@@ -17,7 +17,7 @@ end
 % Some limits and settings used...
 limit.outlier = 3; % +/-5 mV/m is somewhat good outlier limit..
 limit.edp_edi_zero1 = 2.5; % EPD > 2.5 of the outliers
-limit.edp_edi_zero2 = 2.0; % abs(EDI) < 2.0 of the outliers. 
+limit.edp_edi_zero2 = 2.0; % abs(EDI) < 2.0 of the outliers.
 limit.aspocNAN = true; % remove intervals with ASPOC on. (Set to NAN).
 
 % Setup
@@ -89,34 +89,34 @@ if(false) %% Very quickly examine data, compare EDI with closest, in time, EDP d
   end
   
   % Find index of outliers
-% ind = abs(edp_l2pre_tmp(:,1) - edi_e_dsl_ts.data(:,1)) > limit.outlier;
-% Plot only outliers (making sure it was as expected).
-%figure;
-%h2 = scatter(edp_l2pre_ts.data(ind,1),edi_resamp.data(ind,1));
-
-% Timestamps of outliers
-%time = edi_e_dsl_ts.time(ind)
-
-% Plot timeseries of outliers (to identify regions with a lot almost
-% continuous outliers)
-%figure; irf_plot(irf.ts_scalar(time, ones(size(time))),'*');
-% 
-% outlier_ts = edi_e_dsl_ts(ind);
-
-% Plot both data and manually zoom in to the intervals with a lot of
-% outliers identified before..
-% Note: this takes a while...
-%figure; irf_plot({edp_l2pre_ts, edi_e_dsl_ts, outlier_ts}, 'comp', 'linestyle',{'-b','-r*','go'});
-
-% ind2 = ind & (edp_l2pre_tmp(:,1) > limit.edp_edi_zero1);
-% ind2 = ind2 & (abs(edi_e_dsl_ts.data(:,1)) < limit.edp_edi_zero2);
-% 
-% outliers_zero_ts = edi_e_dsl_ts(ind2);
-% 
-% time = outliers_zero_ts.time;
-% 
-% figure;
-% h=irf_plot({edp_l2pre_ts, edi_e_dsl_ts, outlier_ts, outliers_zero_ts}, 'comp', 'linestyle',{'-b','-r*','go','blacko'});
+  % ind = abs(edp_l2pre_tmp(:,1) - edi_e_dsl_ts.data(:,1)) > limit.outlier;
+  % Plot only outliers (making sure it was as expected).
+  %figure;
+  %h2 = scatter(edp_l2pre_ts.data(ind,1),edi_resamp.data(ind,1));
+  
+  % Timestamps of outliers
+  %time = edi_e_dsl_ts.time(ind)
+  
+  % Plot timeseries of outliers (to identify regions with a lot almost
+  % continuous outliers)
+  %figure; irf_plot(irf.ts_scalar(time, ones(size(time))),'*');
+  %
+  % outlier_ts = edi_e_dsl_ts(ind);
+  
+  % Plot both data and manually zoom in to the intervals with a lot of
+  % outliers identified before..
+  % Note: this takes a while...
+  %figure; irf_plot({edp_l2pre_ts, edi_e_dsl_ts, outlier_ts}, 'comp', 'linestyle',{'-b','-r*','go'});
+  
+  % ind2 = ind & (edp_l2pre_tmp(:,1) > limit.edp_edi_zero1);
+  % ind2 = ind2 & (abs(edi_e_dsl_ts.data(:,1)) < limit.edp_edi_zero2);
+  %
+  % outliers_zero_ts = edi_e_dsl_ts(ind2);
+  %
+  % time = outliers_zero_ts.time;
+  %
+  % figure;
+  % h=irf_plot({edp_l2pre_ts, edi_e_dsl_ts, outlier_ts, outliers_zero_ts}, 'comp', 'linestyle',{'-b','-r*','go','blacko'});
   
 end
 
@@ -144,7 +144,7 @@ if(true) %% Scatterplot similar to the ones Ivan produced.
   plot( [-10 10]-limit.outlier, [-10 10], '--red', ...
     [-10 10]+limit.outlier, [-10 10], '--red');
 end
-  
+
 if(false) %% Plot heat map.
   figure;%#ok<UNRCH>
   xb = linspace(-15, 15, 50);

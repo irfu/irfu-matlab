@@ -1,9 +1,9 @@
 Tint = irf.tint('2015-08-12T00:00:00Z/2015-08-12T23:59:59Z');
 
-%% Load SDP E & B 
+%% Load SDP E & B
 if 0
-c_eval('B? = mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);') %#ok<UNRCH>
-c_eval('E? = mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);')
+  c_eval('B? = mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);') %#ok<UNRCH>
+  c_eval('E? = mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);')
 end
 
 %% Load EDI
@@ -25,22 +25,22 @@ c_eval('ii=find(diff(Pfast?.time.epochUnix)>100); if ~isempty(ii), Pfast?.data(i
 c_eval('ii=find(diff(Pslow1.time.epochUnix)>100); if ~isempty(ii), Pslow?.data(ii,:) = NaN; end')
 clear ii
 
-%% ASPOC 
- c_eval('AI?=mms.db_get_ts(''mms?_aspoc_srvy_l2'',''mms?_asp_ionc'',Tint);')
- % incorrect fillval setting
- c_eval('AI?.data(AI?.data==min(AI?.data))=NaN;')
- 
+%% ASPOC
+c_eval('AI?=mms.db_get_ts(''mms?_aspoc_srvy_l2'',''mms?_asp_ionc'',Tint);')
+% incorrect fillval setting
+c_eval('AI?.data(AI?.data==min(AI?.data))=NaN;')
+
 %%
 if 0
-h = irf_plot(2); %#ok<UNRCH>
-
-hca = irf_panel('Ex');
-hl = irf_plot(hca,{E1.x,Edi1.x},'comp');
-hl.Children(1).Marker = '.';
-
-hca = irf_panel('Ey');
-hl = irf_plot(hca,{E1.y,Edi1.y},'comp');
-hl.Children(1).Marker = '.';
+  h = irf_plot(2); %#ok<UNRCH>
+  
+  hca = irf_panel('Ex');
+  hl = irf_plot(hca,{E1.x,Edi1.x},'comp');
+  hl.Children(1).Marker = '.';
+  
+  hca = irf_panel('Ey');
+  hl = irf_plot(hca,{E1.y,Edi1.y},'comp');
+  hl.Children(1).Marker = '.';
 end
 
 %% l2pre - fast

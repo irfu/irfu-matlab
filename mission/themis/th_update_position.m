@@ -3,14 +3,14 @@
 dataDir = '/data/themis';
 thIds = 'abcde';
 
-for thId=thIds 
+for thId=thIds
   R = [];
   for year=2007:2020
     fullPath = sprintf('%s%sth%s%sssc%s%02d',...
       dataDir,filesep,thId,filesep,filesep,year);
     if ~exist(fullPath,'dir'), continue, end
     files = dir(sprintf('%s%sth%s_or_ssc_*_v*.cdf',fullPath,filesep,thId));
-   
+    
     if ~isempty(files)
       for iFile=1:length(files)
         fileToRead = [fullPath,filesep,files(iFile).name];
@@ -26,7 +26,7 @@ for thId=thIds
     end
   end
   % remove repeating points at month boundary
-  ii = find(diff(R(:,1))==0); R(ii,:) = []; 
+  ii = find(diff(R(:,1))==0); R(ii,:) = [];
   eval(['Rth' thId '=R;'])
   fprintf('Rth%s >> mRth.mat\n',thId);
   if exist('./mRth.mat','file')

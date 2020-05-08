@@ -7,10 +7,10 @@ function calc_angles(path_input,path_output,filename,sample_fraction)
 % path_output -
 % filename -
 % This file should contain B1,B2,B3,B4 which are
-% measurment of the magneticfiel from the four cluster satelites, 
+% measurment of the magneticfiel from the four cluster satelites,
 % in GSE-coordinates.
 % B = [timestamp| Bx | By | Bz ]
-% sample_fraction -which resolution to use 
+% sample_fraction -which resolution to use
 %
 %Output:
 % the angles and amplitud of each B-vector are saved to file:
@@ -20,7 +20,7 @@ function calc_angles(path_input,path_output,filename,sample_fraction)
 % Calculates the angles between the B-vectors and the amplitude of the angels.
 % The results are saves to file. B1,..,B4 only has to exist, no other specification.
 %
-%Using: 
+%Using:
 % vector_angles
 % fromepoch
 % toepoch
@@ -31,7 +31,7 @@ function calc_angles(path_input,path_output,filename,sample_fraction)
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -87,32 +87,32 @@ end_of_i = max(size(time_line));
 length_of_B1 = max(size(B1));
 tic %starts the clock
 for i = 1:end_of_i
-        
-	if rem(i,10000) == 0
-	est_time = end_of_i/i*toc;
+  
+  if rem(i,10000) == 0
+    est_time = end_of_i/i*toc;
     disp(['the running will take ' num2str(est_time) ' seconds'])
-	disp(['calculation so far ' num2str(i/end_of_i*100) ' %'])
-	end
-        
-    time = time_line(i);
-    %writing the time
-        angles(i,1) = time;
-
-    [B_vectors, n_pos] = time_synch( time, dt, B1, n_pos(1), B2, n_pos(2), B3, n_pos(3), B4, n_pos(4));
-    %the calculation of the angles 
-		
-	% the amplitude of each vector		
-	for d = 1:4
-	ampl(i,d) =  norm(B_vectors(d,:));
-	end
-		
-    angles(i,2:7) = four_vector_angles(B_vectors);
+    disp(['calculation so far ' num2str(i/end_of_i*100) ' %'])
+  end
+  
+  time = time_line(i);
+  %writing the time
+  angles(i,1) = time;
+  
+  [B_vectors, n_pos] = time_synch( time, dt, B1, n_pos(1), B2, n_pos(2), B3, n_pos(3), B4, n_pos(4));
+  %the calculation of the angles
+  
+  % the amplitude of each vector
+  for d = 1:4
+    ampl(i,d) =  norm(B_vectors(d,:));
+  end
+  
+  angles(i,2:7) = four_vector_angles(B_vectors);
 end
 
 %gives the total time
 disp(['This running took ' num2str(toc) ' seconds'])
 
 a = length(filename);
-        
+
 n_file = sprintf('%sA%s',path_output,filename(2:a))
 save(n_file,'angles','ampl');

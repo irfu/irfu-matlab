@@ -5,6 +5,7 @@
 % ARGUMENTS
 % =========
 % configFileRowList : Cell array of strings representing the content of a BICAS config file.
+%                     Permitted to set the same key twice or more. The last row with the setting is used.
 % settingsVsMap     : containers.Map with all values on string form. VS = values as strings.
 %
 %
@@ -19,12 +20,13 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2018-01-24
 %
-function settingsVsMap = interpret_config_file(configFileRowList)
+function settingsVsMap = interpret_config_file(configFileRowList, L)
 
 SETTINGS_KEY_REGEXP          = '[a-zA-Z0-9._-]+';
 SETTINGS_VALUE_STRING_REGEXP = '[^"]*';
 
-% IMPLEMENTATION NOTE: Well-defined keyType and valueType good for comparisons in automated tests, and (2) for
+
+% IMPLEMENTATION NOTE: Well-defined keyType and valueType good for (1) comparisons in automated tests, and (2) for
 % restricting values.
 settingsVsMap = containers.Map('KeyType', 'char', 'ValueType', 'char');
 
@@ -39,23 +41,24 @@ for iRow = 1:numel(configFileRowList)
         % Do nothing
     else
         % CASE: Row is a SETTINGS key assignment.
-        try
-            subStrList = bicas.utils.regexp_str_parts(row, {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'});
-            key      = subStrList{1};
-            valueStr = subStrList{4};
-            
-        catch Exception
+        REGEXP_LIST = {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'};
+        [subStrList, remainingStr] = EJ_library.str.regexp_str_parts(row, REGEXP_LIST, 'permit non-match');
+        
+        % ASSERTION
+        if (numel(subStrList) ~= numel(REGEXP_LIST)) || ~isempty(remainingStr)
             error('BICAS:interpret_config_file:Assertion:CannotInterpretConfigFile', 'Can not interpret row %i in configuration file: "%s"', iRow, row)
         end
+        key      = subStrList{1};
+        valueStr = subStrList{4};
         
         if settingsVsMap.isKey(key)
-            error('BICAS:interpret_config_file:Assertion:CannotInterpretConfigFile', 'The same settings key "%s" is assigned twice.', key)
+            %error('BICAS:interpret_config_file:Assertion:CannotInterpretConfigFile', 'The same settings key "%s" is assigned twice.', key)
+            
+            % NOTE: Log message is annoying when running automatic testing code.
+            L.logf('warning', 'Settings key "%s" is assigned a second (or more) time in the config file.', key)
         end
         settingsVsMap(key) = valueStr;
     end
 end
 
 end
-
-
-

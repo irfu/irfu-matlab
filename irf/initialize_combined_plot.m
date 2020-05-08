@@ -16,7 +16,7 @@ function [h1, h2] = initialize_combined_plot(nTimePanels,nRows,nCols,totCols,sor
 %       h1 - axes handles to time panels: h1 = irf_plot(nTimePanels);
 %       h2 - axes handles to subplots
 %
-%   Examples: 
+%   Examples:
 %     [h1,h2] = INITIALIZE_COMBINED_PLOT(8,2,2,0.4,'vertical')
 %     [h1,h2] = INITIALIZE_COMBINED_PLOT(8,2,2,3,'vertical')
 
@@ -38,32 +38,32 @@ if totCols<1 % gives the fraction of the plot to be taken up by the timeseries
   isub = 0;
   h2left = [];
   totCols = 100;
-
+  
   if strcmp('horizontal',sorting)
-    for ii = 1:nRows  
+    for ii = 1:nRows
       for jj = (totCols-nCols+1):totCols
-        isub = isub + 1;         
+        isub = isub + 1;
         h2(isub) = subplot(nRows,totCols,jj+(ii-1)*totCols);
         h2left = [h2left; h2(isub).Position(1)];
       end
     end
   else % sorts the handles vertically
     for jj = (totCols-nCols+1):totCols
-      for ii = 1:nRows  
-        isub = isub + 1;         
+      for ii = 1:nRows
+        isub = isub + 1;
         h2(isub) = subplot(nRows,totCols,jj+(ii-1)*totCols);
         h2left = [h2left; h2(isub).Position(1)];
       end
     end
   end
-
+  
   % Move panels so they have the appropriate width
   h1right = h1(1).Position(1)+h1(1).Position(3)+0.03;
   x0 = totCols;
   isub = 0;
   for ii = 1:nCols
     for jj = 1:nRows
-      isub = isub + 1;    
+      isub = isub + 1;
       h2(isub).Position(1) = h1right*1.1 + (1-h1right)/nCols*(ii-1)*0.9; % set the left edge
       h2(isub).Position(3) = (1-h1right)/nCols*0.7; % set the width
       
@@ -77,34 +77,34 @@ else % gives the the "total number of columns" for scaling
     h1(ii).Position(3) = space*0.5;
     h1(ii).Position(1) = h1(ii).Position(1)*0.4;
   end
-
+  
   % Make the subplot panels
   isub = 0;
   h2left = [];
-
+  
   if strcmp('horizontal',sorting)
-    for ii = 1:nRows  
+    for ii = 1:nRows
       for jj = (totCols-nCols+1):totCols
-        isub = isub + 1;         
+        isub = isub + 1;
         h2(isub) = subplot(nRows,totCols,jj+(ii-1)*totCols);
         h2left = [h2left; h2(isub).Position(1)];
       end
     end
   else % sorts the handles vertically
     for jj = (totCols-nCols+1):totCols
-      for ii = 1:nRows  
-        isub = isub + 1;         
+      for ii = 1:nRows
+        isub = isub + 1;
         h2(isub) = subplot(nRows,totCols,jj+(ii-1)*totCols);
         h2left = [h2left; h2(isub).Position(1)];
       end
     end
   end
-
+  
   % Adjust irf_plot panels again
   h2left = min(h2left);
   for ii = 1:nTimePanels
     space = 1-(nCols + 1)/(totCols);
-    h1(ii).Position(3) = (h2left-h1(ii).Position(1))*0.8;  
+    h1(ii).Position(3) = (h2left-h1(ii).Position(1))*0.8;
   end
 end
 

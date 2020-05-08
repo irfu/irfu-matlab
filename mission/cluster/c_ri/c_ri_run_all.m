@@ -110,7 +110,7 @@ function c_ri_run_all(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, p
 % The function "c_ri_run_get_B" load the binary data from "/data/cluster/DDS/" this can be changed
 % in the function "create_file" and "c_ri_get_B".
 %
-% To work properly following shell variables should be defined 
+% To work properly following shell variables should be defined
 % export FGMPATH=/share/isdat_files/cal/fgm
 % export SATTPATH=/data/cluster/DDS
 % export ORBITPATH=/data/cluster/DDS
@@ -187,72 +187,72 @@ end
 
 path_ok='disp([])';
 while ~strcmp(path_ok,'c')
- eval(path_ok);
- disp('=========== Path information =========');
- disp(['MP-crossings          > p_MP = ''' p_MP ''';']);
- disp(['data in binary format > p_Bt = ''' p_Bt ''';']);
- disp(['data in matlab format > p_Bd = ''' p_Bd ''';']);
- disp(['preprocessed data     > p_Bp = ''' p_Bp ''';']);
- disp(['calculated angles     > p_A  = ''' p_A ''';']);
- disp(['found events          > p_E  = ''' p_E ''';']);
- disp(['events ASCII, figures > p_R  = ''' p_R ''';']);
- disp('======================================');
- disp('To change enter new value, e.g. >p_A=[pwd ''/''];  or >p_R=''/share/tmp'';');
- disp('To continue >c');
- path_ok=input('>','s');
- if exist('.c_ri_parameters.mat','file')
-  try save -append .c_ri_parameters.mat p_MP p_Bt p_Bd p_Bp p_A p_E p_R;
-  catch, disp('Paths changes valid only for this run!');
+  eval(path_ok);
+  disp('=========== Path information =========');
+  disp(['MP-crossings          > p_MP = ''' p_MP ''';']);
+  disp(['data in binary format > p_Bt = ''' p_Bt ''';']);
+  disp(['data in matlab format > p_Bd = ''' p_Bd ''';']);
+  disp(['preprocessed data     > p_Bp = ''' p_Bp ''';']);
+  disp(['calculated angles     > p_A  = ''' p_A ''';']);
+  disp(['found events          > p_E  = ''' p_E ''';']);
+  disp(['events ASCII, figures > p_R  = ''' p_R ''';']);
+  disp('======================================');
+  disp('To change enter new value, e.g. >p_A=[pwd ''/''];  or >p_R=''/share/tmp'';');
+  disp('To continue >c');
+  path_ok=input('>','s');
+  if exist('.c_ri_parameters.mat','file')
+    try save -append .c_ri_parameters.mat p_MP p_Bt p_Bd p_Bp p_A p_E p_R;
+    catch, disp('Paths changes valid only for this run!');
+    end
+  else
+    try save .c_ri_parameters.mat p_MP p_Bt p_Bd p_Bp p_A p_E p_R;
+    catch, disp('Paths changes valid only for this run!');
+    end
   end
- else
-  try save .c_ri_parameters.mat p_MP p_Bt p_Bd p_Bp p_A p_E p_R;
-  catch, disp('Paths changes valid only for this run!');
-  end
- end
-
+  
 end
 [i_end,c] = size(st_m);
 
 for i = 1:i_end
   st = st_m(i,:);
   et = et_m(i,:);
-
+  
   %step one
   if run_steps(1) == 1
-  c_ri_auto_event_search(st,et,d2MP,psw,p_MP);
+    c_ri_auto_event_search(st,et,d2MP,psw,p_MP);
   end
-
+  
   %step two
   if run_steps(2) == 1
-  c_ri_run_get_B(st,et,p_MP, p_Bt);
+    c_ri_run_get_B(st,et,p_MP, p_Bt);
   end
-
+  
   %step three
   if run_steps(3) == 1
-  c_ri_four_B_files_2_one(p_Bt,p_Bd,st,et);
+    c_ri_four_B_files_2_one(p_Bt,p_Bd,st,et);
   end
-
+  
   %step four
   if run_steps(4) == 1
-  c_ri_load_B_for_preprocess(st,et,p_Bd, p_Bp);
+    c_ri_load_B_for_preprocess(st,et,p_Bd, p_Bp);
   end
-
+  
   %step five
   if run_steps(5) == 1
-  c_ri_run_calc_angles_w_pre(st,et, p_Bp, p_A);
+    c_ri_run_calc_angles_w_pre(st,et, p_Bp, p_A);
   end
-
+  
   %step  sex
   if run_steps(6) == 1
-  m_ang = min_angle(i);
-  m_ampl = min_ampl(i);
-  c_ri_run_class_angle_as_event(st,et,m_ang,m_ampl,p_A,p_E);
+    m_ang = min_angle(i);
+    m_ampl = min_ampl(i);
+    c_ri_run_class_angle_as_event(st,et,m_ang,m_ampl,p_A,p_E);
   end
-
+  
   %step seven
   if run_steps(7) == 1
-  per = period(i);
-  c_ri_run_events_into_pictures(st,et,p_MP,p_Bp,p_E,p_R, per);
+    per = period(i);
+    c_ri_run_events_into_pictures(st,et,p_MP,p_Bp,p_E,p_R, per);
   end
-
+  
 end

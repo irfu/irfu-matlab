@@ -31,7 +31,7 @@
 %
 % RETURN VALUE
 % ============
-% errorCode = The error code that is to be passed on to the OS/shell.
+% errorCode : The error code that is to be passed on to the OS/shell.
 %
 %
 % NOTES
@@ -53,125 +53,177 @@
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-03-xx
+% First created 2016-03-xx.
 %
 function errorCode = main( varargin )
-%
-% PROPOSAL: Set option for MATLAB warnings. Disable?
-%   NOTE: TN claims warnings are sent to stdout.
-% TODO-NEED-INFO: Is the application allowed to overwrite output files?
-%
-% PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
-%   PRO: Useful when S/W descriptor becomes big and complex.
-%
-% PROPOSAL: Split up the "main_without_error_handling" function in several functions (outsource chunks of its code to smaller functions which are called).
-%   PROPOSAL: Printing CLI arguments.
-%
-% PROPOSAL: Better handling of errors in dataobj (reading CDF files).
-%   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
-%
-% PROPOSAL: When printing settings, print how each key value has been set: default, config file, CLI argument.
-%
-% PROPOSAL: Print Exception causes recursively.
-%   NOTE: Technically a tree structure, not a chain/sequence.
-
-
-% Clear any previous instance of global variables
-% -----------------------------------------------
-% This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
-% initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
-clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
-
-C = bicas.error_safe_constants();
-
-
-
-try
-    errorCode = C.EMIDP_2_INFO('NoError').errorCode;
-    main_without_error_handling(varargin);
-
-catch Exception1
-    %================================================================
-    % CASE: Caught an error in the regular execution of the software
-    %================================================================
+    %
+    % PROPOSAL: Set option for MATLAB warnings. Disable?
+    %   NOTE: TN claims warnings are sent to stdout.
+    % TODO-NEED-INFO: Is the application allowed to overwrite output files?
+    %
+    % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
+    %   PRO: Useful when S/W descriptor becomes big and complex.
+    %
+    % PROPOSAL: Split up the "main_without_error_handling" function into several functions (outsource chunks of its code to smaller functions which are called).
+    %   PROPOSAL: Printing CLI arguments.
+    %
+    % PROPOSAL: Better handling of errors in dataobj (reading CDF files).
+    %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
+    %
+    % PROPOSAL: Print MATLAB path (return value from path()).
+    %   CON: Too many rows.
+    %
+    % PROPOSAL: Option for overriding settings via CLI argument in MATLAB using a containers.Map value.
+    %   PROBLEM: Not obvious which order of precedence makes sense. Complicated to use order among settings arguments.
+    %       PROPOSAL: Applies setting BEFORE CLI settings args.
+    %       PROPOSAL: Applies setting AFTER CLI settings args.
+    %       
+    
+    
     try
-        % IMPLEMENTATION NOTE: The error handling collects one long string with log/error messages for one bicas.log
-        % call, instead of making multiple bicas.log calls. This avoids having stdout and stderr messages mixed
-        % (alternating rows with stdout and stderr) in the MATLAB GUI, making it easier to read.
-        msg = '';
-        msg = [msg, sprintf('Main function caught an exception. Starting error handling.\n')];
-        msg = [msg, sprintf('Exception1.identifier = "%s"\n', Exception1.identifier)];
-        msg = [msg, sprintf('Exception1.message    = "%s"\n', Exception1.message)];
+        % Clear any previous instance of global variables
+        % -----------------------------------------------
+        % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
+        % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
+        clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
+        
+        C = bicas.error_safe_constants();
+        L = bicas.logger('bash wrapper', true);   % NOTE: Permitting logging to file in case using inofficial option.
+        
+        
+        
+        %===================================================================================================================
+        % Initialize irfu-matlab "library"
+        % --------------------------------
+        % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
+        %
+        % NOTE: Prints to stdout. Can not deactivate this behaviour!
+        % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
+        %       BICAS or the rest of irfu-matlab).
+        %
+        % IMPLEMENTATION NOTE: bicas.logger.ICD_log_msg uses EJ_library.str.add_prefix_on_every_row.
+        % ==> Must initialize paths for EJ_library BEFORE using bicas.logger.log/logf.
+        %===================================================================================================================
+        irf('check_path');
+        irf('check_os');              % Maybe not strictly needed.
+        irf('matlab');
+        irf('cdf_leapsecondstable');
+        irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
 
-        %=================================================================================
-        % Use MATLAB error message identifiers to identify one or multiple "error types".
-        %=================================================================================
-        msgIdentifierParts = strsplit(Exception1.identifier, ':');
-        emidpList = msgIdentifierParts(C.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
-        if isempty(emidpList)
-            emidpList = {'UntranslatableErrorMsgId'};
+    
+    
+        errorCode = C.EMIDP_2_INFO('NoError').errorCode;    % Default error code (i.e. no error).
+        main_without_error_handling(varargin, L);
+        
+    catch Exception1
+        %================================================================
+        % CASE: Caught an error in the regular execution of the software
+        %================================================================
+        try
+            msg = sprintf('Main function caught an exception. Starting error handling.\n');
+        
+            [msgRecursive, errorCode] = recursive_exception_msg(Exception1, C);
+            msg = [msg, msgRecursive];
+            
+            msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
+            L.log('error', msg)
+
+            return
+            
+        catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
+            %========================================================
+            % CASE: Caught an error in the regular error handling(!)
+            %========================================================
+            
+            % NOTE: Only use very, very error-safe code here.
+            %       Does not use bicas.logger or similar.
+            fprintf(2, 'Error in the MATLAB code''s error handling.\n');            % Print to stderr.
+            fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);    % Print to stderr.
+            fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);       % Print to stderr.
+            
+            % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
+            %   error code 0 : No error
+            %   error code 1 : Every kind of error (!)
+            errorCode = 1;
+            
+            fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
+            return
         end
-
-        %===================================
-        % Print all identified error types.
-        %===================================
-        msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
-        for i = 1:numel(emidpList)
-            emidp = emidpList{i};
-            msg  = [msg, sprintf('    %-23s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
-        end
-        % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
-        errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
-
-        %======================
-        % Print the call stack
-        %======================
-        callStackLength = length(Exception1.stack);
-        msg = [msg, sprintf('MATLAB call stack:\n')];
-        if (~isempty(callStackLength))
-            for i=1:callStackLength
-                stackCall = Exception1.stack(i);
-                temp      = strsplit(stackCall.file, filesep);
-                filename  = temp{end};
-
-                %msg = [msg, sprintf('    %-27s %-52s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line)];
-                msg = [msg, sprintf('    row %3i, %-27s %-52s\n', stackCall.line, [filename, ','], stackCall.name)];
-            end
-        end
-
-        msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
-        bicas.log('error', msg)
-        return
-
-    catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
-        %========================================================
-        % CASE: Caught an error in the regular error handling(!)
-        %========================================================
-
-        % NOTE: Only use very, very error-safe code here.
-        %       Does not use bicas.log() or similar.
-        fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
-        fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
-        fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
-
-        % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
-        %   error code 0 : No error
-        %   error code 1 : Every kind of error (!)
-        errorCode = 1;
-
-        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
-        return
     end
-end
-
-
-
+    
+    
+    
 end    % main
 
 
 
+% Create logging/error message for a given exception, and which is recursive in Exception.cause.
+%
+function [msg, errorCode] = recursive_exception_msg(Exception, C)
+    
+    CAUSES_RECURSIVE_INDENTATION_LENGTH = 8;
+
+    % IMPLEMENTATION NOTE: The error handling collects one long string with log/error messages for one bicas.logger.log
+    % call, instead of making multiple bicas.logger.log calls. This avoids having stdout and stderr messages mixed
+    % (alternating rows with stdout and stderr) in the MATLAB GUI, making it easier to read.
+    msg = '';
+    msg = [msg, sprintf('Exception.identifier = "%s"\n', Exception.identifier)];
+    msg = [msg, sprintf('Exception.message    = "%s"\n', Exception.message)];
+    
+    %=================================================================================
+    % Use MATLAB error message identifiers to identify one or multiple "error types".
+    %=================================================================================
+    msgIdentifierParts = strsplit(Exception.identifier, ':');
+    emidpList = msgIdentifierParts(C.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
+    if isempty(emidpList)
+        emidpList = {'UntranslatableErrorMsgId'};
+    end
+    
+    %===================================
+    % Print all identified error types.
+    %===================================
+    msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
+    for i = 1:numel(emidpList)
+        emidp = emidpList{i};
+        msg  = [msg, sprintf('    %-23s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
+    end
+    % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
+    errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
+    
+    %======================
+    % Print the call stack
+    %======================
+    callStackLength = length(Exception.stack);
+    msg = [msg, sprintf('MATLAB call stack:\n')];
+    if (~isempty(callStackLength))
+        for i=1:callStackLength
+            stackCall = Exception.stack(i);
+            temp      = strsplit(stackCall.file, filesep);
+            filename  = temp{end};
+            
+            msg = [msg, sprintf('    row %4i, %-27s %-52s\n', stackCall.line, [filename, ','], stackCall.name)];
+        end
+    end
+    
+    for iCause = 1:numel(Exception.cause)
+        msg = [msg, sprintf('Logging Exception.cause{%i}:\n', iCause)];
+        
+        %================
+        % RECURSIVE CALL
+        %================
+        % NOTE: Does not capture return value errorCode.
+        recursiveMsg = recursive_exception_msg(Exception.cause{iCause}, C);
+        
+        recursiveMsg = EJ_library.str.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
+        msg = [msg, recursiveMsg];
+    end
+    
+end
+
+
+
 % BICAS's de facto main function, without error handling.
-function main_without_error_handling(cliArgumentsList)
+function main_without_error_handling(cliArgumentsList, L)
 
 
 
@@ -190,35 +242,25 @@ if ~ismember(matlabVersionString, C.PERMITTED_MATLAB_VERSIONS)
         'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
         matlabVersionString, strjoin(C.PERMITTED_MATLAB_VERSIONS, ', '))
 end
-bicas.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
+L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
 
 
 
 % Log that BICAS (the MATLAB code) has started running.
 % RATIONALE: This is useful when one manually looks through the log file and tries to identify the beginning of a
 % particular run. The BICAS log is always amended to and may therefore contain log messages from multiple runs.
-bicas.logf('info', [...
-    '###########################################\n', ...
-    '###########################################\n', ...
+L.logf('info', [...
+    '############################################\n', ...
+    '############################################\n', ...
     '#### BICAS'' MATLAB CODE STARTS RUNNING ####\n', ...
-    '###########################################\n', ...
-    '###########################################\n'])
+    '############################################\n', ...
+    '############################################\n'])
 
 
 
-%===================================================================================================================
-% Initialize irfu-matlab "library"
-%
-% Among other things: Sets up paths to within irfu-matlab (excluding .git/).
-% NOTE: Prints to stdout. Can not deactivate this behaviour!
-% NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
-%       BICAS or the rest of irfu-matlab).
-%===================================================================================================================
-irf('check_path');
-irf('check_os');              % Maybe not strictly needed.
-irf('matlab');
-irf('cdf_leapsecondstable');
-irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
+% IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem of calling irf('check_os') which indirectly
+% calls system('hostname') at ROC:roc2-dev. Could be
+L.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
 
 
 
@@ -236,10 +278,10 @@ bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '.
 %=======================================
 % IMPLEMENTATION NOTE: Want this as early as possible, before interpreting arguments. Should therefore not merge this
 % with printing settings. This might help debug why settings were not set.
-bicas.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
-bicas.logf('info', 'Current working directory: pwd           = "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
-bicas.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
-bicas.logf('info',   '===============================================')
+L.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
+L.logf('info', 'Current working directory: pwd           = "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
+L.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
+L.logf('info',   '===============================================')
 cliArgumentsQuotedList = {};
 for i = 1:length(cliArgumentsList)
     % UI ASSERTION
@@ -248,17 +290,19 @@ for i = 1:length(cliArgumentsList)
         error('BICAS:main', 'Argument %i is not a string.', i)
     end
     
-    bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
+    L.logf('info', 'CLI argument %2i: "%s"', i, cliArgumentsList{i})
     cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
 end
 cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedList, ' ');
 cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
 % both MATLAB command prompt and bash.
-bicas.logf('info', '    CLI arguments for copy-pasting:\n')
-bicas.logf('info', '        Quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
-bicas.logf('info', '        Quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
-bicas.logf('info', '\n\n')
+L.logf('info', '\n')
+L.logf('info', 'CLI arguments for copy-pasting\n')
+L.logf('info', '------------------------------\n')
+L.logf('info', 'Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
+L.logf('info', 'Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
+L.logf('info', '\n\n')
 
 
 
@@ -277,6 +321,16 @@ CliData = bicas.interpret_CLI_args(cliArgumentsList);
 
 
 
+%==============================================================
+% Configure inofficial log file, written to from within MATLAB
+%==============================================================
+if ~isempty(CliData.matlabLogFile)
+    % NOTE: Requires that bicas.logger has been initialized to permit writing to log file.
+    L.set_log_file(CliData.matlabLogFile);
+end
+
+
+
 %=================================================
 % Modify settings according to configuration file
 %=================================================
@@ -285,10 +339,10 @@ if ~isempty(CliData.configFile)
 else
     configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
 end
-bicas.logf('info', 'configFile = "%s"', configFile)
+L.logf('info', 'configFile = "%s"', configFile)
 rowList                 = EJ_library.utils.read_text_file(configFile, '(\r\n|\r|\n)');
-ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
-bicas.log('info', 'Overriding subset of in-memory settings using config file.')
+ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
+L.log('info', 'Overriding subset of in-memory settings using config file.')
 SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS
 
 
@@ -296,8 +350,11 @@ SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'c
 %=========================================================
 % Modify settings according to (inofficial) CLI arguments
 %=========================================================
-bicas.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
+L.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
 SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
+
+
+
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
 
@@ -306,22 +363,23 @@ SETTINGS.make_read_only();
 %======================
 % ASSERTIONS: SETTINGS
 %======================
-EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
-EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
+EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
+%EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
+EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
 % Validate S/W release version
 % ----------------------------
 % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
 % NOTE: It is hard to thoroughly follow the description, but the end result should be under
 % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
-EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
+EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
 
 
 
-bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
+L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
 
 
 
-SwModeDefs = bicas.swmode_defs(SETTINGS);
+SwModeDefs = bicas.swmode_defs(SETTINGS, L);
 
 
 
@@ -382,19 +440,19 @@ switch(CliData.functionalityMode)
         % Set pipelineId, calibrationDir
         %================================
         % NOTE: Reading environment variables first here, where they are needed.
-        calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-        %pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
-        masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-        bicas.logf('info', 'calibrationDir = "%s"', calibrationDir)
-        %bicas.logf('info', 'pipelineId     = "%s"', pipelineId)
-        bicas.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
+        calibrationDir = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+        %pipelineId     = read_env_variable(SETTINGS, L, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
+        masterCdfDir   = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+        L.logf('info', 'calibrationDir = "%s"', calibrationDir)
+        %L.logf('info', 'pipelineId     = "%s"', pipelineId)
+        L.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
 
 
 
         %==================
         % EXECUTE S/W MODE
         %==================
-        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS )
+        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS, L )
 
     otherwise
         error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
@@ -403,7 +461,7 @@ end    % if ... else ... / switch
 
 
 executionWallTimeSeconds = toc(startTimeTicSeconds);
-bicas.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
+L.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
 end
 
 
@@ -524,21 +582,23 @@ end
 
 
 % Read environment variable, but allow the value to be overriden by a settings variable.
-function v = read_env_variable(SETTINGS, envVarName, settingsOverrideName)
-settingsOverrideValue = SETTINGS.get_fv(settingsOverrideName);
+function v = read_env_variable(SETTINGS, L, envVarName, overrideSettingKey)
+settingsOverrideValue = SETTINGS.get_fv(overrideSettingKey);
 
 if isempty(settingsOverrideValue)
     v = getenv(envVarName);
 else
-    bicas.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', envVarName, settingsOverrideName, settingsOverrideValue)
+    L.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', ...
+        envVarName, overrideSettingKey, settingsOverrideValue)
     v = settingsOverrideValue;
 end
 
 % UI ASSERTION
 if isempty(v)
     error('BICAS:main:Assertion', ...
-        'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value "%s".', ...
-        envVarName, settingsOverrideValue)
+        ['Can not set internal variable corresponding to environment variable "%s" from either', ...
+        ' (1) the environment variable, or (2) settings key value %s="%s".'], ...
+        envVarName, overrideSettingKey, settingsOverrideValue)
 end
 end
 
@@ -588,7 +648,7 @@ function SETTINGS = overwrite_settings_from_strings(SETTINGS, ModifiedSettingsMa
         end
         
         % Overwrite old setting.
-        SETTINGS.update_value(key, newValue, valueSource);
+        SETTINGS.override_value(key, newValue, valueSource);
     end
     
 end

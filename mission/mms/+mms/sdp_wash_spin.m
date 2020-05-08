@@ -1,8 +1,8 @@
 function [res] = sdp_wash_spin(data,method,fillGap)
 %MMS.SDP_WASH_SPIN  Wash spin tones
 %
-% RES = C_EFW_WASH_SCP(DATA,[METHOD,GAPFILL]) 
-%   returns RES that is washed satellite potential DATA  
+% RES = C_EFW_WASH_SCP(DATA,[METHOD,GAPFILL])
+%   returns RES that is washed satellite potential DATA
 %
 % Washing requires filling the data gaps defined by METHOD:
 %           'PREVSPIN' - copy data from previous spin [default]
@@ -10,8 +10,8 @@ function [res] = sdp_wash_spin(data,method,fillGap)
 %
 % RES contains washed data with original gaps preserved unless GAPFILL=1
 % specified.
-% 
-% MMS.SDP_WASH_SPIN(DATA,[METHOD,GAPFILL]) 
+%
+% MMS.SDP_WASH_SPIN(DATA,[METHOD,GAPFILL])
 %   when nargout==0 plot the data
 
 % ----------------------------------------------------------------------------
@@ -37,45 +37,45 @@ ii = find( isnan(data.data(:,1)) );
 
 % Fill gaps before spectral cleaning
 if ~isempty(ii)
-	if length(ii) == length(data), return, end
-	
-	% First point is already a gap
-	if ii(1) == 1
-		jj = find(~isnan(data.data(:,1)));
-		res.data(1:jj(1)-1,:) = res.data(jj(1),:);
-		ii(1:jj(1)-1) = [];
-	end
+  if length(ii) == length(data), return, end
+  
+  % First point is already a gap
+  if ii(1) == 1
+    jj = find(~isnan(data.data(:,1)));
+    res.data(1:jj(1)-1,:) = res.data(jj(1),:);
+    ii(1:jj(1)-1) = [];
+  end
 end
 
 % Data ends by a gap
 if ~isempty(ii) && ii(end) == size(data,1)
-	if isempty(jj), jj = find(~isnan(data.data(:,1))); end
-	res.data(jj(end)+1:end,:) = res.data(jj(end),:);
-	ii(jj(end)+1:end) = [];
+  if isempty(jj), jj = find(~isnan(data.data(:,1))); end
+  res.data(jj(end)+1:end,:) = res.data(jj(end),:);
+  ii(jj(end)+1:end) = [];
 end
 
 if ~isempty(ii)
-	ju = find(diff(ii)-1);
-	begs = [ii(1)-1; ii(ju+1)-1];
-	ends = [ii(ju)+1; ii(end)+1];
-	switch lower(method)
-		case 'linear'
-			for idx=1:length(begs)
-				res.data(begs(idx)+1:ends(idx)-1,:) = interp1(...
-					[epoch(begs(idx)); epoch(ends(idx))],...
-					[res(begs(idx),2); res(ends(idx),2)],...
-					epoch(begs(idx)+1:ends(idx)-1),'linear');
-			end
-		case 'prevspin'
-			for idx=1:length(begs)
-				prevs = res.data( epoch >= epoch(begs(idx)+1)-SPIN_PERIOD, :);
-				res.data(begs(idx)+1:ends(idx)-1,:) = ...
-					prevs(1:ends(idx)-begs(idx)-1,:);
-			end
-		otherwise
-			error('METHOD can be : LINEAR, PREVSPIN')
-	end
-			
+  ju = find(diff(ii)-1);
+  begs = [ii(1)-1; ii(ju+1)-1];
+  ends = [ii(ju)+1; ii(end)+1];
+  switch lower(method)
+    case 'linear'
+      for idx=1:length(begs)
+        res.data(begs(idx)+1:ends(idx)-1,:) = interp1(...
+          [epoch(begs(idx)); epoch(ends(idx))],...
+          [res(begs(idx),2); res(ends(idx),2)],...
+          epoch(begs(idx)+1:ends(idx)-1),'linear');
+      end
+    case 'prevspin'
+      for idx=1:length(begs)
+        prevs = res.data( epoch >= epoch(begs(idx)+1)-SPIN_PERIOD, :);
+        res.data(begs(idx)+1:ends(idx)-1,:) = ...
+          prevs(1:ends(idx)-begs(idx)-1,:);
+      end
+    otherwise
+      error('METHOD can be : LINEAR, PREVSPIN')
+  end
+  
 end
 
 for iComp = 1:3
@@ -117,12 +117,11 @@ end
     if nn==0
       hold off
     end
-    res = ifft(f,'symmetric') + m;  
+    res = ifft(f,'symmetric') + m;
   end
 
 end
 
 
 
-	
-	
+

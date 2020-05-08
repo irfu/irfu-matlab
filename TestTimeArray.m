@@ -1,13 +1,13 @@
 classdef TestTimeArray < matlab.unittest.TestCase
-% Test cases for GenericTimeArray and derived classes
-
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
-
+  % Test cases for GenericTimeArray and derived classes
+  
+  % ----------------------------------------------------------------------------
+  % "THE BEER-WARE LICENSE" (Revision 42):
+  % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+  % can do whatever you want with this stuff. If we meet some day, and you think
+  % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+  % ----------------------------------------------------------------------------
+  
   properties (TestParameter)
     class = {'EpochUnix','EpochTT','EpochCdf','EpochCdf16'};
     utc = {'1970-01-01T00:00:00.000000Z',...

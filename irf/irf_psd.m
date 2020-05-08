@@ -71,115 +71,115 @@ if min(size(xx))==1, xx=xx(:); end % make sure x is column vector
 error(msg)
 
 if Fs==2 % test sampling frequency in case Fs not given
-    if xx(1,1)> 9e8 % most probably first column is isdat time
-        Fs=1./(xx(2,1)-xx(1,1));
-        ii_start=2;
-    else
-        ii_start=1;
-    end
+  if xx(1,1)> 9e8 % most probably first column is isdat time
+    Fs=1./(xx(2,1)-xx(1,1));
+    ii_start=2;
+  else
+    ii_start=1;
+  end
 else
-	% seems the sampling frequency was given
-	ii_start=2;
+  % seems the sampling frequency was given
+  ii_start=2;
 end
 for ii=ii_start:size(xx,2) % cycle over the columns of x
-    x=xx(:,ii);
-
-    % compute PSD
-    window = window(:);
-    n = length(x);		% Number of data points
-    nwind = length(window); % length of window
-    if n < nwind    % zero-pad x if it has length less than the window length
-        x(nwind,1:end)=0;  n=nwind;
-    end
-
-    k = fix((n-noverlap)/(nwind-noverlap));	% Number of windows
-    % (k = fix(n/nwind) for noverlap=0)
-
-    index = 1:nwind;
-    KMU = k*norm(window)^2;	% Normalizing scale factor ==> asymptotically unbiased
-    % KMU = k*sum(window)^2;% alt. Nrmlzng scale factor ==> peaks are about right
-
-    Spec = zeros(nfft,1);
-    for i=1:k
-        if strcmp(dflag,'none')
-            xw = window.*(x(index));
-        elseif strcmp(dflag,'linear')
-            xw = window.*detrend(x(index));
-        else
-            xw = window.*detrend(x(index),0);
-        end
-        index = index + (nwind - noverlap);
-        Xx = abs(fft(xw,nfft)).^2;
-        Spec = Spec + Xx;
-    end
-
-    % Select first half
-    if ~any(any(imag(x)~=0))   % if x is not complex
-        if rem(nfft,2)    % nfft odd
-            select = (1:(nfft+1)/2)';
-        else
-            select = (1:nfft/2+1)';
-        end
-        Spec = Spec(select);
+  x=xx(:,ii);
+  
+  % compute PSD
+  window = window(:);
+  n = length(x);		% Number of data points
+  nwind = length(window); % length of window
+  if n < nwind    % zero-pad x if it has length less than the window length
+    x(nwind,1:end)=0;  n=nwind;
+  end
+  
+  k = fix((n-noverlap)/(nwind-noverlap));	% Number of windows
+  % (k = fix(n/nwind) for noverlap=0)
+  
+  index = 1:nwind;
+  KMU = k*norm(window)^2;	% Normalizing scale factor ==> asymptotically unbiased
+  % KMU = k*sum(window)^2;% alt. Nrmlzng scale factor ==> peaks are about right
+  
+  Spec = zeros(nfft,1);
+  for i=1:k
+    if strcmp(dflag,'none')
+      xw = window.*(x(index));
+    elseif strcmp(dflag,'linear')
+      xw = window.*detrend(x(index));
     else
-        select = (1:nfft)';
+      xw = window.*detrend(x(index),0);
     end
-    freq_vector = (select - 1)*Fs/nfft;
-
-    % find confidence interval if needed
-    if (nargout == 3) || ((nargout == 0) && ~isempty(p))
-        if isempty(p)
-            p = .95;    % default
-        end
-        % Confidence interval from Kay, p. 76, eqn 4.16:
-        % (first column is lower edge of conf int., 2nd col is upper edge)
-        confid = Spec*chi2conf(p,k)/KMU;
-
-        if noverlap > 0
-            disp('Warning: confidence intervals inaccurate for NOVERLAP > 0.')
-        end
+    index = index + (nwind - noverlap);
+    Xx = abs(fft(xw,nfft)).^2;
+    Spec = Spec + Xx;
+  end
+  
+  % Select first half
+  if ~any(any(imag(x)~=0))   % if x is not complex
+    if rem(nfft,2)    % nfft odd
+      select = (1:(nfft+1)/2)';
+    else
+      select = (1:nfft/2+1)';
     end
-
-    % I hate decibells, added to make correct units - AV 97.12.20
-    Spec=Spec/Fs*2;
-    %confid=confid/Fs*2;
-    %
-    % original line
-    Spec = Spec*(1/KMU);   % normalize
-
-    % set up output parameters
-    if (nargout == 3)
-        Pxx = Spec;
-        Pxxc = confid;
-        f = freq_vector;
-    elseif (nargout == 2)
-        Pxx = Spec;
-        Pxxc = freq_vector;
-    elseif (nargout == 1)
-        Pxx = Spec;
-    elseif (nargout == 0)
-        if ~isempty(p)
-            P = [Spec confid];
-        else
-            P = Spec;
-        end
-        newplot;
-        %   plot(freq_vector,10*log10(abs(P))), grid on
-        co=get(gca,'colororder');
-        clr=co(mod(ii,size(co,1)),1:3);
-        loglog(freq_vector,(abs(P)),'color',clr), grid on
-        hold on
-        %   xlabel('Frequency [Hz]'), ylabel('Power Spectrum Magnitude (dB)');
-        xlabel('Frequency [Hz]');
-        try
-            q=c_desc(inputname(1));
-            units=['[' q.units{1} ']^2/Hz'];
-        catch
-            units='(singal unit)^2/Hz';
-        end
-        ylabel(units);
-        hold off
+    Spec = Spec(select);
+  else
+    select = (1:nfft)';
+  end
+  freq_vector = (select - 1)*Fs/nfft;
+  
+  % find confidence interval if needed
+  if (nargout == 3) || ((nargout == 0) && ~isempty(p))
+    if isempty(p)
+      p = .95;    % default
     end
+    % Confidence interval from Kay, p. 76, eqn 4.16:
+    % (first column is lower edge of conf int., 2nd col is upper edge)
+    confid = Spec*chi2conf(p,k)/KMU;
+    
+    if noverlap > 0
+      disp('Warning: confidence intervals inaccurate for NOVERLAP > 0.')
+    end
+  end
+  
+  % I hate decibells, added to make correct units - AV 97.12.20
+  Spec=Spec/Fs*2;
+  %confid=confid/Fs*2;
+  %
+  % original line
+  Spec = Spec*(1/KMU);   % normalize
+  
+  % set up output parameters
+  if (nargout == 3)
+    Pxx = Spec;
+    Pxxc = confid;
+    f = freq_vector;
+  elseif (nargout == 2)
+    Pxx = Spec;
+    Pxxc = freq_vector;
+  elseif (nargout == 1)
+    Pxx = Spec;
+  elseif (nargout == 0)
+    if ~isempty(p)
+      P = [Spec confid];
+    else
+      P = Spec;
+    end
+    newplot;
+    %   plot(freq_vector,10*log10(abs(P))), grid on
+    co=get(gca,'colororder');
+    clr=co(mod(ii,size(co,1)),1:3);
+    loglog(freq_vector,(abs(P)),'color',clr), grid on
+    hold on
+    %   xlabel('Frequency [Hz]'), ylabel('Power Spectrum Magnitude (dB)');
+    xlabel('Frequency [Hz]');
+    try
+      q=c_desc(inputname(1));
+      units=['[' q.units{1} ']^2/Hz'];
+    catch
+      units='(singal unit)^2/Hz';
+    end
+    ylabel(units);
+    hold off
+  end
 end
 
 
@@ -207,132 +207,132 @@ function [msg,nfft,Fs,window,noverlap,p,dflag] = psdchk(P,x,y)
 msg = [];
 
 if isempty(P)
-    % psd(x)
-    nfft = min(length(x),256);
-    window = hanning(nfft);
-    noverlap = 0;
-    Fs = 2;
-    p = [];
-    dflag = 'none';
+  % psd(x)
+  nfft = min(length(x),256);
+  window = hanning(nfft);
+  noverlap = 0;
+  Fs = 2;
+  p = [];
+  dflag = 'none';
 elseif length(P) == 1
-    % psd(x,nfft)
-    % psd(x,dflag)
-	if isempty(P{1}),   dflag = 'none'; nfft = min(length(x),256);
-	elseif ischar(P{1}), dflag = P{1};       nfft = min(length(x),256);
-	else,              dflag = 'none'; nfft = P{1};   
-	end
-    Fs = 2;
-    window = hanning(nfft);
-    noverlap = 0;
-    p = [];
+  % psd(x,nfft)
+  % psd(x,dflag)
+  if isempty(P{1}),   dflag = 'none'; nfft = min(length(x),256);
+  elseif ischar(P{1}), dflag = P{1};       nfft = min(length(x),256);
+  else,              dflag = 'none'; nfft = P{1};
+  end
+  Fs = 2;
+  window = hanning(nfft);
+  noverlap = 0;
+  p = [];
 elseif length(P) == 2
-    % psd(x,nfft,Fs)
-    % psd(x,nfft,dflag)
-    if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-	if isempty(P{2}),   dflag = 'none'; Fs = 2;
-	elseif ischar(P{2}), dflag = P{2};       Fs = 2;
-	else,              dflag = 'none'; Fs = P{2};
-	end
-    window = hanning(nfft);
-    noverlap = 0;
-    p = [];
+  % psd(x,nfft,Fs)
+  % psd(x,nfft,dflag)
+  if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
+  if isempty(P{2}),   dflag = 'none'; Fs = 2;
+  elseif ischar(P{2}), dflag = P{2};       Fs = 2;
+  else,              dflag = 'none'; Fs = P{2};
+  end
+  window = hanning(nfft);
+  noverlap = 0;
+  p = [];
 elseif length(P) == 3
-    % psd(x,nfft,Fs,window)
-    % psd(x,nfft,Fs,dflag)
-    if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
-    if ischar(P{3})
-        dflag = P{3};
-        window = hanning(nfft);
-    else
-        dflag = 'none';
-        window = P{3};
-        if length(window) == 1, window = hanning(window); end
-        if isempty(window), window = hanning(nfft); end
-    end
-    noverlap = 0;
-    p = [];
+  % psd(x,nfft,Fs,window)
+  % psd(x,nfft,Fs,dflag)
+  if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
+  if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
+  if ischar(P{3})
+    dflag = P{3};
+    window = hanning(nfft);
+  else
+    dflag = 'none';
+    window = P{3};
+    if length(window) == 1, window = hanning(window); end
+    if isempty(window), window = hanning(nfft); end
+  end
+  noverlap = 0;
+  p = [];
 elseif length(P) == 4
-    % psd(x,nfft,Fs,window,noverlap)
-    % psd(x,nfft,Fs,window,dflag)
-    if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
-    window = P{3};
-    if length(window) == 1, window = hanning(window); end
-    if isempty(window), window = hanning(nfft); end
-    if ischar(P{4})
-        dflag = P{4};
-        noverlap = 0;
-    else
-        dflag = 'none';
-        if isempty(P{4}), noverlap = 0; else, noverlap = P{4}; end
-    end
-    p = [];
+  % psd(x,nfft,Fs,window,noverlap)
+  % psd(x,nfft,Fs,window,dflag)
+  if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
+  if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
+  window = P{3};
+  if length(window) == 1, window = hanning(window); end
+  if isempty(window), window = hanning(nfft); end
+  if ischar(P{4})
+    dflag = P{4};
+    noverlap = 0;
+  else
+    dflag = 'none';
+    if isempty(P{4}), noverlap = 0; else, noverlap = P{4}; end
+  end
+  p = [];
 elseif length(P) == 5
-    % psd(x,nfft,Fs,window,noverlap,p)
-    % psd(x,nfft,Fs,window,noverlap,dflag)
-    if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
-    window = P{3};
-    if length(window) == 1, window = hanning(window); end
-    if isempty(window), window = hanning(nfft); end
-    if isempty(P{4}), noverlap = 0; else, noverlap = P{4}; end
-    if ischar(P{5})
-        dflag = P{5};
-        p = [];
-    else
-        dflag = 'none';
-        if isempty(P{5}), p = .95;    else,    p = P{5}; end
-    end
-elseif length(P) == 6
-    % psd(x,nfft,Fs,window,noverlap,p,dflag)
-    if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
-    window = P{3};
-    if length(window) == 1, window = hanning(window); end
-    if isempty(window), window = hanning(nfft); end
-    if isempty(P{4}), noverlap = 0; else, noverlap = P{4}; end
+  % psd(x,nfft,Fs,window,noverlap,p)
+  % psd(x,nfft,Fs,window,noverlap,dflag)
+  if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
+  if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
+  window = P{3};
+  if length(window) == 1, window = hanning(window); end
+  if isempty(window), window = hanning(nfft); end
+  if isempty(P{4}), noverlap = 0; else, noverlap = P{4}; end
+  if ischar(P{5})
+    dflag = P{5};
+    p = [];
+  else
+    dflag = 'none';
     if isempty(P{5}), p = .95;    else,    p = P{5}; end
-    if ischar(P{6})
-        dflag = P{6};
-    else
-        msg = 'DFLAG parameter must be a string.'; return
-    end
+  end
+elseif length(P) == 6
+  % psd(x,nfft,Fs,window,noverlap,p,dflag)
+  if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
+  if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
+  window = P{3};
+  if length(window) == 1, window = hanning(window); end
+  if isempty(window), window = hanning(nfft); end
+  if isempty(P{4}), noverlap = 0; else, noverlap = P{4}; end
+  if isempty(P{5}), p = .95;    else,    p = P{5}; end
+  if ischar(P{6})
+    dflag = P{6};
+  else
+    msg = 'DFLAG parameter must be a string.'; return
+  end
 end
 
 % NOW do error checking
 if (nfft<length(window))
-    msg = 'Requires window''s length to be no greater than the FFT length.';
+  msg = 'Requires window''s length to be no greater than the FFT length.';
 end
 if (noverlap >= length(window))
-    msg = 'Requires NOVERLAP to be strictly less than the window length.';
+  msg = 'Requires NOVERLAP to be strictly less than the window length.';
 end
 if (nfft ~= abs(round(nfft))) || (noverlap ~= abs(round(noverlap)))
-    msg = 'Requires positive integer values for NFFT and NOVERLAP.';
+  msg = 'Requires positive integer values for NFFT and NOVERLAP.';
 end
 if ~isempty(p)
-    if (numel(p)>1) || (p(1,1)>1) || (p(1,1)<0)
-        msg = 'Requires confidence parameter to be a scalar between 0 and 1.';
-    end
+  if (numel(p)>1) || (p(1,1)>1) || (p(1,1)<0)
+    msg = 'Requires confidence parameter to be a scalar between 0 and 1.';
+  end
 end
 if ~isnumeric(x) || length(size(x))>2
-    msg = 'Requires vector (either row or column) input.';
+  msg = 'Requires vector (either row or column) input.';
 end
 if (nargin>2) && ( (min(size(y))~=1) || ~isnumeric(y) || length(size(y))>2 )
-    msg = 'Requires vector (either row or column) input.';
+  msg = 'Requires vector (either row or column) input.';
 end
 if (nargin>2) && (length(x)~=length(y))
-    msg = 'Requires X and Y be the same length.';
+  msg = 'Requires X and Y be the same length.';
 end
 
 dflag = lower(dflag);
 if strncmp(dflag,'none',1)
-    dflag = 'none';
+  dflag = 'none';
 elseif strncmp(dflag,'linear',1)
-    dflag = 'linear';
+  dflag = 'linear';
 elseif strncmp(dflag,'mean',1)
-    dflag = 'mean';
+  dflag = 'mean';
 else
-    msg = 'DFLAG must be ''linear'', ''mean'', or ''none''.';
+  msg = 'DFLAG must be ''linear'', ''mean'', or ''none''.';
 end
 

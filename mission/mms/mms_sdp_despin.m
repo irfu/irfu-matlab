@@ -12,7 +12,7 @@ function dE = mms_sdp_despin(e12,e34,phaseDeg,deltaOff)
 %
 %   Note: phaseDeg, e12 and e34 must be of the same size
 %
-% Output: 
+% Output:
 %   Despun E (X and Y DSL)
 
 % ----------------------------------------------------------------------------

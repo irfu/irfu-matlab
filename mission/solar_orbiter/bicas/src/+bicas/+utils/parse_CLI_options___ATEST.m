@@ -27,13 +27,13 @@ Ocm3 = containers.Map(...
             struct('optionHeaderRegexp', '--set.*', 'occurrenceRequirement', '0-inf', 'nValues', 1) ...
         });
 
-EOO = oo({}, {}, {});
-    
-tl = {};
-tl{end+1} = new_test(Ocm1, '-b 123',                  {'a', 'b', 'c'}, {EOO,              oo(1, '-b', {'123'}),   EOO});
-tl{end+1} = new_test(Ocm1, '-a -b 123',               {'a', 'b', 'c'}, {oo(1, '-a', {}),  oo(2, '-b', {'123'}),   EOO});
+EOO = oo(cell(0,1), cell(0,1), cell(0,1));
 
-tl{end+1} = new_test(Ocm1, '-a -b 123 -c 8 9',        {'a', 'b', 'c'}, {oo(1, '-a', {}), oo(2, '-b', {'123'}),   oo(4, '-c', {'8', '9'})});
+tl = {};
+tl{end+1} = new_test(Ocm1, '-a',                   'MException');
+tl{end+1} = new_test(Ocm1, '-b 123',               {'a', 'b', 'c'}, {EOO,              oo(1, '-b', {'123'}),   EOO});
+tl{end+1} = new_test(Ocm1, '-a -b 123',            {'a', 'b', 'c'}, {oo(1, '-a', {}),  oo(2, '-b', {'123'}),   EOO});
+tl{end+1} = new_test(Ocm1, '-a -b 123 -c 8 9',     {'a', 'b', 'c'}, {oo(1, '-a', {}),  oo(2, '-b', {'123'}),   oo(4, '-c', {'8', '9'})});
 
 
 tl{end+1} = new_test(Ocm1, '-c 6 7 -a -b 123 -c 8 9', {'a', 'b', 'c'}, {...
@@ -62,6 +62,8 @@ tl{end+1} = new_test(Ocm3, '--input1 i1 --output1 o1 --log logfile --setDEBUG ON
     oo(5, '--log',     {'logfile'}), ...
     oo(7, '--setDEBUG', {'ON'})});
 
+
+
 EJ_library.atest.run_tests(tl)
 
 end
@@ -71,7 +73,11 @@ end
 function NewTest = new_test(OptionsConfigMap, inputStr, outputMapKeys, outputMapValues)
 
 input     = {strsplit(inputStr), OptionsConfigMap};
-expOutput = {containers.Map(outputMapKeys, outputMapValues)};
+if     (nargin == 3) && ischar(outputMapKeys)
+    expOutput = outputMapKeys;
+elseif (nargin == 4) && iscell(outputMapKeys)
+    expOutput = {containers.Map(outputMapKeys, outputMapValues)};
+end
 
 NewTest = EJ_library.atest.CompareFuncResult(@bicas.utils.parse_CLI_options, input, expOutput);
 end
@@ -90,7 +96,12 @@ end
 function OptionOccurrence = oo(iOptionHeaderCliArgument, optionHeader, optionValues)
     assert(iscell(optionValues))
     if isempty(optionValues)
-        optionValues = cell(1,0);
+        optionValues = cell(0,1);
     end
-    OptionOccurrence = struct('iOptionHeaderCliArgument', iOptionHeaderCliArgument, 'optionHeader', optionHeader, 'optionValues', {optionValues});
+    optionValues = optionValues(:);   % Force column vector.
+    
+    OptionOccurrence = struct(...
+        'iOptionHeaderCliArgument', iOptionHeaderCliArgument, ...
+        'optionHeader', optionHeader, ...
+        'optionValues', {optionValues});
 end

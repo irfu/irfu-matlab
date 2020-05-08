@@ -1,5 +1,7 @@
 function [freqRps, z] = convert_TF_human2math(freqHz, gainEnergyDb, phaseShiftDeg)
-% Effectively convert TF on "human-readable" format to a "mathematically pure" z(omega) format.
+%
+% Effectively convert tabulated transfer function (TF) on conventional "human-readable" format to a "mathematically
+% pure" z(omega) format.
 %
 %
 % ARGUMENTS AND RETURN VALUES
@@ -14,7 +16,7 @@ function [freqRps, z] = convert_TF_human2math(freqHz, gainEnergyDb, phaseShiftDe
 % z             : Complex TF amplitudes (DFT component multiplication factors).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-12-12
 
 

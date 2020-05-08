@@ -36,7 +36,7 @@ iPDist.data(iPDist.data<1.1*iPDistErr.data) = 0;
 % get magnetic field in dmpa
 B = mms.get_data('B_dmpa_fgm_brst_l2',tint,ic);
 
-% shock normal vector in GSE 
+% shock normal vector in GSE
 nvec = [0.9580   -0.2708   -0.0938]; nvec = nvec/norm(nvec);
 % Upstream magnetic field in GSE
 Bu = [-1.0948   -2.6270    1.6478];
@@ -62,7 +62,7 @@ c_eval('t2DMPA = mms_dsl2gse(t2GSE,defatt?);', ic);
 %% Reduce distribution along normal vector
 tic
 % reduced distribution along normal vector
-f1Dn = iPDist.reduce('1D',nDMPA,'vg',vg1D,'nMC',nMC); 
+f1Dn = iPDist.reduce('1D',nDMPA,'vg',vg1D,'nMC',nMC);
 toc
 
 %% Reduce ion distributions in 2d planes (n-t1 & n-t2)
@@ -117,11 +117,11 @@ irf_zoom(hca,'y',[min(vg1D),max(vg1D)])
 irf_plot_axis_align(h)
 irf_zoom(h,'x',tint)
 for ii = 1:length(h)
-    h(ii).FontSize = 15;
-    h(ii).LineWidth = 1.3;
-    h(ii).Layer = 'top';
-    h(ii).Position(3) = 0.71;
-    irf_pl_mark(h(ii),t,'k')
+  h(ii).FontSize = 15;
+  h(ii).LineWidth = 1.3;
+  h(ii).Layer = 'top';
+  h(ii).Position(3) = 0.71;
+  irf_pl_mark(h(ii),t,'k')
 end
 h(end).XLabel.String = '';
 hcb.LineWidth = 1.3;
@@ -191,12 +191,12 @@ ylabel(hcb,'$\log_{10} F_i$ [s$^2$ m$^{-5}$]','interpreter','latex','fontsize',1
 hcb.LineWidth = 1.3;
 
 for ii = 1:length(h)
-    % plot crosseye at origin in spacecrat frame
-    plot(h(ii),[h(ii).XLim,0,0,0],[0,0,0,h(ii).YLim],'k-','Linewidth',1.2)
-    h(ii).LineWidth = 1.3;
-    h(ii).Layer = 'top';
-    % match clim
-    h(ii).CLim = h(1).CLim;
-    h(ii).Position(2) = 0.06;
+  % plot crosseye at origin in spacecrat frame
+  plot(h(ii),[h(ii).XLim,0,0,0],[0,0,0,h(ii).YLim],'k-','Linewidth',1.2)
+  h(ii).LineWidth = 1.3;
+  h(ii).Layer = 'top';
+  % match clim
+  h(ii).CLim = h(1).CLim;
+  h(ii).Position(2) = 0.06;
 end
 

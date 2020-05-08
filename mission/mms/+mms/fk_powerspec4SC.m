@@ -3,27 +3,27 @@ function [xvariable,yvariable,powerxy] = fk_powerspec4SC(varargin)
 % [fkpower,freq,wavenumber] = mms.fk_powerspec4SC('E?','R?','B?',Tints,options...)
 %
 % Function to calculate the frequency-wave number power spectrum using
-% the four MMS spacecraft. Uses a generalization of mms.fk_powerspectrum. 
+% the four MMS spacecraft. Uses a generalization of mms.fk_powerspectrum.
 % Wavelet based cross-spectral analysis is used to calculate the phase
 % difference each spacecraft pair and determine 3D wave vector. A
 % generalization of the method used in mms.fk_powerspectrum to four point
-% measurements. 
+% measurements.
 % Written by D. B. Graham.
 %
 % Input: (All data must be in TSeries format)
 %       E? -        Fields to apply 4SC cross-spectral analysis to. E.g., E
-%                   or B fields (if multiple components only the first is used). 
+%                   or B fields (if multiple components only the first is used).
 %       R? -        Positions of the four spacecraft
-%       B? -        Background magnetic field in the same coordinates as R?. 
+%       B? -        Background magnetic field in the same coordinates as R?.
 %                   Used to determine the parallel and perpendicular wave numebers using 4SC average.
-%       Tints -     Time interval over which the power spectrum is calculated. 
+%       Tints -     Time interval over which the power spectrum is calculated.
 %                   To avoid boundary effects use a longer time interval
-%                   for E? and B?. 
+%                   for E? and B?.
 %
 % Options:
 %       cav -       Number of points in timeseries used to estimate phase.
 %                   Optional parameter. Default is cav = 8;
-%       numk -      Set number of wave numbers used in spectrogram. 
+%       numk -      Set number of wave numbers used in spectrogram.
 %       linear -    Linearly spaced frequencies. Set number to df (default is logarithmic spacing).
 %       numf -      Set number of frequencies used in spectrogram.
 %       wwidth -    Multiplier for Morlet wavelet width. Default is 1.
@@ -40,15 +40,15 @@ function [xvariable,yvariable,powerxy] = fk_powerspec4SC(varargin)
 %
 % Notes:
 %   Wavelength must be larger than twice the spacecraft separations,
-%   otherwise spatial aliasing will occur. 
+%   otherwise spatial aliasing will occur.
 %
 %
-% Example: 
+% Example:
 %   [xvecs,yvecs,Power] = fk_powerspec4SC('Epar?','Rxyz?','Bxyz?',Tints)
 %   [xvecs,yvecs,Power] = fk_powerspec4SC('Bscmfac?.x','Rxyz?','Bxyz?',Tints,'linear',10,'numk',500,'cav',4,'wwidth',2);
 %
 % Example to plot:
-%   pcolor(xvecs.kmag,yvecs.fkmag*1e-3,log10(Power.Powerkmagf)); 
+%   pcolor(xvecs.kmag,yvecs.fkmag*1e-3,log10(Power.Powerkmagf));
 %   shading('flat');
 %   xlabel('|k| (m^{-1})');
 %   ylabel('f (kHz)');
@@ -56,11 +56,11 @@ function [xvariable,yvariable,powerxy] = fk_powerspec4SC(varargin)
 
 
 if (nargin < 4)
-	help mms.fk_powerspec4SC;
-	powerxy = NaN;
-	xvariable = NaN;
-	yvariable = NaN;
-	return;
+  help mms.fk_powerspec4SC;
+  powerxy = NaN;
+  xvariable = NaN;
+  yvariable = NaN;
+  return;
 end
 
 ic = 1:4;
@@ -85,15 +85,15 @@ frange = 0;
 
 args=varargin(5:end);
 if numel(args)>0
-	haveoptions=1;
+  haveoptions=1;
   irf.log('notice','Options were passed.');
 else
-	haveoptions=0;
+  haveoptions=0;
 end
 
 while haveoptions
-	l = 2;
-	switch(lower(args{1}))
+  l = 2;
+  switch(lower(args{1}))
     case 'cav'
       if numel(args)>1 && isnumeric(args{2})
         cav = args{2};
@@ -108,7 +108,7 @@ while haveoptions
       end
     case 'linear'
       if numel(args)>1 && isnumeric(args{2})
-        df = args{2}; 
+        df = args{2};
         uselinear = 1;
         irf.log('notice','Using linearly spaced frequencies');
       end
@@ -116,28 +116,28 @@ while haveoptions
       if numel(args)>1 && isnumeric(args{2})
         wwidth = args{2};
       end
-    case 'frange' 
-       if numel(args)>1 && isnumeric(args{2})
-        frange = args{2};      
+    case 'frange'
+      if numel(args)>1 && isnumeric(args{2})
+        frange = args{2};
       end
     otherwise
       irf.log('warning',['Unknown flag: ' args{1}]);
       l=1;
       break;
   end
-    args = args(l+1:end);
-	if isempty(args), haveoptions=0; end
+  args = args(l+1:end);
+  if isempty(args), haveoptions=0; end
 end
 
 idx = tlim(E1.time,Tint);
 
 % If odd, remove last data point (as is done in irf_wavelet)
 if mod(length(idx),2)
-    idx(end)=[];
+  idx(end)=[];
 end
 
 if ~uselinear
-	c_eval('W? = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''nf'',numf,''wavelet_width'',5.36*wwidth);',ic);
+  c_eval('W? = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''nf'',numf,''wavelet_width'',5.36*wwidth);',ic);
 else
   c_eval('W? = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df,''wavelet_width'',5.36*wwidth);',ic);
 end
@@ -150,13 +150,13 @@ c_eval('W?.p = {W?.p{1,1}(idx,:)};',ic);
 c_eval('W?.t = times;',ic);
 
 fkPower = 0.25*(cell2mat(W1.p).*conj(cell2mat(W1.p)) + cell2mat(W2.p).*conj(cell2mat(W2.p)) ...
-   + cell2mat(W3.p).*conj(cell2mat(W3.p)) + cell2mat(W4.p).*conj(cell2mat(W4.p)));
+  + cell2mat(W3.p).*conj(cell2mat(W3.p)) + cell2mat(W4.p).*conj(cell2mat(W4.p)));
 
 N = floor(L/cav)-1;
 posav = cav/2 + (0:1:N)*cav;
 avtimes = times(posav);
- 
-Bav = Bav.resample(avtimes); 
+
+Bav = Bav.resample(avtimes);
 c_eval('R? = R?.resample(avtimes);',ic);
 
 cx12 = zeros(N+1,numf);
@@ -168,13 +168,13 @@ cx34 = zeros(N+1,numf);
 Powerav = zeros(N+1,numf);
 
 for m = 1:N+1
-    cx12(m,:) = irf.nanmean(W1.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    cx13(m,:) = irf.nanmean(W1.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W3.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    cx14(m,:) = irf.nanmean(W1.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W4.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    cx23(m,:) = irf.nanmean(W2.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W3.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    cx24(m,:) = irf.nanmean(W2.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W4.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    cx34(m,:) = irf.nanmean(W3.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W4.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    Powerav(m,:) = irf.nanmean(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
+  cx12(m,:) = irf.nanmean(W1.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+  cx13(m,:) = irf.nanmean(W1.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W3.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+  cx14(m,:) = irf.nanmean(W1.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W4.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+  cx23(m,:) = irf.nanmean(W2.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W3.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+  cx24(m,:) = irf.nanmean(W2.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W4.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+  cx34(m,:) = irf.nanmean(W3.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W4.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+  Powerav(m,:) = irf.nanmean(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
 end
 
 % Compute phase differences between each spacecraft pair
@@ -215,14 +215,14 @@ ky = zeros(N+1,numf);
 kz = zeros(N+1,numf);
 
 for ii = 1:N+1
-	dR = [R2(ii,:);R3(ii,:);R4(ii,:)]-[R1(ii,:);R1(ii,:);R1(ii,:)];
+  dR = [R2(ii,:);R3(ii,:);R4(ii,:)]-[R1(ii,:);R1(ii,:);R1(ii,:)];
   for jj = 1:numf
     % Volumetric tensor with SC1 as center.
     m = dR\[dt2(ii,jj);dt3(ii,jj);dt4(ii,jj)]; % "1/v vector"
-
+    
     kx(ii,jj) = 2*pi*W1.f(jj)*m(1);
     ky(ii,jj) = 2*pi*W1.f(jj)*m(2);
-    kz(ii,jj) = 2*pi*W1.f(jj)*m(3);  
+    kz(ii,jj) = 2*pi*W1.f(jj)*m(3);
   end
 end
 
@@ -251,7 +251,7 @@ dk = 2*kmax/numk;
 irf.log('notice','Computing power versus kmag,f')
 powerkmagf = zeros(numf,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+  for nn = 1:numf
     knumber = floor((kmag(mm,nn))/dkmag)+1;
     powerkmagf(nn,knumber) = powerkmagf(nn,knumber) + Powerav(mm,nn);
   end
@@ -259,7 +259,7 @@ end
 
 powerkmagf(powerkmagf == 0) = NaN;
 %powerkmagf = powerkmagf/(N+1); % Normalization. This should correspond to FFT PSD when summed over k.
-powerkmagf = powerkmagf/max(max(powerkmagf)); % Normalization to Max value for plotting. 
+powerkmagf = powerkmagf/max(max(powerkmagf)); % Normalization to Max value for plotting.
 %powerkmagf(powerkmagf < 1.0e-6) = 1e-6;
 
 xvec1 = kmagvec;
@@ -276,7 +276,7 @@ idxf
 irf.log('notice','Computing power versus kperp,kpar')
 powerkperpkpar = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = idxf
+  for nn = idxf
     kparnumber = floor((kpar(mm,nn)-kmin)/dk)+1;
     kperpnumber = floor((kperp(mm,nn))/dkmag)+1;
     powerkperpkpar(kparnumber,kperpnumber) = powerkperpkpar(kparnumber,kperpnumber) + Powerav(mm,nn);
@@ -293,7 +293,7 @@ yvec2 = kvec;
 irf.log('notice','Computing power versus kx,ky')
 powerkxky = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = idxf
+  for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     powerkxky(kynumber,kxnumber) = powerkxky(kynumber,kxnumber) + Powerav(mm,nn);
@@ -310,7 +310,7 @@ yvec3 = kvec;
 irf.log('notice','Computing power versus kx,ky')
 powerkxkz = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = idxf
+  for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkxkz(kznumber,kxnumber) = powerkxkz(kznumber,kxnumber) + Powerav(mm,nn);
@@ -327,7 +327,7 @@ yvec4 = kvec;
 irf.log('notice','Computing power versus ky,kz')
 powerkykz = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = idxf
+  for nn = idxf
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkykz(kznumber,kynumber) = powerkykz(kznumber,kynumber) + Powerav(mm,nn);
@@ -344,7 +344,7 @@ yvec5 = kvec;
 irf.log('notice','Computing power versus kx,f')
 powerkxf = zeros(numf,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+  for nn = 1:numf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     powerkxf(nn,kxnumber) = powerkxf(nn,kxnumber) + Powerav(mm,nn);
   end
@@ -360,7 +360,7 @@ yvec6 = W1.f;
 irf.log('notice','Computing power versus ky,f')
 powerkyf = zeros(numf,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+  for nn = 1:numf
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     powerkyf(nn,kynumber) = powerkyf(nn,kynumber) + Powerav(mm,nn);
   end
@@ -376,7 +376,7 @@ yvec7 = W1.f;
 irf.log('notice','Computing power versus kz,f')
 powerkzf = zeros(numf,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+  for nn = 1:numf
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkzf(nn,kznumber) = powerkzf(nn,kznumber) + Powerav(mm,nn);
   end

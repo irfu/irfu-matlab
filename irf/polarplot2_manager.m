@@ -59,8 +59,8 @@ hl2=line([0 0],[0 0]);set(hl2,'color','b');
 ylabel('Phase');
 
 if flag_new_figure==1
- h2(4)=subplot(4,1,4);axis off;
-
+  h2(4)=subplot(4,1,4);axis off;
+  
   dgud.h2=h2;
   ysc=1.5;% scaling for y separation between text information on screen
   dgud.fmint=uicontrol('style', 'text', 'string', 'fmin  [Hz]','units','centimeters','position', [2 ysc*1 3 ysc*.5]);

@@ -55,7 +55,7 @@ end
 if flag_average == 1
   dBf=irf_filt(dB,0,1/n_av,2,3);
   tt=dBf(:,1);
-  [xx ,dtB]=gradient(dBf(:,2:end),tt,tt); dtB=[tt dtB];  
+  [xx ,dtB]=gradient(dBf(:,2:end),tt,tt); dtB=[tt dtB];
 else
   tt=dB(:,1);
   % create dtB
@@ -65,30 +65,30 @@ end
 muo=4*pi/1e7;
 
 switch method
-case 'A'
-  nb=irf_resamp(irf_norm(B),dtB);
-  vb=irf_resamp(v,dtB);
-  dtBnj=irf_cross(dtB,nb);
-  dtBnb=irf_dot(dtB,nb);
-  nj=irf_norm(dtBnj); % current sheet plane normal
-
-  vnj=irf_dot(vb,nj); % v component in the direction normal to current sheet
-  vp=irf_cross(nb,irf_cross(vb,nb)); % velocity perp to B
-  sin_angle=irf_dot(irf_cross(irf_norm(vp),nj),nb);xxx=irf_dot(vp,nj);ind=find(xxx(:,2)<0);sin_angle(ind,2)=-sin_angle(ind,2);
-  angle=[dtB(:,1) -asin(sin_angle(:,2))*180/pi];
-
-  absvp=irf_abs(vp,1); absvb=irf_abs(vb,1);absvnj=abs(vnj(:,2));
-  indnan_z=find(absvp < absvb*sin(pi/180*deg_z));
-  indnan_p=find(absvnj < absvp*sin(pi/180*deg_p));
-  jz=[dtB(:,1) irf_abs(dtBnj,1)./vnj(:,2)/muo*1e-12];jz(indnan_z,2)=NaN;jz(indnan_p,2)=NaN;
-  jp=[dtB(:,1) abs(dtBnb(:,2))./vnj(:,2)/muo*1e-12];jp(indnan_z,2)=NaN;jp(indnan_p,2)=NaN;
-case 'B'
-  dt=dB(2,1)-dB(1,1);
-  irf_log('proc',['fs=' num2str(1/dt,3) ' irf_jz()']);
-  vb=irf_resamp(v,dtB);
-  jxx=irf_vec_x_scal(irf_cross(dtB,vb),[vb(:,1) irf_abs(vb,1)],-2);
-  j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-12');
-  jz=irf_dot(j,irf_norm(B));
-  jp=irf_dot(j,irf_norm(irf_cross(B,vb)));
-  if nargout==1, jz=j; end
+  case 'A'
+    nb=irf_resamp(irf_norm(B),dtB);
+    vb=irf_resamp(v,dtB);
+    dtBnj=irf_cross(dtB,nb);
+    dtBnb=irf_dot(dtB,nb);
+    nj=irf_norm(dtBnj); % current sheet plane normal
+    
+    vnj=irf_dot(vb,nj); % v component in the direction normal to current sheet
+    vp=irf_cross(nb,irf_cross(vb,nb)); % velocity perp to B
+    sin_angle=irf_dot(irf_cross(irf_norm(vp),nj),nb);xxx=irf_dot(vp,nj);ind=find(xxx(:,2)<0);sin_angle(ind,2)=-sin_angle(ind,2);
+    angle=[dtB(:,1) -asin(sin_angle(:,2))*180/pi];
+    
+    absvp=irf_abs(vp,1); absvb=irf_abs(vb,1);absvnj=abs(vnj(:,2));
+    indnan_z=find(absvp < absvb*sin(pi/180*deg_z));
+    indnan_p=find(absvnj < absvp*sin(pi/180*deg_p));
+    jz=[dtB(:,1) irf_abs(dtBnj,1)./vnj(:,2)/muo*1e-12];jz(indnan_z,2)=NaN;jz(indnan_p,2)=NaN;
+    jp=[dtB(:,1) abs(dtBnb(:,2))./vnj(:,2)/muo*1e-12];jp(indnan_z,2)=NaN;jp(indnan_p,2)=NaN;
+  case 'B'
+    dt=dB(2,1)-dB(1,1);
+    irf_log('proc',['fs=' num2str(1/dt,3) ' irf_jz()']);
+    vb=irf_resamp(v,dtB);
+    jxx=irf_vec_x_scal(irf_cross(dtB,vb),[vb(:,1) irf_abs(vb,1)],-2);
+    j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-12');
+    jz=irf_dot(j,irf_norm(B));
+    jp=irf_dot(j,irf_norm(irf_cross(B,vb)));
+    if nargout==1, jz=j; end
 end

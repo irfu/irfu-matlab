@@ -9,8 +9,8 @@ function res = get_ts(dobj,var_s)
 
 data = get_variable(dobj,var_s);
 if isempty(data) % no such variable, return empty
-	res=[];
-	return;
+  res=[];
+  return;
 end
 
 % MMS special case. This is unly, but convenient.
@@ -18,7 +18,7 @@ if isfield(data.GlobalAttributes,'Mission_group') && ...
     strcmpi(data.GlobalAttributes.Mission_group,'mms')
   res = mms.variable2ts(data); return
 end
-  
+
 fillv = getfillval(dobj,var_s);
 if ~ischar(fillv), data.data(data.data==fillv) = NaN;
 else, irf.log('warning','fill value is character: discarding')
@@ -31,7 +31,7 @@ else
 end
 
 %userData
-ud = data; 
+ud = data;
 
 field_list={'DEPEND_0','data','nrec','dim','name','variance','UNITS'};
 ud = rmfield(ud,field_list(isfield(ud,field_list)));
@@ -63,7 +63,7 @@ else % guessing for Non-CAA data
         repres = {'x','y'};
       elseif data.dim(1)==3
         repres = {'x','y','z'};
-      else, tensorOrder = 0; % TENSOR_ORDER=0 can be ommitted in CAA files 
+      else, tensorOrder = 0; % TENSOR_ORDER=0 can be omitted in CAA files
       end
     case 2 % tensor
     otherwise
@@ -80,9 +80,9 @@ res.name = data.name;
 if isfield(data,'UNITS'), res.units = data.UNITS;
 else, res.units = 'unitless';
 end
-if isfield(ud,'SI_CONVERSION') 
-  res.siConversion = ud.SI_CONVERSION;  
-	ud = rmfield(ud,'SI_CONVERSION');
+if isfield(ud,'SI_CONVERSION')
+  res.siConversion = ud.SI_CONVERSION;
+  ud = rmfield(ud,'SI_CONVERSION');
 end
 if isfield(ud,'COORDINATE_SYSTEM')
   res.coordinateSystem = ud.COORDINATE_SYSTEM;

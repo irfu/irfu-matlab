@@ -3,16 +3,16 @@
         "project":     "ROC",
         "name":        "BIAS Calibration Software (BICAS)",
         "identifier":  "BICAS",
-        "description": "(Incomplete) calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.",
+        "description": "Calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents from L1 data.",
         "icd_version": "1.2"
     },
     "release": {
-        "version":      "1.0.0",
-        "date":         "2020-01-20",
+        "version":      "2.0.0",
+        "date":         "2020-04-29T19:48:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).",
+        "modification": "Added support for L1 input bias current datasets; supports updated L1R input datasets, and updated L2 master CDFs (V08).",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {
@@ -27,6 +27,9 @@
                 "in_sci": {
                     "identifier": "SOLO_L1R_RPW-LFR-SBM1-CWF-E"
                 },
+                "in_cur": {
+                    "identifier": "SOLO_L1_RPW-BIA-CURRENT"
+                },
                 "in_hk": {
                     "identifier": "SOLO_HK_RPW-BIA"
                 }
@@ -37,7 +40,7 @@
                     "name":        "LFR L2 CWF science electric selective burst mode 1 data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SBM1-CWF-E_V08.cdf"
                 }
             }
         },
@@ -47,6 +50,9 @@
             "inputs": {
                 "in_sci": {
                     "identifier": "SOLO_L1R_RPW-LFR-SBM2-CWF-E"
+                },
+                "in_cur": {
+                    "identifier": "SOLO_L1_RPW-BIA-CURRENT"
                 },
                 "in_hk": {
                     "identifier": "SOLO_HK_RPW-BIA"
@@ -58,7 +64,7 @@
                     "name":        "LFR L2 CWF science electric selective burst mode 2 data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SBM2-CWF-E_V05.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SBM2-CWF-E_V08.cdf"
                 }
             }
         },
@@ -68,6 +74,9 @@
             "inputs": {
                 "in_sci": {
                     "identifier": "SOLO_L1R_RPW-LFR-SURV-CWF-E"
+                },
+                "in_cur": {
+                    "identifier": "SOLO_L1_RPW-BIA-CURRENT"
                 },
                 "in_hk": {
                     "identifier": "SOLO_HK_RPW-BIA"
@@ -79,7 +88,7 @@
                     "name":        "LFR L2 CWF science electric survey mode data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SURV-CWF-E_V05.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SURV-CWF-E_V08.cdf"
                 }
             }
         },
@@ -89,6 +98,9 @@
             "inputs": {
                 "in_sci": {
                     "identifier": "SOLO_L1R_RPW-LFR-SURV-SWF-E"
+                },
+                "in_cur": {
+                    "identifier": "SOLO_L1_RPW-BIA-CURRENT"
                 },
                 "in_hk": {
                     "identifier": "SOLO_HK_RPW-BIA"
@@ -100,7 +112,7 @@
                     "name":        "LFR L2 SWF science electric survey mode data",
                     "description": "RPW LFR L2 SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SURV-SWF-E_V05.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SURV-SWF-E_V08.cdf"
                 }
             }
         },
@@ -110,6 +122,9 @@
             "inputs": {
                 "in_sci": {
                     "identifier": "SOLO_L1R_RPW-TDS-LFM-CWF-E"
+                },
+                "in_cur": {
+                    "identifier": "SOLO_L1_RPW-BIA-CURRENT"
                 },
                 "in_hk": {
                     "identifier": "SOLO_HK_RPW-BIA"
@@ -121,7 +136,7 @@
                     "name":        "LFR L2 CWF science electric LF mode data",
                     "description": "RPW TDS L2 CWF science electric (potential difference) data in LF mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-TDS-LFM-CWF-E_V05.cdf"
+                    "template":    "SOLO_L2_RPW-TDS-LFM-CWF-E_V08.cdf"
                 }
             }
         },
@@ -131,6 +146,9 @@
             "inputs": {
                 "in_sci": {
                     "identifier": "SOLO_L1R_RPW-TDS-LFM-RSWF-E"
+                },
+                "in_cur": {
+                    "identifier": "SOLO_L1_RPW-BIA-CURRENT"
                 },
                 "in_hk": {
                     "identifier": "SOLO_HK_RPW-BIA"
@@ -142,7 +160,7 @@
                     "name":        "LFR L2 RSWF science electric LF mode data",
                     "description": "RPW TDS L2 RSWF science electric (potential difference) data in LF mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-TDS-LFM-RSWF-E_V05.cdf"
+                    "template":    "SOLO_L2_RPW-TDS-LFM-RSWF-E_V08.cdf"
                 }
             }
         }

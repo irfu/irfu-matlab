@@ -1,6 +1,6 @@
 function out = caa_combine_l1_p(cl_id)
 %CAA_COMBINE_L1_P  combined data from 4 probes into one file
-% 
+%
 %  OUT = CAA_COMBINE_L1_P(CL_ID)
 %
 
@@ -14,7 +14,7 @@ end
 if ~nOk, irf_log('dsrc','no data'), return, end
 
 %%
-time = []; 
+time = [];
 for v=vars
   vv = v{:};
   if ~isempty(vv), time = [time; vv(:,1)]; end %#ok<AGROW>

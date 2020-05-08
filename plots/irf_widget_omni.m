@@ -48,23 +48,23 @@ switch lower(action)
     initialize_figure(6); % default 5 subplots
     data=get(gcf,'userdata');
     if ~isfield(data,'t')
-			time=irf_time([2010 12 31 01 01 01]);dt=24*3600;
+      time=irf_time([2010 12 31 01 01 01]);dt=24*3600;
       data.t=time;
       data.dt=dt;
       set(gcf,'userdata',data);
     end
     irf_widget_omni('read_data');
     irf_widget_omni('plot');
-
+    
   case 'read_data'
     data=get(gcf,'userdata');
     tint=[data.t data.t+data.dt];
     omni2=irf_get_data(tint,'dst,f10.7','omni2');
     if diff(tint)< 48*3600 % interval larger than 48 h use 1h resolution
-    disp(['Reading OMNI_MIN 1min data :' irf_time(tint,'tint>utc')]);
+      disp(['Reading OMNI_MIN 1min data :' irf_time(tint,'tint>utc')]);
       ff=irf_get_data(tint,'b,bx,bygsm,bzgsm,T,n,v,P,beta,pc,ae,al,au','omni_min');
     else
-    disp(['Reading OMNI2 1h data :' irf_time(tint,'tint>utc')]);
+      disp(['Reading OMNI2 1h data :' irf_time(tint,'tint>utc')]);
       ff=irf_get_data(tint,'b,bx,bygsm,bzgsm,T,n,v,P,beta,pc,ae,al,au','omni2');
     end
     data.ff=ff;
@@ -93,7 +93,7 @@ switch lower(action)
     irf_plot(hca,ff(:,[1 3 4 5 2]));
     ylabel(hca,'B [nT] GSM');
     irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.05]);
-	title(hca,'OMNI solar wind parameters');
+    title(hca,'OMNI solar wind parameters');
     
     %%%%%%%%%%%%
     % Velocity

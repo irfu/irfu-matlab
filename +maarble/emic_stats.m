@@ -1,5 +1,5 @@
 if ismac
-cd ('/Users/yuri/Dropbox (IRFU)/projects-all/MAARBLE/EMIC_stats/tt')
+  cd ('/Users/yuri/Dropbox (IRFU)/projects-all/MAARBLE/EMIC_stats/tt')
 else, cd ('/home/yuri/EMIC_stats/tt')
 end
 

@@ -28,7 +28,7 @@
 function dlrUsing12 = demultiplexer_latching_relay(Epoch)
 % PROPOSAL: SETTING for overriding.
 
-    bicas.proc_utils.assert_Epoch(Epoch)
+    bicas.proc_utils.assert_zv_Epoch(Epoch)
     
     dlrUsing12 = ones(size(Epoch));
     

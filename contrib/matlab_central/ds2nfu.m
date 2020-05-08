@@ -1,9 +1,9 @@
 function varargout = ds2nfu(varargin)
-% DS2NFU  Convert data space units into normalized figure units. 
+% DS2NFU  Convert data space units into normalized figure units.
 %
 % [Xf, Yf] = DS2NFU(X, Y) converts X,Y coordinates from
 % data space to normalized figure units, using the current axes.  This is
-% useful as input for ANNOTATION.  
+% useful as input for ANNOTATION.
 %
 % POSf = DS2NFU(POS) converts 4-element position vector, POS from
 % data space to normalized figure units, using the current axes.  The
@@ -13,10 +13,10 @@ function varargout = ds2nfu(varargin)
 %           'help.jar!/creating_plots/axes_pr4.html'], '-helpbrowser')
 %
 % [Xf, Yf] = DS2NFU(HAX, X, Y) converts X,Y coordinates from
-% data space to normalized figure units, on specified axes HAX.  
+% data space to normalized figure units, on specified axes HAX.
 %
 % POSf = DS2NFU(HAX, POS) converts 4-element position vector, POS from
-% data space to normalized figure units, using the current axes. 
+% data space to normalized figure units, using the current axes.
 %
 % Ex.
 %       % Create some data
@@ -55,30 +55,30 @@ function varargout = ds2nfu(varargin)
 narginchk(1, 3)
 
 % Determine if axes handle is specified
-if length(varargin{1})== 1 && ishandle(varargin{1}) && strcmp(get(varargin{1},'type'),'axes')	
-	hAx = varargin{1};
-	varargin = varargin(2:end);
+if length(varargin{1})== 1 && ishandle(varargin{1}) && strcmp(get(varargin{1},'type'),'axes')
+  hAx = varargin{1};
+  varargin = varargin(2:end);
 else
-	hAx = gca;
+  hAx = gca;
 end
 
 errmsg = ['Invalid input.  Coordinates must be specified as 1 four-element \n' ...
-	'position vector or 2 equal length (x,y) vectors.'];
+  'position vector or 2 equal length (x,y) vectors.'];
 
 % Proceed with remaining inputs
 if length(varargin)==1	% Must be 4 elt POS vector
-	pos = varargin{1};
-	if length(pos) ~=4 
-		error(errmsg);
-	end
+  pos = varargin{1};
+  if length(pos) ~=4
+    error(errmsg);
+  end
 else
-	[x,y] = deal(varargin{:});
-	if length(x) ~= length(y)
-		error(errmsg)
-	end
+  [x,y] = deal(varargin{:});
+  if length(x) ~= length(y)
+    error(errmsg)
+  end
 end
 
-	
+
 %% Get limits
 axun = get(hAx,'Units');
 set(hAx,'Units','normalized');
@@ -90,14 +90,14 @@ axheight = diff(axlim(3:4));
 
 %% Transform data
 if exist('x','var')
-	varargout{1} = (x-axlim(1))*axpos(3)/axwidth + axpos(1);
-	varargout{2} = (y-axlim(3))*axpos(4)/axheight + axpos(2);
+  varargout{1} = (x-axlim(1))*axpos(3)/axwidth + axpos(1);
+  varargout{2} = (y-axlim(3))*axpos(4)/axheight + axpos(2);
 else
-	pos(1) = (pos(1)-axlim(1))/axwidth*axpos(3) + axpos(1);
-	pos(2) = (pos(2)-axlim(3))/axheight*axpos(4) + axpos(2);
-	pos(3) = pos(3)*axpos(3)/axwidth;
-	pos(4) = pos(4)*axpos(4)/axheight;
-	varargout{1} = pos;
+  pos(1) = (pos(1)-axlim(1))/axwidth*axpos(3) + axpos(1);
+  pos(2) = (pos(2)-axlim(3))/axheight*axpos(4) + axpos(2);
+  pos(3) = pos(3)*axpos(3)/axwidth;
+  pos(4) = pos(4)*axpos(4)/axheight;
+  varargout{1} = pos;
 end
 
 

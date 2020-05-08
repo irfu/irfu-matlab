@@ -36,7 +36,7 @@ function [phase, flag, pulse, period, period_flag] = mms_sdp_phase_2(sps, epoch)
 %           6, True number of spins to fill gap > 4 spins is questionable.
 %              Number of spins to fill gap is average of estimates using
 %              beginning and ending of spin periods.
-%       10-16, Extrapolated beyond first/last sunpulse. 10 is added to 
+%       10-16, Extrapolated beyond first/last sunpulse. 10 is added to
 %              quality flag of period used for extrapolation.
 %       20-26, Extrapolated > 3 spins beyond first/last sunpulse. 20 is
 %              added to quality flag of period used for extrapolation.
@@ -44,9 +44,9 @@ function [phase, flag, pulse, period, period_flag] = mms_sdp_phase_2(sps, epoch)
 % Additional optional output(-s), which could be used to create a "cleaner"
 % sun pulse file.
 %   pulse   array(N), of unique pulse times in TT2000.
-%   period  array(N-1), of periods or average periods, to next pulse in ns. 
+%   period  array(N-1), of periods or average periods, to next pulse in ns.
 %   period_flag array(N-1), of flags corresponding to each spin period.
-%           With same meaning as phase flag.  
+%           With same meaning as phase flag.
 %
 % This code is based on the IDL function mms_fg_sunpulse2phase originally
 % written by Ken Bromund, NASA, 2014 for the MMS mission.
@@ -65,14 +65,14 @@ nargoutchk(2,5); % At least the outputs 'phase' and 'flag'.
 
 % Ken Bromunds description is mostly kept in the following segment, as is:
 %
-% To calculate phase, we need a unique, monotonically increasing array of 
+% To calculate phase, we need a unique, monotonically increasing array of
 % sun pulses, with corresponding spin periods.
 % However, we expect to have complications in the HK 0x101 data:
 % 1) The same sun-pulse time will be repeated in consecutive 0x101 packets.
 % and/or
 % 2) Missing sun pulses. E.g. if spin period is less than the 0x101 cadence
 % of 10 s. After I wrote the code to handle this, I learned that during SDP
-% deployment, the cadence of 0x101 packets will be decreased to 1 s. 
+% deployment, the cadence of 0x101 packets will be decreased to 1 s.
 % However, I am leaving the code as-is just in case of error in operations,
 % and because the same code handles any possible small data gaps.
 %
@@ -81,32 +81,32 @@ nargoutchk(2,5); % At least the outputs 'phase' and 'flag'.
 % We are given the spin period in IIFSUNPER (assuming sunssps is 0), but
 % this has several issues:
 % 1) Not always available (e.g. when in shadow)
-% 2) Based on a clock that exhibits temperature drift, not correct TAI 
+% 2) Based on a clock that exhibits temperature drift, not correct TAI
 %    seconds. 25 microsec temperature drift obseved in MRT9b data.
 % 3) Phase calculation must be based on the sun pulse times, which have
 %    jitter, so even if IIFSUNPER is the correct time, it could not be used
-%    with the sun pulse times without introducing phase discontinuities.  
+%    with the sun pulse times without introducing phase discontinuities.
 % For spin period, I use the actual delta-t between sun-pulse times
 % provided by the CIDP. These times are relative to TAI, but do exhibit
 % some jitter (observed up to 15 us, but sigma is about 1 or 2 us).
 %
 % I will use IIFSUNPER only for the phase before the initial point of the
 % file and after large data gaps (where phase continuity is not an issue).
-% It is also used to validate spin period calculations (ie to validate 
+% It is also used to validate spin period calculations (ie to validate
 % correct number of spins between pulses).
-% 
-% A slight improvement could be made by using IIFSUNPER to generate a 
-% 'pseudo sun pulse time' to reduce the data gap size by 1, whenever 
+%
+% A slight improvement could be made by using IIFSUNPER to generate a
+% 'pseudo sun pulse time' to reduce the data gap size by 1, whenever
 % sun pulses are missing in the smaller gaps. For now, assume that the spin
-% rate is changing slowly enough that it is acceptable to assume a 
+% rate is changing slowly enough that it is acceptable to assume a
 % constant, average spin rate accross small gaps.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Outline of Algorithm
 % 1) Get a unique set of sun pulses from a unique set of HK packets.
-% 2) Find spin period that takes us exactly from one pulse to the next, 
+% 2) Find spin period that takes us exactly from one pulse to the next,
 %    dealing with data gaps.
-% 2a) Small data gaps, where it is safe to assume the spin period has not 
+% 2a) Small data gaps, where it is safe to assume the spin period has not
 %     changed significantly enough to allow for uncertainty in the number
 %     of spins during the gap.
 % 2b) Large data gaps, where spin period might have changed enough that
@@ -178,9 +178,9 @@ ndouble = numel(period)-nkeep;
 if(ndouble>0)
   irf.log('warning', ['Removing ', num2str(ndouble), ' repeated sunpulses.']);
   badp = find(nominal_period ~= 1);
-  for i=1:max(ndouble,10)
+  for i=1:min(ndouble,10)
     logStr = sprintf('Removed outlier sunpulse at: %04i-%02i-%02iT%02i:%02i:%02i:%03i.%03i.%03iZ.',...
-        spdfbreakdowntt2000(pulse(badp(i))));
+      spdfbreakdowntt2000(pulse(badp(i))));
     irf.log('notice', logStr);
   end
   % ; iifsunper on the sunpulse after the removed sunpulse is NOT valid
@@ -212,14 +212,14 @@ if(ndouble>0)
   irf.log('notice', [num2str(ndouble), ' closely doubled sunpulses, tossing second pulse. Flagging period before and after.']);
   for i=1:min(ndouble, 10)
     logStr = sprintf('Removed second of closely doubled sunpulse pair at: %04i-%02i-%02iT%02i:%02i:%02i:%03i.%03i.%03iZ.',...
-        spdfbreakdowntt2000(pulse(quick_double(i))));
+      spdfbreakdowntt2000(pulse(quick_double(i))));
     irf.log('notice', logStr);
   end
   keep2 = find(period_flag ~= 1);
-
+  
   period_flag(quick_double - 1) = 8;
   period_flag(quick_double + 1) = 8;
-
+  
   % ; iifsunper on the sunpulse before and after the removed sunpulse could be off by 1%
   if quick_double(end)<length(valid_iifsunper)
     valid_iifsunper(quick_double + 1 ) = 0;
@@ -304,18 +304,18 @@ end
 for i = 1:ngap+1
   nseg = segs(i+1)-segs(i)-1;  % number of periods in this segment
   if (nseg == 0), continue; end
-
+  
   segind = 1+segs(i)+1:nseg+segs(i)+1; % Index, period data of segment.
   segperiod = period(segind);
   segvalid_iifsunper = valid_iifsunper(segind+1);
   segiifsunper = iifsunper(segind+1);
   segind_pulse = (1:nseg+1) + segs(i) + 1; % Index, pulse data of segment.
   segpulse = pulse(segind_pulse);
-
+  
   % Median smooth the spin period data (this will reject periods that are
   % spuriously long, due to missed sun pulses).
   mwin = 7; % This should be an odd number!
-
+  
   if(mwin <= nseg)
     mwin2 = floor(mwin/2);
     % TN: MEDIAN in IDL with second argument width applies a median
@@ -331,7 +331,7 @@ for i = 1:ngap+1
     mperiod = double(segperiod);
     mperiod(:) = median(segperiod);
   end
-
+  
   % ; Use IIFSUNPER if it is valid
   use_iif = find(segvalid_iifsunper);
   if( isempty(use_iif) )
@@ -340,13 +340,13 @@ for i = 1:ngap+1
   else
     mperiod(use_iif) = double(segiifsunper(use_iif));
   end
-
+  
   % Number of spins between each pulse is time between pulse divided by
   % the best guess at the actual period.
   nspins1 = double(segperiod)./mperiod;
-
+  
   seg_period_flag = period_flag(segind);
-
+  
   % ; nspins1 should be nearly an integer value.  If not, issue a warning
   % ; and set a flag.
   spin_warn = find( abs(nspins1 - round(nspins1)) >= 0.25 );
@@ -365,19 +365,19 @@ for i = 1:ngap+1
     end
     seg_period_flag(spin_warn) = 2;
   end
-
-%    ; TODO (maybe) begin ;;;;;;;;;;;;;;;;;;;
-%    ; insert a pseudo sun pulse time and period based on IIFSUNPER to
-%    ; fill in missed sun pulse time.
-%    ; pseudo = where(round(nspins1) gt 1 and valid_iifsunper[1:*], n_pseudo)
-%    ; insert into pulse, period, and period_flag arrays
-%    ; insert 0 into iifsunper and valid_iifsunper arrays, 3 into ssps
-%    ; adjust segs array indices to accunt for inserted points
-%    ; re-calculate period[pseudo]
-%    ; decrement nspins1[pseudo]
-%    ; and furter debug the mess that this incremental improvment would cause...
-%    ; TODO (mabye) end   ;;;;;;;;;;;;;;;;;;;;
-
+  
+  %    ; TODO (maybe) begin ;;;;;;;;;;;;;;;;;;;
+  %    ; insert a pseudo sun pulse time and period based on IIFSUNPER to
+  %    ; fill in missed sun pulse time.
+  %    ; pseudo = where(round(nspins1) gt 1 and valid_iifsunper[1:*], n_pseudo)
+  %    ; insert into pulse, period, and period_flag arrays
+  %    ; insert 0 into iifsunper and valid_iifsunper arrays, 3 into ssps
+  %    ; adjust segs array indices to accunt for inserted points
+  %    ; re-calculate period[pseudo]
+  %    ; decrement nspins1[pseudo]
+  %    ; and furter debug the mess that this incremental improvment would cause...
+  %    ; TODO (mabye) end   ;;;;;;;;;;;;;;;;;;;;
+  
   % ; calculate the average period between pulses.
   nspins1 = int64(round(nspins1));
   period(segind) = period(segind) ./ nspins1;
@@ -417,7 +417,7 @@ for i = 1:ngap
     irf.log('warning', logStr);
     period1 = NaN;
   end
-
+  
   % ; 1b) find period at end of gap:  median of IIFSUNPER (from pseudopulse)
   % ;     of first pulse after gap, plus next 4 spin periods.
   if gapidx + 1 ~= segs(i+2)
@@ -438,13 +438,13 @@ for i = 1:ngap
     irf.log('warning', logStr);
     period2 = NaN;
   end
-
+  
   period(gapidx) = pulse(gapidx+1) - pulse(gapidx);
-
+  
   % ; 2) determine number of spins in gap, working forwards and backwards.
   nspins1 = period(gapidx)/period1;
   nspins2 = period(gapidx)/period2;
-
+  
   if isfinite(nspins1) && isfinite(nspins2) && round(nspins1) == round(nspins2)
     nspins = (nspins1+nspins2)/2;
     period_flag(gapidx) = 1;
@@ -480,7 +480,7 @@ for i = 1:ngap
     irf.log('warning', logStr);
     period_flag(gapidx) = 6;
   end
-
+  
   period(gapidx) = period(gapidx) ./ round(nspins); % average spin period over the interval where there are no sunpulses
   % ; for Hermite interpolation:
   % ; ; increase spinno after the gap by the number of missed sunpulses.
@@ -523,10 +523,10 @@ n_inrange = length(inrange);
 
 if isempty(inrange)
   % Empty overlap meaning HK 101 sunpulses do not cover any of the
-  % EDP data, may even be hours off... This was the case for 
-  % mms4_edp_fast_l1b_dce_20170904_v1.4.0.cdf (covering 00.00-00.30 UTC) 
+  % EDP data, may even be hours off... This was the case for
+  % mms4_edp_fast_l1b_dce_20170904_v1.4.0.cdf (covering 00.00-00.30 UTC)
   % while the corresponding HK 101 file
-  % mms4_fields_hk_l1b_101_20170904_v0.5.0.cdf 
+  % mms4_fields_hk_l1b_101_20170904_v0.5.0.cdf
   % covering 08:25:21 to 08:44:42 UTC.
   % Interpolation  is not an option for these cases, return error and wait
   % for more instrument data along with more hk data (or final DEFATT).
@@ -536,7 +536,7 @@ if isempty(inrange)
 end
 
 if n_inrange > 0
-
+  
   % ; linear interpolate between each pulse
   phase(inrange) = (torow(epoch(inrange)) - torow(pulse(per(inrange))))./torow(period(per(inrange)))*360 + dss2bcs;
   % ;    ; hermite interpolate between each pulse
@@ -599,10 +599,10 @@ function out = IDL_medianfilter(sigIn, width)
 % Verify arguments
 narginchk(2,2)
 if(length(sigIn)<width || width<1 || mod(width,2)==0 || floor(width)~=width)
-    % Incorrect input arguments.
-    err_str = 'Wrong input(-s) to IDL_MEDIAN';
-    irf.log('critical', err_str);
-    error('MATLAB:MMS_SDP_PHASE_2:IDL_MEDIAN:INPUT', err_str);
+  % Incorrect input arguments.
+  err_str = 'Wrong input(-s) to IDL_MEDIAN';
+  irf.log('critical', err_str);
+  error('MATLAB:MMS_SDP_PHASE_2:IDL_MEDIAN:INPUT', err_str);
 end
 
 % Preallocate output
@@ -616,8 +616,8 @@ out(end-width_half:end) = sigIn(end-width_half:end);
 
 % Middle bit, median of the sorted values of each segment of size width.
 for ii = 1+width_half:length(sigIn)-width_half
-    localSeg = sort(sigIn(ii-width_half:ii + width_half));
-    out(ii) = median(localSeg);
+  localSeg = sort(sigIn(ii-width_half:ii + width_half));
+  out(ii) = median(localSeg);
 end
 
 end

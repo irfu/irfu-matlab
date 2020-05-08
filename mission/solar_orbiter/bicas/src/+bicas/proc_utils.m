@@ -1,4 +1,4 @@
-% Collections of minor utility functions (in the form of static methods) used for data processing.
+% Collection of minor utility functions (in the form of static methods) used for data processing.
 %
 % proc_utils = processing utilities
 %
@@ -10,16 +10,14 @@
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-10
+%
 classdef proc_utils
-
 %============================================================================================================
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
-%   Ex: add_rows_to_struct_fields, select_row_range_from_struct_fields
-%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_Epoch)
+%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_zv_Epoch)
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
-% PROPOSAL: Reorg select_row_range_from_struct_fields into returning a list of intervals instead.
 %
 % PROPOSAL: Replace find_last_same_subsequence with function that returns list of sequences.
 %   PRO: Can naturally handle zero records.
@@ -33,60 +31,31 @@ classdef proc_utils
 %
 % PROPOSAL: Split up SPR functions.
 %   convert_N_to_1_SPR_redistribute     -- Keep
-%   convert_N_to_1_SPR_repeat           -- repeat_in_record    + convert_N_to_1_SPR_redistribute
 %   convert_N_to_1_SPR_Epoch            -- increment_in_record + convert_N_to_1_SPR_redistribute
 %   convert_N_to_1_SPR_ACQUISITION_TIME -- Keep
+%   convert_1_to_1_SPR_by_repeating     -- convert_1_to_N_SPR_by_repeating + convert_N_to_1_SPR_redistribute
 
 
 
     methods(Static, Access=public)
 
-%         function S = select_row_range_from_struct_fields(S, iFirst, iLast)
-%         % Given a struct, select a subset of that struct defined by a range of ROW indices for every field.
-%         % Generic utility function.
-%         %
-%         % Compare add_rows_to_struct_fields. Name chosen in analogy.
-%         
-%             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
-%         
-%             fieldNameList = fieldnames(S);
-%             nRows = NaN;                   % Initial non-sensical value which is later replaced.
-%             for i=1:length(fieldNameList)
-%                 fn = fieldNameList{i};
-%                 
-%                 % ASSERTIONS
-%                 if isnan(nRows)
-%                     nRows = size(S.(fn), 1);
-%                     if (nRows < iFirst) || (nRows < iLast)
-%                         error('BICAS:proc_utils:Assertion', 'iFirst or iLast outside of interval of indices (rows).')
-%                     end
-%                 elseif nRows ~= size(S.(fn), 1)
-%                    error('BICAS:proc_utils:Assertion', 'Not all struct fields have the same number of rows.')
-%                 end
-%                 
-%                 S.(fn) = S.(fn)(iFirst:iLast, :, :);
-%             end
-%         end
-
-
-
         function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
+        % For every cell in a cell array, select an index range in the first dimension for every cell array component.
+            
             % ASSERTIONS
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
             
             for i = 1:numel(c1)
-                c2{i} = c1{i}(iFirst:iLast, :, :);
+                c2{i} = c1{i}(iFirst:iLast, :, :,:,:,:);
             end
         end
 
-        
+
 
         function S = add_rows_to_struct_fields(S, SAmendment)
         % Generic utility function.
-        % Add values to every struct field by adding components after their highest row index (let them grow in
-        % the row index).
-        %
-        % Compare select_row_range_from_struct_fields. Name chosen in analogy.
+        % Add values to every struct field by adding components after their highest row index (let them grow in the row
+        % index).
  
 
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
@@ -110,6 +79,8 @@ classdef proc_utils
         % =========
         % iLsf   : The LSF index, i.e. 1=LFR freq. F0, and so on.
         % freqHz : Frequency in Hz.
+        
+        % PROPOSAL: Somehow avoid having an argument for lsfArrayHz. Have it as a constant somehow.
 
             % ASSERTION
             uniqueValues = unique(iLsf);
@@ -139,6 +110,7 @@ classdef proc_utils
         % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
         %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on
         %                    the value of FREQ in the corresponding component.
+        %                    NOTE: Not MATLAB class "logical".
         %
         % NOTE: Works for all array sizes.
             
@@ -185,7 +157,7 @@ classdef proc_utils
         %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
         
             % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(tt2000)
+            bicas.proc_utils.assert_zv_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
             atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;    % at = ACQUISITION_TIME
@@ -373,7 +345,7 @@ classdef proc_utils
                 v = varargin{i};
                 
                 % ASSERTIONS
-                EJ_library.utils.assert.vector(v)
+                EJ_library.assert.vector(v)
                 assert(v(1) == 1)    % Verifies that it is an edge list, and that the "convention" for what is an edge list (include beginning and end) has not changed.
                 
                 % NOTE: Works with (forces) column vectors to make concatenations reliable
@@ -394,7 +366,7 @@ classdef proc_utils
         %
         function [iFirstList, iLastList] = index_edges_2_first_last(iEdgeList)
             assert(issorted(iEdgeList))
-            EJ_library.utils.assert.vector(iEdgeList)
+            EJ_library.assert.vector(iEdgeList)
             
             
             iFirstList = iEdgeList(1:end-1);
@@ -441,35 +413,49 @@ classdef proc_utils
 
         function zv2 = convert_N_to_1_SPR_redistribute(zv1)
         % Convert zVariable-like variable from N samples/record to 1 sample/record (from a matrix to a column vector).
+        % Increases number of records.
         %
         % ARGUMENT
         % ========
-        % v     : (iRecord, iSnapshotSample, iChannel)
+        % zv1     : (iRecord, iSnapshotSample, iChannel)
         %
         % RETURN VALUE
         % ============
-        % v     : (iRecord, iChannel)
+        % zv2     : (iRecord, iChannel). Same number of components, nRecords2 = nRecords1*nSpr1
 
-            EJ_library.utils.assert.size(zv1, [NaN, NaN, NaN])
+            EJ_library.assert.size(zv1, [NaN, NaN, NaN])
             
             zv  = permute(zv1, [2,1,3]);
             zv2 = reshape(zv, size(zv,1) * size(zv,2), size(zv,3));
             
-            EJ_library.utils.assert.size(zv2, [NaN, NaN])
+            EJ_library.assert.size(zv2, [NaN, NaN])
         end
 
 
 
-        function newData = convert_N_to_1_SPR_repeat(oldData, nRepeatsPerOldRecord)
-        % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by repeating within record.
+        function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+        % Two steps:
+        % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
+        %     repeating within record.
         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
             
             % ASSERTIONS
-            assert(iscolumn(oldData),              'BICAS:proc_utils:Assertion:IllegalArgument', 'oldData is not a column vector')
-            assert(isscalar(nRepeatsPerOldRecord), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nSamplesPerOldRecord is not a scalar')
+            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
             
-            newData = repmat(oldData, [1,nRepeatsPerOldRecord]);
-            newData = bicas.proc_utils.convert_N_to_1_SPR_redistribute(newData);
+            zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
+            zv2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zv2);
+        end
+        
+        
+        
+        function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+            % NOTE: Maybe somewhat unnecessary function.
+            
+            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
+            
+            zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
         end
 
         
@@ -497,12 +483,13 @@ classdef proc_utils
         % PROPOSAL: Replace by some simpler(?) algorithm that uses column/matrix multiplication.
             
             % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(oldTt2000)
+            bicas.proc_utils.assert_zv_Epoch(oldTt2000)
             if numel(nSpr) ~= 1
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'nSpr not scalar.')
             elseif size(freqHzWithinRecords, 1) ~= size(oldTt2000, 1)
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'freqWithinRecords and oldTt2000 do not have the same number of rows.')
             end
+            assert(iscolumn(freqHzWithinRecords))
             
             nRecords = numel(oldTt2000);
             
@@ -579,7 +566,7 @@ classdef proc_utils
         % nCopyColsPerRowVec    : 1D vector. {i}=Number of elements to copy from M{i,:}.
         % ca                    : Column cell array of 1D vectors.
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowVec)
-            EJ_library.utils.assert.vector(nCopyColsPerRowVec)
+            EJ_library.assert.vector(nCopyColsPerRowVec)
             assert(ismatrix(M))
             assert(size(M, 1) == length(nCopyColsPerRowVec))
             
@@ -598,9 +585,9 @@ classdef proc_utils
         % nCopyColsPerRowVec    : 1D vector. {i}=Length of ca{i}=Number of elements copyied to M{i,:}.
         function [M, nCopyColsPerRowVec] = convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
             assert(iscell(ca))
-            EJ_library.utils.assert.vector(ca)
+            EJ_library.assert.vector(ca)
             assert(isscalar(nMatrixColumns))
-            EJ_library.utils.assert.vector(nMatrixColumns)
+            EJ_library.assert.vector(nMatrixColumns)
             
             nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
             M                  = zeros(numel(ca), nMatrixColumns) * NaN;
@@ -620,6 +607,8 @@ classdef proc_utils
         % freqHz           : Frequency column vector in s^-1. Can not handle freqHz=NaN since the output is an integer.
         % nSpr             : Number of samples/record.
         % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64. NOTE: Unit ns.
+        
+            ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
             
             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
@@ -632,54 +621,62 @@ classdef proc_utils
             for i = 1:length(freqHz)
                 DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
             end
-            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types'));
+            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.utils.convert_CDF_type_to_MATLAB_class(...
+                ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
         
         
         
-        function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
-        % freqHz     : Frequency column vector in s^-1. Can not handle freq=NaN since the output is an integer.
-        % nSpr       : Number of samples per record (SPR).
-        % SAMP_DTIME : Analogous to BIAS zVariable with CDF_UINT4=uint32. NOTE: Unit ns.
-        %
-        % ~BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
-        % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
-        % 2048/256 Hz = 8e9 ns > 2^31 ns ~ 2e9 ns.
-        % 2017-03-08: Xavier Bonnin (LESIA) and Bruno Katra (RPW/LFR) are aware of this and seem to have implemented it
-        % that way intentionally!!!
-        %
-        % IMPLEMENTATION NOTE: Algorithm should require integers in order to have a very predictable behaviour (useful
-        % when testing).
-        
-            % ASSERTIONS
-            if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
-            elseif ~isscalar(nSpr)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
-            end
-            
-            nRecords = size(freqHz, 1);
-            
-            % Express frequency as period length in ns (since tt2000 uses ns as a unit).
-            % Use the same MATLAB class as tt
-            % Unique frequency per record.
-            periodNsColVec = int64(1e9 ./ freqHz);   % Ns = ns = nanoseconds
-            periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
-                        
-            % Conventions:
-            % ------------
-            % Time unit: ns (as for tt2000)            
-            % Algorithm should require integers to have a very predictable behaviour (useful when testing).
-            
-            % Indices for within every record (start at zero for every record).
-            iSampleRowVec = int64(0:(nSpr-1));
-            iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
-            
-            % Unique time for every sample in every record.
-            SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
-            
-            SAMP_DTIME = cast(SAMP_DTIME, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
-        end
+        % 2020-03-10: Function seems to not be used any more. DSAMP_TIME abolished from BIAS datasets?
+%         function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
+%         %
+%         % ARGUMENTS
+%         % =========
+%         % freqHz     : Frequency column vector in s^-1. Can not handle freq=NaN since the output is an integer.
+%         % nSpr       : Number of samples per record (SPR).
+%         %
+%         % RETURN VALUE
+%         % ============
+%         % SAMP_DTIME : Analogous to BIAS zVariable with CDF_UINT4=uint32. NOTE: Unit ns.
+%         %
+%         % ~BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
+%         % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
+%         % 2048/256 Hz = 8e9 ns > 2^31 ns ~ 2e9 ns.
+%         % 2017-03-08: Xavier Bonnin (LESIA) and Bruno Katra (RPW/LFR) are aware of this and seem to have implemented it
+%         % that way intentionally!!!
+%         %
+%         % IMPLEMENTATION NOTE: Algorithm should require integers in order to have a very predictable behaviour (useful
+%         % when testing).
+%         
+%             % ASSERTIONS
+%             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
+%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
+%             elseif ~isscalar(nSpr)
+%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
+%             end
+%             
+%             nRecords = size(freqHz, 1);
+%             
+%             % Express frequency as period length in ns (since tt2000 uses ns as a unit).
+%             % Use the same MATLAB class as tt
+%             % Unique frequency per record.
+%             periodNsColVec = int64(1e9 ./ freqHz);   % Ns = ns = nanoseconds
+%             periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
+%                         
+%             % Conventions:
+%             % ------------
+%             % Time unit: ns (as for tt2000)            
+%             % Algorithm should require integers to have a very predictable behaviour (useful when testing).
+%             
+%             % Indices for within every record (start at zero for every record).
+%             iSampleRowVec = int64(0:(nSpr-1));
+%             iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
+%             
+%             % Unique time for every sample in every record.
+%             SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
+%             
+%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
+%         end
         
         
         
@@ -691,114 +688,53 @@ classdef proc_utils
         end
 
 
+        
+%         function y2 = interpolate_float_records(zvTt2000_1, y1, zvTt2000_2, method)
+%             % Interpolate ~zVariable to other points in time.
+%             % Values which can not be interpolated will be set to NaN.
+%             % This is intended for interpolating HK and CURRENT to SCI record times.
+%             %
+%             % IMPLEMENTATION NOTE: There is (deliberately) no assertion to check for NaN, neither in input nor output.
+%             % The caller is supposed to check and, depending on settings etc decide whether to interpolate anyway.
+%             %
+%             % IMPLEMENTATION NOTE: interp1 does seem to require y1 to be float. Using NaN as a "fill value" for the
+%             % return value implies that it too has to be a float.
+%             
+%             % PROPOSAL: Assertion issorted.
+%             
+% %             switch(method)
+% %                 case 'nearest'
+% % %                     assert(...
+% % %                         EJ_library.utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
+% % %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
+% % %                         'Can not interpolate data since the time range of zvTt2000_2 is not a subset of zvTt2000_1.')
+% % 
+% %                 case 'previous'
+% %                     % IMPLEMENTATION NOTE: Used for currents which can be extrapolate forward, but not backward.
+% % %                     assert(min(zvTt2000_1) <= min(zvTt2000_2), ...
+% % %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
+% % %                         'Can not interpolate data since the time range of zvTt2000_2 does not begin after zvTt2000_1 begins.')
+% % 
+% %                 otherwise
+% %                     error(...
+% %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
+% %                         'Illegal argument method="%s".', ...
+% %                         method)
+% %             end
+%             
+%             bicas.proc_utils.assert_zv_Epoch(zvTt2000_1)
+%             bicas.proc_utils.assert_zv_Epoch(zvTt2000_2)
+%             y2 = interp1(double(zvTt2000_1), y1, double(zvTt2000_2), method, NaN);
+%         end
+        
 
-        function newData = nearest_interpolate_float_records(oldData, oldTt2000, newTt2000)
-        % Interpolate ~zVariable to other points in time using nearest neighbour interpolation.
-        % Values outside the interval covered by the old time series will be set to NaN.
-        %
-        % This is intended for interpolating HK values to SCI record times.
-        %
-        % IMPLEMENTATION NOTE: interp1 does seem to require oldData to be float. Using NaN as a "fill value" for the
-        % return value imples that it too has to be a float.
-            
-            bicas.proc_utils.assert_Epoch(oldTt2000)
-            bicas.proc_utils.assert_Epoch(newTt2000)
-            newData = interp1(double(oldTt2000), oldData, double(newTt2000), 'nearest', NaN);
-        end
 
-
-
-        function utcStr = tt2000_to_UTC_str(tt2000)
+        function utcStr = tt2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
-        %
-        % Example: 2016-04-16T02:26:14.196334848
-        % NOTE: This is the inverse to spdfparsett2000.
             
-            bicas.proc_utils.assert_Epoch(tt2000)
+            bicas.proc_utils.assert_zv_Epoch(zvTt2000)
             
-            %  spdfbreakdowntt2000 converts the CDF TT2000 time, nanoseconds since
-            %               2000-01-01 12:00:00 to UTC date/time.
-            %
-            %     OUT = spdfbreakdowntt2000(tt2000) returns the UTC date/time from CDF TT2000
-            %     time. OUT is an array with each row having nine (9) numerical values
-            %     for year, month, day, hour, minute, second, millisecond, microsecond
-            %     and nanosecond.
-            v = spdfbreakdowntt2000(tt2000);
-            utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%2i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
-        end
-        
-        
-        
-        % NOTE: Does not recognize HK datasets.
-        % NOTE: Only classifies input datasets. (Is there a good reason for this?)
-        % NOTE: Function deliberately ignores Skeleton_version.
-        % IMPLEMENTATION NOTE: Still recognizes old ROC-SGSE datasets since they may be found in global attribute
-        % DATASET_ID in old test files.
-        %
-        function C = classify_DATASET_ID(datasetId)
-            % PROPOSAL: Use regexp instead.
-            %   PRO: Can more easily handle old ROC-SGSE datasets.
-            %
-            % PROPOSAL: Implement assertsion on DATASET_ID via this function.
-            %   Ex: bicas.assert_DATASET_ID
-            %   Ex: bicas.swmde_defs.assert_DATASET_ID
-            %   CON: Requires strict matching.
-            %   PRO: Does not spread out the knowledge of DATASET_IDs.
-            %   PROPOSAL: Flag for obsoleted DATASET_IDs that may be found in input datasets. Caller decides how to
-            %       respond.
-            % NEED?!: Some way of determining whether an obsoleted and current DATASET_ID are equivalent.
-            
-            EJ_library.utils.assert.castring(datasetId)
-            
-            C.isLfrSbm1 = 0;
-            C.isLfrSbm2 = 0;
-            C.isLfrSwf  = 0;
-            C.isTdsCwf  = 0;
-            C.isTdsRswf = 0;
-            C.isL1      = 0;
-            C.isL1R     = 0;
-            
-            % Shorten function name. MF = Matching Function
-            mf = @(regexpPatternList) (any(EJ_library.utils.regexpf(datasetId, regexpPatternList)));
-            
-            if     mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SBM1-CWF-E', ...
-                                   'SOLO_L1_RPW-LFR-SBM1-CWF'})
-                C.isLfrSbm1  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SBM2-CWF-E', ...
-                                   'SOLO_L1_RPW-LFR-SBM2-CWF'})
-                C.isLfrSbm2  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SURV-CWF-E', ...
-                                   'SOLO_L1_RPW-LFR-SURV-CWF'})
-                % Do nothing
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SURV-SWF-E', ...
-                        '(ROC-SGSE|SOLO)_L1_RPW-LFR-SURV-SWF'})
-                C.isLfrSwf  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-TDS-LFM-CWF-E', ...
-                                   'SOLO_L1_RPW-TDS-LFM-CWF'})
-                C.isTdsCwf  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-TDS-LFM-RSWF-E', ...
-                                   'SOLO_L1_RPW-TDS-LFM-RSWF'})
-                C.isTdsRswf = 1;
-            else
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
-            end
-            
-            if     mf({'(ROC-SGSE|SOLO)_L1_RPW-.*'})
-                C.isL1      = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-.*'})
-                C.isL1R     = 1;
-            else
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
-            end
-            
-            EJ_library.utils.assert.struct2(C, {...
-                'isLfrSbm1', ...
-                'isLfrSbm2', ...
-                'isLfrSwf', ...
-                'isTdsCwf', ...
-                'isTdsRswf', ...
-                'isL1', ...
-                'isL1R'}, {})
+            utcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(zvTt2000);
         end
         
         
@@ -876,7 +812,7 @@ classdef proc_utils
 
                 case 'Epoch'
                     % ASSERTIONS
-                    bicas.proc_utils.assert_Epoch(varValue)
+                    bicas.proc_utils.assert_zv_Epoch(varValue)
                     
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
@@ -916,7 +852,7 @@ classdef proc_utils
         % =========
         % Zvs : Struct with ~zVariables.
         %       NOTE: Uses field name to determine whether field is Epoch-like or not.
-        function log_zVars(Zvs)
+        function log_zVars(Zvs, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
             %   Ex: process_HK_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
@@ -930,13 +866,14 @@ classdef proc_utils
             LOG_LEVEL = 'debug';
 
             fnList     = fieldnames(Zvs);
-            ColumnStrs = struct('name', {}, 'size', {}, 'nNan', {}, 'percentageNan', {}, 'nUniqueValues', {}, 'values', {});
+            ColumnStrs = EJ_library.utils.empty_struct([0,1], 'name', 'size', 'nNan', 'percentageNan', 'nUniqueValues', 'values');
             
             for iFn = 1:numel(fnList)
                 zvName  = fnList{iFn};
                 zvValue = Zvs.(zvName);
                 
-                if iscolumn(zvValue) && isa(zvValue, 'int64') && any(EJ_library.utils.regexpf(zvName, {'Epoch.*', '.*Epoch'}))
+                if iscolumn(zvValue) && isa(zvValue, 'int64') ...
+                        && any(EJ_library.str.regexpf(zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
                     ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch');
@@ -967,12 +904,12 @@ classdef proc_utils
             tableColumnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
             [headerStrs, tableStrs, columnWidths] = EJ_library.utils.assist_print_table(headerStrs, tableStrs,  tableColumnAdjustments);
 
-            bicas.log(LOG_LEVEL, strjoin(headerStrs, ' '))
-            bicas.log(LOG_LEVEL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
+            L.log(LOG_LEVEL, strjoin(headerStrs, ' '))
+            L.log(LOG_LEVEL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
             for iRow = 1:numel(ColumnStrs)
-                bicas.log(LOG_LEVEL, strjoin(tableStrs(iRow, :), ' '))
+                L.log(LOG_LEVEL, strjoin(tableStrs(iRow, :), ' '))
             end
-            bicas.logf(LOG_LEVEL, [...
+            L.logf(LOG_LEVEL, [...
                 '    #NaN = Number of NaN\n', ...
                 '    #Uniq = Number of unique values incl. NaN which counts as equal to itself.\n', ...
                 '    Mm = min-max\n', ...
@@ -982,9 +919,9 @@ classdef proc_utils
 
 
         % Assert that variable is an "zVar Epoch-like" variable.
-        function assert_Epoch(Epoch)
-        % PROPOSAL: Change name: assert_Epoch_zvar
-        % PROPOSAL: Separate functions: assert_Epoch_zvar, assert_Epoch.
+        function assert_zv_Epoch(Epoch)
+        % PROPOSAL: Change name: assert_zv_Epoch_zvar
+        % PROPOSAL: Separate functions: assert_zv_Epoch_zvar, assert_zv_Epoch.
         
             if ~iscolumn(Epoch)
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')   % Right ID?                
@@ -1028,7 +965,7 @@ classdef proc_utils
         
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
-        % PROPOSAL: Implement using new features in EJ_library.utils.assert.size.
+        % PROPOSAL: Implement using new features in EJ_library.assert.size.
         
             fieldNamesList1 = fieldnames(S);
             nRows = [];
@@ -1063,20 +1000,11 @@ classdef proc_utils
         % c : Cell array.
         function assert_cell_array_comps_have_same_N_rows(c)
             nRowsArray = cellfun(@(v) (size(v,1)), c, 'UniformOutput', true);
-            EJ_library.utils.assert.all_equal( nRowsArray )
+            EJ_library.assert.all_equal( nRowsArray )
         end
-        
-        
-        
-        function doOverlap = ranges_overlap(v1, v2)
-            EJ_library.utils.assert.vector(v1)
-            EJ_library.utils.assert.vector(v2)
-            
-            doOverlap = (min(v2) <= max(v1)) && (min(v1) <= max(v2));
-        end
-        
-        
-        
+
+
+
     end   % Static
     
     

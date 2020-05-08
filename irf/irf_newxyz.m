@@ -10,16 +10,16 @@ function [out]=irf_newxyz(inp,x,y,z)
 % if z=0 -> z=xxy,y=zxx
 
 if x==0
- x=cross(y,z);
- z=cross(x,y);
+  x=cross(y,z);
+  z=cross(x,y);
 end
 if y==0
- y=cross(z,x);
- x=cross(y,z); % to make sure x and z are orthogonal
+  y=cross(z,x);
+  x=cross(y,z); % to make sure x and z are orthogonal
 end
 if z==0
- z=cross(x,y);
- y=cross(z,x);
+  z=cross(x,y);
+  y=cross(z,x);
 end
 
 x=x/norm(x);
@@ -42,7 +42,7 @@ if isa(inp,'TSeries')
   end
   return
 end
-  
+
 if size(out,2)==3
   out(:,1)=inp(:,1:3)*x';
   out(:,2)=inp(:,1:3)*y';
@@ -52,7 +52,7 @@ elseif size(out,2)>3
   out(:,3)=inp(:,2:4)*y';
   out(:,4)=inp(:,2:4)*z';
 else
-	errStr = 'Coordinate transformation not possible when input has less than 3 columns';
-	irf.log('critical',errStr);
-	error('irf_newxyz:too_few_components',errStr);
+  errStr = 'Coordinate transformation not possible when input has less than 3 columns';
+  irf.log('critical',errStr);
+  error('irf_newxyz:too_few_components',errStr);
 end

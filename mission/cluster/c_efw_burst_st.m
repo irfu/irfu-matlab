@@ -1,8 +1,8 @@
 function OUT=c_efw_burst_st(filename)
 %C_EFW_BURST_ST Check the starting time of the burst according to ISDAT
 %
-% OUT=c_efw_burst_st(filename) 
-% 
+% OUT=c_efw_burst_st(filename)
+%
 % $Id$
 
 % By Anders Tjulin 13/8-2002

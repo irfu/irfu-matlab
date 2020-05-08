@@ -2,13 +2,13 @@ function spinfit = c_efw_onesfit(pair,fout,maxit,minpts,te,data,tp,ph)
 %C_EFW_ONESFIT produce one spin fit value (ex, ey)
 %   of EFW data frome given probe pair. The spin fit will
 %   be to all the data put in, which thus typically should
-%   cover exactly one spin. 
+%   cover exactly one spin.
 %
 % spinfit = c_efw_onesfit(pair,fout,maxit,minpts,te,data,tp,ph)
 %
 % Input:
 %  pair - probe pair used (12, 32, 34)
-%  fout - minimum fraction of fit standard deviation that defines an outlier 
+%  fout - minimum fraction of fit standard deviation that defines an outlier
 %         (zero means no removal of outliers)
 %  maxit - maximum number of iterations (zero means infinity)
 %  minpts - minimum number of data points to perform fit
@@ -16,12 +16,12 @@ function spinfit = c_efw_onesfit(pair,fout,maxit,minpts,te,data,tp,ph)
 %  te - EFW time in seconds (isGetDataLite time)
 %  data - EFW data from pair in mV/m, should correspond to te
 %  tp - Ephemeris time in seconds (isGetDataLite time)
-%  ph - Ephemeris phase in degr (sun angle for s/c Y axis), should 
-%      correspond to tp 
+%  ph - Ephemeris phase in degr (sun angle for s/c Y axis), should
+%      correspond to tp
 %
 % Output:
 %  spinfit = [ts,ex,ey,offset,sdev0,sdev,iter,nout]
-%  ts - time vector in seconds 
+%  ts - time vector in seconds
 %  ex - E-field x-component in DSI coordinates (almost GSE)
 %  ey - E-field y-component in DSI coordinates (almost GSE)
 %  offset - mean value of input data
@@ -63,8 +63,8 @@ elseif pair == 34
   ph = ph + pi/4;
 else
   pair_ok = 0;
-end 
-  
+end
+
 % Do spin fit
 
 spinfit = zeros(1,8);
@@ -82,10 +82,10 @@ if pair_ok
     else
       spfit = regress(data1, [cos(ph1) sin(ph1) ones(size(ph1))]);
       fit = spfit(1) * cos(ph1) + spfit(2) * sin(ph1) + spfit(3);
-	  dif = data1 - fit;
-	  sdev = std(dif);
+      dif = data1 - fit;
+      sdev = std(dif);
       if iter == 1, sdev0 = sdev; end
-      ind = find(abs(dif) > fout * sdev);  % Find outliers 
+      ind = find(abs(dif) > fout * sdev);  % Find outliers
       if fout == 0 || maxit == 0 || isempty(ind) || iter >= maxit
         spinfit(1) = mean(te);
         spinfit(2) = spfit(1);

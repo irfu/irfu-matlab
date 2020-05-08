@@ -1,7 +1,9 @@
 function h = mms4_pl_eb(Tint, dMode)
 %MMS.MMS4_PL_EB  Summary plot - E & B at 4 MS S/C
 %
-%  H = MMS.MMS4_PL_EB(Tint, [mode])
+%  h = MMS.MMS4_PL_EB(Tint, [MODE])
+%
+%  MODE - one of 'fast' (default) or 'brst'
 
 %Tint = irf.tint('2015-05-24T02:10:00Z/2015-05-24T02:30:00Z');
 
@@ -23,31 +25,33 @@ for mmsId = 1:4
     B_dmpa_fgm_srvy = mms.get_data('B_dmpa_dfg_srvy_l2pre',Tint,mmsId);
     if isempty(B_dmpa_fgm_srvy)
       irf.log('warning','loading QL DFG')
-      B_dmpa_fgm_srvy = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId);
+      B_dmpa_fgm_srvy = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); %#ok<NASGU>
     end
   end
   E_dsl_edp = mms.get_data(['E_dsl_edp_' dMode '_l2'],Tint,mmsId);
   if isempty(E_dsl_edp)
     irf.log('warning','loading QL DCE')
-    E_dsl_edp = mms.get_data(['E_dsl_edp_' dMode '_ql'],Tint,mmsId);
+    E_dsl_edp = mms.get_data(['E_dsl_edp_' dMode '_ql'],Tint,mmsId); %#ok<NASGU>
   end
+  
+  %{
   E2d_dsl_edp = mms.get_data(['E2d_dsl_edp_' dMode '_l2pre'],Tint,mmsId);
   if isempty(E2d_dsl_edp)
     irf.log('warning','loading QL DCE2d')
-    E2d_dsl_edp = mms.get_data(['E2d_dsl_edp_' dMode '_ql'],Tint,mmsId);
+    E2d_dsl_edp = mms.get_data(['E2d_dsl_edp_' dMode '_ql'],Tint,mmsId); %#ok<NASGU>
   end
+  %}
   
   V_edp = mms.get_data(['V_edp_' dMode '_l2'],Tint,mmsId);
   if isempty(V_edp)
     irf.log('warning','loading SITL DCV')
-    V_edp = mms.get_data('V_edp_fast_sitl',Tint,mmsId);
+    V_edp = mms.get_data('V_edp_fast_sitl',Tint,mmsId); %#ok<NASGU>
   end
   
-  R_gse = mms.get_data('R_gse',Tint,mmsId);
-  
+  R_gse = mms.get_data('R_gse',Tint,mmsId); %#ok<NASGU>
   
   c_eval([...
-    'E? = E2d_dsl_edp;'...
+    'E? = E_dsl_edp;'...
     'P? = V_edp;'...
     'B? = B_dmpa_fgm_srvy;'...
     'R? = R_gse;'],...
@@ -72,18 +76,18 @@ mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
 h = irf_figure(8);
 
 if 1
-hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'abs(B?)',1)
-ylabel(hca,'|B| [nT]')
-irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
-
-hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'B?',1)
-ylabel(hca,'Bx [nT]')
-
-hca = irf_panel('By'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'B?',2)
-ylabel(hca,'By [nT]')
+  hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'abs(B?)',1)
+  ylabel(hca,'|B| [nT]')
+  irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
+  
+  hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'B?',1)
+  ylabel(hca,'Bx [nT]')
+  
+  hca = irf_panel('By'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'B?',2)
+  ylabel(hca,'By [nT]')
 end
 
 hca = irf_panel('Bz'); set(hca,'ColorOrder',mmsColors)
@@ -99,15 +103,15 @@ irf_pl_tx(hca,'E?',2)
 ylabel(hca,'Ey [mV/m]')
 
 if 1
-hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'E?',3)
-ylabel(hca,'Ez [mV/m]')
+  hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'E?',3)
+  ylabel(hca,'Ez [mV/m]')
 end
 
 if 1
-hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'P?')
-ylabel(hca,'ScPot [V]')
+  hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'P?')
+  ylabel(hca,'ScPot [V]')
 end
 
 
@@ -155,9 +159,9 @@ irf_pl_tx(hca,'VExB?',3)
 ylabel(hca,'Vz [km/s]')
 
 if 1
-hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'P?')
-ylabel(hca,'-ScPot [V]')
+  hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'P?')
+  ylabel(hca,'-ScPot [V]')
 end
 
 irf_zoom(h,'x',Tint)

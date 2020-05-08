@@ -7,7 +7,7 @@ function caa_update_deltaoff(d,cl_id)
 % The database is stored in caa/deltaoff.mat
 %
 % See also CAA_COROF_DELTA, ClusterProc/getData
-% 
+%
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -41,15 +41,15 @@ t_st_e = double(ud.t_start_epoch);
 tt = zeros(1,EY-SY+1);
 ts = cell(size(tt));
 for i=1:length(tt)
-	tt(i) = toepoch([SY+i-1 1 1 0 0 0]) - t_st_e;
-	ts{i} = num2str(SY+i-1);
+  tt(i) = toepoch([SY+i-1 1 1 0 0 0]) - t_st_e;
+  ts{i} = num2str(SY+i-1);
 end
 set(h(1),'XTick',tt,'XLim',[tt(1) tt(end)],'Ylim',[-2 2])
 set(h(2),'XTick',tt,'XLim',[tt(1) tt(end)],'Ylim',[-2 2],'XTickLabel',ts)
 
 y = irf_ask('Save? yes/no [%]>','y','no');
 if strcmpi(y,'y') || strcmpi(y,'yes')
-	 load deltaoff
-     c_eval('DeltaOff?=[DeltaOff?'' da'']'' ',cl_id);
-     c_eval('save deltaoff DeltaOff? -append; disp(''DeltaOff? -> deltaoff.mat'')',cl_id)
+  load deltaoff
+  c_eval('DeltaOff?=[DeltaOff?'' da'']'' ',cl_id);
+  c_eval('save deltaoff DeltaOff? -append; disp(''DeltaOff? -> deltaoff.mat'')',cl_id)
 end

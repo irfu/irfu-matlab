@@ -2,8 +2,8 @@ function caa_comp_efw_edi_corr(cl_id)
 %CAA_COMP_EFW_EDI_CORR  compare EFW, EDI with CORROTATION
 %
 % CAA_COMP_EFW_EDI_CORR(CL_ID)
-% 
-% Compare E-fileds measured by  EFW and EDI with 
+%
+% Compare E-fileds measured by  EFW and EDI with
 % CO-ROTATION E-filed.
 %
 % See also: C_EFW_CORROT
@@ -32,14 +32,14 @@ if diEs(1,1) == -157e8, error('No E-field'), end
 diEs(isnan(diEs(:,2)),:) = [];
 diEDI = c_load('diEDI?',cl_id,'var');
 if diEDI(1,1) == -157e8
-	diEDI = [];
-	disp('No EDI data')
+  diEDI = [];
+  disp('No EDI data')
 end
-	
+
 diBr = c_load('diBr?',cl_id,'var');
 if diBr(1,1) == -157e8
-	diBr = c_load('diBrs?',cl_id,'var');
-	if diBr(1,1) == -157e8, error('No B-field'), end
+  diBr = c_load('diBrs?',cl_id,'var');
+  if diBr(1,1) == -157e8, error('No B-field'), end
 end
 P = c_load('P?',cl_id,'var');
 R = c_load('R?',cl_id,'var');
@@ -51,7 +51,7 @@ diRr = irf_resamp(diR,diBr);
 
 % Earth rotation vector in DSI
 geiOM = diBr;
-geiOM(:,2:3) = 0; 
+geiOM(:,2:3) = 0;
 geiOM(:,4) = 1;
 om = irf_gse2gei(geiOM,-1);
 om(:,2:4) = om(:,2:4)*2*pi/86400;
@@ -74,21 +74,21 @@ diECorr(:,2:4) = diECorr(:,2:4) + diEi(:,2:4);
 clf
 h = 1:4;
 for ax=1:3
-	h(ax) = irf_subplot(4,1,-ax);
-	if isempty(diEDI)
-		irf_plot({diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
-		'linestyle',{'-','-'},'comp');
-	else
-		irf_plot({diEDI(:,[1 (ax+1)]),diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
-			'linestyle',{'.','-','-'},'comp');
-	end
-	sfit_probe = caa_sfit_probe(cl_id);
-	[ok, lowake] = c_load(sprintf('LOWAKE?p%d',sfit_probe),cl_id);
-	if ok && ~isempty(lowake)
-		diEs_wake = caa_rm_blankt(diEs,lowake,1);
-		hold on
-		irf_plot(diEs_wake(:,[1 (ax+1)]),'g*')
-	end
+  h(ax) = irf_subplot(4,1,-ax);
+  if isempty(diEDI)
+    irf_plot({diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
+      'linestyle',{'-','-'},'comp');
+  else
+    irf_plot({diEDI(:,[1 (ax+1)]),diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
+      'linestyle',{'.','-','-'},'comp');
+  end
+  sfit_probe = caa_sfit_probe(cl_id);
+  [ok, lowake] = c_load(sprintf('LOWAKE?p%d',sfit_probe),cl_id);
+  if ok && ~isempty(lowake)
+    diEs_wake = caa_rm_blankt(diEs,lowake,1);
+    hold on
+    irf_plot(diEs_wake(:,[1 (ax+1)]),'g*')
+  end
 end
 if isempty(diEDI), legend(h(1),'EFW','corrotation')
 else, legend(h(1),'EDI','EFW','corrotation')
@@ -115,19 +115,19 @@ idx = find( Pr(:,2) > SCPOT_LIM & dE > DE_LIM );
 clear diEr diECr Pr
 
 if ~isempty(idx)
-	irf_log('proc',sprintf('max diff from corrotation is %.2f mV/m',max(dE)))
-	for j=idx'
-		diEs( diEs(:,1)>=t(j)-WIN*TAV/2 & diEs(:,1)<=t(j)+WIN*TAV/2,...
-			2:end ) = NaN;
-	end
-	for ax=1:2
-		axes(h(ax)); hold on
-		irf_plot(diEs(:,[1 (ax+1)]),'g.');
-		hold off
-	end
-	set(gca,'XTickLabel',[])
-	xlabel('')
+  irf_log('proc',sprintf('max diff from corrotation is %.2f mV/m',max(dE)))
+  for j=idx'
+    diEs( diEs(:,1)>=t(j)-WIN*TAV/2 & diEs(:,1)<=t(j)+WIN*TAV/2,...
+      2:end ) = NaN;
+  end
+  for ax=1:2
+    axes(h(ax)); hold on
+    irf_plot(diEs(:,[1 (ax+1)]),'g.');
+    hold off
+  end
+  set(gca,'XTickLabel',[])
+  xlabel('')
 else
-	irf_log('proc','data is good')
+  irf_log('proc','data is good')
 end
-	
+

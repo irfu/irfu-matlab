@@ -102,7 +102,7 @@ for mmsId = 1:4
     E34.(mmsIdS).data(bitand( E34.(mmsIdS).time.ttns >= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.start.ttns, ...
       E34.(mmsIdS).time.ttns <= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.stop.ttns), :) = NaN;
   end
-
+  
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
   if isempty(B) || (midnightROI && B.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
     % If higher level data was not found, or ROI covers midnight +10min and
@@ -132,22 +132,22 @@ for mmsId = 1:4
     %  irf.log('warning','Using L1b FPI data');
     %  if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l1b',Tint,mmsId); end
     %else
-      % No L2 or L1b, try QL
-      Vifpi = mms.get_data('Vi_dbcs_fpi_ql',Tint,mmsId);
-      if ~isempty(Vifpi)
-        irf.log('warning','Using QL FPI data');
-        if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId); end
-      else
-        % No L2, L1b or QL. Last resort, try SITL
-        %Vifpi = mms.get_data('Vi_dbcs_fpi_sitl',Tint,mmsId);
-        %if ~isempty(Vifpi)
-          %irf.log('warning','Using SITL FPI data');
-          %if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId); end
-       %else
-          irf.log('warning', 'Did not find any FPI data');
-          continue
-       end
-      %end
+    % No L2 or L1b, try QL
+    Vifpi = mms.get_data('Vi_dbcs_fpi_ql',Tint,mmsId);
+    if ~isempty(Vifpi)
+      irf.log('warning','Using QL FPI data');
+      if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId); end
+    else
+      % No L2, L1b or QL. Last resort, try SITL
+      %Vifpi = mms.get_data('Vi_dbcs_fpi_sitl',Tint,mmsId);
+      %if ~isempty(Vifpi)
+      %irf.log('warning','Using SITL FPI data');
+      %if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId); end
+      %else
+      irf.log('warning', 'Did not find any FPI data');
+      continue
+    end
+    %end
     %end
   else
     irf.log('notice','Using L2 FPI data');
@@ -161,7 +161,7 @@ for mmsId = 1:4
   if isempty(idxMSH)
     NifpiR = Nifpi.resample(Epoch20s,'median');
     VifpiR = Vifpi.resample(Epoch20s,'median');
-    idxMSH = NifpiR.data>5 & VifpiR.x.data>-200;  
+    idxMSH = NifpiR.data>5 & VifpiR.x.data>-200;
     if sum(idxMSH) < 180 % We require min 100 spins of MSH data
       irf.log('warning','Using ALL data (not only MSH)')
       idxMSH(:)=true;
@@ -195,7 +195,7 @@ for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   if isempty(E34.(mmsIdS)), continue, end
   DE.(mmsIdS) = ALPHA*E34.(mmsIdS) - ErefFpi;
-  deTmp = DE.(mmsIdS).data; deTmp = deTmp(idxMSH,:); 
+  deTmp = DE.(mmsIdS).data; deTmp = deTmp(idxMSH,:);
   offTmp = zeros(1,2);
   for iComp = 1:2
     offTmp(iComp) = median(deTmp(~isnan(deTmp(:,iComp)),iComp));
@@ -209,104 +209,104 @@ mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
 h = irf_figure(195,6,'reset');
 
 if 1 % Panel Ex
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
-  plData= [plData {E34.(mmsIdS).x}]; %#ok<AGROW>
-end
-
-hca = irf_panel('Ex'); set(hca,'ColorOrder',mmsColors)
-irf_plot(hca,plData,'comp')
-hold(hca,'on'), irf_plot(hca,ErefFpi.x,'c.'), hold(hca,'off')
-ylabel(hca,'Ex [mV/m]')
-irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
+    plData= [plData {E34.(mmsIdS).x}]; %#ok<AGROW>
+  end
+  
+  hca = irf_panel('Ex'); set(hca,'ColorOrder',mmsColors)
+  irf_plot(hca,plData,'comp')
+  hold(hca,'on'), irf_plot(hca,ErefFpi.x,'c.'), hold(hca,'off')
+  ylabel(hca,'Ex [mV/m]')
+  irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
 end
 
 if 1 % Panel Ey
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
-  plData= [plData {E34.(mmsIdS).y}]; %#ok<AGROW>
-end
-
-hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
-irf_plot(hca,plData,'comp')
-hold(hca,'on'), irf_plot(hca,ErefFpi.y,'c.'), hold(hca,'off')
-ylabel(hca,'Ey [mV/m]')
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
+    plData= [plData {E34.(mmsIdS).y}]; %#ok<AGROW>
+  end
+  
+  hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
+  irf_plot(hca,plData,'comp')
+  hold(hca,'on'), irf_plot(hca,ErefFpi.y,'c.'), hold(hca,'off')
+  ylabel(hca,'Ey [mV/m]')
 end
 
 if 1 % Panel dEx
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(DE.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
-  plData= [plData {DE.(mmsIdS).x}]; %#ok<AGROW>
-end
-
-hca = irf_panel('dEx'); set(hca,'ColorOrder',mmsColors)
-irf_plot(hca,plData,'comp')
-ylabel(hca,'dEx [mV/m]')
-
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(Off.(mmsIdS)), tt = NaN; else, tt = Off.(mmsIdS)(1); end
-  plData= [plData {sprintf('dEx%d=%.2f',mmsId,tt)}]; %#ok<AGROW>
-end
-irf_legend(hca,plData,[0.1, 0.05],'color','cluster');
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(DE.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
+    plData= [plData {DE.(mmsIdS).x}]; %#ok<AGROW>
+  end
+  
+  hca = irf_panel('dEx'); set(hca,'ColorOrder',mmsColors)
+  irf_plot(hca,plData,'comp')
+  ylabel(hca,'dEx [mV/m]')
+  
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(Off.(mmsIdS)), tt = NaN; else, tt = Off.(mmsIdS)(1); end
+    plData= [plData {sprintf('dEx%d=%.2f',mmsId,tt)}]; %#ok<AGROW>
+  end
+  irf_legend(hca,plData,[0.1, 0.05],'color','cluster');
 end
 
 if 1 % Panel dEy
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(DE.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
-  plData= [plData {DE.(mmsIdS).y}]; %#ok<AGROW>
-end
-
-hca = irf_panel('dEy'); set(hca,'ColorOrder',mmsColors)
-irf_plot(hca,plData,'comp')
-ylabel(hca,'dEy [mV/m]')
-
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(Off.(mmsIdS)), tt = NaN; else, tt = Off.(mmsIdS)(2); end
-  plData= [plData {sprintf('dEy%d=%.2f',mmsId,tt)}]; %#ok<AGROW>
-end
-irf_legend(hca,plData,[0.1, 0.05],'color','cluster');
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(DE.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
+    plData= [plData {DE.(mmsIdS).y}]; %#ok<AGROW>
+  end
+  
+  hca = irf_panel('dEy'); set(hca,'ColorOrder',mmsColors)
+  irf_plot(hca,plData,'comp')
+  ylabel(hca,'dEy [mV/m]')
+  
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(Off.(mmsIdS)), tt = NaN; else, tt = Off.(mmsIdS)(2); end
+    plData= [plData {sprintf('dEy%d=%.2f',mmsId,tt)}]; %#ok<AGROW>
+  end
+  irf_legend(hca,plData,[0.1, 0.05],'color','cluster');
 end
 
 if 1 % Panel Ex-corr
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
-  plData= [plData {E34.(mmsIdS).x*ALPHA-Off.(mmsIdS)(1)}]; %#ok<AGROW>
-end
-
-hca = irf_panel('Ex-corr'); set(hca,'ColorOrder',mmsColors)
-irf_plot(hca,plData,'comp')
-ttt = ErefFpi.x;
-hold(hca,'on'), irf_plot(hca,ttt,'c.'), irf_plot(hca,ttt(idxMSH),'m.'), hold(hca,'off')
-ylabel(hca,'Ex [mV/m]')
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
+    plData= [plData {E34.(mmsIdS).x*ALPHA-Off.(mmsIdS)(1)}]; %#ok<AGROW>
+  end
+  
+  hca = irf_panel('Ex-corr'); set(hca,'ColorOrder',mmsColors)
+  irf_plot(hca,plData,'comp')
+  ttt = ErefFpi.x;
+  hold(hca,'on'), irf_plot(hca,ttt,'c.'), irf_plot(hca,ttt(idxMSH),'m.'), hold(hca,'off')
+  ylabel(hca,'Ex [mV/m]')
 end
 
 if 1 % Panel Ey-corr
-plData = {};
-for mmsId = 1:4
-  mmsIdS = sprintf('c%d',mmsId);
-  if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
-  plData= [plData {E34.(mmsIdS).y*ALPHA-Off.(mmsIdS)(2)}]; %#ok<AGROW>
-end
-
-hca = irf_panel('Ey-corr'); set(hca,'ColorOrder',mmsColors)
-irf_plot(hca,plData,'comp')
-ttt = ErefFpi.y;
-hold(hca,'on'), irf_plot(hca,ttt,'c.'), irf_plot(hca,ttt(idxMSH),'m.'), hold(hca,'off')
-ylabel(hca,'Ey [mV/m]')
+  plData = {};
+  for mmsId = 1:4
+    mmsIdS = sprintf('c%d',mmsId);
+    if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
+    plData= [plData {E34.(mmsIdS).y*ALPHA-Off.(mmsIdS)(2)}]; %#ok<AGROW>
+  end
+  
+  hca = irf_panel('Ey-corr'); set(hca,'ColorOrder',mmsColors)
+  irf_plot(hca,plData,'comp')
+  ttt = ErefFpi.y;
+  hold(hca,'on'), irf_plot(hca,ttt,'c.'), irf_plot(hca,ttt(idxMSH),'m.'), hold(hca,'off')
+  ylabel(hca,'Ey [mV/m]')
 end
 
 irf_zoom(h,'x',Tint)

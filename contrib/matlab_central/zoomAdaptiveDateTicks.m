@@ -8,7 +8,7 @@ function zoomAdaptiveDateTicks(varargin)
 % zoomAdaptiveDateTicks('off')
 % Turns off the automatic adaptation of date ticks
 % to user zooming for the current figure window
-% 
+%
 % zoomAdaptiveDateTicks('demo')
 % Opens a demo figure window to play with
 
@@ -18,11 +18,11 @@ function zoomAdaptiveDateTicks(varargin)
 % LICENSE
 % Copyright (c) 2007, The MathWorks, Inc.
 % All rights reserved.
-% 
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are
 % met:
-% 
+%
 % * Redistributions of source code must retain the above copyright
 %   notice, this list of conditions and the following disclaimer.
 % * Redistributions in binary form must reproduce the above copyright
@@ -31,7 +31,7 @@ function zoomAdaptiveDateTicks(varargin)
 % * Neither the name of the The MathWorks, Inc. nor the names
 %   of its contributors may be used to endorse or promote products derived
 %   from this software without specific prior written permission.
-% 
+%
 %   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 %   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 %   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -46,30 +46,30 @@ function zoomAdaptiveDateTicks(varargin)
 % END OF LICENSE
 
 if (nargin>0)
-   switch varargin{1}
-      case 'demo'
-         % Create demo values
-         dates = floor(now) - linspace(1169,0,15000)';
-         values= randn(15000,1);
-         % Show data with date ticks
-         figure
-         plot(dates,values)
-         datetick('x')
-         zoomAdaptiveDateTicks('on')
-      case 'on'
-         % Define a post zoom callback
-         set(zoom(gcf),'ActionPostCallback', @adaptiveDateTicks);
-      case 'off'
-         % Delete the post zoom callback
-         set(zoom(gcf),'ActionPostCallback', '');
-      otherwise
-         figure(gcf)
-   end
+  switch varargin{1}
+    case 'demo'
+      % Create demo values
+      dates = floor(now) - linspace(1169,0,15000)';
+      values= randn(15000,1);
+      % Show data with date ticks
+      figure
+      plot(dates,values)
+      datetick('x')
+      zoomAdaptiveDateTicks('on')
+    case 'on'
+      % Define a post zoom callback
+      set(zoom(gcf),'ActionPostCallback', @adaptiveDateTicks);
+    case 'off'
+      % Delete the post zoom callback
+      set(zoom(gcf),'ActionPostCallback', '');
+    otherwise
+      figure(gcf)
+  end
 end
 
 
 function adaptiveDateTicks(figureHandle,eventObjectHandle)
-% Resetting x axis to automatic tick mark generation 
+% Resetting x axis to automatic tick mark generation
 set(eventObjectHandle.Axes,'XTickMode','auto')
 % using automaticallly generate date ticks
 datetick(eventObjectHandle.Axes,'x','keeplimits')

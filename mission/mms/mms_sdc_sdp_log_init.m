@@ -5,7 +5,7 @@ function mms_sdc_sdp_log_init(procStr, fileStr, runTime)
 %
 % Creates a log file at destination depending on which process is running
 % and what data it is processing. Log files follow the pattern:
-% $LOG_PATH_ROOT / mmsX / edp / {tmmode}/ {level} / {descriptor} / {yyyy} 
+% $LOG_PATH_ROOT / mmsX / edp / {tmmode}/ {level} / {descriptor} / {yyyy}
 %  / {mm} / mmsX_edp_tmmode_level_descriptor_yyyymmddhhmmss_runtime.log
 % (with an extra "/{dd}" added for burst data).
 % Where X is one of 1, 2, 3, 4 and (determined by fileStr)

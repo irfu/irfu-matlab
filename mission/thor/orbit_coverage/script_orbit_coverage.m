@@ -1,6 +1,6 @@
 % SCRIPT_ORBIT_COVERAGE.m
 %
-% % 1: No need to run. 
+% % 1: No need to run.
 % compare_different_years_of_omni_data
 %
 % % 2: Define regions of interest and see how much time is spent within

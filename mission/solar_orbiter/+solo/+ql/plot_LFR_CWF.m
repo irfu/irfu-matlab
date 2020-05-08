@@ -5,13 +5,17 @@
 % SOLO_L2_RPW-LFR-SURV-CWF-E
 %
 %
+% NOTE: Does not properly derive sampling frequency. (Awaiting new dataset skeletons.)
+% NOTE: Color scale is log, therefore negative values (probably).
+%
+%
 % INCOMPLETE
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function [hAxesArray] = plot_LFR_CWF(filePath)
+function hAxesArray = plot_LFR_CWF(filePath)
     % SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf zVariables:
     %
     % Variable Information (0 rVariable, 17 zVariables)
@@ -35,89 +39,86 @@ function [hAxesArray] = plot_LFR_CWF(filePath)
     % SYNCHRO_FLAG           CDF_UINT1/1       0:[]    T/
     %
     % NOTE: E_LABEL = ["V12","V13","V23"]
-
+    
     % TODO-DECISION: Content of figure title
-    %   PROPOSAL: ~File path, ~filename
     %   PROPOSAL: Time range
-    %   PROPOSAL: DATASET_ID
-    %       NOTE: Varies depending on file since code covers three DATASET_IDs.
+    %   PROPOSAL: DOY.
+    %       ~PROBLEM/NOTE: Could span multiple days, or part of day.
     %
-    % TODO/BUG: Functioning ~color map
-    % TODO: DC/AC: Detection, label.
-    % TODO: Correct sampling frequency for irf_powerfft.
-    % BUG: X axes differ between spectra and time series (irfu-matlab bug?).
+    % TODO-NI: Detect DC/AC and only plot one of them? Analogous to LFR SWF.
+    %   TODO-NI: CWF never uses AC? SBM1/2?
+    % TODO-NI: Spectrum overlap 50% also for CWF?
+    % TODO: Correct sampling frequency needed for irf_powerfft.
+    % TODO: Use zVar SAMPLING_RATE (when introduced) for spectrums.
+    % PROPOSAL: Settings arguments to disable/enable hidden functionality
+    %   Ex: SWF: Permit/force DC+AC diffs
+    %   Ex: Disable spectrograms.
     
-    %warning('Incomplete quicklook code')
-    
-    FILL_VALUE = single(-1e31);
-    
+    %PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;
+
     D = dataobj(filePath);
     
-    Epoch = D.data.Epoch.data;
-    V1_DC    = D.data.V.data(:,1);
-    V12_DC   = D.data.E.data(:,1);
-    %E13   = D.data.E.data(:,2);
-    V23_DC   = D.data.E.data(:,3);
-    V12_AC   = D.data.EAC.data(:,1);
-    V23_AC   = D.data.EAC.data(:,3);
+    epoch = D.data.Epoch.data;
+    vDc1  = get_CDF_zv_data(D, 'V',   1);
+    vDc12 = get_CDF_zv_data(D, 'E',   1);
+    vDc23 = get_CDF_zv_data(D, 'E',   3);
+    vAc12 = get_CDF_zv_data(D, 'EAC', 1);
+    vAc23 = get_CDF_zv_data(D, 'EAC', 3);
     
-    V1_DC  = changem(V1_DC,  NaN, FILL_VALUE);
-    V12_DC = changem(V12_DC, NaN, FILL_VALUE);
-    V23_DC = changem(V23_DC, NaN, FILL_VALUE);
-    V12_AC = changem(V12_AC, NaN, FILL_VALUE);
-    V23_AC = changem(V23_AC, NaN, FILL_VALUE);
+    TsVdc1  = irf.ts_scalar(epoch, vDc1);
+    TsVdc12 = irf.ts_scalar(epoch, vDc12);
+    TsVdc23 = irf.ts_scalar(epoch, vDc23);
+    TsVac12 = irf.ts_scalar(epoch, vAc12);
+    TsVac23 = irf.ts_scalar(epoch, vAc23);
     
-    irf_plot(5,'newfigure');
-    
-    TsV1_DC  = irf.ts_scalar(Epoch, V1_DC);
-    TsV12_DC = irf.ts_scalar(Epoch, V12_DC);
-    TsV23_DC = irf.ts_scalar(Epoch, V23_DC);
-    TsV12_AC = irf.ts_scalar(Epoch, V12_AC);
-    TsV23_AC = irf.ts_scalar(Epoch, V23_AC);
+    % TEMPORARY FIX
+    % Assume there is one sampling frequency + datagaps.
+    % There is no zVar for sampling frequency in old datasets.
+    samplingFreqHz = 1/mode(diff(TsVdc1.time.tts));
+
+    irf_plot(3+5,'newfigure');
     
     hAxesArray = [];
-    %h(end+1) = plot_spectrum( 'V1 spectrogram', TsV1,   'V1');
-    %h(end+1) = plot_spectrum('E12 spectrogram', TsE12, 'V12');
-    %h(end+1) = plot_spectrum('E23 spectrogram', TsE23, 'V23');
-    
-    hAxesArray(end+1) = plot_time_series( 'V1 DC time series', TsV1_DC,   'V1_DC [V]');
-    hAxesArray(end+1) = plot_time_series('V12 DC time series', TsV12_DC, 'V12_DC [V]');
-    hAxesArray(end+1) = plot_time_series('V23 DC time series', TsV23_DC, 'V23_DC [V]');
-    hAxesArray(end+1) = plot_time_series('V12 AC time series', TsV12_AC, 'V12_AC [V]');
-    hAxesArray(end+1) = plot_time_series('V23 AC time series', TsV23_AC, 'V23_AC [V]');
+    hAxesArray(end+1) = spectrogram_panel( 'V1 DC spectrogram', TsVdc1,  samplingFreqHz, 'V1\_DC');
+    hAxesArray(end+1) = spectrogram_panel('V12 DC spectrogram', TsVdc12, samplingFreqHz, 'V12\_DC');
+    hAxesArray(end+1) = spectrogram_panel('V23 DC spectrogram', TsVdc23, samplingFreqHz, 'V23\_DC');
+
+    hAxesArray(end+1) = time_series_panel( 'V1 DC time series', TsVdc1,   'V1_DC [V]');
+    hAxesArray(end+1) = time_series_panel('V12 DC time series', TsVdc12, 'V12_DC [V]');
+    hAxesArray(end+1) = time_series_panel('V23 DC time series', TsVdc23, 'V23_DC [V]');
+    hAxesArray(end+1) = time_series_panel('V12 AC time series', TsVac12, 'V12_AC [V]');
+    hAxesArray(end+1) = time_series_panel('V23 AC time series', TsVac23, 'V23_AC [V]');
 
     solo.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
     
     irf_plot_axis_align(hAxesArray)                     % For aligning MATLAB axes (taking color legends into account).
-    irf_zoom(hAxesArray, 'x', irf.tint(TsV1_DC.time))    % For aligning the content of the MATLAB axes.
-    %title(hAxesArray(1), 'LFR CWF')
+    irf_zoom(hAxesArray, 'x', irf.tint(TsVdc1.time))    % For aligning the content of the MATLAB axes.
 end
 
 
 
+% ARGUMENTS
+% =========
 % panelTag      : 
 % Ts            : irfumatlab TSeries (volt).
 % yLabelNonUnit : y label without unit (unit is at the color bar; Assumes "Ts" uses volt).
-function h = plot_spectrum(panelTag, Ts, yLabelNonUnit)
-    %N_SAMPLES_PER_SPECTRUM = 2048;
-    N_SAMPLES_PER_SPECTRUM = 128;
+%
+function h = spectrogram_panel(panelTag, Ts, samplingFreqHz, yLabelNonUnit)
     
-    % TEMPORARY FIX?!
-    % Assuming there is one sampling frequency.
-    % (There is no zVar for sampling frequency.)
-    samplingFreqHz = 1/mode(diff(Ts.time.tts));
+    %N_SAMPLES_PER_SPECTRUM = 2048;
+    N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
     
     h = irf_panel(panelTag);
     %irf_plot(hE12Spectra, 'colorbarlabel')
-    specrec = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz);
+    Specrec = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz);
     %irf_spectrogram(hE12Spectra,specrec);
     %irf_colormap(hE12Spectra,'default');
 
-    specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
+    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
     %irf_plot(h, specrec);
-    irf_spectrogram(h, specrec);   % Replaces irf_plot
+    irf_spectrogram(h, Specrec);   % Replaces irf_plot
     set(h, 'yscale','log')
-    ylabel(h, {yLabelNonUnit;'f [Hz]'})   % NOTE: Adding frequency unit on separate row.
+    ylabel(h, {yLabelNonUnit; 'f [Hz]'})   % NOTE: Adding frequency unit on separate row.
 end
 
 
@@ -125,8 +126,16 @@ end
 % panelTag      : 
 % Ts            : irfumatlab TSeries
 % yLabelNonUnit : y label with unit.
-function hAxes = plot_time_series(panelTag, Ts, yLabel)
+function hAxes = time_series_panel(panelTag, Ts, yLabel)
     hAxes = irf_panel(panelTag);
     irf_plot(hAxes, Ts)
     ylabel(hAxes, yLabel)
+end
+
+
+
+function data = get_CDF_zv_data(D, zvName, i2)
+    fillValue = getfillval(D, zvName);
+    data = D.data.(zvName).data(:, i2);
+    data = changem(data, NaN, fillValue);
 end

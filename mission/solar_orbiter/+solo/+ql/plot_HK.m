@@ -161,13 +161,21 @@ function plot_HK(filePath)
     positionCa = get(hAxesArray, 'Position');    % CA = Cell Array
     yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
     heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
-    heightPanelArray2 = solo.ql.reweight(heightPanelArray1, BIT_PANEL_HEIGHT, numel(ZVAR_SCALAR_LIST)+3+[1:numel(ZVAR_BIT_FLAG_LIST)]);
+    
+    heightPanelArray2 = solo.ql.reweight(...
+        heightPanelArray1, ...
+        BIT_PANEL_HEIGHT, ...
+        numel(ZVAR_SCALAR_LIST)+3+[1:numel(ZVAR_BIT_FLAG_LIST)]);
     yPanelArray2 = cumsum([heightPanelArray2(2:end); yPanelArray1(end)], 'reverse');
+    
+    %config = [repmat(-1, 1, numel(ZVAR_SCALAR_LIST)+3), repmat(BIT_PANEL_HEIGHT, 1, numel(ZVAR_BIT_FLAG_LIST))]
+    %[heightPanelArray2] = EJ_library.utils.autoscale(sum(heightPanelArray1), config);
+    
     for i = 1:numel(hAxesArray)
         position = positionCa{i};
         position(2) = yPanelArray2(i);
         position(4) = heightPanelArray2(i);
-        set(hAxesArray(i), 'Position', position)
+        set(hAxesArray(i), 'InnerPosition', position)
     end
     
     
@@ -176,9 +184,9 @@ function plot_HK(filePath)
     
     irf_plot_axis_align(hAxesArray)               % For aligning MATLAB axes OuterPosition (taking color legends into account).
     irf_zoom(hAxesArray, 'x', irf.tint(Epoch))    % For aligning the content of the MATLAB axes.
-    
+
     set(hAxesArray(1:end-1), 'XLabel', [])        % Remove duplicate x labels. Empirically: Must come after irf_zoom.
-    %erikpgjohansson.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
+    %EJ_library.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
 end
 
 
@@ -190,7 +198,7 @@ function [hAxes, hLines, hLegendText] = plot_time_series1(D, zvName, lineWidth)
     panelTag = zvName;
     
     Ts = irf.ts_scalar(D.data.Epoch.data, D.data.(zvName).data);
-    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', {solo.ql.escape_str(zvName)});
+    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', {EJ_library.graph.escape_str(zvName)});
     set(hLines, 'LineWidth', lineWidth)
 end
 
@@ -216,7 +224,7 @@ function [hAxes, hLines, hLegendText] = plot_time_series3(D, zVarNamePattern)
         D.data.(zvName2).data, ...
         D.data.(zvName3).data]);
 
-    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', {solo.ql.escape_str(sprintf(zVarNamePattern, '1')), '2', '3'});
+    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', {EJ_library.graph.escape_str(sprintf(zVarNamePattern, '1')), '2', '3'});
 end
 
 
@@ -269,7 +277,7 @@ function [hAxes, hLines, hLegendText] = plot_bit_series(panelTag, Epoch, bitSeri
     modify_legend_text_color(hLines)
     
     % NOTE: Command puts the text relative to the specified coordinates in different ways depending on coordinates.
-    hLegendText = irf_legend(hAxes, solo.ql.escape_str(channelName), CHANNEL_NAME_POS);    
+    hLegendText = irf_legend(hAxes, EJ_library.graph.escape_str(channelName), CHANNEL_NAME_POS);    
     %modify_legend_text_color(hLegendText)
     
     set(hAxes, 'Clipping', 'on')   % Should be default, so not necessary.
