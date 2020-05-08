@@ -2299,7 +2299,7 @@ classdef PDist < TSeries
           spec.p_label = {'PSD',obj.units};
         case {'keV/(cm^2 s sr keV)'}
           spec.p_label = {'DEF',obj.units};
-        case {'1/(cm^2 s sr keV)'}
+        case {'1/(cm^2 s sr eV)'}
           spec.p_label = {'PEF',obj.units};
         otherwise
           spec.p_label = {obj.units};
@@ -2467,7 +2467,7 @@ classdef PDist < TSeries
           otherwise
             error('Units not supported.')
         end
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
         irf.log('warning','Converting DPFlux to PSD');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end
@@ -2486,8 +2486,8 @@ classdef PDist < TSeries
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
         PD.data_ = tmpData;
-        PD.units = '1/(cm^2 s sr keV)';
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
+        PD.units = '1/(cm^2 s sr eV)';
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
         reshapedData = reshapedData./matEnergy;
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
@@ -2501,7 +2501,7 @@ classdef PDist < TSeries
     function PD = convertto(obj,newunits)
       % Changes units of Pdist.
       % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
-      % and '1/(cm^2 s sr keV)'
+      % and '1/(cm^2 s sr eV)'
       
       PD = obj;
       % Convert to SI units
@@ -2514,7 +2514,7 @@ classdef PDist < TSeries
           %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = obj.deflux(-1);
-        case {'1/(cm^2 s sr keV)'}
+        case {'1/(cm^2 s sr eV)'}
           PD = obj.dpflux(-1);
         otherwise
           error('Unknown units.')
@@ -2535,7 +2535,7 @@ classdef PDist < TSeries
           %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = PD.deflux;
-        case {'1/(cm^2 s sr keV)'}
+        case {'1/(cm^2 s sr eV)'}
           PD = PD.dpflux;
         otherwise
           error('Units not supported.');
