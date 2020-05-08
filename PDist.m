@@ -2299,13 +2299,8 @@ classdef PDist < TSeries
           spec.p_label = {'PSD',obj.units};
         case {'keV/(cm^2 s sr keV)'}
           spec.p_label = {'DEF',obj.units};
-<<<<<<< HEAD
-        case {'1/(cm^2 s sr eV)'}
-          spec.p_label = {'PEF',obj.units};  
-=======
         case {'1/(cm^2 s sr keV)'}
           spec.p_label = {'PEF',obj.units};
->>>>>>> 50298165f5f26a7d437a51c791f976cf68525a44
         otherwise
           spec.p_label = {obj.units};
       end
@@ -2462,19 +2457,6 @@ classdef PDist < TSeries
       end
       
       if nargin<2 || flagdir ~= -1
-<<<<<<< HEAD
-      switch obj.units
-        case {'s^3/cm^6'}
-          tmpData = obj.data*1e30/1e6/mm^2/0.53707;
-        case {'s^3/m^6'}
-          tmpData = obj.data*1e18/1e6/mm^2/0.53707;
-        case {'s^3/km^6'}
-          tmpData = obj.data/1e6/mm^2/0.53707;
-        otherwise
-          error('Units not supported.')
-      end
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
-=======
         switch obj.units
           case {'s^3/cm^6'}
             tmpData = obj.data*1e30/1e6/mm^2/0.53707;
@@ -2486,7 +2468,6 @@ classdef PDist < TSeries
             error('Units not supported.')
         end
       elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
->>>>>>> 50298165f5f26a7d437a51c791f976cf68525a44
         irf.log('warning','Converting DPFlux to PSD');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end
@@ -2505,13 +2486,8 @@ classdef PDist < TSeries
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
         PD.data_ = tmpData;
-<<<<<<< HEAD
-        PD.units = '1/(cm^2 s sr eV)';  
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
-=======
         PD.units = '1/(cm^2 s sr keV)';
       elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
->>>>>>> 50298165f5f26a7d437a51c791f976cf68525a44
         reshapedData = reshapedData./matEnergy;
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
@@ -2525,13 +2501,8 @@ classdef PDist < TSeries
     function PD = convertto(obj,newunits)
       % Changes units of Pdist.
       % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
-<<<<<<< HEAD
-      % and '1/(cm^2 s sr eV)'
-        
-=======
       % and '1/(cm^2 s sr keV)'
       
->>>>>>> 50298165f5f26a7d437a51c791f976cf68525a44
       PD = obj;
       % Convert to SI units
       switch obj.units
@@ -2543,7 +2514,7 @@ classdef PDist < TSeries
           %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = obj.deflux(-1);
-        case {'1/(cm^2 s sr eV)'}
+        case {'1/(cm^2 s sr keV)'}
           PD = obj.dpflux(-1);
         otherwise
           error('Unknown units.')
@@ -2564,7 +2535,7 @@ classdef PDist < TSeries
           %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = PD.deflux;
-        case {'1/(cm^2 s sr eV)'}
+        case {'1/(cm^2 s sr keV)'}
           PD = PD.dpflux;
         otherwise
           error('Units not supported.');
