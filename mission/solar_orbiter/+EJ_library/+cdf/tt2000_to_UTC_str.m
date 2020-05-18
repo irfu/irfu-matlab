@@ -17,7 +17,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-04-03.
 %
-function utcStr = CDF_tt2000_to_UTC_str(tt2000)    
+function utcStr = tt2000_to_UTC_str(tt2000)    
     % TODO-DECISION: How handle various needs for formats? Rounding, truncation?
     % PROPOSAL: Assertions on argument being int64 as they are in CDF?
     % PROPOSAL: Convert array.
@@ -38,7 +38,11 @@ function utcStr = CDF_tt2000_to_UTC_str(tt2000)
     
     % NOTE: spdfbreakdowntt2000 can handle Nx1 arrays, where N>=1.    
     assert(isscalar(tt2000), 'Illegal argument tt2000. Must be scalar.')
-    v = spdfbreakdowntt2000(tt2000);
     
-    utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%02i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
+    
+    %v = spdfbreakdowntt2000(tt2000);
+    %utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%02i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
+    
+    dateVec = EJ_library.cdf.tt2000_to_datevec(tt2000);
+    utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%02.9g', dateVec(1:6));
 end

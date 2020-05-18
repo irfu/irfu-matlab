@@ -91,7 +91,7 @@ classdef proc
             %==============================
             % Configure calibration object
             %==============================
-            C = EJ_library.so.classify_DATASET_ID(inputSciDsi);
+            C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
             useCt   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1R;
             useCti2 = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1R;
             if useCt
@@ -128,7 +128,7 @@ classdef proc
             %==============================
             % Configure calibration object
             %==============================
-            C = EJ_library.so.classify_DATASET_ID(inputSciDsi);
+            C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
             if C.isTdsCwf
                 settingUseCt   = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 settingUseCti2 = 'PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2';

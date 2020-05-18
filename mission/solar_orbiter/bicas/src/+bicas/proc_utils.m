@@ -621,7 +621,7 @@ classdef proc_utils
             for i = 1:length(freqHz)
                 DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
             end
-            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.utils.convert_CDF_type_to_MATLAB_class(...
+            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
                 ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
         
@@ -675,7 +675,7 @@ classdef proc_utils
 %             % Unique time for every sample in every record.
 %             SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
 %             
-%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
+%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.cdf.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
 %         end
         
         
@@ -734,7 +734,7 @@ classdef proc_utils
             
             bicas.proc_utils.assert_zv_Epoch(zvTt2000)
             
-            utcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(zvTt2000);
+            utcStr = EJ_library.cdf.tt2000_to_UTC_str(zvTt2000);
         end
         
         

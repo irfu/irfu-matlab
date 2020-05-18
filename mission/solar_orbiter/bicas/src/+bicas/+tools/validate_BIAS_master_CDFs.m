@@ -176,7 +176,7 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
 
     Do         = dataobj(filePath);    % DO = dataobj
     Ga         = Do.GlobalAttributes;
-    Zmd        = EJ_library.utils.get_zvs_metadata_struct(Do.Variables, Do.VariableAttributes);
+    Zmd        = EJ_library.cdf.get_zvs_metadata_struct(Do.Variables, Do.VariableAttributes);
     zvNameList = fieldnames(Zmd);
     
     

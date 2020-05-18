@@ -1,4 +1,4 @@
-function write_CDF_dataobj(filePath, ...
+function write_dataobj(filePath, ...
     dataobj_GlobalAttributes, dataobj_data, dataobj_VariableAttributes, dataobj_Variables, varargin)
 %
 % Function which writes a CDF file.
@@ -129,7 +129,7 @@ function write_CDF_dataobj(filePath, ...
 %    CON: Using exactly one record automatically leads to the CDF labelling the CDF variable as record-invariant!
 %    CON: May not fit any zvar attribute DEPEND_x (zvar must have same length as other zvar).
 %
-% PROPOSAL: Reorganize into write_CDF_dataobj calling more genering function write_CDF which assumes more generic data
+% PROPOSAL: Reorganize into write_dataobj calling more genering function write_CDF which assumes more generic data
 % structures.
 %   PROPOSAL: Useful for combining with future generic function read_CDF which could replace dataobj.
 %       NOTE/CON: spdfcdfread returns some data structures similar to what dataobj contains so the gain might be small.
@@ -183,12 +183,12 @@ zVarNameAllList2 = fieldnames(dataobj_data);
 EJ_library.assert.castring_set(zVarNameAllList1)
 % if length(unique(zVarNameAllList1)) ~= length(zVarNameAllList1)
 %     % IMPLEMENTATION NOTE: Could be useful for test code which may generate zVar names automatically.
-%     error('write_CDF_dataobj:Assertion', 'Not all zVariable names are unique.')
+%     error('write_dataobj:Assertion', 'Not all zVariable names are unique.')
 % end
 % ASSERTION: Arguments contain two consistent lists of zVariables.
 EJ_library.assert.castring_sets_equal(zVarNameAllList1, zVarNameAllList2)
 % if ~isempty(setxor(zVarNameAllList1, zVarNameAllList2))
-%     error('write_CDF_dataobj:Assertion', 'Arguments contain two inconsistent lists of available zVariable names.')
+%     error('write_dataobj:Assertion', 'Arguments contain two inconsistent lists of available zVariable names.')
 % end
 
 zVarNameAllList = zVarNameAllList1;
@@ -221,7 +221,7 @@ for i = 1:length(dataobj_Variables(:,1))
     padValue               = dataobj_Variables{i, 9};   % This value can NOT be found in dataobj_data. Has to be read from dataobj_Variables.
     
     zVarValue            = dataobj_data.(zVarName).data;
-    specifiedMatlabClass = EJ_library.utils.convert_CDF_type_to_MATLAB_class(specifiedCdfDataType, 'Permit MATLAB classes');
+    specifiedMatlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(specifiedCdfDataType, 'Permit MATLAB classes');
     
     
     
@@ -231,7 +231,7 @@ for i = 1:length(dataobj_Variables(:,1))
     % In practice: #records > 0 with zero-size records ==> zero records
     % Not certain that the CDF files format is meant to handle this either.
     if prod(specifiedSizePerRecord) == 0
-        error('write_CDF_dataobj:Assertion', ...
+        error('write_dataobj:Assertion', ...
             'Specified size per record contains zero-size dimension(s). This function can not handle this case.')
     end
     
@@ -252,7 +252,7 @@ for i = 1:length(dataobj_Variables(:,1))
     
     %if ~(~Settings.strictEmptyZvClass && isempty(zVarValue)) && ~strcmp( specifiedMatlabClass, zVarDataMatlabClass )
     if ~strcmp( specifiedMatlabClass, zVarDataMatlabClass ) && (Settings.strictEmptyZvClass || ~isempty(zVarValue))
-        error('write_CDF_dataobj:Assertion', ...
+        error('write_dataobj:Assertion', ...
             'The MATLAB class ("%s") of the variable containing zVariable ("%s") data does not match specified CDF data type "%s".', ...
             zVarDataMatlabClass, zVarName, specifiedCdfDataType)
     end
@@ -291,7 +291,7 @@ for i = 1:length(dataobj_Variables(:,1))
             % CASE: The current zVariable does not have this attribute (varAttrName).
             continue
         elseif length(iAttrZVar) > 1
-            error('write_CDF_dataobj:Assertion:OperationNotImplemented', ...
+            error('write_dataobj:Assertion:OperationNotImplemented', ...
                 'Can not handle multiple variable name matches in dataobj_VariableAttributes.%s.', varAttrName)
         end
         varAttrValue = doVarAttrField{iAttrZVar, 2};
@@ -299,7 +299,7 @@ for i = 1:length(dataobj_Variables(:,1))
             varAttrValue = spdfparsett2000(varAttrValue);   % Convert char-->tt2000.
         elseif ~strcmp(specifiedCdfDataType, class(varAttrValue))
             class(varAttrValue)
-            error('write_CDF_dataobj:Assertion', ...
+            error('write_dataobj:Assertion', ...
                 'Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', ...
                 varAttrName, zVarName)
         end
@@ -461,7 +461,7 @@ end
 % charArray : Char array with indices (iRecord,iCharWithinString,)
 function charArray = convert_dataobj_charZVarValue_2_consistent_charZVarValue(charArray, nWrd1)
     % ASSERTION
-    assert(isscalar(nWrd1), 'write_CDF_dataobj:Assertion', 'Argument nWrd1 is not a scalar.')
+    assert(isscalar(nWrd1), 'write_dataobj:Assertion', 'Argument nWrd1 is not a scalar.')
 
     if nWrd1 == 1
         charArray = permute(charArray, [2,1,3]);
@@ -494,12 +494,12 @@ end
 function [zVarValue, isRecordBound] = prepare_char_zVarData(charArray)
     % ASSERTIONS. Important to check that the code can actually handle the case.
     assert(ischar(charArray), ...
-        'write_CDF_dataobj:Assertion', 'Argument charArray is not a char array.')
+        'write_dataobj:Assertion', 'Argument charArray is not a char array.')
     assert(ndims(charArray) <= 3, ...
-        'write_CDF_dataobj:Assertion:OperationNotImplemented', ...
+        'write_dataobj:Assertion:OperationNotImplemented', ...
         'Argument charArray has more than 3 dimension (2 per record). Can not produce value for such zVariable.')
     assert(~isempty(charArray), ...
-        'write_CDF_dataobj:Assertion:OperationNotImplemented', ...
+        'write_dataobj:Assertion:OperationNotImplemented', ...
         'Argument charArray constains zero strings. Can not produce value for empty zVariable.')
     
     nRecords = size(charArray, 2);   % CASE: >=1, because of assertion.
@@ -520,7 +520,7 @@ function [zVarValue, isRecordBound] = prepare_char_zVarData(charArray)
                 end
             end
         else
-            error('write_CDF_dataobj:Assertion:OperationNotImplemented', 'Argument charArray represents multiple records containing multiple strings per record. Can not produce zVariable value for this case.');
+            error('write_dataobj:Assertion:OperationNotImplemented', 'Argument charArray represents multiple records containing multiple strings per record. Can not produce zVariable value for this case.');
         end
     end    
     
@@ -559,7 +559,7 @@ if ischar(zVarValue)
     if ~isequal(...
             normalize_size_vec(specifiedSizePerRecord), ...
             normalize_size_vec(sizePerRecord))
-        error('write_CDF_dataobj:Assertion', ...
+        error('write_dataobj:Assertion', ...
             'The zVariable data size (dataobj_data.(''%s'').data) does not fit the stated size per record (dataobj_Variables).', ...
             zVarName)
     end
@@ -585,7 +585,7 @@ elseif isnumeric(zVarValue)
         if ~isequal(...
                 normalize_size_vec(specifiedSizePerRecord), ...
                 normalize_size_vec(sizePerRecord))
-            error('write_CDF_dataobj:Assertion', ...
+            error('write_dataobj:Assertion', ...
                 ['The zVariable (''%s'') data size according to data variable itself is not', ...
                 ' consistent with the stated size per record in other argument.\n', ...
                 '    Size per record according to data variable produced by processing: [', sprintf('%i ', sizePerRecord),          ']\n', ...
@@ -601,7 +601,7 @@ elseif isnumeric(zVarValue)
     % -----------------------------------------------------------
     % For 3D matrices, spdfcdfwrite interprets the last index (not the first index!) as the record number.
     % Must therefore permute the indices so that write_cdf2 is consistent for all numbers of dimensions.
-    %     write_CDF_dataobj data arguments : index 1 = record.
+    %     write_dataobj data arguments : index 1 = record.
     %     matrix passed on to spdfcdfwrite : index 3 = record.
     % NOTE: spdfcdfread (at least with argument "'Structure', 1, 'KeepEpochAsIs', 1") works like spdfcdfwrite in
     % this regard.
@@ -648,7 +648,7 @@ elseif isnumeric(zVarValue)
         isRecordBound = 1;
     end
 else
-    error('write_CDF_dataobj:Assertion', 'zVarValue is neither char nor numeric.')
+    error('write_dataobj:Assertion', 'zVarValue is neither char nor numeric.')
 end
 
 end
@@ -679,7 +679,7 @@ end
 % 
 % if isempty(zVarData)
 %     if ~turnZeroRecordsIntoOneRecord
-%         error('write_CDF_dataobj:Assertion', 'Can not handle CDF zVariables with zero records (due to presumed bug in spdfcdfwrite).')
+%         error('write_dataobj:Assertion', 'Can not handle CDF zVariables with zero records (due to presumed bug in spdfcdfwrite).')
 %     else
 %         %---------------------------------------------------------------------------------------------
 %         % EXPERIMENTAL SOLUTION: Store 1 record of data with only pad values instead of zero records.
@@ -689,7 +689,7 @@ end
 %         try
 %             zVarData = cast(ones(nRecords, 1), specifiedMatlabClass) * padValue;
 %         catch exception
-%             error('write_CDF_dataobj:Assertion', 'Can not type cast zvar data variable to MATLAB class "%s" (CDF: "%s").', ...
+%             error('write_dataobj:Assertion', 'Can not type cast zvar data variable to MATLAB class "%s" (CDF: "%s").', ...
 %                 specifiedMatlabClass, dataobjStatedCdfDataType)
 %         end
 %     end

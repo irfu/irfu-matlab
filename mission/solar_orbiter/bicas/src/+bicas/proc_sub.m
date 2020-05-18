@@ -264,8 +264,8 @@ classdef proc_sub
             % CDF ASSERTION: CURRENT data begins before SCI data (i.e. there is enough CURRENT data).
             if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
-                sciEpochUtcStr    = EJ_library.utils.CDF_tt2000_to_UTC_str(min(sciEpoch));
-                curEpochMinUtcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(min(InCur.Zv.Epoch));
+                sciEpochUtcStr    = EJ_library.cdf.tt2000_to_UTC_str(min(sciEpoch));
+                curEpochMinUtcStr = EJ_library.cdf.tt2000_to_UTC_str(min(InCur.Zv.Epoch));
                 
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 
@@ -348,7 +348,7 @@ classdef proc_sub
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             nRecords = size(InSci.Zv.Epoch, 1);            
-            C = EJ_library.so.classify_DATASET_ID(inSciDsi);
+            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
             
             
             
@@ -509,7 +509,7 @@ classdef proc_sub
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
-            C = EJ_library.so.classify_DATASET_ID(inSciDsi);
+            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
 
             % CDF ASSERTION
             if ~issorted(InSci.Zv.Epoch, 'strictascend')

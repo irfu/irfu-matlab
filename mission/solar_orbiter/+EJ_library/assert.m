@@ -100,7 +100,7 @@ classdef assert
 %       PROPOSAL: Assert all linebreaks are LF (no CR+LF). Require ending linebreak.
 %
 % PROPOSAL: Assert string sets equal
-%   Ex: write_CDF_dataobj
+%   Ex: write_dataobj
 
 
 
@@ -279,7 +279,7 @@ classdef assert
             %   CON: Rarely needed.
             %       CON: Maybe not
             %           Ex: Settings structs
-            %           Ex: EJ_library.so.group_datasets_by_filename
+            %           Ex: EJ_library.so.abp.find_DSGs_by_filename_fields
             %   CON-PROPOSAL: Can manually call EJ_library.assert.struct multiple times, once for each substruct,
             %                 instead (if only required field names).
             %
@@ -344,14 +344,20 @@ classdef assert
 
         % Assert v has a non-one size in at most one dimension.
         %
-        % NOTE: MATLAB's "isvector" function uses different criterion which excludes numel(v) == 0, and length in third
-        % or higher dimension.
+        % NOTE: MATLAB's "isvector" function uses different criterion which excludes length in third or higher
+        % dimension.
+        %   isvector(ones(0,1)) == 1
+        %   isvector(ones(1,0)) == 1
+        %   isvector(ones(1,1,3)) == 0
+        %   isvector(ones(1,1,0)) == 0
+        %
         function vector(v)
             % PROPOSAL: Optional extra argument that specifies the length.
             
-            dims = size(v);
-            dims(dims==1) = [];
-            if numel(dims) > 1
+%             dims = size(v);
+%             dims(dims==1) = [];
+%             if numel(dims) > 1
+            if sum(size(v) ~= 1) > 1
                 sizeStr = sprintf('%ix', size(v));
                 error(EJ_library.assert.ERROR_MSG_ID, 'Expected vector, but found variable of size %s.', sizeStr(1:end-1))
             end
@@ -416,8 +422,8 @@ classdef assert
             end
             
             % Overwrite NaN values with the actual size values for those indices.
-            iIgnore = isnan(sizeConstraints);
-            sizeConstraints(iIgnore) = sizeV(iIgnore);
+            bIgnore = isnan(sizeConstraints);
+            sizeConstraints(bIgnore) = sizeV(bIgnore);
 
             % ASSERTION: The actual assertion
             assert( all(sizeV == sizeConstraints), EJ_library.assert.ERROR_MSG_ID, 'Variable does not have the expected size.')

@@ -52,6 +52,7 @@ classdef CompareFuncResult
         input
         expOutput
         expExceptionName
+        Settings
     end
 
 
@@ -59,6 +60,7 @@ classdef CompareFuncResult
     methods(Access=public)
         
         % Constructor
+        %
         %
         % ARGUMENTS
         % =========
@@ -71,6 +73,8 @@ classdef CompareFuncResult
         % varargin           : Settings as interpreted by EJ_library.utils.interpret_settings_args.
         %                       'equalsFunc' : Function handle areEqual = equalsFunc(a,b)
         %                           a, b : Expected and actual function output as cell arrays.
+        %                       'keyboardOnUnequal' : 0/1, boolean. Whether to stop execution with "keyboard" so the
+        %                           user can manually compare and inspect the expected and actual output.
         function obj = CompareFuncResult(func, input, expOutputOrExcName, varargin)
             % ASSERTION
             assert(iscell(input), 'Argument "input" is not a cell array')
@@ -89,9 +93,10 @@ classdef CompareFuncResult
             end
             
             % MATLAB R2016a: "isequalwithequalnans is not recommended. Use ISEQUALN instead."
-            DEFAULT_SETTINGS = struct('equalsFunc', @isequaln);
-            Settings         = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-            obj.equalsFunc   = Settings.equalsFunc;
+            DEFAULT_SETTINGS = struct('equalsFunc', @isequaln, 'keyboardOnUnequal', 0);
+            obj.Settings     = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+            
+            obj.equalsFunc   = obj.Settings.equalsFunc;
         end
 
 
@@ -164,6 +169,11 @@ classdef CompareFuncResult
                         TestData.Result.diff.message  = diffMsg;
                         TestData.resultDescrText      = 'Actual function result differs from expected function result.';
                         TestData.success              = false;
+                        
+                        if obj.Settings.keyboardOnUnequal
+                            expOutput = obj.expOutput;   % To make it more convenient for the user.
+                            keyboard
+                        end
                     end
                 else
                     % CASE: Expected exception.
