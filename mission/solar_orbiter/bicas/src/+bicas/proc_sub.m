@@ -258,10 +258,12 @@ classdef proc_sub
                     size(InCur.Zv.IBIAS_2, 1), ...
                     size(InCur.Zv.IBIAS_3, 1)])
             end
-            
-            
-            
+
+
+
+            %========================================================================================
             % CDF ASSERTION: CURRENT data begins before SCI data (i.e. there is enough CURRENT data).
+            %========================================================================================
             if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
                 sciEpochUtcStr    = EJ_library.cdf.tt2000_to_UTC_str(min(sciEpoch));
@@ -276,9 +278,11 @@ classdef proc_sub
                 
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:SWModeProcessing')
-
             end
             
+            
+            
+            %===========================================================================================================
             % CDF ASSERTION: Epoch increases (not monotonically)
             % --------------------------------------------------
             % NOTE: bicas.proc_sub.interpolate_current checks (and handles) that Epoch increases monotonically, but only
@@ -286,6 +290,7 @@ classdef proc_sub
             % Ex: Timestamps, iAntenna = mod(iRecord,3): 1,2,3,5,4,6
             %       ==> Monotonically increasing sequences for each antenna separately, but not even increasing when
             %           combined.
+            %===========================================================================================================
             if ~issorted(InCur.Zv.Epoch)
                 error('CURRENT timestamps do not increase (all antennas combined).')
             end
@@ -880,7 +885,7 @@ classdef proc_sub
             iEdgeList      = bicas.proc_utils.find_constant_sequences(iCalibLZv);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             for iSubseq = 1:length(iFirstList)
-                iRecords = iFirstList(iSubseq) : iLastList (iSubseq);
+                iRecords = iFirstList(iSubseq) : iLastList(iSubseq);
                 
                 for iAnt = 1:3
                     currentAAmpere(iRecords, iAnt) = Cal.calibrate_TC_bias_TM_to_bias_current(...
