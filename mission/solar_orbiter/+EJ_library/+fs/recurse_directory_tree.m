@@ -350,8 +350,8 @@ function dirCmdResult = get_dir_cmd_result_for_single_object(path)
     % TODO-DECISION: How handle "/"?
     
     % IMPLEMENTATION NOTE: Need correct path to later determine the name of the directory (e.g. for relative paths, "/", "..").
-    % EJ_library.utils.get_abs_path might not be enough.
-    absPath = EJ_library.utils.get_abs_path(path);   
+    % EJ_library.fs.get_abs_path might not be enough.
+    absPath = EJ_library.fs.get_abs_path(path);   
     
     dirCmdResultsList = dir(absPath);
 

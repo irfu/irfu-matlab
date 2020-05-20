@@ -57,9 +57,9 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %=====================================
     % Iterate over all files in directory
     %=====================================
-    % NOTE: EJ_library.utils.glob_files_dirs does not add ^ and $.
+    % NOTE: EJ_library.fs.glob_files_dirs does not add ^ and $.
     filenameRegexp = ['^', filenameRegexp, '$'];
-    oiList = EJ_library.utils.glob_files_dirs(dirPath, {filenameRegexp});   % OI = Object Info.
+    oiList = EJ_library.fs.glob_files_dirs(dirPath, {filenameRegexp});   % OI = Object Info.
     oiList = oiList(~[oiList.isdir]);
     doList = {};             % DO = dataobj
     nFiles = numel(oiList);

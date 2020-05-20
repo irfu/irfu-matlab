@@ -269,7 +269,7 @@ L.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
 %===============================
 % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
 [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
-bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '..', '..'));
+bicasRootPath         = EJ_library.fs.get_abs_path(fullfile(matlabSrcPath, '..', '..'));
 
 
 
@@ -340,7 +340,7 @@ else
     configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
 end
 L.logf('info', 'configFile = "%s"', configFile)
-rowList                 = EJ_library.utils.read_text_file(configFile, '(\r\n|\r|\n)');
+rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
 ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
 L.log('info', 'Overriding subset of in-memory settings using config file.')
 SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS

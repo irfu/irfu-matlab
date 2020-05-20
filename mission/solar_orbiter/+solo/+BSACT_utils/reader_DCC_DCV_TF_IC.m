@@ -150,7 +150,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
         %                         cTableFilesPattern.
         % mebTemperatureCelsius : The MEB temperature at which the tests are made.
             
-            testLogbookRowList = EJ_library.utils.read_text_file(testLogbookFile, '\r?\n');
+            testLogbookRowList = EJ_library.fs.read_text_file(testLogbookFile, '\r?\n');
             metadataList = solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(testLogbookRowList, dataType);
             
             % TODO-NEED-INFO: Necessary to use special function here? Can replace call with one-liner?
