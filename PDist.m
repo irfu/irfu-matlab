@@ -84,6 +84,18 @@ classdef PDist < TSeries
           warning('Unknown distribution type')
       end
       
+      % Should check dimension of depends, and switch if they are wrong,
+      % time should always be first index, and it can be 1 or obj.nt
+      % This has only been partly implemented here...
+      size_data = size(obj.data);
+      for idep = 1:numel(obj.depend)
+        size_dep = size(obj.depend{idep}); 
+        if not(size_dep(1) == 1)
+          if size_dep(2) == 1
+            obj.depend{idep} = obj.depend{idep}';
+          end
+        end
+      end
       % collect additional data into ancillary
       while ~isempty(args)
         x = args{1}; args(1) = [];
@@ -1093,7 +1105,7 @@ classdef PDist < TSeries
       
       if not(any([vgInput,vgInputEdges])) % prepare a single grid outside the time-loop
         emax = dist.ancillary.energy(1,end)+dist.ancillary.delta_energy_plus(1,end);
-        vmax = units.c*sqrt(1-(emax*units.e/(M*units.c^2)-1).^2);
+        vmax = units.c*sqrt(1-(emax*units.e/(M*units.c^2)+1).^(-2));
         nv = 100;
         vgcart_noinput = linspace(-vmax,vmax,nv);
         irf.log('warning',sprintf('No velocity grid specified, using a default vg = linspace(-vmax,vmax,%g), with vmax = %g km/s.',nv,vmax*1e-3));
@@ -1142,7 +1154,7 @@ classdef PDist < TSeries
           %disp(sprintf('%8.1g ',energy))
         end
         
-        v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)-1).^2); % m/s
+        v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)+1).^(-2)); % m/s
         
         % azimuthal angle
         if size(dist.depend{2},1)>1
