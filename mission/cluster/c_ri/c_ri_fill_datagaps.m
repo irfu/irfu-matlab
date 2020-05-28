@@ -16,7 +16,7 @@ function B_out = c_ri_fill_datagaps(B)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

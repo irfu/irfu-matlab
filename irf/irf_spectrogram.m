@@ -12,7 +12,7 @@ function [hout,hcb] = irf_spectrogram(varargin)
 %              specrec.t  - time vector
 %              specrec.f  - frequency vector (can be also matrix the size specrec.p)
 %              specrec.p  - spectral density matrix (size(t)xsize(f))
-%              specrec.dt - Description of the width of each separate spectrum in the plots. (Can be omitted)
+%              specrec.dt - Description of the ~half-width of each separate spectrum in the plots. (Can be omitted)
 %                           Specified in seconds. Multiple allowed forms:
 %                           (1) Numeric value(s). Half-width of each spectrum.
 %                               (a) scalar, or

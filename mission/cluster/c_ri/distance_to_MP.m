@@ -23,7 +23,7 @@ function [DIST,ID] = distance_to_MP(XN_PD, VEL, XGSM, YGSM, ZGSM)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 % Translated from the fortran cod:

@@ -24,7 +24,7 @@ function [B_vectors, n_positions] = time_synch(t, dt, B1, n1, B2, n2, B3, n3, B4
 %
 %Error: Zero-vector i return if one
 %
-%Discription of variables:
+%Description of variables:
 % t, is the time at the previous (n-1) sample
 % dt, is the time between samples, where t(n-1)+dt = t(n)
 % n, is the current position in the vector

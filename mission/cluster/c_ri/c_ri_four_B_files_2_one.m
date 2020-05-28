@@ -25,7 +25,7 @@ function c_ri_four_B_files_2_one(path_input, path_output , s_t, e_t)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

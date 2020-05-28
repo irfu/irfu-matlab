@@ -65,7 +65,13 @@ for iSc = 1:4
       defatt.zphase = combined(srt(usrt));
     end % if ii==1
   end % for ii=1:length(listDefatt)
-  if isempty(defatt), error('Unknown zphase'); end
+  if isempty(listDefatt)
+    irf.log('warning', 'Did not find any corresponding defatt, fall back to HK101.');
+    defatt = mms.sunpulse_from_hk101(iSc, tint); % Save as "defatt" (meaning it can be used directly below instead of what was defatt..)
+    if isempty(defatt)
+      error('Unknown zphase');
+    end
+  end
   if(iSc==4 && tint.stop.ttns > EpochTT('2016-06-12T05:28:48.200Z').ttns)
     warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS4 p4 failed
   elseif(iSc==2 && tint.stop.ttns > EpochTT('2018-09-21T06:04:45.810Z').ttns)

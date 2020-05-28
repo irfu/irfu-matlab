@@ -21,7 +21,7 @@ function c_ri_run_calc_angles_w_pre(s_t, e_t, path_input, path_output)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

@@ -7,7 +7,7 @@ function calc_angles(path_input,path_output,filename,sample_fraction)
 % path_output -
 % filename -
 % This file should contain B1,B2,B3,B4 which are
-% measurment of the magneticfiel from the four cluster satelites,
+% measurements of the magnetic field from the four cluster satellites,
 % in GSE-coordinates.
 % B = [timestamp| Bx | By | Bz ]
 % sample_fraction -which resolution to use
@@ -32,7 +32,7 @@ function calc_angles(path_input,path_output,filename,sample_fraction)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

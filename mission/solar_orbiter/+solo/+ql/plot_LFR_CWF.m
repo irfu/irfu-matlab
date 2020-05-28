@@ -53,6 +53,12 @@ function hAxesArray = plot_LFR_CWF(filePath)
     % PROPOSAL: Settings arguments to disable/enable hidden functionality
     %   Ex: SWF: Permit/force DC+AC diffs
     %   Ex: Disable spectrograms.
+    %
+    % PROPOSAL: Change package name to sp (summary plots).
+    %
+    % ~BUG: Can probably not handle new zVariable names VDC.
+    %
+    % PROPOSAL: Settings for disabling spectrum etc.
     
     %PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;
 
@@ -64,7 +70,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     vDc23 = get_CDF_zv_data(D, 'E',   3);
     vAc12 = get_CDF_zv_data(D, 'EAC', 1);
     vAc23 = get_CDF_zv_data(D, 'EAC', 3);
-    
+
     TsVdc1  = irf.ts_scalar(epoch, vDc1);
     TsVdc12 = irf.ts_scalar(epoch, vDc12);
     TsVdc23 = irf.ts_scalar(epoch, vDc23);
@@ -89,6 +95,14 @@ function hAxesArray = plot_LFR_CWF(filePath)
     hAxesArray(end+1) = time_series_panel('V12 AC time series', TsVac12, 'V12_AC [V]');
     hAxesArray(end+1) = time_series_panel('V23 AC time series', TsVac23, 'V23_AC [V]');
 
+    % TEST
+%     TILE_MRG_SETTINGS = struct(...
+%         'mrgLeft',   10, ...
+%         'mrgRight',  10, ...
+%         'mrgTop',    5, ...
+%         'mrgBottom', 5);
+%     erikpgjohansson.graph.tile_by_InnerPosition_OuterPosition(hAxesArray(:), TILE_MRG_SETTINGS)
+            
     solo.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
     
     irf_plot_axis_align(hAxesArray)                     % For aligning MATLAB axes (taking color legends into account).

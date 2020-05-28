@@ -26,7 +26,7 @@ function c_ri_run_class_angle_as_event(s_tm, e_tm, min_angle, min_ampl, path_inp
 %Error:
 % If no events are found, no file is saved
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

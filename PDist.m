@@ -55,6 +55,10 @@ classdef PDist < TSeries
       
       % collect required data, depend
       switch obj.type_
+        case {'moms-tens0'} % eg. density or scalar temperature partial moments
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+        case {'moms-tens1'} % eg. velocitypartial moments
+        case {'moms-tens2'} % eg. pressure or temperature partial moments
         case {'skymap'} % construct skymap distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
@@ -80,6 +84,18 @@ classdef PDist < TSeries
           warning('Unknown distribution type')
       end
       
+      % Should check dimension of depends, and switch if they are wrong,
+      % time should always be first index, and it can be 1 or obj.nt
+      % This has only been partly implemented here...
+      size_data = size(obj.data);
+      for idep = 1:numel(obj.depend)
+        size_dep = size(obj.depend{idep}); 
+        if not(size_dep(1) == 1)
+          if size_dep(2) == 1
+            obj.depend{idep} = obj.depend{idep}';
+          end
+        end
+      end
       % collect additional data into ancillary
       while ~isempty(args)
         x = args{1}; args(1) = [];
@@ -1089,7 +1105,7 @@ classdef PDist < TSeries
       
       if not(any([vgInput,vgInputEdges])) % prepare a single grid outside the time-loop
         emax = dist.ancillary.energy(1,end)+dist.ancillary.delta_energy_plus(1,end);
-        vmax = units.c*sqrt(1-(emax*units.e/(M*units.c^2)-1).^2);
+        vmax = units.c*sqrt(1-(emax*units.e/(M*units.c^2)+1).^(-2));
         nv = 100;
         vgcart_noinput = linspace(-vmax,vmax,nv);
         irf.log('warning',sprintf('No velocity grid specified, using a default vg = linspace(-vmax,vmax,%g), with vmax = %g km/s.',nv,vmax*1e-3));
@@ -1138,7 +1154,7 @@ classdef PDist < TSeries
           %disp(sprintf('%8.1g ',energy))
         end
         
-        v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)-1).^2); % m/s
+        v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)+1).^(-2)); % m/s
         
         % azimuthal angle
         if size(dist.depend{2},1)>1
@@ -2295,7 +2311,7 @@ classdef PDist < TSeries
           spec.p_label = {'PSD',obj.units};
         case {'keV/(cm^2 s sr keV)'}
           spec.p_label = {'DEF',obj.units};
-        case {'1/(cm^2 s sr keV)'}
+        case {'1/(cm^2 s sr eV)'}
           spec.p_label = {'PEF',obj.units};
         otherwise
           spec.p_label = {obj.units};
@@ -2314,12 +2330,16 @@ classdef PDist < TSeries
               spec.p = squeeze(double(nanmean(obj.data(:,:,iPA),3)));
             case 'omni'
               spec.p = double(obj.data);
+            case 'moms-tens0'
+              spec.p = double(obj.data);
             otherwise
               error('Spectype ''%s'' not yet implemented for distribution type ''%s''.',spectype,obj.type);
           end
           spec.t = obj.time.epochUnix;
           spec.f = single(obj.depend{1});
-          spec.f_label = {['E_' obj.species(1) ' (eV)']};
+          if not(isempty(obj.species))
+            spec.f_label = {['E_' obj.species(1) ' (eV)']};
+          end
         case {'pitchangle','pa'}
           if ~isempty(varargin) % assume next argument is the pitchangle level/levels we want to average over
             iE = varargin{1};
@@ -2459,7 +2479,7 @@ classdef PDist < TSeries
           otherwise
             error('Units not supported.')
         end
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
         irf.log('warning','Converting DPFlux to PSD');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end
@@ -2478,8 +2498,8 @@ classdef PDist < TSeries
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
         PD.data_ = tmpData;
-        PD.units = '1/(cm^2 s sr keV)';
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
+        PD.units = '1/(cm^2 s sr eV)';
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
         reshapedData = reshapedData./matEnergy;
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
@@ -2493,7 +2513,7 @@ classdef PDist < TSeries
     function PD = convertto(obj,newunits)
       % Changes units of Pdist.
       % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
-      % and '1/(cm^2 s sr keV)'
+      % and '1/(cm^2 s sr eV)'
       
       PD = obj;
       % Convert to SI units
@@ -2506,7 +2526,7 @@ classdef PDist < TSeries
           %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = obj.deflux(-1);
-        case {'1/(cm^2 s sr keV)'}
+        case {'1/(cm^2 s sr eV)'}
           PD = obj.dpflux(-1);
         otherwise
           error('Unknown units.')
@@ -2527,7 +2547,7 @@ classdef PDist < TSeries
           %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = PD.deflux;
-        case {'1/(cm^2 s sr keV)'}
+        case {'1/(cm^2 s sr eV)'}
           PD = PD.dpflux;
         otherwise
           error('Units not supported.');

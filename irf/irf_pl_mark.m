@@ -24,7 +24,7 @@ function [outhandle, colr]=irf_pl_mark(varargin)
 %  now more compliant to MATLAB
 
 
-[ax,args,nargs] = axescheck(varargin{:});
+[ax,args,nargs] = irf.axescheck(varargin{:});
 
 if nargs == 0 % show only help
   help irf_pl_mark;

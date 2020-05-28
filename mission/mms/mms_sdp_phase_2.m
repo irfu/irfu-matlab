@@ -178,7 +178,7 @@ ndouble = numel(period)-nkeep;
 if(ndouble>0)
   irf.log('warning', ['Removing ', num2str(ndouble), ' repeated sunpulses.']);
   badp = find(nominal_period ~= 1);
-  for i=1:max(ndouble,10)
+  for i=1:min(ndouble,10)
     logStr = sprintf('Removed outlier sunpulse at: %04i-%02i-%02iT%02i:%02i:%02i:%03i.%03i.%03iZ.',...
       spdfbreakdowntt2000(pulse(badp(i))));
     irf.log('notice', logStr);

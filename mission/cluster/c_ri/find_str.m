@@ -16,7 +16,7 @@ function name2 = find_str(name1, fp, f_end)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

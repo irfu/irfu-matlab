@@ -21,7 +21,7 @@ function angle_table = four_vector_angles(vector_table)
 % If one of the vector i a zero-vector then all the angles compared with
 % that vector will be zero.
 %
-%Discription of variables:
+%Description of variables:
 % vector_table is an array containg four vectors. Each row contains a vector.
 % i is a loop index
 % angle_table is the output table

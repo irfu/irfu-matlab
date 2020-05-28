@@ -12,7 +12,7 @@ function [angles, ampl1, ampl2] = c_ri_angles(B1,B2)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

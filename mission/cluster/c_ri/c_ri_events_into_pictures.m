@@ -17,7 +17,7 @@ function a = c_ri_events_into_pictures(path_eve, file_events, per, p_up, path_Bp
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

@@ -11,7 +11,7 @@ function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list,
 %Descrition of the function:
 %   Loads the specified data for each event in the given time interval
 %
-%Discription of variables:
+%Description of variables:
 % eventsw   - 1 event per row, 3 columns [start_time end_time s/c_mode(1-burst, 0-normal)]
 %
 %Written by Andris Vaivads Sep 2003 -

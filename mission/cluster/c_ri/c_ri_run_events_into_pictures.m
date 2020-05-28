@@ -12,7 +12,7 @@ function c_ri_run_events_into_pictures(s_t,e_t,p_MP,p_Bp,p_E,p_Out, period)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

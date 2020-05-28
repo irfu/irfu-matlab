@@ -13,7 +13,7 @@ function fp = plot_max_angles(max_angles)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

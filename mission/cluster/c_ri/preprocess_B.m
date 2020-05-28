@@ -16,7 +16,7 @@ function [B1_c,B2_c,B3_c,B4_c] = preprocess_B(B1,B2,B3,B4,mode)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

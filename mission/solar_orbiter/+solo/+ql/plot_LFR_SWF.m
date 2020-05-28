@@ -64,9 +64,16 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     % PROPOSAL: Argument for time interval should use some more irfu-matlab-way of specifying a time interval.
     % PROPOSAL: Some clear way of distinguishing AC & DC visually?
     %
-    % TODO?: Remove interpolation between time series snapshots?
-    % TODO: 50% overlap PSD
-    
+    % TODO?: Remove interpolation (straight lines) between time series snapshots?
+    %
+    % ~BUG: Can probably not handle new zVariable names VDC.
+    %
+    % ~BUG: Algorithm for calculating enlargement of snapshot spectra not always appropriate.
+    %   Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20200228_V01.cdf
+    %   PROPOSAL: Enlarge each snapshot spectrum until it reaches neighbour (roughly).
+    %       Use min(timeToSnapshotBefore, timeToSnapshotafter) as max radius.
+    % 
+
     % YK 2020-04-16: Officially only either DC or AC diffs.
     % NOTE: solo_L2_rpw-lfr-surv-cwf-e-cdag_20200228_V01.cdf contains both DC & AC diffs.
     ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS = 0;   % DEFAULT 0. Useful for debugging (runs through all code).
@@ -255,6 +262,9 @@ end
 % tlLegend : Top-left  (TL) legend string.
 % trLegend : Top-right (TR) legend string.
 %
+% SS  : SnapShot
+% SSS : SnapShot Spectrogram
+%
 function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend)
     % NOTE: Multiple-row labels causes trouble for the time series ylabels.
     % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS snapshots that vary in length.
@@ -262,15 +272,16 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     % Fraction of the (minimum) time distance between snapshots (centers) that will be used for displaying the spectra.
     % Value 1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
     SNAPSHOT_WIDTH_FRACTION  = 0.90;
+    %SNAPSHOT_WIDTH_FRACTION  = 0.90;     % DEBUG
     %SPECTRUM_OVERLAP_PERCENT = 0;    % Percent, not fraction.
     SPECTRUM_OVERLAP_PERCENT = 50;    % Percent, not fraction.
     
     % NOTE: More samples per spectrum is faster (sic!).
     %N_SAMPLES_PER_SPECTRUM = 2048 / 2;   % TEST
     N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
-    
 
-    
+
+
     TsCa  = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
 
     h = irf_panel(panelTag);    
@@ -280,7 +291,7 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     %====================
     SpecrecCa = {};
     ssCenterEpochUnixArray = [];
-    for i = 1:numel(TsCa)    
+    for i = 1:numel(TsCa)
         Ts = TsCa{i};
         
         SpecrecCa{end+1} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
@@ -288,7 +299,7 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
         % IMPLEMENTATION NOTE: Later needs the snapshot centers in the same time system as Specrec.t (epoch Unix).
         ssCenterEpochUnixArray(end+1) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
     end
-    ssPeriodSec = min(diff(ssCenterEpochUnixArray));
+    sssMaxWidthSecArray = derive_max_spectrum_width(ssCenterEpochUnixArray);
     
     %==================================================================================================================
     % Set the display locations of individual spectras (override defaults). Separately stretch out the collection of
@@ -297,16 +308,41 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     % distance.
     %==================================================================================================================
     for i = 1:numel(TsCa)
-        ssLengthSec = TsCa{i}.time.stop.epochUnix - TsCa{i}.time.start.epochUnix;
-        
-        % Stretch out spectra (for given snapshot) in time to be ALMOST adjacent between snapshots.
-        % NOTE: Specrec.dt is not set by irf_powerfft so there is no default value that can be scaled up.
-        % NOTE: Uses original spectrum positions and re-positions them relative to snapshot center.
-        scaleFactor = ssPeriodSec/ssLengthSec * SNAPSHOT_WIDTH_FRACTION;
-        SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + (SpecrecCa{i}.t - ssCenterEpochUnixArray(i)) * scaleFactor;
-        SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff(SpecrecCa{i}.t)) * 0.5;
+        bKeep(i) = ~isempty(SpecrecCa{i});
+        if ~isempty(SpecrecCa{i})
+            %ssLengthSec = TsCa{i}.time.stop.epochUnix - TsCa{i}.time.start.epochUnix;
+            
+            sssWidthSec = sssMaxWidthSecArray(i) * SNAPSHOT_WIDTH_FRACTION;
+            
+            % Stretch out spectra (for given snapshot) in time to be ALMOST adjacent between snapshots.
+            % NOTE: Specrec.dt is not set by irf_powerfft so there is no default value that can be scaled up.
+            % NOTE: Uses original spectrum positions and re-positions them relative to snapshot center.
+            %scaleFactor     = sssWidthSec / ssLengthSec;
+            %SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + (SpecrecCa{i}.t - ssCenterEpochUnixArray(i)) * scaleFactor;
+            
+            % Can not handle %numel(SpecrecCa{i}.t) == 1.
+            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff(SpecrecCa{i}.t)) * 0.5;
+            
+            % Does not work.
+            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff([SpecrecCa{i}.t(:); TsCa{i}.time.stop.epochUnix] )) * 0.5;
+            
+            % Does not use original SpecrecCa{i}.t values at all.
+            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * sssWidthSec / numel(SpecrecCa{i}.t) / 2;
+
+            % Set t and dt from scratch. Distribute the FFTs evenly over the available time interval.
+            % PRO: Always works 8does not crash), also for when there is only one FFT sequence.
+            % CON: If any of the individual FFTs fails (which the do), then irf_powerfft does not return that.
+            %      ==> Remaining FFTs are spread out over the remaining space.
+            %      ==> FFTs are placed in the wrong location.
+            %
+            nT = numel(SpecrecCa{i}.t);
+            distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nT);    % Distance from SS center to center of first/last FFT.
+            SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nT);
+            SpecrecCa{i}.dt = ones(nT, 1) * sssWidthSec / (2*nT);
+        end
     end
     
+    SpecrecCa(~bKeep) = [];
     Specrec = merge_specrec(SpecrecCa);
     
     Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
@@ -317,7 +353,25 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
 
     irf_legend(h, tlLegend, [0.02 0.98], 'color', 'k')
     irf_legend(h, trLegend, [0.98 0.98])
+end
 
+
+
+% For every snapshot, return the available width (in time; centered on snapshot center) for displaying the snapshot
+% spectrogram. Time offset and unit unimportant. Argument and return values have same unit.
+%
+function sssMaxWidthArray = derive_max_spectrum_width(ssCenterArray)
+    % Use distance to nearest snapshot for each snapshot separately.
+    % NOTE: Should NOT be multiplied by two, since using entire distance.
+    sssMaxWidthArray = min([Inf; diff(ssCenterArray(:))], [diff(ssCenterArray(:)); Inf]);
+    
+    % Use smallest distance between any two consecutive snapshots (one global value for all snapshots).
+    % Sometimes yields too narrow spectrograms.
+    % Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20200228_V01.cdf
+    %sssMaxWidthArray = min(diff(ssCenterArray)) * ones(size(ssCenterArray));
+    
+    % NOTE: Can not assume that both input and output have same size, only same length.
+    assert(numel(ssCenterArray) == numel(sssMaxWidthArray))
 end
 
 
@@ -426,7 +480,7 @@ function Specrec = merge_specrec(SpecrecCa)
         S = SpecrecCa{i};
         if ~isempty(S)
             EJ_library.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
-            assert(iscolumn(S.dt))
+            assert(iscolumn(S.dt), 'S.dt is not a column.')
             assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
             
             Specrec.f    = S.f;                       % NOTE: Not adding to array, but setting it in its entirety.
@@ -435,6 +489,8 @@ function Specrec = merge_specrec(SpecrecCa)
             Specrec.dt   = [Specrec.dt;   S.dt(:)];   % NOTE: Has to be column vector.
         end
     end
+    
+    assert(issorted(Specrec.t))   % Not sure if good assertion.
 end
 
 

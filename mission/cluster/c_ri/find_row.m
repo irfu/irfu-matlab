@@ -23,7 +23,7 @@ function [start_row, end_row] = find_row(start_time, end_time, Btdt, startpositi
 %Error:
 % -1 is returned if there are no valid rows.
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

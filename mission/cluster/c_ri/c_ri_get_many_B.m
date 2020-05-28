@@ -24,7 +24,7 @@ function c_ri_get_many_B(passing_MP,path_output)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

@@ -39,7 +39,7 @@ function [passing_MP,dist_t] = c_ri_auto_event_search(start_time_m,end_time_m,di
 %Error:
 % [-1,-1] is retured of there are no events found.
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

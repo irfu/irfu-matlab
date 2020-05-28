@@ -19,7 +19,7 @@ function t_dt = t_and_dt(t,dt)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
