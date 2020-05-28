@@ -417,11 +417,11 @@ classdef proc_utils
         %
         % ARGUMENT
         % ========
-        % zv1     : (iRecord, iSnapshotSample, iChannel)
+        % zv1 : (iRecord, iSnapshotSample, iChannel)
         %
         % RETURN VALUE
         % ============
-        % zv2     : (iRecord, iChannel). Same number of components, nRecords2 = nRecords1*nSpr1
+        % zv2 : (iRecord, iChannel). Same number of components, nRecords2 = nRecords1*nSpr1
 
             EJ_library.assert.size(zv1, [NaN, NaN, NaN])
             
@@ -433,30 +433,30 @@ classdef proc_utils
 
 
 
-        function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-        % Two steps:
-        % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
-        %     repeating within record.
-        % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
-            
-            % ASSERTIONS
-            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-            
-            zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
-            zv2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zv2);
-        end
+%         function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+%         % Two steps:
+%         % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
+%         %     repeating within record.
+%         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
+%             
+%             % ASSERTIONS
+%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
+%             
+%             zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
+%             zv2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zv2);
+%         end
         
         
         
-        function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-            % NOTE: Maybe somewhat unnecessary function.
-            
-            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-            
-            zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
-        end
+%         function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+%             % NOTE: Maybe somewhat unnecessary function.
+%             
+%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
+%             
+%             zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
+%         end
 
         
         
@@ -1010,4 +1010,3 @@ classdef proc_utils
     
     
 end
-

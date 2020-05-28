@@ -426,9 +426,9 @@ function write_dataset_CDF(...
 
 
 
-%=================
-% Checks on Epoch
-%=================
+%===================
+% ASSERTIONS: Epoch
+%===================
 if ~isfield(ZvsSubset, 'Epoch')
     error('BICAS:execute_sw_mode', 'Data for output dataset "%s" has no zVariable Epoch.', outputFile)
 end
