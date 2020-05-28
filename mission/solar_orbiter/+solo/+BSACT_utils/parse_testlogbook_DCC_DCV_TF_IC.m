@@ -181,7 +181,7 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                     RowCTableMetadata = parseTestRowFuncPtr(rowStr);
                     metadataList = [...
                         metadataList, ...
-                        bicas.utils.merge_structs(HeaderRowSettings, RowCTableMetadata)];   % Works with metadataList==[];
+                        EJ_library.utils.merge_structs(HeaderRowSettings, RowCTableMetadata)];   % Works with metadataList==[];
                     expectedRowType = 'Test';
                 catch
                     expectedRowType = 'NoDataSuffix_or_Header2';

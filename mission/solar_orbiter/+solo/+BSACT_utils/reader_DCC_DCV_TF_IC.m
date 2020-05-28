@@ -154,7 +154,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
             metadataList = solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(testLogbookRowList, dataType);
             
             % TODO-NEED-INFO: Necessary to use special function here? Can replace call with one-liner?
-            metadataList = bicas.utils.merge_structs(metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
+            metadataList = EJ_library.utils.merge_structs(metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
 
 
 
