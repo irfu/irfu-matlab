@@ -17,8 +17,6 @@ function proc_utils___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
     find_constant_sequences___ATEST    
     convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
-    convert_N_to_1_SPR_Epoch___ATEST
-    convert_N_to_1_SPR_redistribute___ATEST
     %convert_1_to_1_SPR_by_repeating___ATEST
     set_NaN_after_snapshots_end___ATEST
     
@@ -110,35 +108,6 @@ function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
         {uint32([123, 100; 123, 200; 123, 300; 123, 400; 4, 65486; 5, 50; 5, 150; 5, 250])});
     
     EJ_library.atest.run_tests(tl)
-end
-
-
-
-function convert_N_to_1_SPR_Epoch___ATEST
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_Epoch, inputs, outputs));
-    tl = {};
-    
-    tl{end+1} = new_test({int64(1000),         3, 1e6},        {int64([1000; 2000; 3000])});
-    tl{end+1} = new_test({int64([2000; 3000]), 1, [1e7; 1e7]}, {int64([2000; 3000])  });
-    tl{end+1} = new_test({int64([2000; 3000]), 2, [1e7; 1e8]}, {int64([2000; 2100; 3000; 3010])});
-    
-    EJ_library.atest.run_tests(tl);
-end
-
-
-
-function convert_N_to_1_SPR_redistribute___ATEST
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_redistribute, inputs, outputs));
-    tl = {};
-    
-    tl{end+1} = new_test({[1,2,3; 4,5,6; 7,8,9; 10,11,12]}, {(1:12)'});
-    tl{end+1} = new_test({[1,2,3,4,5,6,7,8,9,10,11]},       {(1:11)'});
-    tl{end+1} = new_test({[1,2,3,4,5,6,7,8,9,10,11]'},      {(1:11)'});
-    
-    A = permute(reshape([1:24], 4,3,2), [2,1,3]);   % 3D matrix.
-    tl{end+1} = new_test({A},   {[(1:12)', (13:24)']});
-    
-    EJ_library.atest.run_tests(tl);
 end
 
 

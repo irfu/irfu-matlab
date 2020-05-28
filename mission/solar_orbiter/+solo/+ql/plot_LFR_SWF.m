@@ -384,11 +384,11 @@ function h = time_series_panel2(panelTagSignalsStr, zvEpoch, zvDataList, Samplin
     
     zvEpoch  = zvEpoch(SamplingRateInfo.bRecords);
     nRecords = size(zvEpoch, 1);   % NOTE: After selecting records.
-    zvEpoch  = bicas.proc_utils.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*SamplingRateInfo.freqHz);
+    zvEpoch  = EJ_library.so.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*SamplingRateInfo.freqHz);
     
     for i = 1:numel(zvDataList)
         zvData = zvDataList{i}(SamplingRateInfo.bRecords, :);
-        zvDataList{i} = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zvData);
+        zvDataList{i} = EJ_library.so.convert_N_to_1_SPR_redistribute(zvData);
     end
     
     % NOTE: Effectively serves as an assertion on zv sizes.
