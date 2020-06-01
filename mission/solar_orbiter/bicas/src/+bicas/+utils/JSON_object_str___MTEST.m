@@ -4,28 +4,28 @@
 % NOTE: Example s/w descriptor is outdated, but that does not really matter.
 %
 function JSON_object_str___MTEST
-
-obj = define_descriptor1();
-str = bicas.utils.JSON_object_str(obj, 4, 15);
-fprintf('-------------------------------------------\n');
-fprintf(str);
-
-
-
-%==========================================================================
+    
+    obj = define_descriptor1();
+    str = bicas.utils.JSON_object_str(obj, 4, 15);
+    fprintf('-------------------------------------------\n');
+    fprintf(str);
+    
+    
+    
+    %==========================================================================
     function obj = define_descriptor3()
         obj = struct('output_cdf1', 'output_filename1.cdf', 'output_cdf2', 'output_filename2.cdf');
     end
-%==========================================================================
+    %==========================================================================
     function obj = define_descriptor2()
         obj = {};
         obj{1} = struct('output_cdf1', 'output_filename1.cdf');
         obj{2} = struct('output_cdf2', 'output_filename2.cdf');
     end
-%==========================================================================
+    %==========================================================================
     function obj = define_descriptor1()
         ERIK_P_G_JOHANSSON = 'Erik P G Johansson';
-
+        
         obj = struct();
         
         identification.project     = 'ROC-SGSE';

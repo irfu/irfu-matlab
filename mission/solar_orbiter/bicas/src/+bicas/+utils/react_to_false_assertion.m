@@ -6,13 +6,13 @@
 % First created <=2016-10-28
 %
 function react_to_false_assertion(L, giveError, msg)
-% PROPOSAL: Abolish!
-
-if giveError
-    error('BICAS:Assertion', msg)
-else
-    LINE_FEED = char(10);
-    L.log('warning', ['FALSE ASSERTION: ', msg, LINE_FEED])
-end
-
+    % PROPOSAL: Abolish!
+    
+    if giveError
+        error('BICAS:Assertion', msg)
+    else
+        LINE_FEED = char(10);
+        L.log('warning', ['FALSE ASSERTION: ', msg, LINE_FEED])
+    end
+    
 end
