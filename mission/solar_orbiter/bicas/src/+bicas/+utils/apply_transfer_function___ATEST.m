@@ -1,12 +1,11 @@
+%
 % Semi-automatic test code for function "apply_transfer_function".
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2017-02-16
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
+% First created 2017-02-13
 %
 function apply_transfer_function___ATEST
-    % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-    % First created 2017-02-13
     %
     % NOTE: Want to test even & odd N, dt<>1.
     

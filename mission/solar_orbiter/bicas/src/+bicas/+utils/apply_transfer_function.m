@@ -75,8 +75,9 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
     % multiply frequency component of the signal in volt; not volt^2) and omega is a frequency (radians/s).
     %
     %
-    % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+    % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     % First created 2017-02-13
+    %
     
     
     
@@ -246,7 +247,7 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
     % ASSERTION: Real output.
     % IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is not used.
     if ~isreal(y2)
-        maxAbsImag = max(abs(imag(y2)))
+        maxAbsImag = max(abs(imag(y2)))    % Print
         error('BICAS:apply_transfer_function:Assertion', 'y2 is not real. Bug.')
     end
     

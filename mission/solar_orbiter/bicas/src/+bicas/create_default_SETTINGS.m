@@ -176,8 +176,7 @@ function SETTINGS = create_default_SETTINGS()
     
     % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
     S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
-    % Require Test_id to be identical for all input CDF datasets.
-    %S.define_setting('INPUT_CDF.GA_TEST_IDS_MISMATCH_POLICY',  0);
+    S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
     
     % NOTE: This modification applies BEFORE PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
     % Epoch.
@@ -195,8 +194,7 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     cell(0,1))
     % Alternate fill value to use.
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
-    
-    
+
     % For testing, while lacking proper bias current datasets to test with.
     S.define_setting('INPUT_CDF.CUR.PREPEND_TEST_DATA',        0)
     % For testing, when HK and SCI time are completely different and do not overlap (though HK time still has to cover a
@@ -210,8 +208,6 @@ function SETTINGS = create_default_SETTINGS()
     % ------------
     % Settings that apply to ALL output datasets
     %############################################
-    % Set CDF GlobalAttribute "Test_id". ROC DFMD says that Test_id should really be set by ROC.
-    %S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID',   1);
     % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
     %S.define_setting('OUTPUT_CDF.DATA_VERSION',                    '01');
     % Flag to disable writing output files. Useful for debugging.

@@ -184,7 +184,6 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
     
     GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
     GlobalAttributesSubset.Parent_version = {};
-    %pgaTestIdList   = {};   % List = List with one value per parent.
     pgaProviderList = {};
     for i = 1:length(GlobalAttributesCellArray)
         GlobalAttributesSubset.Parents       {end+1} = ['CDF>', GlobalAttributesCellArray{i}.Logical_file_id{1}];
@@ -192,20 +191,20 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
         % NOTE: ROC DFMD is not completely clear on which version number should be used.
         GlobalAttributesSubset.Parent_version{end+1} = GlobalAttributesCellArray{i}.Data_version{1};
         
-        %pgaTestIdList                        {end+1} = GlobalAttributesCellArray{i}.Test_id{1};
         pgaProviderList                      {end+1} = GlobalAttributesCellArray{i}.Provider{1};
     end
     
-    % NOTE: Test_id values can legitimately differ. E.g. "eeabc1edba9d76b08870510f87a0be6193c39051" and "eeabc1e".
-    bicas.utils.assert_strings_equal(L, 0,                       pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
-    %bicas.utils.assert_strings_equal(L, ASSERT_MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
+    pgaUniqueProviderList = unique(pgaProviderList);
+    if ~isscalar(pgaUniqueProviderList)
+        [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY');
+        bicas.default_anomaly_handling(...
+            L, settingValue, settingKey, 'E+W+illegal', ...
+            'The value of the input CDF files'' global attribute "Provider" differ (and they should not, or?).', ...
+            'BICAS:execute_sw_mode:DatasetFormat')
+        % NOTE: Maybe wrong choice of error ID "DatasetFormat".
+    end
     
-    % IMPLEMENTATION NOTE: Uses shortened "Test id" value in case it is a long one, e.g. "eeabc1edba9d76b08870510f87a0be6193c39051". Uncertain
-    % how "legal" that is but it seems to be at least what people use in the filenames.
-    % IMPLEMENTATION NOTE: Does not assume a minimum length for TestId since empty Test_id strings have been observed in
-    % datasets. /2020-01-07
     GlobalAttributesSubset.Provider = pgaProviderList{1};
-    %GlobalAttributesSubset.Test_Id  = pgaTestIdList{1}(1:min(7, length(pgaTestIdList{1})));
     
 end
 
