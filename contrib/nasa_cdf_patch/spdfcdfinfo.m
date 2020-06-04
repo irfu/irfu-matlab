@@ -173,6 +173,8 @@ function info = spdfcdfinfo(filename, varargin)
 %                                    patch version of the MATLAB release.
 %   August 10, 2010   Mike Liu       Added INT8 and TT2000 data types.
 %
+%   November 14, 2019 Mike Liu       Added the latest leap second info from the
+%                                    table to 'LibVersion'.
 
 %
 % Process arguments.
@@ -214,7 +216,7 @@ info1.Variables = {};
 info1.GlobalAttributes = [];
 info1.VariableAttributes = [];
 info1.LibVersion = '';
-info1.PatchVersion = '3.7.1.0';
+info1.PatchVersion = '3.8.0.0';
 info2.Variables = {};
 info2.VariableAttributes = [];
 args.VarStruct = false;
@@ -229,7 +231,9 @@ if (nargin == 0) || (length(strtrim(filename)) == 0)
     theLibVersion = sprintf('%d.%d.%d', tmp.LibVersion.Version, ...
                                         tmp.LibVersion.Release, ...
                                         tmp.LibVersion.Increment);
+    theLibLeapSecond = sprintf('%d', tmp.LibVersion.Latest_Leapsecond);
     disp(['LibVersion: ',theLibVersion]);
+    disp(['Latest leap Second from Table: ',theLibLeapSecond]);
     disp(['PatchVersion: ', info1.PatchVersion]);
 else    
   % Parse arguments based on their number.
@@ -255,6 +259,9 @@ else
        switch (paramStrings{idx})
          case 'varstruct'
                varstruct = varargin{k + 1};
+               if (numel(varstruct) ~= 1)
+                   msg = 'The "varstruct" value must be a scalar logical.';
+               end
 
                if (islogical(varstruct))
                    args.VarStruct = varstruct;
