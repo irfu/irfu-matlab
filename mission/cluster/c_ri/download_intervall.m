@@ -22,7 +22,7 @@ function [B,download_logg]  = download_intervall(Btdt, start_time,start_row, end
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

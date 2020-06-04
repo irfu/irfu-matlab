@@ -12,7 +12,7 @@ function d_b = create_download_blocks(start_time, Dt, block_size)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

@@ -570,7 +570,7 @@ classdef mms_sdp_dmgr < handle
           end
           
         case('aspoc')
-          % ASPOC, have an adverse impact on E-field mesurements.
+          % ASPOC, have an adverse impact on E-field measurements.
           vars = fields(dataObj.data);
           for kk=1:length(vars)
             if( ~isempty(strfind(vars{kk},'status')) )

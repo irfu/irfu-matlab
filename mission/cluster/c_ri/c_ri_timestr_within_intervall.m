@@ -20,7 +20,7 @@ function within = c_ri_timestr_within_intervall(time_str,s_t,e_t)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

@@ -12,7 +12,7 @@ function get_event_data(fp)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

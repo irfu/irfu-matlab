@@ -18,8 +18,8 @@ function s = merge_structs(s1, s2)
 % First created 2017-10-12
 
 % "Test code":
-% bicas.utils.merge_structs(struct('a', 1), struct('b', 2, 'c', 4))
-% s1=struct('a', {1,2,3,4}); s2=struct('b', {2,3,4,6}', 'c', {4,5,6,7}'); s=bicas.utils.merge_structs(s1, s2)
+% EJ_library.utils.merge_structs(struct('a', 1), struct('b', 2, 'c', 4))
+% s1=struct('a', {1,2,3,4}); s2=struct('b', {2,3,4,6}', 'c', {4,5,6,7}'); s=EJ_library.utils.merge_structs(s1, s2)
 
 
     if ~isvector(s1) || ~isvector(s2)

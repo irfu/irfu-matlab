@@ -11,7 +11,7 @@
 %                    commands ^ and $.
 % varargin         : Settings struct and/or list of pairs of arguments representing settings (string key + value) to
 %                    override the defaults.
-%                    Values are passed on to EJ_library.utils.recurse_directory_tree. See implementation for
+%                    Values are passed on to EJ_library.fs.recurse_directory_tree. See implementation for
 %                    meaning and default values.
 %
 % RETURN VALUE
@@ -43,7 +43,7 @@ function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargi
 %
 % PROPOSAL: Argument for choosing types of objects: files, directories, files & directories.
 %   PROPOSAL: Implement as setting
-%       NOTE: Settings are passed on to EJ_library.utils.recurse_directory_tree. Problem?
+%       NOTE: Settings are passed on to EJ_library.fs.recurse_directory_tree. Problem?
 %
 % PROPOSAL: Change function name to not use "glob".
 %   PRO: "glob" is deceiving when uses regex.
@@ -62,7 +62,7 @@ function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargi
 % ASSERTION
 assert(iscell(regexPatternList), 'regexPatternList is not a cell array.')
 
-objectInfoList = EJ_library.utils.recurse_directory_tree(...
+objectInfoList = EJ_library.fs.recurse_directory_tree(...
     rootDirPath, ...
     @(args) FileFunc         (args, regexPatternList), ...
     @(args) DirFunc          (args, regexPatternList), ...

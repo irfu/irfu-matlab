@@ -70,7 +70,7 @@ end
 %=====================================================================================================================
 
 % Read file a second time(!)
-rowList = EJ_library.utils.read_text_file(filePath, '\r?\n');
+rowList = EJ_library.fs.read_text_file(filePath, '\r?\n');
 
 % Find relevant rows.
 temp = regexp(rowList, '^mheader\.reg[0-9]*');

@@ -57,9 +57,9 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %=====================================
     % Iterate over all files in directory
     %=====================================
-    % NOTE: EJ_library.utils.glob_files_dirs does not add ^ and $.
+    % NOTE: EJ_library.fs.glob_files_dirs does not add ^ and $.
     filenameRegexp = ['^', filenameRegexp, '$'];
-    oiList = EJ_library.utils.glob_files_dirs(dirPath, {filenameRegexp});   % OI = Object Info.
+    oiList = EJ_library.fs.glob_files_dirs(dirPath, {filenameRegexp});   % OI = Object Info.
     oiList = oiList(~[oiList.isdir]);
     doList = {};             % DO = dataobj
     nFiles = numel(oiList);
@@ -176,7 +176,7 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
 
     Do         = dataobj(filePath);    % DO = dataobj
     Ga         = Do.GlobalAttributes;
-    Zmd        = EJ_library.utils.get_zvs_metadata_struct(Do.Variables, Do.VariableAttributes);
+    Zmd        = EJ_library.cdf.get_zvs_metadata_struct(Do.Variables, Do.VariableAttributes);
     zvNameList = fieldnames(Zmd);
     
     

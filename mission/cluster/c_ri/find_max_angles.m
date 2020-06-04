@@ -18,7 +18,7 @@ function max_angles = find_max_angles(A,AP, min_ampl)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

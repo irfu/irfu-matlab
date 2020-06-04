@@ -7,12 +7,12 @@
         "icd_version": "1.2"
     },
     "release": {
-        "version":      "2.0.0",
-        "date":         "2020-04-29T19:48:00Z",
+        "version":      "2.0.1",
+        "date":         "2020-05-18T19:16:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Added support for L1 input bias current datasets; supports updated L1R input datasets, and updated L2 master CDFs (V08).",
+        "modification": "Bugfix: Correctly reads L1 dataset bias currents as nanoampere",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {

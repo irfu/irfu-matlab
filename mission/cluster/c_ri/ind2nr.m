@@ -16,7 +16,7 @@ function [nr_1, nr_2] = ind2nr(ind)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

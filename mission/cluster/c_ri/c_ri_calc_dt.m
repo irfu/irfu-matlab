@@ -21,7 +21,7 @@ function dt = c_ri_calc_dt(B,k,mode)
 %Error:
 % sends -1 of dt not is found
 %
-%Discription of variables:
+%Description of variables:
 % the number of steps to calculate a period
 %
 %Written by Robert Isaksson in the summer of -03

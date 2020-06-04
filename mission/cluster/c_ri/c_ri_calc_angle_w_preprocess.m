@@ -22,7 +22,7 @@ function c_ri_calc_angle_w_preprocess(path_input,filename,path_output)
 % Matrixes must have the same size. Checks the size. No file written
 % if there is size not is correct.
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

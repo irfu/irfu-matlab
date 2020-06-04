@@ -13,7 +13,7 @@
 %                varargin{2*m + 2} : SETTINGS key which determines the policy. Must have value WARNING or ERROR.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-09
 %
 function handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFunc, varargin)
@@ -36,6 +36,7 @@ function handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFun
         
         [~, i] = ismember(newFn, {fnChangeList(:).newFieldname});   % NOTE: i==0 <==> no match.
         if i > 0
+            % CASE: Found a fieldname change to react to.
             [settingValue, settingKey] = SETTINGS.get_fv(settingKey);
             anomalyDescrMsg = anomalyDescrMsgFunc(fnChangeList(i).oldFieldname, fnChangeList(i).newFieldname);
             
@@ -48,6 +49,3 @@ function handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFun
     
     assert(numel(varargin) == 0)
 end
-
-
-

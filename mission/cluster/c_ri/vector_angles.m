@@ -24,7 +24,7 @@ function ang = vector_angles(v1 , v2)
 %Error:
 % If a  zero-vector is input the result will be zero angle.
 %
-%Discription of variables:
+%Description of variables:
 % a and b are the constants infront of the unit length vectors
 % v1, v2 are the input
 % v3 is vector perpendicular to v2

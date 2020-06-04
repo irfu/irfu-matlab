@@ -218,7 +218,7 @@ classdef proc_sub
         
         
         
-        function currentMicroSAmpere = process_CUR_to_CUR_on_SCI_TIME(sciEpoch, InCur, SETTINGS, L)
+        function currentSAmpere = process_CUR_to_CUR_on_SCI_TIME(sciEpoch, InCur, SETTINGS, L)
             % ASSERTIONS
             EJ_library.assert.struct(InCur, {'Zv', 'Ga'}, {})
             
@@ -258,14 +258,16 @@ classdef proc_sub
                     size(InCur.Zv.IBIAS_2, 1), ...
                     size(InCur.Zv.IBIAS_3, 1)])
             end
-            
-            
-            
+
+
+
+            %========================================================================================
             % CDF ASSERTION: CURRENT data begins before SCI data (i.e. there is enough CURRENT data).
+            %========================================================================================
             if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
-                sciEpochUtcStr    = EJ_library.utils.CDF_tt2000_to_UTC_str(min(sciEpoch));
-                curEpochMinUtcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(min(InCur.Zv.Epoch));
+                sciEpochUtcStr    = EJ_library.cdf.tt2000_to_UTC_str(min(sciEpoch));
+                curEpochMinUtcStr = EJ_library.cdf.tt2000_to_UTC_str(min(InCur.Zv.Epoch));
                 
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 
@@ -276,9 +278,11 @@ classdef proc_sub
                 
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:SWModeProcessing')
-
             end
             
+            
+            
+            %===========================================================================================================
             % CDF ASSERTION: Epoch increases (not monotonically)
             % --------------------------------------------------
             % NOTE: bicas.proc_sub.interpolate_current checks (and handles) that Epoch increases monotonically, but only
@@ -286,15 +290,18 @@ classdef proc_sub
             % Ex: Timestamps, iAntenna = mod(iRecord,3): 1,2,3,5,4,6
             %       ==> Monotonically increasing sequences for each antenna separately, but not even increasing when
             %           combined.
+            %===========================================================================================================
             if ~issorted(InCur.Zv.Epoch)
                 error('CURRENT timestamps do not increase (all antennas combined).')
             end
             
             % NOTE: bicas.proc_sub.interpolate_current checks that Epoch increases monotonically.
-            currentMicroSAmpere = [];
-            currentMicroSAmpere(:,1) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
-            currentMicroSAmpere(:,2) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
-            currentMicroSAmpere(:,3) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere = [];
+            currentNanoSAmpere(:,1) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,2) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,3) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
+            
+            currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
 
         
@@ -348,7 +355,7 @@ classdef proc_sub
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             nRecords = size(InSci.Zv.Epoch, 1);            
-            C = EJ_library.so.classify_DATASET_ID(inSciDsi);
+            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
             
             
             
@@ -509,7 +516,7 @@ classdef proc_sub
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
-            C = EJ_library.so.classify_DATASET_ID(inSciDsi);
+            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
 
             % CDF ASSERTION
             if ~issorted(InSci.Zv.Epoch, 'strictascend')
@@ -870,15 +877,15 @@ classdef proc_sub
             % Set (calibrated) bias currents
             %================================
             % BUG / TEMP: Set default values since the real bias current values are not available.
-            currentMicroSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
-            currentTm           = bicas.calib.calibrate_set_current_to_bias_current(currentMicroSAmpere*1e-6);
-            currentAAmpere      = bicas.proc_utils.create_NaN_array(size(currentMicroSAmpere));   % Variable to fill/set.
+            currentSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
+            currentTm      = bicas.calib.calibrate_set_current_to_bias_current(currentSAmpere);
             
+            currentAAmpere = bicas.proc_utils.create_NaN_array(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);
             iEdgeList      = bicas.proc_utils.find_constant_sequences(iCalibLZv);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             for iSubseq = 1:length(iFirstList)
-                iRecords = iFirstList(iSubseq) : iLastList (iSubseq);
+                iRecords = iFirstList(iSubseq) : iLastList(iSubseq);
                 
                 for iAnt = 1:3
                     currentAAmpere(iRecords, iAnt) = Cal.calibrate_TC_bias_TM_to_bias_current(...

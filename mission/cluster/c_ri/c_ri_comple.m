@@ -12,7 +12,7 @@ function B_c = c_ri_comple(time_line,B,s_per)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

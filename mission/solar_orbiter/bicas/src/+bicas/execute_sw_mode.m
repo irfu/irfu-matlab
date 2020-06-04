@@ -59,7 +59,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 %
 % PROPOSAL: read_dataset_CDF, write_dataset_CDF as separate function files.
 %
-% PROPOSAL: Abolish get_fill_pad_values and using EJ_library.utils.get_zvs_metadata_struct instead.
+% PROPOSAL: Abolish get_fill_pad_values and using EJ_library.cdf.get_zvs_metadata_struct instead.
 
 
 
@@ -426,9 +426,9 @@ function write_dataset_CDF(...
 
 
 
-%=================
-% Checks on Epoch
-%=================
+%===================
+% ASSERTIONS: Epoch
+%===================
 if ~isfield(ZvsSubset, 'Epoch')
     error('BICAS:execute_sw_mode', 'Data for output dataset "%s" has no zVariable Epoch.', outputFile)
 end
@@ -478,7 +478,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
         [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
         zvValue        = EJ_library.utils.replace_value(zvValue, NaN, fillValue);
     end
-    matlabClass = EJ_library.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
+    matlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
     zvValue     = cast(zvValue, matlabClass);
 
     % Set zVariable.
@@ -530,7 +530,7 @@ for fn = fieldnames(DataObj.data)'
             'processing data. This should only happen for incomplete processing.'], ...
             zvName);
         
-        matlabClass   = EJ_library.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
+        matlabClass   = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
 
         if isNumericZVar
@@ -618,7 +618,7 @@ if strictNumericZvSizePerRecord
 end
 
 L.logf('info', 'Writing dataset CDF file: %s', outputFile)
-EJ_library.utils.write_CDF_dataobj( ...
+EJ_library.cdf.write_dataobj( ...
     outputFile, ...
     DataObj.GlobalAttributes, ...
     DataObj.data, ...

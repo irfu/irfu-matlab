@@ -115,7 +115,7 @@ function c_ri_run_all(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, p
 % export SATTPATH=/data/cluster/DDS
 % export ORBITPATH=/data/cluster/DDS
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 %

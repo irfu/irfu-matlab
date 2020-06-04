@@ -411,115 +411,31 @@ classdef proc_utils
 
 
 
-        function zv2 = convert_N_to_1_SPR_redistribute(zv1)
-        % Convert zVariable-like variable from N samples/record to 1 sample/record (from a matrix to a column vector).
-        % Increases number of records.
-        %
-        % ARGUMENT
-        % ========
-        % zv1     : (iRecord, iSnapshotSample, iChannel)
-        %
-        % RETURN VALUE
-        % ============
-        % zv2     : (iRecord, iChannel). Same number of components, nRecords2 = nRecords1*nSpr1
+%         function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+%         % Two steps:
+%         % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
+%         %     repeating within record.
+%         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
+%             
+%             % ASSERTIONS
+%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
+%             
+%             zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
+%             zv2 = EJ_library.so.convert_N_to_1_SPR_redistribute(zv2);
+%         end
+        
+        
+        
+%         function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+%             % NOTE: Maybe somewhat unnecessary function.
+%             
+%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
+%             
+%             zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
+%         end
 
-            EJ_library.assert.size(zv1, [NaN, NaN, NaN])
-            
-            zv  = permute(zv1, [2,1,3]);
-            zv2 = reshape(zv, size(zv,1) * size(zv,2), size(zv,3));
-            
-            EJ_library.assert.size(zv2, [NaN, NaN])
-        end
-
-
-
-        function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-        % Two steps:
-        % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
-        %     repeating within record.
-        % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
-            
-            % ASSERTIONS
-            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-            
-            zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
-            zv2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zv2);
-        end
-        
-        
-        
-        function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-            % NOTE: Maybe somewhat unnecessary function.
-            
-            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-            
-            zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
-        end
-
-        
-        
-        function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, freqHzWithinRecords )
-        % Convert time series zVariable (column) equivalent to converting N-->1 samples/record, assuming time increments
-        % with frequency within each snapshot.
-        %
-        % ARGUMENTS AND RETURN VALUE
-        % ==========================
-        % oldTt2000         : Nx1 vector.
-        % nSpr              : Positive integer. Scalar. Number of values/samples per record (SPR).
-        % freqWithinRecords : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
-        % newTt2000         : Nx1 vector. Like oldTt2000 but each single time (row) has been replaced by a constantly
-        %                     incrementing sequence of times (rows). Every such sequence begins with the original value,
-        %                     has length nSpr with frequency freqWithinRecords(i).
-        %                     NOTE: There is no check that the entire sequence is monotonic. LFR data can have snapshots
-        %                           (i.e. snapshot records) that overlap in time!
-            
-        % PROPOSAL: Turn into more generic function, working on number sequences in general.
-        % PROPOSAL: N_sequence should be a column vector.
-        %    NOTE: TDS-LFM-RSWF, LFR-SURV-CWF have varying snapshot lengths.
-        %    PRO: Could be useful for converting N->1 samples/record for calibration with transfer functions.
-        %       NOTE: Then also needs function that does the reverse.
-        % PROPOSAL: Replace by some simpler(?) algorithm that uses column/matrix multiplication.
-            
-            % ASSERTIONS
-            bicas.proc_utils.assert_zv_Epoch(oldTt2000)
-            if numel(nSpr) ~= 1
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'nSpr not scalar.')
-            elseif size(freqHzWithinRecords, 1) ~= size(oldTt2000, 1)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'freqWithinRecords and oldTt2000 do not have the same number of rows.')
-            end
-            assert(iscolumn(freqHzWithinRecords))
-            
-            nRecords = numel(oldTt2000);
-            
-            % Express frequency as period length in ns (since tt2000 uses ns as a unit).
-            % Use the same MATLAB class as tt.
-            % Unique frequency per record.
-            periodNsColVec = int64(1e9 ./ freqHzWithinRecords);   
-            periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
-                        
-            % Conventions:
-            % ------------
-            % Time unit: ns (as for tt2000)            
-            % Algorithm should require integers to have a very predictable behaviour (useful when testing).
-            
-            % Times for the beginning of every record.
-            tt2000RecordBeginColVec = oldTt2000;
-            tt2000RecordBeginMatrix = repmat(tt2000RecordBeginColVec, [1, nSpr]);
-            
-            % Indices for within every record (start at zero for every record).
-            iSampleRowVec = int64(0:(nSpr-1));
-            iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
-            
-            % Unique time for every sample in every record.
-            tt2000Matrix = tt2000RecordBeginMatrix + iSampleMatrix .* periodNsMatrix;
-            
-            % Convert to 2D matrix --> 1D column vector.
-            %newTt2000 = reshape(tt2000Matrix', [nRecords*nSpr, 1]);
-            newTt2000 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(tt2000Matrix);
-        end
-        
         
         
         function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC )
@@ -542,7 +458,7 @@ classdef proc_utils
             bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
 
             tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
-            tt2000_2           = bicas.proc_utils.convert_N_to_1_SPR_Epoch(  tt2000_1,           nSpr, freqWithinRecords);
+            tt2000_2           = EJ_library.so.convert_N_to_1_SPR_Epoch(     tt2000_1,           nSpr, freqWithinRecords);
             ACQUISITION_TIME_2 = bicas.proc_utils.tt2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
         end
         
@@ -621,7 +537,7 @@ classdef proc_utils
             for i = 1:length(freqHz)
                 DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
             end
-            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.utils.convert_CDF_type_to_MATLAB_class(...
+            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
                 ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
         
@@ -675,7 +591,7 @@ classdef proc_utils
 %             % Unique time for every sample in every record.
 %             SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
 %             
-%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
+%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.cdf.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
 %         end
         
         
@@ -734,7 +650,7 @@ classdef proc_utils
             
             bicas.proc_utils.assert_zv_Epoch(zvTt2000)
             
-            utcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(zvTt2000);
+            utcStr = EJ_library.cdf.tt2000_to_UTC_str(zvTt2000);
         end
         
         
@@ -1010,4 +926,3 @@ classdef proc_utils
     
     
 end
-

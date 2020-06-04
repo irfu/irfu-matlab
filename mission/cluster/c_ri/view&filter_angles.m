@@ -12,7 +12,7 @@ function view&filter_angles(path,filename)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

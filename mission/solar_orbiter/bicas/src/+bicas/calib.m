@@ -1091,9 +1091,12 @@ classdef calib < handle
         
         
         
-        % Convert "set current" to TC.
+        % Convert "set current" to TC/TM units.
         %
         function biasCurrentTm = calibrate_set_current_to_bias_current(currentSAmpere)
+            % PROPOSAL: Make into static function.
+            %   PRO: Easier to use from outside of BICAS.
+            
             MAX_ABS_SET_CURRENT_SAMPERE = 60e-6;
             
             % ASSERTION
@@ -1102,7 +1105,7 @@ classdef calib < handle
             if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= MAX_ABS_SET_CURRENT_SAMPERE))
                 
                 error('BICAS:calib:Assertion:IllegalArgument', ...
-                    'Argument currentSAmpere (unit: set current/ampere) contains illegally large value(s). Largest value is %g.', ...
+                    'Argument currentSAmpere (unit: set current/ampere) contains illegally large value(s). Largest found value is %g.', ...
                     currentSAmpere(iMax))
             end
             

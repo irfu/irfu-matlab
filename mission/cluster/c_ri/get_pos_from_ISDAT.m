@@ -21,7 +21,7 @@ function P_GSE = get_pos_from_ISDAT(spacecraft,start_time, Dt)
 %
 %Error: [-1,0, 0, 0] is returned, if it wasnt possible to load the data
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

@@ -24,7 +24,7 @@ function number = Ut2number(t1,length, t2,sr)
 % There is an errorcheck to see if the time i longer that the number of
 % samples. Then the last sample i returned.
 %
-%Discription of variables:
+%Description of variables:
 % t1 in epoch
 % t2 in Ut
 % sr in samples per second

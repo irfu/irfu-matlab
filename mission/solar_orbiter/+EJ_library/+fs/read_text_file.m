@@ -29,7 +29,7 @@ function [rowsList] = read_text_file(filePath, linebreakRegexp)
 
 
 
-    bytesArray = EJ_library.utils.read_file(filePath);
+    bytesArray = EJ_library.fs.read_file(filePath);
 
 %     % IMPLEMENTATION NOTE: "delimiter" does not refer to end-of-line (there is a separate property for that).
 %     % Default textscan behaviour is to detect which of LF, CR, or CR+LF to use for end-of-line.

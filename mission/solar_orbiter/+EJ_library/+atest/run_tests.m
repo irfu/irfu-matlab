@@ -36,6 +36,11 @@ function run_tests(testList)
     % PROPOSAL: Setting ~printResultDepth.
     %
     % PROPOSAL: Optional whether to stop on first failure.
+    %
+    % PROPOSAL: On failure, print function call that generated failure so that user can call manually from CLI.
+    %   NOTE: Can not alway generate usable call.
+    %       Ex: Can not generate package path.
+    %       Ex: Can not call inner or nested function from CLI.
     
     Settings.printParentSeparately = true;
     Settings.stringsEscape         = true;
