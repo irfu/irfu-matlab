@@ -31,7 +31,8 @@ function particlemoments = psd_moments(varargin)
 %   velocity, pressure, temperature, particle heat flux vector as TSeries'.
 %
 % Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
-% ePDist = mms.get_data(''PDe_fpi_brst_l2'',Tint,1);
+% ePDist = mms.get_data('PDe_fpi_brst_l2',Tint,1);
+% SCpot = mms.get_data('V_edp_brst_l2',Tint,1);
 % particlemoments = mms.psd_moments(ePDist,SCpot,'energyrange',[1 1000]);
 
 % 1. basic
