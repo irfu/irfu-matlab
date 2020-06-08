@@ -107,12 +107,8 @@ if isa(varargin{1},'PDist')
       energy0 = pdist.ancillary.energy0;
       energy1 = pdist.ancillary.energy1;
     else
-      if isfield(pdist.ancillary, 'energy')
-        energy0 = pdist.ancillary.energy(1, :);
-        energy1 = pdist.ancillary.energy(2, :);
-      else
-        irf.log('warning', 'no data for energy0 & energy1.');
-      end
+      energy0 = pdist.depend{1,1}(1, :);
+      energy1 = pdist.depend{1,1}(2, :);
     end
     noangles = 0;
     numechannels = size(pdist.depend{1},2);
