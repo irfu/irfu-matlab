@@ -37,8 +37,8 @@ ePDistomni = ePDist.omni.deflux;
 iPDistomni = iPDist.omni.deflux;
 
 % electron and ion omnidirection differential energy flux
-ePDistpitch = ePDist.e64.pitchangles(Bxyz,24).deflux;
-iPDistpitch = iPDist.e64.pitchangles(Bxyz,18).deflux;
+ePDistpitch = ePDist.pitchangles(Bxyz,24).deflux;
+iPDistpitch = iPDist.pitchangles(Bxyz,18).deflux;
 
 % select energy intervals for pitch-angle distributions
 eint1 = [3e1 3e2];
