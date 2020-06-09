@@ -2220,10 +2220,10 @@ classdef PDist < TSeries
         else PD.ancillary.energy0 = energy(1,elevels); end
         if isfield(PD.ancillary, 'energy1'), PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
         else PD.ancillary.energy1 = energy(2,elevels); end
-        if ~isfield(PD.ancillary, 'esteptable')
-          [esteptable,~] = ismember(energy,PD.ancillary.energy1,'rows');
-          PD.ancillary.esteptable = esteptable;
-        end
+%         if ~isfield(PD.ancillary, 'esteptable')
+%           [esteptable,~] = ismember(energy,PD.ancillary.energy1,'rows');
+%           PD.ancillary.esteptable = esteptable;
+%         end
         if isfield(PD.ancillary,'energy'), PD.ancillary.energy = PD.ancillary.energy(:,elevels); end
         if isfield(PD.ancillary,'delta_energy_minus'), PD.ancillary.delta_energy_minus = PD.ancillary.delta_energy_minus(:,elevels); end
         if isfield(PD.ancillary,'delta_energy_plus'), PD.ancillary.delta_energy_plus = PD.ancillary.delta_energy_plus(:,elevels); end
