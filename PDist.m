@@ -84,9 +84,13 @@ classdef PDist < TSeries
           warning('Unknown distribution type')
       end
       
+      % Enforce energy to be a timeseries (not much difference in data size anyways)
+      obj = obj.enforce_depend_timeseries('energy');      
+      
       % Should check dimension of depends, and switch if they are wrong,
       % time should always be first index, and it can be 1 or obj.nt
       % This has only been partly implemented here...
+      % Should be moved to a private method to make code more easily readable.
       size_data = size(obj.data);
       for idep = 1:numel(obj.depend)
         size_dep = size(obj.depend{idep}); 
@@ -140,16 +144,17 @@ classdef PDist < TSeries
           
           % pick out correct indices for ancillary data time tables, nb. this
           % assumes anything with 'number of rows' = PDist.length is a timetable
-          ancillary_fieldnames = fieldnames(obj.ancillary);
-          new_ancillary_data = obj.ancillary;
-          for iField = 1:numel(ancillary_fieldnames)
-            field_data = getfield(obj.ancillary,ancillary_fieldnames{iField});
-            if isnumeric(field_data) && size(field_data,1) == sizeData(1) % has the same number of rows as the PDist has time indices, assume each row corresponds to the same time index
-              new_ancillary_data = setfield(new_ancillary_data,ancillary_fieldnames{iField},field_data(idxTmp{1},:,:,:,:,:,:)); % repeated :,:,:,:,:,:, used to support multidimensional data
+          if not(isempty(obj.ancillary))
+            ancillary_fieldnames = fieldnames(obj.ancillary);
+            new_ancillary_data = obj.ancillary;
+            for iField = 1:numel(ancillary_fieldnames)
+              field_data = getfield(obj.ancillary,ancillary_fieldnames{iField});
+              if isnumeric(field_data) && size(field_data,1) == sizeData(1) % has the same number of rows as the PDist has time indices, assume each row corresponds to the same time index
+                new_ancillary_data = setfield(new_ancillary_data,ancillary_fieldnames{iField},field_data(idxTmp{1},:,:,:,:,:,:)); % repeated :,:,:,:,:,:, used to support multidimensional data
+              end
             end
+            obj.ancillary = new_ancillary_data;
           end
-          obj.ancillary = new_ancillary_data;
-          
           if numel(idx) > 1
             nargout_str = [];
             if nargout == 0 % dont give varargout
@@ -2628,7 +2633,7 @@ classdef PDist < TSeries
       %         PD = obj.clone(obj.time,new_data);
       %         PD.depend = {PD.depend{1},repmat(mid{1},obj.length,1)};
       %       else
-      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles,varargin{:}); % - For v1.0.0 or higher data
+      PD = mms.get_pitchangledist(obj,obj1,'angles',nangles,varargin{:}); % - For v1.0.0 or higher data
       %       end
       % if the pitch angle bins are not equally spaced, we pass this for
       % plotting purposes, can be empty
@@ -2691,13 +2696,18 @@ classdef PDist < TSeries
       %   see also MMS.PSD_REBIN
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end
-      if size(obj.depend{1},2) == 64; irf_log(proc,'PDist already has 64 energy levels.'); end
+      if size(obj.depend{1},2) == 64; irf_log('proc','PDist already has 64 energy levels.'); end
       
       if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable
         esteptable = zeros(obj.length,1);
         [energies,~,esteptable] = unique(obj.depend{1},'rows'); % consider using legacy
         energy0 = obj.depend{1}(1,:);
         energy1 = obj.depend{1}(2,:);
+      end
+      if isequal(energy0,energy1)
+        irf_log('proc','PDist only has one set of energies, returning original PDist.')
+        PD = obj;
+        return
       end
       
       [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.esteptable));
@@ -2812,14 +2822,16 @@ classdef PDist < TSeries
           error('Species not supported.')
       end
     end
-    function e = energy(obj)
-      % Get energy of object
-      %indE = find(strcmp(obj.representation,'energy'))
-      e = obj.depend{1};
-    end
-    
-    
-    
+%     function e = energy(obj)
+%       % Get energy of object when not knowing its index  
+%       isEnergy = cellfun(@(s) strcmp(s,'energy'),obj.representation);
+%       iEnergy = find(isEnergy);
+%       if isempty(iEnergy) % no energy dependence, return
+%         e = [];
+%       else
+%         e = obj.depend{iEnergy};
+%       end
+%     end       
     function moms = moments(obj,varargin)
       % PRELIMINARY VERSION
       % Currently does not include spacecraft potential and has no
@@ -3014,7 +3026,27 @@ classdef PDist < TSeries
     
   end
   % Plotting functions
-  
+  methods (Access = protected)
+    function PD = enforce_depend_timeseries(obj,depend)
+      % Find if 'depend' is a depend, and if yes, enforce it to be a
+      % timeseries
+      PD = obj;
+      isSep = cellfun(@(s) strcmp(s,depend),obj.representation);
+      iDep = find(isSep);
+      if isempty(iDep) % no energy dependence, return
+        return;
+      end
+      current_depend = obj.depend{iDep};
+      dimDependData = size(obj.data,iDep+1); % +1 because dim 1 is time
+      if size(current_depend) == [obj.length,dimDependData] % depend{iEnergy} is timeseries      
+        return
+      elseif size(current_depend) == [1,dimDependData] % depend{iEnergy} is 1 x nt
+        PD.depend{iDep} = repmat(current_depend,[obj.length,1]);
+      elseif size(current_depend) == [1,dimDependData] % depend{iEnergy} is nt x 1
+        PD.depend{iDep} = repmat(current_depend',[obj.length,1]);
+      end
+    end
+  end
   methods (Static)
     function newUnits = changeunits(from,to)
       
