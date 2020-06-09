@@ -265,7 +265,8 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...
   'Nhplus_hpca_sitl','aspoc_status',...
   'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2',...
-  ...'Omnifluxion_epd_feeps_brst_l2'...
+  'Omnifluxion_epd_feeps_brst_l2','Omnifluxion_epd_eis_brst_l2',...
+  'Omnifluxion_epd_eis_fast_l2'
   }; % XXX THESE MUST BE THE SAME VARS AS BELOW
 
 if strcmp(varStr,'vars') % collect all vars, for testing
@@ -627,6 +628,10 @@ switch Vr.inst
         pref = ['mms' mmsIdS '_' sensor '_'];
         suf = ['_part_' Vr.cs '_' Vr.tmmode];
         res = mms.db_get_ts(dsetName,[pref momType suf],Tint);
+        energy_ = mms.db_get_ts(dsetName,[pref 'energy_' Vr.tmmode],Tint); % mms.db_get_variable doesnt do the tlim, so i do mms.db_get_ts instead
+        energy_delta = mms.db_get_ts(dsetName,[pref 'energy_delta_' Vr.tmmode],Tint); % mms.db_get_variable doesnt do the tlim
+        res.userData.energy = energy_;
+        res.userData.energy_delta = energy_delta;
         if ~isempty(res), return, end
         res = get_ts('tensor2');
       case {'Vi','Ve'}
@@ -704,7 +709,7 @@ switch Vr.inst
     end
     
     if doPDist
-      res = get_ts('skymap');      
+      res = get_ts('hpca_omni');      
     else
       res = mms.db_get_ts(dsetName,pref,Tint);
     end
@@ -791,6 +796,14 @@ switch Vr.inst
     % but the variables have epd_feeps, e.g.: mms1_epd_feeps_brst_l2_ion_top_intensity_sensorid_6
     dsetName = ['mms' mmsIdS '_' extractAfter(Vr.inst,'_') '_' Vr.tmmode '_' Vr.lev '_' species];
     res = get_ts('feeps_omni');
+  case 'epd_eis'
+    all_species = {'ion','electron'};
+    species_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_species);
+    species = all_species{find(species_index)};    
+    param = extractBefore(Vr.param,species);
+    dsetName = ['mms' mmsIdS '_' strrep(Vr.inst,'_','-') '_' Vr.tmmode '_' Vr.lev '_phxtof'];
+   % mms?_epd-eis_srvy_l2_phxtof
+    res = get_ts('eis_omni');
   otherwise
     error('not implemented yet')
 end
@@ -977,7 +990,7 @@ end
             energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);
             energy = energy.tlim(Tint);
             res = irf.ts_skymap(dist.time, dist.data, energy.data, phi, theta);
-          case 'hpcabrst' % not implemented
+          case 'hpcabrst' % should probably not be under 'skymap'
             dist = mms.db_get_variable(dsetName,[pref],Tint);
             dist_ts = mms.variable2ts(dist);
             omni_data = squeeze(irf.nanmean(dist_ts.data,2));
@@ -985,9 +998,7 @@ end
             res = dist;
             res.siConversion = dist_ts.siConversion;
             res.units = dist_ts.units;
-            res.species = ion;
-            % 
-            % obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+            res.species = ion;          
         end
         switch [Vr.inst Vr.tmmode]
           case {'fpibrst','fpifast'}
@@ -1002,6 +1013,53 @@ end
         end
           res.name = dsetName;
           res.userData = dist.userData;
+      case 'hpca_omni' % move hpca omni here
+        dist = mms.db_get_variable(dsetName,[pref],Tint);
+        dist_ts = mms.variable2ts(dist);
+        omni_data = squeeze(irf.nanmean(dist_ts.data,2));
+        dist = PDist(dist_ts.time,omni_data,'omni',dist.DEPEND_2.data);
+        res = dist;
+        res.siConversion = dist_ts.siConversion;
+        res.units = dist_ts.units;
+        res.species = ion;   
+      case 'eis_omni'
+        file_list = mms.db_list_files(dsetName,Tint);
+        if isempty(file_list);
+          res = [];
+          return
+        end
+        dobj = dataobj([file_list(1).path '/' file_list(1).name]);
+        
+        for iSen = 0:5
+          pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_P4_flux_t' num2str(iSen)];
+          tmpvar = mms.db_get_ts(dsetName,pref,Tint);
+          if not(isempty(tmpvar))
+            EISdpf{iSen+1} = comb_ts(tmpvar);          
+            energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy']);
+            energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
+            energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+          end
+        end
+        % check if energies are equal or not.
+        for iSen = 0:4
+          for iSen_ = iSen:5
+            if not(isequal(energies{iSen+1},energies{iSen_+1}))
+              irf.log('critical',sprintf('Energies of sensors %g and %g are not equal. Aborting.',iSen,iSen_))
+              res = [];
+              return;
+            end
+          end
+        end
+        
+        % Should take into acount Nans here.
+        omnidata = (EISdpf{1}.data+EISdpf{2}.data+EISdpf{3}.data+EISdpf{4}.data+EISdpf{5}.data+EISdpf{6}.data)/6;
+        dist = PDist(EISdpf{1}.time,omnidata,'omni',energies{1}.data*1e3); % energies keV -> eV
+        res = dist;
+        res.siConversion = EISdpf{1}.siConversion;
+        res.units = EISdpf{1}.units;
+        res.species = 'ion';
+        res.ancillary.delta_energy_minus = energies_dminus{1};
+        res.ancillary.delta_energy_plus = energies_dplus{1};
       case 'feeps_omni'
         % FROM SPEDAS: Added by DLT on 31 Jan 2017: set unique energy and gain correction factors per spacecraft
         eEcorr = [14.0, -1.0, -3.0, -3.0]; % energy correction
@@ -1020,7 +1078,7 @@ end
               case 'fast', sensors = [3:5, 11:12];
               otherwise, error('invalid mode')
             end
-          otherwise, error('invalid specie')
+          otherwise, error('invalid species')
         end
         
         dsetPref= ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' species];
@@ -1036,20 +1094,32 @@ end
           sufMask = sprintf('sector_mask_sensorid_%d',sen);
           top = mms.db_get_ts(dsetName,[dsetPref '_top_' suf],Tint);
           mask = mms.db_get_ts(dsetName,[dsetPref '_top_' sufMask],Tint);
-%           if all(size((mask.data))==size((top.data)))
-%             top.data(logical(mask.data)) = NaN;
-%           else
-%             top.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
-%           end
+          %mask_var = mms.db_get_variable(dsetName,[dsetPref '_top_' sufMask],Tint);
+          if all(size((mask.data))==size((top.data)))
+            % Here I'm assuming that a mask value of 0 is a good sector. So
+            % I find all indices that are not equal to zero.
+            idMask = find(not(isequal(mask.data,0)));
+            if not(isempty(idMask))
+              irf.log('warning',sprintf('MMS%s, FEEPS: Masking %g indices for top sensor %g.',mmsIdS,numel(idMask),iSen))
+            end
+            top.data(idMask) = NaN;
+          else
+            top.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
+          end
+          
           bot = mms.db_get_ts(dsetName,[dsetPref '_bottom_' suf],Tint);
           mask = mms.db_get_ts(dsetName,[dsetPref '_bottom_' sufMask],Tint);
-%           if all(size((mask.data))==size((bot.data)))
-%             bot.data(logical(mask.data)) = NaN;
-%           else
-%             bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN;
-%           end
-          %c_eval([species(1) 'Tit?=top;'  species(1) 'Bit?=bot;'],sen) %
-          %The usage of eval leads to error: Attempt to add "iTit6" to a static workspace.
+          if all(size((mask.data))==size((bot.data)))
+            % Here I'm assuming that a mask value of 0 is a good sector. So
+            % I find all indices that are not equal to zero.
+            idMask = find(not(isequal(mask.data,0)));
+            if not(isempty(idMask))
+              irf.log('warning',sprintf('MMS%s, FEEPS: Masking %g indices for bot sensor %g.',mmsIdS,numel(idMask),iSen))
+            end
+            bot.data(idMask) = NaN;
+          else
+            bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
+          end
           Tit{iSen} = top;
           Bit{iSen} = bot;
         end
