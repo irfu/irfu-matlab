@@ -279,6 +279,28 @@ function SETTINGS = create_default_SETTINGS()
     % TDS has bugfixed. /2019-12-19
     % PROPOSAL: Rename.
     S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
+
+    %===================================================================================================================
+    % Where to obtain the mux mode
+    % ----------------------------
+    % BIAS HK data contains mux mode using its own Epoch (typically ~30 s time resolution?), which means that
+    % ~interpolation to SCI data is necessary, which means that the effective mux mode value can briefly be wrong.
+    % LFR SCI data (L1/L1R) contains a zVar for mux mode using the same Epoch as the data.
+    % NOTE: The relevant TDS datasets do not contain mux mode.
+    % solo_L1R_rpw-tds-lfm-cwf-e-cdag_20200225_V01.cdf : Does not have mux mode.
+    % solo_L1_rpw-tds-lfm-cwf-cdag_20200225_V04.cdf    : Does not have mux mode.
+    % solo_L1_rpw-tds-lfm-cwf-cdag_20200409_V04.cdf    : Does not have mux mode.
+    % solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V04.cdf   : Does not have mux mode. Irrelevant dataset (not LFM).
+    %===================================================================================================================
+    S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
+    
+    %===================================================================================================================
+    % Define LFR sampling frequencies used for LFR datasets
+    % ------------------------------------------------------
+    % The variables names (F[0-3]) follow LFR's naming scheme.
+    % Only used for sequences of samples within the same CDF record (?!).
+    %===================================================================================================================
+    S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   % 24576 = 6 * 4096
     
     
     
@@ -358,14 +380,6 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
-    
-    %====================================================================================================================
-    % Define LFR sampling frequencies used for LFR datasets
-    % ------------------------------------------------------
-    % The variables names (F[0-3]) follow LFR's naming scheme.
-    % Only used for sequences of samples within the same CDF record (?!).
-    %====================================================================================================================
-    S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   % 24576 = 6 * 4096
     
     
     

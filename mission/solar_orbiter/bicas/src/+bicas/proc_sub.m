@@ -486,8 +486,19 @@ classdef proc_sub
             PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), zvRx==0 );
             PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), zvRx==0 );
             
-            PreDc.Zv.MUX_SET        = HkSciTime.MUX_SET;
-            PreDc.Zv.DIFF_GAIN      = HkSciTime.DIFF_GAIN;            
+            
+            [value, key] = SETTINGS.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
+            switch(value)
+                case 'BIAS_HK'
+                    L.log('debug', 'Using BIAS HK mux mode.')
+                    PreDc.Zv.MUX_SET = HkSciTime.MUX_SET;
+                case 'LFR_SCI'
+                    L.log('debug', 'Using LFR SCI mux mode.')
+                    PreDc.Zv.MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
+                otherwise
+                    error('BICAS:proc_sub:ConfigurationBug', 'Illegal settings value %s="%s"', key, value)
+            end
+            PreDc.Zv.DIFF_GAIN      = HkSciTime.DIFF_GAIN;
             
             PreDc.hasSnapshotFormat    = C.isLfrSurvSwf;
             PreDc.nRecords             = nRecords;
