@@ -1,0 +1,12 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/.github"
+  schedule:
+    interval: daily
+    time: "09:00"
+    timezone: Europe/Stockholm
+  open-pull-requests-limit: 10
+  target-branch: devel
+  assignees:
+  - thomas-nilsson-irfu
