@@ -6,9 +6,12 @@ function cmap1=irf_colormap(varargin)
 %       'standard'  - (default), same as 'space','cmap' (commonly used showing space data)
 %       'poynting'  - white in center and blue/green for negative and red/black for positive values
 %       'poynting_gray'  - gray in center and blue/green for negative and red/black for positive values
+%       'solo'
+%       'bluered'
+%       'waterfall' - fancy-schmancy
 %
 % IRF_COLORMAP(AX,colormap_name) - apply colormap to axis AX
-%
+
 
 [ax,args,nargs] = axescheck(varargin{:});
 

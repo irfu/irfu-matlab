@@ -1,5 +1,7 @@
-% Calculate and plot electron and ion pitch angle distributions from L1b particle
-% brst data.
+% Calculate and plot electron and ion pitch angle distributions in burst mode. 
+% Replace brst variables with fast (for FPI and EDP) and srvy (FGM) to plot
+% fast mode particle data. 
+
 % Written by D. B. Graham.
 
 ic = 3; % Spacecraft number
@@ -12,17 +14,17 @@ c_eval('ePDist = mms.get_data(''PDe_fpi_brst_l2'',Tint,?);',ic)
 c_eval('iPDist = mms.get_data(''PDi_fpi_brst_l2'',Tint,?);',ic)
 
 % Particle moments
-c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ic);
+c_eval('ne = mms.get_data(''Ne_fpi_brst_l2'',Tint,?);',ic);
 c_eval('Ve = mms.get_data(''Ve_gse_fpi_brst_l2'',Tint,?);',ic);
-c_eval('Te = mms.get_data(''Te_gse_fpi_brst_l2'',Tint,?);',ic);
-c_eval('ni = mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',Tint);',ic);
+c_eval('Te = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ic);
+c_eval('ni = mms.get_data(''Ni_fpi_brst_l2'',Tint,?),;',ic);
 c_eval('Vi = mms.get_data(''Vi_gse_fpi_brst_l2'',Tint,?);',ic);
-c_eval('Ti = mms.get_data(''Ti_gse_fpi_brst_l2'',Tint,?);',ic);
+c_eval('Ti = mms.get_data(''Ti_dbcs_fpi_brst_l2'',Tint,?);',ic);
 
 % Other variables
-c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_dmpa_srvy_l2'',Tint);',ic);
-c_eval('Bgse=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_gse_srvy_l2'',Tint);',ic);
-c_eval('SCpot=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_scpot_brst_l2'',Tint);',ic);
+c_eval('Bxyz=mms.get_data(''B_dmpa_fgm_brst_l2'',Tint,?);',ic);
+c_eval('Bgse=mms.get_data(''B_gse_fgm_brst_l2'',Tint,?);',ic);
+c_eval('SCpot=mms.get_data(''V_edp_brst_l2'',Tint,?);',ic);
 
 %% Compute parallel and perpendicular electron and ion temperatures
 Tipp = mms.rotate_tensor(Ti,'fac',Bxyz,'pp');
@@ -37,8 +39,8 @@ ePDistomni = ePDist.omni.deflux;
 iPDistomni = iPDist.omni.deflux;
 
 % electron and ion omnidirection differential energy flux
-ePDistpitch = ePDist.e64.pitchangles(Bxyz,24).deflux;
-iPDistpitch = iPDist.e64.pitchangles(Bxyz,18).deflux;
+ePDistpitch = ePDist.pitchangles(Bxyz,24).deflux;
+iPDistpitch = iPDist.pitchangles(Bxyz,18).deflux;
 
 % select energy intervals for pitch-angle distributions
 eint1 = [3e1 3e2];
@@ -84,7 +86,7 @@ set(h(5),'ytick',[1e1 1e2 1e3 1e4]);
 ylabel(h(5),'E_{i} (eV)','fontsize',12,'Interpreter','tex');
 
 h(6)=irf_panel('ipadlow');
-irf_spectrogram(h(6),iPDistpitch.elim(eint1).specrec('pa'),'log','donotfitcolorbarlabel');
+irf_spectrogram(h(6),iPDistpitch.specrec('pa'),'log','donotfitcolorbarlabel');
 irf_legend(h(6),'(f)',[0.99 0.98],'color','k','fontsize',12);
 set(h(6),'yscale','lin');
 set(h(6),'ytick',[0 90 180]);
