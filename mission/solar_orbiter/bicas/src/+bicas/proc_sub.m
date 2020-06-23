@@ -880,8 +880,15 @@ classdef proc_sub
             % DEMUX
             %=======
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
+            
+            nRecords = size(PreDc.Zv.Epoch, 1);
+            tTicToc = tic();            
+            
             PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(PreDc, Cal, SETTINGS, L);
-
+            
+            wallTimeSec = toc(tTicToc);
+            L.logf('info', 'simple_demultiplex: Time used for execution (wall time): %g [s], %g [s/record]', wallTimeSec, wallTimeSec/nRecords)
+            
             
             
             %================================
