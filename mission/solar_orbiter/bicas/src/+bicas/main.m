@@ -85,7 +85,7 @@ function errorCode = main( varargin )
         % -----------------------------------------------
         % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
         % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
-        clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
+        clear -global SETTINGS
         
         C = bicas.error_safe_constants();
         L = bicas.logger('bash wrapper', true);   % NOTE: Permitting logging to file in case using inofficial option.
@@ -255,12 +255,14 @@ function main_without_error_handling(cliArgumentsList, L)
         '#### BICAS'' MATLAB CODE STARTS RUNNING ####\n', ...
         '############################################\n', ...
         '############################################\n'])
-    
-    
-    
+
+
+
     % IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem of calling irf('check_os') which indirectly
-    % calls system('hostname') at ROC:roc2-dev. Could be
-    L.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
+    % calls system('hostname') at ROC:roc2-dev.
+    L.logf('debug', 'OS environment variable PATH                 = "%s"', getenv('PATH'));
+    % NOTE: Useful for seeing which leap second table was actually used, e.g. at ROC.
+    L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', getenv('CDF_LEAPSECONDSTABLE'));
     
     
     

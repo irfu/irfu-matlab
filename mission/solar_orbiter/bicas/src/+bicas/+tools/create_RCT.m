@@ -37,6 +37,7 @@ function create_RCT(rctMasterCdfFile, destDir)
 % First created 2018-03-09
 
 
+
 % RCTs in DataPool git repository 2019-01-14 (commit 50cc3d8):
 %  ROC-SGSE_CAL_RCT-BIAS_V01.xlsx
 %  ROC-SGSE_CAL_RCT-BIAS_V02.xlsx        <--- Where is this now?
@@ -63,9 +64,12 @@ function create_RCT(rctMasterCdfFile, destDir)
 %   NOTE: Time stamps are not copied, nor modifications of existing time stamps. Can therefor not just reduce to relative times.
 % PROPOSAL: Change function name: Something which implies using a master file and "filling it".
 % PROPOSAL: Somehow separate the code with the hardcoded data into a separate file.
-    
-    
-    
+% PROPOSAL: Create related JSON file which references RCT. 
+%   NOTE: XB-mail 2020-06-12. Meant for selecting among RCTs which are valid only for a particular time period.
+%       Should be ~trivial for BICAS which uses one RCT all the time.
+
+
+
     destPath = fullfile(destDir, get_dest_RCT_filename());
     
     ADD_DEBUG_RECORD_L = 0;

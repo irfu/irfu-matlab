@@ -802,7 +802,7 @@ classdef proc_utils
                 elseif ischar(zvValue)
                     
                     % Example of string valued (but irrelevant) CDF zVariables: ACQUISITION_TIME_LABEL
-                    ;   % Ignore
+                    % Ignore. Do nothing.
                     
                 else
                     error('BICAS:proc_utils:Assertion', 'Can not handle zVar "%s".', zvName)

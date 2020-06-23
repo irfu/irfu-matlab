@@ -48,6 +48,14 @@ classdef logger < handle
 % PROPOSAL: Inofficial logLevel='WARNING' which is translated into a regular warning but somehow emphasized in the logs.
 %   PROPOSAL: Message is framed with "=".
 %   PROPOSAL: All text is uppercase.
+%
+% PROPOSAL: Submit SETTINGS to log object.
+%   PRO: Can include specialized logging function that use SETTINGS.
+%       PRO: Can call these functions without invoking SETTINGS every time.
+%   CON: Makes class dependent on SETTINGS. ==> Bad for logging during error handling.
+%   CON: SETTINGS is finalized (made read-only) AFTER logger object is initialized.
+%       PROPOSAL: Set SETTINGS using separate loger method first when it has been finalized.
+%           NOTE: Any function that uses SETTINGS can not be called earlier than this anyway.
 
 
 

@@ -283,9 +283,17 @@ function SETTINGS = create_default_SETTINGS()
     %===================================================================================================================
     % Where to obtain the mux mode
     % ----------------------------
-    % BIAS HK data contains mux mode using its own Epoch (typically ~30 s time resolution?), which means that
-    % ~interpolation to SCI data is necessary, which means that the effective mux mode value can briefly be wrong.
-    % LFR SCI data (L1/L1R) contains a zVar for mux mode using the same Epoch as the data.
+    % BIAS HK data
+    % ------------
+    % Contains mux mode using its own Epoch (typically ~30 s time resolution?), which means that ~interpolation to SCI
+    % data is necessary, which means that the effective mux mode value can briefly be wrong. BIAS HK may also
+    % potentially not cover the same time range as SCI data at all, and then the mux mode can be really wrong (e.g. when
+    % using different versions).
+    %
+    % LFR SCI data (L1/L1R)
+    % ---------------------
+    % Contains a zVar for mux mode using the same Epoch as the data.
+    %
     % NOTE: The relevant TDS datasets do not contain mux mode.
     % solo_L1R_rpw-tds-lfm-cwf-e-cdag_20200225_V01.cdf : Does not have mux mode.
     % solo_L1_rpw-tds-lfm-cwf-cdag_20200225_V04.cdf    : Does not have mux mode.
@@ -304,7 +312,7 @@ function SETTINGS = create_default_SETTINGS()
     
     
     
-    %=======================================================================================================================
+    %===================================================================================================================
     % PROCESSING.RCT_REGEXP.*
     % Regular expressions for the filenames of RCTs
     % ---------------------------------------------
@@ -353,8 +361,8 @@ function SETTINGS = create_default_SETTINGS()
     % RCT filenaming is implemented as settings since filenaming seems likely to change.
     % (1) LFR & TDS do not seem to follow the filenaming convenction
     % (2) BIAS has (previously at least) not followed the filenaming convention.
-    % (3) it is uncertain how it (doc version 1/1) can be applied to BIAS RCTs (which receiver should the BIAS RCT specify
-    % when BIAS uses the same RCT for both LFR & TDS data?).
+    % (3) it is uncertain how it (doc version 1/1) can be applied to BIAS RCTs (which receiver should the BIAS RCT
+    % specify when BIAS uses the same RCT for both LFR & TDS data?).
     %
     % NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add seconds=2 digits).
     % NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of day, only date)
@@ -374,7 +382,7 @@ function SETTINGS = create_default_SETTINGS()
     %           (Two types of calibration files, but only RODP versions)
     %
     % NOTE: Only the last filename in a sorted list of matching filenames will actually be used.
-    %=======================================================================================================================
+    %===================================================================================================================
     CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
     S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);    % Wrong filenaming convention?!!
     S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);

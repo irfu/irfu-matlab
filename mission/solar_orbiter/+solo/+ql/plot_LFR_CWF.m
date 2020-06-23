@@ -101,7 +101,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
 %         'mrgRight',  10, ...
 %         'mrgTop',    5, ...
 %         'mrgBottom', 5);
-%     erikpgjohansson.graph.tile_by_InnerPosition_OuterPosition(hAxesArray(:), TILE_MRG_SETTINGS)
+%     EJ_library.graph.tile_by_InnerPosition_OuterPosition(hAxesArray(:), TILE_MRG_SETTINGS)
             
     solo.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
     

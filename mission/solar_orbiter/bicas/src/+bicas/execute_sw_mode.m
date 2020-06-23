@@ -329,8 +329,8 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     %===============================================================================================
-    % Check for increasing Epoch values
-    % ---------------------------------
+    % ASSERTION: Increasing Epoch values
+    % ----------------------------------
     % Examples:
     % solo_L1_rpw-lfr-surv-cwf-cdag_20200212_V01.cdf   (decrements 504 times)
     % solo_L1_rpw-lfr-surv-swf-cdag_20200212_V01.cdf   (1458 identical consecutive pairs of values)

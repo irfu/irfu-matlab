@@ -1015,9 +1015,9 @@ classdef proc_sub
                 L.log('warning', 'Creating NaN-valued CALIBRATION_TABLE_INDEX due to zVar not being present in input CDF.')
                 CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
             end
-
-
-                
+            
+            
+            
             %===================================================================================
             % (1) Find continuous subsequences of records with identical settings.
             % (2) Process data separately for each such sequence.
@@ -1033,6 +1033,7 @@ classdef proc_sub
                 PreDc.Zv.iLsf, ...
                 CALIBRATION_TABLE_INDEX_zv);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
+            
             for iSubseq = 1:length(iFirstList)
 
                 iFirst = iFirstList(iSubseq);
