@@ -2,6 +2,7 @@
 % Takes a structure "A" and adds to it the fields of a structure "B". If a field exists in both structures, then
 % Settings determines what happens. Can be recursive.
 %
+%
 % NOTES
 % =====
 % NOTE: The operation is NOT symmetric in "A" and "B".
@@ -9,12 +10,15 @@
 %   (1) a non-empty struct array field can be struct or non-struct for different components
 %   (2) an empty struct array field does not have a class (neither struct or non-struct)
 %   A user could iterate over struct array components and call the function for each component separately.
+% --
+% NOTE: EJ_library.utils.merge_structs is similar.
 %
 %
 % ARGUMENTS
 % =========
-%   A       : Scalar struct. The fields of "B" will be added to this struct.
-%   B       : Scalar struct.
+%   A       : Struct array. The fields of "B" will be added to this struct.
+%   B       : Struct array. Same size as A.
+%               NOTE: Struct arrays only work if algorithm does not need to read field values, ie. no collisions.
 % varargin  : As interpreted by EJ_library.utils.interpret_settings_args.
 %       noStructs,
 %       aIsStruct,
@@ -73,6 +77,7 @@ function A = add_struct_to_struct(A, B, varargin)
 %       CON: Recursion depth is well defined for diffdn.
 %
 % PROPOSAL: Permit struct arrays, but restrict policies (for struct arrays only) to 'Error' and 'Overwrite'.
+% PROPOSAL: Should not support struct arrays. Should use EJ_library.utils.merge_structs instead.
 
 
 
@@ -90,8 +95,9 @@ function A = add_struct_to_struct(A, B, varargin)
     assert(isstruct(A),               'A is not a structure.')
     assert(isstruct(B),               'B is not a structure.')
     assert(isstruct(Settings),        'Settings is not a struct.')
-    assert(isscalar(A),               'A is not scalar.')
-    assert(isscalar(B),               'B is not scalar.')
+%     assert(isscalar(A),               'A is not scalar.')
+%     assert(isscalar(B),               'B is not scalar.')
+    assert(all(size(A) == size(B)))
     %assert(isequal(size(A), size(B)), 'A and B have different array sizes.')
     
     %===========================
@@ -123,7 +129,7 @@ function A = add_struct_to_struct(A, B, varargin)
                 abAreStructs = true;
             end
 
-            if strcmp(behaviour, 'Error')
+            if     strcmp(behaviour, 'Error')
                 error('Structures share identically named fields "%s".', fieldName)
             elseif strcmp(behaviour, 'Overwrite')
                 A.(fieldName) = B.(fieldName);
@@ -141,7 +147,8 @@ function A = add_struct_to_struct(A, B, varargin)
             %===========================================
             switch(Settings.onlyBField)
                 case 'Copy'
-                    A.(fieldName) = B.(fieldName);     % NOTE: Not overwrite field, but create new field in A.
+                    %A.(fieldName) = B.(fieldName);            % NOTE: Not overwrite field, but create new field in A.
+                    [A.(fieldName)] = deal(B.(fieldName));    % NOTE: Not overwrite field, but create new field in A.
                 case 'Error'
                     error('Field B.%s exists but not A.%s.', fieldName, fieldName)
                 otherwise

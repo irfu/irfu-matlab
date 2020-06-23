@@ -3,16 +3,17 @@
 % (have a non-empty intersection).
 %
 %
-% NOTE: Ranges that only have exactly one number in common count as overlapping.
+% NOTE: Ranges that only have exactly one number in common count as overlapping, i.e. the boundaries are included.
 % 
 %
 % Author: Erik P G Johansson
 % Initially created <2020-04-09.
 %
-function rangesOverlap = ranges_intersect(v1, v2)
+function rangesIntersect = ranges_intersect(v1, v2)
 
     EJ_library.assert.vector(v1)
     EJ_library.assert.vector(v2)
     
-    rangesOverlap = (min(v2) <= max(v1)) && (min(v1) <= max(v2));   % NOTE: 
+    %rangesIntersect = (min(v2) <= max(v1)) && (min(v1) <= max(v2));   % NOTE: Equality.
+    rangesIntersect = EJ_library.utils.intervals_intersect(min(v1), max(v1), min(v2), max(v2));   % NOTE: Includes boundaries.
 end

@@ -105,7 +105,9 @@ classdef assert
 
 
     properties(Constant)
-        ERROR_MSG_ID = 'assert:Assertion'
+        % EMID = Error Message ID
+        %ERROR_EMID     = 'assert:IllformedAssertion'
+        ASSERTION_EMID = 'assert:Assertion'
     end
 
     
@@ -117,9 +119,9 @@ classdef assert
         function castring(s)
             % PROPOSAL: Only accept empty char arrays of size 1x0 or 0x0.
             if ~ischar(s)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected castring (0x0, 1xN char array) is not char.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected castring (0x0, 1xN char array) is not char.')
             elseif ~(isempty(s) || size(s, 1) == 1)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected castring (0x0, 1xN char array) has wrong dimensions.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected castring (0x0, 1xN char array) has wrong dimensions.')
             end
         end
         
@@ -138,7 +140,7 @@ classdef assert
         %              NOTE: Must be non-empty array.
         function castring_regexp(s, regexp)
             if ~any(EJ_library.str.regexpf(s, regexp))
-                error(EJ_library.assert.ERROR_MSG_ID, 'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
+                error(EJ_library.assert.ASSERTION_EMID, 'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
             end
         end
         
@@ -149,12 +151,12 @@ classdef assert
             % NOTE: Misleading name, since does not check for strings.
             
             if ~iscell(s)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but is not cell array.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected cell array of unique strings, but is not cell array.')
                 
             % IMPLEMENTATION NOTE: For cell arrays, "unique" requires the components to be strings. Therefore does not
             % check (again), since it is probably slow.
             elseif numel(unique(s)) ~= numel(s)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but not all strings are unique.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected cell array of unique strings, but not all strings are unique.')
             end
         end
         
@@ -164,7 +166,7 @@ classdef assert
             % NOTE/BUG: Does not require sets to have internally unique strings.
             
             if ~isempty(setxor(set1, set2))
-                error(EJ_library.assert.ERROR_MSG_ID, 'The two string sets are not equivalent.')
+                error(EJ_library.assert.ASSERTION_EMID, 'The two string sets are not equivalent.')
             end
         end
         
@@ -179,7 +181,7 @@ classdef assert
             EJ_library.assert.castring(s)
             
             if ~ismember(s, strSet)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected string in string set is not in set.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected string in string set is not in set.')
             end
         end
         
@@ -190,7 +192,7 @@ classdef assert
         function subset(strSubset, strSet)
             
             if ~EJ_library.utils.subset(strSubset, strSet)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected subset is not a subset.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected subset is not a subset.')
             end
         end
         
@@ -198,16 +200,17 @@ classdef assert
         
         function scalar(x)
             if ~isscalar(x)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Variable is not scalar as expected.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Variable is not scalar as expected.')
             end
         end
         
         
         
         % Either regular file or symlink to regular file (i.e. not directory or symlink to directory).
+        % Cf. path_is_available
         function file_exists(filePath)
             if ~(exist(filePath, 'file') == 2)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected existing regular file (or symlink to regular file) "%s" can not be found.', filePath)
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected existing regular file (or symlink to regular file) "%s" can not be found.', filePath)
             end
         end
         
@@ -215,7 +218,7 @@ classdef assert
         
         function dir_exists(dirPath)
             if ~exist(dirPath, 'dir')
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected existing directory "%s" can not be found.', dirPath)
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected existing directory "%s" can not be found.', dirPath)
             end
         end
         
@@ -231,7 +234,7 @@ classdef assert
         %   Ex: file_dir_does_not_exist
         
             if exist(path, 'file')
-                error(EJ_library.assert.ERROR_MSG_ID, 'Path "%s" which was expected to point to nothing, actually points to a file/directory.', path)
+                error(EJ_library.assert.ASSERTION_EMID, 'Path "%s" which was expected to point to nothing, actually points to a file/directory.', path)
             end
         end
 
@@ -295,7 +298,7 @@ classdef assert
             elseif isequal(optionalFnSet, 'all')
                 disallowedFnSet = {};
             else
-                error(EJ_library.assert.ERROR_MSG_ID, 'Illegal optionalFnSet argument. Is neither cell array or string constant "all".')
+                error(EJ_library.assert.ASSERTION_EMID, 'Illegal optionalFnSet argument. Is neither cell array or string constant "all".')
             end
             
             % Give error, with an actually useful error message.
@@ -303,7 +306,7 @@ classdef assert
                 missingRequiredFnListStr = strjoin(missingRequiredFnSet, ', ');
                 disallowedFnListStr      = strjoin(disallowedFnSet,      ', ');
 
-                error(EJ_library.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
+                error(EJ_library.assert.ASSERTION_EMID, ['Expected struct has the wrong set of fields.', ...
                     '\n    Missing fields:           %s', ...
                     '\n    Extra (forbidden) fields: %s'], missingRequiredFnListStr, disallowedFnListStr)
             end
@@ -318,15 +321,15 @@ classdef assert
         % NOTE: Can not handle: is function handle, but does not point to existing function(!)
         function func(funcHandle, nArgin, nArgout)
             if ~isa(funcHandle, 'function_handle')
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected function handle is not a function handle.')
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected function handle is not a function handle.')
             end
             if nargin(funcHandle) ~= nArgin
-                error(EJ_library.assert.ERROR_MSG_ID, ...
+                error(EJ_library.assert.ASSERTION_EMID, ...
                     'Expected function handle ("%s") has the wrong number of input arguments. nargin()=%i, nArgin=%i', ...
                     func2str(funcHandle), nargin(funcHandle), nArgin)
             elseif nargout(funcHandle) ~= nArgout
                 % NOTE: MATLAB actually uses term "output arguments".
-                error(EJ_library.assert.ERROR_MSG_ID, ...
+                error(EJ_library.assert.ASSERTION_EMID, ...
                     'Expected function handle ("%s") has the wrong number of output arguments (return values). nargout()=%i, nArgout=%i', ...
                     func2str(funcHandle), nargout(funcHandle), nArgout)
             end
@@ -336,13 +339,14 @@ classdef assert
 
         function isa(v, className)
             if ~isa(v, className)
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected class=%s but found class=%s.', className, class(v))
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected class=%s but found class=%s.', className, class(v))
             end
         end
         
         
 
         % Assert v has a non-one size in at most one dimension.
+        % NOTE: Excludes 0x0, e.g. [] and ''.
         %
         % NOTE: MATLAB's "isvector" function uses different criterion which excludes length in third or higher
         % dimension.
@@ -353,19 +357,23 @@ classdef assert
         %
         function vector(v)
             % PROPOSAL: Optional extra argument that specifies the length.
+            % PROPOSAL: Better name. Vector is ambiguous w.r.t. number of dimensions.
+            % PROPOSAL: Permit 0x0.
+            %   PROPOSAL: Separate constant to permit. '0x0', 'permit 0x0'.
             
 %             dims = size(v);
 %             dims(dims==1) = [];
 %             if numel(dims) > 1
             if sum(size(v) ~= 1) > 1
                 sizeStr = sprintf('%ix', size(v));
-                error(EJ_library.assert.ERROR_MSG_ID, 'Expected vector, but found variable of size %s.', sizeStr(1:end-1))
+                error(EJ_library.assert.ASSERTION_EMID, 'Expected vector, but found variable of size %s.', sizeStr(1:end-1))
             end
         end
         
         
         
         % Assert that v has a specific size, in all or some dimensions/indices.
+        % NOTE: Should eventually be replaced by sizes()?
         %
         % ARGUMENTS
         % =========
@@ -377,29 +385,8 @@ classdef assert
         function size(v, sizeConstraints)
             % PROPOSAL: Apply the same size constraint to an arbitrary number of variables.
             %
-            % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices
-            %           have to be identical in size (but arbitrary) between variables.
-            %
-            %   PROPOSAL: Use negative values to indicate that the size in that dimension should be identical.
-            %       CALL EXAMPLE: EJ_library.assert.size(Epoch, [-1], zvSnapshotsV, [-1, 1, -2], zvSnapshotsE, [-1, 2, -2])
-            %       Ex: zVariables: Number of records, number of samples per record.
-            %
-            %   PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
-            %       PROPOSAL: sizeConstraints = 1x1 cell array, with one numeric value (length of vector)?!!
-            %       PROPOSAL: Prepend sizeConstraints with string constant "vector".
-            %   ~CON/NOTE: Can not assert equal size for variables with arbitrary number of dimensions.
-            %
-            %       PROPOSAL: Policy argument for how to treat dimensions after those specified.
-            %           Higher dimensions size 1
-            %           Higher dimensions equal for all variables.
-            %               NOTE: Requires that all size specifications specify the same dimensions(?)
-            %
-            %       PROPOSAL: Last size component refers to size in all higher dimensions.
-            %           CON: Very non-standard, unintuitive, unclear.
-            %           CON: Verbose.
+            % Cf sizes.
             
-            %   PROPOSAL: Same dimensions in all dimensions except those specified.
-            %       PRO: Better handling of "high dimensions to infinity".
             
             % ASSERTION
             EJ_library.assert.vector(sizeConstraints)
@@ -426,13 +413,138 @@ classdef assert
             sizeConstraints(bIgnore) = sizeV(bIgnore);
 
             % ASSERTION: The actual assertion
-            assert( all(sizeV == sizeConstraints), EJ_library.assert.ERROR_MSG_ID, 'Variable does not have the expected size.')
+            assert( all(sizeV == sizeConstraints), EJ_library.assert.ASSERTION_EMID, 'Variable does not have the expected size.')
         end
-        
-        
-        
+
+
+
+        % Simultaneously check the size of multiple variables, including whether specified dimensions are identical (but
+        % arbitrarily sized).
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % Arbitrary number of argument pairs
+        %   var
+        %   sizeConstraint : 1D vector with integers specifying size of corresponding argument "var".
+        %       Negative integer : Arbitrary dimension size which must match between all arguments "var".
+        %                          Must be numbered -1, -2, ... , -N
+        %       NaN              : Arbitrary dimension size independent of other dimensions.
+        % 
+        %
+        % RETURN VALUES
+        % =============
+        % Size of dimensions labelled with negative integers, in order -1, -2, ... .
+        %
+        %
+        % NOTES
+        % =====
+        % FINISHED (except assertions on input) but uncertain if
+        %   has sensible design
+        %   has sensible name
+        %   should replace "size()"
+        % NOTE: Returning values in principle makes it an assertion+functionality.
+        %
+        function [varargout] = sizes(varargin)
+            % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices
+            %           have to be identical in size (but arbitrary) between variables.
+            %
+            %   PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
+            %       PROPOSAL: sizeConstraints = 1x1 cell array, with one numeric value (N, negativeValue, NaN).
+            %       PROPOSAL: Prepend sizeConstraints with string constant "vector", "1D", "1D vector".
+            %   ~CON/NOTE: Can not assert equal size for variables with arbitrary number of dimensions.
+            %
+            %   PROPOSAL: Same dimensions in all dimensions except those specified.
+            %       PRO: Better handling of "high dimensions to infinity".
+            %
+            % PROPOSAL: Count all negative numbers as sizes, not just successive integers.
+            %   Return values is negative integers in order, but not necesarily in order
+            
+            nArgs = numel(varargin);
+
+            sizeArray            = [];
+            sizeConstraintsArray = [];
+
+            %============================================================================
+            % Read arguments and store values in "data structure" suitable for algorithm
+            %============================================================================
+            specialSizeValue = 0;
+            while true
+                if nArgs == 2*specialSizeValue
+                    break
+                elseif nArgs >= 2*(specialSizeValue+1)
+                    specialSizeValue = specialSizeValue + 1;
+                else
+                    error(EJ_library.assert.ASSERTION_EMID, 'Ill-formed assertion. Number of arguments is not even.')
+                end
+
+                sizeArg           = size(varargin{2*specialSizeValue-1});
+                sizeConstraintArg = varargin{2*specialSizeValue};
+                EJ_library.assert.vector(sizeConstraintArg)
+                
+                % Force column arrays.
+                sizeArg           = sizeArg(:);
+                sizeConstraintArg = sizeConstraintArg(:);                
+                
+                % Pad the smallest arrays with ones until both have same size
+                % -----------------------------------------------------------
+                % NOTE: padarray pads in first dimension by default.
+                nDiff = numel(sizeArg) - numel(sizeConstraintArg);
+                if nDiff >= 1
+                    sizeConstraintArg = padarray(sizeConstraintArg,  nDiff, 1, 'post');
+                else
+                    sizeArg           = padarray(sizeArg,           -nDiff, 1, 'post');
+                end
+                
+                sizeArray            = [sizeArray;            sizeArg];
+                sizeConstraintsArray = [sizeConstraintsArray; sizeConstraintArg];
+            end
+            
+            %================================
+            % Assert explicitly stated sizes
+            %================================
+            b = (sizeConstraintsArray >= 0);
+            assert(all(sizeConstraintsArray(b) == sizeArray(b)), ...
+                'Variable(s) have different sizes for explicitly specified dimension sizes.')
+            sizeConstraintsArray(b) = NaN; % Effectively remove already checked size constraints.
+
+            %=======================
+            % Assert matching sizes
+            %=======================
+            specialSizeValue = -1;
+            while true
+                b = (sizeConstraintsArray == specialSizeValue);
+                if ~any(b)
+                    break
+                end
+
+                uniqueValues = unique(sizeArray(b));
+                nUniqueSizes = numel(uniqueValues);
+
+                assert(nUniqueSizes == 1, 'Variables have different sizes for dimensions labelled %i.', specialSizeValue)
+
+                varargout{-specialSizeValue} = uniqueValues;
+
+                sizeConstraintsArray(b) = NaN;   % Effectively remove already checked size constraints.
+                
+                specialSizeValue = specialSizeValue - 1;
+            end
+            
+            % ASSERTION: Assert correct size constraints.
+            % Exclude NaN.
+            assert(all(isnan(sizeConstraintsArray)), ...
+                'Size constraints contains negative numbers that can not (are not supposed to) be interpreted as constraints.')
+
+            %=====================================
+            % NOTE: Ignore sizeConstraints == NaN
+            %=====================================
+        end
+
+
+
         % Assert that all values in a matrix are identical. Useful for e.g. checking that sizes of vectors are
         % identical.
+        %
         %
         % ARGUMENT
         % ========
@@ -452,7 +564,7 @@ classdef assert
             nTotal   = numel(v);
             
             if (nUniques ~= 1) && (nTotal >= 1)
-                error(EJ_library.assert.ERROR_MSG_ID, ...
+                error(EJ_library.assert.ASSERTION_EMID, ...
                     'Expected vector of identical values, but found %i unique values out of a total of %i values.', ...
                     nUniques, nTotal)
             end

@@ -1,3 +1,4 @@
+%
 function add_struct_to_struct___ATEST
     
     AB  = struct('a', 1, 'b', 2);
@@ -27,9 +28,14 @@ function add_struct_to_struct___ATEST
     tl{end+1} = NewTest({AB, CD, SET_OEEE}, {struct('a', 1, 'b', 2, 'c', 3, 'd', 4)});
     tl{end+1} = NewTest({AB, CD},           {struct('a', 1, 'b', 2, 'c', 3, 'd', 4)});    % Test default DFP.
     
-    % Test struct arrays
-    A   = EJ_library.utils.empty_struct([9,0], 'a', 'b');
-    B   = EJ_library.utils.empty_struct([9,0],      'b', 'c');
+    % Test struct arrays without overlap.
+    A = EJ_library.utils.empty_struct([9,1], 'a');
+    B = EJ_library.utils.empty_struct([9,1],      'b');
+    tl{end+1} = NewTest({A, B, SET_OEEE}, {EJ_library.utils.empty_struct([9,1], 'a', 'b')});
+    
+    % Test struct arrays with overlap
+    A = EJ_library.utils.empty_struct([9,1], 'a', 'b');
+    B = EJ_library.utils.empty_struct([9,1],      'b', 'c');
     tl{end+1} = NewTest({A, B, SET_OEEE}, 'MException');
     
     % Overlap
