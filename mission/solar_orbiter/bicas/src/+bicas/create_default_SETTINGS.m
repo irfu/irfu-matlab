@@ -199,7 +199,7 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('INPUT_CDF.CUR.PREPEND_TEST_DATA',        0)
     % For testing, when HK and SCI time are completely different and do not overlap (though HK time still has to cover a
     % larger interval than SCI). Adds/subtracts HK time so that the first HK timestamp equals the first SCI timestamp.
-    S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',              0)
+    S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',          0)
     
     
     
@@ -208,15 +208,14 @@ function SETTINGS = create_default_SETTINGS()
     % ------------
     % Settings that apply to ALL output datasets
     %############################################
-    % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
-    %S.define_setting('OUTPUT_CDF.DATA_VERSION',                    '01');
-    % Flag to disable writing output files. Useful for debugging.
-    S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',             0)
+    % Flag to disable writing output files AFTER PROCESSING. Useful for debugging.
+    S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',            0)
     % What BICAS should do when there is a pre-existing file on a output dataset file path.
     % NOTE: Not known if the RCS ICD says anything about what should be the default, or what ROC thinks it should be.
-    S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY',                'WARNING');    % ERROR, WARNING.
-    
-    
+    S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY', 'WARNING');    % ERROR, WARNING.
+    % Disable processing, but generate empty output files. Useful for debugging code that calls BICAS many times (batch
+    % processing) and when dataset content is unimportant since it speeds up BICAS. 
+    S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
     
     % Value that shows up in output dataset GlobalAttributes.Calibration_version.
     % Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value.
