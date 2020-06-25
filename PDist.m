@@ -1258,7 +1258,7 @@ classdef PDist < TSeries
         PD.ancillary.vy_edges = all_vy_edges_tmp;
         PD.ancillary.base = 'pol';
       elseif dim == 2 && strcmpi(base,'cart')
-        PD = PDist(dist.time(it),Fg,'plane (reduced)',all_vx*1e-3,all_vx*1e-3);
+        PD = PDist(dist.time(it),Fg,'plane (reduced)',squeeze(all_vx)*1e-3,squeeze(all_vx)*1e-3);
         PD.ancillary.vx_edges = all_vx_edges*1e-3;
         PD.ancillary.vy_edges = all_vx_edges*1e-3;
         PD.ancillary.base = 'cart';
