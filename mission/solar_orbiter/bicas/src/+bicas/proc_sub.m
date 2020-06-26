@@ -734,11 +734,9 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
-            OutSciZv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1);
-            OutSciZv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2);
-            OutSciZv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3);
-            
-            
+            OutSciZv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
+            OutSciZv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
+            OutSciZv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
             
             % NOTE: The two cases are different in the indexes they use for OutSciZv.
             switch(outputDsi)
@@ -816,9 +814,9 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
-            OutSciZv.IBIAS1     = SciPostDc.Zv.currentAAmpere(:, 1);
-            OutSciZv.IBIAS2     = SciPostDc.Zv.currentAAmpere(:, 2);
-            OutSciZv.IBIAS3     = SciPostDc.Zv.currentAAmpere(:, 3);
+            OutSciZv.IBIAS1     = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
+            OutSciZv.IBIAS2     = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
+            OutSciZv.IBIAS3     = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
             
             % NOTE: The two cases are actually different in the indexes they use for OutSciZv.
             switch(outputDsi)
