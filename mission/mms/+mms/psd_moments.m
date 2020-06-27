@@ -216,6 +216,8 @@ end
 
 if isfield(pdist.ancillary,'delta_energy_minus') && isfield(pdist.ancillary,'delta_energy_plus')
   flag_dE = 1;
+  energy_minus = pdist.ancillary.delta_energy_minus;
+  energy_plus = pdist.ancillary.delta_energy_plus;
 end
 
 % Calculate speed widths associated with each energy channel.
