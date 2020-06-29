@@ -68,35 +68,6 @@ classdef proc_utils
                 S.(fn) = [S.(fn) ; SAmendment.(fn)];
             end
         end
-
-        
-
-        function freqHz = get_LFR_frequency(iLsf, lsfArrayHz)
-        % Convert LFR zVariable FREQ values to Hz. The usefulness of this function stems from how the LFR
-        % datasets are defined.
-        %
-        % ARGUMENTS
-        % =========
-        % iLsf   : The LSF index, i.e. 1=LFR freq. F0, and so on.
-        % freqHz : Frequency in Hz.
-        
-        % PROPOSAL: Somehow avoid having an argument for lsfArrayHz. Have it as a constant somehow.
-
-            % ASSERTION
-            uniqueValues = unique(iLsf);
-            if ~all(ismember(uniqueValues, [1,2,3,4]))
-                uniqueValuesStr = sprintf('%d', uniqueValues);   % NOTE: Has to print without \n to keep all values on a single-line string.
-                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
-                    'Found unexpected values in LSF index (corresponding to LFR FREQ+1). Unique values: %s.', uniqueValuesStr)
-            end
-            
-            % NOTE: Implementation that works for arrays of any size.
-            freqHz = ones(size(iLsf)) * NaN;        % Allocate array and set default values.
-            freqHz(iLsf==1) = lsfArrayHz(1);
-            freqHz(iLsf==2) = lsfArrayHz(2);
-            freqHz(iLsf==3) = lsfArrayHz(3);
-            freqHz(iLsf==4) = lsfArrayHz(4);
-        end
         
         
         

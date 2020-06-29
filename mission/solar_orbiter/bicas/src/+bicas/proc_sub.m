@@ -306,11 +306,11 @@ classdef proc_sub
 
         
         
-        % Wrapper around EJ_library.so.zv_TC_to_current for anomaly handling.
+        % Wrapper around EJ_library.so.CURRENT_zv_to_current_interpolate for anomaly handling.
         function sciZv_IBIASx = zv_TC_to_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
             
-            [sciZv_IBIASx, duplicateAnomaly] = EJ_library.so.zv_TC_to_current(...
-                curZv_Epoch, ...
+            [sciZv_IBIASx, duplicateAnomaly] = EJ_library.so.CURRENT_zv_to_current_interpolate(...
+                double(curZv_Epoch), ...
                 curZv_IBIAS_x, ...
                 sciZv_Epoch);
             
@@ -320,20 +320,20 @@ classdef proc_sub
                 % Handle non-monotonically increasing Epoch
                 %======================================================================================================
 
-                [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.CUR.NON-MONOTONICALLY-INCREMENTING_ZV_EPOCH_POLICY');
-                anomalyDescriptionMsg = 'Bias currents contain multiple identical timestamps on the same antenna.';
+                [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY');
+                anomalyDescriptionMsg = 'Bias current data contain dupicate settings, with identical timestamps and identical bias settings on the same antenna.';
                 
                 switch(settingValue)
                     case 'REMOVE_DUPLICATES'
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
                             anomalyDescriptionMsg)
                         L.log('warning', ...
-                            'Removed identical bias current settings with identical timestamps on the same antenna.')
+                            'Removed duplicated bias current settings with identical timestamps on the same antenna.')
 
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
                             anomalyDescriptionMsg, 'BICAS:proc_sub:SWModeProcessing:DatasetFormat')
-                end                
+                end
             end
         end    % TC_to_current
         
@@ -422,7 +422,7 @@ classdef proc_sub
 
 
             % NOTE: Needed also for 1 SPR.
-            zvFreqHz = bicas.proc_utils.get_LFR_frequency( iLsfZv, SETTINGS.get_fv('PROCESSING.LFR.F0_F1_F2_F3_HZ') );
+            zvFreqHz = EJ_library.so.get_LFR_frequency( iLsfZv );
 
             % Obtain the relevant values (one per record) from zVariables R0, R1, R2, and the virtual "R3".
             zvRx = bicas.proc_utils.get_LFR_Rx(...

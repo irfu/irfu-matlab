@@ -181,9 +181,12 @@ function SETTINGS = create_default_SETTINGS()
     % NOTE: This modification applies BEFORE PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
     % Epoch.
     % NOTE: Only check for increasing, not monotonically.
+    % NOTE: There is a known, mitigatable anomaly in SOLO_L1_RPW_BIA-CURRENT which duplicated settings (same timestamp,
+    % same bias setting on same antenna) which would be triggered by an assertion on an assert on monotonically
+    % increasing timestamps.
     S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',                   'ERROR')      % ERROR, WARNING, SORT
     
-    S.define_setting('INPUT_CDF.CUR.NON-MONOTONICALLY-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
+    S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'REMOVE_DUPLICATES')    % ERROR, REMOVE_DUPLICATES
     
     % Whether to replace pad values with NaN internally.
     % NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore useful.
@@ -300,14 +303,6 @@ function SETTINGS = create_default_SETTINGS()
     % solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V04.cdf   : Does not have mux mode. Irrelevant dataset (not LFM).
     %===================================================================================================================
     S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
-    
-    %===================================================================================================================
-    % Define LFR sampling frequencies used for LFR datasets
-    % ------------------------------------------------------
-    % The variables names (F[0-3]) follow LFR's naming scheme.
-    % Only used for sequences of samples within the same CDF record (?!).
-    %===================================================================================================================
-    S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   % 24576 = 6 * 4096
     
     
     
