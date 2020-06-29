@@ -228,7 +228,7 @@ if isbrstdata % Burst mode energy/speed widths
     energylower = energy - energy_minus;
     vupper = sqrt(2*qe*energyupper/pmass);
     vlower = sqrt(2*qe*energylower/pmass);
-    deltav = (vupper-vlower);
+    deltavmat = (vupper-vlower);
   else
     energyall = [energy0 energy1];
     energyall = log10(sort(energyall));
@@ -274,6 +274,7 @@ end
 for nt = 1:length(pdist.time)
   if isbrstdata
     if flag_same_e && flag_dE
+      deltav = deltavmat(nt,:);
     else
       energy = energy0;
       deltav = deltav0;

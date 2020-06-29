@@ -100,7 +100,7 @@ end
 lengthphi = length(PDist.depend{1,2}(1,:));
 
 % Define corrected energy levels using SCpot
-energyarr = PDist.ancillary.energy;
+energyarr = PDist.depend{1,1};
 v = zeros(size(energyarr));
 deltav = zeros(size(energyarr));
 
