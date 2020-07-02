@@ -350,6 +350,11 @@ function SETTINGS = create_default_SETTINGS()
     %   N.B. The CAL file naming convention is not fully compliant with the SOC definition [AD1]. /.../
     % """"""""
     %
+    % Xavier Bonnin, 2020-07-02:
+    %   Wrong:   SOLO_CAL_RPW_BIAS_V202004062127.cdf   # NOTE: No minus!
+    %   Correct: SOLO_CAL_RPW-BIAS_V202004062127.cdf   # NOTE: Minus!
+    %
+    %
     % RATIONALE
     % =========
     % RCT filenaming is implemented as settings since filenaming seems likely to change.
@@ -378,7 +383,7 @@ function SETTINGS = create_default_SETTINGS()
     % NOTE: Only the last filename in a sorted list of matching filenames will actually be used.
     %===================================================================================================================
     CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-    S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);    % Wrong filenaming convention?!!
+    S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
