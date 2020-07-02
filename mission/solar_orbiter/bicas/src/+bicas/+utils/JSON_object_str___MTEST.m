@@ -6,7 +6,7 @@
 function JSON_object_str___MTEST
     
     obj = define_descriptor1();
-    str = bicas.utils.JSON_object_str(obj, 4, 15);
+    str = bicas.utils.JSON_object_str(obj, 4);
     fprintf('-------------------------------------------\n');
     fprintf(str);
     
