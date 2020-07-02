@@ -253,7 +253,6 @@ classdef calib < handle
             obj.SETTINGS         = SETTINGS;
             obj.L                = L;
             
-            %obj.pipelineId       = pipelineId;
             obj.enableDetrending = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
             obj.calibrationDir   = calibrationDir;
             

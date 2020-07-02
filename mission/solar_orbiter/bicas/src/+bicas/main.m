@@ -438,19 +438,20 @@ function main_without_error_handling(cliArgumentsList, L)
             
             
             
-            %================================
-            % Set pipelineId, calibrationDir
-            %================================
+            %==================================
+            % Set calibrationDir, masterCdfDir
+            %==================================
             % NOTE: Reading environment variables first here, where they are needed.
             calibrationDir = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-            %pipelineId     = read_env_variable(SETTINGS, L, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
             masterCdfDir   = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
             L.logf('info', 'calibrationDir = "%s"', calibrationDir)
-            %L.logf('info', 'pipelineId     = "%s"', pipelineId)
             L.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
-            
-            
-            
+
+            EJ_library.assert.dir_exists(calibrationDir)
+            EJ_library.assert.dir_exists(masterCdfDir)
+
+
+
             %==================
             % EXECUTE S/W MODE
             %==================

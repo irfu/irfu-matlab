@@ -13,8 +13,8 @@
 % RATIONALE: INSTANTIATED CLASS INSTEAD OF LOGGING FUNCTIONS
 % ==========================================================
 % Improve flexibility. No matter how complex the configuration of the logging is, it can be done once when configuring
-% the class instance, and all the variables are then passed along with the object, or by using persistant/global
-% variables (ugly!).
+% the class instance, and all the variables are then passed along with the object.
+% --
 % Ex: Switch between any combination of logging to (1) file and/or (2) stdout, or (3) don't log at all.
 % Ex: Switch between log prefixes or not.
 % Ex: Non-BICAS code that uses BICAS code (e.g. bicas.calib) can have other logging, or none.
@@ -66,7 +66,7 @@ classdef logger < handle
         
         LINE_FEED  = char(10);
         
-        stdoutOption   = 'None';
+        stdoutOption   = 'none';
         
         logFileEnabled = false;
         logFileId      = [];
@@ -84,7 +84,7 @@ classdef logger < handle
         % No arguments   : No logging at all.
         % --
         % stdoutOption   : String constant.
-        %                   'None'
+        %                   'none'
         %                   'human-readable' : Log to stdout as is most convenient for a human reader.
         %                   'bash wrapper'   : Log to stdout as required by BICAS bash wrapper script.
         % logFileEnabled : Logical/numerical. Whether to write to log file.
@@ -96,7 +96,7 @@ classdef logger < handle
             %   CON: Want short call for no logging.
             
             if nargin == 0
-                obj.stdoutOption   = 'None';
+                obj.stdoutOption   = 'none';
                 obj.logFileEnabled = false;
                 
             elseif nargin == 2
@@ -104,8 +104,8 @@ classdef logger < handle
                 logFileEnabled = logical(logFileEnabled);
                 
                 switch(stdoutOption)
-                    case 'None'
-                        obj.stdoutOption = 'None';
+                    case 'none'
+                        obj.stdoutOption = 'none';
                         
                     case 'human-readable'
                         obj.stdoutOption = 'human-readable';
@@ -181,7 +181,7 @@ classdef logger < handle
             % Print to stdout
             %=================
             switch(obj.stdoutOption)
-                case 'None'
+                case 'none'
                 case 'human-readable'
                     obj.write_to_stdout(rcsIcdLogMsg)
                 case 'bash wrapper'

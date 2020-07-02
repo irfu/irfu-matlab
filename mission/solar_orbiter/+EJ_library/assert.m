@@ -444,6 +444,7 @@ classdef assert
         %   has sensible name
         %   should replace "size()"
         % NOTE: Returning values in principle makes it an assertion+functionality.
+        % NOTE: One needs to add semicolon to end of row, since it returns values.
         %
         function [varargout] = sizes(varargin)
             % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices

@@ -9,6 +9,7 @@
 % nSpr              : Positive integer. Scalar. Number of values/samples per record (SPR).
 % freqWithinRecords : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
 %
+%
 % RETURN VALUE
 % ============
 % newTt2000         : Nx1 vector. Like oldTt2000 but each single time (row) has been replaced by a constantly

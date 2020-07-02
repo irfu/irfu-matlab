@@ -186,6 +186,8 @@ function SETTINGS = create_default_SETTINGS()
     % increasing timestamps.
     S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',                   'ERROR')      % ERROR, WARNING, SORT
     
+    % Set to REMOVE_DUPLICATES as requested by Xavier Bonnin in
+    % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/27#note_15954
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'REMOVE_DUPLICATES')    % ERROR, REMOVE_DUPLICATES
     
     % Whether to replace pad values with NaN internally.
@@ -243,9 +245,9 @@ function SETTINGS = create_default_SETTINGS()
     % Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?) SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
     % Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
     S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'WARNING');   % ERROR, WARNING
-    
-    
-    
+
+
+
     % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
     S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass',                 0)
     % Whether the size per record of an empty (0 records) output DF zVar has to be in agreement with the master CDF's size
@@ -366,12 +368,13 @@ function SETTINGS = create_default_SETTINGS()
     % NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add seconds=2 digits).
     % NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of day, only date)
     %
-    % Examples of de facto RCT filenames (2019 Sept)
+    % Examples of de facto RCT filenames (2019 Sept + later)
     % ----------------------------------------------
     % BIAS:
     %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
     %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention, closer to documentation)
     %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old implemented convention)
+    %           SOLO_CAL_RPW_BIAS_V202004062127.cdf   (almost correct)
     % LFR:
     %       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
     %           SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf

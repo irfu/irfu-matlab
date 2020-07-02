@@ -33,32 +33,71 @@ function apply_transfer_function___ATEST
     %
     % PROPOSAL: Proper functions (with longer descriptive names) for creating functions, instead of function pointers.
     
-    
     % EPSILON = 1e-6;
     EPSILON = 1e-4;
     
-    input  = {};
-    output = {};
+    
+    
+    [inputCa, outputCa] = define_tests();
+%     inputCa  = inputCa(1);
+%     outputCa = outputCa(1);
+
+    %======================
+    % Run & plot all tests
+    %======================
+    close all
+    for iTest = 1:numel(inputCa)
+        
+        y2_exp = outputCa{iTest};
+        y2_res = bicas.utils.apply_transfer_function( inputCa{iTest}{:} );
+        
+        n = (1:length(y2_exp))';
+        y1 = inputCa{iTest}{2};
+        figure
+        plot(n, y1,     '-');   hold on
+        plot(n, y2_exp, '-k', 'LineWidth', 2.0)
+        plot(n, y2_res, '*')
+        legend('y1', 'y2\_expected', 'y2\_result')
+        xlabel('Array index (not t)')
+        
+        if ~EJ_library.utils.approx_equals(y2_res, y2_exp, EPSILON, 'NaN equal to itself')
+            %error('BICAS:TEST', 'TEST FAILED')
+            warning('TEST FAILED')
+            
+            [y2diffMax, iY2DiffMax] = max(abs(y2_res - y2_exp))
+            %         keyboard
+            %         close all
+        else
+            disp('TEST OK')
+        end
+    end
+    
+end
+
+
+
+function [inputCa, outputCa] = define_tests()
+    inputCa  = {};
+    outputCa = {};
     
     % Function for creating time samples vector.
     tVec = @(N,dt) (0 : dt : ((N-1)*dt) )';
     
-    % Function for creating a function (time domain) which is a delayed version of a specified function AND treats it as
-    % cyclic. delay>0 pushes it in t+ direction.
+    % Function for creating another function (time domain) which is a delayed version of a specified function AND treats
+    % it as cyclic. delay>0 pushes it in t+ direction.
     % f  : Function pointer
     % N  : Number of samples in time series.
     % dt :
     delayedFunc = @(f,t,delay,N,dt) (f(mod(t-delay, N*dt)));
     
-    % TF that delays function (in time domain), i.e. one time delay for all frequencies.
+    % TF that delays function, i.e. it is moved in the t+ direction (time domain), i.e. one time delay for all
+    % frequencies
     delayTfZ    = @(omega, delay)   (exp(1i*omega*(-delay)));
     
     % TF for (almost) constant Z. Implements Z(omega=0)=z0 and Z(omega>0)=z1.
     % NOTE: Must work for omega=vector.
     % NOTE: z0 should be real.
     constantTfZ = @(omega, z0, z1) ( (omega==0)*z0 + (omega~=0)*z1 );
-    
-    
     
     if 1
         % Signal: Quadratic function
@@ -72,13 +111,13 @@ function apply_transfer_function___ATEST
         tf     = @(omega) delayTfZ(omega, delay);
         
         t  = tVec(N, dt);
-        f = @(t) (0.5*t.^2 - 1*t + 2);
+        f = @(t) (0.5*(t-3).^2 + 5);
         y1 = f(t);
         y2 = delayedFunc(f, t, delay, N, dt);
         
         %    input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};   % Test fails legitimately
-        input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
-        output{end+1} = y2;
+        inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+        outputCa{end+1} = y2;
     end
     
     if 1
@@ -96,8 +135,8 @@ function apply_transfer_function___ATEST
         y2 = f2(t);
         
         % NOTE: Test without de-trending.
-        input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
-        output{end+1} = y2;
+        inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+        outputCa{end+1} = y2;
     end
     
     if 1
@@ -116,8 +155,8 @@ function apply_transfer_function___ATEST
             y1 = f(t);
             y2 = delayedFunc(f, t, delay, N, dt);
             
-            input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
-            output{end+1} = y2;
+            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+            outputCa{end+1} = y2;
         end
     end
     
@@ -144,8 +183,8 @@ function apply_transfer_function___ATEST
             y1 = f(t);
             y2 = delayedFunc(f,t,delay,N,dt);
             
-            input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
-            output{end+1} = y2;
+            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+            outputCa{end+1} = y2;
         end
     end
     
@@ -166,8 +205,8 @@ function apply_transfer_function___ATEST
             y2 = delayedFunc(f,t,delay,N,dt);
             
             %         input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};    % De-trend
-            input{end+1} = {dt, y1, tf, 'enableDetrending', 0};    % De-trend
-            output{end+1} = y2;
+            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};    % De-trend
+            outputCa{end+1} = y2;
         end
     end
     
@@ -188,40 +227,9 @@ function apply_transfer_function___ATEST
             y2 = delayedFunc(f,t,delay,N,dt);
             %         y1(3) = NaN;    % TEST
             
-            input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
             %         input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};
-            output{end+1} = y2;
+            outputCa{end+1} = y2;
         end
     end
-    
-    
-    
-    close all
-    for iTest = 1:length(input)
-        
-        y2_exp = output{iTest};
-        y2_res = bicas.utils.apply_transfer_function( input{iTest}{:} );
-        
-        n = (1:length(y2_exp))';
-        y1 = input{iTest}{2};
-        figure
-        %     plot(n, [y1, y2_exp])
-        plot(n, y1,     '-'); hold on
-        plot(n, y2_exp, '-k', 'LineWidth', 2.0)
-        plot(n, y2_res, '*')
-        legend('y1', 'y2\_expected', 'y2\_result')
-        xlabel('array index (not t)')
-        
-        if ~EJ_library.utils.approx_equals(y2_res, y2_exp, EPSILON, 'NaN equal to itself')
-            %error('BICAS:TEST', 'TEST FAILED')
-            warning('TEST FAILED')
-            
-            [y2diffMax, iY2DiffMax] = max(abs(y2_res - y2_exp))
-            %         keyboard
-            %         close all
-        else
-            disp('TEST OK')
-        end
-    end
-    
 end

@@ -108,6 +108,8 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
 %
 % PROPOSAL: Read temperature which seems contained in all (?) calibration table files.
 %   Ex: "header.reg2 23.96   :Ambient temperature in C"
+%
+% PROPOSAL: Functions for reading files in separate file (or static functions in separate class).
 
 
 

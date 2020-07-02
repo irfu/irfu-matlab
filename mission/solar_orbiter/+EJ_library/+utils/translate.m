@@ -1,5 +1,6 @@
 %
-% Function for "translating" a string into another value from a table. Give proper error message if no match.
+% Function for "translating" a string into another value (not necessarily string) from a table. Give proper error
+% message if no match.
 %
 %
 % RATIONALE

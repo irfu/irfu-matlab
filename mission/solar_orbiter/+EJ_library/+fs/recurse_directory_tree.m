@@ -76,7 +76,7 @@
 % dirCmdResult   : The struct with information for this object that is returned by MATLAB's "dir", 
 %                  i.e. NOT information on all the children, only the object itself.
 % recursionDepth : Number of levels into the rootDirPath subdirectory tree. rootDirPath is level zero.
-%                  Files and directories have the same level.
+%                  Files and directories under the same directory have the same level.
 %
 %
 %
@@ -166,7 +166,8 @@ function result = recurse_directory_tree(rootDirPath, FileFunc, DirFunc, ShouldR
 
 % PROPOSAL: Argument för maximalt rekursionsdjup.
 %   CON: Behövs inte. ShouldRecurseFunc kan lätt implementera det om det behövs.
-% PROPOSAL: Tillåt kombination  Settings.useRelativeDirectorySlash && ~Settings.useRootRelativePathPeriod.
+% PROPOSAL: Allow combination
+%           Settings.useRelativeDirectorySlash && ~Settings.useRootRelativePathPeriod.
 %           Lägg då INTE till snedstreck för rootkatalogen.
 % PROPOSAL: Avskaffa useRelativeDirectorySlash. Aldrig sluta med slash.
 %   NOTE: Se MATLAB-anteckningsfil.
@@ -186,6 +187,7 @@ function result = recurse_directory_tree(rootDirPath, FileFunc, DirFunc, ShouldR
     DEFAULT_SETTINGS.useRelativeDirectorySlash = false;
     DEFAULT_SETTINGS.useRootRelativePathPeriod = false;
     Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+    EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
     % ASSERTION
     if Settings.useRelativeDirectorySlash && ~Settings.useRootRelativePathPeriod
@@ -209,7 +211,8 @@ function result = recurse_directory_tree(rootDirPath, FileFunc, DirFunc, ShouldR
     % paths beginning with "./" which is unnecessary for the actual children of the directory.
     result = recurse_directory_tree_INTERNAL(...
         rootDirPath, '', ...
-        dirCmdResultRootPath, 0, ...
+        dirCmdResultRootPath, ...
+        0, ...
         FileFunc, DirFunc, ShouldRecurseFunc, ...
         relativeDirectoryPathSuffix, relativePathRoot);
 end
@@ -235,8 +238,10 @@ end
 % result              : [] (not cell) if ShouldRecurseFunc returns false for this directory.
 % 
 function result = recurse_directory_tree_INTERNAL(...
-        rootDirPath, relativePath, ...
-        dirCmdResultCurrent, recursionDepth, ...
+        rootDirPath, ...
+        relativePath, ...
+        dirCmdResultCurrent, ...
+        recursionDepth, ...
         FileFunc, DirFunc, ShouldRecurseFunc, ...
         relativeDirectoryPathSuffix, relativePathRoot)
     

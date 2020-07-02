@@ -3,7 +3,6 @@
 % First created 2019-08-02
 %
 function assert_DATASET_ID(datasetId)
-    % PROPOSAL: Optional second argument for pipeline ID.
     % PROPOSAL: Implement via list.
     % PROPOSAL: Implement via EJ_library.so.adm.classify_DATASET_ID. See implementation.
     
