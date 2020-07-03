@@ -71,11 +71,11 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir)
 
 
 
-    rctFilename = get_dest_RCT_filename();
+    [rctFilename, gaCALIBRATION_VERSION] = get_dest_RCT_filename();
     rctPath     = fullfile(destDir, rctFilename);
 
     [RctZvL, RctZvH] = set_RCT_content();
-    create_RCT_file(rctMasterCdfFile, rctPath, RctZvL, RctZvH);
+    create_RCT_file(rctMasterCdfFile, rctPath, RctZvL, RctZvH, gaCALIBRATION_VERSION);
 end
 
 
@@ -190,12 +190,15 @@ end
 % ===================================================
 % See comments for bicas.create_default_SETTINGS, settings PROCESSING.RCT_REGEXP.* (all RCTs).
 %
-function destFilename = get_dest_RCT_filename()
+function [destFilename, gaCALIBRATION_VERSION] = get_dest_RCT_filename()
     % IMPLEMENTATION NOTE: The official filenaming convention is not followed here!! Not sure how to comply with it either (which
     % receiver should the BIAS RCT specify?).
     
+    % NOTE: Should not contain seconds.
+    gaCALIBRATION_VERSION = datestr(clock, 'yyyymmddHHMM');
+    
     % NOTE: Minus in "RPW-BIAS".
-    destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', datestr(clock, 'yyyymmddHHMM'));
+    destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);
 end
 
 
@@ -263,12 +266,16 @@ end
 
 % rctL : Struct with zVars associated with Epoch_L.
 % rctH : Struct with zVars associated with Epoch_H.
-function create_RCT_file(rctMasterCdfFile, destPath, RctL, RctH)
+function create_RCT_file(rctMasterCdfFile, destPath, RctL, RctH, gaCALIBRATION_VERSION)
     % PROPOSAL: Assertion for matching number of records Epoch_L+data, Epoch_H+data.
     %   PROPOSAL: Read from master file which should match.
     % TODO-DECISION: Require correct MATLAB classes (via write_CDF_dataobj)?
     
+    assert(ischar(gaCALIBRATION_VERSION))
+    
     DataObj = dataobj(rctMasterCdfFile);
+    
+    DataObj.GlobalAttributes.CALIBRATION_VERSION = {gaCALIBRATION_VERSION};
     
     DataObj.data.Epoch_L.data = RctL.Epoch_L;
     DataObj.data.Epoch_H.data = RctH.Epoch_H;

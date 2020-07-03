@@ -11,7 +11,7 @@
 function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir)
 % MANUAL CALL
 % NOTE: Should NOT(!!!) use RCT master CDF at /nonhome_data/work_files/SOLAR_ORBITER/skeletons_BIAS_RCT/.
-% bicas.tools.create_RCT_and_RCT_JSON('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RCT-BIAS_V01.cdf', '/home/erjo/temp/')
+% bicas.tools.create_RCT_and_RCT_JSON('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V02.cdf', '/home/erjo/temp/')
 %
 
     rctPath     = bicas.tools.create_RCT(rctMasterCdfFile, destDir);
