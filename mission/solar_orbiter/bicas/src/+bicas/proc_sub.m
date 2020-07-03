@@ -437,6 +437,7 @@ classdef proc_sub
             PreDc.Zv.freqHz                 = zvFreqHz;
             PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
             PreDc.Zv.SYNCHRO_FLAG           = InSci.Zv.SYNCHRO_FLAG;
+            PreDc.Zv.BW                     = InSci.Zv.BW;
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
                 % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
@@ -696,7 +697,7 @@ classdef proc_sub
             EJ_library.assert.struct(PreDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
                 'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, ...
-                {'CALIBRATION_TABLE_INDEX'});
+                {'CALIBRATION_TABLE_INDEX', 'BW'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
 
             assert(isa(PreDc.Zv.freqHz, 'double'))
@@ -711,7 +712,7 @@ classdef proc_sub
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
                 'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', ...
                 'currentAAmpere', 'DemuxerOutput'}, ...
-                {'CALIBRATION_TABLE_INDEX'});
+                {'CALIBRATION_TABLE_INDEX', 'BW'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
 
@@ -730,6 +731,7 @@ classdef proc_sub
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
             OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
+            OutSciZv.BW               = SciPostDc.Zv.BW;
             OutSciZv.DELTA_PLUS_MINUS = SciPostDc.Zv.DELTA_PLUS_MINUS;
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
@@ -789,7 +791,7 @@ classdef proc_sub
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
             EJ_library.assert.struct(OutSciZv, {...
-                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'BW', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end   % process_PostDC_to_LFR
 
