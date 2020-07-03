@@ -7,19 +7,19 @@ function hout = pl_l2(fName)
 %% load data
 d =dataobj(fName);
 
-El2 = get_ts(d,'EDC');
-Vl2 = get_ts(d,'VDC');
+EDC = get_ts(d,'EDC'); 
+VDC = get_ts(d,'VDC');
 
 %% plot data
 
 h = irf_plot(2,'reset');
 
-irf_plot(h(1),El2);
+irf_plot(h(1),EDC);
 legend(h(1),'V12','V13','V23')
 [~,fName_s,~] = fileparts(fName);
 title(h(1),fName_s,'Interpreter','none')
 
-irf_plot(h(2),Vl2);
+irf_plot(h(2),VDC);
 legend(h(2),'V1','V2','V3')
 
 %%

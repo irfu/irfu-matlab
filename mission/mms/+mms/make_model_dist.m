@@ -78,7 +78,7 @@ lengththeta = length(PDist.depend{1,3});
 lengthenergy = length(PDist.ancillary.energy0);
 
 % Get energy array
-energyarr = PDist.ancillary.energy;
+energyarr = PDist.depend{1,1};
 
 % Define Cartesian coordinates
 x = zeros(length(PDist.time),lengthphi,lengththeta);
