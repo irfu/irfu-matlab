@@ -1,5 +1,9 @@
 function [DCE,PSP] = vdccal(VDC)
+%VDCCAL  Calibrate VDC to get DC E and PSP
+%
+%    [DCE,PSP] = vdccal(VDC)
 
+% d23K123.mat file produced by solo.correlate_probes_batch (script)
 a = load('d23K123.mat');
 
 d23R = a.d23.resample(VDC);
