@@ -133,14 +133,14 @@ function SETTINGS = create_default_SETTINGS()
         ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
         ' (2) calibrate bias currents from L1 data.']);
     S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-    S.define_setting('SWD.release.version',            '2.0.1');
-    S.define_setting('SWD.release.date',               '2020-05-18T19:16:00Z');
+    S.define_setting('SWD.release.version',            '3.0.0');
+    S.define_setting('SWD.release.date',               '2020-07-07T17:04:00Z');
     S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team, IRF');
     S.define_setting('SWD.release.contact',            'erjo@irfu.se');
     S.define_setting('SWD.release.institute',          IRF_LONG_NAME);   % Full name or abbreviation?
     %S.define_setting('SWD.release.modification',       'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.');
     %S.define_setting('SWD.release.modification',       'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).');
-    S.define_setting('SWD.release.modification',       'Bugfix: Correctly reads L1 dataset bias currents as nanoampere');
+    S.define_setting('SWD.release.modification',       'High freq. TF cutoff; use LFR mux mode; tolerate input/L1 bias current duplicates; copies zv BW; output nA; V09 master CDFs');
     S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch? "master" instead?
     %
     S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
@@ -225,7 +225,7 @@ function SETTINGS = create_default_SETTINGS()
     % Value that shows up in output dataset GlobalAttributes.Calibration_version.
     % Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value.
     S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
-        '1.0; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Currents: No data.');
+        '1.1; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Calibrates currents.');
     
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
