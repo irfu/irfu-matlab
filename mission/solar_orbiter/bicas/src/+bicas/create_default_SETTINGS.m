@@ -464,6 +464,13 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
     % Whether to use de-trending before applying transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED',        1)
+    % Frequency above which the ITF is set to zero.
+    % Expressed as a fraction of the Nyquist frequency (half the sampling frequency; 1 sample/s = 1 Hz).
+    % inf = No limit.
+    %S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  Inf)
+    S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.7)
+    
+    
     % Whether to disable LFR/TDS transfer functions (but still potentially use the BIAS transfer functions).
     % This effectively means that TM voltage corresponds to interface volt.
     % NOTE: This useful for separately using bicas.calib for analyzing BIAS standalone calibration tables (BSACT).

@@ -26,24 +26,7 @@
 % represents a phase delay of tau for that frequency, i.e.
 %   y2(t) == y1(t-tau)
 % if e.g. y1(t) only has one frequency component.
-% NOTE: This should be the same convention used by the Laplace transform.
-%
-%
-% ARGUMENTS AND RETURN VALUE
-% ==========================
-% NOTE: All arguments/return value vectors are column vectors. TF = transfer function.
-% dt       : Time between each sample. Unit: seconds
-% y1       : Samples. Must be real-valued (assertion). May contain NaN.
-% tf       : Function handle to function z=tf(omega). z is a complex value (amplitude+phase) and has not unit.
-%            omega unit: rad/s.
-%            Will only be called for omega>=0. tf(0) must be real.
-%            NOTE: If the caller wants to use a tabulated TF, then s/he should construct an anonymous function that
-%            interpolates the tabulated TF (e.g. using "interp1") and submit it as argument.
-% y2       : y1 after the application of the TF.
-%            If y1 contains at least one NaN, then all components in y2 will be NaN. No error will be thrown.
-% varargin : Optional settings arguments as interpreted by EJ_library.utils.interpret_settings_args.
-%   Possible settings:
-%       enableDetrending : Override the default on whether de-trending is used. Default=0.
+% NOTE: This should be the same convention as used by the Laplace transform.
 %
 %
 % NOTES
@@ -67,8 +50,11 @@
 % IMPLEMENTATION NOTES
 % ====================
 % -- Has the ability to enable/disable de-trending to make testing easier.
+% -- Has the ability to make TF zero above cutoff. This cut-off is naturally sampling frequency-dependent and therefore
+%    not a natural part of the TF itself.
 % -- Conversion of transfer functions to fit the input format should be done by wrapper functions and NOT by this
 %    function.
+%       Ex: Turn a given tabulated TF into an actual MATLAB function.
 % -- This function only represents the pure mathematical algorithm and therefore only works with "mathematically
 %    pure" variables and units: radians, complex amplitudes (no dB, no volt^2, no amplitude+phase). This is useful
 %    since it
@@ -91,21 +77,39 @@
 % (radians/s).
 %
 %
+% ARGUMENTS AND RETURN VALUE
+% ==========================
+% NOTE: All arguments/return value vectors are column vectors.
+% dt       : Time between each sample. Unit: seconds
+% y1       : Samples. Must be real-valued (assertion). May contain NaN.
+% tf       : Function handle to function z=tf(omega). z is a complex value (amplitude+phase) and has not unit.
+%            omega unit: rad/s.
+%            Will only be called for omega>=0. tf(0) must be real.
+%            NOTE: If the caller wants to use a tabulated TF, then s/he should construct an anonymous function that
+%            interpolates the tabulated TF (e.g. using "interp1") and submit it as argument.
+% y2       : y1 after the application of the TF.
+%            If y1 contains at least one NaN, then all components in y2 will be NaN. No error will be thrown.
+% varargin : Optional settings arguments as interpreted by EJ_library.utils.interpret_settings_args.
+%   Possible settings:
+%       enableDetrending        : Override the default on whether de-trending is used. Default=0.
+%       tfHighFreqLimitFraction : Fraction of Nyquist frequency (1/dt). TF is regarded as zero above this frequency.
+%                                 Can be Inf.
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-13
 %
 function [y2] = apply_transfer_function(dt, y1, tf, varargin)
-    
-    
-    
     % ------------------------------------------------------------------------------------------------------------------
     % TODO-NEED-INFO: WHY DOES THIS FUNCTION EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
+    % PROPOSAL: Function name should imply using frequency domain.
     % PROPOSAL: Option for using inverse TF? Can easily be implemented in the actual call to the function though
     %           (dangerous?).
     % PROPOSAL: Option for error on NaN/Inf.
     % PROPOSAL: Eliminate dt from function. Only needed for interpreting tfOmega. Add in wrapper.
     % PROPOSAL: Eliminate de-trending. Add in wrapper.
     %   CON/NOTE: Might not be compatible with future functionality (Hann Windows etc).
+    %       CON: Why? Any such functionality should be easier with a mathematically "pure" function.
     %
     % PROPOSAL: If slow to call function handle for transfer function tf, permit caller to submit table with implicit frequencies.
     %   PROPOSAL: Return the Z values actually used, so that caller can call back using them.
@@ -143,15 +147,27 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
     elseif ~isreal(tf(0))
         error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf(0) is not real.')
     end
-    
-    
-    
-    DEFAULT_SETTINGS.enableDetrending = 0;
+
+
+
+    DEFAULT_SETTINGS.enableDetrending        = 0;
+    DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
     Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
-    
-    
-    
+
+
+    assert(...
+        isnumeric(  Settings.tfHighFreqLimitFraction) ...
+        && isscalar(Settings.tfHighFreqLimitFraction) ...
+        && ~isnan(  Settings.tfHighFreqLimitFraction) ...
+        && (        Settings.tfHighFreqLimitFraction >= 0))
+    % NOTE: Permit Settings.tfHighFreqLimitFraction to be +Inf.
+    tfHighFreqLimitRps = Settings.tfHighFreqLimitFraction * pi/dt;   % pi/dt = 2*pi * (1/2 * 1/dt)
+    tf2 = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
+    clear tf    % Clear just to make sure it is not used later
+
+
+
     N = length(y1);
     
     if Settings.enableDetrending
@@ -180,15 +196,19 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
     % (1) We want to interpret the signal as consisting of pairs of positive and negative frequencies (pairs of
     % complex bases).
     % (2) We want to interpret the TF as being a symmetric function, defined for both positive and negative
-    % frequencies, Z(omega)=Z*(-omega), *=conjugate.
+    % frequencies,
+    %    Z(omega) = Z*(-omega), *=conjugate.
     %
     % The DFT components X_k, k=1..N can be thought of as representing different frequencies
-    %    omega_k = 2*pi*(k-1) / (N*dt) .
+    %    omega_k = 2*pi*(k-1) / (N*dt)
+    % .
     % Since
-    %    exp(i*2*pi*omega_k*t_n) = exp(i*2*pi*omega_(k+N)*t_n),
-    %    where t_n = (n-1)*dt ,
+    %    exp(i*2*pi*omega_k*t_n) = exp(i*2*pi*omega_(k+m*N)*t_n),
+    % where
+    %    t_n = (n-1)*dt ,
+    %    m = any integer ,
     % the exact frequencies associated with DFT components X_k are however subject to a choice/interpretation, where
-    %    omega_k <--> omega_(k+N) .
+    %    omega_k <--> omega_(k+m*N) .
     % Since we only work with real-valued signals, we want to interpret the DFT components as having frequencies
     %    omega_1, ..., omega_ceil(N/2), omega_[ceil(N/2)+1-N], ..., omega_0
     % but to look up values in the TF, we have to use the absolute values of the above frequencies and conjugate Z when
@@ -211,10 +231,10 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
     % ---------------------------------------------------------------------------------
     % NOTE: De-trending (if enabled) should already have removed the zero-frequency component from the in signal.
     %=============================================================================================================
-    tfZLookups    = tf(abs(tfOmegaLookups));
-    i             = tfOmegaLookups < 0;
-    tfZLookups(i) = conj(tfZLookups(i));
-    % % ASSERTION:
+    tfZLookups                = tf2(abs(tfOmegaLookups));
+    iNegativeFreq             = tfOmegaLookups < 0;
+    tfZLookups(iNegativeFreq) = conj(tfZLookups(iNegativeFreq));
+    % ASSERTION:
     if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
         error('BICAS:apply_transfer_function:Assertion', 'Transfer function tf returned non-finite value for at least one frequency.')
     end

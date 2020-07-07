@@ -212,6 +212,7 @@ classdef calib < handle
 
         % Corresponds to SETTINGS key-value.
         enableDetrending
+        itfHighFreqLimitFraction;
                 
         % What type of calibration to use.
         allVoltageCalibDisabled
@@ -253,8 +254,9 @@ classdef calib < handle
             obj.SETTINGS         = SETTINGS;
             obj.L                = L;
             
-            obj.enableDetrending = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
-            obj.calibrationDir   = calibrationDir;
+            obj.enableDetrending               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
+            obj.itfHighFreqLimitFraction       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
+            obj.calibrationDir                 = calibrationDir;
             
             obj.Bias                           = obj.read_log_RCT_by_SETTINGS_regexp('BIAS');
             obj.BiasGain.alphaIvpav            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
@@ -636,7 +638,8 @@ classdef calib < handle
                 % APPLY TRANSFER FUNCTION
                 tempSamplesAVolt = bicas.utils.apply_transfer_function(...
                     dtSec(i), samplesTm, itfIvpt, ...
-                    'enableDetrending', obj.enableDetrending);
+                    'enableDetrending',        obj.enableDetrending, ...
+                    'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
 
                 samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
             end
@@ -707,7 +710,8 @@ classdef calib < handle
                         dtSec(i), ...
                         tempSamplesIVolt(:), ...
                         BiasCalibData.itfAvpiv, ...
-                        'enableDetrending', obj.enableDetrending);
+                        'enableDetrending',        obj.enableDetrending, ...
+                        'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
 
@@ -783,7 +787,8 @@ classdef calib < handle
                         dtSec(i), ...
                         samplesCaTm{i}(:), ...
                         itf, ...
-                        'enableDetrending', obj.enableDetrending);
+                        'enableDetrending',        obj.enableDetrending, ...
+                        'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
                     
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
