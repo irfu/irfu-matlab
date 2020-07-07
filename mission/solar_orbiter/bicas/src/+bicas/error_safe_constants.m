@@ -34,7 +34,7 @@
 %         NOTE: "Component" has a special meaning in that context. Therefore uses term "part" instead.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-02
 %
 function C = error_safe_constants
@@ -42,7 +42,8 @@ function C = error_safe_constants
     %   PROPOSAL: ~constants.
     % PROPOSAL: Category for bad input datasets (both science and HK).
     %   PRO: Has similar for RCTs.
-    
+    %
+    % PROPOSAL: Move to class for constants.
     
     % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
     %   error code 0 : No error

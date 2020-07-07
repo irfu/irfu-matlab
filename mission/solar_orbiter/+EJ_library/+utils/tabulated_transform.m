@@ -25,12 +25,20 @@
 %   ** Z does not converge to zero when omega goes to infinity (could define value
 %      for omega=inf).
 % --
-% This class deliberately does not implement an "eval" function at arbitrary frequencies since which interpolation to
-% use is ambiguous.
+% This class deliberately does NOT implement an "eval" function at arbitrary frequencies since it is ambiguous.
 %   ** How extrapolate beyond the frequency limits of the table?
-%       ** Assert that frequency within table (no extrapolation)?
+%       ** Assert that frequency is within table (forbid extrapolation)?
+%       ** Extrapolate, in particular to 0 Hz?
 %   ** How interpolate (linear interpolation? quadratic interpolation? splines?)
-%   ** It is easy for the caller to use interp1 for interpolation.
+%   ** It is easy for the caller to use e.g. interp1 for interpolation.
+%
+%
+% RATIONALE
+% =========
+% This class may seem to not "do much", but it is still useful since
+%   ** It is a "standard struct" for tabulated TFs. Does not need to manually keep frequencies and Z together.
+%   ** It is immutable.
+%   ** The constructor can initialize using two common formats.
 % 
 %
 % Author: Erik P G Johansson
@@ -49,9 +57,6 @@ classdef tabulated_transform
 % PROPOSAL: New class name(s), without "transform".
 %   PROPOSAL: tabulated_TF, rational_func_TF
 %   CON: "transform" refers to Fourier/Laplace transform.
-%
-% TODO-NI: Why is this class useful?
-%   
 
 
 
@@ -121,7 +126,7 @@ classdef tabulated_transform
                     numel(omegaRps), ...
                     numel(amplitude), ...
                     numel(phaseRad)])
-                % NOTE: isfinite assertion implemented via Z.
+                % NOTE: isfinite assertion implemented via assertions on Z (later).
                 
                 Z = amplitude .* exp(1i*phaseRad);
             elseif (numel(varargin) >= 1) && isnumeric(varargin{1})

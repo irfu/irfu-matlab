@@ -19,9 +19,9 @@
 % - is extra careful with well defined terms/shorternings/naming conventions
 % since
 % (1) undiscovered calibration bugs could be considered extra bad
-% (2) it is expected to be hard to detect certain bugs
-% (3) it could be hard to use automatic testing here.
-% (4) to detect changing RCT formats, in particular from external teams.
+% (2) it is expected to be hard to detect certain bugs,
+% (3) it could be hard to use automatic testing here,
+% (4) to detect changing RCT formats, in particular from teams to BIAS team.
 % --
 % All calibration functions of measured data are assumed to accept data from all BLTS (1-5), i.e. including TDS, in
 % order to reduce the number assumptions that the calling code needs to make.
@@ -74,13 +74,16 @@
 % NOTE: Definition is partly created to avoid using term "BIAS_i" since it is easily confused with other things (the
 % subsystem BIAS, bias currents), partly to include various stages of calibration.
 %
+%
 % ASR = Antenna Signal Representation
 % -----------------------------------
 % The "physical antenna signals" which BIAS-LFR/TDS is trying to measure, or a measurement thereof. In reality, the
 % terminology is:
 % ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF (DC diff, antenna 1-2)
 % ASR samples : Samples representing a specific ASR (as opposed to BLTS)
-% NOTE: There are 9 ASRs, i.e. they can refer also to signals not represented in any single BLTS.
+% NOTE: There are 9 ASRs, i.e. they can refer also to signals not represented by any single BLTS, given a chosen mux
+% mode (and latching relay setting).
+%
 %
 % BIAS_i, i=1..5
 % --------------
@@ -185,7 +188,8 @@ classdef calib < handle
 
 
 
-    properties(Access=private)
+    %properties(Access=private)
+    properties(SetAccess=private, GetAccess=public)
         
         Bias;
         BiasGain             % BIAS scalar (simplified) calibration, not in the RCTs. For debugging/testing purposes.
@@ -220,7 +224,7 @@ classdef calib < handle
         lfrTdsTfDisabled
         useBiasTfScalar
         
-        % Needed so that it can be submitted it to bicas.RCT.read_log_RCT_by_SETTINGS_regexp.
+        % Needed so that it can be submitted to bicas.RCT.read_log_RCT_by_SETTINGS_regexp.
         SETTINGS
         L
     end
@@ -265,7 +269,7 @@ classdef calib < handle
             obj.BiasGain.gammaIvpav.lowGain    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
             
             obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
-            obj.HkBiasCurrent.gainAapt          = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT');
+            obj.HkBiasCurrent.gainAapt         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT');
             
             obj.lfrLsfOffsetsTm                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
 
@@ -569,7 +573,6 @@ classdef calib < handle
         %   .BltsSrc   : bicas.BLTS_src_dest describing where the signal comes from.
         %   ...
         %
-        %function samplesCaAVolt = calibrate_LFR_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, cti1, cti2)
         function samplesCaAVolt = calibrate_LFR_full(obj, dtSec, samplesCaTm, CalSettings, cti1, cti2)
             
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
@@ -617,9 +620,9 @@ classdef calib < handle
                 lfrItfIvpt = obj.get_LFR_ITF(cti1, iBlts, iLsf);
             end
 
-            %=====================================
-            % Create combined TF for LFR and BIAS
-            %=====================================
+            %======================================
+            % Create combined ITF for LFR and BIAS
+            %======================================
             itfIvpt = @(omegaRps) (...
                 lfrItfIvpt(omegaRps) ...
                 .* ...
@@ -647,12 +650,15 @@ classdef calib < handle
 
 
 
+        
+
+
+
         %
         % ARGUMENTS
         % =========
         % See calibrate_LFR_full.
         %
-        %function samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
         function samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, CalSettings, cti1, cti2)
 
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
@@ -732,7 +738,6 @@ classdef calib < handle
         % =========
         % See calibrate_LFR_full.
         %
-        %function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
         function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, CalSettings, cti1, cti2)
             
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
@@ -765,9 +770,9 @@ classdef calib < handle
             samplesCaAVolt = cell(size(samplesCaTm));   % Initialize empty output variable.
             if ismember(iBlts, [1,2,3])
                 
-                %=====================================
-                % Create combined TF for TDS and BIAS
-                %=====================================
+                %======================================
+                % Create combined ITF for TDS and BIAS
+                %======================================
                 if obj.lfrTdsTfDisabled
                     tdsItfIvpt = @(omegaRps) (ones(omegaRps));
                 else
@@ -1003,6 +1008,7 @@ classdef calib < handle
 
         % Read any single RCT file, and log it. Effectively wraps the different RCT-reading functions.
         % 
+        %
         % IMPLEMENTATION NOTES
         % ====================
         % This method exists to
@@ -1184,16 +1190,20 @@ classdef calib < handle
         
         
         % Modify tabulated INVERSE transfer functions, if needed.
+        % Tabulated TF --> Tabulated TF
         %
         % Extrapolate to 0 Hz, if needed.
+        %
         function ModifItf = modify_tabulated_ITF(Itf)
             assert(Itf.omegaRps(1) > 0)
 
             % NOTE: Can not just use the lowest-frequency Z value for 0 Hz since it has to be real (not complex).
-            Z1     = Itf.Z(1);
-            signZ0 = sign(real(Z1));
-            assert(signZ0 ~= 0, 'Can not extrapolate due to ambiguity. real(Z(1)) = 0.')
-            Z0     = abs(Z1) * signZ0;
+            Z1       = Itf.Z(1);
+            signZ0   = sign(real(Z1));
+            assert(signZ0 ~= 0, ...
+                'BICAS:calib:modify_tabulated_ITF:FailedToReadInterpretRCT:Assertion', ...
+                'Can not extrapolate tabulated inverse transfer function (ITF) to zero Hz due to ambiguity. real(Z(1)) = 0.')
+            Z0       = abs(Z1) * signZ0;   % Z value at 0 Hz.
             
             omegaRps = [0;  Itf.omegaRps(:)];
             Z        = [Z0; Itf.Z(:)       ];

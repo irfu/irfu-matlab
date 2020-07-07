@@ -348,8 +348,6 @@ classdef proc_sub
         % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining "virtual snapshot" length.
         % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
         
-            LFR_SWF_SNAPSHOT_LENGTH = 2048;
-
             % ASSERTIONS
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
@@ -361,7 +359,7 @@ classdef proc_sub
             
             % CDF ASSERTION
             if ~issorted(InSci.Zv.Epoch, 'strictascend')
-                error('Voltage timestamps do not increase (all antennas combined).')
+                error('Voltage (science) dataset timestamps do not increase.')
             end
             
             %=================
@@ -400,7 +398,7 @@ classdef proc_sub
             
             % ASSERTIONS
             if C.isLfrSurvSwf
-                assert(nCdfSamplesPerRecord == LFR_SWF_SNAPSHOT_LENGTH)
+                assert(nCdfSamplesPerRecord == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
             else
                 assert(nCdfSamplesPerRecord == 1)
             end
@@ -488,6 +486,10 @@ classdef proc_sub
             PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), zvRx==0 );
             
             
+            
+            %==================================================================
+            % Select which source of mux mode is used: LFR datasets or BIAS HK
+            %==================================================================
             [value, key] = SETTINGS.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
             switch(value)
                 case 'BIAS_HK'
@@ -499,14 +501,15 @@ classdef proc_sub
                 otherwise
                     error('BICAS:proc_sub:ConfigurationBug', 'Illegal settings value %s="%s"', key, value)
             end
-            PreDc.Zv.DIFF_GAIN      = HkSciTime.DIFF_GAIN;
+            
+            PreDc.Zv.DIFF_GAIN         = HkSciTime.DIFF_GAIN;
+            PreDc.Zv.iLsf              = iLsfZv;
             
             PreDc.hasSnapshotFormat    = C.isLfrSurvSwf;
             PreDc.nRecords             = nRecords;
             PreDc.nCdfSamplesPerRecord = nCdfSamplesPerRecord;
             PreDc.isLfr                = true;
             PreDc.isTdsCwf             = false;
-            PreDc.Zv.iLsf              = iLsfZv;
 
 
 
@@ -736,6 +739,7 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
+            % NOTE: Convert AAmpere --> (antenna) nA
             OutSciZv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
             OutSciZv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSciZv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;

@@ -1,6 +1,8 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
-% Seem bias.demultiplexer.main function.
+% See
+%   bias.demultiplexer.main.
+%   bicas.BLTS_src_dest
 %
 %
 % NOTE
@@ -19,7 +21,7 @@
 % See bicas.calib, bicas.demultiplexer_latching_relay.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %
 classdef demultiplexer
@@ -33,7 +35,9 @@ classdef demultiplexer
     
     properties(Access=private, Constant)
         
-        % IMPLEMENTATION NOTE: Reasons to pre-define (1) bicas.BLTS_src_dest objects, and (2) structs created by
+        % IMPLEMENTATION NOTE: Reasons to pre-define
+        %   (1) bicas.BLTS_src_dest objects, and
+        %   (2) structs created by
         % bicas.demultiplexer.routing (consisting of bicas.BLTS_src_dest objects):
         % ** Only makes constructor calls when bicas.demultiplexer is (statically) initialized, not every time the
         %    bicas.demultiplexer.main function is called. ==> Faster
@@ -138,7 +142,7 @@ classdef demultiplexer
         %
         % RETURN VALUES
         % =============
-        % RoutingArray   : Array of bicas.BLTS_src_dest objects. (iBlts) = Represents the origin of the corresponding
+        % BltsSrcArray   : Array of bicas.BLTS_src_dest objects. (iBlts) = Represents the origin of the corresponding
         %                  BLTS.
         % AsrSamplesVolt : Samples for all ASRs (singles, diffs) which can possibly be derived from the BLTS (BIAS_i). Those which can not be
         %                  derived are correctly sized containing only NaN. Struct with fields.
@@ -394,15 +398,15 @@ classdef demultiplexer
         function fn = get_ASR_fieldname(BltsDest)
             % PROPOSAL: New name implying "destination".
             
-            if     isequal(BltsDest, bicas.demultiplexer.SRC_DC_V1)     fn = 'dcV1';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V2)     fn = 'dcV2';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V3)     fn = 'dcV3';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V12)    fn = 'dcV12';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V13)    fn = 'dcV13';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V23)    fn = 'dcV23';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V12)    fn = 'acV12';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V13)    fn = 'acV13';
-            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V23)    fn = 'acV23';
+            if     isequal(BltsDest, bicas.demultiplexer.SRC_DC_V1)    fn = 'dcV1';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V2)    fn = 'dcV2';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V3)    fn = 'dcV3';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V12)   fn = 'dcV12';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V13)   fn = 'dcV13';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V23)   fn = 'dcV23';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V12)   fn = 'acV12';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V13)   fn = 'acV13';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V23)   fn = 'acV23';
             else
                 error('BICAS:demultiplexer:Assertion:IllegalArgument', 'Illegal argument BltsDest.')
             end
