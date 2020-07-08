@@ -63,11 +63,15 @@ function hAxesArray = plot_LFR_CWF(filePath)
     %PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;
 
     D = dataobj(filePath);
+%     D.data = EJ_library.utils.normalize_struct_fieldnames(D.data, {...
+%         {{'V', 'VDC'}, 'VDC'}, ...
+%         {{'E', 'EDC'}, 'EDC'}}, ...
+%         'Assert one matching candidate');
     
     epoch = D.data.Epoch.data;
-    vDc1  = get_CDF_zv_data(D, 'V',   1);
-    vDc12 = get_CDF_zv_data(D, 'E',   1);
-    vDc23 = get_CDF_zv_data(D, 'E',   3);
+    vDc1  = get_CDF_zv_data(D, 'VDC', 1);
+    vDc12 = get_CDF_zv_data(D, 'EDC', 1);
+    vDc23 = get_CDF_zv_data(D, 'EDC', 3);
     vAc12 = get_CDF_zv_data(D, 'EAC', 1);
     vAc23 = get_CDF_zv_data(D, 'EAC', 3);
 
@@ -149,6 +153,13 @@ end
 
 
 function data = get_CDF_zv_data(D, zvName, i2)
+    % TEMPORARY: For backward compatibility.
+    if strcmp(zvName, 'VDC') && isfield(D.data, 'V')
+        zvName = 'V';
+    elseif strcmp(zvName, 'EDC') && isfield(D.data, 'E')
+        zvName = 'E';
+    end
+    
     fillValue = getfillval(D, zvName);
     data = D.data.(zvName).data(:, i2);
     data = changem(data, NaN, fillValue);
