@@ -18,7 +18,7 @@
 %
 function [rowsList] = read_text_file(filePath, linebreakRegexp)
 % PROPOSAL: Use s=textscan(fileId, '%s', 'delimiter', '\n').
-% PROPOSAL: Read entire file as a string, then split it using a specified line-break string.
+% PROPOSAL: Read entire file as a (byte) string, then split it using a specified line-break string.
 %   PROPOSAL: Return both string and row string list.
 %       CON: Unnecessary to return row string list. Trivial to produce with str_split.
 %           CON: Only if what is line-break is unambiguous.

@@ -1,6 +1,7 @@
 %
-% Given a setting for how to handle an anomaly that has already occurred, setting
-% Anomaly = something that should not happen but may, depending on a setting, be handled in multiple ways.
+% Given a setting for how to handle an anomaly that has already occurred.
+%
+% Def. "anomaly" : something that should not happen but may, depending on a setting, be handled in multiple ways.
 %
 % The concept is to be able to make various forms of error/anomaly handling shorter and more consistent, and make the
 % use of anomaly handling settings more consistent. This code should be able to handle or help in the common cases:
@@ -16,13 +17,13 @@
 % anomalyDescrMsg = 'Description of anomaly.';
 % [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
 % switch(settingValue)
-%     case 'WORKARUOND_1'
+%     case 'WORKAROUND_1'
 %         default_anomaly_handling(L, settingValue, settingKey, 'other', ...
 %           anomalyDescrMsg)
 %         L.log('warning', 'Description of mitigation/workaround 1.')
 %         % Code for mitigating/workaround 1.
 %
-%     case 'WORKARUOND_2'
+%     case 'WORKAROUND_2'
 %         default_anomaly_handling(L, settingValue, settingKey, 'other', ...
 %           anomalyDescrMsg)
 %         L.log('warning', 'Description of mitigation/workaround 2.')

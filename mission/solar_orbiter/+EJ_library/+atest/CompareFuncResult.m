@@ -10,10 +10,10 @@
 %
 % TERMINOLOGY, ABBREVIATIONS
 % ==========================
-% expected=exp  : Something that is the function is expected to do  or return   when called.
-% actual=act    : Something that    the function actually       did or returned when called.
-% input         : Arguments to function (all combined)
-% output        : Function return values (all combined)
+% expected = exp : Something that is the function is expected to do  or return   when called.
+% actual   = act : Something that    the function actually       did or returned when called.
+% input          : Arguments to function (all combined)
+% output         : Function return values (all combined)
 %
 %
 % FUNCTION HANDLES FOR TESTING CLASS METHODS

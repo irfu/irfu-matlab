@@ -12,3 +12,18 @@ Version 2.0.0
 -------------
 Added support for L1 input bias current datasets; supports updated L1R input
 datasets, and updated L2 master CDFs (V08).
+
+
+Version 2.0.1
+-------------
+Bugfix: Reads bias current zVars as nA (not uA)
+
+
+Version 3.0.0
+-------------
+Functionality for ITF high freq. cutoff.
+Uses master CDFs V09 (instead of V08).
+Copies zVar BW from LFR datasets.
+Searches for BIAS RCT using other filenaming scheme: *RPW-BIAS*.
+L2 bias current in nA (not ampere).
+Uses LFR mux mode.

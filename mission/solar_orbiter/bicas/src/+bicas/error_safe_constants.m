@@ -34,43 +34,44 @@
 %         NOTE: "Component" has a special meaning in that context. Therefore uses term "part" instead.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-02
 %
 function C = error_safe_constants
-% PROPOSAL: Change name. Something not just "error safe". "All" constants that can not be modified as in SETTINGS.
-%   PROPOSAL: ~constants.
-% PROPOSAL: Category for bad input datasets (both science and HK).
-%   PRO: Has similar for RCTs.
-
-
-% NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
-%   error code 0 : No error
-%   error code 1 : Every kind of error (!)
-MAP = containers.Map('KeyType', 'char', 'ValueType', 'any');
-MAP('NoError')                      = info_struct(0, 'No error');
-MAP('BadMatlabVersion')             = info_struct(1, 'Using the wrong MATLAB version.');
-MAP('UntranslatableErrorMsgId')     = info_struct(1, 'Error occurred, but code can not translate the error''s MATLAB message identifier into any of BICAS''s internal standard error codes.');
-MAP('MatlabCodeErrorHandlingError') = info_struct(1, 'The MATLAB code''s own error handling failed.');
-MAP('CLISyntax')                    = info_struct(1, 'Can not interpret command-line interface (CLI) arguments syntax.');
-MAP('PathNotFound')                 = info_struct(1, 'A specified directory or file does not exist.');
-MAP('OperationNotImplemented')      = info_struct(1, 'Execution has reached a portion of the code that has not been implemented yet.');
-MAP('Assertion')                    = info_struct(1, 'Detected an internal state that should never be possible in a bug-free code that receives correct inputs.');
-MAP('IllegalArgument')              = info_struct(1, 'An argument to an internal function had an illegal value.');
-MAP('SWModeProcessing')             = info_struct(1, 'Error in s/w mode processing (processing datasets).');
-MAP('DatasetFormat')                = info_struct(1, 'Error when interpreting (official CDF) input datasets, including master CDF files.');
-MAP('IllegalCodeConfiguration')     = info_struct(1, 'Bad hard-coded configuration (or possibly configurable setting but should not be), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain user-controlled input.');
-MAP('CannotInterpretConfigFile')    = info_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
-MAP('ConfigurationBug')             = info_struct(1, 'Trying to configure BICAS in an illegal way.');
-MAP('FailedToReadInterpretRCT')     = info_struct(1, 'Can not interpret the content of the calibration file (RCT) file, e.g. because the RCT contains invalid calibration values.');
-MAP('CannotFindRegexMatchingRCT')   = info_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
-C.EMIDP_2_INFO = MAP;
-
-% NOTE: BICAS originally required MATLAB R2016a.
-% NOTE: ROC only needs MATLAB R2019b. Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
-C.PERMITTED_MATLAB_VERSIONS         = {'2019b'};
-C.DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');    % Path (incl. filename) to default config file. Relative to BICAS's directory root.
-
+    % PROPOSAL: Change name. Something not just "error safe". "All" constants that can not be modified as in SETTINGS.
+    %   PROPOSAL: ~constants.
+    % PROPOSAL: Category for bad input datasets (both science and HK).
+    %   PRO: Has similar for RCTs.
+    %
+    % PROPOSAL: Move to class for constants.
+    
+    % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
+    %   error code 0 : No error
+    %   error code 1 : Every kind of error (!)
+    MAP = containers.Map('KeyType', 'char', 'ValueType', 'any');
+    MAP('NoError')                      = info_struct(0, 'No error');
+    MAP('BadMatlabVersion')             = info_struct(1, 'Using the wrong MATLAB version.');
+    MAP('UntranslatableErrorMsgId')     = info_struct(1, 'Error occurred, but code can not translate the error''s MATLAB message identifier into any of BICAS''s internal standard error codes.');
+    MAP('MatlabCodeErrorHandlingError') = info_struct(1, 'The MATLAB code''s own error handling failed.');
+    MAP('CLISyntax')                    = info_struct(1, 'Can not interpret command-line interface (CLI) arguments syntax.');
+    MAP('PathNotFound')                 = info_struct(1, 'A specified directory or file does not exist.');
+    MAP('OperationNotImplemented')      = info_struct(1, 'Execution has reached a portion of the code that has not been implemented yet.');
+    MAP('Assertion')                    = info_struct(1, 'Detected an internal state that should never be possible in a bug-free code that receives correct inputs.');
+    MAP('IllegalArgument')              = info_struct(1, 'An argument to an internal function had an illegal value.');
+    MAP('SWModeProcessing')             = info_struct(1, 'Error in s/w mode processing (processing datasets).');
+    MAP('DatasetFormat')                = info_struct(1, 'Error when interpreting (official CDF) input datasets, including master CDF files.');
+    MAP('IllegalCodeConfiguration')     = info_struct(1, 'Bad hard-coded configuration (or possibly configurable setting but should not be), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain user-controlled input.');
+    MAP('CannotInterpretConfigFile')    = info_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
+    MAP('ConfigurationBug')             = info_struct(1, 'Trying to configure BICAS in an illegal way.');
+    MAP('FailedToReadInterpretRCT')     = info_struct(1, 'Can not interpret the content of the calibration file (RCT) file, e.g. because the RCT contains invalid calibration values.');
+    MAP('CannotFindRegexMatchingRCT')   = info_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
+    C.EMIDP_2_INFO = MAP;
+    
+    % NOTE: BICAS originally required MATLAB R2016a.
+    % NOTE: ROC only needs MATLAB R2019b. Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
+    C.PERMITTED_MATLAB_VERSIONS         = {'2019b'};
+    C.DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');    % Path (incl. filename) to default config file. Relative to BICAS's directory root.
+    
 end
 
 

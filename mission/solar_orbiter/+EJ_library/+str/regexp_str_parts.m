@@ -27,14 +27,16 @@
 % regexpList     : Cell array of strings, each one containing a regexp. "^" at the beginning of a regexp will be ignored.
 %                  NOTE: The sequence of regexes must match every single character in str.
 % nonMatchPolicy : String constant determining what happens in the event of a non-perfect match (including no match).
-%                  'assert match' or 'permit non-match'. This refers to both kinds of failure (above).
+%                  'assert match', or
+%                  'permit non-match'.
+%                  This refers to both kinds of failure (above).
 %
 %
 % RETURN VALUE
 % ============
 % subStrList     : Cell array of strings, each being a match for the corresponding string in regexpList.
 % remainingStr   : The remainder of argument str that was not matched.
-% perfectMatch   : Logical. Whether matched all regular expression to entire string.
+% perfectMatch   : Logical. Whether matched all regular expressions to entire string.
 %
 %
 % Author: Erik P G Johansson, IRF Uppsala, Sweden

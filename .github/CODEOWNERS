@@ -1,0 +1,30 @@
+# The goal of this file is to help in the assignment of code reviewers,
+# whenever an issue or merge request is opened for irfu-matlab.
+# If it works well it will be further refined...
+
+# Each line here is a file pattern followed by one or more owners.
+# Order is important; the last matching pattern takes the most
+# precedence.
+
+# Listed first, the "fallback".
+# These owners will be the default owners for everything in
+# the repo. Unless a later match takes precedence,
+# @thomas-nilsson-irfu will be requested for
+# review when someone opens a pull request.
+*       @thomas-nilsson-irfu
+
+# @ErikPGJ owns any files in the mission/solar_orbiter/
+# directory at the root of the repository and any of its
+# subdirectories. Likewise for the mission/rosetta/ directory.
+/mission/solar_orbiter @ErikPGJ
+/mission/rosetta @ErikPGJ
+
+# @JanKarlsson owns any files in the mission/cluster/
+# directory at the root of the repository and any of its
+# subdirectories.
+/mission/cluster @JanKarlsson
+
+# @thomas-nilsson-irfu and @danbgraham owns any files in
+# the mission/mms/ directory at the root of the repository
+# and any of its subdirectories.
+/mission/mms @thomas-nilsson-irfu @danbgraham

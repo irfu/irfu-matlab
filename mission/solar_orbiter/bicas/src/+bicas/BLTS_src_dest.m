@@ -1,15 +1,17 @@
 %
 % Simple class which instances can represent either of two things
-% (1) where a particular BLTS comes from, i.e.
+% (1) SIGNAL SOURCE: where a particular BLTS comes from, i.e.
 %     ** an ASR, DC single/DC diff/DC AC
 %     ** "2.5 V Ref"
 %     ** "GND"
 %     ** that its origin is unknown (mux mode unknown)
-% or
-% (2) how the BLTS should be stored in the dataset (since output datasets are only designed to store data measured data
-% as ASRs), i.e.
+% OR
+% (2) ~SIGNAL STORAGE: how the BLTS should be stored in the dataset (since output datasets are only designed to store
+% data measured data as ASRs), i.e.
 %     ** an ASR, DC single/DC diff/DC AC
 %     ** nowhere (mux mode unknown).
+% NOTE: One instance of this class represents either one of the two above alternatives. "src_dest" should thus be
+% interpreted as "source OR dest".
 %
 % Immutable.
 %
@@ -19,7 +21,7 @@
 % See bicas.calib.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-19
 %
 classdef BLTS_src_dest %< handle
