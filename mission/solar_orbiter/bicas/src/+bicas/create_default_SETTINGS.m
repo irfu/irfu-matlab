@@ -50,10 +50,6 @@ function SETTINGS = create_default_SETTINGS()
     % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
     % PROPOSAL: Abolish INPUT_CDF.CUR.PREPEND_TEST_DATA.
     % PROPOSAL: Naming convention for settings keys for testing ONLY:
-    % PROPOSAL: Abolish
-    %           PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2
-    %           PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2
-    %           TDS CWF/RSWF CALIBRATION_TABLE_INDEX2 should never be used. /David Pisa 2020-04-30.
     %
     % PROPOSAL: Some kind of automatic warning for not using default setting.
     %   CON: Log already contains this.
@@ -398,11 +394,11 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               1)
     S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             1)
     S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
-    % Value=1 not implemented, since it is unclear what it is useful for, if anything.
-    S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)
+    % Value=1 not implemented, since CALIBRATION_TABLE_INDEX is not set for TDS.
+    %S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)
     S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
-    % Value=1 not implemented, since it is unclear what it is useful for, if anything.
-    S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)
+    % Value=1 not implemented, since CALIBRATION_TABLE_INDEX is not set for TDS.
+    %S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)
     S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
     
     

@@ -677,12 +677,9 @@ classdef calib < handle
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
-                % NOTE: solo_L1R_rpw-tds-lfm-cwf-e-cdag_20200225_V01.cdf: CALIBRATION_TABLE_INDEX(i,2) = FILLVAL
-                % Does not seem to be used by TDS-CWF datasets. This function does not use it.
-                
-                % TODO? ASSERTION: cti2 = ???
+                % TODO? ASSERTION: cti2 = 0???
                 error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-                    'TDS-CWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
+                    'TDS-CWF calibration never uses CALIBRATION_TABLE_INDEX2.')
             end
             
             samplesCaAVolt = cell(size(samplesCaTm));   % Initialize empty output variable.
@@ -756,9 +753,9 @@ classdef calib < handle
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
-                % TODO? ASSERTION: cti2 = ???
+                % TODO? ASSERTION: cti2 = 0???
                 error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-                    'TDS-RSWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
+                    'TDS-RSWF calibration never uses CALIBRATION_TABLE_INDEX2.')
             end
             
             %==============================

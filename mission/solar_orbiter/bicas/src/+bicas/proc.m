@@ -128,18 +128,20 @@ classdef proc
             %==============================
             % Configure calibration object
             %==============================
+            % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
             C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
             if C.isTdsCwf
                 settingUseCt   = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                settingUseCti2 = 'PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2';
-                rctId = 'TDS-CWF';
+                %settingUseCti2 = 'PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2';
+                rctId          = 'TDS-CWF';
             else
                 settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                settingUseCti2 = 'PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2';
-                rctId = 'TDS-RSWF';
+                %settingUseCti2 = 'PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2';
+                rctId          = 'TDS-RSWF';
             end
             useCt   = SETTINGS.get_fv(settingUseCt)   && C.isL1R;
-            useCti2 = SETTINGS.get_fv(settingUseCti2) && C.isL1R;
+            %useCti2 = SETTINGS.get_fv(settingUseCti2) && C.isL1R;
+            useCti2 = false;
             if useCt
                 Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE(rctId, ...
                     InputSciPd.Ga.CALIBRATION_TABLE, ...
