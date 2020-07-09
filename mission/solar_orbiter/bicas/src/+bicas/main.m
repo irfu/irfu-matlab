@@ -87,8 +87,9 @@ function errorCode = main( varargin )
         % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
         clear -global SETTINGS
         
-        C = bicas.error_safe_constants();
-        L = bicas.logger('bash wrapper', true);   % NOTE: Permitting logging to file in case using inofficial option.
+        %C = bicas.error_safe_constants();
+        % NOTE: Permitting logging to file from MATLAB instead of bash wrapper in case of using inofficial option.
+        L = bicas.logger('bash wrapper', true);
         
         
         
@@ -112,7 +113,7 @@ function errorCode = main( varargin )
 
     
     
-        errorCode = C.EMIDP_2_INFO('NoError').errorCode;    % Default error code (i.e. no error).
+        errorCode = bicas.error_safe_constants.EMIDP_2_INFO('NoError').errorCode;    % Default error code (i.e. no error).
         main_without_error_handling(varargin, L);
         
     catch Exception1
@@ -122,7 +123,7 @@ function errorCode = main( varargin )
         try
             msg = sprintf('Main function caught an exception. Starting error handling.\n');
         
-            [msgRecursive, errorCode] = recursive_exception_msg(Exception1, C);
+            [msgRecursive, errorCode] = recursive_exception_msg(Exception1);
             msg = [msg, msgRecursive];
             
             msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
@@ -159,7 +160,7 @@ end    % main
 
 % Create logging/error message for a given exception, and which is recursive in Exception.cause.
 %
-function [msg, errorCode] = recursive_exception_msg(Exception, C)
+function [msg, errorCode] = recursive_exception_msg(Exception)
     
     CAUSES_RECURSIVE_INDENTATION_LENGTH = 8;
 
@@ -174,7 +175,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception, C)
     % Use MATLAB error message identifiers to identify one or multiple "error types".
     %=================================================================================
     msgIdentifierParts = strsplit(Exception.identifier, ':');
-    emidpList = msgIdentifierParts(C.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
+    emidpList = msgIdentifierParts(bicas.error_safe_constants.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
     if isempty(emidpList)
         emidpList = {'UntranslatableErrorMsgId'};
     end
@@ -185,10 +186,10 @@ function [msg, errorCode] = recursive_exception_msg(Exception, C)
     msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
     for i = 1:numel(emidpList)
         emidp = emidpList{i};
-        msg  = [msg, sprintf('    %-23s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
+        msg  = [msg, sprintf('    %-23s : %s\n', emidp, bicas.error_safe_constants.EMIDP_2_INFO(emidp).description)];
     end
     % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
-    errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
+    errorCode = bicas.error_safe_constants.EMIDP_2_INFO(emidpList{end}).errorCode;
     
     %======================
     % Print the call stack
@@ -212,7 +213,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception, C)
         % RECURSIVE CALL
         %================
         % NOTE: Does not capture return value errorCode.
-        recursiveMsg = recursive_exception_msg(Exception.cause{iCause}, C);
+        recursiveMsg = recursive_exception_msg(Exception.cause{iCause});
         
         recursiveMsg = EJ_library.str.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
         msg = [msg, recursiveMsg];
@@ -229,7 +230,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     startTimeTicSeconds = tic;
     
-    C = bicas.error_safe_constants();
+    %C = bicas.error_safe_constants();
     
     
     
@@ -237,10 +238,10 @@ function main_without_error_handling(cliArgumentsList, L)
     % ~ASSERTION: Check MATLAB version
     %==================================
     matlabVersionString = version('-release');
-    if ~ismember(matlabVersionString, C.PERMITTED_MATLAB_VERSIONS)
+    if ~ismember(matlabVersionString, bicas.error_safe_constants.PERMITTED_MATLAB_VERSIONS)
         error('BICAS:main:BadMatlabVersion', ...
             'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
-            matlabVersionString, strjoin(C.PERMITTED_MATLAB_VERSIONS, ', '))
+            matlabVersionString, strjoin(bicas.error_safe_constants.PERMITTED_MATLAB_VERSIONS, ', '))
     end
     L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
     
@@ -329,6 +330,9 @@ function main_without_error_handling(cliArgumentsList, L)
     if ~isempty(CliData.matlabLogFile)
         % NOTE: Requires that bicas.logger has been initialized to permit writing to log file.
         L.set_log_file(CliData.matlabLogFile);
+    else
+        % There should be no log file, (generated from within MATLAB).
+        L.set_log_file([]);
     end
     
     
@@ -339,7 +343,7 @@ function main_without_error_handling(cliArgumentsList, L)
     if ~isempty(CliData.configFile)
         configFile = CliData.configFile;
     else
-        configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
+        configFile = fullfile(bicasRootPath, bicas.error_safe_constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
     end
     L.logf('info', 'configFile = "%s"', configFile)
     rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
@@ -551,7 +555,7 @@ function print_help(SETTINGS)
     %
     % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
     
-    C = bicas.error_safe_constants();
+    %C = bicas.error_safe_constants();
     
     
     
@@ -562,10 +566,10 @@ function print_help(SETTINGS)
     %==========================
     % Print error codes & types
     %==========================
-    errorCodesList = cellfun(@(x) (x.errorCode), C.EMIDP_2_INFO.values);   % Array of (unsorted) error codes.
+    errorCodesList = cellfun(@(x) (x.errorCode), bicas.error_safe_constants.EMIDP_2_INFO.values);   % Array of (unsorted) error codes.
     [~, iSort] = sort(errorCodesList);
-    empidList          = C.EMIDP_2_INFO.keys;
-    errorTypesInfoList = C.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
+    empidList          = bicas.error_safe_constants.EMIDP_2_INFO.keys;
+    errorTypesInfoList = bicas.error_safe_constants.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
     empidList          = empidList(iSort);
     errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
     bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')

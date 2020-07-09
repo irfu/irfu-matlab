@@ -50,13 +50,12 @@
 
 
 
-# Prefix that MATLAB code uses for stdout rows that should be sent to stdout (from the script).
+# Prefix that MATLAB code uses for stdout rows that should be sent to STDOUT (from this script).
 # NOTE: This pattern must match the corresponding prefix used in MATLAB.
 declare -r STDOUT_PREFIX='STDOUT: '    # NOTE: Not regex. Implicit that should match beginning of line.
 
-# Prefix that MATLAB code uses for stdout rows that should be sent to the log file.
-declare -r LOG_PREFIX='LOG: '
-
+# Prefix that MATLAB code uses for stdout rows that should be sent to the LOG FILE (from this script)
+declare -r LOG_FILE_PREFIX='LOG FILE: '
 
 # Name of MATLAB script that launches the MATLAB part of BICAS, such as it is called from inside MATLAB,
 # i.e. WITHOUT the file extension ".m".
@@ -297,7 +296,7 @@ filter_stdout_labeled_rows() {
 
 filter_log_labeled_rows() {
     # NOTE: Call grep to FILTER entire rows. Call sed to filter out the prefix. Must call both.
-    grep "^${LOG_PREFIX}" | sed "s/^${LOG_PREFIX}//"
+    grep "^${LOG_FILE_PREFIX}" | sed "s/^${LOG_FILE_PREFIX}//"
 }
 
 

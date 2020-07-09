@@ -25,7 +25,6 @@
 % First created 2018-01-24
 %
 function SETTINGS = create_default_SETTINGS()
-    % PROPOSAL: Make STDOUT_PREFIX not overridable, move to error_safe_constants?
     % PROPOSAL: Setting for latching relay? Setting for only mode 0?
     %
     % PROPOSAL: Need (settings name) terminology for temporary "bugfixes"/corrections due to bugs outside of BICAS,
@@ -88,8 +87,9 @@ function SETTINGS = create_default_SETTINGS()
     
     
     
-    % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
-    S.define_setting('STDOUT_PREFIX',               'STDOUT: ');
+    % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher
+    % script.
+    %S.define_setting('STDOUT_PREFIX',               'STDOUT: ');
     % NOTE: Analogous LOG_PREFIX is hard-coded for safety.
     
     % Parameters influencing how JSON objects are printed with function JSON_object_str.

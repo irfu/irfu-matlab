@@ -44,7 +44,7 @@ classdef settings < handle
 %   PROPOSAL: MATLAB class (data type)
 %   PROPOSAL: Default value (so can display it if overridden)
 %   PROPOSAL: Flag for write-protection (always use default value).
-%       NOTE: Some settings (one?) make no sense to modify: config file path, STDOUT_PREFIX.
+%       NOTE: Some settings (one?) make no sense to modify: config file path.
 %   PROPOSAL: Flag for values which have not been set but must later be set.
 %       PROPOSAL: MATLAB_COMMAND
 %           CON: Is not really needed by BICAS.

@@ -35,8 +35,6 @@ classdef logger < handle
 % PROPOSAL: Log from bash as before for nominal execution, AND use separate CLI log arguments to log to file from MATLAB.
 %   Ex: --log-to-file-from-matlab <log file>
 %
-% PROPOSAL: Move LOG_PREFIX to error_safe_constants.
-%
 % PROPOSAL: EJ_library.assert.trailing_LF
 %   PROPOSAL: Simultaneously assert not trailing CR+LF.
 %
@@ -56,13 +54,15 @@ classdef logger < handle
 %   CON: SETTINGS is finalized (made read-only) AFTER logger object is initialized.
 %       PROPOSAL: Set SETTINGS using separate loger method first when it has been finalized.
 %           NOTE: Any function that uses SETTINGS can not be called earlier than this anyway.
+%
+% PROPOSAL: Move constant(s) to class for error-safe constants.
 
 
 
     properties(Access=private)
         % IMPLEMENTATION NOTE: Constant defined here and not centrally (e.g. SETTINGS) to make sure that it is error-safe and
         % always initialized. Needed for early initialization and error handling (try-catch).
-        LOG_PREFIX = 'LOG: ';
+        %LOG_PREFIX = 'LOG FILE: ';
         
         LINE_FEED  = char(10);
         
@@ -79,10 +79,9 @@ classdef logger < handle
 
         % Constructor
         %
+        %
         % ARGUMENTS
         % =========
-        % No arguments   : No logging at all.
-        % --
         % stdoutOption   : String constant.
         %                   'none'
         %                   'human-readable' : Log to stdout as is most convenient for a human reader.
@@ -95,11 +94,11 @@ classdef logger < handle
             % PROPOSAL: Separate arguments for stdout and log file behaviour
             %   CON: Want short call for no logging.
             
-            if nargin == 0
-                obj.stdoutOption   = 'none';
-                obj.logFileEnabled = false;
-                
-            elseif nargin == 2
+%             if nargin == 0
+%                 obj.stdoutOption   = 'none';
+%                 obj.logFileEnabled = false;
+%                 
+            if nargin == 2
                 assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), 'Illegal argument logFileEnabled.')
                 logFileEnabled = logical(logFileEnabled);
                 
@@ -125,44 +124,70 @@ classdef logger < handle
 
 
 
-        % Specify the log file to use, if logging to file has been enabled. Previous log messages have been buffered.
+        % Specify the log file to use, if logging to file has been enabled (assertion). Previous log messages have been
+        % buffered.
+        %
         % 
         % RATIONALE: NOT USING CONSTRUCTOR
         % ================================
         % It is useful to be able to specify log file AFTER that some logging has been done.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % logFile : Path to log file.
+        %           NOTE: If empty, then do not (ever) use log file. This option is useful if it is not known at the
+        %           time of calling the constructor whether a log file should be used or not. This way the log message
+        %           buffer can be cleared to potentially conserve RAM.
         % 
         function obj = set_log_file(obj, logFile)
             assert(obj.logFileEnabled,     'Trying to specify log file without having enabled log file in constructor.')
             assert(isempty(obj.logFileId), 'Trying to specify log file twice.')
 
-            %===============
-            % Open log file
-            %===============
-            % NOTE: Overwrite any pre-existing file.
-            [fileId, fopenErrorMsg] = fopen(logFile, 'w');
-            if fileId == -1
-                error('BICAS:logger:Assertion', 'Can not open log file "%s". fopen error message: "%s"', logFile, fopenErrorMsg)
-                % NOTE: Does not alter the object properties.
+            if ~isempty(logFile)
+                % CASE: Set log file.
+                
+                %===============
+                % Open log file
+                %===============
+                % NOTE: Overwrite any pre-existing file.
+                [fileId, fopenErrorMsg] = fopen(logFile, 'w');
+                if fileId == -1
+                    error(...
+                        'BICAS:logger:Assertion', ...
+                        'Can not open log file "%s". fopen error message: "%s"', logFile, fopenErrorMsg)
+                    % NOTE: Does not alter the object properties.
+                end
+                obj.logFileId = fileId;
+                
+                %=============================
+                % Write buffered log messages
+                %=============================
+                for i = 1:numel(obj.logFileBuffer)
+                    obj.write_to_log_file(obj.logFileBuffer{i});
+                end
+                obj.logFileBuffer = {};
+                
+            else
+                % CASE: There should be no log file (despite constructor saying there should/could be one).
+                
+                obj.logFileEnabled = false;
+                obj.logFileBuffer = {};
             end
-            obj.logFileId = fileId;
-            
-            %=============================
-            % Write buffered log messages
-            %=============================
-            for i = 1:numel(obj.logFileBuffer)
-                obj.write_to_log_file(obj.logFileBuffer{i});
-            end
-            obj.logFileBuffer = {};
         end
 
 
 
+        % Fundemental method for logging. Other methods may wrap this method to provide addition functionality.
+        %
+        %
         % ARGUMENTS
         % =========
         % logLevel : String constant.
         %            NOTE: Value 'error' WILL NOT THROW ERROR. This is so that error handling code can log using this
-        %            alternative. To THROW an error, use function error(...) or throw an exception directly.
-        % msgStr   : Potentially multi-row string to be printed. NOTE: Multi-row strings must end with line feed.
+        %            alternative. To actually THROW an error, use function error(...) or throw an exception directly.
+        % msgStr   : Potentially multi-row string to be printed.
+        %            NOTE: Multi-row strings must end with line feed (after last row).
         %
         %
         % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -173,19 +198,26 @@ classdef logger < handle
             %   NOTE: Apropos RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.4 table.
             
             % RCS ICD compliant string.
-            rcsIcdLogMsg            = obj.ICD_log_msg(logLevel, msg);            
-            % String that is intended to be read by BICAS bash wrapper as stdout.
-            bashWrapperRecipientStr = EJ_library.str.add_prefix_on_every_row(rcsIcdLogMsg, obj.LOG_PREFIX);
+            rcsIcdLogMsg = obj.ICD_log_msg(logLevel, msg);            
 
             %=================
             % Print to stdout
             %=================
             switch(obj.stdoutOption)
                 case 'none'
+                    % Do nothing
+                    
                 case 'human-readable'
                     obj.write_to_stdout(rcsIcdLogMsg)
+                    
                 case 'bash wrapper'
+                    % String that is intended to be read by BICAS bash wrapper as stdout.
+                    bashWrapperRecipientStr = EJ_library.str.add_prefix_on_every_row(...
+                        rcsIcdLogMsg, ...
+                        bicas.error_safe_constants.LOG_FILE_PREFIX_TBW);
+                    
                     obj.write_to_stdout(bashWrapperRecipientStr)
+                    
                 otherwise
                     error('BICAS:logger:Assertion', 'Illegal property value obj.stdoutOption="%s".', obj.stdoutOption)
             end
@@ -275,8 +307,9 @@ classdef logger < handle
         % NOTE: Partly defined by RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3.
         % NOTE: RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3 speaks of a "debug mode" not implemented here.
         %       Function always prints debug-level messages.
-        % NOTE: Does not add LOG_PREFIX required for wrapper script to recognize log messages in stdout. This is
-        %       intentional since one may want both log message version with and without LOG_PREFIX.
+        % NOTE: Does NOT add bicas.error_safe_constants.LOG_FILE_PREFIX_TBW required for wrapper script to recognize log
+        %       file messages in stdout. This is intentional since one may want both log message version with and
+        %       without bicas.error_safe_constants.LOG_FILE_PREFIX_TBW.
         % NOTE: Could be a static method.
         %
         % RETURN VALUE
