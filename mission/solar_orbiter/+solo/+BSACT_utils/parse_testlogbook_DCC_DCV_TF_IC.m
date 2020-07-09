@@ -1,92 +1,94 @@
+%
+% In the raw BIAS standalone calibration data, parse testlogbook file for
+% type DC_VOLTAGE and TRANSFER_FUNCTION to obtain metadata for calibration table files.
+% Returns data which associates Test ID (and thus calibration data file) with various settings, e.g. mux mode.
+%
+%
+%
+% TEXT FILE FORMAT
+% ================
+% The format is a text file format in the following sequence.
+% (1) Various human-readable text (ignored),
+% (2) Repeated sequences of data analogous with the examples below:
+% DCC:
+%       """"""""
+%       Antenna 1, LFR_1 Output, Mode 4 (cal mode 0)
+%       Ant 1 = Signal, Ant 2 = GND, Ant 3 = GND, Stimuli = 100kohm
+%       ID100 = input voltage = -30V
+%       ID101 = input voltage = 0V
+%       ID102 = input voltage = +30V
+%       """"""""
+% DCV/TF:
+%       """"""""
+%       Antenna 3, LFR Output
+%       Ant 1 = GND, Ant 2 = GND, Ant 3 = Signal, Stimuli = 1Mohm
+%       ID68 = Mode 0 (std operation), LFR_3 = V23_DC
+%       ID69 = Mode 0 (std operation), LFR_5 = V23_AC, Gain = 5
+%       ID70 = Mode 0 (std operation), LFR_5 = V23_AC, Gain = 100
+%       ID71 = Mode 1 (probe 1 fails), LFR_2 = V3_DC
+%       """"""""
+% IC:
+%       """"""""
+%       Stimuli = 1Mohm
+%       ID300 = Mode 4 (cal mode 0), LFR_1 = V1_DC
+%       ID301 = Mode 4 (cal mode 0), LFR_2 = V2_DC
+%       ID302 = Mode 4 (cal mode 0), LFR_3 = V3_DC
+%       ID303 = Mode 0 (std operation), LFR_2 = V12_DC*
+%       ID304 = Mode 0 (std operation), LFR_2 = V13_DC*
+%       ID305 = Mode 0 (std operation), LFR_3 = V23_DC
+%       """"""""
+%
+% (3) Various human-readable text and plotting and fitting log messages (ignored).
+%
+%
+%
+% ARGUMENTS
+% ===========================
+% rowList             : Cell array of strings representing rows in text file.
+% dataType            : String specifying the type of logbook being read: "DCC", "DCV", "TF".
+%
+%
+% RETURN VALUES
+% =============
+% metadataList        : Array of structs. Each struct has fields:
+%   If dataType == "DCC":
+%       .antennaSignals          : Length 3 vector. [i] = Value for antenna i. Values: 0=GND (ground), 1=Signal.
+%       .stimuliOhm
+%       .testIdNbr
+%       .inputVoltageLogbookVolt : Not to be confused with the calibration table column "inputVoltageVolt" which
+%                                  probably should have the approximate same constant value.
+%   If dataType == "DCV" or "TF":
+%       .testIdNbr
+%       .antennaSignals   : Length 3 vector. [i] = Value for antenna i. Values: 0=GND (ground), 1=Signal.
+%       .stimuliOhm
+%       .muxMode
+%       .outputChNbr      : Scalar x=1-5 representing which BIAS output BIAS_x is used.
+%       .inputChNbr       : Scalar array length 1 or 2. Contains antenna number(s) (one if single, two if diff), as in
+%                           e.g. "V12_DC". inputChNbr(1) < inputChNbr(2).
+%       .acGain           : Scalar value. Should be 5 or 100. NaN if not explicitly stated in rowList (can be legitimate).
+%       .invertedInput    : True iff diff AND inputChNbr(1) represents GND and inputChNbr(2) represents signal.
+%       .commonModeInput  : True iff diff AND common mode (2 signals).
+%       (but not .mebTempCelsius, .filePath)
+%
+%
+%
+% NOTES
+% =====
+% NOTE: Return result excludes latching relay (could in principle be derived from inputChNbrs sometimes).
+% NOTE: The class name is chosen to reflect the types of calibration data that it may contain in anticipation of
+% eventually creating another analogous class for other calibration data (bias current calibration data).
+% IMPLEMENTATION NOTE: .antennaSignals as a vector of flags is useful since
+% (1) one can can easily check on which signals are on which inputChNbr, .e.g. all(d.antennaSignals(d.inputChNbr))
+% (2) it is possible to extend the meaning of values to more alternatives than two (e.g. "Signal", "GND", "2.5 V").
+% IMPLEMENTATION NOTE: Takes list of rows as argument instead of file path, partly to make automated testing easier.
+%
+%
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2017-10-12
+%
+
 function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
-    %
-    % In the raw BIAS standalone calibration data, parse testlogbook file for
-    % type DC_VOLTAGE and TRANSFER_FUNCTION to obtain metadata for calibration table files.
-    % Returns data which associates Test ID (and thus calibration data file) with various settings, e.g. mux mode.
-    %
-    %
-    %
-    % TEXT FILE FORMAT
-    % ================
-    % The format is a text file format in the following sequence.
-    % (1) Various human-readable text (ignored),
-    % (2) Repeated sequences of data analogous with the examples below:
-    % DCC:
-    %       """"""""
-    %       Antenna 1, LFR_1 Output, Mode 4 (cal mode 0)
-    %       Ant 1 = Signal, Ant 2 = GND, Ant 3 = GND, Stimuli = 100kohm
-    %       ID100 = input voltage = -30V
-    %       ID101 = input voltage = 0V
-    %       ID102 = input voltage = +30V
-    %       """"""""
-    % DCV/TF:
-    %       """"""""
-    %       Antenna 3, LFR Output
-    %       Ant 1 = GND, Ant 2 = GND, Ant 3 = Signal, Stimuli = 1Mohm
-    %       ID68 = Mode 0 (std operation), LFR_3 = V23_DC
-    %       ID69 = Mode 0 (std operation), LFR_5 = V23_AC, Gain = 5
-    %       ID70 = Mode 0 (std operation), LFR_5 = V23_AC, Gain = 100
-    %       ID71 = Mode 1 (probe 1 fails), LFR_2 = V3_DC
-    %       """"""""
-    % IC:
-    %       """"""""
-    %       Stimuli = 1Mohm
-    %       ID300 = Mode 4 (cal mode 0), LFR_1 = V1_DC
-    %       ID301 = Mode 4 (cal mode 0), LFR_2 = V2_DC
-    %       ID302 = Mode 4 (cal mode 0), LFR_3 = V3_DC
-    %       ID303 = Mode 0 (std operation), LFR_2 = V12_DC*
-    %       ID304 = Mode 0 (std operation), LFR_2 = V13_DC*
-    %       ID305 = Mode 0 (std operation), LFR_3 = V23_DC
-    %       """"""""
-    %
-    % (3) Various human-readable text and plotting and fitting log messages (ignored).
-    %
-    %
-    %
-    % ARGUMENTS
-    % ===========================
-    % rowList             : Cell array of strings representing rows in text file.
-    % dataType            : String specifying the type of logbook being read: "DCC", "DCV", "TF".
-    
-    %
-    % RETURN VALUES
-    % =============
-    % metadataList        : Array of structs. Each struct has fields:
-    %   If dataType == "DCC":
-    %       .antennaSignals          : Length 3 vector. [i] = Value for antenna i. Values: 0=GND (ground), 1=Signal.
-    %       .stimuliOhm
-    %       .testIdNbr
-    %       .inputVoltageLogbookVolt : Not to be confused with the calibration table column "inputVoltageVolt" which
-    %                                  probably should have the approximate same constant value.
-    %   If dataType == "DCV" or "TF":
-    %       .testIdNbr
-    %       .antennaSignals   : Length 3 vector. [i] = Value for antenna i. Values: 0=GND (ground), 1=Signal.
-    %       .stimuliOhm
-    %       .muxMode
-    %       .outputChNbr      : Scalar x=1-5 representing which BIAS output BIAS_x is used.
-    %       .inputChNbr       : Scalar array length 1 or 2. Contains antenna number(s) (one if single, two if diff), as in
-    %                           e.g. "V12_DC". inputChNbr(1) < inputChNbr(2).
-    %       .acGain           : Scalar value. Should be 5 or 100. NaN if not explicitly stated in rowList (can be legitimate).
-    %       .invertedInput    : True iff diff AND inputChNbr(1) represents GND and inputChNbr(2) represents signal.
-    %       .commonModeInput  : True iff diff AND common mode (2 signals).
-    %       (but not .mebTempCelsius, .filePath)
-    %
-    %
-    %
-    % NOTES
-    % =====
-    % NOTE: Return result excludes latching relay (could in principle be derived from inputChNbrs sometimes).
-    % NOTE: The class name is chosen to reflect the types of calibration data that it may contain in anticipation of
-    % eventually creating another analogous class for other calibration data (bias current calibration data).
-    % IMPLEMENTATION NOTE: .antennaSignals as a vector of flags is useful since
-    % (1) one can can easily check on which signals are on which inputChNbr, .e.g. all(d.antennaSignals(d.inputChNbr))
-    % (2) it is possible to extend the meaning of values to more alternatives than two (e.g. "Signal", "GND", "2.5 V").
-    % IMPLEMENTATION NOTE: Takes list of rows as argument instead of file path, partly to make automated testing easier.
-    %
-    %
-    %
-    % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-    % First created 2017-10-12
     
     %==============================================================================================
     % BOGIQ
@@ -98,12 +100,13 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
     % PROPOSAL: invertedInput --> hasInvertedInput
     % PROPOSAL: antennaSignals --> hasAntennaSignals (singular/plural?)
     % PROPOSAL: Flag isDiff
-    % PROPOSAL: Should become part of reader_DCC_DCV_TF_IC?
+    % PROPOSAL: Flag isAc
+    % PROPOSAL: Flag isHg
+    % PROPOSAL: testIdNbr --> testId
     %
     % PROPOSAL: Examine and modify code to more rigorously handle strings which do not match what is expected (and document).
     % PROPOSAL: Additional assertion functions for various return struct fields. Could be used in this code but also outside
     % code which compares values with values returned from here.
-    %   PROPOSAL: Rework as class?!
     %==============================================================================================
     
     
@@ -129,7 +132,10 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
             deriveExtraCTableMetaDataFuncPtr = @derive_extra_cTable_metadata_DCC_IC;
             
         otherwise
-            error('BICAS:parse_test_logbook:Assertion:IllegalArgument', 'Argument dataType="%s" has an illegal value.')
+            error(...
+                'BICAS:parse_test_logbook:Assertion:IllegalArgument', ...
+                'Argument dataType="%s" has an illegal value.', ...
+                dataType)
     end
     
     

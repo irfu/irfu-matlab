@@ -10,11 +10,12 @@
 %
 % ARGUMENTS
 % ========= 
-% str          : String or cell array of strings. Empty string must be of class char, i.e. e.g. not [] (due to function "regexp").
-%                NOTE: Will permit empty strings to match a regular expression.
+% str          : String or cell array of strings. Empty string must be of class char, i.e. e.g. not [] (due to function
+%                "regexp"). NOTE: Will permit empty strings to match a regular expression.
 % regexPattern : String or cell array of strings. Each string is a regexp which may or may not be surrounded by
 %                ^ and $.
-% NOTE: str and regexPattern must not both simultaneously be non-scalar cell arrays.
+% --
+% NOTE: str and regexPattern must not simultaneously be non-scalar cell arrays.
 %
 %
 % RETURN VALUE

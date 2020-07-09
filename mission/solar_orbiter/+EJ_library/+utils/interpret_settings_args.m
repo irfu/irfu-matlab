@@ -40,7 +40,7 @@
 %
 % ARGUMENTS
 % =========
-% DefaultSettings : Struct with default Settings (to be processed; not Settings for this functions).
+% DefaultSettings : Struct with default Settings to be processed (not Settings for this function).
 % argList         : Cell array representing a sequence of arguments (presumably "varargin" or subset thereof) from
 %                   another function that uses this function.
 %                   It is either
@@ -100,6 +100,12 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
     %
     % PROBLEM: Mixing interface (key strings) with implementation (variable/field names). Can not change fieldname
     %          without changing interface.
+    %
+    % PROPOSAL: Extend syntax: Permit struct at "any" and multiple points in list of arguments.
+    %   Keys present in later location overwrite earlier.
+    %   Ex: struct1,key1,value1,struct2,key2,value2
+    %   CON: Has not actually had the need for this. Is just "clever".
+    %   NOTE: Can be implemented recursively?!!
     
     %====================================================
     % Assign SettingsArg1: Uses first argument if struct
@@ -141,11 +147,11 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
     
     % NOTE: Could permit recursive settings structs, but then without checking for the existence of corresponding default key.
     AS2S_SETTINGS = struct(...
-        'noStructs',  'Overwrite', ...
-        'aIsStruct',  'Error', ...
-        'bIsStruct',  'Error', ...
+        'noStructs',    'Overwrite', ...
+        'aIsStruct',    'Error', ...
+        'bIsStruct',    'Error', ...
         'abAreStructs', 'Error', ...
-        'onlyBField', 'Copy');
+        'onlyBField',   'Copy');
     
     % For missing values, take from SettingsArg1.
     %Settings = add_struct_to_struct(Settings, SettingsArg1, AS2S_SETTINGS);
@@ -157,6 +163,7 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
 end
 
 
+
 %=======================================================================================================================
 % Lightly modified hard-coded copy of EJ_library.utils.add_struct_to_struct
 % -------------------------------------------------------------------------
@@ -164,15 +171,15 @@ end
 %
 % IMPORTANT IMPLEMENTATION NOTE
 % =============================
-% This function (EJ_library.utils.interpret_settings_args) deliberately does not use
-% EJ_library.utils.add_struct_to_struct so that it can use EJ_library.utils.interpret_settings_args instead. Both using
-% each other would lead to ininite recursion.
+% This function (EJ_library.utils.interpret_settings_args) DELIBERATELY DOES NOT USE
+% EJ_library.utils.add_struct_to_struct so that it can use EJ_library.utils.interpret_settings_args INSTEAD.
+% Both using each other would lead to ininite recursion.
 %=======================================================================================================================
 function A = add_struct_to_struct(A, B, Settings)
 
-    %========================================================================================================
+    %=============================================================================================================
     % IMPLEMENTATION NOTE: CAN NOT USE EJ_library.utils.interpret_settings_args SINCE IT USES THIS FUNCTION!
-    %========================================================================================================
+    %=============================================================================================================
     if nargin == 2
         Settings = DEFAULT_SETTINGS;
     elseif nargin == 3

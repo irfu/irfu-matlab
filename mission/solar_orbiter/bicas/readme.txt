@@ -134,8 +134,5 @@ See "install.txt".
 ####################################
  Known current limitations, caveats
 ####################################
-* BICAS currently calibrates only voltages, but not currents as there are no
-current datasets to read.
-
-For other limitations and caveats, see the official user manual, the RUM
+For limitations and caveats, see the official user manual, the RUM
 document.

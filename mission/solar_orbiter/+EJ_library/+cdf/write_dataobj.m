@@ -151,9 +151,10 @@ function write_dataobj(filePath, ...
 % PROPOSAL: Flag for different interpretations of indices in char arrays (dataobj or logical).
 % PROPOSAL: Flag for assertion on preventing NaN.
 %
-% PROPOSAL: Check for illegal characters (or at least, characters which can not be handled) in global attributes: åäöÅÄÖ, quotes(?).
-%   NOTE: According to old notes, åäöÅÄÖ will be invisible global attributes, but the corresponding number of characters will be cut out
-%   from the end.
+% PROPOSAL: Check for illegal characters (or at least, characters which can not be handled) in global attributes:
+%           åäöÅÄÖ, quotes(?).
+%   NOTE: According to old notes, åäöÅÄÖ will be invisible global attributes, but the corresponding number of characters
+%   will be cut out from the end.
 %
 % ~BUG: Zero-record numeric & char zVars are converted to [] (numeric, always 0x0) by dataobj. This code does not take
 % this into account by internally converting the zVar variable back to the right class and size.
@@ -297,11 +298,13 @@ for i = 1:length(dataobj_Variables(:,1))
         varAttrValue = doVarAttrField{iAttrZVar, 2};
         if strcmp(specifiedCdfDataType, 'tt2000') && ischar(varAttrValue)
             varAttrValue = spdfparsett2000(varAttrValue);   % Convert char-->tt2000.
-        elseif ~strcmp(specifiedCdfDataType, class(varAttrValue))
-            class(varAttrValue)
+            
+        %elseif ~strcmp(specifiedCdfDataType, class(varAttrValue))
+        elseif ~strcmp(specifiedMatlabClass, class(varAttrValue))
             error('write_dataobj:Assertion', ...
-                'Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', ...
-                varAttrName, zVarName)
+                ['Found VariableAttribute %s for CDF variable "%s" whose data type did not match the declared one.', ...
+                ' specifiedCdfDataType="%s", specifiedMatlabClass="%s", class(varAttrValue)="%s"'], ...
+                varAttrName, zVarName, specifiedCdfDataType, specifiedMatlabClass, class(varAttrValue))
         end
         
         % Modify dataobj_VariableAttributes correspondingly.

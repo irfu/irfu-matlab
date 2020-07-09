@@ -85,7 +85,7 @@ function errorCode = main( varargin )
         % -----------------------------------------------
         % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
         % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
-        clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
+        clear -global SETTINGS
         
         C = bicas.error_safe_constants();
         L = bicas.logger('bash wrapper', true);   % NOTE: Permitting logging to file in case using inofficial option.
@@ -224,260 +224,263 @@ end
 
 % BICAS's de facto main function, without error handling.
 function main_without_error_handling(cliArgumentsList, L)
+    
+    
+    
+    startTimeTicSeconds = tic;
+    
+    C = bicas.error_safe_constants();
+    
+    
+    
+    %==================================
+    % ~ASSERTION: Check MATLAB version
+    %==================================
+    matlabVersionString = version('-release');
+    if ~ismember(matlabVersionString, C.PERMITTED_MATLAB_VERSIONS)
+        error('BICAS:main:BadMatlabVersion', ...
+            'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
+            matlabVersionString, strjoin(C.PERMITTED_MATLAB_VERSIONS, ', '))
+    end
+    L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
+    
+    
+    
+    % Log that BICAS (the MATLAB code) has started running.
+    % RATIONALE: This is useful when one manually looks through the log file and tries to identify the beginning of a
+    % particular run. The BICAS log is always amended to and may therefore contain log messages from multiple runs.
+    L.logf('info', [...
+        '############################################\n', ...
+        '############################################\n', ...
+        '#### BICAS'' MATLAB CODE STARTS RUNNING ####\n', ...
+        '############################################\n', ...
+        '############################################\n'])
 
 
 
-startTimeTicSeconds = tic;
-
-C = bicas.error_safe_constants();
-
-
-
-%==================================
-% ~ASSERTION: Check MATLAB version
-%==================================
-matlabVersionString = version('-release');
-if ~ismember(matlabVersionString, C.PERMITTED_MATLAB_VERSIONS)
-    error('BICAS:main:BadMatlabVersion', ...
-        'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
-        matlabVersionString, strjoin(C.PERMITTED_MATLAB_VERSIONS, ', '))
-end
-L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
-
-
-
-% Log that BICAS (the MATLAB code) has started running.
-% RATIONALE: This is useful when one manually looks through the log file and tries to identify the beginning of a
-% particular run. The BICAS log is always amended to and may therefore contain log messages from multiple runs.
-L.logf('info', [...
-    '############################################\n', ...
-    '############################################\n', ...
-    '#### BICAS'' MATLAB CODE STARTS RUNNING ####\n', ...
-    '############################################\n', ...
-    '############################################\n'])
-
-
-
-% IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem of calling irf('check_os') which indirectly
-% calls system('hostname') at ROC:roc2-dev. Could be
-L.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
-
-
-
-%===============================
-% Derive BICAS's directory root
-%===============================
-% ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
-[matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
-bicasRootPath         = EJ_library.fs.get_abs_path(fullfile(matlabSrcPath, '..', '..'));
-
-
-
-%=======================================
-% Log misc. paths and all CLI arguments
-%=======================================
-% IMPLEMENTATION NOTE: Want this as early as possible, before interpreting arguments. Should therefore not merge this
-% with printing settings. This might help debug why settings were not set.
-L.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
-L.logf('info', 'Current working directory: pwd           = "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
-L.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
-L.logf('info',   '===============================================')
-cliArgumentsQuotedList = {};
-for i = 1:length(cliArgumentsList)
-    % UI ASSERTION
-    % IMPLEMENTATION NOTE: This check useful when calling BICAS from MATLAB (not bash).
-    if ~ischar(cliArgumentsList{i})
-        error('BICAS:main', 'Argument %i is not a string.', i)
+    % IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem of calling irf('check_os') which indirectly
+    % calls system('hostname') at ROC:roc2-dev.
+    L.logf('debug', 'OS environment variable PATH                 = "%s"', getenv('PATH'));
+    % NOTE: Useful for seeing which leap second table was actually used, e.g. at ROC.
+    L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', getenv('CDF_LEAPSECONDSTABLE'));
+    
+    
+    
+    %===============================
+    % Derive BICAS's directory root
+    %===============================
+    % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
+    [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
+    bicasRootPath         = EJ_library.fs.get_abs_path(fullfile(matlabSrcPath, '..', '..'));
+    
+    
+    
+    %=======================================
+    % Log misc. paths and all CLI arguments
+    %=======================================
+    % IMPLEMENTATION NOTE: Want this as early as possible, before interpreting arguments. Should therefore not merge this
+    % with printing settings. This might help debug why settings were not set.
+    L.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
+    L.logf('info', 'Current working directory: pwd           = "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
+    L.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
+    L.logf('info',   '===============================================')
+    cliArgumentsQuotedList = {};
+    for i = 1:length(cliArgumentsList)
+        % UI ASSERTION
+        % IMPLEMENTATION NOTE: This check useful when calling BICAS from MATLAB (not bash).
+        if ~ischar(cliArgumentsList{i})
+            error('BICAS:main', 'Argument %i is not a string.', i)
+        end
+        
+        L.logf('info', 'CLI argument %2i: "%s"', i, cliArgumentsList{i})
+        cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
+    end
+    cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedList, ' ');
+    cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
+    % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
+    % both MATLAB command prompt and bash.
+    L.logf('info', '\n')
+    L.logf('info', 'CLI arguments for copy-pasting\n')
+    L.logf('info', '------------------------------\n')
+    L.logf('info', 'Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
+    L.logf('info', 'Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
+    L.logf('info', '\n\n')
+    
+    
+    
+    %========================================
+    % Initialize global settings & constants
+    %========================================
+    global SETTINGS
+    SETTINGS  = bicas.create_default_SETTINGS();
+    
+    
+    
+    %=============================================
+    % First-round interpretation of CLI arguments
+    %=============================================
+    CliData = bicas.interpret_CLI_args(cliArgumentsList);
+    
+    
+    
+    %==============================================================
+    % Configure inofficial log file, written to from within MATLAB
+    %==============================================================
+    if ~isempty(CliData.matlabLogFile)
+        % NOTE: Requires that bicas.logger has been initialized to permit writing to log file.
+        L.set_log_file(CliData.matlabLogFile);
     end
     
-    L.logf('info', 'CLI argument %2i: "%s"', i, cliArgumentsList{i})
-    cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
-end
-cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedList, ' ');
-cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
-% IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
-% both MATLAB command prompt and bash.
-L.logf('info', '\n')
-L.logf('info', 'CLI arguments for copy-pasting\n')
-L.logf('info', '------------------------------\n')
-L.logf('info', 'Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
-L.logf('info', 'Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
-L.logf('info', '\n\n')
+    
+    
+    %=================================================
+    % Modify settings according to configuration file
+    %=================================================
+    if ~isempty(CliData.configFile)
+        configFile = CliData.configFile;
+    else
+        configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
+    end
+    L.logf('info', 'configFile = "%s"', configFile)
+    rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
+    ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
+    L.log('info', 'Overriding subset of in-memory settings using config file.')
+    SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS
+    
+    
+    
+    %=========================================================
+    % Modify settings according to (inofficial) CLI arguments
+    %=========================================================
+    L.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
+    SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
+    
+    
+    
+    SETTINGS.make_read_only();
+    % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
+    
+    
+    
+    %======================
+    % ASSERTIONS: SETTINGS
+    %======================
+    EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
+    %EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
+    EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
+    % Validate S/W release version
+    % ----------------------------
+    % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
+    % NOTE: It is hard to thoroughly follow the description, but the end result should be under
+    % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
+    EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
+    
+    
+    
+    L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
+    
+    
+    
+    SwModeDefs = bicas.swmode_defs(SETTINGS, L);
+    
+    
+    
+    switch(CliData.functionalityMode)
+        case 'version'
+            print_version(SwModeDefs.List, SETTINGS)
+            
+        case 'identification'
+            print_identification(SwModeDefs.List, SETTINGS)
+            
+        case 'S/W descriptor'
+            print_sw_descriptor(SwModeDefs.List, SETTINGS)
+            
+        case 'help'
+            print_help(SETTINGS)
+            
+        case 'S/W mode'
+            %==============================================================================
+            % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
+            %==============================================================================
+            try
+                SwModeInfo = SwModeDefs.get_sw_mode_info(CliData.swModeArg);
+            catch Exception1
+                % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
+                error('BICAS:main:CLISyntax', ...
+                    'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
+                    CliData.swModeArg);
+            end
+            
+            
+            
+            %======================================================================
+            % Parse CliData.SpecInputParametersMap arguments depending on S/W mode
+            %======================================================================
+            
+            % Extract INPUT dataset files from SIP arguments.
+            InputFilesMap = extract_rename_Map_keys(...
+                CliData.SpecInputParametersMap, ...
+                {SwModeInfo.inputsList(:).cliOptionHeaderBody}, ...
+                {SwModeInfo.inputsList(:).prodFuncInputKey});
+            
+            % Extract OUTPUT dataset files from SIP arguments.
+            OutputFilesMap = extract_rename_Map_keys(...
+                CliData.SpecInputParametersMap, ...
+                {SwModeInfo.outputsList(:).cliOptionHeaderBody}, ...
+                {SwModeInfo.outputsList(:).prodFuncOutputKey});
+            
+            % ASSERTION: Assume correct number of arguments (the only thing not implicitly checked by extract_rename_Map_keys above).
+            nSipExpected = numel(SwModeInfo.inputsList) + numel(SwModeInfo.outputsList);
+            nSipActual   = numel(CliData.SpecInputParametersMap.keys);
+            if nSipExpected ~= nSipActual
+                error('BICAS:main:CLISyntax', 'Illegal number of "specific input parameters" (input & output datasets). Expected %i, but got %i.', nSipExpected, nSipActual)
+            end
+            
+            
+            
+            %==================================
+            % Set calibrationDir, masterCdfDir
+            %==================================
+            % NOTE: Reading environment variables first here, where they are needed.
+            calibrationDir = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+            masterCdfDir   = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+            L.logf('info', 'calibrationDir = "%s"', calibrationDir)
+            L.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
+
+            EJ_library.assert.dir_exists(calibrationDir)
+            EJ_library.assert.dir_exists(masterCdfDir)
 
 
 
-%========================================
-% Initialize global settings & constants
-%========================================
-global SETTINGS
-SETTINGS  = bicas.create_default_SETTINGS();
-
-
-
-%=============================================
-% First-round interpretation of CLI arguments
-%=============================================
-CliData = bicas.interpret_CLI_args(cliArgumentsList);
-
-
-
-%==============================================================
-% Configure inofficial log file, written to from within MATLAB
-%==============================================================
-if ~isempty(CliData.matlabLogFile)
-    % NOTE: Requires that bicas.logger has been initialized to permit writing to log file.
-    L.set_log_file(CliData.matlabLogFile);
-end
-
-
-
-%=================================================
-% Modify settings according to configuration file
-%=================================================
-if ~isempty(CliData.configFile)
-    configFile = CliData.configFile;
-else
-    configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
-end
-L.logf('info', 'configFile = "%s"', configFile)
-rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
-ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
-L.log('info', 'Overriding subset of in-memory settings using config file.')
-SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS
-
-
-
-%=========================================================
-% Modify settings according to (inofficial) CLI arguments
-%=========================================================
-L.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
-SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
-
-
-
-SETTINGS.make_read_only();
-% CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
-
-
-
-%======================
-% ASSERTIONS: SETTINGS
-%======================
-EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
-%EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
-EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
-% Validate S/W release version
-% ----------------------------
-% RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
-% NOTE: It is hard to thoroughly follow the description, but the end result should be under
-% release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
-EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
-
-
-
-L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
-
-
-
-SwModeDefs = bicas.swmode_defs(SETTINGS, L);
-
-
-
-switch(CliData.functionalityMode)
-    case 'version'
-        print_version(SwModeDefs.List, SETTINGS)
-        
-    case 'identification'
-        print_identification(SwModeDefs.List, SETTINGS)
-        
-    case 'S/W descriptor'
-        print_sw_descriptor(SwModeDefs.List, SETTINGS)
-        
-    case 'help'
-        print_help(SETTINGS)
-        
-    case 'S/W mode'
-        %==============================================================================
-        % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
-        %==============================================================================
-        try
-            SwModeInfo = SwModeDefs.get_sw_mode_info(CliData.swModeArg);
-        catch Exception1
-            % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
-            error('BICAS:main:CLISyntax', ...
-                'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
-                CliData.swModeArg);
-        end
-
-
-
-        %======================================================================
-        % Parse CliData.SpecInputParametersMap arguments depending on S/W mode
-        %======================================================================
-        
-        % Extract INPUT dataset files from SIP arguments.
-        InputFilesMap = extract_rename_Map_keys(...
-            CliData.SpecInputParametersMap, ...
-            {SwModeInfo.inputsList(:).cliOptionHeaderBody}, ...
-            {SwModeInfo.inputsList(:).prodFuncInputKey});
-        
-        % Extract OUTPUT dataset files from SIP arguments.
-        OutputFilesMap = extract_rename_Map_keys(...
-            CliData.SpecInputParametersMap, ...
-            {SwModeInfo.outputsList(:).cliOptionHeaderBody}, ...
-            {SwModeInfo.outputsList(:).prodFuncOutputKey});
-        
-        % ASSERTION: Assume correct number of arguments (the only thing not implicitly checked by extract_rename_Map_keys above).
-        nSipExpected = numel(SwModeInfo.inputsList) + numel(SwModeInfo.outputsList);
-        nSipActual   = numel(CliData.SpecInputParametersMap.keys);
-        if nSipExpected ~= nSipActual
-            error('BICAS:main:CLISyntax', 'Illegal number of "specific input parameters" (input & output datasets). Expected %i, but got %i.', nSipExpected, nSipActual)
-        end        
-
-        
-        
-        %================================
-        % Set pipelineId, calibrationDir
-        %================================
-        % NOTE: Reading environment variables first here, where they are needed.
-        calibrationDir = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-        %pipelineId     = read_env_variable(SETTINGS, L, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
-        masterCdfDir   = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-        L.logf('info', 'calibrationDir = "%s"', calibrationDir)
-        %L.logf('info', 'pipelineId     = "%s"', pipelineId)
-        L.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
-
-
-
-        %==================
-        % EXECUTE S/W MODE
-        %==================
-        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS, L )
-
-    otherwise
-        error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
-end    % if ... else ... / switch
-
-
-
-executionWallTimeSeconds = toc(startTimeTicSeconds);
-L.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
+            %==================
+            % EXECUTE S/W MODE
+            %==================
+            bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS, L )
+            
+        otherwise
+            error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
+    end    % if ... else ... / switch
+    
+    
+    
+    executionWallTimeSeconds = toc(startTimeTicSeconds);
+    L.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
 end
 
 
 
 function NewMap = extract_rename_Map_keys(SrcMap, srcKeysList, newKeysList)
-assert(numel(srcKeysList) == numel(newKeysList))
-NewMap = containers.Map();
-
-for i = 1:numel(srcKeysList)
-    srcKey = srcKeysList{i};
+    assert(numel(srcKeysList) == numel(newKeysList))
+    NewMap = containers.Map();
     
-    if ~SrcMap.isKey(srcKey)
-        error('BICAS:main:Assertion', 'Can not find source key "%s"', srcKey)
+    for i = 1:numel(srcKeysList)
+        srcKey = srcKeysList{i};
+        
+        if ~SrcMap.isKey(srcKey)
+            error('BICAS:main:Assertion', 'Can not find source key "%s"', srcKey)
+        end
+        NewMap(newKeysList{i}) = SrcMap(srcKey);
     end
-    NewMap(newKeysList{i}) = SrcMap(srcKey);
-end
 end
 
 
@@ -491,19 +494,19 @@ end
 % First created <<2019-08-05
 %
 function print_version(SwModeDefsList, SETTINGS)
-
-% IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
-% constants since the RCS ICD specifies that it should be that specific version.
-% This is in principle inefficient but also "precise".
-
-JsonSwd = bicas.get_sw_descriptor(SwModeDefsList, SETTINGS);
-
-JsonVersion = [];
-JsonVersion.version = JsonSwd.release.version;
-
-strVersion = bicas.utils.JSON_object_str(JsonVersion, ...
-    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
-bicas.stdout_print(strVersion);
+    
+    % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
+    % constants since the RCS ICD specifies that it should be that specific version.
+    % This is in principle inefficient but also "precise".
+    
+    JsonSwd = bicas.get_sw_descriptor(SwModeDefsList, SETTINGS);
+    
+    JsonVersion = [];
+    JsonVersion.version = JsonSwd.release.version;
+    
+    strVersion = bicas.utils.JSON_object_str(JsonVersion, ...
+        SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+    bicas.stdout_print(strVersion);
 end
 
 
@@ -514,12 +517,12 @@ end
 % First created 2016-06-07
 %
 function print_identification(SwModesDefsList, SETTINGS)
-
-JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
-strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
-    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
-bicas.stdout_print(strSwd);
-
+    
+    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
+    strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
+        SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+    bicas.stdout_print(strSwd);
+    
 end
 
 
@@ -530,12 +533,12 @@ end
 % First created 2016-06-07/2019-09-24
 %
 function print_sw_descriptor(SwModesDefsList, SETTINGS)
-
-JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
-strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
-    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
-bicas.stdout_print(strSwd);
-
+    
+    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
+    strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
+        SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+    bicas.stdout_print(strSwd);
+    
 end
 
 
@@ -545,63 +548,62 @@ end
 % NOTE: Useful if the output printed by this function can be used for copy-pasting into RCS User Manual (RUM).
 %
 function print_help(SETTINGS)
-%
-% PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
-
-C = bicas.error_safe_constants();
-
-
-
-% Print software name & description
-bicas.stdout_printf('\n%s version %s\n', SETTINGS.get_fv('SWD.identification.name'), SETTINGS.get_fv('SWD.release.version') )
-bicas.stdout_print(SETTINGS.get_fv('SWD.identification.description'))
-
-%==========================
-% Print error codes & types
-%==========================
-errorCodesList = cellfun(@(x) (x.errorCode), C.EMIDP_2_INFO.values);   % Array of (unsorted) error codes.
-[~, iSort] = sort(errorCodesList);
-empidList          = C.EMIDP_2_INFO.keys;
-errorTypesInfoList = C.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
-empidList          = empidList(iSort);
-errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
-bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')
-bicas.stdout_printf(  '===================================================================')
-for i = 1:numel(errorTypesInfoList)
-    errorType = errorTypesInfoList{i};
-    bicas.stdout_printf(['    %1i : %s\n', ...
-                         '        %s\n'], errorType.errorCode, empidList{i}, errorType.description)
-end
-
-% Print settings
-bicas.stdout_print(bicas.sprint_SETTINGS(SETTINGS))   % Includes title
-
-bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
+    %
+    % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
+    
+    C = bicas.error_safe_constants();
+    
+    
+    
+    % Print software name & description
+    bicas.stdout_printf('\n%s version %s\n', SETTINGS.get_fv('SWD.identification.name'), SETTINGS.get_fv('SWD.release.version') )
+    bicas.stdout_print(SETTINGS.get_fv('SWD.identification.description'))
+    
+    %==========================
+    % Print error codes & types
+    %==========================
+    errorCodesList = cellfun(@(x) (x.errorCode), C.EMIDP_2_INFO.values);   % Array of (unsorted) error codes.
+    [~, iSort] = sort(errorCodesList);
+    empidList          = C.EMIDP_2_INFO.keys;
+    errorTypesInfoList = C.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
+    empidList          = empidList(iSort);
+    errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
+    bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')
+    bicas.stdout_printf(  '===================================================================')
+    for i = 1:numel(errorTypesInfoList)
+        errorType = errorTypesInfoList{i};
+        bicas.stdout_printf(['    %1i : %s\n', ...
+            '        %s\n'], errorType.errorCode, empidList{i}, errorType.description)
+    end
+    
+    % Print settings
+    bicas.stdout_print(bicas.sprint_SETTINGS(SETTINGS))   % Includes title
+    
+    bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
 end
 
 
 
 % Read environment variable, but allow the value to be overriden by a settings variable.
 function v = read_env_variable(SETTINGS, L, envVarName, overrideSettingKey)
-settingsOverrideValue = SETTINGS.get_fv(overrideSettingKey);
-
-if isempty(settingsOverrideValue)
-    v = getenv(envVarName);
-else
-    L.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', ...
-        envVarName, overrideSettingKey, settingsOverrideValue)
-    v = settingsOverrideValue;
+    settingsOverrideValue = SETTINGS.get_fv(overrideSettingKey);
+    
+    if isempty(settingsOverrideValue)
+        v = getenv(envVarName);
+    else
+        L.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', ...
+            envVarName, overrideSettingKey, settingsOverrideValue)
+        v = settingsOverrideValue;
+    end
+    
+    % UI ASSERTION
+    if isempty(v)
+        error('BICAS:main:Assertion', ...
+            ['Can not set internal variable corresponding to environment variable "%s" from either', ...
+            ' (1) the environment variable, or (2) settings key value %s="%s".'], ...
+            envVarName, overrideSettingKey, settingsOverrideValue)
+    end
 end
-
-% UI ASSERTION
-if isempty(v)
-    error('BICAS:main:Assertion', ...
-        ['Can not set internal variable corresponding to environment variable "%s" from either', ...
-        ' (1) the environment variable, or (2) settings key value %s="%s".'], ...
-        envVarName, overrideSettingKey, settingsOverrideValue)
-end
-end
-
 
 
 

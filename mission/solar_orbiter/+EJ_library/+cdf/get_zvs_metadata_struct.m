@@ -14,7 +14,7 @@
 % --
 % NOTE: spdfcdfinfo can return Variables in a struct format using
 %   S = spdfcdfinfo(filePath, 'VARSTRUCT', true)
-% It consists of a 1x1 struct where each field contains the content of one column. That is thus not a replacement for
+% It consists of a 1x1 struct where each field contains the content of one column. This is thus not a replacement for
 % the struct returned by this function.
 % --
 % NOTE: The CDF file format permits zVariable names and zVariable attribute names that are not legal MATLAB struct
@@ -53,6 +53,7 @@
 %               .(zvAttributeName)
 %           .Other                   : Struct. The reformatted content of "Variables".
 %               .(metadataField)
+%               NOTE: .FILLVAL, .VALIDMIN, .VALIDMAX (under .Other) are empty if CDF does not contain values.
 %
 %
 % Author: Erik P G Johansson
