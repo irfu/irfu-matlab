@@ -293,7 +293,7 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     % Log data read from CDF file
-    bicas.proc_utils.log_zVars(ZvsLog, L)
+    bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
     
     
     

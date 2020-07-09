@@ -85,7 +85,7 @@ function errorCode = main( varargin )
         % -----------------------------------------------
         % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
         % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
-        clear -global SETTINGS
+        %clear -global SETTINGS
         
         %C = bicas.error_safe_constants();
         % NOTE: Permitting logging to file from MATLAB instead of bash wrapper in case of using inofficial option.
@@ -312,7 +312,7 @@ function main_without_error_handling(cliArgumentsList, L)
     %========================================
     % Initialize global settings & constants
     %========================================
-    global SETTINGS
+    %global SETTINGS
     SETTINGS  = bicas.create_default_SETTINGS();
     
     

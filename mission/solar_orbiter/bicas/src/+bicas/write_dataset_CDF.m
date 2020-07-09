@@ -156,7 +156,7 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     
     
     % Log data to be written to CDF file.
-    bicas.proc_utils.log_zVars(ZvsLog, L)
+    bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
     
     
     

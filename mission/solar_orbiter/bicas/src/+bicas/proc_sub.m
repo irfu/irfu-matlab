@@ -128,7 +128,7 @@ classdef proc_sub
                 TimeVars.SCI_ACQUISITION_TIME_tt2000 = ...
                     bicas.proc_utils.ACQUISITION_TIME_to_tt2000(InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
-            bicas.proc_utils.log_zVars(TimeVars, L);
+            bicas.proc_utils.log_zVars(TimeVars, SETTINGS, L);
 
 
 

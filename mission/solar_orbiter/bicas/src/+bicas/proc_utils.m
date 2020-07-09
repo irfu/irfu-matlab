@@ -626,10 +626,13 @@ classdef proc_utils
         
         
         
-        function ColumnStrs = log_array(varName, varValue, varType)
-            % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
-            % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
-            % settings are used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
+        function ColumnStrs = log_array(varName, varValue, varType, SETTINGS)
+            % Logs statistics on the contents of a numeric variable (any dimensionality):
+            %   ** Array size
+            %   ** Number of and percentage NaN,
+            %   ** unique values, min-max.
+            % Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which settings are
+            % used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
             %
             % IMPLEMENTATION NOTE: Deliberately short function name to not clutter the log.
             %
@@ -647,8 +650,8 @@ classdef proc_utils
             % PROPOSAL: Move to +utils.
             % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
             % PROPOSAL: Print MATLAB class (implicitly range).
-            
-            global SETTINGS
+            % PROPOSAL: Better function name. Should imply that it generates strings for logging, not the logging
+            %           itself.
             
             % ASSERTION
             assert(isnumeric(varValue))
@@ -741,7 +744,7 @@ classdef proc_utils
         % =========
         % Zvs : Struct with ~zVariables.
         %       NOTE: Uses field name to determine whether field is Epoch-like or not.
-        function log_zVars(Zvs, L)
+        function log_zVars(Zvs, SETTINGS, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
             %   Ex: process_HK_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
@@ -765,12 +768,12 @@ classdef proc_utils
                         && any(EJ_library.str.regexpf(zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch');
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch', SETTINGS);
                     
                 elseif isnumeric(zvValue)
                     % CASE: Non-Epoch-like numeric variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'numeric');
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'numeric', SETTINGS);
                     
                 elseif ischar(zvValue)
                     
