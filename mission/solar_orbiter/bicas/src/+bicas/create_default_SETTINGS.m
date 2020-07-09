@@ -95,8 +95,12 @@ function SETTINGS = create_default_SETTINGS()
     % Parameters influencing how JSON objects are printed with function JSON_object_str.
     S.define_setting('JSON_OBJECT_STR.INDENT_SIZE', 4);
     
-    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
-    S.define_setting('LOGGING.MAX_UNIQUES_PRINTED', 5);
+    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter
+    % representation (min-max range)
+    S.define_setting('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED', 5);
+    % When logging contents of TT2000 vector (in practise zVar Epoch), maximum number of unique TT2000 values printed
+    % before switching to shorter representation (min-max range).
+    S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
     
     % EXPERIMENTAL
     % Enable inofficial support for S/W modes that accept L1 LFR & TDS datasets in addition to the official support for L1R.

@@ -648,8 +648,6 @@ classdef proc_utils
             % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
             % PROPOSAL: Print MATLAB class (implicitly range).
             
-            MAX_EPOCH_UNIQUES_PRINTED = 2;
-            
             global SETTINGS
             
             % ASSERTION
@@ -683,7 +681,7 @@ classdef proc_utils
                     %===================================
                     % Construct string: range of values
                     %===================================
-                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_UNIQUES_PRINTED')
+                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED')
                         vMin = min(min(min(varValue)));
                         vMax = max(max(max(varValue)));
                         
@@ -704,14 +702,18 @@ classdef proc_utils
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
                     
-                    if nUniqueValues > MAX_EPOCH_UNIQUES_PRINTED
+                    %if nUniqueValues > MAX_EPOCH_UNIQUES_PRINTED
+                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
                         epochMinStr = bicas.proc_utils.tt2000_to_UTC_str(min(varValue));
                         epochMaxStr = bicas.proc_utils.tt2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
-                        for i = 1:numel(uniqueValues)
-                            valueStrs{end+1} = bicas.proc_utils.tt2000_to_UTC_str(uniqueValues{i});
-                        end
+%                         valueStrs = {};
+%                         for i = 1:numel(uniqueValues)
+%                             valueStrs{end+1} = bicas.proc_utils.tt2000_to_UTC_str(uniqueValues(i));
+%                         end
+                        bicas.proc_utils.assert_zv_Epoch(uniqueValues)
+                        valueStrs = EJ_library.cdf.tt2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
                     else
                         valuesStr = '-';
