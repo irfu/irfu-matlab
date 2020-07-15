@@ -115,6 +115,8 @@ function plot_HK(filePath)
     Epoch = D.data.Epoch.data;
     
     hAxesArray = irf_plot(numel(ZVAR_SCALAR_LIST)+3+numel(ZVAR_BIT_FLAG_LIST), 'newfigure');
+    % Panel height: fixed size + weight for each panel, used for distributing segments.
+    panelHeightFswArray = zeros(0,2);   % FSW = Fixed Size + Weight
 
     %=====================================
     % Add panels for scalar numeric zVars
@@ -133,15 +135,16 @@ function plot_HK(filePath)
             set(hAxes, 'YLim', [0,7])
             set(hAxes, 'YTick', 1:7)
         end
-
+        
+        panelHeightFswArray(end+1, :) = [0, 1];
     end
     
     %==================================================================
     % Add panels for triplets of numeric zVars (one zVar per antenna).
     %==================================================================
-    plot_time_series3(D, 'HK_BIA_BIAS%s');
-    plot_time_series3(D, 'HK_BIA_TEMP_ANT%s_LF_PA');
-    plot_time_series3(D, 'HK_BIA_M%s'   );
+    plot_time_series3(D, 'HK_BIA_BIAS%s');             panelHeightFswArray(end+1, :) = [0, 1];
+    plot_time_series3(D, 'HK_BIA_TEMP_ANT%s_LF_PA');   panelHeightFswArray(end+1, :) = [0, 1];
+    plot_time_series3(D, 'HK_BIA_M%s'   );             panelHeightFswArray(end+1, :) = [0, 1];
 
     %==================================================================
     % Add panels for bit-valued zVars.
@@ -150,6 +153,7 @@ function plot_HK(filePath)
     for i = 1:numel(ZVAR_BIT_FLAG_LIST)
         zVarName = ZVAR_BIT_FLAG_LIST{i};
         hBitArray(end+1) = plot_bit_series(zVarName, Epoch, D.data.(zVarName).data, zVarName);
+        panelHeightFswArray(end+1, :) = [BIT_PANEL_HEIGHT, 0];
     end
 
 
@@ -160,12 +164,18 @@ function plot_HK(filePath)
     % 'Position' : [left bottom width height]. Size and location, excluding a margin for the labels.
     positionCa = get(hAxesArray, 'Position');    % CA = Cell Array
     yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
+    % Panel height before distributing height segments. Assumes that panels are adjacent to each other.
     heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
     
-    heightPanelArray2 = solo.ql.reweight(...
-        heightPanelArray1, ...
-        BIT_PANEL_HEIGHT, ...
-        numel(ZVAR_SCALAR_LIST)+3+[1:numel(ZVAR_BIT_FLAG_LIST)]);
+%     iPanelsToSetHeightFor = numel(ZVAR_SCALAR_LIST) + 3 + [1:numel(ZVAR_BIT_FLAG_LIST)];
+%     heightPanelArray2 = solo.ql.reweight(...
+%         heightPanelArray1, ...
+%         BIT_PANEL_HEIGHT, ...
+%         iPanelsToSetHeightFor);
+    heightPanelArray2 = EJ_library.utils.distribute_segments(...
+        sum(heightPanelArray1), ...
+        panelHeightFswArray(:,1), ...
+        panelHeightFswArray(:,2));
     yPanelArray2 = cumsum([heightPanelArray2(2:end); yPanelArray1(end)], 'reverse');
     
     %config = [repmat(-1, 1, numel(ZVAR_SCALAR_LIST)+3), repmat(BIT_PANEL_HEIGHT, 1, numel(ZVAR_BIT_FLAG_LIST))]
