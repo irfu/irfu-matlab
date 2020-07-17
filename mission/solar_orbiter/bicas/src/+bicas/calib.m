@@ -184,7 +184,9 @@ classdef calib < handle
 %   PROPOSAL: "init_*"
 %   PROPOSAL: "complete_init_*"
 %
-% PROPOSAL: Use struct arguments to reduce number of arguments to calibration functions.
+% PROPOSAL: Function for producing combined FTFs (LFR/TDS + BIAS).
+%   PRO: Useful for debugging. Can easily inspect & plot FTFs.
+%   CON: Code only reads ITFs.
 
 
 
@@ -542,7 +544,6 @@ classdef calib < handle
                     %===========
                     % CASE: LFR
                     %===========
-                    %samplesCaAVolt = obj.calibrate_LFR_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, cti1, cti2);
                     samplesCaAVolt = obj.calibrate_LFR_full(dtSec, samplesCaTm, CalSettings, cti1, cti2);
                 else
                     %===========
@@ -550,11 +551,9 @@ classdef calib < handle
                     %===========
                     if isTdsCwf
                         % CASE: TDS CWF
-                        %samplesCaAVolt = obj.calibrate_TDS_CWF_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2);
                         samplesCaAVolt = obj.calibrate_TDS_CWF_full(dtSec, samplesCaTm, CalSettings, cti1, cti2);
                     else
                         % CASE: TDS RSWF
-                        %samplesCaAVolt = obj.calibrate_TDS_RSWF_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2);
                         samplesCaAVolt = obj.calibrate_TDS_RSWF_full(dtSec, samplesCaTm, CalSettings, cti1, cti2);
                     end
                 end

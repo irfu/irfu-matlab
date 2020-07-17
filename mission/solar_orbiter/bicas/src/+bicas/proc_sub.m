@@ -37,40 +37,19 @@ classdef proc_sub
 %   PROPOSAL: proc_TDS
 %   PROPOSAL: proc_demux_calib
 %
-% PROPOSAL: Use double for all numeric zVariables in the processing. Do not produce or require proper type, e.g. integers, in any
-%           intermediate processing. Only convert to the proper data type/class when writing to CDF.
-%   PRO: Variables can keep NaN to represent fill/pad value, also for "integers".
-%   PRO: The knowledge of the dataset CDF formats is not spread out over the code.
-%       Ex: Setting default values for PreDc.QUALITY_FLAG, PreDc.QUALITY_BITMASK, PreDc.DELTA_PLUS_MINUS.
-%       Ex: ACQUISITION_TIME.
-%   CON: Less assertions can be made in utility functions.
-%       Ex: proc_utils.ACQUISITION_TIME_*, proc_utils.tt2000_* functions.
-%   CON: ROUNDING ERRORS. Can not be certain that values which are copied, are actually copied.
-%   --
-%   NOTE: Functions may in principle require integer math to work correctly.
-% --
-% PROPOSAL: Derive DIFF_GAIN (from BIAS HK using time interpolation) in one code common to both LFR & TDS.
-%   PROPOSAL: Function
-%   PRO: Uses flag for selecting interpolation time in one place.
-% PROPOSAL: Derive HK_BIA_MODE_MUX_SET (from BIAS SCI or HK using time interpolation for HK) in one code common to both LFR & TDS.
-%   PROPOSAL: Function
-%   PRO: Uses flag for selecting HK/SCI DIFF_GAIN in one place.
-%   PRO: Uses flag for selecting interpolation time in one place.
-%--
-% NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
+% PROPOSAL: Merge process_PostDC_to_LFR and process_PostDC_to_TDS.
 %
 % PROPOSAL: Instantiate class, use instance methods instead of static.
 %   PRO: Can have SETTINGS and constants as instance variable instead of calling global variables.
 %
 % PROPOSAL: Submit zVar variable attributes.
 %   PRO: Can interpret fill values.
-%       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems to be
-%       bad).
+%       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
+%           to be bad).
+%
 % PROPOSAL: Return (to execute_sw_mode), global attributes.
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
-%
-% PROPOSAL: Separate LFR and TDS in different files.
 %#######################################################################################################################
 
     methods(Static, Access=public)
@@ -163,7 +142,6 @@ classdef proc_sub
                     anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
             if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
-                %error('BICAS:proc_sub:DatasetFormat:SWModeProcessing', 'SCI and HK time ranges do not overlap in time.')
                 
                 % NOTE: "WARNING" (rather than error) only makes sense if it is possible to later meaningfully permit
                 % non-intersection.
@@ -180,11 +158,6 @@ classdef proc_sub
             % NOTE: Only obtains one MUX_SET per record ==> Can not change MUX_SET in the middle of a record.
             % NOTE: Can potentially obtain MUX_SET from LFR SCI.
             %=========================================================================================================            
-%             HkSciTime.MUX_SET = bicas.proc_utils.interpolate_float_records(...
-%                 hkEpoch, ...
-%                 double(InHk.Zv.HK_BIA_MODE_MUX_SET), ...
-%                 InSci.Zv.Epoch, ...
-%                 'nearest');
             HkSciTime.MUX_SET = bicas.utils.interpolate_nearest(...
                 hkEpochExtrapMargin, ...
                 hkEpoch, ...
@@ -199,11 +172,6 @@ classdef proc_sub
             % NOTE: Not perfect handling of time when 1 snapshot/record, since one should ideally use time stamps
             % for every LFR _sample_.
             %=========================================================================================================
-%             HkSciTime.DIFF_GAIN = bicas.proc_utils.interpolate_float_records(...
-%                 hkEpoch, ...
-%                 double(InHk.Zv.HK_BIA_DIFF_GAIN), ...
-%                 InSci.Zv.Epoch, ...
-%                 'nearest');
             HkSciTime.DIFF_GAIN = bicas.utils.interpolate_nearest(...
                 hkEpochExtrapMargin, ...
                 hkEpoch, ...
@@ -237,9 +205,9 @@ classdef proc_sub
                 % One timestamp every minute.
                 % NOTE: Must have timestamps with non-NaN bias values beginning before first voltage Epoch value.
                 EpochAmend = (sciEpoch(1) + int64(j *60*1e9 - 5*60*1e9))';
-                IBIAS_amend_1 =  mod(j,60)';
-                IBIAS_amend_2 = -mod(j,60)';
-                IBIAS_amend_3 =  mod(j,60)';
+                IBIAS_amend_1       =  mod(j,60)';
+                IBIAS_amend_2       = -mod(j,60)';
+                IBIAS_amend_3       =  mod(j,60)';
                 IBIAS_amend_1(i3+1) = NaN;
                 IBIAS_amend_1(i3+2) = NaN;
                 IBIAS_amend_2(i3+0) = NaN;
@@ -738,9 +706,9 @@ classdef proc_sub
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
             % NOTE: Convert AAmpere --> (antenna) nA
-            OutSciZv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
-            OutSciZv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
-            OutSciZv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
+            OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
+            OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
+            OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
             
             % NOTE: The two cases are different in the indexes they use for OutSciZv.
             switch(outputDsi)
@@ -787,8 +755,8 @@ classdef proc_sub
                     error('BICAS:proc_sub:Assertion:IllegalArgument', ...
                         'Function can not produce outputDsi=%s.', outputDsi)
             end
-
-
+            
+            
             
             % ASSERTION
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
@@ -861,9 +829,9 @@ classdef proc_sub
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end
-
-
-
+        
+        
+        
         % Processing function. Converts PreDC to PostDC, i.e. demux and calibrate data.
         % Function is in large part a wrapper around "simple_demultiplex".
         %
@@ -1127,9 +1095,6 @@ classdef proc_sub
                         CalSettings.iLsf         = iLsf_ss;
                         ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
                             PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
-%                         ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
-%                             PreDc.isLfr, PreDc.isTdsCwf, iBlts, ...
-%                             BltsSrcAsrArray(iBlts), biasHighGain, iCalibL_ss, iCalibH_ss, iLsf_ss, CALIBRATION_TABLE_INDEX_ss);
                         
                         if PreDc.hasSnapshotFormat
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...

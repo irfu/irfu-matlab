@@ -228,11 +228,10 @@ classdef logger < handle
             if obj.logFileEnabled
                 
                 if isempty(obj.logFileId)
-                    % CASE: Has not yet specified log file                    
+                    % CASE: Has not yet specified log file
                     obj.logFileBuffer{end+1} = rcsIcdLogMsg;
                 else
                     % CASE: Has specified log file.
-                    
                     obj.write_to_log_file(rcsIcdLogMsg);
                 end
             end
@@ -261,7 +260,7 @@ classdef logger < handle
 
 
 
-        % Wrapper around bicas.logger.log but prints with pattern + parameters.
+        % Wrapper around bicas.logger.log. Prints with pattern + parameters.
         %
         %
         % ARGUMENTS
@@ -270,7 +269,7 @@ classdef logger < handle
         % varargin : Variables used in msgStr
         %
         %
-        % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+        % Author: Erik P G Johansson, IRF, Uppsala, Sweden
         % First created 2019-07-26
         %
         function logf(obj, logLevel, msgStr, varargin)
@@ -278,7 +277,9 @@ classdef logger < handle
             obj.log( logLevel, sprintf(msgStr, varargin{:}) );
             
         end
-        
+
+
+
     end    % methods(Access=public)
     
     

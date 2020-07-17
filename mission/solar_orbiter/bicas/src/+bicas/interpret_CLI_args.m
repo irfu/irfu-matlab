@@ -46,7 +46,7 @@
 % SIP                     : Specific Input Parameters. The phrase is an RCS ICD term.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-22.
 %
 function CliData = interpret_CLI_args(cliArgumentList)
@@ -91,15 +91,15 @@ function CliData = interpret_CLI_args(cliArgumentList)
     
     
     
-    %=======================================================================================================================
+    %===================================================================================================================
     % Extract the modified settings from the inofficial CLI arguments.
     %
     % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE option (in the meaning of
     % parse_CLI_options) and is filled with the corresponding option values in the order of the CLI arguments.
     %       ==> A later occurrence of an option with the same first option value, overwrites previous occurrences of the
     %       option with the same first option value. This is the intended behaviour (not a side effect).
-    %       E.g. --setting LOGGING.IRF_LOG_LEVEL w --setting LOGGING.IRF_LOG_LEVEL n
-    %=======================================================================================================================
+    %       E.g. --set SETTING_NAME 0 --setting SETTING_NAME 1
+    %===================================================================================================================
     OptionValuesMap = bicas.utils.parse_CLI_options(cliArgumentList, OPTIONS_CONFIG_MAP);
     CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(OptionValuesMap('modified_settings'));
     

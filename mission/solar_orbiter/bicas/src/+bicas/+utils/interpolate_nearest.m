@@ -15,7 +15,10 @@
 %
 % RETURN VALUE
 % ============
-% y2      : Same size as x2. NOTE: Always double (if numel(x1) >= 2).
+% y2      : Same size as x2.
+%           y2(i)=NaN if    x2(i) < min(x2) - xmargin,
+%                        or x2(i) > min(x2) + xmargin
+%           NOTE: Always double (if numel(x1) >= 2).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -31,13 +34,14 @@ function y2 = interpolate_nearest(xMargin, x1, y1, x2)
     if     nX1 == 0
         y2 = NaN(size(x2));
         return
-        %error('x1 must contain at least one value.')
+        
     elseif nX1 == 1
-        % NOTE: Special treatment of scalar x1 since interp1 does not support it.
+        % NOTE: Special treatment of scalar x1 since "interp1" does not support it.
         assert(isfinite(x1))
         
         y2 = NaN(size(x2));
         y2(x2 == x1) = y1;
+        
     else
         % Required by interp1.
         x1 = double(x1);

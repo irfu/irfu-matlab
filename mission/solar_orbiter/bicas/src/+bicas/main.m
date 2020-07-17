@@ -93,18 +93,18 @@ function errorCode = main( varargin )
         
         
         
-        %===================================================================================================================
+        %===============================================================================================================
         % Initialize irfu-matlab "library"
         % --------------------------------
         % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
         %
         % NOTE: Prints to stdout. Can not deactivate this behaviour!
-        % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
-        %       BICAS or the rest of irfu-matlab).
+        % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates
+        %       to BICAS or the rest of irfu-matlab).
         %
         % IMPLEMENTATION NOTE: bicas.logger.ICD_log_msg uses EJ_library.str.add_prefix_on_every_row.
         % ==> Must initialize paths for EJ_library BEFORE using bicas.logger.log/logf.
-        %===================================================================================================================
+        %===============================================================================================================
         irf('check_path');
         irf('check_os');              % Maybe not strictly needed.
         irf('matlab');

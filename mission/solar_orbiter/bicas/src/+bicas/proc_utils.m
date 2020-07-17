@@ -8,7 +8,7 @@
 % SPR = Samples Per (CDF-like) Record
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-10
 %
 classdef proc_utils
@@ -182,6 +182,9 @@ classdef proc_utils
         %
         function iEdgeList = find_constant_sequences(varargin)
             % PROPOSAL: Rename to imply that the function finds edges (separating sequences), not sequences.
+            % PROPOSAL: Make into generic function, split_by_change.
+            % PROPOSAL: Use EJ_library.utils.find_equalities with searchDistance=1.
+            
             %tic
             nArgs = numel(varargin);
             
@@ -384,36 +387,10 @@ classdef proc_utils
             filteredData(bRowFilter, :) = NaN;
         end
 
-
-
-%         function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-%         % Two steps:
-%         % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
-%         %     repeating within record.
-%         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
-%             
-%             % ASSERTIONS
-%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-%             
-%             zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
-%             zv2 = EJ_library.so.convert_N_to_1_SPR_redistribute(zv2);
-%         end
         
         
-        
-%         function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-%             % NOTE: Maybe somewhat unnecessary function.
-%             
-%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-%             
-%             zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
-%         end
-
-        
-        
-        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC )
+        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(...
+            ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC)
         % Function intended for converting ACQUISITION_TIME (always one time per record) from many samples/record to one
         % sample/record. See convert_N_to_1_SPR_Epoch which is analogous.
         % 
@@ -643,12 +620,15 @@ classdef proc_utils
             %
             % ARGUMENTS
             % =========
-            % Alternative 1: 'explanation' (string literal) : Prints explanation of the (very condensed) log messages.
-            % Alternative 2: variableName, variableValue    : Print statistics on line
+            % varName  :
+            % varValue :
+            % varType  : String constant. 'numeric' or 'Epoch'. Determines how varValue is interpreted.
             %
-            % ASSUMPTIONS
-            % ===========
-            % variableValue is numeric
+            %
+            % RETURN VALUE
+            % ============
+            % ColumnStrs : Struct with fields corresponding to different column values for one row in a table.
+            %
             
             % PROPOSAL: Handle fill/pad value?
             % PROPOSAL: Move to +utils.
@@ -672,6 +652,7 @@ classdef proc_utils
             sizeStr = sprintf('(%s)', sizeStr);
             
             switch(varType)
+                
                 case 'numeric'
                     % ASSERTION
                     assert(ndims(varValue) <= 3, 'BICAS:proc_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')

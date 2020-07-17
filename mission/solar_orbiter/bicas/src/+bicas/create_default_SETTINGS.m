@@ -50,19 +50,12 @@ function SETTINGS = create_default_SETTINGS()
     % PROPOSAL: Abolish INPUT_CDF.CUR.PREPEND_TEST_DATA.
     % PROPOSAL: Naming convention for settings keys for testing ONLY:
     %
-    % PROPOSAL: Some kind of automatic warning for not using default setting.
-    %   CON: Log already contains this.
-    %       CON: No it does not since e.g. a log file can set a setting to the same value as the default.
-    %
     % PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
     %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
     %
     % PROPOSAL: Setting keys should always be on the form ENABLE, never DISABLE.
     %   PRO: More consistent.
     %   CON: Less clear what is a deviation from the default.
-    %
-    % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
-    % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
     %
     % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
     %   ==> Problems with grepping log files.
@@ -73,9 +66,29 @@ function SETTINGS = create_default_SETTINGS()
     %   PROPOSAL: Use lower case "error", "warning"
     %   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
     %
-    % PROPOSAL: Other solution for PROCESSING.LFR.F0_F1_F2_F3_HZ.
-    %   PRO: Constants needed also outside of BICAS.
-    
+    % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
+    % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+    %
+    % PROPOSAL: Policy on usage of dataset levels in settings keys.
+    %   Ex: For now, L1R refers to algorithms to use WHEN processing L1R as input
+    %       Ex: PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY
+    %       NOTE: Does not have to refer to the L1R datasets as such.
+    %           Ex: L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
+    %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
+    %   Ex: For now, L2 refers to algorithms to use when processing L2 as output.
+    %       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
+    %   NEED: Specify whether refers to input or output data (not necessarily datasets).
+    %       Ex: Distinguish processing L1R-->L2, L2-->L3.
+    %   NEED: Distinguish processing (science) data L1-->L2, L1R-->L2
+    %   NEED: Distinguish
+    %       (1) datasets of specific level, and
+    %       (2) algorithms that run when using given input level.
+    %   PROPOSAL: Some kind of prefix before data level.
+    %       PROPOSAL: IN_L1R, OUT_L2 etc.
+    %   PROPOSAL: when speaking of datasets, use
+    %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
+    %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
+    %       PROBLEM: How distinguish from processing?
     
     S = bicas.settings();
     
@@ -102,8 +115,8 @@ function SETTINGS = create_default_SETTINGS()
     % before switching to shorter representation (min-max range).
     S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
     
-    % EXPERIMENTAL
-    % Enable inofficial support for S/W modes that accept L1 LFR & TDS datasets in addition to the official support for L1R.
+    % Enable inofficial support for S/W modes that accept L1 LFR & TDS datasets in addition to the official support for
+    % L1R.
     S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
     
     
@@ -190,7 +203,8 @@ function SETTINGS = create_default_SETTINGS()
     % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/27#note_15954
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'REMOVE_DUPLICATES')    % ERROR, REMOVE_DUPLICATES
     
-    % Whether to replace pad values with NaN internally.
+    % Whether to replace PAD VALUES values with NaN internally.
+    % IMPORTANT NOTE: Refers to CDF PAD VALUES, NOT CDF FILL VALUES!
     % NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore useful.
     S.define_setting('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED',       1)            % 0/false, 1/true.
     
@@ -236,9 +250,9 @@ function SETTINGS = create_default_SETTINGS()
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.BIAS', 'BIAS')   % Abolish?
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.LFR',  'LFR')    % Abolish?
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.TDS',  'TDS')    % Abolish?
-    
-    
-    
+
+
+
     % What to do with zVariables which are still empty after copying data into the master CDF.
     % This indicates that something is wrong, either in the master CDF or in the processing.
     S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'ERROR');   % ERROR, WARNING, USE_FILLVAL
@@ -395,6 +409,7 @@ function SETTINGS = create_default_SETTINGS()
     
     % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX (in every record), that contains an index to
     % calibration data inside a given RCT.
+    % "L1R" refers to when using L1R datasets as input, as opposed to L1.
     S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               1)
     S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             1)
     S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)

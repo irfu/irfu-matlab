@@ -1,3 +1,4 @@
+%
 % str = sprint_SETTINGS()
 %
 % Create human-readable multi-line string to represent SETTINGS. Meant for logging and printing to stdout.
@@ -52,9 +53,11 @@ function str = sprint_SETTINGS(SETTINGS)
             value = valueStructArray(iVs).value;
             
             if ischar(value)
+                
                 strValue = ['"', value, '"'];
                 
             elseif isnumeric(value)
+                
                 EJ_library.assert.vector(value)
                 if isscalar(value)
                     strValue = sprintf('%d', value);
