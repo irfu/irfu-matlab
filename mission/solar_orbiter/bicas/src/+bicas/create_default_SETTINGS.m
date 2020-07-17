@@ -297,6 +297,20 @@ function SETTINGS = create_default_SETTINGS()
     % TDS has bugfixed. /2019-12-19
     % PROPOSAL: Rename.
     S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
+    
+    %===============================================================================================================
+    % Settings for when to remove data by setting it to fill value
+    % ------------------------------------------------------------
+    % "L2" refers to output datasets. Both voltage and current data.
+    % In practise, this functionality is there as a temporary solution for removing sweeps.
+    %===============================================================================================================
+    S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
+    % Unit: S = Seconds
+    % Lower number since using LFR mux mode (unless configured not to), which has same cadence as science data.
+    % See PROCESSING.LFR.MUX_MODE_SOURCE.
+    S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)    
+    % Higher number since using BIAS HK, which means that the mux mode is know with a lower time resolution.
+    S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)    
 
     %===================================================================================================================
     % Where to obtain the mux mode

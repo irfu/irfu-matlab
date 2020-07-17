@@ -883,7 +883,23 @@ classdef proc_sub
             end
             
             PostDc.Zv.currentAAmpere = currentAAmpere;
+            
+            
+            
+            % Remove data because of settings.
+            [...
+                PostDc.Zv.currentAAmpere, ...
+                PostDc.Zv.DemuxerOutput] ...
+                = bicas.proc_sub.remove_PostDc_data(...
+                PostDc.Zv.currentAAmpere, ...
+                PostDc.Zv.DemuxerOutput, ...
+                PostDc.Zv.Epoch, ...
+                PostDc.Zv.MUX_SET, ...
+                PostDc.isLfr, ...
+                SETTINGS, L);
 
+            
+            
             % ASSERTION
             bicas.proc_sub.assert_PostDC(PostDc)
         end
@@ -894,6 +910,68 @@ classdef proc_sub
     
     methods(Static, Access=private)
     %methods(Static, Access=public)
+    
+    
+    
+        % Remove data because of settings
+        function [zvCurrentAAmpere, DemuxerOutput] = remove_PostDc_data(...
+                zvCurrentAAmpere, DemuxerOutput, zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
+            % -------------------------------
+            % PROPOSAL: Separate function
+            %   NOTE: PreDc as argument, or
+            %   [samplesCaTm, currentAAmpere] = (isLfr, Epoch, MUX_SET, samplesCaTm, currentAAmpere, SETTINGS, L)
+            %   CON: Increases memory usage?
+            
+            LL = 'info';    % LL = Log Level
+            
+            % Read settings
+            % NOTE: There is no PostDc.isTds, only .isTdsCwf
+            [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv('PROCESSING.L2.REMOVE_DATA.MUX_MODES');
+            if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';
+            else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';
+                %else            error('BICAS:proc_sub:Assertion', 'Neither LFR or TDS data.')
+            end
+            removeMarginSec = SETTINGS.get_fv(settingMarginKey);
+            
+            % Algorithm for finding what to remove.
+            bRemoveArray = EJ_library.utils.true_with_margin(...
+                zvEpoch, ...
+                ismember(zv_MUX_SET, muxModesRemove), ...
+                removeMarginSec * 1e9);
+            
+            % Remove and log
+            [i1Array, i2Array] = EJ_library.utils.split_by_false(bRemoveArray);
+            nRemoveIntervals = numel(i1Array);
+            if nRemoveIntervals > 0
+                
+                %=====
+                % Log
+                %=====
+                L.logf(LL, 'Setting science data to fill value in selected CDF records due to settings: ');
+                L.logf(LL, '    Setting %s = [%s]', ...
+                    settingMuxModesKey, ...
+                    strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '));
+                L.logf(LL, '    Setting %s = %g', settingMarginKey, removeMarginSec);
+                
+                for iRi = 1:nRemoveIntervals
+                    iCdfRecord1 = i1Array(iRi);
+                    iCdfRecord2 = i2Array(iRi);
+                    utc1  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord1));
+                    utc2  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord2));
+                    L.logf(LL, '    Records %7i-%7i, %s--%s', iCdfRecord1, iCdfRecord2, utc1, utc2);
+                end
+                
+                %=============
+                % Remove data
+                %=============
+                DemuxerOutput = structfun(...
+                    @(x) (bicas.proc_utils.filter_rows(x, bRemoveArray)), ...
+                    DemuxerOutput, 'UniformOutput', false);
+                zvCurrentAAmpere(bRemoveArray, :) = NaN;     % BUG: Sets variable that does not exist!   ???
+            end            
+        end
+    
+    
 
         % Wrapper around "simple_demultiplex_subsequence_OLD" to be able to handle multiple CDF records with changing
         % settings.
