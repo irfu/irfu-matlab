@@ -407,13 +407,11 @@ classdef proc_sub
 
 
             % Set iLsfZv.
-            if     C.isLfrSbm1
-                iLsfZv = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
-            elseif C.isLfrSbm2
-                iLsfZv = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
-            else
-                % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF index values (1=F0) used in loaded RCT data structs.
-                iLsfZv = InSci.Zv.FREQ + 1;
+            if     C.isLfrSbm1   iLsfZv = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
+            elseif C.isLfrSbm2   iLsfZv = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
+            else                 iLsfZv = InSci.Zv.FREQ + 1;
+                % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF index values (1=F0) used in loaded RCT data
+                % structs.
             end
             EJ_library.assert.size(iLsfZv, [NaN, 1])
 
@@ -423,7 +421,7 @@ classdef proc_sub
             zvFreqHz = EJ_library.so.get_LFR_frequency( iLsfZv );
 
             % Obtain the relevant values (one per record) from zVariables R0, R1, R2, and the virtual "R3".
-            zvRx = bicas.proc_utils.get_LFR_Rx(...
+            zvRx = EJ_library.so.get_LFR_Rx(...
                 InSci.Zv.R0, ...
                 InSci.Zv.R1, ...
                 InSci.Zv.R2, ...
@@ -478,12 +476,12 @@ classdef proc_sub
             V = single(V);
             E = single(E);
 
-            PreDc.Zv.samplesCaTm    = {};
+            PreDc.Zv.samplesCaTm    = cell(5,1);
             PreDc.Zv.samplesCaTm{1} = V;
-            PreDc.Zv.samplesCaTm{2} = bicas.proc_utils.filter_rows( E(:,:,1), zvRx==1 );
-            PreDc.Zv.samplesCaTm{3} = bicas.proc_utils.filter_rows( E(:,:,2), zvRx==1 );
-            PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), zvRx==0 );
-            PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), zvRx==0 );
+            PreDc.Zv.samplesCaTm{2} = bicas.proc_utils.filter_rows( E(:,:,1), zvRx==0 );    % Copy values, except when zvRx==0 (==>NaN).
+            PreDc.Zv.samplesCaTm{3} = bicas.proc_utils.filter_rows( E(:,:,2), zvRx==0 );
+            PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), zvRx==1 );
+            PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), zvRx==1 );
             
             
             
@@ -770,9 +768,10 @@ classdef proc_sub
                 case  {'SOLO_L2_RPW-LFR-SURV-SWF-E'}
                     
                     % ASSERTION
-                    assert(nSamplesPerRecord == 2048, ...
+                    assert(nSamplesPerRecord == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH, ...
                         'BICAS:proc_sub:Assertion:IllegalArgument', ...
-                        'Number of samples per CDF record is not 2048, as expected. Bad Input CDF?')
+                        'Number of samples per CDF record is not %i, as expected. Bad Input CDF?', ...
+                        EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
                     
                     OutSciZv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
                     OutSciZv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
@@ -814,15 +813,13 @@ classdef proc_sub
             OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
             OutSciZv.DELTA_PLUS_MINUS = SciPostDc.Zv.DELTA_PLUS_MINUS;
-            OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1);
-            OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2);
-            OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3);
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
-            OutSciZv.IBIAS1     = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
-            OutSciZv.IBIAS2     = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
-            OutSciZv.IBIAS3     = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
+            % NOTE: Convert AAmpere --> (antenna) nA
+            OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
+            OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
+            OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
             
             % NOTE: The two cases are actually different in the indexes they use for OutSciZv.
             switch(outputDsi)
@@ -879,13 +876,15 @@ classdef proc_sub
 
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc);
-
+            
+            
+            
             %=======
             % DEMUX
             %=======
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
             
-            nRecords = size(PreDc.Zv.Epoch, 1);
+            nRecords = size(PostDc.Zv.Epoch, 1);
             tTicToc = tic();            
             
             PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(PreDc, Cal, SETTINGS, L);
@@ -899,11 +898,11 @@ classdef proc_sub
             % Set (calibrated) bias currents
             %================================
             % BUG / TEMP: Set default values since the real bias current values are not available.
-            currentSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
+            currentSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(PostDc.Zv.Epoch, InCurPd, SETTINGS, L);
             currentTm      = bicas.calib.calibrate_set_current_to_bias_current(currentSAmpere);
             
             currentAAmpere = bicas.proc_utils.create_NaN_array(size(currentSAmpere));    % Variable to fill/set.
-            iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);
+            iCalibLZv      = Cal.get_calibration_time_L(PostDc.Zv.Epoch);
             iEdgeList      = bicas.proc_utils.find_constant_sequences(iCalibLZv);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             for iSubseq = 1:length(iFirstList)

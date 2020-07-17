@@ -62,14 +62,32 @@ function str = sprint_SETTINGS(SETTINGS)
                     strArray = EJ_library.str.sprintf_many('%d', value);
                     strValue = sprintf('[%s]', strjoin(strArray, ', '));
                 end
-                
+
             elseif iscell(value)
+
                 EJ_library.assert.vector(value)
-                strValue = sprintf('{"%s"}', strjoin(value, '", "'));
-                
+                strValueCa = {};
+                for i = 1:numel(value)
+                    cellValue = value{i};
+                    if isnumeric(cellValue) && isscalar(cellValue)
+                        strValueCa{i} = sprintf('%g', cellValue);
+                    elseif ischar(cellValue)
+                        strValueCa{i} = sprintf('"%s"', cellValue);
+                    else
+                        error(...
+                            'BICAS:sprintf_settings:IllegalCodeConfiguration', ...
+                            'Can not print setting for log since cell array component is neither scalar numeric nor string.')
+                    end
+                end
+                strValue = sprintf('{%s}', strjoin(strValueCa, ', '));
+
             else
-                error('BICAS:sprintf_settings:Assertion', ...
-                    'SETTINGS value (overriden or not) for key="%s" has illegal MATLAB class. It is neither char nor numeric.', key)
+
+                error(...
+                    'BICAS:sprintf_settings:Assertion', ...
+                    ['SETTINGS value (overriden or not) for key="%s" has illegal MATLAB class.', ...
+                    ' It is neither char, numeric, nor 1D cell array.'], key)
+
             end
             strValueList{iVs} = strValue;
             clear strValue value

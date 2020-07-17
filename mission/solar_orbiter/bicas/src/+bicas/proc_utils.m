@@ -68,32 +68,33 @@ classdef proc_utils
                 S.(fn) = [S.(fn) ; SAmendment.(fn)];
             end
         end
-        
-        
-        
-        function Rx = get_LFR_Rx(R0, R1, R2, iLsf)
-        % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
-        %
-        % ARGUMENTS
-        % =========
-        % R0, R1, R2, FREQ : LFR CDF zVariables. All must have identical array sizes.
-        %                    FREQ(i) == 0 (not 1) ==> F0 and so on.
-        % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
-        %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on
-        %                    the value of FREQ in the corresponding component.
-        %                    NOTE: Not MATLAB class "logical".
-        %
-        % NOTE: Works for all array sizes.
-            
-            Rx = NaN * ones(size(iLsf));        % Set to NaN (should always be overwritten if code works).
-            
-            I = (iLsf==1);   Rx(I) = R0(I);
-            I = (iLsf==2);   Rx(I) = R1(I);
-            I = (iLsf==3);   Rx(I) = R2(I);
-            I = (iLsf==4);   Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
-            
-            assert(all(~isnan(Rx)))
-        end
+
+
+
+        % MOVED TO SEPARATE GENERIC FUNCTION.
+%         function Rx = get_LFR_Rx(R0, R1, R2, iLsf)
+%         % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
+%         %
+%         % ARGUMENTS
+%         % =========
+%         % R0, R1, R2, FREQ : LFR CDF zVariables. All must have identical array sizes.
+%         %                    FREQ(i) == 0 (not 1) ==> F0 and so on.
+%         % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
+%         %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on      
+%         %                    the value of FREQ in the corresponding component.
+%         %                    NOTE: Not MATLAB class "logical".
+%         %
+%         % NOTE: Works for all array sizes.
+%             
+%             Rx = NaN * ones(size(iLsf));        % Set to NaN (should always be overwritten if code works).
+%             
+%             I = (iLsf==1);   Rx(I) = R0(I);
+%             I = (iLsf==2);   Rx(I) = R1(I);
+%             I = (iLsf==3);   Rx(I) = R2(I);
+%             I = (iLsf==4);   Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
+%             
+%             assert(all(~isnan(Rx)))
+%         end
 
 
         
@@ -346,28 +347,31 @@ classdef proc_utils
         
         
         
-        function filteredData = filter_rows(data, rowFilter)
-        % Function intended for filtering out data from a zVariable by setting parts of it to NaN.
+        function filteredData = filter_rows(data, bRowFilter)
+        % Function intended for filtering out data from a zVariable by setting parts of it to NaN. Also useful for
+        % constructing aonymous functions.
+        %
         %
         % ARGUMENTS AND RETURN VALUE
         % ==========================
         % data         : Numeric array with N rows.                 (Intended to represent a zVariable with N records.)
-        % rowFilter    : Numeric/logical column vector with N rows. (Intended to represent a zVariable with N records.)
+        % bRowFilter   : Numeric/logical column vector with N rows. (Intended to represent a zVariable with N records.)
         % filteredData : Array of the same size as "data", such that
         %                filteredData(i,:,:, ...) == NaN,              for rowFilter(i)==0.
         %                filteredData(i,:,:, ...) == data(i,:,:, ...), for rowFilter(i)~=0.
 
             % ASSERTIONS
-            if ~iscolumn(rowFilter)     % Not really necessary to require row vector, only 1D vector.
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"rowFilter" is not a column vector.')
-            elseif size(rowFilter, 1) ~= size(data, 1)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
-            elseif ~isfloat(data)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"data" is not a floating-point class (can not represent NaN).')
-            end
-            
-            
-            
+            assert(islogical(bRowFilter))    % Mostly to make sure the caller knows that it represents true/false.
+            assert(isfloat(data), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument "data" is not a floating-point class (can not represent NaN).')
+            % Not really necessary to require row vector, only 1D vector.
+            assert(iscolumn(bRowFilter), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument "rowFilter" is not a column vector.')
+            assert(size(bRowFilter, 1) == size(data, 1), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
+
+
+
             % Copy all data
             filteredData = data;
             
@@ -377,7 +381,7 @@ classdef proc_utils
             % if rowFilter and filteredData have different numbers of rows, then the final array may get the wrong
             % dimensions (without triggering error!) since new array components (indices) are assigned. ==> Having a
             % corresponding ASSERTION is important!
-            filteredData(rowFilter==0, :) = NaN;
+            filteredData(bRowFilter, :) = NaN;
         end
 
 

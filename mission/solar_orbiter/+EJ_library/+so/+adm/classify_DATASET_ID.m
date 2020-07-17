@@ -9,6 +9,10 @@
 % DATASET_ID in old test files.
 %
 function C = classify_DATASET_ID(datasetId)
+    % NEED: Be able to generalize nicely to datasets other than BICAS L1/L1R-->L2 processing: sweeps, currents, HK.
+    % NEED: Be able to generalize nicely to BIAS L3 datasets.
+    %   TODO-DEC: Counts as LFR? What if also uses TDS to derive L3 (should not happen)?
+    %
     % PROPOSAL: Use regexp instead.
     %   PRO: Can more easily handle old ROC-SGSE datasets.
     %
@@ -23,9 +27,9 @@ function C = classify_DATASET_ID(datasetId)
     %
     % PROPOSAL: Generalize to work for all DATASET_IDs (BICAS-related and not). Put outside BICAS.
     % PROPOSAL: Return whether SOLO or ROC-SGSE prefix.
-    
-    
-    
+
+
+
     EJ_library.assert.castring(datasetId)
     
     % One flag per type of input/output voltage data.
