@@ -71,6 +71,12 @@ classdef rational_func_transform
         
         
         
+        function Tf = inverse(obj)
+            Tf = EJ_library.utils.rational_func_transform(obj.denominatorCoeffs, obj.numeratorCoeffs);
+        end
+        
+        
+        
         % Check if transfer function converges toward zero in the limit of high frequencies.
         % This is a basic sanity check and should be a necessary(?) (but not sufficient?) criterion for stable
         % transfer functions.

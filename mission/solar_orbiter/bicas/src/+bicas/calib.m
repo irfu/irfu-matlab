@@ -297,20 +297,20 @@ classdef calib < handle
             AC_DIFF_FREQS_HZ = [0, 1000];
             nBiasEpochL = numel(obj.Bias.epochL);
             for iEpochL = 1:nBiasEpochL
-                dcSingleZ = obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(DC_FREQ_HQ);
-                dcDiffZ   = obj.Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(DC_FREQ_HQ);
+                %dcSingleZ = obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(DC_FREQ_HQ);
+                %dcDiffZ   = obj.Bias.ItfSet.DcDiffAvpiv{  iEpochL}.eval(DC_FREQ_HQ);
                 
                 % Log bias current calibration
                 L.logf('debug', '(%i) BIAS current offsets (%s) [A]',         iEpochL, ...
                     strjoin(EJ_library.str.sprintf_many('% 10e', obj.Bias.Current.offsetsAAmpere(iEpochL, :)), ', '))
                 L.logf('debug', '(%i) BIAS current gain    (%s) [A/TM unit]', iEpochL, ...
                     strjoin(EJ_library.str.sprintf_many('% 10e', obj.Bias.Current.gainsAapt(iEpochL, :)),      ', '))
-                
+
                 % Log transfer functions (frequency domain), selected frequencies.
-                obj.log_ITF_Z(sprintf('(%i) BIAS DC single',          iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(omegaRps)))
-                obj.log_ITF_Z(sprintf('(%i) BIAS DC diff',            iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(omegaRps)))
+                obj.log_ITF_Z(sprintf('(%i) BIAS DC single',          iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcSingleAvpiv{  iEpochL}.eval(omegaRps)))
+                obj.log_ITF_Z(sprintf('(%i) BIAS DC diff',            iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcDiffAvpiv{    iEpochL}.eval(omegaRps)))
                 
-                obj.log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcLowGainAvpiv{iEpochL}.eval(omegaRps)))
+                obj.log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcLowGainAvpiv{ iEpochL}.eval(omegaRps)))
                 obj.log_ITF_Z(sprintf('(%i) BIAS AC diff, high gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcHighGainAvpiv{iEpochL}.eval(omegaRps)))
             end
             
@@ -1022,10 +1022,10 @@ classdef calib < handle
             obj.L.logf('info', 'Reading %-4s RCT: "%s"', rctId, filePath)
 
             switch(rctId)
-                case 'BIAS'     ; Rcd =                                  bicas.RCT.read_BIAS_RCT(    filePath);
-                case 'LFR'      ; Rcd = bicas.calib.modify_LFR_data(     bicas.RCT.read_LFR_RCT(     filePath));
-                case 'TDS-CWF'  ; Rcd =                                  bicas.RCT.read_TDS_CWF_RCT( filePath);
-                case 'TDS-RSWF' ; Rcd = bicas.calib.modify_TDS_RSWF_data(bicas.RCT.read_TDS_RSWF_RCT(filePath));
+                case 'BIAS'     ; Rcd = bicas.calib.modify_BIAS_RCT_data(    bicas.RCT.read_BIAS_RCT(    filePath));
+                case 'LFR'      ; Rcd = bicas.calib.modify_LFR_RCT_data(     bicas.RCT.read_LFR_RCT(     filePath));
+                case 'TDS-CWF'  ; Rcd =                                      bicas.RCT.read_TDS_CWF_RCT( filePath);
+                case 'TDS-RSWF' ; Rcd = bicas.calib.modify_TDS_RSWF_RCT_data(bicas.RCT.read_TDS_RSWF_RCT(filePath));
                 otherwise
                     error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId);
             end
@@ -1128,22 +1128,60 @@ classdef calib < handle
 
 
 
-        function LfrItfIvptTable = modify_LFR_data(LfrItfIvptTable)
-            % Modify tabulated LFR TFs.
-            for iLsf = 1:numel(LfrItfIvptTable)
-                for iBlts = 1:numel(LfrItfIvptTable{iLsf})
-                    LfrItfIvptTable{iLsf}{iBlts} = bicas.calib.modify_tabulated_ITF(LfrItfIvptTable{iLsf}{iBlts});
-                end
+        function Bias = modify_BIAS_RCT_data(Bias)
+            nTime = EJ_library.assert.sizes(...
+                Bias.FtfSet.DcSingleAvpiv,   [-1, 1], ...
+                Bias.FtfSet.DcDiffAvpiv,     [-1, 1], ...
+                Bias.FtfSet.AcLowGainAvpiv,  [-1, 1], ...
+                Bias.FtfSet.AcHighGainAvpiv, [-1, 1]);
+            
+            % NOTE: Add .ItfSet, derived from .FtfSet.
+            for iTf = 1:nTime
+                % INVERT: FTF --> ITF
+                Bias.ItfSet.DcSingleAvpiv{  iTf} = Bias.FtfSet.DcSingleAvpiv{  iTf}.inverse();
+                Bias.ItfSet.DcDiffAvpiv{    iTf} = Bias.FtfSet.DcDiffAvpiv{    iTf}.inverse();
+                Bias.ItfSet.AcLowGainAvpiv{ iTf} = Bias.FtfSet.AcLowGainAvpiv{ iTf}.inverse();
+                Bias.ItfSet.AcHighGainAvpiv{iTf} = Bias.FtfSet.AcHighGainAvpiv{iTf}.inverse();
             end
         end
         
         
+            
+        function ItfIvptTable = modify_LFR_RCT_data(FtfTpivTable)
+            
+            % Modify tabulated LFR TFs.
+            ItfIvptTable = {};
+            for iLsf = 1:numel(FtfTpivTable)
+                
+                ItfIvptTable{end+1} = {};
+                for iBlts = 1:numel(FtfTpivTable{iLsf})
+                    
+                    %FtfTpiv = FtfTpivTable{iLsf}{iBlts};
+                    
+                    % INVERT: FTF --> ITF
+%                     ItfIvpt = EJ_library.utils.tabulated_transform(...
+%                         FtfTpiv.omegaRps, ...
+%                         1./FtfTpiv.Z);
+
+                    % INVERT: FTF --> ITF
+                    ItfIvpt = FtfTpivTable{iLsf}{iBlts}.inverse();
+                    
+                    ItfIvptTable{iLsf}{iBlts} = bicas.calib.modify_tabulated_ITF(ItfIvpt);
+                    
+                end                
+            end
+            
+        end
         
-        function TdsRswfItfIvptList = modify_TDS_RSWF_data(TdsRswfItfIvptList)
+        
+        
+        function TdsRswfItfIvptList = modify_TDS_RSWF_RCT_data(TdsRswfItfIvptList)
+            
             % Modify tabulated TDS-RSWF TFs.
             for iBlts = 1:numel(TdsRswfItfIvptList)
                 TdsRswfItfIvptList{iBlts} = bicas.calib.modify_tabulated_ITF(TdsRswfItfIvptList{iBlts});
             end
+            
         end
 
 
@@ -1155,11 +1193,11 @@ classdef calib < handle
         % NOTE: Intended specifically for INVERSE transfer functions. Therefore using Z=0 for frequencies higher than
         % the table.
         %
-        function Z = eval_tabulated_ITF(TabulatedTf, omegaRps)
-            useTabTf = (omegaRps <= TabulatedTf.omegaRps(end));
+        function Z = eval_tabulated_ITF(TabulatedItf, omegaRps)
+            useTabTf = (omegaRps <= TabulatedItf.omegaRps(end));
             
-            % NOTE: interp1 return NaN for values outside range.
-            Z = interp1(TabulatedTf.omegaRps, TabulatedTf.Z, omegaRps, 'linear');
+            % NOTE: interp1 returns NaN for values outside range.
+            Z = interp1(TabulatedItf.omegaRps, TabulatedItf.Z, omegaRps, 'linear');
             Z(~useTabTf) = 0;   % Set to zero (overwrite) for values above highest tabulated frequency.
             
             % ASSERTION
@@ -1174,8 +1212,8 @@ classdef calib < handle
                     'Range of frequencies for which evaluation (interpolation) of Z was attempted:\n', ...
                     '    min(omegaRps)     = %g\n', ...
                     '    max(omegaRps)     = %g\n'], ...
-                    min(TabulatedTf.omegaRps), ...
-                    max(TabulatedTf.omegaRps), ...
+                    min(TabulatedItf.omegaRps), ...
+                    max(TabulatedItf.omegaRps), ...
                     min(omegaRps), ...
                     max(omegaRps));
                 
@@ -1185,13 +1223,16 @@ classdef calib < handle
         
         
         
-        % Modify tabulated INVERSE transfer functions, if needed.
+        % Modify TABULATED INVERSE transfer functions, if needed.
         % Tabulated TF --> Tabulated TF
         %
         % Extrapolate to 0 Hz, if needed.
         %
+        % NOTE: Does NOT remove high frequencies.
+        %
         function ModifItf = modify_tabulated_ITF(Itf)
             assert(Itf.omegaRps(1) > 0)
+            assert(isa(Itf, 'EJ_library.utils.tabulated_transform'))
 
             % NOTE: Can not just use the lowest-frequency Z value for 0 Hz since it has to be real (not complex).
             Z1       = Itf.Z(1);

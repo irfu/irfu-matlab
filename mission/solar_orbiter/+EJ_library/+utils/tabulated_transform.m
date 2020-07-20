@@ -180,6 +180,12 @@ classdef tabulated_transform
         
         
         
+        function Tf = inverse(obj)
+            Tf = EJ_library.utils.tabulated_transform(obj.omegaRps, 1./obj.Z);
+        end
+        
+        
+        
         % "Sanity check" one might want to use for assertions. Determine, "approximately", whether the tabulated abs(Z)
         % decreases toward zero for high frequencies (or is zero).
         %

@@ -132,20 +132,24 @@ classdef RCT
 
         function [Bias] = read_BIAS_RCT(filePath)
             % TODO-DECISION: How handle time?
-            %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting indices in a data struct.
+            %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
+            %             indices in a data struct.
             %       PROPOSAL: (private method) [omegaRps, zVpc] = get_transfer_func(epoch, signalType)
             %           signalType = 'DC single' etc
-            
             Do = dataobj(filePath);
             
             % Constants for interpreting the array indices in the CDF.
-            NUMERATOR   = 1;
-            DENOMINATOR = 2;
+            I_NUMERATOR   = 1;
+            I_DENOMINATOR = 2;
             %
-            DC_SINGLE = 1;
-            DC_DIFF   = 2;
-            AC_LG     = 3;
-            AC_HG     = 4;
+            I_DC_SINGLE = 1;
+            I_DC_DIFF   = 2;
+            I_AC_LG     = 3;
+            I_AC_HG     = 4;
+            %
+            I_E12 = 1;
+            I_E13 = 2;
+            I_E23 = 3;
             
             try
                 % NOTE: Assumes 1 CDF record or many (time-dependent values).
@@ -166,19 +170,21 @@ classdef RCT
                 %
                 % 1 CDF record : cdfdump: "TRANSFER_FUNCTION_COEFFS CDF_DOUBLE/1   3:[2,8,4]       F/TTT"   # 3=number of dimensions/record
                 % 2 CDF records: cdfdump: "TRANSFER_FUNCTION_COEFFS CDF_DOUBLE/1   3:[2,8,4]       T/TTT"
-                % 1 CDF record:   size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [  4 2 8]
-                % 2 CDF records:  size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [2 4 2 8]
-                ftfCoeffs = permute(ftfCoeffs, [1, 4,3,2]);
+                % 1 CDF record:  size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [4 2 8]
+                % 2 CDF records: size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [2 4 2 8]
+                ftfCoeffs = permute(ftfCoeffs, [1, 4, 3, 2]);
 
 
 
                 %=======================================================
                 % ASSERTIONS: Size of tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %=======================================================
-                assert(size(ftfCoeffs, 1) == nEpochL)
-                assert(size(ftfCoeffs, 2) >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
-                assert(size(ftfCoeffs, 3) == 2)
-                assert(size(ftfCoeffs, 4) == 4)
+%                 assert(size(ftfCoeffs, 1) == nEpochL)
+%                 assert(size(ftfCoeffs, 2) >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
+%                 assert(size(ftfCoeffs, 3) == 2)
+%                 assert(size(ftfCoeffs, 4) == 4)
+                nNdCoeffs = EJ_library.assert.sizes(ftfCoeffs, [nEpochL, -1, 2, 4]);   % ND = Numerator Denominator
+                assert(nNdCoeffs >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
 
                 %================================
                 % Assign struct that is returned
@@ -189,33 +195,38 @@ classdef RCT
                 Bias.Current.offsetsAAmpere = biasCurrentOffsetsAAmpere;
                 Bias.Current.gainsAapt      = biasCurrentGainsAapt;
                 Bias.dcSingleOffsetsAVolt   = dcSingleOffsetsAVolt;
-                Bias.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, 1);
-                Bias.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, 2);
-                Bias.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, 3);
+                Bias.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, I_E12);
+                Bias.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, I_E13);
+                Bias.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, I_E23);
 
-                % NOTE: Using name "ItfSet" only to avoid "Itfs" (plural). (List, Table would be wrong? Use "ItfTable"?)
-                Bias.ItfSet.DcSingleAvpiv = bicas.RCT.create_ITF_sequence(...
-                    ftfCoeffs(:, :, NUMERATOR,   DC_SINGLE), ...
-                    ftfCoeffs(:, :, DENOMINATOR, DC_SINGLE));
+                % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural). (List, Table would be wrong? Use "FtfTable"?)
+                Bias.FtfSet.DcSingleAvpiv = bicas.RCT.create_TF_sequence(...
+                    ftfCoeffs(:, :, I_NUMERATOR,   I_DC_SINGLE), ...
+                    ftfCoeffs(:, :, I_DENOMINATOR, I_DC_SINGLE));
 
-                Bias.ItfSet.DcDiffAvpiv = bicas.RCT.create_ITF_sequence(...
-                    ftfCoeffs(:, :, NUMERATOR,   DC_DIFF), ...
-                    ftfCoeffs(:, :, DENOMINATOR, DC_DIFF));
+                Bias.FtfSet.DcDiffAvpiv = bicas.RCT.create_TF_sequence(...
+                    ftfCoeffs(:, :, I_NUMERATOR,   I_DC_DIFF), ...
+                    ftfCoeffs(:, :, I_DENOMINATOR, I_DC_DIFF));
 
-                Bias.ItfSet.AcLowGainAvpiv = bicas.RCT.create_ITF_sequence(...
-                    ftfCoeffs(:, :, NUMERATOR,   AC_LG), ...
-                    ftfCoeffs(:, :, DENOMINATOR, AC_LG));
+                Bias.FtfSet.AcLowGainAvpiv = bicas.RCT.create_TF_sequence(...
+                    ftfCoeffs(:, :, I_NUMERATOR,   I_AC_LG), ...
+                    ftfCoeffs(:, :, I_DENOMINATOR, I_AC_LG));
 
-                Bias.ItfSet.AcHighGainAvpiv = bicas.RCT.create_ITF_sequence(...
-                    ftfCoeffs(:, :, NUMERATOR,   AC_HG), ...
-                    ftfCoeffs(:, :, DENOMINATOR, AC_HG));
+                Bias.FtfSet.AcHighGainAvpiv = bicas.RCT.create_TF_sequence(...
+                    ftfCoeffs(:, :, I_NUMERATOR,   I_AC_HG), ...
+                    ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
                 
                 % ASSERTIONS
-                EJ_library.assert.all_equal(...
-                   [numel(Bias.ItfSet.DcSingleAvpiv), ...
-                    numel(Bias.ItfSet.DcDiffAvpiv), ...
-                    numel(Bias.ItfSet.AcLowGainAvpiv), ...
-                    numel(Bias.ItfSet.AcHighGainAvpiv)])
+%                 EJ_library.assert.all_equal(...
+%                    [nEpochL, ...
+%                     numel(Bias.FtfSet.DcSingleAvpiv), ...
+%                     numel(Bias.FtfSet.DcDiffAvpiv), ...
+%                     numel(Bias.FtfSet.AcLowGainAvpiv), ...
+%                     numel(Bias.FtfSet.AcHighGainAvpiv)])
+                EJ_library.assert.sizes(Bias.FtfSet.DcSingleAvpiv,   [nEpochL, 1]);
+                EJ_library.assert.sizes(Bias.FtfSet.DcDiffAvpiv,     [nEpochL, 1]);
+                EJ_library.assert.sizes(Bias.FtfSet.AcLowGainAvpiv,  [nEpochL, 1]);
+                EJ_library.assert.sizes(Bias.FtfSet.AcHighGainAvpiv, [nEpochL, 1]);
                 for iEpochL = 1:nEpochL
                     %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:calib:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
                     %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:calib:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
@@ -231,34 +242,40 @@ classdef RCT
                 validateattributes(Bias.epochL, {'numeric'}, {'increasing'})
                 validateattributes(Bias.epochH, {'numeric'}, {'increasing'})
 
-                assert(ndims(Bias.Current.offsetsAAmpere)    == 2)
-                assert(size( Bias.Current.offsetsAAmpere, 1) == nEpochL)
-                assert(size( Bias.Current.offsetsAAmpere, 2) == 3)
-                assert(ndims(Bias.Current.gainsAapt)         == 2)
-                assert(size( Bias.Current.gainsAapt, 1)      == nEpochL)
-                assert(size( Bias.Current.gainsAapt, 2)      == 3)
-                assert(ndims(Bias.dcSingleOffsetsAVolt)      == 2)
-                assert(size( Bias.dcSingleOffsetsAVolt, 1)   == nEpochH)
-                assert(size( Bias.dcSingleOffsetsAVolt, 2)   == 3)
+                EJ_library.assert.sizes(Bias.Current.offsetsAAmpere, [nEpochL, 3]);
+                EJ_library.assert.sizes(Bias.Current.gainsAapt,      [nEpochL, 3]);
+                EJ_library.assert.sizes(Bias.dcSingleOffsetsAVolt,   [nEpochH, 3]);
+%                 assert(ndims(Bias.Current.offsetsAAmpere)    == 2)
+%                 assert(size( Bias.Current.offsetsAAmpere, 1) == nEpochL)
+%                 assert(size( Bias.Current.offsetsAAmpere, 2) == 3)
+%                 assert(ndims(Bias.Current.gainsAapt)         == 2)
+%                 assert(size( Bias.Current.gainsAapt, 1)      == nEpochL)
+%                 assert(size( Bias.Current.gainsAapt, 2)      == 3)
+%                 assert(ndims(Bias.dcSingleOffsetsAVolt)      == 2)
+%                 assert(size( Bias.dcSingleOffsetsAVolt, 1)   == nEpochH)
+%                 assert(size( Bias.dcSingleOffsetsAVolt, 2)   == 3)
+                
                 for fn = fieldnames(Bias.DcDiffOffsets)'
-                    assert(iscolumn(Bias.DcDiffOffsets.(fn{1}))           )
-                    assert(length(  Bias.DcDiffOffsets.(fn{1})) == nEpochH)
+%                     assert(iscolumn(Bias.DcDiffOffsets.(fn{1}))           )
+%                     assert(length(  Bias.DcDiffOffsets.(fn{1})) == nEpochH)
+                    EJ_library.assert.sizes(Bias.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
                 end
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (BIAS RCT) "%s"', filePath);
+                Exc2 = MException(...
+                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'Error when interpreting calibration file (BIAS RCT) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2)
-                %error('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (BIAS RCT) "%s"', filePath)
             end
         end
 
 
 
-        % LfrItfIvptTable : {iLsf}{iBlts}. Table of LFR TFs.
-        %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5
-        %                   iLsf=4    : iBlts=1..3 for BIAS 1-3
-        function LfrItfIvptTable = read_LFR_RCT(filePath)
+        % LfrFtfTpivTable : {iLsf}{iBlts}. Table of LFR FTFs.
+        %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5.
+        %                   iLsf=4    : iBlts=1..3 for BIAS 1-3.
+        function LfrFtfIvptTable = read_LFR_RCT(filePath)
             Do = dataobj(filePath);
             
             try
@@ -286,26 +303,28 @@ classdef RCT
                 phaseTableDeg{4} = shiftdim(Do.data.TF_BIAS_123_phase_F3.data);
 
                 for iLsf = 1:4
-                    if iLsf ~= 4
-                        nBltsMax = 5;
-                    else
-                        nBltsMax = 3;
+                    if iLsf ~= 4   nBltsMax = 5;
+                    else           nBltsMax = 3;    % F3 is an exception and has no AC (iBlts={4,5}) TF.
                     end
 
                     % NOTE: Values for the specific LSF, hence the prefix.
-                    lsfFreqTableHz   = freqTableHz{iLsf};
+                    lsfFreqTableHz   = freqTableHz{  iLsf};
                     lsfAmplTableTpiv = amplTableTpiv{iLsf};
                     lsfPhaseTableDeg = phaseTableDeg{iLsf};
 
                     % ASSERTIONS: Check CDF array sizes, and implicitly that the CDF format is the expected one.
-                    assert(iscolumn(freqTableHz{iLsf}))
-                    
-                    assert(ndims(lsfAmplTableTpiv) == 2)
-                    assert(ndims(lsfPhaseTableDeg) == 2)
-                    assert(size( lsfAmplTableTpiv, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                    assert(size( lsfPhaseTableDeg, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                    assert(size( lsfAmplTableTpiv, 2) == nBltsMax)
-                    assert(size( lsfPhaseTableDeg, 2) == nBltsMax)
+%                     assert(iscolumn(freqTableHz{iLsf}))                    
+%                     assert(ndims(lsfAmplTableTpiv) == 2)
+%                     assert(ndims(lsfPhaseTableDeg) == 2)
+%                     assert(size( lsfAmplTableTpiv, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+%                     assert(size( lsfPhaseTableDeg, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+%                     assert(size( lsfAmplTableTpiv, 2) == nBltsMax)
+%                     assert(size( lsfPhaseTableDeg, 2) == nBltsMax)
+                    nFreqs = EJ_library.assert.sizes(...
+                        lsfFreqTableHz,   [-1,       1 ], ...
+                        lsfAmplTableTpiv, [-1, nBltsMax], ...
+                        lsfPhaseTableDeg, [-1, nBltsMax]);
+                    assert(nFreqs >= bicas.RCT.TF_TABLE_MIN_LENGTH)
 
                     for iBlts = 1:nBltsMax
                         
@@ -314,21 +333,29 @@ classdef RCT
                         lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBlts);
 
                         % NOTE: INVERTS the tabulated TF.
-                        %   NOTE: This requires negating the phase too.
-                        ItfIvpt = EJ_library.utils.tabulated_transform(...
+                        %   NOTE: This requires (1) inverting the (real/absolute) amplitude, AND (2) NEGATING THE PHASE.
+%                         ItfIvpt = EJ_library.utils.tabulated_transform(...
+%                             lsfBltsFreqTableHz * 2*pi, ...
+%                             1 ./ lsfBltsAmplTableTpiv, ...
+%                             - deg2rad(lsfBltsPhaseTableDeg));
+                        FtfTpiv = EJ_library.utils.tabulated_transform(...
                             lsfBltsFreqTableHz * 2*pi, ...
-                            1 ./ lsfBltsAmplTableTpiv, ...
-                            - deg2rad(lsfBltsPhaseTableDeg));
+                            lsfBltsAmplTableTpiv, ...
+                            deg2rad(lsfBltsPhaseTableDeg));
                         
                         % ASSERTION: ITF
-                        assert(~ItfIvpt.toward_zero_at_high_freq())
+%                         assert(~ItfIvpt.toward_zero_at_high_freq())
+                        % ASSERTION: FTF
+                        assert(FtfTpiv.toward_zero_at_high_freq())
                         
-                        LfrItfIvptTable{iLsf}{iBlts} = ItfIvpt;
+                        LfrFtfIvptTable{iLsf}{iBlts} = FtfTpiv;
                     end
                 end
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (LFR team''s RCT for BIAS/BICAS) "%s"', filePath);
+                Exc2 = MException(...
+                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'Error when interpreting calibration file (LFR team''s RCT for BIAS/BICAS) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -336,6 +363,7 @@ classdef RCT
         
         
         
+        % NOTE: tdsCwfFactorsIvpt are already inverted (can be seen from units).
         function tdsCwfFactorsIvpt = read_TDS_CWF_RCT(filePath)
             
             Do = dataobj(filePath);
@@ -363,33 +391,38 @@ classdef RCT
         
         
         
+        % NOTE: The TDS RSWF RCT contains ITFs, not FTFs.
+        %
         function TdsRswfItfIvptList = read_TDS_RSWF_RCT(filePath)
             
             Do = dataobj(filePath);
             
             try
                 % ASSUMPTION: Exactly 1 CDF record.
-                % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
-                % ==> Remove leading singleton dimensions, much assertions.
-                freqsHz  = shiftdim(Do.data.CALIBRATION_FREQUENCY.data);
-                amplIvpt = shiftdim(Do.data.CALIBRATION_AMPLITUDE.data);
-                phaseDeg = shiftdim(Do.data.CALIBRATION_PHASE.data);
+                % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case.
+                % ==> Remove leading singleton dimensions (just to be format-tolerant), much assertions.
+                freqsHz  = shiftdim(Do.data.CALIBRATION_FREQUENCY.data);   % 1x512 --> 512x1
+                amplIvpt = shiftdim(Do.data.CALIBRATION_AMPLITUDE.data);   % 3x512 --> 3x512
+                phaseDeg = shiftdim(Do.data.CALIBRATION_PHASE.data);       % 3x512 --> 3x512
                 
                 % ASSERTIONS: Check CDF array sizes, no change in format.
-                assert(iscolumn(freqsHz));                
-                assert(ndims(amplIvpt)    == 2)
-                assert(ndims(phaseDeg)    == 2)
-                assert(size( amplIvpt, 1) == 3)
-                assert(size( phaseDeg, 1) == 3)
-                assert(size( amplIvpt, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                assert(size( phaseDeg, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-
-                EJ_library.assert.all_equal([...
-                    length(freqsHz), ...
-                    size(amplIvpt,  2), ...
-                    size(phaseDeg, 2) ]);
+                assert(iscolumn(freqsHz));    % NOTE: Should be 1D vector. "shiftdim" makes it a column vector.
+                nFreqs = EJ_library.assert.sizes(freqsHz, [-1, 1], amplIvpt, [3, -1], phaseDeg, [3,-1]);
+                assert(nFreqs >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                %assert(ndims(amplIvpt)    == 2)
+                %assert(ndims(phaseDeg)    == 2)
+                %assert(size( amplIvpt, 1) == 3)
+                %assert(size( phaseDeg, 1) == 3)
+                %assert(size( amplIvpt, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                %assert(size( phaseDeg, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                
+                %EJ_library.assert.all_equal([...
+                %    length(freqsHz), ...
+                %    size(amplIvpt, 2), ...
+                %    size(phaseDeg, 2) ]);
 
                 for iBlts = 1:3
+                    % NOTE: RCT contains ITF, not FTF.
                     ItfIvpt = EJ_library.utils.tabulated_transform(...
                         freqsHz * 2*pi, ...
                         amplIvpt(        iBlts, :), ...
@@ -454,44 +487,50 @@ classdef RCT
 
         % Utility function to simplify read_BIAS_RCT. Arguments correspond to zVariables in BIAS RCT.
         %
-        % NOTE: Arguments describe FTFs. Return value describes ITFs.
-        %
         %
         % ARGUMENTS
         % =========
         % ftfNumCoeffs, ftfDenomCoeffs : 2D matrix of numerator/denominator coefficients for a sequence of FTFs.
-        % ItfArray                     : Cell array of ITF (rational_func_transform).
+        %                                (iTime, iCoeff).
+        %
         %
         % RETURN VALUE
         % ============
-        % ItfArray : 1D cell array of EJ_library.utils.rational_func_transform.
+        % FtfArray                     : 1D column cell array of FTFs (EJ_library.utils.rational_func_transform).
         %
-        function ItfArray = create_ITF_sequence(ftfNumCoeffs, ftfDenomCoeffs)
+        function FtfArray = create_TF_sequence(ftfNumCoeffs, ftfDenomCoeffs)
+            
             % ASSERTIONS
-            assert(size(ftfNumCoeffs, 1) == size(ftfDenomCoeffs, 1))
+            nTime = EJ_library.assert.sizes(ftfNumCoeffs, [-1, -2], ftfDenomCoeffs, [-1, -2]);
+            %assert(size(ftfNumCoeffs, 1) == size(ftfDenomCoeffs, 1))
             % The last FTF denominator coefficient (highest index, for which the value is non-zero) must be =1.
             assert(...
                 ftfDenomCoeffs(find(ftfDenomCoeffs, 1, 'last')) == 1, ...
                 'BICAS:calib:FailedToReadInterpretRCT', ...
                 ['RCT should contain forward transfer function (FTF) denominator coefficients,', ...
-                ' where the highest-order (non-zero) coefficient is NOT one as expected.'])
+                ' where the highest-order (non-zero) coefficient is the number one (1).', ...
+                ' The data does not satisfy this criterion.'])
 
-            ItfArray = {};
-            
-            for i = 1:size(ftfNumCoeffs, 1)
+            FtfArray = {};
+            for iTime = 1:nTime
                 
-                % IMPORTANT NOTE: Invert TF: FTF --> ITF
-                Itf = EJ_library.utils.rational_func_transform(...
-                    ftfDenomCoeffs(i,:), ...
-                    ftfNumCoeffs(i,:));
+                % IMPORTANT NOTE: INVERT TF: FTF --> ITF
+%                 Itf = EJ_library.utils.rational_func_transform(...
+%                     ftfDenomCoeffs(iTime, :), ...
+%                     ftfNumCoeffs(  iTime, :));
+                Ftf = EJ_library.utils.rational_func_transform(...
+                    ftfNumCoeffs(  iTime, :), ...
+                    ftfDenomCoeffs(iTime, :));
                 
                 % ASSERTIONS
-                assert(Itf.has_real_impulse_response())
-                % Assert ITF. Can not set proper error message.
-                assert(~Itf.zero_in_high_freq_limit(), 'BICAS:calib:FailedToReadInterpretRCT', ...
-                    'Transfer function is not inverted, i.e. not physical OUTput-to-INput.')
+                assert(Ftf.has_real_impulse_response())
+                % Assert FTF. Can not set proper error message.
+                assert(Ftf.zero_in_high_freq_limit(), ...
+                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    ['Transfer function is expected to be "forward", i.e. in the direction of the physical signal.', ...
+                    ' It seems not to be.'])
                 
-                ItfArray{end+1} = Itf;
+                FtfArray{end+1, 1} = Ftf;    % Force column array.
             end
         end
 
