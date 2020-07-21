@@ -1,5 +1,8 @@
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% NOTE: Only accepts a subset of all possible DATASET_IDs, in practise only BICAS-related DATASET_IDs.
+%
+%
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-08-02
 %
 function assert_DATASET_ID(datasetId)

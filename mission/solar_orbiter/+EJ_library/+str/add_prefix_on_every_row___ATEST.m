@@ -2,7 +2,7 @@
 % Automatic test code for add_prefix_on_every_row.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-26
 %
 function add_prefix_on_every_row___ATEST

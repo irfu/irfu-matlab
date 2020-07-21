@@ -9,7 +9,7 @@
 %            specified replacements matters.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-12-03
 %
 function s = strrepmany(s, varargin)

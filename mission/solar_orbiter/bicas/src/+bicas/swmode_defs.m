@@ -66,16 +66,29 @@ classdef swmode_defs
     % PROPOSAL: Use PF = prodFunc, production function
     % PROPOSAL: Same input CDF can have multiple DATASET_IDs, but only one is shown in the s/w descriptor.
     %   PRO: Can handle old datasets with ROG-SGSE DATASET_IDs, and otherwise only use RODP DATASET_IDs.
+    %
+    % PROPOSAL: Use classes instead of structs.
+    %   PROPOSAL: Use sub-package for classes.
+    %   PROPOSAL: Class for s/w mode definition.
+    %       PROPOSAL: Name swmode_def
+    %           CON: Too similar to swmode_defs
+    %   PROPOSAL: Class for input datasets.
+    %   PROPOSAL: Class for output datasets.
+    %
 
 
 
     % PRIVATE, STATIC, CONSTANTS
     properties(Constant, GetAccess=private)
-        % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems (ambiguous) to imply this regex for S/W mode CLI parameters.
+        % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems (ambiguous) to imply this regex for S/W mode
+        % CLI parameters.
         % regexp: "\w    A word character [a-z_A-Z0-9]"
-        SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
+        %
+        % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
+        SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   
         
-        % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only permits these characters (and only lowercase!).
+        % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only permits these characters (and only
+        % lowercase!).
         % This regexp only describes the "option body", i.e. not the preceding "--".
         SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
     end
@@ -93,6 +106,8 @@ classdef swmode_defs
     
     methods(Access=public)
         
+        
+        
         % Constructor
         %
         % ARGUMENTS
@@ -103,10 +118,11 @@ classdef swmode_defs
         % implementation has not been entirely updated to take advantage of this (not simplified of this).
         % 
         function obj = swmode_defs(SETTINGS, L)
-            % PROPOSAL: Re-implement (top-level) hard-coded constants by setting multiple redundant 1D(?) vectors that covers every case.
-            %   Then set various cases by assigning constants to many elements using MATLAB syntax.
-            %   One index representing: Combination of DATASET_ID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI), every element contains data for
-            %   that dataset. Must use combination DATASET_ID+Skeleton_Version to potentially cover old versions.            
+            % PROPOSAL: Re-implement (top-level) hard-coded constants by setting multiple redundant 1D(?) vectors that
+            %   covers every case. Then set various cases by assigning constants to many elements using MATLAB syntax.
+            %   One index representing: Combination of DATASET_ID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI),
+            %   every element contains data for that dataset. Must use combination DATASET_ID+Skeleton_Version to
+            %   potentially cover old versions.
             %   Manipulate and set multiple elements smoothly by using vectors for indices.
             %   Ex: Vectors to set: skeletonVersionVector, SBMx_SURV_vector, CWF_SWF_vector, output
             %       dataset level, vectors for human-readable description string(s) (e.g. modeStr)
@@ -244,9 +260,9 @@ classdef swmode_defs
             swModeInfo = obj.List(i);
         end
         
+        
+        
     end    % methods(Access=public)
-    
-    
 
 
     methods(Static, Access=private)
@@ -256,7 +272,8 @@ classdef swmode_defs
         % NOTE: Name dangerously similar to "bicas.swmode_defs".
         function Def = def_swmode(prodFunc, cliOption, swdPurpose, inputsList, outputsList)
             Def.prodFunc    = prodFunc;
-            Def.cliOption   = cliOption;   % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by e.g. "--". Variable therefore NOT named *Body.
+            % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by e.g. "--". Variable therefore NOT named *Body.
+            Def.cliOption   = cliOption;   
             Def.swdPurpose  = swdPurpose;
             Def.inputsList  = inputsList;
             Def.outputsList = outputsList;
@@ -332,14 +349,20 @@ classdef swmode_defs
             EJ_library.assert.castring_regexp(str, '[^<>]*')
         end
         
+        
+        
         function assert_SW_mode_CLI_option(swModeCliOption)
             EJ_library.assert.castring_regexp(swModeCliOption, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)
         end
+        
+        
 
         % NOTE: Really refers to "option body".
         function assert_SIP_CLI_option(sipCliOptionBody)
             EJ_library.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SIP_CLI_OPTION_BODY_REGEX)
         end
+        
+        
         
     end    % methods(Static, Access=private)
 

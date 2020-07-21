@@ -80,8 +80,6 @@ classdef assert
 %       PRO: Can be used with regular assert statements.
 %           PRO: MATLAB's assert can be used for raising exception with customized error message.
 %       CON: "assert" is a bad name for such a class.
-
-
 %
 % PROPOSAL: Static variable for error message identifier.
 %   PRO: Can set differently in BICAS.
@@ -314,12 +312,30 @@ classdef assert
 
 
 
-        % NOTE: Can not be used for an assertion that treats functions with/without varargin/varargout.
-        %   Ex: Assertion for functions which can ACCEPT (not require exactly) 5 arguments, i.e. incl. functions which
-        %       take >5 arguments.
-        % NOTE: Not sure how nargin/nargout work for anonymous functions. Always -1?
-        % NOTE: Can not handle: is function handle, but does not point to existing function(!)
+        % ARGUMENTS
+        % =========
+        % nArgin   : Value returned by nargin() for function handle.
+        %            abs(nArgin)  = Number of arguments, where varargin counts as one.
+        %            sign(nArgin) = 0 or 1: No varargin.
+        %                          -1     : Has varargin.
+        % nArgout : Value returned by nargout() for function handle.
+        %            Analogous to nArgin.
+        % 
+        % NOTE: Can not handle function handle that does not point to existing function(!)
+        %
+        % NOTE: Method's USEFULNESS IS LIMITED due to below reasons:
+        %   NOTE: Can not distinguish between functions that 
+        %       (1) only accept exactly N arguments, and
+        %       (2) accept a variable-number of arguments, including N arguments (using varargin).
+        %       Analogous problem with nargout.
+        %   NOTE: Empirically, nargout(anonymousFunction) == -1, always.
+        %
         function func(funcHandle, nArgin, nArgout)
+            % PROPOSAL: Make nArgin/nArgout able to simultaneously accept multiple nargin/nargout values.
+            %   Ex: Accept nargin  = 3, -1,-2,-3 (accept all functions that seemingly can accept three arguments)
+            %   Ex: Accept nargout = 3, -1,-2,-3 (accept all functions that seemingly can return three values)
+            %   PROPOSAL: Submit exact set (numeric array) of accepted values.
+            
             if ~isa(funcHandle, 'function_handle')
                 error(EJ_library.assert.ASSERTION_EMID, 'Expected function handle is not a function handle.')
             end
@@ -330,7 +346,8 @@ classdef assert
             elseif nargout(funcHandle) ~= nArgout
                 % NOTE: MATLAB actually uses term "output arguments".
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'Expected function handle ("%s") has the wrong number of output arguments (return values). nargout()=%i, nArgout=%i', ...
+                    ['Expected function handle ("%s") has the wrong number of output', ...
+                    ' arguments (return values). nargout()=%i, nArgout=%i'], ...
                     func2str(funcHandle), nargout(funcHandle), nArgout)
             end
         end

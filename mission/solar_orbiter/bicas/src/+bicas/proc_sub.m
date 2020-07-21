@@ -1,3 +1,4 @@
+%
 % Class that collects "processing functions" as public static methods.
 %
 % This class is not meant to be instantiated.
@@ -187,48 +188,13 @@ classdef proc_sub
         
         
         function currentSAmpere = process_CUR_to_CUR_on_SCI_TIME(sciEpoch, InCur, SETTINGS, L)
+            % PROPOSAL: Change function name. process_* implies converting struct-->struct.
+            
             % ASSERTIONS
             EJ_library.assert.struct(InCur, {'Zv', 'Ga'}, {})
             
             
             
-            if SETTINGS.get_fv('INPUT_CDF.CUR.PREPEND_TEST_DATA')
-                L.log('warning', '==========================================================')
-                L.log('warning', 'WARNING: PREPENDING MADE-UP TEST DATA TO BIAS CURRENT DATA')
-                L.log('warning', '==========================================================')
-                
-                %==========================================
-                % ADD (PREPEND) TEST DATA TO BIAS CURRENTS
-                %==========================================
-                j  = 0:20;
-                i3 = 1:3:(numel(j)-2);   % Useful for setting components to NaN.
-                % One timestamp every minute.
-                % NOTE: Must have timestamps with non-NaN bias values beginning before first voltage Epoch value.
-                EpochAmend = (sciEpoch(1) + int64(j *60*1e9 - 5*60*1e9))';
-                IBIAS_amend_1       =  mod(j,60)';
-                IBIAS_amend_2       = -mod(j,60)';
-                IBIAS_amend_3       =  mod(j,60)';
-                IBIAS_amend_1(i3+1) = NaN;
-                IBIAS_amend_1(i3+2) = NaN;
-                IBIAS_amend_2(i3+0) = NaN;
-                IBIAS_amend_2(i3+2) = NaN;
-                IBIAS_amend_3(i3+0) = NaN;
-                IBIAS_amend_3(i3+1) = NaN;
-                
-                InCur.Zv.Epoch   = [EpochAmend    ; InCur.Zv.Epoch];
-                InCur.Zv.IBIAS_1 = [IBIAS_amend_1 ; InCur.Zv.IBIAS_1];
-                InCur.Zv.IBIAS_2 = [IBIAS_amend_2 ; InCur.Zv.IBIAS_2];
-                InCur.Zv.IBIAS_3 = [IBIAS_amend_3 ; InCur.Zv.IBIAS_3];
-                assert(issorted(InCur.Zv.Epoch), 'TEST CODE failed')
-                EJ_library.assert.all_equal([...
-                    size(InCur.Zv.Epoch,   1), ...
-                    size(InCur.Zv.IBIAS_1, 1), ...
-                    size(InCur.Zv.IBIAS_2, 1), ...
-                    size(InCur.Zv.IBIAS_3, 1)])
-            end
-
-
-
             %========================================================================================
             % CDF ASSERTION: CURRENT data begins before SCI data (i.e. there is enough CURRENT data).
             %========================================================================================

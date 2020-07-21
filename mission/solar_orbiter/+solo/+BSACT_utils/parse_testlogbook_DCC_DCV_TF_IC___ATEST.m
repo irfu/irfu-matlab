@@ -2,7 +2,7 @@
 % Automatic test code for function parse_testlogbook_DCC_DCV_TF_IC.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-10-12
 %
 function parse_testlogbook_DCC_DCV_TF_IC___ATEST

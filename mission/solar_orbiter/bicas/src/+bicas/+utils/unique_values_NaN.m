@@ -12,7 +12,7 @@ function uniqueValues = unique_values_NaN(A)
     % uniqueValues : 1D array of unique values. Sorted.
     %
     %
-    % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+    % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     % First created 2016-10-11
     %
     

@@ -1,6 +1,8 @@
 %
-% Class for (1) loading calibration data from file, and (2) library/utility functions that calibrate data.
-% An instance contains all loaded RCTs.
+% Class for
+% (1) loading calibration data from file, and
+% (2) library/utility functions that calibrate data.
+% An instance of this class contains data for all loaded RCTs.
 %
 % NOTE: RCT reading functions assume that the same type of RCT (BIAS, LFR, TDS-CWF or TDS-RSWF) is identical (in all
 % relevant parts) for both the RODP and ROC-SGSE pipeline.
@@ -21,10 +23,16 @@
 % (1) undiscovered calibration bugs could be considered extra bad
 % (2) it is expected to be hard to detect certain bugs,
 % (3) it could be hard to use automatic testing here,
-% (4) to detect changing RCT formats, in particular from teams to BIAS team.
+% (4) to detect changing RCT formats, in particular in RCTS from non-BIAS teams.
 % --
 % All calibration functions of measured data are assumed to accept data from all BLTS (1-5), i.e. including TDS, in
 % order to reduce the number assumptions that the calling code needs to make.
+%
+%
+% DESIGN INTENT
+% =============
+% If needed, then this class modifies the calibration data read from RCTs, e.g. inverts FTFs, so that RCT-reading code
+% (bicas.RCT) does not need to (it should not).
 %
 %
 % DEFINITIONS, NAMING CONVENTIONS
@@ -32,15 +40,15 @@
 % Offset = Value (constant) that is ADDED to (not subtracted from) a measured value during the calibration process.
 % CA     = Cell Array
 % --
-% LSF  = LFR Sampling Frequency (F0...F3)
-%        NOTE: When used as an array index, 1=F0, ..., 4=F3.
-% TF   = Transfer function (Z=Z(omega))
-% FTF  = Forward Transfer Function = TF that describes physical input-to-output (not the reverse)
-% ITF  = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
-% CTI  = CALIBRATION_TABLE_INDEX (zVar)
-% CTI1 = First  value in record of zVar CALIBRATION_TABLE_INDEX.
-% CTI2 = Second value in record of zVar CALIBRATION_TABLE_INDEX.
-% RCTS = RCT CALIBRATION_TABLE (glob.attr)+CALIBRATION_TABLE_INDEX (zVar). S = plural
+% LSF    = LFR Sampling Frequency (F0...F3)
+%          NOTE: When used as an array index, 1=F0, ..., 4=F3.
+% TF     = Transfer function (Z=Z(omega))
+% FTF    = Forward Transfer Function = TF that describes physical input-to-output (not the reverse)
+% ITF    = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
+% CTI    = CALIBRATION_TABLE_INDEX (zVar)
+% CTI1   = First  value in record of zVar CALIBRATION_TABLE_INDEX.
+% CTI2   = Second value in record of zVar CALIBRATION_TABLE_INDEX.
+% RCTS   = RCT CALIBRATION_TABLE (glob.attr)+CALIBRATION_TABLE_INDEX (zVar). S = plural
 %
 %
 % UNITS / TYPES OF QUANTITIES
@@ -50,7 +58,7 @@
 % AVolt   = Antenna Volt   = Calibrated volt at the antennas, i.e. the final calibrated (measured) value, including
 %           for reconstructed signals (e.g. diffs calculated from singles). May also refer to offsets and values without
 %           offsets.
-% AAmpere = Antenna ampere      = Calibrated ampere at the antenna.
+% AAmpere = Antenna ampere = Calibrated ampere at the antenna.
 % SAmpere = Set current ampere. Exactly proportional to bias current in TM.
 % TPIV    = TM/interface volt
 % IVPT    = Interface volt/TM
@@ -91,8 +99,8 @@
 % LFR/TDS. Unit: LFR/TDS calibrated volt. Mostly replaced by BLTS+specified unit in the code.
 %
 %
-% REMINDER: CALIBRATION_TABLE, CALIBRATION_TABLE_INDEX
-% ====================================================
+% REMINDER: HOW CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX WORK
+% ==============================================================
 % CALIBRATION_TABLE       : Global attribute
 %   "Filename of the calibration table(s)."
 %   "There must as many as entries than the number of calibration table files associated to the L1R file."
@@ -116,9 +124,6 @@ classdef calib < handle
 % TODO-NEED-INFO: Parasitic capacitance values?
 %
 % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
-%
-% PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
-% PROPOSAL: Function for permuting indices to handle dataobj's handling of 1 record-case.
 %
 % TODO-DECISION: How distribute the "calibration formulas/algorithms between
 %   (1) calibrate_* functions, 
@@ -171,9 +176,6 @@ classdef calib < handle
 %   PROPOSAL: Have different classes and acronyms for (1) physical signal sources and (2) dataset representation
 %       ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
 %
-% PROPOSAL: Move TF=0 for HIGH frequencies to modify_tabulated_ITF.
-%
-% PROPOSAL: Initialize with RCT-data directly. Put RCT-reading outside of class.
 % PROPOSAL: Calibration mode for only removing LFR LSF offsets
 %   NOTE: Does not apply to TDS.
 %
@@ -184,9 +186,10 @@ classdef calib < handle
 %   PROPOSAL: "init_*"
 %   PROPOSAL: "complete_init_*"
 %
-% PROPOSAL: Function for producing combined FTFs (LFR/TDS + BIAS).
+% PROPOSAL: Store both FTFs and ITFs, despite that FTFs are not used for calibration directly.
+%   NOTE: BIAS & LFR RCTs contain FTFs, TDS RCT contains ITFs.
+%   NOTE: Has to keep track of FTF/ITF before modifications (extrapolation to 0 Hz, Z=0 for high freq.).
 %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
-%   CON: Code only reads ITFs.
 
 
 
@@ -254,9 +257,34 @@ classdef calib < handle
         %
         function obj = calib(calibrationDir, SETTINGS, L)
             % TODO-DECISION: Appropriate to use SETTINGS this way? Submit calibration data directly?
+            %
+            % PROPOSAL: Abolish second init methods:
+            %       read_non_BIAS_RCTs_by_regexp
+            %       read_non_BIAS_RCT_by_CALIBRATION_TABLE
+            %   PROPOSAL: Initialize completely using constructor.
+            %       NOTE: Can not initialize in execute_sw_mode (since does not know LFR/TDS since does not know s/w mode).
+            %       NOTE: Will have to submit calibrationDir to prodFunc or to swmode_defs (analogous to SETTINGS, L).
+            %       PRO: Can abolish obj.hasLoadedNonBiasData .
+            %   PROPOSAL: Initialize using only ONE second init method.
+            %   PROPOSAL: (1) Two static methods (two alternate ways) to initialize 1D cell array of non-BIAS RCTs to
+            %             load, corresponding to those RCTs in ga. CALIBRATION_TABLE that should be loaded, leaving
+            %             ~empty cells for those that should not (and can not) be loaded.
+            %             (2) Cell array is passed to calib init method (primary or secondary), combined with flag for
+            %             whether calib should read zv CALIBRATION_TABLE_INDEX.
+            %       PROBLEM: zv BW only applies to LFR, not TDS.
+            %       CON: Requires knowledge of zv BW and CALIBRATION_TABLE_INDEX which is then used in both static calib
+            %            methods (above) and the calibration code.
+            %           CON: Relatively harmless since reading too few or too many RCTs will lead to error.
+            %   PROPOSAL: Dynamic RCT loading. Load RCT first time it is requested.
+            %       NOTE: Must still be aware of how to load: using CALIBRATION_TABLE_INDEX+CALIBRATION_TABLE, or using
+            %             pattern matching/regexp..
+            %       NOTE: Must connect calib fields with rctId and which RCT to load.
+            %           PROPOSAL: containers.Map: rctId --> (data, bicas.RCT reading method, SETTINGS key for filename regexp.).
+            %       PRO: Knowledge of BW and CALIBRATION_TABLE_INDEX+CALIBRATION_TABLE in one place.
+            %       CON: Code will not immediately know whether all non-BIAS RCTs can be loaded. May crash after a delay.
             
             % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set.
-            
+
             obj.SETTINGS         = SETTINGS;
             obj.L                = L;
             
@@ -278,6 +306,8 @@ classdef calib < handle
             obj.allVoltageCalibDisabled        = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
             obj.biasOffsetsDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS');
             obj.lfrTdsTfDisabled               = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
+            
+            % Set obj.useBiasTfScalar.
             settingBiasTf                      = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
             switch(settingBiasTf)
                 case 'FULL'
@@ -285,7 +315,10 @@ classdef calib < handle
                 case 'SCALAR'
                     obj.useBiasTfScalar = 1;
                 otherwise
-                    error('BICAS:calib:Assertion:ConfigurationBug', 'Illegal value for setting PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".', settingBiasTf)
+                    error(...
+                        'BICAS:calib:Assertion:ConfigurationBug', ...
+                        'Illegal value for setting PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".', ...
+                        settingBiasTf)
             end
 
 
@@ -297,8 +330,6 @@ classdef calib < handle
             AC_DIFF_FREQS_HZ = [0, 1000];
             nBiasEpochL = numel(obj.Bias.epochL);
             for iEpochL = 1:nBiasEpochL
-                %dcSingleZ = obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(DC_FREQ_HQ);
-                %dcDiffZ   = obj.Bias.ItfSet.DcDiffAvpiv{  iEpochL}.eval(DC_FREQ_HQ);
                 
                 % Log bias current calibration
                 L.logf('debug', '(%i) BIAS current offsets (%s) [A]',         iEpochL, ...
@@ -325,7 +356,7 @@ classdef calib < handle
         %
         function read_non_BIAS_RCTs_by_regexp(obj, use_CALIBRATION_TABLE_INDEX2)
             % ASSERTIONS
-            assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Can not load non-BIAS data twice.')
+            assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Trying to load non-BIAS data twice.')
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
             
             obj.LfrItfIvptTable{1}    = obj.read_log_RCT_by_SETTINGS_regexp('LFR');
@@ -340,7 +371,7 @@ classdef calib < handle
             obj.log_TDS_RSWF_ITFs();
         end
 
-
+        
         
         % Load non-BIAS RCT(s) of ONE type (rctId) using CDF global attribute CALIBRATION_TABLE and zVar
         % CALIBRATION_TABLE_INDEX.
@@ -367,9 +398,14 @@ classdef calib < handle
                 rctId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, use_CALIBRATION_TABLE_INDEX2)
             
             % ASSERTIONS
-            assert(iscell(ga_CALIBRATION_TABLE), 'BICAS:calib:Assertion:IllegalArgument', 'ga_CALIBRATION_TABLE is not a cell array.')
+            assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Trying to load non-BIAS data twice.')
+            assert(iscell(ga_CALIBRATION_TABLE), ...
+                'BICAS:calib:Assertion:IllegalArgument', ...
+                'Argument ga_CALIBRATION_TABLE is not a cell array.')
             EJ_library.assert.vector(ga_CALIBRATION_TABLE)
-            assert(size(zv_CALIBRATION_TABLE_INDEX, 2) == 2, 'BICAS:calib:Assertion:IllegalArgument', 'zv_CALIBRATION_TABLE_INDEX does not have two columns.')
+            assert(size(zv_CALIBRATION_TABLE_INDEX, 2) == 2, ...
+                'BICAS:calib:Assertion:IllegalArgument', ...
+                'Argument zv_CALIBRATION_TABLE_INDEX does not have two columns.')
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
 
             %==================================================================================================
@@ -380,8 +416,10 @@ classdef calib < handle
             iUniqueList = unique(zv_CALIBRATION_TABLE_INDEX(:,1));
             % List/cell array of data from multiple RCTs (potentially, but practically probably not).
             rctDataList = cell(numel(ga_CALIBRATION_TABLE), 1);
+            % NOTE: Iterate over unique numbers, NOT indices in rctDataList. Will therefore leave some cells in cell
+            % array empty, if the corresponding CALIBRATION_TABLE RCTs are not referenced in CALIBRATION_TABLE_INDEX.
             for i = 1:numel(iUniqueList)
-                j              = iUniqueList(i) + 1;   % NOTE: Cell array index is one greater that the stored value.
+                j              = iUniqueList(i) + 1;   % NOTE: Cell array index is one greater than the stored value.
                 rctDataList{j} = obj.read_log_RCT_by_filename(ga_CALIBRATION_TABLE{j}, rctId);
             end
             
@@ -389,12 +427,9 @@ classdef calib < handle
             % Store read RCTs
             %=================
             switch(rctId)
-                case 'LFR'
-                    obj.LfrItfIvptTable    = rctDataList;
-                case 'TDS-CWF'
-                    obj.tdsCwfFactorsIvpt  = rctDataList;
-                case 'TDS-RSWF'
-                    obj.TdsRswfItfIvptList = rctDataList;
+                case 'LFR'      ;   obj.LfrItfIvptTable    = rctDataList;
+                case 'TDS-CWF'  ;   obj.tdsCwfFactorsIvpt  = rctDataList;
+                case 'TDS-RSWF' ;   obj.TdsRswfItfIvptList = rctDataList;
                 otherwise
                     error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId)
             end
@@ -512,7 +547,6 @@ classdef calib < handle
         % Calibrate all voltages. Function will choose the more specific algorithm internally.
         function samplesCaAVolt = calibrate_voltage_all(obj, ...
                 dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, zv_CALIBRATION_TABLE_INDEX)
-%                dtSec, samplesCaTm, isLfr, isTdsCwf, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, CALIBRATION_TABLE_INDEX)
             
             % ASSERTIONS
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
@@ -590,6 +624,7 @@ classdef calib < handle
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             assert((1 <= iLsf)  && (iLsf  <= 4), 'Illegal argument iLsf=%g.', iLsf)
+            assert(isscalar(cti1))
             assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
             % No assertion on cti2 unless used (determined later).
             
@@ -600,8 +635,9 @@ classdef calib < handle
             %============================================
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % ASSERTIONS
-                assert(cti2 >= 0,      'BICAS:calib:Assertion', 'Illegal cti2=%g (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))', cti2)
-                assert(iLsf == cti2+1, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting iLsf)', cti2+1, iLsf)
+                assert(isscalar(cti2), 'BICAS:calib:IllegalArgument:Assertion', 'Argument cti2 is not scalar.')
+                assert(cti2 >= 0,      'BICAS:calib:IllegalArgument:Assertion', 'Illegal argument cti2=%g (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))', cti2)
+                assert(iLsf == cti2+1, 'BICAS:calib:IllegalArgument:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting iLsf)', cti2+1, iLsf)
                 
                 % NOTE: Only place cti2 is used.
                 iLsf = cti2 + 1;
@@ -976,7 +1012,8 @@ classdef calib < handle
                 % Exception.identifier = "MATLAB:UndefinedFunction"
                 % Exception.message    = "Undefined function 'phase' for input arguments of type 'double'."
                 % Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):
-                %     UntranslatableErrorMsgId : Error occurred, but code can not translate the error's MATLAB message identifier into any of BICAS's internal standard error codes.
+                %     UntranslatableErrorMsgId : Error occurred, but code can not translate the error's MATLAB message
+                %     identifier into any of BICAS's internal standard error codes.
                 % MATLAB call stack:
                 %     row  969, calib.m,                    calib.log_ITF_Z
                 %     row  303, calib.m,                    calib.calib
@@ -1009,7 +1046,7 @@ classdef calib < handle
         % ====================
         % This method exists to
         % (1) run shared code that should be run when reading any RCT (logging, modifying data),
-        % (2) separate logging from the RCT-reading code, so that one can read RCTs without BICAS.
+        % (2) separate the logging from the RCT-reading code, so that external code can read RCTs without BICAS.
         %
         %
         % ARGUMENTS
@@ -1017,7 +1054,7 @@ classdef calib < handle
         % rctId : String constants representing pipeline and RCT to be read.
         %
         function RctCalibData = read_log_modify_RCT(obj, filePath, rctId)
-            % PROPOSAL: Incorporate modify_LFR_data, modify_TDS_RSWF_data
+            % PROPOSAL: Incorporate modify_LFR_RCT_data, modify_TDS_RSWF_RCT_data
             
             obj.L.logf('info', 'Reading %-4s RCT: "%s"', rctId, filePath)
 

@@ -33,7 +33,7 @@
 %   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1). Inconvenient.
 % 
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-22
 %
 classdef settings < handle

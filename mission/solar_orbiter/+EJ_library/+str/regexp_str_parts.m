@@ -39,7 +39,7 @@
 % perfectMatch   : Logical. Whether matched all regular expressions to entire string.
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-25.
 %
 function [subStrList, remainingStr, perfectMatch] = regexp_str_parts(str, regexpList, nonMatchPolicy)

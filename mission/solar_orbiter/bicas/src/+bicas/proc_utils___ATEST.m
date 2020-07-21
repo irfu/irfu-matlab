@@ -3,7 +3,7 @@
 % NOTE: Does NOT test all functions in proc_utils.
 % 
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-17
 %
 

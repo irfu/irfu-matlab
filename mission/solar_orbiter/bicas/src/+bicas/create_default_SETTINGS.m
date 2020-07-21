@@ -21,7 +21,7 @@
 % in the S/W descriptor).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-24
 %
 function SETTINGS = create_default_SETTINGS()
@@ -47,7 +47,6 @@ function SETTINGS = create_default_SETTINGS()
     %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
     %
     % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-    % PROPOSAL: Abolish INPUT_CDF.CUR.PREPEND_TEST_DATA.
     % PROPOSAL: Naming convention for settings keys for testing ONLY:
     %
     % PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
@@ -214,8 +213,6 @@ function SETTINGS = create_default_SETTINGS()
     % Alternate fill value to use.
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
-    % For testing, while lacking proper bias current datasets to test with.
-    S.define_setting('INPUT_CDF.CUR.PREPEND_TEST_DATA',        0)
     % For testing, when HK and SCI time are completely different and do not overlap (though HK time still has to cover a
     % larger interval than SCI). Adds/subtracts HK time so that the first HK timestamp equals the first SCI timestamp.
     S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',          0)
@@ -427,11 +424,8 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               1)
     S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             1)
     S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
-    % Value=1 not implemented, since CALIBRATION_TABLE_INDEX is not set for TDS.
-    %S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)
+    % CALIBRATION_TABLE_INDEX is not set for TDS. Therefore no such setting for TDS.
     S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
-    % Value=1 not implemented, since CALIBRATION_TABLE_INDEX is not set for TDS.
-    %S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)
     S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
     
     

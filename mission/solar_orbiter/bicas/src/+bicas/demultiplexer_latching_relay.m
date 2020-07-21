@@ -26,7 +26,7 @@
 % See bicas.calib.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %
 function dlrUsing12 = demultiplexer_latching_relay(Epoch)

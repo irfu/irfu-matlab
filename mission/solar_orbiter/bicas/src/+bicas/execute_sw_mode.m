@@ -2,7 +2,7 @@
 % This function should be agnostic of CLI syntax.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-09
 %
 %

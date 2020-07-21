@@ -17,7 +17,7 @@
 % script can handle to read what it needs.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-24
 %
 function settingsVsMap = interpret_config_file(configFileRowList, L)

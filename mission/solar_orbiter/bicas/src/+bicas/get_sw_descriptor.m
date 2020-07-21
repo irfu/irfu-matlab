@@ -2,7 +2,7 @@
 % Return result can be used for generating a string that can be printed.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created ~2016-06-01
 %
 %

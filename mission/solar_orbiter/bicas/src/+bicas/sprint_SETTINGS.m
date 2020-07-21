@@ -4,7 +4,7 @@
 % Create human-readable multi-line string to represent SETTINGS. Meant for logging and printing to stdout.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-22
 %
 function str = sprint_SETTINGS(SETTINGS)

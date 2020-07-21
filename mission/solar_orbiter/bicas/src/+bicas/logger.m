@@ -94,32 +94,27 @@ classdef logger < handle
             % PROPOSAL: Separate arguments for stdout and log file behaviour
             %   CON: Want short call for no logging.
             
-%             if nargin == 0
-%                 obj.stdoutOption   = 'none';
-%                 obj.logFileEnabled = false;
-%                 
-            if nargin == 2
-                assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), 'Illegal argument logFileEnabled.')
-                logFileEnabled = logical(logFileEnabled);
-                
-                switch(stdoutOption)
-                    case 'none'
-                        obj.stdoutOption = 'none';
-                        
-                    case 'human-readable'
-                        obj.stdoutOption = 'human-readable';
-                        
-                    case 'bash wrapper'
-                        obj.stdoutOption = 'bash wrapper';
-                        
-                    otherwise
-                        error('Illegal argument "%s".', stdoutOption)
-                end
-                
-                obj.logFileEnabled = logFileEnabled;
-            else
-                error('Illegal number of arguments.')
+            % ASSERTIONS
+            % IMPLEMENTATION NOTE: Assertion for number of arguments, since this used to be variable.
+            assert(nargin == 2)
+            assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), 'Illegal argument logFileEnabled.')
+            logFileEnabled = logical(logFileEnabled);
+            
+            switch(stdoutOption)
+                case 'none'
+                    obj.stdoutOption = 'none';
+                    
+                case 'human-readable'
+                    obj.stdoutOption = 'human-readable';
+                    
+                case 'bash wrapper'
+                    obj.stdoutOption = 'bash wrapper';
+                    
+                otherwise
+                    error('Illegal argument "%s".', stdoutOption)
             end
+            
+            obj.logFileEnabled = logFileEnabled;
         end
 
 

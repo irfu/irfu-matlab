@@ -13,6 +13,8 @@ classdef constants   % < handle
         % Should at least refer to the "normal" LFR snapshot length that BICAS uses.
         % Notes imply that there may be other ones (calibration? LFR-HF? LFR-SCM?).
         LFR_SWF_SNAPSHOT_LENGTH = 2048;
+        
+        TM_PER_SET_AMPERE = 32768 / 60e-6;
     end
 
 end

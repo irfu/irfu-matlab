@@ -53,7 +53,7 @@
 %               NOTE: An option occurrence with zero values has a 1x0 cell array (not 0x0).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-02, reworked 2017-02-09, reworked 2019-07-22.
 %
 function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)

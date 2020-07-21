@@ -22,7 +22,7 @@
 % columnWidths : 1D array of column widths, i.e. length of the longest string in respective columns.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-14.
 %
 function [headerStrs, tableStrs, columnWidths] = assist_print_table(headerStrs, tableStrs, columnAdjustments)

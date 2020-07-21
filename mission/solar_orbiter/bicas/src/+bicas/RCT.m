@@ -5,30 +5,45 @@
 % DESIGN INTENT
 % =============
 % Implemented so that no calibration data is modified/added to/removed from. The returned data structures reflect the
-% content of the RCTs, not necessarily the data used. Modification of data (in particular extrapolation of transfer
-% functions) should be done elsewhere.
+% content of the RCTs, not necessarily the data used. Modification of data (in particular modifications of transfer
+% functions, e.g. extrapolation or cut-offs) should be done elsewhere.
 % --
-% NOTE: Not entirely true. Code inverts LFR & BIAS RCT FTF-->ITF.
+% NOTE: BIAS & LFR RCTs contain FTFs which are not inverted here. TDS RCTs contain ITFs.
+% NOTE: Code still converts RCT TFs slightly:
+%   frequency      : Hz    --> rad/s
+%   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-15
 %
 classdef RCT
 % BOGIQ
 % =====
 % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
+% PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
 % PROPOSAL: Assert CDF skeleton/master version number.
 % PROPOSAL: Assert skeleton/master.
-% PROPOSAL: Assert/warn (depending on setting?) file units in CDF metadata.
+%
+% PROPOSAL: Function for permuting indices to handle dataobj's handling of 1 record-case.
+%
+% PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that the RCT zVariables have the wrong units.
 % PROPOSAL: Use utility function for reading every zVariable.
 %   PROPOSAL: Assert units from zVar attributes.
 %
-% PROPOSAL: Move out the extrapolation of LFR TFs.
-%   PRO: Want to distinguish between RCT data and modified data.
 % PROPOSAL: Log read RCTs in the same way as input datasets; generic zVar logging.
 %
-% PROPOSAL: Read FTFs and have the caller (bicas.calib) invert the FTFs.
+% PROPOSAL: Classes for RCT data.
+%   PRO: BIAS data has many fields.
+%   PRO: More well-defined data structs.
+%   PRO: Automatic assertions.
+%   CON: Structs are modified RCT.m-->calib.m ==> Too many classes.
+%
+% PROPOSAL: Move out find_RCT_by_SETTINGS_regexp.
+%   PRO: Only code that uses SETTINGS.
+%   PROPOSAL: Move to bicas.calib.
+%       PRO: Only used by bicas.calib.
+% PROPOSAL: Move out find_RCT_regexp.
 
 
 
@@ -37,7 +52,7 @@ classdef RCT
         % Minimum number of numerator or denominator coefficients in the BIAS RCT.
         N_MIN_TF_NUMER_DENOM_COEFFS = 8;
         
-        % Minimum number of entries in tabulated transfer functions in RCTs.
+        % Minimum number of expected entries in tabulated transfer functions in RCTs.
         TF_TABLE_MIN_LENGTH = 10;
         
     end
@@ -58,7 +73,7 @@ classdef RCT
         % =========
         % rctId : String constants representing RCT to be read.
         %
-        function RctCalibData = find_RCT_by_SETTINGS_regexp(calibrationDir, rctId, SETTINGS, L)
+        function path = find_RCT_by_SETTINGS_regexp(calibrationDir, rctId, SETTINGS, L)
 
             %============================
             % Create regexp for filename
@@ -74,7 +89,7 @@ classdef RCT
                 rctId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctId="%s"', rctId));
             filenameRegexp = SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s', analyzerSettingsSegm));
             
-            RctCalibData = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp, L);
+            path = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp, L);
         end
 
 
@@ -287,10 +302,10 @@ classdef RCT
                 % there are 5+5+5+3 TFs (but only 1 frequency table/LSF, since they are recycled).
                 % NOTE: The assignment of indices here effectively determines the translation between array index and
                 % LFR Sampling Frequency (LSF). This is NOT the same as the values in the LFR zVar FREQ.
-                freqTableHz{1}  = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLsf}.
-                freqTableHz{2}  = shiftdim(Do.data.Freqs_F1.data);
-                freqTableHz{3}  = shiftdim(Do.data.Freqs_F2.data);
-                freqTableHz{4}  = shiftdim(Do.data.Freqs_F3.data);
+                freqTableHz{1}   = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLsf}.
+                freqTableHz{2}   = shiftdim(Do.data.Freqs_F1.data);
+                freqTableHz{3}   = shiftdim(Do.data.Freqs_F2.data);
+                freqTableHz{4}   = shiftdim(Do.data.Freqs_F3.data);
 
                 amplTableTpiv{1} = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
                 amplTableTpiv{2} = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
@@ -383,7 +398,9 @@ classdef RCT
                 assert(size(    tdsCwfFactorsIvpt, 1) == 3)
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (TDS team''s LFM CWF RCT for BIAS/BICAS) "%s"', filePath);
+                Exc2 = MException(...
+                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'Error when interpreting calibration file (TDS team''s LFM CWF RCT for BIAS/BICAS) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -437,8 +454,10 @@ classdef RCT
                 end
 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', ...
-                    'Error when interpreting calibration file (TDS team''s LFM RSWF RCT for BIAS/BICAS) "%s"', filePath);
+                Exc2 = MException(...
+                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'Error when interpreting calibration file (TDS team''s LFM RSWF RCT for BIAS/BICAS) "%s"', ...
+                    filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end

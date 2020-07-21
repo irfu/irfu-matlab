@@ -52,7 +52,7 @@
 % RATIONALE: See the bash wrapper script.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-03-xx.
 %
 function errorCode = main( varargin )
@@ -381,7 +381,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
+    L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Print/log the content of SETTINGS.
     
     
     
@@ -494,7 +494,7 @@ end
 % RCS ICD 00037 iss1/rev2, draft 2019-07-11, Section 5.2:
 % The example (but not the text) makes it clear that code should print JSON object.
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created <<2019-08-05
 %
 function print_version(SwModeDefsList, SETTINGS)
@@ -517,7 +517,7 @@ end
 
 % Print the JSON S/W descriptor identification section.
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
 %
 function print_identification(SwModesDefsList, SETTINGS)
@@ -533,7 +533,7 @@ end
 
 % Print the JSON S/W descriptor.
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24
 %
 function print_sw_descriptor(SwModesDefsList, SETTINGS)

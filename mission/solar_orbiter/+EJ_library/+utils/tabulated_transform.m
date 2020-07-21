@@ -37,6 +37,7 @@
 % =========
 % This class may seem to not "do much", but it is still useful since
 %   ** It is a "standard struct" for tabulated TFs. Does not need to manually keep frequencies and Z together.
+%   ** Documentation
 %   ** It is immutable.
 %   ** The constructor can initialize using two common formats.
 % 
@@ -74,8 +75,8 @@ classdef tabulated_transform
 
         % ARGUMENTS
         % =========
-        % Syntax 1: (omegaRps, Z)
-        % Syntax 2: (omegaRps, amplitude, phaseRad)
+        % SYNTAX 1: (omegaRps, Z)
+        % SYNTAX 2: (omegaRps, amplitude, phaseRad)
         % --
         % omegaRps  : 1D array of frequencies (positive, real; radians/s).
         % Z         : 1D array of complex transfer function values.

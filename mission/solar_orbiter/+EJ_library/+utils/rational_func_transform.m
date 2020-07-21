@@ -1,4 +1,3 @@
-classdef rational_func_transform
 % 
 % Class which instances encapsulate and store one IMMUTABLE copy of a "Laplace/Fourier transform" on the format
 %
@@ -14,8 +13,8 @@ classdef rational_func_transform
 % ** It is ambiguous which sanity checks one should use.
 % ** Want to keep the code generic, e.g.
 %    ** be able to store "backward" TFs,
-%    ** useful for numeric experiments,
-%    ** use it for both Laplace transforms and Fourier transforms(?).
+%    ** be useful for numeric experiments,
+%    ** be able to use it for both Laplace transforms and Fourier transforms(?).
 % Instead it provides extra methods to make relevant assertions easy to implement by the user.
 % 
 % This class deliberately requires (via assertions):
@@ -31,6 +30,7 @@ classdef rational_func_transform
 % Author: Erik P G Johansson
 % First created 2019-11-12
 %
+classdef rational_func_transform
 
 % PROPOSAL: Implement subclasses with more strict requirements on permitted transforms.
 % PROPOSAL: Change name to specify subset of analytical transforms.
@@ -50,6 +50,8 @@ classdef rational_func_transform
 
     methods(Access=public)
         
+        
+        
         function obj = rational_func_transform(numeratorCoeffs, denominatorCoeffs)
             % IMPLEMENTATION NOTE: See top-level file comments.
 
@@ -60,6 +62,7 @@ classdef rational_func_transform
             assert(all(isfinite(  numeratorCoeffs)))
             assert(all(isfinite(denominatorCoeffs)))
             % ASSERTION: Require at least non-zero value in each polynomial separately.
+            % PROPOSITION: Bad, non-generic assertions?
             assert(max(abs(  numeratorCoeffs)) > 0)
             assert(max(abs(denominatorCoeffs)) > 0)
             
@@ -98,10 +101,11 @@ classdef rational_func_transform
             %     high_freq_limit_zero
             %     zero_at_high_freq_limit
             
-            % Denominator polynomial should have at least as high a degree as the numerator polynomial. <==> Z should
-            % not diverge as omega-->inf.
-            nNc = find(obj.numeratorCoeffs,   1, 'last');   % Detect highest-order non-zero coefficient.
-            nDc = find(obj.denominatorCoeffs, 1, 'last');
+            % Denominator polynomial should have at least as high a degree as the numerator polynomial.
+            % <==> Z should not diverge as omega-->inf.
+            % Detect highest-order non-zero coefficients.
+            nNc = find(obj.numeratorCoeffs,   1, 'last');    % NC = Numerator Coefficients
+            nDc = find(obj.denominatorCoeffs, 1, 'last');    % DC = Denominator Coefficients
             zeroInHfLimit = (nDc > nNc);
         end
 
