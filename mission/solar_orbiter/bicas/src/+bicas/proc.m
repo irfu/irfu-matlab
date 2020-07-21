@@ -18,7 +18,7 @@
 % (with another interface).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-30
 %
 classdef proc
@@ -82,7 +82,7 @@ classdef proc
         %                    (1) it could be missing, or
         %                    (2) sometimes one may want to read an ROC-SGSE dataset as if it was an RODP dataset or the other way around.
         %
-        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, Cal, inputSciDsi, outputDsi, SETTINGS, L)
             
             InputHkPd  = InputDatasetsMap('HK_cdf');
             InputCurPd = InputDatasetsMap('CUR_cdf');
@@ -119,7 +119,7 @@ classdef proc
         % =========
         % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, Cal, inputSciDsi, outputDsi, SETTINGS, L)
             
             InputHkPd  = InputDatasetsMap('HK_cdf');
             InputCurPd = InputDatasetsMap('CUR_cdf');

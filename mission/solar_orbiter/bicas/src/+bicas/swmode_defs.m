@@ -45,7 +45,7 @@
 % SIP = "Specific Input Parameters" (RCS ICD).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-31
 %
 classdef swmode_defs
@@ -139,7 +139,7 @@ classdef swmode_defs
                 '<SWM purpose amendm>', swmPurposeAmendmList{iInputLevel});
             
             % Input def that is reused multiple times.
-            HK_INPUT_DEF = obj.def_input_dataset(...
+            HK_INPUT_DEF = bicas.swmode_defs.def_input_dataset(...
                 'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
 
             
@@ -159,7 +159,8 @@ classdef swmode_defs
                 'outputSkeletonVersion', {'09',  '09'});
             
             
-            CUR_INPUT_DEF = obj.def_input_dataset('in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
+
+            CUR_INPUT_DEF = bicas.swmode_defs.def_input_dataset('in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
             
             SwModeList = EJ_library.utils.empty_struct([0,1], ...
                 'prodFunc', 'cliOption', 'swdPurpose', 'inputsList', 'outputsList');
@@ -174,24 +175,23 @@ classdef swmode_defs
                         '<C/SWF>',      LFR_SW_MODE_DATA(iSwm).CWF_SWF), ...
                         '<mode str>',   LFR_SW_MODE_DATA(iSwm).modeStr);
 
-                    SCI_INPUT_DEF = obj.def_input_dataset(...
+                    SCI_INPUT_DEF = bicas.swmode_defs.def_input_dataset(...
                         'in_sci', ...
                         strmod('SOLO_<InLvl>_RPW-LFR-<SBMx/SURV>-<C/SWF><I-E>'), ...
                         'SCI_cdf');
 
-                    SCI_OUTPUT_DEF = obj.def_output_dataset(...
+                    SCI_OUTPUT_DEF = bicas.swmode_defs.def_output_dataset(...
                         strmod('SOLO_L2_RPW-LFR-<SBMx/SURV>-<C/SWF>-E'), ...
                         strmod('LFR L2 <C/SWF> science electric <mode str> data'), ...
                         strmod('RPW LFR L2 <C/SWF> science electric (potential difference) data in <mode str>, time-tagged'), ...
                         LFR_SW_MODE_DATA(iSwm).outputSkeletonVersion);
 
-                    SwModeList(end+1) = obj.def_swmode(...
+                    SwModeList(end+1) = bicas.swmode_defs.def_swmode(...
                         @(InputDatasetsMap, Cal) bicas.proc.produce_L2_LFR(...
                             InputDatasetsMap, ...
                             Cal, ...
                             SCI_INPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.datasetId, ...
-                            SCI_OUTPUT_DEF.skeletonVersion, ...
                             SETTINGS, L), ...
                         strmod('LFR-<SBMx/SURV>-<C/SWF>-E<SWM suffix>'), ...
                         strmod('Generate <SBMx/SURV> <C/SWF> electric field L2 data (potential difference) from LFR <InLvl> data.<SWM purpose amendm>'), ...
@@ -205,24 +205,23 @@ classdef swmode_defs
                     strmod = @(s) strrep(strmodg(s, iInputLevel), ...
                         '<C/RSWF>', TDS_SW_MODE_DATA(iSwm).CWF_RSWF);
 
-                    SCI_INPUT_DEF = obj.def_input_dataset(...
+                    SCI_INPUT_DEF = bicas.swmode_defs.def_input_dataset(...
                         'in_sci', ...
                         strmod('SOLO_<InLvl>_RPW-TDS-LFM-<C/RSWF><I-E>'), ...
                         'SCI_cdf');
                     
-                    SCI_OUTPUT_DEF = obj.def_output_dataset(...
+                    SCI_OUTPUT_DEF = bicas.swmode_defs.def_output_dataset(...
                         strmod('SOLO_L2_RPW-TDS-LFM-<C/RSWF>-E'), ...
                         strmod('LFR L2 <C/RSWF> science electric LF mode data'), ...
                         strmod('RPW TDS L2 <C/RSWF> science electric (potential difference) data in LF mode, time-tagged'), ...
                         TDS_SW_MODE_DATA(iSwm).outputSkeletonVersion);
 
-                    SwModeList(end+1) = obj.def_swmode(...
+                    SwModeList(end+1) = bicas.swmode_defs.def_swmode(...
                         @(InputDatasetsMap, Cal) bicas.proc.produce_L2_TDS(...
                             InputDatasetsMap, ...
                             Cal, ...
                             SCI_INPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.datasetId, ...
-                            SCI_OUTPUT_DEF.skeletonVersion, ...
                             SETTINGS, L), ...
                         strmod('TDS-LFM-<C/RSWF>-E<SWM suffix>'), ...
                         strmod('Generate <C/RSWF> electric field L2 data (potential difference) from TDS LF mode <InLvl> data.<SWM purpose amendm>'), ...
@@ -249,10 +248,13 @@ classdef swmode_defs
     
     
 
-    methods(Access=private)
+
+    methods(Static, Access=private)
         
-        % NOTE: Could technically be a static method. Only instance method for grouping it with other analogous methods.
-        function Def = def_swmode(~, prodFunc, cliOption, swdPurpose, inputsList, outputsList)
+        
+        
+        % NOTE: Name dangerously similar to "bicas.swmode_defs".
+        function Def = def_swmode(prodFunc, cliOption, swdPurpose, inputsList, outputsList)
             Def.prodFunc    = prodFunc;
             Def.cliOption   = cliOption;   % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by e.g. "--". Variable therefore NOT named *Body.
             Def.swdPurpose  = swdPurpose;
@@ -263,7 +265,7 @@ classdef swmode_defs
             
             % ASSERTIONS
             EJ_library.assert.castring_set( {...
-                Def.inputsList(:).cliOptionHeaderBody, ...
+                Def.inputsList( :).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody })   % Important. Check uniqueness of SIP options.
             EJ_library.assert.castring_set( {...
                 Def.inputsList(:).prodFuncInputKey })   % Maybe not really necessary.
@@ -280,19 +282,20 @@ classdef swmode_defs
 
         
         
-        function Def = def_input_dataset(obj, cliOptionHeaderBody, datasetId, prodFuncInputKey)
+        function Def = def_input_dataset(cliOptionHeaderBody, datasetId, prodFuncInputKey)
             % NOTE: No dataset/skeleton version.
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
             Def.prodFuncInputKey    = prodFuncInputKey;
             Def.datasetId           = datasetId;
             
             bicas.swmode_defs.assert_SIP_CLI_option(Def.cliOptionHeaderBody)
-            obj.assert_DATASET_ID(                  Def.datasetId)    % NOTE: Using the internal assertion function, not the global one.
+            % NOTE: Using the INTERNAL assertion function, not the global one.
+            bicas.swmode_defs.assert_DATASET_ID(    Def.datasetId)
         end
 
         
         
-        function Def = def_output_dataset(obj, datasetId, swdName, swdDescription, skeletonVersion)
+        function Def = def_output_dataset(datasetId, swdName, swdDescription, skeletonVersion)
             Def.cliOptionHeaderBody = 'out_sci';
             Def.prodFuncOutputKey   = 'SCI_cdf';
             Def.swdName             = swdName;
@@ -304,7 +307,7 @@ classdef swmode_defs
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOptionHeaderBody)
             bicas.swmode_defs.assert_text(              Def.swdName)
             bicas.swmode_defs.assert_text(              Def.swdDescription)
-            obj.assert_DATASET_ID(                      Def.datasetId)
+            bicas.swmode_defs.assert_DATASET_ID(        Def.datasetId)
             bicas.assert_dataset_level(                 Def.datasetLevel)
             bicas.assert_skeleton_version(              Def.skeletonVersion)
         end
@@ -312,7 +315,7 @@ classdef swmode_defs
 
 
         % NOTE: Wrapper around global counterpart.
-        function assert_DATASET_ID(obj, datasetId)
+        function assert_DATASET_ID(datasetId)
             % PROPOSAL: Use classification function for DATASET_ID instead.
             
             bicas.assert_DATASET_ID(datasetId)
@@ -320,12 +323,8 @@ classdef swmode_defs
             % ASSERTION: Only using SOLO_* DATASET_IDs.
             assert(strcmp('SOLO_', datasetId(1:5)))
         end
-
-    end    % methods(Access=private)    
-
-
-
-    methods(Static, Access=private)
+        
+        
 
         % Assert that string contains human-readable text.
         function assert_text(str)
