@@ -192,6 +192,16 @@ classdef calib < handle
 %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
 
 
+    properties(Access=private, Constant)
+    %properties(Access=public, Constant)    % DEBUG
+        
+        % Map: RCT Type ID --> Info about RCT type.
+        % Its keys defines the set of RCT Type ID strings.
+        RctTypesMap = bicas.calib.init_RCT_Types_Map();
+        
+    end
+
+
 
     %properties(Access=private)
     properties(SetAccess=private, GetAccess=public)
@@ -205,6 +215,8 @@ classdef calib < handle
         LfrItfIvptTable    = {};
         tdsCwfFactorsIvpt  = {};
         TdsRswfItfIvptList = {};
+        %RctData = containers.Map();
+        
         lfrLsfOffsetsTm    = [];   % EXPERIMENTAL. NOTE: Technically, the name contains a tautology (LFR+LSF).
        
         calibrationDir
@@ -278,8 +290,8 @@ classdef calib < handle
             %   PROPOSAL: Dynamic RCT loading. Load RCT first time it is requested.
             %       NOTE: Must still be aware of how to load: using CALIBRATION_TABLE_INDEX+CALIBRATION_TABLE, or using
             %             pattern matching/regexp..
-            %       NOTE: Must connect calib fields with rctId and which RCT to load.
-            %           PROPOSAL: containers.Map: rctId --> (data, bicas.RCT reading method, SETTINGS key for filename regexp.).
+            %       NOTE: Must connect calib fields with rctTypeId and which RCT to load.
+            %           PROPOSAL: containers.Map: rctTypeId --> (data, bicas.RCT reading method, SETTINGS key for filename regexp.).
             %       PRO: Knowledge of BW and CALIBRATION_TABLE_INDEX+CALIBRATION_TABLE in one place.
             %       CON: Code will not immediately know whether all non-BIAS RCTs can be loaded. May crash after a delay.
             
@@ -373,7 +385,7 @@ classdef calib < handle
 
         
         
-        % Load non-BIAS RCT(s) of ONE type (rctId) using CDF global attribute CALIBRATION_TABLE and zVar
+        % Load non-BIAS RCT(s) of ONE type (rctTypeId) using CDF global attribute CALIBRATION_TABLE and zVar
         % CALIBRATION_TABLE_INDEX.
         %
         % IMPLEMENTATION NOTE: May load multiple RCTs (of the same type) but will only load those RCTs which are
@@ -395,7 +407,7 @@ classdef calib < handle
         %               mentioned in ga_CALIBRATION_TABLE.
         %
         function rctDataList = read_non_BIAS_RCT_by_CALIBRATION_TABLE(obj, ...
-                rctId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, use_CALIBRATION_TABLE_INDEX2)
+                rctTypeId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, use_CALIBRATION_TABLE_INDEX2)
             
             % ASSERTIONS
             assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Trying to load non-BIAS data twice.')
@@ -420,18 +432,18 @@ classdef calib < handle
             % array empty, if the corresponding CALIBRATION_TABLE RCTs are not referenced in CALIBRATION_TABLE_INDEX.
             for i = 1:numel(iUniqueList)
                 j              = iUniqueList(i) + 1;   % NOTE: Cell array index is one greater than the stored value.
-                rctDataList{j} = obj.read_log_RCT_by_filename(ga_CALIBRATION_TABLE{j}, rctId);
+                rctDataList{j} = obj.read_log_RCT_by_filename(ga_CALIBRATION_TABLE{j}, rctTypeId);
             end
             
             %=================
             % Store read RCTs
             %=================
-            switch(rctId)
+            switch(rctTypeId)
                 case 'LFR'      ;   obj.LfrItfIvptTable    = rctDataList;
                 case 'TDS-CWF'  ;   obj.tdsCwfFactorsIvpt  = rctDataList;
                 case 'TDS-RSWF' ;   obj.TdsRswfItfIvptList = rctDataList;
                 otherwise
-                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId)
+                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctTypeId="%s"', rctTypeId)
             end
             
             obj.hasLoadedNonBiasData         = 1;
@@ -867,16 +879,19 @@ classdef calib < handle
 
         % NOTE: To be compared with read_log_RCT_by_SETTINGS_regexp.
         % NOTE: Does not need to be an instance method. Is so only to put it next to read_log_RCT_by_SETTINGS_regexp.
-        function RctCalibData = read_log_RCT_by_filename(obj, filename, rctId)
-            RctCalibData = obj.read_log_modify_RCT(fullfile(obj.calibrationDir, filename), rctId);
+        function RctCalibData = read_log_RCT_by_filename(obj, filename, rctTypeId)
+            RctCalibData = obj.read_log_modify_RCT(fullfile(obj.calibrationDir, filename), rctTypeId);
         end
 
 
 
         % NOTE: To be compared with read_log_RCT_by_filename.
-        function RctCalibData = read_log_RCT_by_SETTINGS_regexp(obj, rctId)
-            filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, rctId, obj.SETTINGS, obj.L);
-            RctCalibData = obj.read_log_modify_RCT(filePath, rctId);
+        function RctCalibData = read_log_RCT_by_SETTINGS_regexp(obj, rctTypeId)
+            %filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, rctTypeId, obj.SETTINGS, obj.L);
+            
+            filenameRegexp = obj.SETTINGS.get_fv(bicas.calib.RctTypesMap(rctTypeId).filenameRegexpSettingKey);            
+            filePath       = bicas.RCT.find_RCT_regexp(obj.calibrationDir, filenameRegexp, obj.L);
+            RctCalibData   = obj.read_log_modify_RCT(filePath, rctTypeId);
         end
 
 
@@ -1051,22 +1066,28 @@ classdef calib < handle
         %
         % ARGUMENTS
         % =========
-        % rctId : String constants representing pipeline and RCT to be read.
+        % rctTypeId : String constants representing pipeline and RCT to be read.
         %
-        function RctCalibData = read_log_modify_RCT(obj, filePath, rctId)
+        function RctData = read_log_modify_RCT(obj, filePath, rctTypeId)
             % PROPOSAL: Incorporate modify_LFR_RCT_data, modify_TDS_RSWF_RCT_data
             
-            obj.L.logf('info', 'Reading %-4s RCT: "%s"', rctId, filePath)
+            obj.L.logf('info', 'Reading %-4s RCT: "%s"', rctTypeId, filePath)
+            
+            readRctFunc   = bicas.calib.RctTypesMap(rctTypeId).readRctFunc;
+            modifyRctFunc = bicas.calib.RctTypesMap(rctTypeId).modifyRctFunc;
+            
+            RctData = readRctFunc(filePath);
+            RctData = modifyRctFunc(RctData);
 
-            switch(rctId)
-                case 'BIAS'     ; Rcd = bicas.calib.modify_BIAS_RCT_data(    bicas.RCT.read_BIAS_RCT(    filePath));
-                case 'LFR'      ; Rcd = bicas.calib.modify_LFR_RCT_data(     bicas.RCT.read_LFR_RCT(     filePath));
-                case 'TDS-CWF'  ; Rcd =                                      bicas.RCT.read_TDS_CWF_RCT( filePath);
-                case 'TDS-RSWF' ; Rcd = bicas.calib.modify_TDS_RSWF_RCT_data(bicas.RCT.read_TDS_RSWF_RCT(filePath));
-                otherwise
-                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId);
-            end
-            RctCalibData = Rcd;
+%             switch(rctTypeId)
+%                 case 'BIAS'     ; Rcd = bicas.calib.modify_BIAS_RCT_data(    bicas.RCT.read_BIAS_RCT(    filePath));
+%                 case 'LFR'      ; Rcd = bicas.calib.modify_LFR_RCT_data(     bicas.RCT.read_LFR_RCT(     filePath));
+%                 case 'TDS-CWF'  ; Rcd =                                      bicas.RCT.read_TDS_CWF_RCT( filePath);
+%                 case 'TDS-RSWF' ; Rcd = bicas.calib.modify_TDS_RSWF_RCT_data(bicas.RCT.read_TDS_RSWF_RCT(filePath));
+%                 otherwise
+%                     error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctTypeId="%s"', rctTypeId);
+%             end
+%             RctCalibData = Rcd;
         end
 
 
@@ -1162,9 +1183,30 @@ classdef calib < handle
 
 
     methods(Static, Access=private)
-
-
-
+        
+        
+        
+        % Code to initialize hard-coded static constant.
+        function RctTable = init_RCT_Types_Map()
+            RctTable = containers.Map();
+            
+            RctTable('BIAS')     = RCT_entry(@bicas.RCT.read_BIAS_RCT,     @bicas.calib.modify_BIAS_RCT_data,     'PROCESSING.RCT_REGEXP.BIAS');
+            RctTable('LFR')      = RCT_entry(@bicas.RCT.read_LFR_RCT,      @bicas.calib.modify_LFR_RCT_data,      'PROCESSING.RCT_REGEXP.LFR');
+            RctTable('TDS-CWF')  = RCT_entry(@bicas.RCT.read_TDS_CWF_RCT,  @(S) (S),                              'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
+            RctTable('TDS-RSWF') = RCT_entry(@bicas.RCT.read_TDS_RSWF_RCT, @bicas.calib.modify_TDS_RSWF_RCT_data, 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            function Entry = RCT_entry(readRctFunc, modifyRctFunc, filenameRegexpSettingKey)
+                Entry = struct(...
+                    'readRctFunc',              readRctFunc, ...
+                    'modifyRctFunc',            modifyRctFunc, ...
+                    'filenameRegexpSettingKey', filenameRegexpSettingKey);
+            end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        end
+        
+        
+        
         function Bias = modify_BIAS_RCT_data(Bias)
             nTime = EJ_library.assert.sizes(...
                 Bias.FtfSet.DcSingleAvpiv,   [-1, 1], ...

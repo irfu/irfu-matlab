@@ -71,26 +71,26 @@ classdef RCT
         %
         % ARGUMENTS
         % =========
-        % rctId : String constants representing RCT to be read.
+        % rctTypeId : String constants representing RCT to be read.
         %
-        function path = find_RCT_by_SETTINGS_regexp(calibrationDir, rctId, SETTINGS, L)
-
-            %============================
-            % Create regexp for filename
-            %============================
-            % IMPLEMENTATION NOTE: Below translation statement
-            % (1) verifies the argument, AND
-            % (2) separates the argument string constants from the SETTINGS naming convention.
-            analyzerSettingsSegm = EJ_library.utils.translate({...
-                {'BIAS'},     'BIAS'; ...
-                {'LFR'},      'LFR'; ...
-                {'TDS-CWF'},  'TDS-LFM-CWF'; ...
-                {'TDS-RSWF'}, 'TDS-LFM-RSWF'}, ...
-                rctId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctId="%s"', rctId));
-            filenameRegexp = SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s', analyzerSettingsSegm));
-            
-            path = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp, L);
-        end
+%         function path = find_RCT_by_SETTINGS_regexp(calibrationDir, rctTypeId, SETTINGS, L)
+% 
+%             %============================
+%             % Create regexp for filename
+%             %============================
+%             % IMPLEMENTATION NOTE: Below translation statement
+%             % (1) verifies the argument, AND
+%             % (2) separates the argument string constants from the SETTINGS naming convention.
+%             analyzerSettingsSegm = EJ_library.utils.translate({...
+%                 {'BIAS'},     'BIAS'; ...
+%                 {'LFR'},      'LFR'; ...
+%                 {'TDS-CWF'},  'TDS-LFM-CWF'; ...
+%                 {'TDS-RSWF'}, 'TDS-LFM-RSWF'}, ...
+%                 rctTypeId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctTypeId="%s"', rctTypeId));
+%             filenameRegexp = SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s', analyzerSettingsSegm));
+%             
+%             path = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp, L);
+%         end
 
 
 

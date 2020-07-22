@@ -131,15 +131,15 @@ classdef proc
             C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
             if C.isTdsCwf
                 settingUseCt   = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                rctId          = 'TDS-CWF';
+                rctTypeId      = 'TDS-CWF';
             else
                 settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                rctId          = 'TDS-RSWF';
+                rctTypeId      = 'TDS-RSWF';
             end
             useCt   = SETTINGS.get_fv(settingUseCt)   && C.isL1R;
             useCti2 = false;    % Always false for TDS.
             if useCt
-                Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE(rctId, ...
+                Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE(rctTypeId, ...
                     InputSciPd.Ga.CALIBRATION_TABLE, ...
                     InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
                     useCti2);
