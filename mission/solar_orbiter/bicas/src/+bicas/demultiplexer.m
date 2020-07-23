@@ -177,7 +177,7 @@ classdef demultiplexer
             assert(numel(bltsSamplesAVolt)==5)
             assert(isnumeric(bltsSamplesAVolt{1}))   % Shuold ideally check for all indices, but one helps.
             
-            % AS = "ASR Samples" (AVolt)
+            % AS = "ASR Samples" (avolt)
             NAN_VALUES = ones(size(bltsSamplesAVolt{1})) * NaN;
             As.dcV1  = NAN_VALUES;
             As.dcV2  = NAN_VALUES;

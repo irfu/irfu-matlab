@@ -39,10 +39,6 @@ classdef RCT
 %   PRO: Automatic assertions.
 %   CON: Structs are modified RCT.m-->calib.m ==> Too many classes.
 %
-% PROPOSAL: Move out find_RCT_by_SETTINGS_regexp.
-%   PRO: Only code that uses SETTINGS.
-%   PROPOSAL: Move to bicas.calib.
-%       PRO: Only used by bicas.calib.
 % PROPOSAL: Move out find_RCT_regexp.
 
 
@@ -63,37 +59,6 @@ classdef RCT
         
         
         
-        % Determine the path to the RCT that should be used, using the filenaming convention specified in the
-        % documentation (defined in SETTINGS), and according to algorithm specified in the documentation.
-        %
-        % Effectively a wrapper around bicas.RCT.find_RCT_regexp.
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % rctTypeId : String constants representing RCT to be read.
-        %
-%         function path = find_RCT_by_SETTINGS_regexp(calibrationDir, rctTypeId, SETTINGS, L)
-% 
-%             %============================
-%             % Create regexp for filename
-%             %============================
-%             % IMPLEMENTATION NOTE: Below translation statement
-%             % (1) verifies the argument, AND
-%             % (2) separates the argument string constants from the SETTINGS naming convention.
-%             analyzerSettingsSegm = EJ_library.utils.translate({...
-%                 {'BIAS'},     'BIAS'; ...
-%                 {'LFR'},      'LFR'; ...
-%                 {'TDS-CWF'},  'TDS-LFM-CWF'; ...
-%                 {'TDS-RSWF'}, 'TDS-LFM-RSWF'}, ...
-%                 rctTypeId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctTypeId="%s"', rctTypeId));
-%             filenameRegexp = SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s', analyzerSettingsSegm));
-%             
-%             path = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp, L);
-%         end
-
-
-
         % Determine the path to the RCT that should be used according to algorithm specified in the documentation(?). If
         % there are multiple matching candidates, choose the latest one as indicated by the filename.
         %
@@ -145,12 +110,13 @@ classdef RCT
 
 
 
-        function [Bias] = read_BIAS_RCT(filePath)
+        function [RctData] = read_BIAS_RCT(filePath)
             % TODO-DECISION: How handle time?
             %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
             %             indices in a data struct.
             %       PROPOSAL: (private method) [omegaRps, zVpc] = get_transfer_func(epoch, signalType)
             %           signalType = 'DC single' etc
+            
             Do = dataobj(filePath);
             
             % Constants for interpreting the array indices in the CDF.
@@ -204,30 +170,30 @@ classdef RCT
                 %================================
                 % Assign struct that is returned
                 %================================
-                Bias.epochL = epochL;
-                Bias.epochH = epochH;
+                RctData.epochL = epochL;
+                RctData.epochH = epochH;
 
-                Bias.Current.offsetsAAmpere = biasCurrentOffsetsAAmpere;
-                Bias.Current.gainsAapt      = biasCurrentGainsAapt;
-                Bias.dcSingleOffsetsAVolt   = dcSingleOffsetsAVolt;
-                Bias.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, I_E12);
-                Bias.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, I_E13);
-                Bias.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, I_E23);
+                RctData.Current.offsetsAAmpere = biasCurrentOffsetsAAmpere;
+                RctData.Current.gainsAapt      = biasCurrentGainsAapt;
+                RctData.dcSingleOffsetsAVolt   = dcSingleOffsetsAVolt;
+                RctData.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, I_E12);
+                RctData.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, I_E13);
+                RctData.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, I_E23);
 
                 % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural). (List, Table would be wrong? Use "FtfTable"?)
-                Bias.FtfSet.DcSingleAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.DcSingleAvpiv = bicas.RCT.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_DC_SINGLE), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_DC_SINGLE));
 
-                Bias.FtfSet.DcDiffAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.DcDiffAvpiv = bicas.RCT.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_DC_DIFF), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_DC_DIFF));
 
-                Bias.FtfSet.AcLowGainAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.AcLowGainAvpiv = bicas.RCT.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_AC_LG), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_LG));
 
-                Bias.FtfSet.AcHighGainAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.AcHighGainAvpiv = bicas.RCT.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_AC_HG), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
                 
@@ -238,10 +204,10 @@ classdef RCT
 %                     numel(Bias.FtfSet.DcDiffAvpiv), ...
 %                     numel(Bias.FtfSet.AcLowGainAvpiv), ...
 %                     numel(Bias.FtfSet.AcHighGainAvpiv)])
-                EJ_library.assert.sizes(Bias.FtfSet.DcSingleAvpiv,   [nEpochL, 1]);
-                EJ_library.assert.sizes(Bias.FtfSet.DcDiffAvpiv,     [nEpochL, 1]);
-                EJ_library.assert.sizes(Bias.FtfSet.AcLowGainAvpiv,  [nEpochL, 1]);
-                EJ_library.assert.sizes(Bias.FtfSet.AcHighGainAvpiv, [nEpochL, 1]);
+                EJ_library.assert.sizes(RctData.FtfSet.DcSingleAvpiv,   [nEpochL, 1]);
+                EJ_library.assert.sizes(RctData.FtfSet.DcDiffAvpiv,     [nEpochL, 1]);
+                EJ_library.assert.sizes(RctData.FtfSet.AcLowGainAvpiv,  [nEpochL, 1]);
+                EJ_library.assert.sizes(RctData.FtfSet.AcHighGainAvpiv, [nEpochL, 1]);
                 for iEpochL = 1:nEpochL
                     %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:calib:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
                     %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:calib:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
@@ -252,14 +218,14 @@ classdef RCT
                 %==========================================================================
                 % ASSERTIONS: All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %==========================================================================
-                bicas.proc_utils.assert_zv_Epoch(Bias.epochL)
-                bicas.proc_utils.assert_zv_Epoch(Bias.epochH)
-                validateattributes(Bias.epochL, {'numeric'}, {'increasing'})
-                validateattributes(Bias.epochH, {'numeric'}, {'increasing'})
+                bicas.proc_utils.assert_zv_Epoch(RctData.epochL)
+                bicas.proc_utils.assert_zv_Epoch(RctData.epochH)
+                validateattributes(RctData.epochL, {'numeric'}, {'increasing'})
+                validateattributes(RctData.epochH, {'numeric'}, {'increasing'})
 
-                EJ_library.assert.sizes(Bias.Current.offsetsAAmpere, [nEpochL, 3]);
-                EJ_library.assert.sizes(Bias.Current.gainsAapt,      [nEpochL, 3]);
-                EJ_library.assert.sizes(Bias.dcSingleOffsetsAVolt,   [nEpochH, 3]);
+                EJ_library.assert.sizes(RctData.Current.offsetsAAmpere, [nEpochL, 3]);
+                EJ_library.assert.sizes(RctData.Current.gainsAapt,      [nEpochL, 3]);
+                EJ_library.assert.sizes(RctData.dcSingleOffsetsAVolt,   [nEpochH, 3]);
 %                 assert(ndims(Bias.Current.offsetsAAmpere)    == 2)
 %                 assert(size( Bias.Current.offsetsAAmpere, 1) == nEpochL)
 %                 assert(size( Bias.Current.offsetsAAmpere, 2) == 3)
@@ -270,10 +236,10 @@ classdef RCT
 %                 assert(size( Bias.dcSingleOffsetsAVolt, 1)   == nEpochH)
 %                 assert(size( Bias.dcSingleOffsetsAVolt, 2)   == 3)
                 
-                for fn = fieldnames(Bias.DcDiffOffsets)'
+                for fn = fieldnames(RctData.DcDiffOffsets)'
 %                     assert(iscolumn(Bias.DcDiffOffsets.(fn{1}))           )
 %                     assert(length(  Bias.DcDiffOffsets.(fn{1})) == nEpochH)
-                    EJ_library.assert.sizes(Bias.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
+                    EJ_library.assert.sizes(RctData.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
                 end
                 
             catch Exc1
@@ -290,7 +256,7 @@ classdef RCT
         % LfrFtfTpivTable : {iLsf}{iBlts}. Table of LFR FTFs.
         %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5.
         %                   iLsf=4    : iBlts=1..3 for BIAS 1-3.
-        function LfrFtfIvptTable = read_LFR_RCT(filePath)
+        function RctData = read_LFR_RCT(filePath)
             Do = dataobj(filePath);
             
             try
@@ -363,9 +329,13 @@ classdef RCT
                         % ASSERTION: FTF
                         assert(FtfTpiv.toward_zero_at_high_freq())
                         
-                        LfrFtfIvptTable{iLsf}{iBlts} = FtfTpiv;
+                        FtfTpivTable{iLsf}{iBlts} = FtfTpiv;
                     end
                 end
+                
+                % NOTE: Storing data in struct field to clarify the nature of the content to the caller.
+                RctData = [];
+                RctData.FtfTpivTable = FtfTpivTable;
                 
             catch Exc1
                 Exc2 = MException(...
@@ -378,8 +348,8 @@ classdef RCT
         
         
         
-        % NOTE: tdsCwfFactorsIvpt are already inverted (can be seen from units).
-        function tdsCwfFactorsIvpt = read_TDS_CWF_RCT(filePath)
+        % NOTE: TDS CWF cwfFactorsIvpt are already inverted (can be seen from units).
+        function RctData = read_TDS_CWF_RCT(filePath)
             
             Do = dataobj(filePath);
             
@@ -391,11 +361,15 @@ classdef RCT
                 % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
                 % ==> Remove leading singleton dimensions, much assertions.
                 
-                tdsCwfFactorsIvpt = shiftdim(Do.data.CALIBRATION_TABLE.data);
+                factorsIvpt = shiftdim(Do.data.CALIBRATION_TABLE.data);
                 
                 % ASSERTIONS: Check CDF array sizes, no change in format.
-                assert(iscolumn(tdsCwfFactorsIvpt))
-                assert(size(    tdsCwfFactorsIvpt, 1) == 3)
+%                 assert(iscolumn(factorsIvpt))
+%                 assert(size(    factorsIvpt, 1) == 3)
+                EJ_library.assert.size(factorsIvpt, [3,1])
+                
+                RctData = [];
+                RctData.factorsIvpt = factorsIvpt;
                 
             catch Exc1
                 Exc2 = MException(...
@@ -410,7 +384,7 @@ classdef RCT
         
         % NOTE: The TDS RSWF RCT contains ITFs, not FTFs.
         %
-        function TdsRswfItfIvptList = read_TDS_RSWF_RCT(filePath)
+        function RctData = read_TDS_RSWF_RCT(filePath)
             
             Do = dataobj(filePath);
             
@@ -450,9 +424,12 @@ classdef RCT
                         ['TDS RSWF transfer function appears to go toward zero at high frequencies. Has it not been', ...
                         ' inverted/made backward in time, i.e. does it not describe physical output-to-physical input?'])
 
-                    TdsRswfItfIvptList{iBlts} = ItfIvpt;
+                    ItfIvptList{iBlts} = ItfIvpt;
                 end
 
+                RctData = [];
+                RctData.ItfIvptList = ItfIvptList;
+                
             catch Exc1
                 Exc2 = MException(...
                     'BICAS:calib:FailedToReadInterpretRCT', ...

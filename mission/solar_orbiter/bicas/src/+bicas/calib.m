@@ -53,21 +53,21 @@
 %
 % UNITS / TYPES OF QUANTITIES
 % ---------------------------
-% TM      = Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this instead of the term "count".
-% IVolt   = Interface Volt = Calibrated volt at the interface between BIAS and LFR/TDS.
-% AVolt   = Antenna Volt   = Calibrated volt at the antennas, i.e. the final calibrated (measured) value, including
-%           for reconstructed signals (e.g. diffs calculated from singles). May also refer to offsets and values without
-%           offsets.
-% AAmpere = Antenna ampere = Calibrated ampere at the antenna.
-% SAmpere = Set current ampere. Exactly proportional to bias current in TM.
-% TPIV    = TM/interface volt
-% IVPT    = Interface volt/TM
-% AAPT    = Antenna ampere/TM
-% AVPIV   = Antenna volt/interface volt
-% IVPAV   = Interface volt/antenna volt
-% Deg     = Degrees (angle). 1 revolution=360 degrees=2*pi radians.
-% RPS     = Radians/second
-% Sec     = Seconds
+% TM       = Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this instead of the term "count".
+% IV=ivolt = Interface Volt = Calibrated volt at the interface between BIAS and LFR/TDS.
+% AV=avolt = Antenna   Volt = Calibrated volt at the antennas, i.e. the final calibrated (measured) value, including
+%            for reconstructed signals (e.g. diffs calculated from singles). May also refer to offsets and values
+%            without offsets.
+% aampere  = Antenna ampere = Calibrated ampere at the antenna.
+% sampere  = Set current ampere. Exactly proportional to bias current in TM.
+% TPIV     = TM/interface volt
+% IVPT     = Interface volt/TM
+% AAPT     = Antenna ampere/TM
+% AVPIV    = Antenna volt/interface volt
+% IVPAV    = Interface volt/antenna volt
+% Deg      = Degrees (angle). 1 revolution=360 degrees=2*pi radians.
+% RPS      = Radians/second
+% Sec      = Seconds
 % 
 %
 % BLTS = BIAS-LFR/TDS SIGNAL
@@ -192,54 +192,74 @@ classdef calib < handle
 %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
 
 
+
     properties(Access=private, Constant)
-    %properties(Access=public, Constant)    % DEBUG
         
         % Map: RCT Type ID --> Info about RCT type.
         % Its keys defines the set of RCT Type ID strings.
         RctTypesMap = bicas.calib.init_RCT_Types_Map();
         
+        % Local constant for convenience.
+        NAN_TF = @(omegaRps) (omegaRps * NaN);
+        
+        READING_RCT_PATH_LL = 'info';    % LL = Log Level
+        RCT_DATA_LL         = 'debug';
     end
 
 
 
-    %properties(Access=private)
     properties(SetAccess=private, GetAccess=public)
         
-        Bias;
-        BiasGain             % BIAS scalar (simplified) calibration, not in the RCTs. For debugging/testing purposes.
+        %==================
+        % Calibration data
+        %==================
+        
+        % RCT calibration data
+        % --------------------------------------------------
+        % containers.Map: RCT Type ID --> Data
+        % For BIAS, data is a struct (only one BIAS RCT is loaded).
+        % For non-BIAS, data is a 1D cell array. {iRct}.
+        % iRct-1 corresponds to ga. CALIBRATION_TABLE. and zv. CALIBRATION_TABLE_INDEX(:,1) when those are used.
+        % May thus contain empty cells for RCTs which should not (and can not) be loaded.
+        RctDataMap = containers.Map();
+        
+        % Non-RCT calibration data
+        BiasScalarGain             % BIAS scalar (simplified) calibration, not in the RCTs. For debugging/testing purposes.
         HkBiasCurrent
-        
-        % Cell arrays. {iRct}, iRct=CALIBRATION_TABLE_INDEX(i,1), if CALIBRATION_TABLE_INDEX is used. Otherwise always
-        % scalar cell array.
-        LfrItfIvptTable    = {};
-        tdsCwfFactorsIvpt  = {};
-        TdsRswfItfIvptList = {};
-        %RctData = containers.Map();
-        
         lfrLsfOffsetsTm    = [];   % EXPERIMENTAL. NOTE: Technically, the name contains a tautology (LFR+LSF).
-       
-        calibrationDir
         
-        % Flag for whether non-BIAS data has been loaded, i.e. whether the object has been fully initialized
-        % (constructor+one of two methods).
-        hasLoadedNonBiasData = false;
         
+        
+        %==================================================
+        % Settings for what kind of calibration to perform
+        %==================================================
+        
+        % Corresponds to SETTINGS key-value.
+        enableDetrending
+        itfHighFreqLimitFraction;
+                
         % Whether to select non-BIAS RCT using global attribute CALIBRATION_TABLE (and
         % CALIBRATION_TABLE_INDEX(iRecord,1)).
         use_CALIBRATION_TABLE_rcts        
         % Whether to use CALIBRATION_TABLE_INDEX(iRecord,2) for calibration.
         use_CALIBRATION_TABLE_INDEX2
 
-        % Corresponds to SETTINGS key-value.
-        enableDetrending
-        itfHighFreqLimitFraction;
-                
         % What type of calibration to use.
         allVoltageCalibDisabled
+        useBiasTfScalar
         biasOffsetsDisabled
         lfrTdsTfDisabled
-        useBiasTfScalar
+
+        
+        
+        %=======
+        % Other
+        %=======
+        calibrationDir
+        
+        % Flag for whether non-BIAS data has been loaded, i.e. whether the object has been fully initialized
+        % (constructor+one of two methods).
+        hasLoadedNonBiasData = false;
         
         % Needed so that it can be submitted to bicas.RCT.read_log_RCT_by_SETTINGS_regexp.
         SETTINGS
@@ -248,11 +268,6 @@ classdef calib < handle
     
     
     
-    properties(Access=private, Constant)
-        % Local constant for convenience.
-        NAN_TF = @(omegaRps) (omegaRps * NaN);
-    end
-
     %###################################################################################################################
 
     methods(Access=public)
@@ -297,30 +312,37 @@ classdef calib < handle
             
             % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set.
 
-            obj.SETTINGS         = SETTINGS;
-            obj.L                = L;
+            obj.SETTINGS = SETTINGS;
+            obj.L        = L;
             
             obj.enableDetrending               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
             obj.itfHighFreqLimitFraction       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
             obj.calibrationDir                 = calibrationDir;
             
-            obj.Bias                           = obj.read_log_RCT_by_SETTINGS_regexp('BIAS');
-            obj.BiasGain.alphaIvpav            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
-            obj.BiasGain.betaIvpav             = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
-            obj.BiasGain.gammaIvpav.highGain   = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
-            obj.BiasGain.gammaIvpav.lowGain    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
             
-            obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
-            obj.HkBiasCurrent.gainAapt         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT');
+            % IMPLEMENTATIO NOTE: It has been observed that value sometimes survives from previous runs, despite being
+            % an instance variable. Unknown why. Therefore explicitly overwrites it.
+            obj.RctDataMap = containers.Map();
+            obj.RctDataMap('BIAS')                 = obj.read_log_RCT_by_SETTINGS_regexp('BIAS');
             
-            obj.lfrLsfOffsetsTm                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
+            obj.BiasScalarGain.alphaIvpav          = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
+            obj.BiasScalarGain.betaIvpav           = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
+            obj.BiasScalarGain.gammaIvpav.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
+            obj.BiasScalarGain.gammaIvpav.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
+            
+            obj.HkBiasCurrent.offsetTm             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
+            obj.HkBiasCurrent.gainAapt             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT');
+            
+            obj.lfrLsfOffsetsTm                    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
 
-            obj.allVoltageCalibDisabled        = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
-            obj.biasOffsetsDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS');
-            obj.lfrTdsTfDisabled               = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
+            
+            
+            obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
+            obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS');
+            obj.lfrTdsTfDisabled                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
             
             % Set obj.useBiasTfScalar.
-            settingBiasTf                      = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
+            settingBiasTf                          = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
             switch(settingBiasTf)
                 case 'FULL'
                     obj.useBiasTfScalar = 0;
@@ -331,30 +353,6 @@ classdef calib < handle
                         'BICAS:calib:Assertion:ConfigurationBug', ...
                         'Illegal value for setting PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".', ...
                         settingBiasTf)
-            end
-
-
-
-            %===========================================
-            % Log some indicative value(s) in BIAS ITFs
-            %===========================================
-            DC_FREQ_HQ       = 0;
-            AC_DIFF_FREQS_HZ = [0, 1000];
-            nBiasEpochL = numel(obj.Bias.epochL);
-            for iEpochL = 1:nBiasEpochL
-                
-                % Log bias current calibration
-                L.logf('debug', '(%i) BIAS current offsets (%s) [A]',         iEpochL, ...
-                    strjoin(EJ_library.str.sprintf_many('% 10e', obj.Bias.Current.offsetsAAmpere(iEpochL, :)), ', '))
-                L.logf('debug', '(%i) BIAS current gain    (%s) [A/TM unit]', iEpochL, ...
-                    strjoin(EJ_library.str.sprintf_many('% 10e', obj.Bias.Current.gainsAapt(iEpochL, :)),      ', '))
-
-                % Log transfer functions (frequency domain), selected frequencies.
-                obj.log_ITF_Z(sprintf('(%i) BIAS DC single',          iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcSingleAvpiv{  iEpochL}.eval(omegaRps)))
-                obj.log_ITF_Z(sprintf('(%i) BIAS DC diff',            iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcDiffAvpiv{    iEpochL}.eval(omegaRps)))
-                
-                obj.log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcLowGainAvpiv{ iEpochL}.eval(omegaRps)))
-                obj.log_ITF_Z(sprintf('(%i) BIAS AC diff, high gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcHighGainAvpiv{iEpochL}.eval(omegaRps)))
             end
             
         end
@@ -371,16 +369,13 @@ classdef calib < handle
             assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Trying to load non-BIAS data twice.')
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
             
-            obj.LfrItfIvptTable{1}    = obj.read_log_RCT_by_SETTINGS_regexp('LFR');
-            obj.tdsCwfFactorsIvpt{1}  = obj.read_log_RCT_by_SETTINGS_regexp('TDS-CWF');
-            obj.TdsRswfItfIvptList{1} = obj.read_log_RCT_by_SETTINGS_regexp('TDS-RSWF');
+            obj.RctDataMap('LFR')      = {obj.read_log_RCT_by_SETTINGS_regexp('LFR')};
+            obj.RctDataMap('TDS-CWF')  = {obj.read_log_RCT_by_SETTINGS_regexp('TDS-CWF')};
+            obj.RctDataMap('TDS-RSWF') = {obj.read_log_RCT_by_SETTINGS_regexp('TDS-RSWF')};
             
             obj.hasLoadedNonBiasData         = 1;
             obj.use_CALIBRATION_TABLE_rcts   = 0;
             obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
-            
-            obj.log_LFR_ITFs();
-            obj.log_TDS_RSWF_ITFs();
         end
 
         
@@ -438,78 +433,26 @@ classdef calib < handle
             %=================
             % Store read RCTs
             %=================
-            switch(rctTypeId)
-                case 'LFR'      ;   obj.LfrItfIvptTable    = rctDataList;
-                case 'TDS-CWF'  ;   obj.tdsCwfFactorsIvpt  = rctDataList;
-                case 'TDS-RSWF' ;   obj.TdsRswfItfIvptList = rctDataList;
-                otherwise
-                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctTypeId="%s"', rctTypeId)
-            end
+            obj.RctDataMap(rctTypeId) = rctDataList;
             
             obj.hasLoadedNonBiasData         = 1;
             obj.use_CALIBRATION_TABLE_rcts   = 1;
             obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
-            
-            obj.log_LFR_ITFs();
-            obj.log_TDS_RSWF_ITFs();
         end
 
 
 
-        function log_LFR_ITFs(obj)
-            
-            FREQ_HZ = 0;
-            for iLfrRct = 1:numel(obj.LfrItfIvptTable)
-                if ~isempty(obj.LfrItfIvptTable{iLfrRct})
-                    % CASE: This index corresponds to an actually loaded RCT (some are intentionally empty).
-                    for iLsf = 1:4
-                        if iLsf ~= 4
-                            nBltsMax = 5;
-                        else
-                            nBltsMax = 3;
-                        end
-                        
-                        for iBlts = 1:nBltsMax
-                            TabulatedItfIvpt = obj.LfrItfIvptTable{iLfrRct}{iLsf}{iBlts};
-                            ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
-                            obj.log_ITF_Z(...
-                                sprintf('LFR RCT %i, F%i, BLTS/BIAS_%i', iLfrRct, iLsf-1, iBlts), ...
-                                'IVolt/TM unit', FREQ_HZ, ItfIvpt)
-                        end
-                    end    % for
-                end    % if
-            end    % for
-        end
-        
-        
-        
-        function log_TDS_RSWF_ITFs(obj)
-            
-            FREQ_HZ = 0;
-            for iTdsRswfRct = 1:numel(obj.TdsRswfItfIvptList)
-                for iBlts = 1:3
-                    TabulatedItfIvpt = obj.TdsRswfItfIvptList{iTdsRswfRct}{iBlts};                    
-                    ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
-                    obj.log_ITF_Z(...
-                        sprintf('TDS RSWF RCT %i, BLTS/BIAS_%i', iTdsRswfRct, iBlts), ...
-                        'IVolt/TM unit', FREQ_HZ, ItfIvpt)
-                end
-            end
-        end
-        
-        
-        
         % Convert/calibrate TC bias current: TM units --> physical units.
         %
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
         %
-        function biasCurrentAAmpere = calibrate_TC_bias_TM_to_bias_current(obj, biasCurrentTm, iAntenna, iCalibTimeL)
+        function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, biasCurrentTm, iAntenna, iCalibTimeL)
             
             %==============================
             % Obtain calibration constants
             %==============================
-            offsetAAmpere = obj.Bias.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
-            gainAapt      = obj.Bias.Current.gainsAapt(     iCalibTimeL, iAntenna);
+            offsetAAmpere = obj.RctDataMap('BIAS').Current.offsetsAAmpere(iCalibTimeL, iAntenna);
+            gainAapt      = obj.RctDataMap('BIAS').Current.gainsAapt(     iCalibTimeL, iAntenna);
 
             % CALIBRATE
             biasCurrentAAmpere = offsetAAmpere + gainAapt .* double(biasCurrentTm);    % LINEAR FUNCTION
@@ -676,7 +619,7 @@ classdef calib < handle
                 BiasCalibData.itfAvpiv(omegaRps));
 
             %=======================================
-            % CALIBRATE: LFR TM --> TM --> AVolt
+            % CALIBRATE: LFR TM --> TM --> avolt
             %=======================================
             samplesCaAVolt = cell(size(samplesCaTm));
             lsfOffsetTm = obj.lfrLsfOffsetsTm(iLsf);
@@ -701,7 +644,6 @@ classdef calib < handle
 
 
 
-        %
         % ARGUMENTS
         % =========
         % See calibrate_LFR_full.
@@ -748,7 +690,8 @@ classdef calib < handle
                     if obj.lfrTdsTfDisabled
                         tdsFactorIvpt = 1;
                     else
-                        tdsFactorIvpt = obj.tdsCwfFactorsIvpt{cti1+1}(iBlts);
+                        RctList       = obj.RctDataMap('TDS-CWF');
+                        tdsFactorIvpt = RctList{cti1+1}.factorsIvpt(iBlts);
                     end
                     tempSamplesIVolt = tdsFactorIvpt * samplesCaTm{i};    % MULTIPLICATION
                    
@@ -820,7 +763,9 @@ classdef calib < handle
                 if obj.lfrTdsTfDisabled
                     tdsItfIvpt = @(omegaRps) (ones(omegaRps));
                 else
-                    tdsItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.TdsRswfItfIvptList{cti1+1}{iBlts}, omegaRps));
+                    RctList = obj.RctDataMap('TDS-RSWF');
+                    tdsItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(...
+                        RctList{cti1+1}.ItfIvptList{iBlts}, omegaRps));
                 end
 
                 itf = @(omegaRps) (...
@@ -854,13 +799,13 @@ classdef calib < handle
 
 
         function iCalib = get_calibration_time_L(obj, Epoch)
-            iCalib = bicas.calib.get_calibration_time(Epoch, obj.Bias.epochL);
+            iCalib = bicas.calib.get_calibration_time(Epoch, obj.RctDataMap('BIAS').epochL);
         end
 
 
 
         function iCalib = get_calibration_time_H(obj, Epoch)
-            iCalib = bicas.calib.get_calibration_time(Epoch, obj.Bias.epochH);
+            iCalib = bicas.calib.get_calibration_time(Epoch, obj.RctDataMap('BIAS').epochH);
         end
 
 
@@ -880,18 +825,16 @@ classdef calib < handle
         % NOTE: To be compared with read_log_RCT_by_SETTINGS_regexp.
         % NOTE: Does not need to be an instance method. Is so only to put it next to read_log_RCT_by_SETTINGS_regexp.
         function RctCalibData = read_log_RCT_by_filename(obj, filename, rctTypeId)
-            RctCalibData = obj.read_log_modify_RCT(fullfile(obj.calibrationDir, filename), rctTypeId);
+            RctCalibData = bicas.calib.read_log_modify_RCT(fullfile(obj.calibrationDir, filename), rctTypeId, obj.L);
         end
 
 
 
         % NOTE: To be compared with read_log_RCT_by_filename.
-        function RctCalibData = read_log_RCT_by_SETTINGS_regexp(obj, rctTypeId)
-            %filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, rctTypeId, obj.SETTINGS, obj.L);
-            
+        function RctData = read_log_RCT_by_SETTINGS_regexp(obj, rctTypeId)
             filenameRegexp = obj.SETTINGS.get_fv(bicas.calib.RctTypesMap(rctTypeId).filenameRegexpSettingKey);            
             filePath       = bicas.RCT.find_RCT_regexp(obj.calibrationDir, filenameRegexp, obj.L);
-            RctCalibData   = obj.read_log_modify_RCT(filePath, rctTypeId);
+            RctData        = bicas.calib.read_log_modify_RCT(filePath, rctTypeId, obj.L);
         end
 
 
@@ -915,23 +858,25 @@ classdef calib < handle
             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
+            
+            BiasRct = obj.RctDataMap('BIAS');
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % kIvpav = Multiplication factor "k" that represents/replaces the (forward) transfer function.
             switch(BltsSrc.category)
                 case 'DC single'
                     
-                    BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
-                    kFtfIvpav    = obj.BiasGain.alphaIvpav;
-                    offsetAVolt  = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
+                    BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
+                    kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
+                    offsetAVolt  = BiasRct.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
                     
                 case 'DC diff'
                     
-                    BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcDiffAvpiv);
-                    kFtfIvpav    = obj.BiasGain.betaIvpav;
-                    if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
-                    elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
-                    elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
+                    BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.DcDiffAvpiv);
+                    kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
+                    if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = BiasRct.DcDiffOffsets.E12AVolt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E13AVolt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E23AVolt(iCalibTimeH);
                     else
                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsSrc.');
                     end
@@ -939,12 +884,12 @@ classdef calib < handle
                 case 'AC diff'
                     
                     if     biasHighGain == 0
-                        BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcLowGainAvpiv);
-                        kFtfIvpav    = obj.BiasGain.gammaIvpav.lowGain;
+                        BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.AcLowGainAvpiv);
+                        kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.lowGain;
                         offsetAVolt  = 0;
                     elseif biasHighGain == 1
-                        BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcHighGainAvpiv);
-                        kFtfIvpav    = obj.BiasGain.gammaIvpav.highGain;
+                        BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.AcHighGainAvpiv);
+                        kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.highGain;
                         offsetAVolt  = 0;
                     elseif isnan(biasHighGain)
                         BiasItfAvpiv = bicas.calib.NAN_TF;
@@ -961,9 +906,11 @@ classdef calib < handle
             end
             
             if obj.biasOffsetsDisabled && ~isnan(offsetAVolt)
+                % NOTE: Overwrites "offsetAVolt".
                 offsetAVolt = 0;
             end
             if obj.useBiasTfScalar
+                % NOTE: Overwrites "BiasItfAvpiv".
                 BiasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
             end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -998,96 +945,10 @@ classdef calib < handle
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 lfrItfIvpt = bicas.calib.NAN_TF;
             else
-                lfrItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.LfrItfIvptTable{cti1+1}{iLsf}{iBlts}, omegaRps));
+                RctList    = obj.RctDataMap('LFR');
+                lfrItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(...
+                    RctList{cti1+1}.ItfIvptTable{iLsf}{iBlts}, omegaRps));
             end
-        end
-
-
-
-        % NOTE: Requires obj.L to be initialized.
-        %
-        % ARGUMENTS
-        % =========
-        % freqHzArray : Array of frequencies for which the ITF value should be logged.
-        % TfFuncPtr   : Function pointer. Z(omegaRps).
-        %
-        function log_ITF_Z(obj, itfName, itfUnit, freqHzArray, itfFuncPtr)
-            
-            zArray = itfFuncPtr(freqHzArray);
-            prefixStr = sprintf('Inverse TF, %s,', itfName);    % NOTE: Includes final comma.
-            for i=1:numel(freqHzArray)
-                freqHz = freqHzArray(i);
-                Z      = zArray(i);
-                
-                inverseZValueStr = sprintf('1/%8.5f', 1/abs(Z));
-                
-                %======================================================================================================
-                % NOTE 2020-04-30: Execution at ROC fails due to not finding function "phase" for unknown reason.
-                % --------------------------------------------------------------------------------------
-                % Exception.identifier = "MATLAB:UndefinedFunction"
-                % Exception.message    = "Undefined function 'phase' for input arguments of type 'double'."
-                % Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):
-                %     UntranslatableErrorMsgId : Error occurred, but code can not translate the error's MATLAB message
-                %     identifier into any of BICAS's internal standard error codes.
-                % MATLAB call stack:
-                %     row  969, calib.m,                    calib.log_ITF_Z
-                %     row  303, calib.m,                    calib.calib
-                %     row   68, execute_sw_mode.m,          execute_sw_mode
-                %     row  455, main.m,                     main_without_error_handling
-                %     row  116, main.m,                     main
-                % --------------------------------------------------------------------------------------
-                % See also
-                % https://se.mathworks.com/matlabcentral/answers/408657-which-toolbox-is-phase-in
-                % """"phase() as a routine by itself is part of the System Identification Toolbox, in the "obsolete" category.
-                % phase() is also a method of the newer iddata() class from the System Identification Toolbox.
-                % But what you probably want is angle() followed by unwrap(), which is part of basic MATLAB.""""
-                %
-                % Therefore using "angle" instead of "phase".
-                %======================================================================================================
-                obj.L.logf('debug', '%-41s %4i Hz: abs(Z)=%8.5f=%12s [%s], phase(Z)=%5.1f [deg]', ...
-                    prefixStr, freqHz, abs(Z), inverseZValueStr, itfUnit, rad2deg(angle(Z)))
-                
-                % Do not print prefix more than once.
-                prefixStr = '';
-            end
-        end
-        
-
-
-        % Read any single RCT file, and log it. Effectively wraps the different RCT-reading functions.
-        % 
-        %
-        % IMPLEMENTATION NOTES
-        % ====================
-        % This method exists to
-        % (1) run shared code that should be run when reading any RCT (logging, modifying data),
-        % (2) separate the logging from the RCT-reading code, so that external code can read RCTs without BICAS.
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % rctTypeId : String constants representing pipeline and RCT to be read.
-        %
-        function RctData = read_log_modify_RCT(obj, filePath, rctTypeId)
-            % PROPOSAL: Incorporate modify_LFR_RCT_data, modify_TDS_RSWF_RCT_data
-            
-            obj.L.logf('info', 'Reading %-4s RCT: "%s"', rctTypeId, filePath)
-            
-            readRctFunc   = bicas.calib.RctTypesMap(rctTypeId).readRctFunc;
-            modifyRctFunc = bicas.calib.RctTypesMap(rctTypeId).modifyRctFunc;
-            
-            RctData = readRctFunc(filePath);
-            RctData = modifyRctFunc(RctData);
-
-%             switch(rctTypeId)
-%                 case 'BIAS'     ; Rcd = bicas.calib.modify_BIAS_RCT_data(    bicas.RCT.read_BIAS_RCT(    filePath));
-%                 case 'LFR'      ; Rcd = bicas.calib.modify_LFR_RCT_data(     bicas.RCT.read_LFR_RCT(     filePath));
-%                 case 'TDS-CWF'  ; Rcd =                                      bicas.RCT.read_TDS_CWF_RCT( filePath);
-%                 case 'TDS-RSWF' ; Rcd = bicas.calib.modify_TDS_RSWF_RCT_data(bicas.RCT.read_TDS_RSWF_RCT(filePath));
-%                 otherwise
-%                     error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctTypeId="%s"', rctTypeId);
-%             end
-%             RctCalibData = Rcd;
         end
 
 
@@ -1157,23 +1018,20 @@ classdef calib < handle
         
         % Convert "set current" to TC/TM units.
         %
-        function biasCurrentTm = calibrate_set_current_to_bias_current(currentSAmpere)
-            % PROPOSAL: Make into static function.
-            %   PRO: Easier to use from outside of BICAS.
-            
-            MAX_ABS_SET_CURRENT_SAMPERE = 60e-6;
+        function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
             
             % ASSERTION
             % NOTE: max(...) ignores NaN, unless that is the only value, which then becomes the max value.
             [maxAbsSAmpere, iMax] = max(abs(currentSAmpere(:)));
-            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= MAX_ABS_SET_CURRENT_SAMPERE))
+            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= EJ_library.so.constants.MAX_ABS_SAMPERE))
                 
                 error('BICAS:calib:Assertion:IllegalArgument', ...
-                    'Argument currentSAmpere (unit: set current/ampere) contains illegally large value(s). Largest found value is %g.', ...
+                    ['Argument currentSAmpere (unit: set current/ampere) contains illegally large value(s).', ...
+                    ' Largest found value is %g.'], ...
                     currentSAmpere(iMax))
             end
             
-            biasCurrentTm = currentSAmpere * 32768/60e-6;
+            biasCurrentTm = currentSAmpere * EJ_library.so.constants.TM_PER_SAMPERE;
         end
 
 
@@ -1190,16 +1048,19 @@ classdef calib < handle
         function RctTable = init_RCT_Types_Map()
             RctTable = containers.Map();
             
-            RctTable('BIAS')     = RCT_entry(@bicas.RCT.read_BIAS_RCT,     @bicas.calib.modify_BIAS_RCT_data,     'PROCESSING.RCT_REGEXP.BIAS');
-            RctTable('LFR')      = RCT_entry(@bicas.RCT.read_LFR_RCT,      @bicas.calib.modify_LFR_RCT_data,      'PROCESSING.RCT_REGEXP.LFR');
-            RctTable('TDS-CWF')  = RCT_entry(@bicas.RCT.read_TDS_CWF_RCT,  @(S) (S),                              'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
-            RctTable('TDS-RSWF') = RCT_entry(@bicas.RCT.read_TDS_RSWF_RCT, @bicas.calib.modify_TDS_RSWF_RCT_data, 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
+            NOTHING_FUNC = @(S) (S);
+            
+            RctTable('BIAS')     = RCT_entry(@bicas.RCT.read_BIAS_RCT,     @bicas.calib.modify_BIAS_RCT_data,     @bicas.calib.log_BIAS_RCT,      'PROCESSING.RCT_REGEXP.BIAS');
+            RctTable('LFR')      = RCT_entry(@bicas.RCT.read_LFR_RCT,      @bicas.calib.modify_LFR_RCT_data,      @bicas.calib.log_LFR_RCTs,      'PROCESSING.RCT_REGEXP.LFR');
+            RctTable('TDS-CWF')  = RCT_entry(@bicas.RCT.read_TDS_CWF_RCT,  NOTHING_FUNC,                          @bicas.calib.log_TDS_CWF_RCTs,  'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
+            RctTable('TDS-RSWF') = RCT_entry(@bicas.RCT.read_TDS_RSWF_RCT, @bicas.calib.modify_TDS_RSWF_RCT_data, @bicas.calib.log_TDS_RSWF_RCTs, 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            function Entry = RCT_entry(readRctFunc, modifyRctFunc, filenameRegexpSettingKey)
+            function Entry = RCT_entry(readRctFunc, modifyRctFunc, logRctFunc, filenameRegexpSettingKey)
                 Entry = struct(...
-                    'readRctFunc',              readRctFunc, ...
-                    'modifyRctFunc',            modifyRctFunc, ...
+                    'readRctFunc',              readRctFunc, ...      % Pointer to function that reads one RCT.
+                    'modifyRctFunc',            modifyRctFunc, ...    % Pointer to function that modifies data for one RCT.
+                    'logRctFunc',               logRctFunc, ...       % Pointer to function that logs data for one RCT.
                     'filenameRegexpSettingKey', filenameRegexpSettingKey);
             end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1207,58 +1068,60 @@ classdef calib < handle
         
         
         
-        function Bias = modify_BIAS_RCT_data(Bias)
-            nTime = EJ_library.assert.sizes(...
-                Bias.FtfSet.DcSingleAvpiv,   [-1, 1], ...
-                Bias.FtfSet.DcDiffAvpiv,     [-1, 1], ...
-                Bias.FtfSet.AcLowGainAvpiv,  [-1, 1], ...
-                Bias.FtfSet.AcHighGainAvpiv, [-1, 1]);
+        function RctData = modify_BIAS_RCT_data(RctData)
+            FtfSet = RctData.FtfSet;
             
-            % NOTE: Add .ItfSet, derived from .FtfSet.
+            % ASSERTIONS
+            nTime = EJ_library.assert.sizes(...
+                FtfSet.DcSingleAvpiv,   [-1, 1], ...
+                FtfSet.DcDiffAvpiv,     [-1, 1], ...
+                FtfSet.AcLowGainAvpiv,  [-1, 1], ...
+                FtfSet.AcHighGainAvpiv, [-1, 1]);
+            
+            % NOTE: Derive ITFs.
+            ItfSet = [];
             for iTf = 1:nTime
                 % INVERT: FTF --> ITF
-                Bias.ItfSet.DcSingleAvpiv{  iTf} = Bias.FtfSet.DcSingleAvpiv{  iTf}.inverse();
-                Bias.ItfSet.DcDiffAvpiv{    iTf} = Bias.FtfSet.DcDiffAvpiv{    iTf}.inverse();
-                Bias.ItfSet.AcLowGainAvpiv{ iTf} = Bias.FtfSet.AcLowGainAvpiv{ iTf}.inverse();
-                Bias.ItfSet.AcHighGainAvpiv{iTf} = Bias.FtfSet.AcHighGainAvpiv{iTf}.inverse();
+                ItfSet.DcSingleAvpiv{  iTf} = FtfSet.DcSingleAvpiv{  iTf}.inverse();
+                ItfSet.DcDiffAvpiv{    iTf} = FtfSet.DcDiffAvpiv{    iTf}.inverse();
+                ItfSet.AcLowGainAvpiv{ iTf} = FtfSet.AcLowGainAvpiv{ iTf}.inverse();
+                ItfSet.AcHighGainAvpiv{iTf} = FtfSet.AcHighGainAvpiv{iTf}.inverse();
             end
+            
+            RctData.ItfSet = ItfSet;
         end
         
         
             
-        function ItfIvptTable = modify_LFR_RCT_data(FtfTpivTable)
+        function RctData = modify_LFR_RCT_data(RctData)
             
-            % Modify tabulated LFR TFs.
+            FtfTpivTable = RctData.FtfTpivTable;
+            
+            % Read LFR FTFs, derive ITFs and modify them.
             ItfIvptTable = {};
             for iLsf = 1:numel(FtfTpivTable)
                 
                 ItfIvptTable{end+1} = {};
                 for iBlts = 1:numel(FtfTpivTable{iLsf})
-                    
-                    %FtfTpiv = FtfTpivTable{iLsf}{iBlts};
-                    
-                    % INVERT: FTF --> ITF
-%                     ItfIvpt = EJ_library.utils.tabulated_transform(...
-%                         FtfTpiv.omegaRps, ...
-%                         1./FtfTpiv.Z);
 
                     % INVERT: FTF --> ITF
                     ItfIvpt = FtfTpivTable{iLsf}{iBlts}.inverse();
-                    
+                    % MODIFY ITF
                     ItfIvptTable{iLsf}{iBlts} = bicas.calib.modify_tabulated_ITF(ItfIvpt);
                     
                 end                
             end
             
+            RctData.ItfIvptTable = ItfIvptTable;            
         end
         
         
         
-        function TdsRswfItfIvptList = modify_TDS_RSWF_RCT_data(TdsRswfItfIvptList)
+        function RctData = modify_TDS_RSWF_RCT_data(RctData)
             
             % Modify tabulated TDS-RSWF TFs.
-            for iBlts = 1:numel(TdsRswfItfIvptList)
-                TdsRswfItfIvptList{iBlts} = bicas.calib.modify_tabulated_ITF(TdsRswfItfIvptList{iBlts});
+            for iBlts = 1:numel(RctData.ItfIvptList)
+                RctData.ItfIvptList{iBlts} = bicas.calib.modify_tabulated_ITF(RctData.ItfIvptList{iBlts});
             end
             
         end
@@ -1325,6 +1188,193 @@ classdef calib < handle
             Z        = [Z0; Itf.Z(:)       ];
             
             ModifItf = EJ_library.utils.tabulated_transform(omegaRps, Z);
+        end
+        
+
+
+        % Log some indicative value(s) for a BIAS RCT.
+        % NOTE: Does not log file path. Caller is assumed to do that.
+        function log_BIAS_RCT(RctData, L)
+            
+            DC_FREQ_HZ       = 0;
+            AC_DIFF_FREQS_HZ = [0, 1000];
+            LL               = bicas.calib.RCT_DATA_LL;
+            
+            for iEpochL = 1:numel(RctData.epochL)
+                
+                L.logf(LL, 'Below values are used for data beginning %s:', EJ_library.cdf.tt2000_to_UTC_str(RctData.epochL(iEpochL)))
+                
+                % Log bias current calibration
+                L.logf(LL, '    BIAS current offsets: %s [aampere]',         bicas.calib.vector_string('% 10e', RctData.Current.offsetsAAmpere(iEpochL, :)))
+                L.logf(LL, '    BIAS current gain   : %s [aampere/TM unit]', bicas.calib.vector_string('% 10e', RctData.Current.gainsAapt(     iEpochL, :)))
+                
+                % Log transfer functions (frequency domain), selected frequencies.
+                log_TF('    BIAS ITF DC single',          DC_FREQ_HZ,       RctData.ItfSet.DcSingleAvpiv)
+                log_TF('    BIAS ITF DC diff',            DC_FREQ_HZ,       RctData.ItfSet.DcDiffAvpiv)
+                
+                log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.AcLowGainAvpiv)
+                log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.AcHighGainAvpiv)
+            end
+            
+            % NOTE: Must work for multiple CDF records.
+            dcDiffOffsetsAVolt = [...
+                RctData.DcDiffOffsets.E12AVolt, ...
+                RctData.DcDiffOffsets.E13AVolt, ...
+                RctData.DcDiffOffsets.E23AVolt];
+            EJ_library.assert.size(dcDiffOffsetsAVolt, [NaN, 3]);            
+            for iEpochH = 1:numel(RctData.epochH)
+                L.logf(LL, 'Below values are used for data beginning %s:', EJ_library.cdf.tt2000_to_UTC_str(RctData.epochH(iEpochH)))
+                
+                L.logf(LL, '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
+                    bicas.calib.vector_string('%g', RctData.dcSingleOffsetsAVolt(iEpochH, :)))
+                L.logf(LL, '    BIAS DC diff   voltage offsets (E12,E13,E23): %s [avolt]', ...
+                    bicas.calib.vector_string('%g', dcDiffOffsetsAVolt(iEpochH)))
+
+            end
+                
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Nested utility function.
+            % NOTE: Impicitly function of iEpochL, L, LL.
+            function log_TF(name, freqArray, ItfList)
+                bicas.calib.log_TF(...
+                    LL, name, 'avolt/ivolt', freqArray, @(omegaRps) (ItfList{iEpochL}.eval(omegaRps)), L);
+            end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        end
+
+
+        
+        % Analogous to log_BIAS_RCT.
+        function log_LFR_RCTs(RctData, L)
+            FREQ_HZ = 0;
+            
+            % CASE: This index corresponds to an actually loaded RCT (some are intentionally empty).
+            for iLsf = 1:4
+                if iLsf ~= 4   nBltsMax = 5;
+                else           nBltsMax = 3;
+                end
+                
+                for iBlts = 1:nBltsMax
+                    TabulatedItfIvpt = RctData.ItfIvptTable{iLsf}{iBlts};
+                    ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
+                    bicas.calib.log_TF(...
+                        bicas.calib.RCT_DATA_LL, ...
+                        sprintf('LFR ITF, F%i, BLTS/BIAS_%i', iLsf-1, iBlts), ...
+                        'ivolt/TM unit', FREQ_HZ, ItfIvpt, L)
+                end
+            end    % for
+            
+        end
+        
+        
+        
+        % Analogous to log_BIAS_RCT.
+        function log_TDS_CWF_RCTs(RctData, L)
+            
+            L.logf(bicas.calib.RCT_DATA_LL, 'TDS CWF calibration factors: %s [ivolt/TM]', ...
+                bicas.calib.vector_string('%g', RctData.factorsIvpt));
+        end
+        
+        
+        
+        % Analogous to log_BIAS_RCT.
+        function log_TDS_RSWF_RCTs(RctData, L)
+            
+            FREQ_HZ = 0;
+            
+            for iBlts = 1:3
+                TabulatedItfIvpt = RctData.ItfIvptList{iBlts};
+                ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
+                bicas.calib.log_TF(...
+                    bicas.calib.RCT_DATA_LL, ...
+                    sprintf('TDS RSWF ITF, BLTS/BIAS_%i', iBlts), ...
+                    'ivolt/TM unit', FREQ_HZ, ItfIvpt, L)
+            end
+        end
+
+
+
+        % Read any single RCT file, and log it. Effectively wraps the different RCT-reading functions.
+        % 
+        %
+        % IMPLEMENTATION NOTES
+        % ====================
+        % This method exists to
+        % (1) run shared code that should be run when reading any RCT (logging, modifying data),
+        % (2) separate the logging from the RCT-reading code, so that external code can read RCTs without BICAS.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % rctTypeId : String constants representing pipeline and RCT to be read.
+        %
+        function RctData = read_log_modify_RCT(filePath, rctTypeId, L)
+            % PROPOSAL: Incorporate modify_LFR_RCT_data, modify_TDS_RSWF_RCT_data
+            
+            L.logf(bicas.calib.READING_RCT_PATH_LL, 'Reading RCT (rctTypeId=%s): "%s"', rctTypeId, filePath)
+            
+            readRctFunc   = bicas.calib.RctTypesMap(rctTypeId).readRctFunc;
+            modifyRctFunc = bicas.calib.RctTypesMap(rctTypeId).modifyRctFunc;
+            logRctFunc    = bicas.calib.RctTypesMap(rctTypeId).logRctFunc;
+            
+            RctData = readRctFunc(filePath);
+            RctData = modifyRctFunc(RctData);
+            logRctFunc(RctData, L);
+        end
+        
+        
+        
+        % ARGUMENTS
+        % =========
+        % freqHzArray : Array of frequencies for which the ITF value should be logged.
+        % TfFuncPtr   : Function pointer. Z(omegaRps).
+        %
+        function log_TF(logLevel, tfName, tfUnit, freqHzArray, tfFuncPtr, L)
+            
+            zArray = tfFuncPtr(freqHzArray);
+            for i=1:numel(freqHzArray)
+                freqHz = freqHzArray(i);
+                Z      = zArray(i);
+                
+                inverseZValueStr = sprintf('1/%10.5f', 1/abs(Z));
+                
+                %======================================================================================================
+                % NOTE 2020-04-30: Execution at ROC fails due to not finding function "phase" for unknown reason.
+                % --------------------------------------------------------------------------------------
+                % Exception.identifier = "MATLAB:UndefinedFunction"
+                % Exception.message    = "Undefined function 'phase' for input arguments of type 'double'."
+                % Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):
+                %     UntranslatableErrorMsgId : Error occurred, but code can not translate the error's MATLAB message
+                %     identifier into any of BICAS's internal standard error codes.
+                % MATLAB call stack:
+                %     row  969, calib.m,                    calib.log_ITF_Z
+                %     row  303, calib.m,                    calib.calib
+                %     row   68, execute_sw_mode.m,          execute_sw_mode
+                %     row  455, main.m,                     main_without_error_handling
+                %     row  116, main.m,                     main
+                % --------------------------------------------------------------------------------------
+                % See also
+                % https://se.mathworks.com/matlabcentral/answers/408657-which-toolbox-is-phase-in
+                % """"phase() as a routine by itself is part of the System Identification Toolbox, in the "obsolete"
+                % category. phase() is also a method of the newer iddata() class from the System Identification Toolbox.
+                % But what you probably want is angle() followed by unwrap(), which is part of basic MATLAB.""""
+                %
+                % Therefore using "angle" instead of "phase".
+                %======================================================================================================
+                assert(numel(tfName) <= 31)    % Check that string is not too long for neat printouts.
+                L.logf(logLevel, '%-31s %4i Hz: abs(Z)=%8.5f=%12s [%s], phase(Z)=% 6.1f [deg]', ...
+                    tfName, freqHz, abs(Z), inverseZValueStr, tfUnit, rad2deg(angle(Z)))
+            end    % for
+        end
+        
+        
+        
+        % Utility function for creating string representing 1D vector.
+        % Ex: '(3.1416, 2.7183, 1.6180)'
+        function s = vector_string(pattern, v)
+            assert(~isempty(v))
+            EJ_library.assert.vector(v)
+            s = sprintf('(%s)', strjoin(EJ_library.str.sprintf_many(pattern, v), ', '));
         end
         
         

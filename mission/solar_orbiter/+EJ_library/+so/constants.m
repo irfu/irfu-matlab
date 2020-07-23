@@ -14,7 +14,13 @@ classdef constants   % < handle
         % Notes imply that there may be other ones (calibration? LFR-HF? LFR-SCM?).
         LFR_SWF_SNAPSHOT_LENGTH = 2048;
         
-        TM_PER_SET_AMPERE = 32768 / 60e-6;
+        % Max absolute value of set current.
+        % NOTE: Does not take into consideration that the actual min & max might be
+        % slightly different due to that TM = -2^15 ... (2^15-1)., i.e.
+        % max=(2^15-1)/2^15 * 60e-9 sampere.
+        MAX_ABS_SAMPERE = 60e-6;
+        
+        TM_PER_SAMPERE = 32768 / 60e-6;
     end
 
 end

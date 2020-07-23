@@ -833,7 +833,7 @@ classdef proc_sub
             %================================
             % BUG / TEMP: Set default values since the real bias current values are not available.
             currentSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(PostDc.Zv.Epoch, InCurPd, SETTINGS, L);
-            currentTm      = bicas.calib.calibrate_set_current_to_bias_current(currentSAmpere);
+            currentTm      = bicas.calib.calibrate_current_sampere_to_TM(currentSAmpere);
             
             currentAAmpere = bicas.proc_utils.create_NaN_array(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_calibration_time_L(PostDc.Zv.Epoch);
@@ -843,7 +843,7 @@ classdef proc_sub
                 iRecords = iFirstList(iSubseq) : iLastList(iSubseq);
                 
                 for iAnt = 1:3
-                    currentAAmpere(iRecords, iAnt) = Cal.calibrate_TC_bias_TM_to_bias_current(...
+                    currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
                         currentTm(iRecords, iAnt), iAnt, iCalibLZv(iRecords));
                 end
             end
@@ -991,7 +991,7 @@ classdef proc_sub
 
 
             % Create empty 1x1 structure to which new array components can be added.
-            % NOTE: Unit is AVolt. Not including in the field names to keep them short.
+            % NOTE: Unit is avolt. Not including unit in the field names to keep them short.
             AsrSamplesAVolt = EJ_library.utils.empty_struct([1], ...
                 'dcV1',  'dcV2',  'dcV3', ...
                 'dcV12', 'dcV23', 'dcV13', ...
