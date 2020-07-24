@@ -367,6 +367,7 @@ classdef proc_sub
             PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
             PreDc.Zv.SYNCHRO_FLAG           = InSci.Zv.SYNCHRO_FLAG;
             PreDc.Zv.BW                     = InSci.Zv.BW;
+            PreDc.Zv.useFillValues          = ~logical(InSci.Zv.BW);
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
                 % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
@@ -522,9 +523,9 @@ classdef proc_sub
                 error('Voltage timestamps do not increase (all antennas combined).')
             end            
             
-            freqHz = double(InSci.Zv.SAMPLING_RATE);
+            freqHzZv = double(InSci.Zv.SAMPLING_RATE);
             
-            if any(freqHz == 255)
+            if any(freqHzZv == 255)
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY');
                 anomalyDescrMsg = 'Finds illegal stated sampling frequency 255 in TDS L1/L1R LFM-RSWF dataset.';
                 
@@ -536,7 +537,7 @@ classdef proc_sub
                             % to have SAMPLING_RATE == 255, which is likely a BUG in the dataset. /Erik P G Johansson 2019-12-03
                             % Bug in TDS RCS.  /David Pisa 2019-12-03
                             % Setting it to what is probably the correct value.
-                            freqHz(freqHz == 255) = 32768;
+                            freqHzZv(freqHzZv == 255) = 32768;
                             L.logf('warning', ...
                                 'Using workaround to modify instances of sampling frequency 255-->32768.')
                             bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', anomalyDescrMsg)
@@ -552,13 +553,14 @@ classdef proc_sub
             PreDc = [];
             
             PreDc.Zv.Epoch            = InSci.Zv.Epoch;
-            PreDc.Zv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nCdfSamplesPerRecord);
-            PreDc.Zv.freqHz           = freqHz;
+            PreDc.Zv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHzZv, nCdfSamplesPerRecord);
+            PreDc.Zv.freqHz           = freqHzZv;
             PreDc.Zv.QUALITY_FLAG     = InSci.Zv.QUALITY_FLAG;
             PreDc.Zv.QUALITY_BITMASK  = InSci.Zv.QUALITY_BITMASK;
             PreDc.Zv.SYNCHRO_FLAG     = InSci.Zv.SYNCHRO_FLAG;
             PreDc.Zv.MUX_SET          = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN        = HkSciTime.DIFF_GAIN;
+            PreDc.Zv.useFillValues    = false(nRecords, 1);
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
                 % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
@@ -660,7 +662,7 @@ classdef proc_sub
                 {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.assert.struct(PreDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
-                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, ...
+                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'useFillValues'}, ...
                 {'CALIBRATION_TABLE_INDEX', 'BW'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
 
@@ -675,7 +677,7 @@ classdef proc_sub
             EJ_library.assert.struct(PostDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
                 'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', ...
-                'currentAAmpere', 'DemuxerOutput'}, ...
+                'currentAAmpere', 'DemuxerOutput', 'useFillValues'}, ...
                 {'CALIBRATION_TABLE_INDEX', 'BW'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
@@ -866,14 +868,29 @@ classdef proc_sub
             
             currentAAmpere = bicas.proc_utils.create_NaN_array(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_calibration_time_L(PostDc.Zv.Epoch);
-            iEdgeList      = bicas.proc_utils.find_constant_sequences(iCalibLZv);
+            iEdgeList      = bicas.proc_utils.find_constant_sequences(iCalibLZv, PreDc.Zv.useFillValues);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
+            L.logf('info', 'Calibrating currents - One sequence of records with identical settings at a time.')
             for iSubseq = 1:length(iFirstList)
-                iRecords = iFirstList(iSubseq) : iLastList(iSubseq);
+                iFirst = iFirstList(iSubseq);
+                iLast  = iLastList(iSubseq);
+                
+                iRecords = iFirst:iLast;
+                
+                L.logf('info', 'Records %7i-%7i : %s -- %s; useFillValues=%g', ...
+                    iFirst, iLast, ...
+                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
+                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
+                    PreDc.Zv.useFillValues(iFirst))
                 
                 for iAnt = 1:3
-                    currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
-                        currentTm(iRecords, iAnt), iAnt, iCalibLZv(iRecords));
+                    if PreDc.Zv.useFillValues(iFirst)
+                        % Set samples to NaN.
+                        currentAAmpere(iRecords, iAnt) = ones(size(currentTm(iRecords, iAnt))) * NaN;
+                    else
+                        currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
+                            currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
+                    end
                 end
             end
             
@@ -1075,7 +1092,8 @@ classdef proc_sub
                 iCalibLZv, ...
                 iCalibHZv, ...
                 PreDc.Zv.iLsf, ...
-                zv_CALIBRATION_TABLE_INDEX);
+                zv_CALIBRATION_TABLE_INDEX, ...
+                PreDc.Zv.useFillValues);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             
             for iSubseq = 1:length(iFirstList)
@@ -1085,24 +1103,29 @@ classdef proc_sub
 
                 % Extract SCALAR settings to use for entire subsequence of records.
                 % SS = Subsequence (single, constant value valid for entire subsequence)
-                MUX_SET_ss                 = PreDc.Zv.MUX_SET  (iFirst);
-                DIFF_GAIN_ss               = PreDc.Zv.DIFF_GAIN(iFirst);
-                dlrUsing12_ss              = dlrUsing12zv(      iFirst);
-                freqHz_ss                  = PreDc.Zv.freqHz(   iFirst);
-                iCalibL_ss                 = iCalibLZv(         iFirst);
-                iCalibH_ss                 = iCalibHZv(         iFirst);
-                iLsf_ss                    = PreDc.Zv.iLsf(     iFirst);
-                CALIBRATION_TABLE_INDEX_ss = CALIBRATION_TABLE_INDEX_zv(iFirst, :);
+                MUX_SET_ss                 = PreDc.Zv.MUX_SET  (        iFirst);
+                DIFF_GAIN_ss               = PreDc.Zv.DIFF_GAIN(        iFirst);
+                dlrUsing12_ss              = dlrUsing12zv(              iFirst);
+                freqHz_ss                  = PreDc.Zv.freqHz(           iFirst);
+                iCalibL_ss                 = iCalibLZv(                 iFirst);
+                iCalibH_ss                 = iCalibHZv(                 iFirst);
+                iLsf_ss                    = PreDc.Zv.iLsf(             iFirst);
+                useFillValues_ss           = PreDc.Zv.useFillValues(    iFirst);
+                CALIBRATION_TABLE_INDEX_ss = zv_CALIBRATION_TABLE_INDEX(iFirst, :);
                 
                 % PROPOSAL: Make into "proper" table.
                 %   NOTE: Can not use EJ_library.utils.assist_print_table since it requires the entire table to pre-exist.
                 %   PROPOSAL: Print after all iterations.
-                L.logf('info', ['Records %7i-%7i : %s -- %s ', ...
-                    'MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
+                L.logf('info', ['Records %7i-%7i : %s -- %s', ...
+                    ' MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i;', ...
+                    ' CALIBRATION_TABLE_INDEX=[%i, %i]; useFillValues=%g'], ...
                     iFirst, iLast, ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
-                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, CALIBRATION_TABLE_INDEX_ss(1), CALIBRATION_TABLE_INDEX_ss(2))
+                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, ...
+                    CALIBRATION_TABLE_INDEX_ss(1), ...
+                    CALIBRATION_TABLE_INDEX_ss(2), ...
+                    useFillValues_ss)
 
                 %============================================
                 % FIND DEMUXER ROUTING, BUT DO NOT CALIBRATE
@@ -1155,20 +1178,30 @@ classdef proc_sub
                             ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
                         end
                         
-                        %%%%%%%%%%%%
-                        %%%%%%%%%%%%
-                        % CALIBRATE
-                        %%%%%%%%%%%%
-                        %%%%%%%%%%%%
-                        CalSettings = struct();
-                        CalSettings.iBlts        = iBlts;
-                        CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
-                        CalSettings.biasHighGain = biasHighGain;
-                        CalSettings.iCalibTimeL  = iCalibL_ss;
-                        CalSettings.iCalibTimeH  = iCalibH_ss;
-                        CalSettings.iLsf         = iLsf_ss;
-                        ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
-                            PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
+                        if useFillValues_ss
+                            % Create equivalent cell array of NaN-valued sample sequences.
+                            ssSamplesCaAVolt = cell(size(ssSamplesCaTm));
+                            for i = 1:numel(ssSamplesCaTm)
+                                ssSamplesCaAVolt{i} = ones(size(ssSamplesCaTm{i})) * NaN;
+                            end
+                        else
+                            %%%%%%%%%%%%%%
+                            %%%%%%%%%%%%%%
+                            %  CALIBRATE
+                            %%%%%%%%%%%%%%
+                            %%%%%%%%%%%%%%
+                            CalSettings = struct();
+                            CalSettings.iBlts        = iBlts;
+                            CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
+                            CalSettings.biasHighGain = biasHighGain;
+                            CalSettings.iCalibTimeL  = iCalibL_ss;
+                            CalSettings.iCalibTimeH  = iCalibH_ss;
+                            CalSettings.iLsf         = iLsf_ss;
+                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                            ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
+                                PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
+                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        end
                         
                         if PreDc.hasSnapshotFormat
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...

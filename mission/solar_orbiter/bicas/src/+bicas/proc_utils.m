@@ -845,26 +845,34 @@ classdef proc_utils
         % PROPOSAL: Implement using new features in EJ_library.assert.size.
         
             fieldNamesList1 = fieldnames(S);
-            nRows = [];
+            nRowsArray = [];
             for iFn1 = 1:length(fieldNamesList1)
                 fieldValue = S.(fieldNamesList1{iFn1});
                 
-                if isnumeric(fieldValue)
-                    nRows(end+1) = size(fieldValue, 1);
+                if isnumeric(fieldValue) || islogical(fieldValue)
+                    
+                    nRowsArray(end+1) = size(fieldValue, 1);
+                    
                 elseif iscell(fieldValue)
+                    
                     for iCc = 1:numel(fieldValue)
-                        nRows(end+1) = size(fieldValue{iCc}, 1);
+                        nRowsArray(end+1) = size(fieldValue{iCc}, 1);
                     end
+                    
                 elseif isstruct(fieldValue)
+                    
                     fieldNamesList2 = fieldnames(fieldValue);
                     for iFn2 = 1:length(fieldNamesList2)
-                        nRows(end+1) = size(fieldValue.(fieldNamesList2{iFn2}), 1);
+                        nRowsArray(end+1) = size(fieldValue.(fieldNamesList2{iFn2}), 1);
                     end
+                    
                 else
+                    
                     error('BICAS:proc_utils:Assertion', 'Can not handle this type of struct field.')
+                    
                 end
             end
-            if length(unique(nRows)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
+            if length(unique(nRowsArray)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
                 error('BICAS:proc_utils:Assertion', ...
                     'Numeric fields and cell array components in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
             end
