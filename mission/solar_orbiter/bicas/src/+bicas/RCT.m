@@ -68,12 +68,12 @@ classdef RCT
         % Useful to have this as separate functionality so that the chosen RCT to use can be explicitly overridden via
         % e.g. settings.
         %
-        function path = find_RCT_regexp(calibrationDir, filenameRegexp, L)
+        function path = find_RCT_regexp(rctDir, filenameRegexp, L)
 
             %=================================================
             % Find candidate files and select the correct one
             %=================================================
-            dirObjectList = dir(calibrationDir);
+            dirObjectList = dir(rctDir);
             dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
             filenameList = {dirObjectList.name};
             filenameList(~EJ_library.str.regexpf(filenameList, filenameRegexp)) = [];    % Eliminate non-matching filenames.
@@ -83,13 +83,13 @@ classdef RCT
                 % ERROR
                 error('BICAS:calib:CannotFindRegexMatchingRCT', ...
                     'Can not find any calibration file that matches regular expression "%s" in directory "%s".', ...
-                    filenameRegexp, calibrationDir);
+                    filenameRegexp, rctDir);
             end
             % CASE: There is at least one candidate file.
             
             filenameList = sort(filenameList);
             filename     = filenameList{end};
-            path         = fullfile(calibrationDir, filename);
+            path         = fullfile(rctDir, filename);
             
             if numel(filenameList) > 1
                 % WARNING/INFO/NOTICE
@@ -97,7 +97,7 @@ classdef RCT
                     ['Found multiple calibration files matching regular expression "%s"\n', ...
                      'in directory "%s".\n', ...
                      'Selecting the latest one as indicated by the filename: "%s".\n'], ...
-                    filenameRegexp, calibrationDir, filename);
+                    filenameRegexp, rctDir, filename);
                 for i = 1:numel(filenameList)
                     msg = [msg, sprintf('    %s\n', filenameList{i})];
                 end

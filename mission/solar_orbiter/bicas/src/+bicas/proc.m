@@ -82,7 +82,7 @@ classdef proc
         %                    (1) it could be missing, or
         %                    (2) sometimes one may want to read an ROC-SGSE dataset as if it was an RODP dataset or the other way around.
         %
-        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, Cal, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, rctDir, inputSciDsi, outputDsi, SETTINGS, L)
             
             InputHkPd  = InputDatasetsMap('HK_cdf');
             InputCurPd = InputDatasetsMap('CUR_cdf');
@@ -92,16 +92,21 @@ classdef proc
             % Configure calibration object
             %==============================
             C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
-            useCt   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1R;
-            useCti2 = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1R;
-            if useCt
-                Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE('LFR', ...
+            useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1R;
+            useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1R;
+            
+            if useCtRcts
+                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
+                    rctDir, 'LFR', ...
                     InputSciPd.Ga.CALIBRATION_TABLE, ...
                     InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
-                    useCti2);
+                    InputSciPd.Zv.BW, ...
+                    L);
             else
-                Cal.read_non_BIAS_RCTs_by_regexp(useCti2);
+                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
+                    rctDir, SETTINGS, L);
             end
+            Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
             HkSciTimePd  = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
             SciPreDcPd   = bicas.proc_sub.process_LFR_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
@@ -118,7 +123,7 @@ classdef proc
         % =========
         % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, Cal, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, rctDir, inputSciDsi, outputDsi, SETTINGS, L)
             
             InputHkPd  = InputDatasetsMap('HK_cdf');
             InputCurPd = InputDatasetsMap('CUR_cdf');
@@ -136,16 +141,23 @@ classdef proc
                 settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 rctTypeId      = 'TDS-RSWF';
             end
-            useCt   = SETTINGS.get_fv(settingUseCt)   && C.isL1R;
-            useCti2 = false;    % Always false for TDS.
-            if useCt
-                Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE(rctTypeId, ...
+            useCtRcts = SETTINGS.get_fv(settingUseCt)   && C.isL1R;
+            useCti2   = false;    % Always false for TDS.
+            
+            
+            
+            if useCtRcts
+                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
+                    rctDir, rctTypeId, ...
                     InputSciPd.Ga.CALIBRATION_TABLE, ...
                     InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
-                    useCti2);
+                    [], ...
+                    L);
             else
-                Cal.read_non_BIAS_RCTs_by_regexp(useCti2);
+                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
+                    rctDir, SETTINGS, L);
             end
+            Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
             
             

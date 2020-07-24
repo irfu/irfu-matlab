@@ -442,16 +442,16 @@ function main_without_error_handling(cliArgumentsList, L)
             
             
             
-            %==================================
-            % Set calibrationDir, masterCdfDir
-            %==================================
+            %==========================
+            % Set rctDir, masterCdfDir
+            %==========================
             % NOTE: Reading environment variables first here, where they are needed.
-            calibrationDir = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-            masterCdfDir   = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-            L.logf('info', 'calibrationDir = "%s"', calibrationDir)
+            rctDir       = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+            masterCdfDir = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+            L.logf('info', 'rctDir = "%s"', rctDir)
             L.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
 
-            EJ_library.assert.dir_exists(calibrationDir)
+            EJ_library.assert.dir_exists(rctDir)
             EJ_library.assert.dir_exists(masterCdfDir)
 
 
@@ -459,7 +459,7 @@ function main_without_error_handling(cliArgumentsList, L)
             %==================
             % EXECUTE S/W MODE
             %==================
-            bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS, L )
+            bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, rctDir, SETTINGS, L )
             
         otherwise
             error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)

@@ -1,8 +1,8 @@
 %
 % Class for
-% (1) loading calibration data from file, and
-% (2) library/utility functions that calibrate data.
-% An instance of this class contains data for all loaded RCTs.
+% (1) library/utility functions that calibrate data.
+% (2) helper functions to find and load calibration data from file, as needed by BICAS.
+% An instance of this class may or may not contain data for all types of data/RCTs depending on how it was initialized.
 %
 % NOTE: RCT reading functions assume that the same type of RCT (BIAS, LFR, TDS-CWF or TDS-RSWF) is identical (in all
 % relevant parts) for both the RODP and ROC-SGSE pipeline.
@@ -195,12 +195,12 @@ classdef calib < handle
 
     properties(Access=private, Constant)
         
-        % Map: RCT Type ID --> Info about RCT type.
+        % containers.Map: RCT Type ID --> Info about RCT type.
         % Its keys defines the set of RCT Type ID strings.
-        RctTypesMap = bicas.calib.init_RCT_Types_Map();
+        RCT_TYPES_MAP       = bicas.calib.init_RCT_Types_Map();
         
         % Local constant for convenience.
-        NAN_TF = @(omegaRps) (omegaRps * NaN);
+        NAN_TF              = @(omegaRps) (omegaRps * NaN);
         
         READING_RCT_PATH_LL = 'info';    % LL = Log Level
         RCT_DATA_LL         = 'debug';
@@ -220,7 +220,7 @@ classdef calib < handle
         % For BIAS, data is a struct (only one BIAS RCT is loaded).
         % For non-BIAS, data is a 1D cell array. {iRct}.
         % iRct-1 corresponds to ga. CALIBRATION_TABLE. and zv. CALIBRATION_TABLE_INDEX(:,1) when those are used.
-        % May thus contain empty cells for RCTs which should not (and can not) be loaded.
+        % May thus contain empty cells for non-BIAS RCTs which should not (and can not) be loaded.
         RctDataMap = containers.Map();
         
         % Non-RCT calibration data
@@ -249,21 +249,7 @@ classdef calib < handle
         useBiasTfScalar
         biasOffsetsDisabled
         lfrTdsTfDisabled
-
         
-        
-        %=======
-        % Other
-        %=======
-        calibrationDir
-        
-        % Flag for whether non-BIAS data has been loaded, i.e. whether the object has been fully initialized
-        % (constructor+one of two methods).
-        hasLoadedNonBiasData = false;
-        
-        % Needed so that it can be submitted to bicas.RCT.read_log_RCT_by_SETTINGS_regexp.
-        SETTINGS
-        L
     end
     
     
@@ -276,21 +262,30 @@ classdef calib < handle
 
         % Constructor.
         %
-        % IMPORTANT NOTE
-        % ==============
-        % The constructor only initializes BIAS calibration data. One also needs to call either
-        % (1) read_non_BIAS_RCTs_by_regexp, OR
-        % (2) read_non_BIAS_RCT_by_CALIBRATION_TABLE to fully initialize the object.
         %
-        function obj = calib(calibrationDir, SETTINGS, L)
-            % TODO-DECISION: Appropriate to use SETTINGS this way? Submit calibration data directly?
-            %
+        % IMPLEMENTATION NOTE
+        % ===================
+        % The class (instance methods, including constructor) deliberately does not itself determine which non-BIAS RCTs
+        % to read. This is intended so that the user can select non-BIAS RCTs by initializing a containers.Map using
+        % either
+        % (1) static helper method "find_read_non_BIAS_RCTs_by_regexp", 
+        % (2) static helper method "find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE", or
+        % (3) manually (for debugging/analysis/testing).
+        % --
+        % The class (instance methods, including constructor) deliberately does noy READ the non-BIAS RCTs. This is
+        % useful since
+        % ** it makes it possible to inspect & modify the RCT content before submitting it to bicas.calib
+        % ** it completely separates the RCT-reading from the class (modularization)
+        % ** it simplifies the constructor somewhat since it does not need to translate paths into RCT data for
+        %    non-empty cells.
+        %
+        function obj = calib(NonBiasRctDataMap, rctDir, use_CALIBRATION_TABLE_rcts, use_CALIBRATION_TABLE_INDEX2, SETTINGS, L)
             % PROPOSAL: Abolish second init methods:
             %       read_non_BIAS_RCTs_by_regexp
             %       read_non_BIAS_RCT_by_CALIBRATION_TABLE
             %   PROPOSAL: Initialize completely using constructor.
             %       NOTE: Can not initialize in execute_sw_mode (since does not know LFR/TDS since does not know s/w mode).
-            %       NOTE: Will have to submit calibrationDir to prodFunc or to swmode_defs (analogous to SETTINGS, L).
+            %       NOTE: Will have to submit rctDir to prodFunc or to swmode_defs (analogous to SETTINGS, L).
             %       PRO: Can abolish obj.hasLoadedNonBiasData .
             %   PROPOSAL: Initialize using only ONE second init method.
             %   PROPOSAL: (1) Two static methods (two alternate ways) to initialize 1D cell array of non-BIAS RCTs to
@@ -309,21 +304,22 @@ classdef calib < handle
             %           PROPOSAL: containers.Map: rctTypeId --> (data, bicas.RCT reading method, SETTINGS key for filename regexp.).
             %       PRO: Knowledge of BW and CALIBRATION_TABLE_INDEX+CALIBRATION_TABLE in one place.
             %       CON: Code will not immediately know whether all non-BIAS RCTs can be loaded. May crash after a delay.
-            
-            % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set.
 
-            obj.SETTINGS = SETTINGS;
-            obj.L        = L;
+            % ASSERTIONS
+            assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
             
-            obj.enableDetrending               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
-            obj.itfHighFreqLimitFraction       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
-            obj.calibrationDir                 = calibrationDir;
-            
-            
-            % IMPLEMENTATIO NOTE: It has been observed that value sometimes survives from previous runs, despite being
+            filenameRegexp = SETTINGS.get_fv(bicas.calib.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
+            filePath       = bicas.RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
+            % IMPLEMENTATION NOTE: It has been observed that value sometimes survives from previous runs, despite being
             % an instance variable. Unknown why. Therefore explicitly overwrites it.
             obj.RctDataMap = containers.Map();
-            obj.RctDataMap('BIAS')                 = obj.read_log_RCT_by_SETTINGS_regexp('BIAS');
+            obj.RctDataMap('BIAS')                 = bicas.calib.read_log_modify_RCT('BIAS', filePath, L);
+            
+            EJ_library.assert.subset(NonBiasRctDataMap.keys, bicas.calib.RCT_TYPES_MAP.keys)
+            for rctTypeId = NonBiasRctDataMap.keys
+                obj.RctDataMap(rctTypeId{1}) = NonBiasRctDataMap(rctTypeId{1});
+            end
+            
             
             obj.BiasScalarGain.alphaIvpav          = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
             obj.BiasScalarGain.betaIvpav           = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
@@ -336,6 +332,9 @@ classdef calib < handle
             obj.lfrLsfOffsetsTm                    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
 
             
+            
+            obj.enableDetrending                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
+            obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
             
             obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
             obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS');
@@ -355,88 +354,7 @@ classdef calib < handle
                         settingBiasTf)
             end
             
-        end
-        
-        
-        
-        % Load non-BIAS RCTs (all types) using assumptions on filenames.
-        %
-        % NOTE: Can be useful for manual experimentation with calibration.
-        % NOTE: Will only load one of each RCT type (no time dependence as per global attribute CALIBRATION_TABLE).
-        %
-        function read_non_BIAS_RCTs_by_regexp(obj, use_CALIBRATION_TABLE_INDEX2)
-            % ASSERTIONS
-            assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Trying to load non-BIAS data twice.')
-            assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
-            
-            obj.RctDataMap('LFR')      = {obj.read_log_RCT_by_SETTINGS_regexp('LFR')};
-            obj.RctDataMap('TDS-CWF')  = {obj.read_log_RCT_by_SETTINGS_regexp('TDS-CWF')};
-            obj.RctDataMap('TDS-RSWF') = {obj.read_log_RCT_by_SETTINGS_regexp('TDS-RSWF')};
-            
-            obj.hasLoadedNonBiasData         = 1;
-            obj.use_CALIBRATION_TABLE_rcts   = 0;
-            obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
-        end
-
-        
-        
-        % Load non-BIAS RCT(s) of ONE type (rctTypeId) using CDF global attribute CALIBRATION_TABLE and zVar
-        % CALIBRATION_TABLE_INDEX.
-        %
-        % IMPLEMENTATION NOTE: May load multiple RCTs (of the same type) but will only load those RCTs which are
-        % actually needed, as indicated by CALIBRATION_TABLE_INDEX. This is necessary since CALIBRATION_TABLE may
-        % contain unnecessary RCTs of types not recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf
-        % /2019-12-16), and which are therefore unreadable by BICAS (BICAS would crash).
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % ga_CALIBRATION_TABLE       : LFR/TDS RCT global attribute CALIBRATION_TABLE. 1D cell array of strings.
-        % zv_CALIBRATION_TABLE_INDEX : LFR/TDS BICAS input dataset zVariable CALIBRATION_TABLE_INDEX.
-        %
-        %
-        % RETURN VALUE
-        % ============
-        % rctDataList : 1D cell array, of same length as ga_CALIBRATION_TABLE. {iRct},
-        %               where iRct=zv_CALIBRATION_TABLE_INDEX(i,1). Each element is the content of the corresponding RCT
-        %               mentioned in ga_CALIBRATION_TABLE.
-        %
-        function rctDataList = read_non_BIAS_RCT_by_CALIBRATION_TABLE(obj, ...
-                rctTypeId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, use_CALIBRATION_TABLE_INDEX2)
-            
-            % ASSERTIONS
-            assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Trying to load non-BIAS data twice.')
-            assert(iscell(ga_CALIBRATION_TABLE), ...
-                'BICAS:calib:Assertion:IllegalArgument', ...
-                'Argument ga_CALIBRATION_TABLE is not a cell array.')
-            EJ_library.assert.vector(ga_CALIBRATION_TABLE)
-            assert(size(zv_CALIBRATION_TABLE_INDEX, 2) == 2, ...
-                'BICAS:calib:Assertion:IllegalArgument', ...
-                'Argument zv_CALIBRATION_TABLE_INDEX does not have two columns.')
-            assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
-
-            %==================================================================================================
-            % Read RCTs, but only those actually NEEDED according to zv_CALIBRATION_TABLE_INDEX
-            % ---------------------------------------------------------------------------------
-            % NOTE: This is important since not all RCTs in glob.attr. CALIBRATION_TABLE can be read by BICAS!
-            %==================================================================================================
-            iUniqueList = unique(zv_CALIBRATION_TABLE_INDEX(:,1));
-            % List/cell array of data from multiple RCTs (potentially, but practically probably not).
-            rctDataList = cell(numel(ga_CALIBRATION_TABLE), 1);
-            % NOTE: Iterate over unique numbers, NOT indices in rctDataList. Will therefore leave some cells in cell
-            % array empty, if the corresponding CALIBRATION_TABLE RCTs are not referenced in CALIBRATION_TABLE_INDEX.
-            for i = 1:numel(iUniqueList)
-                j              = iUniqueList(i) + 1;   % NOTE: Cell array index is one greater than the stored value.
-                rctDataList{j} = obj.read_log_RCT_by_filename(ga_CALIBRATION_TABLE{j}, rctTypeId);
-            end
-            
-            %=================
-            % Store read RCTs
-            %=================
-            obj.RctDataMap(rctTypeId) = rctDataList;
-            
-            obj.hasLoadedNonBiasData         = 1;
-            obj.use_CALIBRATION_TABLE_rcts   = 1;
+            obj.use_CALIBRATION_TABLE_rcts   = use_CALIBRATION_TABLE_rcts;
             obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
         end
 
@@ -505,7 +423,7 @@ classdef calib < handle
             
             % ASSERTIONS
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
-            assert(all(size(zv_CALIBRATION_TABLE_INDEX) == [1,2]))
+            EJ_library.assert.size(zv_CALIBRATION_TABLE_INDEX, [1,2])
             
             
 
@@ -822,23 +740,6 @@ classdef calib < handle
 
 
 
-        % NOTE: To be compared with read_log_RCT_by_SETTINGS_regexp.
-        % NOTE: Does not need to be an instance method. Is so only to put it next to read_log_RCT_by_SETTINGS_regexp.
-        function RctCalibData = read_log_RCT_by_filename(obj, filename, rctTypeId)
-            RctCalibData = bicas.calib.read_log_modify_RCT(fullfile(obj.calibrationDir, filename), rctTypeId, obj.L);
-        end
-
-
-
-        % NOTE: To be compared with read_log_RCT_by_filename.
-        function RctData = read_log_RCT_by_SETTINGS_regexp(obj, rctTypeId)
-            filenameRegexp = obj.SETTINGS.get_fv(bicas.calib.RctTypesMap(rctTypeId).filenameRegexpSettingKey);            
-            filePath       = bicas.RCT.find_RCT_regexp(obj.calibrationDir, filenameRegexp, obj.L);
-            RctData        = bicas.calib.read_log_modify_RCT(filePath, rctTypeId, obj.L);
-        end
-
-
-        
         % Return subset of already loaded BIAS calibration data, for specified settings.
         %
         % NOTE: May return calibration values corresponding to scalar calibration, depending on SETTINGS:
@@ -937,17 +838,33 @@ classdef calib < handle
         % calibrating.
         % 
         function lfrItfIvpt = get_LFR_ITF(obj, cti1, iBlts, iLsf)
+            % ASSERTIONS
             assert(cti1 >= 0)
             assert(ismember(iBlts, [1:5]))
             assert(ismember(iLsf,  [1:4]))
-            assert(logical(obj.hasLoadedNonBiasData))
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 lfrItfIvpt = bicas.calib.NAN_TF;
             else
-                RctList    = obj.RctDataMap('LFR');
+                RctDataList = obj.RctDataMap('LFR');
+                
+                % ASSERTION
+                % IMPLEMENTATION NOTE: Anonymous function below will fail at a later stage if these assertions are
+                % false. Checking for these criteria here makes it easier to understand these particular types of error.
+                assert(numel(RctDataList) >= (cti1+1), ...
+                    'BICAS:calib:IllegalArgument:DatasetFormat:Assertion', ...
+                    ['LFR RctDataList is too small for argument cti1=%g.', ...
+                    ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
+                    ' value is larger than g.attr. CALIBRATION TABLE allows.'], cti1)
+                assert(~isempty(RctDataList{cti1+1}), ...
+                    'BICAS:calib:IllegalArgument:DatasetFormat:Assertion', ...
+                    ['LFR RctDataList contains no RCT data corresponding to argument cti1=%g.', ...
+                    ' This may indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
+                    ' value is wrong or that BICAS did not try to load the corresponding', ...
+                    ' RCT in g.attr. CALIBRATION_TABLE.'], cti1)
+                
                 lfrItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(...
-                    RctList{cti1+1}.ItfIvptTable{iLsf}{iBlts}, omegaRps));
+                    RctDataList{cti1+1}.ItfIvptTable{iLsf}{iBlts}, omegaRps));
             end
         end
 
@@ -960,6 +877,115 @@ classdef calib < handle
     
     
     methods(Static, Access=public)
+
+
+
+        % Load all non-BIAS RCTs (all types) using assumptions on filenames.
+        %
+        % NOTE: Can be useful for manual experimentation with calibration.
+        % NOTE: Necessary when processing L1-->L2 (inofficially) since L1 does not have
+        %       CALIBRATION_TABLE+CALIBRATION_TABLE_INDEX.
+        % NOTE: Will only load one of each RCT type (no potential time dependence as per global attribute CALIBRATION_TABLE).
+        %       and requires user to not use CALIBRATION_TABLE_INDEX.
+        %
+        % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time. However, it is useful to be able to
+        % initialize bicas.calib so that it can simultanteously calibrate all kinds of data for debugging purposes.
+        % Therefore loads ALL non-BIAS RCT types.
+        %
+        % RETURN VALUE
+        % ============
+        % RctDataMap : containers.Map. One key per non-BIAS RCT type ID. Value = 1x1 cell array with RCT data.
+        %              IMPLEMENTATION NOTE: Returns containers.Map to provide the same interface to bicas.calib
+        %              constructor as bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE.
+        % 
+        function RctDataMap = find_read_non_BIAS_RCTs_by_regexp(rctDir, SETTINGS, L)
+            
+            RctDataMap = containers.Map();
+            
+            for rctTypeId = {'LFR', 'TDS-CWF', 'TDS-RSWF'}
+                
+                settingKey     = bicas.calib.RCT_TYPES_MAP(rctTypeId{1}).filenameRegexpSettingKey;
+                filenameRegexp = SETTINGS.get_fv(settingKey);
+                filePath       = bicas.RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
+                RctDataList    = {bicas.calib.read_log_modify_RCT(rctTypeId{1}, filePath, L)};
+                
+                % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that they are stored analogously with when
+                % using ga. CALIBRATION_TABLE.
+                RctDataMap(rctTypeId{1}) = RctDataList;
+            end
+        end
+
+
+
+        % Load non-BIAS RCT(s) of ONE type (rctTypeId) using CDF global attribute CALIBRATION_TABLE and zVars
+        % CALIBRATION_TABLE_INDEX and BW.
+        %
+        % IMPLEMENTATION NOTE: May load multiple RCTs (of the same RCT type) but will only load those RCTs which are
+        % actually needed, as indicated by CALIBRATION_TABLE_INDEX and BW. This is necessary since CALIBRATION_TABLE may
+        % reference unnecessary RCTs of types not recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf
+        % /2019-12-16), and which are therefore unreadable by BICAS (BICAS would crash).
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % ga_CALIBRATION_TABLE       : LFR/TDS RCT global attribute CALIBRATION_TABLE. 1D cell array of strings.
+        % zv_CALIBRATION_TABLE_INDEX : LFR/TDS BICAS input dataset zVariable CALIBRATION_TABLE_INDEX.
+        % zv_BW                      : Either
+        %                               (1) [] (as for TDS data), or
+        %                               (2) LFR input dataset zVariable BW.
+        %
+        %
+        % RETURN VALUE
+        % ============
+        % RctDataMap : containers.Map with
+        %               keys   = non-BIAS RCT type ID.
+        %               values = 1D cell. Non-empty indices {iRct}
+        %              come from zv_CALIBRATION_TABLE_INDEX(i,1). Each element is the content of the corresponding RCT
+        %              mentioned in ga_CALIBRATION_TABLE.
+        %              IMPLEMENTATION NOTE: Returns containers.Map to provide the same interface to bicas.calib
+        %              constructor as bicas.calib.find_read_non_BIAS_RCTs_by_regexp.
+        %
+        function RctDataMap = find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
+                rctDir, rctTypeId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, zv_BW, L)
+            
+            % ASSERTION
+            assert(iscell(ga_CALIBRATION_TABLE))
+            
+            if isempty(zv_BW)
+                % ASSERTION
+                nCt = EJ_library.assert.sizes(...
+                    ga_CALIBRATION_TABLE,       [-1, 1], ...
+                    zv_CALIBRATION_TABLE_INDEX, [-2, 2]);
+                
+                iCtArray = unique(zv_CALIBRATION_TABLE_INDEX(:, 1));     % CT = CALIBRATION_TABLE
+                
+            else
+                % ASSERTIONS
+                nCt = EJ_library.assert.sizes(...
+                    ga_CALIBRATION_TABLE,       [-1, 1], ...
+                    zv_CALIBRATION_TABLE_INDEX, [-2, 2], ...
+                    zv_BW,                      [-2, 1]);
+                assert(all(ismember(zv_BW, [0,1])))
+                
+                iCtArray = unique(zv_CALIBRATION_TABLE_INDEX(logical(zv_BW), 1));
+            end
+            
+            
+            
+            % Cell array of paths to RCTs of the same RCT type.
+            RctDataList = cell(nCt, 1);
+            
+            % NOTE: Iterate over those entries in CALIBRATION_TABLE that should be considered, NOT all indices. May
+            % therefore legitimately leave some cells in cell array empty.
+            for i = 1:numel(iCtArray)
+                j              = iCtArray(i) + 1;   % NOTE: Cell array index is one greater than the stored value.
+                filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
+                RctDataList{j} = bicas.calib.read_log_modify_RCT(rctTypeId, filePath, L);
+            end
+            
+            RctDataMap = containers.Map();
+            RctDataMap(rctTypeId) = RctDataList;
+        end
 
 
         
@@ -1308,14 +1334,13 @@ classdef calib < handle
         % =========
         % rctTypeId : String constants representing pipeline and RCT to be read.
         %
-        function RctData = read_log_modify_RCT(filePath, rctTypeId, L)
-            % PROPOSAL: Incorporate modify_LFR_RCT_data, modify_TDS_RSWF_RCT_data
+        function RctData = read_log_modify_RCT(rctTypeId, filePath, L)
             
             L.logf(bicas.calib.READING_RCT_PATH_LL, 'Reading RCT (rctTypeId=%s): "%s"', rctTypeId, filePath)
             
-            readRctFunc   = bicas.calib.RctTypesMap(rctTypeId).readRctFunc;
-            modifyRctFunc = bicas.calib.RctTypesMap(rctTypeId).modifyRctFunc;
-            logRctFunc    = bicas.calib.RctTypesMap(rctTypeId).logRctFunc;
+            readRctFunc   = bicas.calib.RCT_TYPES_MAP(rctTypeId).readRctFunc;
+            modifyRctFunc = bicas.calib.RCT_TYPES_MAP(rctTypeId).modifyRctFunc;
+            logRctFunc    = bicas.calib.RCT_TYPES_MAP(rctTypeId).logRctFunc;
             
             RctData = readRctFunc(filePath);
             RctData = modifyRctFunc(RctData);
