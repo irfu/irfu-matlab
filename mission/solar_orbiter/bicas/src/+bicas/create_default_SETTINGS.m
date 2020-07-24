@@ -290,6 +290,9 @@ function SETTINGS = create_default_SETTINGS()
     % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Abolish?
     S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY', 'ERROR')   % WARNING, ERROR, CORRECT
     
+    % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are empty.
+    S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'USE_FILL_VALUE')   % ERROR, USE_FILL_VALUE
+    
     % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
     % TDS has bugfixed. /2019-12-19
     % PROPOSAL: Rename.
@@ -426,7 +429,7 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
     % CALIBRATION_TABLE_INDEX is not set for TDS. Therefore no such setting for TDS.
     S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
-    S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
+    %S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
     
     
     

@@ -494,15 +494,15 @@ classdef calib < handle
             EJ_library.assert.vector(samplesCaTm)
             EJ_library.assert.vector(dtSec)
             assert(numel(samplesCaTm) == numel(dtSec))
-            assert((1 <= iBlts) && (iBlts <= 5))
+            bicas.calib.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
-            assert((1 <= iLsf)  && (iLsf  <= 4), 'Illegal argument iLsf=%g.', iLsf)
+            bicas.calib.assert_iLsf(iLsf)
             assert(isscalar(cti1))
             assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
             % No assertion on cti2 unless used (determined later).
-            
-            
-            
+
+
+
             %============================================
             % Only place to potentially make use of cti2
             %============================================
@@ -579,7 +579,7 @@ classdef calib < handle
             EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
-            assert((1 <= iBlts) && (iBlts <= 5))
+            bicas.calib.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             assert(cti1 >= 0)
             
@@ -656,7 +656,7 @@ classdef calib < handle
             EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
-            assert((1 <= iBlts) && (iBlts <= 5))
+            bicas.calib.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             assert(cti1 >= 0)
             
@@ -840,8 +840,8 @@ classdef calib < handle
         function lfrItfIvpt = get_LFR_ITF(obj, cti1, iBlts, iLsf)
             % ASSERTIONS
             assert(cti1 >= 0)
-            assert(ismember(iBlts, [1:5]))
-            assert(ismember(iLsf,  [1:4]))
+            bicas.calib.assert_iBlts(iBlts)
+            bicas.calib.assert_iLsf(iLsf)
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 lfrItfIvpt = bicas.calib.NAN_TF;
@@ -1400,6 +1400,18 @@ classdef calib < handle
             assert(~isempty(v))
             EJ_library.assert.vector(v)
             s = sprintf('(%s)', strjoin(EJ_library.str.sprintf_many(pattern, v), ', '));
+        end
+        
+        
+        
+        function assert_iBlts(iBlts)
+            assert(ismember(iBlts, [1:5]), 'BICAS:calib:IllegalArgument:Assertion', 'Illegal value iBlts=%g', iBlts)
+        end
+        
+        
+        
+        function assert_iLsf(iLsf)
+            assert(ismember(iLsf,  [1:4]), 'BICAS:calib:IllegalArgument:Assertion', 'Illegal value iLsf=%g.', iLsf)
         end
         
         

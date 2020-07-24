@@ -117,6 +117,12 @@ classdef BLTS_src_dest %< handle
 
 
 
+        function isAsr = is_ASR(obj)
+            isAsr = ismember(obj.category, {'DC single', 'DC diff', 'AC diff'});
+        end
+
+
+
     end    % methods(Access=public)
     
 end

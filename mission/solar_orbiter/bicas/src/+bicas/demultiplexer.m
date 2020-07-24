@@ -87,9 +87,6 @@ classdef demultiplexer
         
         
         
-        % NEW FUNCTION. NOT USED YET BUT MEANT TO REPLACE OLD FUNCTION "simple_demultiplex_subsequence_OLD".
-        %
-        %
         % Function that "encodes" the demultiplexer part of the BIAS subsystem.For a specified mux mode and demuxer
         % latching relay setting, it determines/encodes
         % (1) which (physical) input signal (Antennas, GND, "2.5V Ref", unknown) is routed to which physical output signal (BLTS)
@@ -345,7 +342,7 @@ classdef demultiplexer
         
         
         
-    end   % methods(Static, Access=public)
+    end    % methods(Static, Access=public)
     
     
     

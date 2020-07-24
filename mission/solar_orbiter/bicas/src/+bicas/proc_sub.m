@@ -286,16 +286,8 @@ classdef proc_sub
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
-            nRecords = size(InSci.Zv.Epoch, 1);            
-            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
-            
-            
-            
-            % CDF ASSERTION
-            if ~issorted(InSci.Zv.Epoch, 'strictascend')
-                error('Voltage (science) dataset timestamps do not increase.')
-            end
-            
+
+
             %=================
             % Normalize zVars
             %=================
@@ -321,6 +313,16 @@ classdef proc_sub
 
 
 
+            nRecords = size(InSci.Zv.Epoch, 1);
+            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
+            
+            
+            
+            % CDF ASSERTION
+            if ~issorted(InSci.Zv.Epoch, 'strictascend')
+                error('Voltage (science) dataset timestamps do not increase.')
+            end
+            
             V = InSci.Zv.V;
             E = permute(InSci.Zv.E, [1,3,2]);
             % Switch last two indices of E.
@@ -328,15 +330,12 @@ classdef proc_sub
             %     index 3 = E1/E2 component
             %               NOTE: 1/2=index into array; these are diffs but not equivalent to any particular diffs).
             
-            nCdfSamplesPerRecord = size(V, 2);
+            nCdfSamplesPerRecord = EJ_library.assert.sizes(V, [nRecords, -1], E, [nRecords, -1, 2]);
             
             % ASSERTIONS
-            if C.isLfrSurvSwf
-                assert(nCdfSamplesPerRecord == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
-            else
-                assert(nCdfSamplesPerRecord == 1)
+            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
+            else                assert(nCdfSamplesPerRecord == 1)
             end
-            assert(size(E, 3) == 2)
 
 
 
@@ -381,26 +380,56 @@ classdef proc_sub
             % IMPLEMENTATION NOTE: QUALITY_FLAG, QUALITY_BITMASK have been found empty in test data, but should have
             % attribute DEPEND_0 = "Epoch" ==> Should have same number of records as Epoch.
             % Can not save CDF with zVar with zero records (crashes when reading CDF). ==> Better create empty records.
-            % Test data: MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
+            %
+            % Test data:
+            %  MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
+            %  ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf
+            %  ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E_6b05822_CNE_V02.cdf
             %
             % PROPOSAL: Move to the code that reads CDF datasets instead. Generalize to many zVariables.
             %===========================================================================================================
             PreDc.Zv.QUALITY_FLAG    = InSci.Zv.QUALITY_FLAG;
             PreDc.Zv.QUALITY_BITMASK = InSci.Zv.QUALITY_BITMASK;
+            
+            [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
+            
             if isempty(PreDc.Zv.QUALITY_FLAG)
-                L.log('warning', 'QUALITY_FLAG from the LFR SCI source dataset is empty. Filling with empty values.')
-                PreDc.Zv.QUALITY_FLAG = bicas.proc_utils.create_NaN_array([nRecords, 1]);
+                
+                anomalyDescrMsg = 'QUALITY_FLAG from the LFR SCI source dataset is empty.';
+                switch(settingValue)
+                    case 'USE_FILL_VALUE'
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
+                        L.log('warning', 'Filling with empty values.')
+                        PreDc.Zv.QUALITY_FLAG = bicas.proc_utils.create_NaN_array([nRecords, 1]);
+                    otherwise
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
+                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
+                end
+                
             end
             if isempty(PreDc.Zv.QUALITY_BITMASK)
-                L.log('warning', 'QUALITY_BITMASK from the LFR SCI source dataset is empty. Filling with empty values.')
-                PreDc.Zv.QUALITY_BITMASK = bicas.proc_utils.create_NaN_array([nRecords, 1]);
+                
+                anomalyDescrMsg = 'QUALITY_BITMASK from the LFR SCI source dataset is empty.';
+                switch(settingValue)
+                    case 'USE_FILL_VALUE'
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
+                        L.log('warning', 'Filling with empty values.')
+                        PreDc.Zv.QUALITY_BITMASK = bicas.proc_utils.create_NaN_array([nRecords, 1]);               
+                    otherwise
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
+                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
+                end
+                
             end
             
             % ASSERTIONS
             % LFR QUALITY_FLAG, QUALITY_BITMASK not set yet (2019-09-17), but I presume they should have just one value
             % per record. BIAS output datasets should.
-            assert(size(PreDc.Zv.QUALITY_FLAG,    2) == 1)
-            assert(size(PreDc.Zv.QUALITY_BITMASK, 2) == 1)
+            EJ_library.assert.sizes(...
+                PreDc.Zv.QUALITY_FLAG,    [nRecords, 1], ...
+                PreDc.Zv.QUALITY_BITMASK, [nRecords, 1])
 
 
 
@@ -548,14 +577,14 @@ classdef proc_sub
                 % ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E_73525cd_CNE_V03.CDF.
                 % 2019-09-18, David Pisa: Not a flaw in TDS RCS but in the source L1 dataset.
                 %====================================================================================================
-                SAMPS_PER_CH_MIN_VALID = 2^10;
-                SAMPS_PER_CH_MAX_VALID = 2^15;
-                SAMPS_PER_CH_zv        = double(InSci.Zv.SAMPS_PER_CH);
-                SAMPS_PER_CH_rounded   = round(2.^round(log2(SAMPS_PER_CH_zv)));
-                SAMPS_PER_CH_rounded(SAMPS_PER_CH_rounded < SAMPS_PER_CH_MIN_VALID) = SAMPS_PER_CH_MIN_VALID;
-                SAMPS_PER_CH_rounded(SAMPS_PER_CH_rounded > SAMPS_PER_CH_MAX_VALID) = SAMPS_PER_CH_MAX_VALID;
-                if any(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH_zv)
-                    SAMPS_PER_CH_badValues = unique(SAMPS_PER_CH_zv(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH_zv));
+                SAMPS_PER_CH_MIN_VALID    = 2^10;
+                SAMPS_PER_CH_MAX_VALID    = 2^15;
+                zv_SAMPS_PER_CH           = double(InSci.Zv.SAMPS_PER_CH);
+                zv_SAMPS_PER_CH_rounded   = round(2.^round(log2(zv_SAMPS_PER_CH)));
+                zv_SAMPS_PER_CH_rounded(zv_SAMPS_PER_CH_rounded < SAMPS_PER_CH_MIN_VALID) = SAMPS_PER_CH_MIN_VALID;
+                zv_SAMPS_PER_CH_rounded(zv_SAMPS_PER_CH_rounded > SAMPS_PER_CH_MAX_VALID) = SAMPS_PER_CH_MAX_VALID;
+                if any(zv_SAMPS_PER_CH_rounded ~= zv_SAMPS_PER_CH)
+                    SAMPS_PER_CH_badValues = unique(zv_SAMPS_PER_CH(zv_SAMPS_PER_CH_rounded ~= zv_SAMPS_PER_CH));
                     
                     badValuesDisplayStr = strjoin(arrayfun(...
                         @(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');
@@ -572,7 +601,7 @@ classdef proc_sub
                                 ['Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid', ...
                                 ' values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
                             
-                            SAMPS_PER_CH_zv = SAMPS_PER_CH_rounded;
+                            zv_SAMPS_PER_CH = zv_SAMPS_PER_CH_rounded;
                             
                         otherwise
                             bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
@@ -588,7 +617,7 @@ classdef proc_sub
                 % FULL_BAND mode has each snapshot divided into 2^15 samples/record * 8 records.  /Unknown source
                 % Unclear what value SAMPS_PER_CH should have for FULL_BAND mode. How does Epoch work for FULL_BAND
                 % snapshots?
-                PreDc.Zv.nValidSamplesPerRecord = SAMPS_PER_CH_zv;
+                PreDc.Zv.nValidSamplesPerRecord = zv_SAMPS_PER_CH;
             else
                 PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
             end
@@ -741,8 +770,6 @@ classdef proc_sub
             
             OutSciZv = [];
             
-            %nSamplesPerRecord = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);   % Samples per record.
-            
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
             OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
@@ -799,11 +826,12 @@ classdef proc_sub
         
         
         % Processing function. Converts PreDC to PostDC, i.e. demux and calibrate data.
-        % Function is in large part a wrapper around "simple_demultiplex".
+        % Function is in large part a wrapper around "calibrate_demux_voltages".
         %
         % NOTE: Public function as opposed to the other demuxing/calibration functions.
         %
-        function PostDc = process_demuxing_calibration(PreDc, InCurPd, Cal, SETTINGS, L)
+        function PostDc = process_calibrate_demux_filter(PreDc, InCurPd, Cal, SETTINGS, L)
+        %
         % PROPOSAL: Move the setting of IBIASx (bias current) somewhere else?
         %   PRO: Unrelated to demultiplexing.
         %   CON: Related to calibration.
@@ -821,17 +849,18 @@ classdef proc_sub
             nRecords = size(PostDc.Zv.Epoch, 1);
             tTicToc = tic();            
             
-            PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(PreDc, Cal, SETTINGS, L);
+            PostDc.Zv.DemuxerOutput = bicas.proc_sub.calibrate_demux_voltages(PreDc, Cal, SETTINGS, L);
             
             wallTimeSec = toc(tTicToc);
-            L.logf('info', 'simple_demultiplex: Time used for execution (wall time): %g [s], %g [s/record]', wallTimeSec, wallTimeSec/nRecords)
-            
-            
-            
-            %================================
-            % Set (calibrated) bias currents
-            %================================
-            % BUG / TEMP: Set default values since the real bias current values are not available.
+            L.logf('info', ...
+                'bicas.proc_sub.calibrate_demux_voltages: Time used for execution (wall time): %g [s], %g [s/record]', ...
+                wallTimeSec, wallTimeSec/nRecords)
+
+
+
+            %=========================
+            % Calibrate bias currents
+            %=========================
             currentSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(PostDc.Zv.Epoch, InCurPd, SETTINGS, L);
             currentTm      = bicas.calib.calibrate_current_sampere_to_TM(currentSAmpere);
             
@@ -939,13 +968,12 @@ classdef proc_sub
     
     
 
-        % Wrapper around "simple_demultiplex_subsequence_OLD" to be able to handle multiple CDF records with changing
-        % settings.
+        % Demultiplex and calibrate voltages.
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
         %
-        function AsrSamplesAVolt = simple_demultiplex(PreDc, Cal, SETTINGS, L)
-        % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
+        function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, SETTINGS, L)
+        % PROPOSAL: Incorporate into processing function process_calibrate_demux_filter.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         %
         % PROPOSAL: Sequence of constant settings includes dt (for CWF)
@@ -1011,24 +1039,25 @@ classdef proc_sub
                 % NOTE: Has observed breaking assertion in LFR test files "LFR___LFR_suggested_2019-01-17".
                 % PROPOSAL: Abolish somehow.
                 
-                CALIBRATION_TABLE_INDEX_zv = PreDc.Zv.CALIBRATION_TABLE_INDEX;
-                hasLegalCtiSize = size(CALIBRATION_TABLE_INDEX_zv, 2) == 2;
-                if ~hasLegalCtiSize
-                    [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE');
-                    if settingValue
-                        L.log('warning', ...
-                            'Setting CALIBRATION_TABLE_INDEX to NaN due to setting %s = "%i".', settingKey, settingValue)
-                        CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
-                    else
-                        error('BICAS:proc_sub:Assertion', 'zVar CALIBRATION_TABLE_INDEX has illegal width=%i (<>2).', size(CALIBRATION_TABLE_INDEX_zv, 2))
-                    end
-                end
+                zv_CALIBRATION_TABLE_INDEX = PreDc.Zv.CALIBRATION_TABLE_INDEX;
+%                 hasLegalCtiSize = size(zv_CALIBRATION_TABLE_INDEX, 2) == 2;
+%                 if ~hasLegalCtiSize
+%                     [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE');
+%                     if settingValue
+%                         L.log('warning', ...
+%                             'Setting CALIBRATION_TABLE_INDEX to NaN due to setting %s = "%i".', settingKey, settingValue)
+%                         zv_CALIBRATION_TABLE_INDEX = zeros(PreDc.nRecords, 2) * NaN;
+%                     else
+%                         error('BICAS:proc_sub:Assertion', 'zVar CALIBRATION_TABLE_INDEX has illegal width=%i (<>2).', ...
+%                             size(zv_CALIBRATION_TABLE_INDEX, 2))
+%                     end
+%                 end
             else
                 % NOTE: Technically, this should only happen for L1 input.
                 
-                % Create "empty" CALIBRATION_TABLE_INDEX_zv.
+                % Create "empty" zv_CALIBRATION_TABLE_INDEX.
                 L.log('warning', 'Creating NaN-valued CALIBRATION_TABLE_INDEX due to zVar not being present in input CDF.')
-                CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
+                zv_CALIBRATION_TABLE_INDEX = zeros(PreDc.nRecords, 2) * NaN;
             end
             
             
@@ -1046,7 +1075,7 @@ classdef proc_sub
                 iCalibLZv, ...
                 iCalibHZv, ...
                 PreDc.Zv.iLsf, ...
-                CALIBRATION_TABLE_INDEX_zv);
+                zv_CALIBRATION_TABLE_INDEX);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             
             for iSubseq = 1:length(iFirstList)
@@ -1110,12 +1139,13 @@ classdef proc_sub
                         % Calibrated data is NaN.
                         ssSamplesAVolt{iBlts} = NaN * zeros(size(ssSamplesTm{iBlts}));
 
-                    elseif strcmp(BltsSrcAsrArray(iBlts).category, 'GND') || strcmp(BltsSrcAsrArray(iBlts).category, '2.5V Ref')
-                        % No calibration.
+                    elseif ismember(BltsSrcAsrArray(iBlts).category, {'GND', '2.5V Ref'})
+                        % ==> No calibration.
                         ssSamplesAVolt{iBlts} = ssSamplesTm{iBlts};
                         
                     else
-                        % PROPOSAL: Check .category and add else-assertion.
+                        assert(BltsSrcAsrArray(iBlts).is_ASR())
+                        % ==> Calibrate
                         
                         if PreDc.hasSnapshotFormat
                             ssSamplesCaTm = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...

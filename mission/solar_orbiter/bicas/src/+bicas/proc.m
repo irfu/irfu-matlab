@@ -110,7 +110,7 @@ classdef proc
             
             HkSciTimePd  = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
             SciPreDcPd   = bicas.proc_sub.process_LFR_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd  = bicas.proc_sub.process_demuxing_calibration(  SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
+            SciPostDcPd  = bicas.proc_sub.process_calibrate_demux_filter(  SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
             OutputSciPd  = bicas.proc_sub.process_PostDC_to_LFR(         SciPostDcPd, outputDsi);
             
             OutputDatasetsMap = containers.Map();
@@ -163,7 +163,7 @@ classdef proc
             
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(InputSciPd, InputHkPd,   SETTINGS, L);
             SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, InputCurPd,  Cal, SETTINGS, L);
+            SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd, InputCurPd,  Cal, SETTINGS, L);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi);
 
             OutputDatasetsMap = containers.Map();
