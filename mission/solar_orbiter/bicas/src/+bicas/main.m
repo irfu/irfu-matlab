@@ -113,7 +113,7 @@ function errorCode = main( varargin )
 
     
     
-        errorCode = bicas.error_safe_constants.EMIDP_2_INFO('NoError').errorCode;    % Default error code (i.e. no error).
+        errorCode = bicas.constants.EMIDP_2_INFO('NoError').errorCode;    % Default error code (i.e. no error).
         main_without_error_handling(varargin, L);
         
     catch Exception1
@@ -175,7 +175,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     % Use MATLAB error message identifiers to identify one or multiple "error types".
     %=================================================================================
     msgIdentifierParts = strsplit(Exception.identifier, ':');
-    emidpList = msgIdentifierParts(bicas.error_safe_constants.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
+    emidpList = msgIdentifierParts(bicas.constants.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
     if isempty(emidpList)
         emidpList = {'UntranslatableErrorMsgId'};
     end
@@ -186,10 +186,10 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
     for i = 1:numel(emidpList)
         emidp = emidpList{i};
-        msg  = [msg, sprintf('    %-23s : %s\n', emidp, bicas.error_safe_constants.EMIDP_2_INFO(emidp).description)];
+        msg  = [msg, sprintf('    %-23s : %s\n', emidp, bicas.constants.EMIDP_2_INFO(emidp).description)];
     end
     % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
-    errorCode = bicas.error_safe_constants.EMIDP_2_INFO(emidpList{end}).errorCode;
+    errorCode = bicas.constants.EMIDP_2_INFO(emidpList{end}).errorCode;
     
     %======================
     % Print the call stack
@@ -230,18 +230,16 @@ function main_without_error_handling(cliArgumentsList, L)
     
     startTimeTicSeconds = tic;
     
-    %C = bicas.error_safe_constants();
-    
     
     
     %==================================
     % ~ASSERTION: Check MATLAB version
     %==================================
     matlabVersionString = version('-release');
-    if ~ismember(matlabVersionString, bicas.error_safe_constants.PERMITTED_MATLAB_VERSIONS)
+    if ~ismember(matlabVersionString, bicas.constants.PERMITTED_MATLAB_VERSIONS)
         error('BICAS:main:BadMatlabVersion', ...
             'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
-            matlabVersionString, strjoin(bicas.error_safe_constants.PERMITTED_MATLAB_VERSIONS, ', '))
+            matlabVersionString, strjoin(bicas.constants.PERMITTED_MATLAB_VERSIONS, ', '))
     end
     L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
     
@@ -343,7 +341,7 @@ function main_without_error_handling(cliArgumentsList, L)
     if ~isempty(CliData.configFile)
         configFile = CliData.configFile;
     else
-        configFile = fullfile(bicasRootPath, bicas.error_safe_constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
+        configFile = fullfile(bicasRootPath, bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
     end
     L.logf('info', 'configFile = "%s"', configFile)
     rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
@@ -566,10 +564,10 @@ function print_help(SETTINGS)
     %==========================
     % Print error codes & types
     %==========================
-    errorCodesList = cellfun(@(x) (x.errorCode), bicas.error_safe_constants.EMIDP_2_INFO.values);   % Array of (unsorted) error codes.
+    errorCodesList = cellfun(@(x) (x.errorCode), bicas.constants.EMIDP_2_INFO.values);   % Array of (unsorted) error codes.
     [~, iSort] = sort(errorCodesList);
-    empidList          = bicas.error_safe_constants.EMIDP_2_INFO.keys;
-    errorTypesInfoList = bicas.error_safe_constants.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
+    empidList          = bicas.constants.EMIDP_2_INFO.keys;
+    errorTypesInfoList = bicas.constants.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
     empidList          = empidList(iSort);
     errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
     bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')

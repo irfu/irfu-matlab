@@ -209,7 +209,7 @@ classdef logger < handle
                     % String that is intended to be read by BICAS bash wrapper as stdout.
                     bashWrapperRecipientStr = EJ_library.str.add_prefix_on_every_row(...
                         rcsIcdLogMsg, ...
-                        bicas.error_safe_constants.LOG_FILE_PREFIX_TBW);
+                        bicas.constants.LOG_FILE_PREFIX_TBW);
                     
                     obj.write_to_stdout(bashWrapperRecipientStr)
                     
@@ -303,9 +303,9 @@ classdef logger < handle
         % NOTE: Partly defined by RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3.
         % NOTE: RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3 speaks of a "debug mode" not implemented here.
         %       Function always prints debug-level messages.
-        % NOTE: Does NOT add bicas.error_safe_constants.LOG_FILE_PREFIX_TBW required for wrapper script to recognize log
+        % NOTE: Does NOT add bicas.constants.LOG_FILE_PREFIX_TBW required for wrapper script to recognize log
         %       file messages in stdout. This is intentional since one may want both log message version with and
-        %       without bicas.error_safe_constants.LOG_FILE_PREFIX_TBW.
+        %       without bicas.constants.LOG_FILE_PREFIX_TBW.
         % NOTE: Could be a static method.
         %
         % RETURN VALUE

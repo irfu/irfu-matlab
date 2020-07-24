@@ -76,7 +76,7 @@ function JsonSwd = get_sw_descriptor(SwModeDefsList, SETTINGS)
     
     JsonSwd.environment.executable     = SETTINGS.get_fv('SWD.environment.executable');
     %JsonSwd.environment.configuration  = C.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
-    JsonSwd.environment.configuration  = bicas.error_safe_constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    JsonSwd.environment.configuration  = bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     
     JsonSwd.modes = {};
     for i = 1:length(SwModeDefsList)

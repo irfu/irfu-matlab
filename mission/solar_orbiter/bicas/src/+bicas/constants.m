@@ -20,9 +20,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-07-09, as a replacement for the FUNCTION error_safe_constant created 2016-06-02.
 %
-classdef error_safe_constants   % < handle
-    % PROPOSAL: Change name. Something not just "error safe". "All" constants that can not be modified as in SETTINGS.
-    %   PROPOSAL: ~constants.
+classdef constants   % < handle
     % PROPOSAL: Error category for bad input datasets (both science and HK).
     %   PRO: Has similar for RCTs.
     
@@ -63,7 +61,7 @@ classdef error_safe_constants   % < handle
         %                      kinds of errors this error code should cover.
         %
         %
-        EMIDP_2_INFO = bicas.error_safe_constants.init_EMIDP_2_INFO;
+        EMIDP_2_INFO = bicas.constants.init_EMIDP_2_INFO;
         
     end    % properties(Constant)
     

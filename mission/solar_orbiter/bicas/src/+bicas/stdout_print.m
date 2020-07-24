@@ -17,7 +17,7 @@
 function stdout_print(msgStr)
     % PROPOSAL: Change name to something analogous with logf.
     
-    printStr = EJ_library.str.add_prefix_on_every_row(msgStr, bicas.error_safe_constants.STDOUT_PREFIX_TBW);
+    printStr = EJ_library.str.add_prefix_on_every_row(msgStr, bicas.constants.STDOUT_PREFIX_TBW);
     
     fwrite(1, printStr);    % NOTE: Must print using function that reacts to trailing line feed.
 end
