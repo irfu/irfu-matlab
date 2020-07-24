@@ -430,17 +430,26 @@ classdef proc_utils
 
 
         
+        % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
+        %
+        % ARGUMENTS
+        % =========
         % M                     : 2D matrix
-        % nCopyColsPerRowVec    : 1D vector. {i}=Number of elements to copy from M{i,:}.
+        % nCopyColsPerRowVec    : 1D column vector. {i}=Number of elements to copy from M{i,:}.
+        %
+        % RETURN VALUE
+        % ============
         % ca                    : Column cell array of 1D vectors.
-        function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowVec)
-            EJ_library.assert.vector(nCopyColsPerRowVec)
-            assert(ismatrix(M))
-            assert(size(M, 1) == length(nCopyColsPerRowVec))
+        function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
+            EJ_library.assert.vector(nCopyColsPerRowArray)
+            %assert(ismatrix(M))
+            %assert(size(M, 1) == length(nCopyColsPerRowArray))
+            nRows = EJ_library.assert.sizes(M, [-1, NaN], nCopyColsPerRowArray, [-1, 1]);
             
             ca = cell(size(M, 1), 1);
-            for iRow = 1:numel(nCopyColsPerRowVec)
-                ca{iRow} = M(iRow, 1:nCopyColsPerRowVec(iRow));
+%             for iRow = 1:numel(nCopyColsPerRowVec)
+            for iRow = 1:nRows
+                ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
             end
         end
         

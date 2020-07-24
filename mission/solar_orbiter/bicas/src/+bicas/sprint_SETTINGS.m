@@ -1,6 +1,4 @@
 %
-% str = sprint_SETTINGS()
-%
 % Create human-readable multi-line string to represent SETTINGS. Meant for logging and printing to stdout.
 %
 %

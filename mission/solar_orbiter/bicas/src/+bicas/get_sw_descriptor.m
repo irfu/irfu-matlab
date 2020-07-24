@@ -48,8 +48,6 @@ function JsonSwd = get_sw_descriptor(SwModeDefsList, SETTINGS)
     %   NOTE: Already implicitly checks that all the needed fields exist (since they are read here).
     %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if
     %         the S/W as a whole is (by default).
-    %
-    %C = bicas.error_safe_constants();
     
     
     

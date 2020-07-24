@@ -190,6 +190,10 @@ classdef calib < handle
 %   NOTE: BIAS & LFR RCTs contain FTFs, TDS RCT contains ITFs.
 %   NOTE: Has to keep track of FTF/ITF before modifications (extrapolation to 0 Hz, Z=0 for high freq.).
 %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
+%
+% PROPOSAL: Assertion function for CalSettings.
+%   TODO-NI: Same struct, with same fields in all cases?
+%   NOTE: Function does not know which fields are actually used.
 
 
 
@@ -555,10 +559,6 @@ classdef calib < handle
                 samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
             end
         end
-
-
-
-        
 
 
 

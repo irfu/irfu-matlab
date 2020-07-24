@@ -40,9 +40,6 @@ classdef proc_sub
 %
 % PROPOSAL: Merge process_PostDC_to_LFR and process_PostDC_to_TDS.
 %
-% PROPOSAL: Instantiate class, use instance methods instead of static.
-%   PRO: Can have SETTINGS and constants as instance variable instead of calling global variables.
-%
 % PROPOSAL: Submit zVar variable attributes.
 %   PRO: Can interpret fill values.
 %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
@@ -51,6 +48,9 @@ classdef proc_sub
 % PROPOSAL: Return (to execute_sw_mode), global attributes.
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
+%
+% PROPOSAL: Functionality in remove_PostDc_data() should use useFillValues instead.
+%
 %#######################################################################################################################
 
     methods(Static, Access=public)
@@ -472,9 +472,9 @@ classdef proc_sub
             PreDc.nCdfSamplesPerRecord = nCdfSamplesPerRecord;
             PreDc.isLfr                = true;
             PreDc.isTdsCwf             = false;
+            
 
-
-
+            
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
         end
@@ -702,7 +702,7 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
-            % NOTE: Convert AAmpere --> (antenna) nA
+            % NOTE: Convert aampere --> (antenna) nA
             OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
             OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
@@ -761,7 +761,7 @@ classdef proc_sub
             EJ_library.assert.struct(OutSciZv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'BW', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
-        end   % process_PostDC_to_LFR
+        end    % process_PostDC_to_LFR
 
 
 
@@ -779,7 +779,7 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
-            % NOTE: Convert AAmpere --> (antenna) nA
+            % NOTE: Convert aampere --> (antenna) nA
             OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
             OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
@@ -837,9 +837,26 @@ classdef proc_sub
         % PROPOSAL: Move the setting of IBIASx (bias current) somewhere else?
         %   PRO: Unrelated to demultiplexing.
         %   CON: Related to calibration.
+        %
+        % PROPOSAL: Rename functions
+        %       process_demuxing_calibration
+        %           calibrates voltages, currents
+        %           demuxes
+        %           removes/filter data
+        %           PROPOSAL: process_calibrate_demux_filter
+        %       simple_demultiplex
+        %           calibrates voltages
+        %           demuxes
+        %           splits into subsequences of constant settings.
+        %           PROPOSAL: calibrate_demux_voltages
 
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc);
+            
+            
+            
+            % EXPERIMENTAL:
+            % PROPOSAL: Modify PreDc.Zv.useFillValues here
             
             
             
@@ -849,9 +866,9 @@ classdef proc_sub
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
             
             nRecords = size(PostDc.Zv.Epoch, 1);
-            tTicToc = tic();            
+            tTicToc  = tic();            
             
-            PostDc.Zv.DemuxerOutput = bicas.proc_sub.calibrate_demux_voltages(PreDc, Cal, SETTINGS, L);
+            PostDc.Zv.DemuxerOutput = bicas.proc_sub.calibrate_demux_voltages(PreDc, Cal, L);
             
             wallTimeSec = toc(tTicToc);
             L.logf('info', ...
@@ -898,11 +915,15 @@ classdef proc_sub
             
             
             
-            % Remove data because of settings.
+            %=================================
+            % Remove data because of settings
+            %=================================
             [...
                 PostDc.Zv.currentAAmpere, ...
                 PostDc.Zv.DemuxerOutput] ...
+                ...
                 = bicas.proc_sub.remove_PostDc_data(...
+                ...
                 PostDc.Zv.currentAAmpere, ...
                 PostDc.Zv.DemuxerOutput, ...
                 PostDc.Zv.Epoch, ...
@@ -925,22 +946,22 @@ classdef proc_sub
     
     
     
-        % Remove data because of settings
+        % Remove data (set records to fill values) because of settings.
+        % Ex: Sweeps
+        % 
         function [zvCurrentAAmpere, DemuxerOutput] = remove_PostDc_data(...
                 zvCurrentAAmpere, DemuxerOutput, zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
-            % -------------------------------
-            % PROPOSAL: Separate function
-            %   NOTE: PreDc as argument, or
-            %   [samplesCaTm, currentAAmpere] = (isLfr, Epoch, MUX_SET, samplesCaTm, currentAAmpere, SETTINGS, L)
-            %   CON: Increases memory usage?
+            % PROPOSAL: Merge with functionality for not even calibrating records?
+            %   NOTE: This function is for setting data to fill value, after it was calibrated, demuxed.
+            %       ==> It only works for data that can be calibrated. Not for BW=0 data.
             
             LL = 'info';    % LL = Log Level
             
             % Read settings
             % NOTE: There is no PostDc.isTds, only .isTdsCwf
             [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv('PROCESSING.L2.REMOVE_DATA.MUX_MODES');
-            if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';
-            else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';
+            if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
+            else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
                 %else            error('BICAS:proc_sub:Assertion', 'Neither LFR or TDS data.')
             end
             removeMarginSec = SETTINGS.get_fv(settingMarginKey);
@@ -989,7 +1010,7 @@ classdef proc_sub
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
         %
-        function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, SETTINGS, L)
+        function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, L)
         % PROPOSAL: Incorporate into processing function process_calibrate_demux_filter.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         %
@@ -1024,7 +1045,7 @@ classdef proc_sub
 
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
-            assert(iscell(PreDc.Zv.samplesCaTm))
+            assert(iscell(  PreDc.Zv.samplesCaTm))
             EJ_library.assert.vector(PreDc.Zv.samplesCaTm)
             assert(numel(PreDc.Zv.samplesCaTm) == 5)
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(PreDc.Zv.samplesCaTm)
@@ -1048,8 +1069,8 @@ classdef proc_sub
 
             
             
+            % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
             if isfield(PreDc.Zv, 'CALIBRATION_TABLE_INDEX')
-                % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
                 
                 % ASSERTION
                 % NOTE: Checks both LFR & TDS CDF files.
@@ -1095,6 +1116,7 @@ classdef proc_sub
                 zv_CALIBRATION_TABLE_INDEX, ...
                 PreDc.Zv.useFillValues);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
+            L.logf('info', 'Calibrating voltages - One sequence of records with identical settings at a time.')
             
             for iSubseq = 1:length(iFirstList)
 
@@ -1148,18 +1170,18 @@ classdef proc_sub
                     ssDtSec = double(PreDc.Zv.Epoch(iLast) - PreDc.Zv.Epoch(iFirst)) / (iLast-iFirst) * 1e-9;   % TEMPORARY
                 end
                 
-                biasHighGain = DIFF_GAIN_ss;    % NOTE: Not yet sure that this is correct.
+                biasHighGain = DIFF_GAIN_ss;
 
 
 
-                %=======================
-                % ITERATE OVER CHANNELS
-                %=======================
+                %===================
+                % ITERATE OVER BLTS
+                %===================
                 ssSamplesAVolt = cell(5,1);
                 for iBlts = 1:5
 
                     if strcmp(BltsSrcAsrArray(iBlts).category, 'Unknown')
-                        % Calibrated data is NaN.
+                        % ==> Calibrated data == NaN.
                         ssSamplesAVolt{iBlts} = NaN * zeros(size(ssSamplesTm{iBlts}));
 
                     elseif ismember(BltsSrcAsrArray(iBlts).category, {'GND', '2.5V Ref'})
@@ -1210,7 +1232,7 @@ classdef proc_sub
                             ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};   % NOTE: Must be column array.
                         end
                     end
-                end
+                end    % for iBlts = 1:5
                 
                 %====================
                 % CALL DEMULTIPLEXER
@@ -1218,12 +1240,11 @@ classdef proc_sub
                 [~, SsAsrSamplesAVolt] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
                 
                 % Add demuxed sequence to the to-be complete set of records.
-                %DemuxerOutput = bicas.proc_utils.add_rows_to_struct_fields(DemuxerOutput, DemuxerOutputSubseq);
                 AsrSamplesAVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesAVolt, SsAsrSamplesAVolt);
                 
-            end
+            end    % for iSubseq
             
-        end   % simple_demultiplex
+        end    % calibrate_demux_voltages
 
 
         
@@ -1243,6 +1264,6 @@ classdef proc_sub
 
 
 
-    end   % methods(Static, Access=private)
+    end    % methods(Static, Access=private)
         
 end

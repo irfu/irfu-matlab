@@ -77,7 +77,12 @@ function errorCode = main( varargin )
     %   PROBLEM: Not obvious which order of precedence makes sense. Complicated to use order among settings arguments.
     %       PROPOSAL: Applies setting BEFORE CLI settings args.
     %       PROPOSAL: Applies setting AFTER CLI settings args.
-    %       
+    % 
+    % PROPOSAL: Log some kind of indicator of de facto code version.
+    %   PROPOSAL: git commit (latest)
+    %       NOTE: Different on irfu-matlab and bicas_ROC.
+    %   PROPOSAL: git branch
+    
     
     
     try
@@ -87,7 +92,6 @@ function errorCode = main( varargin )
         % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
         %clear -global SETTINGS
         
-        %C = bicas.error_safe_constants();
         % NOTE: Permitting logging to file from MATLAB instead of bash wrapper in case of using inofficial option.
         L = bicas.logger('bash wrapper', true);
         
@@ -552,8 +556,6 @@ end
 function print_help(SETTINGS)
     %
     % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
-    
-    %C = bicas.error_safe_constants();
     
     
     

@@ -24,6 +24,7 @@ classdef RCT
 % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
 % PROPOSAL: Assert CDF skeleton/master version number.
 % PROPOSAL: Assert skeleton/master.
+%   PRO: Can give better error message when reading the wrong RCT.
 %
 % PROPOSAL: Function for permuting indices to handle dataobj's handling of 1 record-case.
 %
@@ -44,7 +45,7 @@ classdef RCT
 
 
     properties(Access=private, Constant)
-        
+
         % Minimum number of numerator or denominator coefficients in the BIAS RCT.
         N_MIN_TF_NUMER_DENOM_COEFFS = 8;
         
