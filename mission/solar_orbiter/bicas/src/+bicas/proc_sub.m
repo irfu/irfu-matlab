@@ -855,8 +855,11 @@ classdef proc_sub
             
             
             
-            % EXPERIMENTAL:
-            % PROPOSAL: Modify PreDc.Zv.useFillValues here
+            %============================================
+            % Find CDF records to remove due to settings
+            %============================================
+            PreDc.Zv.useFillValues = bicas.proc_sub.add_UFV_records_from_settings(...
+                PreDc.Zv.Epoch, PreDc.Zv.useFillValues, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
             
             
             
@@ -918,18 +921,18 @@ classdef proc_sub
             %=================================
             % Remove data because of settings
             %=================================
-            [...
-                PostDc.Zv.currentAAmpere, ...
-                PostDc.Zv.DemuxerOutput] ...
-                ...
-                = bicas.proc_sub.remove_PostDc_data(...
-                ...
-                PostDc.Zv.currentAAmpere, ...
-                PostDc.Zv.DemuxerOutput, ...
-                PostDc.Zv.Epoch, ...
-                PostDc.Zv.MUX_SET, ...
-                PostDc.isLfr, ...
-                SETTINGS, L);
+%             [...
+%                 PostDc.Zv.currentAAmpere, ...
+%                 PostDc.Zv.DemuxerOutput] ...
+%                 ...
+%                 = bicas.proc_sub.remove_PostDc_data(...
+%                 ...
+%                 PostDc.Zv.currentAAmpere, ...
+%                 PostDc.Zv.DemuxerOutput, ...
+%                 PostDc.Zv.Epoch, ...
+%                 PostDc.Zv.MUX_SET, ...
+%                 PostDc.isLfr, ...
+%                 SETTINGS, L);
 
             
             
@@ -946,63 +949,141 @@ classdef proc_sub
     
     
     
-        % Remove data (set records to fill values) because of settings.
+        % Add more CDF records to remove, based on settings.
         % Ex: Sweeps
         % 
-        function [zvCurrentAAmpere, DemuxerOutput] = remove_PostDc_data(...
-                zvCurrentAAmpere, DemuxerOutput, zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
-            % PROPOSAL: Merge with functionality for not even calibrating records?
-            %   NOTE: This function is for setting data to fill value, after it was calibrated, demuxed.
-            %       ==> It only works for data that can be calibrated. Not for BW=0 data.
+        function zvUseFillValues = add_UFV_records_from_settings(zvEpoch, zvUseFillValues, zv_MUX_SET, isLfr, SETTINGS, L)
+            % PROPOSAL: Do not log removal of science data here, since the actual removal does not take place here.
+            %   CON: This code has access to the settings that determine what should be removed.
+            %
+            % PROPOSAL: Better name
+            %   ~determine
+            %   ~settings
+            %   ~add
+            %   determine_UFV_records
+            %   determine_remove_records
+            %   add_UFV_records_from_settings
             
             LL = 'info';    % LL = Log Level
+
+            bicas.proc_utils.assert_zv_Epoch(zvEpoch)
+            assert(islogical(zvUseFillValues))
+            assert(islogical(isLfr));
             
+            %===============
             % Read settings
-            % NOTE: There is no PostDc.isTds, only .isTdsCwf
+            %===============
             [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv('PROCESSING.L2.REMOVE_DATA.MUX_MODES');
             if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
-                %else            error('BICAS:proc_sub:Assertion', 'Neither LFR or TDS data.')
             end
             removeMarginSec = SETTINGS.get_fv(settingMarginKey);
             
-            % Algorithm for finding what to remove.
-            bRemoveArray = EJ_library.utils.true_with_margin(...
+            %==========================================
+            % Find exact indices/CDF records to remove
+            %==========================================
+            zvUseFillValuesNew = EJ_library.utils.true_with_margin(...
                 zvEpoch, ...
                 ismember(zv_MUX_SET, muxModesRemove), ...
                 removeMarginSec * 1e9);
             
-            % Remove and log
-            [i1Array, i2Array] = EJ_library.utils.split_by_false(bRemoveArray);
-            nRemoveIntervals = numel(i1Array);
-            if nRemoveIntervals > 0
+            % Add the new records to remove, to the already known records to remove.
+            zvUseFillValues = zvUseFillValues | zvUseFillValuesNew;
+            
+            %=====
+            % Log
+            %=====
+            % NOTE: The intervals found BELOW, AFTER adding margins, may not correspond to the intervals found ABOVE,
+            % BEFORE adding margins.
+            % NOTE: Only logging the intervals found in the ABOVE algorithm, NOT the TOTAL list of CCDF records to
+            % remove.
+            [i1Array, i2Array] = EJ_library.utils.split_by_false(zvUseFillValuesNew);
+            nUfvIntervals = numel(i1Array);   % UFV = Use Fill Values
+            if nUfvIntervals > 0
                 
-                %=====
-                % Log
-                %=====
-                L.logf(LL, 'Setting science data to fill value in selected CDF records due to settings: ');
+                %==============
+                % Log settings
+                %==============
+                L.logf(LL, 'Found intervals of CDF records that should be set to fill values (i.e. removed) due to settings:');
                 L.logf(LL, '    Setting %s = [%s]', ...
                     settingMuxModesKey, ...
                     strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '));
+                % IMPLEMENTATION NOTE: Does not explicitly write out unit, since it depends on definition of setting.
+                % Setting key should include the unit.
                 L.logf(LL, '    Setting %s = %g', settingMarginKey, removeMarginSec);
                 
-                for iRi = 1:nRemoveIntervals
+                %===============
+                % Log intervals
+                %===============
+                for iRi = 1:nUfvIntervals
                     iCdfRecord1 = i1Array(iRi);
                     iCdfRecord2 = i2Array(iRi);
                     utc1  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord1));
                     utc2  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord2));
-                    L.logf(LL, '    Records %7i-%7i, %s--%s', iCdfRecord1, iCdfRecord2, utc1, utc2);
+                    L.logf(LL, '    Records %7i-%7i, %s -- %s', iCdfRecord1, iCdfRecord2, utc1, utc2);
                 end
-                
-                %=============
-                % Remove data
-                %=============
-                DemuxerOutput = structfun(...
-                    @(x) (bicas.proc_utils.filter_rows(x, bRemoveArray)), ...
-                    DemuxerOutput, 'UniformOutput', false);
-                zvCurrentAAmpere(bRemoveArray, :) = NaN;     % BUG: Sets variable that does not exist!   ???
-            end            
+            end
+            
         end
+    
+    
+    
+        % Remove data (set records to fill values) because of settings.
+        % Ex: Sweeps
+        % 
+%         function [zvCurrentAAmpere, DemuxerOutput] = remove_PostDc_data(...
+%                 zvCurrentAAmpere, DemuxerOutput, zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
+%             % PROPOSAL: Merge with functionality for not even calibrating records?
+%             %   NOTE: This function is for setting data to fill value, after it was calibrated, demuxed.
+%             %       ==> It only works for data that can be calibrated. Not for BW=0 data.
+%             
+%             LL = 'info';    % LL = Log Level
+%             
+%             % Read settings
+%             [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv('PROCESSING.L2.REMOVE_DATA.MUX_MODES');
+%             if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
+%             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
+%                 %else            error('BICAS:proc_sub:Assertion', 'Neither LFR or TDS data.')
+%             end
+%             removeMarginSec = SETTINGS.get_fv(settingMarginKey);
+%             
+%             % Algorithm for finding the exact indices/CDF records to remove.
+%             bRemoveArray = EJ_library.utils.true_with_margin(...
+%                 zvEpoch, ...
+%                 ismember(zv_MUX_SET, muxModesRemove), ...
+%                 removeMarginSec * 1e9);
+%             
+%             % Remove and log
+%             [i1Array, i2Array] = EJ_library.utils.split_by_false(bRemoveArray);
+%             nRemoveIntervals = numel(i1Array);
+%             if nRemoveIntervals > 0
+%                 
+%                 %=====
+%                 % Log
+%                 %=====
+%                 L.logf(LL, 'Setting science data to fill value in selected CDF records due to settings: ');
+%                 L.logf(LL, '    Setting %s = [%s]', ...
+%                     settingMuxModesKey, ...
+%                     strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '));
+%                 L.logf(LL, '    Setting %s = %g', settingMarginKey, removeMarginSec);
+%                 
+%                 for iRi = 1:nRemoveIntervals
+%                     iCdfRecord1 = i1Array(iRi);
+%                     iCdfRecord2 = i2Array(iRi);
+%                     utc1  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord1));
+%                     utc2  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord2));
+%                     L.logf(LL, '    Records %7i-%7i, %s--%s', iCdfRecord1, iCdfRecord2, utc1, utc2);
+%                 end
+%                 
+%                 %=============
+%                 % Remove data
+%                 %=============
+%                 DemuxerOutput = structfun(...
+%                     @(x) (bicas.proc_utils.filter_rows(x, bRemoveArray)), ...
+%                     DemuxerOutput, 'UniformOutput', false);
+%                 zvCurrentAAmpere(bRemoveArray, :) = NaN;     % BUG: Sets variable that does not exist!   ???
+%             end            
+%         end
     
     
 
