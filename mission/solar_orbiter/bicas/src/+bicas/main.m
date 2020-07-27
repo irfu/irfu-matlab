@@ -232,7 +232,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    startTimeTicSeconds = tic;
+    tTicToc = tic();
     
     
     
@@ -469,9 +469,10 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    executionWallTimeSeconds = toc(startTimeTicSeconds);
-    L.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
-end
+    %executionWallTimeSeconds = toc(startTimeTicSeconds);
+    %L.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
+    bicas.log_speed_profiling(L, 'main_without_error_handling', tTicToc);
+end    % main_without_error_handling
 
 
 

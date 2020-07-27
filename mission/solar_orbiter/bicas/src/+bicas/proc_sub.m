@@ -282,6 +282,8 @@ classdef proc_sub
         % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining "virtual snapshot" length.
         % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
         
+            tTicToc = tic();
+            
             % ASSERTIONS
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
@@ -477,6 +479,11 @@ classdef proc_sub
             
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
+            
+            
+            
+            % NOTE: Assumes no "return" statement.
+            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC', tTicToc, nRecords, 'record')
         end
         
         
@@ -489,6 +496,8 @@ classdef proc_sub
         % BUG?: Does not use CHANNEL_STATUS_INFO.
         % NOTE: BIAS output datasets do not have a variable for the length of snapshots. Need to use NaN/fill value.
 
+            tTicToc = tic();
+            
             % ASSERTIONS
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
@@ -653,6 +662,11 @@ classdef proc_sub
 
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
+            
+            
+            
+            % NOTE: Assumes no "return" statement.
+            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC', tTicToc, nRecords, 'record')
         end
 
 
@@ -684,15 +698,18 @@ classdef proc_sub
 
 
 
-        function [OutSciZv] = process_PostDC_to_LFR(SciPostDc, outputDsi)
+        function [OutSciZv] = process_PostDC_to_LFR(SciPostDc, outputDsi, L)
         % Processing function. Convert PostDC to any one of several similar LFR dataset PDs.
         
+            tTicToc = tic();
+            
             % ASSERTIONS
             bicas.proc_sub.assert_PostDC(SciPostDc)
             
             OutSciZv = [];
             
             nSamplesPerRecord = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);   % Samples per record.
+            nRecords          = size(SciPostDc.Zv.Epoch, 1);
             
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
@@ -761,14 +778,23 @@ classdef proc_sub
             EJ_library.assert.struct(OutSciZv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'BW', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
+            
+            
+            
+            % NOTE: Assumes no "return" statement.
+            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_LFR', tTicToc, nRecords, 'record')
         end    % process_PostDC_to_LFR
 
 
 
-        function OutSciZv = process_PostDC_to_TDS(SciPostDc, outputDsi)
+        function OutSciZv = process_PostDC_to_TDS(SciPostDc, outputDsi, L)
+            
+            tTicToc = tic();
             
             % ASSERTIONS
             bicas.proc_sub.assert_PostDC(SciPostDc)
+
+            nRecords = size(SciPostDc.Zv.Epoch, 1);
             
             OutSciZv = [];
             
@@ -823,6 +849,11 @@ classdef proc_sub
             EJ_library.assert.struct(OutSciZv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
+            
+            
+            
+            % NOTE: Assumes no "return" statement.
+            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_TDS', tTicToc, nRecords, 'record')
         end
         
         
@@ -1122,8 +1153,10 @@ classdef proc_sub
         %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
         %
-        % PROPOSAL: Move processing of one subsequence (one for loop iteration) into one function.
+        % PROPOSAL: Move processing of one subsequence (one for loop iteration) into its own function.
 
+            tTicToc  = tic();
+            
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
             assert(iscell(  PreDc.Zv.samplesCaTm))
@@ -1134,6 +1167,10 @@ classdef proc_sub
                 size(PreDc.Zv.MUX_SET,        1), ...
                 size(PreDc.Zv.DIFF_GAIN,      1), ...
                 size(PreDc.Zv.samplesCaTm{1}, 1)])
+            nRecords = EJ_library.assert.sizes(...
+                PreDc.Zv.MUX_SET,        [-1,   1], ...
+                PreDc.Zv.DIFF_GAIN,      [-1,   1], ...
+                PreDc.Zv.samplesCaTm{1}, [-1, NaN]);
 
 
 
@@ -1325,6 +1362,10 @@ classdef proc_sub
                 
             end    % for iSubseq
             
+            
+            
+            % NOTE: Assumes no "return" statement.
+            bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages', tTicToc, nRecords, 'record')
         end    % calibrate_demux_voltages
 
 
