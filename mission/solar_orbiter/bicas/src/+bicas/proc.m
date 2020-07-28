@@ -108,13 +108,18 @@ classdef proc
             end
             Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
-            HkSciTimePd  = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
-            SciPreDcPd   = bicas.proc_sub.process_LFR_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd  = bicas.proc_sub.process_calibrate_demux_filter(  SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
-            OutputSciPd  = bicas.proc_sub.process_PostDC_to_LFR(         SciPostDcPd, outputDsi);
+            %profile -memory on ; profile on
+            
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(         SciPostDcPd, outputDsi, L);
+            
+            %profile report ; profile off
             
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
+            bicas.log_memory_profiling(L, 'produce_L2_LFR - 6');
         end
 
 

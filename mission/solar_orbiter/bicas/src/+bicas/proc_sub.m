@@ -898,17 +898,9 @@ classdef proc_sub
             % DEMUX
             %=======
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
-            
-            nRecords = size(PostDc.Zv.Epoch, 1);
-            tTicToc  = tic();            
-            
+
             PostDc.Zv.DemuxerOutput = bicas.proc_sub.calibrate_demux_voltages(PreDc, Cal, L);
             
-            wallTimeSec = toc(tTicToc);
-            L.logf('info', ...
-                'bicas.proc_sub.calibrate_demux_voltages: Time used for execution (wall time): %g [s], %g [s/record]', ...
-                wallTimeSec, wallTimeSec/nRecords)
-
 
 
             %=========================
