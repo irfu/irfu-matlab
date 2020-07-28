@@ -251,6 +251,9 @@ loggable_main_code() {
     #
     # NOTE: The irfu-matlab code itself adds subdirectories to irfu-matlab/. "genpath" should therefore not be required,
     # unless BICAS requires code before irfu-matlab is initialized.
+    #
+    # NOTE: Using -nojvm is supposed to save ~400 MiB of RAM.
+    # https://se.mathworks.com/help/matlab/matlab_prog/resolving-out-of-memory-errors.html
     #====================================================================================================================
     echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
     # NOTE: EJ_library is needed before calling irf(...).

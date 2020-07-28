@@ -166,10 +166,10 @@ classdef proc
             
             
             
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(InputSciPd, InputHkPd,   SETTINGS, L);
-            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd, InputHkPd,   SETTINGS, L);
+            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(          InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd, InputCurPd,  Cal, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(         SciPostDcPd, outputDsi, L);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;

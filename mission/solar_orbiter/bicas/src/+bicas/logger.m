@@ -43,19 +43,16 @@ classdef logger < handle
 %   Log to file, but specify it after instantiation.
 %   Log to stdout.
 %
-% PROPOSAL: Inofficial logLevel='WARNING' which is translated into a regular warning but somehow emphasized in the logs.
+% TODO-DEC: Should special, extra logging functionality be in this class or outside of it?
+%   Ex: bicas.calib.log_TF
+%   Ex: Logging for speed tests.
+%   PRO: Shorter call. Can use L.method(...) instead of bicas.logfunc(L, ...)
+%
+% PROPOSAL: Way of emphasizing selected log messages.
 %   PROPOSAL: Message is framed with "=".
 %   PROPOSAL: All text is uppercase.
-%
-% PROPOSAL: Submit SETTINGS to log object.
-%   PRO: Can include specialized logging function that use SETTINGS.
-%       PRO: Can call these functions without invoking SETTINGS every time.
-%   CON: Makes class dependent on SETTINGS. ==> Bad for logging during error handling.
-%   CON: SETTINGS is finalized (made read-only) AFTER logger object is initialized.
-%       PROPOSAL: Set SETTINGS using separate loger method first when it has been finalized.
-%           NOTE: Any function that uses SETTINGS can not be called earlier than this anyway.
-%
-% PROPOSAL: Move constant(s) to class for error-safe constants.
+%   PROPOSAL: Inofficial logLevel='WARNING' (capitals) which is formatted and translated into a regular logLevel='warning'.
+%   PROPOSAL: Separate log method.
 
 
 

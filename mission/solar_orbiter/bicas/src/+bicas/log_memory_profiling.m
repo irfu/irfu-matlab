@@ -71,7 +71,7 @@ function log_memory_profiling(L, locationName)
         headerDataCa{end+1} = strjoin(dataStrs(iRow, :), COLUMN_SEPARATOR);
     end
     tableStr = [strjoin(headerDataCa, newline), newline];
-    tableStr = EJ_library.str.indent_str(tableStr, INDENT_SIZE);   % Indent table.
+    tableStr = EJ_library.str.indent(tableStr, INDENT_SIZE);   % Indent table.
 
     str = [firstRowStr, tableStr];
     str = EJ_library.str.add_prefix_on_every_row(str, LOG_PREFIX);

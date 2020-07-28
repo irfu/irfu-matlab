@@ -28,6 +28,9 @@ function handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFun
     %           with).
     %   PROPOSAL: handle_struct_normalization_anomaly
     %
+    % PROBLEM: Concept of changing fieldnames of actual struct is bad when struct is so large that it may cause memory
+    %          problems. May want to avoid modifying struct in order to help MATLAB's code optimization (prevent
+    %          temporary copies).
     
     while numel(varargin) >= 2    % Iterate over pairs of varargin components.
         newFn      = varargin{1};

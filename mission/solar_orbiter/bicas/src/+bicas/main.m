@@ -219,7 +219,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
         % NOTE: Does not capture return value errorCode.
         recursiveMsg = recursive_exception_msg(Exception.cause{iCause});
         
-        recursiveMsg = EJ_library.str.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
+        recursiveMsg = EJ_library.str.indent(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
         msg = [msg, recursiveMsg];
     end
     
@@ -469,8 +469,6 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    %executionWallTimeSeconds = toc(startTimeTicSeconds);
-    %L.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
     bicas.log_speed_profiling(L, 'main_without_error_handling', tTicToc);
 end    % main_without_error_handling
 

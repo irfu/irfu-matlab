@@ -558,7 +558,7 @@ end
 %
 function validation_warning(varargin)
     msg    = sprintf(varargin{:});
-    msg    = EJ_library.str.indent_str(msg, 3);
+    msg    = EJ_library.str.indent(msg, 3);
     msg(2) ='*';
 
     fwrite(1, msg)

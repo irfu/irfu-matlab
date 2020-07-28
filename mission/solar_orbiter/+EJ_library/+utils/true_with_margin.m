@@ -1,6 +1,6 @@
 %
-% Given a sequence of logical values (1D array) placed on a coordinate axis x (numeric 1D array), add an x margin to the
-% sequences of true values.
+% Given a sequence of logical values (1D array), arbitrarily placed on a coordinate axis x (numeric 1D array), add an x
+% margin to the x-ordered sequences of true values.
 %
 %
 % ARGUMENTS
@@ -10,19 +10,19 @@
 % xMargin : Scalar, positive, finite or  +inf.
 %
 %
-%
 % RETURN VALUES
 % =============
-% b2 : Logical. Same size as b1. Every true value is within an x distance xMargin of a true v1 value.
-%       b2(i) == true
+% b2 : Logical. Same size as b1. Every true value is within an x distance xMargin of a true v1 value. Every false value
+%      is not.
+%       (b2(i) == true)
 %       <==>
-%       There is at least one j such the b1(j)==true and abs(x(i)-x(j)) <= xMargin
+%       There is at least one j such the b1(j)==true and abs(x(i)-x(j)) <= xMargin.
+%
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-07-09.
 %
 function b2 = true_with_margin(x, b1, xMargin)
-    % PROPOSAL: Automatic test code.
     %
     % PROPOSAL: Extend to use arbitrary x2<>x1, associated with y2.
     %   CON: Less well defined what that means. How handle if x2(i) is in the middle of an uninterrupted y1=true

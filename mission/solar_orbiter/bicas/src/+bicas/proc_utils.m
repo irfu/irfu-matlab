@@ -699,16 +699,11 @@ classdef proc_utils
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
                     
-                    %if nUniqueValues > MAX_EPOCH_UNIQUES_PRINTED
                     if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
                         epochMinStr = bicas.proc_utils.tt2000_to_UTC_str(min(varValue));
                         epochMaxStr = bicas.proc_utils.tt2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
-%                         valueStrs = {};
-%                         for i = 1:numel(uniqueValues)
-%                             valueStrs{end+1} = bicas.proc_utils.tt2000_to_UTC_str(uniqueValues(i));
-%                         end
                         bicas.proc_utils.assert_zv_Epoch(uniqueValues)
                         valueStrs = EJ_library.cdf.tt2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
@@ -720,7 +715,7 @@ classdef proc_utils
                     error('BICAS:proc_utils', 'Illegal argument varType="%s"', varType)
             end
             
-            % Assemble the final string
+            % Assemble the final strings.
             ColumnStrs.name             = varName;
             ColumnStrs.size             = sizeStr;
             ColumnStrs.nNan             = nNanStr;
@@ -738,6 +733,7 @@ classdef proc_utils
         % =========
         % Zvs : Struct with ~zVariables.
         %       NOTE: Uses field name to determine whether field is Epoch-like or not.
+        %
         function log_zVars(Zvs, SETTINGS, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
@@ -749,7 +745,7 @@ classdef proc_utils
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13:02:34
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13h02m34s
             
-            LOG_LEVEL = 'debug';
+            LL = 'debug';
 
             fnList     = fieldnames(Zvs);
             ColumnStrs = EJ_library.utils.empty_struct([0,1], 'name', 'size', 'nNan', 'percentageNan', 'nUniqueValues', 'values');
@@ -780,22 +776,23 @@ classdef proc_utils
             end
             
             headerStrs = {'Name', 'Size', '#NaN', '%NaN', '#Uniq', 'Values'};
-            tableStrs = {};
-            tableStrs(:,1) = {ColumnStrs(:).name}';
-            tableStrs(:,2) = {ColumnStrs(:).size}';
-            tableStrs(:,3) = {ColumnStrs(:).nNan}';
-            tableStrs(:,4) = {ColumnStrs(:).percentageNan}';
-            tableStrs(:,5) = {ColumnStrs(:).nUniqueValues}';
-            tableStrs(:,6) = {ColumnStrs(:).values}';
-            tableColumnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
-            [headerStrs, tableStrs, columnWidths] = EJ_library.utils.assist_print_table(headerStrs, tableStrs,  tableColumnAdjustments);
+            dataStrs = {};
+            dataStrs(:,1) = {ColumnStrs(:).name}';
+            dataStrs(:,2) = {ColumnStrs(:).size}';
+            dataStrs(:,3) = {ColumnStrs(:).nNan}';
+            dataStrs(:,4) = {ColumnStrs(:).percentageNan}';
+            dataStrs(:,5) = {ColumnStrs(:).nUniqueValues}';
+            dataStrs(:,6) = {ColumnStrs(:).values}';
+            columnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
+            [headerStrs, dataStrs, columnWidths] = EJ_library.str.assist_print_table(...
+                headerStrs, dataStrs,  columnAdjustments);
 
-            L.log(LOG_LEVEL, strjoin(headerStrs, ' '))
-            L.log(LOG_LEVEL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
+            L.log(LL, strjoin(headerStrs, ' '))
+            L.log(LL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
             for iRow = 1:numel(ColumnStrs)
-                L.log(LOG_LEVEL, strjoin(tableStrs(iRow, :), ' '))
+                L.log(LL, strjoin(dataStrs(iRow, :), ' '))
             end
-            L.logf(LOG_LEVEL, [...
+            L.logf(LL, [...
                 '    #NaN = Number of NaN\n', ...
                 '    #Uniq = Number of unique values incl. NaN which counts as equal to itself.\n', ...
                 '    Mm = min-max\n', ...
@@ -805,16 +802,11 @@ classdef proc_utils
 
 
         % Assert that variable is an "zVar Epoch-like" variable.
-        function assert_zv_Epoch(Epoch)
-        % PROPOSAL: Change name: assert_zv_Epoch_zvar
-        % PROPOSAL: Separate functions: assert_zv_Epoch_zvar, assert_zv_Epoch.
-        
-            if ~iscolumn(Epoch)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')   % Right ID?                
-            elseif ~isa(Epoch, 'int64')
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')   % Right ID?
-            end
-            
+        function assert_zv_Epoch(zvEpoch)
+
+            assert(iscolumn(zvEpoch),     'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')
+            assert(isa(zvEpoch, 'int64'), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')
+
             % Use?!!! Too processing heavy?!
             %validateattributes(Epoch, {'numeric'}, {'increasing'})
         end
@@ -824,17 +816,13 @@ classdef proc_utils
         function assert_ACQUISITION_TIME(ACQUISITION_TIME)
         % Assert that variable is an "zVar ACQUISITION_TIME-like" variable.
         
-            if ~isa(ACQUISITION_TIME, 'uint32')
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not uint32.')
-            elseif ndims(ACQUISITION_TIME) ~= 2
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not 2D.')
-            elseif size(ACQUISITION_TIME, 2) ~= 2
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME does not have two columns.')
-            elseif any(ACQUISITION_TIME(:, 1) < 0)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME has negative number of integer seconds.')
-            elseif any(65536 <= ACQUISITION_TIME(:, 2))    % Does not need to check for negative values due to uint32.
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME subseconds out of range.')
-            end
+            EMID = 'BICAS:proc_utils:Assertion:IllegalArgument';
+        
+            assert(isa(  ACQUISITION_TIME, 'uint32'),     EMID, 'ACQUISITION_TIME is not uint32.')
+            EJ_library.assert.size(ACQUISITION_TIME, [NaN, 2])
+            assert(all(  ACQUISITION_TIME(:, 1) >= 0),    EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
+            % IMPLEMENTATION NOTE: Does not need to check for negative values due to uint32.
+            assert(all(  ACQUISITION_TIME(:, 2) < 65536), EMID, 'ACQUISITION_TIME subseconds out of range.')
         end
         
         
