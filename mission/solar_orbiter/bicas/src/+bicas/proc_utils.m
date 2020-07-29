@@ -56,6 +56,9 @@ classdef proc_utils
         % Generic utility function.
         % Add values to every struct field by adding components after their highest row index (let them grow in the row
         % index).
+        %
+        % NOTE 2020-07-29: Strong indications that using this function is inefficient if called for one added record at
+        % a time.
  
 
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
@@ -71,33 +74,6 @@ classdef proc_utils
 
 
 
-        % MOVED TO SEPARATE GENERIC FUNCTION.
-%         function Rx = get_LFR_Rx(R0, R1, R2, iLsf)
-%         % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
-%         %
-%         % ARGUMENTS
-%         % =========
-%         % R0, R1, R2, FREQ : LFR CDF zVariables. All must have identical array sizes.
-%         %                    FREQ(i) == 0 (not 1) ==> F0 and so on.
-%         % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
-%         %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on      
-%         %                    the value of FREQ in the corresponding component.
-%         %                    NOTE: Not MATLAB class "logical".
-%         %
-%         % NOTE: Works for all array sizes.
-%             
-%             Rx = NaN * ones(size(iLsf));        % Set to NaN (should always be overwritten if code works).
-%             
-%             I = (iLsf==1);   Rx(I) = R0(I);
-%             I = (iLsf==2);   Rx(I) = R1(I);
-%             I = (iLsf==3);   Rx(I) = R2(I);
-%             I = (iLsf==4);   Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
-%             
-%             assert(all(~isnan(Rx)))
-%         end
-
-
-        
         function tt2000 = ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for Epoch in CDF files.
         % 
@@ -442,12 +418,9 @@ classdef proc_utils
         % ca                    : Column cell array of 1D vectors.
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
             EJ_library.assert.vector(nCopyColsPerRowArray)
-            %assert(ismatrix(M))
-            %assert(size(M, 1) == length(nCopyColsPerRowArray))
             nRows = EJ_library.assert.sizes(M, [-1, NaN], nCopyColsPerRowArray, [-1, 1]);
             
             ca = cell(size(M, 1), 1);
-%             for iRow = 1:numel(nCopyColsPerRowVec)
             for iRow = 1:nRows
                 ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
             end
@@ -455,6 +428,8 @@ classdef proc_utils
         
 
         
+        % ARGUMENTS
+        % =========
         % ca                    : Column cell array of 1D vectors.
         % nMatrixColumns        : Scalar. Number of columns in M.
         % M                     : Numeric 2D matrix.
@@ -504,59 +479,6 @@ classdef proc_utils
         
         
         
-        % 2020-03-10: Function seems to not be used any more. DSAMP_TIME abolished from BIAS datasets?
-%         function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
-%         %
-%         % ARGUMENTS
-%         % =========
-%         % freqHz     : Frequency column vector in s^-1. Can not handle freq=NaN since the output is an integer.
-%         % nSpr       : Number of samples per record (SPR).
-%         %
-%         % RETURN VALUE
-%         % ============
-%         % SAMP_DTIME : Analogous to BIAS zVariable with CDF_UINT4=uint32. NOTE: Unit ns.
-%         %
-%         % ~BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
-%         % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
-%         % 2048/256 Hz = 8e9 ns > 2^31 ns ~ 2e9 ns.
-%         % 2017-03-08: Xavier Bonnin (LESIA) and Bruno Katra (RPW/LFR) are aware of this and seem to have implemented it
-%         % that way intentionally!!!
-%         %
-%         % IMPLEMENTATION NOTE: Algorithm should require integers in order to have a very predictable behaviour (useful
-%         % when testing).
-%         
-%             % ASSERTIONS
-%             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
-%             elseif ~isscalar(nSpr)
-%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
-%             end
-%             
-%             nRecords = size(freqHz, 1);
-%             
-%             % Express frequency as period length in ns (since tt2000 uses ns as a unit).
-%             % Use the same MATLAB class as tt
-%             % Unique frequency per record.
-%             periodNsColVec = int64(1e9 ./ freqHz);   % Ns = ns = nanoseconds
-%             periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
-%                         
-%             % Conventions:
-%             % ------------
-%             % Time unit: ns (as for tt2000)            
-%             % Algorithm should require integers to have a very predictable behaviour (useful when testing).
-%             
-%             % Indices for within every record (start at zero for every record).
-%             iSampleRowVec = int64(0:(nSpr-1));
-%             iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
-%             
-%             % Unique time for every sample in every record.
-%             SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
-%             
-%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.cdf.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
-%         end
-        
-        
-        
         % mSize : [nRows, nColumns, ...] so that the return value from the size() function can be used.
         function M = create_NaN_array(mSize)
             assert(numel(mSize) >= 2)
@@ -566,46 +488,6 @@ classdef proc_utils
 
 
         
-%         function y2 = interpolate_float_records(zvTt2000_1, y1, zvTt2000_2, method)
-%             % Interpolate ~zVariable to other points in time.
-%             % Values which can not be interpolated will be set to NaN.
-%             % This is intended for interpolating HK and CURRENT to SCI record times.
-%             %
-%             % IMPLEMENTATION NOTE: There is (deliberately) no assertion to check for NaN, neither in input nor output.
-%             % The caller is supposed to check and, depending on settings etc decide whether to interpolate anyway.
-%             %
-%             % IMPLEMENTATION NOTE: interp1 does seem to require y1 to be float. Using NaN as a "fill value" for the
-%             % return value implies that it too has to be a float.
-%             
-%             % PROPOSAL: Assertion issorted.
-%             
-% %             switch(method)
-% %                 case 'nearest'
-% % %                     assert(...
-% % %                         EJ_library.utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
-% % %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-% % %                         'Can not interpolate data since the time range of zvTt2000_2 is not a subset of zvTt2000_1.')
-% % 
-% %                 case 'previous'
-% %                     % IMPLEMENTATION NOTE: Used for currents which can be extrapolate forward, but not backward.
-% % %                     assert(min(zvTt2000_1) <= min(zvTt2000_2), ...
-% % %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-% % %                         'Can not interpolate data since the time range of zvTt2000_2 does not begin after zvTt2000_1 begins.')
-% % 
-% %                 otherwise
-% %                     error(...
-% %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-% %                         'Illegal argument method="%s".', ...
-% %                         method)
-% %             end
-%             
-%             bicas.proc_utils.assert_zv_Epoch(zvTt2000_1)
-%             bicas.proc_utils.assert_zv_Epoch(zvTt2000_2)
-%             y2 = interp1(double(zvTt2000_1), y1, double(zvTt2000_2), method, NaN);
-%         end
-        
-
-
         function utcStr = tt2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
             
@@ -827,19 +709,22 @@ classdef proc_utils
         
         
         
-        function assert_struct_num_fields_have_same_N_rows(S)
-        % Assert that the below variables inside the struct have the same size in the first index.
-        % (1) numeric fields                  : The field itself
-        % (2) cell fields                     : Cell array components
-        % (3) struct field (inside the struct): The inner struct's fields (not recursive)
-        % Asserts that there are no other types of variables.
+        function nRows = assert_struct_num_fields_have_same_N_rows(S)
+        % Assert that data structure have the same number of rows in its constituent parts.
         %
         % Useful for structs where all fields represent CDF zVariables and/or derivatives thereof, the size in the first
         % index (number of CDF record) should be equal.
-        
+        %
+        % ARGUMENTS
+        % =========
+        % S : Struct
+        %       Fields may (ony) be of the following types. Number of rows must be identical for the specified
+        %       data structure components (right-hand side).
+        %       (1) numeric/logical fields          : The field itself
+        %       (2) cell fields                     : Cell array components (not the cell array itself!)
+        %       (3) struct field (inside the struct): The inner struct's fields (not recursive)
+
         % NOTE: Function name somewhat bad.
-        % PROPOSAL: Make recursive?!
-        % PROPOSAL: Implement using new features in EJ_library.assert.size.
         
             fieldNamesList1 = fieldnames(S);
             nRowsArray = [];
@@ -869,9 +754,13 @@ classdef proc_utils
                     
                 end
             end
+            
+            nRows = unique(nRowsArray);   % NOTE: Empty vector if nRowsArray is empty.
+            
             if length(unique(nRowsArray)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
                 error('BICAS:proc_utils:Assertion', ...
-                    'Numeric fields and cell array components in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
+                    ['Numeric fields and cell array components in struct do not have the same number', ...
+                    ' of rows (likely corresponding to CDF zVar records).'])
             end
         end
         

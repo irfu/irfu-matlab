@@ -119,7 +119,7 @@ classdef proc
             
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
-            bicas.log_memory_profiling(L, 'produce_L2_LFR - 6');
+            bicas.log_memory_profiling(L, 'bicas.produce_L2_LFR:end');
         end
 
 

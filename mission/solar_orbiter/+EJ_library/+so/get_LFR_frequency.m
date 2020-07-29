@@ -25,6 +25,8 @@ function freqHz = get_LFR_frequency(iLsf)
     
     LSF_HZ = EJ_library.so.constants.LSF_HZ;
     
+    % PROPOSAL: Somehow avoid having an argument for lsfArrayHz. Have it as a constant somehow.
+    
     % ASSERTION
     uniqueValues = unique(iLsf);
     if ~all(ismember(uniqueValues, [1,2,3,4]))

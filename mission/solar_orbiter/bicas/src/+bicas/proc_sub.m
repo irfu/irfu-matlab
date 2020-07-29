@@ -37,6 +37,7 @@ classdef proc_sub
 %   PROPOSAL: proc_LFR
 %   PROPOSAL: proc_TDS
 %   PROPOSAL: proc_demux_calib
+%   PROPOSAL: Local utility functions are moved to bicas.proc_utils.
 %
 % PROPOSAL: Merge process_PostDC_to_LFR
 %           and   process_PostDC_to_TDS.
@@ -359,19 +360,15 @@ classdef proc_sub
             PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), zv_Rx==1 );
             PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), zv_Rx==1 );
             
-            PreDc.Zv.Epoch                  = InSci.Zv.Epoch;
-            PreDc.Zv.DELTA_PLUS_MINUS       = bicas.proc_utils.derive_DELTA_PLUS_MINUS(zvFreqHz, nCdfSamplesPerRecord);            
-            PreDc.Zv.freqHz                 = zvFreqHz;
-            PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
-            PreDc.Zv.BW                     = InSci.Zv.BW;
-            PreDc.Zv.useFillValues          = ~logical(InSci.Zv.BW);
-            PreDc.Zv.DIFF_GAIN              = HkSciTime.DIFF_GAIN;
-            PreDc.Zv.iLsf                   = iLsfZv;
-            
-            if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
-                % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
-                PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
-            end
+            PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
+            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc_utils.derive_DELTA_PLUS_MINUS(zvFreqHz, nCdfSamplesPerRecord);            
+            PreDc.Zv.freqHz                  = zvFreqHz;
+            PreDc.Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
+            PreDc.Zv.BW                      = InSci.Zv.BW;
+            PreDc.Zv.useFillValues           = ~logical(InSci.Zv.BW);
+            PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
+            PreDc.Zv.iLsf                    = iLsfZv;            
+            PreDc.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(InSci.Zv, nRecords, C);
             
             
             
@@ -471,11 +468,9 @@ classdef proc_sub
 
             
             
-            PreDc.hasSnapshotFormat    = C.isLfrSurvSwf;
-            PreDc.isLfr                = true;
-            PreDc.isTdsCwf             = false;
-%             PreDc.nRecords             = nRecords;
-%             PreDc.nCdfSamplesPerRecord = nCdfSamplesPerRecord;
+            PreDc.hasSnapshotFormat = C.isLfrSurvSwf;
+            PreDc.isLfr             = true;
+            PreDc.isTdsCwf          = false;
             
 
             
@@ -484,10 +479,9 @@ classdef proc_sub
             
             
             
-            % NOTE: Assumes no "return" statement.
             bicas.log_speed_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC', tTicToc, nRecords, 'record')
-            bicas.log_memory_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC');
-        end
+            bicas.log_memory_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC:end');
+        end    % process_LFR_to_PreDC
         
         
         
@@ -529,12 +523,12 @@ classdef proc_sub
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
-            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
-
             % CDF ASSERTION
             if ~issorted(InSci.Zv.Epoch, 'strictascend')
                 error('Voltage timestamps do not increase (all antennas combined).')
             end
+
+            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
             
             %===============================================================================================
             % Normalize zVar names
@@ -551,16 +545,15 @@ classdef proc_sub
 
 
 
-            nRecords             = size(InSci.Zv.Epoch, 1);
-            nCdfSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the zVariable, not necessarily actual data.
+            nRecords                  = size(InSci.Zv.Epoch, 1);
+            nCdfMaxSamplesPerSnapshot = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the zVariable, not necessarily actual data.
 
-            % CDF ASSERTION
-            if ~issorted(InSci.Zv.Epoch, 'strictascend')
-                error('Voltage timestamps do not increase (all antennas combined).')
-            end            
             
-            freqHzZv = double(InSci.Zv.SAMPLING_RATE);
             
+            %==============
+            % Set freqHzZv
+            %==============
+            freqHzZv = double(InSci.Zv.SAMPLING_RATE);            
             if any(freqHzZv == 255)
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY');
                 anomalyDescrMsg = 'Finds illegal stated sampling frequency 255 in TDS L1/L1R LFM-RSWF dataset.';
@@ -586,21 +579,20 @@ classdef proc_sub
                 end
             end
             
+            
+            
             PreDc = [];
             
-            PreDc.Zv.Epoch            = InSci.Zv.Epoch;
-            PreDc.Zv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHzZv, nCdfSamplesPerRecord);
-            PreDc.Zv.freqHz           = freqHzZv;
-            PreDc.Zv.QUALITY_FLAG     = InSci.Zv.QUALITY_FLAG;
-            PreDc.Zv.QUALITY_BITMASK  = InSci.Zv.QUALITY_BITMASK;
-            PreDc.Zv.SYNCHRO_FLAG     = InSci.Zv.SYNCHRO_FLAG;
-            PreDc.Zv.MUX_SET          = HkSciTime.MUX_SET;
-            PreDc.Zv.DIFF_GAIN        = HkSciTime.DIFF_GAIN;
-            PreDc.Zv.useFillValues    = false(nRecords, 1);
-            if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
-                % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
-                PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
-            end
+            PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
+            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHzZv, nCdfMaxSamplesPerSnapshot);
+            PreDc.Zv.freqHz                  = freqHzZv;
+            PreDc.Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
+            PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
+            PreDc.Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
+            PreDc.Zv.MUX_SET                 = HkSciTime.MUX_SET;
+            PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
+            PreDc.Zv.useFillValues           = false(nRecords, 1);
+            PreDc.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(InSci.Zv, nRecords, C);
 
 
 
@@ -662,28 +654,31 @@ classdef proc_sub
 
 
 
-            if C.isL1R
-                assert(size(InSci.Zv.WAVEFORM_DATA, 2) == 3, ...
-                    'BICAS:proc_sub:process_TDS_to_PreDC:Assertion:DatasetFormat', 'TDS zVar WAVEFORM_DATA has an unexpected size.')
-            elseif C.isL1
-                assert(size(InSci.Zv.WAVEFORM_DATA, 2) == 8, ...
-                    'BICAS:proc_sub:process_TDS_to_PreDC:Assertion:DatasetFormat', 'TDS zVar WAVEFORM_DATA has an unexpected size.')
+            %==========================
+            % Set PreDc.Zv.samplesCaTm
+            %==========================
+            % CDF ASSERTION
+            if     C.isL1R   WAVEFORM_DATA_nChannels = 3;
+            elseif C.isL1    WAVEFORM_DATA_nChannels = 8;
             end
+            assert(...
+                ~EJ_library.assert.have_sizes(InSci.Zv.WAVEFORM_DATA, [nRecords, WAVEFORM_DATA_nChannels, nCdfMaxSamplesPerSnapshot], ...
+                'BICAS:proc_sub:process_TDS_to_PreDC:Assertion:DatasetFormat', 'TDS zVar WAVEFORM_DATA has an unexpected size.'))
             modif_WAVEFORM_DATA = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
-
+            
             PreDc.Zv.samplesCaTm    = cell(5,1);
             PreDc.Zv.samplesCaTm{1} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.Zv.nValidSamplesPerRecord );
             PreDc.Zv.samplesCaTm{2} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.Zv.nValidSamplesPerRecord );
             PreDc.Zv.samplesCaTm{3} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.Zv.nValidSamplesPerRecord );
-            PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.create_NaN_array([nRecords, nCdfSamplesPerRecord]);
-            PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.create_NaN_array([nRecords, nCdfSamplesPerRecord]);
+            PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.create_NaN_array([nRecords, nCdfMaxSamplesPerSnapshot]);
+            PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.create_NaN_array([nRecords, nCdfMaxSamplesPerSnapshot]);
 
-            PreDc.isLfr                = false;
-            PreDc.isTdsCwf             = C.isTdsCwf;
-            PreDc.hasSnapshotFormat    = C.isTdsRswf;
-%             PreDc.nRecords             = nRecords;
-%             PreDc.nCdfSamplesPerRecord = nCdfSamplesPerRecord;
-            PreDc.Zv.iLsf              = zeros(nRecords, 1) * NaN;   % Only set becuse the code shared with LFR requires it.
+            
+            
+            PreDc.isLfr             = false;
+            PreDc.isTdsCwf          = C.isTdsCwf;
+            PreDc.hasSnapshotFormat = C.isTdsRswf;
+            PreDc.Zv.iLsf           = zeros(nRecords, 1) * NaN;   % Only set becuse the code shared with LFR requires it.
 
 
 
@@ -692,22 +687,37 @@ classdef proc_sub
             
             
             
-            % NOTE: Assumes no "return" statement.
             bicas.log_speed_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC', tTicToc, nRecords, 'record')
             bicas.log_memory_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC:end')
         end    % process_TDS_to_PreDC
 
 
 
+        % Utility function to shorten code.
+        function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(ZvStruct, nRecords, inputDsiC)
+            % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
+            
+            if inputDsiC.isL1R
+                CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
+            elseif inputDsiC.isL1
+                CALIBRATION_TABLE_INDEX = zeros(nRecords, 2) * NaN;
+            else
+                error('Can not normalize CALIBRATION_TABLE_INDEX for this DATASET_ID classification.')
+            end
+        end
+        
+        
+        
         function assert_PreDC(PreDc)
-%             EJ_library.assert.struct(PreDc, ...
-%                 {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.assert.struct(PreDc, ...
                 {'Zv', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
+            
             EJ_library.assert.struct(PreDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
-                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'useFillValues'}, ...
-                {'CALIBRATION_TABLE_INDEX', 'BW'});
+                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
+                'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
+                {'BW'});
+            
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
 
             assert(isa(PreDc.Zv.freqHz, 'double'))
@@ -716,22 +726,14 @@ classdef proc_sub
 
 
         function assert_PostDC(PostDc)
-%             EJ_library.assert.struct(PostDc, ...
-%                 {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.assert.struct(PostDc, ...
                 {'Zv', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
             
-%             EJ_library.assert.struct(PostDc.Zv, ...
-%                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
-%                 'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', ...
-%                 'currentAAmpere', 'DemuxerOutput', 'useFillValues'}, ...
-%                 {'CALIBRATION_TABLE_INDEX', 'BW'});
-            
             EJ_library.assert.struct(PostDc.Zv, ...
                 {'Epoch', 'freqHz', ...
-                'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', ...
-                'currentAAmpere', 'DemuxerOutput'}, ...
-                {'CALIBRATION_TABLE_INDEX', 'BW'});
+                'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
+                'DemuxerOutput', 'currentAAmpere'}, ...
+                {'BW'});
             
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
@@ -746,11 +748,12 @@ classdef proc_sub
             % ASSERTIONS
             bicas.proc_sub.assert_PostDC(SciPostDc)
             
+            
+
+            nSamplesPerRecord         = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);
+            nRecords                  = size(SciPostDc.Zv.Epoch, 1);
+
             OutSciZv = [];
-            
-            nSamplesPerRecord = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);   % Samples per record.
-            nRecords          = size(SciPostDc.Zv.Epoch, 1);
-            
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
             OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
@@ -759,7 +762,7 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
 
-            % NOTE: Convert aampere --> (antenna) nA
+            % NOTE: Convert aampere --> nano-aampere
             OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
             OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
@@ -835,7 +838,6 @@ classdef proc_sub
             
             
             
-            % NOTE: Assumes no "return" statement.
             bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_LFR', tTicToc, nRecords, 'record')
         end    % process_PostDC_to_LFR
 
@@ -906,7 +908,6 @@ classdef proc_sub
             
             
             
-            % NOTE: Assumes no "return" statement.
             bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_TDS', tTicToc, nRecords, 'record')
         end
         
@@ -932,7 +933,7 @@ classdef proc_sub
             
             
             
-            %PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
+            % IMPLEMENTATION NOTE: Only copy fields which are known to be needed in order to conserve memory.
             PostDc = [];
             PostDc.Zv.Epoch            = PreDc.Zv.Epoch;
             PostDc.Zv.QUALITY_BITMASK  = PreDc.Zv.QUALITY_BITMASK;
@@ -948,6 +949,10 @@ classdef proc_sub
             PostDc.hasSnapshotFormat = PreDc.hasSnapshotFormat;
             
 
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % DEMUX & CALIBRATE VOLTAGES
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             PostDc.Zv.DemuxerOutput = bicas.proc_sub.calibrate_demux_voltages(PreDc, Cal, L);
             
 
@@ -995,7 +1000,11 @@ classdef proc_sub
             
             % ASSERTION
             bicas.proc_sub.assert_PostDC(PostDc)
-        end
+            
+            bicas.log_memory_profiling(L, 'bicas.proc_sub.process_calibrate_demux_filter:end')
+        end    % process_calibrate_demux_filter
+        
+        
         
     end    % methods(Static, Access=public)
             
@@ -1009,7 +1018,9 @@ classdef proc_sub
         % Add more CDF records to remove, based on settings.
         % Ex: Sweeps
         % 
-        function zvUseFillValues = add_UFV_records_from_settings(zvEpoch, zvUseFillValues, zv_MUX_SET, isLfr, SETTINGS, L)
+        % UFV = Use Fill Values
+        function zvUseFillValues = add_UFV_records_from_settings(...
+                zvEpoch, zvUseFillValues, zv_MUX_SET, isLfr, SETTINGS, L)
             % PROPOSAL: Do not log removal of science data here, since the actual removal does not take place here.
             %   CON: This code has access to the settings that determine what should be removed.
             %
@@ -1082,67 +1093,8 @@ classdef proc_sub
             end
             
         end
-    
-    
-    
-        % Remove data (set records to fill values) because of settings.
-        % Ex: Sweeps
-        % 
-%         function [zvCurrentAAmpere, DemuxerOutput] = remove_PostDc_data(...
-%                 zvCurrentAAmpere, DemuxerOutput, zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
-%             % PROPOSAL: Merge with functionality for not even calibrating records?
-%             %   NOTE: This function is for setting data to fill value, after it was calibrated, demuxed.
-%             %       ==> It only works for data that can be calibrated. Not for BW=0 data.
-%             
-%             LL = 'info';    % LL = Log Level
-%             
-%             % Read settings
-%             [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv('PROCESSING.L2.REMOVE_DATA.MUX_MODES');
-%             if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
-%             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
-%                 %else            error('BICAS:proc_sub:Assertion', 'Neither LFR or TDS data.')
-%             end
-%             removeMarginSec = SETTINGS.get_fv(settingMarginKey);
-%             
-%             % Algorithm for finding the exact indices/CDF records to remove.
-%             bRemoveArray = EJ_library.utils.true_with_margin(...
-%                 zvEpoch, ...
-%                 ismember(zv_MUX_SET, muxModesRemove), ...
-%                 removeMarginSec * 1e9);
-%             
-%             % Remove and log
-%             [i1Array, i2Array] = EJ_library.utils.split_by_false(bRemoveArray);
-%             nRemoveIntervals = numel(i1Array);
-%             if nRemoveIntervals > 0
-%                 
-%                 %=====
-%                 % Log
-%                 %=====
-%                 L.logf(LL, 'Setting science data to fill value in selected CDF records due to settings: ');
-%                 L.logf(LL, '    Setting %s = [%s]', ...
-%                     settingMuxModesKey, ...
-%                     strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '));
-%                 L.logf(LL, '    Setting %s = %g', settingMarginKey, removeMarginSec);
-%                 
-%                 for iRi = 1:nRemoveIntervals
-%                     iCdfRecord1 = i1Array(iRi);
-%                     iCdfRecord2 = i2Array(iRi);
-%                     utc1  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord1));
-%                     utc2  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord2));
-%                     L.logf(LL, '    Records %7i-%7i, %s--%s', iCdfRecord1, iCdfRecord2, utc1, utc2);
-%                 end
-%                 
-%                 %=============
-%                 % Remove data
-%                 %=============
-%                 DemuxerOutput = structfun(...
-%                     @(x) (bicas.proc_utils.filter_rows(x, bRemoveArray)), ...
-%                     DemuxerOutput, 'UniformOutput', false);
-%                 zvCurrentAAmpere(bRemoveArray, :) = NaN;     % BUG: Sets variable that does not exist!   ???
-%             end            
-%         end
-    
-    
+
+
 
         % Demultiplex and calibrate voltages.
         %
@@ -1179,7 +1131,7 @@ classdef proc_sub
         %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
         %
-        % PROPOSAL: Move processing of one subsequence (one for loop iteration) into its own function.
+        % PROPOSAL: Move processing of one subsequence (one for-loop iteration) into its own function.
 
             tTicToc  = tic();
             
@@ -1189,61 +1141,24 @@ classdef proc_sub
             EJ_library.assert.vector(PreDc.Zv.samplesCaTm)
             assert(numel(PreDc.Zv.samplesCaTm) == 5)
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(PreDc.Zv.samplesCaTm)
-            EJ_library.assert.all_equal([...
-                size(PreDc.Zv.MUX_SET,        1), ...
-                size(PreDc.Zv.DIFF_GAIN,      1), ...
-                size(PreDc.Zv.samplesCaTm{1}, 1)])
-            nRecords = EJ_library.assert.sizes(...
+            [nRecords, nSamplesPerRecordChannel] = EJ_library.assert.sizes(...
                 PreDc.Zv.MUX_SET,        [-1,   1], ...
                 PreDc.Zv.DIFF_GAIN,      [-1,   1], ...
-                PreDc.Zv.samplesCaTm{1}, [-1, NaN]);
+                PreDc.Zv.samplesCaTm{1}, [-1, -2]);
 
 
 
             % Create empty 1x1 structure to which new array components can be added.
             % NOTE: Unit is avolt. Not including unit in the field names to keep them short.
             AsrSamplesAVolt = EJ_library.utils.empty_struct([1], ...
-                'dcV1',  'dcV2',  'dcV3', ...
-                'dcV12', 'dcV23', 'dcV13', ...
-                'acV12', 'acV23', 'acV13');
+                'dcV1', 'dcV12', 'acV12', ...
+                'dcV2', 'dcV13', 'acV13', ...
+                'dcV3', 'dcV23', 'acV23');
 
             dlrUsing12zv = bicas.demultiplexer_latching_relay(PreDc.Zv.Epoch);
             iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
             iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
 
-            
-            
-            % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
-            if isfield(PreDc.Zv, 'CALIBRATION_TABLE_INDEX')
-                
-                % ASSERTION
-                % NOTE: Checks both LFR & TDS CDF files.
-                % NOTE: Has observed breaking assertion in LFR test files "LFR___LFR_suggested_2019-01-17".
-                % PROPOSAL: Abolish somehow.
-                
-                zv_CALIBRATION_TABLE_INDEX = PreDc.Zv.CALIBRATION_TABLE_INDEX;
-%                 hasLegalCtiSize = size(zv_CALIBRATION_TABLE_INDEX, 2) == 2;
-%                 if ~hasLegalCtiSize
-%                     [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE');
-%                     if settingValue
-%                         L.log('warning', ...
-%                             'Setting CALIBRATION_TABLE_INDEX to NaN due to setting %s = "%i".', settingKey, settingValue)
-%                         zv_CALIBRATION_TABLE_INDEX = zeros(PreDc.nRecords, 2) * NaN;
-%                     else
-%                         error('BICAS:proc_sub:Assertion', 'zVar CALIBRATION_TABLE_INDEX has illegal width=%i (<>2).', ...
-%                             size(zv_CALIBRATION_TABLE_INDEX, 2))
-%                     end
-%                 end
-            else
-                % NOTE: Technically, this should only happen for L1 input.
-                
-                nRecords = size(PreDc.Zv.Epoch, 1);
-                
-                % Create "empty" zv_CALIBRATION_TABLE_INDEX.
-                L.log('warning', 'Creating NaN-valued CALIBRATION_TABLE_INDEX due to zVar not being present in input CDF.')
-                zv_CALIBRATION_TABLE_INDEX = zeros(nRecords, 2) * NaN;
-            end
-            
             
             
             %===================================================================================
@@ -1259,7 +1174,7 @@ classdef proc_sub
                 iCalibLZv, ...
                 iCalibHZv, ...
                 PreDc.Zv.iLsf, ...
-                zv_CALIBRATION_TABLE_INDEX, ...
+                PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
                 PreDc.Zv.useFillValues);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             L.logf('info', 'Calibrating voltages - One sequence of records with identical settings at a time.')
@@ -1279,7 +1194,7 @@ classdef proc_sub
                 iCalibH_ss                 = iCalibHZv(                 iFirst);
                 iLsf_ss                    = PreDc.Zv.iLsf(             iFirst);
                 useFillValues_ss           = PreDc.Zv.useFillValues(    iFirst);
-                CALIBRATION_TABLE_INDEX_ss = zv_CALIBRATION_TABLE_INDEX(iFirst, :);
+                CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
                 
                 % PROPOSAL: Make into "proper" table.
                 %   NOTE: Can not use EJ_library.str.assist_print_table since it requires the entire table to
@@ -1337,7 +1252,7 @@ classdef proc_sub
                         
                     else
                         assert(BltsSrcAsrArray(iBlts).is_ASR())
-                        % ==> Calibrate
+                        % ==> Calibrate (unless explicitly stated that should not)
                         
                         if PreDc.hasSnapshotFormat
                             ssSamplesCaTm = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...
@@ -1393,12 +1308,13 @@ classdef proc_sub
                 % Add demuxed sequence to the to-be complete set of records.
                 AsrSamplesAVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesAVolt, SsAsrSamplesAVolt);
                 
-            end    % for iSubseq
+            end    % for iSubseq = 1:length(iFirstList)
             
             
             
             % NOTE: Assumes no "return" statement.
             bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages', tTicToc, nRecords, 'record')
+            bicas.log_memory_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
 
 

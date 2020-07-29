@@ -17,7 +17,6 @@ function proc_utils___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
     find_constant_sequences___ATEST    
     convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
-    %convert_1_to_1_SPR_by_repeating___ATEST
     set_NaN_after_snapshots_end___ATEST
     
     % Tests for functions which are currently not used
@@ -31,9 +30,9 @@ function convert_matrix_to_cell_array_of_vectors___ATEST
         @bicas.proc_utils.convert_matrix_to_cell_array_of_vectors, inputs, outputs));
     tl = {};
     
-    tl{end+1} = new_test({[],zeros(0,1)}, {cell(0,1)});
+    tl{end+1} = new_test({zeros(0,1), zeros(0,1)}, {cell(0,1)});
     tl{end+1} = new_test({[1,2,3,4,5], [3]}, {{[1,2,3]}});
-    tl{end+1} = new_test({[1,2,3,4,5; 6,7,8,9,0], [3, 2]}, {{[1,2,3]; [6,7]}});
+    tl{end+1} = new_test({[1,2,3,4,5; 6,7,8,9,0], [3; 2]}, {{[1,2,3]; [6,7]}});
     
     EJ_library.atest.run_tests(tl)
 end
@@ -109,19 +108,6 @@ function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     
     EJ_library.atest.run_tests(tl)
 end
-
-
-
-% function convert_1_to_1_SPR_by_repeating___ATEST
-%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_1_to_1_SPR_by_repeating, inputs, outputs));
-%     tl = {};
-%     
-%     tl{end+1} = new_test({[5;6], 3},      {[5;5;5; 6;6;6]});
-%     tl{end+1} = new_test({[5],   2},      {[5;5]});    
-%     tl{end+1} = new_test({zeros(0,1), 2}, {zeros(0,1)});
-%     
-%     EJ_library.atest.run_tests(tl);
-% end
 
 
 

@@ -43,6 +43,7 @@ function [headerStrs, dataStrs, columnWidths] = assist_print_table(headerStrs, d
     %   Ex: Numeric value + unit in two separate columns. Numeric value is right-adjusted, unit is left-adjusted, one
     %       header for both.
     %       Ex: "123 bytes"
+    %   PROPOSAL: headerStrs{iCol} == [] ==> Merged column headers.
     
     HEADER_ADJUSTMENT = 'center';
     

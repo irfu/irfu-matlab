@@ -37,7 +37,8 @@ function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)
     if nargin == 3
         infoStr = sprintf('%s: %g [s]', codeName, wallTimeSec);
     elseif nargin == 5
-        infoStr = sprintf('%s: %g [s], %g [s/%s]', codeName, wallTimeSec, wallTimeSec/nUnits, unitName);
+        % NOTE: Adds "s" after unit to get plural.
+        infoStr = sprintf('%s: %g [s], %g [s/%s], %g [%ss]', codeName, wallTimeSec, wallTimeSec/nUnits, unitName, nUnits, unitName);
     else
         error('Illegal number of arguments.')
     end

@@ -52,11 +52,9 @@ classdef assert
 % PROPOSAL: Optional error message identifier as second-last argument to ~every method (see "error").
 %   CON: Can conflict with other string arguments.
 %
-% PROPOSAL: Assertion for checking that multiple variables have same size in specific dimensions/indices.
-%   See BOGIQ for method "size".
 %
-% PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
-%           Use an analogous naming scheme.
+%
+% PROPOSAL: Have way of obtaining whether assertion is satisfied, without throwing error.
 %   PRO: Can use assertion methods for raising customized exceptions (not just assertion exceptions), e.g. for UI
 %        errors.
 %   PRO: Useful for creating more compact custom-made assertions.
@@ -64,26 +62,65 @@ classdef assert
 %       Ex: assert(<castring> || <struct>)
 %       Ex: Checking settings values.
 %           Ex: assert(ischar(defaultValue) || isnumeric(defaultValue) || is_castring_set(defaultValue))
-%   PRO: Can use assertion methods for checking state/conditions (without raising errors).
+%   PRO: Can construct custom-made assertion that can not be created through combinations of pre-existing assertion
+%       functions.
+%       Ex: assert(isscalar(padValue) || is_castring(padValue))
+%   PRO: Can use assertion methods for checking state/conditions (to execute code; not raise errors).
 %       Ex: if <castring> elseif <castring_set> else ... end
-%   CON: Not clear what the conditions should be, and if they should some assertions themselves. Input checks or assume
-%       the nominal condition
-%       Ex: castring_set: Should the return value be whether the input argument is
-%           A cell array of unique strings.
-%           A cell array of unique strings (assertion: cell array)
-%           A cell array of unique strings (assertion: cell array of strings) ???
-%   PROPOSAL: Name "cond".
-%   Ex: vector, struct
-%   Ex: Because of comments?: dir_exists, file_exists
-%   Ex: castring?
-%   --
-%   PROPOSAL: Have methods return a true/false value for assertion result. If a value is returned, then raise no assertion error.
+%
+%   CON: The dividing line between (a) assertion (which raise error) on the inputs of the condition function, and (b)
+%        the result of the function itself becomes blurry.
+%       Ex: Confusing arguments for value to be tested, and parameters to the test/assertion.
+%       Ex: ~is_castring_set: Should the function return false, or raise assertion error on input if value is
+%           (1) not a cell array, or
+%           (2) cell array of non-strings, or
+%           (3) cell array of non-unique strings ?
+%       Ex: is_castring_in_set(s, strSet): Should the function return false when
+%           (1) s is string in strSet, when strSet is a cell array of non-unique strings, or
+%           (2) s is not a string ?
+%       Ex: ~have_sizes(): sizeConstraints is not a numeric 1D array.
+%       Ex: ~castring_sets_equal()
+%       Ex: ~file_exists(path)
+%           False if path is not a string?
+%   CON: IMPORTANT: Assertion functions should have no effect (barring bugs in the outside code). They can assert more
+%        and less as long as they assert a subset of what can be asserted. If an assertion is tightened or loosened that
+%        way, then that (ideally) has no effect. For a condition function, tightening/loosening the definition of a
+%        condition may have consequences.
+% 
+%   PROPOSAL: Condition results should correspond to the exact condition implied in the function name, and
+%             OPTIONALLY use internal assertions for other conditions implied in the name.
+%       Ex: ~is_castring_in_set(s, strSet)
+%           Optionally assert that s is castring, and strSet is set. Return result, assuming those are true.
+%           CON: Sounds wrong.
+%       Ex: castring_sets_equal(set1, set2)
+%           Optionally assert that set1 and set2 are sets.
+%       PROPOSAL: Interpret condition from the adjective or verb.
+%       PROPOSAL: Assume that arguments are what they "should be", in isolation.
+%
+%   PROBLEM: How handle assertions functions that also return values.
+%       Ex: sizes()
+%           PROPOSAL: Condition function identical. Return boolean ahead of all other return values.
+%               Ex: [satisfied, nRecords] = ~have_sizes(zVar1, [-1], zVar2, [-1, 2048])
+%   
+%   PROPOSAL: Have assertion methods return a true/false value for assertion result. If a value is returned, then raise no error.
+%       CON: sizes() already has return values (and aritrarily many).
 %       PRO: Can be used with regular assert statements.
 %           PRO: MATLAB's assert can be used for raising exception with customized error message.
+% 
+%   PROPOSAL: Have analogous SEPARATE "CONDITION FUNCTIONS".
+%       PROPOSAL: Naming scheme  is_*, has_*, have_*
+%           CON: Not perfect since also sounds like assertions.
+%               Ex: assert.have_sizes, assert.is_castring
+%           CON: Does not work for all assertion functions
+%               Ex: castring_sets_equal --> are_castring_sets_equal? castring_sets_are_equal?
 %       CON: "assert" is a bad name for such a class.
+%       PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
+%               Use an analogous naming scheme.
+%           PROPOSAL: Class name "cond".
+%       PROPOSAL: Only do so for well-defined conditions.
+%           Ex: Not castring.
 %
-% PROPOSAL: Static variable for error message identifier.
-%   PRO: Can set differently in BICAS.
+%
 %
 % PROPOSAL: Function for asserting that some arbitrary property is identical for an arbitrary set of variables.
 %   Function handle defines the property: argument=variable, return value=value that should be identical for all
@@ -101,7 +138,7 @@ classdef assert
 % PROPOSAL: Assert string sets equal
 %   Ex: write_dataobj
 %
-% PROPOSAL: Utility function for error() and assert() that always use EJ_library.assert.ASSERTION_EMID.
+% PROPOSAL: Internal utility function for error() and assert() that always use EJ_library.assert.ASSERTION_EMID.
 %   CON: Not that much shorter.
 %           error(EJ_library.assert.ASSERTION_EMID, msg)
 %       ==> EJ_library.assert.error(msg)
@@ -109,11 +146,11 @@ classdef assert
 %       CON: Private function so matters less.
 %   CON: Slower?
 %       CON: Only applies to an internal assert function. Internal "error" function only triggered when assertion
-%            alraedy has failed.
+%            already has failed.
 %   PRO: Easier to be consistent.
 %   PRO: Clearer.
 %       PRO: Fewer arguments.
-%       
+% 
 
 
 
@@ -467,8 +504,9 @@ classdef assert
 
 
         % Simultaneously
-        % ** check the size of multiple variables,
-        % ** whether specified arbitrary-sizes dimensions are identical across dimensions and variables
+        % ** check the size of multiple variables
+        % ** whether specified dimensions match explicit sizes
+        % ** whether specified dimensions have identical but arbitrary sizes (e.g. across variables)
         % ** return above arbitarily-sized dimensions, so that the caller can e.g. check them.
         %
         % Ex: Check that variables representing zVariables have the right non-record dimensions, and the same number of
@@ -479,16 +517,19 @@ classdef assert
         % =========
         % varargin: Arbitrary number of argument pairs below:
         %   var            : variable value which size will be tested.
-        %   sizeConstraint : 1D vector with integers specifying size of corresponding argument "var".
-        %       Negative integer : Arbitrary dimension size which must match between all arguments "var".
-        %                          Must be numbered -1, -2, ... , -N
-        %       NaN              : Arbitrary dimension size independent of other dimensions. No corresponding return
-        %                          value.
+        %   sizeConstraint : 1D vector with integers specifying the size of the corresponding argument "var".
+        %       Nonnegative integer : Explicit required size.
+        %       Negative integer    : Arbitrary dimension size which must match between all arguments "var".
+        %                             Must be numbered -1, -2, ... , -N
+        %       NaN                 : Arbitrary dimension size independent of other dimensions. No corresponding return
+        %                             value.
         % 
         %
         % RETURN VALUES
         % =============
-        % Size of dimensions labelled with negative integers, in order -1, -2, ... .
+        % condSatisfied : Whether variable sizes satisfy criteria.
+        % varargout     : Size of dimensions labelled with negative integers, in order -1, -2, ... .
+        %                 NOTE: Values are only guaranteed to be correct if condSatisfied==true.
         %
         %
         % NOTES
@@ -497,39 +538,40 @@ classdef assert
         %   has sensible design
         %   has sensible name
         %   should replace EJ_library.assert.size().
-        % NOTE: "Backward-compatible" with EJ_library.assert.size().
-        % NOTE: Returning values in principle makes it an assertion+functionality.
-        % NOTE: One needs to add semicolon to end of row, since has return values.
         %
-        function [varargout] = sizes(varargin)
-            % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices
-            %           have to be identical in size (but arbitrary) between variables.
-            %
+        function [condSatisfied, varargout] = have_sizes(varargin)
             %   PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
             %       PROPOSAL: sizeConstraints = {N}, one numeric value (N, negativeValue, NaN).
             %       PROPOSAL: sizeConstraints = {'1D vector', N}
             %       PROPOSAL: Prepend sizeConstraints argument with string constant "vector", "1D", "1D vector".
             %   ~CON/NOTE: Can not assert equal size for variables with arbitrary number of dimensions.
             %
-            %   PROPOSAL: Same dimensions in all dimensions except those specified.
-            %       PRO: Better handling of "high dimensions to infinity".
-            %
-            % PROPOSAL: Count all negative numbers as sizes, not just successive integers.
-            %           Return values are negative integers in order.
             % PROPOSAL: Abolish NaN (force caller to use negative integer size).
             %   PRO: Simplifies implementation.
             %   PRO: Saves NaN for possible future special value for other functionality.
             %   CON: Clearer that NaN refers to arbitrary value.
             %
-            % PROPOSAL: Use method to replace EJ_library.assert.size().
-            %   PROPOSAL: Keep name "sizes".
-            %       CON: Bad name when testing just one variable.
-            %   PROPOSAL: Use (take over) name "size".
-            %       PRO: Can see constraining many variables as an extension of the base functionality.
+            % PROBLEM?: Variables which are so large as to potentially cause memory problems should not(?) be submitted
+            % to varargin, since they are likely copied then, even if not modified.
+            %   PROPOSAL: Enable way of just submitting size(X) instead.
+            %       PROPOSAL: Add suffix argument string constant 'size'.
+            %
+            % PROPOSAL: Return error message for assertion function to use as error message.
+            %   CON: Must add new return value which a direct caller of this function is unlikely to want.
             
             nArgs = numel(varargin);
+            
+            % Number of return values representing (potentially linked) dimension sizes.
+            % NOTE: This should be LESS OR EQUAL to the number of arbitrary (potentially linked) dimension sizes.
+            nOutputDims = nargout - 1;
+            
+            % Assign default value to varargout.
+            % IMPLEMENTATION NOTE: Required to avoid secondary error, if exiting function before varargout has been
+            % entirely assigned.
+            varargout = num2cell(ones(1, nOutputDims) * NaN);
+            %varargout = cell(1, nOutputDims);
 
-            sizeArray            = [];
+            sizeArray       = [];
             sizeConstrArray = [];
 
             %=====================================================================================
@@ -559,8 +601,8 @@ classdef assert
                 sizeArg           = sizeArg(:);
                 sizeConstraintArg = sizeConstraintArg(:);                
                 
-                % Pad the smallest arrays with ones until both have same size
-                % -----------------------------------------------------------
+                % Pad the smallest arrays with ones (1) until both have same size
+                % ---------------------------------------------------------------
                 % NOTE: padarray pads in first dimension by default.
                 %       'post' : Pads after the last array element along each dimension.
                 nDiff = numel(sizeArg) - numel(sizeConstraintArg);
@@ -568,56 +610,108 @@ classdef assert
                 else            sizeArg           = padarray(sizeArg,           -nDiff, 1, 'post');
                 end
                 
-                sizeArray       = [sizeArray;            sizeArg];
+                sizeArray       = [sizeArray;       sizeArg];
                 sizeConstrArray = [sizeConstrArray; sizeConstraintArg];
             end
             
-            %==============================================
-            % ASSERTION: Explicitly stated dimension sizes
-            %==============================================
-            b = (sizeConstrArray >= 0);    % NOTE: (NaN >= 0) returns false.
-            assert(all(sizeConstrArray(b) == sizeArray(b)), ...
-                EJ_library.assert.ASSERTION_EMID, ...
-                'At least one variable dimension size differs from an explicitly specified dimension size.')
-            sizeConstrArray(b) = NaN;    % Effectively remove already checked size constraints from later checks.
-
-            %=====================================================================================
-            % ASSERTION: Linked dimension sizes must match each other (negative size constraints)
-            %=====================================================================================
+            
+            
+            %==========================================================================================================
+            % ASSERTION: Arbitrary linked dimension sizes
+            % -------------------------------------------
+            % IMPLEMENTATION NOTE: Performs this check before explicit dimension sizes to increase chance of correctly
+            % assigning varargout before returning.
+            %==========================================================================================================
             sizeConstrSpecialValue = -1;
+            iOutputDim = 0;
             while true
                 b = (sizeConstrArray == sizeConstrSpecialValue);
                 if ~any(b)
                     % CASE: sizeConstrSpecialValue is not used as a special value.
+                    % ==> Stop trying other special values.
                     break
                 end
 
                 uniqueSizes  = unique(sizeArray(b));
                 nUniqueSizes = numel(uniqueSizes);
 
-                assert(nUniqueSizes == 1, ...
-                    EJ_library.assert.ASSERTION_EMID, ...
-                    'One or several variables have different sizes for dimensions labelled %i.', sizeConstrSpecialValue)
+                if nUniqueSizes ~= 1
+                    condSatisfied = false;
+                    return
+                end
+%                 assert(nUniqueSizes == 1, ...
+%                     EJ_library.assert.ASSERTION_EMID, ...
+%                     'One or several variables have different sizes for dimensions labelled %i.', sizeConstrSpecialValue)
 
                 % Assign return values.
-                varargout{-sizeConstrSpecialValue} = uniqueSizes;
+                % NOTE: Does not matter if assigning return values which are not stored by caller, but it is important
+                % to that there are at least as many linked dimension sizes as there are return values.
+                iOutputDim = -sizeConstrSpecialValue;
+                varargout{iOutputDim} = uniqueSizes;
 
                 sizeConstrArray(b) = NaN;    % Effectively remove already checked size constraints from later checks.
                 
                 sizeConstrSpecialValue = sizeConstrSpecialValue - 1;
             end
+            assert(nOutputDims <= iOutputDim, ...
+                EJ_library.assert.ASSERTION_EMID, ...
+                'There are not as many arbitrary (potentially linked) dimension sizes as there are requested output values.')
+            
+            
+            
+            %==============================================
+            % ASSERTION: Explicitly stated dimension sizes
+            %==============================================
+            b = (sizeConstrArray >= 0);    % NOTE: Relies on that (NaN >= 0) returns false.
+            if ~all(sizeConstrArray(b) == sizeArray(b))
+                condSatisfied = false;
+                return
+            end
+%             assert(all(sizeConstrArray(b) == sizeArray(b), ...
+%                 EJ_library.assert.ASSERTION_EMID, ...
+%                 'At least one variable dimension size differs from an explicitly specified dimension size.')
+            
+            sizeConstrArray(b) = NaN;    % Effectively remove already checked size constraints from later checks.
+
+            
             
             %===========================================
             % ASSERTION: Only size constraint NaN left.
             %===========================================
-            assert(all(isnan(sizeConstrArray)), ...
-                EJ_library.assert.ASSERTION_EMID, ...
-                ['Size constraints contains negative numbers that can not (are not supposed to)', ...
-                ' be interpreted as constraints.'])
+            if ~all(isnan(sizeConstrArray))
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    ['Size constraints contains negative numbers that can not (are not supposed to)', ...
+                    ' be interpreted as constraints.'])
+            end
+%             assert(all(isnan(sizeConstrArray)), ...
+%                 EJ_library.assert.ASSERTION_EMID, ...
+%                 ['Size constraints contains negative numbers that can not (are not supposed to)', ...
+%                 ' be interpreted as constraints.'])
 
             %==============================================================================
             % NOTE: Ignore size constraint NaN. Does not need to be explicitly checked.
             %==============================================================================
+            
+            condSatisfied = true;
+        end
+        
+        % CORRESPONDING ASSERTION FUNCTION
+        %
+        % NOTE: "Backward-compatible" with EJ_library.assert.size().
+        % NOTE: Returning values in principle makes it an assertion+functionality.
+        % NOTE: One needs to add semicolon to end of row, since has return values.
+        %
+        function [varargout] = sizes(varargin)
+            % PROPOSAL: Use method to replace EJ_library.assert.size().
+            %   PROPOSAL: Keep name "sizes".
+            %       CON: Bad name when testing just one variable.
+            %   PROPOSAL: Use (take over) name "size".
+            %       PRO: Can see constraining many variables as an extension of the base functionality.
+            
+            varargout = cell(1, nargout);
+            [condSatisfied, varargout{:}] = EJ_library.assert.have_sizes(varargin{:});
+            
+            assert(condSatisfied, EJ_library.assert.ASSERTION_EMID, 'Variable sizes do not satisfy specified constraints.')
         end
 
 

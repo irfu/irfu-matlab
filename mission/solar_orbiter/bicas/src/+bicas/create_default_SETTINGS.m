@@ -429,7 +429,6 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
     % CALIBRATION_TABLE_INDEX is not set for TDS. Therefore no such setting for TDS.
     S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
-    %S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
     
     
     

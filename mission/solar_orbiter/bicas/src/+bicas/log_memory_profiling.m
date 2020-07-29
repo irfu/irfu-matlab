@@ -26,6 +26,9 @@ function log_memory_profiling(L, locationName)
     %   PROPOSAL: Different for different variables.
     % PROPOSAL: Make more grep-friendly.
     %   Ex: Sums, specific code locations.
+    %
+    % PROPOSAL: Column for largest variables.
+    %   PROPOSAL: Size ranking. 1=largest.
 
     M = evalin('caller', 'whos');
 
