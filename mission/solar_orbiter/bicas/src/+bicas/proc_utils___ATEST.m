@@ -13,6 +13,7 @@
 
 function proc_utils___ATEST
     
+    set_struct_field_rows___ATEST
     convert_matrix_to_cell_array_of_vectors___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
     find_constant_sequences___ATEST    
@@ -21,6 +22,34 @@ function proc_utils___ATEST
     
     % Tests for functions which are currently not used
     % ================================================
+end
+
+
+
+function set_struct_field_rows___ATEST
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
+        @bicas.proc_utils.set_struct_field_rows, inputs, outputs));
+    tl = {};
+    
+    % VERY INCOMPLETE TEST SUITE.
+    
+    tl{end+1} = new_test({...
+        struct('asd', reshape([1:24], [4,3,2])), ...
+        struct('asd', reshape([1:12], [2,3,2])), 2:3}, {...
+        struct('asd', reshape([1,1,2,4, 5,3,4,8, 9,5,6,12,   13,7,8,16, 17,9,10,20, 21,11,12,24], 4,3,2)) ...
+        });
+    
+    tl{end+1} = new_test({...
+        struct('asd', [1;2;3;4;5]), ...
+        struct('asd', [8;9]), [4,3]}, {...
+        struct('asd', [1;2;9;8;5])});
+    
+%     tl{end+1} = new_test({}, {});
+%     tl{end+1} = new_test({}, {});
+%     tl{end+1} = new_test({}, {});
+%     tl{end+1} = new_test({}, {});
+    
+    EJ_library.atest.run_tests(tl)
 end
 
 

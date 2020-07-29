@@ -1148,12 +1148,19 @@ classdef proc_sub
 
 
 
-            % Create empty 1x1 structure to which new array components can be added.
+            % Pre-allocate. Important for speeding up LFR-SWF which tends to be broken into subsequences of 1 record.
             % NOTE: Unit is avolt. Not including unit in the field names to keep them short.
-            AsrSamplesAVolt = EJ_library.utils.empty_struct([1], ...
-                'dcV1', 'dcV12', 'acV12', ...
-                'dcV2', 'dcV13', 'acV13', ...
-                'dcV3', 'dcV23', 'acV23');
+            voltageArray = bicas.proc_utils.create_NaN_array([nRecords, nSamplesPerRecordChannel]);
+            AsrSamplesAVolt = struct(...
+                'dcV1',  voltageArray, ...
+                'dcV2',  voltageArray, ...
+                'dcV3',  voltageArray, ...
+                'dcV12', voltageArray, ...
+                'dcV13', voltageArray, ...
+                'dcV23', voltageArray, ...
+                'acV12', voltageArray, ...
+                'acV13', voltageArray, ...
+                'acV23', voltageArray);
 
             dlrUsing12zv = bicas.demultiplexer_latching_relay(PreDc.Zv.Epoch);
             iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
@@ -1306,7 +1313,13 @@ classdef proc_sub
                 [~, SsAsrSamplesAVolt] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
                 
                 % Add demuxed sequence to the to-be complete set of records.
-                AsrSamplesAVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesAVolt, SsAsrSamplesAVolt);
+%                 tTicToc2 = tic();
+%                 AsrSamplesAVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesAVolt, SsAsrSamplesAVolt);
+%                 bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages:bicas.proc_utils.add_rows_to_struct_fields', tTicToc2)
+                
+                %tTicToc2 = tic();
+                AsrSamplesAVolt = bicas.proc_utils.set_struct_field_rows(AsrSamplesAVolt, SsAsrSamplesAVolt, iFirst:iLast);
+                %bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages:bicas.proc_utils.set_struct_field_rows', tTicToc2)
                 
             end    % for iSubseq = 1:length(iFirstList)
             

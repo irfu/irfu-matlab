@@ -52,26 +52,47 @@ classdef proc_utils
 
 
 
-        function S = add_rows_to_struct_fields(S, SAmendment)
+%         function S = add_rows_to_struct_fields(S, SAmendment)
+%         % Generic utility function.
+%         % Add values to every struct field by adding components after their highest row index (let them grow in the row
+%         % index).
+%         %
+%         % NOTE 2020-07-29: Strong indications that using this function is inefficient if called for one added record at
+%         % a time.
+%         %
+%         % NOTE: Keep function for a while for potential speed comparisons.
+% 
+%             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
+%             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SAmendment);
+%             
+%             fieldNamesList = fieldnames(SAmendment);
+%             for i=1:length(fieldNamesList)
+%                 fn = fieldNamesList{i};
+%                 
+%                 S.(fn) = [S.(fn) ; SAmendment.(fn)];
+%             end
+%         end
+
+        
+        
+        function S = set_struct_field_rows(S, SAmendment, iRowsArray)
         % Generic utility function.
-        % Add values to every struct field by adding components after their highest row index (let them grow in the row
-        % index).
-        %
-        % NOTE 2020-07-29: Strong indications that using this function is inefficient if called for one added record at
-        % a time.
- 
+        % Set values in every struct field.
 
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SAmendment);
+            nRowsSa = bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SAmendment);
+            assert(numel(iRowsArray) == nRowsSa)
+            EJ_library.assert.castring_sets_equal(fieldnames(S), fieldnames(SAmendment))
             
             fieldNamesList = fieldnames(SAmendment);
             for i=1:length(fieldNamesList)
                 fn = fieldNamesList{i};
+                assert(isnumeric(S.(fn)))
                 
-                S.(fn) = [S.(fn) ; SAmendment.(fn)];
+                S.(fn)(iRowsArray, :) = SAmendment.(fn)(:, :);
             end
         end
-
+        
 
 
         function tt2000 = ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
