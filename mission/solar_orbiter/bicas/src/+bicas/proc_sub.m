@@ -294,7 +294,7 @@ classdef proc_sub
             % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining "virtual snapshot" length.
             % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
             
-            tTicToc = tic();
+            %tTicToc = tic();
             
             % ASSERTIONS
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
@@ -479,8 +479,8 @@ classdef proc_sub
             
             
             
-            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC', tTicToc, nRecords, 'record')
-            bicas.log_memory_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC:end');
+            %bicas.log_speed_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC', tTicToc, nRecords, 'record')
+            %bicas.log_memory_profiling(L, 'bicas.proc_sub.process_LFR_to_PreDC:end');
         end    % process_LFR_to_PreDC
         
         
@@ -517,7 +517,7 @@ classdef proc_sub
         % BUG?: Does not use CHANNEL_STATUS_INFO.
         % NOTE: BIAS output datasets do not have a variable for the length of snapshots. Need to use NaN/fill value.
 
-            tTicToc = tic();
+            %tTicToc = tic();
             
             % ASSERTIONS
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
@@ -687,8 +687,8 @@ classdef proc_sub
             
             
             
-            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC', tTicToc, nRecords, 'record')
-            bicas.log_memory_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC:end')
+            %bicas.log_speed_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC', tTicToc, nRecords, 'record')
+            %bicas.log_memory_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC:end')
         end    % process_TDS_to_PreDC
 
 
@@ -743,7 +743,7 @@ classdef proc_sub
         function [OutSciZv] = process_PostDC_to_LFR(SciPostDc, outputDsi, L)
         % Processing function. Convert PostDC to any one of several similar LFR dataset PDs.
         
-            tTicToc = tic();
+            %tTicToc = tic();
             
             % ASSERTIONS
             bicas.proc_sub.assert_PostDC(SciPostDc)
@@ -838,19 +838,19 @@ classdef proc_sub
             
             
             
-            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_LFR', tTicToc, nRecords, 'record')
+            %bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_LFR', tTicToc, nRecords, 'record')
         end    % process_PostDC_to_LFR
 
 
 
         function OutSciZv = process_PostDC_to_TDS(SciPostDc, outputDsi, L)
             
-            tTicToc = tic();
+            %tTicToc = tic();
             
             % ASSERTIONS
             bicas.proc_sub.assert_PostDC(SciPostDc)
 
-            nRecords = size(SciPostDc.Zv.Epoch, 1);
+            %nRecords = size(SciPostDc.Zv.Epoch, 1);
             
             OutSciZv = [];
             
@@ -908,7 +908,7 @@ classdef proc_sub
             
             
             
-            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_TDS', tTicToc, nRecords, 'record')
+            %bicas.log_speed_profiling(L, 'bicas.proc_sub.process_PostDC_to_TDS', tTicToc, nRecords, 'record')
         end
         
         
@@ -919,6 +919,8 @@ classdef proc_sub
         % NOTE: Public function as opposed to the other demuxing/calibration functions.
         %
         function PostDc = process_calibrate_demux_filter(PreDc, InCurPd, Cal, SETTINGS, L)
+            
+            tTicToc = tic();
 
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc);
@@ -1001,7 +1003,9 @@ classdef proc_sub
             % ASSERTION
             bicas.proc_sub.assert_PostDC(PostDc)
             
-            bicas.log_memory_profiling(L, 'bicas.proc_sub.process_calibrate_demux_filter:end')
+            nRecords = size(PreDc.Zv.Epoch, 1);
+            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_calibrate_demux_filter', tTicToc, nRecords, 'record')
+            %bicas.log_memory_profiling(L, 'bicas.proc_sub.process_calibrate_demux_filter:end')
         end    % process_calibrate_demux_filter
         
         
@@ -1133,7 +1137,7 @@ classdef proc_sub
         %
         % PROPOSAL: Move processing of one subsequence (one for-loop iteration) into its own function.
 
-            tTicToc  = tic();
+            %tTicToc  = tic();
             
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
@@ -1326,8 +1330,8 @@ classdef proc_sub
             
             
             % NOTE: Assumes no "return" statement.
-            bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages', tTicToc, nRecords, 'record')
-            bicas.log_memory_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages:end')
+            %bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages', tTicToc, nRecords, 'record')
+            %bicas.log_memory_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
 
 
