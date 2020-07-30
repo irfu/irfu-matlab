@@ -1,10 +1,8 @@
-DPATH = '/Volumes/solarorbiter/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/2020-06-17_10.44/';
+DPATH = '/Volumes/solo/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/latest/';
 d = dir([DPATH '*.cdf']);
-DPATH = '/Volumes/solarorbiter/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/2020-06-24_11.51/';
-d1 = dir([DPATH '*.cdf']);
-d = [d; d1];
+
 probeCorr = [];
-for i = 6:length(d)
+for i = 82:length(d) % 7 - March, 82 - June 1
   sprintf('Processing %s', d(i).name)
   tt = solo.correlate_probes([d(i).folder filesep d(i).name]);
   if isempty(probeCorr), probeCorr = tt;
@@ -14,7 +12,7 @@ end
 
 %%
 irf_plot(probeCorr)
-probeCorr.data(probeCorr.data(:,1)>1.8,:) = NaN;
+probeCorr.data(probeCorr.data(:,1)>1.3,:) = NaN;
 probeCorr.data(probeCorr.data(:,1)<1.1,:) = NaN;
 probeCorr.data(probeCorr.data(:,3)<0.5,:) = NaN;
 irf_plot(probeCorr,'o-')
@@ -26,13 +24,11 @@ d23 = irf.ts_scalar(probeCorr.time,movmedian(probeCorr.data(:,5),11,'omitnan','E
 idx = find(~isnan(d23.data));
 d23 = irf.ts_scalar(d23.time(idx), d23.data(idx));
 %%
-DPATH = '/Volumes/solarorbiter/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/2020-06-17_10.44/';
+DPATH = '/Volumes/solo/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/latest/';
 d = dir([DPATH '*.cdf']);
-DPATH = '/Volumes/solarorbiter/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/2020-06-24_11.51/';
-d1 = dir([DPATH '*.cdf']);
-d = [d; d1];
+
 probeCorrNew = [];
-for i = 6:length(d)
+for i = 82:length(d)
   sprintf('Processing %s', d(i).name)
   tt = solo.correlate_probes([d(i).folder filesep d(i).name],d23);
   if isempty(probeCorrNew), probeCorrNew = tt;
@@ -48,5 +44,9 @@ K123 = irf.ts_scalar(probeCorrNew.time,movmedian(probeCorrNew.data,5,'omitnan','
 idx = find(~isnan(K123.data(:,1)));
 K123 = irf.ts_scalar(K123.time(idx), K123.data(idx,:));
 
-%%
+%% Save update data
+K123_new = K123;
+d23_new = d23;
+load d23K123
+K123 = K123_new.combine(K123); d23 = d23_new.combine(d23);
 save d23K123 K123 d23
