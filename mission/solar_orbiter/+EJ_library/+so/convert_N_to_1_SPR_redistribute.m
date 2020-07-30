@@ -18,10 +18,10 @@
 %
 function zv2 = convert_N_to_1_SPR_redistribute(zv1)
     
-    EJ_library.assert.size(zv1, [NaN, NaN, NaN])
+    EJ_library.assert.sizes(zv1, [NaN, NaN, NaN])
     
     zv  = permute(zv1, [2,1,3]);
     zv2 = reshape(zv, size(zv,1) * size(zv,2), size(zv,3));
     
-    EJ_library.assert.size(zv2, [NaN, NaN])
+    EJ_library.assert.sizes(zv2, [NaN, NaN])
 end

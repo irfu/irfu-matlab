@@ -722,7 +722,7 @@ classdef proc_utils
             EMID = 'BICAS:proc_utils:Assertion:IllegalArgument';
         
             assert(isa(  ACQUISITION_TIME, 'uint32'),     EMID, 'ACQUISITION_TIME is not uint32.')
-            EJ_library.assert.size(ACQUISITION_TIME, [NaN, 2])
+            EJ_library.assert.sizes(ACQUISITION_TIME, [NaN, 2])
             assert(all(  ACQUISITION_TIME(:, 1) >= 0),    EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
             % IMPLEMENTATION NOTE: Does not need to check for negative values due to uint32.
             assert(all(  ACQUISITION_TIME(:, 2) < 65536), EMID, 'ACQUISITION_TIME subseconds out of range.')

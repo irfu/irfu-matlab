@@ -16,6 +16,7 @@
 % ZV   : CDF zVariable, or something analogous to it. If refers to CDF:ish content, then the first index corresponds to
 %        the CDF record.
 % SPR  : Samples Per (CDF) Record. Only refers to actual data (currents, voltages), not metadata.
+% UFV  : Use Fill Values
 %
 %
 % SOME INTERMEDIATE PROCESSING DATA FORMATS
@@ -39,9 +40,6 @@ classdef proc_sub
 %   PROPOSAL: proc_demux_calib
 %   PROPOSAL: Local utility functions are moved to bicas.proc_utils.
 %
-% PROPOSAL: Merge process_PostDC_to_LFR
-%           and   process_PostDC_to_TDS.
-%
 % PROPOSAL: Submit zVar variable attributes.
 %   PRO: Can interpret fill values.
 %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
@@ -50,8 +48,6 @@ classdef proc_sub
 % PROPOSAL: Return (to execute_sw_mode), global attributes.
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
-%
-% PROPOSAL: Functionality in remove_PostDc_data() should use useFillValues instead.
 %
 % TODO: add_UFV_records_from_settings should know whether output is L2 or not.
 %
@@ -81,17 +77,18 @@ classdef proc_sub
             ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
             USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
             if USE_ZV_ACQUISITION_TIME_HK
+                % NOTE: ACQUISITION_TIME in test file
+                % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+                % is not monotonically increasing (in fact, it is completely strange).
+                assert(issorted(hkEpoch, 'strictascend'), ...
+                    'BICAS:proc_sub:Assertion:DatasetFormat', ...
+                    'Trying to use HK zVar ACQUISITION_TIME but it is not monotonically increasing (when converting to tt2000).')
+                
                 hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
                     ACQUISITION_TIME_EPOCH_UTC);
                 L.logf('warning', 'Using HK zVar ACQUISITION_TIME instead of Epoch.')
                 
-                % NOTE: ACQUISITION_TIME in test file
-                % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-                % is not monotonically increasing (in fact, it is completely strange).
-%                 assert(issorted(hkEpoch, 'strictascend'), ...
-%                     'BICAS:proc_sub:Assertion:DatasetFormat', ...
-%                     'Trying to use HK zVar ACQUISITION_TIME but it is not monotonically increasing (when converting to tt2000).')
             else
                 hkEpoch = InHk.Zv.Epoch;
             end
@@ -280,7 +277,7 @@ classdef proc_sub
                 % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF index values (1=F0) used in loaded RCT data
                 % structs.
             end
-            EJ_library.assert.size(iLsfZv, [NaN, 1])
+            EJ_library.assert.sizes(iLsfZv, [NaN, 1])
 
 
 
@@ -596,8 +593,9 @@ classdef proc_sub
             if     C.isL1R   WAVEFORM_DATA_nChannels = 3;
             elseif C.isL1    WAVEFORM_DATA_nChannels = 8;
             end
+            % NOTE: Not using assertion function directly in order to produce customized error message instead.
             assert(...
-                ~EJ_library.assert.have_sizes(InSci.Zv.WAVEFORM_DATA, [nRecords, WAVEFORM_DATA_nChannels, nCdfMaxSamplesPerSnapshot], ...
+                ~EJ_library.utils.sizes(InSci.Zv.WAVEFORM_DATA, [nRecords, WAVEFORM_DATA_nChannels, nCdfMaxSamplesPerSnapshot], ...
                 'BICAS:proc_sub:process_TDS_to_PreDC:Assertion:DatasetFormat', 'TDS zVar WAVEFORM_DATA has an unexpected size.'))
             modif_WAVEFORM_DATA = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
             
@@ -638,7 +636,7 @@ classdef proc_sub
             
             
 
-            nSamplesPerRecord         = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);
+            nSamplesPerRecordChannel  = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);
             nRecords                  = size(SciPostDc.Zv.Epoch, 1);
 
             OutSciZv = [];
@@ -662,7 +660,7 @@ classdef proc_sub
                        'SOLO_L2_RPW-LFR-SBM2-CWF-E'}
 
                     % ASSERTION
-                    assert(nSamplesPerRecord == 1, ...
+                    assert(nSamplesPerRecordChannel == 1, ...
                         'BICAS:proc_sub:Assertion:IllegalArgument', ...
                         'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
                     assert(size(OutSciZv.QUALITY_FLAG,    2) == 1)
@@ -688,15 +686,15 @@ classdef proc_sub
                 case  {'SOLO_L2_RPW-LFR-SURV-SWF-E'}
                     
                     % ASSERTION
-                    assert(nSamplesPerRecord == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH, ...
+                    assert(nSamplesPerRecordChannel == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH, ...
                         'BICAS:proc_sub:Assertion:IllegalArgument', ...
                         'Number of samples per CDF record is not %i, as expected. Bad Input CDF?', ...
                         EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
                     
                     % Try to pre-allocate to save RAM/speed up.
-                    OutSciZv.VDC = zeros(nRecords, nSamplesPerRecord, 3);
-                    OutSciZv.EDC = zeros(nRecords, nSamplesPerRecord, 3);
-                    OutSciZv.EAC = zeros(nRecords, nSamplesPerRecord, 3);
+                    OutSciZv.VDC = zeros(nRecords, nSamplesPerRecordChannel, 3);
+                    OutSciZv.EDC = zeros(nRecords, nSamplesPerRecordChannel, 3);
+                    OutSciZv.EAC = zeros(nRecords, nSamplesPerRecordChannel, 3);
                     
                     OutSciZv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
                     OutSciZv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
@@ -823,8 +821,11 @@ classdef proc_sub
             
             
             
-            % IMPLEMENTATION NOTE: Only copy fields which are known to be needed in order to conserve memory.
+            % IMPLEMENTATION NOTE: Only copy fields PreDc-->PostDc which are known to be needed in order to conserve
+            % memory.
             PostDc = [];
+            
+            % Copy relevant zVars.
             PostDc.Zv.Epoch            = PreDc.Zv.Epoch;
             PostDc.Zv.QUALITY_BITMASK  = PreDc.Zv.QUALITY_BITMASK;
             PostDc.Zv.QUALITY_FLAG     = PreDc.Zv.QUALITY_FLAG;
@@ -834,6 +835,8 @@ classdef proc_sub
             if isfield(PreDc.Zv, 'BW')
                 PostDc.Zv.BW               = PreDc.Zv.BW;
             end
+            
+            % Copy non-zVars.
             PostDc.isLfr             = PreDc.isLfr;
             PostDc.isTdsCwf          = PreDc.isTdsCwf;
             PostDc.hasSnapshotFormat = PreDc.hasSnapshotFormat;
@@ -1022,7 +1025,6 @@ classdef proc_sub
         % Add more CDF records to remove, based on settings.
         % Ex: Sweeps
         % 
-        % UFV = Use Fill Values
         function zvUseFillValues = add_UFV_records_from_settings(...
                 zvEpoch, zvUseFillValues, zv_MUX_SET, isLfr, SETTINGS, L)
             % PROPOSAL: Do not log removal of science data here, since the actual removal does not take place here.
@@ -1034,7 +1036,6 @@ classdef proc_sub
             %   ~add
             %   determine_UFV_records
             %   determine_remove_records
-            %   add_UFV_records_from_settings
             
             LL = 'info';    % LL = Log Level
 
@@ -1127,7 +1128,7 @@ classdef proc_sub
         %
         % PROPOSAL: Integrate into bicas.demultiplexer (as method).
         % NOTE: Calibration is really separate from the demultiplexer. Demultiplexer only needs to split into
-        % subsequences based on mux mode and latching relay, nothing else.
+        %       subsequences based on mux mode and latching relay, nothing else.
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
         %
         % PROPOSAL: Function for dtSec.
@@ -1146,8 +1147,8 @@ classdef proc_sub
             assert(numel(PreDc.Zv.samplesCaTm) == 5)
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(PreDc.Zv.samplesCaTm)
             [nRecords, nSamplesPerRecordChannel] = EJ_library.assert.sizes(...
-                PreDc.Zv.MUX_SET,        [-1,   1], ...
-                PreDc.Zv.DIFF_GAIN,      [-1,   1], ...
+                PreDc.Zv.MUX_SET,        [-1,  1], ...
+                PreDc.Zv.DIFF_GAIN,      [-1,  1], ...
                 PreDc.Zv.samplesCaTm{1}, [-1, -2]);
 
 

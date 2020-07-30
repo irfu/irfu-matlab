@@ -427,7 +427,7 @@ classdef calib < handle
             
             % ASSERTIONS
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
-            EJ_library.assert.size(zv_CALIBRATION_TABLE_INDEX, [1,2])
+            EJ_library.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
             
             
 
@@ -1247,7 +1247,7 @@ classdef calib < handle
                 RctData.DcDiffOffsets.E12AVolt, ...
                 RctData.DcDiffOffsets.E13AVolt, ...
                 RctData.DcDiffOffsets.E23AVolt];
-            EJ_library.assert.size(dcDiffOffsetsAVolt, [NaN, 3]);            
+            EJ_library.assert.sizes(dcDiffOffsetsAVolt, [NaN, 3]);            
             for iEpochH = 1:numel(RctData.epochH)
                 L.logf(LL, 'Below values are used for data beginning %s:', EJ_library.cdf.tt2000_to_UTC_str(RctData.epochH(iEpochH)))
                 

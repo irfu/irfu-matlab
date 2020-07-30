@@ -367,7 +367,7 @@ classdef RCT
                 % ASSERTIONS: Check CDF array sizes, no change in format.
 %                 assert(iscolumn(factorsIvpt))
 %                 assert(size(    factorsIvpt, 1) == 3)
-                EJ_library.assert.size(factorsIvpt, [3,1])
+                EJ_library.assert.sizes(factorsIvpt, [3,1])
                 
                 RctData = [];
                 RctData.factorsIvpt = factorsIvpt;

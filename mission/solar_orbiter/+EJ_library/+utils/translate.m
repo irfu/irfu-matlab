@@ -130,7 +130,7 @@ end
 
 
 function [keySetsTable, valuesTable] = convert_table(table)
-    EJ_library.assert.size(table, [NaN, 2])
+    EJ_library.assert.sizes(table, [NaN, 2])
     %assert(size(table, 2) == 2)
     
     keySetsTable = table(:,1);

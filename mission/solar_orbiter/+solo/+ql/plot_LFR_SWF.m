@@ -434,7 +434,7 @@ function TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz)
     % NOTE: No special treatment of snapshots with only NaN.
     
     assert(isscalar(samplingFreqHz))
-    EJ_library.assert.size(zvData, [NaN, NaN])
+    EJ_library.assert.sizes(zvData, [NaN, NaN])
     assert(size(zvEpoch, 1) == size(zvData, 1))   % Same number of records
     bicas.proc_utils.assert_zv_Epoch(zvEpoch)
     
