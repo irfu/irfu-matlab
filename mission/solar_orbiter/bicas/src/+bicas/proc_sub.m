@@ -241,45 +241,6 @@ classdef proc_sub
             
             currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
-
-        
-        
-        % Wrapper around EJ_library.so.CURRENT_zv_to_current_interpolate for anomaly handling.
-        function sciZv_IBIASx = zv_TC_to_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
-            
-            %====================
-            % Calibrate currents
-            %====================
-            [sciZv_IBIASx, duplicateAnomaly] = EJ_library.so.CURRENT_zv_to_current_interpolate(...
-                double(curZv_Epoch), ...
-                curZv_IBIAS_x, ...
-                sciZv_Epoch);
-            
-            
-            
-            if duplicateAnomaly
-                %====================================================
-                % Handle anomaly: Non-monotonically increasing Epoch
-                %====================================================
-                [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY');
-                anomalyDescriptionMsg = [...
-                    'Bias current data contain duplicate settings, with identical timestamps', ...
-                    ' and identical bias settings on the same antenna.'];
-                
-                switch(settingValue)
-                    case 'REMOVE_DUPLICATES'
-                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
-                            anomalyDescriptionMsg)
-                        L.log('warning', ...
-                            'Removed duplicated bias current settings with identical timestamps on the same antenna.')
-
-                    otherwise
-                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
-                            anomalyDescriptionMsg, 'BICAS:proc_sub:SWModeProcessing:DatasetFormat')
-                end
-            end
-            
-        end    % bicas.proc_sub.zv_TC_to_current
         
         
         
@@ -485,32 +446,6 @@ classdef proc_sub
         
         
         
-        % Utility function to shorten code.
-        function zv = normalize_LFR_zVar_empty(L, settingValue, settingKey, nRecords, zv, zvName)
-            
-            if ~isempty(zv)
-                % Do nothing.
-                % zv = zv;
-            else
-                anomalyDescrMsg = sprintf('zVar "%s" from the LFR SCI source dataset is empty.', zvName);
-                switch(settingValue)
-                    case 'USE_FILL_VALUE'
-                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
-                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
-                        
-                        L.logf('warning', 'Using fill values for %s.', zvName)
-                        zv = bicas.proc_utils.create_NaN_array([nRecords, 1]);
-                        
-                    otherwise
-                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
-                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
-                end
-            end
-            
-        end
-        
-        
-        
         function PreDc = process_TDS_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
         %
@@ -690,53 +625,6 @@ classdef proc_sub
             %bicas.log_speed_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC', tTicToc, nRecords, 'record')
             %bicas.log_memory_profiling(L, 'bicas.proc_sub.process_TDS_to_PreDC:end')
         end    % process_TDS_to_PreDC
-
-
-
-        % Utility function to shorten code.
-        function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(ZvStruct, nRecords, inputDsiC)
-            % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
-            
-            if inputDsiC.isL1R
-                CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
-            elseif inputDsiC.isL1
-                CALIBRATION_TABLE_INDEX = zeros(nRecords, 2) * NaN;
-            else
-                error('Can not normalize CALIBRATION_TABLE_INDEX for this DATASET_ID classification.')
-            end
-        end
-        
-        
-        
-        function assert_PreDC(PreDc)
-            EJ_library.assert.struct(PreDc, ...
-                {'Zv', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
-            
-            EJ_library.assert.struct(PreDc.Zv, ...
-                {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
-                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
-                'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
-                {'BW'});
-            
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
-
-            assert(isa(PreDc.Zv.freqHz, 'double'))
-        end
-
-
-
-        function assert_PostDC(PostDc)
-            EJ_library.assert.struct(PostDc, ...
-                {'Zv', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
-            
-            EJ_library.assert.struct(PostDc.Zv, ...
-                {'Epoch', 'freqHz', ...
-                'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
-                'DemuxerOutput', 'currentAAmpere'}, ...
-                {'BW'});
-            
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
-        end
 
 
 
@@ -1016,6 +904,118 @@ classdef proc_sub
     
     methods(Static, Access=private)
     %methods(Static, Access=public)
+        
+        
+        
+        % Utility function to shorten code.
+        function zv = normalize_LFR_zVar_empty(L, settingValue, settingKey, nRecords, zv, zvName)
+            
+            if ~isempty(zv)
+                % Do nothing.
+                % zv = zv;
+            else
+                anomalyDescrMsg = sprintf('zVar "%s" from the LFR SCI source dataset is empty.', zvName);
+                switch(settingValue)
+                    case 'USE_FILL_VALUE'
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
+                        
+                        L.logf('warning', 'Using fill values for %s.', zvName)
+                        zv = bicas.proc_utils.create_NaN_array([nRecords, 1]);
+                        
+                    otherwise
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
+                            anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
+                end
+            end
+            
+        end
+
+
+
+        % Utility function to shorten code.
+        function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(ZvStruct, nRecords, inputDsiC)
+            % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
+            
+            if inputDsiC.isL1R
+                CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
+            elseif inputDsiC.isL1
+                CALIBRATION_TABLE_INDEX = zeros(nRecords, 2) * NaN;
+            else
+                error('Can not normalize CALIBRATION_TABLE_INDEX for this DATASET_ID classification.')
+            end
+        end
+
+        
+        
+        % Wrapper around EJ_library.so.CURRENT_zv_to_current_interpolate for anomaly handling.
+        function sciZv_IBIASx = zv_TC_to_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
+            
+            %====================
+            % Calibrate currents
+            %====================
+            [sciZv_IBIASx, duplicateAnomaly] = EJ_library.so.CURRENT_zv_to_current_interpolate(...
+                double(curZv_Epoch), ...
+                curZv_IBIAS_x, ...
+                sciZv_Epoch);
+            
+            
+            
+            if duplicateAnomaly
+                %====================================================
+                % Handle anomaly: Non-monotonically increasing Epoch
+                %====================================================
+                [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY');
+                anomalyDescriptionMsg = [...
+                    'Bias current data contain duplicate settings, with identical timestamps', ...
+                    ' and identical bias settings on the same antenna.'];
+                
+                switch(settingValue)
+                    case 'REMOVE_DUPLICATES'
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                            anomalyDescriptionMsg)
+                        L.log('warning', ...
+                            'Removed duplicated bias current settings with identical timestamps on the same antenna.')
+
+                    otherwise
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
+                            anomalyDescriptionMsg, 'BICAS:proc_sub:SWModeProcessing:DatasetFormat')
+                end
+            end
+            
+        end    % bicas.proc_sub.zv_TC_to_current
+        
+        
+        
+        function assert_PreDC(PreDc)
+            EJ_library.assert.struct(PreDc, ...
+                {'Zv', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
+            
+            EJ_library.assert.struct(PreDc.Zv, ...
+                {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
+                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
+                'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
+                {'BW'});
+            
+            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
+
+            assert(isa(PreDc.Zv.freqHz, 'double'))
+        end
+
+
+
+        function assert_PostDC(PostDc)
+            EJ_library.assert.struct(PostDc, ...
+                {'Zv', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
+            
+            EJ_library.assert.struct(PostDc.Zv, ...
+                {'Epoch', 'freqHz', ...
+                'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
+                'DemuxerOutput', 'currentAAmpere'}, ...
+                {'BW'});
+            
+            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
+        end
     
     
     
