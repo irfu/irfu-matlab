@@ -1,5 +1,5 @@
 % 
-% Read file as a 1D array of byte values.
+% Read an entire file as a 1D array of byte values.
 %
 %
 % RETURN VALUE
@@ -7,7 +7,8 @@
 % byteArray : 1D array of uint8.
 %
 %
-% Initially created 2020-03-10, by Erik Johansson.
+% Author: Erik P G Johansson, Uppsala, Sweden
+% First created 2020-03-10.
 %
 function byteArray = read_file(filePath)
     fileId = fopen(filePath);

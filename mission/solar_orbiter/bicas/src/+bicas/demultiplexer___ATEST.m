@@ -2,20 +2,20 @@
 %
 % Very basic tests at this stage. Could be improved but unsure how much is meaningful.
 function demultiplexer___ATEST
-
-new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.demultiplexer.main, inputs, outputs));
-tl = {};
-
-V1   = 10;
-V2   = 11;
-V3   = 12;
-V12  = V1-V2;
-V13  = V1-V3;
-V23  = V2-V3;
-V12a = 45-56;
-V13a = 45-69;
-V23a = 56-69;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.demultiplexer.main, inputs, outputs));
+    tl = {};
+    
+    V1   = 10;
+    V2   = 11;
+    V3   = 12;
+    V12  = V1-V2;
+    V13  = V1-V3;
+    V23  = V2-V3;
+    V12a = 45-56;
+    V13a = 45-69;
+    V23a = 56-69;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function AsrSamplesVolt = ASR_samples(varargin)
         assert(nargin == 9)
         AsrSamplesVolt = struct(...
@@ -29,7 +29,7 @@ V23a = 56-69;
             'acV13', as(varargin{8}, V13a), ...
             'acV23', as(varargin{9}, V23a));
     end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function BltsSrcArray = BLTS_src_array(categoryArray, antennasArray)
         assert( numel(categoryArray) == numel(antennasArray) )
         
@@ -39,36 +39,36 @@ V23a = 56-69;
                 antennasArray{i});
         end
     end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-if 1
-    tl{end+1} = new_test(...
-        {0, true, {V1, V12, V23, V12a, V23a}}, ...
-        {BLTS_src_array(...
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    
+    
+    if 1
+        tl{end+1} = new_test(...
+            {0, true, {V1, V12, V23, V12a, V23a}}, ...
+            {BLTS_src_array(...
             {'DC single', 'DC diff', 'DC diff', 'AC diff', 'AC diff'}, ...
             {[1], [1 2], [2 3], [1 2], [2 3]}), ...
-        ASR_samples(1,1,1, 1,1,1, 1,1,1)});
-end
-
-if 1
-    tl{end+1} = new_test(...
-        {1, false, {V2, V3, V23, V13a, V23a}}, ...
-        {BLTS_src_array(...
+            ASR_samples(1,1,1, 1,1,1, 1,1,1)});
+    end
+    
+    if 1
+        tl{end+1} = new_test(...
+            {1, false, {V2, V3, V23, V13a, V23a}}, ...
+            {BLTS_src_array(...
             {'DC single', 'DC single', 'DC diff', 'AC diff', 'AC diff'}, ...
             {[2], [3], [2 3], [1 3], [2 3]}), ...
-        ASR_samples(0,1,1, 0,0,1, 1,1,1)});
+            ASR_samples(0,1,1, 0,0,1, 1,1,1)});
+    end
+    
+    EJ_library.atest.run_tests(tl)
 end
 
-EJ_library.atest.run_tests(tl)
-end
 
 
-
- % as = assign. Effectively implements ~ternary operator + constant (NaN).
+% as = assign. Effectively implements ~ternary operator + constant (NaN).
 function V = as(v,V)
-if v; V = V;
-else  V = NaN;
-end
+    if v; V = V;
+    else  V = NaN;
+    end
 end

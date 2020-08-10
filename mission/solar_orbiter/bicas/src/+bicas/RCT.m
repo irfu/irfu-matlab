@@ -7,6 +7,8 @@
 % Implemented so that no calibration data is modified/added to/removed from. The returned data structures reflect the
 % content of the RCTs, not necessarily the data used. Modification of data (in particular extrapolation of transfer
 % functions) should be done elsewhere.
+% --
+% NOTE: Not entirely true. Code inverts LFR & BIAS RCT FTF-->ITF.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -25,6 +27,8 @@ classdef RCT
 % PROPOSAL: Move out the extrapolation of LFR TFs.
 %   PRO: Want to distinguish between RCT data and modified data.
 % PROPOSAL: Log read RCTs in the same way as input datasets; generic zVar logging.
+%
+% PROPOSAL: Read FTFs and have the caller (bicas.calib) invert the FTFs.
 
 
 
@@ -59,11 +63,6 @@ classdef RCT
             %============================
             % Create regexp for filename
             %============================
-%             pipelineSettingsSegm = EJ_library.utils.translate({...
-%                 {'ROC-SGSE', 'RGTS'}, 'RGTS';...
-%                 {'RODP'},             'RODP'}, ...
-%                 pipelineId, ...
-%                 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal pipelineId="%s"', pipelineId));
             % IMPLEMENTATION NOTE: Below translation statement
             % (1) verifies the argument, AND
             % (2) separates the argument string constants from the SETTINGS naming convention.
@@ -168,7 +167,7 @@ classdef RCT
                 % 1 CDF record : cdfdump: "TRANSFER_FUNCTION_COEFFS CDF_DOUBLE/1   3:[2,8,4]       F/TTT"   # 3=number of dimensions/record
                 % 2 CDF records: cdfdump: "TRANSFER_FUNCTION_COEFFS CDF_DOUBLE/1   3:[2,8,4]       T/TTT"
                 % 1 CDF record:   size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [  4 2 8]
-                % 2 CDF records:  size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [2 4 2 8]                
+                % 2 CDF records:  size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [2 4 2 8]
                 ftfCoeffs = permute(ftfCoeffs, [1, 4,3,2]);
 
 
@@ -314,7 +313,8 @@ classdef RCT
                         lsfBltsAmplTableTpiv = lsfAmplTableTpiv(:, iBlts);
                         lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBlts);
 
-                        % NOTE: INVERTING the tabulated TF.
+                        % NOTE: INVERTS the tabulated TF.
+                        %   NOTE: This requires negating the phase too.
                         ItfIvpt = EJ_library.utils.tabulated_transform(...
                             lsfBltsFreqTableHz * 2*pi, ...
                             1 ./ lsfBltsAmplTableTpiv, ...
@@ -470,8 +470,11 @@ classdef RCT
             % ASSERTIONS
             assert(size(ftfNumCoeffs, 1) == size(ftfDenomCoeffs, 1))
             % The last FTF denominator coefficient (highest index, for which the value is non-zero) must be =1.
-            assert(ftfDenomCoeffs(find(ftfDenomCoeffs, 1, 'last')) == 1, 'BICAS:calib:FailedToReadInterpretRCT', ...
-                'RCT contains forward transfer function (FTF) denominator coefficients, where the highest-order (non-zero) coefficient is NOT one as expected.')
+            assert(...
+                ftfDenomCoeffs(find(ftfDenomCoeffs, 1, 'last')) == 1, ...
+                'BICAS:calib:FailedToReadInterpretRCT', ...
+                ['RCT should contain forward transfer function (FTF) denominator coefficients,', ...
+                ' where the highest-order (non-zero) coefficient is NOT one as expected.'])
 
             ItfArray = {};
             
@@ -485,7 +488,8 @@ classdef RCT
                 % ASSERTIONS
                 assert(Itf.has_real_impulse_response())
                 % Assert ITF. Can not set proper error message.
-                assert(~Itf.zero_in_high_freq_limit(), 'BICAS:calib:FailedToReadInterpretRCT', 'Transfer function is not inverted, i.e. not physical OUTput-to-INput.')
+                assert(~Itf.zero_in_high_freq_limit(), 'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'Transfer function is not inverted, i.e. not physical OUTput-to-INput.')
                 
                 ItfArray{end+1} = Itf;
             end

@@ -3,8 +3,8 @@
 % vectors of Z and omega values.
 %
 %
-% IMPLEMENTATION NOTE
-% ===================
+% IMPLEMENTATION NOTES
+% ====================
 % This class does NOT implement assertions for all conceivable sanity checks on transfer functions. Reasons:
 % ** It is ambiguous which sanity checks one should use.
 % ** Want to keep the code generic, e.g.
@@ -12,7 +12,7 @@
 %    ** useful for numeric experiments,
 %    ** use it for both Laplace transforms and Fourier transforms(?).
 % Instead it provides extra methods to make relevant assertions easy to implement by the user.
-% 
+% --
 % This class deliberately requires (via assertions):
 %   ** The TF can be evaluated to finite values (not NaN, Inf) by requiring tabulated Z values to be finite.
 %   ** The TF is not extrapolated beyond the tabulated omega values.
@@ -24,6 +24,21 @@
 %   ** TFs with poles with non-negative real value (oscillations and divergent impulse responses).
 %   ** Z does not converge to zero when omega goes to infinity (could define value
 %      for omega=inf).
+% --
+% This class deliberately does NOT implement an "eval" function at arbitrary frequencies since it is ambiguous.
+%   ** How extrapolate beyond the frequency limits of the table?
+%       ** Assert that frequency is within table (forbid extrapolation)?
+%       ** Extrapolate, in particular to 0 Hz?
+%   ** How interpolate (linear interpolation? quadratic interpolation? splines?)
+%   ** It is easy for the caller to use e.g. interp1 for interpolation.
+%
+%
+% RATIONALE
+% =========
+% This class may seem to not "do much", but it is still useful since
+%   ** It is a "standard struct" for tabulated TFs. Does not need to manually keep frequencies and Z together.
+%   ** It is immutable.
+%   ** The constructor can initialize using two common formats.
 % 
 %
 % Author: Erik P G Johansson
@@ -111,7 +126,7 @@ classdef tabulated_transform
                     numel(omegaRps), ...
                     numel(amplitude), ...
                     numel(phaseRad)])
-                % NOTE: isfinite assertion implemented via Z.
+                % NOTE: isfinite assertion implemented via assertions on Z (later).
                 
                 Z = amplitude .* exp(1i*phaseRad);
             elseif (numel(varargin) >= 1) && isnumeric(varargin{1})

@@ -7,12 +7,12 @@
         "icd_version": "1.2"
     },
     "release": {
-        "version":      "2.0.1",
-        "date":         "2020-05-18T19:16:00Z",
+        "version":      "3.0.0",
+        "date":         "2020-07-07T17:04:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Bugfix: Correctly reads L1 dataset bias currents as nanoampere",
+        "modification": "High freq. TF cutoff; use LFR mux mode; tolerate input/L1 bias current duplicates; copies zv BW; output nA; V09 master CDFs",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {
@@ -40,7 +40,7 @@
                     "name":        "LFR L2 CWF science electric selective burst mode 1 data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SBM1-CWF-E_V08.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SBM1-CWF-E_V09.cdf"
                 }
             }
         },
@@ -64,7 +64,7 @@
                     "name":        "LFR L2 CWF science electric selective burst mode 2 data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SBM2-CWF-E_V08.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SBM2-CWF-E_V09.cdf"
                 }
             }
         },
@@ -88,7 +88,7 @@
                     "name":        "LFR L2 CWF science electric survey mode data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SURV-CWF-E_V08.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SURV-CWF-E_V09.cdf"
                 }
             }
         },
@@ -112,7 +112,7 @@
                     "name":        "LFR L2 SWF science electric survey mode data",
                     "description": "RPW LFR L2 SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SURV-SWF-E_V08.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SURV-SWF-E_V09.cdf"
                 }
             }
         },
@@ -136,7 +136,7 @@
                     "name":        "LFR L2 CWF science electric LF mode data",
                     "description": "RPW TDS L2 CWF science electric (potential difference) data in LF mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-TDS-LFM-CWF-E_V08.cdf"
+                    "template":    "SOLO_L2_RPW-TDS-LFM-CWF-E_V09.cdf"
                 }
             }
         },
@@ -160,7 +160,7 @@
                     "name":        "LFR L2 RSWF science electric LF mode data",
                     "description": "RPW TDS L2 RSWF science electric (potential difference) data in LF mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-TDS-LFM-RSWF-E_V08.cdf"
+                    "template":    "SOLO_L2_RPW-TDS-LFM-RSWF-E_V09.cdf"
                 }
             }
         }
