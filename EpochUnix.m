@@ -17,14 +17,14 @@ classdef EpochUnix < GenericTimeArray
       if isa(inp,'double')
         if min(size(inp))>1
           error('irf:EpochUnix:EpochUnix:badInputs',...
-            'Double input (seconds since 1970) must be a columt or row vector')
+            'Double input (seconds since 1970) must be a column or row vector')
         end
         if size(inp,2)~=1, inp = inp'; end % to column
         obj.epoch = inp;
       elseif isa(inp,'int64')
         if min(size(inp))>1
           error('irf:EpochUnix:EpochUnix:badInputs',...
-            'int64 input (nanoseconds since 2000) must be a columt or row vector')
+            'int64 input (nanoseconds since 2000) must be a column or row vector')
         end
         obj.epoch = EpochUnix.from_ttns(inp(:)); % column vector
       elseif isa(inp,'char')
@@ -69,7 +69,7 @@ classdef EpochUnix < GenericTimeArray
   
   methods (Static)
     function ttns = to_ttns(epoch)
-      % Convert unix epoch to TT in ns
+      % Convert unix epoch to TT2000 (ns)
       vector6        = fromepoch(epoch);
       tSecRound      = floor(vector6(:,6));
       tmSec          = 1e3*(vector6(:,6)-tSecRound);
@@ -81,6 +81,8 @@ classdef EpochUnix < GenericTimeArray
       ttns           = spdfcomputett2000(vector6);
     end
     function epoch = from_ttns(ttns)
+      % Convert TT2000 (ns) to unix epoch
+      % Empirically: Only seems to work if ttns is int64.
       s_tmp = spdfencodett2000(ttns(1));
       epoch0 = iso2epoch(s_tmp{:});
       epoch = double(ttns - ttns(1))*1e-9 + epoch0;

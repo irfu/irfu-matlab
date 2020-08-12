@@ -95,7 +95,7 @@ switch nargin
       if regexp(vs,'?'), cl_id = 1:4;
       else, cl_id = 1;
       end
-    else, error('Second input argument must be eather a number 1..4 or a string.')
+    else, error('Second input argument must be either a number 1..4 or a string.')
     end
   case 1
     mode_s = 'res';
