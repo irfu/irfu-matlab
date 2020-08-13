@@ -2877,7 +2877,7 @@ classdef PDist < TSeries
         esteptable = zeros(1,length(dist));
       end
       idEstep0First = find(esteptable==0,1);
-      emat = double(dist.energy); % [eV]
+      emat = double(dist.depend{1}); % [eV]
       e0 = emat(idEstep0First,:); e0 = e0(1,:); % [eV]
       e1 = emat(idEstep0First+1,:); e1 = e1(1,:); % [eV]
       % velocity (size = [2,nE]) per steptable
