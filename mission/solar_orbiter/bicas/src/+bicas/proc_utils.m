@@ -852,7 +852,7 @@ classdef proc_utils
         
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
-        % PROPOSAL: Implement using new features in EJ_library.assert.size.
+        % PROPOSAL: Implement using new features in EJ_library.assert.sizes.
         
             fieldNamesList1 = fieldnames(S);
             nRows = [];
