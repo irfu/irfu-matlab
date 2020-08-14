@@ -151,7 +151,7 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
         pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F0, 'V1\_DC'));
         if displayDcDiffs
             pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F0, 'V12\_DC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V13\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V23\_DC'));
         end
         if displayAcDiffs
             pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F0, 'V12\_AC'));
