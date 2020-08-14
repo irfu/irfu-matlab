@@ -76,6 +76,10 @@ overlap = overlapPercent * 0.01;
 
 
 usingTSeries = isa(data,'TSeries');
+% IMPLEMENTATION NOTE: If samplFreqHz is single-precision (or integer,
+% probably), rather than double-precision, then this can lead to numerical
+% problems. Historically, this had lead to spectrumTimeSec1 not incrementing.
+samplFreqHz = double(samplFreqHz); 
 
 
 
