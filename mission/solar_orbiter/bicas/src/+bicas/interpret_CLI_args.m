@@ -57,7 +57,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     % PROPOSAL: Include assertion for unique input and output dataset paths.
     %   NOTE: Assertion is presently in execute_sw_mode.
     
-    
+    SW_MODE_CLI_OPTION_REGEX = bicas.constants.SW_MODE_CLI_OPTION_REGEX;
     
     %==================================================================================
     % Configure
@@ -66,14 +66,12 @@ function CliData = interpret_CLI_args(cliArgumentList)
     % (2) inofficial options
     % NOTE: Exclude the argument for functionality mode itself.
     %==================================================================================
-    SW_MODE_REGEXP = '[^-][^-].*';
-    
     OPTIONS_CONFIG_MAP = containers.Map();
-    OPTIONS_CONFIG_MAP('version_FM')                = struct('optionHeaderRegexp', '--version',        'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('identification_FM')         = struct('optionHeaderRegexp', '--identification', 'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('swdescriptor_FM')           = struct('optionHeaderRegexp', '--swdescriptor',   'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('help_FM')                   = struct('optionHeaderRegexp', '--help',           'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('SW_mode')                   = struct('optionHeaderRegexp', SW_MODE_REGEXP,     'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('version_FM')        = struct('optionHeaderRegexp', '--version',              'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('identification_FM') = struct('optionHeaderRegexp', '--identification',       'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('swdescriptor_FM')   = struct('optionHeaderRegexp', '--swdescriptor',         'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('help_FM')           = struct('optionHeaderRegexp', '--help',                 'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('SW_mode')           = struct('optionHeaderRegexp', SW_MODE_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
     
     % NOTE: "specific_input_parameters" refers to the official RCS ICD term.
     % NOTE: ICD_log_file is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
@@ -143,7 +141,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
             % ASSERTION
             % NOTE: Somewhat of a hack, since can not read out from using bicas.utils.parse_CLI_options where
             % the SW_mode option is located among the arguments. The code knows it should be somewhere.
-            %if ~EJ_library.str.regexpf(swModeArg, SW_MODE_REGEXP)
+            %if ~EJ_library.str.regexpf(swModeArg, bicas.constants.SW_MODE_CLI_OPTION_REGEX)
             if numel(OptionValues) ~= 1
                 % Somewhat misleading error message. Hard to be accurate without too much effort or by explaining the
                 % argument-parsing algorithm to the user.

@@ -171,6 +171,43 @@ classdef proc
 
         end
         
+        
+        
+        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap)
+            
+            InputLfrCwfPd = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
+
+            nRecords = numel(InputLfrCwfPd.Zv.Epoch);
+
+            
+            
+            % TEMP: Create legal output datasets with no data.
+            EfieldPd = struct();
+            EfieldPd.Epoch            = InputLfrCwfPd.Zv.Epoch;
+            EfieldPd.QUALITY_FLAG     = InputLfrCwfPd.Zv.QUALITY_FLAG;
+            EfieldPd.QUALITY_BITMASK  = InputLfrCwfPd.Zv.QUALITY_BITMASK;
+            EfieldPd.DELTA_PLUS_MINUS = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
+            EfieldPd.EDC_SFR          = zeros(nRecords, 3);
+            
+            ScpotPd = struct();
+            ScpotPd.Epoch             = InputLfrCwfPd.Zv.Epoch;
+            ScpotPd.QUALITY_FLAG      = InputLfrCwfPd.Zv.QUALITY_FLAG;
+            ScpotPd.QUALITY_BITMASK   = InputLfrCwfPd.Zv.QUALITY_BITMASK;
+            ScpotPd.DELTA_PLUS_MINUS  = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
+            ScpotPd.SCPOT             = zeros(nRecords, 3);
+            ScpotPd.PSP               = zeros(nRecords, 3);
+
+            
+            
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('EFIELD_cdf') = EfieldPd;
+            OutputDatasetsMap('SCPOT_cdf')  = ScpotPd;
+        end
+        
+        
+        
     end    % methods(Static, Access=public)
+    
+    
     
 end    % classdef

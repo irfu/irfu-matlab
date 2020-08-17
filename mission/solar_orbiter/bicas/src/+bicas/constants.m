@@ -63,6 +63,20 @@ classdef constants   % < handle
         %
         EMIDP_2_INFO = bicas.constants.init_EMIDP_2_INFO;
         
+        
+        
+        % Regular expression that the CLI name of a s/w mode must satisfy.
+        %
+        % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems to imply this regex for S/W mode
+        % CLI parameters: ^[A-Za-z][\\w-]+$
+        % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
+        %
+        % NOTE: Must not begin with "--" to be confused with CLI options, but the above constraint ensures this.
+        %
+        % NOTE: help regexp: "\w    A word character [a-z_A-Z0-9]"
+        %
+        SW_MODE_CLI_OPTION_REGEX = '[A-Za-z][\w-]+';
+        
     end    % properties(Constant)
     
     
