@@ -1,11 +1,12 @@
 %
-% Quicklook for the content of one BIAS HK dataset (CDF file), i.e. DATASET_ID = SOLO_HK_RPW-BIA.
+% Quicklook for the content of one BIAS HK dataset (CDF file), i.e. DATASET_ID =
+% SOLO_HK_RPW-BIA.
 %
 %
 % INCOMPLETE
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-27.
 %
 function plot_HK(filePath)
