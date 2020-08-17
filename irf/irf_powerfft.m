@@ -2,30 +2,36 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 %IRF_POWERFFT  compute power spectrum
 %
 % [Specrec]        = irf_powerfft(data,nFft,samplFreqHz,[overlapPercent,smoothWidth])
-% [t,power,f]      = irf_powerfft(data,nFft,samplFreqHz,[overlapPercent,smoothWidth])
+% [t,p,f]          = irf_powerfft(data,nFft,samplFreqHz,[overlapPercent,smoothWidth])
 %       Return the same results as either one struct, or as separate return
-%       values.
+%       values. See "Return value".
 %
 % (no return value)  irf_powerfft(data,nFft,samplFreqHz,[overlapPercent, smoothWidth])
 %       Uses results to call irf_spectrogram.
 %
+%
+% ARGUMENTS
+% =========
 %   data           - Either
 %                     (1) a vector (first column is time in seconds; remaining
 %                         columns are data), or
 %                     (2) a TSeries object.
-%   nFft           - Length of time covered by every spectrum, when the samples
-%                    are sampled at frequency samplFreqHz. This is also the
-%                    number of samples (real or reconstructed) used for every
-%                    spectrum.
+%   nFft           - Length of time covered by every spectrum, as measured by
+%                    the number of samples when sampled at exactly sampling
+%                    frequency samplFreqHz. This is also the number of samples
+%                    (real or reconstructed) used for every spectrum.
 %   samplFreqHz    - The sampling frequency [samples/s].
 %   overlapPercent - Overlap between spectras in percent (0..100-).
 %   smoothWidth    -
 %
+%
+% RETURN VALUE(S)
+% ===============
 %	Specrec        - Structure with below fields:
 %		.t(iTime)
 %          - Numeric column array. Time of each individual spectrum [seconds].
-%            If using TSeries, then epoch unix.
-%            If not using TSeries, then same time format as data time.
+%            If "data" is a numeric matrix, then same time format as data time.
+%            If "data" is a TSeries, then time format epoch unix.
 %		.p{iComponent}(iTime, iFreq)
 %          - Cell array of numeric arrays of spectrum values.
 %            NaN if too little underlying data for the particular spectrum.
@@ -34,14 +40,37 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 %		.f(iFreq)
 %          - Numeric column array. Frequencies [Hz] for spectrum. One array
 %            for all spectras.
-%       The structure can be passed to IRF_SPECTROGRAM with/without
+%
+%       Note: The structure can be passed to IRF_SPECTROGRAM with/without
 %       modifications.
+%       Note: IRF_SPECTROGRAM interprets .t as epoch unix, implying that if
+%       "data" is a numeric array, then its time format must also be epoch unix.
+%
+%
+% Note: If a sample=NaN is used for deriving a specific spectrum, then the
+% entire spectrum is set to NaN.
 %
 % Note: Input data does not have to be sampled at samplFreqHz, and sampling
-% frequency may vary. Missing samples, needed for FFT, are reconstructed by
-% using the mean value is used, assuming not too many samples are missing. If
-% the actual sampling rate is higher than samplFreqHz, then samples may be
-% dropped.
+% frequency may vary over time. To derive spectra, shorter sequences of samples
+% are sent to FFT. These sequences of samples are at exactly sampling frequency
+% samplFreqHz, and are constructed from the submitted samples, by e.g. adjusting
+% the timestamps.
+% * When the actual sampling rate is HIGHER than samplFreqHz, then some samples
+%   are dropped from (not used for) calculating the given spectrum.
+% * When the actual sampling rate is LOWER than samplFreqHz, then missing
+%   values are reconstructed by using the mean value. If the percentage of
+%   missing samples for a given spectrum is over a set (hardcoded)
+%   treeshold, then only NaN is used. ==> That entire spectrum is set to NaN.
+% 
+%   WARNING: When the actual sampling rate is sufficiently much lower than
+%   samplFreqHz, then there will be so many data gaps that all NaN is used for
+%   all samples, rendering the affected spectras NaN, despite the presence of
+%   valid data. To resolve this problem, the caller can
+%   (1) split up the samples into sequences of approximately constant sampling
+%       frequency and call IRF_POWERFFT (and optionally IRF_SPECTROGRAM) once
+%       for each such sequence, or
+%   (2) use the lowest sampling frequency in the data, sacrificing the
+%       higher-frequency parts of the spectras.
 %
 % See also FFT, IRF_SPECTROGRAM
 
@@ -55,8 +84,8 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 % ~BUG: When multiple samples map to the same timestamp in sample sequences used
 % for FFT, only one (the last one) will be used. Could instead be e.g. average,
 % or nearest sample in time.
-% BUG: Special case (early exit) for nSpectras<1 does not consider the number of
-% expected return values.
+% BUG: Special case (early exit) for nSpectras<1 does not consider the actual
+% number of expected return values.
 
 
 
@@ -68,14 +97,12 @@ elseif nargin<5
   smoothWidth    = 0;
 end
 
-if overlapPercent<0 || overlapPercent>=100
-  error('Illegal OVERLAP. Must be in the range 0..100-.')
-end
+assert(isscalar(overlapPercent))
+assert( 0<=overlapPercent || overlapPercent<100, ...
+    'Argument overlapPercent is not in the range 0..100-.')
 overlap = overlapPercent * 0.01;
+assert(isscalar(samplFreqHz), 'Argument samplFreqHz is not scalar.')
 
-
-
-usingTSeries = isa(data,'TSeries');
 % IMPLEMENTATION NOTE: If samplFreqHz is single-precision (or integer,
 % probably), rather than double-precision, then this can lead to numerical
 % problems. Historically, this had lead to spectrumTimeSec1 not incrementing.
@@ -89,12 +116,16 @@ samplFreqHz = double(samplFreqHz);
 % timeSecArray : Nx1. Time stamps in seconds, using "arbitrary" epoch.
 % samples      : NxM.
 %=======================================================================
-if usingTSeries
+if isa(data,'TSeries')
   timeSecArray = data.time.tts;   % TT2000, but in seconds.
   samples      = data.data;
-else
+  usingTSeries = true;
+elseif ismatrix(data) && isnumeric(data) && (size(data, 2)>=1)
   timeSecArray = data(:, 1);
   samples      = data(:, 2:end);
+  usingTSeries = false;
+else
+  error('Argument "data" is neither TSeries, nor numeric 2D array with at least one column.')
 end
 clear data
 
@@ -258,7 +289,7 @@ end    % irf_powerfft
 
 
 
-% Help function to handle datagaps. Given a matrix/TSeries of samples to base
+% Help function to handle data gaps. Given a matrix/TSeries of samples to base
 % a spectrum on (possibly lacking samples, jumps in timestamps), construct a
 % "complete" 1D vector that can be used for FFT. Throws away time intervals
 % with less than some percentage (90%) of data.
@@ -339,7 +370,7 @@ end    % irf_powerfft
 
 
 % Extract a sequence of samples, representing samples at equidistant points in
-% time (sampling freqency) that FFT can be applied to. Handle datagaps and
+% time (sampling frequency) that FFT can be applied to. Handle data gaps and
 % varying sampling rate (according to time stamps).
 %
 % nSamplesOut : Number of samples (per component) in output.
@@ -362,7 +393,7 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
   %iKeep        = find(bKeep, 1, 'first') : find(bKeep, 1, 'last');
   timeSecArray = timeSecArray(bKeep, :);
   samples      = samples(bKeep, :);
-    
+  
   nComp = size(samples, 2);
   
   % Find mapping between (original) sample indices and out sample indices.

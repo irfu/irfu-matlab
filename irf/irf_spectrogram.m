@@ -9,7 +9,7 @@ function [hout,hcb] = irf_spectrogram(varargin)
 %          h   - axis handle
 %          hcb - colorbar handle
 %    specrec - structure including spectra
-%              specrec.t  - time vector
+%              specrec.t  - time vector (epoch unix)
 %              specrec.f  - frequency vector (can be also matrix the size specrec.p)
 %              specrec.p  - spectral density matrix (size(t)xsize(f))
 %              specrec.dt - Description of the ~half-width of each separate spectrum in the plots. (Can be omitted)
@@ -121,7 +121,7 @@ elseif isnumeric(specrec.p)
   ncomp=1;
   specrec.p={specrec.p};
 else
-  disp('WARNING: cannot intepret input parameters in irf_spectrogram, returning.')
+  disp('WARNING: cannot interpret input parameters in irf_spectrogram, returning.')
   return
 end
 
@@ -129,7 +129,7 @@ ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
 
 %% Plot spectrogram
-load caa/cmap.mat
+%load caa/cmap.mat
 
 % Initiate figure if handles not given
 if isempty(h)
@@ -318,11 +318,11 @@ end
 if nargout>0, hout=h; end
 
 function zoom_in_if_necessary(h)
-ud=get(h,'userdata');
-if isfield(ud,'zoom_x')
-  disp('zooming in the updated plot')
-  irf_zoom(h,'x',ud.zoom_x);
-  if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10 % isdat epoch
-    irf_timeaxis(h,'nolabel');
-  end
+  ud=get(h,'userdata');
+  if isfield(ud,'zoom_x')
+    disp('zooming in the updated plot')
+    irf_zoom(h,'x',ud.zoom_x);
+    if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10 % isdat epoch
+      irf_timeaxis(h,'nolabel');
+    end
 end
