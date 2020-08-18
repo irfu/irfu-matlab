@@ -107,8 +107,9 @@ function find_constant_sequences___ATEST
         [1,  3,      5,  6,    9]'});
 
     EJ_library.atest.run_tests(tl)
-    
-    
+
+
+
     % Speed test
 %     rand_vector = @() (floor(rand(1e6,2)*1.1));
 %     v1 = rand_vector();

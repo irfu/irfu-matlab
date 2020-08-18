@@ -195,6 +195,7 @@ classdef assert
         % regexp : (1) String. Regular expressions.
         %          (2) Cell array of strings. List of regular expressions.
         %              NOTE: Must be non-empty array.
+        %
         function castring_regexp(s, regexp)
             if ~any(EJ_library.str.regexpf(s, regexp))
                 error(EJ_library.assert.ASSERTION_EMID, ...

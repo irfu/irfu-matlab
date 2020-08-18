@@ -19,7 +19,7 @@ function C = classify_DATASET_ID(datasetId)
     % PROPOSAL: Implement assertion on DATASET_ID via this function.
     %   Ex: bicas.assert_DATASET_ID
     %   Ex: bicas.swmode_defs.assert_DATASET_ID
-    %   CON: Requires strict matching.
+    %   CON: ~Requires strict matching.
     %   PRO: Does not spread out the knowledge of DATASET_IDs.
     %   PROPOSAL: Flag for obsoleted DATASET_IDs that may be found in input datasets. Caller decides how to
     %       respond.
@@ -27,6 +27,27 @@ function C = classify_DATASET_ID(datasetId)
     %
     % PROPOSAL: Generalize to work for all DATASET_IDs (BICAS-related and not). Put outside BICAS.
     % PROPOSAL: Return whether SOLO or ROC-SGSE prefix.
+    %
+    % NOTE: In principle, this function is a substitute for multiple functions DATASET_ID-->boolean, which are defined
+    % only on a subset of DATASET_IDs.
+    %   PROPOSAL: Have caller request flags. If a flag is not defined for the specified DATASET_ID, then assertion error.
+    %   PROPOSAL: Have class with only static methods. Define constant table DATASET_ID-->set_of_values. Values can be
+    %             false/true or other, or be undefined. Define static methods/functions that use table to translate
+    %             table to relevant flag. If requested flag is undefined, then assertion error.
+    %   PROPOSAL: Not use an actual constant table, but a private static method that returns all available flags for a
+    %             given DATASET_ID.
+    %   PROPOSAL: Use list of DATASET_IDs for assertion on valid DATASET_ID.
+    %
+    % PROPOSAL: Split up into multiple functions which cover subsets of DATASET_IDs. Their results can then be combined.
+    %   CON: Can not implement assertions for bad DATASET_IDs.
+    %       PROPOSAL: Policy argument for assertion.
+    %   PRO: Not all flags always make sense.
+    %   NEED: bicas.proc, bicas.proc_sub:    Classify L1/L1R LFR/TDS datasets.
+    %   NEED: bicas.swmode_defs:             Assert valid BICAS input/output DATASET_ID.
+    %   NEED: bicas.get_master_CDF_filename: Assert valid BICAS output DATASET_ID
+    %   NEED: EJ_library.so.psp2:       LFR CWF/SBM1/SBM2/SWF to set Rx.
+    %                                        Potentially classify any BICAS-related dataset.
+    %   NEED: parse_dataset_filename:        Distinguish SOLO & ROC-SGSE.
 
 
 
@@ -112,8 +133,8 @@ function C = classify_DATASET_ID(datasetId)
     C.isCwf = C.isLfrSbm1 | C.isLfrSbm2 | C.isLfrSurvCwf | C.isTdsCwf;
     C.isSwf = C.isLfrSurvSwf                             | C.isTdsRswf;
 
-    
-    
+
+
     % ASSERTION
     EJ_library.assert.struct(C, {...
         'isLfrSbm1', ...

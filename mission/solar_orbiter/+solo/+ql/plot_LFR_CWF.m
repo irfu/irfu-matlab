@@ -82,7 +82,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     TsVac23 = irf.ts_scalar(epoch, vAc23);
     
     % TEMPORARY FIX
-    % Assume there is one sampling frequency + datagaps.
+    % Assume there is one sampling frequency + data gaps.
     % There is no zVar for sampling frequency in old datasets.
     samplingFreqHz = 1/mode(diff(TsVdc1.time.tts));
 

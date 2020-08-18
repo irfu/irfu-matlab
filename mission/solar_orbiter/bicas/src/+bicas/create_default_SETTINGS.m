@@ -88,9 +88,15 @@ function SETTINGS = create_default_SETTINGS()
     %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
     %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
     %       PROBLEM: How distinguish from processing?
-    
+    %
+    % PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
+    %   NOTE: Name change likely influences BICAS testing code and pipeline. Should therefore only be implemented at the
+    %         right time.
+
+
+
     S = bicas.settings();
-    
+
     % The MATLAB command (e.g. path) to use to launch MATLAB for BICAS.
     % NOTE: Only the value in the BICAS config file is actually used. The normal priority order for how SETTINGS values are
     % being obtained does apply here but does not matter since the value is only used by the bash wrapper script for

@@ -37,7 +37,6 @@ classdef constants   % < handle
         % Path (incl. filename) to default config file. Relative to BICAS's directory root.        
         DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');
         
-        
         % MATLAB stdout prefix to signal to bash wrapper that the log message should be passed on to STDOUT (without the
         % prefix).
         STDOUT_PREFIX_TBW = 'STDOUT: ';

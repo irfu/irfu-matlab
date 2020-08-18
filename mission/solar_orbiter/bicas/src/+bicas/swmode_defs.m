@@ -13,7 +13,6 @@
 %    bicas.proc' production functions.
 %
 %
-%
 % IMPLEMENTATION NOTES
 % ====================
 % The class essentially consists of one large struct, and a constructor that builds it. The large data struct contains

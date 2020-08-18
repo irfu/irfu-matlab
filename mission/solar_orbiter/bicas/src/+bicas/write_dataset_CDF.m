@@ -192,9 +192,15 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
             % CASE: zVariable has zero records, indicating that it should have been set using PDV field
             %===========================================================================================
             
-            anomalyDescrMsg = sprintf(['Master CDF contains zVariable "%s" which has not been set (i.e. it has zero records) after adding ', ...
+            % NOTE: Useful to specify master CDF path in the case of having
+            % multiple output datasets. Will otherwise not know which output
+            % dataset is referred to. Note: Can still read master CDF from
+            % preceeding log messages.
+            anomalyDescrMsg = sprintf(...
+                ['Master CDF "%s" contains zVariable "%s" which has not been', ...
+                ' set (i.e. it has zero records) after adding ', ...
                 'processing data. This should only happen for incomplete processing.'], ...
-                zvName);
+                masterCdfPath, zvName);
             
             matlabClass   = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
             isNumericZVar = isnumeric(cast(0.000, matlabClass));

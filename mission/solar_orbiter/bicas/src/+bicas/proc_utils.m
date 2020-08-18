@@ -178,16 +178,13 @@ classdef proc_utils
         % Has kept multiple implementations to be able to compare speeds.
         %
         function iEdgeList = find_constant_sequences(varargin)
-            % PROPOSAL: Rename to imply that the function finds edges (separating sequences), not sequences.
-            % PROPOSAL: Make into generic function, split_by_change.
-            % PROPOSAL: Use EJ_library.utils.find_equalities with searchDistance=1.
+            % PROPOSAL: Replace using EJ_library.utils.split_by_change.
             
-            %tic
             nArgs = numel(varargin);
             
             % ASSERTION
             assert(nArgs >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
-                        
+
             nRows  = size(varargin{1},1);
             % Pre-allocate. Should be same size for all arguments and therefore does not need to be re-initialized/cleared.
             diff_v = zeros(nRows-1, 1);
@@ -318,7 +315,9 @@ classdef proc_utils
                 
                 % ASSERTIONS
                 EJ_library.assert.vector(v)
-                assert(v(1) == 1)    % Verifies that it is an edge list, and that the "convention" for what is an edge list (include beginning and end) has not changed.
+                % Verifies that it is an edge list, and that the "convention" for what is an edge list (include
+                % beginning and end) has not changed.
+                assert(v(1) == 1)    
                 
                 % NOTE: Works with (forces) column vectors to make concatenations reliable
                 iEdgeList = [iEdgeList; varargin{i}(:)];

@@ -77,18 +77,11 @@ classdef proc_sub
             ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
             USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
             if USE_ZV_ACQUISITION_TIME_HK
-                % NOTE: ACQUISITION_TIME in test file
-                % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-                % is not monotonically increasing (in fact, it is completely strange).
-                assert(issorted(hkEpoch, 'strictascend'), ...
-                    'BICAS:proc_sub:Assertion:DatasetFormat', ...
-                    'Trying to use HK zVar ACQUISITION_TIME but it is not monotonically increasing (when converting to tt2000).')
-                
                 hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
                     ACQUISITION_TIME_EPOCH_UTC);
-                L.logf('warning', 'Using HK zVar ACQUISITION_TIME instead of Epoch.')
                 
+                L.logf('warning', 'Using HK zVar ACQUISITION_TIME instead of Epoch.')
             else
                 hkEpoch = InHk.Zv.Epoch;
             end
@@ -126,6 +119,9 @@ classdef proc_sub
             % WARNINGS / ERRORS
             %===================
             if ~issorted(hkEpoch, 'strictascend')
+                % NOTE: ACQUISITION_TIME in test file
+                % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+                % is not monotonically increasing (in fact, it is completely strange).
                 error('HK timestamps do not increase monotonically (USE_ZV_ACQUISITION_TIME_HK=%g).', USE_ZV_ACQUISITION_TIME_HK)
             end
             if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
