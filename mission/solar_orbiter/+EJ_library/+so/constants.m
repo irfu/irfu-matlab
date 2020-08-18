@@ -2,7 +2,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-06-26
 %
-classdef constants   % < handle
+classdef constants
     
     properties(Constant)
         % LFR Sampling Frequencies (LSF): F0, F1, F2, F3

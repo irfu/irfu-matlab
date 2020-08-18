@@ -745,6 +745,8 @@ classdef proc_utils
         %       (3) struct field (inside the struct): The inner struct's fields (not recursive)
 
         % NOTE: Function name somewhat bad.
+        % PROPOSAL: Make recursive?!
+        % PROPOSAL: Implement using new features in EJ_library.assert.sizes.
         
             fieldNamesList1 = fieldnames(S);
             nRowsArray = [];

@@ -25,7 +25,7 @@ classdef EpochTT < GenericTimeArray
       elseif isa(inp,'int64')
         if min(size(inp))>1
           error('irf:EpochTT:EpochTT:badInputs',...
-            'int64 input (nanoseconds since 2000) must be a columt or row vector')
+            'int64 input (nanoseconds since 2000) must be a column or row vector')
         end
         obj.epoch = inp(:); % column vector
       elseif isa(inp,'char')

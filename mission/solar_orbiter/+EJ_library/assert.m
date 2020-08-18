@@ -156,6 +156,13 @@ classdef assert
 %
 % PROPOSAL: Assert string sets equal
 %   Ex: write_dataobj
+%
+% PROPOSAL: Assertion functions for MATLAB's date vectors.
+%   NOTE: Variants with 3 and 6 components
+%       PROPOSAL: datevec3, datevec6
+%       PROPOSAL: datevec(dv, nComp)    % nComp = 3,6
+%   NOTE: Variants with 1 or many rows.
+%       PROPOSAL: datevec(dv, nComp, oneManyRows)
 
 
 
@@ -178,7 +185,7 @@ classdef assert
                     'Expected castring (0x0, 1xN char array) is not char.')
             elseif ~(isempty(s) || size(s, 1) == 1)
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'Expected castring (0x0, 1xN char array) has wrong dimensions.')
+                    'Expected castring (0x0, 1xN char array) has illegal dimensions.')
             end
         end
         
@@ -258,6 +265,30 @@ classdef assert
         
         
         
+        % Check that numeric/logical array contains only unique values.
+        % NaN, Inf, -Inf count as a unique values.
+        function number_set(v)
+            % NOTE: number_set analogous to castring_set.
+            % PROPOSAL: Better name considering the accepted MATLAB classes.
+            
+            % IMPLEMENTATION NOTE: Special cases for "unique".
+            %   NaN:      Every NaN counts as unique (i.e. different from other NaN).
+            %   In, -Inf: Inf counts as equal to itself, -Inf counts as equal to
+            %              itself.
+            % Must therefore count the number of NaNs.
+            % NOTE: Works for logical, (individual) character arrays, but not for cell arrays of strings.
+            assert(sum(isnan(v)) <= 1, ...
+                EJ_library.assert.ASSERTION_EMID, ...
+                'Array does not contain only unique numbers. It contains multiple NaN.')
+            
+            % IMPLEMENTATION NOTE: Also works for strings (but the NaN check above does not).
+            assert(numel(unique(v)) == numel(v), ...
+                EJ_library.assert.ASSERTION_EMID, ...
+                'Array does not contain only unique numbers.')
+        end
+        
+        
+        
         function scalar(x)
             if ~isscalar(x)
                 error(EJ_library.assert.ASSERTION_EMID, 'Variable is not scalar as expected.')
@@ -295,7 +326,7 @@ classdef assert
         
             if exist(path, 'file')
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'Path "%s" which was expected to point to nothing, actually points to a file/directory.', path)
+                    'Path "%s" which was expected to point to nothing, actually points to a file or directory.', path)
             end
         end
 

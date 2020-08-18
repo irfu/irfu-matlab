@@ -33,7 +33,6 @@
 % FINISHED (except assertions on input) but uncertain if
 %   has sensible design
 %   has sensible name
-%   should replace EJ_library.assert.size().
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden

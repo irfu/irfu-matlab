@@ -34,8 +34,14 @@ function C = classify_DATASET_ID(datasetId)
     %   PROPOSAL: Have class with only static methods. Define constant table DATASET_ID-->set_of_values. Values can be
     %             false/true or other, or be undefined. Define static methods/functions that use table to translate
     %             table to relevant flag. If requested flag is undefined, then assertion error.
+    %   PROPOSAL: Name DSI_classif, DATASET_ID_classif, DSI, DATASET_ID
+    %   PROPOSAL: Move convert_DATASET_ID_to_SOLO to class.
+    %       PROPOSAL: Rename to convert_ROCSGSE_to_SOLO.
     %   PROPOSAL: Not use an actual constant table, but a private static method that returns all available flags for a
     %             given DATASET_ID.
+    %       PROPOSAL: Table DATASET_ID descriptor+level --> values (instead of from DATASET_ID).
+    %       PROPOSAL: Table DATASET_ID descriptor       --> values (instead of from DATASET_ID, or level).
+    %           NOTE: Returning level would be using separate functionality.
     %   PROPOSAL: Use list of DATASET_IDs for assertion on valid DATASET_ID.
     %
     % PROPOSAL: Split up into multiple functions which cover subsets of DATASET_IDs. Their results can then be combined.
@@ -48,6 +54,11 @@ function C = classify_DATASET_ID(datasetId)
     %   NEED: EJ_library.so.psp2:       LFR CWF/SBM1/SBM2/SWF to set Rx.
     %                                        Potentially classify any BICAS-related dataset.
     %   NEED: parse_dataset_filename:        Distinguish SOLO & ROC-SGSE.
+    %
+    % PROPOSAL: Function that splits up DATASET_ID string into parts:
+    %   source name : SOLO, ROC-SGSE
+    %   level       : L1 etc
+    %   descriptor  : (HK) RPW-BIA etc
 
 
 
