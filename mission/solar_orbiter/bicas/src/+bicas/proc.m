@@ -177,29 +177,77 @@ classdef proc
         
         
         
-        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap)
-            
+        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap, SETTINGS, L)
+            % Always the same DATASET_ID.
+            INPUT_DATASET_ID = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
+
             InputLfrCwfPd = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
-            nRecords = numel(InputLfrCwfPd.Zv.Epoch);
-
+            [InputLfrCwfPd.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfPd.Zv, ...
+                {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
+            
+            bicas.proc_sub.handle_zv_name_change(...
+                fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+            
+            %===================================================================
+            % Calculate
+            % (1) E-field, and
+            % (2) s/c potentials
+            % via BICAS-external code
+            % -----------------------
+            % NOTE: Needs to be careful with the units, and incompatible updates
+            % to solo.vdccal without the knowledge of the BICAS author.
+            % Therefore extra assertions to detect such changes.
+            %===================================================================
+            TsVdc = TSeries(...
+                EpochTT(InputLfrCwfPd.Zv.Epoch), InputLfrCwfPd.Zv.VDC, ...
+                'TensorOrder', 1, ...
+                'repres', {'x', 'y', 'z'});
+            [TsEdc, TsPsp, TsScpot] = solo.vdccal(TsVdc);
+            EJ_library.assert.sizes(...
+                InputLfrCwfPd.Zv.Epoch, [-1, 1], ...
+                TsEdc.data,   [-1, 3], ...
+                TsPsp.data,   [-1, 1], ...
+                TsScpot.data, [-1, 3])
+            assert(strcmp(TsEdc.units,   'mV/m'))
+            assert(strcmp(TsPsp.units,   'V'))
+            assert(strcmp(TsScpot.units, 'V'))
+            
+            %=================
+            % Convert E-field
+            %=================
+            zvEdcMvpm = TsEdc.data;    % MVPM = mV/m
+            % Set E_x = NaN, but only if assertion deems that the corresponding
+            % information is missing
+            % -----------------------------------------------------------------
+            % IMPLEMENTATION NOTE: solo.vdccal set antenna 1 to be zero, if the
+            % source data is non-fill value/NaN, but NaN if fill value. Must
+            % therefore check for both zero and NaN.
+            % Ex: 2020-08-01
+            % IMPLEMENTATION NOTE: ismember does not work for NaN.
+            assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
+                ['EDC for antenna 1 returned from BICAS_external code', ...
+                ' solo.vdccal() is not zero or NaN and can therefore not be', ...
+                ' assumed to unknown anymore. BICAS needs to be updated to reflect this.'])
+            zvEdcMvpm(:, 1) = NaN;
+            clear TsEdc
             
             
-            % TEMP: Create legal output datasets with no data.
+            
             EfieldPd = struct();
             EfieldPd.Epoch            = InputLfrCwfPd.Zv.Epoch;
             EfieldPd.QUALITY_FLAG     = InputLfrCwfPd.Zv.QUALITY_FLAG;
             EfieldPd.QUALITY_BITMASK  = InputLfrCwfPd.Zv.QUALITY_BITMASK;
             EfieldPd.DELTA_PLUS_MINUS = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
-            EfieldPd.EDC_SFR          = zeros(nRecords, 3);
+            EfieldPd.EDC_SFR          = zvEdcMvpm;
             
             ScpotPd = struct();
             ScpotPd.Epoch             = InputLfrCwfPd.Zv.Epoch;
             ScpotPd.QUALITY_FLAG      = InputLfrCwfPd.Zv.QUALITY_FLAG;
             ScpotPd.QUALITY_BITMASK   = InputLfrCwfPd.Zv.QUALITY_BITMASK;
             ScpotPd.DELTA_PLUS_MINUS  = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
-            ScpotPd.SCPOT             = zeros(nRecords, 3);
-            ScpotPd.PSP               = zeros(nRecords, 3);
+            ScpotPd.SCPOT             = TsScpot.data;
+            ScpotPd.PSP               = TsPsp.data;
 
             
             

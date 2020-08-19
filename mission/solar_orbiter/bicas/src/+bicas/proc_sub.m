@@ -894,6 +894,25 @@ classdef proc_sub
             bicas.log_speed_profiling(L, 'bicas.proc_sub.process_calibrate_demux_filter', tTicToc, nRecords, 'record')
             %bicas.log_memory_profiling(L, 'bicas.proc_sub.process_calibrate_demux_filter:end')
         end    % process_calibrate_demux_filter
+
+
+        
+        % Wrapper around bicas.proc_sub.handle_struct_name_change to be used locally.
+        % NOTE: Also used in bicas.proc.process_L3. Therefore public.
+        %
+        % ARGUMENTS
+        % =========
+        % inSciDsi : Input SCI DATASET_ID which contains the zVariable.
+        % varargin : Passed on to bicas.handle_struct_name_change as its
+        %            varargin.
+        %
+        function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
+            anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
+                'Input dataset DATASET_ID=%s uses an alternative but illegal(?) zVariable name "%s" instead of "%s".', ...
+                inSciDsi, oldFieldname, newFieldname));
+            
+            bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
+        end
         
         
         
@@ -1330,22 +1349,6 @@ classdef proc_sub
             %bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages', tTicToc, nRecords, 'record')
             %bicas.log_memory_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
-
-
-        
-        % Wrapper around bicas.proc_sub.handle_struct_name_change to be used locally.
-        %
-        % ARGUMENTS
-        % =========
-        % inSciDsi : Input SCI DATASET_ID which contains the zVariable.
-        %
-        function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
-            anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
-                'Input dataset DATASET_ID=%s uses an alternative but illegal(?) zVariable name "%s" instead of "%s".', ...
-                inSciDsi, oldFieldname, newFieldname));
-            
-            bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
-        end
 
 
 
