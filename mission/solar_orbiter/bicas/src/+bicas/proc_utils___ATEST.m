@@ -16,7 +16,7 @@ function proc_utils___ATEST
     set_struct_field_rows___ATEST
     convert_matrix_to_cell_array_of_vectors___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
-    find_constant_sequences___ATEST    
+    %find_constant_sequences___ATEST    
     convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     set_NaN_after_snapshots_end___ATEST
     
@@ -82,43 +82,43 @@ end
 
 
 
-function find_constant_sequences___ATEST
-    % NOTE: Indirectly tests bicas.proc_utils.merge_index_edge_lists since it is used by this function.
-    
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences, inputs, outputs));
-    tl = {};
-
-    tl{end+1} = new_test({},                     'MException');
-    tl{end+1} = new_test({[]', []'},             'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
-    tl{end+1} = new_test({ones(0,1), ones(0,1)}, 'MException');
-    tl{end+1} = new_test({[1]                          }, {[1,2]'});
-    tl{end+1} = new_test({[1], [3]                     }, {[1,2]'});
-    tl{end+1} = new_test({[1,2,3]'                     }, {[1,2,3,4]'});   % NOTE: Specifically check difference between first two. Can be bug if code misses iRow+1 at the right place.
-    tl{end+1} = new_test({[1,1,1]',      [3,3,3]'      }, {[1,4]'});
-    tl{end+1} = new_test({[1,1,1]',      [NaN,NaN,NaN]'}, {[1,4]'});
-    tl{end+1} = new_test({[1,1,1]',      [Inf,Inf,Inf]'}, {[1,4]'});
-    tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4,7]'});
-    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
-    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
-    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,6; 3,6; 3,6; 3,6; 4,6; 4,6]}, {[1,3,5,7]'});
-    tl{end+1} = new_test({...
-        [1,1,NaN,NaN,NaN,2,2,2]', ...
-        [3,3,3,  3,  4,  4,4,4]'}, {...
-        [1,  3,      5,  6,    9]'});
-
-    EJ_library.atest.run_tests(tl)
-
-
-
-    % Speed test
-%     rand_vector = @() (floor(rand(1e6,2)*1.1));
-%     v1 = rand_vector();
-%     v2 = rand_vector();
-%     v3 = rand_vector();
-%     tic
-%     bicas.proc_utils.find_constant_sequences(v1,v2,v3);
-%     toc
-end
+% function find_constant_sequences___ATEST
+%     % NOTE: Indirectly tests bicas.proc_utils.merge_index_edge_lists since it is used by this function.
+%     
+%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences, inputs, outputs));
+%     tl = {};
+% 
+%     tl{end+1} = new_test({},                     'MException');
+%     tl{end+1} = new_test({[]', []'},             'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
+%     tl{end+1} = new_test({ones(0,1), ones(0,1)}, 'MException');
+%     tl{end+1} = new_test({[1]                          }, {[1,2]'});
+%     tl{end+1} = new_test({[1], [3]                     }, {[1,2]'});
+%     tl{end+1} = new_test({[1,2,3]'                     }, {[1,2,3,4]'});   % NOTE: Specifically check difference between first two. Can be bug if code misses iRow+1 at the right place.
+%     tl{end+1} = new_test({[1,1,1]',      [3,3,3]'      }, {[1,4]'});
+%     tl{end+1} = new_test({[1,1,1]',      [NaN,NaN,NaN]'}, {[1,4]'});
+%     tl{end+1} = new_test({[1,1,1]',      [Inf,Inf,Inf]'}, {[1,4]'});
+%     tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4,7]'});
+%     tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+%     tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+%     tl{end+1} = new_test({[1,1,2,2,2,2]', [3,6; 3,6; 3,6; 3,6; 4,6; 4,6]}, {[1,3,5,7]'});
+%     tl{end+1} = new_test({...
+%         [1,1,NaN,NaN,NaN,2,2,2]', ...
+%         [3,3,3,  3,  4,  4,4,4]'}, {...
+%         [1,  3,      5,  6,    9]'});
+% 
+%     EJ_library.atest.run_tests(tl)
+% 
+% 
+% 
+%     % Speed test
+% %     rand_vector = @() (floor(rand(1e6,2)*1.1));
+% %     v1 = rand_vector();
+% %     v2 = rand_vector();
+% %     v3 = rand_vector();
+% %     tic
+% %     bicas.proc_utils.find_constant_sequences(v1,v2,v3);
+% %     toc
+% end
 
 
 
