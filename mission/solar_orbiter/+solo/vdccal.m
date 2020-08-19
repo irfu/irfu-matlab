@@ -1,7 +1,9 @@
-function [DCE,PSP] = vdccal(VDC)
+function [DCE,PSP,SCPOT] = vdccal(VDC)
 %VDCCAL  Calibrate VDC to get DC E and PSP
 %
-%    [DCE,PSP] = vdccal(VDC)
+%    [DCE,PSP,SCPOT] = vdccal(VDC)
+%
+% NOTE: This function is used by BICAS for producing official datasets.
 
 % d23K123.mat file produced by solo.correlate_probes_batch (script)
 a = load('d23K123.mat');
@@ -24,4 +26,7 @@ DCE = irf.ts_vec_xyz(VDC.time,[E23*0 E23 E123]);
 DCE.units = 'mV/m';
 
 PSP = irf.ts_scalar(VDC.time,(V23corr + double(VDC.x.data))/2);
+PSP.units = 'V';
 
+SCPOT = irf.ts_vec_xyz(VDC.time, PSP.data*[-1,-1,-1] + [0,0,0]);
+SCPOT.units = PSP.units;
