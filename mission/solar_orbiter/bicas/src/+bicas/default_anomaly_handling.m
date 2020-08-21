@@ -142,7 +142,7 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
     N_INDENT = 4;
     ILLEGAL_SETTING_MSG = 'The setting value is illegal. Can therefore not handle the error/anomaly.';
     
-    anomalyDescriptionMsg = EJ_library.str.indent_str(anomalyDescriptionMsg, numel(PREFIX));
+    anomalyDescriptionMsg = EJ_library.str.indent(anomalyDescriptionMsg, numel(PREFIX));
     anomalyDescriptionMsg(1:numel(PREFIX)) = PREFIX;
 
     switch(casesHandled)
@@ -193,6 +193,6 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
     end
     %=================================================================================================================
     function logi(logLevel, str)
-        L.log(logLevel, EJ_library.str.indent_str(str, N_INDENT))
+        L.log(logLevel, EJ_library.str.indent(str, N_INDENT))
     end
 end

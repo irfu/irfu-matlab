@@ -415,7 +415,7 @@ classdef proc_sub
                 % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF index values (1=F0) used in loaded RCT data structs.
                 iLsfZv = InSci.Zv.FREQ + 1;
             end
-            EJ_library.assert.size(iLsfZv, [NaN, 1])
+            EJ_library.assert.sizes(iLsfZv, [NaN, 1])
 
 
 

@@ -8,14 +8,15 @@
 % Primarily intended as a utility function to avoid common verbose switch-case statements (with an "otherwise"
 % assertion) which interprets and verifies string constants, only to assign new values to some other variable(s) in
 % every case statement. Can then write the code more in the form of a table.
-% ** Can be used to assign multiple variables in every case by having e.g. cell array as values.
+% ** Can be used to assign multiple variables (output) in every case by having e.g. cell array as values.
+% ** Can use the same table structure to iterate over all "switch-case" statements.
 % 
 %
 % ARGUMENTS AND RETURN VALUE
 % ==========================
-% translate(... , errorMsgId, errorMsg)
+% SYNTAX: translate(... , errorMsgId, errorMsg)
 %   No match will lead to error. (There can not be multiple matches.)
-% translate(... , nonMatchValue)
+% SYNTAX: translate(... , nonMatchValue)
 %   No match will be accepted.
 % --
 % table                : Cell array of (a) cell arrays of strings, and (b) arbitrary values.
@@ -34,12 +35,11 @@
 %
 % RETURN VALUE
 % ============
-% value      : table{i, 2} for which table{i, 1}==key (string comparison).
+% value      : Same as table{i, 2} for which table{i, 1}==key (string comparison).
 % 
 %
 % Initially created 2019-09-18 by Erik P G Johansson.
 %
-%function value = translate(table, key, errorMsgId, errorMsg)
 function value = translate(table, key, varargin)
     % PROPOSAL: Submit function returning error message string. Only evaluated if error.
     %   PRO: Useful for complex error messages.
@@ -62,9 +62,16 @@ function value = translate(table, key, varargin)
     % PROPOSAL: Exclude empty strings (assertion).
     %   PRO: Avoids empty string ambiguity.
     %
-    % PROPOSAL: Reorder arguments. "table" last.
+    % PROPOSAL: Return value as multiple return values (varying number).
+    %   NOTE: Requires values to be same sized 1D cell arrays.
     
     [keySetsTable, valuesTable] = convert_table(table);
+    
+    % ASSERTION
+    for i = 1:numel(keySetsTable)
+        assert(iscell(keySetsTable{i}), 'table(:, i) is not cell array.')
+    end
+    
     matchArray = zeros(size(keySetsTable));
     
     nVarargin = numel(varargin);
@@ -123,9 +130,10 @@ end
 
 
 function [keySetsTable, valuesTable] = convert_table(table)
-    EJ_library.assert.size(table, [NaN, 2])
+    EJ_library.assert.sizes(table, [NaN, 2])
     %assert(size(table, 2) == 2)
     
     keySetsTable = table(:,1);
     valuesTable  = table(:,2);
+    
 end

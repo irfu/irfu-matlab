@@ -25,12 +25,12 @@ function freqHz = get_LFR_frequency(iLsf)
     
     LSF_HZ = EJ_library.so.constants.LSF_HZ;
     
-    % PROPOSAL: Somehow avoid having an argument for lsfArrayHz. Have it as a constant somehow.
-    
     % ASSERTION
     uniqueValues = unique(iLsf);
     if ~all(ismember(uniqueValues, [1,2,3,4]))
-        uniqueValuesStr = sprintf('%d', uniqueValues);   % NOTE: Has to print without \n to keep all values on a single-line string.
+        %uniqueValuesStr = sprintf('%d ', uniqueValues);   % NOTE: Has to print without \n to keep all values on a single-line string.        
+        uniqueValuesStr = strjoin(EJ_library.str.sprintf_many('%d', uniqueValues), ', ');
+        
         error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
             'Found unexpected values in LSF index (corresponding to LFR FREQ+1). Unique values: %s.', uniqueValuesStr)
     end

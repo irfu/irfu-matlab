@@ -214,7 +214,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception, C)
         % NOTE: Does not capture return value errorCode.
         recursiveMsg = recursive_exception_msg(Exception.cause{iCause}, C);
         
-        recursiveMsg = EJ_library.str.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
+        recursiveMsg = EJ_library.str.indent(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
         msg = [msg, recursiveMsg];
     end
     

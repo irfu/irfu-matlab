@@ -2,7 +2,7 @@
 % Automated test code for interpret_config_file.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-25
 %
 function regexp_str_parts___ATEST()

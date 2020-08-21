@@ -363,14 +363,18 @@ function dirCmdResult = get_dir_cmd_result_for_single_object(path)
     dirCmdResultsList = dir(absPath);
 
     % Replace "." (current directory) with the actual name of the current directory.
-    [junk, baseName, ext] = fileparts(absPath);   % IMPLEMENTATION NOTE: Keep compatible with MATLAB R2009a ==> Do NOT use "~" notation.
     iPath = find(strcmp({dirCmdResultsList.name}, '.'));
     assert(isscalar(iPath), 'Can not find exactly one instance of object named "." .')
     dirCmdResult = dirCmdResultsList(iPath);
     
     % IMPLEMENTATION NOTE: Empirically, "dir" returns zero entries for non-readable directories WITHOUT THROWING ANY
     % EXCEPTION. This can give very non-intuitive errors.
+    
     assert(length(dirCmdResult) == 1, '"dir" returned zero entries for "%s". Non-existent? No read permissions?', absPath)
-    dirCmdResult.name = [baseName, ext];            
+    
+    % IMPLEMENTATION NOTE: Keep compatible with MATLAB R2009a ==> Do NOT use "~" notation.
+    %[junk, baseName, ext] = fileparts(absPath);
+    %dirCmdResult.name = [baseName, ext];
+    dirCmdResult.name = EJ_library.fs.get_name(absPath);
 end
 

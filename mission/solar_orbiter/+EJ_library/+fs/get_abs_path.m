@@ -19,50 +19,50 @@
 % First created 2016-06-09.
 %
 function path = get_abs_path(path)
-% PROPOSAL: Uses Linux's "readlink -f".
-%       CON: Platform-dependent.
-%
-% PROPOSAL: Use "what".
-%   NOTE: Does not work on files.
-% PROPOSAL: Use "fileparts" to make it work for files in existing directories.
-%
-% NOTE: Different use cases, operations.
-%   PROPOSAL: Convert (absolute or relative) to absolute path: add current directory to path.
-%       NOTE: Does not require existing object.
-%   PROPOSAL: Find canonical path: Replace symlinks with non-links.
-%       NOTE: Requires existing object (or at least up to last link).
-%   PROPOSAL: Rationalize away .. and .
-%       NOTE: Does not require existing object.
-%   PROPOSAL: Replace ~ with home dir.
-%       NOTE: Does not require existing object.
-%
-% PROPOSAL: Test code.
-
-try
-    if strcmp(path, '~') || (length(path)>=2 && strcmp(path(1:2), ['~', filesep]))
-        homeDir = getenv('HOME');    % Not entirely sure if may have trailing slash.
-        path = fullfile(homeDir, path(2:end));
+    % PROPOSAL: Uses Linux's "readlink -f".
+    %       CON: Platform-dependent.
+    %
+    % PROPOSAL: Use "what".
+    %   NOTE: Does not work on files.
+    % PROPOSAL: Use "fileparts" to make it work for files in existing directories.
+    %
+    % NOTE: Different use cases, operations.
+    %   PROPOSAL: Convert (absolute or relative) to absolute path: add current directory to path.
+    %       NOTE: Does not require existing object.
+    %   PROPOSAL: Find canonical path: Replace symlinks with non-links.
+    %       NOTE: Requires existing object (or at least up to last link).
+    %   PROPOSAL: Rationalize away .. and .
+    %       NOTE: Does not require existing object.
+    %   PROPOSAL: Replace ~ with home dir.
+    %       NOTE: Does not require existing object.
+    %
+    % PROPOSAL: Test code.
+    
+    try
+        if strcmp(path, '~') || (length(path)>=2 && strcmp(path(1:2), ['~', filesep]))
+            homeDir = getenv('HOME');    % Not entirely sure if may have trailing slash.
+            path = fullfile(homeDir, path(2:end));
+        end
+        
+        if ~exist(path, 'dir')
+            [dirPath, basename, suffix] = fileparts(path);   % NOTE: If ends with slash, then everything is assigned to dirPath!
+            
+            % Uses MATLAB trick to convert path to absolute path.
+            %dirPath = cd(cd(dirPath));
+            whatInfo = what(dirPath);
+            dirPath = whatInfo.path;
+            path = fullfile(dirPath, [basename, suffix]);
+        else
+            %path = cd(cd(path));
+            whatInfo = what(path);
+            path = whatInfo.path;
+        end
+        
+        path = regexp(path, '^(/.*[^/]|/)', 'match');    % Remove trailing slashes, except for system root.
+        path = path{1};
+        
+    catch Exc
+        error('get_abs_path:FailedToConvertPath', 'Failed to convert path "%s" to an absolute path.\nExc.message = "%s"', path, Exc.message)
     end
     
-    if ~exist(path, 'dir')
-        [dirPath, basename, suffix] = fileparts(path);   % NOTE: If ends with slash, then everything is assigned to dirPath!
-   
-        % Uses MATLAB trick to convert path to absolute path.
-        %dirPath = cd(cd(dirPath));
-        whatInfo = what(dirPath);
-        dirPath = whatInfo.path;
-        path = fullfile(dirPath, [basename, suffix]);
-    else
-        %path = cd(cd(path));
-        whatInfo = what(path);
-        path = whatInfo.path;
-    end
-    
-    path = regexp(path, '^(/.*[^/]|/)', 'match');    % Remove trailing slashes, except for system root.
-    path = path{1};
-    
-catch Exc
-    error('get_abs_path:FailedToConvertPath', 'Failed to convert path "%s" to an absolute path.\nExc.message = "%s"', path, Exc.message)
-end
-
 end
