@@ -3,6 +3,8 @@ function sf = c_efw_fsample(data,mode,cl_id)
 %
 % fs = c_efw_fsample(data,[mode, cl_id])
 % returns sampling frequency in Hz
+%
+% data - first column is interpreted as time. Other columns are ignored.
 % mode - restrict to particular type of data :
 %        'any' - default 0.25/5/25/450/4500/9000 Hz
 %        'lx'  - LX data 5 Hz
