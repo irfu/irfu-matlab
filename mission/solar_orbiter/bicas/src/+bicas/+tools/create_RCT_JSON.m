@@ -1,7 +1,7 @@
 %
 % Create RCT JSON file, associated with BICAS RCTs.
 %
-% NOTE: The RCT JSON filename should be static and is therefore hardcoded.
+% NOTE: The RCT JSON filename should be static and is therefore hard-coded.
 % NOTE: Will overwrite old RCT JSON file.
 %
 %

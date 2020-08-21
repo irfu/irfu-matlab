@@ -1,11 +1,11 @@
 %
-% Semi-automatic test code for function "apply_transfer_function".
+% Semi-automatic test code for function "apply_TF_freq".
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-13
 %
-function apply_transfer_function___ATEST
+function apply_TF_freq___ATEST
     %
     % NOTE: Want to test even & odd N, dt<>1.
     
@@ -49,7 +49,7 @@ function apply_transfer_function___ATEST
     for iTest = 1:numel(inputCa)
         
         y2_exp = outputCa{iTest};
-        y2_res = bicas.utils.apply_transfer_function( inputCa{iTest}{:} );
+        y2_res = bicas.utils.apply_TF_freq( inputCa{iTest}{:} );
         
         n = (1:length(y2_exp))';
         y1 = inputCa{iTest}{2};

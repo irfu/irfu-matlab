@@ -489,62 +489,19 @@ classdef assert
                     'Expected vector, but found variable of size %s.', sizeStr)
             end
         end
-        
-        
-        
-        % Assert that v has a specific size, in all or some dimensions/indices.
-        % NOTE: Should eventually be replaced by sizes()?
-        %
-        % ARGUMENTS
-        % =========
-        % v               : Variable which size will be asserted.
-        % sizeConstraints : 1D vector with the sizes of the corresponding indices/dimensions. A component value of NaN
-        %                   means that the size of that particular dimension will not be checked. Higher dimensions
-        %                   which are not specified are implicitly one.
-        %
-%         function size(v, sizeConstraints)
-%             % PROPOSAL: Apply the same size constraint to an arbitrary number of variables.
-%             %
-%             % Cf EJ_library.assert.sizes.
-%             
-%             
-%             % ASSERTION
-%             EJ_library.assert.vector(sizeConstraints)
-%             
-%             sizeV = size(v);
-%             
-%             % Enforce column vectors.
-%             sizeV           = sizeV(:);
-%             sizeConstraints = sizeConstraints(:);
-%             
-%             nSizeV           = numel(sizeV);
-%             nSizeConstraints = numel(sizeConstraints);
-%             
-%             % Enforce that sizeV and sizeConstraints have equal size by adding components equal to one (1).
-%             % NOTE: MATLAB's "size" function always returns at least a 1x2 vector.
-%             if (nSizeV < nSizeConstraints)
-%                 sizeV           = [sizeV;           ones(nSizeConstraints-nSizeV, 1)];
-%             else
-%                 sizeConstraints = [sizeConstraints; ones(nSizeV-nSizeConstraints, 1)];
-%             end
-%             
-%             % Overwrite NaN values with the actual size values for those indices.
-%             bIgnore = isnan(sizeConstraints);
-%             sizeConstraints(bIgnore) = sizeV(bIgnore);
-% 
-%             % ASSERTION: The actual assertion
-%             assert( all(sizeV == sizeConstraints), ...
-%                 EJ_library.assert.ASSERTION_EMID, 'Variable does not have the expected size.')
-%         end
-
 
 
         
-        % See EJ_library.utils.sizes.
+        % Assert the sizes of one or multiple variables.
+        % See EJ_library.utils.sizes for argments and return values.
         %
-        % NOTE: "Backward-compatible" with EJ_library.assert.size().
-        % NOTE: Returning values in principle makes it an assertion+functionality.
         % NOTE: One needs to add semicolon to end of row, since has return values.
+        % NOTE: Can use return values to assert conditions like n>10, which this
+        %       function can not.
+        % NOTE: Returning useful values in principle make this function have both
+        %       assertion and non-assertion functionality.
+        %   Ex: Returning number of CDF records while simultaneously asserting
+        %       consistent sizes of multiple (zv/MATLAB) variables.
         %
         function [varargout] = sizes(varargin)
             % PROPOSAL: Use method to replace EJ_library.assert.size().

@@ -19,9 +19,6 @@ classdef proc_utils
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
 %
-% PROPOSAL: Replace find_last_same_subsequence with function that returns list of sequences.
-%   PRO: Can naturally handle zero records.
-%
 % N-->1 sample/record
 %    NOTE: Time conversion may require moving the zero-point within the snapshot/record.
 %    PROPOSAL: : All have nSamplesPerOldRecord as column vector.
@@ -480,16 +477,20 @@ classdef proc_utils
         
             ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
             
-            if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
-            elseif ~isscalar(nSpr)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
-            end
+            assert(iscolumn(freqHz) && isfloat(freqHz) && all(~isnan(freqHz)), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', ...
+                'Argument "freqHz" is not a column vector of non-NaN floats.')
+            assert(isscalar(nSpr), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', ...
+                'Argument "nSpr" is not a scalar.')
             
             nRecords = size(freqHz, 1);
             DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
             for i = 1:length(freqHz)
-                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
+                % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
+                % that the unit is the same as for Epoch.
+                % NOTE: Seems to work for more than 2D.
+                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;
             end
             DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
                 ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));

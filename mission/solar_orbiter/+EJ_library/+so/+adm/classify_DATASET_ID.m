@@ -19,21 +19,40 @@ function C = classify_DATASET_ID(datasetId)
     % PROPOSAL: Implement assertion on DATASET_ID via this function.
     %   Ex: bicas.assert_DATASET_ID
     %   Ex: bicas.swmode_defs.assert_DATASET_ID
-    %   CON: ~Requires strict matching.
+    %   CON: Requires strict matching.
     %   PRO: Does not spread out the knowledge of DATASET_IDs.
     %   PROPOSAL: Flag for obsoleted DATASET_IDs that may be found in input datasets. Caller decides how to
     %       respond.
     % NEED?!: Some way of determining whether an obsoleted and current DATASET_ID are equivalent.
     %
-    % PROPOSAL: Generalize to work for all DATASET_IDs (BICAS-related and not). Put outside BICAS.
+    %
+    %
+    % PROPOSAL: Generalize to work for all DATASET_IDs (BICAS-related and not).
     % PROPOSAL: Return whether SOLO or ROC-SGSE prefix.
+    % PROPOSAL: Function that splits up DATASET_ID string into parts:
+    %   source name : SOLO, ROC-SGSE
+    %   level       : L1 etc
+    %   descriptor  : (HK) RPW-BIA etc
+    %   TODO-DECISION: How should this relate to assertion on DATASET_ID?
+    %
+    %
     %
     % NOTE: In principle, this function is a substitute for multiple functions DATASET_ID-->boolean, which are defined
-    % only on a subset of DATASET_IDs.
-    %   PROPOSAL: Have caller request flags. If a flag is not defined for the specified DATASET_ID, then assertion error.
-    %   PROPOSAL: Have class with only static methods. Define constant table DATASET_ID-->set_of_values. Values can be
-    %             false/true or other, or be undefined. Define static methods/functions that use table to translate
-    %             table to relevant flag. If requested flag is undefined, then assertion error.
+    % on only a subset of DATASET_IDs.
+    % PROPOSAL: Have caller request flags. If a flag is not defined for the specified DATASET_ID, then assertion error.
+    
+    % PROPOSAL: Define constant table DATASET_ID-->set_of_values. Values can be
+    %           false/true or other, or be undefined. Define static
+    %           methods/functions that use table to translate table to relevant
+    %           flag. If requested flag is undefined, then assertion error.
+    %   PROPOSAL: Have in EJ_library.so.constants.
+    %   PROPOSAL: Format: containers.Map: DATASET_ID --> struct with one flag
+    %   (or variable) per field. Different DATASET_IDs can have different fields.
+    %       CON: Duplicates for SOLO and ROC-SGSE.
+    %           PROPOSAL: Level + ~descriptor --> struct
+    %   PROPOSAL: Can not use patterns in the constants and DATASET_IDs.
+    %
+    % PROPOSAL: Have class with only static methods + constants table.
     %   PROPOSAL: Name DSI_classif, DATASET_ID_classif, DSI, DATASET_ID
     %   PROPOSAL: Move convert_DATASET_ID_to_SOLO to class.
     %       PROPOSAL: Rename to convert_ROCSGSE_to_SOLO.
@@ -48,17 +67,18 @@ function C = classify_DATASET_ID(datasetId)
     %   CON: Can not implement assertions for bad DATASET_IDs.
     %       PROPOSAL: Policy argument for assertion.
     %   PRO: Not all flags always make sense.
+    %   CON: When a flag should be defined or not is not well-defined.
+    %       Ex: isLfr, isTds may be well-defined for union(LFR,TDS), but should
+    %            they be defined for HK too?
+    %       Ex: Should isLfr == ~isTds?
+    %       Ex: Should isCwf == ~isSwf?
+    %   --
     %   NEED: bicas.proc, bicas.proc_sub:    Classify L1/L1R LFR/TDS datasets.
     %   NEED: bicas.swmode_defs:             Assert valid BICAS input/output DATASET_ID.
     %   NEED: bicas.get_master_CDF_filename: Assert valid BICAS output DATASET_ID
     %   NEED: EJ_library.so.psp2:       LFR CWF/SBM1/SBM2/SWF to set Rx.
     %                                        Potentially classify any BICAS-related dataset.
     %   NEED: parse_dataset_filename:        Distinguish SOLO & ROC-SGSE.
-    %
-    % PROPOSAL: Function that splits up DATASET_ID string into parts:
-    %   source name : SOLO, ROC-SGSE
-    %   level       : L1 etc
-    %   descriptor  : (HK) RPW-BIA etc
 
 
 
@@ -105,7 +125,7 @@ function C = classify_DATASET_ID(datasetId)
         case 'L1R' ; C.isL1R = true;
         case 'L2'  ; C.isL2  = true;
         case 'L3'  ; C.isL3  = true;
-        case 'HK'    % Do nothing. There is "isBiasHk" instead.
+        case 'HK'   % Do nothing. There is "isBiasHk" instead.
         otherwise
             error('BICAS:proc_utils:Assertion:IllegalArgument', 'Can not handle DATASET_ID. datasetId="%s"', datasetId)
     end
@@ -144,8 +164,8 @@ function C = classify_DATASET_ID(datasetId)
     C.isCwf = C.isLfrSbm1 | C.isLfrSbm2 | C.isLfrSurvCwf | C.isTdsCwf;
     C.isSwf = C.isLfrSurvSwf                             | C.isTdsRswf;
 
-
-
+    
+    
     % ASSERTION
     EJ_library.assert.struct(C, {...
         'isLfrSbm1', ...

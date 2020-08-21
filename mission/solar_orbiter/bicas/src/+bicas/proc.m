@@ -47,15 +47,6 @@ classdef proc
     %   PROPOSAL: process_*
     %       CON: Already used in proc_sub.
     %   TODO-DECISION: Include skeleton version in function names?
-    % 
-    % TODO-DECISION: Use PDID system?
-    %   NOTE: data_manager_old's PDID used skeleton versions.
-    %   NOTE: According to RCS ICD 00037 iss1/rev2, draft 2019-07-11, the s/w descriptor interface no longer specifies
-    %         the version of the input datasets. One can still specify modes (and CLI parameters) that require specific
-    %         input skeleton versions though.
-    %   NOTE: Processing functions still need to know the input skeleton version.
-    %   NOTE: One can choose PDIDs such that the incorporate the version or not. If they do not, then the corresponding
-    %         PDVs must themselves contain the same information.
     % --
     % PROPOSAL: Production functions should not assume/specify any particular input dataset version, but read it out
     %           from global attributes (part of the PDV).
@@ -65,12 +56,6 @@ classdef proc
     %       the right arguments, e.g. empty) return information on the corresponding inputs (incl. for s/w descriptor).
     % 
     %   NOTE: Metadata associated with each s/w mode
-    %
-    % --
-    % TODO-DECISION: How handle differences between pipelines?
-    %
-    % PROPOSAL: (Outside) Derive PDID from input dataset, then use it when sending input dataset argument to production function.
-    %   CON: Possible to derive non-existant (non-supported) PDIDs. Not the best way to test input datasets.
 
     
     

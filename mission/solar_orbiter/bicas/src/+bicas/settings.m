@@ -199,7 +199,7 @@ classdef settings < handle
         % value : The value of the setting.
         % key   : The name of the settings key, i.e. identical to the argument "key".
         %         IMPLEMENTATION NOTE: This is useful in code that tries to avoid hardcoding the key string too many
-        %         times. That way, the key is hardcoded once (in the call to this method), and then simultaneously
+        %         times. That way, the key is hard-coded once (in the call to this method), and then simultaneously
         %         assigned to a variable that is then used in the vicinity for error/warning/log messages etc. It is the
         %         second return value so that it can be ignored when the caller does not need it.
         function [value, key] = get_fv(obj, key)

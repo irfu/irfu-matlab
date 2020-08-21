@@ -16,11 +16,11 @@
 % IMPLEMENTATION NOTES
 % ====================
 % The class essentially consists of one large struct, and a constructor that builds it. The large data struct contains
-% many parts which are similar but not the same. To do this, much of the data is "generated" with hardcoded strings
+% many parts which are similar but not the same. To do this, much of the data is "generated" with hard-coded strings
 % (mostly the same in every iteration), in which specific codes/substrings are substituted algorithmically (different in
 % different iterations). To avoid mistakes, the code uses a lot of assertions to protect against mistakes, e.g.
 % -- algorithmic bugs
-% -- mistyped hardcoded info
+% -- mistyped hard-coded info
 % -- mistakenly confused arguments with each other.
 % Assertions are located at the place where "values are placed in their final location".
 % 
@@ -31,7 +31,7 @@
 %
 % RATIONALE
 % =========
-% -- Should decrease the amount of overlapping hardcoded information to e.g. reduce risk of mistakes, reduce manual
+% -- Should decrease the amount of overlapping hard-coded information to e.g. reduce risk of mistakes, reduce manual
 %    work when verifying updates.
 % -- Having one big, somewhat redundant data structure should make the interface to the rest of BICAS relatively
 %    future-proof, in the face of future updates.

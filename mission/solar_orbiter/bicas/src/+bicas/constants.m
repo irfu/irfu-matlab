@@ -1,5 +1,5 @@
 %
-% Hardcoded constants which are needed
+% Hard-coded constants which are needed
 % -- for error handling
 % -- early, before regular settings are initialized,
 % and which  thus need to be initialized independent of settings and in a way which is unlikely to trigger errors.
@@ -28,13 +28,17 @@ classdef constants   % < handle
     
     properties(Constant)
 
-        % Permissible string values returned by "version('-release')" when using the correct MATLAB version.
+        % Permissible string values returned by "version('-release')" when using
+        % the correct MATLAB version.
         %
-        % NOTE: BICAS originally required MATLAB R2016a.
-        % NOTE: ROC only needs MATLAB R2019b. Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
+        % NOTE: BICAS originally required MATLAB R2016a but no longer does.
+        % NOTE: ROC only needs MATLAB R2019b. Source:
+        % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
         PERMITTED_MATLAB_VERSIONS         = {'2019b'};        
 
-        % Path (incl. filename) to default config file. Relative to BICAS's directory root.        
+        % Path to default config file relative to BICAS's directory root. Note
+        % that this is also implicitly the constant for the default config file
+        % filename.
         DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');
         
         % MATLAB stdout prefix to signal to bash wrapper that the log message should be passed on to STDOUT (without the

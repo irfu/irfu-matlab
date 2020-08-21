@@ -244,7 +244,7 @@ classdef proc_sub
         %
         function PreDc = process_LFR_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
             %
-            % PROBLEM: Hardcoded CDF data types (MATLAB classes).
+            % PROBLEM: Hard-coded CDF data types (MATLAB classes).
             % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining "virtual snapshot" length.
             % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
             
@@ -926,12 +926,16 @@ classdef proc_sub
         
         
         
-        % Utility function to shorten code.
-        function zv = normalize_LFR_zVar_empty(L, settingValue, settingKey, nRecords, zv, zvName)
+        % Local utility function to shorten & clarify code.
+        %
+        % If zv1 is non-empty, then zv2=zv1.
+        % If zv1 is empty, then error/mitigate.
+        %
+        function zv2 = normalize_LFR_zVar_empty(L, settingValue, settingKey, nRecords, zv1, zvName)
             
-            if ~isempty(zv)
+            if ~isempty(zv1)
                 % Do nothing.
-                % zv = zv;
+                zv2 = zv1;
             else
                 anomalyDescrMsg = sprintf('zVar "%s" from the LFR SCI source dataset is empty.', zvName);
                 switch(settingValue)
@@ -940,7 +944,7 @@ classdef proc_sub
                             anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
                         
                         L.logf('warning', 'Using fill values for %s.', zvName)
-                        zv = bicas.proc_utils.create_NaN_array([nRecords, 1]);
+                        zv2 = bicas.proc_utils.create_NaN_array([nRecords, 1]);
                         
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
@@ -1189,11 +1193,16 @@ classdef proc_sub
 
             
             
-            %===================================================================================
-            % (1) Find continuous subsequences of records with identical settings.
+            %===================================================================
+            % (1) Find continuous subsequences of records with identical
+            %     settings.
             % (2) Process data separately for each such sequence.
-            % NOTE: Just finding continuous subsequences can take a significant amount of time.
-            %===================================================================================
+            % NOTE: Just finding continuous subsequences can take a significant
+            % amount of time.
+            % NOTE: Empirically, this is not useful for real LFR SWF datasets
+            % where the LFR sampling frequency changes in every record, meaning
+            % that the subsequences are all 1 record long.
+            %===================================================================
             [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(...
                 PreDc.Zv.MUX_SET, ...
                 PreDc.Zv.DIFF_GAIN, ...

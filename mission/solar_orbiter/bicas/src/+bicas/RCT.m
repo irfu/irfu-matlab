@@ -161,10 +161,6 @@ classdef RCT
                 %=======================================================
                 % ASSERTIONS: Size of tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %=======================================================
-%                 assert(size(ftfCoeffs, 1) == nEpochL)
-%                 assert(size(ftfCoeffs, 2) >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
-%                 assert(size(ftfCoeffs, 3) == 2)
-%                 assert(size(ftfCoeffs, 4) == 4)
                 nNdCoeffs = EJ_library.assert.sizes(ftfCoeffs, [nEpochL, -1, 2, 4]);   % ND = Numerator Denominator
                 assert(nNdCoeffs >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
 
@@ -199,12 +195,6 @@ classdef RCT
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
                 
                 % ASSERTIONS
-%                 EJ_library.assert.all_equal(...
-%                    [nEpochL, ...
-%                     numel(Bias.FtfSet.DcSingleAvpiv), ...
-%                     numel(Bias.FtfSet.DcDiffAvpiv), ...
-%                     numel(Bias.FtfSet.AcLowGainAvpiv), ...
-%                     numel(Bias.FtfSet.AcHighGainAvpiv)])
                 EJ_library.assert.sizes(RctData.FtfSet.DcSingleAvpiv,   [nEpochL, 1]);
                 EJ_library.assert.sizes(RctData.FtfSet.DcDiffAvpiv,     [nEpochL, 1]);
                 EJ_library.assert.sizes(RctData.FtfSet.AcLowGainAvpiv,  [nEpochL, 1]);
@@ -212,8 +202,11 @@ classdef RCT
                 for iEpochL = 1:nEpochL
                     %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:calib:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
                     %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:calib:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
-                    % Unsure if assertion makes sense for AC, or possibly even for DC.
-                    % 2020-03-10: This criterion is not true for AC high-gain transfer function fit now used (but does for AC diff low-gain).
+                    % Unsure if assertion makes sense for AC, or possibly even
+                    % for DC.
+                    % 2020-03-10: This criterion is not true for AC high-gain
+                    % transfer function fit now used (but does for AC diff
+                    % low-gain).
                 end
                 
                 %==========================================================================
@@ -227,19 +220,8 @@ classdef RCT
                 EJ_library.assert.sizes(RctData.Current.offsetsAAmpere, [nEpochL, 3]);
                 EJ_library.assert.sizes(RctData.Current.gainsAapt,      [nEpochL, 3]);
                 EJ_library.assert.sizes(RctData.dcSingleOffsetsAVolt,   [nEpochH, 3]);
-%                 assert(ndims(Bias.Current.offsetsAAmpere)    == 2)
-%                 assert(size( Bias.Current.offsetsAAmpere, 1) == nEpochL)
-%                 assert(size( Bias.Current.offsetsAAmpere, 2) == 3)
-%                 assert(ndims(Bias.Current.gainsAapt)         == 2)
-%                 assert(size( Bias.Current.gainsAapt, 1)      == nEpochL)
-%                 assert(size( Bias.Current.gainsAapt, 2)      == 3)
-%                 assert(ndims(Bias.dcSingleOffsetsAVolt)      == 2)
-%                 assert(size( Bias.dcSingleOffsetsAVolt, 1)   == nEpochH)
-%                 assert(size( Bias.dcSingleOffsetsAVolt, 2)   == 3)
-                
+
                 for fn = fieldnames(RctData.DcDiffOffsets)'
-%                     assert(iscolumn(Bias.DcDiffOffsets.(fn{1}))           )
-%                     assert(length(  Bias.DcDiffOffsets.(fn{1})) == nEpochH)
                     EJ_library.assert.sizes(RctData.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
                 end
                 
@@ -285,8 +267,8 @@ classdef RCT
                 phaseTableDeg{4} = shiftdim(Do.data.TF_BIAS_123_phase_F3.data);
 
                 for iLsf = 1:4
-                    if iLsf ~= 4   nBltsMax = 5;
-                    else           nBltsMax = 3;    % F3 is an exception and has no AC (iBlts={4,5}) TF.
+                    if iLsf ~= 4   nBlts = 5;
+                    else           nBlts = 3;    % F3 is an exception and has no AC (iBlts={4,5}) TF.
                     end
 
                     % NOTE: Values for the specific LSF, hence the prefix.
@@ -295,20 +277,13 @@ classdef RCT
                     lsfPhaseTableDeg = phaseTableDeg{iLsf};
 
                     % ASSERTIONS: Check CDF array sizes, and implicitly that the CDF format is the expected one.
-%                     assert(iscolumn(freqTableHz{iLsf}))                    
-%                     assert(ndims(lsfAmplTableTpiv) == 2)
-%                     assert(ndims(lsfPhaseTableDeg) == 2)
-%                     assert(size( lsfAmplTableTpiv, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-%                     assert(size( lsfPhaseTableDeg, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-%                     assert(size( lsfAmplTableTpiv, 2) == nBltsMax)
-%                     assert(size( lsfPhaseTableDeg, 2) == nBltsMax)
                     nFreqs = EJ_library.assert.sizes(...
                         lsfFreqTableHz,   [-1,       1 ], ...
-                        lsfAmplTableTpiv, [-1, nBltsMax], ...
-                        lsfPhaseTableDeg, [-1, nBltsMax]);
+                        lsfAmplTableTpiv, [-1, nBlts], ...
+                        lsfPhaseTableDeg, [-1, nBlts]);
                     assert(nFreqs >= bicas.RCT.TF_TABLE_MIN_LENGTH)
 
-                    for iBlts = 1:nBltsMax
+                    for iBlts = 1:nBlts
                         
                         lsfBltsFreqTableHz   = lsfFreqTableHz;
                         lsfBltsAmplTableTpiv = lsfAmplTableTpiv(:, iBlts);
@@ -325,8 +300,6 @@ classdef RCT
                             lsfBltsAmplTableTpiv, ...
                             deg2rad(lsfBltsPhaseTableDeg));
                         
-                        % ASSERTION: ITF
-%                         assert(~ItfIvpt.toward_zero_at_high_freq())
                         % ASSERTION: FTF
                         assert(FtfTpiv.toward_zero_at_high_freq())
                         
@@ -365,8 +338,6 @@ classdef RCT
                 factorsIvpt = shiftdim(Do.data.CALIBRATION_TABLE.data);
                 
                 % ASSERTIONS: Check CDF array sizes, no change in format.
-%                 assert(iscolumn(factorsIvpt))
-%                 assert(size(    factorsIvpt, 1) == 3)
                 EJ_library.assert.sizes(factorsIvpt, [3,1])
                 
                 RctData = [];
@@ -401,17 +372,6 @@ classdef RCT
                 assert(iscolumn(freqsHz));    % NOTE: Should be 1D vector. "shiftdim" makes it a column vector.
                 nFreqs = EJ_library.assert.sizes(freqsHz, [-1, 1], amplIvpt, [3, -1], phaseDeg, [3,-1]);
                 assert(nFreqs >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                %assert(ndims(amplIvpt)    == 2)
-                %assert(ndims(phaseDeg)    == 2)
-                %assert(size( amplIvpt, 1) == 3)
-                %assert(size( phaseDeg, 1) == 3)
-                %assert(size( amplIvpt, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                %assert(size( phaseDeg, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                
-                %EJ_library.assert.all_equal([...
-                %    length(freqsHz), ...
-                %    size(amplIvpt, 2), ...
-                %    size(phaseDeg, 2) ]);
 
                 for iBlts = 1:3
                     % NOTE: RCT contains ITF, not FTF.
@@ -473,9 +433,6 @@ classdef RCT
             data = DataobjZVar.data;            
             
             if DataobjZVar.nrec == 1
-                %nDims = ndims(data);
-                %order = [nDims + 1, 1:nDims];
-                %data = permute(data, order);
                 data = shiftdim(data, -1);
             end
         end

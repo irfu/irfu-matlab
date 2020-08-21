@@ -114,7 +114,7 @@ classdef demultiplexer
         %
         % RATIONALE
         % =========
-        % Meant to collect all hardcoded information about the demultiplexer routing of signals in the BIAS
+        % Meant to collect all hard-coded information about the demultiplexer routing of signals in the BIAS
         % specification, Table 4.
         %
         %
@@ -198,7 +198,7 @@ classdef demultiplexer
 
             import bicas.demultiplexer.*
 
-            % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux mode, but the code hardcodes this
+            % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux mode, but the code hard-codes this
             % separately for every case (i.e. multiple times) for completeness.
             switch(demuxMode)
                 
@@ -212,7 +212,7 @@ classdef demultiplexer
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
-                    % Derive the ASR:s not in the BLTS.
+                    % Derive the ASRs not in the BLTS.
                     As.dcV2 = As.dcV1 - As.dcV12;
                     As.dcV3 = As.dcV2 - As.dcV23;
                     if dlrUsing12

@@ -1,9 +1,14 @@
 %
-% Find sequences of constant value for a set of non-empty N-D vectors of identical size in the first dimension.
+% For a set of a set of N-D vectors with the same size in dimension 1, find all
+% uninterrupted sequences of indices (in dimension 1) for which all variables
+% are constant, i.e. var(i, :, :, ...) is identical for all values "i" in the
+% sequence.
+%
 % NOTE: NaN counts as equal to itself.
-% NOTE: Needs to work for NaN in order to handle demultipexer mode and diff gain being NaN (unknown).
-% NOTE: Implementation uses EJ_library.utils.find_equalities and therefore "isequaln", i.e.
-%   -- IMPORTANT NOTE: Does not care about MATLAB class, not even recursively, e.g. {'A'} == {65}.
+% NOTE: Implementation uses EJ_library.utils.find_equalities and therefore
+% "isequaln", i.e.
+%   -- IMPORTANT NOTE: Does not care about MATLAB class, not even recursively,
+%      e.g. {'A'} == {65}.
 %   -- Does not care about the order of fieldnames in structs
 %   -- Counts NaN as equal to itself.
 %
@@ -12,19 +17,21 @@
 %
 % ARGUMENTS
 % =========
-% varargin : At least one argument. All arguments must have same size in dimension 1.
+% varargin : At least one argument. All arguments must have the same size in
+%            dimension 1.
 %
 %
 % RETURN VALUES
 % =============
-% i1Array, i2Array : Numeric column arrays. First and last index in all sequences where arguments have constant values in
-%                    the first dimension.
-%                    Never describe zero-length sequences (e.g. end before beginning).
+% i1Array, i2Array : Numeric column arrays. First and last index in all
+%                    sequences where arguments have constant values in the first
+%                    dimension. Never contains zero-length sequences (e.g. end
+%                    before beginning).
 %                    NOTE: i1Array <= i2Array.
 %                    NOTE: 0x1 if arguments have zero rows.
 % n                : Number of subsequences. numel(i1Array).
-%                    RATIONALE: This is provided as a pure convenience to the caller who would normally have to derive
-%                    this anyway.
+%                    RATIONALE: This is provided as a pure convenience to the
+%                    caller who would normally have to derive this anyway.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
