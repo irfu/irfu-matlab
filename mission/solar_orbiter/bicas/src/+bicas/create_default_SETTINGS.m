@@ -92,6 +92,11 @@ function SETTINGS = create_default_SETTINGS()
     % PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
     %   NOTE: Name change likely influences BICAS testing code and pipeline. Should therefore only be implemented at the
     %         right time.
+    %
+    % PROPOSAL: Separate function for validating/asserting settings.
+    %   NOTE: Must be done AFTER all settings have been set.
+    %   PROPOSAL: Do every time settings are set, i.e. for default values,
+    %       config file values, CLI argument values.
 
 
 
@@ -343,7 +348,7 @@ function SETTINGS = create_default_SETTINGS()
     % solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V04.cdf   : Does not have mux mode. Irrelevant dataset (not LFM).
     %===================================================================================================================
     S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
-    
+
     %====================================================================
     % TEMPORARY SOLUTION
     % Maximum value for zVar QUALITY_FLAG in output datasets.
@@ -438,14 +443,15 @@ function SETTINGS = create_default_SETTINGS()
     
 
     
-    % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX (in every record), that contains an index to
-    % calibration data inside a given RCT.
+    % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX
+    % (in every record), that contains an index to calibration data inside a
+    % given RCT.
     % "L1R" refers to when using L1R datasets as input, as opposed to L1.
-    S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               1)
-    S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             1)
-    S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
+    S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      1)
+    S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    1)
+    S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  1)
     % CALIBRATION_TABLE_INDEX is not set for TDS. Therefore no such setting for TDS.
-    S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
+    S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
     
     
     
@@ -478,44 +484,47 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN',  100);
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN',     5);
     
-    %=======================================================================================================================
-    % Constants for using HK bias currents for deriving/calibrating the bias currents
-    % -------------------------------------------------------------------------------
-    % Values taken from BIAS specifications, 01/16, Section 3.4.4.1-3. Not to be confused with registers which set the
-    % bias command.
+    %============================================================================
+    % Constants for calibrating bias currents from the HK bias currents
+    % -----------------------------------------------------------------
+    % Values taken from BIAS specifications, 01/16, Section 3.4.4.1-3. Not to be
+    % confused with registers which set the bias command.
     %
     % NOTE: This is a non-standard way of deriving the bias currents.
-    % NOTE 2019-09-12: THIS HAS NOT BEEN IMPLEMENTED IN THE CODE YET EXCEPT FOR CALIBRATION FUNCTION.
-    %=======================================================================================================================
+    %============================================================================
     % NOTE: OFFSET_TM value is added to the TM value (not the ampere value).
     S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
     S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT', -0.008198754     * [1,1,1])
     
     
     
-    %===================================================================
-    % Deactivate/simplify different parts of the calibration algorithm
-    %===================================================================
-    % Disable all voltage calibration. Output dataset data contain TM units. BIAS demultiplexer addition/subtraction of BLTS
-    % necessary to derive antenna signals is still done though.
+    %===============================================================
+    % Disable/simplify different parts of the calibration algorithm
+    %===============================================================
+    % Disable all voltage calibration. Output dataset data contain TM units.
+    % BIAS demultiplexer addition/subtraction of BLTS necessary to derive
+    % antenna signals is still done though.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',              0);
     % Whether to disable BIAS offsets.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS', 0);
-    % Whether to use transfer functions or scalar multiplication for calibration of signals between antennas and
-    % BIAS-LFR/TDS interface. It does not affect the LFR/TDS transfer functions.
+    % Whether to use transfer functions or scalar multiplication for calibration
+    % of signals between antennas and BIAS-LFR/TDS interface. It does not affect
+    % the LFR/TDS transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
     % Whether to use de-trending before applying transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED',        1)
     % Frequency above which the ITF is set to zero.
-    % Expressed as a fraction of the Nyquist frequency (half the sampling frequency; 1 sample/s = 1 Hz).
+    % Expressed as a fraction of the Nyquist frequency (half the sampling
+    % frequency; 1 sample/s = 1 Hz).
     % inf = No limit.
     %S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  Inf)
     S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.7)
     
-    
-    % Whether to disable LFR/TDS transfer functions (but still potentially use the BIAS transfer functions).
-    % This effectively means that TM voltage corresponds to interface volt.
-    % NOTE: This useful for separately using bicas.calib for analyzing BIAS standalone calibration tables (BSACT).
+    % Whether to disable LFR/TDS transfer functions (but still potentially use
+    % the BIAS transfer functions). This effectively means that TM voltage
+    % corresponds to interface volt.
+    % NOTE: This useful for separately using bicas.calib for analyzing BIAS
+    % standalone calibration tables (BSACT).
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
     
     

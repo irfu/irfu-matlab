@@ -93,8 +93,8 @@ function C = classify_DATASET_ID(datasetId)
     C.isTdsCwf     = false;
     C.isTdsRswf    = false;
     % One flag per exact DATASET_ID.
-    C.isCurrent    = false;
-    C.isBiasHk     = false;
+    %C.isCurrent    = false;   % Not used
+    %C.isBiasHk     = false;   % Not used
     % One flag per level.
     C.isL1         = false;
     C.isL1R        = false;
@@ -133,9 +133,11 @@ function C = classify_DATASET_ID(datasetId)
     
     
     if     strcmp(datasetId, 'SOLO_L1_RPW-BIA-CURRENT')
-        C.isCurrent = true;
+        %C.isCurrent = true;
     elseif strcmp(datasetId, 'SOLO_HK_RPW-BIA')
-        C.isBiasHk  = true;
+        %C.isBiasHk  = true;
+    elseif any(strcmp(datasetId, {'SOLO_L3_RPW-BIA-EFIELD', 'SOLO_L3_RPW-BIA-SCPOT'}))
+        % Do nothing.
     else        
         if (C.isL1R || C.isL2)
             assert(strcmp(suffix(end-1:end), '-E'))
@@ -152,7 +154,7 @@ function C = classify_DATASET_ID(datasetId)
             case 'RPW-TDS-LFM-CWF'  ; C.isTdsCwf     = true;
             case 'RPW-TDS-LFM-RSWF' ; C.isTdsRswf    = true;
             otherwise
-                %error('BICAS:proc_utils:Assertion:IllegalArgument', 'Can not handle DATASET_ID. datasetId="%s"', datasetId)
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Can not handle DATASET_ID. datasetId="%s"', datasetId)
         end
     end
 
@@ -174,8 +176,6 @@ function C = classify_DATASET_ID(datasetId)
         'isLfrSurvSwf', ...
         'isTdsCwf', ...
         'isTdsRswf', ...
-        'isCurrent', ...
-        'isBiasHk', ...
         'isL1', ...
         'isL1R', ...
         'isL2', ...

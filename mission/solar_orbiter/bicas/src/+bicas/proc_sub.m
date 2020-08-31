@@ -373,16 +373,19 @@ classdef proc_sub
 
 
             %===========================================================================================================
-            % Set QUALITY_FLAG, QUALITY_BITMASK: Replace illegally empty data with fill values/NaN
+            % Set QUALITY_BITMASK, QUALITY_FLAG: Replace illegally empty data with fill values/NaN
             % ------------------------------------------------------------------------------------
-            % IMPLEMENTATION NOTE: QUALITY_FLAG, QUALITY_BITMASK have been found empty in test data, but should have
-            % attribute DEPEND_0 = "Epoch" ==> Should have same number of records as Epoch.
-            % Can not save CDF with zVar with zero records (crashes when reading CDF). ==> Better create empty records.
+            % IMPLEMENTATION NOTE: QUALITY_BITMASK, QUALITY_FLAG have been found
+            % empty in test data, but should have attribute DEPEND_0 = "Epoch"
+            % ==> Should have same number of records as Epoch.
             %
-            % Test data:
+            % Can not save CDF with zVar with zero records (crashes when reading
+            % CDF). ==> Better create empty records.
+            %
+            % Examples of QUALITY_FLAG = empty:
             %  MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
-            %  ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf
-            %  ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E_6b05822_CNE_V02.cdf
+            %  ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf (TESTDATA_RGTS_LFR_CALBUT_V1.1.0)
+            %  ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E_6b05822_CNE_V02.cdf (TESTDATA_RGTS_LFR_CALBUT_V1.1.0)
             %
             % PROPOSAL: Move to the code that reads CDF datasets instead. Generalize to many zVariables.
             % PROPOSAL: Regard as "normalization" code. ==> Group together with other normalization code.
@@ -401,11 +404,12 @@ classdef proc_sub
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), 'includeNaN');
             
             % ASSERTIONS
-            % LFR QUALITY_FLAG, QUALITY_BITMASK not set yet (2019-09-17), but I presume they should have just one value
-            % per record. BIAS output datasets should.
+            % QUALITY_BITMASK, LFR QUALITY_FLAG not set yet (2019-09-17), but I
+            % presume they should have just one value per record. BIAS output
+            % datasets should.
             EJ_library.assert.sizes(...
-                PreDc.Zv.QUALITY_FLAG,    [nRecords, 1], ...
-                PreDc.Zv.QUALITY_BITMASK, [nRecords, 1])
+                PreDc.Zv.QUALITY_BITMASK, [nRecords, 1], ...
+                PreDc.Zv.QUALITY_FLAG,    [nRecords, 1])
 
 
 
@@ -667,8 +671,8 @@ classdef proc_sub
                     assert(nSamplesPerRecordChannel == 1, ...
                         'BICAS:proc_sub:Assertion:IllegalArgument', ...
                         'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
-                    assert(size(OutSciZv.QUALITY_FLAG,    2) == 1)
                     assert(size(OutSciZv.QUALITY_BITMASK, 2) == 1)
+                    assert(size(OutSciZv.QUALITY_FLAG,    2) == 1)
                     
                     % Try to pre-allocate to save RAM/speed up.
                     OutSciZv.VDC = zeros(nRecords, 3);
@@ -745,8 +749,8 @@ classdef proc_sub
             OutSciZv = [];
             
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
-            OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
+            OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
             OutSciZv.DELTA_PLUS_MINUS = SciPostDc.Zv.DELTA_PLUS_MINUS;
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
@@ -1024,7 +1028,7 @@ classdef proc_sub
             
             EJ_library.assert.struct(PreDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
-                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
+                'MUX_SET', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
                 'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
                 {'BW'});
             
@@ -1041,7 +1045,7 @@ classdef proc_sub
             
             EJ_library.assert.struct(PostDc.Zv, ...
                 {'Epoch', 'freqHz', ...
-                'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
+                'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
                 'DemuxerOutput', 'currentAAmpere'}, ...
                 {'BW'});
             
