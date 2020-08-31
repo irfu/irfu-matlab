@@ -344,6 +344,13 @@ function SETTINGS = create_default_SETTINGS()
     %===================================================================================================================
     S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
     
+    %====================================================================
+    % TEMPORARY SOLUTION
+    % Maximum value for zVar QUALITY_FLAG in output datasets.
+    % YK 2020-08-31: Use 2=Survey data, possibly not publication-quality
+    %====================================================================
+    S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
+    
     
     
     %===================================================================================================================

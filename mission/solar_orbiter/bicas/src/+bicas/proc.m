@@ -221,15 +221,21 @@ classdef proc
             
             EfieldPd = struct();
             EfieldPd.Epoch            = InputLfrCwfPd.Zv.Epoch;
-            EfieldPd.QUALITY_FLAG     = InputLfrCwfPd.Zv.QUALITY_FLAG;
             EfieldPd.QUALITY_BITMASK  = InputLfrCwfPd.Zv.QUALITY_BITMASK;
+            EfieldPd.QUALITY_FLAG     = min(...
+                InputLfrCwfPd.Zv.QUALITY_FLAG, ...
+                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
+                'includeNaN');
             EfieldPd.DELTA_PLUS_MINUS = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
             EfieldPd.EDC_SFR          = zvEdcMvpm;
             
             ScpotPd = struct();
             ScpotPd.Epoch             = InputLfrCwfPd.Zv.Epoch;
-            ScpotPd.QUALITY_FLAG      = InputLfrCwfPd.Zv.QUALITY_FLAG;
             ScpotPd.QUALITY_BITMASK   = InputLfrCwfPd.Zv.QUALITY_BITMASK;
+            ScpotPd.QUALITY_FLAG      = min(...
+                InputLfrCwfPd.Zv.QUALITY_FLAG, ...
+                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
+                'includeNaN');
             ScpotPd.DELTA_PLUS_MINUS  = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
             ScpotPd.SCPOT             = TsScpot.data;
             ScpotPd.PSP               = TsPsp.data;
