@@ -113,7 +113,7 @@ elseif strcmpi(method,'time')
   % Translated to Matlab by T.Nilsson, IRFU, from LPP/Berkeley IDL code.
   
   fsamp = c_efw_fsample(einp);
-  nk = 512;
+  nk = 512;        % Number of samples in interpolated transfer function.
   df = fsamp/nk;
   frq = (0:nk-1)*df; frq(nk/2+2:end) = frq(nk/2+2:end)-nk*df;
   
@@ -130,7 +130,7 @@ elseif strcmpi(method,'time')
   if(n_take_conj>0)
     c(take_conj) = conj(c(take_conj));
   else
-    c = complex(ones(1,size(tfinp2,1)),zeros(1,size(tfinp2,1)));
+    c = complex(ones(1,size(tfinp2,1)),zeros(1,size(tfinp2,1)));    % BUG: "tfinp2" not defined anywhere.
     warning('c filter had no negative freq. Not valid');
   end
   
