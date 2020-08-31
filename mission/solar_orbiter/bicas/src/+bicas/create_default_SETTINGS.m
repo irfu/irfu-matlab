@@ -482,7 +482,7 @@ function SETTINGS = create_default_SETTINGS()
     %=======================================================================================================================
     % NOTE: OFFSET_TM value is added to the TM value (not the ampere value).
     S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
-    S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT',  -0.008198754     * [1,1,1])
+    S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT', -0.008198754     * [1,1,1])
     
     
     
