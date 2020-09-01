@@ -161,14 +161,15 @@ function SETTINGS = create_default_SETTINGS()
         ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
         ' (2) calibrate bias currents from L1 data.']);
     S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-    S.define_setting('SWD.release.version',            '3.0.0');
-    S.define_setting('SWD.release.date',               '2020-07-07T17:04:00Z');
+    S.define_setting('SWD.release.version',            '3.1.0');
+    S.define_setting('SWD.release.date',               '2020-09-01T17:00:00Z');
     S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team, IRF');
     S.define_setting('SWD.release.contact',            'erjo@irfu.se');
     S.define_setting('SWD.release.institute',          IRF_LONG_NAME);   % Full name or abbreviation?
-    %S.define_setting('SWD.release.modification',       'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.');
-    %S.define_setting('SWD.release.modification',       'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).');
-    S.define_setting('SWD.release.modification',       'High freq. TF cutoff; use LFR mux mode; tolerate input/L1 bias current duplicates; copies zv BW; output nA; V09 master CDFs');
+    % 'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.'
+    % 'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).'
+    % 3.0.0: 'High freq. TF cutoff; use LFR mux mode; tolerate input/L1 bias current duplicates; copies zv BW; output nA; V09 master CDFs'
+    S.define_setting('SWD.release.modification',       'Bugfix to handle LFR zVar BW=0; Preliminary sweep removal; Performance improvement (speed-up); Prel. setting of zVar QUALITY_FLAG=<2; Inofficial preliminary support for L3');   % 3.1.0
     S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch? "master" instead?
     %
     S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
