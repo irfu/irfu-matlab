@@ -152,6 +152,7 @@ function SETTINGS = create_default_SETTINGS()
     % """"""""
     %###########################################################################################################
     IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';
+    %
     S.define_setting('SWD.identification.project',     'ROC');
     S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
     S.define_setting('SWD.identification.identifier',  'BICAS');
@@ -178,7 +179,8 @@ function SETTINGS = create_default_SETTINGS()
     %####################
     % ENV_VAR_OVERRIDE.*
     %####################
-    % Variables, if non-empty, are used to override the corresponding environment variables.
+    % Variables which, if non-empty, are used to override the corresponding
+    % environment variables.
     S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
     S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
     
@@ -205,12 +207,14 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
     S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
     
-    % NOTE: This modification applies BEFORE PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
+    % NOTE: This modification applies BEFORE
+    % PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
     % Epoch.
     % NOTE: Only check for increasing, not monotonically.
-    % NOTE: There is a known, mitigatable anomaly in SOLO_L1_RPW_BIA-CURRENT which duplicated settings (same timestamp,
-    % same bias setting on same antenna) which would be triggered by an assertion on an assert on monotonically
-    % increasing timestamps.
+    % NOTE: There is a known, mitigatable anomaly in SOLO_L1_RPW_BIA-CURRENT
+    % which duplicated settings (same timestamp, same bias setting on same
+    % antenna) which would be triggered by an assertion on an assert on
+    % monotonically increasing timestamps.
     S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',                   'ERROR')      % ERROR, WARNING, SORT
     
     % Set to REMOVE_DUPLICATES as requested by Xavier Bonnin in
@@ -219,17 +223,21 @@ function SETTINGS = create_default_SETTINGS()
     
     % Whether to replace PAD VALUES values with NaN internally.
     % IMPORTANT NOTE: Refers to CDF PAD VALUES, NOT CDF FILL VALUES!
-    % NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore useful.
+    % NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore
+    % useful.
     S.define_setting('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED',       1)            % 0/false, 1/true.
     
-    % List of zVar names for which alternate fill value should be used when the zVars are loaded and interpreted.
+    % List of zVar names for which alternate fill value should be used when the
+    % zVars are loaded and interpreted.
     %S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {'IBIAS_1', 'IBIAS_2', 'IBIAS_3'})
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     cell(0,1))
     % Alternate fill value to use.
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
-    % For testing, when HK and SCI time are completely different and do not overlap (though HK time still has to cover a
-    % larger interval than SCI). Adds/subtracts HK time so that the first HK timestamp equals the first SCI timestamp.
+    % For testing, when HK and SCI time are completely different and do not
+    % overlap (though HK time still has to cover a larger interval than SCI).
+    % Adds/subtracts HK time so that the first HK timestamp equals the first SCI
+    % timestamp.
     S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',          0)
     
     
@@ -239,17 +247,22 @@ function SETTINGS = create_default_SETTINGS()
     % ------------
     % Settings that apply to ALL output datasets
     %############################################
-    % Flag to disable writing output files AFTER PROCESSING. Useful for debugging.
+    % Flag to disable writing output files AFTER PROCESSING. Useful for
+    % debugging.
     S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',            0)
-    % What BICAS should do when there is a pre-existing file on a output dataset file path.
-    % NOTE: Not known if the RCS ICD says anything about what should be the default, or what ROC thinks it should be.
+    % What BICAS should do when there is a pre-existing file on a output dataset
+    % file path.
+    % NOTE: Not known if the RCS ICD says anything about what should be the
+    % default, or what ROC thinks it should be.
     S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY', 'WARNING');    % ERROR, WARNING.
-    % Disable processing, but generate empty output files. Useful for debugging code that calls BICAS many times (batch
-    % processing) and when dataset content is unimportant since it speeds up BICAS. 
+    % Disable processing, but generate empty output files. Useful for debugging
+    % code that calls BICAS many times (batch processing) and when dataset
+    % content is unimportant since it speeds up BICAS.
     S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
     
-    % Value that shows up in output dataset GlobalAttributes.Calibration_version.
-    % Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value.
+    % Value that shows up in output dataset
+    % GlobalAttributes.Calibration_version. Value that is used to set the output
+    % dataset GlobalAttribute "Calibration_version". String value.
     S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
         '1.1; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Calibrates currents.');
     
@@ -265,8 +278,9 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    % What to do with zVariables which are still empty after copying data into the master CDF.
-    % This indicates that something is wrong, either in the master CDF or in the processing.
+    % What to do with zVariables which are still empty after copying data into
+    % the master CDF. This indicates that something is wrong, either in the
+    % master CDF or in the processing.
     S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'ERROR');   % ERROR, WARNING, USE_FILLVAL
     % Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?) SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
     % Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
@@ -274,14 +288,17 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
+    % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
+    % 0/false. Abolish?
     S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass',                 0)
-    % Whether the size per record of an empty (0 records) output DF zVar has to be in agreement with the master CDF's size
-    % per record.
-    % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
+    % Whether the size per record of an empty (0 records) output DF zVar has to
+    % be in agreement with the master CDF's size per record.
+    % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
+    % 0/false. Abolish?
     S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyNumericZvSizePerRecord',  0)
-    % Whether the size per record of an output CDF zVar has to be in agreement with the master CDF's size per record.
-    % This is useful if the master CDF has not been updated in this regard only.
+    % Whether the size per record of an output CDF zVar has to be in agreement
+    % with the master CDF's size per record. This is useful if the master CDF
+    % has not been updated in this regard only.
     S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictNumericZvSizePerRecord',       0)
     
     
@@ -290,11 +307,15 @@ function SETTINGS = create_default_SETTINGS()
     % PROCESSING.*
     %##############
     % Whether to use ACQUISITION_TIME instead of Epoch for HK.
-    % NOTE: This change happens AFTER INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY.
-    % NOTE: Setting created so that HK can use ACQUISITION_TIME for interpolating its data to SCI time. Not trivial (but
-    % doable) to generalize to SCI data (voltages) since the naming implies using this for all data use, not just the HK-SCI
-    % interpolation. Such generalization should ideally be made when reading the dataset, but then code which treats
-    % datasets as generic, has to dentify which dataset is SCI. Should not be worth the effort.
+    % NOTE: This change happens AFTER
+    % INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY.
+    % NOTE: Setting created so that HK can use ACQUISITION_TIME for
+    % interpolating its data to SCI time. Not trivial (but doable) to generalize
+    % to SCI data (voltages) since the naming implies using this for all data
+    % use, not just the HK-SCI interpolation. Such generalization should ideally
+    % be made when reading the dataset, but then code which treats datasets as
+    % generic, has to dentify which dataset is SCI. Should not be worth the
+    % effort.
     S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
     
     S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'ERROR')      % WARNING, ERROR
@@ -302,10 +323,12 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
     S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'WARNING')    % WARNING, ERROR
     
-    % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Abolish?
+    % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF
+    % datasets. Abolish?
     S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY', 'ERROR')   % WARNING, ERROR, CORRECT
     
-    % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are empty.
+    % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are
+    % empty.
     S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'USE_FILL_VALUE')   % ERROR, USE_FILL_VALUE
     
     % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
@@ -313,12 +336,13 @@ function SETTINGS = create_default_SETTINGS()
     % PROPOSAL: Rename.
     S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
     
-    %===============================================================================================================
+    %============================================================================
     % Settings for when to remove data by setting it to fill value
     % ------------------------------------------------------------
-    % "L2" refers to output datasets. Both voltage and current data.
-    % In practise, this functionality is there as a temporary solution for removing sweeps.
-    %===============================================================================================================
+    % "L2" refers to output datasets. Both voltage and current data. In
+    % practise, this functionality is there as a temporary solution for removing
+    % sweeps.
+    %============================================================================
     S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
     % Unit: S = Seconds
     % Lower number since using LFR mux mode (unless configured not to), which has same cadence as science data.
@@ -327,26 +351,23 @@ function SETTINGS = create_default_SETTINGS()
     % Higher number since using BIAS HK, which means that the mux mode is know with a lower time resolution.
     S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)    
 
-    %===================================================================================================================
+    %============================================================================
     % Where to obtain the mux mode
     % ----------------------------
     % BIAS HK data
     % ------------
-    % Contains mux mode using its own Epoch (typically ~30 s time resolution?), which means that ~interpolation to SCI
-    % data is necessary, which means that the effective mux mode value can briefly be wrong. BIAS HK may also
-    % potentially not cover the same time range as SCI data at all, and then the mux mode can be really wrong (e.g. when
-    % using different versions).
+    % Contains mux mode using its own Epoch (typically ~30 s time resolution?),
+    % which means that ~interpolation to SCI data is necessary, which means that
+    % the effective mux mode value can briefly be wrong. BIAS HK may also
+    % potentially not cover the same time range as SCI data at all, and then the
+    % mux mode can be really wrong (e.g. when using different versions).
     %
     % LFR SCI data (L1/L1R)
     % ---------------------
     % Contains a zVar for mux mode using the same Epoch as the data.
     %
     % NOTE: The relevant TDS datasets do not contain mux mode.
-    % solo_L1R_rpw-tds-lfm-cwf-e-cdag_20200225_V01.cdf : Does not have mux mode.
-    % solo_L1_rpw-tds-lfm-cwf-cdag_20200225_V04.cdf    : Does not have mux mode.
-    % solo_L1_rpw-tds-lfm-cwf-cdag_20200409_V04.cdf    : Does not have mux mode.
-    % solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V04.cdf   : Does not have mux mode. Irrelevant dataset (not LFM).
-    %===================================================================================================================
+    %============================================================================
     S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
 
     %====================================================================
@@ -409,17 +430,19 @@ function SETTINGS = create_default_SETTINGS()
     %
     % RATIONALE
     % =========
-    % RCT filenaming is implemented as settings since filenaming seems likely to change.
+    % RCT filenaming is implemented as settings since filenaming seems likely to
+    % change.
     % (1) LFR & TDS do not seem to follow the filenaming convenction
     % (2) BIAS has (previously at least) not followed the filenaming convention.
-    % (3) it is uncertain how it (doc version 1/1) can be applied to BIAS RCTs (which receiver should the BIAS RCT
-    % specify when BIAS uses the same RCT for both LFR & TDS data?).
+    % (3) it is uncertain how it (doc version 1/1) can be applied to BIAS RCTs
+    % (which receiver should the BIAS RCT specify when BIAS uses the same RCT
+    % for both LFR & TDS data?).
     %
     % NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add seconds=2 digits).
     % NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of day, only date)
     %
     % Examples of de facto RCT filenames (2019 Sept + later)
-    % ----------------------------------------------
+    % ------------------------------------------------------
     % BIAS:
     %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
     %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention, closer to documentation)
@@ -433,7 +456,8 @@ function SETTINGS = create_default_SETTINGS()
     %           SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20190128.cdf
     %           (Two types of calibration files, but only RODP versions)
     %
-    % NOTE: Only the last filename in a sorted list of matching filenames will actually be used.
+    % NOTE: Only the last filename in a sorted list of matching filenames will
+    % actually be used.
     %===================================================================================================================
     CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
     S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
@@ -456,8 +480,7 @@ function SETTINGS = create_default_SETTINGS()
     
     
     %======================================================================
-    % EXPERIMENTAL.
-    % LFR sampling frequency-dependent offsets.
+    % EXPERIMENTAL: LFR sampling frequency-dependent offsets.
     %
     % Values obtained from manually fitting F0,F1,F2 (not F3) snapshots in
     % ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E_59e82ff_CNE_V02.cdf.
@@ -468,17 +491,20 @@ function SETTINGS = create_default_SETTINGS()
     %S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
     
-    %=============================================================================================================
+    %============================================================================
     % Calibration constants for the "scalar" calibration mode
     % -------------------------------------------------------
     % Unit: IVPAV = Interface volt per antenna volt.
     %
-    % Calibration constants that are used instead of the corresponding BIAS transfer functions.
-    % NOTE: These values do not influence the nominal, "full" calibration. They are entirely separate.
-    % NOTE: The sign should preferably be consistent with the BIAS transfer functions, i.e. positive values as of
-    % 2020-04-27.
-    % NOTE: There are no equivalent (alternative) scalar values to replace the LFR & TDS transfer functions.
-    %=============================================================================================================
+    % Calibration constants that are used instead of the corresponding BIAS
+    % transfer functions.
+    % NOTE: These values do not influence the nominal, "full" calibration. They
+    %       are entirely separate.
+    % NOTE: The sign should preferably be consistent with the BIAS transfer
+    %       functions, i.e. positive values as of 2020-04-27.
+    % NOTE: There are no equivalent (alternative) scalar values to replace the
+    %       LFR & TDS transfer functions.
+    %============================================================================
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV',           1/17);
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV',               1);
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN',  100);
