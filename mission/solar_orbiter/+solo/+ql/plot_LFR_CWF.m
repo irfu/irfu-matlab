@@ -29,6 +29,50 @@
 % (Probably the same also for other EDC12/EAC12, EDC23/EAC23.)
 %
 %
+% BUGS
+% ====
+% Can be very slow due to spectrograms.
+% YK 2020-09-01: Plotting of spectrograms slows it down and that spectrograms
+% should be averaged before plotting.
+% --
+% EJ 2020-09-01: Run implies/hints that wall time increases much faster than dataset size.
+% erjo@brain /home/erjo/temp/sp/2020-08-31> grep cwf.*Wall  so_sp_batch.2020-08-31_12.52.27.log 
+%     solo_L3_rpw-lfr-surv-cwf-e_20200808_V01.png: Wall time used for plotting: 38127.7 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200809_V01.png: Wall time used for plotting: 37890.2 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200810_V01.png: Wall time used for plotting: 136.988 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200811_V01.png: Wall time used for plotting: 114.704 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200812_V01.png: Wall time used for plotting: 132.951 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200813_V01.png: Wall time used for plotting: 133.784 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200819_V01.png: Wall time used for plotting: 66.5982 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200820_V01.png: Wall time used for plotting: 134.468 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200821_V01.png: Wall time used for plotting: 116.474 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200822_V01.png: Wall time used for plotting: 138.96 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200823_V01.png: Wall time used for plotting: 116.116 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200824_V01.png: Wall time used for plotting: 132.725 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200825_V01.png: Wall time used for plotting: 135.157 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200826_V01.png: Wall time used for plotting: 133.753 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200827_V01.png: Wall time used for plotting: 134.075 [s]
+%     solo_L3_rpw-lfr-surv-cwf-e_20200828_V01.png: Wall time used for plotting: 79.0095 [s]
+% erjo@brain /data/solo/remote/data/L2/lfr_wf_e/2020> ll -h */*cwf*202008{08..31}*
+% /.../
+% -rw-r--r-- 1 erjo solarorbiter 807M 2020-08-20 22.19:43 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200808_V01.cdf
+% -rw-r--r-- 1 erjo solarorbiter 807M 2020-08-21 07.55:23 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200809_V02.cdf
+% -rw-r--r-- 1 erjo solarorbiter  95M 2020-08-20 19.31:17 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200810_V01.cdf
+% -rw-r--r-- 1 erjo solarorbiter 115M 2020-08-20 21.27:53 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200811_V01.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-20 21.01:52 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200812_V02.cdf
+% -rw-r--r-- 1 erjo solarorbiter 104M 2020-08-20 18.16:54 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200813_V01.cdf
+% -rw-r--r-- 1 erjo solarorbiter  67M 2020-08-26 12.31:51 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200819_V03.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-26 14.19:01 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200820_V03.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-26 13.12:55 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200821_V03.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-26 15.03:52 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200822_V02.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-26 18.19:03 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200823_V02.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-28 13.53:03 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200824_V03.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-28 14.01:53 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200825_V02.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-28 14.07:03 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200826_V01.cdf
+% -rw-r--r-- 1 erjo solarorbiter 105M 2020-08-29 14.02:19 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200827_V02.cdf
+% -rw-r--r-- 1 erjo solarorbiter  62M 2020-08-29 15.35:15 08/solo_L2_rpw-lfr-surv-cwf-e-cdag_20200828_V01.cdf
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-28.
 %
@@ -145,6 +189,7 @@ function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit
     Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
     Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
     irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot    
+    
     
     set(hAxes, 'yscale','log')
     ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})   % NOTE: Adding frequency unit on separate row.

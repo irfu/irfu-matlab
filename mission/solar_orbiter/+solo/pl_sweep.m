@@ -3,6 +3,10 @@ function [iPhoto_out] = pl_sweep(fName, hardcopyFlag)
 %
 % [iPhoto] = solo.pl_sweep(fileName, [hardcopyFlag])
 %
+% Input:
+%     hardCopyFlag - Logical. Whether to produce a plot file in the current
+%                    directory. Default=false.
+%
 % Output:
 %     iPhoto - photo-saturation current
 
@@ -25,8 +29,8 @@ title(h(1),fName,'Interpreter','none')
 
 if hardcopyFlag
 
-set(gcf,'InvertHardcopy','off','PaperPositionMode','auto')
-print(gcf,'-dpng','-painters','-r150',[fName '.png'])
+  set(gcf,'InvertHardcopy','off','PaperPositionMode','auto')
+  print(gcf,'-dpng','-painters','-r150',[fName '.png'])
 end
 
 %%
@@ -102,6 +106,6 @@ title(h(1),fName,'Interpreter','none')
 
 if hardcopyFlag
 
-set(gcf,'InvertHardcopy','off','PaperPositionMode','auto')
-print(gcf,'-dpng','-painters','-r150',[fName '_IV.png'])
+  set(gcf,'InvertHardcopy','off','PaperPositionMode','auto')
+  print(gcf,'-dpng','-painters','-r150',[fName '_IV.png'])
 end

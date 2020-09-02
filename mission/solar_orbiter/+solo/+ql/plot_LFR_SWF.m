@@ -124,7 +124,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
     if ENABLE_SPECTROGRAMS
         % IMPLEMENTATION NOTE: Could make a for loop over LFR sampling
         % frequencies (F0..F2) here. The current construct is however useful to
-        % make it possible to manualy (and tepmorarily) disable selected
+        % make it possible to manually (and temporarily) disable selected
         % spectrograms.
         %=================
         % F0 spectrograms

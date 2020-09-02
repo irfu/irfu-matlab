@@ -7,7 +7,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-09.
 %
-function s = indent_str(s, nWhitespace)
+function s = indent(s, nWhitespace)
     assert(nWhitespace >= 0, 'nWhitespace mus be nonegative.')
     
     % NOTE: "repmat" accepts negative sizes.
