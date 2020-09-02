@@ -143,6 +143,7 @@ function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit
     end
 
     Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
+    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
     irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot    
     
     set(hAxes, 'yscale','log')
