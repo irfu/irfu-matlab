@@ -9,7 +9,7 @@
 % ====================
 % Example argument list referred to below: --verbose --file ~/bicas.conf --setting varX 123
 % --
-% Option header   = A predefined (hardcoded, more or less) string meant to match a single argument, e.g. "--verbose",
+% Option header   = A predefined (hard-coded, more or less) string meant to match a single argument, e.g. "--verbose",
 %                   "--file", "--setting". It does not have to begin with "--" or "-" but that is the convention.
 % Option value(s) = A sequence of arguments (could be zero arguments) following an option header with which they are
 %                   associated, e.g. none, "bicas.conf", or "X" & "123". The number of expected option values should be
@@ -53,7 +53,7 @@
 %               NOTE: An option occurrence with zero values has a 1x0 cell array (not 0x0).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-02, reworked 2017-02-09, reworked 2019-07-22.
 %
 function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)

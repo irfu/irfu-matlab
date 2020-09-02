@@ -32,7 +32,7 @@ end
 
 function testSCpotProcessAndReadCDF(testCase)
 % Test to write one Usc CDF file to $DROPBOX_ROOT. The output file is
-% removed afterwards to ensure it does not interfer with future
+% removed afterwards to ensure it does not interfere with future
 % writing.
 DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
 DROPBOX_ROOT = getenv('DROPBOX_ROOT');
@@ -62,7 +62,7 @@ end
 
 function testSITLprocessAndReadCDF(testCase)
 % Test to write one SITL CDF file to $DROPBOX_ROOT. The output file is
-% removed afterwards to ensure it does not interfer with future
+% removed afterwards to ensure it does not interfere with future
 % writing.end
 DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
 DROPBOX_ROOT = getenv('DROPBOX_ROOT');
@@ -85,7 +85,7 @@ end
 
 function testQuickLookProcessAndReadCDF(testCase)
 % Test to write one QuickLook CDFend file to $DROPBOX_ROOT. The output
-% file is removed afterwards to ensure it does not interfer with future
+% file is removed afterwards to ensure it does not interfere with future
 % writing.
 DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
 DROPBOX_ROOT = getenv('DROPBOX_ROOT');
@@ -107,7 +107,7 @@ end
 
 function testL2PRErocessAndReadCDF(testCase)
 % Test to write one QuickLook CDFend file to $DROPBOX_ROOT. The output
-% file is removed afterwards to ensure it does not interfer with future
+% file is removed afterwards to ensure it does not interfere with future
 % writing.
 DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
 DROPBOX_ROOT = getenv('DROPBOX_ROOT');

@@ -9,10 +9,10 @@
 %            specified replacements matters.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-12-03
 %
-function s = strrepmany(s, varargin)
+function s = strrep_many(s, varargin)
     % PROPOSAL: Change argument syntax (varargin) to something that is more suitable for data structures AND hardcoding.
     %   PROPOSAL: oldSsList, newSsList
     %       CON: Bad for hardcoding. Each string pair can not be on the same row.
@@ -33,7 +33,7 @@ function s = strrepmany(s, varargin)
         elseif numel(varargin) == 0
             return
         else
-            error('Not same number of old substrings as new substrings.')
+            error('Not same number of arguments for old substrings and new substrings.')
         end
         
         s = strrep(s, oldSs, newSs);

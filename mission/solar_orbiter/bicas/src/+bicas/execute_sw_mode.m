@@ -2,7 +2,7 @@
 % This function should be agnostic of CLI syntax.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-09
 %
 %
@@ -25,7 +25,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, calibrationDir, SETTINGS, L)
+function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, rctDir, SETTINGS, L)
     %
     % QUESTION: How verify dataset ID and dataset version against constants?
     %    NOTE: Need to read CDF first.
@@ -62,8 +62,6 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     
     
     GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
-    
-    Cal = bicas.calib(calibrationDir, SETTINGS, L);
     
     
     
@@ -131,7 +129,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     %==============
     [settingNpefValue, settingNpefKey] = SETTINGS.get_fv('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
-        OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, Cal);
+        OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, rctDir);
     else
         OutputDatasetsMap = [];
         L.logf('warning', 'Disabled processing due to setting %s.', settingNpefKey)
@@ -293,7 +291,7 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     % Log data read from CDF file
-    bicas.proc_utils.log_zVars(ZvsLog, L)
+    bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
     
     
     

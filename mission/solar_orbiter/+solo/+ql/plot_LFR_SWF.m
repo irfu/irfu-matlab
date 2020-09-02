@@ -4,7 +4,7 @@
 %
 %
 % NOTE: Only capable (default) of only showing either DC diffs or AC diffs.
-% There are hardcoded settings for permitting or forcing both.
+% There are hard-coded settings for permitting or forcing both.
 % NOTE: Uses bicas.proc_utils.* code.
 % NOTE: Does not yet support spectrogram overlap.
 % NOTE: Time series panels interpolate between snapshots.

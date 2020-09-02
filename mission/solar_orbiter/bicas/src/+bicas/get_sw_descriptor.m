@@ -2,7 +2,7 @@
 % Return result can be used for generating a string that can be printed.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created ~2016-06-01
 %
 %
@@ -48,8 +48,6 @@ function JsonSwd = get_sw_descriptor(SwModeDefsList, SETTINGS)
     %   NOTE: Already implicitly checks that all the needed fields exist (since they are read here).
     %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if
     %         the S/W as a whole is (by default).
-    %
-    C = bicas.error_safe_constants();
     
     
     
@@ -75,7 +73,8 @@ function JsonSwd = get_sw_descriptor(SwModeDefsList, SETTINGS)
     JsonSwd.release.source             = SETTINGS.get_fv('SWD.release.source');    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     
     JsonSwd.environment.executable     = SETTINGS.get_fv('SWD.environment.executable');
-    JsonSwd.environment.configuration  = C.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    %JsonSwd.environment.configuration  = C.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    JsonSwd.environment.configuration  = bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     
     JsonSwd.modes = {};
     for i = 1:length(SwModeDefsList)

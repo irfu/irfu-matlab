@@ -3,7 +3,7 @@
 % NOTE: Does NOT test all functions in proc_utils.
 % 
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-17
 %
 
@@ -13,15 +13,43 @@
 
 function proc_utils___ATEST
     
+    set_struct_field_rows___ATEST
     convert_matrix_to_cell_array_of_vectors___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
-    find_constant_sequences___ATEST    
+    %find_constant_sequences___ATEST    
     convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
-    %convert_1_to_1_SPR_by_repeating___ATEST
     set_NaN_after_snapshots_end___ATEST
     
     % Tests for functions which are currently not used
     % ================================================
+end
+
+
+
+function set_struct_field_rows___ATEST
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
+        @bicas.proc_utils.set_struct_field_rows, inputs, outputs));
+    tl = {};
+    
+    % VERY INCOMPLETE TEST SUITE.
+    
+    tl{end+1} = new_test({...
+        struct('asd', reshape([1:24], [4,3,2])), ...
+        struct('asd', reshape([1:12], [2,3,2])), 2:3}, {...
+        struct('asd', reshape([1,1,2,4, 5,3,4,8, 9,5,6,12,   13,7,8,16, 17,9,10,20, 21,11,12,24], 4,3,2)) ...
+        });
+    
+    tl{end+1} = new_test({...
+        struct('asd', [1;2;3;4;5]), ...
+        struct('asd', [8;9]), [4,3]}, {...
+        struct('asd', [1;2;9;8;5])});
+    
+%     tl{end+1} = new_test({}, {});
+%     tl{end+1} = new_test({}, {});
+%     tl{end+1} = new_test({}, {});
+%     tl{end+1} = new_test({}, {});
+    
+    EJ_library.atest.run_tests(tl)
 end
 
 
@@ -31,9 +59,9 @@ function convert_matrix_to_cell_array_of_vectors___ATEST
         @bicas.proc_utils.convert_matrix_to_cell_array_of_vectors, inputs, outputs));
     tl = {};
     
-    tl{end+1} = new_test({[],zeros(0,1)}, {cell(0,1)});
+    tl{end+1} = new_test({zeros(0,1), zeros(0,1)}, {cell(0,1)});
     tl{end+1} = new_test({[1,2,3,4,5], [3]}, {{[1,2,3]}});
-    tl{end+1} = new_test({[1,2,3,4,5; 6,7,8,9,0], [3, 2]}, {{[1,2,3]; [6,7]}});
+    tl{end+1} = new_test({[1,2,3,4,5; 6,7,8,9,0], [3; 2]}, {{[1,2,3]; [6,7]}});
     
     EJ_library.atest.run_tests(tl)
 end
@@ -54,42 +82,43 @@ end
 
 
 
-function find_constant_sequences___ATEST
-    % NOTE: Indirectly tests bicas.proc_utils.merge_index_edge_lists since it is used by this function.
-    
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences, inputs, outputs));
-    tl = {};
-
-    tl{end+1} = new_test({},                     'MException');
-    tl{end+1} = new_test({[]', []'},             'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
-    tl{end+1} = new_test({ones(0,1), ones(0,1)}, 'MException');
-    tl{end+1} = new_test({[1]                          }, {[1,2]'});
-    tl{end+1} = new_test({[1], [3]                     }, {[1,2]'});
-    tl{end+1} = new_test({[1,2,3]'                     }, {[1,2,3,4]'});   % NOTE: Specifically check difference between first two. Can be bug if code misses iRow+1 at the right place.
-    tl{end+1} = new_test({[1,1,1]',      [3,3,3]'      }, {[1,4]'});
-    tl{end+1} = new_test({[1,1,1]',      [NaN,NaN,NaN]'}, {[1,4]'});
-    tl{end+1} = new_test({[1,1,1]',      [Inf,Inf,Inf]'}, {[1,4]'});
-    tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4,7]'});
-    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
-    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
-    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,6; 3,6; 3,6; 3,6; 4,6; 4,6]}, {[1,3,5,7]'});
-    tl{end+1} = new_test({...
-        [1,1,NaN,NaN,NaN,2,2,2]', ...
-        [3,3,3,  3,  4,  4,4,4]'}, {...
-        [1,  3,      5,  6,    9]'});
-
-    EJ_library.atest.run_tests(tl)
-    
-    
-    % Speed test
-%     rand_vector = @() (floor(rand(1e6,2)*1.1));
-%     v1 = rand_vector();
-%     v2 = rand_vector();
-%     v3 = rand_vector();
-%     tic
-%     bicas.proc_utils.find_constant_sequences(v1,v2,v3);
-%     toc
-end
+% function find_constant_sequences___ATEST
+%     % NOTE: Indirectly tests bicas.proc_utils.merge_index_edge_lists since it is used by this function.
+%     
+%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences, inputs, outputs));
+%     tl = {};
+% 
+%     tl{end+1} = new_test({},                     'MException');
+%     tl{end+1} = new_test({[]', []'},             'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
+%     tl{end+1} = new_test({ones(0,1), ones(0,1)}, 'MException');
+%     tl{end+1} = new_test({[1]                          }, {[1,2]'});
+%     tl{end+1} = new_test({[1], [3]                     }, {[1,2]'});
+%     tl{end+1} = new_test({[1,2,3]'                     }, {[1,2,3,4]'});   % NOTE: Specifically check difference between first two. Can be bug if code misses iRow+1 at the right place.
+%     tl{end+1} = new_test({[1,1,1]',      [3,3,3]'      }, {[1,4]'});
+%     tl{end+1} = new_test({[1,1,1]',      [NaN,NaN,NaN]'}, {[1,4]'});
+%     tl{end+1} = new_test({[1,1,1]',      [Inf,Inf,Inf]'}, {[1,4]'});
+%     tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4,7]'});
+%     tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+%     tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+%     tl{end+1} = new_test({[1,1,2,2,2,2]', [3,6; 3,6; 3,6; 3,6; 4,6; 4,6]}, {[1,3,5,7]'});
+%     tl{end+1} = new_test({...
+%         [1,1,NaN,NaN,NaN,2,2,2]', ...
+%         [3,3,3,  3,  4,  4,4,4]'}, {...
+%         [1,  3,      5,  6,    9]'});
+% 
+%     EJ_library.atest.run_tests(tl)
+% 
+% 
+% 
+%     % Speed test
+% %     rand_vector = @() (floor(rand(1e6,2)*1.1));
+% %     v1 = rand_vector();
+% %     v2 = rand_vector();
+% %     v3 = rand_vector();
+% %     tic
+% %     bicas.proc_utils.find_constant_sequences(v1,v2,v3);
+% %     toc
+% end
 
 
 
@@ -109,19 +138,6 @@ function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     
     EJ_library.atest.run_tests(tl)
 end
-
-
-
-% function convert_1_to_1_SPR_by_repeating___ATEST
-%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_1_to_1_SPR_by_repeating, inputs, outputs));
-%     tl = {};
-%     
-%     tl{end+1} = new_test({[5;6], 3},      {[5;5;5; 6;6;6]});
-%     tl{end+1} = new_test({[5],   2},      {[5;5]});    
-%     tl{end+1} = new_test({zeros(0,1), 2}, {zeros(0,1)});
-%     
-%     EJ_library.atest.run_tests(tl);
-% end
 
 
 

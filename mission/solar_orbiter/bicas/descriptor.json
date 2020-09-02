@@ -7,12 +7,12 @@
         "icd_version": "1.2"
     },
     "release": {
-        "version":      "3.0.0",
-        "date":         "2020-07-07T17:04:00Z",
+        "version":      "3.1.0",
+        "date":         "2020-09-01T17:00:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "High freq. TF cutoff; use LFR mux mode; tolerate input/L1 bias current duplicates; copies zv BW; output nA; V09 master CDFs",
+        "modification": "Bugfix to handle LFR zVar BW=0; Preliminary sweep removal; Performance improvement (speed-up); Prel. setting of zVar QUALITY_FLAG=<2; Inofficial preliminary support for L3",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {

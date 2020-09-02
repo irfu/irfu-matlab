@@ -28,7 +28,7 @@ end
 
 function testUscWriteCDF(testCase)
 % Test to write one Usc CDF file to $DROPBOX_ROOT. The output file is
-% removed afterwards to ensure it does not interfer with future
+% removed afterwards to ensure it does not interfere with future
 % writing.
 global ENVIR;
 % Fill data with at least 10 points as we have experienced issues with
@@ -104,7 +104,7 @@ end
 
 function testQuickLookWriteCDF(testCase)
 % Test to write one SITL CDF file to $DROPBOX_ROOT. The output file is
-% removed afterwards to ensure it does not interfer with future
+% removed afterwards to ensure it does not interfere with future
 % writing.
 global ENVIR;
 % Fill data with at least 10 points as we have experienced issues with
@@ -186,7 +186,7 @@ end
 
 function testSITLwriteCDF(testCase)
 % Test to write one SITL CDF file to $DROPBOX_ROOT. The output file is
-% removed afterwards to ensure it does not interfer with future
+% removed afterwards to ensure it does not interfere with future
 % writing.
 global ENVIR;
 % Fill data with at least 10 points as we have experienced issues with

@@ -17,7 +17,7 @@
 % script can handle to read what it needs.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-24
 %
 function settingsVsMap = interpret_config_file(configFileRowList, L)
@@ -25,6 +25,7 @@ function settingsVsMap = interpret_config_file(configFileRowList, L)
     SETTINGS_KEY_REGEXP          = '[a-zA-Z0-9._-]+';
     SETTINGS_VALUE_STRING_REGEXP = '[^"]*';
     
+
     
     % IMPLEMENTATION NOTE: Well-defined keyType and valueType good for (1) comparisons in automated tests, and (2) for
     % restricting values.

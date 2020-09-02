@@ -1,5 +1,5 @@
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-08-02
 %
 function assert_skeleton_version(skeletonVersionStr)

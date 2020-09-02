@@ -97,6 +97,9 @@ function [S2, fnChangeList] = normalize_struct_fieldnames(S1, normList, duplicat
     %       (1) Which candidate was used.
     %       (2) Which candidates were ignored.
     %
+    % PROBLEM: Concept of changing fieldnames of actual struct is bad when struct is so large that it may cause memory
+    %          problems. May want to avoid modifying struct in order to help MATLAB's code optimization (prevent
+    %          temporary copies).
 
     fnList       = fieldnames(S1);
     iChange      = 0;

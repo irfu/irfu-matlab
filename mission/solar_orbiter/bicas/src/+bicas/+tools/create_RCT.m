@@ -67,7 +67,7 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir)
 % TODO-NEED-INFO: How set time stamps?
 %   NOTE: Time stamps are not copied, nor modifications of existing time stamps. Can therefor not just reduce to relative times.
 % PROPOSAL: Change function name: Something which implies using a master file and "filling it".
-% PROPOSAL: Somehow separate the code with the hardcoded data into a separate file.
+% PROPOSAL: Somehow separate the code with the hard-coded data into a separate file.
 
 
 

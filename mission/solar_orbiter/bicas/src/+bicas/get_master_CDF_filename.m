@@ -9,7 +9,7 @@
 % skeletonVersionStr : Two-character two-digit string specifying version of the master CDF file.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-28
 %
 function masterCdfFilename = get_master_CDF_filename(datasetId, skeletonVersionStr)

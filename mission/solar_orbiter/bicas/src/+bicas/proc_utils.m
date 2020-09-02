@@ -8,7 +8,7 @@
 % SPR = Samples Per (CDF-like) Record
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-10
 %
 classdef proc_utils
@@ -18,9 +18,6 @@ classdef proc_utils
 %   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_zv_Epoch)
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
-%
-% PROPOSAL: Replace find_last_same_subsequence with function that returns list of sequences.
-%   PRO: Can naturally handle zero records.
 %
 % N-->1 sample/record
 %    NOTE: Time conversion may require moving the zero-point within the snapshot/record.
@@ -52,51 +49,49 @@ classdef proc_utils
 
 
 
-        function S = add_rows_to_struct_fields(S, SAmendment)
+%         function S = add_rows_to_struct_fields(S, SAmendment)
+%         % Generic utility function.
+%         % Add values to every struct field by adding components after their highest row index (let them grow in the row
+%         % index).
+%         %
+%         % NOTE 2020-07-29: Strong indications that using this function is inefficient if called for one added record at
+%         % a time.
+%         %
+%         % NOTE: Keep function for a while for potential speed comparisons.
+% 
+%             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
+%             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SAmendment);
+%             
+%             fieldNamesList = fieldnames(SAmendment);
+%             for i=1:length(fieldNamesList)
+%                 fn = fieldNamesList{i};
+%                 
+%                 S.(fn) = [S.(fn) ; SAmendment.(fn)];
+%             end
+%         end
+
+        
+        
+        function S = set_struct_field_rows(S, SAmendment, iRowsArray)
         % Generic utility function.
-        % Add values to every struct field by adding components after their highest row index (let them grow in the row
-        % index).
- 
+        % Set values in every struct field.
 
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SAmendment);
+            nRowsSa = bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SAmendment);
+            assert(numel(iRowsArray) == nRowsSa)
+            EJ_library.assert.castring_sets_equal(fieldnames(S), fieldnames(SAmendment))
             
             fieldNamesList = fieldnames(SAmendment);
             for i=1:length(fieldNamesList)
                 fn = fieldNamesList{i};
+                assert(isnumeric(S.(fn)))
                 
-                S.(fn) = [S.(fn) ; SAmendment.(fn)];
+                S.(fn)(iRowsArray, :) = SAmendment.(fn)(:, :);
             end
         end
         
-        
-        
-        function Rx = get_LFR_Rx(R0, R1, R2, iLsf)
-        % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
-        %
-        % ARGUMENTS
-        % =========
-        % R0, R1, R2, FREQ : LFR CDF zVariables. All must have identical array sizes.
-        %                    FREQ(i) == 0 (not 1) ==> F0 and so on.
-        % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
-        %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on
-        %                    the value of FREQ in the corresponding component.
-        %                    NOTE: Not MATLAB class "logical".
-        %
-        % NOTE: Works for all array sizes.
-            
-            Rx = NaN * ones(size(iLsf));        % Set to NaN (should always be overwritten if code works).
-            
-            I = (iLsf==1);   Rx(I) = R0(I);
-            I = (iLsf==2);   Rx(I) = R1(I);
-            I = (iLsf==3);   Rx(I) = R2(I);
-            I = (iLsf==4);   Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
-            
-            assert(all(~isnan(Rx)))
-        end
 
 
-        
         function tt2000 = ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for Epoch in CDF files.
         % 
@@ -149,225 +144,228 @@ classdef proc_utils
         
         
         
-        % Find sequences of constant value for a set of non-empty N-D vectors of identical length. Return sequences in
-        % the format of indices to "edges", here defined as the set union of
-        % (1) The first index
-        % (2) The last index+1
-        % (3) Every index which is the first index in a sequence of unchanging values for all vectors
-        % NOTE: NaN counts as equal to itself.
-        % NOTE: Needs to work for NaN in order to handle demultipexer mode and diff gain being NaN (unknown).
+%         % Find sequences of constant value for a set of non-empty N-D vectors of identical length. Return sequences in
+%         % the format of indices to "edges", here defined as the set union of
+%         % (1) The first index
+%         % (2) The last index+1
+%         % (3) Every index which is the first index in a sequence of unchanging values for all vectors
+%         % NOTE: NaN counts as equal to itself.
+%         % NOTE: Needs to work for NaN in order to handle demultipexer mode and diff gain being NaN (unknown).
+%         %
+%         %
+%         % ARGUMENTS AND RETURN VALUE
+%         % ==========================
+%         % varargin  : Matrices with same size in the first index. Must be at least one argument. Max 2-D.
+%         % iEdgeList : 1D vector. Minimum-length 2.
+%         % --
+%         % RATIONALE: The function uses varargin (and the possibility to submit many separate 1D vectors) instead of one
+%         % matrix argument (the caller merges) to make it possible to have vectors of multiple variable types (MATLAB
+%         % classes) and different dimensions (column, row etc).
+%         % --
+%         % RATIONALE: The return format is chosen such that it is easy to merge it with other lists of edges from other
+%         % sources.
+%         %
+%         %
+%         % EXECUTION SPEED
+%         % ===============
+%         % Empirically, it can be useful to have a fast implementation of this function.
+%         % IMPLEMENTATION NOTE: One can re-implement using subsref to handle higher-dimensional matrices, but this slows
+%         % down the function, by factor of ~20. Presently hard-coded to permit up to 2-D matrices by the number indexing
+%         % (hard-coded number of colons), but this can be increased to an arbitrary finite limit.
+%         % Has kept multiple implementations to be able to compare speeds.
+%         %
+%         function iEdgeList = find_constant_sequences(varargin)
+%             % PROPOSAL: Replace using EJ_library.utils.split_by_change.
+%             
+%             nArgs = numel(varargin);
+%             
+%             % ASSERTION
+%             assert(nArgs >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
+% 
+%             nRows  = size(varargin{1},1);
+%             % Pre-allocate. Should be same size for all arguments and therefore does not need to be re-initialized/cleared.
+%             diff_v = zeros(nRows-1, 1);
+% 
+% 
+% 
+%             if 1
+%                 %=========================================================================
+%                 % IMPLEMENTATION 1a
+%                 % * One call to "isequalnan" for every row and argument.
+%                 % NOTE: Slightly faster to index only once, and save the result (v1, v2).
+%                 %=========================================================================
+%                 
+%                 iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
+%                 for iArg = 1:nArgs
+%                     v = varargin{iArg};   % Argument before assertions.
+%                     
+%                     % ASSERTIONS
+%                     assert(~isempty(v))
+%                     assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
+%                     assert(ndims(v) <= 2)
+%                     
+%                     v1 = v(1, :);
+%                     for iRow = 1:nRows-1
+%                         
+%                         v2 = v(iRow+1, :);
+%                         
+%                         %==================================================================================================
+%                         % Compare two slices of v, and subsequent in the first index of v
+%                         % ----------------------------------------------------------------
+%                         % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
+%                         % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
+%                         % objects etc).
+%                         %==================================================================================================
+%                         %diff_v(iRow) = ~isequaln(v(iRow,:), v(iRow+1,:));
+%                         diff_v(iRow) = ~isequaln(v1, v2);
+%                         
+%                         v1 = v2;
+%                     end
+%                     
+%                     iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
+%                 end
+%                 iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
+%                 
+%             end
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%             if 0
+%                 %======================================================
+%                 % IMPLEMENTATION 1b
+%                 % * One call to "isequalnan" for every row and argument.
+%                 % * Uses subsref ==> Makes it really slow.
+%                 %======================================================
+%                 
+%                 iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
+%                 S = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
+%                 
+%                 for iArg = 1:nArgs
+%                     v = varargin{iArg};   % Argument before assertions.
+%                     
+%                     % ASSERTIONS
+%                     assert(~isempty(v))
+%                     assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
+%                     assert(ndims(v) <= 2)
+%                     
+%                     S.subs{1} = 1;
+%                     v1        = subsref(v, S);
+%                     for iRow = 1:nRows-1
+%                         
+%                         S.subs{1} = iRow + 1;
+%                         v2        = subsref(v, S);
+%                         
+%                         %==================================================================================================
+%                         % Compare two slices of v, and subsequent in the first index of v
+%                         % ----------------------------------------------------------------
+%                         % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
+%                         % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
+%                         % objects etc).
+%                         %==================================================================================================
+%                         diff_v(iRow) = ~isequaln(v1, v2);
+%                         
+%                         v1 = v2;
+%                     end
+%                     
+%                     iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
+%                 end
+%                 iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
+%                 
+%             end
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%             if 0
+%                 %========================================================
+%                 % IMPLEMENTATION 2
+%                 % * One call to "isequalnan" for every row (not argument).
+%                 % Seems slower than not.
+%                 %========================================================
+%                 v1 = cell(nArgs, 1);
+%                 v2 = cell(nArgs, 1);
+%                 for iArg = 1:nArgs
+%                     v = varargin{iArg};   % Argument before assertions.
+%                     
+%                     % ASSERTIONS
+%                     assert(~isempty(v))
+%                     assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
+%                     assert(ndims(v) <= 2)
+%                     
+%                     v1{iArg} = v(1, :);
+%                 end
+%                 for iRow = 1:nRows-1
+%                     for iArg = 1:nArgs
+%                         v = varargin{iArg};
+%                         v2{iArg} = v(iRow+1, :);
+%                     end
+%                     diff_v(iRow) = ~isequaln(v1, v2);
+%                     v1 = v2;
+%                 end
+%                 iEdgeList = [1; 1+find(diff_v); nRows+1];
+%                 
+%             end
+%         end
+%         
+%         
+%         
+%         function iEdgeList = merge_index_edge_lists(varargin)
+%             iEdgeList = [];
+%             for i = 1:numel(varargin)
+%                 v = varargin{i};
+%                 
+%                 % ASSERTIONS
+%                 EJ_library.assert.vector(v)
+%                 % Verifies that it is an edge list, and that the "convention" for what is an edge list (include
+%                 % beginning and end) has not changed.
+%                 assert(v(1) == 1)    
+%                 
+%                 % NOTE: Works with (forces) column vectors to make concatenations reliable
+%                 iEdgeList = [iEdgeList; varargin{i}(:)];
+%             end
+%             iEdgeList = sort(unique(iEdgeList));
+%         end
+%         
+%         
+%         
+%         % EXPERIMENTAL
+%         %
+%         % Convert a list of edges (indexes) into adjacent sequences of indices, represented by lists of the first and
+%         % last index for each sequence. Each sequence begins and ends with an edge.
+%         %
+%         % iEdgeList  : Sorted numeric 1D vector. If empty or scalar, then empty vectors are returned.
+%         % iFirstList, iLastList : Vectors with first and last index for each sequence.
+%         %
+%         function [iFirstList, iLastList] = index_edges_2_first_last(iEdgeList)
+%             assert(issorted(iEdgeList))
+%             EJ_library.assert.vector(iEdgeList)
+%             
+%             iFirstList = iEdgeList(1:end-1);
+%             iLastList  = iEdgeList(2:end) - 1;
+%         end
+        
+        
+        
+        function filteredData = filter_rows(data, bRowFilter)
+        % Function intended for filtering out data from a zVariable by setting parts of it to NaN. Also useful for
+        % constructing aonymous functions.
         %
-        %
-        % ARGUMENTS AND RETURN VALUE
-        % ==========================
-        % varargin  : Matrices with same size in the first index. Must be at least one argument. Max 2-D.
-        % iEdgeList : 1D vector. Minimum-length 2.
-        % --
-        % RATIONALE: The function uses varargin (and the possibility to submit many separate 1D vectors) instead of one
-        % matrix argument (the caller merges) to make it possible to have vectors of multiple variable types (MATLAB
-        % classes) and different dimensions (column, row etc).
-        % --
-        % RATIONALE: The return format is chosen such that it is easy to merge it with other lists of edges from other
-        % sources.
-        %
-        %
-        % EXECUTION SPEED
-        % ===============
-        % Empirically, it can be useful to have a fast implementation of this function.
-        % IMPLEMENTATION NOTE: One can re-implement using subsref to handle higher-dimensional matrices, but this slows
-        % down the function, by factor of ~20. Presently hardcoded to permit up to 2-D matrices by the number indexing
-        % (hardcoded number of colons), but this can be increased to an arbitrary finite limit.
-        % Has kept multiple implementations to be able to compare speeds.
-        %
-        function iEdgeList = find_constant_sequences(varargin)
-            % PROPOSAL: Rename to imply that the function finds edges (separating sequences), not sequences.
-            %tic
-            nArgs = numel(varargin);
-            
-            % ASSERTION
-            assert(nArgs >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
-                        
-            nRows  = size(varargin{1},1);
-            % Pre-allocate. Should be same size for all arguments and therefore does not need to be re-initialized/cleared.
-            diff_v = zeros(nRows-1, 1);
-
-
-
-            if 1
-                %=========================================================================
-                % IMPLEMENTATION 1a
-                % * One call to "isequalnan" for every row and argument.
-                % NOTE: Slightly faster to index only once, and save the result (v1, v2).
-                %=========================================================================
-                
-                iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
-                for iArg = 1:nArgs
-                    v = varargin{iArg};   % Argument before assertions.
-                    
-                    % ASSERTIONS
-                    assert(~isempty(v))
-                    assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
-                    assert(ndims(v) <= 2)
-                    
-                    v1 = v(1, :);
-                    for iRow = 1:nRows-1
-                        
-                        v2 = v(iRow+1, :);
-                        
-                        %==================================================================================================
-                        % Compare two slices of v, and subsequent in the first index of v
-                        % ----------------------------------------------------------------
-                        % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
-                        % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
-                        % objects etc).
-                        %==================================================================================================
-                        %diff_v(iRow) = ~isequaln(v(iRow,:), v(iRow+1,:));
-                        diff_v(iRow) = ~isequaln(v1, v2);
-                        
-                        v1 = v2;
-                    end
-                    
-                    iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
-                end
-                iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
-                
-            end
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            if 0
-                %======================================================
-                % IMPLEMENTATION 1b
-                % * One call to "isequalnan" for every row and argument.
-                % * Uses subsref ==> Makes it really slow.
-                %======================================================
-                
-                iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
-                S = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
-                
-                for iArg = 1:nArgs
-                    v = varargin{iArg};   % Argument before assertions.
-                    
-                    % ASSERTIONS
-                    assert(~isempty(v))
-                    assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
-                    assert(ndims(v) <= 2)
-                    
-                    S.subs{1} = 1;
-                    v1        = subsref(v, S);
-                    for iRow = 1:nRows-1
-                        
-                        S.subs{1} = iRow + 1;
-                        v2        = subsref(v, S);
-                        
-                        %==================================================================================================
-                        % Compare two slices of v, and subsequent in the first index of v
-                        % ----------------------------------------------------------------
-                        % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
-                        % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
-                        % objects etc).
-                        %==================================================================================================
-                        diff_v(iRow) = ~isequaln(v1, v2);
-                        
-                        v1 = v2;
-                    end
-                    
-                    iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
-                end
-                iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
-                
-            end
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            if 0
-                %========================================================
-                % IMPLEMENTATION 2
-                % * One call to "isequalnan" for every row (not argument).
-                % Seems slower than not.
-                %========================================================
-                v1 = cell(nArgs, 1);
-                v2 = cell(nArgs, 1);
-                for iArg = 1:nArgs
-                    v = varargin{iArg};   % Argument before assertions.
-                    
-                    % ASSERTIONS
-                    assert(~isempty(v))
-                    assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
-                    assert(ndims(v) <= 2)
-                    
-                    v1{iArg} = v(1, :);
-                end
-                for iRow = 1:nRows-1
-                    for iArg = 1:nArgs
-                        v = varargin{iArg};
-                        v2{iArg} = v(iRow+1, :);
-                    end
-                    diff_v(iRow) = ~isequaln(v1, v2);
-                    v1 = v2;
-                end
-                iEdgeList = [1; 1+find(diff_v); nRows+1];
-                
-            end
-        end
-        
-        
-        
-        % EXPERIMENTAL
-        function iEdgeList = merge_index_edge_lists(varargin)
-            iEdgeList = [];
-            for i = 1:numel(varargin)
-                v = varargin{i};
-                
-                % ASSERTIONS
-                EJ_library.assert.vector(v)
-                assert(v(1) == 1)    % Verifies that it is an edge list, and that the "convention" for what is an edge list (include beginning and end) has not changed.
-                
-                % NOTE: Works with (forces) column vectors to make concatenations reliable
-                iEdgeList = [iEdgeList; varargin{i}(:)];
-            end
-            iEdgeList = sort(unique(iEdgeList));
-        end
-        
-        
-        
-        % EXPERIMENTAL
-        %
-        % Convert a list of edges (indexes) into adjacent sequences of indices, represented by lists of the first and
-        % last index for each sequence. Each sequence begins and ends with an edge.
-        %
-        % iEdgeList  : Sorted numeric 1D vector. If empty or scalar, then empty vectors are returned.
-        % iFirstList, iLastList : Vectors with first and last index for each sequence.
-        %
-        function [iFirstList, iLastList] = index_edges_2_first_last(iEdgeList)
-            assert(issorted(iEdgeList))
-            EJ_library.assert.vector(iEdgeList)
-            
-            
-            iFirstList = iEdgeList(1:end-1);
-            iLastList  = iEdgeList(2:end) - 1;
-        end
-        
-        
-        
-        function filteredData = filter_rows(data, rowFilter)
-        % Function intended for filtering out data from a zVariable by setting parts of it to NaN.
         %
         % ARGUMENTS AND RETURN VALUE
         % ==========================
         % data         : Numeric array with N rows.                 (Intended to represent a zVariable with N records.)
-        % rowFilter    : Numeric/logical column vector with N rows. (Intended to represent a zVariable with N records.)
+        % bRowFilter   : Numeric/logical column vector with N rows. (Intended to represent a zVariable with N records.)
         % filteredData : Array of the same size as "data", such that
         %                filteredData(i,:,:, ...) == NaN,              for rowFilter(i)==0.
         %                filteredData(i,:,:, ...) == data(i,:,:, ...), for rowFilter(i)~=0.
 
             % ASSERTIONS
-            if ~iscolumn(rowFilter)     % Not really necessary to require row vector, only 1D vector.
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"rowFilter" is not a column vector.')
-            elseif size(rowFilter, 1) ~= size(data, 1)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
-            elseif ~isfloat(data)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"data" is not a floating-point class (can not represent NaN).')
-            end
-            
-            
-            
+            assert(islogical(bRowFilter))    % Mostly to make sure the caller knows that it represents true/false.
+            assert(isfloat(data), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument "data" is not a floating-point class (can not represent NaN).')
+            % Not really necessary to require row vector, only 1D vector.
+            assert(iscolumn(bRowFilter), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument "rowFilter" is not a column vector.')
+            assert(size(bRowFilter, 1) == size(data, 1), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
+
+
+
             % Copy all data
             filteredData = data;
             
@@ -377,39 +375,13 @@ classdef proc_utils
             % if rowFilter and filteredData have different numbers of rows, then the final array may get the wrong
             % dimensions (without triggering error!) since new array components (indices) are assigned. ==> Having a
             % corresponding ASSERTION is important!
-            filteredData(rowFilter==0, :) = NaN;
+            filteredData(bRowFilter, :) = NaN;
         end
 
-
-
-%         function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-%         % Two steps:
-%         % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
-%         %     repeating within record.
-%         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
-%             
-%             % ASSERTIONS
-%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-%             
-%             zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
-%             zv2 = EJ_library.so.convert_N_to_1_SPR_redistribute(zv2);
-%         end
         
         
-        
-%         function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
-%             % NOTE: Maybe somewhat unnecessary function.
-%             
-%             assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
-%             assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
-%             
-%             zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
-%         end
-
-        
-        
-        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC )
+        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(...
+            ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC)
         % Function intended for converting ACQUISITION_TIME (always one time per record) from many samples/record to one
         % sample/record. See convert_N_to_1_SPR_Epoch which is analogous.
         % 
@@ -449,22 +421,30 @@ classdef proc_utils
 
 
         
+        % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
+        %
+        % ARGUMENTS
+        % =========
         % M                     : 2D matrix
-        % nCopyColsPerRowVec    : 1D vector. {i}=Number of elements to copy from M{i,:}.
+        % nCopyColsPerRowVec    : 1D column vector. {i}=Number of elements to copy from M{i,:}.
+        %
+        % RETURN VALUE
+        % ============
         % ca                    : Column cell array of 1D vectors.
-        function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowVec)
-            EJ_library.assert.vector(nCopyColsPerRowVec)
-            assert(ismatrix(M))
-            assert(size(M, 1) == length(nCopyColsPerRowVec))
+        function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
+            EJ_library.assert.vector(nCopyColsPerRowArray)
+            nRows = EJ_library.assert.sizes(M, [-1, NaN], nCopyColsPerRowArray, [-1, 1]);
             
             ca = cell(size(M, 1), 1);
-            for iRow = 1:numel(nCopyColsPerRowVec)
-                ca{iRow} = M(iRow, 1:nCopyColsPerRowVec(iRow));
+            for iRow = 1:nRows
+                ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
             end
         end
         
 
         
+        % ARGUMENTS
+        % =========
         % ca                    : Column cell array of 1D vectors.
         % nMatrixColumns        : Scalar. Number of columns in M.
         % M                     : Numeric 2D matrix.
@@ -497,73 +477,24 @@ classdef proc_utils
         
             ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
             
-            if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
-            elseif ~isscalar(nSpr)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
-            end
+            assert(iscolumn(freqHz) && isfloat(freqHz) && all(~isnan(freqHz)), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', ...
+                'Argument "freqHz" is not a column vector of non-NaN floats.')
+            assert(isscalar(nSpr), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', ...
+                'Argument "nSpr" is not a scalar.')
             
             nRecords = size(freqHz, 1);
             DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
             for i = 1:length(freqHz)
-                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
+                % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
+                % that the unit is the same as for Epoch.
+                % NOTE: Seems to work for more than 2D.
+                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;
             end
             DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
                 ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
-        
-        
-        
-        % 2020-03-10: Function seems to not be used any more. DSAMP_TIME abolished from BIAS datasets?
-%         function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
-%         %
-%         % ARGUMENTS
-%         % =========
-%         % freqHz     : Frequency column vector in s^-1. Can not handle freq=NaN since the output is an integer.
-%         % nSpr       : Number of samples per record (SPR).
-%         %
-%         % RETURN VALUE
-%         % ============
-%         % SAMP_DTIME : Analogous to BIAS zVariable with CDF_UINT4=uint32. NOTE: Unit ns.
-%         %
-%         % ~BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
-%         % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
-%         % 2048/256 Hz = 8e9 ns > 2^31 ns ~ 2e9 ns.
-%         % 2017-03-08: Xavier Bonnin (LESIA) and Bruno Katra (RPW/LFR) are aware of this and seem to have implemented it
-%         % that way intentionally!!!
-%         %
-%         % IMPLEMENTATION NOTE: Algorithm should require integers in order to have a very predictable behaviour (useful
-%         % when testing).
-%         
-%             % ASSERTIONS
-%             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
-%             elseif ~isscalar(nSpr)
-%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
-%             end
-%             
-%             nRecords = size(freqHz, 1);
-%             
-%             % Express frequency as period length in ns (since tt2000 uses ns as a unit).
-%             % Use the same MATLAB class as tt
-%             % Unique frequency per record.
-%             periodNsColVec = int64(1e9 ./ freqHz);   % Ns = ns = nanoseconds
-%             periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
-%                         
-%             % Conventions:
-%             % ------------
-%             % Time unit: ns (as for tt2000)            
-%             % Algorithm should require integers to have a very predictable behaviour (useful when testing).
-%             
-%             % Indices for within every record (start at zero for every record).
-%             iSampleRowVec = int64(0:(nSpr-1));
-%             iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
-%             
-%             % Unique time for every sample in every record.
-%             SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
-%             
-%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.cdf.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
-%         end
         
         
         
@@ -576,46 +507,6 @@ classdef proc_utils
 
 
         
-%         function y2 = interpolate_float_records(zvTt2000_1, y1, zvTt2000_2, method)
-%             % Interpolate ~zVariable to other points in time.
-%             % Values which can not be interpolated will be set to NaN.
-%             % This is intended for interpolating HK and CURRENT to SCI record times.
-%             %
-%             % IMPLEMENTATION NOTE: There is (deliberately) no assertion to check for NaN, neither in input nor output.
-%             % The caller is supposed to check and, depending on settings etc decide whether to interpolate anyway.
-%             %
-%             % IMPLEMENTATION NOTE: interp1 does seem to require y1 to be float. Using NaN as a "fill value" for the
-%             % return value implies that it too has to be a float.
-%             
-%             % PROPOSAL: Assertion issorted.
-%             
-% %             switch(method)
-% %                 case 'nearest'
-% % %                     assert(...
-% % %                         EJ_library.utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
-% % %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-% % %                         'Can not interpolate data since the time range of zvTt2000_2 is not a subset of zvTt2000_1.')
-% % 
-% %                 case 'previous'
-% %                     % IMPLEMENTATION NOTE: Used for currents which can be extrapolate forward, but not backward.
-% % %                     assert(min(zvTt2000_1) <= min(zvTt2000_2), ...
-% % %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-% % %                         'Can not interpolate data since the time range of zvTt2000_2 does not begin after zvTt2000_1 begins.')
-% % 
-% %                 otherwise
-% %                     error(...
-% %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-% %                         'Illegal argument method="%s".', ...
-% %                         method)
-% %             end
-%             
-%             bicas.proc_utils.assert_zv_Epoch(zvTt2000_1)
-%             bicas.proc_utils.assert_zv_Epoch(zvTt2000_2)
-%             y2 = interp1(double(zvTt2000_1), y1, double(zvTt2000_2), method, NaN);
-%         end
-        
-
-
         function utcStr = tt2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
             
@@ -626,31 +517,35 @@ classdef proc_utils
         
         
         
-        function ColumnStrs = log_array(varName, varValue, varType)
-            % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
-            % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
-            % settings are used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
+        function ColumnStrs = log_array(varName, varValue, varType, SETTINGS)
+            % Logs statistics on the contents of a numeric variable (any dimensionality):
+            %   ** Array size
+            %   ** Number of and percentage NaN,
+            %   ** unique values, min-max.
+            % Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which settings are
+            % used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
             %
             % IMPLEMENTATION NOTE: Deliberately short function name to not clutter the log.
             %
             %
             % ARGUMENTS
             % =========
-            % Alternative 1: 'explanation' (string literal) : Prints explanation of the (very condensed) log messages.
-            % Alternative 2: variableName, variableValue    : Print statistics on line
+            % varName  :
+            % varValue :
+            % varType  : String constant. 'numeric' or 'Epoch'. Determines how varValue is interpreted.
             %
-            % ASSUMPTIONS
-            % ===========
-            % variableValue is numeric
+            %
+            % RETURN VALUE
+            % ============
+            % ColumnStrs : Struct with fields corresponding to different column values for one row in a table.
+            %
             
             % PROPOSAL: Handle fill/pad value?
             % PROPOSAL: Move to +utils.
             % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
             % PROPOSAL: Print MATLAB class (implicitly range).
-            
-            MAX_EPOCH_UNIQUES_PRINTED = 2;
-            
-            global SETTINGS
+            % PROPOSAL: Better function name. Should imply that it generates strings for logging, not the logging
+            %           itself.
             
             % ASSERTION
             assert(isnumeric(varValue))
@@ -667,6 +562,7 @@ classdef proc_utils
             sizeStr = sprintf('(%s)', sizeStr);
             
             switch(varType)
+                
                 case 'numeric'
                     % ASSERTION
                     assert(ndims(varValue) <= 3, 'BICAS:proc_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')
@@ -683,7 +579,7 @@ classdef proc_utils
                     %===================================
                     % Construct string: range of values
                     %===================================
-                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_UNIQUES_PRINTED')
+                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED')
                         vMin = min(min(min(varValue)));
                         vMax = max(max(max(varValue)));
                         
@@ -704,14 +600,13 @@ classdef proc_utils
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
                     
-                    if nUniqueValues > MAX_EPOCH_UNIQUES_PRINTED
+                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
                         epochMinStr = bicas.proc_utils.tt2000_to_UTC_str(min(varValue));
                         epochMaxStr = bicas.proc_utils.tt2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
-                        for i = 1:numel(uniqueValues)
-                            valueStrs{end+1} = bicas.proc_utils.tt2000_to_UTC_str(uniqueValues{i});
-                        end
+                        bicas.proc_utils.assert_zv_Epoch(uniqueValues)
+                        valueStrs = EJ_library.cdf.tt2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
                     else
                         valuesStr = '-';
@@ -721,7 +616,7 @@ classdef proc_utils
                     error('BICAS:proc_utils', 'Illegal argument varType="%s"', varType)
             end
             
-            % Assemble the final string
+            % Assemble the final strings.
             ColumnStrs.name             = varName;
             ColumnStrs.size             = sizeStr;
             ColumnStrs.nNan             = nNanStr;
@@ -739,7 +634,8 @@ classdef proc_utils
         % =========
         % Zvs : Struct with ~zVariables.
         %       NOTE: Uses field name to determine whether field is Epoch-like or not.
-        function log_zVars(Zvs, L)
+        %
+        function log_zVars(Zvs, SETTINGS, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
             %   Ex: process_HK_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
@@ -750,7 +646,7 @@ classdef proc_utils
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13:02:34
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13h02m34s
             
-            LOG_LEVEL = 'debug';
+            LL = 'debug';
 
             fnList     = fieldnames(Zvs);
             ColumnStrs = EJ_library.utils.empty_struct([0,1], 'name', 'size', 'nNan', 'percentageNan', 'nUniqueValues', 'values');
@@ -763,12 +659,12 @@ classdef proc_utils
                         && any(EJ_library.str.regexpf(zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch');
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch', SETTINGS);
                     
                 elseif isnumeric(zvValue)
                     % CASE: Non-Epoch-like numeric variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'numeric');
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'numeric', SETTINGS);
                     
                 elseif ischar(zvValue)
                     
@@ -781,22 +677,23 @@ classdef proc_utils
             end
             
             headerStrs = {'Name', 'Size', '#NaN', '%NaN', '#Uniq', 'Values'};
-            tableStrs = {};
-            tableStrs(:,1) = {ColumnStrs(:).name}';
-            tableStrs(:,2) = {ColumnStrs(:).size}';
-            tableStrs(:,3) = {ColumnStrs(:).nNan}';
-            tableStrs(:,4) = {ColumnStrs(:).percentageNan}';
-            tableStrs(:,5) = {ColumnStrs(:).nUniqueValues}';
-            tableStrs(:,6) = {ColumnStrs(:).values}';
-            tableColumnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
-            [headerStrs, tableStrs, columnWidths] = EJ_library.utils.assist_print_table(headerStrs, tableStrs,  tableColumnAdjustments);
+            dataStrs = {};
+            dataStrs(:,1) = {ColumnStrs(:).name}';
+            dataStrs(:,2) = {ColumnStrs(:).size}';
+            dataStrs(:,3) = {ColumnStrs(:).nNan}';
+            dataStrs(:,4) = {ColumnStrs(:).percentageNan}';
+            dataStrs(:,5) = {ColumnStrs(:).nUniqueValues}';
+            dataStrs(:,6) = {ColumnStrs(:).values}';
+            columnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
+            [headerStrs, dataStrs, columnWidths] = EJ_library.str.assist_print_table(...
+                headerStrs, dataStrs,  columnAdjustments);
 
-            L.log(LOG_LEVEL, strjoin(headerStrs, ' '))
-            L.log(LOG_LEVEL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
+            L.log(LL, strjoin(headerStrs, ' '))
+            L.log(LL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
             for iRow = 1:numel(ColumnStrs)
-                L.log(LOG_LEVEL, strjoin(tableStrs(iRow, :), ' '))
+                L.log(LL, strjoin(dataStrs(iRow, :), ' '))
             end
-            L.logf(LOG_LEVEL, [...
+            L.logf(LL, [...
                 '    #NaN = Number of NaN\n', ...
                 '    #Uniq = Number of unique values incl. NaN which counts as equal to itself.\n', ...
                 '    Mm = min-max\n', ...
@@ -806,16 +703,11 @@ classdef proc_utils
 
 
         % Assert that variable is an "zVar Epoch-like" variable.
-        function assert_zv_Epoch(Epoch)
-        % PROPOSAL: Change name: assert_zv_Epoch_zvar
-        % PROPOSAL: Separate functions: assert_zv_Epoch_zvar, assert_zv_Epoch.
-        
-            if ~iscolumn(Epoch)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')   % Right ID?                
-            elseif ~isa(Epoch, 'int64')
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')   % Right ID?
-            end
-            
+        function assert_zv_Epoch(zvEpoch)
+
+            assert(iscolumn(zvEpoch),     'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')
+            assert(isa(zvEpoch, 'int64'), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')
+
             % Use?!!! Too processing heavy?!
             %validateattributes(Epoch, {'numeric'}, {'increasing'})
         end
@@ -825,58 +717,71 @@ classdef proc_utils
         function assert_ACQUISITION_TIME(ACQUISITION_TIME)
         % Assert that variable is an "zVar ACQUISITION_TIME-like" variable.
         
-            if ~isa(ACQUISITION_TIME, 'uint32')
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not uint32.')
-            elseif ndims(ACQUISITION_TIME) ~= 2
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not 2D.')
-            elseif size(ACQUISITION_TIME, 2) ~= 2
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME does not have two columns.')
-            elseif any(ACQUISITION_TIME(:, 1) < 0)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME has negative number of integer seconds.')
-            elseif any(65536 <= ACQUISITION_TIME(:, 2))    % Does not need to check for negative values due to uint32.
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME subseconds out of range.')
-            end
+            EMID = 'BICAS:proc_utils:Assertion:IllegalArgument';
+        
+            assert(isa(  ACQUISITION_TIME, 'uint32'),     EMID, 'ACQUISITION_TIME is not uint32.')
+            EJ_library.assert.sizes(ACQUISITION_TIME, [NaN, 2])
+            assert(all(  ACQUISITION_TIME(:, 1) >= 0),    EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
+            % IMPLEMENTATION NOTE: Does not need to check for negative values due to uint32.
+            assert(all(  ACQUISITION_TIME(:, 2) < 65536), EMID, 'ACQUISITION_TIME subseconds out of range.')
         end
         
         
         
-        function assert_struct_num_fields_have_same_N_rows(S)
-        % Assert that the below variables inside the struct have the same size in the first index.
-        % (1) numeric fields                  : The field itself
-        % (2) cell fields                     : Cell array components
-        % (3) struct field (inside the struct): The inner struct's fields (not recursive)
-        % Asserts that there are no other types of variables.
+        function nRows = assert_struct_num_fields_have_same_N_rows(S)
+        % Assert that data structure have the same number of rows in its constituent parts.
         %
         % Useful for structs where all fields represent CDF zVariables and/or derivatives thereof, the size in the first
         % index (number of CDF record) should be equal.
-        
+        %
+        % ARGUMENTS
+        % =========
+        % S : Struct
+        %       Fields may (ony) be of the following types. Number of rows must be identical for the specified
+        %       data structure components (right-hand side).
+        %       (1) numeric/logical fields          : The field itself
+        %       (2) cell fields                     : Cell array components (not the cell array itself!)
+        %       (3) struct field (inside the struct): The inner struct's fields (not recursive)
+
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
         % PROPOSAL: Implement using new features in EJ_library.assert.sizes.
         
             fieldNamesList1 = fieldnames(S);
-            nRows = [];
+            nRowsArray = [];
             for iFn1 = 1:length(fieldNamesList1)
                 fieldValue = S.(fieldNamesList1{iFn1});
                 
-                if isnumeric(fieldValue)
-                    nRows(end+1) = size(fieldValue, 1);
+                if isnumeric(fieldValue) || islogical(fieldValue)
+                    
+                    nRowsArray(end+1) = size(fieldValue, 1);
+                    
                 elseif iscell(fieldValue)
+                    
                     for iCc = 1:numel(fieldValue)
-                        nRows(end+1) = size(fieldValue{iCc}, 1);
+                        nRowsArray(end+1) = size(fieldValue{iCc}, 1);
                     end
+                    
                 elseif isstruct(fieldValue)
+                    
                     fieldNamesList2 = fieldnames(fieldValue);
                     for iFn2 = 1:length(fieldNamesList2)
-                        nRows(end+1) = size(fieldValue.(fieldNamesList2{iFn2}), 1);
+                        nRowsArray(end+1) = size(fieldValue.(fieldNamesList2{iFn2}), 1);
                     end
+                    
                 else
+                    
                     error('BICAS:proc_utils:Assertion', 'Can not handle this type of struct field.')
+                    
                 end
             end
-            if length(unique(nRows)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
+            
+            nRows = unique(nRowsArray);   % NOTE: Empty vector if nRowsArray is empty.
+            
+            if length(unique(nRowsArray)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
                 error('BICAS:proc_utils:Assertion', ...
-                    'Numeric fields and cell array components in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
+                    ['Numeric fields and cell array components in struct do not have the same number', ...
+                    ' of rows (likely corresponding to CDF zVar records).'])
             end
         end
         
