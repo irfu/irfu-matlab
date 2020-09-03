@@ -166,7 +166,10 @@ if isempty(iKeep)
   error('All timestamps are NaN.');
 end
 timeSecArray = timeSecArray(iKeep);
-samples      = samples(iKeep);
+% NOTE: Limits the dimensionality of data samples. Therefore uses some extra
+% ":". However, other aspects of this code also limits the dimensionality even
+% more.
+samples      = samples(iKeep, :, :, :, :, :);
 
 
 
