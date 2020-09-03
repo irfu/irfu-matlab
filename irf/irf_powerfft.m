@@ -15,7 +15,8 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 %   data           - Either
 %                     (1) a vector (first column is time in seconds; remaining
 %                         columns are data), or
-%                     (2) a TSeries object.
+%                     (2) a TSeries object. May contain one sample per
+%                         timestamp, or a 1D vector of samples per timestamp.
 %   nFft           - Length of time covered by every spectrum, as measured by
 %                    the number of samples when sampled at exactly sampling
 %                    frequency samplFreqHz. This is also the number of samples
@@ -27,16 +28,16 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 %
 % RETURN VALUE(S)
 % ===============
-%	Specrec        - Structure with below fields:
+%	Specrec - Structure with below fields:
 %		.t(iTime)
 %          - Numeric column array. Time of each individual spectrum [seconds].
 %            If "data" is a numeric matrix, then same time format as data time.
 %            If "data" is a TSeries, then time format epoch unix.
-%		.p{iComponent}(iTime, iFreq)
-%          - Cell array of numeric arrays of spectrum values.
+%		.p{iDataComp}(iTime, iFreq)
+%          - Cell array of same-sized numeric 2D arrays of spectrum values.
 %            NaN if too little underlying data for the particular spectrum.
-%            iComponent = Which type of samples in data (of multiple samples
-%            per timestamp).
+%            iDataComp = Which data component out of multiple samples per
+%            timestamp.
 %		.f(iFreq)
 %          - Numeric column array. Frequencies [Hz] for spectrum. One array
 %            for all spectras.
@@ -125,8 +126,12 @@ elseif ismatrix(data) && isnumeric(data) && (size(data, 2)>=1)
   samples      = data(:, 2:end);
   usingTSeries = false;
 else
-  error('Argument "data" is neither TSeries, nor numeric 2D array with at least one column.')
+  error('Argument "data" is neither (1) TSeries, nor (2) numeric 2D array with at least one column.')
 end
+% NOTE: samples(iTime, i)
+assert(ndims(samples) <= 2, ...
+    ['Argument "data" must be at most 1D per timestamp but is not.', ...
+    ' This function is not yet designed to handle this case (yet).'])
 clear data
 
 
@@ -168,7 +173,9 @@ samples      = samples(iKeep);
 timeSec1  = timeSecArray(1,   1);
 timeSec2  = timeSecArray(end, 1);
 nComp     = size(samples, 2);
-nSpectras = fix(((timeSec2-timeSec1)*samplFreqHz+1) * (1+overlap)/nFft);   % fix = Round toward zero.
+% fix() : Round toward zero.
+% nSpectras = Number of time intervals for which spectras should be made.
+nSpectras = fix(((timeSec2-timeSec1)*samplFreqHz+1) * (1+overlap)/nFft);
 spectrumTimeSec1  = timeSec1 - 0.5/samplFreqHz;   % Time of beginning of time interval used for spectrum.
 spectrumLengthSec = nFft/samplFreqHz;    % Length of time interval used for ONE spectrum.
 
@@ -247,7 +254,8 @@ for iSpectrum = 1:nSpectras
       
       Specrec.p{iComp}(iSpectrum,:) = pf(1:nFreqs);
     else
-      % There is at least one NaN in the data that underlies the spectrum. ==> Use NaN for entire spectrum.
+      % There is at least one NaN in the data that underlies the spectrum.
+      % ==> Use NaN for entire spectrum.
       Specrec.p{iComp}(iSpectrum,:) = NaN;
     end
   end
@@ -373,17 +381,31 @@ end    % irf_powerfft
 % time (sampling frequency) that FFT can be applied to. Handle data gaps and
 % varying sampling rate (according to time stamps).
 %
-% nSamplesOut : Number of samples (per component) in output.
+% NOTE: Code assumes that "samples" is at most 2D.
+%
+% ARGUMENTS
+% =========
+% timeSecArray
+% samples
+% intervalSec1 : Timestamp of beginning of time interval for which to extract a
+%                sequence of samples.
+%                NOTE: End of time interval is derived this argument combined
+%                with nSamplesOut and samplFreqHz.
+% samplFreqHz
+% nSamplesOut  : Number of samples (per component) in output.
+%
+% RETURN VALUE
+% ============
 % samplesOut  : Vector of size N x nSamplesOut. Each dimension 1 index corresponds
 %               to constant time increments, according to samplFreqHz.
 %
 function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1, samplFreqHz, nSamplesOut)
-  % Filter samples based on timestamps first
-  % ----------------------------------------
-  % IMPLEMENTATION NOTE: Filter samples based on timestamps first speeds up the
-  % code substantially since rounding actually seems to take a considerable
-  % amount of time (it would otherwise be done repeatedly for the same samples,
-  % when extracting data for different spectrums).
+  % Only keep samples based on timestamps
+  % -------------------------------------
+  % IMPLEMENTATION NOTE: Only keeping samples based on timestamps first speeds
+  % up the code substantially since rounding actually seems to take a
+  % considerable amount of time (it would otherwise be done repeatedly for the
+  % same samples, when extracting data for different spectrums).
   % IMPLEMENTATION NOTE: Indexing using iKeep = find(bKeep) (non-logical
   % indexing), instead of bKeep (logical indexing), also seems to speed up code
   % somewhat, maybe.
@@ -392,14 +414,18 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
   %iKeep        = find(bKeep);
   %iKeep        = find(bKeep, 1, 'first') : find(bKeep, 1, 'last');
   timeSecArray = timeSecArray(bKeep, :);
-  samples      = samples(bKeep, :);
+  samples      = samples(     bKeep, :);
   
-  nComp = size(samples, 2);
+  nTimestamps = size(samples, 1);
+  nComp       = size(samples, 2);
   
   % Find mapping between (original) sample indices and out sample indices.
   % NOTE: This is NOT a 1-to-1 mapping. Zero, one, or multiple input indices
-  %       may be mapped to the same output index.
-  iIn  = [1:size(samples, 1)]';
+  %       may be mapped to the same output index. Mapping multiple samples to
+  %       one output sample and then arbitrarily picking only one of those input
+  %       samples is in principle suboptimal (averaging is better?) but is
+  %       probably OK for most applications. Improve?!
+  iIn  = [1:nTimestamps]';
   iOut = round((timeSecArray-intervalSec1)*samplFreqHz + 0.5);
     
   % Ensure that code only extracts the desired data, and only assigns
@@ -409,25 +435,28 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
   iIn( ~b) = [];
   iOut(~b) = [];
   
-  samplesOut          = NaN(nSamplesOut, nComp);
+  samplesOut          = NaN(nSamplesOut, nComp);   % Pre-allocate as NaN, to be on the safe side.
   samplesOut(iOut, :) = samples(iIn, :);
     
-  samplesOut = replace_NaN(samplesOut);
+  samplesOut          = replace_NaN(samplesOut);
 end
 
 
 
+% Replace NaN with the mean of non-NaN values, unless there are too many NaN in
+% which case NaN will be used anyway for all values (all timestamps for the same
+% component).
 function samples = replace_NaN(samples)
   MAX_FRACTION_NAN = 0.1;
     
-  % Replace NaN with the mean of non-NaN values, unless there are too many NaN
-  % In which case NaN will be used anyway.
   bNan = isnan(samples);
   if any(bNan)
-    m = irf.nanmean(samples, 1, 1-MAX_FRACTION_NAN);    % m = mean
-    for iCol = 1:size(samples, 2)
-      if(any(bNan(:,iCol)))
-        samples(bNan(:,iCol), iCol) = m(iCol);
+    % NOTE: One mean per component/channel.
+    meanArray = irf.nanmean(samples, 1, 1-MAX_FRACTION_NAN);
+    
+    for iComp = 1:size(samples, 2)
+      if(any(bNan(:,iComp)))
+        samples(bNan(:,iComp), iComp) = meanArray(iComp);
       end
     end
   end
