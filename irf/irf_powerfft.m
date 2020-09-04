@@ -305,7 +305,7 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
   % IMPLEMENTATION NOTE: Indexing using iKeep = find(bKeep) (non-logical
   % indexing), instead of bKeep (logical indexing), also seems to speed up code
   % somewhat, maybe.
-  intervalSec2 = intervalSec1 + nSamplesOut*samplFreqHz;
+  intervalSec2 = intervalSec1 + nSamplesOut/samplFreqHz;
   bKeep        = (intervalSec1 <= timeSecArray) & (timeSecArray <= intervalSec2);
   %iKeep        = find(bKeep);
   %iKeep        = find(bKeep, 1, 'first') : find(bKeep, 1, 'last');
