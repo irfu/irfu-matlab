@@ -220,7 +220,7 @@ function SETTINGS = create_default_SETTINGS()
     
     % Set to REMOVE_DUPLICATES as requested by Xavier Bonnin in
     % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/27#note_15954
-    S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'REMOVE_DUPLICATES')    % ERROR, REMOVE_DUPLICATES
+    S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
     
     % Whether to replace PAD VALUES values with NaN internally.
     % IMPORTANT NOTE: Refers to CDF PAD VALUES, NOT CDF FILL VALUES!
