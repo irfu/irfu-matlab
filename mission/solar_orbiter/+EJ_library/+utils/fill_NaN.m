@@ -1,14 +1,17 @@
 %
 % UNFINISHED / EXPERIMENTAL
 %
-% For a given function x-->y, replace every NaN with the nearest value (in x distance), unless it exceeds some
-% threeshold.
+% DELETE? Effectively already replaced by merge_Specrec:use_nearest_nonNaN.
+%
+% For a given function x-->y, replace every NaN with the nearest value (in x
+% distance), unless it exceeds some threeshold.
 %
 %
 % ARGUMENTS
 % =========
 % x : 1D numeric array. Must be finite.
 % y : 1D numeric array. Same length as x. Must be finite or NaN.
+% --
 % x,y represents a function x-->y.
 %
 %

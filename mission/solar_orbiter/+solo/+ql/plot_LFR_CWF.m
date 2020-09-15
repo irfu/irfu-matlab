@@ -76,8 +76,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function hAxesArray = plot_LFR_CWF(filePath)
-    
+function hAxesArray = plot_LFR_CWF(filePath)    
     % TODO-DECISION: Content of figure title
     %   PROPOSAL: Time range
     %   PROPOSAL: DOY.
@@ -95,6 +94,8 @@ function hAxesArray = plot_LFR_CWF(filePath)
     % PROPOSAL: Change package name to sp (summary plots).
     %
     % PROPOSAL: Settings for disabling spectrum etc.
+    %
+    % PROPOSAL: Centralize ~constants: samples per FFT, overlap, SNAPSHOT_WIDTH_FRACTION
     
     %PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;
 
@@ -186,7 +187,6 @@ function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit
     Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
     Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
     irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot    
-    
     
     set(hAxes, 'yscale','log')
     ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})   % NOTE: Adding frequency unit on separate row.

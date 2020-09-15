@@ -262,7 +262,8 @@ end
 %
 function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend)
     % NOTE: Multiple-row labels causes trouble for the time series ylabels.
-    % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS snapshots that vary in length.
+    % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS
+    % snapshots that vary in length.
 
     % Fraction of the (minimum) time distance between snapshots (centers) that will be used for displaying the spectra.
     % Value 1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
@@ -314,14 +315,11 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
             
             sssWidthSec = sssMaxWidthSecArray(i) * SNAPSHOT_WIDTH_FRACTION;
             
+            %SpecrecCa{i} = solo.ql.downsample_Specrec(SpecrecCa{i}, 10);    % TEST
+            
             % Stretch out spectra (for given snapshot) in time to be ALMOST adjacent between snapshots.
             % NOTE: Specrec.dt is not set by irf_powerfft so there is no default value that can be scaled up.
             % NOTE: Uses original spectrum positions and re-positions them relative to snapshot center.
-            %scaleFactor     = sssWidthSec / ssLengthSec;
-            %SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + (SpecrecCa{i}.t - ssCenterEpochUnixArray(i)) * scaleFactor;
-            
-            % Can not handle %numel(SpecrecCa{i}.t) == 1.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff(SpecrecCa{i}.t)) * 0.5;
             
             nTime = numel(SpecrecCa{i}.t);      % Number of timestamps, but also spectras (within snapshot).
             distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);    % Distance from SS center to center of first/last FFT.
@@ -331,10 +329,9 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     end
     
     SpecrecCa(~bKeep) = [];
-    Specrec = merge_specrec(SpecrecCa);
+    Specrec = merge_specrec(SpecrecCa);    
     
     Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-    
     irf_spectrogram(h, Specrec);   % Replaces irf_plot
     
     set(h, 'yscale','log')
@@ -345,8 +342,9 @@ end
 
 
 
-% For every snapshot, return the available width (in time; centered on snapshot center) for displaying the snapshot
-% spectrogram. Time offset and unit unimportant. Argument and return values have same unit.
+% For every snapshot, return the available width (in time; centered on snapshot
+% center) for displaying the snapshot spectrogram. Time offset and unit
+% unimportant. Argument and return values have same unit.
 %
 function sssMaxWidthArray = derive_max_spectrum_width(ssCenterArray)
     % Use distance to nearest snapshot for each snapshot separately.

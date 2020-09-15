@@ -1,10 +1,13 @@
 %
-% Given two N-dimensional arrays (y1, y2), with associated coordinate values in each dimension (x1Ca, x2Ca), create a
-% third N-dimensional array (Y) with associated coordinate values in each dimension (xCa). The return values are the
-% union of the arguments, with a fill value used for unset values.
+% Given two N-dimensional arrays (y1, y2), with associated coordinate values in
+% each dimension (x1Ca, x2Ca), create a third N-dimensional array (Y) with
+% associated coordinate values in each dimension (xCa). The return values are
+% the union of the arguments, with a fill value used for unset values.
 %
-% NOTE: "coordinated" in function name refers to N-dimensional arrays with (cartesian) coordinates associated with every
-% component, where one coordinate axis is associated with every dimension.
+% NOTE: "coordinated" in the function name refers to N-dimensional arrays with
+% (cartesian) coordinates associated with every component, where one coordinate
+% axis is associated with every dimension, and one coordinate value is
+% associated with every index value.
 %
 %
 % ARGUMENTS
