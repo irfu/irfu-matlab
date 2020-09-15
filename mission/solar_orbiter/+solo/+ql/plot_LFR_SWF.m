@@ -15,7 +15,23 @@
 % First created 2020-01-28.
 %
 function hAxesArray = plot_LFR_SWF(filePath)
-    %
+    % SPEED
+    % =====
+    % Execution time
+    % With    irf_spectrogram : 26.592199 s
+    % Without irf_spectrogram : 36.683050 s
+    % With    irf_spectrogram, downsample_Specrec(nBins=2) for every
+    % snapshot                : 31.648818 s
+    % ==> irf_spectrogram is only a part of the problem. It is not enough to use
+    % downsample_Specrec.
+    % --
+    % N_SAMPLES_PER_SPECTRUM = 128 ==> 29.063167 s
+    % N_SAMPLES_PER_SPECTRUM = 512 ==> 17.913298 s
+    % --
+    % NOTE: 24 spectrums per snapshot (N_SAMPLES_PER_SPECTRUM = 128) ==> not much use downsampling further).
+
+
+
     % POLICY: BOGIQ for all quicklook plot code: See plot_LFR_CWF.
     %
     % TODO-DECISION: How submit data to spectrum_panel?
@@ -260,21 +276,28 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
 
 
     TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
+    nTs  = numel(TsCa);
 
     h = irf_panel(panelTag);    
     
     %====================
     % Calculate spectras
     %====================
-    SpecrecCa = {};
-    ssCenterEpochUnixArray = [];
-    for i = 1:numel(TsCa)
+    % IMPLEMENTATION NOTE: irf_powerfft is the most time-consuming part of this
+    % code.
+    %
+    % NOTE: Using for-->parfor speeds up plot_LFR_SWF by
+    % 29.912231 s-->21.303145 s (irony). /2020-09-04
+    %
+    SpecrecCa = cell(nTs, 1);
+    ssCenterEpochUnixArray = zeros(nTs, 1);
+    parfor i = 1:nTs    % PARFOR
         Ts = TsCa{i};
         
-        SpecrecCa{end+1} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
+        SpecrecCa{i} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
         
         % IMPLEMENTATION NOTE: Later needs the snapshot centers in the same time system as Specrec.t (epoch Unix).
-        ssCenterEpochUnixArray(end+1) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
+        ssCenterEpochUnixArray(i) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
     end
     sssMaxWidthSecArray = derive_max_spectrum_width(ssCenterEpochUnixArray);
     
@@ -300,22 +323,10 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
             % Can not handle %numel(SpecrecCa{i}.t) == 1.
             %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff(SpecrecCa{i}.t)) * 0.5;
             
-            % Does not work.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff([SpecrecCa{i}.t(:); TsCa{i}.time.stop.epochUnix] )) * 0.5;
-            
-            % Does not use original SpecrecCa{i}.t values at all.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * sssWidthSec / numel(SpecrecCa{i}.t) / 2;
-
-            % Set t and dt from scratch. Distribute the FFTs evenly over the available time interval.
-            % PRO: Always works 8does not crash), also for when there is only one FFT sequence.
-            % CON: If any of the individual FFTs fails (which the do), then irf_powerfft does not return that.
-            %      ==> Remaining FFTs are spread out over the remaining space.
-            %      ==> FFTs are placed in the wrong location.
-            %
-            nT = numel(SpecrecCa{i}.t);
-            distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nT);    % Distance from SS center to center of first/last FFT.
-            SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nT);
-            SpecrecCa{i}.dt = ones(nT, 1) * sssWidthSec / (2*nT);
+            nTime = numel(SpecrecCa{i}.t);      % Number of timestamps, but also spectras (within snapshot).
+            distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);    % Distance from SS center to center of first/last FFT.
+            SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
+            SpecrecCa{i}.dt = ones(nTime, 1) * sssWidthSec/(2*nTime);
         end
     end
     

@@ -173,17 +173,14 @@ function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit
     
     hAxes = irf_panel(panelTag);
     
-    SpecrecCa = {};
+    % SS = SubSequence
     [iSs1Array, iSs2Array, nSs] = EJ_library.utils.split_by_change(zvSamplingFreqHz);
-    for jSs = 1:nSs
+    SpecrecCa = cell(nSs, 1);
+    parfor jSs = 1:nSs    % PARFOR
         
-        iSs = iSs1Array(jSs) : iSs2Array(jSs);
+        iSsArray = iSs1Array(jSs) : iSs2Array(jSs);
 
-        SpecrecCa{jSs} = irf_powerfft(Ts(iSs), N_SAMPLES_PER_SPECTRUM, zvSamplingFreqHz(iSs1Array(jSs)));
-        
-%         Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-%         hold on    % Required so that successive calls to irf_spectrogram do not replace preceedings ones.
-%         irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot
+        SpecrecCa{jSs} = irf_powerfft(Ts(iSsArray), N_SAMPLES_PER_SPECTRUM, zvSamplingFreqHz(iSs1Array(jSs)));
     end
 
     Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
