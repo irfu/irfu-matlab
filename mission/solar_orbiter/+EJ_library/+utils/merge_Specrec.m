@@ -56,7 +56,10 @@ function Specrec = merge_Specrec(SpecrecCa)
     
     
     
-    S = pad_NaN(SpecrecCa{1});
+    % Specrec which will grow with the content of other Specrecs. Its content
+    % will be overwritten.
+    S = SpecrecCa{1};
+    
     for iS = 1:N
         S2 = SpecrecCa{iS};
         
@@ -79,9 +82,11 @@ function Specrec = merge_Specrec(SpecrecCa)
     end
     
     for iTime = 1:numel(S.t)
-        d = mode(diff(S.f(~isnan(S.p{1}(iTime, :))))) / 2;
+        %d = mode(diff(S.f(~isnan(S.p{1}(iTime, :))))) / 2;
         
-        S.p{1}(iTime, :) = EJ_library.utils.fill_NaN(S.f, S.p{1}(iTime, :), d);
+        %S.p{1}(iTime, :) = EJ_library.utils.fill_NaN(S.f, S.p{1}(iTime, :), d);
+        
+        S.p{1}(iTime, :) = use_nearest_nonNaN(S.f, S.p{1}(iTime, :));
     end
     
     Specrec = S;
@@ -91,11 +96,24 @@ end
 
 function Specrec = pad_NaN(Specrec)
     
-    % NOTE: Requires at numel(t) >= 2.
     t = Specrec.t;
+    % NOTE: Requires numel(t) >= 2.
     t = [2*t(1) - t(2); t; 2*t(end) - t(end-1)];
     Specrec.t = t;
     
     Specrec.p{1} = padarray(Specrec.p{1}, [1, 0], NaN, 'both');
     % NOTE: .f unchanged
+end
+
+
+
+% Replace NaN values with nearest non-NaN value, unless outside range of non-NaN
+% values
+function y = use_nearest_nonNaN(x,y)
+    bFinite = ~isnan(y);
+    x2 = x(bFinite);
+    y2 = y(bFinite);
+    if any(bFinite)
+        y = interp1(x2, y2, x, 'nearest');   % No extrapolation.
+    end
 end
