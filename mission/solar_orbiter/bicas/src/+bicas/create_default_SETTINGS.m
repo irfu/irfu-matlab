@@ -544,8 +544,9 @@ function SETTINGS = create_default_SETTINGS()
     % Expressed as a fraction of the Nyquist frequency (half the sampling
     % frequency; 1 sample/s = 1 Hz).
     % inf = No limit.
-    %S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  Inf)
-    S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.7)
+    % YK 2020-09-15: Set inverted transfer function to zero for
+    % omega>0.8*omega_Nyquist (not 0.7).
+    S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.8)
     
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
