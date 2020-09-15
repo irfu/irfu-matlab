@@ -36,3 +36,10 @@ Preliminary sweep removal.
 Performance improvement (speed-up).
 Preliminary setting of zVar QUALITY_FLAG (max 2).
 Inofficial preliminary support for producing L2-->L3.
+
+
+Version 3.1.1
+-------------
+Modified default settings:
+(1) inverted transfer function cutoff at 0.8*omega_Nyquist (instead of 0.7)
+(2) duplicate bias current gives error (instead of using mitigation)
