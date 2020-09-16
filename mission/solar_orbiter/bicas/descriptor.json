@@ -7,12 +7,12 @@
         "icd_version": "1.2"
     },
     "release": {
-        "version":      "3.1.0",
-        "date":         "2020-09-01T17:00:00Z",
+        "version":      "3.1.1",
+        "date":         "2020-09-15T11:22:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Bugfix to handle LFR zVar BW=0; Preliminary sweep removal; Performance improvement (speed-up); Prel. setting of zVar QUALITY_FLAG=<2; Inofficial preliminary support for L3",
+        "modification": "Modified default settings: inverted transfer function cutoff at 0.8*omega_Nyquist, duplicate bias current gives error",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {

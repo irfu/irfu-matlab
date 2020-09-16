@@ -983,7 +983,8 @@ classdef proc_sub
 
         
         
-        % Wrapper around EJ_library.so.CURRENT_zv_to_current_interpolate for anomaly handling.
+        % Wrapper around EJ_library.so.CURRENT_zv_to_current_interpolate for
+        % anomaly handling.
         function sciZv_IBIASx = zv_TC_to_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
             
             %====================
