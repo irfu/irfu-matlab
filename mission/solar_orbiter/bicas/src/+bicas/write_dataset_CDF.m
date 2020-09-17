@@ -106,6 +106,8 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     if ~issorted(ZvsSubset.Epoch, 'strictascend')
         error('BICAS:execute_sw_mode', 'Data for output dataset "%s" contains a zVariable Epoch that does not increase monotonically.', outputFile)
     end
+    EJ_library.assert.struct(GlobalAttributesSubset, ...
+        {'Parents', 'Parent_version', 'Provider', 'Datetime', 'OBS_ID', 'SOOP_TYPE'}, {})
     
     
     
@@ -172,7 +174,10 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(outputFile);
     DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
     DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
-    DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;                 
+    DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;
+    DataObj.GlobalAttributes.Datetime            = GlobalAttributesSubset.Datetime;
+    DataObj.GlobalAttributes.OBS_ID              = GlobalAttributesSubset.OBS_ID;
+    DataObj.GlobalAttributes.SOOP_TYPE           = GlobalAttributesSubset.SOOP_TYPE;
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
     

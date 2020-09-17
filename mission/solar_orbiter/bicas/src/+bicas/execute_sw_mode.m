@@ -61,7 +61,9 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     
     
     
-    GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
+    % Use cell array since CDF global attributes may in principle contain
+    % different sets of attributes (field names).
+    %GlobalAttributesCa = {};
     
     
     
@@ -114,13 +116,11 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
                 inputFilePath, cdfDatasetId, SwModeInfo.inputsList(i).datasetId);
             bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, 'BICAS:DatasetFormat')
         end
-        
-        GlobalAttributesCellArray{end+1} = GlobalAttributes;
     end
     
     
     
-    globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS, L);
+    GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(InputDatasetsMap, SETTINGS, L);
     
     
     
@@ -161,7 +161,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
             ZvsSubset = [];
         end
         bicas.write_dataset_CDF( ...
-            ZvsSubset, globalAttributesSubset, outputFilePath, masterCdfPath, ...
+            ZvsSubset, GlobalAttributesSubset, outputFilePath, masterCdfPath, ...
             SETTINGS, L );
     end
     
@@ -171,35 +171,70 @@ end   % execute_sw_mode
 
 
 
-function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS, L)
-    % Function for global attributes for an output dataset from the global attributes of multiple input datasets (if there
-    % are several).
-    %
+% Function for global attributes for an output dataset from the global
+% attributes of multiple input datasets (if there are several).
+%
+%
+% SOOP_TYPE, Datetime, OBS_ID
+% ===========================
+% XB on RCS telecon 2020-09-17: SOOP_TYPE, Datetime, OBS_ID should be taken from
+% L1 (not HK, unless implicit that it should).
+% --
+% Global attributes Datetime, OBS_ID, SOOP_TYPE appear to be present in BICAS
+% input L1R datasets, CURRENT datasets, and BIAS HK datasets. Not true for old
+% SBM1 datasets (at least).
+% Exception: OBS_ID is not in BIAS HK. /2020-09-17
+% --
+% BUG?/NOTE: The current implementation takes values from all the input datasets
+% that have those global attributes. Should ideally check the DATASET_IDs and
+% require attributes for some DATASET_IDs, and ignore it for others.
+%
+%
+% RETURN VALUE
+% ============
+% OutGaSubset : Struct where each field name corresponds to a CDF
+%               global atttribute.
+%               NOTE: Deviates from the usual variable naming
+%               conventions. GlobalAttributesSubset field names have
+%               the exact names of CDF global attributes.
+%
+function OutGaSubset = derive_output_dataset_GlobalAttributes(InputDatasetsMap, SETTINGS, L)
     % PGA = Parents' GlobalAttributes.
-    %
-    % RETURN VALUE
-    % ============
-    % GlobalAttributesSubset : Struct where each field name corresponds to a CDF global atttribute.
-    %                          NOTE: Deviates from the usual variable naming conventions. GlobalAttributesSubset field names
-    %                          have the exact names of CDF global attributes.
-    %
+    % NOTE: Does not really need all of InputDatasetsMap as input (but it is
+    % easily accessible when calling this function). Contains zVars which is
+    % overkill.
+
+    OutGaSubset.Parents        = {};
+    OutGaSubset.Parent_version = {};
+    OutGaSubset.Provider       = {};
+    OutGaSubset.Datetime       = {};
+    OutGaSubset.OBS_ID         = {};
+    OutGaSubset.SOOP_TYPE      = {};
     
-    %ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF.GA_TEST_IDS_MISMATCH_POLICY');
+    keysCa = InputDatasetsMap.keys;
+    for i = 1:numel(keysCa)        
+        Ga = InputDatasetsMap(keysCa{i}).Ga;
     
-    GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
-    GlobalAttributesSubset.Parent_version = {};
-    pgaProviderList = {};
-    for i = 1:length(GlobalAttributesCellArray)
-        GlobalAttributesSubset.Parents       {end+1} = ['CDF>', GlobalAttributesCellArray{i}.Logical_file_id{1}];
+        % ASSERTION
+        % NOTE: ROC DFMD is not completely clear on which version number should
+        % be used.
+        % NOTE: Stores all values to be safe.
+        assert(isscalar(Ga.Data_version), ...
+            'BICAS:execute_sw_mode:DatasetFormat', ...
+            'Global attribute Data_version for input dataset with key=%s is not scalar (one string).', ...
+            keysCa{i})
         
-        % NOTE: ROC DFMD is not completely clear on which version number should be used.
-        GlobalAttributesSubset.Parent_version{end+1} = GlobalAttributesCellArray{i}.Data_version{1};
-        
-        pgaProviderList                      {end+1} = GlobalAttributesCellArray{i}.Provider{1};
+        OutGaSubset.Parents       {end+1} = ['CDF>', Ga.Logical_file_id{1}];
+        OutGaSubset.Parent_version{end+1} = Ga.Data_version{1};
+        OutGaSubset.Provider              = union(OutGaSubset.Provider, Ga.Provider);
+
+        OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'Datetime');
+        OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'OBS_ID');
+        OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'SOOP_TYPE');
     end
     
-    pgaUniqueProviderList = unique(pgaProviderList);
-    if ~isscalar(pgaUniqueProviderList)
+    % ~ASSERTION
+    if ~isscalar(OutGaSubset.Parents)
         [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY');
         bicas.default_anomaly_handling(...
             L, settingValue, settingKey, 'E+W+illegal', ...
@@ -208,6 +243,29 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
         % NOTE: Maybe wrong choice of error ID "DatasetFormat".
     end
     
-    GlobalAttributesSubset.Provider = pgaProviderList{1};
+end
+
+
+
+% Utility function to shorten & clarify code.
+% Not very efficient, but that is unimportant here.
+%
+% NOTE: Eliminates duplicated values.
+% NOTE: Removes ' ', unless it is the only value. ' ' is like a fill value for
+%       global attributes?
+function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
+    outValue = OutGa.(fieldName);
     
+    if isfield(InGa, fieldName)
+        outValue = union(outValue, InGa.(fieldName));
+    end
+    
+    % Remove ' ', unless it is the only value.
+    % HACK?
+    outValue2 = setdiff(outValue, ' ');
+    if ~isempty(outValue2)
+        outValue = outValue2;
+    end
+    
+    OutGa.(fieldName) = outValue;
 end
