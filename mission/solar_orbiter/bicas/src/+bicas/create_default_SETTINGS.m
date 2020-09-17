@@ -217,8 +217,6 @@ function SETTINGS = create_default_SETTINGS()
     % monotonically increasing timestamps.
     S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',                   'ERROR')      % ERROR, WARNING, SORT
     
-    % Set to REMOVE_DUPLICATES as requested by Xavier Bonnin in
-    % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/27#note_15954
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
     
     % Whether to replace PAD VALUES values with NaN internally.

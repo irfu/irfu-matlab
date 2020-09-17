@@ -19,14 +19,17 @@
 %
 % "BUGS"
 % ======
-% - Sets GlobalAttributes.Generation_date in local time (no fixed time zone).
-% - Calls derive_output_dataset_GlobalAttributes for ALL input dataset and uses the result for ALL output datasets.
-%   ==> If a S/W mode has multiple output datasets based on different sets of input datasets, then the GlobalAttributes
-%   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
+% - Sets GlobalAttributes.Generation_date in local time (no fixed time zone,
+%   e.g. UTC+0).
+% - Calls derive_output_dataset_GlobalAttributes for ALL input dataset and uses
+%   the result for ALL output datasets.
+%   ==> If a S/W mode has multiple output datasets based on different sets of
+%   input datasets, then the GlobalAttributes might be wrong. Should ideally be
+%   run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
 function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, rctDir, SETTINGS, L)
-    %
+    
     % QUESTION: How verify dataset ID and dataset version against constants?
     %    NOTE: Need to read CDF first.
     %    NOTE: Need S/W mode.
@@ -34,9 +37,6 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     % PROPOSAL: Verify output zVariables against master CDF zVariable dimensions (accessible with dataobj, even for zero records).
     %   PROPOSAL: function matchesMaster(DataObj, MasterDataobj)
     %       PRO: Want to use dataobj to avoid reading file (input dataset) twice.
-    %
-    % QUESTION: What should be the relationship between data manager and S/W modes really?
-    %           Should data manager check anything?
     %
     % NOTE: Things that need to be done when writing PDV-->CDF
     %       Read master CDF file.
@@ -46,25 +46,9 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     %           Software_version, SPECTRAL_RANGE_MIN/-MAX (optional?), TIME_MIN/-MAX
     %       Write VariableAttributes: pad value? (if master CDF does not contain a correct value), SCALE_MIN/-MAX
     %
-    % PROPOSAL: BUG FIX: Move global attributes into PDs somehow to let the processing functions collect the values during processing?
-    %   PROPOSAL: Have PDs include global attributes in new struct structure.
-    %             EIn PD:            EInPD(GlobalAttributes,          zVariables)   // All input dataset GAs.
-    %             Intermediary PDs:     PD(GlobalAttributesCellArray, data)         // All input datasets GAs (multiple datasets).
-    %             EOut PDs:         EOutPD(GlobalAttributesSubset,    data)         // Only those GAs that should be set. Should have been "collected" at this stage.
-    %       PROBLEM: When collecting lists of GAs, must handle any overlap of input datasets when merging lists.
-    %           Ex: (EIn1+EIn2-->Interm1; EIn1+EIn2-->Interm2; Interm1+Interm2-->EOut)
-    %
     % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
     %   NOTE: These do not use NaN, but fill values.
-    %
-    % PROPOSAL: read_dataset_CDF as separate function file.
-    
-    
-    
-    % Use cell array since CDF global attributes may in principle contain
-    % different sets of attributes (field names).
-    %GlobalAttributesCa = {};
-    
+
     
     
     % ASSERTION: Check that all input & output dataset paths (strings) are unique.

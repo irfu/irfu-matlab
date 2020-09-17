@@ -1,17 +1,26 @@
 %
-% Function that writes one ___DATASET___ CDF file.
+% Function that writes one dataset CDF file.
 %
 %
-% BUG: write_nominal_dataset_CDF seems to only be able to overwrite pre-existing (proper) CDF files, but not empty
-% files.
+% BUG: write_nominal_dataset_CDF seems to only be able to overwrite pre-existing
+% (proper) CDF files, but not empty pre-existing files.
+%
+%
+% ARGUMENTS
+% =========
+% ZvsSubset : Struct with those zVars which should be written to
+%             CDF. "Subset" since it excludes those zVars in the master file,
+%             and which should NOT be overwritten.
+% GaSubset  : Struct with fields representing a subset of the CDF
+%             global attributes. A specific set of fields is required.
 % 
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
-% First created 2020-06-24 as a separate file, moved from bicas.executed_sw_mode.
+% First created 2020-06-24 as a separate file, by moving out the function from
+% bicas.executed_sw_mode.
 %
 function write_dataset_CDF(...
-        ZvsSubset, GlobalAttributesSubset, outputFile, masterCdfPath, SETTINGS, L)
-% PROPOSAL: Be possible to overwrite files with write_nominal_dataset_CDF (when desired).
+        ZvsSubset, GaSubset, outputFile, masterCdfPath, SETTINGS, L)
     
     %=======================================================================================================================
     % This function needs GlobalAttributes values from the input files:
@@ -29,7 +38,7 @@ function write_dataset_CDF(...
     
     [settingNpefValue, settingNpefKey] = SETTINGS.get_fv('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
-        DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterCdfPath, outputFile, SETTINGS, L);
+        DataObj = init_modif_dataobj(ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
         % NOTE: This call will fail if setting OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
         % therefore ZvsSubset=[] (can not be generated).
     end
@@ -41,7 +50,7 @@ function write_dataset_CDF(...
     %==============================
     % UI ASSERTION: Check for directory collision. Always error.
     if exist(outputFile, 'dir')     % Checks for directory.
-        error('BICAS:execute_sw_mode', 'Intended output dataset file path matches a pre-existing directory.')
+        error('BICAS:write_dataset_CDF', 'Intended output dataset file path matches a pre-existing directory.')
     end
     
     % Check if file writing is deliberately disabled.
@@ -57,7 +66,7 @@ function write_dataset_CDF(...
         
         anomalyDescrMsg = sprintf('Intended output dataset file path "%s" matches a pre-existing file.', outputFile);
         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-            anomalyDescrMsg, 'BICAS:execute_sw_mode')
+            anomalyDescrMsg, 'BICAS:write_dataset_CDF')
     end
     
     if ~settingNpefValue
@@ -94,17 +103,23 @@ end
 % purposes (deactivate processing but still write file).
 %
 function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterCdfPath, outputFile, SETTINGS, L)
-    %===================
-    % ASSERTIONS: Epoch
-    %===================
+    %============
+    % ASSERTIONS
+    %============
     if ~isfield(ZvsSubset, 'Epoch')
-        error('BICAS:execute_sw_mode', 'Data for output dataset "%s" has no zVariable Epoch.', outputFile)
+        error('BICAS:write_dataset_CDF', ...
+            'Data for output dataset "%s" has no zVariable Epoch.', ...
+            outputFile)
     end
     if isempty(ZvsSubset.Epoch)
-        error('BICAS:execute_sw_mode', 'Data for output dataset "%s" contains an empty zVariable Epoch.', outputFile)
+        error('BICAS:write_dataset_CDF', ...
+            'Data for output dataset "%s" contains an empty zVariable Epoch.', ...
+            outputFile)
     end
     if ~issorted(ZvsSubset.Epoch, 'strictascend')
-        error('BICAS:execute_sw_mode', 'Data for output dataset "%s" contains a zVariable Epoch that does not increase monotonically.', outputFile)
+        error('BICAS:write_dataset_CDF', ...
+            'Data for output dataset "%s" contains a zVariable Epoch that does not increase monotonically.', ...
+            outputFile)
     end
     EJ_library.assert.struct(GlobalAttributesSubset, ...
         {'Parents', 'Parent_version', 'Provider', 'Datetime', 'OBS_ID', 'SOOP_TYPE'}, {})
@@ -129,7 +144,7 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
         
         % ASSERTION: Master CDF already contains the zVariable.
         if ~isfield(DataObj.data, zvName)
-            error('BICAS:execute_sw_mode:Assertion:SWModeProcessing', ...
+            error('BICAS:write_dataset_CDF:Assertion:SWModeProcessing', ...
                 'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zvName)
         end
         
@@ -159,8 +174,6 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     
     % Log data to be written to CDF file.
     bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
-    
-    
     
     %==========================
     % Set CDF GlobalAttributes
@@ -250,7 +263,7 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
                         
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, ...
-                            'BICAS:execute_sw_mode:SWModeProcessing:DatasetFormat')
+                            'BICAS:write_dataset_CDF:SWModeProcessing:DatasetFormat')
                 end
                 
             else
@@ -259,7 +272,7 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
                 %========================
                 [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, ...
-                    'BICAS:execute_sw_mode:SWModeProcessing:DatasetFormat')
+                    'BICAS:write_dataset_CDF:SWModeProcessing:DatasetFormat')
             end
         end
     end
@@ -303,19 +316,5 @@ end
 function logicalFileId = get_logical_file_id(filePath)
     % Use the filename without suffix.
     [~, basename, ~] = fileparts(filePath);
-   logicalFileId = basename;
+    logicalFileId = basename;
 end
-% function logicalFileId = get_logical_file_id(datasetId, testId, provider, dataVersion)
-%     % Construct a "Logical_file_id" as defined in the ROC DFMD.
-%     %   NOTE 2020-03-19: Can not find in ROC DFMD 02/02,
-%     % "The name of the CDF file without the ‘.cdf’ extension, using the file naming convention."
-%     
-%     bicas.assert_DATASET_ID(datasetId)
-%     
-%     if ~ischar(dataVersion ) || length(dataVersion)~=2
-%         error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal dataVersion')
-%     end
-%     
-%     providerParts = strsplit(provider, '>');
-%     logicalFileId = [datasetId, '_', testId, '_', providerParts{1}, '_V', dataVersion];
-% end
