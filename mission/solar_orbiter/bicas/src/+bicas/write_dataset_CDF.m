@@ -175,9 +175,21 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;                 
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
-    %DataObj.GlobalAttributes.TIME_MIN
-    %DataObj.GlobalAttributes.TIME_MAX
-    %DataObj.GlobalAttribute.CAVEATS ?!! ROC DFMD hints that value should not be set dynamically. (See meaning of non-italic black text for global attribute name in table.)
+    
+    % "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009:
+    %   "TIME_MIN   The date and time of the beginning of the first acquisition for the data contained in the file"
+    %   "TIME_MAX   The date and time of the end of the last acquisition for the data contained in the file""
+    %   States that TIME_MIN, TIME_MAX should be "Julian day" (not "modified
+    %   Julian day", which e.g. OVT uses internally).
+    % NOTE: Implementation does not consider the integration time of each
+    % sample.
+    % NOTE: juliandate() is consistent with Julian date converter at
+    % https://www.onlineconversion.com/julian_date.htm
+    DataObj.GlobalAttributes.TIME_MIN = juliandate(EJ_library.cdf.tt2000_to_datevec(ZvsSubset.Epoch(1  )));
+    DataObj.GlobalAttributes.TIME_MAX = juliandate(EJ_library.cdf.tt2000_to_datevec(ZvsSubset.Epoch(end)));
+    
+    % ROC DFMD hints that value should not be set dynamically. (See meaning of non-italic black text for global attribute name in table.)
+    %DataObj.GlobalAttribute.CAVEATS ?!!
     
     
     
