@@ -343,11 +343,13 @@ function SETTINGS = create_default_SETTINGS()
     %============================================================================
     S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
     % Unit: S = Seconds
-    % Lower number since using LFR mux mode (unless configured not to), which has same cadence as science data.
+    % Lower number since using LFR mux mode (unless configured not to), which
+    % has same cadence as science data.
     % See PROCESSING.LFR.MUX_MODE_SOURCE.
     S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)    
-    % Higher number since using BIAS HK, which means that the mux mode is know with a lower time resolution.
-    S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)    
+    % Higher number since using BIAS HK for TDS, which means that the mux mode
+    % is known with a lower time resolution.
+    S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 
     %============================================================================
     % Where to obtain the mux mode

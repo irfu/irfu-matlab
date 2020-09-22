@@ -65,9 +65,12 @@ classdef proc
         
         % ARGUMENTS
         % =========
-        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
-        % inputSciDsi      : The science input dataset will be interpreted as having this DATASET_ID.
-        %                    RATIONALE: InputDatasetsMap should contain the same as a CDF global attribute but
+        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV
+        %                    for input CDF.
+        % inputSciDsi      : The science input dataset will be interpreted as
+        %                    having this DATASET_ID.
+        %                    RATIONALE: InputDatasetsMap should contain the same
+        %                    as a CDF global attribute but
         %                    (1) it could be missing, or
         %                    (2) sometimes one may want to read an ROC-SGSE
         %                        dataset as if it was an RODP dataset or the other
@@ -99,10 +102,15 @@ classdef proc
             end
             Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
+            %==============
+            % Process data
+            %==============
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
             SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(         SciPostDcPd, outputDsi, L);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(         SciPostDcPd, outputDsi,   L);
+            
+            
             
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
@@ -132,10 +140,8 @@ classdef proc
                 settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 rctTypeId      = 'TDS-RSWF';
             end
-            useCtRcts = SETTINGS.get_fv(settingUseCt)   && C.isL1R;
+            useCtRcts = SETTINGS.get_fv(settingUseCt) && C.isL1R;
             useCti2   = false;    % Always false for TDS.
-            
-            
             
             if useCtRcts
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
@@ -150,16 +156,18 @@ classdef proc
             end
             Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
-            
-            
+            %==============
+            % Process data
+            %==============
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd, InputHkPd,   SETTINGS, L);
             SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(          InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd, InputCurPd,  Cal, SETTINGS, L);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(         SciPostDcPd, outputDsi, L);
 
+            
+            
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
-
         end
         
         
@@ -230,6 +238,8 @@ classdef proc
                 'includeNaN');
             EfieldPd.DELTA_PLUS_MINUS = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
             EfieldPd.EDC_SFR          = zvEdcMvpm;
+            
+            
             
             ScpotPd = struct();
             ScpotPd.Epoch             = InputLfrCwfPd.Zv.Epoch;

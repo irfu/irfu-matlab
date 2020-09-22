@@ -162,7 +162,8 @@ end    % main
 
 
 
-% Create logging/error message for a given exception, and which is recursive in Exception.cause.
+% Create logging/error message for a given exception, and which is recursive in
+% Exception.cause.
 %
 function [msg, errorCode] = recursive_exception_msg(Exception)
     

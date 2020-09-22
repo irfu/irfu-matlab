@@ -457,7 +457,7 @@ classdef proc_utils
             EJ_library.assert.vector(nMatrixColumns)
             
             nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
-            M                  = zeros(numel(ca), nMatrixColumns) * NaN;
+            M                  = nan(  numel(ca), nMatrixColumns);
             for iRow = 1:numel(nCopyColsPerRowVec)
                 nCopyColsPerRowVec(iRow)            = numel(ca{iRow});
                 M(iRow, 1:nCopyColsPerRowVec(iRow)) = ca{iRow};
@@ -497,15 +497,6 @@ classdef proc_utils
         end
         
         
-        
-        % mSize : [nRows, nColumns, ...] so that the return value from the size() function can be used.
-        function M = create_NaN_array(mSize)
-            assert(numel(mSize) >= 2)
-            
-            M = NaN * zeros(mSize);
-        end
-
-
         
         function utcStr = tt2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.

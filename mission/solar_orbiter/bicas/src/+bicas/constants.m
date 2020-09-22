@@ -68,17 +68,26 @@ classdef constants   % < handle
         
         
         
-        % Regular expression that the CLI name of a s/w mode must satisfy.
+        % Regular expression which the CLI name of a s/w mode must satisfy.
         %
-        % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems to imply this regex for S/W mode
-        % CLI parameters: ^[A-Za-z][\\w-]+$
+        % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems to
+        % imply this regex for S/W mode CLI parameters: ^[A-Za-z][\\w-]+$
         % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
         %
-        % NOTE: Must not begin with "--" to be confused with CLI options, but the above constraint ensures this.
+        % NOTE: Must not begin with "--" since it could be confused with CLI
+        % options, but the RCS ICD constraints already ensure this.
         %
         % NOTE: help regexp: "\w    A word character [a-z_A-Z0-9]"
         %
         SW_MODE_CLI_OPTION_REGEX = '[A-Za-z][\w-]+';
+        
+        
+        
+        % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only
+        % permits these characters (and only lowercase!).
+        % This regexp only describes the "option body", i.e. not the preceding
+        % "--".
+        SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
         
     end    % properties(Constant)
     
