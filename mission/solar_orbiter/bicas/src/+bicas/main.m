@@ -455,13 +455,23 @@ function main_without_error_handling(cliArgumentsList, L)
 
             EJ_library.assert.dir_exists(rctDir)
             EJ_library.assert.dir_exists(masterCdfDir)
+            
+            
+            
+            %===================
+            % Read RCS NSO file
+            %===================
+            rcsNsoPath = fullfile(bicasRootPath, SETTINGS.get_fv('PROCESSING.RCS_NSO_FILE.RELATIVE_PATH'));
+            %L.logf('info', 'rcsNsoPath = "%s"', rcsNsoPath);
+            L.logf('info', 'Loading RCS NSO table XML file "%s"', rcsNsoPath)
+            NsoTable = bicas.nso_table(rcsNsoPath);
 
 
 
             %==================
             % EXECUTE S/W MODE
             %==================
-            bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, rctDir, SETTINGS, L )
+            bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, rctDir, NsoTable, SETTINGS, L )
             
         otherwise
             error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)

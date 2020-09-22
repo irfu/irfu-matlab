@@ -28,7 +28,7 @@
 %   run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, rctDir, SETTINGS, L)
+function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, rctDir, NsoTable, SETTINGS, L)
     
     % QUESTION: How verify dataset ID and dataset version against constants?
     %    NOTE: Need to read CDF first.
@@ -113,7 +113,10 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     %==============
     [settingNpefValue, settingNpefKey] = SETTINGS.get_fv('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
-        OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, rctDir);
+        %==========================
+        % CALL PRODUCTION FUNCTION
+        %==========================
+        OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, rctDir, NsoTable);
     else
         OutputDatasetsMap = [];
         L.logf('warning', 'Disabled processing due to setting %s.', settingNpefKey)

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Manually written table over "non-standard operations" (NSO), i.e. time intervals ("events")
+which should be labelled in special ways (QUALITY_FLAG, L2_QUALITY_BITMASK, maybe blanking data).
+
+startTimeUtc,
+stopTimeUtc   : Start & stop time as UTC strings.
+rcsNsoCode    : String constant used by BICAS to set quality flags & bits, remove data etc.
+                RCS NSO = RPW Calibration Software Non-Standard Operation
+-->
+<table
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="solo_ns_ops.xsd">
+	<event>
+		<startTimeUtc>2002-05-30T09:30:10Z</startTimeUtc>
+		<stopTimeUtc>2002-05-30T10:30:10Z</stopTimeUtc>
+		<rcsNsoCode>saturation</rcsNsoCode>
+		<description>A minor test problem 1</description>
+	</event>
+	<event>
+		<startTimeUtc>2012-05-30T09:30:10Z</startTimeUtc>
+		<stopTimeUtc>2012-05-30T10:30:10Z</stopTimeUtc>
+		<rcsNsoCode>bad_bias</rcsNsoCode>
+		<description>A minor test problem 2</description>
+	</event>
+	<event>
+		<startTimeUtc>2012-05-30T09:30:10Z</startTimeUtc>
+		<stopTimeUtc>2012-05-30T10:30:10Z</stopTimeUtc>
+		<rcsNsoCode>test_RCS_NSO_code</rcsNsoCode>
+		<description>Test problem</description>
+	</event>
+</table>

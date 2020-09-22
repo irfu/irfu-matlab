@@ -84,7 +84,7 @@ classdef constants   % < handle
     
     
 
-    methods(Static)
+    methods(Static, Access=private)
         
         
 
@@ -110,6 +110,7 @@ classdef constants   % < handle
             MAP('CannotInterpretConfigFile')    = init_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
             MAP('ConfigurationBug')             = init_struct(1, 'Trying to configure BICAS in an illegal way.');
             MAP('FailedToReadInterpretRCT')     = init_struct(1, 'Can not interpret the content of the calibration file (RCT) file, e.g. because the RCT contains invalid calibration values.');
+            MAP('FailedToReadInterpretNsOps')   = init_struct(1, 'Can not read or interpret the content of the non-standard operations file.');
             MAP('CannotFindRegexMatchingRCT')   = init_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
             
             % IMPLEMENTATION NOTE: Using a nested function merely to keep the function call short.

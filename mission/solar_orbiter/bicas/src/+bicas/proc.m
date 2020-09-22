@@ -69,9 +69,11 @@ classdef proc
         % inputSciDsi      : The science input dataset will be interpreted as having this DATASET_ID.
         %                    RATIONALE: InputDatasetsMap should contain the same as a CDF global attribute but
         %                    (1) it could be missing, or
-        %                    (2) sometimes one may want to read an ROC-SGSE dataset as if it was an RODP dataset or the other way around.
+        %                    (2) sometimes one may want to read an ROC-SGSE
+        %                        dataset as if it was an RODP dataset or the other
+        %                        way around.
         %
-        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, rctDir, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
             
             InputHkPd  = InputDatasetsMap('HK_cdf');
             InputCurPd = InputDatasetsMap('CUR_cdf');
@@ -112,7 +114,7 @@ classdef proc
         % =========
         % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, rctDir, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
             
             InputHkPd  = InputDatasetsMap('HK_cdf');
             InputCurPd = InputDatasetsMap('CUR_cdf');
@@ -162,7 +164,7 @@ classdef proc
         
         
         
-        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap, NsoTable, SETTINGS, L)
             % Always the same DATASET_ID.
             INPUT_DATASET_ID = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
 
