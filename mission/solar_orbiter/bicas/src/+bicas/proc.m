@@ -160,11 +160,11 @@ classdef proc
             %==============
             % Process data
             %==============
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd, InputHkPd,   SETTINGS, L);
-            InputSciPd  = bicas.proc_sub.process_TDS_normalize(         InputSciPd, inputSciDsi, SETTINGS, L);
-            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(          InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd, InputCurPd,  Cal, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(         SciPostDcPd, outputDsi, L);
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
+            InputSciPd  = bicas.proc_sub.process_TDS_normalize(         InputSciPd,  inputSciDsi, SETTINGS, L);
+            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR_TDS_main(SciPostDcPd, outputDsi,   L);
 
             
             

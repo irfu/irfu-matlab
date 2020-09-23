@@ -765,26 +765,34 @@ classdef proc_sub
             bicas.proc_sub.assert_PreDC(PreDc)
             
         end    % process_TDS_to_PreDC
+        
 
 
-
-        % Processing function. Convert PostDC to any one of several similar LFR
-        % dataset PDs.
         function [OutSciZv] = process_PostDC_to_LFR(SciPostDc, outputDsi, L)
+            OutSciZv    = bicas.proc_sub.process_PostDC_to_LFR_TDS_main(SciPostDc, outputDsi, L);
+            OutSciZv.BW = SciPostDc.Zv.BW;
+        end
+
+
+
+        % Processing function. Convert PostDC to either
+        % (1) a TDS dataset, or
+        % (2) almost to an LFR dataset (the rest is done in a wrapper).
+        function [OutSciZv] = process_PostDC_to_LFR_TDS_main(SciPostDc, outputDsi, L)
 
             % ASSERTIONS
             bicas.proc_sub.assert_PostDC(SciPostDc)
-            
-            
+
+
 
             nSamplesPerRecordChannel  = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);
             nRecords                  = size(SciPostDc.Zv.Epoch, 1);
 
             OutSciZv = [];
+            
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
             OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
-            OutSciZv.BW               = SciPostDc.Zv.BW;    % Only for LFR.
             OutSciZv.DELTA_PLUS_MINUS = SciPostDc.Zv.DELTA_PLUS_MINUS;
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
@@ -794,65 +802,77 @@ classdef proc_sub
             OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
             
+            
+            
+            C = EJ_library.so.adm.classify_DATASET_ID(outputDsi);
+
+            EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
+            EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD;
+            
             % NOTE: The two cases are different in the indexes they use for
             % OutSciZv.
-            switch(outputDsi)
-                case  {'SOLO_L2_RPW-LFR-SURV-CWF-E' ...
-                       'SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
-                       'SOLO_L2_RPW-LFR-SBM2-CWF-E'}
-
-                    % ASSERTION
-                    assert(nSamplesPerRecordChannel == 1, ...
-                        'BICAS:proc_sub:Assertion:IllegalArgument', ...
-                        'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
-                    assert(size(OutSciZv.QUALITY_BITMASK, 2) == 1)
-                    assert(size(OutSciZv.QUALITY_FLAG,    2) == 1)
-                    
-                    % Try to pre-allocate to save RAM/speed up.
-                    OutSciZv.VDC = zeros(nRecords, 3);
-                    OutSciZv.EDC = zeros(nRecords, 3);
-                    OutSciZv.EAC = zeros(nRecords, 3);
-                    
-                    OutSciZv.VDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.VDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.VDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    
-                    OutSciZv.EDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.EDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.EDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
-                    
-                    OutSciZv.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
-                    OutSciZv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
-                    OutSciZv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
-                    
-                case  {'SOLO_L2_RPW-LFR-SURV-SWF-E'}
-                    
-                    % ASSERTION
-                    assert(nSamplesPerRecordChannel == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH, ...
-                        'BICAS:proc_sub:Assertion:IllegalArgument', ...
-                        'Number of samples per CDF record is not %i, as expected. Bad Input CDF?', ...
-                        EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
-                    
-                    % Try to pre-allocate to save RAM/speed up.
-                    OutSciZv.VDC = zeros(nRecords, nSamplesPerRecordChannel, 3);
-                    OutSciZv.EDC = zeros(nRecords, nSamplesPerRecordChannel, 3);
-                    OutSciZv.EAC = zeros(nRecords, nSamplesPerRecordChannel, 3);
-                    
-                    OutSciZv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    
-                    OutSciZv.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
-                    
-                    OutSciZv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
-                    OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
-                    OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
-
-                otherwise
-                    error('BICAS:proc_sub:Assertion:IllegalArgument', ...
-                        'Function can not produce outputDsi=%s.', outputDsi)
+            if C.isCwf
+                
+                % ASSERTIONS
+                assert(nSamplesPerRecordChannel == 1, ...
+                    'BICAS:proc_sub:Assertion:IllegalArgument', ...
+                    'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
+                EJ_library.assert.sizes(...
+                    OutSciZv.QUALITY_BITMASK, [nRecords, 1], ...
+                    OutSciZv.QUALITY_FLAG,    [nRecords, 1])
+                
+                % Try to pre-allocate to save RAM/speed up.
+                OutSciZv.VDC = nan(nRecords, 3);
+                OutSciZv.EDC = nan(nRecords, 3);
+                OutSciZv.EAC = nan(nRecords, 3);
+                
+                OutSciZv.VDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
+                OutSciZv.VDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
+                OutSciZv.VDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
+                
+                OutSciZv.EDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
+                OutSciZv.EDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
+                OutSciZv.EDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
+                
+                OutSciZv.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
+                OutSciZv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
+                OutSciZv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
+                
+            elseif C.isSwf
+                
+                if     C.isLfr   SAMPLES_PER_RECORD_CHANNEL = EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
+                elseif C.isTds   SAMPLES_PER_RECORD_CHANNEL = EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD;
+                else             error('BICAS:proc_sub:Assertion', 'Illegal DATASET_ID classification.')
+                end
+                
+                % ASSERTION
+                assert(nSamplesPerRecordChannel == SAMPLES_PER_RECORD_CHANNEL, ...
+                    'BICAS:proc_sub:Assertion:IllegalArgument', ...
+                    'Number of samples per CDF record (%i) is not %i, as expected. Bad Input CDF?', ...
+                    nSamplesPerRecordChannel, ...
+                    SAMPLES_PER_RECORD_CHANNEL)
+                
+                % Try to pre-allocate to save RAM/speed up.
+                temp = nan(nRecords, nSamplesPerRecordChannel, 3);
+                OutSciZv.VDC = temp;
+                OutSciZv.EDC = temp;
+                OutSciZv.EAC = temp;
+                
+                OutSciZv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
+                OutSciZv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
+                OutSciZv.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
+                
+                OutSciZv.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
+                OutSciZv.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
+                OutSciZv.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
+                
+                OutSciZv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
+                OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
+                OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
+                
+            else
+                error('BICAS:proc_sub:Assertion:IllegalArgument', ...
+                    'Function can not produce outputDsi=%s.', outputDsi)
             end
             
             
@@ -864,77 +884,10 @@ classdef proc_sub
             % NOTE: Includes zVar "BW" (LFR L2 only).
             EJ_library.assert.struct(OutSciZv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
-                'QUALITY_BITMASK', 'QUALITY_FLAG', 'BW', ...
+                'QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
             
-        end    % process_PostDC_to_LFR
-
-
-
-        function OutSciZv = process_PostDC_to_TDS(SciPostDc, outputDsi, L)
-
-            % ASSERTIONS
-            bicas.proc_sub.assert_PostDC(SciPostDc)
-
-
-            
-            OutSciZv = [];
-            
-            OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
-            OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
-            OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
-            OutSciZv.DELTA_PLUS_MINUS = SciPostDc.Zv.DELTA_PLUS_MINUS;
-            OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
-            OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
-
-            % NOTE: Convert aampere --> (antenna) nA
-            OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
-            OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
-            OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
-            
-            % NOTE: The two cases are actually different in the indexes they use
-            % for OutSciZv.
-            switch(outputDsi)
-                
-                case {'SOLO_L2_RPW-TDS-LFM-CWF-E'}
-
-                    OutSciZv.VDC(:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.VDC(:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.VDC(:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    OutSciZv.EDC(:,1)   = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.EDC(:,2)   = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.EDC(:,3)   = SciPostDc.Zv.DemuxerOutput.dcV23;
-                    OutSciZv.EAC(:,1)   = SciPostDc.Zv.DemuxerOutput.acV12;
-                    OutSciZv.EAC(:,2)   = SciPostDc.Zv.DemuxerOutput.acV13;
-                    OutSciZv.EAC(:,3)   = SciPostDc.Zv.DemuxerOutput.acV23;
-                    
-                case {'SOLO_L2_RPW-TDS-LFM-RSWF-E'}
-                    OutSciZv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    OutSciZv.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
-                    OutSciZv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
-                    OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
-                    OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
-                    
-                otherwise
-                    error('BICAS:proc_sub:Assertion:IllegalArgument', ...
-                        'Function can not produce outputDsi=%s.', outputDsi)
-            end
-
-
-
-            % ASSERTION
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
-            % NOTE: Not really necessary since the list of zVars will be checked
-            % against the master CDF?
-            EJ_library.assert.struct(OutSciZv, {...
-                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
-                'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
-            
-        end
+        end    % process_PostDC_to_LFR_TDS_main
         
         
         
@@ -976,11 +929,6 @@ classdef proc_sub
             if isfield(PreDc.Zv, 'BW')
                 PostDc.Zv.BW               = PreDc.Zv.BW;
             end
-            
-            % Copy non-zVars.
-            PostDc.isLfr             = PreDc.isLfr;
-            PostDc.isTdsCwf          = PreDc.isTdsCwf;
-            PostDc.hasSnapshotFormat = PreDc.hasSnapshotFormat;
             
 
 
@@ -1191,7 +1139,7 @@ classdef proc_sub
 
         function assert_PostDC(PostDc)
             EJ_library.assert.struct(PostDc, ...
-                {'Zv', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
+                {'Zv'}, {});
             
             EJ_library.assert.struct(PostDc.Zv, ...
                 {'Epoch', 'freqHz', ...
