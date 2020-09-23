@@ -59,8 +59,8 @@ classdef proc_sub
 %   process_PostDC_to_LFR and
 %   process_PostDC_to_TDS into one function that shares most of the functionality.
 %
-% PROPOSAL: process_calibrate_demux_filter
-%                 & calibrate_demux_voltages
+% PROPOSAL:   process_calibrate_demux
+%           & calibrate_demux_voltages
 %           should only accept the needed zVars and variables.
 %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
 %         from struct.
@@ -898,20 +898,12 @@ classdef proc_sub
         % NOTE: Public function as opposed to the other demuxing/calibration
         % functions.
         %
-        function PostDc = process_calibrate_demux_filter(PreDc, InCurPd, Cal, SETTINGS, L)
+        function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, SETTINGS, L)
             
             tTicToc = tic();
 
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc);
-            
-            
-            
-            %============================================
-            % Find CDF records to remove due to settings
-            %============================================
-            PreDc.Zv.useFillValues = bicas.proc_sub.add_UFV_records_from_settings(...
-                PreDc.Zv.Epoch, PreDc.Zv.useFillValues, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
             
             
             
@@ -947,7 +939,7 @@ classdef proc_sub
             
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);
-            [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(iCalibLZv, PreDc.Zv.useFillValues);
+            [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(iCalibLZv);
             L.logf('info', 'Calibrating currents - One sequence of records with identical settings at a time.')
             for iSubseq = 1:nSubseq
                 iFirst = iFirstList(iSubseq);
@@ -955,26 +947,19 @@ classdef proc_sub
                 
                 iRecords = iFirst:iLast;
                 
-                L.logf('info', 'Records %7i-%7i : %s -- %s; useFillValues=%g', ...
+                L.logf('info', 'Records %7i-%7i : %s -- %s', ...
                     iFirst, iLast, ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
-                    PreDc.Zv.useFillValues(iFirst))
+                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
                 
                 for iAnt = 1:3
-                    if PreDc.Zv.useFillValues(iFirst)
-                        % Set CURRENT samples to NaN based on PreDc.Zv.useFillValues.
-                        currentAAmpere(iRecords, iAnt) = nan(size(currentTm(iRecords, iAnt)));
-                    else
-                        %%%%%%%%%%%%%%%%%%%%%
-                        % CALIBRATE CURRENTS
-                        %%%%%%%%%%%%%%%%%%%%%
-                        currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
-                            currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
-                    end
+                    %%%%%%%%%%%%%%%%%%%%%
+                    % CALIBRATE CURRENTS
+                    %%%%%%%%%%%%%%%%%%%%%
+                    currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
+                        currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
                 end
             end
-            
             PostDc.Zv.currentAAmpere = currentAAmpere;
             
             
@@ -983,8 +968,43 @@ classdef proc_sub
             bicas.proc_sub.assert_PostDC(PostDc)
             
             nRecords = size(PreDc.Zv.Epoch, 1);
-            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_calibrate_demux_filter', tTicToc, nRecords, 'record')
-        end    % process_calibrate_demux_filter
+            bicas.log_speed_profiling(L, 'bicas.proc_sub.process_calibrate_demux', tTicToc, nRecords, 'record')
+        end    % process_calibrate_demux
+        
+        
+        
+        % Processing function
+        %
+        % Overwrite selected data in selected CDF records with fill values/NaN.
+        function PostDc = process_PostDc_filter(PreDc, PostDc, SETTINGS, L)
+            
+            %============================================
+            % Find CDF records to remove due to settings
+            %============================================
+            zvUfvSettings = bicas.proc_sub.get_UFV_records_from_settings(...
+                PreDc.Zv.Epoch, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
+            
+            zvUfvFinal = PreDc.Zv.useFillValues | zvUfvSettings;
+
+            % Log
+            logHeaderStr = sprintf(...
+                ['All interval(s) of CDF records for which data should be set', ...
+                ' to fill values (i.e. removed), regardless of reason.\n']);
+            bicas.proc_sub.log_UFV_records(PreDc.Zv.Epoch, zvUfvFinal, logHeaderStr, L)
+
+
+
+            %==================================================================
+            % Set CURRENTS and VOLTAGES to NaN based on PreDc.Zv.useFillValues
+            %==================================================================
+            PostDc.Zv.currentAAmpere(zvUfvFinal, :) = NaN;
+            %
+            fnCa = fieldnames(PostDc.Zv.DemuxerOutput);
+            for iFn = 1:numel(fnCa)
+                PostDc.Zv.DemuxerOutput.(fnCa{iFn})(zvUfvFinal, :, :) = NaN;
+            end
+            
+        end
 
 
         
@@ -1152,25 +1172,20 @@ classdef proc_sub
     
     
     
-        % Add more CDF records to remove, based on settings.
+        % Find CDF records to remove based on settings (not data itself, almost,
+        % since MUX mode is data).
+        %
         % Ex: Sweeps
         % 
-        function zvUseFillValues = add_UFV_records_from_settings(...
-                zvEpoch, zvUseFillValues, zv_MUX_SET, isLfr, SETTINGS, L)
-            % PROPOSAL: Do not log removal of science data here, since the actual removal does not take place here.
-            %   CON: This code has access to the settings that determine what should be removed.
-            %
-            % PROPOSAL: Better name
-            %   ~determine
-            %   ~settings
-            %   ~add
-            %   determine_UFV_records
-            %   determine_remove_records
+        function zvUseFillValues = get_UFV_records_from_settings(...
+                zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
+            % PROPOSAL: Only derive UFV records based on settings. Not take
+            %           previously found UFV records (BW) into account. Merging UFV
+            %           records from settings and BW respectively can be done
+            %           outside (trivial).
+            % PROPOSAL: Separate function for logging which records that should be removed.
             
-            LL = 'info';    % LL = Log Level
-
             bicas.proc_utils.assert_zv_Epoch(zvEpoch)
-            assert(islogical(zvUseFillValues))
             assert(islogical(isLfr));
             
             %===============
@@ -1180,42 +1195,48 @@ classdef proc_sub
             if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
             end
-            removeMarginSec = SETTINGS.get_fv(settingMarginKey);
+            [removeMarginSec, settingMarginKey] = SETTINGS.get_fv(settingMarginKey);
             
             %==========================================
             % Find exact indices/CDF records to remove
             %==========================================
-            zvUseFillValuesNew = EJ_library.utils.true_with_margin(...
+            zvUseFillValues = EJ_library.utils.true_with_margin(...
                 zvEpoch, ...
                 ismember(zv_MUX_SET, muxModesRemove), ...
                 removeMarginSec * 1e9);
             
-            % Add the new records to remove, to the already known records to
-            % remove.
-            zvUseFillValues = zvUseFillValues | zvUseFillValuesNew;
-            
             %=====
             % Log
             %=====
-            % NOTE: The intervals found BELOW, AFTER adding margins, may not
-            % correspond to the intervals found ABOVE, BEFORE adding margins.
-            % NOTE: Only logging the intervals found in the ABOVE algorithm, NOT
-            % the TOTAL list of CCDF records to remove.
-            [i1Array, i2Array] = EJ_library.utils.split_by_false(zvUseFillValuesNew);
+            logHeaderStr = sprintf(...
+                ['Found interval(s) of CDF records for which data should be set to', ...
+                ' fill values (i.e. removed) based on settings.\n', ...
+                '    NOTE: This may not be all CDF records which will be removed.\n', ...
+                '    Setting %s = [%s]\n', ...
+                '    Setting %s = %f\n'], ...
+                settingMuxModesKey, ...
+                strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '), ...
+                settingMarginKey, ...
+                removeMarginSec);
+            bicas.proc_sub.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
+        end
+        
+        
+        
+        % Log UFV records
+        %
+        % NOTE: Only logs (including header) if there are records to remove.
+        function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
+            LL = 'info';    % LL = Log Level
+
+            [i1Array, i2Array] = EJ_library.utils.split_by_false(zvUfv);
             nUfvIntervals = numel(i1Array);
             if nUfvIntervals > 0
                 
                 %==============
                 % Log settings
                 %==============
-                L.logf(LL, 'Found intervals of CDF records that should be set to fill values (i.e. removed) due to settings:');
-                L.logf(LL, '    Setting %s = [%s]', ...
-                    settingMuxModesKey, ...
-                    strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '));
-                % IMPLEMENTATION NOTE: Does not explicitly write out unit, since
-                % it depends on definition of setting. Setting key should
-                % include the unit.
-                L.logf(LL, '    Setting %s = %g', settingMarginKey, removeMarginSec);
+                L.logf(LL, logHeaderStr)
                 
                 %===============
                 % Log intervals
@@ -1324,8 +1345,7 @@ classdef proc_sub
                 iCalibLZv, ...
                 iCalibHZv, ...
                 PreDc.Zv.iLsf, ...
-                PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
-                PreDc.Zv.useFillValues);
+                PreDc.Zv.CALIBRATION_TABLE_INDEX);
             L.logf('info', 'Calibrating voltages - One sequence of records with identical settings at a time.')
             
             for iSubseq = 1:nSubseq
@@ -1337,14 +1357,13 @@ classdef proc_sub
                 % records.
                 % SS = Subsequence (single, constant value valid for entire
                 %      subsequence)
-                MUX_SET_ss                 = PreDc.Zv.MUX_SET  (        iFirst);
-                DIFF_GAIN_ss               = PreDc.Zv.DIFF_GAIN(        iFirst);
-                dlrUsing12_ss              = dlrUsing12zv(              iFirst);
-                freqHz_ss                  = PreDc.Zv.freqHz(           iFirst);
-                iCalibL_ss                 = iCalibLZv(                 iFirst);
-                iCalibH_ss                 = iCalibHZv(                 iFirst);
-                iLsf_ss                    = PreDc.Zv.iLsf(             iFirst);
-                useFillValues_ss           = PreDc.Zv.useFillValues(    iFirst);
+                MUX_SET_ss                 = PreDc.Zv.MUX_SET  (              iFirst);
+                DIFF_GAIN_ss               = PreDc.Zv.DIFF_GAIN(              iFirst);
+                dlrUsing12_ss              = dlrUsing12zv(                    iFirst);
+                freqHz_ss                  = PreDc.Zv.freqHz(                 iFirst);
+                iCalibL_ss                 = iCalibLZv(                       iFirst);
+                iCalibH_ss                 = iCalibHZv(                       iFirst);
+                iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
                 CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
                 
                 % PROPOSAL: Make into "proper" table.
@@ -1353,14 +1372,13 @@ classdef proc_sub
                 %   PROPOSAL: Print after all iterations.
                 L.logf('info', ['Records %7i-%7i : %s -- %s', ...
                     ' MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i;', ...
-                    ' CALIBRATION_TABLE_INDEX=[%i, %i]; useFillValues=%g'], ...
+                    ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
                     MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, ...
                     CALIBRATION_TABLE_INDEX_ss(1), ...
-                    CALIBRATION_TABLE_INDEX_ss(2), ...
-                    useFillValues_ss)
+                    CALIBRATION_TABLE_INDEX_ss(2))
 
                 %============================================
                 % FIND DEMUXER ROUTING, BUT DO NOT CALIBRATE
@@ -1416,34 +1434,22 @@ classdef proc_sub
                             ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
                         end
                         
-                        if useFillValues_ss
-                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                            % CASE: Set VOLTAGE samples to NaN based on PreDc.Zv.useFillValues
-                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-                            % Create equivalent cell array of NaN-valued sample sequences.
-                            ssSamplesCaAVolt = cell(size(ssSamplesCaTm));
-                            for i = 1:numel(ssSamplesCaTm)
-                                ssSamplesCaAVolt{i} = nan(size(ssSamplesCaTm{i}));
-                            end
-                        else
-                            %%%%%%%%%%%%%%%%%%%%%%%
-                            %%%%%%%%%%%%%%%%%%%%%%%
-                            %  CALIBRATE VOLTAGES
-                            %%%%%%%%%%%%%%%%%%%%%%%
-                            %%%%%%%%%%%%%%%%%%%%%%%
-                            CalSettings = struct();
-                            CalSettings.iBlts        = iBlts;
-                            CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
-                            CalSettings.biasHighGain = biasHighGain;
-                            CalSettings.iCalibTimeL  = iCalibL_ss;
-                            CalSettings.iCalibTimeH  = iCalibH_ss;
-                            CalSettings.iLsf         = iLsf_ss;
-                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                            ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
-                                PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
-                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                        end
+                        %%%%%%%%%%%%%%%%%%%%%%%
+                        %%%%%%%%%%%%%%%%%%%%%%%
+                        %  CALIBRATE VOLTAGES
+                        %%%%%%%%%%%%%%%%%%%%%%%
+                        %%%%%%%%%%%%%%%%%%%%%%%
+                        CalSettings = struct();
+                        CalSettings.iBlts        = iBlts;
+                        CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
+                        CalSettings.biasHighGain = biasHighGain;
+                        CalSettings.iCalibTimeL  = iCalibL_ss;
+                        CalSettings.iCalibTimeH  = iCalibH_ss;
+                        CalSettings.iLsf         = iLsf_ss;
+                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
+                            PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
+                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         
                         if PreDc.hasSnapshotFormat
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
