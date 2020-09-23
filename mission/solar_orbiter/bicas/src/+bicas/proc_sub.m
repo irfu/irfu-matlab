@@ -265,6 +265,118 @@ classdef proc_sub
         
         
         
+        % Processing function. Only "normalizes" data to account for technically
+        % illegal input LFR datasets. This should try to:
+        % ** modify L1 to look like L1R
+        % ** mitigate historical bugs (in the input datasets)
+        % ** mitigate for not yet implemented features (in input datasets)
+        %
+        function InSciNorm = process_LFR_normalize(InSci, inSciDsi, SETTINGS, L)
+            
+            % Default behaviour: Copy values, except for values which are
+            % modified later
+            InSciNorm = InSci;
+            
+            nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
+            
+            
+            
+            %===================================
+            % Normalize CALIBRATION_TABLE_INDEX
+            %===================================
+            InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(...
+                InSci.Zv, nRecords, inSciDsi);            
+            
+            
+            
+            %========================
+            % Normalize SYNCHRO_FLAG
+            %========================
+            has_SYNCHRO_FLAG      = isfield(InSci.Zv, 'SYNCHRO_FLAG');
+            has_TIME_SYNCHRO_FLAG = isfield(InSci.Zv, 'TIME_SYNCHRO_FLAG');
+            if      has_SYNCHRO_FLAG && ~has_TIME_SYNCHRO_FLAG
+                
+                % CASE: Everything nominal.
+                InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.SYNCHRO_FLAG;
+                
+            elseif ~has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
+                
+                % CASE: Input CDF uses wrong zVar name.
+                [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY');
+                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                    'Found zVar TIME_SYNCHRO_FLAG instead of SYNCHRO_FLAG.')
+                L.log('warning', 'Using illegally named zVar TIME_SYNCHRO_FLAG as SYNCHRO_FLAG.')
+                InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
+                
+            elseif has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
+                
+                % CASE: Input CDF has two zVars: one with correct name, one with
+                % incorrect name
+                
+                %------------------------
+                % "Normal" normalization
+                %------------------------
+                % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG
+                % seems to be the correct zVar.
+                if SETTINGS.get_fv('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED') ...
+                        && isempty(InSci.Zv.SYNCHRO_FLAG)
+                    %----------------------------------------------------------
+                    % Workaround: Normalize LFR data to handle variations that
+                    % should not exist
+                    %----------------------------------------------------------
+                    % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG
+                    % (non-empty) may BOTH be present. "DEFINITION BUG" in
+                    % definition of datasets/skeleton?
+                    % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf /2020-03-17
+                    
+                    InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
+                else
+                    error('BICAS:process_LFR_normalize:DatasetFormat', 'Input dataset has both zVar SYNCHRO_FLAG and TIME_SYNCHRO_FLAG.')
+                end
+            else
+                error('BICAS:process_LFR_normalize:DatasetFormat', 'Input dataset does not have zVar SYNCHRO_FLAG as expected.')
+            end
+            
+            
+
+            %=======================================================================================================
+            % Set QUALITY_BITMASK, QUALITY_FLAG:
+            % Replace illegally empty data with fill values/NaN
+            % ------------------------------------------------------------------
+            % IMPLEMENTATION NOTE: QUALITY_BITMASK, QUALITY_FLAG have been found
+            % empty in test data, but should have attribute DEPEND_0 = "Epoch"
+            % ==> Should have same number of records as Epoch.
+            %
+            % Can not save CDF with zVar with zero records (crashes when reading
+            % CDF). ==> Better create empty records.
+            %
+            % Examples of QUALITY_FLAG = empty:
+            %  MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
+            %  ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf (TESTDATA_RGTS_LFR_CALBUT_V1.1.0)
+            %  ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E_6b05822_CNE_V02.cdf (TESTDATA_RGTS_LFR_CALBUT_V1.1.0)
+            %=======================================================================================================
+            % PROPOSAL: Move to the code that reads CDF datasets instead. Generalize to many zVariables.
+            % PROPOSAL: Regard as "normalization" code. ==> Group together with other normalization code.
+            %=======================================================================================================
+            [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
+            
+            InSciNorm.Zv.QUALITY_BITMASK = bicas.proc_sub.normalize_LFR_zVar_empty(...
+                L, settingValue, settingKey, nRecords, ...
+                InSci.Zv.QUALITY_BITMASK, 'QUALITY_BITMASK');
+            
+            InSciNorm.Zv.QUALITY_FLAG    = bicas.proc_sub.normalize_LFR_zVar_empty(...
+                L, settingValue, settingKey, nRecords, ...
+                InSci.Zv.QUALITY_FLAG,    'QUALITY_FLAG');
+            
+            % ASSERTIONS
+            EJ_library.assert.sizes(...
+                InSciNorm.Zv.QUALITY_BITMASK, [nRecords, 1], ...
+                InSciNorm.Zv.QUALITY_FLAG,    [nRecords, 1])
+
+        end    % process_LFR_normalize
+        
+        
+        
         % Processing function. Convert LFR CDF data to PreDC.
         %
         % IMPLEMENTATION NOTE: Does not modify InSci in an attempt to save RAM
@@ -353,101 +465,16 @@ classdef proc_sub
             PreDc.Zv.BW                      = InSci.Zv.BW;
             PreDc.Zv.useFillValues           = ~logical(InSci.Zv.BW);
             PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
-            PreDc.Zv.iLsf                    = iLsfZv;            
-            PreDc.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(InSci.Zv, nRecords, C);
+            PreDc.Zv.iLsf                    = iLsfZv;
             
+            PreDc.Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
+            PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
             
-            
-            %=============================
-            % Set SYNCHRO_FLAG: Normalize
-            %=============================
-            has_SYNCHRO_FLAG      = isfield(InSci.Zv, 'SYNCHRO_FLAG');
-            has_TIME_SYNCHRO_FLAG = isfield(InSci.Zv, 'TIME_SYNCHRO_FLAG');
-            if      has_SYNCHRO_FLAG && ~has_TIME_SYNCHRO_FLAG
-                
-                % CASE: Everything nominal.
-                PreDc.Zv.SYNCHRO_FLAG = InSci.Zv.SYNCHRO_FLAG;
-                
-            elseif ~has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
-                
-                % CASE: Input CDF uses wrong zVar name.
-                [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY');
-                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-                    'Found zVar TIME_SYNCHRO_FLAG instead of SYNCHRO_FLAG.')
-                L.log('warning', 'Using illegally named zVar TIME_SYNCHRO_FLAG as SYNCHRO_FLAG.')
-                PreDc.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
-                
-            elseif has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
-                
-                % CASE: Input CDF has two zVars: one with correct name, one with
-                % incorrect name
-                
-                %------------------------
-                % "Normal" normalization
-                %------------------------
-                % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG
-                % seems to be the correct zVar.
-                if SETTINGS.get_fv('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED') ...
-                        && isempty(InSci.Zv.SYNCHRO_FLAG)
-                    %----------------------------------------------------------
-                    % Workaround: Normalize LFR data to handle variations that
-                    % should not exist
-                    %----------------------------------------------------------
-                    % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG
-                    % (non-empty) may BOTH be present. "DEFINITION BUG" in
-                    % definition of datasets/skeleton?
-                    % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf /2020-03-17
-                    
-                    PreDc.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
-                else
-                    error('BICAS:DatasetFormat', 'Input dataset has both zVar SYNCHRO_FLAG and TIME_SYNCHRO_FLAG.')
-                end
-            else
-                error('BICAS:DatasetFormat', 'Input dataset does not have zVar SYNCHRO_FLAG as expected.')
-            end            
-
-
-
-            %=======================================================================================================
-            % Set QUALITY_BITMASK, QUALITY_FLAG:
-            % Replace illegally empty data with fill values/NaN
-            % ------------------------------------------------------------------
-            % IMPLEMENTATION NOTE: QUALITY_BITMASK, QUALITY_FLAG have been found
-            % empty in test data, but should have attribute DEPEND_0 = "Epoch"
-            % ==> Should have same number of records as Epoch.
-            %
-            % Can not save CDF with zVar with zero records (crashes when reading
-            % CDF). ==> Better create empty records.
-            %
-            % Examples of QUALITY_FLAG = empty:
-            %  MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
-            %  ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf (TESTDATA_RGTS_LFR_CALBUT_V1.1.0)
-            %  ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E_6b05822_CNE_V02.cdf (TESTDATA_RGTS_LFR_CALBUT_V1.1.0)
-            %=======================================================================================================
-            % PROPOSAL: Move to the code that reads CDF datasets instead. Generalize to many zVariables.
-            % PROPOSAL: Regard as "normalization" code. ==> Group together with other normalization code.
-            %=======================================================================================================
-            [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
-            
-            PreDc.Zv.QUALITY_BITMASK = bicas.proc_sub.normalize_LFR_zVar_empty(...
-                L, settingValue, settingKey, nRecords, ...
-                InSci.Zv.QUALITY_BITMASK, 'QUALITY_BITMASK');
-            
-            zv_QUALITY_FLAG          = bicas.proc_sub.normalize_LFR_zVar_empty(...
-                L, settingValue, settingKey, nRecords, ...
-                InSci.Zv.QUALITY_FLAG,    'QUALITY_FLAG');
+            PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
             PreDc.Zv.QUALITY_FLAG = min(...
-                zv_QUALITY_FLAG, ...
+                InSci.Zv.QUALITY_FLAG, ...
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), 'includeNaN');
             
-            % ASSERTIONS
-            % QUALITY_BITMASK, LFR QUALITY_FLAG not set yet (2019-09-17), but I
-            % presume they should have just one value per record. BIAS output
-            % datasets should.
-            EJ_library.assert.sizes(...
-                PreDc.Zv.QUALITY_BITMASK, [nRecords, 1], ...
-                PreDc.Zv.QUALITY_FLAG,    [nRecords, 1])
-
 
 
             %==================================================================
@@ -482,6 +509,141 @@ classdef proc_sub
         
         
         
+        % Processing function. Only "normalizes" data to account for technically
+        % illegal input TDS datasets. This should try to:
+        % ** modify L1 to look like L1R
+        % ** mitigate historical bugs (in the input datasets)
+        % ** mitigate for not yet implemented features (in input datasets)
+        %
+        function InSciNorm = process_TDS_normalize(InSci, inSciDsi, SETTINGS, L)
+            
+            % Default behaviour: Copy values, except for values which are
+            % modified later
+            InSciNorm = InSci;
+            
+            nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
+            
+            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
+            
+            
+            
+            %===================================
+            % Normalize CALIBRATION_TABLE_INDEX
+            %===================================
+            InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(...
+                InSci.Zv, nRecords, inSciDsi);
+            
+            
+            
+            %===========================================================
+            % Normalize zVar name SYNCHRO_FLAG
+            % --------------------------------
+            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input
+            % datasets. Unknown why. "DEFINITION BUG" in definition of
+            % datasets/skeleton? /2020-01-05
+            % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
+            % to be the correct one. /2020-01-21
+            %===========================================================
+            [InSci.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InSci.Zv, ...
+                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
+                'Assert one matching candidate');
+            
+            bicas.proc_sub.handle_zv_name_change(...
+                fnChangeList, inSciDsi, SETTINGS, L, ...
+                'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+
+            
+            
+            %=========================
+            % Normalize SAMPLING_RATE
+            %=========================
+            if any(InSci.Zv.SAMPLING_RATE == 255)
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY');
+                anomalyDescrMsg = 'Finds illegal, stated sampling frequency 255 in TDS L1/L1R LFM-RSWF dataset.';
+                
+                if C.isTdsRswf
+                    switch(settingValue)
+                        case 'CORRECT'
+                            %===================================================
+                            % IMPLEMENTATION NOTE: Has observed test file
+                            % TESTDATA_RGTS_TDS_CALBA_V0.8.5C:
+                            % solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+                            % to have SAMPLING_RATE == 255, which is likely a
+                            % BUG in the dataset.
+                            % /Erik P G Johansson 2019-12-03
+                            % Is bug in TDS RCS.  /David Pisa 2019-12-03
+                            % Setting it to what is probably the correct value.
+                            %===================================================
+                            InSciNorm.Zv.SAMPLING_RATE(InSci.Zv.SAMPLING_RATE == 255) = 32768;
+                            L.logf('warning', ...
+                                'Using workaround to modify instances of sampling frequency 255-->32768.')
+                            bicas.default_anomaly_handling(L, ...
+                                settingValue, settingKey, 'other', anomalyDescrMsg)
+                            
+                        otherwise
+                            bicas.default_anomaly_handling(L, ...
+                                settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, 'BICAS:process_TDS_normalize:DatasetFormat')
+                    end
+                else
+                    error(anomalyDescrMsg)
+                end
+            end
+            
+            
+            
+            if C.isTdsRswf
+                %============================================================
+                % Check for and handle illegal input data, zVar SAMPS_PER_CH
+                % ----------------------------------------------------------
+                % NOTE: Has observed invalid SAMPS_PER_CH value 16562 in
+                % ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E_73525cd_CNE_V03.CDF.
+                % 2019-09-18, David Pisa: Not a flaw in TDS RCS but in the
+                % source L1 dataset.
+                %============================================================
+                SAMPS_PER_CH_MIN_VALID    = 2^10;
+                SAMPS_PER_CH_MAX_VALID    = 2^15;
+
+                zv_SAMPS_PER_CH_corrected = round(2.^round(log2(double(InSci.Zv.SAMPS_PER_CH))));
+                zv_SAMPS_PER_CH_corrected = cast(zv_SAMPS_PER_CH_corrected, class(InSci.Zv.SAMPS_PER_CH));
+                zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, SAMPS_PER_CH_MIN_VALID);
+                zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, SAMPS_PER_CH_MAX_VALID);
+                
+                if any(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH)
+                    % CASE: SAMPS_PER_CH has at least one illegal value
+                    
+                    SAMPS_PER_CH_badValues = unique(InSci.Zv.SAMPS_PER_CH(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH));
+                    
+                    badValuesDisplayStr = strjoin(arrayfun(...
+                        @(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');
+                    anomalyDescrMsg = sprintf(...
+                        'TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s) which are not on the form 2^n and in the interval %.0f to %.0f: %s', ...
+                        SAMPS_PER_CH_MIN_VALID, ...
+                        SAMPS_PER_CH_MAX_VALID, ...
+                        badValuesDisplayStr);
+                    
+                    [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
+                    switch(settingValue)
+                        case 'ROUND'
+                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                                anomalyDescrMsg, 'BICAS:proc_sub:process_TDS_normalize:Assertion:DatasetFormat')
+                            L.log('warning', ...
+                                ['Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid', ...
+                                ' values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
+                            
+                            InSciNorm.Zv.SAMPS_PER_CH = zv_SAMPS_PER_CH_corrected;
+                            
+                        otherwise
+                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                                anomalyDescrMsg, 'BICAS:proc_sub:process_TDS_normalize:Assertion:DatasetFormat')
+
+                    end    % switch
+                end    % if
+            end    % if
+            
+        end    % process_TDS_normalize
+        
+        
+        
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
         function PreDc = process_TDS_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
         %
@@ -502,64 +664,15 @@ classdef proc_sub
 
             
             
-            %===========================================================
-            % Normalize zVar name SYNCHRO_FLAG
-            % --------------------------------
-            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input
-            % datasets. Unknown why. "DEFINITION BUG" in definition of
-            % datasets/skeleton? /2020-01-05
-            % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
-            % to be the correct one. /2020-01-21
-            %===========================================================
-            [InSci.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InSci.Zv, ...
-                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
-                'Assert one matching candidate');
-            
-            bicas.proc_sub.handle_zv_name_change(...
-                fnChangeList, inSciDsi, SETTINGS, L, ...
-                'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-
-
-
             nRecords                  = size(InSci.Zv.Epoch, 1);
             % Number of samples in the zVariable, not necessarily actual data.
             nCdfMaxSamplesPerSnapshot = size(InSci.Zv.WAVEFORM_DATA, 3);
 
             
             
-            %==============
-            % Set freqHzZv
-            %==============
-            freqHzZv = double(InSci.Zv.SAMPLING_RATE);            
-            if any(freqHzZv == 255)
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY');
-                anomalyDescrMsg = 'Finds illegal, stated sampling frequency 255 in TDS L1/L1R LFM-RSWF dataset.';
-                
-                if C.isTdsRswf
-                    switch(settingValue)
-                        case 'CORRECT'
-                            %===================================================
-                            % IMPLEMENTATION NOTE: Has observed test file
-                            % TESTDATA_RGTS_TDS_CALBA_V0.8.5C:
-                            % solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-                            % to have SAMPLING_RATE == 255, which is likely a
-                            % BUG in the dataset.
-                            % /Erik P G Johansson 2019-12-03
-                            % Is bug in TDS RCS.  /David Pisa 2019-12-03
-                            % Setting it to what is probably the correct value.
-                            %===================================================
-                            freqHzZv(freqHzZv == 255) = 32768;
-                            L.logf('warning', ...
-                                'Using workaround to modify instances of sampling frequency 255-->32768.')
-                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', anomalyDescrMsg)
-                            
-                        otherwise
-                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, 'BICAS:DatasetFormat')
-                    end
-                else
-                    error(anomalyDescrMsg)
-                end
-            end
+            % Why convert to double? To avoid precision problems when doing math
+            % with other variables?
+            freqHzZv = double(InSci.Zv.SAMPLING_RATE);
             
             
             
@@ -576,7 +689,7 @@ classdef proc_sub
             PreDc.Zv.MUX_SET                 = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
             PreDc.Zv.useFillValues           = false(nRecords, 1);
-            PreDc.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(InSci.Zv, nRecords, C);
+            PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
 
 
@@ -584,49 +697,6 @@ classdef proc_sub
             % Set PreDc.Zv.nValidSamplesPerRecord
             %=====================================
             if C.isTdsRswf
-                %============================================================
-                % Check for and handle illegal input data, zVar SAMPS_PER_CH
-                % ----------------------------------------------------------
-                % NOTE: Has observed invalid SAMPS_PER_CH value 16562 in
-                % ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E_73525cd_CNE_V03.CDF.
-                % 2019-09-18, David Pisa: Not a flaw in TDS RCS but in the
-                % source L1 dataset.
-                %============================================================
-                SAMPS_PER_CH_MIN_VALID    = 2^10;
-                SAMPS_PER_CH_MAX_VALID    = 2^15;
-                zv_SAMPS_PER_CH           = double(InSci.Zv.SAMPS_PER_CH);
-                zv_SAMPS_PER_CH_rounded   = round(2.^round(log2(zv_SAMPS_PER_CH)));
-                zv_SAMPS_PER_CH_rounded(zv_SAMPS_PER_CH_rounded < SAMPS_PER_CH_MIN_VALID) = SAMPS_PER_CH_MIN_VALID;
-                zv_SAMPS_PER_CH_rounded(zv_SAMPS_PER_CH_rounded > SAMPS_PER_CH_MAX_VALID) = SAMPS_PER_CH_MAX_VALID;
-                if any(zv_SAMPS_PER_CH_rounded ~= zv_SAMPS_PER_CH)
-                    SAMPS_PER_CH_badValues = unique(zv_SAMPS_PER_CH(zv_SAMPS_PER_CH_rounded ~= zv_SAMPS_PER_CH));
-                    
-                    badValuesDisplayStr = strjoin(arrayfun(...
-                        @(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');
-                    anomalyDescrMsg = sprintf(...
-                        'TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s) which are not on the form 2^n and in the interval %.0f to %.0f: %s', ...
-                        SAMPS_PER_CH_MIN_VALID, ...
-                        SAMPS_PER_CH_MAX_VALID, ...
-                        badValuesDisplayStr);
-                    
-                    [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
-                    switch(settingValue)
-                        case 'ROUND'
-                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
-                                anomalyDescrMsg, 'BICAS:proc_sub:Assertion:DatasetFormat')
-                            L.log('warning', ...
-                                ['Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid', ...
-                                ' values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
-                            
-                            zv_SAMPS_PER_CH = zv_SAMPS_PER_CH_rounded;
-                            
-                        otherwise
-                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-                                anomalyDescrMsg, 'BICAS:proc_sub:Assertion:DatasetFormat')
-
-                    end
-                end
-                
                 %================================================================
                 % NOTE: This might only be appropriate for TDS's "COMMON_MODE"
                 % mode. TDS also has a "FULL_BAND" mode with 2^18=262144 samples
@@ -639,11 +709,22 @@ classdef proc_sub
                 % value SAMPS_PER_CH should have for FULL_BAND mode. How does
                 % Epoch work for FULL_BAND snapshots?
                 %================================================================
-                PreDc.Zv.nValidSamplesPerRecord = zv_SAMPS_PER_CH;
+                % Converting to double because code did so before code
+                % reorganization. Reason unknown. Needed to avoid precision
+                % problems when doing math with other variables?
+                PreDc.Zv.nValidSamplesPerRecord = double(InSci.Zv.SAMPS_PER_CH);
             else
                 PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
             end
-
+            assert(all(PreDc.Zv.nValidSamplesPerRecord <= nCdfMaxSamplesPerSnapshot), ...
+                'BICAS:proc_sub:process_TDS_to_PreDC:Assertion:DatasetFormat', ...
+                ['Dataset indicates that the number of valid samples per CDF', ...
+                ' record (max(PreDc.Zv.nValidSamplesPerRecord)=%i) is', ...
+                ' NOT fewer than the number of indices per CDF record', ...
+                ' (nCdfMaxSamplesPerSnapshot=%i).'], ...
+                max(PreDc.Zv.nValidSamplesPerRecord), ...
+                nCdfMaxSamplesPerSnapshot)
+            
 
 
             %==========================
@@ -1029,13 +1110,17 @@ classdef proc_sub
 
 
         % Utility function to shorten code.
-        function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(ZvStruct, nRecords, inputDsiC)
-            % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
+        %
+        % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX exists
+        % for L1R, but not L1.
+        function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(ZvStruct, nRecords, inputDsi)
             
-            if inputDsiC.isL1R
+            C = EJ_library.so.adm.classify_DATASET_ID(inputDsi);
+            
+            if C.isL1R
                 CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
-            elseif inputDsiC.isL1
-                CALIBRATION_TABLE_INDEX = zeros(nRecords, 2) * NaN;
+            elseif C.isL1
+                CALIBRATION_TABLE_INDEX = nan(nRecords, 2);
             else
                 error('Can not normalize CALIBRATION_TABLE_INDEX for this DATASET_ID classification.')
             end
