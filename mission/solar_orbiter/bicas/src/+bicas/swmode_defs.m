@@ -388,14 +388,12 @@ classdef swmode_defs
         
         
         function Def = def_output_dataset(cliOptionHeaderBody, datasetId, prodFuncOutputKey, swdName, swdDescription, skeletonVersion)
-            C = EJ_library.so.adm.classify_DATASET_ID(datasetId);
+            [~, datasetLevel, ~] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
             
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
             Def.datasetId           = datasetId;
-            if     C.isL2    Def.datasetLevel        = 'L2';
-            elseif C.isL3    Def.datasetLevel        = 'L3';
-            else             error('')
-            end
+            Def.datasetLevel        = datasetLevel;
+            
             Def.prodFuncOutputKey   = prodFuncOutputKey;   % 'SCI_cdf';
             Def.swdName             = swdName;
             Def.swdDescription      = swdDescription;
@@ -405,7 +403,7 @@ classdef swmode_defs
             bicas.swmode_defs.assert_text(              Def.swdName)
             bicas.swmode_defs.assert_text(              Def.swdDescription)
             bicas.swmode_defs.assert_DATASET_ID(        Def.datasetId)
-            bicas.assert_dataset_level(                 Def.datasetLevel)
+            EJ_library.so.adm.assert_dataset_level(     Def.datasetLevel)
             bicas.assert_skeleton_version(              Def.skeletonVersion)
         end
 
@@ -413,12 +411,11 @@ classdef swmode_defs
 
         % NOTE: Wrapper around global counterpart.
         function assert_DATASET_ID(datasetId)
-            % PROPOSAL: Use classification function for DATASET_ID instead.
-            
-            bicas.assert_DATASET_ID(datasetId)
+            bicas.assert_BICAS_DATASET_ID(datasetId)
             
             % ASSERTION: Only using SOLO_* DATASET_IDs.
-            assert(strcmp('SOLO_', datasetId(1:5)))
+            [sourceName, ~, ~] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
+            assert(strcmp(sourceName, 'SOLO'))
         end
         
         

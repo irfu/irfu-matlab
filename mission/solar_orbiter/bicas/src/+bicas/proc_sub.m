@@ -400,8 +400,7 @@ classdef proc_sub
             
             
             nRecords = size(InSci.Zv.Epoch, 1);
-            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
-            
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
 
 
             %============
@@ -523,8 +522,7 @@ classdef proc_sub
             
             nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
             
-            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
-            
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
             
             
             %===================================
@@ -660,8 +658,7 @@ classdef proc_sub
                 error('Voltage timestamps do not increase (all antennas combined).')
             end
 
-            C = EJ_library.so.adm.classify_DATASET_ID(inSciDsi);
-
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
             
             
             nRecords                  = size(InSci.Zv.Epoch, 1);
@@ -731,7 +728,7 @@ classdef proc_sub
             % Set PreDc.Zv.samplesCaTm
             %==========================
             % CDF ASSERTION
-            if     C.isL1R   WAVEFORM_DATA_nChannels = 3;
+            if     C.isL1r   WAVEFORM_DATA_nChannels = 3;
             elseif C.isL1    WAVEFORM_DATA_nChannels = 8;
             end
             % NOTE: NOT using method EJ_library.assert.sizes directly in
@@ -804,7 +801,7 @@ classdef proc_sub
             
             
             
-            C = EJ_library.so.adm.classify_DATASET_ID(outputDsi);
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(outputDsi);
 
             EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
             EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD;
@@ -1083,9 +1080,9 @@ classdef proc_sub
         % for L1R, but not L1.
         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(ZvStruct, nRecords, inputDsi)
             
-            C = EJ_library.so.adm.classify_DATASET_ID(inputDsi);
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputDsi);
             
-            if C.isL1R
+            if C.isL1r
                 CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
             elseif C.isL1
                 CALIBRATION_TABLE_INDEX = nan(nRecords, 2);

@@ -85,9 +85,9 @@ classdef proc
             %==============================
             % Configure calibration object
             %==============================
-            C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
-            useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1R;
-            useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1R;
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
+            useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1r;
+            useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1r;
             
             if useCtRcts
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
@@ -134,7 +134,7 @@ classdef proc
             % Configure calibration object
             %==============================
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
-            C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
             if C.isTdsCwf
                 settingUseCt   = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 rctTypeId      = 'TDS-CWF';
@@ -142,7 +142,7 @@ classdef proc
                 settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 rctTypeId      = 'TDS-RSWF';
             end
-            useCtRcts = SETTINGS.get_fv(settingUseCt) && C.isL1R;
+            useCtRcts = SETTINGS.get_fv(settingUseCt) && C.isL1r;
             useCti2   = false;    % Always false for TDS.
             
             if useCtRcts
