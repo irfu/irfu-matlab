@@ -2,30 +2,44 @@
 % Simultaneously
 % ** check the size of multiple variables
 % ** whether specified dimensions match explicit sizes
-% ** whether specified dimensions have identical but arbitrary sizes (e.g. across variables)
-% ** return above arbitarily-sized dimensions, so that the caller can e.g. check them.
+% ** whether specified dimensions have identical but arbitrary sizes (e.g.
+%    across variables)
+% ** return above arbitrarily-sized dimensions, so that the caller can e.g.
+%    check them.
 %
-% Ex: Check that variables representing zVariables have explicitly specified non-record dimensions, and the same
-% arbitrary number of records (size in first dimension). Return number of records.
+% Ex: Check that variables representing zVariables have explicitly specified
+% non-record dimensions, and the same arbitrary number of records (size in first
+% dimension). Return number of CDF records.
+%
+%
+% RATIONALE
+% =========
+% This function is intended for assertions. It is not an assertion function
+% by itself since there are rare situations where one wants to customize the
+% error behaviour.
 %
 %
 % ARGUMENTS
 % =========
 % varargin: Arbitrary number of argument pairs below:
 %   var            : variable value which size will be tested.
-%   sizeConstraint : 1D vector with integers specifying the size of the corresponding argument "var".
+%   sizeConstraint : 1D vector with integers specifying the size of the
+%                    corresponding argument "var".
 %       Nonnegative integer : Explicit required size.
-%       Negative integer    : Arbitrary dimension size which must match between all arguments "var".
+%       Negative integer    : Arbitrary dimension size which must match between
+%                             all arguments "var".
 %                             Must be numbered -1, -2, ... , -N
-%       NaN                 : Arbitrary dimension size independent of other dimensions. No corresponding return
-%                             value.
+%       NaN                 : Arbitrary dimension size independent of other
+%                             dimensions. No corresponding return value.
 %
 %
 % RETURN VALUES
 % =============
 % condSatisfied : Logical. Whether variable sizes satisfy criteria.
-% varargout     : Size of dimensions labelled with negative integers, in order -1, -2, ... .
-%                 NOTE: Values are only guaranteed to be correct if condSatisfied==true.
+% varargout     : Size of dimensions labelled with negative integers, in order
+%                 -1, -2, ... .
+%                 NOTE: Values are only guaranteed to be correct if
+%                 condSatisfied==true.
 %
 %
 % NOTES
@@ -39,21 +53,22 @@
 % First created 2020-07-29, when broken out from of other code.
 %
 function [condSatisfied, varargout] = sizes(varargin)
-    %   PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
-    %       PROPOSAL: sizeConstraints = {N}, one numeric value (N, negativeValue, NaN).
-    %       PROPOSAL: sizeConstraints = {'1D vector', N}
-    %       PROPOSAL: Prepend sizeConstraints argument with string constant "vector", "1D", "1D vector".
-    %   ~CON/NOTE: Can not assert equal size for variables with arbitrary number of dimensions.
+    % PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
+    %   PROPOSAL: sizeConstraints = {N}, one numeric value (N, negativeValue, NaN).
+    %   PROPOSAL: sizeConstraints = {'1D vector', N}
+    %   PROPOSAL: Prepend sizeConstraints argument with string constant
+    %   "vector", "1D", "1D vector". Require sizeConstraints to be scalar.
+    %
+    % PROBLEM?/NOTE: Can not assert equal size for variables with arbitrary number of dimensions.
+    %
+    % PROBLEM?: Can not ignore the sizes of all higher dimensions.
+    %   Ex: Can not be used to emulate size(A, 1) == size(B, 1) alone.
+    %   PROPOSAL: sizeConstraints = {'ignore higher dims', [...]}
     %
     % PROPOSAL: Abolish NaN (force caller to use negative integer size).
     %   PRO: Simplifies implementation.
     %   PRO: Saves NaN for possible future special value for other functionality.
     %   CON: Clearer that NaN refers to arbitrary value.
-    %
-    % PROBLEM?: Variables which are so large as to potentially cause memory problems should not(?) be submitted
-    % to varargin, since they are likely copied then, even if not modified.
-    %   PROPOSAL: Enable way of just submitting size(X) instead.
-    %       PROPOSAL: Add suffix argument string constant 'size'.
     %
     % PROPOSAL: Return error message for assertion function to use as error message.
     %   CON: Must add new return value which a direct caller of this function is unlikely to want.
@@ -61,21 +76,22 @@ function [condSatisfied, varargout] = sizes(varargin)
     nArgs = numel(varargin);
     
     % Number of return values representing (potentially linked) dimension sizes.
-    % NOTE: This should be LESS OR EQUAL to the number of arbitrary (potentially linked) dimension sizes.
+    % NOTE: This should be LESS OR EQUAL to the number of arbitrary (potentially
+    % linked) dimension sizes.
     nOutputDims = nargout - 1;
     
     % Assign default value to varargout.
-    % IMPLEMENTATION NOTE: Required to avoid secondary error, if exiting function before varargout has been
-    % entirely assigned.
-    varargout = num2cell(ones(1, nOutputDims) * NaN);
-    %varargout = cell(1, nOutputDims);
+    % IMPLEMENTATION NOTE: Required to avoid secondary error, if exiting
+    % function before varargout has been entirely assigned.
+    varargout = num2cell(nan(1, nOutputDims));
     
     sizeArray       = [];
     sizeConstrArray = [];
     
-    %=====================================================================================
-    % Read arguments and store values in a data structure that is suitable for algorithm.
-    %=====================================================================================
+    %==========================================================================
+    % Read arguments and store values in a data structure that is suitable for
+    % algorithm.
+    %==========================================================================
     iArgPair = 0;    % NOTE: iArgPair=1 represents the first argument pair.
     while true
         %====================
@@ -115,12 +131,12 @@ function [condSatisfied, varargout] = sizes(varargin)
     
     
     
-    %==========================================================================================================
+    %==========================================================================
     % ASSERTION: Arbitrary linked dimension sizes
     % -------------------------------------------
-    % IMPLEMENTATION NOTE: Performs this check before explicit dimension sizes to increase chance of correctly
-    % assigning varargout before returning.
-    %==========================================================================================================
+    % IMPLEMENTATION NOTE: Performs this check before explicit dimension sizes
+    % to increase chance of correctly assigning varargout before returning.
+    %==========================================================================
     sizeConstrSpecialValue = -1;
     iOutputDim = 0;
     while true
@@ -138,23 +154,22 @@ function [condSatisfied, varargout] = sizes(varargin)
             condSatisfied = false;
             return
         end
-        %                 assert(nUniqueSizes == 1, ...
-        %                     EJ_library.assert.ASSERTION_EMID, ...
-        %                     'One or several variables have different sizes for dimensions labelled %i.', sizeConstrSpecialValue)
         
         % Assign return values.
-        % NOTE: Does not matter if assigning return values which are not stored by caller, but it is important
-        % to that there are at least as many linked dimension sizes as there are return values.
+        % NOTE: Does not matter if assigning return values which are not stored
+        % by caller, but it is important to that there are at least as many
+        % linked dimension sizes as there are return values.
         iOutputDim = -sizeConstrSpecialValue;
         varargout{iOutputDim} = uniqueSizes;
         
-        sizeConstrArray(b) = NaN;    % Effectively remove already checked size constraints from later checks.
+        % Effectively remove already checked size constraints from later checks.
+        sizeConstrArray(b) = NaN;
         
         sizeConstrSpecialValue = sizeConstrSpecialValue - 1;
     end
     assert(nOutputDims <= iOutputDim, ...
         'sizes:Assertion', ...
-        'There are more requested output values, than there are arbitrary (potentially linked) dimension sizes.')
+        'There are more requested output values than there are arbitrary (potentially linked) dimension sizes.')
     
     
     
@@ -166,11 +181,9 @@ function [condSatisfied, varargout] = sizes(varargin)
         condSatisfied = false;
         return
     end
-    %             assert(all(sizeConstrArray(b) == sizeArray(b), ...
-    %                 EJ_library.assert.ASSERTION_EMID, ...
-    %                 'At least one variable dimension size differs from an explicitly specified dimension size.')
     
-    sizeConstrArray(b) = NaN;    % Effectively remove already checked size constraints from later checks.
+    % Effectively remove already checked size constraints from later checks.
+    sizeConstrArray(b) = NaN;
     
     
     
@@ -181,10 +194,6 @@ function [condSatisfied, varargout] = sizes(varargin)
         error('sizes:Assertion', ...
             ['Size constraints contains negative numbers that can not be interpreted as constraints.'])
     end
-    %             assert(all(isnan(sizeConstrArray)), ...
-    %                 EJ_library.assert.ASSERTION_EMID, ...
-    %                 ['Size constraints contains negative numbers that can not (are not supposed to)', ...
-    %                 ' be interpreted as constraints.'])
     
     %==============================================================================
     % NOTE: Ignore size constraint NaN. Does not need to be explicitly checked.

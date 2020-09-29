@@ -36,7 +36,7 @@ function freqHz = get_LFR_frequency(iLsf)
     end
     
     % NOTE: Implementation that works for arrays of any size.
-    freqHz = ones(size(iLsf)) * NaN;        % Allocate array and set default values.
+    freqHz = nan(size(iLsf));        % Allocate array and set default values.
     freqHz(iLsf==1) = LSF_HZ(1);
     freqHz(iLsf==2) = LSF_HZ(2);
     freqHz(iLsf==3) = LSF_HZ(3);

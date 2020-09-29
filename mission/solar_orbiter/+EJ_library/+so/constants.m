@@ -1,4 +1,7 @@
 %
+% sampere = set ampere
+%
+%
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-06-26
 %
@@ -27,7 +30,7 @@ classdef constants
         % max=(2^15-1)/2^15 * 60e-9 sampere.
         MAX_ABS_SAMPERE = 60e-6;
         
-        TM_PER_SAMPERE = 32768 / 60e-6;
+        TM_PER_SAMPERE = 32768 / EJ_library.so.constants.MAX_ABS_SAMPERE;
     end
 
 end
