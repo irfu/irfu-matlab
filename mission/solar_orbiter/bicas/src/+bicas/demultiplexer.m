@@ -220,16 +220,17 @@ classdef demultiplexer
             assert(isnumeric(bltsSamplesAVolt{1}))   % Should ideally check for all indices, but one helps.
             
             % AS = "ASR Samples" (avolt)
-            NAN_VALUES = nan(size(bltsSamplesAVolt{1}));
-            As.dcV1  = NAN_VALUES;
-            As.dcV2  = NAN_VALUES;
-            As.dcV3  = NAN_VALUES;
-            As.dcV12 = NAN_VALUES;
-            As.dcV13 = NAN_VALUES;
-            As.dcV23 = NAN_VALUES;
-            As.acV12 = NAN_VALUES;
-            As.acV13 = NAN_VALUES;
-            As.acV23 = NAN_VALUES;
+%             NAN_VALUES = nan(size(bltsSamplesAVolt{1}));
+%             As.dcV1  = NAN_VALUES;
+%             As.dcV2  = NAN_VALUES;
+%             As.dcV3  = NAN_VALUES;
+%             As.dcV12 = NAN_VALUES;
+%             As.dcV13 = NAN_VALUES;
+%             As.dcV23 = NAN_VALUES;
+%             As.acV12 = NAN_VALUES;
+%             As.acV13 = NAN_VALUES;
+%             As.acV23 = NAN_VALUES;
+            As = struct();
             
             
             
@@ -256,25 +257,25 @@ classdef demultiplexer
                     RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V23;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     % Derive the ASRs not in the BLTS.
-                    As.dcV2 = As.dcV1 - As.dcV12;
-                    As.dcV3 = As.dcV2 - As.dcV23;
-                    if dlrUsing12
-                        As.dcV13 = As.dcV12 + As.dcV23;
-                    else
-                        As.dcV12 = As.dcV13 - As.dcV23;
-                    end
-                    
+%                     As.dcV2 = As.dcV1 - As.dcV12;
+%                     As.dcV3 = As.dcV2 - As.dcV23;
+%                     if dlrUsing12
+%                         As.dcV13 = As.dcV12 + As.dcV23;
+%                     else
+%                         As.dcV12 = As.dcV13 - As.dcV23;
+%                     end
+
                 case 1   % Probe 1 fails
-                    
+
                     RoutingArray(1) = bicas.demultiplexer.ROUTING_DC_V2;
                     RoutingArray(2) = bicas.demultiplexer.ROUTING_DC_V3;
                     RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V23;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3
                     % contain redundant data (regardless of latching relay
@@ -287,17 +288,17 @@ classdef demultiplexer
                     RoutingArray(3) =                     ROUTING_DC_V1x;
                     RoutingArray(4) = bicas.demultiplexer.ROUTING_AC_V13;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
-                    if dlrUsing12
-                        % CASE: Know V1, V3, V12
-                        As.dcV2  = As.dcV1 - As.dcV12;
-                        As.dcV13 = As.dcV1 - As.dcV3;
-                        As.dcV23 = As.dcV2 - As.dcV3;
-                    else
-                        % NOTE: Can not derive anything extra for DC. BLTS 1-3
-                        % contain redundant data.
-                    end
+%                     if dlrUsing12
+%                         % CASE: Know V1, V3, V12
+%                         As.dcV2  = As.dcV1 - As.dcV12;
+%                         As.dcV13 = As.dcV1 - As.dcV3;
+%                         As.dcV23 = As.dcV2 - As.dcV3;
+%                     else
+%                         % NOTE: Can not derive anything extra for DC. BLTS 1-3
+%                         % contain redundant data.
+%                     end
                     
                 case 3   % Probe 3 fails
 
@@ -306,17 +307,17 @@ classdef demultiplexer
                     RoutingArray(3) =                     ROUTING_DC_V1x;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
 
-                    if dlrUsing12
-                        % NOTE: Can not derive anything extra for DC. BLTS 1-3
-                        % contain redundant data.
-                    else
-                        % CASE: Know V1, V2, V13
-                        As.dcV3  = As.dcV1 - As.dcV13;
-                        As.dcV12 = As.dcV1 - As.dcV2;
-                        As.dcV23 = As.dcV2 - As.dcV3;
-                    end
+%                     if dlrUsing12
+%                         % NOTE: Can not derive anything extra for DC. BLTS 1-3
+%                         % contain redundant data.
+%                     else
+%                         % CASE: Know V1, V2, V13
+%                         As.dcV3  = As.dcV1 - As.dcV13;
+%                         As.dcV12 = As.dcV1 - As.dcV2;
+%                         As.dcV23 = As.dcV2 - As.dcV3;
+%                     end
                     
                 case 4   % Calibration mode 0
                     
@@ -325,11 +326,11 @@ classdef demultiplexer
                     RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V3;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
-                    As.dcV12 = As.dcV1 - As.dcV2;
-                    As.dcV13 = As.dcV1 - As.dcV3;
-                    As.dcV23 = As.dcV2 - As.dcV3;
+%                     As.dcV12 = As.dcV1 - As.dcV2;
+%                     As.dcV13 = As.dcV1 - As.dcV3;
+%                     As.dcV23 = As.dcV2 - As.dcV3;
 
                 case {5,6,7}   % Calibration mode 1/2/3
 
@@ -345,11 +346,11 @@ classdef demultiplexer
                     end
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
-                    As.dcV12 = As.dcV1 - As.dcV2;
-                    As.dcV13 = As.dcV1 - As.dcV3;
-                    As.dcV23 = As.dcV2 - As.dcV3;
+%                     As.dcV12 = As.dcV1 - As.dcV2;
+%                     As.dcV13 = As.dcV1 - As.dcV3;
+%                     As.dcV23 = As.dcV2 - As.dcV3;
 
                 otherwise
                     % IMPLEMENTATION NOTE: switch-case statement does not work
@@ -365,7 +366,7 @@ classdef demultiplexer
                         RoutingArray(3) = bicas.demultiplexer.ROUTING_UNKNOWN_3_TO_NOTHING;
                         RoutingArray(4) =                     ROUTING_AC_V1x;
                         RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                        As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                        %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                         
                         % BUG/NOTE: Does not set any DC samples. Therefore just
                         % keeping the defaults. Can not derive any DC signals
@@ -379,11 +380,14 @@ classdef demultiplexer
             
             % IMPLEMENTATION NOTE: Can be placed outside switch-case since BLTS
             % 4 & 5 are routed identically for all mux modes.
-            if dlrUsing12
-                As.acV13 = As.acV12 + As.acV23;
-            else
-                As.acV12 = As.acV13 - As.acV23;
-            end
+%             if dlrUsing12
+%                 As.acV13 = As.acV12 + As.acV23;
+%             else
+%                 As.acV12 = As.acV13 - As.acV23;
+%             end
+            
+            As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+            As = complement_ASR(As);
             
             
             
@@ -395,6 +399,95 @@ classdef demultiplexer
             % Assign return values.
             AsrSamplesAVolt = As;
             BltsSrcArray    = [RoutingArray.src];
+        end
+        
+        
+        
+        % Given an incomplete ASR struct, derive the missing ASRs using the
+        % existing ones.
+        %
+        % NOTE: In the event of redundant FIELDS, but not redundant DATA
+        % (non-fill value), the code can NOT make intelligent choice of only
+        % using available data to replace fill values.
+        %   Ex: mux=1: Fields (V1, V2, V12) but V1 does not contain any data
+        %   (fill values). Could in principle derive V1=V2-V12 but code does
+        %   not know this.
+        %   NOTE: Unlikely that this will ever happen, or that the
+        %   instrument RPW is even able to return data for this situation.
+        %
+        % NOTE: Only public for the purpose of automatic testing.
+        %
+        function AsrSamplesAVolt = complement_ASR(AsrSamplesAVolt)
+            As = AsrSamplesAVolt;   % Shorten variable name.
+            
+            % NOTE: A relation can be complemented at most once, but algorithm
+            % will try to complement relations multiple times.
+            %
+            % PROPOSAL: Add empty/NaN same-sized fields when can not derive any more fields. Assertion on fieldnames
+            %           at the end.
+            %
+            % PROPOSAL: Implement on a record-by-record basis, with b indices to
+            %           select which records should be derived.
+            %   PRO: Can apply over multiple demultiplexer modes.
+            %       CON: Not necessarily for non-antenna data. Might want to
+            %       keep V12=NaN, but V1,V2=non-NaN for e.g. 2.5V ref data.
+            %       Maybe...
+            %   Ex: b1 = ~isnan(As.dcV1), ...
+            %       b = b1 & b2 & ~b12;
+            %       As.dcV12(b, :) = As.dcV1(b, :) - As.dcV2(b, :);
+            
+            N_ASR_FIELDNAMES = numel(bicas.demultiplexer.ASR_FIELDNAMES_CA);
+            
+            %================
+            % Derive AC ASRs
+            %================
+            % AC ASRs are separate from DC. Does not have to be in loop.
+            % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
+            % nFnAfter == 9 condition does not work.
+            As = bicas.demultiplexer.complete_relation(As, 'acV13', 'acV12', 'acV23');
+
+            %================
+            % Derive DC ASRs
+            %================
+            nFnBefore = numel(fieldnames(As));
+            while true
+                % NOTE: Relation dcV13 = dcV12 + dcV23 has precedence for
+                % deriving diffs since it is better to derive a diff from
+                % (initially available) diffs rather than singles, directly or
+                % indirectly, if possible.
+                As = bicas.demultiplexer.complete_relation(As, 'dcV13', 'dcV12', 'dcV23');
+                
+                As = bicas.demultiplexer.complete_relation(As, 'dcV1',  'dcV12', 'dcV2');
+                As = bicas.demultiplexer.complete_relation(As, 'dcV1',  'dcV13', 'dcV3');
+                As = bicas.demultiplexer.complete_relation(As, 'dcV2',  'dcV23', 'dcV3');
+                nFnAfter = numel(fieldnames(As));
+                
+                if (nFnBefore == nFnAfter) || (nFnAfter == 9)
+                    break
+                end
+                nFnBefore = nFnAfter;
+            end
+                        
+            %===================================================================
+            % Assign all ASRs/fields which have not yet been assigned
+            % -------------------------------------------------------
+            % IMPLEMENTATION NOTE: This is needed to handle for situations when
+            % the supplied fields can not be used to determine all fields (five
+            % fields are supplied but the system of equations is
+            % overdetermined/redundant).
+            %   Ex: mux=1,2,3
+            %===================================================================
+            tempNaN = nan(size(As.acV12));    % Use first field in fieldnames?
+            for iFn = 1:N_ASR_FIELDNAMES
+                fn = bicas.demultiplexer.ASR_FIELDNAMES_CA{iFn};
+                if ~isfield(As, fn)
+                    As.(fn) = tempNaN;
+                end
+            end
+            
+            EJ_library.assert.struct(As, bicas.demultiplexer.ASR_FIELDNAMES_CA, {})
+            
+            AsrSamplesAVolt = As;
         end
         
         
@@ -500,72 +593,27 @@ classdef demultiplexer
         
         
         
-%         % EXPERIMENTAL. NOT USED.
-%         function AsrSamplesVolt = complement_DC_signals(AsrSamplesVolt)
-%             As = AsrSamplesVolt;
-%             
-%             % BUG??!!! Algorithm should ideally start over with highest-precedence relation after any field has been
-%             % derived?
-%             % NOTE: A relation can be complemented at most once, but algorithm will try to complement relations
-%             % multiple times.            
-%             % PROPOSAL: complete_relation returns successFlag. Use list of function pointers. Remove functions that have
-%             % executed.
-%             %   CON: Overkill.
-%             % PROPOSAL: Add empty/NaN same-sized fields when can not derive any more fields. Assertion on fieldnames
-%             %           at the end.
-%             
-%             % AC ASRs are separate from DC. Does not have to be in loop.
-%             % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise nFnAfter == 9 condition does not work.
-%             As = complete_relation(As, 'acV13', 'acV12', 'acV23');
-% 
-%             nFnBefore = numel(fieldnames(As));
-%             while true
-%                 % NOTE: This relation has precedence since it is better to derive a diff from (initially available)
-%                 % diffs rather than singles, directly or indirectly, if possible.
-%                 %
-%                 % Example of bad derivation:
-%                 %   Mux mode=0, dlr12=true
-%                 %   Initially known values (BLTS): V1,V12,V23
-%                 %   V2=f(V1,V12)
-%                 %   V3=f(V2,V23)
-%                 %   V13=f(V1,V3)   ## Bad since could use V13=f(V12,V23), only using initial values.
-%                 As = complete_relation(As, 'dcV13',    'dcV12',    'dcV23');
-%                 
-%                 As = complete_relation(As, 'dcV1',     'dcV12',    'dcV2');
-%                 As = complete_relation(As, 'dcV2',     'dcV23',    'dcV3');
-%                 As = complete_relation(As, 'dcV1',     'dcV13',    'dcV3');
-%                 nFnAfter = numel(fieldnames(As));
-%                 
-%                 if (nFnBefore == nFnAfter) || (nFnAfter == 9)
-%                     break
-%                 end
-%                 nFnBefore = nFnAfter;
-%             end
-%             
-%             AsrSamplesVolt = As;
-%         end
-%         
-%         
-%         
-%         % EXPERIMENTAL. NOT USED.
-%         %
-%         % s             : Struct
-%         % fn1, fn2, fn3 : Existent or non-existent fieldnames in s.
-%         %
-%         % If exactly two of the fieldnames exist in s, then derive the third
-%         % using the relationship s.(fn1) == s.(fn2) + s.(fn3)
-%         function S = complete_relation(S, fn1, fn2, fn3)
-%             e1 = isfield(S, fn1);
-%             e2 = isfield(S, fn2);
-%             d3 = isfield(S, fn3);
-%             if     ~e1 &&  e2 &&  e3     S.(fn1) = S.(fn2) + S.(fn3);
-%             elseif  e1 && ~e2 &&  e3     S.(fn2) = S.(fn1) - S.(fn3);
-%             elseif  e1 &&  e2 && ~e3     S.(fn3) = S.(fn1) - S.(fn2);
-%             end
-%         end
-                
-        
-        
+        % Utility function. Derive missing ASR fields from other fields. If
+        % exactly two of the fieldnames exist in S, then derive the third using
+        % the relationship As.(fn1) == As.(fn2) + As.(fn3)
+        %
+        % ARGUMENTS
+        % =========
+        % As             : Struct
+        % fn1, fn2, fn3 : Existent or non-existent fieldnames in s.
+        %
+        function As = complete_relation(As, fn1, fn2, fn3)
+            e1 = isfield(As, fn1);
+            e2 = isfield(As, fn2);
+            e3 = isfield(As, fn3);
+            if     ~e1 &&  e2 &&  e3     As.(fn1) = As.(fn2) + As.(fn3);
+            elseif  e1 && ~e2 &&  e3     As.(fn2) = As.(fn1) - As.(fn3);
+            elseif  e1 &&  e2 && ~e3     As.(fn3) = As.(fn1) - As.(fn2);
+            end
+        end
+
+
+
     end    % methods(Static, Access=public)
 
 

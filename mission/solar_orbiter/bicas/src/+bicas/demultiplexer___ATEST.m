@@ -6,6 +6,51 @@
 %
 function demultiplexer___ATEST
     main___ATEST
+    complement_ASR___ATEST
+end
+
+
+
+function complement_ASR___ATEST
+    newTest    = @(inputFieldsCa, outputFieldsCa) (erikpgjohansson.atest.CompareFuncResult(...
+        @new_test, ...
+        {inputFieldsCa}, {}));
+    
+    tl = {};
+    
+    % TODO: dlrUsing12
+    tl{end+1} = newTest({'dcV1', 19, 'dcV12', 27, 'dcV23', 33,    'acV12', 54, 'acV23', 75});    % mux=0, dlrUsing12=1
+    tl{end+1} = newTest({'dcV1', 19, 'dcV13', 27, 'dcV23', 33,    'acV13', 54, 'acV23', 75});    % mux=0, dlrUsing12=0
+    tl{end+1} = newTest({'dcV2', 19, 'dcV3',  27, 'dcV23', 19-27, 'acV12', 54, 'acV23', 75});    % mux=1
+    tl{end+1} = newTest({'dcV1', 2   'dcV2',  7,  'dcV3',  32,    'acV12', 74, 'acV23', 85});    % mux=4
+    
+    erikpgjohansson.atest.run_tests(tl)
+    
+    
+    
+    function new_test(inputFieldsCa)
+        A = bicas.demultiplexer.complement_ASR( struct(inputFieldsCa{:}) );
+        
+        % Test all possible relationsships.
+        %
+        % NOTE: Implicitly asserts that all fields are present.
+        % NOTE: Must account for that some fields may be NaN, and therefore can
+        % not be checked against relations.
+        assert_relation(A.dcV1,  A.dcV12, A.dcV2 )
+        assert_relation(A.dcV1,  A.dcV13, A.dcV3 )
+        assert_relation(A.dcV2,  A.dcV23, A.dcV3 )
+        assert_relation(A.dcV13, A.dcV12, A.dcV23)    % DC. All diffs
+        %
+        assert_relation(A.acV13, A.acV12, A.acV23)    % AC. All diffs
+    end
+end
+
+
+
+% Local utility function.
+function assert_relation(A, B, C)
+    b = ~isnan(A) & ~isnan(B) & ~isnan(C);
+    assert(all(A(b) == B(b) + C(b)))
 end
 
 
