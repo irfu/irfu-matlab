@@ -1,8 +1,16 @@
+%
 % Automatic test code for bicas.demultiplexer.
 %
-% Very basic tests at this stage. Could be improved but unsure how much is meaningful.
+% Very basic tests at this stage. Could be improved but unsure how much is
+% meaningful.
+%
 function demultiplexer___ATEST
-    
+    main___ATEST
+end
+
+
+
+function main___ATEST()
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.demultiplexer.main, inputs, outputs));
     tl = {};
     
@@ -15,7 +23,7 @@ function demultiplexer___ATEST
     V12a = 45-56;
     V13a = 45-69;
     V23a = 56-69;
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###################################################################
     function AsrSamplesVolt = ASR_samples(varargin)
         assert(nargin == 9)
         AsrSamplesVolt = struct(...
@@ -29,7 +37,7 @@ function demultiplexer___ATEST
             'acV13', as(varargin{8}, V13a), ...
             'acV23', as(varargin{9}, V23a));
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###################################################################
     function BltsSrcArray = BLTS_src_array(categoryArray, antennasArray)
         assert( numel(categoryArray) == numel(antennasArray) )
         
@@ -39,7 +47,7 @@ function demultiplexer___ATEST
                 antennasArray{i});
         end
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###################################################################
     
     
     
@@ -65,10 +73,10 @@ function demultiplexer___ATEST
 end
 
 
-
+% Local utility function.
 % as = assign. Effectively implements ~ternary operator + constant (NaN).
-function V = as(v,V)
-    if v; V = V;
+function V = as(b,V)
+    if b; V = V;
     else  V = NaN;
     end
 end

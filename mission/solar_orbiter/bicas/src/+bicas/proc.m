@@ -105,12 +105,12 @@ classdef proc
             %==============
             % Process data
             %==============
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
-            InputSciPd  = bicas.proc_sub.process_LFR_normalize(         InputSciPd,  inputSciDsi, SETTINGS, L);
-            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_calibrate_demux(       SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_PostDc_filter(         SciPreDcPd,  SciPostDcPd, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(         SciPostDcPd, outputDsi,   L);
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(InputSciPd,  InputHkPd,   SETTINGS, L);
+            InputSciPd  = bicas.proc_sub.process_LFR_normalize(       InputSciPd,  inputSciDsi, SETTINGS, L);
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDcPd = bicas.proc_sub.process_calibrate_demux(     SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
+            SciPostDcPd = bicas.proc_sub.process_PostDc_filter(       SciPreDcPd,  SciPostDcPd, SETTINGS, L);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi,   L);
             
             
             
@@ -136,11 +136,11 @@ classdef proc
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
             if C.isTdsCwf
-                settingUseCt   = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                rctTypeId      = 'TDS-CWF';
+                settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                rctTypeId    = 'TDS-CWF';
             else
-                settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                rctTypeId      = 'TDS-RSWF';
+                settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                rctTypeId    = 'TDS-RSWF';
             end
             useCtRcts = SETTINGS.get_fv(settingUseCt) && C.isL1r;
             useCti2   = false;    % Always false for TDS.

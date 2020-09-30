@@ -195,9 +195,9 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     
     
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %############################
     % Validate global attributes
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %############################
     
     %===================================
     % Validate set of global attributes
@@ -270,9 +270,9 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     
 
     
-    %%%%%%%%%%%%%%%%%%%%%%
+    %#####################
     % Validate zVariables
-    %%%%%%%%%%%%%%%%%%%%%%
+    %#####################
     
     %============================
     % Validate set of zVariables
@@ -335,9 +335,9 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
 
 
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###############################
     % Validate zVariable attributes
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###############################
     
     %======================================
     % Validate set of zVariable attributes

@@ -17,7 +17,8 @@
 %       content, then the first index corresponds to the CDF record.
 % SPR : Samples Per (CDF) Record. Only refers to actual data (currents,
 %       voltages), not metadata.
-% UFV : Use Fill Values
+% UFV : Use Fill Values (refers to records which data should overwritten with
+%       fill values)
 %
 %
 % SOME INTERMEDIATE PROCESSING DATA FORMATS
@@ -52,12 +53,6 @@ classdef proc_sub
 % PROPOSAL: Return (to execute_sw_mode), global attributes.
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
-%
-% TODO: add_UFV_records_from_settings should know whether output is L2 or not.
-%
-% PROPOSAL: Merge (most of)
-%   process_PostDC_to_LFR and
-%   process_PostDC_to_TDS into one function that shares most of the functionality.
 %
 % PROPOSAL:   process_calibrate_demux
 %           & calibrate_demux_voltages
@@ -145,7 +140,8 @@ classdef proc_sub
                 % NOTE: ACQUISITION_TIME in test file
                 % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
                 % is not monotonically increasing (in fact, it is completely strange).
-                error('HK timestamps do not increase monotonically (USE_ZV_ACQUISITION_TIME_HK=%g).', USE_ZV_ACQUISITION_TIME_HK)
+                error('HK timestamps do not increase monotonically (USE_ZV_ACQUISITION_TIME_HK=%g).', ...
+                    USE_ZV_ACQUISITION_TIME_HK)
             end
             if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 hk1RelativeSec = 1e-9 * (min(hkEpoch) - min(InSci.Zv.Epoch));
@@ -168,7 +164,8 @@ classdef proc_sub
                 % possible to later meaningfully permit non-intersection.
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-                    'SCI and HK time ranges do not overlap in time.', 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
+                    'SCI and HK time ranges do not overlap in time.', ...
+                    'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
             
             % NOTE: Requires >=2 records.
@@ -331,10 +328,12 @@ classdef proc_sub
                     
                     InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
                 else
-                    error('BICAS:process_LFR_normalize:DatasetFormat', 'Input dataset has both zVar SYNCHRO_FLAG and TIME_SYNCHRO_FLAG.')
+                    error('BICAS:process_LFR_normalize:DatasetFormat', ...
+                        'Input dataset has both zVar SYNCHRO_FLAG and TIME_SYNCHRO_FLAG.')
                 end
             else
-                error('BICAS:process_LFR_normalize:DatasetFormat', 'Input dataset does not have zVar SYNCHRO_FLAG as expected.')
+                error('BICAS:process_LFR_normalize:DatasetFormat', ...
+                    'Input dataset does not have zVar SYNCHRO_FLAG as expected.')
             end
             
             
@@ -441,7 +440,9 @@ classdef proc_sub
             E = single(permute(InSci.Zv.E, [1,3,2]));
             
             % ASSERTIONS
-            nCdfSamplesPerRecord = EJ_library.assert.sizes(InSci.Zv.V, [nRecords, -1], E, [nRecords, -1, 2]);
+            nCdfSamplesPerRecord = EJ_library.assert.sizes(...
+                InSci.Zv.V, [nRecords, -1], ...
+                E,          [nRecords, -1, 2]);
             if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
             else                assert(nCdfSamplesPerRecord == 1)
             end
@@ -598,13 +599,10 @@ classdef proc_sub
                 % 2019-09-18, David Pisa: Not a flaw in TDS RCS but in the
                 % source L1 dataset.
                 %============================================================
-                SAMPS_PER_CH_MIN_VALID    = 2^10;
-                SAMPS_PER_CH_MAX_VALID    = 2^15;
-
                 zv_SAMPS_PER_CH_corrected = round(2.^round(log2(double(InSci.Zv.SAMPS_PER_CH))));
                 zv_SAMPS_PER_CH_corrected = cast(zv_SAMPS_PER_CH_corrected, class(InSci.Zv.SAMPS_PER_CH));
-                zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, SAMPS_PER_CH_MIN_VALID);
-                zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, SAMPS_PER_CH_MAX_VALID);
+                zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MIN);
+                zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MAX);
                 
                 if any(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH)
                     % CASE: SAMPS_PER_CH has at least one illegal value
@@ -614,9 +612,11 @@ classdef proc_sub
                     badValuesDisplayStr = strjoin(arrayfun(...
                         @(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');
                     anomalyDescrMsg = sprintf(...
-                        'TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s) which are not on the form 2^n and in the interval %.0f to %.0f: %s', ...
-                        SAMPS_PER_CH_MIN_VALID, ...
-                        SAMPS_PER_CH_MAX_VALID, ...
+                        ['TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected', ...
+                        ' value(s) which are not on the form 2^n and in the', ...
+                        ' interval %.0f to %.0f: %s'], ...
+                        EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MIN, ...
+                        EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MAX, ...
                         badValuesDisplayStr);
                     
                     [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
@@ -775,6 +775,10 @@ classdef proc_sub
         % Processing function. Convert PostDC to either
         % (1) a TDS dataset, or
         % (2) almost to an LFR dataset (the rest is done in a wrapper).
+        %
+        % This function only changes the data format (and selects data to send
+        % to CDF).
+        %
         function [OutSciZv] = process_PostDC_to_LFR_TDS_main(SciPostDc, outputDsi, L)
 
             % ASSERTIONS
@@ -850,10 +854,10 @@ classdef proc_sub
                     SAMPLES_PER_RECORD_CHANNEL)
                 
                 % Try to pre-allocate to save RAM/speed up.
-                temp = nan(nRecords, nSamplesPerRecordChannel, 3);
-                OutSciZv.VDC = temp;
-                OutSciZv.EDC = temp;
-                OutSciZv.EAC = temp;
+                tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
+                OutSciZv.VDC = tempNaN;
+                OutSciZv.EDC = tempNaN;
+                OutSciZv.EAC = tempNaN;
                 
                 OutSciZv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
                 OutSciZv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
@@ -896,6 +900,8 @@ classdef proc_sub
         % functions.
         %
         function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, SETTINGS, L)
+            % PROPOSAL: Separate function for calibrating currents.
+            % PROPOSAL: PostDc does not need to contain copied zVars.
             
             tTicToc = tic();
 
@@ -916,21 +922,21 @@ classdef proc_sub
             PostDc.Zv.SYNCHRO_FLAG     = PreDc.Zv.SYNCHRO_FLAG;
             PostDc.Zv.freqHz           = PreDc.Zv.freqHz;
             if isfield(PreDc.Zv, 'BW')
-                PostDc.Zv.BW               = PreDc.Zv.BW;
+                PostDc.Zv.BW           = PreDc.Zv.BW;
             end
             
 
 
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %############################
             % DEMUX & CALIBRATE VOLTAGES
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %############################
             PostDc.Zv.DemuxerOutput = bicas.proc_sub.calibrate_demux_voltages(PreDc, Cal, L);
             
 
 
-            %=========================
+            %#########################
             % Calibrate bias CURRENTS
-            %=========================
+            %#########################
             currentSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
             currentTm      = bicas.calib.calibrate_current_sampere_to_TM(currentSAmpere);
             
@@ -950,9 +956,9 @@ classdef proc_sub
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
                 
                 for iAnt = 1:3
-                    %%%%%%%%%%%%%%%%%%%%%
+                    %--------------------
                     % CALIBRATE CURRENTS
-                    %%%%%%%%%%%%%%%%%%%%%
+                    %--------------------
                     currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
                         currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
                 end
@@ -970,9 +976,10 @@ classdef proc_sub
         
         
         
-        % Processing function
+        % Processing function.
         %
         % Overwrite selected data in selected CDF records with fill values/NaN.
+        %
         function PostDc = process_PostDc_filter(PreDc, PostDc, SETTINGS, L)
             
             %============================================
@@ -1007,6 +1014,7 @@ classdef proc_sub
         
         % Wrapper around bicas.proc_sub.handle_struct_name_change to be used
         % locally.
+        %
         % NOTE: Also used in bicas.proc.process_L3. Therefore public.
         %
         % ARGUMENTS
@@ -1257,9 +1265,6 @@ classdef proc_sub
         % consistent.
         %
         function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, L)
-        % PROPOSAL: Incorporate into processing function process_calibrate_demux_filter.
-        % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
-        %
         % PROPOSAL: Sequence of constant settings includes dt (for CWF)
         %   PROBLEM: Not clear how to implement it since it is a property of two records, not one.
         %       PROPOSAL: Use other utility function(s).
@@ -1304,8 +1309,10 @@ classdef proc_sub
 
 
 
-            % Pre-allocate. Important for speeding up LFR-SWF which tends to be
-            % broken into subsequences of 1 record.
+            % Pre-allocate
+            % ------------
+            % IMPLEMENTATION NOTE: Very important for speeding up LFR-SWF which
+            % tends to be broken into subsequences of 1 record.
             tempVoltageArray = nan(nRecords, nSamplesPerRecordChannel);
             AsrSamplesAVolt = struct(...
                 'dcV1',  tempVoltageArray, ...
@@ -1431,11 +1438,11 @@ classdef proc_sub
                             ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
                         end
                         
-                        %%%%%%%%%%%%%%%%%%%%%%%
-                        %%%%%%%%%%%%%%%%%%%%%%%
+                        %######################
+                        %######################
                         %  CALIBRATE VOLTAGES
-                        %%%%%%%%%%%%%%%%%%%%%%%
-                        %%%%%%%%%%%%%%%%%%%%%%%
+                        %######################
+                        %######################
                         CalSettings = struct();
                         CalSettings.iBlts        = iBlts;
                         CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
@@ -1443,10 +1450,10 @@ classdef proc_sub
                         CalSettings.iCalibTimeL  = iCalibL_ss;
                         CalSettings.iCalibTimeH  = iCalibH_ss;
                         CalSettings.iLsf         = iLsf_ss;
-                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        %##########################################################################
                         ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
                             PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
-                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        %##########################################################################
                         
                         if PreDc.hasSnapshotFormat
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
