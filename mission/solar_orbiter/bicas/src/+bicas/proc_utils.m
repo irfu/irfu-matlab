@@ -290,6 +290,9 @@ classdef proc_utils
         
         function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
         %
+        % NOTE: Modified to not need nSpr. FINAL?
+        %
+        %
         % ARGUMENTS
         % =========
         % freqHz           : Frequency column vector in s^-1.
@@ -305,16 +308,20 @@ classdef proc_utils
         
             ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
             
-            assert(iscolumn(freqHz) && isfloat(freqHz) && all(~isnan(freqHz)), ...
+            % ASSERTIONS
+            nRecords = EJ_library.assert.sizes(freqHz, [-1]);
+            assert(isfloat(freqHz) && all(~isnan(freqHz)), ...
                 'BICAS:proc_utils:Assertion:IllegalArgument', ...
-                'Argument "freqHz" is not a column vector of non-NaN floats.')
+                'Argument "freqHz" does not consist of non-NaN floats.')
             assert(isscalar(nSpr), ...
                 'BICAS:proc_utils:Assertion:IllegalArgument', ...
                 'Argument "nSpr" is not a scalar.')
             
-            nRecords = size(freqHz, 1);
-            DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
-            for i = 1:length(freqHz)
+            
+            
+            %DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
+            DELTA_PLUS_MINUS = zeros([nRecords, 1]);    % 1 sample/record.
+            for i = 1:nRecords
                 % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
                 % that the unit is the same as for Epoch.
                 % NOTE: Seems to work for more than 2D.
