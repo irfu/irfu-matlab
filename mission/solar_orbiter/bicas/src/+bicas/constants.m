@@ -89,6 +89,18 @@ classdef constants   % < handle
         % "--".
         SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
         
+        
+        
+        % Legal RCS NSO IDs.
+        % 
+        % IMPLEMENTATION NOTE: Specified as struct so that the struct can
+        % simultaneously be used to
+        % ** reference specific constants (fields) in code
+        % ** compile list of legal NSO IDs in NSO table file.
+        NSOID = struct(...
+            'TEST_QF0', 'test_QUALITY_FLAG_0', ...
+            'TEST_UFV', 'test_UFV');
+        
     end    % properties(Constant)
     
     

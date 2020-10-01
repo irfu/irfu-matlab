@@ -78,12 +78,12 @@ classdef proc
         %
         function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
             
-            InputHkPd  = InputDatasetsMap('HK_cdf');
-            InputCurPd = InputDatasetsMap('CUR_cdf');
-            InputSciPd = InputDatasetsMap('SCI_cdf');
+            InputHkCdf  = InputDatasetsMap('HK_cdf');
+            InputCurCdf = InputDatasetsMap('CUR_cdf');
+            InputSciCdf = InputDatasetsMap('SCI_cdf');
 
             %==============================
-            % Configure calibration object
+            % Configure bicas.calib object
             %==============================
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
             useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1r;
@@ -92,9 +92,9 @@ classdef proc
             if useCtRcts
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, 'LFR', ...
-                    InputSciPd.Ga.CALIBRATION_TABLE, ...
-                    InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
-                    InputSciPd.Zv.BW, ...
+                    InputSciCdf.Ga.CALIBRATION_TABLE, ...
+                    InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+                    InputSciCdf.Zv.BW, ...
                     L);
             else
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
@@ -105,17 +105,17 @@ classdef proc
             %==============
             % Process data
             %==============
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(InputSciPd,  InputHkPd,   SETTINGS, L);
-            InputSciPd  = bicas.proc_sub.process_LFR_normalize(       InputSciPd,  inputSciDsi, SETTINGS, L);
-            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_calibrate_demux(     SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_PostDc_filter(       SciPreDcPd,  SciPostDcPd, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi,   L);
+            HkSciTimePd           = bicas.proc_sub.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
+            InputSciCdf           = bicas.proc_sub.process_LFR_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc_sub.process_LFR_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal,    SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            OutputSciCdf          = bicas.proc_sub.process_PostDC_to_LFR_CDF(       SciPreDc, SciPostDc, outputDsi, L);
             
             
             
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('SCI_cdf') = OutputSciPd;
+            OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
         end
 
 
@@ -126,12 +126,12 @@ classdef proc
         %
         function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
             
-            InputHkPd  = InputDatasetsMap('HK_cdf');
-            InputCurPd = InputDatasetsMap('CUR_cdf');
-            InputSciPd = InputDatasetsMap('SCI_cdf');
+            InputHkCdf  = InputDatasetsMap('HK_cdf');
+            InputCurCdf = InputDatasetsMap('CUR_cdf');
+            InputSciCdf = InputDatasetsMap('SCI_cdf');
             
             %==============================
-            % Configure calibration object
+            % Configure bicas.calib object
             %==============================
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
@@ -148,8 +148,8 @@ classdef proc
             if useCtRcts
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, rctTypeId, ...
-                    InputSciPd.Ga.CALIBRATION_TABLE, ...
-                    InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
+                    InputSciCdf.Ga.CALIBRATION_TABLE, ...
+                    InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     [], ...
                     L);
             else
@@ -161,17 +161,17 @@ classdef proc
             %==============
             % Process data
             %==============
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
-            InputSciPd  = bicas.proc_sub.process_TDS_normalize(         InputSciPd,  inputSciDsi, SETTINGS, L);
-            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_calibrate_demux(       SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_PostDc_filter(         SciPreDcPd,  SciPostDcPd, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR_TDS_main(SciPostDcPd, outputDsi,   L);
+            HkSciTimePd           = bicas.proc_sub.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
+            InputSciCdf           = bicas.proc_sub.process_TDS_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc_sub.process_TDS_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal, SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            OutputSciCdf          = bicas.proc_sub.process_PostDC_to_TDS_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
             
             
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('SCI_cdf') = OutputSciPd;
+            OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
         end
         
         
@@ -180,9 +180,9 @@ classdef proc
             % Always the same DATASET_ID.
             INPUT_DATASET_ID = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
 
-            InputLfrCwfPd = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
+            InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
-            [InputLfrCwfPd.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfPd.Zv, ...
+            [InputLfrCwfCdf.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfCdf.Zv, ...
                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
             
             bicas.proc_sub.handle_zv_name_change(...
@@ -199,12 +199,12 @@ classdef proc
             % Therefore extra assertions to detect such changes.
             %===================================================================
             TsVdc = TSeries(...
-                EpochTT(InputLfrCwfPd.Zv.Epoch), InputLfrCwfPd.Zv.VDC, ...
+                EpochTT(InputLfrCwfCdf.Zv.Epoch), InputLfrCwfCdf.Zv.VDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
             [TsEdc, TsPsp, TsScpot] = solo.vdccal(TsVdc);
             EJ_library.assert.sizes(...
-                InputLfrCwfPd.Zv.Epoch, [-1, 1], ...
+                InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
                 TsEdc.data,   [-1, 3], ...
                 TsPsp.data,   [-1, 1], ...
                 TsScpot.data, [-1, 3])
@@ -233,34 +233,34 @@ classdef proc
             
             
             
-            EfieldPd = struct();
-            EfieldPd.Epoch            = InputLfrCwfPd.Zv.Epoch;
-            EfieldPd.QUALITY_BITMASK  = InputLfrCwfPd.Zv.QUALITY_BITMASK;
-            EfieldPd.QUALITY_FLAG     = min(...
-                InputLfrCwfPd.Zv.QUALITY_FLAG, ...
+            EfieldCdf = struct();
+            EfieldCdf.Epoch            = InputLfrCwfCdf.Zv.Epoch;
+            EfieldCdf.QUALITY_BITMASK  = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
+            EfieldCdf.QUALITY_FLAG     = min(...
+                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
                 'includeNaN');
-            EfieldPd.DELTA_PLUS_MINUS = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
-            EfieldPd.EDC_SFR          = zvEdcMvpm;
+            EfieldCdf.DELTA_PLUS_MINUS = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
+            EfieldCdf.EDC_SFR          = zvEdcMvpm;
             
             
             
-            ScpotPd = struct();
-            ScpotPd.Epoch             = InputLfrCwfPd.Zv.Epoch;
-            ScpotPd.QUALITY_BITMASK   = InputLfrCwfPd.Zv.QUALITY_BITMASK;
-            ScpotPd.QUALITY_FLAG      = min(...
-                InputLfrCwfPd.Zv.QUALITY_FLAG, ...
+            ScpotCdf = struct();
+            ScpotCdf.Epoch             = InputLfrCwfCdf.Zv.Epoch;
+            ScpotCdf.QUALITY_BITMASK   = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
+            ScpotCdf.QUALITY_FLAG      = min(...
+                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
                 'includeNaN');
-            ScpotPd.DELTA_PLUS_MINUS  = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
-            ScpotPd.SCPOT             = TsScpot.data;
-            ScpotPd.PSP               = TsPsp.data;
+            ScpotCdf.DELTA_PLUS_MINUS  = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
+            ScpotCdf.SCPOT             = TsScpot.data;
+            ScpotCdf.PSP               = TsPsp.data;
 
             
             
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('EFIELD_cdf') = EfieldPd;
-            OutputDatasetsMap('SCPOT_cdf')  = ScpotPd;
+            OutputDatasetsMap('EFIELD_cdf') = EfieldCdf;
+            OutputDatasetsMap('SCPOT_cdf')  = ScpotCdf;
         end
         
         

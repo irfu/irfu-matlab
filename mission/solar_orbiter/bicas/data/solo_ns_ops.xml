@@ -5,27 +5,33 @@ which should be labelled in special ways (QUALITY_FLAG, L2_QUALITY_BITMASK, mayb
 
 startTimeUtc,
 stopTimeUtc   : Start & stop time as UTC strings.
-rcsNsoCode    : String constant used by BICAS to set quality flags & bits, remove data etc.
+rcsNsoId      : String constant used by BICAS to set quality flags & bits, remove data etc.
                 RCS NSO = RPW Calibration Software Non-Standard Operation
 -->
 <table
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="solo_ns_ops.xsd">
 	<event>
-		<startTimeUtc>2002-05-30T09:30:10Z</startTimeUtc>
-		<stopTimeUtc>2002-05-30T10:30:10Z</stopTimeUtc>
-		<rcsNsoCode>saturation</rcsNsoCode>
-		<description>A minor test problem 1</description>
+		<startTimeUtc>2020-02-13T00:58:00Z</startTimeUtc>
+		<stopTimeUtc> 2020-02-13T00:59:00Z</stopTimeUtc>
+		<rcsNsoId>test_QUALITY_FLAG_0</rcsNsoId>
+		<description>Test 1. 2020-02-13 00:00-~01:40 corresponds to local LFR CWF test dataset.</description>
 	</event>
 	<event>
-		<startTimeUtc>2012-05-30T09:30:10Z</startTimeUtc>
-		<stopTimeUtc>2012-05-30T10:30:10Z</stopTimeUtc>
-		<rcsNsoCode>bad_bias</rcsNsoCode>
-		<description>A minor test problem 2</description>
+		<startTimeUtc>2020-02-13T01:01:00Z</startTimeUtc>
+		<stopTimeUtc> 2020-02-13T01:02:00Z</stopTimeUtc>
+		<rcsNsoId>test_UFV</rcsNsoId>
+		<description>Test 2</description>
 	</event>
 	<event>
-		<startTimeUtc>2012-05-30T09:30:10Z</startTimeUtc>
-		<stopTimeUtc>2012-05-30T10:30:10Z</stopTimeUtc>
-		<rcsNsoCode>test_RCS_NSO_code</rcsNsoCode>
-		<description>Test problem</description>
+		<startTimeUtc>2020-04-14T01:00:00Z</startTimeUtc>
+		<stopTimeUtc> 2020-04-14T02:00:00Z</stopTimeUtc>
+		<rcsNsoId>test_QUALITY_FLAG_0</rcsNsoId>
+		<description>Test 1. 2020-04-14 00:00-24:00 corresponds to local LFR SWF test dataset.</description>
+	</event>
+	<event>
+		<startTimeUtc>2020-04-14T03:00:00Z</startTimeUtc>
+		<stopTimeUtc> 2020-04-14T04:00:00Z</stopTimeUtc>
+		<rcsNsoId>test_UFV</rcsNsoId>
+		<description>Test 2</description>
 	</event>
 </table>
