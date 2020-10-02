@@ -48,6 +48,13 @@ if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
       end
       repres = cellstr(data.REPRESENTATION_1.data)';
       ud = rmfield(ud,'REPRESENTATION_1');
+      % THIS IS A HACK FOR BAD SOLO MAG FILES
+      if length(repres) ~= data.dim(1)
+        warning('BAD_REPRESENTATION','Wrong representation size')
+        if data.dim(1)==3
+          repres = {'x','y','z'};
+        end
+      end
     case 2 % tensor
       error('not implemented')
     otherwise
