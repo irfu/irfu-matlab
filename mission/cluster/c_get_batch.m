@@ -129,7 +129,7 @@ while have_options
           for i=1:length(p), vars(length(vars)+1) = p(i); end %#ok<AGROW>
         elseif iscell(args{2}), vars = args{2};
         else
-          irf_log('fcal','VARS must be eather string or cell array')
+          irf_log('fcal','VARS must be either string or cell array')
         end
       case 'varsproc'
         if ischar(args{2})
@@ -139,7 +139,7 @@ while have_options
         elseif iscell(args{2}), varsProc = args{2};
         else
           irf_log('fcal',...
-            'VARSPROC must be eather string or cell array')
+            'VARSPROC must be either string or cell array')
         end
       case 'extrav'
         if ischar(args{2})
@@ -147,7 +147,7 @@ while have_options
         elseif iscell(args{2}), varsXtra = args{2};
         else
           irf_log('fcal',...
-            'EXTRAV must be eather string or cell array')
+            'EXTRAV must be either string or cell array')
         end
       case 'cdb'
         if (isa(args{2},'ClusterDB')), cdb = args{2};

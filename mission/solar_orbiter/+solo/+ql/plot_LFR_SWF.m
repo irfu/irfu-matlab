@@ -1,53 +1,38 @@
 %
-% Quicklook for the content of one BIAS LFR SWF dataset (CDF file), i.e. DATASET_ID = SOLO_L2_RPW-LFR-SURV-SWF-E
+% Quicklook for the content of one BIAS LFR SWF dataset (CDF file), i.e.
+% DATASET_ID = SOLO_L2_RPW-LFR-SURV-SWF-E.
 %
 %
-% NOTE: Only capable (default) of only showing either DC diffs or AC diffs. There are hardcoded settings for permitting
-% or forcing both.
+% NOTE: Only capable (default) of only showing either DC diffs or AC diffs.
+% There are hard-coded settings for permitting or forcing both.
 % NOTE: Uses bicas.proc_utils.* code.
 % NOTE: Does not yet support spectrogram overlap.
 % NOTE: Time series panels interpolate between snapshots.
 % NOTE: Color scale is log, therefore negative values (probably).
 %
 %
-% ARGUMENTS
-% =========
-% timeIntervUtc : Optional. Cell array, length 2. {1},{2} = UTC string, begin & end.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
-    %
-    % SOLO_L2_RPW-LFR-SURV-SWF-E_V05.cdf zVariables:
-    %
-    % Variable Information (0 rVariable, 18 zVariables)
-    % ===========================================================
-    % Epoch                 CDF_TT2000/1      0:[]    T/
-    % ACQUISITION_TIME      CDF_UINT4/1       1:[2]   T/T
-    % ACQUISITION_TIME_UNITS CDF_CHAR/16      1:[2]   F/T
-    % ACQUISITION_TIME_LABEL CDF_CHAR/32      1:[2]   F/T
-    % QUALITY_FLAG          CDF_UINT1/1       0:[]    T/
-    % QUALITY_BITMASK       CDF_UINT1/1       0:[]    T/
-    % V_LABEL               CDF_CHAR/2        1:[3]   F/T
-    % E_LABEL               CDF_CHAR/3        1:[3]   F/T
-    % EAC_LABEL             CDF_CHAR/5        1:[3]   F/T
-    % V                     CDF_REAL4/1       2:[2048,3]      T/TT
-    % E                     CDF_REAL4/1       2:[2048,3]      T/TT
-    % EAC                   CDF_REAL4/1       2:[2048,3]      T/TT
-    % IBIAS1                CDF_REAL4/1       1:[2048]        T/T
-    % IBIAS2                CDF_REAL4/1       1:[2048]        T/T
-    % IBIAS3                CDF_REAL4/1       1:[2048]        T/T
-    % DELTA_PLUS_MINUS      CDF_INT8/1        1:[2048]        T/T
-    % F_SAMPLE              CDF_REAL4/1       0:[]    T/
-    % SYNCHRO_FLAG          CDF_UINT1/1       0:[]    T/
+function hAxesArray = plot_LFR_SWF(filePath)
+    % SPEED
+    % =====
+    % Execution time
+    % With    irf_spectrogram : 26.592199 s
+    % Without irf_spectrogram : 36.683050 s
+    % With    irf_spectrogram, downsample_Specrec(nBins=2) for every
+    % snapshot                : 31.648818 s
+    % ==> irf_spectrogram is only a part of the problem. It is not enough to use
+    % downsample_Specrec.
+    % --
+    % N_SAMPLES_PER_SPECTRUM = 128 ==> 29.063167 s
+    % N_SAMPLES_PER_SPECTRUM = 512 ==> 17.913298 s
+    % --
+    % NOTE: 24 spectrums per snapshot (N_SAMPLES_PER_SPECTRUM = 128) ==> not much use downsampling further).
+
+
 
     % POLICY: BOGIQ for all quicklook plot code: See plot_LFR_CWF.
-    %
-    % PROPOSAL: Document "proper speed test" since spectrograms are slow.
-    %   PROPOSAL: Separate file for this.
-    %   PROPOSAL: Vary nSamplesPerSpectrum.
     %
     % TODO-DECISION: How submit data to spectrum_panel?
     %   NEED: Should also work for TDS's varying-length snapshots?
@@ -61,18 +46,16 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     %       CON: Does not work per snapshot.
     %   PROPOSAL: Always let the caller split up the time series in segments, snapshots or otherwise.
     %
-    % PROPOSAL: Argument for time interval should use some more irfu-matlab-way of specifying a time interval.
     % PROPOSAL: Some clear way of distinguishing AC & DC visually?
     %
     % TODO?: Remove interpolation (straight lines) between time series snapshots?
-    %
-    % ~BUG: Can probably not handle new zVariable names VDC.
     %
     % ~BUG: Algorithm for calculating enlargement of snapshot spectra not always appropriate.
     %   Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20200228_V01.cdf
     %   PROPOSAL: Enlarge each snapshot spectrum until it reaches neighbour (roughly).
     %       Use min(timeToSnapshotBefore, timeToSnapshotafter) as max radius.
     % 
+    % PROPOSAL: Use EJ_library.so.constants for Fx.str, Fx.freqHz in some better way.
 
     % YK 2020-04-16: Officially only either DC or AC diffs.
     % NOTE: solo_L2_rpw-lfr-surv-cwf-e-cdag_20200228_V01.cdf contains both DC & AC diffs.
@@ -83,27 +66,16 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     % Info associated with LFR sampling rates (F0-F3 is LFR's terminology).
     % NOTE: LFR SWF only uses F0-F2 (not F3).
     % RATIONALE: Useful to be able to submit (to a function) all info associated with one sampling rate at once.
-    F0.str    = 'F0';
-    F1.str    = 'F1';
-    F2.str    = 'F2';
-    F0.freqHz = 24576;
-    F1.freqHz =  4096;
-    F2.freqHz =   256;
+    F0.str    = EJ_library.so.constants.LSF_NAME_ARRAY{1};
+    F1.str    = EJ_library.so.constants.LSF_NAME_ARRAY{2};
+    F2.str    = EJ_library.so.constants.LSF_NAME_ARRAY{3};
+    F0.freqHz = EJ_library.so.constants.LSF_HZ(1);
+    F1.freqHz = EJ_library.so.constants.LSF_HZ(2);
+    F2.freqHz = EJ_library.so.constants.LSF_HZ(3);
 
     
     
-    % Interpret argument for optionally restricting covered time range.
-    % TEMPORARY? Useful for debugging when plotting large files (slow plotting).
-    if nargin == 1
-        DATAOBJ_TIME_INTERVAL_ARGS = {};
-    elseif nargin == 2
-        assert(iscell(timeIntervUtc))
-        DATAOBJ_TIME_INTERVAL_ARGS = {'tint', [iso2epoch(timeIntervUtc{1}), iso2epoch(timeIntervUtc{2})]};
-    end
-    
-    
-
-    D = dataobj(filePath, DATAOBJ_TIME_INTERVAL_ARGS{:});
+    D = dataobj(filePath);
     
     epoch    = D.data.Epoch.data;
     F_SAMPLE = get_CDF_zv_data(D, 'SAMPLING_RATE', 1);
@@ -112,6 +84,27 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     vDc23    = get_CDF_zv_data(D, 'EDC', 3);
     vAc12    = get_CDF_zv_data(D, 'EAC', 1);
     vAc23    = get_CDF_zv_data(D, 'EAC', 3);
+    clear D
+    
+    if 0
+        % DEBUG: Limit records
+        I1 = 1;
+        I2 = 100;
+        
+        epoch = epoch(I1:I2);
+        F_SAMPLE = F_SAMPLE(I1:I2);
+        vDc1  = vDc1( I1:I2, :);
+        vDc12 = vDc12(I1:I2, :);
+        vDc23 = vDc23(I1:I2, :);
+        vAc12 = vAc12(I1:I2, :);
+        vAc23 = vAc23(I1:I2, :);
+        
+        fprintf('Limiting records to %s -- %s\n', ...
+            EJ_library.cdf.tt2000_to_UTC_str(epoch(1)), ...
+            EJ_library.cdf.tt2000_to_UTC_str(epoch(end)))
+    end
+    
+    
     
     % B = Boolean/Logical (true/false for every index value).
     F0.bRecords = (F_SAMPLE == F0.freqHz);
@@ -145,13 +138,17 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     
     pcfcList = {};    % PCFC = Panel Creation Function Call
     if ENABLE_SPECTROGRAMS
+        % IMPLEMENTATION NOTE: Could make a for loop over LFR sampling
+        % frequencies (F0..F2) here. The current construct is however useful to
+        % make it possible to manually (and temporarily) disable selected
+        % spectrograms.
         %=================
         % F0 spectrograms
         %=================
         pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F0, 'V1\_DC'));
         if displayDcDiffs
             pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F0, 'V12\_DC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V13\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V23\_DC'));
         end
         if displayAcDiffs
             pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F0, 'V12\_AC'));
@@ -257,8 +254,6 @@ end
 
 % ARGUMENTS
 % =========
-% TsCa     : Cell array of TSeries. All TSeries separately describe different time segments of one single scalar time
-%            series. In practice, each TSeries should represent one snapshot. This speeds up the spectrograms by a lot.
 % tlLegend : Top-left  (TL) legend string.
 % trLegend : Top-right (TR) legend string.
 %
@@ -267,37 +262,43 @@ end
 %
 function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend)
     % NOTE: Multiple-row labels causes trouble for the time series ylabels.
-    % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS snapshots that vary in length.
+    % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS
+    % snapshots that vary in length.
 
     % Fraction of the (minimum) time distance between snapshots (centers) that will be used for displaying the spectra.
     % Value 1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
     SNAPSHOT_WIDTH_FRACTION  = 0.90;
-    %SNAPSHOT_WIDTH_FRACTION  = 0.90;     % DEBUG
     %SPECTRUM_OVERLAP_PERCENT = 0;    % Percent, not fraction.
     SPECTRUM_OVERLAP_PERCENT = 50;    % Percent, not fraction.
     
     % NOTE: More samples per spectrum is faster (sic!).
-    %N_SAMPLES_PER_SPECTRUM = 2048 / 2;   % TEST
     N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
+    %N_SAMPLES_PER_SPECTRUM = 512;    % Speed test
 
 
-
-    TsCa  = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
+    TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
+    nTs  = numel(TsCa);
 
     h = irf_panel(panelTag);    
     
     %====================
     % Calculate spectras
     %====================
-    SpecrecCa = {};
-    ssCenterEpochUnixArray = [];
-    for i = 1:numel(TsCa)
+    % IMPLEMENTATION NOTE: irf_powerfft is the most time-consuming part of this
+    % code.
+    %
+    % NOTE: Using for-->parfor speeds up plot_LFR_SWF by
+    % 29.912231 s-->21.303145 s (irony). /2020-09-04
+    %
+    SpecrecCa = cell(nTs, 1);
+    ssCenterEpochUnixArray = zeros(nTs, 1);
+    parfor i = 1:nTs    % PARFOR
         Ts = TsCa{i};
         
-        SpecrecCa{end+1} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
+        SpecrecCa{i} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
         
         % IMPLEMENTATION NOTE: Later needs the snapshot centers in the same time system as Specrec.t (epoch Unix).
-        ssCenterEpochUnixArray(end+1) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
+        ssCenterEpochUnixArray(i) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
     end
     sssMaxWidthSecArray = derive_max_spectrum_width(ssCenterEpochUnixArray);
     
@@ -314,39 +315,23 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
             
             sssWidthSec = sssMaxWidthSecArray(i) * SNAPSHOT_WIDTH_FRACTION;
             
+            %SpecrecCa{i} = solo.ql.downsample_Specrec(SpecrecCa{i}, 10);    % TEST
+            
             % Stretch out spectra (for given snapshot) in time to be ALMOST adjacent between snapshots.
             % NOTE: Specrec.dt is not set by irf_powerfft so there is no default value that can be scaled up.
             % NOTE: Uses original spectrum positions and re-positions them relative to snapshot center.
-            %scaleFactor     = sssWidthSec / ssLengthSec;
-            %SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + (SpecrecCa{i}.t - ssCenterEpochUnixArray(i)) * scaleFactor;
             
-            % Can not handle %numel(SpecrecCa{i}.t) == 1.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff(SpecrecCa{i}.t)) * 0.5;
-            
-            % Does not work.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff([SpecrecCa{i}.t(:); TsCa{i}.time.stop.epochUnix] )) * 0.5;
-            
-            % Does not use original SpecrecCa{i}.t values at all.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * sssWidthSec / numel(SpecrecCa{i}.t) / 2;
-
-            % Set t and dt from scratch. Distribute the FFTs evenly over the available time interval.
-            % PRO: Always works 8does not crash), also for when there is only one FFT sequence.
-            % CON: If any of the individual FFTs fails (which the do), then irf_powerfft does not return that.
-            %      ==> Remaining FFTs are spread out over the remaining space.
-            %      ==> FFTs are placed in the wrong location.
-            %
-            nT = numel(SpecrecCa{i}.t);
-            distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nT);    % Distance from SS center to center of first/last FFT.
-            SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nT);
-            SpecrecCa{i}.dt = ones(nT, 1) * sssWidthSec / (2*nT);
+            nTime = numel(SpecrecCa{i}.t);      % Number of timestamps, but also spectras (within snapshot).
+            distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);    % Distance from SS center to center of first/last FFT.
+            SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
+            SpecrecCa{i}.dt = ones(nTime, 1) * sssWidthSec/(2*nTime);
         end
     end
     
     SpecrecCa(~bKeep) = [];
-    Specrec = merge_specrec(SpecrecCa);
+    Specrec = merge_specrec(SpecrecCa);    
     
-    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-    
+    Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
     irf_spectrogram(h, Specrec);   % Replaces irf_plot
     
     set(h, 'yscale','log')
@@ -357,8 +342,9 @@ end
 
 
 
-% For every snapshot, return the available width (in time; centered on snapshot center) for displaying the snapshot
-% spectrogram. Time offset and unit unimportant. Argument and return values have same unit.
+% For every snapshot, return the available width (in time; centered on snapshot
+% center) for displaying the snapshot spectrogram. Time offset and unit
+% unimportant. Argument and return values have same unit.
 %
 function sssMaxWidthArray = derive_max_spectrum_width(ssCenterArray)
     % Use distance to nearest snapshot for each snapshot separately.
@@ -377,7 +363,8 @@ end
 
 
 % Convenient wrapper around time_series_panel.
-% Converts from zVar-like variables (N samples/record; all records) to what is actually used for plotting.
+% Converts from zVar-like variables (N samples/record; all records) to what is
+% actually used for plotting.
 function h = time_series_panel2(panelTagSignalsStr, zvEpoch, zvDataList, SamplingRateInfo, trLegend)
     
     nSps     = size(zvDataList{1}, 2);   % SPS = Samples Per Snapshot
@@ -405,7 +392,8 @@ end
 % ARGUMENTS
 % =========
 % tlLegend : Top-left  (TL) legend.
-% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time series.
+% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time
+%            series.
 function h = time_series_panel(panelTag, Ts, tlLegend, trLegend)
     h = irf_panel(panelTag);
     irf_plot(h, Ts)
@@ -423,18 +411,20 @@ end
 % zvEpoch : Nx1 array.
 % zvData  : NxM array. (iRecord, iSampleWithinSnapshot). 1 record=1 snapshot.
 % TsCa    : (iSnapshot) 1D cell array of TSeries.
-%           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB confuses indexing a TSeries array (with
-%           brackets) with some special TSeries functionality for calling its code with brackets (calling TSeries'
-%           method "subsref").
+%           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB
+%           confuses indexing a TSeries array (with brackets) with some special
+%           TSeries functionality for calling its code with brackets (calling
+%           TSeries' method "subsref").
+%
+% IMPLEMENTATION NOTE: Function is written to some day be easily extended to be used for use with TDS's
+% length-varying snapshots.
 %
 function TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz)
-    % IMPLEMENTATION NOTE: Function is written to some day be easily extended to be used for use with TDS's
-    % length-varying snapshots.
     %
     % NOTE: No special treatment of snapshots with only NaN.
     
     assert(isscalar(samplingFreqHz))
-    EJ_library.assert.size(zvData, [NaN, NaN])
+    EJ_library.assert.sizes(zvData, [NaN, NaN])
     assert(size(zvEpoch, 1) == size(zvData, 1))   % Same number of records
     bicas.proc_utils.assert_zv_Epoch(zvEpoch)
     
@@ -454,17 +444,23 @@ end
 
 
 
-% Merge multiple instances of "specrec" structs as returned by irf_powerfft.
+% Merge multiple instances of "specrec" structs as returned by irf_powerfft,
+% with identical frequencies.
 % NOTE: Optionally added fields must be added after merging.
+% NOTE: Cf EJ_library.utils.merge_Specrec which is more powerful but which is
+% unnecessary here since only merging spectras with the same frequencies
+% (underlying data uses the same sampling frequency).
 %
-% ARGUMENTS AND RETURN VALUE
-% ==========================
-% SpecrecCa : Cell array of "specrec" as returned by irf_powerfft, but with .dt (column array) added to it.
-%             Unsure if irf_powerfft can return more cases than can be handled here.
+% ARGUMENTS
+% =========
+% SpecrecCa : Cell array of "Specrec" structs as returned by irf_powerfft, but with .dt (column array) added to it.
 %             NOTE: Requires dt (column array of scalars).
 %             NOTE: Assumes that all specrec use the same frequencies.
 %             IMPLEMENTATION NOTE: Uses cell array instead of struct array to be able to handle (and ignore) the case
 %             specrec = [] which can be returned by irf_powerfft.
+%
+% RETURN VALUE
+% ============
 % Specrec   : Struct array that can be used by irf_spectrogram.
 %
 function Specrec = merge_specrec(SpecrecCa)
@@ -496,6 +492,7 @@ end
 
 
 function data = get_CDF_zv_data(D, zvName, i3)
+    
     % TEMPORARY: For backward compatibility.
     if strcmp(zvName, 'SAMPLING_RATE') && isfield(D.data, 'F_SAMPLE')
         zvName = 'F_SAMPLE';

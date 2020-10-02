@@ -18,19 +18,19 @@
 % [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
 % switch(settingValue)
 %     case 'WORKAROUND_1'
-%         default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+%         bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
 %           anomalyDescrMsg)
 %         L.log('warning', 'Description of mitigation/workaround 1.')
 %         % Code for mitigating/workaround 1.
 %
 %     case 'WORKAROUND_2'
-%         default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+%         bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
 %           anomalyDescrMsg)
 %         L.log('warning', 'Description of mitigation/workaround 2.')
 %         % Code for mitigating/workaround 2.
 %
 %     otherwise
-%         default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
+%         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
 %           anomalyDescrMsg, 'BICAS:execute_sw_mode:SWModeProcessing')
 % end
 %
@@ -39,7 +39,7 @@
 % ===============================================
 % anomalyDescrMsg = 'Description of anomaly.';
 % [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
-% default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+% bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
 %     anomalyDescrMsg, 'BICAS:execute_sw_mode:SWModeProcessing')
 %
 %
@@ -142,7 +142,7 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
     N_INDENT = 4;
     ILLEGAL_SETTING_MSG = 'The setting value is illegal. Can therefore not handle the error/anomaly.';
     
-    anomalyDescriptionMsg = EJ_library.str.indent_str(anomalyDescriptionMsg, numel(PREFIX));
+    anomalyDescriptionMsg = EJ_library.str.indent(anomalyDescriptionMsg, numel(PREFIX));
     anomalyDescriptionMsg(1:numel(PREFIX)) = PREFIX;
 
     switch(casesHandled)
@@ -193,6 +193,6 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
     end
     %=================================================================================================================
     function logi(logLevel, str)
-        L.log(logLevel, EJ_library.str.indent_str(str, N_INDENT))
+        L.log(logLevel, EJ_library.str.indent(str, N_INDENT))
     end
 end

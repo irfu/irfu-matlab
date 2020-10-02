@@ -1,6 +1,8 @@
 function res = get_ts(dobj,var_s)
-%GET_TS(dobj, var_s)  get a variable in as TSeries object
+%GET_TS(dobj, var_s)  get a variable as a TSeries object
 %
+%           dobj  - dataobj
+%           var_s - String. Name of zVariable
 % Output:
 %			empty, if variable does not exist
 %			otherwise TSeries object
@@ -13,7 +15,7 @@ if isempty(data) % no such variable, return empty
   return;
 end
 
-% MMS special case. This is unly, but convenient.
+% MMS special case. This is ugly, but convenient.
 if isfield(data.GlobalAttributes,'Mission_group') && ...
     strcmpi(data.GlobalAttributes.Mission_group,'mms')
   res = mms.variable2ts(data); return

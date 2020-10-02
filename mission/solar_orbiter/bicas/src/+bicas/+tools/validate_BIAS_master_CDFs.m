@@ -32,7 +32,7 @@
 %             for manually inspecting the CDF files to investigate what is wrong.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-06
 %
 function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
@@ -558,7 +558,7 @@ end
 %
 function validation_warning(varargin)
     msg    = sprintf(varargin{:});
-    msg    = EJ_library.str.indent_str(msg, 3);
+    msg    = EJ_library.str.indent(msg, 3);
     msg(2) ='*';
 
     fwrite(1, msg)

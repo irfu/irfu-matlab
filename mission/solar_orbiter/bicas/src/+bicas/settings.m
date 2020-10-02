@@ -33,7 +33,7 @@
 %   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1). Inconvenient.
 % 
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-22
 %
 classdef settings < handle
@@ -44,7 +44,7 @@ classdef settings < handle
 %   PROPOSAL: MATLAB class (data type)
 %   PROPOSAL: Default value (so can display it if overridden)
 %   PROPOSAL: Flag for write-protection (always use default value).
-%       NOTE: Some settings (one?) make no sense to modify: config file path, STDOUT_PREFIX.
+%       NOTE: Some settings (one?) make no sense to modify: config file path.
 %   PROPOSAL: Flag for values which have not been set but must later be set.
 %       PROPOSAL: MATLAB_COMMAND
 %           CON: Is not really needed by BICAS.
@@ -199,7 +199,7 @@ classdef settings < handle
         % value : The value of the setting.
         % key   : The name of the settings key, i.e. identical to the argument "key".
         %         IMPLEMENTATION NOTE: This is useful in code that tries to avoid hardcoding the key string too many
-        %         times. That way, the key is hardcoded once (in the call to this method), and then simultaneously
+        %         times. That way, the key is hard-coded once (in the call to this method), and then simultaneously
         %         assigned to a variable that is then used in the vicinity for error/warning/log messages etc. It is the
         %         second return value so that it can be ignored when the caller does not need it.
         function [value, key] = get_fv(obj, key)

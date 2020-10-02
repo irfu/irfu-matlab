@@ -87,9 +87,6 @@ classdef demultiplexer
         
         
         
-        % NEW FUNCTION. NOT USED YET BUT MEANT TO REPLACE OLD FUNCTION "simple_demultiplex_subsequence_OLD".
-        %
-        %
         % Function that "encodes" the demultiplexer part of the BIAS subsystem.For a specified mux mode and demuxer
         % latching relay setting, it determines/encodes
         % (1) which (physical) input signal (Antennas, GND, "2.5V Ref", unknown) is routed to which physical output signal (BLTS)
@@ -117,7 +114,7 @@ classdef demultiplexer
         %
         % RATIONALE
         % =========
-        % Meant to collect all hardcoded information about the demultiplexer routing of signals in the BIAS
+        % Meant to collect all hard-coded information about the demultiplexer routing of signals in the BIAS
         % specification, Table 4.
         %
         %
@@ -177,7 +174,7 @@ classdef demultiplexer
             assert(numel(bltsSamplesAVolt)==5)
             assert(isnumeric(bltsSamplesAVolt{1}))   % Shuold ideally check for all indices, but one helps.
             
-            % AS = "ASR Samples" (AVolt)
+            % AS = "ASR Samples" (avolt)
             NAN_VALUES = ones(size(bltsSamplesAVolt{1})) * NaN;
             As.dcV1  = NAN_VALUES;
             As.dcV2  = NAN_VALUES;
@@ -201,7 +198,7 @@ classdef demultiplexer
 
             import bicas.demultiplexer.*
 
-            % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux mode, but the code hardcodes this
+            % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux mode, but the code hard-codes this
             % separately for every case (i.e. multiple times) for completeness.
             switch(demuxMode)
                 
@@ -215,7 +212,7 @@ classdef demultiplexer
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
-                    % Derive the ASR:s not in the BLTS.
+                    % Derive the ASRs not in the BLTS.
                     As.dcV2 = As.dcV1 - As.dcV12;
                     As.dcV3 = As.dcV2 - As.dcV23;
                     if dlrUsing12
@@ -345,7 +342,7 @@ classdef demultiplexer
         
         
         
-    end   % methods(Static, Access=public)
+    end    % methods(Static, Access=public)
     
     
     

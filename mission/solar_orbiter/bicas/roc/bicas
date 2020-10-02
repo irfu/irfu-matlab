@@ -50,13 +50,12 @@
 
 
 
-# Prefix that MATLAB code uses for stdout rows that should be sent to stdout (from the script).
+# Prefix that MATLAB code uses for stdout rows that should be sent to STDOUT (from this script).
 # NOTE: This pattern must match the corresponding prefix used in MATLAB.
 declare -r STDOUT_PREFIX='STDOUT: '    # NOTE: Not regex. Implicit that should match beginning of line.
 
-# Prefix that MATLAB code uses for stdout rows that should be sent to the log file.
-declare -r LOG_PREFIX='LOG: '
-
+# Prefix that MATLAB code uses for stdout rows that should be sent to the LOG FILE (from this script)
+declare -r LOG_FILE_PREFIX='LOG FILE: '
 
 # Name of MATLAB script that launches the MATLAB part of BICAS, such as it is called from inside MATLAB,
 # i.e. WITHOUT the file extension ".m".
@@ -252,6 +251,9 @@ loggable_main_code() {
     #
     # NOTE: The irfu-matlab code itself adds subdirectories to irfu-matlab/. "genpath" should therefore not be required,
     # unless BICAS requires code before irfu-matlab is initialized.
+    #
+    # NOTE: Using -nojvm is supposed to save ~400 MiB of RAM.
+    # https://se.mathworks.com/help/matlab/matlab_prog/resolving-out-of-memory-errors.html
     #====================================================================================================================
     echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
     # NOTE: EJ_library is needed before calling irf(...).
@@ -297,7 +299,7 @@ filter_stdout_labeled_rows() {
 
 filter_log_labeled_rows() {
     # NOTE: Call grep to FILTER entire rows. Call sed to filter out the prefix. Must call both.
-    grep "^${LOG_PREFIX}" | sed "s/^${LOG_PREFIX}//"
+    grep "^${LOG_FILE_PREFIX}" | sed "s/^${LOG_FILE_PREFIX}//"
 }
 
 

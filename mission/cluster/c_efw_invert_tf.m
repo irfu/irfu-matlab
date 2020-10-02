@@ -113,7 +113,7 @@ elseif strcmpi(method,'time')
   % Translated to Matlab by T.Nilsson, IRFU, from LPP/Berkeley IDL code.
   
   fsamp = c_efw_fsample(einp);
-  nk = 512;
+  nk = 512;        % Number of samples in interpolated transfer function.
   df = fsamp/nk;
   frq = (0:nk-1)*df; frq(nk/2+2:end) = frq(nk/2+2:end)-nk*df;
   
@@ -130,7 +130,7 @@ elseif strcmpi(method,'time')
   if(n_take_conj>0)
     c(take_conj) = conj(c(take_conj));
   else
-    c = complex(ones(1,size(tfinp2,1)),zeros(1,size(tfinp2,1)));
+    c = complex(ones(1,size(tfinp2,1)),zeros(1,size(tfinp2,1)));    % BUG: "tfinp2" not defined anywhere.
     warning('c filter had no negative freq. Not valid');
   end
   
@@ -174,7 +174,7 @@ elseif strcmpi(method,'time')
   eout = einp;
   
   % Before applying the filter remove any DC levels as the Hann window
-  % above could interfer with these and create an offset. The signal should
+  % above could interfere with these and create an offset. The signal should
   % be uncoupled before we let the Hann applied kernel do its thing.
   einp_mean = mean(einp(:,2));
   einp(:,2) = einp(:,2) - einp_mean;
@@ -220,7 +220,7 @@ end
 function ao = cluster_staff_fastconvol(a, kernel, edge, blk_c)
 
 % This function is a translated version of cluster_eff_fastconvol
-% originally written in IDL by ???. Traslated into Matlab code by
+% originally written in IDL by ???. Translated into Matlab code by
 % T.Nilsson, IRFU, 20130702
 % Input:
 %        a - data seq.
@@ -296,8 +296,8 @@ function result = block_conv( filter, signal, blen )
 % Linear Convolution computation via the Overlap-and-Save method. Ver 2.
 % This function require: length(signal) > blen > length(filter).
 
-% This separate function was originaly created by Ilias Konsoulas who
-% REQUIRED that following copyright message remain intact, the code has
+% This separate function was originally created by Ilias Konsoulas who
+% REQUIRED that the following copyright message remain intact. The code has
 % since been modified by T.Nilsson, IRFU, 20130802.
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %

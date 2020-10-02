@@ -1,10 +1,11 @@
 %
-% Set a standardized plot title (call "title).
+% Set a standardized plot title (calls "title").
 %
 % ARGUMENTS
 % =========
 % plotTypeStr : Top string, e.g. "LFR CWF".
-% filePath    : Path to file. Will only use the filename but permits submitting entire path for convenience.
+% filePath    : Path to file. Will only use the filename but permits submitting
+%               entire path for convenience.
 %
 function set_std_title(plotTypeStr, filePath, hTopAxes)
     assert(isscalar(hTopAxes))

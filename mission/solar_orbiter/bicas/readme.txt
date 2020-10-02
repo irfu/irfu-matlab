@@ -10,7 +10,7 @@ software is Erik P G Johansson, Swedish Institute of Space Physics (IRF),
 Uppsala, Sweden. Software development began 2016-03-xx (March 2016).
 
 IMPORTANT NOTE: BICAS is designed to comply with the RCS ICD. Much documentation
-on how to use this software can thus be found there. Fore more documentation,
+on how to use this software can thus be found there. For more documentation,
 see RCS ICD and RUM documents (see below).
 
 
@@ -20,8 +20,8 @@ see RCS ICD and RUM documents (see below).
 #######################
 NOTE: This list also applies to comments in the source code.
 --
-RCS                        = RPW Calibration Software. BICAS is an example of an
-                             RCS.
+RCS                        = RPW Calibration Software. BICAS is an example of
+                             an RCS.
 ICD                        = Interface Control Document
 ROC DFMD                   = Document ROC-TST-GSE-NTT-00017-LES, "Data format
                              and metadata definition for the ROC-SGSE data"
@@ -73,20 +73,22 @@ NOTE: The official CLI parameter syntax is defined in RCS ICD, Iss02 Rev02, Sect
 SYNTAX 1: ( --version | --identification | --swdescriptor | --help ) <General parameters>
 SYNTAX 2: <S/W mode> <General parameters, Output parameter, Specific inputs parameters> 
 
-NOTE: In syntax 2, the position of the first arguments is important. The order of all other arguments is arbitrary.
+NOTE: In syntax 2, the position of the first arguments is important. The order
+of all other (groups of) arguments is arbitrary.
 
---version           Print the software version.
---identification    Print the S/W descriptor release segment.
---swdescriptor      Print the S/W descriptor (not RCS ICD requirement).
---help              Print "help-ish" text
+--version          Print the software version.
+--identification   Print the S/W descriptor release segment.
+--swdescriptor     Print the S/W descriptor (not RCS ICD requirement).
+--help             Print "help-ish" text
 
 
 
 =========================
  Common input parameters
 =========================
---log    <absolute path to log file>    (optional) Specifies log file.
---config <absolute path to file>        (optional) Specifies the configuration file to use.
+--log    <absolute path to log file>   (optional) Specifies log file.
+--config <absolute path to file>       (optional) Specifies the configuration
+                                       file to use.
 
 
 <S/W mode>   Selects the S/W mode to use.

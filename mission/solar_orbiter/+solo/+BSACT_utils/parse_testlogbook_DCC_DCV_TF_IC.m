@@ -84,7 +84,7 @@
 %
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-10-12
 %
 

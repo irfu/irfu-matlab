@@ -1,12 +1,13 @@
 %
 % Automated test code fore interpret_config_file.
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-25
 %
 function interpret_config_file___ATEST()
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
-        @bicas.interpret_config_file, [inputs, {bicas.logger()}], outputs));
+        @bicas.interpret_config_file, [inputs, {bicas.logger('none', false)}], outputs));
+    
     tl = {};
 
     tl{end+1} = new_test({{'# Comment'}},               {containers.Map('KeyType', 'char', 'ValueType', 'char')});

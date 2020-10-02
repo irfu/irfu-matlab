@@ -261,7 +261,7 @@ switch lower(yscale)
     else
       dy=double(diffy)/4; % 1st approx
       dy10power=10^(floor(log10(dy)));
-      dy1stcipher=floor(dy/dy10power);
+      dy1stcipher=round(dy/dy10power);
       if dy1stcipher>5
         dy = 5*dy10power;
       else

@@ -9,7 +9,7 @@ function subsetStructList = select_cell_array_structs(structList, fieldName, sel
     % AND skeletonVersionStr.
     %
     %
-    % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+    % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     % First created 2016-07-19
     %
     %

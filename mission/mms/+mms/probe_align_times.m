@@ -2,7 +2,7 @@ function [starttime1,endtime1,starttime3,endtime3] = probe_align_times(varargin)
 %
 % [starttime1,endtime1,starttime3,endtime3] = mms.probe_align_times(Exyz,Bxyz,SCpot,zphase,1)
 %
-% Returns times when field-aligned electrostatic waves can be characterized using interferomtry
+% Returns times when field-aligned electrostatic waves can be characterized using interferometry
 % techniques. The same alignment conditions as Graham et al., JGR, 2015 are used.
 % Optional figure produced showing E_FAC, probe fields, and probe potentials to view
 % time delays between electric fields aligned with B.

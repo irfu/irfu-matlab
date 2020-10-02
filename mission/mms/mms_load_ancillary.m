@@ -28,7 +28,7 @@ switch lower(dataType)
     % if the number of headers are specified to textscan.
     % Last header line is identified by the existence of "COMMENT".
     headerGrep = 'COMMENT';
-    
+    nHeaders = 49;
     % Column 1 time in format yyyy-doyTHH:MM:SS.mmm
     % (where doy is day of year and mmm is milliseconds)
     % Column 10 Z-Phase (in degrees).
@@ -43,7 +43,7 @@ switch lower(dataType)
     % should appear as a unit.
     % Last header is identified by the existence of "Km/Sec"
     headerGrep = 'Kg';
-    
+    nHeaders = 14;
     % Column 1 time in format yyyy-doy/HH:MM:SS.mmm
     % (where doy is day of year and mmm is milliseconds),
     % Column 3, 4, 5 is position in X,Y,Z (in some ref.frame, TBC which)
@@ -55,7 +55,7 @@ switch lower(dataType)
     % for header lines. However the last line contains "". We can identify
     % number of header lines by looking for this string.
     headerGrep = 'Scale';
-    
+    nHeaders = 11;
     % Column 1 time in format yyyy-doy/HH:MM:SS.mmm
     % (where doy is day of year and mmm is miliseconds.
     % Column 3 is Quality factor, column 4 is scale.
@@ -68,19 +68,22 @@ switch lower(dataType)
 end
 
 % Get number of last header line using unix commands grep, tail and cut.
-if ismac, cutArgs = '-d'':'' -f2'; else, cutArgs = '-d: -f1'; end
-nTries = 1;
-[status, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
-  '" | tail -n1 | cut ' cutArgs]);
-nHeaders = str2double(nHeaders);
-while (status || ~isa(nHeaders, 'double') || nHeaders<=0) && nTries<=5
-  % For some reason it failed, log it and try again.
-  irf.log('warning', ['Failed with "grep" on ', fullFilename,'. Trying again.']);
-  nTries = nTries+1;
-  [status, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
-    '" | tail -n1 | cut ' cutArgs]);
-  irf.log('warning', ['This time around "grep" got nHeaders:', nHeaders,'.']);
-  nHeaders = str2double(nHeaders);
+if ispc
+else
+    if ismac, cutArgs = '-d'':'' -f2'; else, cutArgs = '-d: -f1'; end
+    nTries = 1;
+    [status, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
+        '" | tail -n1 | cut ' cutArgs]);
+    nHeaders = str2double(nHeaders);
+    while (status || ~isa(nHeaders, 'double') || nHeaders<=0) && nTries<=5
+        % For some reason it failed, log it and try again.
+        irf.log('warning', ['Failed with "grep" on ', fullFilename,'. Trying again.']);
+        nTries = nTries+1;
+        [status, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
+            '" | tail -n1 | cut ' cutArgs]);
+        irf.log('warning', ['This time around "grep" got nHeaders:', nHeaders,'.']);
+        nHeaders = str2double(nHeaders);
+    end
 end
 
 fileID = fopen(fullFilename, 'r');

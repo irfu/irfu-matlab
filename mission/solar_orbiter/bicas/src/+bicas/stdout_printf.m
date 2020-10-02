@@ -2,7 +2,7 @@
 % Wrapper around stdout_print but prints with pattern+parameters.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-08-05
 %
 function stdout_printf(pattern, varargin)

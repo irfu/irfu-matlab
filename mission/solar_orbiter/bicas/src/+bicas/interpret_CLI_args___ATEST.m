@@ -1,4 +1,4 @@
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-23
 function interpret_CLI_args___ATEST
 

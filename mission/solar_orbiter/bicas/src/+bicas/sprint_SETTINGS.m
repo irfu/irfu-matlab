@@ -1,9 +1,8 @@
-% str = sprint_SETTINGS()
 %
 % Create human-readable multi-line string to represent SETTINGS. Meant for logging and printing to stdout.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-22
 %
 function str = sprint_SETTINGS(SETTINGS)
@@ -27,7 +26,7 @@ function str = sprint_SETTINGS(SETTINGS)
     %
     
     % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants") to indicate/hint that it is only the content
-    % of the "SETTINGS" variables, and not of error_safe_constants.m.
+    % of the "SETTINGS" variables, and not of bicas.constants.
     str = sprintf([...
         '\n', ...
         'SETTINGS\n', ...
@@ -52,9 +51,11 @@ function str = sprint_SETTINGS(SETTINGS)
             value = valueStructArray(iVs).value;
             
             if ischar(value)
+                
                 strValue = ['"', value, '"'];
                 
             elseif isnumeric(value)
+                
                 EJ_library.assert.vector(value)
                 if isscalar(value)
                     strValue = sprintf('%d', value);
@@ -62,14 +63,32 @@ function str = sprint_SETTINGS(SETTINGS)
                     strArray = EJ_library.str.sprintf_many('%d', value);
                     strValue = sprintf('[%s]', strjoin(strArray, ', '));
                 end
-                
+
             elseif iscell(value)
+
                 EJ_library.assert.vector(value)
-                strValue = sprintf('{"%s"}', strjoin(value, '", "'));
-                
+                strValueCa = {};
+                for i = 1:numel(value)
+                    cellValue = value{i};
+                    if isnumeric(cellValue) && isscalar(cellValue)
+                        strValueCa{i} = sprintf('%g', cellValue);
+                    elseif ischar(cellValue)
+                        strValueCa{i} = sprintf('"%s"', cellValue);
+                    else
+                        error(...
+                            'BICAS:sprintf_settings:IllegalCodeConfiguration', ...
+                            'Can not print setting for log since cell array component is neither scalar numeric nor string.')
+                    end
+                end
+                strValue = sprintf('{%s}', strjoin(strValueCa, ', '));
+
             else
-                error('BICAS:sprintf_settings:Assertion', ...
-                    'SETTINGS value (overriden or not) for key="%s" has illegal MATLAB class. It is neither char nor numeric.', key)
+
+                error(...
+                    'BICAS:sprintf_settings:Assertion', ...
+                    ['SETTINGS value (overriden or not) for key="%s" has illegal MATLAB class.', ...
+                    ' It is neither char, numeric, nor 1D cell array.'], key)
+
             end
             strValueList{iVs} = strValue;
             clear strValue value

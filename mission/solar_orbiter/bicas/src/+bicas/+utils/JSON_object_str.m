@@ -31,7 +31,7 @@
 %   containers.Map : Can handle any object name string string.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-05-31
 %
 function str = JSON_object_str(JsonObj, indentSize)
