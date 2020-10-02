@@ -23,7 +23,7 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 %                    (real or reconstructed) used for every spectrum.
 %   samplFreqHz    - The sampling frequency [samples/s].
 %   overlapPercent - Overlap between spectras in percent (0..100-).
-%   smoothWidth    -
+%   smoothWidth    - (Unit: seconds?)
 %
 %
 % RETURN VALUE(S)
@@ -147,10 +147,12 @@ timeSecArray = timeSecArray(iKeep);
 % more.
 samples      = samples(iKeep, :, :, :, :, :);
 
+assert(issorted(timeSecArray))
 
 
 timeSec1  = timeSecArray(1,   1);
 timeSec2  = timeSecArray(end, 1);
+nTime     = numel(timeSecArray);
 nComp     = size(samples, 2);
 % fix() : Round toward zero.
 % nSpectras = Number of time intervals for which spectras should be made.
@@ -191,24 +193,61 @@ nnorm = 2.0/nFft/samplFreqHz/wnorm;
 
 
 
-%==============================================
+%=============================================
 % Iterate over STIs (spectrum time intervals)
-%==============================================
+%=============================================
+% NOTE: Calling select_preprocess_data is by far the slowest part of this
+% function. /Erik P G Johansson 2020-09-04
+%
 % IMPLEMENTATION NOTE: Empirically, calling select_preprocess_data in a separate
-% loop in advance speeds up the code (cuts execution time by ~11% in SolO CWF
-% test, ~43 s --> ~37 s; ~12% in SolO SWF test that calls for every snapshot).
-% Unknown why. RAM caching?
-% tTt = tic;
+% loop in advance speeds up the code (cuts total execution time by ~11% in SolO
+% CWF test, ~43 s --> ~37 s; ~12% in SolO SWF test that calls for every
+% snapshot). Unknown why. RAM caching? /Erik P G Johansson 2020-09-03/04
+%
+% IMPLEMENTATION NOTE: Changing "for"-->"parfor" speeds up the LOOP:
+% 32.596355 s --> 13.654587 s; irony, SolO CWF test. (Numbers assumes that the
+% "parallel pool" has already started. /Erik P G Johansson 2020-09-04
+% 
+% IMPLEMENTATION NOTE: Changing "for"-->"parfor" makes code SLOWER for SolO SWF
+% quicklook plotting with one IRF_powerfft call for every snapshot.
+% 30.592659 s --> 89.429904 s (solo.ql.plot_SWF; not just irf_powerfft).
+% /Erik P G Johansson 2020-09-04
+% ==> NOT USING "parfor".
 samplesStiCa = cell(nSti, 1);
-for iSti = 1:nSti
+iSti1 = int32(1);
+for iSti = 1:nSti     % NOT USING "parfor"
+  % Find beginning and end (in seconds) of current STI.
   stiSec1 = stiFirstSec1 + (1-overlap)*stiLengthSec*(iSti-1);
-  samplesStiCa{iSti} = select_preprocess_data(timeSecArray, samples, stiSec1, samplFreqHz, nFft);
+  stiSec2 = stiSec1      + nFft/samplFreqHz;
+  
+  % Find index interval i1:i2 for the samples of the current STI
+  % ------------------------------------------------------------
+  % IMPLEMENTATION NOTE: Doing this outside of select_preprocess_data while
+  % making use of timeSecArray being sorted (increasing) speeds up this
+  % function. If not, then one has to use "find" inside select_preprocess_data
+  % which is slower.
+  % /Erik P G Johansson 2020-09-14.
+  while timeSecArray(iSti1) < stiSec1
+      iSti1 = iSti1 + 1;
+  end
+  % NOTE: May have that ~(timeSecArray(i1) <= stiSec2).
+  % ==> Must begin with i2=i1-1.
+  iSti2 = iSti1-1;
+  while (iSti2+1 <= nTime) && (timeSecArray(iSti2+1) <= stiSec2)
+      iSti2 = iSti2 + 1;
+  end
+  % Only use below assertions when debugging/testing (code is slow).
+  % NOTE: Even if not used, the still illustrate
+  %assert(  find(timeSecArray >= stiSec1, 1, 'first') == i1 )
+  %assert( (find(timeSecArray <= stiSec2, 1, 'last')  == i2) || (i2 == nTime))
+      
+  %samplesStiCa{iSti} = select_preprocess_data(timeSecArray, samples, stiSec1, samplFreqHz, nFft);
+  samplesStiCa{iSti} = select_preprocess_data3(timeSecArray, samples, stiSec1, samplFreqHz, nFft, iSti1, iSti2);
+  %samplesStiCa{iSti} = select_preprocess_data2(timeSecArray, samples, stiSec1, samplFreqHz, nFft);
 end
-% toc(tTt)
-%==============================================
-% Iterate over STIs (spectrum time intervals)
-%==============================================
-% tTt = tic;
+%=============================================
+% Iterate over STIs (Spectrum Time Intervals)
+%=============================================
 for iSti = 1:nSti
   stiSec1 = stiFirstSec1 + (1-overlap)*stiLengthSec*(iSti-1);
   
@@ -238,7 +277,6 @@ for iSti = 1:nSti
   end
   
 end    % for iSti
-% toc(tTt)
 
 
 
@@ -281,8 +319,8 @@ end    % irf_powerfft
 %
 % ARGUMENTS
 % =========
-% timeSecArray
-% samples
+% timeSecArray : 1D array. Length nTime.
+% samples      : 2D array. Size nTime x nComp.
 % intervalSec1 : Timestamp of beginning of time interval for which to extract a
 %                sequence of samples.
 %                NOTE: End of time interval is derived from this argument
@@ -292,38 +330,57 @@ end    % irf_powerfft
 %
 % RETURN VALUE
 % ============
-% samplesOut  : Vector of size N x nSamplesOut. Each dimension 1 index corresponds
+% samplesOut  : Numeric array. Size nTime x nSamplesOut. Each dimension 1 index corresponds
 %               to constant time increments, according to samplFreqHz.
 %
 function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1, samplFreqHz, nSamplesOut)
-  % Only keep samples based on timestamps
-  % -------------------------------------
-  % IMPLEMENTATION NOTE: Only keeping samples based on timestamps first speeds
-  % up the code substantially since rounding actually seems to take a
-  % considerable amount of time (it would otherwise be done repeatedly for the
-  % same samples, when extracting data for different spectrums).
-  % IMPLEMENTATION NOTE: Indexing using iKeep = find(bKeep) (non-logical
-  % indexing), instead of bKeep (logical indexing), also seems to speed up code
+  % Only keep samples within specified time interval
+  % ------------------------------------------------
+  % IMPLEMENTATION NOTE: Only keeping samples based on timestamps before doing
+  % anything else speeds up the code substantially since rounding actually seems
+  % to take a considerable amount of time (it would otherwise be done repeatedly
+  % for the same samples, when extracting data for different spectrums).
+  %
+  % IMPLEMENTATION NOTE: Indexing using iKeep = find(bKeep) ("non-logical"
+  % indexing), instead of bKeep (logical indexing), might speed up code
   % somewhat, maybe.
+  
+  % Using "find" to find indices (instead of bKeep).
+  % 40-46 s --> 35-42 s (irony; SolO RPW CWF test file)
+  
   intervalSec2 = intervalSec1 + nSamplesOut/samplFreqHz;
+  
+  %=============================================================================
+  % Implementation 1
+  %     bKeep        = (intervalSec1 <= timeSecArray) & (timeSecArray <= intervalSec2);
+  %     timeSecArray = timeSecArray(bKeep);
+  %     samples      = samples(     bKeep, :);
+  %=============================================================================
   bKeep        = (intervalSec1 <= timeSecArray) & (timeSecArray <= intervalSec2);
-  %iKeep        = find(bKeep);
-  %iKeep        = find(bKeep, 1, 'first') : find(bKeep, 1, 'last');
   timeSecArray = timeSecArray(bKeep);
-  samples      = samples(     bKeep, :);
+  %samples      = samples(     bKeep, :);
   
-  nTimestamps = size(samples, 1);
-  nComp       = size(samples, 2);
+  %assert(numel(samples) == numel(timeSecArray))
+  nTimeSel = size(timeSecArray, 1);
+  nComp    = size(samples,      2);
   
-  % Find mapping between (original) sample indices and out sample indices.
+  %=============================================================================
+  % Find mapping between (~original) sample indices and out sample indices.
   % NOTE: This is NOT a 1-to-1 mapping. Zero, one, or multiple input indices
   %       may be mapped to the same output index. Mapping multiple samples to
   %       one output sample and then arbitrarily picking only one of those input
   %       samples is in principle suboptimal (averaging is better?) but is
   %       probably OK for most applications. Improve?!
-  iIn  = [1:nTimestamps]';
+  %=============================================================================
+  
+  %iIn  = [1:nTimestamps]';
+  % EXPERIMENTAL. ==> Makes samples=samples(bKeep) unnecessary.
+  % ASSUMPTION: Argument timeSecArray is sorted (incrementing).
+  i1   = find(bKeep, 1, 'first'); % Separate for profiling purposes.
+  iIn  = i1 + [0:nTimeSel-1];
+  
   iOut = round((timeSecArray-intervalSec1)*samplFreqHz + 0.5);
-    
+
   % Ensure that code only extracts the desired data, and only assigns
   % the desired (and legal) indices.
   % NOTE: Historically, many bugs have been associated with getting this wrong.
@@ -336,6 +393,49 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
     
   samplesOut          = replace_NaN(samplesOut);
 end
+
+
+
+% EXPERIMENTAL: For speeding up.
+% 
+% i1, i2: Indices into "timeSecArray, samples" representing first and last
+%         sample in a time interval.
+function samplesOut = select_preprocess_data3(timeSecArray, samples, intervalSec1, samplFreqHz, nSamplesOut, i1, i2)
+  nComp = size(samples, 2);
+  iIn   = i1:i2;  
+  iOut  = round((timeSecArray(i1:i2)-intervalSec1)*samplFreqHz + 0.5);
+
+  b = (1 <= iOut) & (iOut <= nSamplesOut);
+  iIn( ~b) = [];
+  iOut(~b) = [];
+  
+  samplesOut          = NaN(nSamplesOut, nComp);   % Pre-allocate as NaN, to be on the safe side.
+  samplesOut(iOut, :) = samples(iIn, :);
+    
+  samplesOut          = replace_NaN(samplesOut);
+end
+
+
+
+% EXPERIMENTAL: Use interp1 because maybe it is faster (maybe implemented using
+% e.g. C).
+% PROBLEM: interp1 does NOT return NaN when nearest value is farther than half
+% an integration width.
+% Slower using interp1 for every STI separately ==> One may guess probably also
+% slower if used globally). /Erik P G Johansson 2020-09-04
+% function stiSamples = select_preprocess_data2(timeSecArray, samples, intervalSec1, samplFreqHz, nSamplesOut)
+%   intervalSec2 = intervalSec1 + nSamplesOut/samplFreqHz;
+%   
+%   stiTimeSecArray = linspace(...
+%       intervalSec1 + 0.5/samplFreqHz, ...
+%       intervalSec2 - 0.5/samplFreqHz, ...
+%       nSamplesOut);
+%   
+%   % NOTE: interp1(X,V,Xq, ...) works for length(X) == size(V,1)
+%   [stiSamples] = interp1(timeSecArray, samples, stiTimeSecArray, 'nearest');
+%   
+%   %stiSamples   = replace_NaN(stiSamples);
+% end
 
 
 
@@ -363,7 +463,7 @@ end
 % Basic smoothing procedure, borrowed from mms_fft().
 % Smoothes the spectras, not the input data.
 function Specrec = smoothSpectrum(Specrec, smoothWidth, samplFreqHz, nf, nSpectras, nComp)
-    
+  
   nc = floor(smoothWidth*samplFreqHz);
   % Make sure nc is even.
   if (mod(nc,2) == 1)

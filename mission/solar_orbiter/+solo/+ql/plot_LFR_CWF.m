@@ -76,8 +76,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function hAxesArray = plot_LFR_CWF(filePath)
-    
+function hAxesArray = plot_LFR_CWF(filePath)    
     % TODO-DECISION: Content of figure title
     %   PROPOSAL: Time range
     %   PROPOSAL: DOY.
@@ -95,6 +94,8 @@ function hAxesArray = plot_LFR_CWF(filePath)
     % PROPOSAL: Change package name to sp (summary plots).
     %
     % PROPOSAL: Settings for disabling spectrum etc.
+    %
+    % PROPOSAL: Centralize ~constants: samples per FFT, overlap, SNAPSHOT_WIDTH_FRACTION
     
     %PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;
 
@@ -108,23 +109,23 @@ function hAxesArray = plot_LFR_CWF(filePath)
     zvSamplFreqHz = D.data.SAMPLING_RATE.data;
     clear D
     
-    if 0
-        % DEBUG: Limit records
-        I1 = 1.12e5;
-        I2 = 1.20e5;
-        
-        epoch = epoch(I1:I2);
-        vDc1  = vDc1( I1:I2);
-        vDc12 = vDc12(I1:I2);
-        vDc23 = vDc23(I1:I2);
-        vAc12 = vAc12(I1:I2);
-        vAc23 = vAc23(I1:I2);
-        zvSamplFreqHz = zvSamplFreqHz(I1:I2);
-        
-        fprintf('Limiting records to %s -- %s\n', ...
-            EJ_library.cdf.tt2000_to_UTC_str(epoch(1)), ...
-            EJ_library.cdf.tt2000_to_UTC_str(epoch(end)))
-    end
+%     if 0
+%         % DEBUG: Limit records
+%         I1 = 1.12e5;
+%         I2 = 1.20e5;
+%         
+%         epoch = epoch(I1:I2);
+%         vDc1  = vDc1( I1:I2);
+%         vDc12 = vDc12(I1:I2);
+%         vDc23 = vDc23(I1:I2);
+%         vAc12 = vAc12(I1:I2);
+%         vAc23 = vAc23(I1:I2);
+%         zvSamplFreqHz = zvSamplFreqHz(I1:I2);
+%         
+%         fprintf('Limiting records to %s -- %s\n', ...
+%             EJ_library.cdf.tt2000_to_UTC_str(epoch(1)), ...
+%             EJ_library.cdf.tt2000_to_UTC_str(epoch(end)))
+%     end
     
     TsVdc1  = irf.ts_scalar(epoch, vDc1);
     TsVdc12 = irf.ts_scalar(epoch, vDc12);
@@ -132,7 +133,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     TsVac12 = irf.ts_scalar(epoch, vAc12);
     TsVac23 = irf.ts_scalar(epoch, vAc23);
     
-    irf_plot(3+5,'newfigure');
+    irf_plot(3+5, 'newfigure');
     
     hAxesArray = [];
     hAxesArray(end+1) = spectrogram_panel( 'V1 DC spectrogram', TsVdc1,  zvSamplFreqHz, 'V1\_DC');
@@ -145,16 +146,8 @@ function hAxesArray = plot_LFR_CWF(filePath)
     hAxesArray(end+1) = time_series_panel('V12 AC time series', TsVac12, 'V12_AC [V]');
     hAxesArray(end+1) = time_series_panel('V23 AC time series', TsVac23, 'V23_AC [V]');
 
-    % TEST
-%     TILE_MRG_SETTINGS = struct(...
-%         'mrgLeft',   10, ...
-%         'mrgRight',  10, ...
-%         'mrgTop',    5, ...
-%         'mrgBottom', 5);
-%     EJ_library.graph.tile_by_InnerPosition_OuterPosition(hAxesArray(:), TILE_MRG_SETTINGS)
-            
     solo.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
-    
+
     irf_plot_axis_align(hAxesArray)               % For aligning MATLAB axes (taking color legends into account).
     irf_zoom(hAxesArray, 'x', irf.tint(epoch))    % For aligning the content of the MATLAB axes.
 end
@@ -173,25 +166,22 @@ function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit
     
     hAxes = irf_panel(panelTag);
     
-    SpecrecCa = {};
+    % SS = SubSequence
     [iSs1Array, iSs2Array, nSs] = EJ_library.utils.split_by_change(zvSamplingFreqHz);
-    for jSs = 1:nSs
+    SpecrecCa = cell(nSs, 1);
+    parfor jSs = 1:nSs    % PARFOR
         
-        iSs = iSs1Array(jSs) : iSs2Array(jSs);
+        iSsArray = iSs1Array(jSs) : iSs2Array(jSs);
 
-        SpecrecCa{jSs} = irf_powerfft(Ts(iSs), N_SAMPLES_PER_SPECTRUM, zvSamplingFreqHz(iSs1Array(jSs)));
-        
-%         Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-%         hold on    % Required so that successive calls to irf_spectrogram do not replace preceedings ones.
-%         irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot
+        SpecrecCa{jSs} = irf_powerfft(Ts(iSsArray), N_SAMPLES_PER_SPECTRUM, zvSamplingFreqHz(iSs1Array(jSs)));
     end
 
     Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
-    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-    irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot    
-    
+    Specrec.p_label = {'log_{10} [V^2/Hz]'};     % Replaces colorbarlabel
+    irf_spectrogram(hAxes, Specrec);    % Replaces irf_plot
     
     set(hAxes, 'yscale','log')
+    %caxis(hAxes, [-13, -4])
     ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})   % NOTE: Adding frequency unit on separate row.
 
 end

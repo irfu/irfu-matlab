@@ -3,7 +3,7 @@
 % SOLO_HK_RPW-BIA.
 %
 %
-% INCOMPLETE
+% INCOMPLETE?
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -55,23 +55,44 @@ function plot_HK(filePath)
     % ==> 38 zVars
     %
     % PROPOSAL: New name: plot_BIAS_HK
-    % PROPOSAL: Combine triplets of bit series.
-    % PROPOSAL: Improve bit plotting. The locations of bit flips are technically somewhat misrepresented. E.g. singular
-    % ones (surrounded by zeros) should be represented as "infinitely" thin vertical lines, whereas two ones in a row
-    % (surrounded by zeros) are not.
-    %
-    % ~BUG: No grid lines for bits empty zVars.
-    % BUG: Multiple dates below shared x axis, after zooming (automatic globa re-setting of x axis?).
     %
     % PROBLEM: How handle triplets of scalar/bit zVars (as list of zVars)?
     %   PROPOSAL: Put in lists as one string=3 zVars?
     %   PROPOSAL: Put in lists as three recursively grouped zVars (cell array in cell array).
     %
+    % TODO-DEC: How plot bits?
+    %   PROPOSAL: Combine triplets of bit series, somehow.
+    %       PROPOSALS: Three graphs together in same panel
+    %           PROPOSAL: Slight offset between them so that lines do not
+    %                     overlap when horizontal.
+    %               CON: Will overlap when vertical, i.e. entirely for short
+    %                    flips.
+    %           PROPOSAL: Great offset between them so that lines do not
+    %                     overlap when horizontal or vertical.
+    %   PROPOSAL: Flip between colors. No line.
+    %       CON: Flip might be invisible for very short durations
+    %           Ex: Old bug: HK_BIA_MODE_BYPASS_PROBE1/2/3 does not show bit=1
+    %               (short time interval; calibration sweep) for 2020-07-01 when
+    %               saving to file.
+    %   PROPOSAL: Graph.
+    %       PRO: Can always see flips, no matter how short the time interval.
+    %       CON: Hard to distinguish 0 and 1, low & high, especially if many bit plots in a row.
+    %           PRO: May blend with boundary between plots (panels).
+    %   PROPOSAL: Graph with different colors/symbols for 0 and 1 (technically two
+    %             graphs).
+    %       PROBLEM/CON: Unclear if this works with using irf_plot + TimeSeries.
+    %
+    % BUG: Multiple dates below shared x axis, after zooming (automatic global re-setting of x axis?).
+    %
+    % 
+    %
+    %
     % PROPOSAL: ylabel [TM], [TM units].
     
-    %warning('Incomplete quicklook code')
+
     
     BIT_PANEL_HEIGHT = 0.011;
+    %BIT_PANEL_HEIGHT = 0.03;   % DEBUG
     
     ZVAR_EXCLUDED_LIST = {...
         'Epoch', ...
@@ -83,7 +104,7 @@ function plot_HK(filePath)
         'HK_BIA_DUMMY', ...
         'PA_RPW_HK_SPARE8_1'};
     
-    ZVAR_SCALAR_LIST = {
+    ZVAR_SINGLE_SCALAR_LIST = {
         'HK_BIA_MODE_MUX_SET', ...
         'HK_BIA_REF_VOLTAGE_H', ...
         'HK_BIA_REF_VOLTAGE_L', ...
@@ -91,7 +112,12 @@ function plot_HK(filePath)
         'HK_BIA_NHV', ...
         'HK_BIA_PHV', ...
         'HK_BIA_REF2_VOLT'};
-
+    
+    ZVAR_TRIPLET_SCALAR_LIST = {
+        zv_name_triplet('HK_BIA_BIAS%i'), ...
+        zv_name_triplet('HK_BIA_TEMP_ANT%i_LF_PA'), ...
+        zv_name_triplet('HK_BIA_M%i')};
+    
     % zVariables that are (presumably) bit flags.
     ZVAR_BIT_FLAG_LIST = {...
         'SYNCHRO_FLAG', ...
@@ -109,28 +135,43 @@ function plot_HK(filePath)
         };
     
     % ASSERTION
-    ZVAR_ALL_LIST = union(union(ZVAR_EXCLUDED_LIST, ZVAR_SCALAR_LIST), ZVAR_BIT_FLAG_LIST);
-    assert(numel(ZVAR_ALL_LIST) == numel(ZVAR_EXCLUDED_LIST)+numel(ZVAR_SCALAR_LIST)+numel(ZVAR_BIT_FLAG_LIST), 'zVars overlap')
+    ZVAR_ALL_LIST = EJ_library.utils.union(...
+        ZVAR_EXCLUDED_LIST, ...
+        ZVAR_SINGLE_SCALAR_LIST, ...
+        unpack(ZVAR_TRIPLET_SCALAR_LIST), ...
+        ZVAR_BIT_FLAG_LIST);    
+    
+    assert(...
+        numel(ZVAR_ALL_LIST) == ...
+        numel(ZVAR_EXCLUDED_LIST) + ...
+        numel(ZVAR_SINGLE_SCALAR_LIST) + ...
+        numel(unpack(ZVAR_TRIPLET_SCALAR_LIST)) + ...
+        numel(ZVAR_BIT_FLAG_LIST), ...
+        'zVars overlap')
     
     D = dataobj(filePath);
     Epoch = D.data.Epoch.data;
     
-    hAxesArray = irf_plot(numel(ZVAR_SCALAR_LIST)+3+numel(ZVAR_BIT_FLAG_LIST), 'newfigure');
+    hAxesArray = irf_plot(...
+        numel(ZVAR_SINGLE_SCALAR_LIST)+...
+        numel(ZVAR_TRIPLET_SCALAR_LIST) + ...
+        numel(ZVAR_BIT_FLAG_LIST), ...
+        'newfigure');
     % Panel height: fixed size + weight for each panel, used for distributing segments.
     panelHeightFswArray = zeros(0,2);   % FSW = Fixed Size + Weight
 
     %=====================================
     % Add panels for scalar numeric zVars
     %=====================================
-    for i = 1:numel(ZVAR_SCALAR_LIST)
+    for i = 1:numel(ZVAR_SINGLE_SCALAR_LIST)
         lineWidth = 0.5;  % Default.
-        if strcmp(ZVAR_SCALAR_LIST{i}, 'HK_BIA_MODE_MUX_SET')
+        if strcmp(ZVAR_SINGLE_SCALAR_LIST{i}, 'HK_BIA_MODE_MUX_SET')
             lineWidth = 5.0;
         end
         
-        [hAxes, hLines, hLegendText] = plot_time_series1(D, ZVAR_SCALAR_LIST{i}, lineWidth);        
+        [hAxes, hLines, hLegendText] = plot_time_series1(D, ZVAR_SINGLE_SCALAR_LIST{i}, lineWidth);        
         
-        if strcmp(ZVAR_SCALAR_LIST{i}, 'HK_BIA_MODE_MUX_SET')
+        if strcmp(ZVAR_SINGLE_SCALAR_LIST{i}, 'HK_BIA_MODE_MUX_SET')
             % IMPLEMENTATION NOTE: Skip lowest tick/label value (YTick), so that the label does not overlap with the
             % label of the panel below.
             set(hAxes, 'YLim', [0,7])
@@ -143,9 +184,11 @@ function plot_HK(filePath)
     %==================================================================
     % Add panels for triplets of numeric zVars (one zVar per antenna).
     %==================================================================
-    plot_time_series3(D, 'HK_BIA_BIAS%s');             panelHeightFswArray(end+1, :) = [0, 1];
-    plot_time_series3(D, 'HK_BIA_TEMP_ANT%s_LF_PA');   panelHeightFswArray(end+1, :) = [0, 1];
-    plot_time_series3(D, 'HK_BIA_M%s'   );             panelHeightFswArray(end+1, :) = [0, 1];
+    for i = 1:numel(ZVAR_TRIPLET_SCALAR_LIST)
+        
+        plot_time_series3(D, ZVAR_TRIPLET_SCALAR_LIST{i});
+        panelHeightFswArray(end+1, :) = [0, 1];
+    end
 
     %==================================================================
     % Add panels for bit-valued zVars.
@@ -168,19 +211,11 @@ function plot_HK(filePath)
     % Panel height before distributing height segments. Assumes that panels are adjacent to each other.
     heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
     
-%     iPanelsToSetHeightFor = numel(ZVAR_SCALAR_LIST) + 3 + [1:numel(ZVAR_BIT_FLAG_LIST)];
-%     heightPanelArray2 = solo.ql.reweight(...
-%         heightPanelArray1, ...
-%         BIT_PANEL_HEIGHT, ...
-%         iPanelsToSetHeightFor);
     heightPanelArray2 = EJ_library.utils.distribute_segments(...
         sum(heightPanelArray1), ...
         panelHeightFswArray(:,1), ...
         panelHeightFswArray(:,2));
     yPanelArray2 = cumsum([heightPanelArray2(2:end); yPanelArray1(end)], 'reverse');
-    
-    %config = [repmat(-1, 1, numel(ZVAR_SCALAR_LIST)+3), repmat(BIT_PANEL_HEIGHT, 1, numel(ZVAR_BIT_FLAG_LIST))]
-    %[heightPanelArray2] = EJ_library.utils.autoscale(sum(heightPanelArray1), config);
     
     for i = 1:numel(hAxesArray)
         position = positionCa{i};
@@ -193,10 +228,14 @@ function plot_HK(filePath)
     
     solo.ql.set_std_title('BIAS HK', filePath, hAxesArray(1))
     
-    irf_plot_axis_align(hAxesArray)               % For aligning MATLAB axes OuterPosition (taking color legends into account).
-    irf_zoom(hAxesArray, 'x', irf.tint(Epoch))    % For aligning the content of the MATLAB axes.
+    % For aligning MATLAB axes OuterPosition (taking color legends into account).
+    irf_plot_axis_align(hAxesArray)               
+    % For aligning the content of the MATLAB axes.
+    irf_zoom(hAxesArray, 'x', irf.tint(Epoch))
 
-    set(hAxesArray(1:end-1), 'XLabel', [])        % Remove duplicate x labels. Empirically: Must come after irf_zoom.
+    % Remove duplicate x labels.
+    % Empirically: Must come after irf_zoom.
+    set(hAxesArray(1:end-1), 'XLabel', [])
     %EJ_library.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
 end
 
@@ -219,23 +258,23 @@ end
 %
 % ARGUMENTS
 % =========
-% D               : dataobj
-% zVarNamePattern : String used in sprintf, with "%s" (not "%i"!) representing the antenna number 1, 2, or 3.
+% D           : dataobj
+% zVarNamesCa : Length 3 cell array of zVar names.
 %
-function [hAxes, hLines, hLegendText] = plot_time_series3(D, zVarNamePattern)
-    % NOTE: Automatically derive panel tag.
-    panelTag = sprintf(zVarNamePattern, 'x');
+function [hAxes, hLines, hLegendText] = plot_time_series3(D, zVarNamesCa)
+% zVarNamePattern : String used in sprintf, with "%s" (not "%i"!) representing the antenna number 1, 2, or 3.
+    assert(numel(zVarNamesCa) == 3)
     
-    zvName1 = sprintf(zVarNamePattern, '1');
-    zvName2 = sprintf(zVarNamePattern, '2');
-    zvName3 = sprintf(zVarNamePattern, '3');
+    % NOTE: Automatically derive panel tag. Exact value unimportant.
+    panelTag = zVarNamesCa{1};
     
     Ts = irf.ts_scalar(D.data.Epoch.data, [...
-        D.data.(zvName1).data, ...
-        D.data.(zvName2).data, ...
-        D.data.(zvName3).data]);
+        D.data.(zVarNamesCa{1}).data, ...
+        D.data.(zVarNamesCa{2}).data, ...
+        D.data.(zVarNamesCa{3}).data]);
 
-    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', {EJ_library.graph.escape_str(sprintf(zVarNamePattern, '1')), '2', '3'});
+    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', ...
+        {EJ_library.graph.escape_str(zVarNamesCa{1}), '2', '3'});
 end
 
 
@@ -261,41 +300,72 @@ end
 % =========
 % channelName : 
 %
-function [hAxes, hLines, hLegendText] = plot_bit_series(panelTag, Epoch, bitSeries, channelName)
-    % IMPLEMENTATION NOTE: Somewhat hackish plotting of "area": y value=0 is replaced by NaN. Plots very wide line which
-    % is later clipped/cropped by the axes.
-    
+function [hAxes, hLines, hLegendText] = plot_bit_series(panelTag, Epoch, b, channelName)
+    % OBSOLETE: IMPLEMENTATION NOTE: Somewhat hackish plotting of "area": y value=0 is
+    % replaced by NaN. Plots very wide line which is later clipped/cropped by
+    % the axes.
+
     %BIT_COLOR = [0.5, 0.5, 0.5];
-    BIT_COLOR = [0, 0, 0];
+    %BIT_COLOR = [0, 0, 0];
+    %BIT_COLOR = [0, 0, 1];
     %CHANNEL_NAME_POS = [0.02, 0.98];
     CHANNEL_NAME_POS = [0.98, 0.98];
     %LEGEND_COLOR = [0,0,1];
     
-    if isempty(bitSeries)
+    % ASSERTIONS
+    assert(all(ismember(b, [0,1])))
+    
+    if isempty(b)
         Epoch(:) = [];
         channelName = ['(', channelName, ': empty zVar)'];
     end
     
-    % Create time series object.
-    bitSeries = double(bitSeries);      % NOTE: Raw zVariable may be integers which can not be assigned the value NaN.
-    assert(all(ismember(bitSeries, [0,1])))
-    bitSeries(bitSeries == 0) = NaN;
-    Ts = irf.ts_scalar(Epoch, bitSeries);
+   
+
+    % Divide b into b0 and b1, which when plotted as lines, form one line
+    % identical to b. This way one can plot separate parts with separate colors.
+    % Use NaN for parts that are not plotted by either b0 or b1.
+    b = double(b);   % Must be double to be able to assign NaN.
+    % Identify indices just after b has flipped.
+    iJumpUp = 1 + find((b(1:end-1)==0) & (b(2:end)==1));
+    iJumpDn = 1 + find((b(1:end-1)==1) & (b(2:end)==0));
+    % Create b0, b1.
+    b0 = b;
+    b1 = b;
+    b0(b0 == 1) = NaN;
+    b1(b1 == 0) = NaN;
+    b0(iJumpUp) = 1;
+    b1(iJumpDn) = 0;
+    
+    % Create time series object
+    % -------------------------
+    Ts = irf.ts_scalar(Epoch, [b0, b1]);
     
     % Plot
     hAxes = irf_panel(panelTag);
-    hLines = irf_plot(hAxes, Ts, 'LineWidth', 1e9, 'Color', BIT_COLOR);
+    hLines = irf_plot(hAxes, Ts, 'LineWidth', 3);
+    assert(numel(hLines) == 2)
+    hLines(1).Color = [0,0,1];
+    hLines(2).Color = [1,0,0];
+    
     modify_legend_text_color(hLines)
     
-    % NOTE: Command puts the text relative to the specified coordinates in different ways depending on coordinates.
+    
+    
+    % NOTE: Command puts the text relative to the specified coordinates in
+    % different ways depending on coordinates.
     hLegendText = irf_legend(hAxes, EJ_library.graph.escape_str(channelName), CHANNEL_NAME_POS);    
     %modify_legend_text_color(hLegendText)
     
     set(hAxes, 'Clipping', 'on')   % Should be default, so not necessary.
     set(hAxes, 'ClippingStyle', 'rectangle')
     set(hAxes, 'yTickLabel', {})
-    set(hAxes, 'YGrid', 'off')   % Remove horizontal grid lines.
-    set(hAxes, 'TickLength', [0, 0])          % Remove ticks by setting their length.
+    set(hAxes, 'YGrid', 'off')          % Remove horizontal grid lines.
+    %set(hAxes, 'TickLength', [0, 0])    % Remove ticks by setting their length.
+    
+    set(hAxes, 'YLim', [-0.2, 1.2])
+    set(hAxes, 'YTick', [])
+    %set(hAxes, 'yTickLabel', {'0', '1'})
 end
 
 
@@ -308,3 +378,29 @@ function modify_legend_text_color(hTextArray)
     end
 end
 
+
+
+% Utility function
+%
+% c  : Cell array of (1) non-cells, and/or (2) cell arrays.
+% ca : Column cell array.
+function ca = unpack(c)
+    ca = cell(0,1);
+    for i = 1:numel(c)
+        if iscell(c{i})
+            ca = [ca; c{i}(:)];
+        else
+            ca = [ca; c(i)];
+        end
+    end
+end
+
+
+
+% Utility function
+function zVarNameTripletCa = zv_name_triplet(zVarNamePattern)
+    zVarNameTripletCa = {};
+    for iAnt = 1:3
+        zVarNameTripletCa{iAnt} = sprintf(zVarNamePattern, iAnt);
+    end
+end

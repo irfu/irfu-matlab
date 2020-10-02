@@ -15,7 +15,23 @@
 % First created 2020-01-28.
 %
 function hAxesArray = plot_LFR_SWF(filePath)
-    %
+    % SPEED
+    % =====
+    % Execution time
+    % With    irf_spectrogram : 26.592199 s
+    % Without irf_spectrogram : 36.683050 s
+    % With    irf_spectrogram, downsample_Specrec(nBins=2) for every
+    % snapshot                : 31.648818 s
+    % ==> irf_spectrogram is only a part of the problem. It is not enough to use
+    % downsample_Specrec.
+    % --
+    % N_SAMPLES_PER_SPECTRUM = 128 ==> 29.063167 s
+    % N_SAMPLES_PER_SPECTRUM = 512 ==> 17.913298 s
+    % --
+    % NOTE: 24 spectrums per snapshot (N_SAMPLES_PER_SPECTRUM = 128) ==> not much use downsampling further).
+
+
+
     % POLICY: BOGIQ for all quicklook plot code: See plot_LFR_CWF.
     %
     % TODO-DECISION: How submit data to spectrum_panel?
@@ -246,7 +262,8 @@ end
 %
 function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend)
     % NOTE: Multiple-row labels causes trouble for the time series ylabels.
-    % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS snapshots that vary in length.
+    % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS
+    % snapshots that vary in length.
 
     % Fraction of the (minimum) time distance between snapshots (centers) that will be used for displaying the spectra.
     % Value 1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
@@ -256,25 +273,32 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     
     % NOTE: More samples per spectrum is faster (sic!).
     N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
-
+    %N_SAMPLES_PER_SPECTRUM = 512;    % Speed test
 
 
     TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
+    nTs  = numel(TsCa);
 
     h = irf_panel(panelTag);    
     
     %====================
     % Calculate spectras
     %====================
-    SpecrecCa = {};
-    ssCenterEpochUnixArray = [];
-    for i = 1:numel(TsCa)
+    % IMPLEMENTATION NOTE: irf_powerfft is the most time-consuming part of this
+    % code.
+    %
+    % NOTE: Using for-->parfor speeds up plot_LFR_SWF by
+    % 29.912231 s-->21.303145 s (irony). /2020-09-04
+    %
+    SpecrecCa = cell(nTs, 1);
+    ssCenterEpochUnixArray = zeros(nTs, 1);
+    parfor i = 1:nTs    % PARFOR
         Ts = TsCa{i};
         
-        SpecrecCa{end+1} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
+        SpecrecCa{i} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
         
         % IMPLEMENTATION NOTE: Later needs the snapshot centers in the same time system as Specrec.t (epoch Unix).
-        ssCenterEpochUnixArray(end+1) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
+        ssCenterEpochUnixArray(i) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
     end
     sssMaxWidthSecArray = derive_max_spectrum_width(ssCenterEpochUnixArray);
     
@@ -291,39 +315,23 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
             
             sssWidthSec = sssMaxWidthSecArray(i) * SNAPSHOT_WIDTH_FRACTION;
             
+            %SpecrecCa{i} = solo.ql.downsample_Specrec(SpecrecCa{i}, 10);    % TEST
+            
             % Stretch out spectra (for given snapshot) in time to be ALMOST adjacent between snapshots.
             % NOTE: Specrec.dt is not set by irf_powerfft so there is no default value that can be scaled up.
             % NOTE: Uses original spectrum positions and re-positions them relative to snapshot center.
-            %scaleFactor     = sssWidthSec / ssLengthSec;
-            %SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + (SpecrecCa{i}.t - ssCenterEpochUnixArray(i)) * scaleFactor;
             
-            % Can not handle %numel(SpecrecCa{i}.t) == 1.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff(SpecrecCa{i}.t)) * 0.5;
-            
-            % Does not work.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * min(diff([SpecrecCa{i}.t(:); TsCa{i}.time.stop.epochUnix] )) * 0.5;
-            
-            % Does not use original SpecrecCa{i}.t values at all.
-            %SpecrecCa{i}.dt = ones(size(SpecrecCa{i}.t)) * sssWidthSec / numel(SpecrecCa{i}.t) / 2;
-
-            % Set t and dt from scratch. Distribute the FFTs evenly over the available time interval.
-            % PRO: Always works 8does not crash), also for when there is only one FFT sequence.
-            % CON: If any of the individual FFTs fails (which the do), then irf_powerfft does not return that.
-            %      ==> Remaining FFTs are spread out over the remaining space.
-            %      ==> FFTs are placed in the wrong location.
-            %
-            nT = numel(SpecrecCa{i}.t);
-            distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nT);    % Distance from SS center to center of first/last FFT.
-            SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nT);
-            SpecrecCa{i}.dt = ones(nT, 1) * sssWidthSec / (2*nT);
+            nTime = numel(SpecrecCa{i}.t);      % Number of timestamps, but also spectras (within snapshot).
+            distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);    % Distance from SS center to center of first/last FFT.
+            SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
+            SpecrecCa{i}.dt = ones(nTime, 1) * sssWidthSec/(2*nTime);
         end
     end
     
     SpecrecCa(~bKeep) = [];
-    Specrec = merge_specrec(SpecrecCa);
+    Specrec = merge_specrec(SpecrecCa);    
     
-    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-    
+    Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
     irf_spectrogram(h, Specrec);   % Replaces irf_plot
     
     set(h, 'yscale','log')
@@ -334,8 +342,9 @@ end
 
 
 
-% For every snapshot, return the available width (in time; centered on snapshot center) for displaying the snapshot
-% spectrogram. Time offset and unit unimportant. Argument and return values have same unit.
+% For every snapshot, return the available width (in time; centered on snapshot
+% center) for displaying the snapshot spectrogram. Time offset and unit
+% unimportant. Argument and return values have same unit.
 %
 function sssMaxWidthArray = derive_max_spectrum_width(ssCenterArray)
     % Use distance to nearest snapshot for each snapshot separately.
@@ -354,7 +363,8 @@ end
 
 
 % Convenient wrapper around time_series_panel.
-% Converts from zVar-like variables (N samples/record; all records) to what is actually used for plotting.
+% Converts from zVar-like variables (N samples/record; all records) to what is
+% actually used for plotting.
 function h = time_series_panel2(panelTagSignalsStr, zvEpoch, zvDataList, SamplingRateInfo, trLegend)
     
     nSps     = size(zvDataList{1}, 2);   % SPS = Samples Per Snapshot
@@ -382,7 +392,8 @@ end
 % ARGUMENTS
 % =========
 % tlLegend : Top-left  (TL) legend.
-% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time series.
+% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time
+%            series.
 function h = time_series_panel(panelTag, Ts, tlLegend, trLegend)
     h = irf_panel(panelTag);
     irf_plot(h, Ts)
@@ -400,9 +411,10 @@ end
 % zvEpoch : Nx1 array.
 % zvData  : NxM array. (iRecord, iSampleWithinSnapshot). 1 record=1 snapshot.
 % TsCa    : (iSnapshot) 1D cell array of TSeries.
-%           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB confuses indexing a TSeries array (with
-%           brackets) with some special TSeries functionality for calling its code with brackets (calling TSeries'
-%           method "subsref").
+%           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB
+%           confuses indexing a TSeries array (with brackets) with some special
+%           TSeries functionality for calling its code with brackets (calling
+%           TSeries' method "subsref").
 %
 % IMPLEMENTATION NOTE: Function is written to some day be easily extended to be used for use with TDS's
 % length-varying snapshots.

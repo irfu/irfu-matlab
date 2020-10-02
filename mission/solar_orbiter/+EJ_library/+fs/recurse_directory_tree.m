@@ -225,7 +225,7 @@ function result = recurse_directory_tree(rootPath, FileFunc, DirFunc, ShouldRecu
 
     
     
-    % IMPLEMENTATION NOTE: "isfile" is compatible with MATLAB R2016a.
+    % IMPLEMENTATION NOTE: "isfile" is incompatible with MATLAB R2016a (i.e. Lapsus).
     if exist(rootPath, 'file') && ~exist(rootPath, 'dir')    
 
         result = FileFunc(struct(...
@@ -235,7 +235,7 @@ function result = recurse_directory_tree(rootPath, FileFunc, DirFunc, ShouldRecu
             'dirCmdResult',   dir(rootPath), ...
             'recursionDepth', 0));
 
-    % IMPLEMENTATION NOTE: "isfolder" is compatible with MATLAB R2016a.
+    % IMPLEMENTATION NOTE: "isfolder" is incompatible with MATLAB R2016a (i.e. Lapsus).
     elseif exist(rootPath, 'dir')
         
         rootPath = EJ_library.fs.remove_trailing_slash(rootPath);
