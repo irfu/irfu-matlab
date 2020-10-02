@@ -21,7 +21,7 @@ classdef constants
         TDS_RSWF_SNAPSHOT_LENGTH_MAX = 2^15;
         
         % Number of samples reserved for a snapshot in TDS (LFM) RSWF datasets.
-        % The length of the actual snapshots can be higher or lower.
+        % The length of the actual snapshots can be greater(?) or smaller.
         TDS_RSWF_SAMPLES_PER_RECORD = 32768;
         
         % Max absolute value of set current.

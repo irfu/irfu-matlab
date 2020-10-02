@@ -487,6 +487,7 @@ classdef assert
             %       PROPOSAL: common_vec_1D, nonstrict_vec_1D.
             
             if sum(size(v) ~= 1) > 1
+                % CASE: More than one dimension has size > 1.
                 sizeStr = sprintf('%ix', size(v));
                 sizeStr = sizeStr(1:end-1);   % ~Hack
                 

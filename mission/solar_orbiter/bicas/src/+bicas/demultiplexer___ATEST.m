@@ -12,7 +12,7 @@ end
 
 
 function complement_ASR___ATEST
-    newTest    = @(inputFieldsCa, outputFieldsCa) (erikpgjohansson.atest.CompareFuncResult(...
+    newTest    = @(inputFieldsCa, outputFieldsCa) (EJ_library.atest.CompareFuncResult(...
         @new_test, ...
         {inputFieldsCa}, {}));
     
@@ -24,7 +24,7 @@ function complement_ASR___ATEST
     tl{end+1} = newTest({'dcV2', 19, 'dcV3',  27, 'dcV23', 19-27, 'acV12', 54, 'acV23', 75});    % mux=1
     tl{end+1} = newTest({'dcV1', 2   'dcV2',  7,  'dcV3',  32,    'acV12', 74, 'acV23', 85});    % mux=4
     
-    erikpgjohansson.atest.run_tests(tl)
+    EJ_library.atest.run_tests(tl)
     
     
     

@@ -63,10 +63,12 @@
 function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current(t1, zvIBIASx1)
 
     % ASSERTIONS
-    assert(numel(t1) == numel(zvIBIASx1), 'Arguments t1 and zvIBIASx1 do not have the same number of elements.')
-    % NOTE: Do not check for MONOTONIC increase (yet) since it may be because of
-    % duplicate bias settings. Still useful check since global.
-    assert(issorted(t1), 'Argument t1 is not sorted.')
+    assert(numel(t1) == numel(zvIBIASx1), ...
+        'Arguments t1 and zvIBIASx1 do not have the same number of elements.')
+    % NOTE: Do not check for MONOTONIC increase (yet) since it might not be so
+    % because of duplicate bias settings anomaly. Checking for NON-MONOTONOUS
+    % incrementation is still a useful check since it is global.
+    assert(issorted(t1), 'Argument t1 does not increase, is not sorted.')
     
     % NOTE: return value has to be float to store NaN anyway.
 %     t1        = double(t1);

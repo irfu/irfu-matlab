@@ -231,9 +231,8 @@ classdef proc_utils
                 snapshotLengths, [-1]);
             assert(snapshotMaxLength >= max([snapshotLengths; 0]))
             % Add zero to vector so that max gives sensible value for empty snapshotLengths.
-            
-            
-            
+                        
+            % IMPLEMENTATION
             for iRecord = 1:nRecords
                 zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
             end
@@ -300,6 +299,7 @@ classdef proc_utils
         %                    integer.
         % nSpr             : Number of samples/record.
         %
+        % 
         % RETURN VALUE
         % ============
         % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64.
@@ -325,7 +325,7 @@ classdef proc_utils
                 % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
                 % that the unit is the same as for Epoch.
                 % NOTE: Seems to work for more than 2D.
-                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;
+                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;    % Unit: nanoseconds
             end
             DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, ...
                 EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
@@ -474,7 +474,7 @@ classdef proc_utils
         function log_zVars(Zvs, SETTINGS, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
-            %   Ex: process_HK_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
+            %   Ex: process_HK_CDF_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
             %
             % PROPOSAL: For min-max values, also print difference.
             %   Ex: Time difference for Epoch.

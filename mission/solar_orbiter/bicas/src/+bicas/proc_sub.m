@@ -23,15 +23,14 @@
 %
 % SOME INTERMEDIATE PROCESSING DATA FORMATS
 % =========================================
-% - PreDC = Pre-Demuxing-Calibration Data
+% - PreDC = Pre-(Demuxing & Calibration) Data
 %       Generic data format that can represent all forms of input datasets
 %       before demuxing and calibration. Can use an arbitrary number of samples
 %       per record. Some variables are therefore not used in CWF output
 %       datasets.
-% - PostDC = Post-Demuxing-Calibration Data
-%       Like PreDC but with additional fields. Tries to capture a superset of
-%       the information that goes into any dataset produced by BICAS, and the
-%       exact set of variables that goes into the output datasets.
+% - PostDC = Post-(Demuxing & Calibration) Data
+%       Data format that includes calibrated currents & calibrated & demuxed
+%       voltages.
 % 
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -61,6 +60,8 @@ classdef proc_sub
 %         from struct.
 %
 %#######################################################################################################################
+
+
 
     %#############################
     %#############################
@@ -168,6 +169,8 @@ classdef proc_sub
                     'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
             
+            
+            
             % NOTE: Requires >=2 records.
             hkEpochExtrapMargin = mode(diff(hkEpoch)) / 2;
 
@@ -246,9 +249,9 @@ classdef proc_sub
             %       ==> Monotonically increasing sequences for each antenna
             %           separately, but not even increasing when combined.
             %====================================================================
-            if ~issorted(InCur.Zv.Epoch)
-                error('CURRENT timestamps do not increase (all antennas combined).')
-            end
+            assert(issorted(InCur.Zv.Epoch), ...
+                'BICAS:proc_sub:DatasetFormat', ...
+                'CURRENT timestamps zVar Epoch does not increase (all antennas combined).')
             
             % NOTE: bicas.proc_sub.interpolate_current checks that Epoch
             % increases monotonically.
@@ -388,11 +391,11 @@ classdef proc_sub
             % "virtual snapshot" length. Should only be relevant for
             % V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
             
-            % ASSERTIONS
+            % ASSERTIONS: VARIABLES
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
             
-            % CDF ASSERTION
+            % ASSERTIONS: CDF
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
                 'BICAS:process_LFR_CDF_to_PreDC:DatasetFormat', ...
                 'Voltage (science) dataset timestamps Epoch do not increase monotonously.')
@@ -401,6 +404,7 @@ classdef proc_sub
 
 
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
+
 
 
             %============
@@ -412,7 +416,7 @@ classdef proc_sub
                 % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
                 % index values (1=F0) used in loaded RCT data structs.
             end
-            EJ_library.assert.sizes(iLsfZv, [nRecords, 1])
+            EJ_library.assert.sizes(iLsfZv, [nRecords])
 
 
 
@@ -427,8 +431,9 @@ classdef proc_sub
                 InSci.Zv.R2, ...
                 iLsfZv );
 
-            
-            
+
+
+            %===================================================================
             % IMPLEMENTATION NOTE: E & V must be floating-point so that values
             % can be set to NaN.
             % 
@@ -438,6 +443,7 @@ classdef proc_sub
             %     index 3 = E1/E2 component
             %               NOTE: 1/2=index into array; these are diffs but not
             %               equivalent to any particular diffs).
+            %===================================================================
             E = single(permute(InSci.Zv.E, [1,3,2]));
             
             % ASSERTIONS
@@ -509,7 +515,7 @@ classdef proc_sub
         
         
         % Processing function. Only "normalizes" data to account for technically
-        % illegal input TDS datasets. This should try to:
+        % illegal input TDS datasets. It should try to:
         % ** modify L1 to look like L1R
         % ** mitigate historical bugs (in the input datasets)
         % ** mitigate for not yet implemented features (in input datasets)
@@ -542,7 +548,8 @@ classdef proc_sub
             % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
             % to be the correct one. /2020-01-21
             %===========================================================
-            [InSci.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InSci.Zv, ...
+            [InSci.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(...
+                InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
                 'Assert one matching candidate');
             
@@ -709,7 +716,7 @@ classdef proc_sub
                 % testing. /David Pisa & Jan Soucek in emails, 2016.
                 % --
                 % FULL_BAND mode has each snapshot divided into 2^15
-                % samples/record * 8 records.  /Unknown source Unclear what
+                % samples/record * 8 records.  /Unknown source. Unclear what
                 % value SAMPS_PER_CH should have for FULL_BAND mode. How does
                 % Epoch work for FULL_BAND snapshots?
                 %================================================================
@@ -767,9 +774,9 @@ classdef proc_sub
 
 
 
-        % Processing function. Convert PostDC to either
-        % (1) a TDS dataset, or
-        % (2) almost to an LFR dataset (the rest is done in a wrapper).
+        % Processing function. Convert PreDc+PostDC to something that
+        % (1) almost an LFR dataset (the rest is done in a wrapper).
+        % (2) a TDS dataset (hence the name), and
         %
         % This function only changes the data format (and selects data to send
         % to CDF).
@@ -888,7 +895,7 @@ classdef proc_sub
         
         
         
-        % Processing function. Converts PreDC to PostDC, i.e. demux and
+        % Processing function. Derive PostDC from PreDc, i.e. demux and
         % calibrate data. Function is in large part a wrapper around
         % "calibrate_demux_voltages".
         %
@@ -897,7 +904,6 @@ classdef proc_sub
         %
         function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, SETTINGS, L)
             % PROPOSAL: Separate function for calibrating currents.
-            % PROPOSAL: PostDc does not need to contain copied zVars.
             
             tTicToc = tic();
 
@@ -1226,8 +1232,8 @@ classdef proc_sub
             
             EJ_library.assert.struct(PreDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
-                'MUX_SET', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', ...
-                'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
+                'MUX_SET', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
+                'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
                 {'BW'});
             
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
@@ -1446,7 +1452,7 @@ classdef proc_sub
                 %   NOTE: Can not use EJ_library.str.assist_print_table since it requires the entire table to
                 %         pre-exist.
                 %   PROPOSAL: Print after all iterations.
-                L.logf('info', ['Records %7i-%7i : %s -- %s', ...
+                L.logf('info', ['Records %8i-%8i : %s -- %s', ...
                     ' MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i;', ...
                     ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
@@ -1456,9 +1462,9 @@ classdef proc_sub
                     CALIBRATION_TABLE_INDEX_ss(1), ...
                     CALIBRATION_TABLE_INDEX_ss(2))
 
-                %============================================
-                % FIND DEMUXER ROUTING, BUT DO NOT CALIBRATE
-                %============================================
+                %=======================================
+                % DEMULTIPLEXER: FIND ASR-BLTS ROUTINGS
+                %=======================================
                 % NOTE: Call demultiplexer with no samples. Only for collecting
                 % information on which BLTS channels are connected to which
                 % ASRs.
@@ -1536,9 +1542,9 @@ classdef proc_sub
                     end
                 end    % for iBlts = 1:5
                 
-                %====================
-                % CALL DEMULTIPLEXER
-                %====================
+                %====================================
+                % DEMULTIPLEXER: DERIVE MISSING ASRs
+                %====================================
                 [~, SsAsrSamplesAVolt] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
                 
                 % Add demuxed sequence to the to-be complete set of records.
