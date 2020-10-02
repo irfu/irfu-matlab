@@ -331,7 +331,7 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     SpecrecCa(~bKeep) = [];
     Specrec = merge_specrec(SpecrecCa);    
     
-    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
+    Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
     irf_spectrogram(h, Specrec);   % Replaces irf_plot
     
     set(h, 'yscale','log')

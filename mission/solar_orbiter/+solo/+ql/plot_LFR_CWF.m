@@ -185,8 +185,8 @@ function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit
     end
 
     Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
-    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-    irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot    
+    Specrec.p_label = {'log_{10} [V^2/Hz]'};     % Replaces colorbarlabel
+    irf_spectrogram(hAxes, Specrec);    % Replaces irf_plot
     
     set(hAxes, 'yscale','log')
     ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})   % NOTE: Adding frequency unit on separate row.
