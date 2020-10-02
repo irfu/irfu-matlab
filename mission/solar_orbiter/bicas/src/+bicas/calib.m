@@ -451,12 +451,30 @@ classdef calib < handle
         
         
         % Calibrate all voltages. Function will choose the more specific algorithm internally.
+        %
+        % ARGUMENTS
+        % =========
+        % voltageNaN : Scalar logical. Whether to set voltages to NaN and not
+        %              executing any calibration.
+        %              RATIONALE: This option is useful to
+        %              (1) potentially speed up BICAS when it is known that
+        %              data will be overwritten with fill values later.
+        %              (2) avoid executing calibration algorithms when it is
+        %              known that there is no calibration configuration anyway
+        %              Ex: LFR zVar BW=0 => CALIBRATION_TABLE_INDEX(1,:) illegal.
+        %              ==> Can not calibrate.
+        %              Note: This means that this function technically accepts
+        %              an illegal calibration configuration when argument is set
+        %              to true.
+        %
         function samplesCaAVolt = calibrate_voltage_all(obj, ...
-                dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, zv_CALIBRATION_TABLE_INDEX)
+                dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, ...
+                zv_CALIBRATION_TABLE_INDEX, voltageNaN)
             
             % ASSERTIONS
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             EJ_library.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
+            assert(islogical(voltageNaN) && isscalar(voltageNaN))
             
             
 
@@ -471,11 +489,20 @@ classdef calib < handle
 
             
             
-            if obj.allVoltageCalibDisabled
+            if obj.allVoltageCalibDisabled || voltageNaN
                 
                 samplesCaAVolt = cell(size(samplesCaTm));
+                
                 for i = 1:numel(samplesCaTm)
-                    samplesCaAVolt{i} = double(samplesCaTm{i});
+                    if obj.allVoltageCalibDisabled
+                        % CASE: Set voltages to TM values.
+                        samplesCaAVolt{i} = double(samplesCaTm{i});
+                    end
+                    if voltageNaN
+                        % CASE: Set voltages to NaN.
+                        % (Potentially overwrite TM value.)
+                        samplesCaAVolt{i} = nan(size(samplesCaTm{i}));
+                    end
                 end
                 
             else

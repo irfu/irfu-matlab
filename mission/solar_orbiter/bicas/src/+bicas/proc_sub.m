@@ -1427,6 +1427,7 @@ classdef proc_sub
                 iCalibLZv, ...
                 iCalibHZv, ...
                 PreDc.Zv.iLsf, ...
+                PreDc.Zv.useFillValues, ...
                 PreDc.Zv.CALIBRATION_TABLE_INDEX);
             L.logf('info', 'Calibrating voltages - One sequence of records with identical settings at a time.')
             
@@ -1446,6 +1447,7 @@ classdef proc_sub
                 iCalibL_ss                 = iCalibLZv(                       iFirst);
                 iCalibH_ss                 = iCalibHZv(                       iFirst);
                 iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
+                ufv_ss                     = PreDc.Zv.useFillValues(          iFirst);
                 CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
                 
                 % PROPOSAL: Make into "proper" table.
@@ -1453,12 +1455,12 @@ classdef proc_sub
                 %         pre-exist.
                 %   PROPOSAL: Print after all iterations.
                 L.logf('info', ['Records %8i-%8i : %s -- %s', ...
-                    ' MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i;', ...
+                    ' MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
                     ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
-                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, ...
+                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, ufv_ss, ...
                     CALIBRATION_TABLE_INDEX_ss(1), ...
                     CALIBRATION_TABLE_INDEX_ss(2))
 
@@ -1521,6 +1523,14 @@ classdef proc_sub
                         %  CALIBRATE VOLTAGES
                         %######################
                         %######################
+                        % IMPLEMENTATION NOTE: Must explicitly disable
+                        % calibration for LFR zVar BW=0
+                        % ==> CALIBRATION_TABLE_INDEX(1,:) illegal value.
+                        % ==> Can not calibrate.
+                        % Therefore uses ufv_ss to disable calibration.
+                        % It is thus not enough to overwrite the values later.
+                        % This incidentally also potentially speeds up the code.
+                        % Ex: LFR SWF 2020-02-25, 2020-02-28.
                         CalSettings = struct();
                         CalSettings.iBlts        = iBlts;
                         CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
@@ -1530,7 +1540,7 @@ classdef proc_sub
                         CalSettings.iLsf         = iLsf_ss;
                         %##########################################################################
                         ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
-                            PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
+                            PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss, ufv_ss);
                         %##########################################################################
                         
                         if PreDc.hasSnapshotFormat
