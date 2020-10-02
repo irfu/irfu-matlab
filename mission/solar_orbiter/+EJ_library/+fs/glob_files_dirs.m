@@ -60,6 +60,7 @@ function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargi
     %   PROPOSAL: If regexPatternList is a string (not cell array of strings).
     %
     % PROPOSAL: Return same fields as EJ_library.fs.get_all_files_dirs.
+    %   Ex: "isDir" instead of "isdir"; fileSizeBytes, modificationSdn.
     
     
     % ASSERTION

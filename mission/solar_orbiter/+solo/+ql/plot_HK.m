@@ -89,9 +89,10 @@ function plot_HK(filePath)
     %
     % PROPOSAL: ylabel [TM], [TM units].
     
-    %warning('Incomplete quicklook code')
+
     
     BIT_PANEL_HEIGHT = 0.011;
+    %BIT_PANEL_HEIGHT = 0.03;   % DEBUG
     
     ZVAR_EXCLUDED_LIST = {...
         'Epoch', ...
@@ -210,19 +211,11 @@ function plot_HK(filePath)
     % Panel height before distributing height segments. Assumes that panels are adjacent to each other.
     heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
     
-%     iPanelsToSetHeightFor = numel(ZVAR_SCALAR_LIST) + 3 + [1:numel(ZVAR_BIT_FLAG_LIST)];
-%     heightPanelArray2 = solo.ql.reweight(...
-%         heightPanelArray1, ...
-%         BIT_PANEL_HEIGHT, ...
-%         iPanelsToSetHeightFor);
     heightPanelArray2 = EJ_library.utils.distribute_segments(...
         sum(heightPanelArray1), ...
         panelHeightFswArray(:,1), ...
         panelHeightFswArray(:,2));
     yPanelArray2 = cumsum([heightPanelArray2(2:end); yPanelArray1(end)], 'reverse');
-    
-    %config = [repmat(-1, 1, numel(ZVAR_SCALAR_LIST)+3), repmat(BIT_PANEL_HEIGHT, 1, numel(ZVAR_BIT_FLAG_LIST))]
-    %[heightPanelArray2] = EJ_library.utils.autoscale(sum(heightPanelArray1), config);
     
     for i = 1:numel(hAxesArray)
         position = positionCa{i};

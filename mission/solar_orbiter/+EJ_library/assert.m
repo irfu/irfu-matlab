@@ -1,14 +1,16 @@
 %
 % Class for static methods for creating assertions.
 %
-% NOTE: MATLAB itself (at least MATLAB R2009a) has a function "assert" which is useful for simpler assertions.
+% NOTE: MATLAB itself (at least MATLAB R2009a) has a function "assert" which is
+% useful for simpler assertions.
 %
 %
 % POLICY
 % ======
-% Functions should be named as propositions (when including the class name "assert") which are true if the assertion
-% function does not yield error. "castring" refers to arrays of char, not the concept of "strings" which begins with
-% MATLAB 2017a and later.
+% Functions should be named as propositions (when including the class name
+% "assert") which are true if the assertion function does not yield error.
+% "castring" refers to arrays of char, not the concept of "strings" which begins
+% with MATLAB 2017a and later.
 %
 %
 % RATIONALE, REASONS FOR USING INSTEAD OF MATLAB's "assert"
@@ -20,11 +22,13 @@
 %           Ex: "String set" (cell array + only strings + unique strings)
 %           Ex: "String list" (cell array + only strings)
 %           Ex: Function handle (type + nargin + nargout)
-%       PRO: Can have more tailored default error messages: Different messages for different checks within the same
-%           assertions.
-%           Ex: (1) Expected struct is not. (2) Struct has wrong set of fields + fields which are superfluous/missing.
+%       PRO: Can have more tailored default error messages: Different messages
+%            for different checks within the same assertions.
+%           Ex: (1) Expected struct is not. (2) Struct has wrong set of fields +
+%               fields which are superfluous/missing.
 % CON: Longer statement because of packages.
-% PRO: MATLAB's assert requires argument to logical, not numerical (useful if using 0/1=false/true).
+% PRO: MATLAB's assert requires argument to logical, not numerical (useful if
+%      using 0/1=false/true).
 % --
 % Ex: assert(strcmp(datasetType, 'DERIV1'))
 %     vs EJ_library.assertions.castring_in_set(datasetType, {'DERIV1'})
@@ -36,8 +40,9 @@
 %
 % NAMING CONVENTIONS
 % ==================
-% castring : Character Array (CA) string. String consisting 1xN (or 0x0?) matrix of char.
-%            Name chosen to distinguish castrings from the MATLAB "string arrays" which were introduced in MATLAB R2017a.
+% castring : Character Array (CA) string. String consisting 1xN (or 0x0?) matrix
+%            of char. Name chosen to distinguish castrings from the MATLAB
+%            "string arrays" which were introduced in MATLAB R2017a.
 %
 %
 % Initially created 2018-07-11 by Erik P G Johansson.
@@ -493,23 +498,18 @@ classdef assert
 
         
         % Assert the sizes of one or multiple variables.
-        % See EJ_library.utils.sizes for argments and return values.
+        % See EJ_library.utils.sizes for arguments and return values.
         %
         % NOTE: One needs to add semicolon to end of row, since has return values.
-        % NOTE: Can use return values to assert conditions like n>10, which this
-        %       function can not.
-        % NOTE: Returning useful values in principle make this function have both
-        %       assertion and non-assertion functionality.
+        % NOTE: Can use the return values to assert conditions like n>10 (after
+        %       call to this function), which this function itself can not.
+        % NOTE: Returning useful values in principle make this function have
+        %       both assertion and non-assertion functionality.
         %   Ex: Returning number of CDF records while simultaneously asserting
         %       consistent sizes of multiple (zv/MATLAB) variables.
         %
         function [varargout] = sizes(varargin)
-            % PROPOSAL: Use method to replace EJ_library.assert.size().
-            %   PROPOSAL: Keep name "sizes".
-            %       CON: Bad name when testing just one variable.
-            %   PROPOSAL: Use (take over) name "size".
-            %       PRO: Can see constraining many variables as an extension of the base functionality.
-            
+
             varargout = cell(1, nargout);
             [condSatisfied, varargout{:}] = EJ_library.utils.sizes(varargin{:});
             
@@ -519,8 +519,11 @@ classdef assert
 
 
 
-        % Assert that all values in a matrix are identical. Useful for e.g. checking that sizes of vectors are
-        % identical.
+        % Assert that all values in a matrix are identical. 
+        %
+        % NOTE: Cf isequal() with n>=2 arguments. Does not generalize to n=1,
+        % n=0, or higher-dimensional matrices.
+        % argument.
         %
         %
         % ARGUMENT
@@ -531,7 +534,7 @@ classdef assert
         %     - cell array of strings
         %     Does not work on:
         %     - cell array of numbers
-        %     NOTE: Empty matrices are accepted.
+        %     NOTE: Empty or scalar matrices are accepted.
         %
         function all_equal(v)
             % TODO-DECISION: How handle NaN?

@@ -24,7 +24,7 @@ function Rx = get_LFR_Rx(R0, R1, R2, iLsf)
     
     EJ_library.assert.sizes(R0, [-1, 1], R1, [-1, 1], R2, [-1, 1], iLsf, [-1, 1]);
     
-    Rx = NaN * ones(size(iLsf));        % Set to NaN (should always be overwritten if code works) and iLsf has correct values.
+    Rx = nan(size(iLsf));        % Set to NaN (should always be overwritten if code works) and iLsf has correct values.
     
     b = (iLsf==1);   Rx(b) = R0(b);
     b = (iLsf==2);   Rx(b) = R1(b);

@@ -273,7 +273,7 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     
     % NOTE: More samples per spectrum is faster (sic!).
     N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
-
+    %N_SAMPLES_PER_SPECTRUM = 512;    % Speed test
 
 
     TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
@@ -363,7 +363,8 @@ end
 
 
 % Convenient wrapper around time_series_panel.
-% Converts from zVar-like variables (N samples/record; all records) to what is actually used for plotting.
+% Converts from zVar-like variables (N samples/record; all records) to what is
+% actually used for plotting.
 function h = time_series_panel2(panelTagSignalsStr, zvEpoch, zvDataList, SamplingRateInfo, trLegend)
     
     nSps     = size(zvDataList{1}, 2);   % SPS = Samples Per Snapshot
@@ -391,7 +392,8 @@ end
 % ARGUMENTS
 % =========
 % tlLegend : Top-left  (TL) legend.
-% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time series.
+% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time
+%            series.
 function h = time_series_panel(panelTag, Ts, tlLegend, trLegend)
     h = irf_panel(panelTag);
     irf_plot(h, Ts)
@@ -409,9 +411,10 @@ end
 % zvEpoch : Nx1 array.
 % zvData  : NxM array. (iRecord, iSampleWithinSnapshot). 1 record=1 snapshot.
 % TsCa    : (iSnapshot) 1D cell array of TSeries.
-%           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB confuses indexing a TSeries array (with
-%           brackets) with some special TSeries functionality for calling its code with brackets (calling TSeries'
-%           method "subsref").
+%           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB
+%           confuses indexing a TSeries array (with brackets) with some special
+%           TSeries functionality for calling its code with brackets (calling
+%           TSeries' method "subsref").
 %
 % IMPLEMENTATION NOTE: Function is written to some day be easily extended to be used for use with TDS's
 % length-varying snapshots.

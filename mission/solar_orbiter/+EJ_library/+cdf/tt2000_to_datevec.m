@@ -20,7 +20,6 @@ function dateVecUtc = tt2000_to_datevec(tt2000)
     
     assert(iscolumn(tt2000))
     
-    
     % CASE: tt2000 is a Nx1 array.
     
     if ~isempty(tt2000)

@@ -9,8 +9,8 @@
 % =========
 % u1, u2 : Same-sized numeric arrays.
 % v1, v2 : Same-sized numeric arrays.
-% If all of u1,u2,v1,v2 are non-scalar, then they must all have the same size.
-% NOTE: 
+% If all of u1,u2,v1,v2 are all non-scalar, then they must all have the same
+% size.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -34,6 +34,8 @@ function intervalsIntersect = intervals_intersect(u1, u2, v1, v2)
 %       upperBoundaryIncluded
 %       lowerBoundaryIncluded
 %       CON: No. If one or two boundaries are included, then intersection w1==w2 must be interpreted as a non-intersection.
+%
+% PROPOSAL: Automatic tests
 
     intervalsIntersect = (u1 <= v2) & (v1 <= u2);
     
