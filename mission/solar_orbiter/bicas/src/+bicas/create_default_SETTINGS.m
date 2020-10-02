@@ -327,7 +327,7 @@ function SETTINGS = create_default_SETTINGS()
     
     % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are
     % empty.
-    S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'USE_FILL_VALUE')   % ERROR, USE_FILL_VALUE
+    S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'ERROR')   % ERROR, USE_FILL_VALUE
     
     % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
     % TDS has bugfixed. /2019-12-19
