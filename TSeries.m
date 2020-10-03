@@ -140,6 +140,14 @@ classdef TSeries
       while ~isempty(args)
         x = args{1}; args(1) = [];
         switch lower(x)
+          case {'metadata_from'}
+            if ~isempty(args), dobjRef = args{1}; args(1) = [];
+            else
+              error('irf:TSeries:TSeries:badInputs',...
+                'metadata_from requires a second argument')
+            end
+            obj = dobjRef;
+            obj.data_ = data; obj.t_ = t;
           case {'tensor_xyz'}
             if ndims(obj.data_)>3 %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
