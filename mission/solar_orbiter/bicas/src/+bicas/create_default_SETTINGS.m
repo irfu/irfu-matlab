@@ -135,47 +135,6 @@ function SETTINGS = create_default_SETTINGS()
     
     
     
-    %###########################################################################################################
-    % SWD.*
-    % Various S/W descriptor (SWD) release data for the entire software (not specific outputs)
-    % ----------------------------------------------------------------------------------------
-    % EXCEPTION TO VARIABLE NAMING CONVENTION: Field names are used for constructing the JSON object struct and
-    % can therefore NOT follow variable naming conventions without modifying other code.
-    %
-    % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External Users":
-    % """"""""
-    % 2.2.3 RCS versioning
-    % The RCS version must be a unique number sequence identifier “X.Y.Z”, where “X” is an
-    % integer indicating the release (major changes, not necessarily retro-compatible), “Y” is an
-    % integer indicating the issue (minor changes, necessarily retro-compatible) and “Z” is an
-    % integer indicating a revision (e.g., bug correction).
-    % """"""""
-    %###########################################################################################################
-    IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';
-    %
-    S.define_setting('SWD.identification.project',     'ROC');
-    S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
-    S.define_setting('SWD.identification.identifier',  'BICAS');
-    S.define_setting('SWD.identification.description', ...
-        ['Calibration software meant to', ...
-        ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
-        ' (2) calibrate bias currents from L1 data.']);
-    S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-    S.define_setting('SWD.release.version',            '3.1.1');
-    S.define_setting('SWD.release.date',               '2020-09-15T11:22:00Z');
-    S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team, IRF');
-    S.define_setting('SWD.release.contact',            'erjo@irfu.se');
-    S.define_setting('SWD.release.institute',          IRF_LONG_NAME);   % Full name or abbreviation?
-    % 'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.'
-    % 'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).'
-    S.define_setting('SWD.release.modification',       'Modified default settings: inverted transfer function cutoff at 0.8*omega_Nyquist, duplicate bias current gives error');   % 3.1.1
-    S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch? "master" instead?
-    %
-    S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
-    % NOTE: See also OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
-    
-    
-    
     %####################
     % ENV_VAR_OVERRIDE.*
     %####################

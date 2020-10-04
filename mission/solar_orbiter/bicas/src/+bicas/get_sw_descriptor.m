@@ -56,23 +56,24 @@ function JsonSwd = get_sw_descriptor(SwModeDefsList, SETTINGS)
     % Swd = S/W descriptor = The MATLAB structure which is used for producing the S/W descriptor (SWD) JSON object string.
     % Its fields (field names) should NOT follow variable naming conventions since they determine the JSON object string
     % which must follow the RCS ICD.
+    SwdMetadataMap = bicas.constants.SWD_METADATA;
     
     JsonSwd = [];
-    JsonSwd.identification.project     = SETTINGS.get_fv('SWD.identification.project');
-    JsonSwd.identification.name        = SETTINGS.get_fv('SWD.identification.name');
-    JsonSwd.identification.identifier  = SETTINGS.get_fv('SWD.identification.identifier');
-    JsonSwd.identification.description = SETTINGS.get_fv('SWD.identification.description');
-    JsonSwd.identification.icd_version = SETTINGS.get_fv('SWD.identification.icd_version');
+    JsonSwd.identification.project     = SwdMetadataMap('SWD.identification.project');
+    JsonSwd.identification.name        = SwdMetadataMap('SWD.identification.name');
+    JsonSwd.identification.identifier  = SwdMetadataMap('SWD.identification.identifier');
+    JsonSwd.identification.description = SwdMetadataMap('SWD.identification.description');
+    JsonSwd.identification.icd_version = SwdMetadataMap('SWD.identification.icd_version');
     
-    JsonSwd.release.version            = SETTINGS.get_fv('SWD.release.version');
-    JsonSwd.release.date               = SETTINGS.get_fv('SWD.release.date');
-    JsonSwd.release.author             = SETTINGS.get_fv('SWD.release.author');
-    JsonSwd.release.contact            = SETTINGS.get_fv('SWD.release.contact');
-    JsonSwd.release.institute          = SETTINGS.get_fv('SWD.release.institute');
-    JsonSwd.release.modification       = SETTINGS.get_fv('SWD.release.modification');
-    JsonSwd.release.source             = SETTINGS.get_fv('SWD.release.source');    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    JsonSwd.release.version            = SwdMetadataMap('SWD.release.version');
+    JsonSwd.release.date               = SwdMetadataMap('SWD.release.date');
+    JsonSwd.release.author             = SwdMetadataMap('SWD.release.author');
+    JsonSwd.release.contact            = SwdMetadataMap('SWD.release.contact');
+    JsonSwd.release.institute          = SwdMetadataMap('SWD.release.institute');
+    JsonSwd.release.modification       = SwdMetadataMap('SWD.release.modification');
+    JsonSwd.release.source             = SwdMetadataMap('SWD.release.source');    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     
-    JsonSwd.environment.executable     = SETTINGS.get_fv('SWD.environment.executable');
+    JsonSwd.environment.executable     = SwdMetadataMap('SWD.environment.executable');
     %JsonSwd.environment.configuration  = C.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     JsonSwd.environment.configuration  = bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     

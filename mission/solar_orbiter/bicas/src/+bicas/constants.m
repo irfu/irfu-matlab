@@ -68,6 +68,10 @@ classdef constants   % < handle
         
         
         
+        SWD_METADATA = bicas.constants.init_swd_metadata();
+        
+        
+        
         % Regular expression which the CLI name of a s/w mode must satisfy.
         %
         % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems to
@@ -106,6 +110,68 @@ classdef constants   % < handle
     
 
     methods(Static, Access=private)
+        
+        
+        
+        % Various S/W descriptor (SWD) release data for the entire software (not
+        % specific outputs)
+        % ----------------------------------------------------------------------
+        %
+        % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External Users":
+        % """"""""
+        % 2.2.3 RCS versioning
+        % The RCS version must be a unique number sequence identifier “X.Y.Z”,
+        % where “X” is an integer indicating the release (major changes, not
+        % necessarily retro-compatible), “Y” is an integer indicating the issue
+        % (minor changes, necessarily retro-compatible) and “Z” is an integer
+        % indicating a revision (e.g., bug correction).
+        % """"""""
+        function MAP = init_swd_metadata()
+            MAP = containers.Map();
+            
+            IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';
+            %
+            MAP('SWD.identification.project')     = 'ROC';
+            MAP('SWD.identification.name')        = 'BIAS Calibration Software (BICAS)';
+            MAP('SWD.identification.identifier')  = 'BICAS';
+            MAP('SWD.identification.description') = ...
+                ['Calibration software meant to', ...
+                ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
+                ' (2) calibrate bias currents from L1 data.'];
+            MAP('SWD.identification.icd_version') = '1.2';   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
+            MAP('SWD.release.version')            = '3.1.1';
+            MAP('SWD.release.date')               = '2020-09-15T11:22:00Z';
+            MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
+            MAP('SWD.release.contact')            = 'erjo@irfu.se';
+            MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
+            % 'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.'
+            % 'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).'
+            MAP('SWD.release.modification')       = ...
+                ['Modified default settings: inverted transfer function', ...
+                ' cutoff at 0.8*omega_Nyquist, duplicate bias current gives error'];   % 3.1.1
+            MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
+            % Appropriate branch? "master" instead?
+            %
+            % Relative path to BICAS executable. See RCS ICD.
+            MAP('SWD.environment.executable')     =     'roc/bicas';
+            % NOTE: See also setting
+            % OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
+            
+            
+
+            %======================
+            % ASSERTIONS: SETTINGS
+            %======================
+            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
+            EJ_library.assert.castring_regexp(MAP('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
+            % Validate S/W release version
+            % ----------------------------
+            % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
+            % NOTE: It is hard to thoroughly follow the description, but the end result should be under
+            % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
+            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
+
+        end
         
         
 

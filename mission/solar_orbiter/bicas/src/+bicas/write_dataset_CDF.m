@@ -178,8 +178,8 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     %==========================
     % Set CDF GlobalAttributes
     %==========================
-    DataObj.GlobalAttributes.Software_name       = SETTINGS.get_fv('SWD.identification.name');
-    DataObj.GlobalAttributes.Software_version    = SETTINGS.get_fv('SWD.release.version');
+    DataObj.GlobalAttributes.Software_name       = bicas.constants.SWD_METADATA('SWD.identification.name');
+    DataObj.GlobalAttributes.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
     % Static value?!!
     DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.

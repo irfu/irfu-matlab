@@ -369,21 +369,6 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    %======================
-    % ASSERTIONS: SETTINGS
-    %======================
-    EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
-    %EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
-    EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
-    % Validate S/W release version
-    % ----------------------------
-    % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
-    % NOTE: It is hard to thoroughly follow the description, but the end result should be under
-    % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
-    EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
-    
-    
-    
     L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Print/log the content of SETTINGS.
     
     
@@ -570,8 +555,8 @@ function print_help(SETTINGS)
     
     
     % Print software name & description
-    bicas.stdout_printf('\n%s version %s\n', SETTINGS.get_fv('SWD.identification.name'), SETTINGS.get_fv('SWD.release.version') )
-    bicas.stdout_print(SETTINGS.get_fv('SWD.identification.description'))
+    bicas.stdout_printf('\n%s version %s\n', bicas.constants.SWD_METADATA('SWD.identification.name'), bicas.constants.SWD_METADATA('SWD.release.version') )
+    bicas.stdout_print(bicas.constants.SWD_METADATA('SWD.identification.description'))
     
     %==========================
     % Print error codes & types
