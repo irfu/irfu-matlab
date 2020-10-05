@@ -13,25 +13,25 @@ rcsNsoId      : String constant used by BICAS to set quality flags & bits, remov
 	<event>
 		<startTimeUtc>2020-02-13T00:58:00Z</startTimeUtc>
 		<stopTimeUtc> 2020-02-13T00:59:00Z</stopTimeUtc>
-		<rcsNsoId>test_QUALITY_FLAG_0</rcsNsoId>
+		<rcsNsoId>TEST_QUALITY_FLAG_0</rcsNsoId>
 		<description>Test 1. 2020-02-13 00:00-~01:40 corresponds to local LFR CWF test dataset.</description>
 	</event>
 	<event>
 		<startTimeUtc>2020-02-13T01:01:00Z</startTimeUtc>
 		<stopTimeUtc> 2020-02-13T01:02:00Z</stopTimeUtc>
-		<rcsNsoId>test_UFV</rcsNsoId>
+		<rcsNsoId>TEST_UFV</rcsNsoId>
 		<description>Test 2</description>
 	</event>
 	<event>
 		<startTimeUtc>2020-04-14T01:00:00Z</startTimeUtc>
 		<stopTimeUtc> 2020-04-14T02:00:00Z</stopTimeUtc>
-		<rcsNsoId>test_QUALITY_FLAG_0</rcsNsoId>
+		<rcsNsoId>TEST_QUALITY_FLAG_0</rcsNsoId>
 		<description>Test 1. 2020-04-14 00:00-24:00 corresponds to local LFR SWF test dataset.</description>
 	</event>
 	<event>
 		<startTimeUtc>2020-04-14T03:00:00Z</startTimeUtc>
 		<stopTimeUtc> 2020-04-14T04:00:00Z</stopTimeUtc>
-		<rcsNsoId>test_UFV</rcsNsoId>
+		<rcsNsoId>TEST_UFV</rcsNsoId>
 		<description>Test 2</description>
 	</event>
 </table>

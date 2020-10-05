@@ -795,12 +795,13 @@ classdef proc_sub
 
             OutSciZv = [];
             
-            OutSciZv.Epoch            = SciPreDc.Zv.Epoch;
-            OutSciZv.QUALITY_BITMASK  = SciPreDc.Zv.QUALITY_BITMASK;
-            OutSciZv.QUALITY_FLAG     = SciPreDc.Zv.QUALITY_FLAG;
-            OutSciZv.DELTA_PLUS_MINUS = SciPreDc.Zv.DELTA_PLUS_MINUS;
-            OutSciZv.SYNCHRO_FLAG     = SciPreDc.Zv.SYNCHRO_FLAG;
-            OutSciZv.SAMPLING_RATE    = SciPreDc.Zv.freqHz;
+            OutSciZv.Epoch              = SciPreDc.Zv.Epoch;
+            OutSciZv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
+            OutSciZv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
+            OutSciZv.QUALITY_FLAG       = SciPreDc.Zv.QUALITY_FLAG;
+            OutSciZv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
+            OutSciZv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
+            OutSciZv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
             %OutSciZv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(SciPreDc.Zv.freqHz, nCdfSamplesPerRecord);            
 
             % NOTE: Convert aampere --> nano-aampere
@@ -890,7 +891,7 @@ classdef proc_sub
             % NOTE: Includes zVar "BW" (LFR L2 only).
             EJ_library.assert.struct(OutSciZv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
-                'QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
             
         end    % process_PostDC_to_TDS_CDF
@@ -982,7 +983,23 @@ classdef proc_sub
         % of L1R-->L2 processing.
         %
         function [PreDc, PostDc] = process_quality_filter(PreDc, PostDc, NsoTable, SETTINGS, L)
+            % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the format.
+            %   PROPOSAL: Treat output PostDc as another format?
+            %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
+            %   PROPOSAL: Keep as is. List as optional field in assert_PostDc
+            
+            % ASSERTION
+            bicas.proc_sub.assert_PreDC(PreDc)
+            bicas.proc_sub.assert_PostDC(PostDc)
+            nRecords = EJ_library.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
+            
+            
+            % NOTE: Preallocates and adds zVar to PostDc.
+            PostDc.Zv.L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
+            
+            
+            
             %============================================
             % Find CDF records to remove due to settings
             %============================================
@@ -1007,38 +1024,77 @@ classdef proc_sub
                 nNso, nNsoGlobal);
             
             for kNso = 1:nNso    % Index into local/CDF NSO table.                
-                iNso = iNsoNa(kNso);     % Index into global NSO table.
+                iNso  = iNsoNa(kNso);     % Index into global NSO table.
+                nsoId = nsoIdCa{kNso};
                 
                 L.logf('info', '    %s -- %s %s', ...
                     EJ_library.cdf.tt2000_to_UTC_str(NsoTable.startTt2000Array(iNso)), ...
                     EJ_library.cdf.tt2000_to_UTC_str(NsoTable.stopTt2000Array(iNso)), ...
-                    NsoTable.nsoIdCa{iNso});
+                    nsoId);                
                 
-                switch(nsoIdCa{kNso})
+                %========================================================
+                % TEST FUNCTIONALITY
+                % Translate (selected) TEST NSO IDs into actual NSO IDs.
+                nsoIdTranslated = EJ_library.utils.translate({...
+                    {bicas.constants.NSOID.TEST_PARTIAL_SATURATION}, bicas.constants.NSOID.PARTIAL_SATURATION; ...
+                    {bicas.constants.NSOID.TEST_FULL_SATURATION},    bicas.constants.NSOID.FULL_SATURATION}, ...
+                    nsoId, nsoId);
+                if ~testNsoEnabled && ~strcmp(nsoId, nsoIdTranslated)
+                    nsoId = 'nothing';   % Local constant.
+                end
+                %========================================================
+                
+                %=================================
+                % Take action depending on NSO ID
+                %=================================
+                % Temporary shorter variable name.
+                zv_QUALITY_FLAG       = PreDc.Zv.QUALITY_FLAG(bArraysCa{kNso});
+                zv_L2_QUALITY_BITMASK = PostDc.Zv.L2_QUALITY_BITMASK(bArraysCa{kNso});
+                
+                switch(nsoId)
                     
                     case bicas.constants.NSOID.TEST_QF0
-                        
                         if testNsoEnabled
-                            PreDc.Zv.QUALITY_FLAG(bArraysCa{kNso}) = min(...
-                                PreDc.Zv.QUALITY_FLAG(bArraysCa{kNso}), ...
-                                0, ...
+                            zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 0, ...
                                 'includeNaN');
                         end
                         
                     case bicas.constants.NSOID.TEST_UFV
-                        
                         if testNsoEnabled
                             zvUfv = zvUfv | bArraysCa{kNso};
                         end
 
+                    case bicas.constants.NSOID.PARTIAL_SATURATION
+                        zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 1, 'includeNaN');
+                        zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, ...
+                            bicas.constants.L2QBM_PARTIAL_SATURATION);
+
+                    case bicas.constants.NSOID.FULL_SATURATION
+                        zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 0, 'includeNaN');
+                        zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, ...
+                            bicas.constants.L2QBM_FULL_SATURATION);
+                        zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, ...
+                            bicas.constants.L2QBM_PARTIAL_SATURATION);
+                        % NOTE: Also set PARTIAL saturation bit when FULL
+                        % saturation. /YK 2020-10-02.
+                        
+                    case 'nothing'
+                        % CASE: Do nothing.
+                        % This case is necessary so that test NSO IDs can be
+                        % translated to something harmless when tests are
+                        % disabled.
+
                     otherwise
                         % ASSERTION
                         % NOTE: Not perfect assertion on legal NSO IDs since
-                        % only checks those relevant for the current data (time
-                        % interval).
+                        % code only checks those relevant for the data (time
+                        % interval) currently processed. (Therefore also checks
+                        % all NSO IDs when reads NSO table.)
                         error('Can not interpret RCS NSO ID "%s".', nsoIdCa{kNso})
                         
                 end
+                PreDc.Zv.QUALITY_FLAG(bArraysCa{kNso})        = zv_QUALITY_FLAG;
+                PostDc.Zv.L2_QUALITY_BITMASK(bArraysCa{kNso}) = zv_L2_QUALITY_BITMASK;
                 
             end    % for
             
@@ -1241,7 +1297,7 @@ classdef proc_sub
                 {'Zv'}, {});
             
             EJ_library.assert.struct(PostDc.Zv, ...
-                {'DemuxerOutput', 'currentAAmpere'}, {});
+                {'DemuxerOutput', 'currentAAmpere'}, {'L2_QUALITY_BITMASK'});
             
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
