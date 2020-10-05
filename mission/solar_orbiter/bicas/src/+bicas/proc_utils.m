@@ -294,10 +294,10 @@ classdef proc_utils
         %
         % ARGUMENTS
         % =========
-        % freqHz           : Frequency column vector in s^-1.
-        %                    Can not handle freqHz=NaN since the output is an
-        %                    integer.
-        % nSpr             : Number of samples/record.
+        % freqHz : Frequency column vector in s^-1.
+        %          Can not handle freqHz=NaN since the output is an
+        %          integer (assertion).
+        % nSpr   : Number of samples/record.
         %
         % 
         % RETURN VALUE
@@ -513,7 +513,7 @@ classdef proc_utils
                 end
             end
             
-            headerStrs = {'Name', 'Size', '#NaN', '%NaN', '#Uniq', 'Values'};
+            HEADER_STRS = {'Name', 'Size', '#NaN', '%NaN', '#Uniq', 'Values'};
             dataStrs = {};
             dataStrs(:,1) = {ColumnStrs(:).name}';
             dataStrs(:,2) = {ColumnStrs(:).size}';
@@ -522,11 +522,11 @@ classdef proc_utils
             dataStrs(:,5) = {ColumnStrs(:).nUniqueValues}';
             dataStrs(:,6) = {ColumnStrs(:).values}';
             columnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
-            [headerStrs, dataStrs, columnWidths] = EJ_library.str.assist_print_table(...
-                headerStrs, dataStrs,  columnAdjustments);
+            [HEADER_STRS, dataStrs, columnWidths] = EJ_library.str.assist_print_table(...
+                HEADER_STRS, dataStrs,  columnAdjustments);
 
-            L.log(LL, strjoin(headerStrs, ' '))
-            L.log(LL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
+            L.log(LL, strjoin(HEADER_STRS, ' '))
+            L.log(LL, repmat('=', 1, sum(columnWidths) + numel(HEADER_STRS) - 1))
             for iRow = 1:numel(ColumnStrs)
                 L.log(LL, strjoin(dataStrs(iRow, :), ' '))
             end

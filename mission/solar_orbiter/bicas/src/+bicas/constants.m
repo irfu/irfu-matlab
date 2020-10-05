@@ -18,7 +18,8 @@
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
-% First created 2020-07-09, as a replacement for the FUNCTION error_safe_constant created 2016-06-02.
+% First created 2020-07-09, as a replacement for the FUNCTION
+% error_safe_constant created 2016-06-02.
 %
 classdef constants   % < handle
     % PROPOSAL: Error category for bad input datasets (both science and HK).
@@ -34,26 +35,26 @@ classdef constants   % < handle
         % NOTE: BICAS originally required MATLAB R2016a but no longer does.
         % NOTE: ROC only needs MATLAB R2019b. Source:
         % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
-        PERMITTED_MATLAB_VERSIONS         = {'2019b'};        
+        PERMITTED_MATLAB_VERSIONS         = {'2019b'};
 
         % Path to default config file relative to BICAS's directory root. Note
         % that this is also implicitly the constant for the default config file
         % filename.
         DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');
         
-        % MATLAB stdout prefix to signal to bash wrapper that the log message should be passed on to STDOUT (without the
-        % prefix).
+        % MATLAB stdout prefix to signal to bash wrapper that the log message
+        % should be passed on to STDOUT (without the prefix).
         STDOUT_PREFIX_TBW = 'STDOUT: ';
         
-        % MATLAB stdout prefix to signal to bash wrapper that the log message should be passed on to LOG FILE (without
-        % the prefix).
+        % MATLAB stdout prefix to signal to bash wrapper that the log message
+        % should be passed on to LOG FILE (without the prefix).
         LOG_FILE_PREFIX_TBW = 'LOG FILE: ';
 
         % Information to "interpret" and "translate" captured exceptions
         % --------------------------------------------------------------
         % containers.Map with
-        %   key   = Any one of the colon-separated parts of a MATLAB error message identifier string (see
-        %           "error" function).
+        %   key   = Any one of the colon-separated parts of a MATLAB error
+        %           message identifier string (see "error" function).
         %   value = Struct with fields representing a type of error:
         %       .errorCode   = The error code/number to be returned from BICAS' main function.
         %                      IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types"
@@ -95,12 +96,17 @@ classdef constants   % < handle
         
         
         
-        % Legal RCS NSO IDs.
-        % 
+        % Field values = Legal RCS NSO IDs used in the RCS NSO XML file.
+        % Field names can be used as constants for those strings inside BICAS.
+        %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can
         % simultaneously be used to
         % ** reference specific constants (fields) in code
         % ** compile list of legal NSO IDs in NSO table file.
+        %
+        % IMPLEMENTATION NOTE: One does not want to use the RCS NSO ID string
+        % constants directly inside the code, in case of typos.
+        % 
         NSOID = struct(...
             'TEST_QF0', 'test_QUALITY_FLAG_0', ...
             'TEST_UFV', 'test_UFV');
@@ -126,6 +132,7 @@ classdef constants   % < handle
         % (minor changes, necessarily retro-compatible) and “Z” is an integer
         % indicating a revision (e.g., bug correction).
         % """"""""
+        %
         function MAP = init_swd_metadata()
             MAP = containers.Map();
             
@@ -176,7 +183,8 @@ classdef constants   % < handle
         
 
         function MAP = init_EMIDP_2_INFO()
-            % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
+            % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section
+            % 3.4.3 specifies
             %   error code 0 : No error
             %   error code 1 : Every kind of error (!)
             
@@ -200,7 +208,8 @@ classdef constants   % < handle
             MAP('FailedToReadInterpretNsOps')   = init_struct(1, 'Can not read or interpret the content of the non-standard operations file.');
             MAP('CannotFindRegexMatchingRCT')   = init_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
             
-            % IMPLEMENTATION NOTE: Using a nested function merely to keep the function call short.
+            % IMPLEMENTATION NOTE: Using a nested function merely to keep the
+            % function call short.
             function ErrorTypeInfo = init_struct(errorCode, errorDescription)
                 ErrorTypeInfo = struct(...
                     'errorCode',   errorCode, ...

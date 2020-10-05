@@ -59,6 +59,8 @@ classdef proc_sub
 %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
 %         from struct.
 %
+% PROPOSAL: Redefine PostDC to something that include L2_QUALITY_BITMASK.
+%
 %#######################################################################################################################
 
 
@@ -916,17 +918,6 @@ classdef proc_sub
             % known to be needed in order to conserve memory.
             PostDc = [];
             
-            % Copy relevant zVars.
-            %PostDc.Zv.Epoch            = PreDc.Zv.Epoch;
-            %PostDc.Zv.QUALITY_BITMASK  = PreDc.Zv.QUALITY_BITMASK;
-            %PostDc.Zv.QUALITY_FLAG     = PreDc.Zv.QUALITY_FLAG;
-            %PostDc.Zv.DELTA_PLUS_MINUS = PreDc.Zv.DELTA_PLUS_MINUS;
-            %PostDc.Zv.SYNCHRO_FLAG     = PreDc.Zv.SYNCHRO_FLAG;
-            %PostDc.Zv.freqHz           = PreDc.Zv.freqHz;
-            %if isfield(PreDc.Zv, 'BW')
-            %    PostDc.Zv.BW           = PreDc.Zv.BW;
-            %end
-            
 
 
             %############################
@@ -983,6 +974,7 @@ classdef proc_sub
         % Overwrite selected data in selected CDF records with fill values/NaN.
         % Modify quality zVariables.
         %
+        %
         % RATIONALE
         % =========
         % Does NOT want to operate on structs that mimic the input or output
@@ -1013,6 +1005,7 @@ classdef proc_sub
                 ['Searched non-standard operations (NSO) table.', ...
                 ' Found %i relevant NSO entries out of %i total.'], ...
                 nNso, nNsoGlobal);
+            
             for kNso = 1:nNso    % Index into local/CDF NSO table.                
                 iNso = iNsoNa(kNso);     % Index into global NSO table.
                 

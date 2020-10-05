@@ -1,21 +1,23 @@
 %
-% Set of functions for producing one specific output dataset PDV from the necessary input dataset PDVs.
+% Set of "production functions", functions for producing one specific output
+% dataset PDV from the necessary input dataset PDVs.
 %
 %
-% PRODUCTION FUNCTIONS
-% ====================
+% DEFINITION: PRODUCTION FUNCTION
+% ===============================
 % A function with interface
 %   OutputsMap = produce_*(InputsMap, Cal)
 % where
 % Cal        : A bicas.calib object.
 % InputsMap  : containers.Map with
-%                <keys>       : String defining a name of an input ("prodFuncInputKey" in swmode_defs).
-%                <values>     : A struct with data corresponding to a CDF file (zVariables+global attributes).
+%   <keys>   : String defining a name of an input ("prodFuncInputKey" in swmode_defs).
+%   <values> : A struct with data corresponding to a CDF file (zVariables+global attributes).
 % OutputsMap : containers.Map with
-%                <keys>       : String defining a name of an output ("prodFuncOutputKey" in swmode_defs).
-%                <values>     : A struct with data corresponding to a CDF file (zVariables).
-% NOTE: In practice, anonymous functions with the correct interface are used to wrap the actual implementing functions
-% (with another interface).
+%   <keys>   : String defining a name of an output ("prodFuncOutputKey" in swmode_defs).
+%   <values> : A struct with data corresponding to a CDF file (zVariables).
+% --
+% NOTE: In practice, anonymous functions with the correct interface are used to
+% wrap the actual implementing functions (with another interface).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

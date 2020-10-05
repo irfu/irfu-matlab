@@ -270,7 +270,7 @@ classdef calib < handle
         use_CALIBRATION_TABLE_INDEX2
 
         % What type of calibration to use.
-        allVoltageCalibDisabled
+        allVoltageCalibDisabled    % Use TM values (not set to NaN).
         useBiasTfScalar
         biasOffsetsDisabled
         lfrTdsTfDisabled
