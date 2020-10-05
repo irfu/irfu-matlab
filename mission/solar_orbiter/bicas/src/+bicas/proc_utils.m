@@ -289,7 +289,10 @@ classdef proc_utils
         
         function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
         %
-        % NOTE: Modified to not need nSpr. FINAL?
+        % Derive value for zVar DELTA_PLUS_MINUS.
+        %
+        % NOTE: All values on any given row are identical. Not sure why but it
+        % is probably intentional, as per YK's instruction.
         %
         %
         % ARGUMENTS
@@ -319,8 +322,8 @@ classdef proc_utils
             
             
             
-            %DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
-            DELTA_PLUS_MINUS = zeros([nRecords, 1]);    % 1 sample/record.
+            DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
+            %DELTA_PLUS_MINUS = zeros([nRecords, 1]);    % Always 1 sample/record.
             for i = 1:nRecords
                 % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
                 % that the unit is the same as for Epoch.
