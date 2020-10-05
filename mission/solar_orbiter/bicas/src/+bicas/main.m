@@ -369,7 +369,11 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Print/log the content of SETTINGS.
+    % Print/log the content of SETTINGS.
+    L.log('info', bicas.sprint_SETTINGS(SETTINGS))
+    
+    % Print/log selected parts of bicas.constants.
+    L.log('info', sprint_constants())
     
     
     
@@ -555,8 +559,7 @@ function print_help(SETTINGS)
     
     
     % Print software name & description
-    bicas.stdout_printf('\n%s version %s\n', bicas.constants.SWD_METADATA('SWD.identification.name'), bicas.constants.SWD_METADATA('SWD.release.version') )
-    bicas.stdout_print(bicas.constants.SWD_METADATA('SWD.identification.description'))
+    bicas.stdout_print(sprint_constants());
     
     %==========================
     % Print error codes & types
@@ -652,4 +655,35 @@ function SETTINGS = overwrite_settings_from_strings(SETTINGS, ModifiedSettingsMa
         SETTINGS.override_value(key, newValue, valueSource);
     end
     
+end
+
+
+
+% Create string for logging. Summarizes relevant constants in
+% bicas.constantants, but not all.
+%
+% In practice, only prints s/w descriptor values. Primarily want to log the
+% version information.
+%
+function s = sprint_constants()
+    s = sprintf([...
+        '\n', ...
+        'SELECTED BICAS CONSTANTS\n', ...
+        '========================\n']);
+    
+    keysCa = bicas.constants.SWD_METADATA.keys;   % Always row vector.
+    keysCa = sort(keysCa)';   % Column vector.
+    nKeys  = numel(keysCa);
+    
+    valuesCa = cell(nKeys, 1);
+    for i = 1:nKeys
+        valuesCa{i, 1} = bicas.constants.SWD_METADATA(keysCa{i});
+    end
+    [~, dataCa, columnWidths] = EJ_library.str.assist_print_table(...
+        {'Constant', 'Value'}, [keysCa, valuesCa], {'left', 'left'});
+    
+    for iRow = 1:size(dataCa, 1)
+        s = [s, sprintf('%s = %s\n', dataCa{iRow, 1}, dataCa{iRow, 2})];
+    end
+    s = [s, newline];
 end
