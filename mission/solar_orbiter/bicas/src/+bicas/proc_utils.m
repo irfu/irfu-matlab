@@ -287,12 +287,13 @@ classdef proc_utils
 
         
         
-        function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
+        function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
         %
         % Derive value for zVar DELTA_PLUS_MINUS.
         %
-        % NOTE: All values on any given row are identical. Not sure why but it
-        % is probably intentional, as per YK's instruction.
+        % NOTE: All values on any given row (CDF record) of DELTA_PLUS_MINUS are
+        % identical. Not sure why multiple values per row are needed but it is
+        % probably intentional, as per YK's instruction.
         %
         %
         % ARGUMENTS
@@ -313,7 +314,7 @@ classdef proc_utils
             
             % ASSERTIONS
             nRecords = EJ_library.assert.sizes(freqHz, [-1]);
-            assert(isfloat(freqHz) && all(~isnan(freqHz)), ...
+            assert(isfloat(freqHz) && all(isfinite(freqHz)), ...
                 'BICAS:proc_utils:Assertion:IllegalArgument', ...
                 'Argument "freqHz" does not consist of non-NaN floats.')
             assert(isscalar(nSpr), ...
@@ -322,21 +323,21 @@ classdef proc_utils
             
             
             
-            DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
+            zv_DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
             %DELTA_PLUS_MINUS = zeros([nRecords, 1]);    % Always 1 sample/record.
             for i = 1:nRecords
                 % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
                 % that the unit is the same as for Epoch.
                 % NOTE: Seems to work for more than 2D.
-                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;    % Unit: nanoseconds
+                zv_DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;    % Unit: nanoseconds
             end
-            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, ...
+            zv_DELTA_PLUS_MINUS = cast(zv_DELTA_PLUS_MINUS, ...
                 EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
                     ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
-        
-        
-        
+
+
+
         function utcStr = tt2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
             

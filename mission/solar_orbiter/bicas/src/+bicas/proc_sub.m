@@ -987,6 +987,10 @@ classdef proc_sub
             %   PROPOSAL: Treat output PostDc as another format?
             %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
             %   PROPOSAL: Keep as is. List as optional field in assert_PostDc
+            %
+            % PROPOSAL: Abolish test functionality.
+            %   PRO: Can lead to bugs.
+            % PROPOSAL: Use separate NSO table for testing.
             
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc)
@@ -1053,16 +1057,18 @@ classdef proc_sub
                 
                 switch(nsoId)
                     
+                    %=====================================================
+                    % TEST FUNCTIONALITY
                     case bicas.constants.NSOID.TEST_QF0
                         if testNsoEnabled
                             zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 0, ...
                                 'includeNaN');
                         end
-                        
                     case bicas.constants.NSOID.TEST_UFV
                         if testNsoEnabled
                             zvUfv = zvUfv | bArraysCa{kNso};
                         end
+                    %=====================================================
 
                     case bicas.constants.NSOID.PARTIAL_SATURATION
                         zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 1, 'includeNaN');
@@ -1137,6 +1143,12 @@ classdef proc_sub
             for iFn = 1:numel(fnCa)
                 PostDc.Zv.DemuxerOutput.(fnCa{iFn})(zvUfv, :, :) = NaN;
             end
+
+
+
+            % ASSERTION
+            bicas.proc_sub.assert_PreDC(PreDc)
+            bicas.proc_sub.assert_PostDC(PostDc)
             
         end    % process_quality_filter
 

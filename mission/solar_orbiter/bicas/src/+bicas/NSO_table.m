@@ -17,7 +17,12 @@ classdef NSO_table   % < handle
     %   PRO: MMS table more recent design than Cluster table.
     % PROPOSAL: Terminology similar to Cluster, mission/cluster/caa/caa-control/ns_ops.xml, i.e.
     %           operation = one time interval in NSO table.
-    %   PRO: Cluster tabe more used than MMS table.
+    %   PRO: Cluster table has been used more than MMS table.
+    %
+    % PROPOSAL: Some kind of feature for being able to trigger real NSO ID behaviour just for
+    % testing, but only with proper setting.
+    %   PROPOSAL: process_quality_filter: Translate test NSO ID to proper NSO
+    %   ID, but only with proper setting.
     
     properties(SetAccess=immutable, GetAccess=public)
         % NOTE: Same RCS NSO ID may occur multiple times. Not unique.

@@ -38,6 +38,10 @@
 % First created 2020-08-13.
 %
 function [i1Array, i2Array, n] = split_by_change(varargin)
+    % NOTE: In principle, one might not want to split by every change.
+    %   Ex: BICAS UFV=1 ==> voltageNaN=true ==> One block, regardless of other
+    %       arguments.
+    
     % ASSERTION
     % Require at least one argument, since size of return values is ~undefined (?!!) otherwise.
     assert(numel(varargin) >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')

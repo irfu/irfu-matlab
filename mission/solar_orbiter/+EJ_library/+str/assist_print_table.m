@@ -2,27 +2,32 @@
 % Help the caller create a simple text table for printing.
 %
 %
-% NOTE: The caller has to add e.g. trailing commas in the table cells if the caller wants them (the commas) to be
-% left/center adjusted too.
-% NOTE: Deliberately does NOT remove leading and trailing whitespace before padding so that caller can use this for
-%       fine-tuning adjustment.
-%   Ex: Right-adjust & pad "123  " and "3.5" ==> "123  " and "  3.5" so that decimal point remains in the same place.
+% NOTE: The caller has to add e.g. trailing commas in the table cells if the
+%       caller wants them (the commas) to be left/center adjusted too.
+% NOTE: Deliberately does NOT remove leading and trailing whitespace before
+%       padding so that caller can use this for fine-tuning adjustment.
+%   Ex: Right-adjust & pad "123  " and "3.5" ==> "123  " and "  3.5" so that
+%       decimal point remains in the same place.
 % 
 %
 % ARGUMENTS
 % =========
 % headerStrs        : 1D cell array of strings. {iCol}.
-% dataStrs          : 2D cell array of strings. {iRow, iCol}. Contains the strings to be displayed in the table.
+% dataStrs          : 2D cell array of strings. {iRow, iCol}.
+%                     Contains the strings to be displayed in the table.
 %                     Strings may have independently arbitrary lengths.
-% columnAdjustments : 1D cell array. Each component is a string constant with one of values 'left', 'center', 'right'.
+% columnAdjustments : 1D cell array of string constants.
+%                     'left', 'center', 'right'.
 %
 %
 % RETURN VALUES
 % =============
 % headerStrs,
-% dataStrs     : Same as corresponding arguments, but with padded whitespace so that all cells in the same column
-%                (data+headers combined) have the same column width.
-% columnWidths : Numeric 1D array of column widths, i.e. length of the longest string in respective columns.
+% dataStrs     : Same as corresponding arguments, but with padded whitespace so
+%                that all cells in the same column (data+headers combined) have
+%                the same column width.
+% columnWidths : Numeric 1D array of column widths, i.e. length of the longest
+%                string in respective columns.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -47,16 +52,21 @@ function [headerStrs, dataStrs, columnWidths] = assist_print_table(headerStrs, d
     
     HEADER_ADJUSTMENT = 'center';
     
-    nCols = size(dataStrs, 2);
+    % NORMALIZE
+    headerStrs        = headerStrs(:)';           % Row
+    columnAdjustments = columnAdjustments(:)';    % Row
     
-    assert(size(dataStrs, 2) == length(headerStrs))
-    assert(size(dataStrs, 2) == length(columnAdjustments), 'Differing number of rows in tableStrs and columnAdjustments.')
+    % ASSERTIONS
+    [~, nCols] = EJ_library.assert.sizes(...
+        headerStrs,         [ 1, -2], ...
+        dataStrs,           [-1, -2], ...
+        columnAdjustments,  [ 1, -2]);
     
-    combinedStrs = [headerStrs(:)'; dataStrs];
+    combinedStrs = [headerStrs; dataStrs];
     for iCol = 1:nCols
         columnWidths(iCol)  = max(cellfun(@length, combinedStrs(:, iCol)));
-        headerStrs(:, iCol) = pad_adjust(headerStrs(:, iCol), HEADER_ADJUSTMENT,       columnWidths(iCol));
-        dataStrs(  :, iCol) = pad_adjust(dataStrs(:, iCol),   columnAdjustments{iCol}, columnWidths(iCol));
+        headerStrs(:, iCol) = pad_adjust(headerStrs(1, iCol), HEADER_ADJUSTMENT,       columnWidths(iCol));
+        dataStrs(  :, iCol) = pad_adjust(dataStrs(  :, iCol), columnAdjustments{iCol}, columnWidths(iCol));
     end
 end
 

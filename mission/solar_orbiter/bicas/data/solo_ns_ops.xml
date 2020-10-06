@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 Manually written table over "non-standard operations" (NSO), i.e. time intervals ("events")
-which should be labelled in special ways (QUALITY_FLAG, L2_QUALITY_BITMASK, maybe blanking data).
+which should be labelled in special ways (QUALITY_FLAG, L2_QUALITY_BITMASK, possibly blanking data).
+NOTE: Some of the NSOs are for testing purposes only and will not have any effect by default.
 
 startTimeUtc,
 stopTimeUtc   : Start & stop time as UTC strings.

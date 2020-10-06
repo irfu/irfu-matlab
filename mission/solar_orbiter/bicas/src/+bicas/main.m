@@ -483,8 +483,8 @@ function main_without_error_handling(cliArgumentsList, L)
             % needed.
             rctDir       = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
             masterCdfDir = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-            L.logf('info', 'rctDir = "%s"', rctDir)
-            L.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
+            L.logf('info', 'rctDir       = "%s"', rctDir)
+            L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
 
             EJ_library.assert.dir_exists(rctDir)
             EJ_library.assert.dir_exists(masterCdfDir)
