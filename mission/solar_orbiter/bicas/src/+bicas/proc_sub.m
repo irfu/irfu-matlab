@@ -1044,8 +1044,13 @@ classdef proc_sub
                     {bicas.constants.NSOID.TEST_FULL_SATURATION},    bicas.constants.NSOID.FULL_SATURATION}, ...
                     nsoId, nsoId);
                 if ~testNsoEnabled && ~strcmp(nsoId, nsoIdTranslated)
-                    nsoId = 'nothing';   % Local constant.
+                    % CASE: Not test mode. NSO ID was translated (changed).
+                    % ==> Original NSO ID was a TEST NSO ID
+                    % ==> NSO should be ignored.
+                    nsoIdTranslated = 'nothing';   % Local constant.
                 end
+                nsoId = nsoIdTranslated;
+
                 %========================================================
                 
                 %=================================
@@ -1515,8 +1520,9 @@ classdef proc_sub
                 %   NOTE: Can not use EJ_library.str.assist_print_table since it requires the entire table to
                 %         pre-exist.
                 %   PROPOSAL: Print after all iterations.
+                % NOTE: DIFF_GAIN needs three characters two fit in "NaN".
                 L.logf('info', ['Records %8i-%8i : %s -- %s', ...
-                    ' MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
+                    ' MUX_SET=%i; DIFF_GAIN=%-3i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
                     ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
