@@ -155,21 +155,30 @@ classdef constants   % < handle
                 ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
                 ' (2) calibrate bias currents from L1 data.'];
             MAP('SWD.identification.icd_version') = '1.2';   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-            MAP('SWD.release.version')            = '3.1.1';
-            MAP('SWD.release.date')               = '2020-09-15T11:22:00Z';
+            MAP('SWD.release.version')            = '4.0.0';
+            MAP('SWD.release.date')               = '2020-10-07T12:00:00Z';
             MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
             MAP('SWD.release.contact')            = 'erjo@irfu.se';
             MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
-            % 'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.'
-            % 'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).'
+            % 'Various updates and refactoring; close to complete support for
+            % LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset
+            % support.' 'Almost-complete support for LFR & TDS datasets
+            % (voltages) with transfer functions (partially tested).'
+            % /Earlier version
+            %
+            % SWD.release.modification = ...
+            % ['Modified default settings: inverted transfer function', ...
+            % ' cutoff at 0.8*omega_Nyquist, duplicate bias current gives error'];
+            % /v3.1.1
             MAP('SWD.release.modification')       = ...
-                ['Modified default settings: inverted transfer function', ...
-                ' cutoff at 0.8*omega_Nyquist, duplicate bias current gives error'];   % 3.1.1
+                ['Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)', ...
+                '; Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX', ...
+                '; Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR'];   % v4.0.0
             MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
             % Appropriate branch? "master" instead?
             %
             % Relative path to BICAS executable. See RCS ICD.
-            MAP('SWD.environment.executable')     =     'roc/bicas';
+            MAP('SWD.environment.executable')     = 'roc/bicas';
             % NOTE: See also setting
             % OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
             
