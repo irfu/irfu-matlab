@@ -32,7 +32,8 @@ classdef solo_local_file_db < solo_file_db
       % optional time period "tint".
       % Example:
       %  SOLO_DB = solo_local_file_db('/data/solo'); % init
-      %  fileList = list_files(SOLO_DB, 'solo1_edp_comm_l1b_dce128');
+      %  tint1 = irf.tint('2020-09-15T00:00:00.000000000Z', '2020-09-15T23:59:59.999999999Z');
+      %  fileList = SOLO.db_list_files('solo_L1R_rpw-lfr-surv-swf-b-cdag', tint1);
       narginchk(2,3)
       fileList = [];
       if nargin==3 && (~isempty(tint) && ~isa(tint,'GenericTimeArray'))
@@ -204,7 +205,7 @@ classdef solo_local_file_db < solo_file_db
         if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
         iSame = find(hasFile);
         if length(iSame)>1, error('multiple files with same name'); end
-        if is_version_larger(fnd.vXYZ, fileList(iSame).ver)
+        if is_version_larger(str2double(name(end-5:end-4)), fileList(iSame).ver)
           fileList(iSame) = add_ss(Entry); % replace file
         end
         function entry = add_ss(entry)
@@ -253,48 +254,35 @@ classdef solo_local_file_db < solo_file_db
     end % LIST_FILES
     
     %% LOAD FILES
-    function res = load_file(obj,fileName)
+    function res = load_file(~, fullPathFilename)
       narginchk(2,3)
       
-      irf.log('notice',['loading ' fileName])
-      if solo.db_index
-        fileNameFullPath = fileName;
-      else
-        p = obj.get_path_to_file(fileName);
-        fileNameFullPath = [p filesep fileName];
-      end
-      res = dataobj(fileNameFullPath);
+      irf.log('notice',['loading ', fullPathFilename])
+      res = dataobj(fullPathFilename);
     end % LOAD_FILES
     
     %% FILE_HAS_VAR
-    function res = file_has_var(obj,fileName,varName)
+    function res = file_has_var(obj,fullPathFilename,varName)
       % checks if fileName includes variable name varName
       % res = true/false
       narginchk(3,3)
-      res = false; if isempty(varName) || isempty(fileName), return, end
+      res = false; if isempty(varName) || isempty(fullPathFilename), return, end
       
-      entryTmp = obj.cache.get_by_key(fileName);
+      entryTmp = obj.cache.get_by_key(fullPathFilename);
       if ~isempty(entryTmp)
         res = any(cellfun(@(x) strcmp(x,varName), entryTmp.vars(:,1)));
         return
       end
-      if solo.db_index
-        irf.log('notice','Using index to check if file ok');
-        fullPath = fileName;
-      else
-        p = obj.get_path_to_file(fileName);
-        fullPath = [p filesep fileName];
-      end
-      if ~exist(fullPath,'file')
-        irf.log('warning', ['Fies does not exist: ' fullPath])
+      if ~exist(fullPathFilename,'file')
+        irf.log('warning', ['Fies does not exist: ' fullPathFilename])
         return
       end
       
       % cdf
       if solo.db_index
-        res = obj.index.file_has_var(fileName,varName);
+        res = obj.index.file_has_var(fullPathFilename,varName);
       else
-        info = spdfcdfinfo(fullPath);
+        info = spdfcdfinfo(fullPathFilename);
         if ispc
           % Add a very short delay to ensure consecutive files are not
           % accessed TOO quickly as this may cause Matlab to experince a
@@ -332,7 +320,7 @@ classdef solo_local_file_db < solo_file_db
           case 'rpw-tds-surv-stat-cdag'
             fileDir = [fileDir, filesep, 'stat'];
           case {'rpw-lfr-surv-bp1-cdag', 'rpw-lfr-surv-bp2-cdag'}
-            fileDir = [fileDir, filesep, 'bp'];
+            fileDir = [fileDir, filesep, 'lfr_bp'];
           case {'rpw-lfr-surv-cwf-b-cdag', 'rpw-lfr-surv-swf-b-cdag'}
             fileDir = [fileDir, filesep, 'lfr_wf_b'];
           case {'rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
