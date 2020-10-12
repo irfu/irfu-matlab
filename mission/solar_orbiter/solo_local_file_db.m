@@ -291,31 +291,38 @@ classdef solo_local_file_db < solo_file_db
     
     function fileDir = get_fileDir(~, C)
       fileDir = C{2}; % "L2" (or "L1R", "L1", "L3", "HK")
-      switch C{3}
-        case 'rpw-lfr-surv-asm-cdag'
-          fileDir = [fileDir, filesep, 'lfr_asm'];
-        case 'rpw-tds-surv-hist1d-cdag'
-          fileDir = [fileDir, filesep, 'hist1d'];
-        case 'rpw-tds-surv-hist2d-cdag'
-          fileDir = [fileDir, filesep, 'hist2d'];
-        case 'rpw-tds-surv-mamp-cdag'
-          fileDir = [fileDir, filesep, 'mamp'];
-        case 'rpw-tds-surv-stat-cdag'
-          fileDir = [fileDir, filesep, 'stat'];
-        case {'rpw-lfr-surv-bp1-cdag', 'rpw-lfr-surv-bp2-cdag'}
-          fileDir = [fileDir, filesep, 'bp'];
-        case {'rpw-lfr-surv-cwf-b-cdag', 'rpw-lfr-surv-swf-b-cdag'}
-          fileDir = [fileDir, filesep, 'lfr_wf_b'];
-        case {'rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
-          fileDir = [fileDir, filesep, 'lfr_wf_e'];
-        case {'rpw-tds-surv-rswf-b-cdag', 'rpw-tds-surf-tswf-b-cdag'}
-          fileDir = [fileDir, filesep, 'tds_wf_b'];
-        case {'rpw-tds-surv-rswf-e-cdag', 'rpw-tds-surf-tswf-e-cdag'}
-          fileDir = [fileDir, filesep, 'tds_wf_e'];
-        case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
-          fileDir = [fileDir, filesep, 'thr'];
-        otherwise
-          % Keep it ("HK", "L1R" etc. as these do not have separate subfolders based on descriptor)
+      if isequal(fileDir, 'L2')
+        switch C{3}
+          case 'rpw-lfr-surv-asm-cdag'
+            fileDir = [fileDir, filesep, 'lfr_asm'];
+          case 'rpw-tds-surv-hist1d-cdag'
+            fileDir = [fileDir, filesep, 'hist1d'];
+          case 'rpw-tds-surv-hist2d-cdag'
+            fileDir = [fileDir, filesep, 'hist2d'];
+          case 'rpw-tds-surv-mamp-cdag'
+            fileDir = [fileDir, filesep, 'mamp'];
+          case 'rpw-tds-surv-stat-cdag'
+            fileDir = [fileDir, filesep, 'stat'];
+          case {'rpw-lfr-surv-bp1-cdag', 'rpw-lfr-surv-bp2-cdag'}
+            fileDir = [fileDir, filesep, 'bp'];
+          case {'rpw-lfr-surv-cwf-b-cdag', 'rpw-lfr-surv-swf-b-cdag'}
+            fileDir = [fileDir, filesep, 'lfr_wf_b'];
+          case {'rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
+            fileDir = [fileDir, filesep, 'lfr_wf_e'];
+          case {'rpw-tds-surv-rswf-b-cdag', 'rpw-tds-surf-tswf-b-cdag'}
+            fileDir = [fileDir, filesep, 'tds_wf_b'];
+          case {'rpw-tds-surv-rswf-e-cdag', 'rpw-tds-surf-tswf-e-cdag'}
+            fileDir = [fileDir, filesep, 'tds_wf_e'];
+          case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
+            fileDir = [fileDir, filesep, 'thr'];
+          otherwise
+            % Not yet implemented
+            errS = 'Not yet implemented!';
+            irf.log('critical', errS);
+            error(errs);
+        end
+      else
+        % Keep it ("HK", "L1R" etc. as these do not have separate subfolders based on descriptor)
       end
     end % get_fileDir
     
