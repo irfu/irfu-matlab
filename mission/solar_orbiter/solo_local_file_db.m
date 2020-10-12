@@ -73,9 +73,23 @@ classdef solo_local_file_db < solo_file_db
           if year==TStart.year, moStart = TStart.month; end
           if year==TStop.year, moStop = TStop.month; end
           for mo = moStart:moStop
-            curDir = sprintf('%s%s%s%s%d%s%02d',rDir,filesep,fDir,filesep,year,filesep,mo);
-            dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
-            limited_sci_list;
+            moDir = sprintf('%s%s%s%s%d%s%02d',rDir,filesep,fDir,filesep,year,filesep,mo);
+            curDir = moDir;
+            if strcmp(C{2}, 'L2')
+              % L2
+              dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
+              limited_sci_list;
+            else
+              % L1, L1R, HK etc have daily subfolders
+              dStart = 1; dStop = 31;
+              if year==TStart.year && mo==TStart.month, dStart=TStart.day; end
+              if year==TStop.year && mo==TStop.month, dStop = TStop.day; end
+              for day = dStart:dStop
+                curDir = [moDir filesep sprintf('%02d',day)];
+                dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                limited_sci_list;
+              end
+            end
           end
         end
 
@@ -151,10 +165,24 @@ classdef solo_local_file_db < solo_file_db
               case '1', if ~any(dNameM(2)=='012'), continue, end
               otherwise, continue
             end
-            curDir = [fileDir filesep dNameY filesep dNameM];
-            listingD = dir([curDir filesep filePrefix '*.cdf']);
-            if isempty(listingD), continue, end
-            arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+            if strcmp(C{2}, 'L2')
+              % L2
+              curDir = [fileDir filesep dNameY filesep dNameM];
+              listingD = dir([curDir, filesep, filePrefix, '*.cdf']);
+              if isempty(listingD), continue, end
+              arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+            else
+              % L1, L1R, HK etc have daily subfolders
+              dStart = 1; dStop = 31;
+              for day = dStart:dStop
+                curDir = [fileDir, filesep, dNameY, filesep, dNameM, ...
+                  filesep, sprintf('%02d', day)];
+                if ~exist(curDir, 'dir'), continue, end
+                listingD = dir([curDir, filesep, filePrefix, '*.cdf']);
+                if isempty(listingD), continue, end
+                arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+              end
+            end
           end
         end
       end % LIST_SCI
@@ -319,7 +347,7 @@ classdef solo_local_file_db < solo_file_db
             % Not yet implemented
             errS = 'Not yet implemented!';
             irf.log('critical', errS);
-            error(errs);
+            error(errS);
         end
       else
         % Keep it ("HK", "L1R" etc. as these do not have separate subfolders based on descriptor)
