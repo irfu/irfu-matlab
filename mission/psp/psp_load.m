@@ -42,8 +42,8 @@ switch datatype
   case {'sweap', 'spc'}
     
     
-    filename = 'psp_swp_spc_l3i_';
-    versiontag = '_v01';
+    filename = 'psp_swp_spc_l3i';
+    versiontag = '_v02';
     varnames = {...
       'DQF';...          % data quality flag
       'general_flag';...
