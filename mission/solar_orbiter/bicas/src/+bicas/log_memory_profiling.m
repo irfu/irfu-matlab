@@ -1,8 +1,8 @@
 %
 % Log memory use in the caller workspace at the time of the call.
 %
-% IMPORTANT NOTE: SIMPLISTIC profiling, since it only uses "whos". It can therefore only access the memory use of
-% variables in the caller workspace.
+% IMPORTANT NOTE: SIMPLISTIC profiling, since it only uses "whos". It can
+% therefore only access the memory use of variables in the caller workspace.
 %
 %
 % ARGUMENTS
@@ -59,7 +59,8 @@ function log_memory_profiling(L, locationName)
     
     
     
-    [headerStrs, dataStrs, ~] = EJ_library.str.assist_print_table(HEADER_STRS, dataStrs, COLUMN_ADJUSTMENTS);
+    [headerStrs, dataStrs, ~] = EJ_library.str.assist_print_table(...
+        HEADER_STRS, dataStrs, COLUMN_ADJUSTMENTS);
 
     
     
@@ -83,8 +84,9 @@ end
 
 
 
-% IMPLEMENTATION NOTE: Returns formatted value strings instead of numeric values, so that can add right-hand whitespace
-% when not using decimals, thus placing the decimal point at the right location.
+% IMPLEMENTATION NOTE: Returns formatted value strings instead of numeric
+% values, so that can add right-hand whitespace when not using decimals, thus
+% placing the decimal point at the right location.
 function [valueStr, unit] = select_unit(valueBytes)
     if     valueBytes >= 2^20
         valueStr = sprintf('%.1f', valueBytes / 2^20);

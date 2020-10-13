@@ -1,8 +1,61 @@
+%
 % Automatic test code for bicas.demultiplexer.
 %
-% Very basic tests at this stage. Could be improved but unsure how much is meaningful.
+% Very basic tests at this stage. Could be improved but unsure how much is
+% meaningful.
+%
 function demultiplexer___ATEST
+    main___ATEST
+    complement_ASR___ATEST
+end
+
+
+
+function complement_ASR___ATEST
+    newTest    = @(inputFieldsCa, outputFieldsCa) (EJ_library.atest.CompareFuncResult(...
+        @new_test, ...
+        {inputFieldsCa}, {}));
     
+    tl = {};
+    
+    % TODO: dlrUsing12
+    tl{end+1} = newTest({'dcV1', 19, 'dcV12', 27, 'dcV23', 33,    'acV12', 54, 'acV23', 75});    % mux=0, dlrUsing12=1
+    tl{end+1} = newTest({'dcV1', 19, 'dcV13', 27, 'dcV23', 33,    'acV13', 54, 'acV23', 75});    % mux=0, dlrUsing12=0
+    tl{end+1} = newTest({'dcV2', 19, 'dcV3',  27, 'dcV23', 19-27, 'acV12', 54, 'acV23', 75});    % mux=1
+    tl{end+1} = newTest({'dcV1', 2   'dcV2',  7,  'dcV3',  32,    'acV12', 74, 'acV23', 85});    % mux=4
+    
+    EJ_library.atest.run_tests(tl)
+    
+    
+    
+    function new_test(inputFieldsCa)
+        A = bicas.demultiplexer.complement_ASR( struct(inputFieldsCa{:}) );
+        
+        % Test all possible relationsships.
+        %
+        % NOTE: Implicitly asserts that all fields are present.
+        % NOTE: Must account for that some fields may be NaN, and therefore can
+        % not be checked against relations.
+        assert_relation(A.dcV1,  A.dcV12, A.dcV2 )
+        assert_relation(A.dcV1,  A.dcV13, A.dcV3 )
+        assert_relation(A.dcV2,  A.dcV23, A.dcV3 )
+        assert_relation(A.dcV13, A.dcV12, A.dcV23)    % DC. All diffs
+        %
+        assert_relation(A.acV13, A.acV12, A.acV23)    % AC. All diffs
+    end
+end
+
+
+
+% Local utility function.
+function assert_relation(A, B, C)
+    b = ~isnan(A) & ~isnan(B) & ~isnan(C);
+    assert(all(A(b) == B(b) + C(b)))
+end
+
+
+
+function main___ATEST()
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.demultiplexer.main, inputs, outputs));
     tl = {};
     
@@ -15,7 +68,7 @@ function demultiplexer___ATEST
     V12a = 45-56;
     V13a = 45-69;
     V23a = 56-69;
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###################################################################
     function AsrSamplesVolt = ASR_samples(varargin)
         assert(nargin == 9)
         AsrSamplesVolt = struct(...
@@ -29,7 +82,7 @@ function demultiplexer___ATEST
             'acV13', as(varargin{8}, V13a), ...
             'acV23', as(varargin{9}, V23a));
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###################################################################
     function BltsSrcArray = BLTS_src_array(categoryArray, antennasArray)
         assert( numel(categoryArray) == numel(antennasArray) )
         
@@ -39,7 +92,7 @@ function demultiplexer___ATEST
                 antennasArray{i});
         end
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %###################################################################
     
     
     
@@ -65,10 +118,10 @@ function demultiplexer___ATEST
 end
 
 
-
+% Local utility function.
 % as = assign. Effectively implements ~ternary operator + constant (NaN).
-function V = as(v,V)
-    if v; V = V;
+function V = as(b,V)
+    if b; V = V;
     else  V = NaN;
     end
 end

@@ -18,7 +18,8 @@
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
-% First created 2020-07-09, as a replacement for the FUNCTION error_safe_constant created 2016-06-02.
+% First created 2020-07-09, as a replacement for the FUNCTION
+% error_safe_constant created 2016-06-02.
 %
 classdef constants   % < handle
     % PROPOSAL: Error category for bad input datasets (both science and HK).
@@ -34,26 +35,26 @@ classdef constants   % < handle
         % NOTE: BICAS originally required MATLAB R2016a but no longer does.
         % NOTE: ROC only needs MATLAB R2019b. Source:
         % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
-        PERMITTED_MATLAB_VERSIONS         = {'2019b'};        
+        PERMITTED_MATLAB_VERSIONS         = {'2019b'};
 
         % Path to default config file relative to BICAS's directory root. Note
         % that this is also implicitly the constant for the default config file
         % filename.
         DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');
         
-        % MATLAB stdout prefix to signal to bash wrapper that the log message should be passed on to STDOUT (without the
-        % prefix).
+        % MATLAB stdout prefix to signal to bash wrapper that the log message
+        % should be passed on to STDOUT (without the prefix).
         STDOUT_PREFIX_TBW = 'STDOUT: ';
         
-        % MATLAB stdout prefix to signal to bash wrapper that the log message should be passed on to LOG FILE (without
-        % the prefix).
+        % MATLAB stdout prefix to signal to bash wrapper that the log message
+        % should be passed on to LOG FILE (without the prefix).
         LOG_FILE_PREFIX_TBW = 'LOG FILE: ';
 
         % Information to "interpret" and "translate" captured exceptions
         % --------------------------------------------------------------
         % containers.Map with
-        %   key   = Any one of the colon-separated parts of a MATLAB error message identifier string (see
-        %           "error" function).
+        %   key   = Any one of the colon-separated parts of a MATLAB error
+        %           message identifier string (see "error" function).
         %   value = Struct with fields representing a type of error:
         %       .errorCode   = The error code/number to be returned from BICAS' main function.
         %                      IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types"
@@ -68,28 +69,140 @@ classdef constants   % < handle
         
         
         
-        % Regular expression that the CLI name of a s/w mode must satisfy.
+        SWD_METADATA = bicas.constants.init_swd_metadata();
+        
+        
+        
+        % Regular expression which the CLI name of a s/w mode must satisfy.
         %
-        % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems to imply this regex for S/W mode
-        % CLI parameters: ^[A-Za-z][\\w-]+$
+        % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems to
+        % imply this regex for S/W mode CLI parameters: ^[A-Za-z][\\w-]+$
         % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
         %
-        % NOTE: Must not begin with "--" to be confused with CLI options, but the above constraint ensures this.
+        % NOTE: Must not begin with "--" since it could be confused with CLI
+        % options, but the RCS ICD constraints already ensure this.
         %
         % NOTE: help regexp: "\w    A word character [a-z_A-Z0-9]"
         %
         SW_MODE_CLI_OPTION_REGEX = '[A-Za-z][\w-]+';
         
+        
+        
+        % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only
+        % permits these characters (and only lowercase!).
+        % This regexp only describes the "option body", i.e. not the preceding
+        % "--".
+        SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
+        
+        
+        
+        % Field values = Legal RCS NSO IDs used in the RCS NSO XML file.
+        % Field names can be used as constants for those strings inside BICAS.
+        %
+        % IMPLEMENTATION NOTE: Specified as struct so that the struct can
+        % simultaneously be used to
+        % ** reference specific constants (fields) in code
+        % ** compile list of legal NSO IDs in NSO table file.
+        %
+        % IMPLEMENTATION NOTE: One does not want to use the RCS NSO ID string
+        % constants directly inside the code, in case of typos.
+        % 
+        NSOID = struct(...
+            'TEST_QF0',                'TEST_QUALITY_FLAG_0', ...
+            'TEST_UFV',                'TEST_UFV', ...            
+            'TEST_PARTIAL_SATURATION', 'TEST_partial_saturation', ...
+            'TEST_FULL_SATURATION',    'TEST_full_saturation', ...
+            'PARTIAL_SATURATION',      'partial_saturation', ...
+            'FULL_SATURATION',         'full_saturation');
+        
+        % Define the bits in L2_QUALITY_BITMASK (L2QBM).
+        % Intended for bit operations.
+        L2QBM_PARTIAL_SATURATION = uint16(1);
+        L2QBM_FULL_SATURATION    = uint16(2);
+        
     end    % properties(Constant)
     
     
 
-    methods(Static)
+    methods(Static, Access=private)
+        
+        
+        
+        % Various S/W descriptor (SWD) release data for the entire software (not
+        % specific outputs)
+        % ----------------------------------------------------------------------
+        %
+        % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External Users":
+        % """"""""
+        % 2.2.3 RCS versioning
+        % The RCS version must be a unique number sequence identifier “X.Y.Z”,
+        % where “X” is an integer indicating the release (major changes, not
+        % necessarily retro-compatible), “Y” is an integer indicating the issue
+        % (minor changes, necessarily retro-compatible) and “Z” is an integer
+        % indicating a revision (e.g., bug correction).
+        % """"""""
+        %
+        function MAP = init_swd_metadata()
+            MAP = containers.Map();
+            
+            IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';
+            %
+            MAP('SWD.identification.project')     = 'ROC';
+            MAP('SWD.identification.name')        = 'BIAS Calibration Software (BICAS)';
+            MAP('SWD.identification.identifier')  = 'BICAS';
+            MAP('SWD.identification.description') = ...
+                ['Calibration software meant to', ...
+                ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
+                ' (2) calibrate bias currents from L1 data.'];
+            MAP('SWD.identification.icd_version') = '1.2';   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
+            MAP('SWD.release.version')            = '4.0.0';
+            MAP('SWD.release.date')               = '2020-10-07T12:00:00Z';
+            MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
+            MAP('SWD.release.contact')            = 'erjo@irfu.se';
+            MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
+            % 'Various updates and refactoring; close to complete support for
+            % LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset
+            % support.' 'Almost-complete support for LFR & TDS datasets
+            % (voltages) with transfer functions (partially tested).'
+            % /Earlier version
+            %
+            % SWD.release.modification = ...
+            % ['Modified default settings: inverted transfer function', ...
+            % ' cutoff at 0.8*omega_Nyquist, duplicate bias current gives error'];
+            % /v3.1.1
+            MAP('SWD.release.modification')       = ...
+                ['Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)', ...
+                '; Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX', ...
+                '; Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR'];   % v4.0.0
+            MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
+            % Appropriate branch? "master" instead?
+            %
+            % Relative path to BICAS executable. See RCS ICD.
+            MAP('SWD.environment.executable')     = 'roc/bicas';
+            % NOTE: See also setting
+            % OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
+            
+            
+
+            %======================
+            % ASSERTIONS: SETTINGS
+            %======================
+            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
+            EJ_library.assert.castring_regexp(MAP('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
+            % Validate S/W release version
+            % ----------------------------
+            % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
+            % NOTE: It is hard to thoroughly follow the description, but the end result should be under
+            % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
+            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
+
+        end
         
         
 
         function MAP = init_EMIDP_2_INFO()
-            % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
+            % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section
+            % 3.4.3 specifies
             %   error code 0 : No error
             %   error code 1 : Every kind of error (!)
             
@@ -110,9 +223,11 @@ classdef constants   % < handle
             MAP('CannotInterpretConfigFile')    = init_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
             MAP('ConfigurationBug')             = init_struct(1, 'Trying to configure BICAS in an illegal way.');
             MAP('FailedToReadInterpretRCT')     = init_struct(1, 'Can not interpret the content of the calibration file (RCT) file, e.g. because the RCT contains invalid calibration values.');
+            MAP('FailedToReadInterpretNsOps')   = init_struct(1, 'Can not read or interpret the content of the non-standard operations file.');
             MAP('CannotFindRegexMatchingRCT')   = init_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
             
-            % IMPLEMENTATION NOTE: Using a nested function merely to keep the function call short.
+            % IMPLEMENTATION NOTE: Using a nested function merely to keep the
+            % function call short.
             function ErrorTypeInfo = init_struct(errorCode, errorDescription)
                 ErrorTypeInfo = struct(...
                     'errorCode',   errorCode, ...

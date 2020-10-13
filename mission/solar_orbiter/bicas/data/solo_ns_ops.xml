@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Manually written table over "non-standard operations" (NSO), i.e. time intervals ("events")
+which should be labelled in special ways (QUALITY_FLAG, L2_QUALITY_BITMASK, possibly blanking data).
+NOTE: Some of the NSOs are for testing purposes only and will not have any effect by default.
+
+startTimeUtc,
+stopTimeUtc   : Start & stop time as UTC strings.
+rcsNsoId      : String constant used by BICAS to set quality flags & bits, remove data etc.
+                RCS NSO = RPW Calibration Software Non-Standard Operation
+-->
+<table
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="solo_ns_ops.xsd">
+    <event>
+        <startTimeUtc>2020-02-13T00:58:00Z</startTimeUtc>
+        <stopTimeUtc> 2020-02-13T00:59:00Z</stopTimeUtc>
+        <rcsNsoId>TEST_partial_saturation</rcsNsoId>
+        <description>Test 1. 2020-02-13 00:00-~01:40 corresponds to local LFR CWF test dataset.</description>
+    </event>
+    <event>
+        <startTimeUtc>2020-02-13T01:01:00Z</startTimeUtc>
+        <stopTimeUtc> 2020-02-13T01:02:00Z</stopTimeUtc>
+        <rcsNsoId>TEST_full_saturation</rcsNsoId>
+        <description>Test 2</description>
+    </event>
+    <event>
+        <startTimeUtc>2020-04-14T01:00:00Z</startTimeUtc>
+        <stopTimeUtc> 2020-04-14T02:00:00Z</stopTimeUtc>
+        <rcsNsoId>TEST_partial_saturation</rcsNsoId>
+        <description>Test 1. 2020-04-14 00:00-24:00 corresponds to local LFR SWF test dataset.</description>
+    </event>
+    <event>
+        <startTimeUtc>2020-04-14T03:00:00Z</startTimeUtc>
+        <stopTimeUtc> 2020-04-14T04:00:00Z</stopTimeUtc>
+        <rcsNsoId>TEST_full_saturation</rcsNsoId>
+        <description>Test 2</description>
+    </event>
+
+
+
+    <event>
+        <startTimeUtc>2020-07-05T09:10:00Z</startTimeUtc>
+        <stopTimeUtc> 2020-07-05T14:16:57Z</stopTimeUtc>
+        <rcsNsoId>partial_saturation</rcsNsoId>
+        <description>
+            Completely uncertain of time interval. /EJ
+        </description>
+    </event>
+
+    <event>
+        <startTimeUtc>2020-07-14T00:00:00.50Z</startTimeUtc>
+        <stopTimeUtc> 2020-07-20T07:39:41.54Z</stopTimeUtc>
+        <rcsNsoId>full_saturation</rcsNsoId>
+        <description>Due to bad bias current commanding.</description>
+    </event>
+
+<!--    <event>
+        <startTimeUtc>2020-07-24TZ</startTimeUtc>
+        <stopTimeUtc> 2020-07-24TZ</stopTimeUtc>
+        <rcsNsoId>partial_saturation</rcsNsoId>
+        <description>
+            Due to bad bias current commanding.
+        </description>
+    </event>-->
+
+    <event>
+        <startTimeUtc>2020-07-24T09:35:20Z</startTimeUtc>
+        <stopTimeUtc> 2020-07-27T12:00:00Z</stopTimeUtc>
+        <rcsNsoId>full_saturation</rcsNsoId>
+        <description>
+            Due to bad bias current commanding.
+        </description>
+    </event>
+    
+    <event>
+        <startTimeUtc>2020-08-07T20:45:25.80Z</startTimeUtc>
+        <stopTimeUtc> 2020-08-11T21:27:03.57Z</stopTimeUtc>
+        <rcsNsoId>full_saturation</rcsNsoId>
+        <description>
+            Uncertain of beginning. /EJ
+            Due to bad bias current commanding.
+        </description>
+    </event>
+    
+</table>

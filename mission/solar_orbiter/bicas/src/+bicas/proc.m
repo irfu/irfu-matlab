@@ -1,21 +1,23 @@
 %
-% Set of functions for producing one specific output dataset PDV from the necessary input dataset PDVs.
+% Set of "production functions", functions for producing one specific output
+% dataset PDV from the necessary input dataset PDVs.
 %
 %
-% PRODUCTION FUNCTIONS
-% ====================
+% DEFINITION: PRODUCTION FUNCTION
+% ===============================
 % A function with interface
 %   OutputsMap = produce_*(InputsMap, Cal)
 % where
 % Cal        : A bicas.calib object.
 % InputsMap  : containers.Map with
-%                <keys>       : String defining a name of an input ("prodFuncInputKey" in swmode_defs).
-%                <values>     : A struct with data corresponding to a CDF file (zVariables+global attributes).
+%   <keys>   : String defining a name of an input ("prodFuncInputKey" in swmode_defs).
+%   <values> : A struct with data corresponding to a CDF file (zVariables+global attributes).
 % OutputsMap : containers.Map with
-%                <keys>       : String defining a name of an output ("prodFuncOutputKey" in swmode_defs).
-%                <values>     : A struct with data corresponding to a CDF file (zVariables).
-% NOTE: In practice, anonymous functions with the correct interface are used to wrap the actual implementing functions
-% (with another interface).
+%   <keys>   : String defining a name of an output ("prodFuncOutputKey" in swmode_defs).
+%   <values> : A struct with data corresponding to a CDF file (zVariables).
+% --
+% NOTE: In practice, anonymous functions with the correct interface are used to
+% wrap the actual implementing functions (with another interface).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -65,31 +67,36 @@ classdef proc
         
         % ARGUMENTS
         % =========
-        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
-        % inputSciDsi      : The science input dataset will be interpreted as having this DATASET_ID.
-        %                    RATIONALE: InputDatasetsMap should contain the same as a CDF global attribute but
+        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV
+        %                    for input CDF.
+        % inputSciDsi      : The science input dataset will be interpreted as
+        %                    having this DATASET_ID.
+        %                    RATIONALE: InputDatasetsMap should contain the same
+        %                    as a CDF global attribute but
         %                    (1) it could be missing, or
-        %                    (2) sometimes one may want to read an ROC-SGSE dataset as if it was an RODP dataset or the other way around.
+        %                    (2) sometimes one may want to read an ROC-SGSE
+        %                        dataset as if it was an RODP dataset or the other
+        %                        way around.
         %
-        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, rctDir, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
             
-            InputHkPd  = InputDatasetsMap('HK_cdf');
-            InputCurPd = InputDatasetsMap('CUR_cdf');
-            InputSciPd = InputDatasetsMap('SCI_cdf');
+            InputHkCdf  = InputDatasetsMap('HK_cdf');
+            InputCurCdf = InputDatasetsMap('CUR_cdf');
+            InputSciCdf = InputDatasetsMap('SCI_cdf');
 
             %==============================
-            % Configure calibration object
+            % Configure bicas.calib object
             %==============================
-            C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
-            useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1R;
-            useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1R;
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
+            useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1r;
+            useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1r;
             
             if useCtRcts
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, 'LFR', ...
-                    InputSciPd.Ga.CALIBRATION_TABLE, ...
-                    InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
-                    InputSciPd.Zv.BW, ...
+                    InputSciCdf.Ga.CALIBRATION_TABLE, ...
+                    InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+                    InputSciCdf.Zv.BW, ...
                     L);
             else
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
@@ -97,13 +104,20 @@ classdef proc
             end
             Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd,  InputHkPd,   SETTINGS, L);
-            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(          InputSciPd,  inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd,  InputCurPd,  Cal, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(         SciPostDcPd, outputDsi, L);
+            %==============
+            % Process data
+            %==============
+            HkSciTimePd           = bicas.proc_sub.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
+            InputSciCdf           = bicas.proc_sub.process_LFR_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc_sub.process_LFR_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal,    SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            OutputSciCdf          = bicas.proc_sub.process_PostDC_to_LFR_CDF(       SciPreDc, SciPostDc, outputDsi, L);
+            
+            
             
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('SCI_cdf') = OutputSciPd;
+            OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
         end
 
 
@@ -112,35 +126,33 @@ classdef proc
         % =========
         % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, rctDir, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
             
-            InputHkPd  = InputDatasetsMap('HK_cdf');
-            InputCurPd = InputDatasetsMap('CUR_cdf');
-            InputSciPd = InputDatasetsMap('SCI_cdf');
+            InputHkCdf  = InputDatasetsMap('HK_cdf');
+            InputCurCdf = InputDatasetsMap('CUR_cdf');
+            InputSciCdf = InputDatasetsMap('SCI_cdf');
             
             %==============================
-            % Configure calibration object
+            % Configure bicas.calib object
             %==============================
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
-            C = EJ_library.so.adm.classify_DATASET_ID(inputSciDsi);
+            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
             if C.isTdsCwf
-                settingUseCt   = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                rctTypeId      = 'TDS-CWF';
+                settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                rctTypeId    = 'TDS-CWF';
             else
-                settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                rctTypeId      = 'TDS-RSWF';
+                settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                rctTypeId    = 'TDS-RSWF';
             end
-            useCtRcts = SETTINGS.get_fv(settingUseCt)   && C.isL1R;
+            useCtRcts = SETTINGS.get_fv(settingUseCt) && C.isL1r;
             useCti2   = false;    % Always false for TDS.
-            
-            
             
             if useCtRcts
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, rctTypeId, ...
-                    InputSciPd.Ga.CALIBRATION_TABLE, ...
-                    InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
-                    [], ...
+                    InputSciCdf.Ga.CALIBRATION_TABLE, ...
+                    InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+                    [], ...   % =zv_BW (only for LFR).
                     L);
             else
                 RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
@@ -148,31 +160,36 @@ classdef proc
             end
             Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
-            
-            
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(  InputSciPd, InputHkPd,   SETTINGS, L);
-            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(          InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDcPd = bicas.proc_sub.process_calibrate_demux_filter(SciPreDcPd, InputCurPd,  Cal, SETTINGS, L);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(         SciPostDcPd, outputDsi, L);
+            %==============
+            % Process data
+            %==============
+            HkSciTimePd           = bicas.proc_sub.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
+            InputSciCdf           = bicas.proc_sub.process_TDS_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc_sub.process_TDS_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal, SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            OutputSciCdf          = bicas.proc_sub.process_PostDC_to_TDS_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
+            
+            
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('SCI_cdf') = OutputSciPd;
-
+            OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
         end
         
         
         
-        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap, NsoTable, SETTINGS, L)
             % Always the same DATASET_ID.
             INPUT_DATASET_ID = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
 
-            InputLfrCwfPd = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
+            InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
-            [InputLfrCwfPd.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfPd.Zv, ...
+            [InputLfrCwfCdf.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfCdf.Zv, ...
                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
             
             bicas.proc_sub.handle_zv_name_change(...
-                fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+                fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', ...
+                'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
             
             %===================================================================
             % Calculate
@@ -185,12 +202,12 @@ classdef proc
             % Therefore extra assertions to detect such changes.
             %===================================================================
             TsVdc = TSeries(...
-                EpochTT(InputLfrCwfPd.Zv.Epoch), InputLfrCwfPd.Zv.VDC, ...
+                EpochTT(InputLfrCwfCdf.Zv.Epoch), InputLfrCwfCdf.Zv.VDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
             [TsEdc, TsPsp, TsScpot] = solo.vdccal(TsVdc);
             EJ_library.assert.sizes(...
-                InputLfrCwfPd.Zv.Epoch, [-1, 1], ...
+                InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
                 TsEdc.data,   [-1, 3], ...
                 TsPsp.data,   [-1, 1], ...
                 TsScpot.data, [-1, 3])
@@ -219,32 +236,34 @@ classdef proc
             
             
             
-            EfieldPd = struct();
-            EfieldPd.Epoch            = InputLfrCwfPd.Zv.Epoch;
-            EfieldPd.QUALITY_BITMASK  = InputLfrCwfPd.Zv.QUALITY_BITMASK;
-            EfieldPd.QUALITY_FLAG     = min(...
-                InputLfrCwfPd.Zv.QUALITY_FLAG, ...
+            EfieldCdf = struct();
+            EfieldCdf.Epoch            = InputLfrCwfCdf.Zv.Epoch;
+            EfieldCdf.QUALITY_BITMASK  = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
+            EfieldCdf.QUALITY_FLAG     = min(...
+                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
                 'includeNaN');
-            EfieldPd.DELTA_PLUS_MINUS = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
-            EfieldPd.EDC_SFR          = zvEdcMvpm;
+            EfieldCdf.DELTA_PLUS_MINUS = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
+            EfieldCdf.EDC_SFR          = zvEdcMvpm;
             
-            ScpotPd = struct();
-            ScpotPd.Epoch             = InputLfrCwfPd.Zv.Epoch;
-            ScpotPd.QUALITY_BITMASK   = InputLfrCwfPd.Zv.QUALITY_BITMASK;
-            ScpotPd.QUALITY_FLAG      = min(...
-                InputLfrCwfPd.Zv.QUALITY_FLAG, ...
+            
+            
+            ScpotCdf = struct();
+            ScpotCdf.Epoch             = InputLfrCwfCdf.Zv.Epoch;
+            ScpotCdf.QUALITY_BITMASK   = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
+            ScpotCdf.QUALITY_FLAG      = min(...
+                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
                 'includeNaN');
-            ScpotPd.DELTA_PLUS_MINUS  = InputLfrCwfPd.Zv.DELTA_PLUS_MINUS;
-            ScpotPd.SCPOT             = TsScpot.data;
-            ScpotPd.PSP               = TsPsp.data;
+            ScpotCdf.DELTA_PLUS_MINUS  = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
+            ScpotCdf.SCPOT             = TsScpot.data;
+            ScpotCdf.PSP               = TsPsp.data;
 
             
             
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('EFIELD_cdf') = EfieldPd;
-            OutputDatasetsMap('SCPOT_cdf')  = ScpotPd;
+            OutputDatasetsMap('EFIELD_cdf') = EfieldCdf;
+            OutputDatasetsMap('SCPOT_cdf')  = ScpotCdf;
         end
         
         

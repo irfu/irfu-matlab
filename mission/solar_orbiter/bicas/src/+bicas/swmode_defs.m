@@ -1,6 +1,7 @@
 %
-% Singleton class that stores (after having "built" it) an unmodifiable data structure that represents which and how
-% s/w modes are CURRENTLY VISIBLE to the user. What that data structure contains thus depends on
+% Singleton class that stores (after having "built" it) an unmodifiable data
+% structure that represents which and how s/w modes are CURRENTLY VISIBLE to the
+% user. What that data structure contains thus depends on
 % -- current pipeline: RODP, ROC-SGSE
 % -- whether support for L1 input datasets is enabled or not.
 %
@@ -9,32 +10,38 @@
 %       (a) the caller interface
 %       (b) potentially future help text
 %       (c) the s/w descriptor
-% -- contains variables to make it possible to match information for input and output datasets here, with that of
-%    bicas.proc' production functions.
+% -- contains variables to make it possible to match information for input and
+%    output datasets here, with that of bicas.proc' production functions.
 %
 %
 % IMPLEMENTATION NOTES
 % ====================
-% The class essentially consists of one large struct, and a constructor that builds it. The large data struct contains
-% many parts which are similar but not the same. To do this, much of the data is "generated" with hard-coded strings
-% (mostly the same in every iteration), in which specific codes/substrings are substituted algorithmically (different in
-% different iterations). To avoid mistakes, the code uses a lot of assertions to protect against mistakes, e.g.
+% The class essentially consists of one large struct, and a constructor that
+% builds it. The large data struct contains many parts which are similar but not
+% the same. To do this, much of the data is "generated" with hard-coded strings
+% (mostly the same in every iteration), in which specific codes/substrings are
+% substituted algorithmically (different in different iterations). To avoid
+% mistakes, the code uses a lot of assertions to protect against mistakes, e.g.
 % -- algorithmic bugs
 % -- mistyped hard-coded info
 % -- mistakenly confused arguments with each other.
-% Assertions are located at the place where "values are placed in their final location".
+% Assertions are located at the place where "values are placed in their final
+% location".
 % 
-% NOTE: To implement compatibility with L1 input datasets, the code must be able to handle
-% -- changing input dataset levels: L1 (inofficial support), L1R (official support).
-% It implements support for L1 input datasets via separate S/W modes.
+% NOTE: To implement compatibility with L1 input datasets, the code must be able
+% to handle
+% -- changing input dataset levels: L1 (inofficial support), L1R (official
+%    support). It implements support for L1 input datasets via separate S/W
+%    modes.
 % 
 %
 % RATIONALE
 % =========
-% -- Should decrease the amount of overlapping hard-coded information to e.g. reduce risk of mistakes, reduce manual
-%    work when verifying updates.
-% -- Having one big, somewhat redundant data structure should make the interface to the rest of BICAS relatively
-%    future-proof, in the face of future updates.
+% -- Should decrease the amount of overlapping hard-coded information to e.g.
+%    reduce risk of mistakes, reduce manual work when verifying updates.
+% -- Having one big, albit somewhat redundant data structure should make the
+%    interface to the rest of BICAS relatively future-proof, in the face of
+%    future updates.
 % -- Useful for expected future bias current datasets.
 % -- Possible need for backward compatibility.
 %
@@ -48,9 +55,6 @@
 % First created 2019-07-31
 %
 classdef swmode_defs
-    % PROPOSAL: New class name implying that it only contains S/W modes VISIBLE to the user, that it DEFINES what is
-    % visible for a given BICAS run.
-    %
     % PROPOSAL: Pick SWD name/descriptions from master CDFs.
     % PROPOSAL: Obtain output dataset level from production function metadata?!!
     % PROPOSAL: Include output dataset version.
@@ -60,7 +64,7 @@ classdef swmode_defs
     %   PRO: Needed for verifying conformance with production function.
     %
     % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L1), then filter out the undesired ones
-    % using internal metadata for every S/W mode.
+    %           using internal metadata for every S/W mode.
     %
     % PROPOSAL: Use PF = prodFunc, production function
     % PROPOSAL: Same input CDF can have multiple DATASET_IDs, but only one is shown in the s/w descriptor.
@@ -78,16 +82,28 @@ classdef swmode_defs
     %   inputsList  --> inputsArray
     %   outputsList --> outputsArray
     %   NOTE: Likely influences BICAS testing code and pipeline. Shoud only be implemented at the right time.
+    %
+    % TODO-DEC: Which arguments should swmode_def production functions (function handles in
+    %           an instance of swmode_defs) have?
+    %   NOTE: The arguments needed by the underlying production functions
+    %         varies, but the arguments returned by swmode_defs must be the same.
+    %   NOTE: produce_L2_LFR/TDS() are used for multiple s/w modes with some
+    %         arguments hard-coded differently for different s/w modes (input & output DATASET_IDs).
+    %   NOTE: swmode_def/underlying production functions can receive argument values via
+    %       (1) swmode_def (constructor), or (2) the call in execute_sw_mode.
+    %   PROPOSAL: All arguments which are known at the time swmode_defs
+    %       constructor is called, should receive values there.
+    %       ==> ~As many as possible.
+    %       CON: swmode_defs not really meant to set production function arguments.
+    %       CON: Makes swmode_def harder to initialize (outside of BICAS).
+    %   PROPOSAL: All arguments which are different for different (underlying) production
+    %             functions. ==> As few as possible.
+    %   Ex: SETTINGS, L, rctDir, NsoTable
 
 
 
     % PRIVATE, STATIC, CONSTANTS
-    properties(Constant, GetAccess=private)
-        
-        % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only permits these characters (and only
-        % lowercase!).
-        % This regexp only describes the "option body", i.e. not the preceding "--".
-        SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
+    properties(Constant, GetAccess=private)        
         
         SWM_PURPOSE_AMENDMENT = ' INOFFICIAL wrt. ROC.';
     end
@@ -175,10 +191,10 @@ classdef swmode_defs
                 'survey mode', ...
                 'survey mode' ...
                 }, ...
-                'outputSkeletonVersion', {'09', '09', '09', '09'});
+                'outputSkeletonVersion', {'10', '10', '10', '10'});
             TDS_SW_MODE_DATA = struct(...
                 'CWF_RSWF',              {'CWF', 'RSWF'}, ...
-                'outputSkeletonVersion', {'09',  '09'});
+                'outputSkeletonVersion', {'10',  '10'});
             
             
 
@@ -211,9 +227,10 @@ classdef swmode_defs
                         LFR_SW_MODE_DATA(iSwm).outputSkeletonVersion);
 
                     SwModeList(end+1) = bicas.swmode_defs.def_swmode(...
-                        @(InputDatasetsMap, rctDir) bicas.proc.produce_L2_LFR(...
+                        @(InputDatasetsMap, rctDir, NsoTable) bicas.proc.produce_L2_LFR(...
                             InputDatasetsMap, ...
                             rctDir, ...
+                            NsoTable, ...
                             SciInputDef.datasetId, ...
                             SciOutputDef.datasetId, ...
                             SETTINGS, L), ...
@@ -248,9 +265,10 @@ classdef swmode_defs
                         TDS_SW_MODE_DATA(iSwm).outputSkeletonVersion);
 
                     SwModeList(end+1) = bicas.swmode_defs.def_swmode(...
-                        @(InputDatasetsMap, rctDir) bicas.proc.produce_L2_TDS(...
+                        @(InputDatasetsMap, rctDir, NsoTable) bicas.proc.produce_L2_TDS(...
                             InputDatasetsMap, ...
                             rctDir, ...
+                            NsoTable, ...
                             SciInputDef.datasetId, ...
                             SciOutputDef.datasetId, ...
                             SETTINGS, L), ...
@@ -290,8 +308,9 @@ classdef swmode_defs
                 % NOTE: Function handle: Argument rctDir is not used, but is
                 % needed for the interface.
                 SwModeList(end+1) = bicas.swmode_defs.def_swmode(...
-                    @(InputDatasetsMap, rctDir) (bicas.proc.produce_L3(...
+                    @(InputDatasetsMap, rctDir, NsoTable) (bicas.proc.produce_L3(...
                         InputDatasetsMap, ...
+                        NsoTable, ...
                         SETTINGS, L)), ...
                     'BIA-EFIELD-SCPOT', ...
                     'Generate L3 electric field vector and spacecraft potential data.', ...
@@ -369,14 +388,12 @@ classdef swmode_defs
         
         
         function Def = def_output_dataset(cliOptionHeaderBody, datasetId, prodFuncOutputKey, swdName, swdDescription, skeletonVersion)
-            C = EJ_library.so.adm.classify_DATASET_ID(datasetId);
+            [~, datasetLevel, ~] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
             
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
             Def.datasetId           = datasetId;
-            if     C.isL2    Def.datasetLevel        = 'L2';
-            elseif C.isL3    Def.datasetLevel        = 'L3';
-            else             error('')
-            end
+            Def.datasetLevel        = datasetLevel;
+            
             Def.prodFuncOutputKey   = prodFuncOutputKey;   % 'SCI_cdf';
             Def.swdName             = swdName;
             Def.swdDescription      = swdDescription;
@@ -386,7 +403,7 @@ classdef swmode_defs
             bicas.swmode_defs.assert_text(              Def.swdName)
             bicas.swmode_defs.assert_text(              Def.swdDescription)
             bicas.swmode_defs.assert_DATASET_ID(        Def.datasetId)
-            bicas.assert_dataset_level(                 Def.datasetLevel)
+            EJ_library.so.adm.assert_dataset_level(     Def.datasetLevel)
             bicas.assert_skeleton_version(              Def.skeletonVersion)
         end
 
@@ -394,12 +411,11 @@ classdef swmode_defs
 
         % NOTE: Wrapper around global counterpart.
         function assert_DATASET_ID(datasetId)
-            % PROPOSAL: Use classification function for DATASET_ID instead.
-            
-            bicas.assert_DATASET_ID(datasetId)
+            bicas.assert_BICAS_DATASET_ID(datasetId)
             
             % ASSERTION: Only using SOLO_* DATASET_IDs.
-            assert(strcmp('SOLO_', datasetId(1:5)))
+            [sourceName, ~, ~] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
+            assert(strcmp(sourceName, 'SOLO'))
         end
         
         
@@ -420,7 +436,7 @@ classdef swmode_defs
 
         % NOTE: Really refers to "option body".
         function assert_SIP_CLI_option(sipCliOptionBody)
-            EJ_library.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SIP_CLI_OPTION_BODY_REGEX)
+            EJ_library.assert.castring_regexp(sipCliOptionBody, bicas.constants.SIP_CLI_OPTION_BODY_REGEX)
         end
         
         

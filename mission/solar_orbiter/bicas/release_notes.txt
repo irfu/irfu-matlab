@@ -43,3 +43,10 @@ Version 3.1.1
 Modified default settings:
 (1) inverted transfer function cutoff at 0.8*omega_Nyquist (instead of 0.7)
 (2) duplicate bias current gives error (instead of using mitigation)
+
+
+Version 4.0.0
+-------------
+Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)
+Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX
+Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR

@@ -135,47 +135,6 @@ function SETTINGS = create_default_SETTINGS()
     
     
     
-    %###########################################################################################################
-    % SWD.*
-    % Various S/W descriptor (SWD) release data for the entire software (not specific outputs)
-    % ----------------------------------------------------------------------------------------
-    % EXCEPTION TO VARIABLE NAMING CONVENTION: Field names are used for constructing the JSON object struct and
-    % can therefore NOT follow variable naming conventions without modifying other code.
-    %
-    % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External Users":
-    % """"""""
-    % 2.2.3 RCS versioning
-    % The RCS version must be a unique number sequence identifier “X.Y.Z”, where “X” is an
-    % integer indicating the release (major changes, not necessarily retro-compatible), “Y” is an
-    % integer indicating the issue (minor changes, necessarily retro-compatible) and “Z” is an
-    % integer indicating a revision (e.g., bug correction).
-    % """"""""
-    %###########################################################################################################
-    IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';
-    %
-    S.define_setting('SWD.identification.project',     'ROC');
-    S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
-    S.define_setting('SWD.identification.identifier',  'BICAS');
-    S.define_setting('SWD.identification.description', ...
-        ['Calibration software meant to', ...
-        ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
-        ' (2) calibrate bias currents from L1 data.']);
-    S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-    S.define_setting('SWD.release.version',            '3.1.1');
-    S.define_setting('SWD.release.date',               '2020-09-15T11:22:00Z');
-    S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team, IRF');
-    S.define_setting('SWD.release.contact',            'erjo@irfu.se');
-    S.define_setting('SWD.release.institute',          IRF_LONG_NAME);   % Full name or abbreviation?
-    % 'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.'
-    % 'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).'
-    S.define_setting('SWD.release.modification',       'Modified default settings: inverted transfer function cutoff at 0.8*omega_Nyquist, duplicate bias current gives error');   % 3.1.1
-    S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch? "master" instead?
-    %
-    S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
-    % NOTE: See also OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
-    
-    
-    
     %####################
     % ENV_VAR_OVERRIDE.*
     %####################
@@ -215,14 +174,12 @@ function SETTINGS = create_default_SETTINGS()
     % which duplicated settings (same timestamp, same bias setting on same
     % antenna) which would be triggered by an assertion on an assert on
     % monotonically increasing timestamps.
-    S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',                   'ERROR')      % ERROR, WARNING, SORT
+    S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',           'ERROR')      % ERROR, WARNING, SORT
     
-    % Set to REMOVE_DUPLICATES as requested by Xavier Bonnin in
-    % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/27#note_15954
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
     
     % Whether to replace PAD VALUES values with NaN internally.
-    % IMPORTANT NOTE: Refers to CDF PAD VALUES, NOT CDF FILL VALUES!
+    % IMPORTANT NOTE: Refers to CDF _PAD_VALUES, NOT CDF _FILL_VALUES!
     % NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore
     % useful.
     S.define_setting('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED',       1)            % 0/false, 1/true.
@@ -329,28 +286,13 @@ function SETTINGS = create_default_SETTINGS()
     
     % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are
     % empty.
-    S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'USE_FILL_VALUE')   % ERROR, USE_FILL_VALUE
+    S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'ERROR')   % ERROR, USE_FILL_VALUE
     
     % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
     % TDS has bugfixed. /2019-12-19
     % PROPOSAL: Rename.
     S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
     
-    %============================================================================
-    % Settings for when to remove data by setting it to fill value
-    % ------------------------------------------------------------
-    % "L2" refers to output datasets. Both voltage and current data. In
-    % practise, this functionality is there as a temporary solution for removing
-    % sweeps.
-    %============================================================================
-    S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
-    % Unit: S = Seconds
-    % Lower number since using LFR mux mode (unless configured not to), which has same cadence as science data.
-    % See PROCESSING.LFR.MUX_MODE_SOURCE.
-    S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)    
-    % Higher number since using BIAS HK, which means that the mux mode is know with a lower time resolution.
-    S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)    
-
     %============================================================================
     % Where to obtain the mux mode
     % ----------------------------
@@ -370,12 +312,36 @@ function SETTINGS = create_default_SETTINGS()
     %============================================================================
     S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
 
-    %====================================================================
-    % TEMPORARY SOLUTION
+    
+    
+    %============================================================================
+    % Settings for when to remove data by setting it to fill value
+    % ------------------------------------------------------------
+    % "L2" refers to output datasets. Both voltage and current data. In
+    % practise, this functionality is there as a temporary solution for removing
+    % sweeps.
+    %============================================================================
+    S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
+    % Unit: S = Seconds
+    % Lower number since using LFR mux mode (unless configured not to), which
+    % has same cadence as science data.
+    % See PROCESSING.LFR.MUX_MODE_SOURCE.
+    S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)    
+    % Higher number since using BIAS HK for TDS, which means that the mux mode
+    % is known with a lower time resolution.
+    S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
+
+    
+    
     % Maximum value for zVar QUALITY_FLAG in output datasets.
     % YK 2020-08-31: Use 2=Survey data, possibly not publication-quality
-    %====================================================================
+    % Temporary?
     S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
+    
+    % Path to RCS NSO file. Relative to BICAS root.
+    S.define_setting('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH', fullfile('data', 'solo_ns_ops.xml'))
+    % Whether to enable NSO IDs which are intended for test purposes only.
+    S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
     
     
     
@@ -386,29 +352,31 @@ function SETTINGS = create_default_SETTINGS()
     %
     % OFFICIAL DOCUMENTATION ON RCT FILENAME CONVENTION
     % =================================================
-    % RCT filenaming convention is described in ROC-PRO-DAT-NTT-00006-LES. This document refers to the RODP.
+    % RCT filenaming convention is described in ROC-PRO-DAT-NTT-00006-LES. This
+    % document refers to the RODP.
     %
     % Version 1/1:
     % """"""""
     %   4.3.2 RCT data versioning convention
     %
-    %   The version of the RCT CDF data file must be the local date and time of creation of the file,
-    %   in the format: “YYYYMMDDHHNN”, where “YYYY”, “MM”, “DD”, “HH” and “NN” are
-    %    respectively the 4-digits year, 2-digits month, 2-digits day, 2-digits hours, 2-digits minutes of
-    %    the file creation.
-    %    In the RCT filename, the version number must appear with the “V” prefix (e.g.,
-    %    “V202210122359”.
+    %   The version of the RCT CDF data file must be the local date and time of
+    %   creation of the file, in the format: “YYYYMMDDHHNN”, where “YYYY”, “MM”,
+    %   “DD”, “HH” and “NN” are respectively the 4-digits year, 2-digits month,
+    %   2-digits day, 2-digits hours, 2-digits minutes of the file creation.
+    %   In the RCT filename, the version number must appear with the “V” prefix
+    %   (e.g., “V202210122359”.
     %
     %
     %   4.3.3 RCT file naming convention
     %
     %   The RCT shall comply the following file naming convention:
     %   SOLO_CAL_RPW-[receiver]_[free-field]_[Version].cdf
-    %   Where [receiver] is the name of the receiver in uppercase characters (i.e., “TDS” or
-    %   “LFR”) of the corresponding RPW L1R dataset, [free-field] is a field that can be used to
-    %   specify the content of the file (e.g., “BIAS-F0”) and [Version] is the version of the
-    %   calibration table file (see previous section).
-    %   Note that this RCT naming convention is not fully compliant with the SOC definition [AD1]. /.../
+    %   Where [receiver] is the name of the receiver in uppercase characters
+    %   (i.e., “TDS” or “LFR”) of the corresponding RPW L1R dataset,
+    %   [free-field] is a field that can be used to specify the content of the
+    %   file (e.g., “BIAS-F0”) and [Version] is the version of the calibration
+    %   table file (see previous section). Note that this RCT naming convention
+    %   is not fully compliant with the SOC definition [AD1]. /.../
     % """"""""
     % Version 1/2, draft:
     % Section 2.2.6.3-4: Slightly different filenaming convention:
@@ -420,7 +388,8 @@ function SETTINGS = create_default_SETTINGS()
     %   Where [Descriptor], [free-field] and [CALIBRATION_VERSION] correspond
     %   respectively to the short value in the “Descriptor”, “Free_field” and
     %   “CALIBRATION_VERSION” global attributes (see section 2.2.6.6).
-    %   N.B. The CAL file naming convention is not fully compliant with the SOC definition [AD1]. /.../
+    %   N.B. The CAL file naming convention is not fully compliant with the SOC
+    %   definition [AD1]. /.../
     % """"""""
     %
     % Xavier Bonnin, 2020-07-02:

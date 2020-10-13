@@ -1,41 +1,50 @@
 %
-% Function for "translating" a string into another value (not necessarily string) from a table. Give proper error
-% message if no match.
+% Function for "translating" a string into another value (not necessarily
+% string) from a table. Give proper error message if no match.
 %
 %
 % RATIONALE
 % =========
-% Primarily intended as a utility function to avoid common verbose switch-case statements (with an "otherwise"
-% assertion) which interprets and verifies string constants, only to assign new values to some other variable(s) in
-% every case statement. Can then write the code more in the form of a table.
-% ** Can be used to assign multiple variables (output) in every case by having e.g. cell array as values.
-% ** Can use the same table structure to iterate over all "switch-case" statements.
+% Primarily intended as a utility function to avoid common verbose switch-case
+% statements (with an "otherwise" assertion) which interprets and verifies
+% string constants, only to assign new values to some other variable(s) in every
+% case statement. Can then write the code more in the form of a table.
+% ** Can be used to assign multiple variables (output) in every case by having
+%    e.g. cell array as values.
+% ** Can use the same table structure to iterate over all "switch-case"
+%    statements.
 % 
 %
-% ARGUMENTS AND RETURN VALUE
-% ==========================
+% ARGUMENTS
+% =========
 % SYNTAX: translate(... , errorMsgId, errorMsg)
 %   No match will lead to error. (There can not be multiple matches.)
 % SYNTAX: translate(... , nonMatchValue)
 %   No match will be accepted.
 % --
-% table                : Cell array of (a) cell arrays of strings, and (b) arbitrary values.
-%                        {iRule, 1} = Cell array of unique strings, "keys". Is allowed to be empty but will then never
-%                                     match.
-%                        {iRule, 2} = Arbitrary value to be returned.
-%                        NOTE: Asserts there are only unique keys across all rules.
-%                        RATIONALE: Argument has this structure to make keys+values clear when hardcoding it using
-%                                   literals.
-% key                  : String.
+% table : Cell array of (a) cell arrays of strings, and (b) arbitrary values.
+%         {iRule, 1} = Cell array of unique strings, "keys". Is allowed to be
+%                      empty but will then never match.
+%         {iRule, 2} = Arbitrary value to be returned.
+%         NOTE: Asserts there are only unique keys across all rules.
+%         RATIONALE: Argument has this structure to make keys+values clear when
+%         hardcoding it using literals.
+% key   : String.
+% Alt 1:
+%   varargin{1} = nonMatchValue
+% Alt 2:
+%   varargin{1} = errorMsgId
+%   varargin{2} = errorMsg
 % --
 % NOTE: Empty string matches empty string.
-% NOTE: Counts '' and char(zeros(1,0)) as identical, both for matching and asserting unique keys
-% (due to the behaviour of "ismember" and "unique", as opposed to "strcmp").
+% NOTE: Counts '' and char(zeros(1,0)) as identical, both for matching and
+% asserting unique keys (due to the behaviour of "ismember" and "unique", as
+% opposed to "strcmp").
 %
 %
 % RETURN VALUE
 % ============
-% value      : Same as table{i, 2} for which table{i, 1}==key (string comparison).
+% value : Same as table{i, 2} for which table{i, 1}==key (string comparison).
 % 
 %
 % Initially created 2019-09-18 by Erik P G Johansson.
@@ -83,7 +92,8 @@ function value = translate(table, key, varargin)
         errorMsgId = varargin{1};
         errorMsg   = varargin{2};
         
-        assert(~isempty(errorMsgId), 'Empty errorMsgId')   % NOTE: Empty errorMsgId ==> error() will not throw exception.
+        % NOTE: Empty errorMsgId ==> error() will not throw exception.
+        assert(~isempty(errorMsgId), 'Empty errorMsgId')
         assert(ischar(errorMsgId))
         assert(ischar(errorMsg))
     else
@@ -94,7 +104,8 @@ function value = translate(table, key, varargin)
     
     % ASSERTIONS
     % ASSERTION: Check for duplicate keys.
-    % NOTE: This condition requires the "keys" terms to be unique also within every set of keys.
+    % NOTE: This condition requires the "keys" terms to be unique also within
+    % every set of keys.
     combinedKeysList = [keySetsTable{:}];    % List of all keys in ALL RULES.
     nCombinedKeys    = numel(combinedKeysList);
     nUniqueKeys      = numel(unique(combinedKeysList));
@@ -108,8 +119,8 @@ function value = translate(table, key, varargin)
     for i = 1:numel(keySetsTable)
         keySet = keySetsTable{i};
         
-        % IMPLEMENTATION NOTE: ismember does not work as expected if keySet is not a cell array, in particular a plain
-        % string.
+        % IMPLEMENTATION NOTE: ismember does not work as expected if keySet is
+        % not a cell array, in particular a plain string.
         assert(iscell(keySet))
         
         matchArray(i) = ismember(key, keySet);

@@ -1,5 +1,6 @@
 %
-% Create human-readable multi-line string to represent SETTINGS. Meant for logging and printing to stdout.
+% Create human-readable multi-line string to represent SETTINGS. Meant for
+% logging and printing to stdout.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -25,14 +26,16 @@ function str = sprint_SETTINGS(SETTINGS)
     %       PRO: Han handle any situation of overriding.
     %
     
-    % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants") to indicate/hint that it is only the content
-    % of the "SETTINGS" variables, and not of bicas.constants.
+    % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants")
+    % to indicate/hint that it is only the content of the "SETTINGS" variables,
+    % and not of bicas.constants.
     str = sprintf([...
         '\n', ...
         'SETTINGS\n', ...
         '========\n']);
     
-    keyList      = sort(SETTINGS.get_keys());   % Values seem sorted from the method, but sort again just to be sure.
+    % Values seem sorted from the method, but sort again just to be sure.
+    keyList      = sort(SETTINGS.get_keys());   
     lengthMaxKey = max(cellfun(@length, keyList));
     
     
@@ -43,9 +46,10 @@ function str = sprint_SETTINGS(SETTINGS)
         %value = valueStructArray(end).value;
         nValues = numel(valueStructArray);
         
-        %===========================================================================
-        % Derive value strings for all historical values: present and previous ones
-        %===========================================================================
+        %======================================================================
+        % Derive value strings for all historical values: present and previous
+        % ones
+        %======================================================================
         strValueList = {};   % Must be reset for every key.
         for iVs = 1:nValues
             value = valueStructArray(iVs).value;
@@ -98,9 +102,13 @@ function str = sprint_SETTINGS(SETTINGS)
             {'default'},            '  --';
             {'configuration file'}, '(conf)';
             {'CLI arguments'},      '(CLI)'}, ...
-            valueStructArray(end).valueSource, 'BICAS:sprintf_settings:Assertion', 'Illegal setting value source');
+            valueStructArray(end).valueSource, ...
+            'BICAS:sprintf_settings:Assertion', ...
+            'Illegal setting value source');
         
-        str = [str, sprintf(['%-6s  %-', int2str(lengthMaxKey),'s = %s\n'], valueStatusStr, key, strValueList{end})];
+        str = [str, sprintf(...
+            ['%-6s  %-', int2str(lengthMaxKey),'s = %s\n'], ...
+            valueStatusStr, key, strValueList{end})];
         
         % Print previous values.
         %     if nValues > 1

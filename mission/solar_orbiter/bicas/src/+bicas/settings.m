@@ -1,6 +1,7 @@
 %
-% Singleton class for global settings/constants used by BICAS, and which could reasonably be set via some
-% user interface (default values, configuration file, CLI).
+% Singleton class for global settings/constants used by BICAS, and which could
+% reasonably be set via some user interface (default values, configuration file,
+% CLI).
 %
 %
 % CONCEPT
@@ -12,21 +13,28 @@
 %       (2) numbers (1D vector)
 %       (3) cell array of strings (1D vector)
 % --
-% A settings object progress through three phases, in order, and stays ROC_PIP_NAME/write-protected in the last phase:
+% A settings object progress through three phases, in order, and stays
+% ROC_PIP_NAME/write-protected in the last phase:
 % (1) From creation: New keys can be defined and set to their initial values.
 % (2) Definition disabled: Can set the values of pre-existing keys
-% (3) Read-only: Can not modify the object at all. Can only read key values. (Object can not leave this phase.)
+% (3) Read-only: Can not modify the object at all. Can only read key values.
+%     (Object can not leave this phase.)
 % Separate get methods are used for phases (1)-(2), and (3) respectively.
-% RATIONALE: This concept makes it natural to, when possible, clearly and conclusively separate the writing (setting)
-% and reading of settings. Ideally, we would want all the writing to be followed by all the reading, but in practice
-% they overlap and there does not seem to be a way of avoiding it in BICAS. For those cases it is useful to be forced to
-% use a different get method to highlight that the read value is tentative (which it may be during initialization).
+% --
+% RATIONALE: This concept makes it natural to, when possible, clearly and
+% conclusively separate the writing (setting) and reading of settings. Ideally,
+% we would want all the writing to be followed by all the reading, but in
+% practice they overlap and there does not seem to be a way of avoiding it in
+% BICAS. For those cases it is useful to be forced to use a different get method
+% to highlight that the read value is tentative (which it may be during
+% initialization).
 % 
 %
 % NOTE
 % ====
-% Class stores all overriden values, not just the latest ones. This has not been taken advantage of yet, but is
-% intended for better logging the sources of settings and how they override each other. /2020-01-23
+% Class stores all overriden values, not just the latest ones. This has not been
+% taken advantage of yet, but is intended for better logging the sources of
+% settings and how they override each other. /2020-01-23
 %
 %
 % ~BUG POTENTIAL: Support for 1D cell arrays may not be completely implemented.
@@ -103,9 +111,10 @@ classdef settings < handle
 
         % Constructor
         function obj = settings()
-            % IMPLEMENTATION NOTE: "DataMap" reset here since empirically it is not reset every time an instance is created
-            % if it is only reset in the "properties" section. Otherwise the value from the previous execution is used
-            % for unknown reasons.
+            % IMPLEMENTATION NOTE: "DataMap" reset here since empirically it is
+            % not reset every time an instance is created if it is only reset in
+            % the "properties" section. Otherwise the value from the previous
+            % execution is used for unknown reasons.
             obj.DataMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
         end
 
@@ -155,10 +164,11 @@ classdef settings < handle
 
 
 
-        % Set a PRE-EXISTING key value (i.e. override the default at the very least).
-        % NOTE: Does not check if numeric vectors have the same size as old value.
+        % Set a PRE-EXISTING key value (i.e. override the default at the very
+        % least).
+        % NOTE: Does not check if numeric vectors have the same size as old
+        % value.
         function override_value(obj, key, newValue, valueSource)
-            % NOTE: Used to be public method. Can/should probably be rewritten or merged with set_preexisting_from_strings.
             
             % ASSERTIONS
             EJ_library.assert.castring(valueSource)
@@ -166,7 +176,7 @@ classdef settings < handle
                 error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
             end
             
-            valueArayStruct = obj.get_value_array_struct(key);
+            valueArrayStruct = obj.get_value_array_struct(key);
             
             % ASSERTION
             if ~strcmp(bicas.settings.get_value_type(newValue), obj.get_setting_value_type(key))
@@ -175,9 +185,9 @@ classdef settings < handle
             end
 
             % IMPLEMENTATION NOTE: obj.DataMap(key).value = newValue;   % Not permitted by MATLAB.
-            valueArayStruct(end+1).value       = newValue;
-            valueArayStruct(end  ).valueSource = valueSource;
-            obj.DataMap(key) = valueArayStruct;
+            valueArrayStruct(end+1).value       = newValue;
+            valueArrayStruct(end  ).valueSource = valueSource;
+            obj.DataMap(key) = valueArrayStruct;
         end
 
         
