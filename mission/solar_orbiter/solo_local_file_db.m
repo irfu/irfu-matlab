@@ -310,27 +310,27 @@ classdef solo_local_file_db < solo_file_db
       if isequal(fileDir, 'L2')
         switch C{3}
           case 'rpw-lfr-surv-asm-cdag'
-            fileDir = [fileDir, filesep, 'lfr_asm'];
+            fileDir = [fileDir, filesep, 'lfr_asm']; % ie combined 2nd "_" 4th
           case 'rpw-tds-surv-hist1d-cdag'
-            fileDir = [fileDir, filesep, 'hist1d'];
+            fileDir = [fileDir, filesep, 'hist1d'];  % ie 4th
           case 'rpw-tds-surv-hist2d-cdag'
-            fileDir = [fileDir, filesep, 'hist2d'];
+            fileDir = [fileDir, filesep, 'hist2d'];  % ie 4th
           case 'rpw-tds-surv-mamp-cdag'
-            fileDir = [fileDir, filesep, 'mamp'];
+            fileDir = [fileDir, filesep, 'mamp'];    % ie 4th
           case 'rpw-tds-surv-stat-cdag'
-            fileDir = [fileDir, filesep, 'stat'];
+            fileDir = [fileDir, filesep, 'stat'];    % ie 4th
           case {'rpw-lfr-surv-bp1-cdag', 'rpw-lfr-surv-bp2-cdag'}
-            fileDir = [fileDir, filesep, 'lfr_bp'];
+            fileDir = [fileDir, filesep, 'lfr_bp'];    % ie combined 2nd "_" 4th (excl last digit, which is unique)
           case {'rpw-lfr-surv-cwf-b-cdag', 'rpw-lfr-surv-swf-b-cdag'}
-            fileDir = [fileDir, filesep, 'lfr_wf_b'];
+            fileDir = [fileDir, filesep, 'lfr_wf_b'];  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
           case {'rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
-            fileDir = [fileDir, filesep, 'lfr_wf_e'];
+            fileDir = [fileDir, filesep, 'lfr_wf_e'];  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
           case {'rpw-tds-surv-rswf-b-cdag', 'rpw-tds-surf-tswf-b-cdag'}
-            fileDir = [fileDir, filesep, 'tds_wf_b'];
+            fileDir = [fileDir, filesep, 'tds_wf_b'];  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
           case {'rpw-tds-surv-rswf-e-cdag', 'rpw-tds-surf-tswf-e-cdag'}
-            fileDir = [fileDir, filesep, 'tds_wf_e'];
+            fileDir = [fileDir, filesep, 'tds_wf_e'];  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
           case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
-            fileDir = [fileDir, filesep, 'thr'];
+            fileDir = [fileDir, filesep, 'thr'];  % ie combined 2nd of the two using only first and last char?
           otherwise
             % Not yet implemented
             errS = 'Not yet implemented!';
