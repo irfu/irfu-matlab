@@ -43,7 +43,12 @@ switch datatype
     
     
     filename = 'psp_swp_spc_l3i';
-    versiontag = '_v02';
+    datest = date_start;
+    if datest(1,1:4) == char('2020')
+        versiontag = '_v02';
+    else
+        versiontag = '_v01';
+    end
     varnames = {...
       'DQF';...          % data quality flag
       'general_flag';...
