@@ -50,7 +50,7 @@ if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
       end
       repres = cellstr(data.REPRESENTATION_1.data)';
       ud = rmfield(ud,'REPRESENTATION_1');
-      % THIS IS A HACK FOR BAD SOLO MAG FILES
+      %XXX: THIS IS A HACK FOR BAD SOLO MAG FILES
       if length(repres) ~= data.dim(1)
         warning('BAD_REPRESENTATION','Wrong representation size')
         if data.dim(1)==3
@@ -82,6 +82,10 @@ end
 if isempty(repres)
   res = TSeries(Time,data.data,'TensorOrder',tensorOrder);
 else
+  %XXX: THIS IS A HACK FOR BAD SOLO MAG FILES
+  if (repres{1}=='r' && repres{2}=='t' && repres{3}=='n')
+    repres = {'x','y','z'};
+  end
   res = TSeries(Time,data.data,'TensorOrder',tensorOrder,...
     'repres',repres);
 end
