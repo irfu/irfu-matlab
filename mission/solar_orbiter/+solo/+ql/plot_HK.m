@@ -152,14 +152,11 @@ function plot_HK(filePath)
     D = dataobj(filePath);
     Epoch = D.data.Epoch.data;
     
-    hAxesArray = irf_plot(...
-        numel(ZVAR_SINGLE_SCALAR_LIST)+...
-        numel(ZVAR_TRIPLET_SCALAR_LIST) + ...
-        numel(ZVAR_BIT_FLAG_LIST), ...
-        'newfigure');
-    % Panel height: fixed size + weight for each panel, used for distributing segments.
-    panelHeightFswArray = zeros(0,2);   % FSW = Fixed Size + Weight
 
+    Sp = solo.ql.summary_plot();
+    
+    
+    
     %=====================================
     % Add panels for scalar numeric zVars
     %=====================================
@@ -169,213 +166,35 @@ function plot_HK(filePath)
             lineWidth = 5.0;
         end
         
-        [hAxes, hLines, hLegendText] = plot_time_series1(D, ZVAR_SINGLE_SCALAR_LIST{i}, lineWidth);        
-        
+        axesPropCa = {};
         if strcmp(ZVAR_SINGLE_SCALAR_LIST{i}, 'HK_BIA_MODE_MUX_SET')
             % IMPLEMENTATION NOTE: Skip lowest tick/label value (YTick), so that the label does not overlap with the
             % label of the panel below.
-            set(hAxes, 'YLim', [0,7])
-            set(hAxes, 'YTick', 1:7)
+            axesPropCa = {'YLim', [0,7], 'YTick', 1:7};
         end
-        
-        panelHeightFswArray(end+1, :) = [0, 1];
+        Sp.add_panel_time_series1_HK(D, ZVAR_SINGLE_SCALAR_LIST{i}, {'LineWidth', lineWidth}, axesPropCa)
     end
     
     %==================================================================
     % Add panels for triplets of numeric zVars (one zVar per antenna).
     %==================================================================
     for i = 1:numel(ZVAR_TRIPLET_SCALAR_LIST)
-        
-        plot_time_series3(D, ZVAR_TRIPLET_SCALAR_LIST{i});
-        panelHeightFswArray(end+1, :) = [0, 1];
+        Sp.add_panel_time_series3_HK(D, ZVAR_TRIPLET_SCALAR_LIST{i});
     end
 
     %==================================================================
     % Add panels for bit-valued zVars.
     %==================================================================
-    hBitArray = [];
+%     hBitArray = [];
     for i = 1:numel(ZVAR_BIT_FLAG_LIST)
         zVarName = ZVAR_BIT_FLAG_LIST{i};
-        hBitArray(end+1) = plot_bit_series(zVarName, Epoch, D.data.(zVarName).data, zVarName);
-        panelHeightFswArray(end+1, :) = [BIT_PANEL_HEIGHT, 0];
+        Sp.add_panel_plot_bit_series(zVarName, Epoch, D.data.(zVarName).data, zVarName, BIT_PANEL_HEIGHT);
     end
 
 
+    
+    Sp.finalize('BIAS HK', filePath);
 
-    %=================================
-    % Adjust the height of bit panels
-    %=================================
-    % 'Position' : [left bottom width height]. Size and location, excluding a margin for the labels.
-    positionCa = get(hAxesArray, 'Position');    % CA = Cell Array
-    yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
-    % Panel height before distributing height segments. Assumes that panels are adjacent to each other.
-    heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
-    
-    heightPanelArray2 = EJ_library.utils.distribute_segments(...
-        sum(heightPanelArray1), ...
-        panelHeightFswArray(:,1), ...
-        panelHeightFswArray(:,2));
-    yPanelArray2 = cumsum([heightPanelArray2(2:end); yPanelArray1(end)], 'reverse');
-    
-    for i = 1:numel(hAxesArray)
-        position = positionCa{i};
-        position(2) = yPanelArray2(i);
-        position(4) = heightPanelArray2(i);
-        set(hAxesArray(i), 'InnerPosition', position)
-    end
-    
-    
-    
-    solo.ql.set_std_title('BIAS HK', filePath, hAxesArray(1))
-    
-    % For aligning MATLAB axes OuterPosition (taking color legends into account).
-    irf_plot_axis_align(hAxesArray)               
-    % For aligning the content of the MATLAB axes.
-    irf_zoom(hAxesArray, 'x', irf.tint(Epoch))
-
-    % Remove duplicate x labels.
-    % Empirically: Must come after irf_zoom.
-    set(hAxesArray(1:end-1), 'XLabel', [])
-    %EJ_library.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
-end
-
-
-
-% Plot one panel for 1 numeric time series.
-%
-function [hAxes, hLines, hLegendText] = plot_time_series1(D, zvName, lineWidth)
-    % NOTE: Automatically derive panel tag.
-    panelTag = zvName;
-    
-    Ts = irf.ts_scalar(D.data.Epoch.data, D.data.(zvName).data);
-    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', {EJ_library.graph.escape_str(zvName)});
-    set(hLines, 'LineWidth', lineWidth)
-end
-
-
-
-% Plot one panel for 3 numeric time series (one for each antenna).
-%
-% ARGUMENTS
-% =========
-% D           : dataobj
-% zVarNamesCa : Length 3 cell array of zVar names.
-%
-function [hAxes, hLines, hLegendText] = plot_time_series3(D, zVarNamesCa)
-% zVarNamePattern : String used in sprintf, with "%s" (not "%i"!) representing the antenna number 1, 2, or 3.
-    assert(numel(zVarNamesCa) == 3)
-    
-    % NOTE: Automatically derive panel tag. Exact value unimportant.
-    panelTag = zVarNamesCa{1};
-    
-    Ts = irf.ts_scalar(D.data.Epoch.data, [...
-        D.data.(zVarNamesCa{1}).data, ...
-        D.data.(zVarNamesCa{2}).data, ...
-        D.data.(zVarNamesCa{3}).data]);
-
-    [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, '', ...
-        {EJ_library.graph.escape_str(zVarNamesCa{1}), '2', '3'});
-end
-
-
-
-function [hAxes, hLines, hLegendText] = plot_time_series(panelTag, Ts, yLabel, channelNames)
-    LEGEND_POSITION = [0.98, 0.98];
-    %LEGEND_COLOR = [0,0,1];
-    
-    hAxes  = irf_panel(panelTag);
-    hLines = irf_plot(hAxes, Ts);   % Array, if multiple scalar time series.
-    modify_legend_text_color(hLines)
-    
-    ylabel(hAxes, yLabel)
-    hLegendText = irf_legend(hAxes, channelNames, LEGEND_POSITION);
-    %modify_legend_text_color(hLegendText)
-end
-
-
-
-% Plot one bit-valued array in one irf_panel.
-%
-% ARGUMENTS
-% =========
-% channelName : 
-%
-function [hAxes, hLines, hLegendText] = plot_bit_series(panelTag, Epoch, b, channelName)
-    % OBSOLETE: IMPLEMENTATION NOTE: Somewhat hackish plotting of "area": y value=0 is
-    % replaced by NaN. Plots very wide line which is later clipped/cropped by
-    % the axes.
-
-    %BIT_COLOR = [0.5, 0.5, 0.5];
-    %BIT_COLOR = [0, 0, 0];
-    %BIT_COLOR = [0, 0, 1];
-    %CHANNEL_NAME_POS = [0.02, 0.98];
-    CHANNEL_NAME_POS = [0.98, 0.98];
-    %LEGEND_COLOR = [0,0,1];
-    
-    % ASSERTIONS
-    assert(all(ismember(b, [0,1])))
-    
-    if isempty(b)
-        Epoch(:) = [];
-        channelName = ['(', channelName, ': empty zVar)'];
-    end
-    
-   
-
-    % Divide b into b0 and b1, which when plotted as lines, form one line
-    % identical to b. This way one can plot separate parts with separate colors.
-    % Use NaN for parts that are not plotted by either b0 or b1.
-    b = double(b);   % Must be double to be able to assign NaN.
-    % Identify indices just after b has flipped.
-    iJumpUp = 1 + find((b(1:end-1)==0) & (b(2:end)==1));
-    iJumpDn = 1 + find((b(1:end-1)==1) & (b(2:end)==0));
-    % Create b0, b1.
-    b0 = b;
-    b1 = b;
-    b0(b0 == 1) = NaN;
-    b1(b1 == 0) = NaN;
-    b0(iJumpUp) = 1;
-    b1(iJumpDn) = 0;
-    
-    % Create time series object
-    % -------------------------
-    Ts = irf.ts_scalar(Epoch, [b0, b1]);
-    
-    % Plot
-    hAxes = irf_panel(panelTag);
-    hLines = irf_plot(hAxes, Ts, 'LineWidth', 3);
-    assert(numel(hLines) == 2)
-    hLines(1).Color = [0,0,1];
-    hLines(2).Color = [1,0,0];
-    
-    modify_legend_text_color(hLines)
-    
-    
-    
-    % NOTE: Command puts the text relative to the specified coordinates in
-    % different ways depending on coordinates.
-    hLegendText = irf_legend(hAxes, EJ_library.graph.escape_str(channelName), CHANNEL_NAME_POS);    
-    %modify_legend_text_color(hLegendText)
-    
-    set(hAxes, 'Clipping', 'on')   % Should be default, so not necessary.
-    set(hAxes, 'ClippingStyle', 'rectangle')
-    set(hAxes, 'yTickLabel', {})
-    set(hAxes, 'YGrid', 'off')          % Remove horizontal grid lines.
-    %set(hAxes, 'TickLength', [0, 0])    % Remove ticks by setting their length.
-    
-    set(hAxes, 'YLim', [-0.2, 1.2])
-    set(hAxes, 'YTick', [])
-    %set(hAxes, 'yTickLabel', {'0', '1'})
-end
-
-
-
-function modify_legend_text_color(hTextArray)
-    C_FADE = 0.7;
-    for i = 1:numel(hTextArray)
-        legendColor = get(hTextArray(i), 'Color');
-        set(hTextArray(i), 'Color', 1-C_FADE*(1-legendColor));   % Fade color (move toward white).
-    end
 end
 
 

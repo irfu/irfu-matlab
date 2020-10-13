@@ -76,17 +76,11 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function hAxesArray = plot_LFR_CWF(filePath)    
-    % TODO-DECISION: Content of figure title
-    %   PROPOSAL: Time range
-    %   PROPOSAL: DOY.
-    %       ~PROBLEM/NOTE: Could span multiple days, or part of day.
+function hAxesArray = plot_LFR_CWF(filePath)
     %
     % TODO-NI: Detect DC/AC and only plot one of them? Analogous to LFR SWF.
     %   TODO-NI: CWF never uses AC? SBM1/2?
-    % TODO-NI: Spectrum overlap 50% also for CWF?
-    % TODO: Correct sampling frequency needed for irf_powerfft.
-    % TODO: Use zVar SAMPLING_RATE (when introduced) for spectrums.
+    %
     % PROPOSAL: Settings arguments to disable/enable hidden functionality
     %   Ex: SWF: Permit/force DC+AC diffs
     %   Ex: Disable spectrograms.
@@ -94,11 +88,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     % PROPOSAL: Change package name to sp (summary plots).
     %
     % PROPOSAL: Settings for disabling spectrum etc.
-    %
-    % PROPOSAL: Centralize ~constants: samples per FFT, overlap, SNAPSHOT_WIDTH_FRACTION
     
-    %PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;
-
     D = dataobj(filePath);
     epoch = D.data.Epoch.data;
     vDc1          = get_CDF_zv_data(D, 'VDC', 1);
@@ -133,74 +123,20 @@ function hAxesArray = plot_LFR_CWF(filePath)
     TsVac12 = irf.ts_scalar(epoch, vAc12);
     TsVac23 = irf.ts_scalar(epoch, vAc23);
     
-    irf_plot(3+5, 'newfigure');
+    Sp = solo.ql.summary_plot();
     
-    hAxesArray = [];
-    hAxesArray(end+1) = spectrogram_panel( 'V1 DC spectrogram', TsVdc1,  zvSamplFreqHz, 'V1\_DC');
-    hAxesArray(end+1) = spectrogram_panel('V12 DC spectrogram', TsVdc12, zvSamplFreqHz, 'V12\_DC');
-    hAxesArray(end+1) = spectrogram_panel('V23 DC spectrogram', TsVdc23, zvSamplFreqHz, 'V23\_DC');
+    Sp.add_panel_spectrogram( 'V1 DC spectrogram', TsVdc1,  zvSamplFreqHz, 'V1\_DC');
+    Sp.add_panel_spectrogram('V12 DC spectrogram', TsVdc12, zvSamplFreqHz, 'V12\_DC');
+    Sp.add_panel_spectrogram('V23 DC spectrogram', TsVdc23, zvSamplFreqHz, 'V23\_DC');
 
-    hAxesArray(end+1) = time_series_panel( 'V1 DC time series', TsVdc1,   'V1_DC [V]');
-    hAxesArray(end+1) = time_series_panel('V12 DC time series', TsVdc12, 'V12_DC [V]');
-    hAxesArray(end+1) = time_series_panel('V23 DC time series', TsVdc23, 'V23_DC [V]');
-    hAxesArray(end+1) = time_series_panel('V12 AC time series', TsVac12, 'V12_AC [V]');
-    hAxesArray(end+1) = time_series_panel('V23 AC time series', TsVac23, 'V23_AC [V]');
+    Sp.add_panel_time_series( 'V1 DC time series', TsVdc1,  {}, {}, 'V1_DC [V]',  {}, {});
+    Sp.add_panel_time_series('V12 DC time series', TsVdc12, {}, {}, 'V12_DC [V]', {}, {});
+    Sp.add_panel_time_series('V23 DC time series', TsVdc23, {}, {}, 'V23_DC [V]', {}, {});
+    Sp.add_panel_time_series('V12 AC time series', TsVac12, {}, {}, 'V12_AC [V]', {}, {});
+    Sp.add_panel_time_series('V23 AC time series', TsVac23, {}, {}, 'V23_AC [V]', {}, {});
 
-    solo.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
+    hAxesArray = Sp.finalize('LFR CWF L2', filePath);
 
-    irf_plot_axis_align(hAxesArray)               % For aligning MATLAB axes (taking color legends into account).
-    irf_zoom(hAxesArray, 'x', irf.tint(epoch))    % For aligning the content of the MATLAB axes.
-end
-
-
-
-% ARGUMENTS
-% =========
-% panelTag      : 
-% Ts            : irfumatlab TSeries (volt).
-% yLabelNonUnit : y label without unit (unit is at the color bar; Assumes "Ts" uses volt).
-%
-function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit)
-    
-    N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
-    
-    hAxes = irf_panel(panelTag);
-    
-    % SS = SubSequence
-    [iSs1Array, iSs2Array, nSs] = EJ_library.utils.split_by_change(zvSamplingFreqHz);
-    SpecrecCa = cell(nSs, 1);
-    parfor jSs = 1:nSs    % PARFOR
-        
-        iSsArray = iSs1Array(jSs) : iSs2Array(jSs);
-
-        SpecrecCa{jSs} = irf_powerfft(Ts(iSsArray), N_SAMPLES_PER_SPECTRUM, zvSamplingFreqHz(iSs1Array(jSs)));
-    end
-
-    Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
-    Specrec.p_label = {'log_{10} [V^2/Hz]'};     % Replaces colorbarlabel
-    irf_spectrogram(hAxes, Specrec);    % Replaces irf_plot
-    
-    set(hAxes, 'yscale','log')
-    %caxis(hAxes, [-13, -4])
-    ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})   % NOTE: Adding frequency unit on separate row.
-
-    % Technically potentially slower to load file every time, but I don't want
-    % to make this an argument, and the OS probable caches the small file.
-    load cmap
-    colormap(cmap)
-    
-    set(hAxes, 'YTick', [0.1, 1, 10, 100, 1e3, 1e4, 1e5])
-end
-
-
-
-% panelTag      : 
-% Ts            : irfumatlab TSeries
-% yLabelNonUnit : y label with unit.
-function hAxes = time_series_panel(panelTag, Ts, yLabel)
-    hAxes = irf_panel(panelTag);
-    irf_plot(hAxes, Ts)
-    ylabel(hAxes, yLabel)
 end
 
 
