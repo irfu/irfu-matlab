@@ -184,6 +184,12 @@ function hAxes = spectrogram_panel(panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit
     %caxis(hAxes, [-13, -4])
     ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})   % NOTE: Adding frequency unit on separate row.
 
+    % Technically potentially slower to load file every time, but I don't want
+    % to make this an argument, and the OS probable caches the small file.
+    load cmap
+    colormap(cmap)
+    
+    set(hAxes, 'YTick', [0.1, 1, 10, 100, 1e3, 1e4, 1e5])
 end
 
 

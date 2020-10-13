@@ -56,6 +56,28 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %       Use min(timeToSnapshotBefore, timeToSnapshotafter) as max radius.
     % 
     % PROPOSAL: Use EJ_library.so.constants for Fx.str, Fx.freqHz in some better way.
+    %   PROPOSAL: Submit iLsf (LFR Sampling Frequency) as argument instead.
+    %       PRO: Can eliminate local constants.
+    %
+    % Old TODO: YK's "fixup" 2020-10-13
+    %   hswf = solo.ql.plot_LFR_SWF([RPWPATH LRFFILE]);%% fixup
+    %   load cmap
+    %   colormap(cmap)
+    %   set(hswf(1:3),'YTick',[0.1 1 10])
+    %   caxis(hswf(1),[-11 -7])
+    %   caxis(hswf(2),[-13 -10])
+    %   caxis(hswf(3),[-13 -10])
+    %   caxis(hswf(4),[-9 -5])
+    %   set(hswf(4:6),'YTick',[0.1 1 10])
+    %   caxis(hswf(5),[-11 -8])
+    %   caxis(hswf(6),[-11 -8])
+    %   set(hswf(7:9),'YTick',[0.1 1 10 100])
+    %   caxis(hswf(7),[-8 -5])
+    %   caxis(hswf(8),[-10 -7])
+    %   caxis(hswf(9),[-10 -7])
+    %   2020-10-13: Should be implemented.
+    
+    
 
     % YK 2020-04-16: Officially only either DC or AC diffs.
     % NOTE: solo_L2_rpw-lfr-surv-cwf-e-cdag_20200228_V01.cdf contains both DC & AC diffs.
@@ -145,38 +167,38 @@ function hAxesArray = plot_LFR_SWF(filePath)
         %=================
         % F0 spectrograms
         %=================
-        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F0, 'V1\_DC'));
+        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F0, 'V1\_DC', [-11,-7]));
         if displayDcDiffs
-            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F0, 'V12\_DC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V23\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F0, 'V12\_DC', [-13,-10]));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V23\_DC', [-13,-10]));
         end
         if displayAcDiffs
-            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F0, 'V12\_AC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F0, 'V23\_AC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F0, 'V12\_AC', [-13,-10]));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F0, 'V23\_AC', [-13,-10]));
         end
         %=================
         % F1 spectrograms
         %=================
-        pcfcList{end+1} =     @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F1, 'V1\_DC'));
+        pcfcList{end+1} =     @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F1, 'V1\_DC', [-9,-5]));
         if displayDcDiffs
-            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F1, 'V12\_DC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F1, 'V23\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F1, 'V12\_DC', [-11,-8]));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F1, 'V23\_DC', [-11,-8]));
         end
         if displayAcDiffs
-            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F1, 'V12\_AC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F1, 'V23\_AC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F1, 'V12\_AC', [-11,-8]));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F1, 'V23\_AC', [-11,-8]));
         end
         %=================
         % F2 spectrograms
         %=================
-        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F2, 'V1\_DC'));
+        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F2, 'V1\_DC', [-8,-5]));
         if displayDcDiffs
-            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F2, 'V12\_DC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F2, 'V23\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F2, 'V12\_DC', [-10,-7]));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F2, 'V23\_DC', [-10,-7]));
         end
         if displayAcDiffs
-            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F2, 'V12\_AC'));
-            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F2, 'V23\_AC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F2, 'V12\_AC', [-10,-7]));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F2, 'V23\_AC', [-10,-7]));
         end
     end
     %==========================================================================================
@@ -240,14 +262,16 @@ end
 
 % Convenient wrapper around spectrum_panel.
 % Converts from zVar-like variables to what is actually used for plotting.
-function h = spectrogram_panel2(panelTagSignalsStr, zvEpoch, zvData, SamplingRateInfo, trLegend)
+%
+function h = spectrogram_panel2(panelTagSignalsStr, zvEpoch, zvData, SamplingRateInfo, trLegend, colLimits)
     h = spectrogram_panel(...
         sprintf('%s %s spectrogram', panelTagSignalsStr, SamplingRateInfo.str), ...
         zvEpoch(SamplingRateInfo.bRecords, :), ...
-        zvData(SamplingRateInfo.bRecords, :), ...
+        zvData( SamplingRateInfo.bRecords, :), ...
         SamplingRateInfo.freqHz, ...
         SamplingRateInfo.str, ...
-        trLegend);
+        trLegend, ...
+        colLimits);
 end
 
 
@@ -260,7 +284,7 @@ end
 % SS  : SnapShot
 % SSS : SnapShot Spectrogram
 %
-function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend)
+function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend, colLimits)
     % NOTE: Multiple-row labels causes trouble for the time series ylabels.
     % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS
     % snapshots that vary in length.
@@ -274,6 +298,9 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     % NOTE: More samples per spectrum is faster (sic!).
     N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
     %N_SAMPLES_PER_SPECTRUM = 512;    % Speed test
+    
+    erikpgjohansson.assert.sizes(colLimits, [1,2])
+    
 
 
     TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
@@ -338,6 +365,14 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
 
     irf_legend(h, tlLegend, [0.02 0.98], 'color', 'k')
     irf_legend(h, trLegend, [0.98 0.98])
+    
+    % Technically potentially slower to load file every time, but I don't want
+    % to make this an argument, and the OS probable caches the small file.
+    load cmap
+    colormap(cmap)
+    
+    caxis(h, colLimits)
+    set(h, 'YTick', [0.1, 1, 10, 100])
 end
 
 
