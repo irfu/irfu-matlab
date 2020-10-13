@@ -108,7 +108,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     vAc23         = get_CDF_zv_data(D, 'EAC', 3);
     zvSamplFreqHz = D.data.SAMPLING_RATE.data;
     clear D
-    
+
 %     if 0
 %         % DEBUG: Limit records
 %         I1 = 1.12e5;
