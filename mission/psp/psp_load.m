@@ -23,7 +23,7 @@
 
 function output = psp_load(dataDir,datatype,date_start,date_stop)
 
-if isempty(nargout)
+if nargout==0
   outputToBase = true;
 else
   outputToBase = false;
@@ -168,10 +168,11 @@ end
 
 irf.log('notice','Done loading. Merging the data...');
 
-if outputToBase
+if ~outputToBase
   output = cell(1,nVar);
 end
 
+% Fix the output 
 for iOutputVar = 1:nVar
   
   varname_out = varnamesout{iOutputVar};
@@ -185,6 +186,7 @@ for iOutputVar = 1:nVar
   epoch_data = cell2mat(epochData{iOutputVar}(~indEmptyFiles));
   varOut =  TSeries(EpochTT(epoch_data),var_data,...
     'metadata_from',varMeta{iOutputVar});
+  
   if outputToBase
     assignin('base',varname_out,varOut);
   else
