@@ -138,8 +138,8 @@ for iFile = 1:nFiles
       if exist(fileToLoad_vcheck,'file')
           
           if fileFound == 1
-              irf.log('warning',['Version conflict, Replacing ''' fileToLoad_vcheck ''' with ''' fileToLoad ''''])
-              % give warning if two different versions of the same file exist, go tell someone, server should only keep the latest version.
+                            irf.log('warning',['Version conflict, Replacing ''' fileToLoad ''' with ''' fileToLoad_vcheck ''''])
+                            % give warning if two different versions of the same file exist, go tell someone, server should only keep the latest version.
           end
           
           fileToLoad = fileToLoad_vcheck;
