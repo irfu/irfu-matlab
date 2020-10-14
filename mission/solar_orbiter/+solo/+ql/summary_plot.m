@@ -317,14 +317,14 @@ classdef summary_plot < handle
         % specified LFR sampling frequency (LSF). Uses only the samples of the
         % specified sampling frequency.
         %
-        % Wrapper that converts from zVar-like variables (N samples/record; all
-        % records) to what is actually used for plotting.
-        %
         % NOTE: Removes mean from each snapshot separately (both DC & AC)
         % NOTE: Can also handle TDS snapshots some day?
         %
-        function add_panel_time_series_SWF_LSF(obj, ...
-                panelTagSignalsStr, zvEpoch, zvDataCa, zvSamplFreqHz, iLsf, trLegend)
+        function add_panel_time_series_SWF_LSF(obj, panelTagSignalsStr, ...
+                zvEpoch, zvDataCa, zvSamplFreqHz, iLsf, trLegend, removeMean)
+            
+            nChannels = numel(zvDataCa);
+            assert(numel(removeMean) == nChannels)
             
             bRecords = (zvSamplFreqHz == EJ_library.so.constants.LSF_HZ(iLsf));
             samplFreqHz = EJ_library.so.constants.LSF_HZ(iLsf);
@@ -344,13 +344,18 @@ classdef summary_plot < handle
             assert(nSps >= 2)
             
             zvEpoch  = EJ_library.so.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
-            for i = 1:numel(zvDataCa)
-                zvData      = zvDataCa{i}(bRecords, :);
+            for i = 1:nChannels
+                zvData = zvDataCa{i}(bRecords, :);
                 
-                % Remove mean of each snapshot separately.
-                % /YK 2020-10-13
-                % IMPLEMENTATION NOTE: Ignore NaN so that can handle varying-length TDS snapshots.
-                zvData      = zvData - repmat(mean(zvData, 2, 'omitnan'), [1, nSps]);
+                if removeMean(i)
+                    % Remove mean of each snapshot separately.
+                    % /YK 2020-10-13
+                    %
+                    % IMPLEMENTATION NOTE: Ignore NaN so that can handle
+                    % varying-length TDS snapshots which pad the end with NaN/fill
+                    % value.
+                    zvData = zvData - repmat(mean(zvData, 2, 'omitnan'), [1, nSps]);
+                end
                 
                 zvDataCa{i} = EJ_library.so.convert_N_to_1_SPR_redistribute(zvData);
             end
