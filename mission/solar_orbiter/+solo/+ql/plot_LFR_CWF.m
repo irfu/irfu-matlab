@@ -116,24 +116,26 @@ function hAxesArray = plot_LFR_CWF(filePath)
 %             EJ_library.cdf.tt2000_to_UTC_str(epoch(1)), ...
 %             EJ_library.cdf.tt2000_to_UTC_str(epoch(end)))
 %     end
+
+
     
-    TsVdc1  = irf.ts_scalar(epoch, vDc1);
-    TsVdc12 = irf.ts_scalar(epoch, vDc12);
-    TsVdc23 = irf.ts_scalar(epoch, vDc23);
-    TsVac12 = irf.ts_scalar(epoch, vAc12);
-    TsVac23 = irf.ts_scalar(epoch, vAc23);
+%     TsVdc1  = irf.ts_scalar(epoch, vDc1);
+%     TsVdc12 = irf.ts_scalar(epoch, vDc12);
+%     TsVdc23 = irf.ts_scalar(epoch, vDc23);
+    %TsVac12 = irf.ts_scalar(epoch, vAc12);
+    %TsVac23 = irf.ts_scalar(epoch, vAc23);
     
     Sp = solo.ql.summary_plot();
     
-    Sp.add_panel_spectrogram( 'V1 DC spectrogram', TsVdc1,  zvSamplFreqHz, 'V1\_DC');
-    Sp.add_panel_spectrogram('V12 DC spectrogram', TsVdc12, zvSamplFreqHz, 'V12\_DC');
-    Sp.add_panel_spectrogram('V23 DC spectrogram', TsVdc23, zvSamplFreqHz, 'V23\_DC');
+    Sp.add_panel_spectrogram_CWF( 'V1 DC spectrogram', epoch, vDc1,  zvSamplFreqHz, 'V1\_DC');
+    Sp.add_panel_spectrogram_CWF('V12 DC spectrogram', epoch, vDc12, zvSamplFreqHz, 'V12\_DC');
+    Sp.add_panel_spectrogram_CWF('V23 DC spectrogram', epoch, vDc23, zvSamplFreqHz, 'V23\_DC');
 
-    Sp.add_panel_time_series( 'V1 DC time series', TsVdc1,  {}, {}, 'V1_DC [V]',  {}, {});
-    Sp.add_panel_time_series('V12 DC time series', TsVdc12, {}, {}, 'V12_DC [V]', {}, {});
-    Sp.add_panel_time_series('V23 DC time series', TsVdc23, {}, {}, 'V23_DC [V]', {}, {});
-    Sp.add_panel_time_series('V12 AC time series', TsVac12, {}, {}, 'V12_AC [V]', {}, {});
-    Sp.add_panel_time_series('V23 AC time series', TsVac23, {}, {}, 'V23_AC [V]', {}, {});
+    Sp.add_panel_time_series_CWF( 'V1 DC time series', epoch, vDc1,  'V1_DC [V]',  0);
+    Sp.add_panel_time_series_CWF('V12 DC time series', epoch, vDc12, 'V12_DC [V]', 0);
+    Sp.add_panel_time_series_CWF('V23 DC time series', epoch, vDc23, 'V23_DC [V]', 0);
+    Sp.add_panel_time_series_CWF('V12 AC time series', epoch, vAc12, 'V12_AC [V]', 1);
+    Sp.add_panel_time_series_CWF('V23 AC time series', epoch, vAc23, 'V23_AC [V]', 1);
 
     hAxesArray = Sp.finalize('LFR CWF L2', filePath);
 

@@ -15,10 +15,12 @@ classdef summary_plot < handle
     %
     % PROPOSAL: Consistent naming of ~Epoch/zvTt2000.
     %
-    % PROPOSAL: No TimeSeries arguments.
-    %   NOTE: Currently inconsistent.
+    % PROPOSAL: Merge add_panel_spectrogram_SWF_LSF &
+    %                 add_panel_spectrogram_CWF.
+    %   CON: Too many differences in functionality.
+    %       Ex: Enlarge separate snapshots.
     %
-    % PROPOSAL: Merge add_panel_spectrogram_snapshots &
+    % PROPOSAL: Merge add_panel_spectrogram_SWF_LSF &
     %                 panel_spectrogram_snapshots.
     %   CON: panel_spectrogram_snapshots designed to also be used for TDS
     %        snapshots (in the future).
@@ -31,11 +33,15 @@ classdef summary_plot < handle
     % like to wrap the function handle, not the add_panel_* method.
     %   Ex: Can not fade line color in wrapper.
     %
-    %
     % TODO-DECISION: Content of figure title
     %   PROPOSAL: Time range
     %   PROPOSAL: DOY.
     %       ~PROBLEM/NOTE: Could span multiple days, or part of day.
+    %
+    % PROPOSAL: Eliminate use of dataobj as argument (HK). Let caller create
+    %           wrapper functions for doing that instead.
+    %
+    % PROPOSAL: Let plot_* scripts do more of the customizing via e.g. wrappers.
 
 
 
@@ -96,29 +102,35 @@ classdef summary_plot < handle
         
         
         
+        % Constructor
         function obj = summary_plot()
         end
         
         
         
+        % Add panel for one or multiple scalar time series.
+        %
         % ARGUMENTS
         % =========
         % panelTag      :
-        % Ts            : irfumatlab TSeries
+        % zvData        : Array. (iRecord). ~CWF data.
         % yLabelNonUnit : y label with unit.
         % --
-        % Optional:
-        % tlLegend : Top-left  (TL) legend.
-        % trLegend : Top-right (TR) legend. Cell array of strings, one per
+        % tlLegend : Top-left  (TL) legend. Empty if not used.
+        % trLegend : Top-right (TR) legend.  Empty if not used.
+        %            Cell array of strings, one per
         %            scalar time series.
         %
-        function add_panel_time_series(obj, panelTag, Ts, linesPropCa, axesPropCa, yLabel, tlLegend, trLegend)
+        function add_panel_time_series_CWF_general(obj, panelTag, ...
+            zvEpoch, zvData, linesPropCa, axesPropCa, yLabel, tlLegend, trLegend)
+            
             assert(~obj.figureComplete)
+            assert(nargin == 1+8)
+            
+            Ts = irf.ts_scalar(zvEpoch, zvData);
             
             obj.add_panel_internal_vars(...
-                @() (panel_time_series()), Ts.time.epoch, 0, 1);
-            
-            assert(nargin == 1+7)
+                @() (panel_time_series()), zvEpoch, 0, 1);
             
             
             
@@ -149,24 +161,49 @@ classdef summary_plot < handle
         end
         
         
+        
+        function add_panel_time_series_CWF(obj, panelTag, ...
+            zvEpoch, zvData, yLabel, removeMean)
+        
+            assert(isscalar(removeMean))
+            EJ_library.assert.sizes(...
+                zvEpoch, [-1], ...
+                zvData,  [-1])
+        
+            if removeMean
+                zvData = zvData - mean(zvData, 'omitnan');
+            end
+        
+            obj.add_panel_time_series_CWF_general(panelTag, ...
+                zvEpoch, zvData, {}, {}, yLabel, {}, {})
+        end
+        
+        
 
+        % Add one panel for 3 numeric time series (one for each antenna).
+        %
+        % ARGUMENTS
+        % =========
+        % D           : dataobj
+        %
         function add_panel_time_series1_HK(obj, D, zvName, linesPropCa, axesPropCa)
             % NOTE: Automatically derives panel tag.
             panelTag = zvName;
             
-            Ts = irf.ts_scalar(D.data.Epoch.data, D.data.(zvName).data);
+            %Ts = irf.ts_scalar(D.data.Epoch.data, D.data.(zvName).data);
             
-            
+            zvEpoch = D.data.Epoch.data;
+            zvData  = D.data.(zvName).data;            
             
             % CALL INSTANCE METHOD            
-            obj.add_panel_time_series(...
-                panelTag, Ts, [{'fade'}, linesPropCa], axesPropCa, ...
+            obj.add_panel_time_series_CWF_general(...
+                panelTag, zvEpoch, zvData, [{'fade'}, linesPropCa], axesPropCa, ...
                 '', {}, {EJ_library.graph.escape_str(zvName)})
         end
         
         
         
-        % Plot one panel for 3 numeric time series (one for each antenna).
+        % Add one panel for 3 numeric time series (one for each antenna).
         %
         % ARGUMENTS
         % =========
@@ -179,21 +216,27 @@ classdef summary_plot < handle
             % NOTE: Automatically derives panel tag.
             panelTag = zvNamesCa{1};
             
-            Ts = irf.ts_scalar(D.data.Epoch.data, [...
+%             Ts = irf.ts_scalar(D.data.Epoch.data, [...
+%                 D.data.(zvNamesCa{1}).data, ...
+%                 D.data.(zvNamesCa{2}).data, ...
+%                 D.data.(zvNamesCa{3}).data]);
+            
+            zvEpoch = D.data.Epoch.data;
+            zvData  = [...
                 D.data.(zvNamesCa{1}).data, ...
                 D.data.(zvNamesCa{2}).data, ...
-                D.data.(zvNamesCa{3}).data]);
+                D.data.(zvNamesCa{3}).data];
             
             
             
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series(panelTag, Ts, ...
+            obj.add_panel_time_series_CWF_general(panelTag, zvEpoch, zvData, ...
                 {'fade'}, {}, '', {}, {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
         end
 
 
 
-        % Plot one bit-valued array in one irf_panel.
+        % Add panel for one bit-valued array. Intended for HK.
         %
         % ARGUMENTS
         % =========
@@ -270,54 +313,77 @@ classdef summary_plot < handle
         
 
 
-        % Add panel for time series for one specified LFR sampling frequency
-        % (LSF).
+        % Add panel for time series for SWF data (one snapshot per row) for one
+        % specified LFR sampling frequency (LSF). Uses only the samples of the
+        % specified sampling frequency.
         %
         % Wrapper that converts from zVar-like variables (N samples/record; all
         % records) to what is actually used for plotting.
         %
-        function add_panel_time_series_LSF(obj, panelTagSignalsStr, zvEpoch, zvDataList, zvSamplFreqHz, iLsf, trLegend)
+        % NOTE: Removes mean from each snapshot separately (both DC & AC)
+        % NOTE: Can also handle TDS snapshots some day?
+        %
+        function add_panel_time_series_SWF_LSF(obj, ...
+                panelTagSignalsStr, zvEpoch, zvDataCa, zvSamplFreqHz, iLsf, trLegend)
             
             bRecords = (zvSamplFreqHz == EJ_library.so.constants.LSF_HZ(iLsf));
             samplFreqHz = EJ_library.so.constants.LSF_HZ(iLsf);
             lsfName     = EJ_library.so.constants.LSF_NAME_ARRAY{iLsf};
             
-            nSps        = size(zvDataList{1}, 2);   % SPS = Samples Per Snapshot
             
-            zvEpoch  = zvEpoch(bRecords);
-            nRecords = size(zvEpoch, 1);   % NOTE: After selecting records.
+            
+            zvEpoch     = zvEpoch(bRecords);
+            
+            % IMPLEMENTATION NOTE: Can not obviously use
+            % EJ_library.assert.sizes() to derive nRecords and nSps since
+            % zvEpoch and zvDataCa are being transformed (LSF subset,
+            % SWF-->CWF), and the values need to be derived and used in the
+            % middle of that transformation.
+            nRecords    = size(zvEpoch, 1);         % NOTE: After selecting records.
+            nSps        = size(zvDataCa{1}, 2);   % SPS = Samples Per Snapshot
+            assert(nSps >= 2)
+            
             zvEpoch  = EJ_library.so.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
-            
-            for i = 1:numel(zvDataList)
-                zvData        = zvDataList{i}(bRecords, :);
-                zvDataList{i} = EJ_library.so.convert_N_to_1_SPR_redistribute(zvData);
+            for i = 1:numel(zvDataCa)
+                zvData      = zvDataCa{i}(bRecords, :);
+                
+                % Remove mean of each snapshot separately.
+                % /YK 2020-10-13
+                % IMPLEMENTATION NOTE: Ignore NaN so that can handle varying-length TDS snapshots.
+                zvData      = zvData - repmat(mean(zvData, 2, 'omitnan'), [1, nSps]);
+                
+                zvDataCa{i} = EJ_library.so.convert_N_to_1_SPR_redistribute(zvData);
             end
             
-            % NOTE: Effectively serves as an assertion on zVar sizes.
-            Ts = irf.ts_scalar(zvEpoch, [zvDataList{:}]);
+%             % NOTE: Effectively serves as an assertion on zVar sizes.
+%             Ts = irf.ts_scalar(zvEpoch, [zvDataCa{:}]);
             
             
             
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series(...
+            obj.add_panel_time_series_CWF_general(...
                 sprintf('%s %s time series', panelTagSignalsStr, lsfName), ...
-                Ts, {}, {}, '[V]', lsfName, trLegend)
+                zvEpoch, [zvDataCa{:}], {}, {}, '[V]', lsfName, trLegend)
         end
         
         
 
+        % Add one panel for spectrogram for ~CWF data.
+        %
         % ARGUMENTS
         % =========
         % panelTag      :
-        % Ts            : irfumatlab TSeries (volt).
         % yLabelNonUnit : y label without unit (unit is at the color bar;
         %                 Assumes "Ts" uses volt).
         %
-        function add_panel_spectrogram(obj, panelTag, Ts, zvSamplingFreqHz, yLabelNonUnit)
+        function add_panel_spectrogram_CWF(obj, panelTag, zvEpoch, zvData, zvSamplingFreqHz, yLabelNonUnit)
             assert(~obj.figureComplete)
+            assert(nargin == 1+5)
             
             obj.add_panel_internal_vars(...
-                @() (panel_spectrogram()), Ts.time.epoch, 0, 1);
+                @() (panel_spectrogram()), zvEpoch, 0, 1);
+            
+            Ts  = irf.ts_scalar(zvEpoch, zvData);
             
             
             
@@ -357,7 +423,9 @@ classdef summary_plot < handle
         % Convenient wrapper around spectrum_panel.
         % Converts from zVar-like variables to what is actually used for plotting.
         %
-        function add_panel_spectrogram_snapshots(obj, panelTagSignalsStr, zvEpoch, zvData, zvSamplFreqHz, iLsf, trLegend, colLimits)
+        function add_panel_spectrogram_SWF_LSF(obj, ...
+            panelTagSignalsStr, zvEpoch, zvData, zvSamplFreqHz, iLsf, trLegend, colLimits)
+        
             assert(~obj.figureComplete)
             
             samplFreqHz = EJ_library.so.constants.LSF_HZ(iLsf);
@@ -391,11 +459,14 @@ classdef summary_plot < handle
         % plotTypeStr : Top title string, e.g. "LFR CWF".
         % filePath    : Path to file. Will only use the filename but permits
         %               submitting entire path for convenience.
+        %
         function hAxesArray = finalize(obj, plotTypeStr, filePath)
             
             assert(~obj.figureComplete)
             
             nPanels = numel(obj.pcfcCa);
+            assert(nPanels > 0, 'Class is configured with zero panels. Can not handle this case.')
+            
             irf_plot(nPanels, 'newfigure');
             
             hAxesArray = [];
@@ -403,7 +474,7 @@ classdef summary_plot < handle
                 funcHandle = obj.pcfcCa{i}();
                 hAxesArray(end+1) = funcHandle();
             end
-            
+           
             % For aligning MATLAB axes (taking color legends into account).
             irf_plot_axis_align(hAxesArray)
             % For aligning the content of the MATLAB axes.
@@ -622,9 +693,9 @@ classdef summary_plot < handle
         %
         % ARGUMENTS
         % =========
-        % zvEpoch : Nx1 array.
+        % zvEpoch : Nx1 array. 
         % zvData  : NxM array. (iRecord, iSampleWithinSnapshot). 1 record=1 snapshot.
-        % TsCa    : (iSnapshot) 1D cell array of TSeries.
+        % TsCa    : {iSnapshot} 1D cell array of TSeries.
         %           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB
         %           confuses indexing a TSeries array (with brackets) with some special
         %           TSeries functionality for calling its code with brackets (calling
@@ -638,12 +709,14 @@ classdef summary_plot < handle
             % NOTE: No special treatment of snapshots with only NaN.
             
             assert(isscalar(samplingFreqHz))
-            EJ_library.assert.sizes(zvData, [NaN, NaN])
-            assert(size(zvEpoch, 1) == size(zvData, 1))   % Same number of records
+            [nRecords, nSps] = EJ_library.assert.sizes(...
+                zvEpoch, [-1], ...
+                zvData,  [-1, -2]);
+            %assert(size(zvEpoch, 1) == size(zvData, 1))   % Same number of records
             bicas.proc_utils.assert_zv_Epoch(zvEpoch)
             
-            nRecords = size(zvData, 1);
-            nSps     = size(zvData, 2);
+            %nRecords = size(zvData, 1);
+            %nSps     = size(zvData, 2);
             assert(nSps >= 2)
             
             % Relative timestamps inside CDF record/snapshot.
@@ -652,6 +725,7 @@ classdef summary_plot < handle
             TsCa = {};
             for i = 1:nRecords
                 epochRecord = zvEpoch(i) + epochRelArray;
+               
                 TsCa{i}  = irf.ts_scalar(epochRecord, zvData(i, :));
             end
             

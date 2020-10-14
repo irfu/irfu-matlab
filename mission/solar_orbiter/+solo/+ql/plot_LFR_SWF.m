@@ -73,7 +73,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %   caxis(hswf(7),[-8 -5])
     %   caxis(hswf(8),[-10 -7])
     %   caxis(hswf(9),[-10 -7])
-    %   2020-10-13: Should be implemented.
+    %   2020-10-13: Should already have been implemented.
     
     
 
@@ -81,8 +81,8 @@ function hAxesArray = plot_LFR_SWF(filePath)
     % NOTE: solo_L2_rpw-lfr-surv-cwf-e-cdag_20200228_V01.cdf contains both DC &
     % AC diffs.
     ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS = 0;   % DEFAULT 0. Useful for debugging (runs through all code).
-    PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 1;   % DEFAULT 0.
-    ENABLE_SPECTROGRAMS                   = 1;   % DEFAULT 1.
+    PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 1;
+    ENABLE_SPECTROGRAMS                   = 1;   % DEFAULT 1. Useful for debugging non-spectrogram code.
     
     D = dataobj(filePath);
     
@@ -95,23 +95,23 @@ function hAxesArray = plot_LFR_SWF(filePath)
     vAc23    = get_CDF_zv_data(D, 'EAC', 3);
     clear D
     
-    if 0
-        % DEBUG: Limit records
-        I1 = 1;
-        I2 = 100;
-        
-        epoch = epoch(I1:I2);
-        F_SAMPLE = F_SAMPLE(I1:I2);
-        vDc1  = vDc1( I1:I2, :);
-        vDc12 = vDc12(I1:I2, :);
-        vDc23 = vDc23(I1:I2, :);
-        vAc12 = vAc12(I1:I2, :);
-        vAc23 = vAc23(I1:I2, :);
-        
-        fprintf('Limiting records to %s -- %s\n', ...
-            EJ_library.cdf.tt2000_to_UTC_str(epoch(1)), ...
-            EJ_library.cdf.tt2000_to_UTC_str(epoch(end)))
-    end
+%     if 0
+%         % DEBUG: Limit records
+%         I1 = 1;
+%         I2 = 100;
+%         
+%         epoch = epoch(I1:I2);
+%         F_SAMPLE = F_SAMPLE(I1:I2);
+%         vDc1  = vDc1( I1:I2, :);
+%         vDc12 = vDc12(I1:I2, :);
+%         vDc23 = vDc23(I1:I2, :);
+%         vAc12 = vAc12(I1:I2, :);
+%         vAc23 = vAc23(I1:I2, :);
+%         
+%         fprintf('Limiting records to %s -- %s\n', ...
+%             EJ_library.cdf.tt2000_to_UTC_str(epoch(1)), ...
+%             EJ_library.cdf.tt2000_to_UTC_str(epoch(end)))
+%     end
     
     
     
@@ -150,38 +150,38 @@ function hAxesArray = plot_LFR_SWF(filePath)
         %=================
         % F0 spectrograms
         %=================
-        Sp.add_panel_spectrogram_snapshots( 'V1 DC', epoch, vDc1,  F_SAMPLE, 1, 'V1\_DC', [-11,-7]);
+        Sp.add_panel_spectrogram_SWF_LSF( 'V1 DC', epoch, vDc1,  F_SAMPLE, 1, 'V1\_DC', [-11,-7]);
         if displayDcDiffs
-            Sp.add_panel_spectrogram_snapshots('V12 DC', epoch, vDc12, F_SAMPLE, 1, 'V12\_DC', [-13,-10]);
-            Sp.add_panel_spectrogram_snapshots('V23 DC', epoch, vDc23, F_SAMPLE, 1, 'V23\_DC', [-13,-10]);
+            Sp.add_panel_spectrogram_SWF_LSF('V12 DC', epoch, vDc12, F_SAMPLE, 1, 'V12\_DC', [-13,-10]);
+            Sp.add_panel_spectrogram_SWF_LSF('V23 DC', epoch, vDc23, F_SAMPLE, 1, 'V23\_DC', [-13,-10]);
         end
         if displayAcDiffs
-            Sp.add_panel_spectrogram_snapshots('V12 AC', epoch, vAc12, F_SAMPLE, 1, 'V12\_AC', [-13,-10]);
-            Sp.add_panel_spectrogram_snapshots('V23 AC', epoch, vAc23, F_SAMPLE, 1, 'V23\_AC', [-13,-10]);
+            Sp.add_panel_spectrogram_SWF_LSF('V12 AC', epoch, vAc12, F_SAMPLE, 1, 'V12\_AC', [-13,-10]);
+            Sp.add_panel_spectrogram_SWF_LSF('V23 AC', epoch, vAc23, F_SAMPLE, 1, 'V23\_AC', [-13,-10]);
         end
         %=================
         % F1 spectrograms
         %=================
-        Sp.add_panel_spectrogram_snapshots( 'V1 DC', epoch, vDc1,  F_SAMPLE, 2, 'V1\_DC', [-9,-5]);
+        Sp.add_panel_spectrogram_SWF_LSF( 'V1 DC', epoch, vDc1,  F_SAMPLE, 2, 'V1\_DC', [-9,-5]);
         if displayDcDiffs
-            Sp.add_panel_spectrogram_snapshots('V12 DC', epoch, vDc12, F_SAMPLE, 2, 'V12\_DC', [-11,-8]);
-            Sp.add_panel_spectrogram_snapshots('V23 DC', epoch, vDc23, F_SAMPLE, 2, 'V23\_DC', [-11,-8]);
+            Sp.add_panel_spectrogram_SWF_LSF('V12 DC', epoch, vDc12, F_SAMPLE, 2, 'V12\_DC', [-11,-8]);
+            Sp.add_panel_spectrogram_SWF_LSF('V23 DC', epoch, vDc23, F_SAMPLE, 2, 'V23\_DC', [-11,-8]);
         end
         if displayAcDiffs
-            Sp.add_panel_spectrogram_snapshots('V12 AC', epoch, vAc12, F_SAMPLE, 2, 'V12\_AC', [-11,-8]);
-            Sp.add_panel_spectrogram_snapshots('V23 AC', epoch, vAc23, F_SAMPLE, 2, 'V23\_AC', [-11,-8]);
+            Sp.add_panel_spectrogram_SWF_LSF('V12 AC', epoch, vAc12, F_SAMPLE, 2, 'V12\_AC', [-11,-8]);
+            Sp.add_panel_spectrogram_SWF_LSF('V23 AC', epoch, vAc23, F_SAMPLE, 2, 'V23\_AC', [-11,-8]);
         end
         %=================
         % F2 spectrograms
         %=================
-        Sp.add_panel_spectrogram_snapshots( 'V1 DC', epoch, vDc1,  F_SAMPLE, 3, 'V1\_DC', [-8,-5]);
+        Sp.add_panel_spectrogram_SWF_LSF( 'V1 DC', epoch, vDc1,  F_SAMPLE, 3, 'V1\_DC', [-8,-5]);
         if displayDcDiffs
-            Sp.add_panel_spectrogram_snapshots('V12 DC', epoch, vDc12, F_SAMPLE, 3, 'V12\_DC', [-10,-7]);
-            Sp.add_panel_spectrogram_snapshots('V23 DC', epoch, vDc23, F_SAMPLE, 3, 'V23\_DC', [-10,-7]);
+            Sp.add_panel_spectrogram_SWF_LSF('V12 DC', epoch, vDc12, F_SAMPLE, 3, 'V12\_DC', [-10,-7]);
+            Sp.add_panel_spectrogram_SWF_LSF('V23 DC', epoch, vDc23, F_SAMPLE, 3, 'V23\_DC', [-10,-7]);
         end
         if displayAcDiffs
-            Sp.add_panel_spectrogram_snapshots('V12 AC', epoch, vAc12, F_SAMPLE, 3, 'V12\_AC', [-10,-7]);
-            Sp.add_panel_spectrogram_snapshots('V23 AC', epoch, vAc23, F_SAMPLE, 3, 'V23\_AC', [-10,-7]);
+            Sp.add_panel_spectrogram_SWF_LSF('V12 AC', epoch, vAc12, F_SAMPLE, 3, 'V12\_AC', [-10,-7]);
+            Sp.add_panel_spectrogram_SWF_LSF('V23 AC', epoch, vAc23, F_SAMPLE, 3, 'V23\_AC', [-10,-7]);
         end
     end
     %===========================================================================
@@ -194,7 +194,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
         % DC single + DC diffs
         %======================
         for iLsf = 1:3
-            Sp.add_panel_time_series_LSF(...
+            Sp.add_panel_time_series_SWF_LSF(...
                 'V1,V12,V23 DC', epoch, {vDc1, vDc12, vDc23}, F_SAMPLE, iLsf, ...
                 EJ_library.graph.escape_str({'V1_DC','V12_DC','V23_DC'}));
         end
@@ -205,11 +205,10 @@ function hAxesArray = plot_LFR_SWF(filePath)
         % DC single + AC diffs
         %======================
         for iLsf = 1:3
-            Sp.add_panel_time_series_LSF(...
+            Sp.add_panel_time_series_SWF_LSF(...
                 'V1,V12,V23 DC/AC', epoch, {vDc1, vAc12, vAc23}, F_SAMPLE, iLsf, ...
                 EJ_library.graph.escape_str({'V1_DC','V12_AC','V23_AC'}));
         end
-
     end
     if displayDcDiffs && displayAcDiffs
         %======================
@@ -218,11 +217,10 @@ function hAxesArray = plot_LFR_SWF(filePath)
         % NOTE: Assumes that DC single+diffs have already been plotted (in
         % separate panels).
         for iLsf = 1:3
-            Sp.add_panel_time_series_LSF(...
+            Sp.add_panel_time_series_SWF_LSF(...
                 'V12,V23 AC', epoch, {vAc12, vAc23}, F_SAMPLE, iLsf, ...
                 EJ_library.graph.escape_str({'V12_AC','V23_AC'}));
         end
-
     end
 
     hAxesArray = Sp.finalize('LFR SWF L2', filePath);
