@@ -35,20 +35,13 @@ switch datatype
     varnames = {'psp_fld_l2_mag_RTN'};
     varnamesout = {'rtnB'};
     
-    versiontag = '_v01';
-    
     hourtag={'00';'06';'12';'18'};
     
   case {'sweap', 'spc'}
     
     
     filename = 'psp_swp_spc_l3i';
-    datest = date_start;
-    if datest(1,1:4) == char('2020')
-        versiontag = '_v02';
-    else
-        versiontag = '_v01';
-    end
+    
     varnames = {...
       'DQF';...          % data quality flag
       'general_flag';...
@@ -69,8 +62,6 @@ switch datatype
     filename = 'spp_fld_l1_ephem_spp_rtn_';
     varnames = {'position';'velocity'};
     varnamesout = {'R_ephem';'V_ephem'};
-    
-    versiontag = '_v00';
     
     hourtag={''};
     
@@ -120,7 +111,7 @@ if ~exist('filesToLoadTable','var')
       iFile = iFile + 1;
     end
   end
-  filesToLoadTable= strcat(dataDir,filesep,filename,'_',filesToLoadTable,versiontag,'.cdf');
+  filesToLoadTable= strcat(dataDir,filesep,filename,'_',filesToLoadTable,'_v00','.cdf');
   
 end
 
@@ -134,8 +125,32 @@ for iFile = 1:nFiles
   fileToLoad=strtrim(filesToLoadTable(iFile,:));
   irf.log('notice',['Loading: ' fileToLoad]);
   
-  if exist(fileToLoad,'file')
-    
+  
+  % version check
+  fileFound = 0;
+  nVersion = 20; % this is the highest version to check. Please update if ever needed.
+  
+  fileToLoad_vcheck = fileToLoad;
+  for iVersion = 0:nVersion
+      
+      fileToLoad_vcheck(end-5:end-4) = num2str(iVersion,'%02d');
+      
+      if exist(fileToLoad_vcheck,'file')
+          
+          if fileFound == 1
+              irf.log('warning',['Version conflict, Replacing ''' fileToLoad_vcheck ''' with ''' fileToLoad ''''])
+              % give warning if two different versions of the same file exist, go tell someone, server should only keep the latest version.
+          end
+          
+          fileToLoad = fileToLoad_vcheck;
+          fileFound = 1;
+      end
+      
+  end
+  
+      
+  if fileFound
+      
     pspobj=dataobj(fileToLoad);
     
     for iVar = 1:nVar
