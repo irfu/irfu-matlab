@@ -65,7 +65,7 @@ classdef solo_local_file_db < solo_file_db
       
       %% LIST_SCI_TINT
       function list_sci_tint()
-        rDir = get_remotePrefix(obj, filePrefix);
+        rDir = get_remotePrefix(obj, C);
         fDir = get_fileDir(obj, C);
         TStart = get_times(tint.start); TStop = get_times(tint.stop);
         dateFormat=[]; startFile=[]; stopFile=[];
@@ -145,7 +145,7 @@ classdef solo_local_file_db < solo_file_db
       
       %% LIST SCI
       function list_sci()
-        rDir = get_remotePrefix(obj, filePrefix);
+        rDir = get_remotePrefix(obj, C);
         fDir = get_fileDir(obj, C);
         fileDir = [rDir, filesep, fDir];
         if exist(fileDir,'dir')~=7, return, end
@@ -295,13 +295,15 @@ classdef solo_local_file_db < solo_file_db
   end
   
   methods (Access=private)
-    function rDir = get_remotePrefix(obj, filePrefix)
-      if contains(filePrefix, 'rpw')
+    function rDir = get_remotePrefix(obj, C)
+      if any(contains(C, 'rpw'))
         % RPW data is keept in one separate sync folder at IRFU
         rDir = [obj.dbRoot, filesep, 'remote', filesep, 'data'];
       else
-        % All other instruments are kept in a "soar" sync folder
-        rDir = [obj.dbRoot, filesep, 'soar'];
+        % All other instruments are kept in a "soar" sync folder, sorted
+        % in per instrument folder
+        instr = strsplit(C{3}, '-'); % Descriptor contains instrument and dataproduct descriptor part separated by "-".
+        rDir = [obj.dbRoot, filesep, 'soar', filesep, instr{1}];
       end
     end % get_remotePrefix
     
@@ -332,10 +334,8 @@ classdef solo_local_file_db < solo_file_db
           case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
             fileDir = [fileDir, filesep, 'thr'];  % ie combined 2nd of the two using only first and last char?
           otherwise
-            % Not yet implemented
-            errS = 'Not yet implemented!';
-            irf.log('critical', errS);
-            error(errS);
+            % fallback to full descriptor (used for local SOAR copy at IRFU)
+            fileDir = [fileDir, filesep, C{3}];
         end
       else
         % Keep it ("HK", "L1R" etc. as these do not have separate subfolders based on descriptor)
