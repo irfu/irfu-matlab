@@ -1,10 +1,10 @@
-DPATH = '/Volumes/solo/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/latest/';
-d = dir([DPATH '*.cdf']);
+DPATH = '/Volumes/solo/data_irfu/latest/RPW/L2/lfr_wf_e/2020/10/';
+cdfFiles = dir([DPATH 'solo_L2_rpw-lfr-surv-cwf-e*.cdf']);
 
 probeCorr = [];
-for i = 82:length(d) % 7 - March, 82 - June 1
-  sprintf('Processing %s', d(i).name)
-  tt = solo.correlate_probes([d(i).folder filesep d(i).name]);
+for i = 1:length(cdfFiles) % 7 - March, 82 - June 1
+  sprintf('Processing %s', cdfFiles(i).name)
+  tt = solo.correlate_probes([cdfFiles(i).folder filesep cdfFiles(i).name]);
   if isempty(probeCorr), probeCorr = tt;
   else, probeCorr = probeCorr.combine(tt);
   end
@@ -24,13 +24,11 @@ d23 = irf.ts_scalar(probeCorr.time,movmedian(probeCorr.data(:,5),11,'omitnan','E
 idx = find(~isnan(d23.data));
 d23 = irf.ts_scalar(d23.time(idx), d23.data(idx));
 %%
-DPATH = '/Volumes/solo/data_irfu/SOLO_L2_LFR-SURV-CWF-E_without_sweeps/latest/';
-d = dir([DPATH '*.cdf']);
 
 probeCorrNew = [];
-for i = 82:length(d)
-  sprintf('Processing %s', d(i).name)
-  tt = solo.correlate_probes([d(i).folder filesep d(i).name],d23);
+for i = 1:length(cdfFiles)
+  sprintf('Processing %s', cdfFiles(i).name)
+  tt = solo.correlate_probes([cdfFiles(i).folder filesep cdfFiles(i).name],d23);
   if isempty(probeCorrNew), probeCorrNew = tt;
   else, probeCorrNew = probeCorrNew.combine(tt);
   end
