@@ -76,8 +76,8 @@ classdef solo_local_file_db < solo_file_db
           for mo = moStart:moStop
             moDir = sprintf('%s%s%s%s%d%s%02d',rDir,filesep,fDir,filesep,year,filesep,mo);
             curDir = moDir;
-            if strcmp(C{2}, 'L2')
-              % L2
+            if ismember(C{2}, {'L2', 'L3'})
+              % L2 or L3
               dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
               limited_sci_list;
             else
@@ -166,8 +166,8 @@ classdef solo_local_file_db < solo_file_db
               case '1', if ~any(dNameM(2)=='012'), continue, end
               otherwise, continue
             end
-            if strcmp(C{2}, 'L2')
-              % L2
+            if ismember(C{2}, {'L2', 'L3'})
+              % L2 or L3
               curDir = [fileDir filesep dNameY filesep dNameM];
               listingD = dir([curDir, filesep, filePrefix, '*.cdf']);
               if isempty(listingD), continue, end
@@ -297,8 +297,13 @@ classdef solo_local_file_db < solo_file_db
   methods (Access=private)
     function rDir = get_remotePrefix(obj, C)
       if any(contains(C, 'rpw'))
-        % RPW data is keept in one separate sync folder at IRFU
-        rDir = [obj.dbRoot, filesep, 'remote', filesep, 'data'];
+        % offical RPW data is keept in one separate sync folder at IRFU,
+        % locally produced data is kept in another folder
+        if exist([obj.dbRoot, filesep, 'latest'], 'dir')
+          rDir = [obj.dbRoot, filesep, 'latest', filesep, 'RPW'];
+        else
+          rDir = [obj.dbRoot, filesep, 'remote', filesep, 'data'];
+        end
       else
         % All other instruments are kept in a "soar" sync folder, sorted
         % in per instrument folder
@@ -309,7 +314,7 @@ classdef solo_local_file_db < solo_file_db
     
     function fileDir = get_fileDir(~, C)
       levelDir = C{2}; % "L2" (or "L1R", "L1", "L3", "HK")
-      if isequal(levelDir, 'L2')
+      if ismember(levelDir, {'L2', 'L3'})
         switch C{3}
           case 'rpw-lfr-surv-asm-cdag'
             subDir = 'lfr_asm'; % ie combined 2nd "_" 4th
@@ -333,6 +338,10 @@ classdef solo_local_file_db < solo_file_db
             subDir = 'tds_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
           case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
             subDir = 'thr';  % ie combined 2nd of the two using only first and last char?
+          case 'rpw-bia-scpot'
+            subDir = 'bia-scpot'; % Locally produced files at IRFU (may have to change in future if official)
+          case 'rpw-bia-efield'
+            subDir = 'bia-efield'; % Locally produced files at IRFU (may have to change in future if official)
           otherwise
             % fallback to full descriptor (used for local SOAR copy at IRFU)
             subDir = C{3};
