@@ -54,6 +54,15 @@
 %
 function [condSatisfied, varargout] = sizes(varargin)
     % PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
+    %   CON: Caller can force argument to be column vector before submitting it to
+    %   the function.
+    %       Ex: v(:)
+    %           CON: This trick does not work directly for (at least some) vectors which are the result of expressions.
+    %               Ex: vectorCa{i}(:) does not work.
+    %       CON: This is less easy to read.
+    %       CON: Destroys information. Converts non-1D vector into 1D column
+    %            vector.
+    %           Ex: sizes(V(:), [NaN, 1])
     %   PROPOSAL: sizeConstraints = {N}, one numeric value (N, negativeValue, NaN).
     %   PROPOSAL: sizeConstraints = {'1D vector', N}
     %   PROPOSAL: Prepend sizeConstraints argument with string constant

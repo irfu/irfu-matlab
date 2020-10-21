@@ -105,10 +105,92 @@ classdef summary_plot < handle
         % Constructor
         function obj = summary_plot()
         end
+
+
+
+        % Add panel for one bit-valued array. Intended for HK.
+        %
+        % ARGUMENTS
+        % =========
+        % channelName :
+        %
+        function add_panel_plot_bit_series(obj, panelTag, ...
+                zvEpoch, zvB, channelName, panelHeight)
+            
+            assert(~obj.figureComplete)
+            
+            obj.add_panel_internal_vars(...
+                @() (panel_plot_bit_series()), zvEpoch, panelHeight, 0);
+            
+            
+            
+            function hAxes = panel_plot_bit_series()
+                
+                CHANNEL_NAME_POS = solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION;
+                
+                % ASSERTIONS
+                assert(all(ismember(zvB, [0,1])))
+                
+                if isempty(zvB)
+                    zvEpoch(:) = [];
+                    channelName = ['(', channelName, ': empty zVar)'];
+                end
+                
+                
+                
+                % Divide b into b0 and b1, which when plotted as lines, form one
+                % line identical to b. This way one can plot separate parts with
+                % separate colors. Use NaN for parts that are not plotted by
+                % either b0 or b1.
+                b = double(zvB);   % Must be double to be able to assign NaN. Renaming.
+                clear zvB
+                % Identify indices just after b has flipped.
+                iJumpUp = 1 + find((b(1:end-1)==0) & (b(2:end)==1));
+                iJumpDn = 1 + find((b(1:end-1)==1) & (b(2:end)==0));
+                % Create b0, b1.
+                b0 = b;
+                b1 = b;
+                b0(b0 == 1) = NaN;
+                b1(b1 == 0) = NaN;
+                b0(iJumpUp) = 1;
+                b1(iJumpDn) = 0;
+                
+                % Create time series object
+                % -------------------------
+                Ts = irf.ts_scalar(zvEpoch, [b0, b1]);
+                
+                % Plot
+                hAxes = irf_panel(panelTag);
+                hLines = irf_plot(hAxes, Ts, 'LineWidth', 3);
+                assert(numel(hLines) == 2)
+                hLines(1).Color = [0,0,1];
+                hLines(2).Color = [1,0,0];
+                
+                solo.ql.summary_plot.fade_color(hLines)
+                
+                
+                
+                % NOTE: Command puts the text relative to the specified
+                % coordinates in different ways depending on coordinates.
+                irf_legend(hAxes, EJ_library.graph.escape_str(channelName), CHANNEL_NAME_POS);
+                
+                set(hAxes, 'Clipping', 'on')   % Should be default, so not necessary.
+                set(hAxes, 'ClippingStyle', 'rectangle')
+                set(hAxes, 'yTickLabel', {})
+                set(hAxes, 'YGrid', 'off')          % Remove horizontal grid lines.
+                %set(hAxes, 'TickLength', [0, 0])    % Remove ticks by setting their length.
+                
+                set(hAxes, 'YLim', [-0.2, 1.2])
+                set(hAxes, 'YTick', [])
+                %set(hAxes, 'yTickLabel', {'0', '1'})
+            end
+        end
         
         
         
-        % Add panel for one or multiple scalar time series.
+        % Add panel for one or multiple scalar time series. This method is meant
+        % to be very general and to be called from wrapper methods. It can hence
+        % be allowed to have many settings & arguments.
         %
         % ARGUMENTS
         % =========
@@ -117,7 +199,7 @@ classdef summary_plot < handle
         % yLabelNonUnit : y label with unit.
         % --
         % tlLegend : Top-left  (TL) legend. Empty if not used.
-        % trLegend : Top-right (TR) legend.  Empty if not used.
+        % trLegend : Top-right (TR) legend. Empty if not used.
         %            Cell array of strings, one per
         %            scalar time series.
         %
@@ -127,6 +209,7 @@ classdef summary_plot < handle
             assert(~obj.figureComplete)
             assert(nargin == 1+8)
             
+            % NOTE: Implicitly an assertion on argument sizes.
             Ts = irf.ts_scalar(zvEpoch, zvData);
             
             obj.add_panel_internal_vars(...
@@ -190,8 +273,6 @@ classdef summary_plot < handle
             % NOTE: Automatically derives panel tag.
             panelTag = zvName;
             
-            %Ts = irf.ts_scalar(D.data.Epoch.data, D.data.(zvName).data);
-            
             zvEpoch = D.data.Epoch.data;
             zvData  = D.data.(zvName).data;            
             
@@ -216,11 +297,6 @@ classdef summary_plot < handle
             % NOTE: Automatically derives panel tag.
             panelTag = zvNamesCa{1};
             
-%             Ts = irf.ts_scalar(D.data.Epoch.data, [...
-%                 D.data.(zvNamesCa{1}).data, ...
-%                 D.data.(zvNamesCa{2}).data, ...
-%                 D.data.(zvNamesCa{3}).data]);
-            
             zvEpoch = D.data.Epoch.data;
             zvData  = [...
                 D.data.(zvNamesCa{1}).data, ...
@@ -232,83 +308,6 @@ classdef summary_plot < handle
             % CALL INSTANCE METHOD
             obj.add_panel_time_series_CWF_general(panelTag, zvEpoch, zvData, ...
                 {'fade'}, {}, '', {}, {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
-        end
-
-
-
-        % Add panel for one bit-valued array. Intended for HK.
-        %
-        % ARGUMENTS
-        % =========
-        % channelName :
-        %
-        function add_panel_plot_bit_series(obj, panelTag, zvEpoch, b, channelName, panelHeight)
-            
-            assert(~obj.figureComplete)
-            
-            obj.add_panel_internal_vars(...
-                @() (panel_plot_bit_series()), zvEpoch, panelHeight, 0);
-            
-            
-            
-            function hAxes = panel_plot_bit_series()
-                
-                CHANNEL_NAME_POS = solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION;
-                
-                % ASSERTIONS
-                assert(all(ismember(b, [0,1])))
-                
-                if isempty(b)
-                    zvEpoch(:) = [];
-                    channelName = ['(', channelName, ': empty zVar)'];
-                end
-                
-                
-                
-                % Divide b into b0 and b1, which when plotted as lines, form one line
-                % identical to b. This way one can plot separate parts with separate colors.
-                % Use NaN for parts that are not plotted by either b0 or b1.
-                b = double(b);   % Must be double to be able to assign NaN.
-                % Identify indices just after b has flipped.
-                iJumpUp = 1 + find((b(1:end-1)==0) & (b(2:end)==1));
-                iJumpDn = 1 + find((b(1:end-1)==1) & (b(2:end)==0));
-                % Create b0, b1.
-                b0 = b;
-                b1 = b;
-                b0(b0 == 1) = NaN;
-                b1(b1 == 0) = NaN;
-                b0(iJumpUp) = 1;
-                b1(iJumpDn) = 0;
-                
-                % Create time series object
-                % -------------------------
-                Ts = irf.ts_scalar(zvEpoch, [b0, b1]);
-                
-                % Plot
-                hAxes = irf_panel(panelTag);
-                hLines = irf_plot(hAxes, Ts, 'LineWidth', 3);
-                assert(numel(hLines) == 2)
-                hLines(1).Color = [0,0,1];
-                hLines(2).Color = [1,0,0];
-                
-                solo.ql.summary_plot.fade_color(hLines)
-                
-                
-                
-                % NOTE: Command puts the text relative to the specified coordinates in
-                % different ways depending on coordinates.
-                irf_legend(hAxes, EJ_library.graph.escape_str(channelName), CHANNEL_NAME_POS);
-                
-                set(hAxes, 'Clipping', 'on')   % Should be default, so not necessary.
-                set(hAxes, 'ClippingStyle', 'rectangle')
-                set(hAxes, 'yTickLabel', {})
-                set(hAxes, 'YGrid', 'off')          % Remove horizontal grid lines.
-                %set(hAxes, 'TickLength', [0, 0])    % Remove ticks by setting their length.
-                
-                set(hAxes, 'YLim', [-0.2, 1.2])
-                set(hAxes, 'YTick', [])
-                %set(hAxes, 'yTickLabel', {'0', '1'})
-            end
         end
         
 
@@ -339,8 +338,8 @@ classdef summary_plot < handle
             % zvEpoch and zvDataCa are being transformed (LSF subset,
             % SWF-->CWF), and the values need to be derived and used in the
             % middle of that transformation.
-            nRecords    = size(zvEpoch, 1);         % NOTE: After selecting records.
-            nSps        = size(zvDataCa{1}, 2);   % SPS = Samples Per Snapshot
+            nRecords    = size(zvEpoch, 1);        % NOTE: After selecting records.
+            nSps        = size(zvDataCa{1}, 2);    % SPS = Samples Per Snapshot
             assert(nSps >= 2)
             
             zvEpoch  = EJ_library.so.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
@@ -359,9 +358,6 @@ classdef summary_plot < handle
                 
                 zvDataCa{i} = EJ_library.so.convert_N_to_1_SPR_redistribute(zvData);
             end
-            
-%             % NOTE: Effectively serves as an assertion on zVar sizes.
-%             Ts = irf.ts_scalar(zvEpoch, [zvDataCa{:}]);
             
             
             

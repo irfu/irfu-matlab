@@ -17,13 +17,13 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-04-03.
 %
-function utcStr = tt2000_to_UTC_str(tt2000)    
+function utcStr = TT2000_to_UTC_str(tt2000)    
     % TODO-DECISION: How handle various needs for formats? Rounding, truncation?
     % PROPOSAL: Assertions on argument being int64 as they are in CDF?
     % NOTE: Should be analogous to any inverted conversion function.
     
     assert(isscalar(tt2000), 'Illegal argument tt2000. Must be scalar.')
     
-    utcStrCa = EJ_library.cdf.tt2000_to_UTC_str_many(tt2000);
+    utcStrCa = EJ_library.cdf.TT2000_to_UTC_str_many(tt2000);
     utcStr = utcStrCa{1};
 end
