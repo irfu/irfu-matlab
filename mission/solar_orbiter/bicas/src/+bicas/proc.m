@@ -111,7 +111,7 @@ classdef proc
             InputSciCdf           = bicas.proc_sub.process_LFR_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
             SciPreDc              = bicas.proc_sub.process_LFR_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal,    SETTINGS, L);
-            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
             OutputSciCdf          = bicas.proc_sub.process_PostDC_to_LFR_CDF(       SciPreDc, SciPostDc, outputDsi, L);
             
             
@@ -167,7 +167,7 @@ classdef proc
             InputSciCdf           = bicas.proc_sub.process_TDS_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
             SciPreDc              = bicas.proc_sub.process_TDS_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal, SETTINGS, L);
-            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
             OutputSciCdf          = bicas.proc_sub.process_PostDC_to_TDS_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
             
@@ -219,7 +219,7 @@ classdef proc
             % Convert E-field
             %=================
             zvEdcMvpm = TsEdc.data;    % MVPM = mV/m
-            % Set E_x = NaN, but only if assertion deems that the corresponding
+            % Set E_x = NaN, but ONLY if assertion deems that the corresponding
             % information is missing
             % -----------------------------------------------------------------
             % IMPLEMENTATION NOTE: solo.vdccal set antenna 1 to be zero, if the
@@ -228,7 +228,7 @@ classdef proc
             % Ex: 2020-08-01
             % IMPLEMENTATION NOTE: ismember does not work for NaN.
             assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
-                ['EDC for antenna 1 returned from BICAS_external code', ...
+                ['EDC for antenna 1 returned from', ...
                 ' solo.vdccal() is not zero or NaN and can therefore not be', ...
                 ' assumed to unknown anymore. BICAS needs to be updated to reflect this.'])
             zvEdcMvpm(:, 1) = NaN;

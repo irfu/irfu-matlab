@@ -203,8 +203,8 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     % sample.
     % NOTE: juliandate() is consistent with Julian date converter at
     % https://www.onlineconversion.com/julian_date.htm
-    DataObj.GlobalAttributes.TIME_MIN = juliandate(EJ_library.cdf.tt2000_to_datevec(ZvsSubset.Epoch(1  )));
-    DataObj.GlobalAttributes.TIME_MAX = juliandate(EJ_library.cdf.tt2000_to_datevec(ZvsSubset.Epoch(end)));
+    DataObj.GlobalAttributes.TIME_MIN = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(1  )));
+    DataObj.GlobalAttributes.TIME_MAX = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(end)));
     
     % ROC DFMD hints that value should not be set dynamically. (See meaning of non-italic black text for global attribute name in table.)
     %DataObj.GlobalAttribute.CAVEATS ?!!

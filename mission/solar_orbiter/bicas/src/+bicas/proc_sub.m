@@ -96,7 +96,7 @@ classdef proc_sub
             ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
             USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
             if USE_ZV_ACQUISITION_TIME_HK
-                hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(...
+                hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_TT2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
                     ACQUISITION_TIME_EPOCH_UTC);
                 
@@ -115,12 +115,12 @@ classdef proc_sub
             TimeVars.SCI_Epoch = InSci.Zv.Epoch;
             if isfield(InHk.Zv, 'ACQUISITION_TIME')
                 TimeVars.HK_ACQUISITION_TIME_tt2000 = ...
-                    bicas.proc_utils.ACQUISITION_TIME_to_tt2000(...
+                    bicas.proc_utils.ACQUISITION_TIME_to_TT2000(...
                         InHk.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
             if isfield(InSci.Zv, 'ACQUISITION_TIME') && ~isempty(InSci.Zv.ACQUISITION_TIME)
                 TimeVars.SCI_ACQUISITION_TIME_tt2000 = ...
-                    bicas.proc_utils.ACQUISITION_TIME_to_tt2000(...
+                    bicas.proc_utils.ACQUISITION_TIME_to_TT2000(...
                     InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
             bicas.proc_utils.log_zVars(TimeVars, SETTINGS, L);
@@ -225,8 +225,8 @@ classdef proc_sub
             %===================================================================
             if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
-                sciEpochUtcStr    = EJ_library.cdf.tt2000_to_UTC_str(min(sciEpoch));
-                curEpochMinUtcStr = EJ_library.cdf.tt2000_to_UTC_str(min(InCur.Zv.Epoch));
+                sciEpochUtcStr    = EJ_library.cdf.TT2000_to_UTC_str(min(sciEpoch));
+                curEpochMinUtcStr = EJ_library.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
                 
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 
@@ -946,8 +946,8 @@ classdef proc_sub
                 
                 L.logf('info', 'Records %7i-%7i : %s -- %s', ...
                     iFirst, iLast, ...
-                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
+                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
+                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
                 
                 for iAnt = 1:3
                     %--------------------
@@ -970,10 +970,19 @@ classdef proc_sub
         
         
         
-        % Processing function (L1R-->L2; not L2-->L3).
+        % Processing function (L1/L1R-->L2; not L2-->L3).
         %
         % Overwrite selected data in selected CDF records with fill values/NaN.
         % Modify quality zVariables.
+        %
+        % NOTE: Almost does not modify PreDc.
+        %   Exception: Modifies PreDc.Zv.QUALITY_FLAG
+        %
+        % Sets
+        %   PreDc.Zv.QUALITY_FLAG (modifies)
+        %   PostDc.Zv.L2_QUALITY_BITMASK
+        %   PostDc.Zv.DemuxerOutput
+        %   PostDc.Zv.currentAAmpere
         %
         %
         % RATIONALE
@@ -982,7 +991,7 @@ classdef proc_sub
         % datasets, but on struct that are as similiar as possible for all forms
         % of L1R-->L2 processing.
         %
-        function [PreDc, PostDc] = process_quality_filter(PreDc, PostDc, NsoTable, SETTINGS, L)
+        function [PreDc, PostDc] = process_quality_filter_L2(PreDc, PostDc, NsoTable, SETTINGS, L)
             % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the format.
             %   PROPOSAL: Treat output PostDc as another format?
             %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
@@ -1032,9 +1041,9 @@ classdef proc_sub
                 nsoId = nsoIdCa{kNso};
                 
                 L.logf('info', '    %s -- %s %s', ...
-                    EJ_library.cdf.tt2000_to_UTC_str(NsoTable.startTt2000Array(iNso)), ...
-                    EJ_library.cdf.tt2000_to_UTC_str(NsoTable.stopTt2000Array(iNso)), ...
-                    nsoId);                
+                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.startTt2000Array(iNso)), ...
+                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.stopTt2000Array(iNso)), ...
+                    nsoId);
                 
                 %========================================================
                 % TEST FUNCTIONALITY
@@ -1132,10 +1141,9 @@ classdef proc_sub
 
 
 
-            %==========================================================
-            % Set zVariables for CURRENTS and VOLTAGES to NaN based on
-            % zvUfvFinal
-            %==========================================================
+            %=================================================================
+            % Set zVariables for CURRENTS and VOLTAGES to NaN based on zvUfv.
+            %=================================================================
             % Log
             logHeaderStr = sprintf(...
                 ['All interval(s) of CDF records for which data should be set', ...
@@ -1393,8 +1401,8 @@ classdef proc_sub
                 for iRi = 1:nUfvIntervals
                     iCdfRecord1 = i1Array(iRi);
                     iCdfRecord2 = i2Array(iRi);
-                    utc1  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord1));
-                    utc2  = EJ_library.cdf.tt2000_to_UTC_str(zvEpoch(iCdfRecord2));
+                    utc1  = EJ_library.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord1));
+                    utc2  = EJ_library.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord2));
                     L.logf(LL, '    Records %7i-%7i, %s -- %s', iCdfRecord1, iCdfRecord2, utc1, utc2);
                 end
             end
@@ -1525,8 +1533,8 @@ classdef proc_sub
                     ' MUX_SET=%i; DIFF_GAIN=%-3i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
                     ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
-                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
+                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
+                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
                     MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, ufv_ss, ...
                     CALIBRATION_TABLE_INDEX_ss(1), ...
                     CALIBRATION_TABLE_INDEX_ss(2))

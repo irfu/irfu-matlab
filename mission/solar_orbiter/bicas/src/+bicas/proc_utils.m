@@ -17,9 +17,9 @@ classdef proc_utils
 %============================================================================================================
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
-%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_zv_Epoch)
+%   Ex: log_array, log_struct_array
 %
-% PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
+% PROPOSAL: Write test code for ACQUISITION_TIME_to_TT2000 and its inversion.
 %
 % N-->1 sample/record
 %    NOTE: Time conversion may require moving the zero-point within the snapshot/record.
@@ -87,7 +87,7 @@ classdef proc_utils
         
 
 
-        function tt2000 = ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
+        function tt2000 = ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for
         % Epoch in CDF files.
         % 
@@ -118,7 +118,7 @@ classdef proc_utils
         
 
         
-        function ACQUISITION_TIME = tt2000_to_ACQUISITION_TIME(tt2000, ACQUISITION_TIME_EPOCH_UTC)
+        function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(tt2000, ACQUISITION_TIME_EPOCH_UTC)
         % Convert from tt2000 to ACQUISITION_TIME.
         %
         % t_tt2000 : Nx1 vector. Tequired to be int64 like the real zVar Epoch.
@@ -217,9 +217,9 @@ classdef proc_utils
             % ASSERTIONS
             bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
 
-            tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
+            tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
             tt2000_2           = EJ_library.so.convert_N_to_1_SPR_Epoch(     tt2000_1,           nSpr, freqWithinRecords);
-            ACQUISITION_TIME_2 = bicas.proc_utils.tt2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
+            ACQUISITION_TIME_2 = bicas.proc_utils.TT2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
         end
         
         
@@ -338,12 +338,12 @@ classdef proc_utils
 
 
 
-        function utcStr = tt2000_to_UTC_str(zvTt2000)
+        function utcStr = TT2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
             
             bicas.proc_utils.assert_zv_Epoch(zvTt2000)
             
-            utcStr = EJ_library.cdf.tt2000_to_UTC_str(zvTt2000);
+            utcStr = EJ_library.cdf.TT2000_to_UTC_str(zvTt2000);
         end
         
         
@@ -440,12 +440,12 @@ classdef proc_utils
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
                     
                     if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
-                        epochMinStr = bicas.proc_utils.tt2000_to_UTC_str(min(varValue));
-                        epochMaxStr = bicas.proc_utils.tt2000_to_UTC_str(max(varValue));
+                        epochMinStr = bicas.proc_utils.TT2000_to_UTC_str(min(varValue));
+                        epochMaxStr = bicas.proc_utils.TT2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
                         bicas.proc_utils.assert_zv_Epoch(uniqueValues)
-                        valueStrs = EJ_library.cdf.tt2000_to_UTC_str_many(uniqueValues);
+                        valueStrs = EJ_library.cdf.TT2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
                     else
                         valuesStr = '-';

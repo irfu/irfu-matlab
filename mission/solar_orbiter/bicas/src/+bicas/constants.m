@@ -131,8 +131,8 @@ classdef constants   % < handle
         % Various S/W descriptor (SWD) release data for the entire software (not
         % specific outputs)
         % ----------------------------------------------------------------------
-        %
-        % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External Users":
+        % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
+        % Users":
         % """"""""
         % 2.2.3 RCS versioning
         % The RCS version must be a unique number sequence identifier “X.Y.Z”,
