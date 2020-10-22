@@ -1168,9 +1168,10 @@ classdef proc_sub
         
         
         % Processing function for processing L2-->L3.
-        function [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] = process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L)
+        function [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] ...
+                = process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L)
             
-            % Always the same DATASET_ID.
+            % The only acceptable input DATASET_ID.
             INPUT_DATASET_ID = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
             
             
@@ -1197,11 +1198,11 @@ classdef proc_sub
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
             [TsEdc, TsPsp, TsScpot] = solo.vdccal(VdcTs);
-            EJ_library.assert.sizes(...
+            [nRecords] = EJ_library.assert.sizes(...
                 InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
                 TsEdc.data,              [-1, 3], ...
                 TsPsp.data,              [-1, 1], ...
-                TsScpot.data,            [-1, 3])
+                TsScpot.data,            [-1, 3]);
             assert(strcmp(TsEdc.units,   'mV/m'))
             assert(strcmp(TsPsp.units,   'V'))
             assert(strcmp(TsScpot.units, 'V'))
@@ -1226,8 +1227,9 @@ classdef proc_sub
             zvEdcMvpm(:, 1) = NaN;
             clear TsEdc
             
-            
-            
+            %==================
+            % zVars for EFIELD
+            %==================
             EfieldCdf = struct();
             EfieldCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
             EfieldCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
@@ -1240,7 +1242,9 @@ classdef proc_sub
             EfieldCdf.EDC_SFR            = zvEdcMvpm;
             
             
-            
+            %=================
+            % zVars for SCPOT
+            %=================
             ScpotCdf = struct();
             ScpotCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
             ScpotCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
@@ -1255,13 +1259,37 @@ classdef proc_sub
             
             
             
+            %==============================
+            % zVars for EFIELD DOWNSAMPLED
+            %==============================
             % YK: LOWER PRIORITY
             EfieldDwnsCdf = [];
+            EfieldDwnsCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
+            EfieldDwnsCdf.QUALITY_FLAG       = NaN(nRecords, 1);
+            EfieldDwnsCdf.QUALITY_BITMASK    = NaN(nRecords, 1);
+            EfieldDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecords, 1);
+            EfieldDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecords, 1);
+            %
+            EfieldDwnsCdf.EDC_SFR            = NaN(nRecords, 3);
+            EfieldDwnsCdf.EDCSTD_SFR         = NaN(nRecords, 3);
             
             
             
+            %=============================
+            % zVars for SCPOT DOWNSAMPLED
+            %=============================
             % YK: HIGHER PRIORITY
             ScpotDwnsCdf = [];
+            ScpotDwnsCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
+            ScpotDwnsCdf.QUALITY_FLAG       = NaN(nRecords, 1);
+            ScpotDwnsCdf.QUALITY_BITMASK    = NaN(nRecords, 1);
+            ScpotDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecords, 1);
+            ScpotDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecords, 1);
+            %
+            ScpotDwnsCdf.SCPOT              = NaN(nRecords, 3);
+            ScpotDwnsCdf.SCPOTSTD           = NaN(nRecords, 3);
+            ScpotDwnsCdf.PSP                = NaN(nRecords, 1);    % Right size
+            ScpotDwnsCdf.PSPSTD             = NaN(nRecords, 1);    % Right size
             
         end
 

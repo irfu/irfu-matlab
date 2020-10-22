@@ -188,8 +188,10 @@ classdef proc
             [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] = bicas.proc_sub.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
 
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('EFIELD_cdf') = EfieldCdf;
-            OutputDatasetsMap('SCPOT_cdf')  = ScpotCdf;
+            OutputDatasetsMap('EFIELD_cdf')      = EfieldCdf;
+            OutputDatasetsMap('SCPOT_cdf')       = ScpotCdf;
+            OutputDatasetsMap('EFIELD_DWNS_cdf') = EfieldDwnsCdf;
+            OutputDatasetsMap('SCPOT_DWNS_cdf')  = ScpotDwnsCdf;
         end
         
         
