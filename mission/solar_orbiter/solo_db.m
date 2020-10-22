@@ -144,13 +144,14 @@ classdef solo_db < handle
           
           ignoreFields = {'data','nrec','Generation_date',...
             'GlobalAttributes','Logical_file_id','Data_version','Parents', ...
-            'VALIDMAX'};
+            'SCALEMAX','SCALEMIN','VALIDMAX'};
           for iField=1:length(fields1)
             f = fields1{iField};
             % data, nrec and the GlobalAttributes Generation_date,
             % Logical_file_id and Data_version will almost always differ
             % between files.
             if ~isempty(intersect(f,ignoreFields)), continue, end
+            if isnumeric(s1.(f)) && all(isnan(s1.(f))) && all(isnan(s2.(f))), continue, end
             if isnumeric(s1.(f)) || ischar(s1.(f))
               if ~all(all(all(s1.(f)==s2.(f)))), return, end
             elseif isstruct(s1.(f)), if ~comp_struct(s1.(f),s2.(f)), return, end
