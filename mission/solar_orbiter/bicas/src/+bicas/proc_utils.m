@@ -40,6 +40,16 @@ classdef proc_utils
 
         
         
+        function utcStr = TT2000_to_UTC_str(zvTt2000)
+        % Convert tt2000 value to UTC string with nanoseconds.
+            
+            bicas.proc_utils.assert_zv_Epoch(zvTt2000)
+            
+            utcStr = EJ_library.cdf.TT2000_to_UTC_str(zvTt2000);
+        end
+
+
+
         function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
         % For every cell in a cell array, select an index range in the first
         % dimension for every cell array component.
@@ -87,6 +97,122 @@ classdef proc_utils
         
 
 
+        % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
+        %
+        % ARGUMENTS
+        % =========
+        % M                     : 2D matrix
+        % nCopyColsPerRowVec    : 1D column vector.
+        %                         {i}=Number of elements to copy from M{i,:}.
+        %
+        % RETURN VALUE
+        % ============
+        % ca                    : Column cell array of 1D vectors.
+        function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
+            EJ_library.assert.vector(nCopyColsPerRowArray)
+            nRows = EJ_library.assert.sizes(M, [-1, NaN], nCopyColsPerRowArray, [-1, 1]);
+            
+            ca = cell(size(M, 1), 1);
+            for iRow = 1:nRows
+                ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
+            end
+        end
+        
+
+        
+        % ARGUMENTS
+        % =========
+        % ca                 : Column cell array of 1D vectors.
+        % nMatrixColumns     : Scalar. Number of columns in M.
+        % M                  : Numeric 2D matrix.
+        %                      NOTE: Sets unset elements to NaN.
+        % nCopyColsPerRowVec : 1D vector. {i}=Length of ca{i}=Number of
+        %                      elements copyied to M{i,:}.
+        function [M, nCopyColsPerRowVec] = convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
+            assert(iscell(ca))
+            EJ_library.assert.vector(ca)
+            assert(isscalar(nMatrixColumns))
+            EJ_library.assert.vector(nMatrixColumns)
+            
+            nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
+            M                  = nan(  numel(ca), nMatrixColumns);
+            for iRow = 1:numel(nCopyColsPerRowVec)
+                nCopyColsPerRowVec(iRow)            = numel(ca{iRow});
+                M(iRow, 1:nCopyColsPerRowVec(iRow)) = ca{iRow};
+            end
+            
+        end
+
+        
+        
+        %################################
+        % MODIFYING, DERIVING ZVARIABLES
+        %################################
+        
+        
+        
+        function zvData = filter_rows(zvData, bRowFilter)
+        % Function intended for filtering out data from a zVariable by setting
+        % parts of it to NaN. Also useful for constructing aonymous functions.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % data         : Numeric array with N rows.                 
+        % bRowFilter   : Numeric/logical column vector with N rows.
+        %
+        %
+        % RETURN VALUE
+        % ============
+        % filteredData :
+        %         Array of the same size as "data", such that
+        %         filteredData(i,:,:) == NaN,         for rowFilter(i)==0.
+        %         filteredData(i,:,:) == data(i,:,:), for rowFilter(i)~=0.
+        
+        % PROPOSAL: Better name? ~set_records_NaN
+
+            % ASSERTIONS
+            assert(islogical(bRowFilter))    % Mostly to make sure the caller knows that it represents true/false.
+            assert(isfloat(zvData), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', ...
+                'Argument "data" is not a floating-point class (can therefore not represent NaN).')
+            % Not really necessary to require row vector, only 1D vector.
+            EJ_library.assert.sizes(...
+                zvData,     [-1, NaN, NaN], ...
+                bRowFilter, [-1])
+
+
+            
+            % Overwrite data with NaN
+            % -----------------------
+            % IMPLEMENTATION NOTE: Command works empirically for filteredData
+            % having any number of dimensions. However, if rowFilter and
+            % filteredData have different numbers of rows, then the final array
+            % may get the wrong dimensions (without triggering error!) since new
+            % array components (indices) are assigned. ==> Having a
+            % corresponding ASSERTION is important!
+            zvData(bRowFilter, :) = NaN;
+        end
+
+        
+        
+        function zv = set_NaN_after_snapshots_end(zv, snapshotLengths)
+            % ASSERTIONS
+            [nRecords, snapshotMaxLength] = EJ_library.assert.sizes(...
+                zv,              [-1, -2], ...
+                snapshotLengths, [-1]);
+            assert(snapshotMaxLength >= max([snapshotLengths; 0]))
+            % Add zero to vector so that max gives sensible value for empty
+            % snapshotLengths.
+                        
+            % IMPLEMENTATION
+            for iRecord = 1:nRecords
+                zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
+            end
+        end
+
+
+        
         function tt2000 = ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for
         % Epoch in CDF files.
@@ -149,52 +275,6 @@ classdef proc_utils
 
 
 
-        function filteredData = filter_rows(data, bRowFilter)
-        % Function intended for filtering out data from a zVariable by setting
-        % parts of it to NaN. Also useful for constructing aonymous functions.
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % data         : Numeric array with N rows.                 
-        % bRowFilter   : Numeric/logical column vector with N rows.
-        %
-        %
-        % RETURN VALUE
-        % ============
-        % filteredData :
-        %         Array of the same size as "data", such that
-        %         filteredData(i,:,:) == NaN,         for rowFilter(i)==0.
-        %         filteredData(i,:,:) == data(i,:,:), for rowFilter(i)~=0.
-
-            % ASSERTIONS
-            assert(islogical(bRowFilter))    % Mostly to make sure the caller knows that it represents true/false.
-            assert(isfloat(data), ...
-                'BICAS:proc_utils:Assertion:IllegalArgument', ...
-                'Argument "data" is not a floating-point class (can not represent NaN).')
-            % Not really necessary to require row vector, only 1D vector.
-            EJ_library.assert.sizes(...
-                data,       [-1, NaN, NaN], ...
-                bRowFilter, [-1])
-
-
-
-            % Copy all data
-            filteredData = data;
-            
-            % Overwrite data that should not have been copied with NaN
-            % --------------------------------------------------------
-            % IMPLEMENTATION NOTE: Command works empirically for filteredData
-            % having any number of dimensions. However, if rowFilter and
-            % filteredData have different numbers of rows, then the final array
-            % may get the wrong dimensions (without triggering error!) since new
-            % array components (indices) are assigned. ==> Having a
-            % corresponding ASSERTION is important!
-            filteredData(bRowFilter, :) = NaN;
-        end
-
-        
-        
         function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(...
             ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC)
         % Function intended for converting ACQUISITION_TIME (always one time per
@@ -222,69 +302,6 @@ classdef proc_utils
             ACQUISITION_TIME_2 = bicas.proc_utils.TT2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
         end
         
-        
-        
-        function zv = set_NaN_after_snapshots_end(zv, snapshotLengths)
-            % ASSERTIONS
-            [nRecords, snapshotMaxLength] = EJ_library.assert.sizes(...
-                zv,              [-1, -2], ...
-                snapshotLengths, [-1]);
-            assert(snapshotMaxLength >= max([snapshotLengths; 0]))
-            % Add zero to vector so that max gives sensible value for empty snapshotLengths.
-                        
-            % IMPLEMENTATION
-            for iRecord = 1:nRecords
-                zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
-            end
-        end
-
-
-        
-        % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
-        %
-        % ARGUMENTS
-        % =========
-        % M                     : 2D matrix
-        % nCopyColsPerRowVec    : 1D column vector.
-        %                         {i}=Number of elements to copy from M{i,:}.
-        %
-        % RETURN VALUE
-        % ============
-        % ca                    : Column cell array of 1D vectors.
-        function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
-            EJ_library.assert.vector(nCopyColsPerRowArray)
-            nRows = EJ_library.assert.sizes(M, [-1, NaN], nCopyColsPerRowArray, [-1, 1]);
-            
-            ca = cell(size(M, 1), 1);
-            for iRow = 1:nRows
-                ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
-            end
-        end
-        
-
-        
-        % ARGUMENTS
-        % =========
-        % ca                    : Column cell array of 1D vectors.
-        % nMatrixColumns        : Scalar. Number of columns in M.
-        % M                     : Numeric 2D matrix.
-        %                         NOTE: Sets unset elements to NaN.
-        % nCopyColsPerRowVec    : 1D vector. {i}=Length of ca{i}=Number of elements copyied to M{i,:}.
-        function [M, nCopyColsPerRowVec] = convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
-            assert(iscell(ca))
-            EJ_library.assert.vector(ca)
-            assert(isscalar(nMatrixColumns))
-            EJ_library.assert.vector(nMatrixColumns)
-            
-            nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
-            M                  = nan(  numel(ca), nMatrixColumns);
-            for iRow = 1:numel(nCopyColsPerRowVec)
-                nCopyColsPerRowVec(iRow)            = numel(ca{iRow});
-                M(iRow, 1:nCopyColsPerRowVec(iRow)) = ca{iRow};
-            end
-            
-        end
-
         
         
         function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
@@ -335,19 +352,15 @@ classdef proc_utils
                 EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
                     ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
-
-
-
-        function utcStr = TT2000_to_UTC_str(zvTt2000)
-        % Convert tt2000 value to UTC string with nanoseconds.
-            
-            bicas.proc_utils.assert_zv_Epoch(zvTt2000)
-            
-            utcStr = EJ_library.cdf.TT2000_to_UTC_str(zvTt2000);
-        end
         
         
         
+        %#########
+        % LOGGING 
+        %#########
+
+
+
         function ColumnStrs = log_array(varName, varValue, varType, SETTINGS)
             % Logs statistics on the contents of a numeric variable (any
             % dimensionality):
@@ -540,9 +553,15 @@ classdef proc_utils
                 '    Mm = min-max\n', ...
                 '    Us = Unique values (explicitly listed)\n'])
         end
-
-
-
+        
+        
+        
+        %############
+        % ASSERTIONS
+        %############
+        
+        
+        
         % Assert that variable is an "zVar Epoch-like" variable.
         function assert_zv_Epoch(zvEpoch)
 
