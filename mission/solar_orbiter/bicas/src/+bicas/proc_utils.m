@@ -142,6 +142,102 @@ classdef proc_utils
             end
             
         end
+        
+        
+        
+        % Utility function for downsampling data by grouping together adjacent
+        % time intervals that have the same length when discounting leap
+        % seconds.
+        %
+        % WOLS = WithOut Leap Seconds
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % zvAllTt2000           : Column array. ~Epoch.
+        %                         PROBLEM: Can not handle zvAllTt2000(1),
+        %                         zvAllTt2000(end) being during positive leap
+        %                         second.
+        % boundaryRefTt2000     : Must not be during leap second.
+        % binLengthWolsNs       : Length of each bin.
+        % binTimestampPosWolsNs : Position of timestamp that represents bin,
+        %                         relative to beginning of bin.
+        %
+        %
+        % RETURN VALUES
+        % =============
+        % zvTt2000   : Column array. ~Epoch. One timestamp per bin.
+        % iRecordsCa : Indices to CDF records for respective bins.
+        %              {iInterval}(i,1) = CDF record number.
+        %
+        function [zvBinsTt2000, iRecordsCa] = downsample_Epoch(...
+                zvAllTt2000, boundaryRefTt2000, ...
+                binLengthWolsNs, binTimestampPosWolsNs)
+            
+            % NAMING CONVENTIONS
+            % ==================
+            % TTW      = TT2000 WOLS
+            % bin      = Time interval within which all corresponding CDF
+            %            records should be condensed to one.
+            % boundary = Edge of bin(s).
+            
+
+            
+            % ASSERTIONS
+            bicas.proc_utils.assert_zv_Epoch(zvAllTt2000)
+            assert(issorted(zvAllTt2000, 'strictascend'))    % NOTE: Algorithm assumes this.
+            bicas.proc_utils.assert_zv_Epoch(boundaryRefTt2000)
+            assert(isscalar(boundaryRefTt2000))
+            assert(isa(binLengthWolsNs,       'int64'))
+            assert(isa(binTimestampPosWolsNs, 'int64'))
+            assert((0 <= binTimestampPosWolsNs) && (binTimestampPosWolsNs <= binLengthWolsNs))
+            
+            
+            
+            if isempty(zvAllTt2000)
+                % CASE: zvAllTt2000 is empty.
+                zvBinsTt2000 = int64(ones(0,1));
+                iRecordsCa   = cell(0,1);
+                return
+            end
+            % CASE: zvAllTt2000 is not empty.
+            
+            
+            
+            ttw1           = EJ_library.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(1));
+            ttw2           = EJ_library.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(end));
+            boundaryRefTtw = EJ_library.cdf.time.TT2000_to_TT2000WOLS(boundaryRefTt2000);
+            
+            %======================================
+            % Find bin boundaries & bin timestamps
+            %======================================
+            % "Round" ttw1 down to nearest lower interval boundary.
+            ttw1Floor = idivide(ttw1 - boundaryRefTtw, binLengthWolsNs, 'floor') * binLengthWolsNs + boundaryRefTtw;
+            
+            % Find smallest number of time intervals that will cover (and exceed
+            % if necessary) ttw1 to ttw2.
+            nIntervals = idivide(ttw2 - ttw1Floor, binLengthWolsNs, 'ceil');
+            
+            boundariesTtw = (ttw1Floor + [0:nIntervals] * binLengthWolsNs)';
+            zvBinsTtw     = boundariesTtw(1:end-1) + binTimestampPosWolsNs;
+            
+            
+            boundariesTt2000 = EJ_library.cdf.time.TT2000WOLS_to_TT2000(boundariesTtw);
+            zvBinsTt2000     = EJ_library.cdf.time.TT2000WOLS_to_TT2000(zvBinsTtw);
+            
+            %==================
+            % Assign iRecordCa
+            %==================
+            iRecordsCa = cell(nIntervals, 1);
+            for i = 1:nIntervals
+                % Slow?
+                % PROPOSAL: Speed up by using that zvTt2000 and boundaries are
+                % sorted. Iterate over records, stopping at boundaries.
+                iRecordsCa{i} = find(...
+                      (boundariesTt2000(i) <= zvAllTt2000)...
+                    & (zvAllTt2000         <  boundariesTt2000(i+1)));
+            end
+        end
 
         
         

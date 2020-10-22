@@ -1172,7 +1172,11 @@ classdef proc_sub
                 = process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L)
             
             % The only acceptable input DATASET_ID.
-            INPUT_DATASET_ID = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
+            INPUT_DATASET_ID          = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
+            % Define length of bins, and relative position of corresponding
+            % timestamps.
+            BIN_LENGTH_WOLS_NS        = int64(10e9);
+            BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
             
             
             
@@ -1182,6 +1186,15 @@ classdef proc_sub
             bicas.proc_sub.handle_zv_name_change(...
                 fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', ...
                 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+            
+            
+            
+            QUALITY_FLAG = min(...
+                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
+                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
+                'includeNaN');
+            
+            
             
             %===================================================================
             % Calculate
@@ -1198,7 +1211,7 @@ classdef proc_sub
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
             [TsEdc, TsPsp, TsScpot] = solo.vdccal(VdcTs);
-            [nRecords] = EJ_library.assert.sizes(...
+            EJ_library.assert.sizes(...
                 InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
                 TsEdc.data,              [-1, 3], ...
                 TsPsp.data,              [-1, 1], ...
@@ -1234,12 +1247,10 @@ classdef proc_sub
             EfieldCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
             EfieldCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
             EfieldCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            EfieldCdf.QUALITY_FLAG       = min(...
-                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
-                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
-                'includeNaN');
+            EfieldCdf.QUALITY_FLAG       = QUALITY_FLAG;
             EfieldCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
             EfieldCdf.EDC_SFR            = zvEdcMvpm;
+            
             
             
             %=================
@@ -1249,29 +1260,71 @@ classdef proc_sub
             ScpotCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
             ScpotCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
             ScpotCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            ScpotCdf.QUALITY_FLAG       = min(...
-                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
-                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
-                'includeNaN');
+            ScpotCdf.QUALITY_FLAG       = QUALITY_FLAG;
             ScpotCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
             ScpotCdf.SCPOT              = TsScpot.data;
             ScpotCdf.PSP                = TsPsp.data;
             
             
             
+            %=====================================================
+            % Calculate values used for both downsampled datasets
+            %=====================================================
+            % Find arbitrary bin boundary reference timestamp. This is used for
+            % setting the bin boundaries together with the bin length.
+            v = spdfbreakdowntt2000(InputLfrCwfCdf.Zv.Epoch(1));
+            v(7:9) = 0;   % UTC subsecond (milliseconds, microseconds, nanoseconds)
+            v(6)   = 5;   % UTC second
+            boundaryRefTt2000 = spdfcomputett2000(v);
+            % Find bin timestamps (downsampled timestamps), and which records
+            % belong to which bins.
+            [zvEpochDwns, iRecordsRwnsCa] = bicas.proc_utils.downsample_Epoch(...
+                InputLfrCwfCdf.Zv.Epoch, boundaryRefTt2000, ...
+                BIN_LENGTH_WOLS_NS,      BIN_TIMESTAMP_POS_WOLS_NS);
+            % NOTE: Before possible removal of records.
+            nRecordsDwns = numel(zvEpochDwns);
+            
+            % Set zVariable-like variables with "thought-out" values also for
+            % empty bins. Later code can then decide whether to use these empty
+            % bin values or not.
+            for i = 1:nRecordsDwns
+                k = iRecordsRwnsCa{i};
+                QUALITY_FLAG_dwns(i)       = bicas.proc_sub.downsample_bin_QUALITY_FLAG(                         QUALITY_FLAG(      k));
+                QUALITY_BITMASK_dwns(i)    = bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(InputLfrCwfCdf.Zv.QUALITY_BITMASK(   k));
+                L2_QUALITY_BITMASK_dwns(i) = bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK(k));
+            end
+            DELTA_PLUS_MINUS_dwns = ones(nRecordsDwns, 1) * double(BIN_LENGTH_WOLS_NS / 2);
+
+
+
             %==============================
             % zVars for EFIELD DOWNSAMPLED
             %==============================
             % YK: LOWER PRIORITY
             EfieldDwnsCdf = [];
-            EfieldDwnsCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
-            EfieldDwnsCdf.QUALITY_FLAG       = NaN(nRecords, 1);
-            EfieldDwnsCdf.QUALITY_BITMASK    = NaN(nRecords, 1);
-            EfieldDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecords, 1);
-            EfieldDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecords, 1);
+            EfieldDwnsCdf.Epoch              = zvEpochDwns;
+            EfieldDwnsCdf.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
+            EfieldDwnsCdf.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
+            EfieldDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
+            EfieldDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
             %
-            EfieldDwnsCdf.EDC_SFR            = NaN(nRecords, 3);
-            EfieldDwnsCdf.EDCSTD_SFR         = NaN(nRecords, 3);
+            EfieldDwnsCdf.EDC_SFR            = NaN(nRecordsDwns, 3);
+            EfieldDwnsCdf.EDCSTD_SFR         = NaN(nRecordsDwns, 3);
+            
+            for i = 1:nRecordsDwns
+                k = iRecordsRwnsCa{i};
+                if ~isempty(k)
+                    
+                    EfieldDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
+                    EfieldDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
+                    EfieldDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
+                    EfieldDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
+
+                    [edc_sfr, edcstd_sfr] = bicas.proc_sub.downsample_bin_values(EfieldCdf.EDC_SFR(k, :));
+                    EfieldDwnsCdf.EDC_SFR(i, :)         = edc_sfr;
+                    EfieldDwnsCdf.EDCSTD_SFR(i, :)      = edcstd_sfr;
+                end
+            end
             
             
             
@@ -1280,20 +1333,91 @@ classdef proc_sub
             %=============================
             % YK: HIGHER PRIORITY
             ScpotDwnsCdf = [];
-            ScpotDwnsCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
-            ScpotDwnsCdf.QUALITY_FLAG       = NaN(nRecords, 1);
-            ScpotDwnsCdf.QUALITY_BITMASK    = NaN(nRecords, 1);
-            ScpotDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecords, 1);
-            ScpotDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecords, 1);
+            ScpotDwnsCdf.Epoch              = zvEpochDwns;
+            ScpotDwnsCdf.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
+            ScpotDwnsCdf.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
+            ScpotDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
+            ScpotDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
             %
-            ScpotDwnsCdf.SCPOT              = NaN(nRecords, 3);
-            ScpotDwnsCdf.SCPOTSTD           = NaN(nRecords, 3);
-            ScpotDwnsCdf.PSP                = NaN(nRecords, 1);    % Right size
-            ScpotDwnsCdf.PSPSTD             = NaN(nRecords, 1);    % Right size
+            ScpotDwnsCdf.SCPOT              = NaN(nRecordsDwns, 3);
+            ScpotDwnsCdf.SCPOTSTD           = NaN(nRecordsDwns, 3);
+            ScpotDwnsCdf.PSP                = NaN(nRecordsDwns, 1);
+            ScpotDwnsCdf.PSPSTD             = NaN(nRecordsDwns, 1);
             
+            for i = 1:nRecordsDwns
+                k = iRecordsRwnsCa{i};
+                if ~isempty(k)
+
+                    ScpotDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
+                    ScpotDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
+                    ScpotDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
+                    ScpotDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
+
+                    [scpot, scpotstd] = bicas.proc_sub.downsample_bin_values(ScpotCdf.SCPOT(k, :));
+                    [psp, pspstd]     = bicas.proc_sub.downsample_bin_values(ScpotCdf.PSP(  k, :));
+                    ScpotDwnsCdf.SCPOT(i, :)           = scpot;
+                    ScpotDwnsCdf.SCPOTSTD(i, :)        = scpotstd;
+                    ScpotDwnsCdf.PSP(i)                = psp;
+                    ScpotDwnsCdf.PSPSTD(i)             = pspstd;
+                end
+            end
         end
 
 
+        
+    end    % methods(Static, Access=public)
+            
+
+    
+    %##############################
+    %##############################
+    methods(Static, Access=private)
+    %##############################
+    %##############################
+        
+        
+        
+        % Derive median and modified standard deviation over dimension 1.
+        %
+        function [med, mstd] = downsample_bin_values(zVarSegment)
+            % Only first two dimensions may be size non-one.
+            assert(ismatrix(zVarSegment))
+            
+            med = median(zVarSegment, 1);
+            for i = 1:size(zVarSegment, 2)
+                mstd(1,i) = bicas.utils.modif_std_deviation(zVarSegment(:, i), med(i), 1);
+            end
+        end
+        
+        
+        
+        % Handles case of empty bin.
+        function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(zv_QUALITY_FLAG_segment)
+            % Return NaN or 0 for empty bin?
+            
+            % IMPLEMENTATION NOTE: Just using min([zv_QUALITY_FLAG; 0]) does not work.
+            if isempty(zv_QUALITY_FLAG_segment)
+                QUALITY_FLAG = 0;
+            else
+                QUALITY_FLAG = min(zv_QUALITY_FLAG_segment);
+            end
+        end
+        
+        
+        
+        % L12_QUALITY_BITMASK refers to both zVariables QUALITY_BITMASK (set in
+        % L1) and L2_QUALITY_BITMASK.
+        function L12_QUALITY_BITMASK = downsample_bin_L12_QUALITY_BITMASK(zv_L12_QUALITY_BITMASK_segment)
+            % Return NaN or 0 for empty bin?
+            
+            if isempty(zv_L12_QUALITY_BITMASK_segment)
+                L12_QUALITY_BITMASK = NaN;
+            else
+                L12_QUALITY_BITMASK = bicas.utils.bitops.or(zv_L12_QUALITY_BITMASK_segment);
+            end
+        end
+        
+        
         
         % Wrapper around bicas.proc_sub.handle_struct_name_change to be used
         % locally.
