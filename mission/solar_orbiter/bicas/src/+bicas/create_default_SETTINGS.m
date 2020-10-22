@@ -247,13 +247,13 @@ function SETTINGS = create_default_SETTINGS()
 
     % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
     % 0/false.
-    S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                0)
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                1)
     
     % Whether the size per record of an empty (0 records) output DF zVar has to
     % be in agreement with the master CDF's size per record.
     % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
     % 0/false.
-    S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 0)
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1)
     
     % Whether the size per record of an output CDF zVar has to be in agreement
     % with the master CDF's size per record. Disabling is useful if the master
