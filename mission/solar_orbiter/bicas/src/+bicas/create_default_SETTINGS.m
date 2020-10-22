@@ -246,17 +246,24 @@ function SETTINGS = create_default_SETTINGS()
 
 
     % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
-    % 0/false. Abolish?
-    S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass',                 0)
+    % 0/false.
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                0)
+    
     % Whether the size per record of an empty (0 records) output DF zVar has to
     % be in agreement with the master CDF's size per record.
     % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
-    % 0/false. Abolish?
-    S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyNumericZvSizePerRecord',  0)
+    % 0/false.
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 0)
+    
     % Whether the size per record of an output CDF zVar has to be in agreement
-    % with the master CDF's size per record. This is useful if the master CDF
-    % has not been updated in this regard only.
-    S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictNumericZvSizePerRecord',       0)
+    % with the master CDF's size per record. Disabling is useful if the master
+    % CDF has not been updated in this regard only.
+    % 
+    % 2020-10-22: Disabled due to L2 zVars IBIAS1/2/3 mismatch between
+    % master CDFs and BICAS code. Thus only affects SWF/RSWF, not CWF.
+    %   Master CDFs: Multiple samples/snapshot.
+    %   BICAS code:  1 sample/snapshot.
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      0)
     
     
     
