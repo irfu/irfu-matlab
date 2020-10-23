@@ -11,6 +11,9 @@ END_META       =   DATASET_ID
 START_META     =   DATASET_TITLE
    ENTRY       =   "Spacecraft potential (internal burst)"
 END_META       =   DATASET_TITLE
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Spacecraft_Potential"
+END_META       =   DATASET_TYPE
 START_META     =   DATASET_DESCRIPTION
    ENTRY       =   "This dataset contains measurements of the"
    ENTRY       =   "negative of the Spacecraft potential (internal burst)"
@@ -53,6 +56,16 @@ END_META       =   MAX_TIME_RESOLUTION
 START_META     =   PROCESSING_LEVEL
    ENTRY       =   "Calibrated"
 END_META       =   PROCESSING_LEVEL
+
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "publication based upon use of these data"
+END_META       =   ACKNOWLEDGEMENT
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                   Variables                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
