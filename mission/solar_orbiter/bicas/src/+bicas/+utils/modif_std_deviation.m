@@ -1,5 +1,5 @@
 %
-% Calculate modified standard deviation, but using an arbitrary
+% Calculate "modified standard deviation", but using an arbitrary
 % reference rather than the average.
 %
 %
@@ -13,7 +13,9 @@
 %
 % RETURN VALUES
 % =============
-% s
+% s : NaN, for zero values
+%     0,   for one value
+%     Modified standard deviation otherwise.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden

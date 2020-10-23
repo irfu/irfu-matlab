@@ -1364,6 +1364,23 @@ classdef proc_sub
                 end
             end
         end
+        
+        
+        
+        % Derive median and modified standard deviation over dimension 1.
+        %
+        % NOTE: Only public so automated test code can access it.
+        function [med, mstd] = downsample_bin_sci_values(zVarSegment)
+            % Only first two dimensions may be size non-one.
+            assert(ismatrix(zVarSegment))
+            nSpr = size(zVarSegment, 2);   % SPR = Samples Per (CDF) Record
+            
+            med  = median(zVarSegment, 1);
+            mstd = NaN(1, nSpr);    % Default value if zero records
+            for i = 1:nSpr
+                mstd(1, i) = bicas.utils.modif_std_deviation(zVarSegment(:, i), med(i), 1);
+            end
+        end
 
 
         
@@ -1376,20 +1393,6 @@ classdef proc_sub
     methods(Static, Access=private)
     %##############################
     %##############################
-        
-        
-        
-        % Derive median and modified standard deviation over dimension 1.
-        %
-        function [med, mstd] = downsample_bin_sci_values(zVarSegment)
-            % Only first two dimensions may be size non-one.
-            assert(ismatrix(zVarSegment))
-            
-            med = median(zVarSegment, 1);
-            for i = 1:size(zVarSegment, 2)
-                mstd(1,i) = bicas.utils.modif_std_deviation(zVarSegment(:, i), med(i), 1);
-            end
-        end
         
         
         
