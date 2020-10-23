@@ -307,11 +307,17 @@ for i=1:varsbsize
   start_time = data8ordfc(1,1);
   switch cl_id
     case 1
-      if start_time>toepoch([2009 10 14 07 00 00]) || ...
+      if start_time>toepoch([2018 12 10 03 00 16])
+        % p3 failure
+        if any(probe=='1') || any(probe=='3') || any(probe=='4')
+          irf_log('dsrc',sprintf('p1, p3 & p4 are BAD on sc%d',cl_id))
+          continue
+        end
+      elseif start_time>toepoch([2009 10 14 07 00 00]) || ...
           (start_time>toepoch([2009 04 19 00 00 00]) && start_time<toepoch([2009 05 07 00 00 00]))
-        % p1 and p4 failure
+        % p4 failure
         if any(probe=='1') || any(probe=='4')
-          irf_log('dsrc',sprintf('p1 and p4 are BAD on sc%d',cl_id))
+          irf_log('dsrc',sprintf('p1 & p4 are BAD on sc%d',cl_id))
           continue
         end
       elseif start_time>toepoch([2001 12 28 03 00 00])
@@ -330,12 +336,18 @@ for i=1:varsbsize
         % Ignore p3, p4 and p34 and only use p1, p2 and p12.
         % Use only complete 3-hour intervals to keep it simple.
         if any(probe=='3') || any(probe=='4')
-          irf_log('dsrc',sprintf('Too high bias current on p3&p4 sc%d',cl_id));
+          irf_log('dsrc',sprintf('Too high bias current on p3 & p4 sc%d',cl_id));
           continue
         end
       end
     case 2
-      if start_time>=toepoch([2007 05 13 03 23 48])
+      if start_time>toepoch([2015 10 12 12 00 0])
+        % p2 failure
+        if any(probe=='1') || any(probe=='2')
+          irf_log('dsrc',sprintf('p1 & p2 is BAD on sc%d',cl_id))
+          continue
+        end
+      elseif start_time>=toepoch([2007 05 13 03 23 48])
         % p1 failure
         if any(probe=='1')
           irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
@@ -343,16 +355,42 @@ for i=1:varsbsize
         end
       end
     case 3
-      if start_time>toepoch([2002 07 29 09 06 59 ])
+      if start_time>toepoch([2014 11 03 20 58 16.7])
+        % p2 failure
+        if any(probe=='1') || any(probe=='2') || any(probe=='3')
+          irf_log('dsrc',sprintf('p1, p2 & p3 are BAD on sc%d',cl_id));
+          continue
+        end
+      elseif start_time>toepoch([2011 6 01 09 30 0])
+        % p3 failure
+        if any(probe=='1') || any(probe=='3')
+          irf_log('dsrc',sprintf('p1 & p3 are BAD on sc%d',cl_id));
+          continue
+        end
+      elseif start_time>toepoch([2002 07 29 09 06 59 ])
         % p1 failure
         if any(probe=='1')
           irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
           continue
         end
       end
+    case 4
+      if start_time>=toepoch([2015 02 17 07 30 00]) % 2015-02-17 07:36:30
+        % p3 failure
+        if any(probe=='3') || any(probe=='4')
+          irf_log('dsrc',sprintf('p3 & p4 are BAD on sc%d',cl_id));
+          continue
+        end
+      elseif start_time>=toepoch([2013 07 01 13 30 00]) % 2013 07 01 14 43 44
+        % p4 failure
+        if any(probe=='4')
+          irf_log('dsrc',sprintf('p4 is BAD on sc%d',cl_id));
+          continue
+        end
+      end
   end
   %%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
-  
+
   data=data8ordfc(:,[1 i+1]);
   if length(probe)>1
     % Invert the sign to match the HX data

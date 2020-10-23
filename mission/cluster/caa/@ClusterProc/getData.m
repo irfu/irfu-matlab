@@ -2802,7 +2802,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
   end
   if ~n_ok, data = []; cd(old_pwd), return, end
   
-  if do_burst, problems = 'reset|bbias|sweep|probesa|nsops|spike';
+  if do_burst, problems = 'reset|bbias|sweep|saasa|probesa|nsops|spike';
   else, problems = 'reset|bbias|sweep|saasa|probesa|nsops';
   end
   if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU>
@@ -2814,6 +2814,8 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
       if ~do_burst
         nsops_errlist = [caa_str2errid('hxonly') caa_str2errid('bad_lx')...
           caa_str2errid(irf_ssub('no_p?',probe))];%#ok<NASGU>
+%      else
+%        nsops_errlist = [caa_str2errid(irf_ssub('no_p?',probe))];
       end
       remove_problems
       P.(probeS(probe)) = res;
