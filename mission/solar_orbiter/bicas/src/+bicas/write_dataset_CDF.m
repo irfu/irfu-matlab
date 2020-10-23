@@ -38,29 +38,52 @@ function write_dataset_CDF(...
     %===========================================================================
     
     
-    %===================================================================
-    % Set global max value for zVar QUALITY_FLAG
-    % ------------------------------------------
-    % NOTE: min(... 'includeNaN') implies that NaN always counts as the
-    % lowest value.
-    %===================================================================
-    % PROPOSAL: Turn into generic function for capping QUALITY_FLAG based on
-    % arbitrary setting.
-    [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
-    assert((0 < value) && (value <= 3), 'Illegal setting "%s"=%i.', key, value)
-    if value < 3
-        L.logf('warning', ...
-            'Using setting %s = %i to set a zVar QUALITY_FLAG global max value.', ...
-            key, value);
+    
+    % UI ASSERTION: Check for directory collision. Always error.
+    if exist(outputFile, 'dir')     % Checks for directory.
+        error(...
+            'BICAS:write_dataset_CDF', ...
+            'Intended output dataset file path matches a pre-existing directory.')
     end
-    ZvsSubset.QUALITY_FLAG = min(...
-        ZvsSubset.QUALITY_FLAG, ...
-        value, 'includeNaN');
+    % UI ASSERTION: Check for output file path collision with pre-existing file.
+    if exist(outputFile, 'file')    % Command checks for file and directory (can not do just file).
+        [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
+        
+        anomalyDescrMsg = sprintf('Intended output dataset file path "%s" matches a pre-existing file.', outputFile);
+        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+            anomalyDescrMsg, 'BICAS:write_dataset_CDF')
+    end
     
     
     
+    
+    %===========================
+    % Create (modified) dataobj
+    %===========================
+    % NPEF = No Processing Empty File
     [settingNpefValue, settingNpefKey] = SETTINGS.get_fv('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
+        
+        %===================================================================
+        % Set global max value for zVar QUALITY_FLAG
+        % ------------------------------------------
+        % NOTE: min(... 'includeNaN') implies that NaN always counts as the
+        % lowest value.
+        %===================================================================
+        % PROPOSAL: Turn into generic function for capping QUALITY_FLAG based on
+        % arbitrary setting.
+        [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
+        assert((0 < value) && (value <= 3), 'Illegal setting "%s"=%i.', key, value)
+        if value < 3
+            L.logf('warning', ...
+                'Using setting %s = %i to set a zVar QUALITY_FLAG global max value.', ...
+                key, value);
+        end
+        ZvsSubset.QUALITY_FLAG = min(...
+            ZvsSubset.QUALITY_FLAG, ...
+            value, 'includeNaN');
+        
+        
         DataObj = init_modif_dataobj(ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
         % NOTE: This call will fail if setting
         % OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
@@ -69,30 +92,17 @@ function write_dataset_CDF(...
     
     
     
-    %==============================
-    % Checks before writing to CDF
-    %==============================
-    % UI ASSERTION: Check for directory collision. Always error.
-    if exist(outputFile, 'dir')     % Checks for directory.
-        error(...
-            'BICAS:write_dataset_CDF', ...
-            'Intended output dataset file path matches a pre-existing directory.')
-    end
+    %===========================================
+    % ASSERTIONS / Checks before writing to CDF
+    %===========================================
     
     % Check if file writing is deliberately disabled.
+    % NOTE: Do this as late as possible, in order to be able to test as much
+    % code as possible without writing file.
     [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
     if settingValue
         L.logf('warning', 'Writing output CDF file is disabled via setting %s.', settingKey)
         return
-    end
-    
-    % Check for output file path collision with pre-existing file.
-    if exist(outputFile, 'file')    % Command checks for file and directory (can not do just file).
-        [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
-        
-        anomalyDescrMsg = sprintf('Intended output dataset file path "%s" matches a pre-existing file.', outputFile);
-        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-            anomalyDescrMsg, 'BICAS:write_dataset_CDF')
     end
     
     if ~settingNpefValue
@@ -106,23 +116,8 @@ end
 
 
 
-% NOTE: Should always overwrite file.
-function write_empty_file(filePath)
-    fileId = fopen(filePath, 'w');    
-    
-    % ~ASSERTION
-    if fileId == -1
-        % NOTE: Technically non-BICAS error ID.
-        error('BICAS:write_dataset_CDF:CanNotOpenFile', 'Can not open file: "%s"', filePath)
-    end
-    
-    % NOTE: Does not have to write any data to create empty file.
-    fclose(fileId);
-end
-
-
-
 % Create a modified dataobj that can be written to file.
+% (dataobj is based on master CDF.)
 %
 %
 % NOTE: Assertions require that ZvsSubset contains records of data. Can not
@@ -352,4 +347,20 @@ function logicalFileId = get_logical_file_id(filePath)
     % Use the filename without suffix.
     [~, basename, ~] = fileparts(filePath);
     logicalFileId = basename;
+end
+
+
+
+% NOTE: Should always overwrite file.
+function write_empty_file(filePath)
+    fileId = fopen(filePath, 'w');    
+    
+    % ~ASSERTION
+    if fileId == -1
+        % NOTE: Technically non-BICAS error ID.
+        error('BICAS:write_dataset_CDF:CanNotOpenFile', 'Can not open file: "%s"', filePath)
+    end
+    
+    % NOTE: Does not have to write any data to create empty file.
+    fclose(fileId);
 end
