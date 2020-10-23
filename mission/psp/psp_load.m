@@ -9,7 +9,11 @@
 % cell array if several variables have to be returned.
 %
 % dataDir:  the directory with the cdf files
-% datatype: 'mag','fgm'      - FGM
+% datatype: 'mag_rtn','fgm_rtn'      - FGM, RTN coordinates
+%           'mag_sc','fgm_sc'        - FGM, SC coordinates
+%           'ac_spec_dv12'           - DFB AC-coupled Differential Voltage V12 antenas
+%           'ac_spec_dv34'           - DFB AC-coupled Differential Voltage V34 antenas
+%           'ac_spec_v5'             - DFB AC-coupled V5 Antenna Voltage, Monopole Mode
 %           'sweap','spc'    - sweap proton moments
 %           'ephem'          - ephemeris files
 %           variable names as in the cdf file
@@ -30,12 +34,46 @@ else
 end
 
 switch datatype
-  case {'mag', 'fgm'}
+  case {'mag_rtn', 'fgm_rtn'}
     filename= 'psp_fld_l2_mag_RTN';
     varnames = {'psp_fld_l2_mag_RTN'};
     varnamesout = {'rtnB'};
     
     hourtag={'00';'06';'12';'18'};
+    
+  case {'mag_sc', 'fgm_sc'}
+    filename= 'psp_fld_l2_mag_SC';
+    varnames = {'psp_fld_l2_mag_SC'};
+    varnamesout = {'scB'};
+    
+    hourtag={'00';'06';'12';'18'};
+    
+    case {'ac_spec_dv12'}    
+    filename = 'psp_fld_l2_dfb_ac_spec_dV12hg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_dV12hg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_dV12hg'};
+    varnamesout = {'ac_dv12_freq_bins';'ac_dv12_ps'};
+    
+    hourtag={''};  
+    
+  case {'ac_spec_dv34'}
+    filename = 'psp_fld_l2_dfb_ac_spec_dV34hg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_dV34hg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_dV34hg'};
+    varnamesout = {'ac_dv34_freq_bins';'ac_dv34_ps'};
+    
+    hourtag={''};  
+    
+  case {'ac_spec_v5'}
+    filename = 'psp_fld_l2_dfb_ac_spec_V5hg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_V5hg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_V5hg'};
+    varnamesout = {'ac_v5_freq_bins';'ac_v5_ps'};
+    
+    hourtag={''};   
     
   case {'sweap', 'spc'}
     
@@ -225,6 +263,7 @@ end
     persistent pspVariables
     pspVariables=[...
       'psp_fld_l2_mag_RTN              psp_fld_l2_mag_RTN            rtnB       ';...
+      'psp_fld_l2_mag_SC               psp_fld_l2_mag_SC             scB        ';...
       'psp_fld_l2_dfb_wf_V?dc          psp_fld_l2_dfb_wf_vdc                    ';... ? mark can be 1-5
       'psp_fld_l2_dfb_wf_scm_hg_sensor psp_fld_l2_dfb_wf_scm                    ';...
       'psp_fld_l2_dfb_wf_scm_hg_sc     psp_fld_l2_dfb_wf_scm                    ';...
