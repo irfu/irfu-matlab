@@ -551,7 +551,7 @@ function print_version(SwModeDefsList, SETTINGS)
     % should be that specific version. This is in principle inefficient but also
     % "precise".
     
-    JsonSwd = bicas.get_sw_descriptor(SwModeDefsList, SETTINGS);
+    JsonSwd = bicas.get_sw_descriptor(SwModeDefsList);
     
     JsonVersion = [];
     JsonVersion.version = JsonSwd.release.version;
@@ -570,7 +570,7 @@ end
 %
 function print_identification(SwModesDefsList, SETTINGS)
     
-    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
+    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList);
     strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
@@ -586,7 +586,7 @@ end
 %
 function print_sw_descriptor(SwModesDefsList, SETTINGS)
     
-    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
+    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList);
     strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);

@@ -28,7 +28,7 @@
 %     institute, output_XX.release.file).
 % (6) It is easier to add automatic checks on the S/W descriptor in the code that derives it.
 %
-function JsonSwd = get_sw_descriptor(SwModeDefsList, SETTINGS)
+function JsonSwd = get_sw_descriptor(SwModeDefsList)
     %
     % PROPOSAL: Have this function add the prefix "input_" to all modes[].inputs[].input (in SWD)
     % and only store the "CLI_PARAMETER_suffix" in the BICAS constants structure instead.

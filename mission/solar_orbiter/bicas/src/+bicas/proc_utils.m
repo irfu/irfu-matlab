@@ -14,9 +14,12 @@
 % First created 2016-10-10
 %
 classdef proc_utils
-%============================================================================================================
+%
+% PROPOSAL: POLICY: No functions which set "policy"/configure the output of
+% datasets.
+%
 % PROPOSAL: Split up in separate files?!
-% PROPOSAL: Move some functions to "utils".
+% PROPOSAL: Move some functions to "bicas.utils".
 %   Ex: log_array, log_struct_array
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_TT2000 and its inversion.
@@ -33,6 +36,7 @@ classdef proc_utils
 %   convert_N_to_1_SPR_Epoch            -- increment_in_record + convert_N_to_1_SPR_redistribute
 %   convert_N_to_1_SPR_ACQUISITION_TIME -- Keep
 %   convert_1_to_1_SPR_by_repeating     -- convert_1_to_N_SPR_by_repeating + convert_N_to_1_SPR_redistribute
+%   TODO-NI: Already done? Partially?
 
 
 
@@ -47,9 +51,9 @@ classdef proc_utils
             
             utcStr = EJ_library.cdf.TT2000_to_UTC_str(zvTt2000);
         end
-
-
-
+        
+        
+        
         function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
         % For every cell in a cell array, select an index range in the first
         % dimension for every cell array component.
@@ -343,7 +347,12 @@ classdef proc_utils
         function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(tt2000, ACQUISITION_TIME_EPOCH_UTC)
         % Convert from tt2000 to ACQUISITION_TIME.
         %
-        % t_tt2000 : Nx1 vector. Tequired to be int64 like the real zVar Epoch.
+        % ARGUMENTS
+        % =========
+        % t_tt2000         : Nx1 vector. Required to be int64 like the real zVar Epoch.
+        %
+        % RETURN VALUE
+        % ============
         % ACQUISITION_TIME : Nx2 vector. uint32.
         %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
         %
@@ -352,11 +361,13 @@ classdef proc_utils
             bicas.proc_utils.assert_zv_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
-            atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;    % at = ACQUISITION_TIME
+            % AT = ACQUISITION_TIME
+            atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;
             
             % ASSERTION: ACQUISITION_TIME must not be negative.
             if any(atSeconds < 0)
-                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Can not produce ACQUISITION_TIME (uint32) with negative number of integer seconds.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
+                    'Can not produce ACQUISITION_TIME (uint32) with negative number of integer seconds.')
             end
             
             atSeconds = round(atSeconds*65536) / 65536;
@@ -660,6 +671,8 @@ classdef proc_utils
         
         % Assert that variable is an "zVar Epoch-like" variable.
         function assert_zv_Epoch(zvEpoch)
+            % NOTE: No check for monotonically increasing timestamps. Done
+            % in other locations. Universally? Slow?
 
             assert(iscolumn(zvEpoch),     'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')
             assert(isa(zvEpoch, 'int64'), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')

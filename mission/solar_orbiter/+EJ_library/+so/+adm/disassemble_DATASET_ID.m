@@ -30,6 +30,7 @@
 % First created 2020-09-29.
 %
 function [sourceName, level, descriptor] = disassemble_DATASET_ID(datasetId)
+    % PROPOSAL: Automatic test code.
     
     subStrList = EJ_library.str.regexp_str_parts(...
         datasetId, { ...

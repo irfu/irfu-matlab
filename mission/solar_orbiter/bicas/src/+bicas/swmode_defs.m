@@ -361,7 +361,10 @@ classdef swmode_defs
         
         
         % NOTE: Name dangerously similar to "bicas.swmode_defs".
-        function Def = def_swmode(prodFunc, cliOption, swdPurpose, inputsList, outputsList)
+        function Def = def_swmode(...
+                prodFunc, cliOption, swdPurpose, ...
+                inputsList, outputsList)
+            
             Def.prodFunc    = prodFunc;
             % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by e.g. "--". Variable therefore NOT named *Body.
             Def.cliOption   = cliOption;   
@@ -404,7 +407,9 @@ classdef swmode_defs
 
         
         
-        function Def = def_output_dataset(cliOptionHeaderBody, datasetId, prodFuncOutputKey, swdName, swdDescription, skeletonVersion)
+        function Def = def_output_dataset(...
+                cliOptionHeaderBody, datasetId, prodFuncOutputKey, ...
+                swdName, swdDescription, skeletonVersion)
             [~, datasetLevel, ~] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
             
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
@@ -435,7 +440,7 @@ classdef swmode_defs
             assert(strcmp(sourceName, 'SOLO'))
         end
         
-        
+
 
         % Assert that string contains human-readable text.
         function assert_text(str)

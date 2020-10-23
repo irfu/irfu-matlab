@@ -12,8 +12,6 @@
 %   -- Does not care about the order of fieldnames in structs
 %   -- Counts NaN as equal to itself.
 %
-% NOTE: Meant to eventually replace bicas.proc_utils.find_constant_sequences().
-%
 %
 % ARGUMENTS
 % =========
@@ -43,9 +41,11 @@ function [i1Array, i2Array, n] = split_by_change(varargin)
     %       arguments.
     
     % ASSERTION
-    % Require at least one argument, since size of return values is ~undefined (?!!) otherwise.
+    % Require at least one argument, since size of return values is ~undefined
+    % (?!!) otherwise.
     assert(numel(varargin) >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
-    % NOTE: EJ_library.utils.find_equalities checks that the arguments have the same number of rows.
+    % NOTE: EJ_library.utils.find_equalities checks that the arguments have the
+    % same number of rows.
 
 
 

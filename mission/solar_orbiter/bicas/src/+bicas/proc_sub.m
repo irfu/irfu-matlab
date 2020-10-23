@@ -38,6 +38,9 @@
 %
 classdef proc_sub
 %#######################################################################################################################
+%
+% PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets.
+%
 % PROPOSAL: Split into smaller files.
 %   PROPOSAL: proc_LFR
 %   PROPOSAL: proc_TDS
@@ -1059,7 +1062,6 @@ classdef proc_sub
                     nsoIdTranslated = 'nothing';   % Local constant.
                 end
                 nsoId = nsoIdTranslated;
-
                 %========================================================
                 
                 %=================================
@@ -1171,15 +1173,22 @@ classdef proc_sub
         function [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] ...
                 = process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L)
             
+            % PROPOSAL: Split up in one part for non-downsampled and
+            %           downsampled.
+            %   CON: Shared functionality for 3 quality zVars.
+            
             % The only acceptable input DATASET_ID.
             INPUT_DATASET_ID          = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
             % Define length of bins, and relative position of corresponding
-            % timestamps.
+            % bin timestamps.
             BIN_LENGTH_WOLS_NS        = int64(10e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
             
             
             
+            %======================
+            % Normalize zVar names
+            %======================
             [InputLfrCwfCdf.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfCdf.Zv, ...
                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
             
@@ -1220,6 +1229,8 @@ classdef proc_sub
             assert(strcmp(TsPsp.units,   'V'))
             assert(strcmp(TsScpot.units, 'V'))
             
+            
+            
             %===================================================================
             % Convert E-field
             % ---------------
@@ -1239,6 +1250,8 @@ classdef proc_sub
                 ' assumed to be unknown anymore. BICAS needs to be updated to reflect this.'])
             zvEdcMvpm(:, 1) = NaN;
             clear TsEdc
+            
+            
             
             %==================
             % zVars for EFIELD
@@ -1320,7 +1333,7 @@ classdef proc_sub
                     EfieldDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
                     EfieldDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
-                    [edc_sfr, edcstd_sfr] = bicas.proc_sub.downsample_bin_values(EfieldCdf.EDC_SFR(k, :));
+                    [edc_sfr, edcstd_sfr] = bicas.proc_sub.downsample_bin_sci_values(EfieldCdf.EDC_SFR(k, :));
                     EfieldDwnsCdf.EDC_SFR(i, :)         = edc_sfr;
                     EfieldDwnsCdf.EDCSTD_SFR(i, :)      = edcstd_sfr;
                 end
@@ -1353,8 +1366,8 @@ classdef proc_sub
                     ScpotDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
                     ScpotDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
-                    [scpot, scpotstd] = bicas.proc_sub.downsample_bin_values(ScpotCdf.SCPOT(k, :));
-                    [psp, pspstd]     = bicas.proc_sub.downsample_bin_values(ScpotCdf.PSP(  k, :));
+                    [scpot, scpotstd] = bicas.proc_sub.downsample_bin_sci_values(ScpotCdf.SCPOT(k, :));
+                    [psp, pspstd]     = bicas.proc_sub.downsample_bin_sci_values(ScpotCdf.PSP(  k, :));
                     ScpotDwnsCdf.SCPOT(i, :)           = scpot;
                     ScpotDwnsCdf.SCPOTSTD(i, :)        = scpotstd;
                     ScpotDwnsCdf.PSP(i)                = psp;
@@ -1379,7 +1392,7 @@ classdef proc_sub
         
         % Derive median and modified standard deviation over dimension 1.
         %
-        function [med, mstd] = downsample_bin_values(zVarSegment)
+        function [med, mstd] = downsample_bin_sci_values(zVarSegment)
             % Only first two dimensions may be size non-one.
             assert(ismatrix(zVarSegment))
             
@@ -1422,8 +1435,6 @@ classdef proc_sub
         % Wrapper around bicas.proc_sub.handle_struct_name_change to be used
         % locally.
         %
-        % NOTE: Also used in bicas.proc.process_L3. Therefore public.
-        %
         % ARGUMENTS
         % =========
         % inSciDsi : Input SCI DATASET_ID which contains the zVariable.
@@ -1437,18 +1448,6 @@ classdef proc_sub
             
             bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
         end
-        
-        
-        
-    end    % methods(Static, Access=public)
-            
-
-    
-    %##############################
-    %##############################
-    methods(Static, Access=private)
-    %##############################
-    %##############################
         
         
         
