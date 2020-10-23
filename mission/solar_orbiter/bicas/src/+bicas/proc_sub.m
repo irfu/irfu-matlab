@@ -1122,27 +1122,6 @@ classdef proc_sub
             
             
             
-            %===================================================================
-            % Set global (L2) max value for QUALITY_FLAG
-            % ------------------------------------------
-            % NOTE: min(... 'includeNaN') implies that NaN always counts as the
-            % lowest value.
-            %===================================================================
-            % PROPOSAL: Turn into generic function to cover L2-->L3.
-            %   NOTE: Two datasets are produced for L3. Need way of
-            %   distinguishing them in log messages.
-            [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
-            if value < 3
-                L.logf('warning', ...
-                    'Using setting %s = %i to set a zVar QUALITY_FLAG global max value.', ...
-                    key, value);
-            end
-            PreDc.Zv.QUALITY_FLAG = min(...
-                PreDc.Zv.QUALITY_FLAG, ...
-                value, 'includeNaN');
-
-
-
             %=================================================================
             % Set zVariables for CURRENTS and VOLTAGES to NaN based on zvUfv.
             %=================================================================
@@ -1198,10 +1177,7 @@ classdef proc_sub
             
             
             
-            QUALITY_FLAG = min(...
-                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
-                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
-                'includeNaN');
+            QUALITY_FLAG = InputLfrCwfCdf.Zv.QUALITY_FLAG;
             
             
             

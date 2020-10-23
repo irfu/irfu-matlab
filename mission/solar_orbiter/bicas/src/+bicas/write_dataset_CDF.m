@@ -38,6 +38,26 @@ function write_dataset_CDF(...
     %===========================================================================
     
     
+    %===================================================================
+    % Set global max value for zVar QUALITY_FLAG
+    % ------------------------------------------
+    % NOTE: min(... 'includeNaN') implies that NaN always counts as the
+    % lowest value.
+    %===================================================================
+    % PROPOSAL: Turn into generic function for capping QUALITY_FLAG based on
+    % arbitrary setting.
+    [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
+    assert((0 < value) && (value <= 3), 'Illegal setting "%s"=%i.', key, value)
+    if value < 3
+        L.logf('warning', ...
+            'Using setting %s = %i to set a zVar QUALITY_FLAG global max value.', ...
+            key, value);
+    end
+    ZvsSubset.QUALITY_FLAG = min(...
+        ZvsSubset.QUALITY_FLAG, ...
+        value, 'includeNaN');
+    
+    
     
     [settingNpefValue, settingNpefKey] = SETTINGS.get_fv('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
