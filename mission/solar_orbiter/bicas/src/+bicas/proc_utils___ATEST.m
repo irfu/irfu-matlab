@@ -113,21 +113,21 @@ end
 
 
 function downsample_Epoch___ATEST
-    new_test = @(zvAllUtcCa, boundaryRefUtc, intervalLengthWolsNs, timestampPosWolsNs, zvIntervalsUtcCa, iRecordsCa) ...
+    new_test = @(zvAllUtcCa, boundaryRefUtc, intervalLengthWolsNs, timestampPosWolsNs, zvIntervalsUtcCa, iRecordsCa, binSizeArrayNs) ...
         (EJ_library.atest.CompareFuncResult(...
         @bicas.proc_utils.downsample_Epoch, ...
         {spdfparsett2000(zvAllUtcCa), spdfparsett2000(boundaryRefUtc), int64(intervalLengthWolsNs), int64(timestampPosWolsNs)}, ...
-        {spdfparsett2000(zvIntervalsUtcCa), iRecordsCa(:)}));
+        {spdfparsett2000(zvIntervalsUtcCa), iRecordsCa(:), binSizeArrayNs(:)}));
     ECA = zeros(0,1);
     
     tl = {};
     
     % TEST: No timestamps/empty Epoch.
-    tl{end+1} = new_test({}, '2020-01-01T00:00:00', 10e9, 5e9, {}, {});
+    tl{end+1} = new_test({}, '2020-01-01T00:00:00', 10e9, 5e9, {}, {}, ECA);
     
     % TEST: One timestamps.
-    tl{end+1} = new_test({'2020-01-01T00:00:06'}, '2020-01-01T00:00:00', 10e9, 5e9, {'2020-01-01T00:00:05'}, {1});
-    tl{end+1} = new_test({'2020-01-01T00:00:06'}, '2020-01-01T00:00:01', 10e9, 3e9, {'2020-01-01T00:00:04'}, {1});
+    tl{end+1} = new_test({'2020-01-01T00:00:06'}, '2020-01-01T00:00:00', 10e9, 5e9, {'2020-01-01T00:00:05'}, {1}, [10e9]);
+    tl{end+1} = new_test({'2020-01-01T00:00:06'}, '2020-01-01T00:00:01', 10e9, 3e9, {'2020-01-01T00:00:04'}, {1}, [10e9]);
     
     % TEST: Varying number of timestamps in each interval
     tl{end+1} = new_test(...
@@ -140,9 +140,9 @@ function downsample_Epoch___ATEST
         {...
         '2020-01-01T00:01:05', ...
         '2020-01-01T00:01:15'...
-        }, {1, [2,3]'});
+        }, {1, [2,3]'}, [10e9, 10e9]);
     
-    % TEST: Total interval over leap second (end of 2016).
+    % TEST: Total interval over LEAP SECOND (end of 2016).
     % TEST: Data gap (two intervals without timestamps).
     % TEST: Boundary reference timestamp far from data.
     % TEST: Generally convoluted case...
@@ -165,7 +165,7 @@ function downsample_Epoch___ATEST
         '2017-01-01T00:00:10', ...
         '2017-01-01T00:00:20'...
         '2017-01-01T00:00:30'...
-        }, {[1,2]', [3,4,5,6]', ECA, ECA, [7]});
+        }, {[1,2]', [3,4,5,6]', ECA, ECA, [7]}, [10e9, 11e9, 10e9, 10e9, 10e9]);
     
     EJ_library.atest.run_tests(tl);
 end

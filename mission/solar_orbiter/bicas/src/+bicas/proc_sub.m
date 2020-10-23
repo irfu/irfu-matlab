@@ -1291,7 +1291,7 @@ classdef proc_sub
             boundaryRefTt2000 = spdfcomputett2000(v);
             % Find bin timestamps (downsampled timestamps), and which records
             % belong to which bins.
-            [zvEpochDwns, iRecordsRwnsCa] = bicas.proc_utils.downsample_Epoch(...
+            [zvEpochDwns, iRecordsRwnsCa, binSizeArrayNs] = bicas.proc_utils.downsample_Epoch(...
                 InputLfrCwfCdf.Zv.Epoch, boundaryRefTt2000, ...
                 BIN_LENGTH_WOLS_NS,      BIN_TIMESTAMP_POS_WOLS_NS);
             % NOTE: Before possible removal of records.
@@ -1306,7 +1306,20 @@ classdef proc_sub
                 QUALITY_BITMASK_dwns(i)    = bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(InputLfrCwfCdf.Zv.QUALITY_BITMASK(   k));
                 L2_QUALITY_BITMASK_dwns(i) = bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK(k));
             end
-            DELTA_PLUS_MINUS_dwns = ones(nRecordsDwns, 1) * double(BIN_LENGTH_WOLS_NS / 2);
+            %---------------------------
+            % Set DELTA_PLUS_MINUS_dwns
+            %---------------------------
+            % Constant. Does not take leap seconds into account.
+            % Epoch+DELTA_PLUS_MINUS (only "+") inside/outside of later/upper
+            % bin boundary for positive/negative leap seconds.
+            %DELTA_PLUS_MINUS_dwns = ones(nRecordsDwns, 1) * double(BIN_LENGTH_WOLS_NS / 2);
+            % Takes leap seconds into account.
+            %
+            % NOTE: Not perfect since the bin timestamp is not centered for leap
+            % seconds. Epoch+-DELTA_PLUS_MINUS will thus go outside/inside the
+            % bin boundaries for leap seconds. Same problem for both positive
+            % and negative leap seconds.
+            DELTA_PLUS_MINUS_dwns = double(binSizeArrayNs / 2);            
 
 
 

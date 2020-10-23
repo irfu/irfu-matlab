@@ -170,11 +170,15 @@ classdef proc_utils
         %
         % RETURN VALUES
         % =============
-        % zvTt2000   : Column array. ~Epoch. One timestamp per bin.
-        % iRecordsCa : Indices to CDF records for respective bins.
-        %              {iInterval}(i,1) = CDF record number.
+        % zvTt2000       : Column array. ~Epoch. One timestamp per bin.
+        % iRecordsCa     : Indices to CDF records for respective bins.
+        %                  {iInterval}(i,1) = CDF record number.
+        % binSizeArrayNs : (iBin, 1). Bin size.
+        %                  RATIONALE: Useful for automatic testing, setting
+        %                  zVar DELTA_PLUS_MINUS (if one wants to account for
+        %                  leap seconds).
         %
-        function [zvBinsTt2000, iRecordsCa] = downsample_Epoch(...
+        function [zvBinsTt2000, iRecordsCa, binSizeArrayNs] = downsample_Epoch(...
                 zvAllTt2000, boundaryRefTt2000, ...
                 binLengthWolsNs, binTimestampPosWolsNs)
             
@@ -184,6 +188,11 @@ classdef proc_utils
             % bin      = Time interval within which all corresponding CDF
             %            records should be condensed to one.
             % boundary = Edge of bin(s).
+            
+            % PROPOSAL: Return boundariesTt2000 instead of binSizeArrayNs.
+            %   PRO: More information.
+            %   PRO: Easy to derive binSizeArrayNs = diff(boundariesTt2000);
+            %   CON: Undefined (?) for special case zero bins.
             
 
             
@@ -200,8 +209,9 @@ classdef proc_utils
             
             if isempty(zvAllTt2000)
                 % CASE: zvAllTt2000 is empty.
-                zvBinsTt2000 = int64(ones(0,1));
-                iRecordsCa   = cell(0,1);
+                zvBinsTt2000   = int64(ones(0,1));
+                iRecordsCa     = cell(0,1);
+                binSizeArrayNs = zeros(0,1);
                 return
             end
             % CASE: zvAllTt2000 is not empty.
@@ -228,6 +238,7 @@ classdef proc_utils
             
             boundariesTt2000 = EJ_library.cdf.time.TT2000WOLS_to_TT2000(boundariesTtw);
             zvBinsTt2000     = EJ_library.cdf.time.TT2000WOLS_to_TT2000(zvBinsTtw);
+            binSizeArrayNs   = diff(boundariesTt2000);
             
             %==================
             % Assign iRecordCa
