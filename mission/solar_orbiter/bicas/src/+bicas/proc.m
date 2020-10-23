@@ -237,27 +237,29 @@ classdef proc
             
             
             EfieldCdf = struct();
-            EfieldCdf.Epoch            = InputLfrCwfCdf.Zv.Epoch;
-            EfieldCdf.QUALITY_BITMASK  = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
-            EfieldCdf.QUALITY_FLAG     = min(...
+            EfieldCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
+            EfieldCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
+            EfieldCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
+            EfieldCdf.QUALITY_FLAG       = min(...
                 InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
                 'includeNaN');
-            EfieldCdf.DELTA_PLUS_MINUS = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            EfieldCdf.EDC_SFR          = zvEdcMvpm;
+            EfieldCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
+            EfieldCdf.EDC_SFR            = zvEdcMvpm;
             
             
             
             ScpotCdf = struct();
-            ScpotCdf.Epoch             = InputLfrCwfCdf.Zv.Epoch;
-            ScpotCdf.QUALITY_BITMASK   = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
-            ScpotCdf.QUALITY_FLAG      = min(...
+            ScpotCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
+            ScpotCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
+            ScpotCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
+            ScpotCdf.QUALITY_FLAG       = min(...
                 InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
                 SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
                 'includeNaN');
-            ScpotCdf.DELTA_PLUS_MINUS  = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            ScpotCdf.SCPOT             = TsScpot.data;
-            ScpotCdf.PSP               = TsPsp.data;
+            ScpotCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
+            ScpotCdf.SCPOT              = TsScpot.data;
+            ScpotCdf.PSP                = TsPsp.data;
 
             
             

@@ -1068,7 +1068,9 @@ buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_L!_$.ceh"\n', ...
 buf = pmeta(buf,'FILE_TYPE','cef');
 buf = pmeta(buf,'DATASET_VERSION',EFW_DATASET_VERSION);
 buf = pmeta(buf,'LOGICAL_FILE_ID',file_name);
-buf = pmeta(buf,'VERSION_NUMBER',DATA_VERSION);
+buf = sprintf('%s%s',buf,  'START_META     =   VERSION_NUMBER\n');
+buf = sprintf('%s%s%s',buf,'   ENTRY       =   ',DATA_VERSION);
+buf = sprintf('%s%s',buf,'\nEND_META       =   VERSION_NUMBER\n');
 buf = sprintf('%s%s',buf,'START_META     =   FILE_TIME_SPAN\n');
 buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
 buf = sprintf('%s%s',buf,...
