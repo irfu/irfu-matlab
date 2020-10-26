@@ -1195,15 +1195,18 @@ classdef proc_sub
                 EpochTT(InputLfrCwfCdf.Zv.Epoch), InputLfrCwfCdf.Zv.VDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
-            [TsEdc, TsPsp, TsScpot] = solo.vdccal(VdcTs);
+            %
+            [TsEdcSrf, TsPsp, TsScpot] = solo.vdccal(VdcTs);   % CALL EXTERNAL CODE
+            %
             EJ_library.assert.sizes(...
                 InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
-                TsEdc.data,              [-1, 3], ...
+                TsEdcSrf.data,           [-1, 3], ...
                 TsPsp.data,              [-1, 1], ...
                 TsScpot.data,            [-1, 3]);
-            assert(strcmp(TsEdc.units,   'mV/m'))
-            assert(strcmp(TsPsp.units,   'V'))
-            assert(strcmp(TsScpot.units, 'V'))
+            assert(strcmp(TsEdcSrf.units,            'mV/m'))
+            assert(strcmp(TsEdcSrf.coordinateSystem, 'SRF'))
+            assert(strcmp(TsPsp.units,               'V'))
+            assert(strcmp(TsScpot.units,             'V'))
             
             
             
@@ -1218,7 +1221,7 @@ classdef proc_sub
             % therefore check for both zero and NaN.
             % Ex: Dataset 2020-08-01
             %===================================================================
-            zvEdcMvpm = TsEdc.data;    % MVPM = mV/m
+            zvEdcMvpm = TsEdcSrf.data;    % MVPM = mV/m
             % IMPLEMENTATION NOTE: ismember does not work for NaN.
             assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
                 ['EDC for antenna 1 returned from', ...
@@ -1238,7 +1241,7 @@ classdef proc_sub
             EfieldCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
             EfieldCdf.QUALITY_FLAG       = QUALITY_FLAG;
             EfieldCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            EfieldCdf.EDC_SFR            = zvEdcMvpm;
+            EfieldCdf.EDC_SRF            = zvEdcMvpm;
             
             
             
@@ -1310,8 +1313,8 @@ classdef proc_sub
             EfieldDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
             EfieldDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
             %
-            EfieldDwnsCdf.EDC_SFR            = NaN(nRecordsDwns, 3);
-            EfieldDwnsCdf.EDCSTD_SFR         = NaN(nRecordsDwns, 3);
+            EfieldDwnsCdf.EDC_SRF            = NaN(nRecordsDwns, 3);
+            EfieldDwnsCdf.EDCSTD_SRF         = NaN(nRecordsDwns, 3);
             
             for i = 1:nRecordsDwns
                 k = iRecordsRwnsCa{i};
@@ -1322,9 +1325,9 @@ classdef proc_sub
                     EfieldDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
                     EfieldDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
-                    [edc_sfr, edcstd_sfr] = bicas.proc_sub.downsample_bin_sci_values(EfieldCdf.EDC_SFR(k, :));
-                    EfieldDwnsCdf.EDC_SFR(i, :)         = edc_sfr;
-                    EfieldDwnsCdf.EDCSTD_SFR(i, :)      = edcstd_sfr;
+                    [edc_sfr, edcstd_sfr] = bicas.proc_sub.downsample_bin_sci_values(EfieldCdf.EDC_SRF(k, :));
+                    EfieldDwnsCdf.EDC_SRF(i, :)         = edc_sfr;
+                    EfieldDwnsCdf.EDCSTD_SRF(i, :)      = edcstd_sfr;
                 end
             end
             
