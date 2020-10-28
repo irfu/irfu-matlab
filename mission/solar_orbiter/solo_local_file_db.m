@@ -338,8 +338,12 @@ classdef solo_local_file_db < solo_file_db
             subDir = 'tds_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
           case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
             subDir = 'thr';  % ie combined 2nd of the two using only first and last char?
+          case 'rpw-bia-scpot-10-seconds'
+            subDir = 'bia-scpot-10-seconds';  % Locally produced files at IRFU (may have to change in future if official)
           case 'rpw-bia-scpot'
             subDir = 'bia-scpot'; % Locally produced files at IRFU (may have to change in future if official)
+          case 'rpw-bia-efield-10-seconds'
+            subDir = 'bia-efield-10-seconds';  % Locally produced files at IRFU (may have to change in future if official)
           case 'rpw-bia-efield'
             subDir = 'bia-efield'; % Locally produced files at IRFU (may have to change in future if official)
           otherwise
