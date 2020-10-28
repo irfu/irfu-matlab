@@ -384,7 +384,11 @@ elseif flag_spectrogram
   for d = 1:length(dep_x)
     dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
     dep_x{d}.s = dep.DEPEND_X{d,1};
+    try
     dep_x{d}.fillv = getfillval(dobj,dep_x{d}.s);
+    catch
+      dep_x{d}.fillv = '';
+    end
     if ~strcmp(dep_x{d}.type,'char')
       dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
     end
