@@ -6,7 +6,7 @@ function [ed,d]=irf_edb(e,b,angle_lim,flag)
 %          b - [Bx By Bz] or [t Bx By Bz]
 %  angle_lim - B angle with respect to the spin plane should be at least
 %              angle_lim degrees otherwise Ez is set to 0 or to NaN
-%              if flag 'Eperp+NaN' i sgiven.
+%              if flag 'Eperp+NaN' is given.
 %         ed - E field output
 %          d - B elevation angle above spin plane
 %
@@ -74,6 +74,19 @@ elseif size(b,1) ~= size(e,1)
 end
 
 switch lower(flag_method)
+  case 'ex=0' % Solar Orbiter
+    d=atan2d(bd(:,3),bd(:,2));
+    ind=find(abs(d)>angle_lim);
+    
+    ed(:,3) = ed(:,3)*NaN;
+    if ~isempty(ind)
+      ed(ind,3)=-(ed(ind,2).*bd(ind,2))./bd(ind,3);
+    end
+    
+    irf.log('notice',sprintf(...
+      'E.B=0 (Ex=0) was used for %0.0f from %0.0f data points',...
+      length(ind),length(d)));
+    
   case 'e.b=0'
     % Calculate using assumption E.B=0
     
