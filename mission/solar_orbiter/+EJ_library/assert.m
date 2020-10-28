@@ -73,12 +73,18 @@ classdef assert
 %
 %
 % PROPOSAL: Add argument for name of variable (used as argument) so that can automatically print better error messages.
-% PROPOSAL: Optional error message (string) as last argument to ~every method.
+% PROPOSAL: Optional last arguments for (1) error message, or (2) error msg ID + error message.
 %   CON: Can conflict with other string arguments.
-%       Ex: Method "struct".
-% PROPOSAL: Optional error message identifier as second-last argument to ~every method (see "error").
-%   CON: Can conflict with other string arguments.
-%
+%       CON-PROPOSAL: For assertions with arbitrary number of arguments
+%       (varargin), use cell array instead.
+%           Ex: sizes({xSc, [-1, 1], ySc, [-1, 1]}, 'xpilot.BadSpacecraftShape', 'Illegal spacecraft shape specification.')
+%           PRO: Only sizes() uses varargin 2020-10-07.
+% PROPOSAL: Same syntax as for last arguments of MATLAB function assert(), i.e. 
+%   (1) error message
+%   (2) error message ID + error message (sprintf pattern) + (optional) variable values
+%       for error message (sprintf pattern)
+%   PROPOSAL: Internal assertion error function can process varargin for every
+%             assertion function.
 %
 %
 % PROPOSAL: Have way of obtaining whether assertion is satisfied, without throwing error.
@@ -510,6 +516,7 @@ classdef assert
         %       consistent sizes of multiple (zv/MATLAB) variables.
         %
         function [varargout] = sizes(varargin)
+            % See EJ_library.utils.sizes for BOGIQ.
 
             varargout = cell(1, nargout);
             [condSatisfied, varargout{:}] = EJ_library.utils.sizes(varargin{:});

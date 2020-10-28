@@ -17,22 +17,22 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-04-03.
 %
-function utcStrCa = tt2000_to_UTC_str_many(tt2000Array)
+function utcStrCa = TT2000_to_UTC_str_many(tt2000Array)
     % TODO-DECISION: How handle various needs for formats? Rounding, truncation?
     % PROPOSAL: Assertions on argument being int64 as they are in CDF?
     % PROPOSAL: Handle array.
     %   NOTE: Return value must be cell array.
     %   NOTE: Special case for empty array unless backward-incompatible.
     %   NOTE: Useful to be able to return string, not cell. See actually made calls.
-    %   PROPOSAL: Separate function tt2000_to_UTC_str_many.
+    %   PROPOSAL: Separate function TT2000_to_UTC_str_many.
     %       CON: Might duplicate future functionality.
     %       PROPOSAL: Implement this function using *many function.
     %   PROPOSAL: Flag for returning cell or string.
     %
     % NOTE: Should be analogous to any inverted conversion function.
     
-    % NOTE: EJ_library.cdf.tt2000_to_datevec can handle Nx1 arrays, where N>=1.    
-    dateVec = EJ_library.cdf.tt2000_to_datevec(tt2000Array(:));
+    % NOTE: EJ_library.cdf.TT2000_to_datevec can handle Nx1 arrays, where N>=1.    
+    dateVec = EJ_library.cdf.TT2000_to_datevec(tt2000Array(:));
     
     utcStrCa = cell(size(tt2000Array));
     for i = 1:numel(utcStrCa)

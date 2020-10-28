@@ -338,12 +338,12 @@ classdef proc_utils
 
 
 
-        function utcStr = tt2000_to_UTC_str(zvTt2000)
+        function utcStr = TT2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
             
             bicas.proc_utils.assert_zv_Epoch(zvTt2000)
             
-            utcStr = EJ_library.cdf.tt2000_to_UTC_str(zvTt2000);
+            utcStr = EJ_library.cdf.TT2000_to_UTC_str(zvTt2000);
         end
         
         
@@ -440,12 +440,12 @@ classdef proc_utils
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
                     
                     if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
-                        epochMinStr = bicas.proc_utils.tt2000_to_UTC_str(min(varValue));
-                        epochMaxStr = bicas.proc_utils.tt2000_to_UTC_str(max(varValue));
+                        epochMinStr = bicas.proc_utils.TT2000_to_UTC_str(min(varValue));
+                        epochMaxStr = bicas.proc_utils.TT2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
                         bicas.proc_utils.assert_zv_Epoch(uniqueValues)
-                        valueStrs = EJ_library.cdf.tt2000_to_UTC_str_many(uniqueValues);
+                        valueStrs = EJ_library.cdf.TT2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
                     else
                         valuesStr = '-';

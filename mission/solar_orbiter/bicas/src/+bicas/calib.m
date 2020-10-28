@@ -1322,7 +1322,7 @@ classdef calib < handle
             
             for iEpochL = 1:numel(RctData.epochL)
                 
-                L.logf(LL, 'Below values are used for data beginning %s:', EJ_library.cdf.tt2000_to_UTC_str(RctData.epochL(iEpochL)))
+                L.logf(LL, 'Below values are used for data beginning %s:', EJ_library.cdf.TT2000_to_UTC_str(RctData.epochL(iEpochL)))
                 
                 % Log bias current calibration
                 L.logf(LL, '    BIAS current offsets: %s [aampere]',         bicas.calib.vector_string('% 10e', RctData.Current.offsetsAAmpere(iEpochL, :)))
@@ -1344,7 +1344,7 @@ classdef calib < handle
             EJ_library.assert.sizes(dcDiffOffsetsAVolt, [NaN, 3]);            
             for iEpochH = 1:numel(RctData.epochH)
                 L.logf(LL, 'Below values are used for data beginning %s:', ...
-                    EJ_library.cdf.tt2000_to_UTC_str(RctData.epochH(iEpochH)))
+                    EJ_library.cdf.TT2000_to_UTC_str(RctData.epochH(iEpochH)))
                 
                 L.logf(LL, '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
                     bicas.calib.vector_string('%g', RctData.dcSingleOffsetsAVolt(iEpochH, :)))

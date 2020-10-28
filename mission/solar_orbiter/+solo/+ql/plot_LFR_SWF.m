@@ -109,8 +109,8 @@ function hAxesArray = plot_LFR_SWF(filePath)
 %         vAc23 = vAc23(I1:I2, :);
 %         
 %         fprintf('Limiting records to %s -- %s\n', ...
-%             EJ_library.cdf.tt2000_to_UTC_str(epoch(1)), ...
-%             EJ_library.cdf.tt2000_to_UTC_str(epoch(end)))
+%             EJ_library.cdf.TT2000_to_UTC_str(epoch(1)), ...
+%             EJ_library.cdf.TT2000_to_UTC_str(epoch(end)))
 %     end
     
     
