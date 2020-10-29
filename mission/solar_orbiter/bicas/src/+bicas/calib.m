@@ -603,7 +603,7 @@ classdef calib < handle
             %==============================
             BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
             if obj.lfrTdsTfDisabled
-                lfrItfIvpt = @(omegaRps) (ones(omegaRps));
+                lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
             else
                 lfrItfIvpt = obj.get_LFR_ITF(cti1, iBlts, iLsf);
             end
