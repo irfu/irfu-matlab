@@ -3,7 +3,8 @@
 % (1) define the set of permitted/existing settings keys, and
 % (2) set all settings keys to their initial default values.
 %
-% NOTE: This function does not declare any global SETTINGS object and does not rely on such one being already defined.
+% NOTE: This function does not declare any global SETTINGS object and does not
+% rely on such one being already defined.
 % NOTE: Slightly deceiving name, since it defines which keys are permitted.
 %
 %
@@ -16,9 +17,11 @@
 %
 % NOTES ON SETTINGS KEY NAMING CONVENTION
 % =======================================
-% Some constants (1) correspond exactly to fields in the (JSON) S/W descriptor, and (2) are unlikely to be used for
-% anything else. These are labeled with a prefix "SWD." and the remainder is in lowercase (because that is what they are
-% in the S/W descriptor).
+% Some constants
+%   (1) correspond exactly to fields in the (JSON) S/W descriptor, and
+%   (2) are unlikely to be used for anything else.
+% These are labeled with a prefix "SWD." and the remainder is in lowercase
+% (because that is what they are in the S/W descriptor).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -103,32 +106,36 @@ function SETTINGS = create_default_SETTINGS()
     S = bicas.settings();
 
     % The MATLAB command (e.g. path) to use to launch MATLAB for BICAS.
-    % NOTE: Only the value in the BICAS config file is actually used. The normal priority order for how SETTINGS values are
-    % being obtained does apply here but does not matter since the value is only used by the bash wrapper script for
-    % launching MATLAB.
+    % NOTE: Only the value in the BICAS config file is actually used. The normal
+    % priority order for how SETTINGS values are being obtained does apply here
+    % but does not matter since the value is only used by the bash wrapper
+    % script for launching MATLAB.
     S.define_setting('MATLAB_COMMAND', '');
     
     
     
-    % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher
-    % script.
+    % Prefix used to identify the subset of stdout that should actually be
+    % passed on as stdout by the bash launcher script.
     %S.define_setting('STDOUT_PREFIX',               'STDOUT: ');
     % NOTE: Analogous LOG_PREFIX is hard-coded for safety.
     
-    % Parameters influencing how JSON objects are printed with function JSON_object_str.
+    % Parameters influencing how JSON objects are printed with function
+    % JSON_object_str.
     S.define_setting('JSON_OBJECT_STR.INDENT_SIZE', 4);
     
-    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter
-    % representation (min-max range)
+    % When logging contents of matrix/vector, maximum number of unique values
+    % printed before switching to shorter representation (min-max range)
     S.define_setting('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED', 5);
-    % When logging contents of TT2000 vector (in practise zVar Epoch), maximum number of unique TT2000 values printed
-    % before switching to shorter representation (min-max range).
+    % When logging contents of TT2000 vector (in practise zVar Epoch), maximum
+    % number of unique TT2000 values printed before switching to shorter
+    % representation (min-max range).
     S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
     
     % Enable inofficial (to ROC) support for S/W modes
     % ------------------------------------------------
-    % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to the official support
-    % for L1R. LFR_TDS refers to LFR/TDS input datasets, as opposed to L1 current datasets.
+    % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
+    % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
+    % opposed to L1 current datasets.
     S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
     % Enable s/w modes for processing L2-->L3 datasets.
     S.define_setting('SW_MODES.L2-L3_ENABLED',      0);
@@ -140,8 +147,11 @@ function SETTINGS = create_default_SETTINGS()
     %####################
     % Variables which, if non-empty, are used to override the corresponding
     % environment variables.
-    S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
-    S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
+    % ROC_RCS_CAL_PATH : Defined in RCS ICD. Path to dir. with calibration files.
+    S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');
+    % ROC_RCS_MASTER_PATH : Defined in RCS ICD. Path to dir. with master CDF
+    %                       files.
+    S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   
     
     
     
@@ -162,7 +172,8 @@ function SETTINGS = create_default_SETTINGS()
     
     S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
     
-    % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
+    % Require input CDF Global Attribute "DATASET_ID" to match the expected
+    % value.
     S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
     S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
     
@@ -342,7 +353,8 @@ function SETTINGS = create_default_SETTINGS()
     
     % Maximum value for zVar QUALITY_FLAG in output datasets.
     % YK 2020-08-31: Use 2=Survey data, possibly not publication-quality
-    % Temporary?
+    %
+    % TODO-NI/DEC: Temporary? Use for all output datasets (L2, L3)?
     S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
     
     % Path to RCS NSO file. Relative to BICAS root.
@@ -352,7 +364,7 @@ function SETTINGS = create_default_SETTINGS()
     
     
     
-    %===================================================================================================================
+    %============================================================================
     % PROCESSING.RCT_REGEXP.*
     % Regular expressions for the filenames of RCTs
     % ---------------------------------------------
@@ -414,14 +426,17 @@ function SETTINGS = create_default_SETTINGS()
     % (which receiver should the BIAS RCT specify when BIAS uses the same RCT
     % for both LFR & TDS data?).
     %
-    % NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add seconds=2 digits).
-    % NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of day, only date)
+    % NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
+    % seconds=2_digits).
+    % NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of
+    % day, only date)
     %
     % Examples of de facto RCT filenames (2019 Sept + later)
     % ------------------------------------------------------
     % BIAS:
     %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
-    %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention, closer to documentation)
+    %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention,
+    %                                                  closer to documentation)
     %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old implemented convention)
     %           SOLO_CAL_RPW_BIAS_V202004062127.cdf   (almost correct)
     % LFR:
@@ -434,7 +449,7 @@ function SETTINGS = create_default_SETTINGS()
     %
     % NOTE: Only the last filename in a sorted list of matching filenames will
     % actually be used.
-    %===================================================================================================================
+    %============================================================================
     CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
     S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);

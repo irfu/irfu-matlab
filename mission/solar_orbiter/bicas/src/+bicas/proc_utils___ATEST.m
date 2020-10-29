@@ -16,7 +16,7 @@ function proc_utils___ATEST
     set_struct_field_rows___ATEST
     convert_matrix_to_cell_array_of_vectors___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
-    convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
+    %convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     set_NaN_after_snapshots_end___ATEST
     downsample_Epoch___ATEST
     
@@ -80,22 +80,22 @@ end
 
 
 
-function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
-% NOTE: Indirectly tests convert_N_to_1_SPR_Epoch too.
-
-    % NOTE: Tests should actually be independent of the exact value(!)
-    ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
-
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_ACQUISITION_TIME, inputs, outputs));
-    tl = {};
-    
-    tl{end+1} = new_test( {uint32([123, 100]), 1, 100, ACQUISITION_TIME_EPOCH_UTC}, {uint32([123, 100])});    
-    tl{end+1} = new_test(...
-        {uint32([123, 100; 4, 65486]),                   4, [65536/100; 65536/100], ACQUISITION_TIME_EPOCH_UTC}, ...
-        {uint32([123, 100; 123, 200; 123, 300; 123, 400; 4, 65486; 5, 50; 5, 150; 5, 250])});
-    
-    EJ_library.atest.run_tests(tl)
-end
+% function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
+% % NOTE: Indirectly tests convert_N_to_1_SPR_Epoch too.
+% 
+%     % NOTE: Tests should actually be independent of the exact value(!)
+%     ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
+% 
+%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_ACQUISITION_TIME, inputs, outputs));
+%     tl = {};
+%     
+%     tl{end+1} = new_test( {uint32([123, 100]), 1, 100, ACQUISITION_TIME_EPOCH_UTC}, {uint32([123, 100])});    
+%     tl{end+1} = new_test(...
+%         {uint32([123, 100; 4, 65486]),                   4, [65536/100; 65536/100], ACQUISITION_TIME_EPOCH_UTC}, ...
+%         {uint32([123, 100; 123, 200; 123, 300; 123, 400; 4, 65486; 5, 50; 5, 150; 5, 250])});
+%     
+%     EJ_library.atest.run_tests(tl)
+% end
 
 
 

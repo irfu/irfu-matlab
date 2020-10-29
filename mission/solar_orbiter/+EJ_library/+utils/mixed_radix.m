@@ -1,8 +1,10 @@
 %
 % Functions for working with mixed radix numbers.
 %
-% Ex: Can interpret day+hour+minute+second as digits in mixed radix number (if
-% not using leap seconds).
+% Ex: Can interpret [dayNbr, hours, minutes, second] as digits in mixed radix
+% number (if not using leap seconds).
+% Ex: Can interpret [seconds, milliseconds, microseconds, nanoseconds] as used
+% by the spdf* TT2000 functions.
 %
 %
 % NOTE: Compare EJ_library.utils.extract_subinteger.
@@ -12,13 +14,19 @@
 % ===========
 % MRD = Mixed Radix Digits, i.e. the digits in mixed radix number.
 % --
-% bases : (iDigit)
-% mrd   : (iNbr, iDigit). iDigit=1 <==> least significant digit.
-%         NOTE: This means that digits are in the opposite order to what is
-%         convention when printing out digits as a literal.
+% iDigit=1 <==> Least significant digit.
+%            NOTE: This means that digits are in the opposite order to what is
+%            convention when printing out digits as a literal. It is also the
+%            opposite convention compared to MATLAB's date vectors.
+%            Therefore often necessary to use "fliplr()".
+% iNbr     : Index to separate number, to be converted/treated separately.
+% --
+% bases : (iDigit).
+% mrd   : (iNbr, iDigit). 
 % n     : (iNbr). Regular integer. May be negative.
 % --
-% It is implicit that all arguments will be rounded to integers.
+% It is implicit that all arguments will be rounded to integers internally. The
+% caller must be sure to not go outside of range used by internal data type.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -26,8 +34,8 @@
 %
 classdef mixed_radix   % < handle
     % PROPOSAL: Shorter class name.
-    % PROPOSAL: Outside of utils package.
-    % PROPOSAL: Automatic test code.
+    % PROPOSAL: Move outside of utils package.
+
     
 
     %#######################
@@ -42,6 +50,32 @@ classdef mixed_radix   % < handle
         % PROPOSAL: Permit negative integers (not MRD).
         %   CON: Caller can do mod before calling instead.
         %       CON: Extra work for caller.
+        
+        
+        
+        % NOTE: Permits n to be outside of range defined by bases. Result can be
+        % interpreted as using argument n := mod(n, prod(bases)).
+        % RATIONALE: Useful for in particular negative values where one can not
+        % emulate the behaviour by setting a very large highest base.
+        %   Ex: Negative day numbers+time of day.
+        function mrd = integer_to_MRD(n, bases)
+            % ASSERTIONS
+            [nNbrs, nBases] = EJ_library.assert.sizes(n, [-1, 1], bases, [-2]);
+            assert(all(bases >= 1))
+            
+            n     = int64(n);
+            bases = int64(bases);
+            
+            mrd = int64(zeros(nNbrs, nBases));
+            B   = int64(1);
+            for i = 1:nBases
+                mrd(:, i) = mod(idivide(int64(n), B, 'floor'), bases(i));
+                B = B*bases(i);
+            end
+            
+            % ASSERTION
+            %assert(all(n<B), 'n is too large for the specified bases.')
+        end
         
         
         
@@ -71,32 +105,6 @@ classdef mixed_radix   % < handle
                 n = n + mrd(:, i) * B;
                 B = B * bases(i);
             end
-        end
-        
-        
-        
-        % NOTE: Permits n to be outside of range defined by bases. Result can be
-        % interpreted as being used for n := mod(n, prod(bases)).
-        % RATIONALE: Useful for in particular negative values where one can not
-        % emulate the behaviour by setting a very large highest base.
-        %   Ex: Negative day numbers+time of day.
-        function mrd = integer_to_MRD(n, bases)
-            % ASSERTIONS
-            [nNbrs, nBases] = EJ_library.assert.sizes(n, [-1, 1], bases, [-2]);
-            assert(all(bases >= 1))
-            
-            n     = int64(n);
-            bases = int64(bases);
-            
-            mrd = int64(zeros(nNbrs, nBases));
-            B   = int64(1);
-            for i = 1:nBases
-                mrd(:, i) = mod(idivide(int64(n), B, 'floor'), bases(i));
-                B = B*bases(i);
-            end
-            
-            % ASSERTION
-            %assert(all(n<B), 'n is too large for the specified bases.')
         end
         
         

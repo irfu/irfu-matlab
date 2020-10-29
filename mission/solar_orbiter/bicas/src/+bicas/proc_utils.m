@@ -393,32 +393,32 @@ classdef proc_utils
 
 
 
-        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(...
-            ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC)
-        % Function intended for converting ACQUISITION_TIME (always one time per
-        % record) from many samples/record to one sample/record. See
-        % convert_N_to_1_SPR_Epoch which is analogous.
-        % 
-        % ARGUMENTS AND RETURN VALUES
-        % ===========================
-        % ACQUISITION_TIME_1         : Nx2 vector.
-        % freqWithinRecords          : Nx2 vector.
-        % ACQUISITION_TIME_2         : Nx2 vector.
-        % ACQUISITION_TIME_EPOCH_UTC : UTC as 1x9 row vector.
-        %
-        % NOTE: Theoretically, the function should be independent of the exact
-        % value of ACQUISITION_TIME_EPOCH_UTC.
-
-        % Command-line algorithm "test code":
-        % clear; t_rec = [1;2;3;4]; f = [5;1;5;20]; N=length(t_rec); M=5; I_sample=repmat(0:(M-1), [N, 1]); F=repmat(f, [1,M]); T_rec = repmat(t_rec, [1,M]); T = T_rec + I_sample./F; reshape(T', [numel(T), 1])
-            
-            % ASSERTIONS
-            bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
-
-            tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
-            tt2000_2           = EJ_library.so.convert_N_to_1_SPR_Epoch(     tt2000_1,           nSpr, freqWithinRecords);
-            ACQUISITION_TIME_2 = bicas.proc_utils.TT2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
-        end
+%         function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(...
+%             ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC)
+%         % Function intended for converting ACQUISITION_TIME (always one time per
+%         % record) from many samples/record to one sample/record. See
+%         % convert_N_to_1_SPR_Epoch which is analogous.
+%         % 
+%         % ARGUMENTS AND RETURN VALUES
+%         % ===========================
+%         % ACQUISITION_TIME_1         : Nx2 vector.
+%         % freqWithinRecords          : Nx2 vector.
+%         % ACQUISITION_TIME_2         : Nx2 vector.
+%         % ACQUISITION_TIME_EPOCH_UTC : UTC as 1x9 row vector.
+%         %
+%         % NOTE: Theoretically, the function should be independent of the exact
+%         % value of ACQUISITION_TIME_EPOCH_UTC.
+% 
+%         % Command-line algorithm "test code":
+%         % clear; t_rec = [1;2;3;4]; f = [5;1;5;20]; N=length(t_rec); M=5; I_sample=repmat(0:(M-1), [N, 1]); F=repmat(f, [1,M]); T_rec = repmat(t_rec, [1,M]); T = T_rec + I_sample./F; reshape(T', [numel(T), 1])
+%             
+%             % ASSERTIONS
+%             bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
+% 
+%             tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
+%             tt2000_2           = EJ_library.so.convert_N_to_1_SPR_Epoch(     tt2000_1,           nSpr, freqWithinRecords);
+%             ACQUISITION_TIME_2 = bicas.proc_utils.TT2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
+%         end
         
         
         

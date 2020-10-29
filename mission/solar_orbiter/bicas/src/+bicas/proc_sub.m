@@ -1183,13 +1183,13 @@ classdef proc_sub
             
             %===================================================================
             % Calculate
-            % (1) E-field, and
-            % (2) s/c potentials
-            % via BICAS-external code
-            % -----------------------
+            %   (1) E-field, and
+            %   (2) s/c potentials
+            % via BICAS-external code (inside irfu-matlab)
+            % --------------------------------------------
             % NOTE: Needs to be careful with the units, and incompatible updates
             % to solo.vdccal without the knowledge of the BICAS author.
-            % Therefore extra assertions to detect such changes.
+            % Therefore uses extra assertions to detect such changes.
             %===================================================================
             VdcTs = TSeries(...
                 EpochTT(InputLfrCwfCdf.Zv.Epoch), InputLfrCwfCdf.Zv.VDC, ...
