@@ -152,26 +152,28 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
 
     % Set the order of the polynomial that should be used for detrending.
     N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
+    % EMID = Error Message ID
+    EMID_ARG = 'BICAS:apply_TF_freq:Assertion:IllegalArgument';
     
     %============
     % ASSERTIONS
     %============
     if ~iscolumn(y1)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'Argument y1 is not a column vector.')
+        error(EMID_ARG, 'Argument y1 is not a column vector.')
     elseif ~isnumeric(y1)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'Argument y1 is not numeric.')
+        error(EMID_ARG, 'Argument y1 is not numeric.')
     elseif ~isreal(y1)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'y1 is not real.')
+        error(EMID_ARG, 'y1 is not real.')
         % NOTE: The algorithm itself does not make sense for non-real functions.
     elseif ~isscalar(dt)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'dt is not scalar.')
+        error(EMID_ARG, 'dt is not scalar.')
     elseif ~(dt>0)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'dt is not positive.')
+        error(EMID_ARG, 'dt is not positive.')
     elseif ~isa(tf, 'function_handle')
         % EJ_library.assert.func does not seem to handle return values correctly.
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'tf is not a function.')
+        error(EMID_ARG, 'tf is not a function.')
     elseif ~isreal(tf(0))
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'tf(0) is not real.')
+        error(EMID_ARG, 'tf(0) is not real.')
     end
 
 
@@ -182,6 +184,10 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
 
+    
+    %=========================================================================
+    % Create modified version of TF which is set to zero for high frequencies
+    %=========================================================================
     assert(...
         isnumeric(  Settings.tfHighFreqLimitFraction) ...
         && isscalar(Settings.tfHighFreqLimitFraction) ...
@@ -190,7 +196,7 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     % NOTE: Permit Settings.tfHighFreqLimitFraction to be +Inf.
     tfHighFreqLimitRps = Settings.tfHighFreqLimitFraction * pi/dt;   % pi/dt = 2*pi * (1/2 * 1/dt)
     tf2 = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
-    clear tf    % Clear just to make sure it is not used later
+    clear tf    % Clear just to make sure it is not used later.
 
 
 
@@ -300,7 +306,7 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     %     reference page for the specific mathematical definition of this
     %     symmetry."
     y2 = ifft(yDft2, 'symmetric');
-    y2p = ifft(yDft2);    % TEST
+    %y2p = ifft(yDft2);    % TEST
     
     
     
