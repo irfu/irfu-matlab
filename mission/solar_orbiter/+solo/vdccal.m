@@ -18,13 +18,15 @@ V2corr = double(VDC.y.data) -double(d23R.data);
 V23 = (V2corr + double(VDC.z.data))/2; % (V2 + V3) /2
 V23corr = (V23.*K123R.data(:,1) + K123R.data(:,2));
 
-E23 = double(VDC.z.data) - V2corr;
-E23 = E23*1e3/6;
+% Ey_SRF = V3 - V2, 6.99 - 1/2 of distance between the antennas
+Ey_SRF = double(VDC.z.data) - V2corr;
+Ey_SRF = Ey_SRF*1e3/6.99;
 
-E123 = V23corr - double(VDC.x.data);
-E123 = E123*1e3/6;
+% Ez_SRF = V23 - V1
+Ez_SRF = V23corr - double(VDC.x.data);
+Ez_SRF = Ez_SRF*1e3/6.97;
 
-DCE_SRF = irf.ts_vec_xyz(VDC.time,[E23*0 -E23 E123]);
+DCE_SRF = irf.ts_vec_xyz(VDC.time,[Ey_SRF*0 Ey_SRF Ez_SRF]);
 DCE_SRF.units = 'mV/m';
 DCE_SRF.coordinateSystem = 'SRF';
 
