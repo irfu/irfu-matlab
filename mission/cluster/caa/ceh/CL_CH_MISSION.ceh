@@ -12,18 +12,18 @@ END_META   = MISSION
 
 START_META     = MISSION_TIME_SPAN 
     VALUE_TYPE = ISO_TIME_RANGE 
-    ENTRY      = 2000-08-16T12:39:00Z/2005-12-31T23:59:59Z
+    ENTRY      = 2000-07-16T00:00:00Z/2026-08-22T00:00:00Z
 END_META       = MISSION_TIME_SPAN 
 
 START_META = MISSION_AGENCY 
-    ENTRY  = "ESA>European Space Agency" 
+    ENTRY  = "ESA" 
 END_META   = MISSION_AGENCY 
 
 START_META = MISSION_DESCRIPTION 
     ENTRY  = "The aim of the Cluster mission is to study small-scale structures of the magnetosphere " 
     ENTRY  = "and its environment in three dimensions. To achieve this, Cluster is constituted of four " 
     ENTRY  = "identical spacecraft that will flight in a tetrahedral configuration. The separation distances " 
-    ENTRY  = "between the spacecraft will be varied between 600 km and 20 000 km, according to the " 
+    ENTRY  = "between the spacecraft will be varied between ~40 km and 10 000 km, according to the " 
     ENTRY  = "key scientific regions." 
 END_META   = MISSION_DESCRIPTION 
 
