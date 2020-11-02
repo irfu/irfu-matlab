@@ -2,10 +2,6 @@
 % This function should be agnostic of CLI syntax.
 %
 %
-% Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2016-06-09
-%
-%
 % ARGUMENTS AND RETURN VALUES
 % ===========================
 % SwModeInfo
@@ -27,6 +23,10 @@
 %   input datasets, then the GlobalAttributes might be wrong. Should ideally be
 %   run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
+%
+%
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
+% First created 2016-06-09
 %
 function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, rctDir, NsoTable, SETTINGS, L)
     

@@ -11,7 +11,7 @@
 %
 % RETURN VALUE
 % ============
-% isSubset : Whether set1 is a subset of set2.
+% isSubset : Whether set1 is a subset of set2 (including equal sets).
 % 
 %
 % Author: Erik P G Johansson

@@ -21,7 +21,7 @@ classdef NSO_table   % < handle
     %
     % PROPOSAL: Some kind of feature for being able to trigger real NSO ID behaviour just for
     % testing, but only with proper setting.
-    %   PROPOSAL: process_quality_filter: Translate test NSO ID to proper NSO
+    %   PROPOSAL: process_quality_filter_L2: Translate test NSO ID to proper NSO
     %   ID, but only with proper setting.
     
     properties(SetAccess=immutable, GetAccess=public)

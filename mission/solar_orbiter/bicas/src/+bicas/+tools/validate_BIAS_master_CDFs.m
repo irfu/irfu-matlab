@@ -42,6 +42,11 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %   NOTE: Not sure if all have FILLVAL.
     %
     % TODO-NI: Useful for datasets (master CDFs filled with data)?
+    %
+    % PROPOSAL: Check length of variable attributes.
+    %   FIELD_NAM: Max 30 chars (ISTP)
+    %   CATDESC:   Approx 80 chars (ISTP)
+    %   LABLAXIS:  See ISTP
     
     % ASSERTION
     % IMPLEMENTATION NOTE: Natural mistake to assume that there is only one argument for a single path.

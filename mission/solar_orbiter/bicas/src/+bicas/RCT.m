@@ -4,11 +4,13 @@
 %
 % DESIGN INTENT
 % =============
-% Implemented so that no calibration data is modified/added to/removed from. The returned data structures reflect the
-% content of the RCTs, not necessarily the data used. Modification of data (in particular modifications of transfer
+% Implemented so that no calibration data is modified/added to/removed from. The
+% returned data structures reflect the content of the RCTs, not necessarily the
+% data used. Modification of data (in particular modifications of transfer
 % functions, e.g. extrapolation or cut-offs) should be done elsewhere.
 % --
-% NOTE: BIAS & LFR RCTs contain FTFs which are not inverted here. TDS RCTs contain ITFs.
+% NOTE: BIAS & LFR RCTs contain FTFs which are not inverted in this code.
+%       TDS RCTs contain ITFs.
 % NOTE: Code still converts RCT TFs slightly:
 %   frequency      : Hz    --> rad/s
 %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
@@ -60,14 +62,16 @@ classdef RCT
         
         
         
-        % Determine the path to the RCT that should be used according to algorithm specified in the documentation(?). If
-        % there are multiple matching candidates, choose the latest one as indicated by the filename.
+        % Determine the path to the RCT that should be used according to
+        % algorithm specified in the documentation(?). If there are multiple
+        % matching candidates, choose the latest one as indicated by the
+        % filename.
         %
         %
         % IMPLEMENTATION NOTES
         % ====================
-        % Useful to have this as separate functionality so that the chosen RCT to use can be explicitly overridden via
-        % e.g. settings.
+        % Useful to have this as separate functionality so that the chosen RCT
+        % to use can be explicitly overridden via e.g. settings.
         %
         function path = find_RCT_regexp(rctDir, filenameRegexp, L)
 
@@ -77,7 +81,8 @@ classdef RCT
             dirObjectList = dir(rctDir);
             dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
             filenameList = {dirObjectList.name};
-            filenameList(~EJ_library.str.regexpf(filenameList, filenameRegexp)) = [];    % Eliminate non-matching filenames.
+            % Eliminate non-matching filenames.
+            filenameList(~EJ_library.str.regexpf(filenameList, filenameRegexp)) = [];
             
             % ASSERTION / WARNING
             if numel(filenameList) == 0
@@ -105,8 +110,9 @@ classdef RCT
                 L.log('debug', msg)
             end
             
-            % IMPLEMENTATION NOTE: Not logging which calibration file is selected, since this function is not supposed
-            % to actually load the content.
+            % IMPLEMENTATION NOTE: Not logging which calibration file is
+            % selected, since this function is not supposed to actually load the
+            % content.
         end
 
 
@@ -135,7 +141,8 @@ classdef RCT
             
             try
                 % NOTE: Assumes 1 CDF record or many (time-dependent values).
-                % ==> Must handle that dataobj assigns differently for these two cases.
+                % ==> Must handle that dataobj assigns differently for these two
+                %     cases.
                 epochL                    = bicas.RCT.norm_do_zv(Do.data.Epoch_L);
                 epochH                    = bicas.RCT.norm_do_zv(Do.data.Epoch_H);
                 biasCurrentOffsetsAAmpere = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
@@ -147,8 +154,10 @@ classdef RCT
                 nEpochL = size(epochL, 1);
                 nEpochH = size(epochH, 1);
 
-                % IMPLEMENTATION NOTE: Corrects for what seems to be a bug in dataobj. dataobj permutes/removes indices,
-                % and permutes them differently depending on the number of CDF records (but wrong in all cases).
+                % IMPLEMENTATION NOTE: Corrects for what seems to be a bug in
+                % dataobj. dataobj permutes/removes indices, and permutes them
+                % differently depending on the number of CDF records (but wrong
+                % in all cases).
                 %
                 % 1 CDF record : cdfdump: "TRANSFER_FUNCTION_COEFFS CDF_DOUBLE/1   3:[2,8,4]       F/TTT"   # 3=number of dimensions/record
                 % 2 CDF records: cdfdump: "TRANSFER_FUNCTION_COEFFS CDF_DOUBLE/1   3:[2,8,4]       T/TTT"
@@ -161,7 +170,8 @@ classdef RCT
                 %=======================================================
                 % ASSERTIONS: Size of tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %=======================================================
-                nNdCoeffs = EJ_library.assert.sizes(ftfCoeffs, [nEpochL, -1, 2, 4]);   % ND = Numerator Denominator
+                % ND = Numerator Denominator
+                nNdCoeffs = EJ_library.assert.sizes(ftfCoeffs, [nEpochL, -1, 2, 4]);
                 assert(nNdCoeffs >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
 
                 %================================
@@ -177,7 +187,8 @@ classdef RCT
                 RctData.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, I_E13);
                 RctData.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, I_E23);
 
-                % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural). (List, Table would be wrong? Use "FtfTable"?)
+                % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural).
+                % (List, Table would be wrong? Use "FtfTable"?)
                 RctData.FtfSet.DcSingleAvpiv = bicas.RCT.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_DC_SINGLE), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_DC_SINGLE));
@@ -195,10 +206,11 @@ classdef RCT
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
                 
                 % ASSERTIONS
-                EJ_library.assert.sizes(RctData.FtfSet.DcSingleAvpiv,   [nEpochL, 1]);
-                EJ_library.assert.sizes(RctData.FtfSet.DcDiffAvpiv,     [nEpochL, 1]);
-                EJ_library.assert.sizes(RctData.FtfSet.AcLowGainAvpiv,  [nEpochL, 1]);
-                EJ_library.assert.sizes(RctData.FtfSet.AcHighGainAvpiv, [nEpochL, 1]);
+                EJ_library.assert.sizes(...
+                    RctData.FtfSet.DcSingleAvpiv,   [nEpochL, 1], ...
+                    RctData.FtfSet.DcDiffAvpiv,     [nEpochL, 1], ...
+                    RctData.FtfSet.AcLowGainAvpiv,  [nEpochL, 1], ...
+                    RctData.FtfSet.AcHighGainAvpiv, [nEpochL, 1]);
                 for iEpochL = 1:nEpochL
                     %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:calib:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
                     %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:calib:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
@@ -209,17 +221,19 @@ classdef RCT
                     % low-gain).
                 end
                 
-                %==========================================================================
-                % ASSERTIONS: All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
-                %==========================================================================
+                %==============================================================
+                % ASSERTIONS:
+                % All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
+                %==============================================================
                 bicas.proc_utils.assert_zv_Epoch(RctData.epochL)
                 bicas.proc_utils.assert_zv_Epoch(RctData.epochH)
                 validateattributes(RctData.epochL, {'numeric'}, {'increasing'})
                 validateattributes(RctData.epochH, {'numeric'}, {'increasing'})
 
-                EJ_library.assert.sizes(RctData.Current.offsetsAAmpere, [nEpochL, 3]);
-                EJ_library.assert.sizes(RctData.Current.gainsAapt,      [nEpochL, 3]);
-                EJ_library.assert.sizes(RctData.dcSingleOffsetsAVolt,   [nEpochH, 3]);
+                EJ_library.assert.sizes(...
+                    RctData.Current.offsetsAAmpere, [nEpochL, 3], ...
+                    RctData.Current.gainsAapt,      [nEpochL, 3], ...
+                    RctData.dcSingleOffsetsAVolt,   [nEpochH, 3]);
 
                 for fn = fieldnames(RctData.DcDiffOffsets)'
                     EJ_library.assert.sizes(RctData.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
@@ -244,13 +258,17 @@ classdef RCT
             
             try
                 % ASSUMPTION: Exactly 1 CDF record.
-                % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
+                % IMPLEMENTATION NOTE: Does not want to rely one dataobj special
+                % behaviour for 1 record case
                 % ==> Remove leading singleton dimensions, much assertions.
 
-                % NOTE: There are separate TFs for each BLTS channel, not just separate LFR sampling frequencies, i.e.
-                % there are 5+5+5+3 TFs (but only 1 frequency table/LSF, since they are recycled).
-                % NOTE: The assignment of indices here effectively determines the translation between array index and
-                % LFR Sampling Frequency (LSF). This is NOT the same as the values in the LFR zVar FREQ.
+                % NOTE: There are separate TFs for each BLTS channel, not just
+                % separate LFR sampling frequencies, i.e. there are 5+5+5+3=18
+                % TFs (but only 1 frequency table/LSF, since they are recycled).
+                % NOTE: The assignment of indices here effectively determines
+                % the translation between array index and LFR Sampling Frequency
+                % (LSF). This is NOT the same as the values in the LFR zVar
+                % FREQ.
                 freqTableHz{1}   = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLsf}.
                 freqTableHz{2}   = shiftdim(Do.data.Freqs_F1.data);
                 freqTableHz{3}   = shiftdim(Do.data.Freqs_F2.data);
@@ -267,8 +285,9 @@ classdef RCT
                 phaseTableDeg{4} = shiftdim(Do.data.TF_BIAS_123_phase_F3.data);
 
                 for iLsf = 1:4
+                    % NOTE: F3 is an exception and has no AC (iBlts={4,5}) TF.
                     if iLsf ~= 4   nBlts = 5;
-                    else           nBlts = 3;    % F3 is an exception and has no AC (iBlts={4,5}) TF.
+                    else           nBlts = 3;
                     end
 
                     % NOTE: Values for the specific LSF, hence the prefix.
@@ -276,7 +295,8 @@ classdef RCT
                     lsfAmplTableTpiv = amplTableTpiv{iLsf};
                     lsfPhaseTableDeg = phaseTableDeg{iLsf};
 
-                    % ASSERTIONS: Check CDF array sizes, and implicitly that the CDF format is the expected one.
+                    % ASSERTIONS: Check CDF array sizes, and implicitly that the
+                    % CDF format is the expected one.
                     nFreqs = EJ_library.assert.sizes(...
                         lsfFreqTableHz,   [-1,       1 ], ...
                         lsfAmplTableTpiv, [-1, nBlts], ...
@@ -289,12 +309,6 @@ classdef RCT
                         lsfBltsAmplTableTpiv = lsfAmplTableTpiv(:, iBlts);
                         lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBlts);
 
-                        % NOTE: INVERTS the tabulated TF.
-                        %   NOTE: This requires (1) inverting the (real/absolute) amplitude, AND (2) NEGATING THE PHASE.
-%                         ItfIvpt = EJ_library.utils.tabulated_transform(...
-%                             lsfBltsFreqTableHz * 2*pi, ...
-%                             1 ./ lsfBltsAmplTableTpiv, ...
-%                             - deg2rad(lsfBltsPhaseTableDeg));
                         FtfTpiv = EJ_library.utils.tabulated_transform(...
                             lsfBltsFreqTableHz * 2*pi, ...
                             lsfBltsAmplTableTpiv, ...
@@ -307,7 +321,8 @@ classdef RCT
                     end
                 end
                 
-                % NOTE: Storing data in struct field to clarify the nature of the content to the caller.
+                % NOTE: Storing data in struct field to clarify the nature of
+                % the content to the caller.
                 RctData = [];
                 RctData.FtfTpivTable = FtfTpivTable;
                 
@@ -322,17 +337,20 @@ classdef RCT
         
         
         
-        % NOTE: TDS CWF cwfFactorsIvpt are already inverted (can be seen from units).
+        % NOTE: TDS CWF cwfFactorsIvpt are already inverted (can be seen from
+        % units).
         function RctData = read_TDS_CWF_RCT(filePath)
             
             Do = dataobj(filePath);
             
             try                
-                % NOTE: Undocumented in CDF: zVar CALIBRATION_TABLE is volt/count for just multiplying the TDS signal (for
-                % this kind of data). Is not a frequency-dependent transfer function.
+                % NOTE: Undocumented in CDF: zVar CALIBRATION_TABLE is
+                % volt/count for just multiplying the TDS signal (for this kind
+                % of data). Is not a frequency-dependent transfer function.
                 
                 % ASSUMPTION: Exactly 1 CDF record.
-                % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
+                % IMPLEMENTATION NOTE: Does not want to rely on dataobj's
+                % special behaviour for 1 record case
                 % ==> Remove leading singleton dimensions, much assertions.
                 
                 factorsIvpt = shiftdim(Do.data.CALIBRATION_TABLE.data);
@@ -346,7 +364,9 @@ classdef RCT
             catch Exc1
                 Exc2 = MException(...
                     'BICAS:calib:FailedToReadInterpretRCT', ...
-                    'Error when interpreting calibration file (TDS team''s LFM CWF RCT for BIAS/BICAS) "%s"', filePath);
+                    ['Error when interpreting calibration file (TDS team''s', ...
+                    ' LFM CWF RCT for BIAS/BICAS) "%s"'], ...
+                    filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -362,15 +382,19 @@ classdef RCT
             
             try
                 % ASSUMPTION: Exactly 1 CDF record.
-                % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case.
-                % ==> Remove leading singleton dimensions (just to be format-tolerant), much assertions.
+                % IMPLEMENTATION NOTE: Does not want to rely one dataobj special
+                % behaviour for 1 record case.
+                % ==> Remove leading singleton dimensions (just to be
+                % format-tolerant), many assertions.
                 freqsHz  = shiftdim(Do.data.CALIBRATION_FREQUENCY.data);   % 1x512 --> 512x1
                 amplIvpt = shiftdim(Do.data.CALIBRATION_AMPLITUDE.data);   % 3x512 --> 3x512
                 phaseDeg = shiftdim(Do.data.CALIBRATION_PHASE.data);       % 3x512 --> 3x512
                 
                 % ASSERTIONS: Check CDF array sizes, no change in format.
-                assert(iscolumn(freqsHz));    % NOTE: Should be 1D vector. "shiftdim" makes it a column vector.
-                nFreqs = EJ_library.assert.sizes(freqsHz, [-1, 1], amplIvpt, [3, -1], phaseDeg, [3,-1]);
+                nFreqs = EJ_library.assert.sizes(...
+                    freqsHz,  [-1,  1], ...
+                    amplIvpt, [ 3, -1], ...
+                    phaseDeg, [ 3, -1]);
                 assert(nFreqs >= bicas.RCT.TF_TABLE_MIN_LENGTH)
 
                 for iBlts = 1:3
@@ -382,8 +406,10 @@ classdef RCT
 
                     % ASSERTION: INVERTED TF
                     assert(~ItfIvpt.toward_zero_at_high_freq(), ...
-                        ['TDS RSWF transfer function appears to go toward zero at high frequencies. Has it not been', ...
-                        ' inverted/made backward in time, i.e. does it not describe physical output-to-physical input?'])
+                        ['TDS RSWF transfer function appears to go toward', ...
+                        ' zero at high frequencies. Has it not been', ...
+                        ' inverted/made backward in time, i.e. does it not', ...
+                        ' describe physical output-to-physical input?'])
 
                     ItfIvptList{iBlts} = ItfIvpt;
                 end
@@ -394,7 +420,8 @@ classdef RCT
             catch Exc1
                 Exc2 = MException(...
                     'BICAS:calib:FailedToReadInterpretRCT', ...
-                    'Error when interpreting calibration file (TDS team''s LFM RSWF RCT for BIAS/BICAS) "%s"', ...
+                    'Error when interpreting calibration file (TDS team''s', ...
+                        ' LFM RSWF RCT for BIAS/BICAS) "%s"', ...
                     filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
@@ -413,10 +440,12 @@ classdef RCT
 
         % Utility function
         %
-        % Function for normalizing the indices of dataobj zVariables.
-        % dataobj zVariable arrays have different meanings for their indices depending on whether there are one record
-        % or many. If there is one record, then there is not record index. If there are multiple records, then the first
-        % index represents the record number. This function inserts a size-one index as the first index.
+        % Function for normalizing the indices of dataobj zVariables. dataobj
+        % zVariable arrays have different meanings for their indices depending
+        % on whether there are one record or many. If there is one record, then
+        % there is not record index. If there are multiple records, then the
+        % first index represents the record number. This function inserts a
+        % size-one index as the first index.
         % 
         % DO   = dataobj(...)
         % data = Do.data.TRANSFER_FUNCTION_COEFFS.data
@@ -439,25 +468,31 @@ classdef RCT
 
 
 
-        % Utility function to simplify read_BIAS_RCT. Arguments correspond to zVariables in BIAS RCT.
+        % Utility function to simplify read_BIAS_RCT. Arguments correspond to
+        % zVariables in BIAS RCT.
         %
         %
         % ARGUMENTS
         % =========
-        % ftfNumCoeffs, ftfDenomCoeffs : 2D matrix of numerator/denominator coefficients for a sequence of FTFs.
-        %                                (iTime, iCoeff).
+        % ftfNumCoeffs,
+        % ftfDenomCoeffs : 2D matrix of numerator/denominator coefficients for
+        %                  a sequence of FTFs. (iTime, iCoeff).
         %
         %
         % RETURN VALUE
         % ============
-        % FtfArray                     : 1D column cell array of FTFs (EJ_library.utils.rational_func_transform).
+        % FtfArray : 1D column cell array of FTFs
+        %            (EJ_library.utils.rational_func_transform).
         %
         function FtfArray = create_TF_sequence(ftfNumCoeffs, ftfDenomCoeffs)
             
             % ASSERTIONS
-            nTime = EJ_library.assert.sizes(ftfNumCoeffs, [-1, -2], ftfDenomCoeffs, [-1, -2]);
+            nTime = EJ_library.assert.sizes(...
+                ftfNumCoeffs,   [-1, -2], ...
+                ftfDenomCoeffs, [-1, -2]);
             %assert(size(ftfNumCoeffs, 1) == size(ftfDenomCoeffs, 1))
-            % The last FTF denominator coefficient (highest index, for which the value is non-zero) must be =1.
+            % The last FTF denominator coefficient (highest index, for which the
+            % value is non-zero) must be =1.
             assert(...
                 ftfDenomCoeffs(find(ftfDenomCoeffs, 1, 'last')) == 1, ...
                 'BICAS:calib:FailedToReadInterpretRCT', ...
@@ -468,10 +503,6 @@ classdef RCT
             FtfArray = {};
             for iTime = 1:nTime
                 
-                % IMPORTANT NOTE: INVERT TF: FTF --> ITF
-%                 Itf = EJ_library.utils.rational_func_transform(...
-%                     ftfDenomCoeffs(iTime, :), ...
-%                     ftfNumCoeffs(  iTime, :));
                 Ftf = EJ_library.utils.rational_func_transform(...
                     ftfNumCoeffs(  iTime, :), ...
                     ftfDenomCoeffs(iTime, :));
@@ -481,7 +512,8 @@ classdef RCT
                 % Assert FTF. Can not set proper error message.
                 assert(Ftf.zero_in_high_freq_limit(), ...
                     'BICAS:calib:FailedToReadInterpretRCT', ...
-                    ['Transfer function is expected to be "forward", i.e. in the direction of the physical signal.', ...
+                    ['Transfer function is expected to be "forward",', ...
+                    ' i.e. in the direction of the physical signal.', ...
                     ' It seems not to be.'])
                 
                 FtfArray{end+1, 1} = Ftf;    % Force column array.

@@ -39,7 +39,8 @@
 % first.
 % NOTE: irfu-matlab contains at least two other functions for applying transfer
 % functions to data but which are not general-purpose:
-% 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency domain; multiple ways of handling edges)
+% 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency
+%                            domain; multiple ways of handling edges)
 % 2) c_efw_burst_bsc_tf.m   (short & simple)
 % NOTE: Detrending makes it impossible to modify the amplitude & phase for the
 % frequency components in the trend, e.g. to delay the signal. If the input
@@ -58,7 +59,8 @@
 % ====================
 % -- Has the ability to enable/disable de-trending to make testing easier.
 % -- Has the ability to make TF zero above cutoff. This cut-off is naturally
-%    sampling frequency-dependent and therefore not a natural part of the TF itself.
+%    sampling frequency-dependent and therefore not a natural part of the TF
+%    itself.
 % -- Conversion of transfer functions to fit the input format should be done by
 %    wrapper functions and NOT by this function.
 %       Ex: Turn a given tabulated TF into an actual MATLAB function.
@@ -150,26 +152,28 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
 
     % Set the order of the polynomial that should be used for detrending.
     N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
+    % EMID = Error Message ID
+    EMID_ARG = 'BICAS:apply_TF_freq:Assertion:IllegalArgument';
     
     %============
     % ASSERTIONS
     %============
     if ~iscolumn(y1)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'Argument y1 is not a column vector.')
+        error(EMID_ARG, 'Argument y1 is not a column vector.')
     elseif ~isnumeric(y1)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'Argument y1 is not numeric.')
+        error(EMID_ARG, 'Argument y1 is not numeric.')
     elseif ~isreal(y1)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'y1 is not real.')
+        error(EMID_ARG, 'y1 is not real.')
         % NOTE: The algorithm itself does not make sense for non-real functions.
     elseif ~isscalar(dt)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'dt is not scalar.')
+        error(EMID_ARG, 'dt is not scalar.')
     elseif ~(dt>0)
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'dt is not positive.')
+        error(EMID_ARG, 'dt is not positive.')
     elseif ~isa(tf, 'function_handle')
         % EJ_library.assert.func does not seem to handle return values correctly.
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'tf is not a function.')
+        error(EMID_ARG, 'tf is not a function.')
     elseif ~isreal(tf(0))
-        error('BICAS:apply_TF_freq:Assertion:IllegalArgument', 'tf(0) is not real.')
+        error(EMID_ARG, 'tf(0) is not real.')
     end
 
 
@@ -180,6 +184,10 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
 
+    
+    %=========================================================================
+    % Create modified version of TF which is set to zero for high frequencies
+    %=========================================================================
     assert(...
         isnumeric(  Settings.tfHighFreqLimitFraction) ...
         && isscalar(Settings.tfHighFreqLimitFraction) ...
@@ -188,7 +196,7 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     % NOTE: Permit Settings.tfHighFreqLimitFraction to be +Inf.
     tfHighFreqLimitRps = Settings.tfHighFreqLimitFraction * pi/dt;   % pi/dt = 2*pi * (1/2 * 1/dt)
     tf2 = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
-    clear tf    % Clear just to make sure it is not used later
+    clear tf    % Clear just to make sure it is not used later.
 
 
 
@@ -212,18 +220,19 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     
     
     
-    %================================================================================================================
+    %============================================================================
     % Define the frequencies used to interpret the DFT components X_k (yDft1)
     % -----------------------------------------------------------------------
     % IMPLEMENTATION NOTE:
     % The code only works with REAL-valued time-domain signals. Therefore,
-    % (1) We want to interpret the signal as consisting of pairs of positive and negative frequencies (pairs of
-    % complex bases).
-    % (2) We want to interpret the TF as being a symmetric function, defined for both positive and negative
-    % frequencies,
+    % (1) We want to interpret the signal as consisting of pairs of positive and
+    % negative frequencies (pairs of complex bases).
+    % (2) We want to interpret the TF as being a symmetric function, defined for
+    % both positive and negative frequencies,
     %    Z(omega) = Z*(-omega), *=conjugate.
     %
-    % The DFT components X_k, k=1..N can be thought of as representing different frequencies
+    % The DFT components X_k, k=1..N can be thought of as representing different
+    % frequencies
     %    omega_k = 2*pi*(k-1) / (N*dt)
     % .
     % Since
@@ -231,17 +240,20 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     % where
     %    t_n = (n-1)*dt ,
     %    m = any integer ,
-    % the exact frequencies associated with DFT components X_k are however subject to a choice/interpretation, where
+    % the exact frequencies associated with DFT components X_k are however
+    % subject to a choice/interpretation, where
     %    omega_k <--> omega_(k+m*N) .
-    % Since we only work with real-valued signals, we want to interpret the DFT components as having frequencies
+    % Since we only work with real-valued signals, we want to interpret the DFT
+    % components as having frequencies
     %    omega_1, ..., omega_ceil(N/2), omega_[ceil(N/2)+1-N], ..., omega_0
-    % but to look up values in the TF, we have to use the absolute values of the above frequencies and conjugate Z when
-    % necessary.
+    % but to look up values in the TF, we have to use the absolute values of the
+    % above frequencies and conjugate Z when necessary.
     %
     % NOTE: omega_0 = 0.
-    % NOTE: The above must work for both even & odd N. For even N, the DFT component X_N/2+1 (which does not have a
-    % frequency twin) should be real for real signals.
-    %================================================================================================================
+    % NOTE: The above must work for both even & odd N. For even N, the DFT
+    % component X_N/2+1 (which does not have a frequency twin) should be real
+    % for real signals.
+    %============================================================================
     %tfOmegaLookups     = 2*pi * ((1:N) - 1) / (N*dt);
     %i = (tfOmegaLookups >= pi/dt);    % Indicies for which omega_k should be replaced by omega_(k-N).
     %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
@@ -250,17 +262,21 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     
     
     
-    %=============================================================================================================
-    % Find complex TF values, i.e. complex factors to multiply every DFT component with
-    % ---------------------------------------------------------------------------------
-    % NOTE: De-trending (if enabled) should already have removed the zero-frequency component from the in signal.
-    %=============================================================================================================
+    %====================================================================
+    % Find complex TF values, i.e. complex factors to multiply every DFT
+    % component with
+    % ------------------------------------------------------------------
+    % NOTE: De-trending (if enabled) should already have removed the
+    % zero-frequency component from the in signal.
+    %====================================================================
     tfZLookups                = tf2(abs(tfOmegaLookups));
     iNegativeFreq             = tfOmegaLookups < 0;
     tfZLookups(iNegativeFreq) = conj(tfZLookups(iNegativeFreq));
     % ASSERTION:
     if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
-        error('BICAS:apply_TF_freq:Assertion', 'Transfer function tf returned non-finite value for at least one frequency.')
+        error(...
+            'BICAS:apply_TF_freq:Assertion', ...
+            'Transfer function tf returned non-finite value for at least one frequency.')
     end
     
     
@@ -268,9 +284,11 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     %##################
     % Apply TF to data
     %##################
-    % NOTE: For real input signal and even N, this should produce complex yDft2(N/2+1) values.
-    % IMPORTANT NOTE: Must transpose complex vector in a way that does not negate the imaginary part.
-    %                 Transposing with ' (apostrophe) negates the imaginary part.
+    % NOTE: For real input signal and even N, this should produce complex
+    % yDft2(N/2+1) values.
+    % IMPORTANT NOTE: Must transpose complex vector in a way that does not
+    % negate the imaginary part. Transposing with ' (apostrophe) negates the
+    % imaginary part.
     yDft2 = yDft1 .* transpose(tfZLookups);
     
     
@@ -288,7 +306,7 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     %     reference page for the specific mathematical definition of this
     %     symmetry."
     y2 = ifft(yDft2, 'symmetric');
-    y2p = ifft(yDft2);    % TEST
+    %y2p = ifft(yDft2);    % TEST
     
     
     
@@ -296,7 +314,8 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     % Re-trend
     %##########
     if Settings.enableDetrending
-        % Use Z(omega=0) to scale trend, including higher order polynomial components.
+        % Use Z(omega=0) to scale trend, including higher order polynomial
+        % components.
         trendFitsCoeffs2 = trendFitsCoeffs1 * tfZLookups(1);
         
         yTrend2 = polyval(trendFitsCoeffs2, (1:N)');
@@ -306,7 +325,8 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     
     
     % ASSERTION: Real output.
-    % IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is not used.
+    % IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is
+    % not used.
     if ~isreal(y2)
         maxAbsImag = max(abs(imag(y2)))    % Print
         error('BICAS:apply_TF_freq:Assertion', 'y2 is not real. Bug.')

@@ -92,17 +92,17 @@ classdef proc
             useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1r;
             
             if useCtRcts
-                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
+                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, 'LFR', ...
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
                     InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     InputSciCdf.Zv.BW, ...
                     L);
             else
-                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
+                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
                     rctDir, SETTINGS, L);
             end
-            Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
+            Cal = bicas.calib(NonBiasRctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
             %==============
             % Process data
@@ -111,7 +111,7 @@ classdef proc
             InputSciCdf           = bicas.proc_sub.process_LFR_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
             SciPreDc              = bicas.proc_sub.process_LFR_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal,    SETTINGS, L);
-            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
             OutputSciCdf          = bicas.proc_sub.process_PostDC_to_LFR_CDF(       SciPreDc, SciPostDc, outputDsi, L);
             
             
@@ -148,17 +148,17 @@ classdef proc
             useCti2   = false;    % Always false for TDS.
             
             if useCtRcts
-                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
+                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, rctTypeId, ...
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
                     InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     [], ...   % =zv_BW (only for LFR).
                     L);
             else
-                RctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
+                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
                     rctDir, SETTINGS, L);
             end
-            Cal = bicas.calib(RctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
+            Cal = bicas.calib(NonBiasRctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
             %==============
             % Process data
@@ -167,7 +167,7 @@ classdef proc
             InputSciCdf           = bicas.proc_sub.process_TDS_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
             SciPreDc              = bicas.proc_sub.process_TDS_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDc             = bicas.proc_sub.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal, SETTINGS, L);
-            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter(          SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc_sub.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
             OutputSciCdf          = bicas.proc_sub.process_PostDC_to_TDS_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
             
@@ -179,93 +179,19 @@ classdef proc
         
         
         function [OutputDatasetsMap] = produce_L3(InputDatasetsMap, NsoTable, SETTINGS, L)
-            % Always the same DATASET_ID.
-            INPUT_DATASET_ID = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
-
+            
             InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
-            [InputLfrCwfCdf.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfCdf.Zv, ...
-                {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
-            
-            bicas.proc_sub.handle_zv_name_change(...
-                fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', ...
-                'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-            
-            %===================================================================
-            % Calculate
-            % (1) E-field, and
-            % (2) s/c potentials
-            % via BICAS-external code
-            % -----------------------
-            % NOTE: Needs to be careful with the units, and incompatible updates
-            % to solo.vdccal without the knowledge of the BICAS author.
-            % Therefore extra assertions to detect such changes.
-            %===================================================================
-            TsVdc = TSeries(...
-                EpochTT(InputLfrCwfCdf.Zv.Epoch), InputLfrCwfCdf.Zv.VDC, ...
-                'TensorOrder', 1, ...
-                'repres', {'x', 'y', 'z'});
-            [TsEdc, TsPsp, TsScpot] = solo.vdccal(TsVdc);
-            EJ_library.assert.sizes(...
-                InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
-                TsEdc.data,   [-1, 3], ...
-                TsPsp.data,   [-1, 1], ...
-                TsScpot.data, [-1, 3])
-            assert(strcmp(TsEdc.units,   'mV/m'))
-            assert(strcmp(TsPsp.units,   'V'))
-            assert(strcmp(TsScpot.units, 'V'))
-            
-            %=================
-            % Convert E-field
-            %=================
-            zvEdcMvpm = TsEdc.data;    % MVPM = mV/m
-            % Set E_x = NaN, but only if assertion deems that the corresponding
-            % information is missing
-            % -----------------------------------------------------------------
-            % IMPLEMENTATION NOTE: solo.vdccal set antenna 1 to be zero, if the
-            % source data is non-fill value/NaN, but NaN if fill value. Must
-            % therefore check for both zero and NaN.
-            % Ex: 2020-08-01
-            % IMPLEMENTATION NOTE: ismember does not work for NaN.
-            assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
-                ['EDC for antenna 1 returned from BICAS_external code', ...
-                ' solo.vdccal() is not zero or NaN and can therefore not be', ...
-                ' assumed to unknown anymore. BICAS needs to be updated to reflect this.'])
-            zvEdcMvpm(:, 1) = NaN;
-            clear TsEdc
-            
-            
-            
-            EfieldCdf = struct();
-            EfieldCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
-            EfieldCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
-            EfieldCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            EfieldCdf.QUALITY_FLAG       = min(...
-                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
-                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
-                'includeNaN');
-            EfieldCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            EfieldCdf.EDC_SFR            = zvEdcMvpm;
-            
-            
-            
-            ScpotCdf = struct();
-            ScpotCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
-            ScpotCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
-            ScpotCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            ScpotCdf.QUALITY_FLAG       = min(...
-                InputLfrCwfCdf.Zv.QUALITY_FLAG, ...
-                SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX'), ...
-                'includeNaN');
-            ScpotCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            ScpotCdf.SCPOT              = TsScpot.data;
-            ScpotCdf.PSP                = TsPsp.data;
+            %==============
+            % Process data
+            %==============
+            [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] = bicas.proc_sub.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
 
-            
-            
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('EFIELD_cdf') = EfieldCdf;
-            OutputDatasetsMap('SCPOT_cdf')  = ScpotCdf;
+            OutputDatasetsMap('EFIELD_cdf')      = EfieldCdf;
+            OutputDatasetsMap('SCPOT_cdf')       = ScpotCdf;
+            OutputDatasetsMap('EFIELD_DWNS_cdf') = EfieldDwnsCdf;
+            OutputDatasetsMap('SCPOT_DWNS_cdf')  = ScpotDwnsCdf;
         end
         
         

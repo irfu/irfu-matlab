@@ -213,6 +213,10 @@ classdef calib < handle
 % PROPOSAL: Assertion function for CalSettings.
 %   TODO-NI: Same struct, with same fields in all cases?
 %   NOTE: Function does not know which fields are actually used.
+%
+% PROPOSAL: Do not expose internal calibration data structs and let the caller specify indices. Access via
+%   methods that ask for indices.
+%   PRO: Methods document the proper use of indices.
 
 
 
@@ -249,9 +253,14 @@ classdef calib < handle
         RctDataMap = containers.Map();
         
         % Non-RCT calibration data
-        BiasScalarGain             % BIAS scalar (simplified) calibration, not in the RCTs. For debugging/testing purposes.
+        % ------------------------
+        % BIAS scalar (simplified) calibration, not in the RCTs. For
+        % debugging/testing purposes.
+        BiasScalarGain             
         HkBiasCurrent
-        lfrLsfOffsetsTm    = [];   % EXPERIMENTAL. NOTE: Technically, the name contains a tautology (LFR+LSF).
+        % EXPERIMENTAL. NOTE: Technically, the name contains a tautology
+        % (LFR+LSF).
+        lfrLsfOffsetsTm    = [];
         
         
         
@@ -260,11 +269,11 @@ classdef calib < handle
         %==================================================
         
         % Corresponds to SETTINGS key-value.
-        enableDetrending
+        enableDcDetrending
         itfHighFreqLimitFraction;
                 
-        % Whether to select non-BIAS RCT using global attribute CALIBRATION_TABLE (and
-        % CALIBRATION_TABLE_INDEX(iRecord,1)).
+        % Whether to select non-BIAS RCT using global attribute
+        % CALIBRATION_TABLE (and CALIBRATION_TABLE_INDEX(iRecord,1)).
         use_CALIBRATION_TABLE_rcts        
         % Whether to use CALIBRATION_TABLE_INDEX(iRecord,2) for calibration.
         use_CALIBRATION_TABLE_INDEX2
@@ -336,15 +345,20 @@ classdef calib < handle
 
             % ASSERTIONS
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
+            assert(~ismember('BIAS', NonBiasRctDataMap.keys))
+            EJ_library.assert.subset(NonBiasRctDataMap.keys, bicas.calib.RCT_TYPES_MAP.keys)
             
+            % Create RCT data map entry for BIAS
+            % ----------------------------------
             filenameRegexp = SETTINGS.get_fv(bicas.calib.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
             filePath       = bicas.RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
-            % IMPLEMENTATION NOTE: It has been observed that value sometimes survives from previous runs, despite being
-            % an instance variable. Unknown why. Therefore explicitly overwrites it.
-            obj.RctDataMap = containers.Map();
-            obj.RctDataMap('BIAS')                 = bicas.calib.read_log_modify_RCT('BIAS', filePath, L);
+            % IMPLEMENTATION NOTE: It has been observed that value sometimes
+            % survives from previous runs, despite being an instance variable.
+            % Unknown why. Therefore explicitly overwrites it.
+            obj.RctDataMap         = containers.Map();
+            obj.RctDataMap('BIAS') = bicas.calib.read_log_modify_RCT('BIAS', filePath, L);
             
-            EJ_library.assert.subset(NonBiasRctDataMap.keys, bicas.calib.RCT_TYPES_MAP.keys)
+            % Create combined RCT data map (BIAS + non-BIAS).
             for rctTypeId = NonBiasRctDataMap.keys
                 obj.RctDataMap(rctTypeId{1}) = NonBiasRctDataMap(rctTypeId{1});
             end
@@ -362,11 +376,11 @@ classdef calib < handle
 
             
             
-            obj.enableDetrending                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
+            obj.enableDcDetrending                 = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DETRENDING_ENABLED');
             obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
             
             obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
-            obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS');
+            obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
             obj.lfrTdsTfDisabled                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
             
             % Set obj.useBiasTfScalar.
@@ -391,7 +405,8 @@ classdef calib < handle
 
         % Convert/calibrate TC bias current: TM units --> physical units.
         %
-        % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
+        % NOTE: This is the normal way of obtaining bias current in physical
+        % units (as opposed to HK bias current).
         %
         function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, biasCurrentTm, iAntenna, iCalibTimeL)
             
@@ -407,8 +422,8 @@ classdef calib < handle
 
 
 
-        % Convert/calibrate diagnostic HK TM bias current values to physical units.
-        % Refers to BIAS HK zVars HK_BIA_BIAS1/2/3.
+        % Convert/calibrate diagnostic HK TM bias current values to physical
+        % units. Refers to BIAS HK zVars HK_BIA_BIAS1/2/3.
         %
         %
         % NOTES
@@ -435,14 +450,16 @@ classdef calib < handle
             % Not strictly required, but the variable has to be some integer.
             assert(isa(biasCurrentTm, 'uint16'))
             
-            %===================================================================================================
+            %=============================================================
             % CALIBRATE
             % ---------
             % Unsigned integer which represents ~signed integer.
-            % ==> Intervals 0..0x7FFF and 0x8000...0xFFFF need to "change places".
-            % ==> Need to flip bit representing sign to have one interval 0...0xFFFF with monotonic function
-            %     TM-to-calibrated values.
-            %===================================================================================================
+            % ==> Intervals 0..0x7FFF and 0x8000...0xFFFF need to
+            %     "change places".
+            % ==> Need to flip bit representing sign to have one interval
+            %     0...0xFFFF with monotonic function for TM-to-calibrated
+            %     values.
+            %=============================================================
             biasCurrentTm     = bitxor(biasCurrentTm, hex2dec('8000'));    % FLIP BIT
             biasCurrentAAmpere = obj.HkBiasCurrent.gainAapt(iAntenna) * ...
                 (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));    % LINEAR FUNCTION
@@ -450,7 +467,8 @@ classdef calib < handle
         
         
         
-        % Calibrate all voltages. Function will choose the more specific algorithm internally.
+        % Calibrate all voltages. Function will choose the more specific
+        % algorithm internally.
         %
         % ARGUMENTS
         % =========
@@ -472,6 +490,7 @@ classdef calib < handle
                 zv_CALIBRATION_TABLE_INDEX, voltageNaN)
             
             % ASSERTIONS
+            assert(isstruct(CalSettings))
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             EJ_library.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
             assert(islogical(voltageNaN) && isscalar(voltageNaN))
@@ -484,7 +503,8 @@ classdef calib < handle
             else
                 cti1 = 0;
             end
-            % NOTE: NOT incrementing by one, since the variable's meaning can vary between LFR, TDS-CWF, TDS-RSWF.
+            % NOTE: NOT incrementing by one, since the variable's meaning can
+            % vary between LFR, TDS-CWF, TDS-RSWF.
             cti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
 
             
@@ -584,7 +604,7 @@ classdef calib < handle
             %==============================
             BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
             if obj.lfrTdsTfDisabled
-                lfrItfIvpt = @(omegaRps) (ones(omegaRps));
+                lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
             else
                 lfrItfIvpt = obj.get_LFR_ITF(cti1, iBlts, iLsf);
             end
@@ -610,7 +630,7 @@ classdef calib < handle
                 % APPLY TRANSFER FUNCTION
                 tempSamplesAVolt = bicas.utils.apply_TF_freq(...
                     dtSec(i), samplesTm, itfIvpt, ...
-                    'enableDetrending',        obj.enableDetrending, ...
+                    'enableDetrending',        obj.enableDcDetrending && ~BltsSrc.is_AC(), ...
                     'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
 
                 samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
@@ -678,7 +698,7 @@ classdef calib < handle
                         dtSec(i), ...
                         tempSamplesIVolt(:), ...
                         BiasCalibData.itfAvpiv, ...
-                        'enableDetrending',        obj.enableDetrending, ...
+                        'enableDetrending',        obj.enableDcDetrending, ...
                         'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
@@ -756,7 +776,7 @@ classdef calib < handle
                         dtSec(i), ...
                         samplesCaTm{i}(:), ...
                         itf, ...
-                        'enableDetrending',        obj.enableDetrending, ...
+                        'enableDetrending',        obj.enableDcDetrending, ...
                         'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
                     
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
@@ -889,7 +909,8 @@ classdef calib < handle
 
 
 
-            % Convenience function: Cell array of TFs --> Time-relevant TF (as function handle)
+            % Convenience function:
+            % Cell array of TFs --> Time-relevant TF (as function handle)
             %
             % RFTF = Rational Function (rational_func_transform object) Transfer Function
             function Tf = TF_list_2_func(RftfList)
@@ -924,7 +945,7 @@ classdef calib < handle
                     'BICAS:calib:IllegalArgument:DatasetFormat:Assertion', ...
                     ['LFR RctDataList is too small for argument cti1=%g.', ...
                     ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
-                    ' value is larger than g.attr. CALIBRATION TABLE allows.'], cti1)
+                    ' value is larger than glob. attr. CALIBRATION TABLE allows.'], cti1)
                 assert(~isempty(RctDataList{cti1+1}), ...
                     'BICAS:calib:IllegalArgument:DatasetFormat:Assertion', ...
                     ['LFR RctDataList contains no RCT data corresponding to argument cti1=%g.', ...
@@ -1057,10 +1078,12 @@ classdef calib < handle
             % Cell array of paths to RCTs of the same RCT type.
             RctDataList = cell(nCt, 1);
             
-            % NOTE: Iterate over those entries in CALIBRATION_TABLE that should be considered, NOT all indices. May
-            % therefore legitimately leave some cells in cell array empty.
+            % NOTE: Iterate over those entries in CALIBRATION_TABLE that should
+            % be considered, NOT all indices. May therefore legitimately leave
+            % some cells in cell array empty.
             for i = 1:numel(iCtArray)
-                j              = iCtArray(i) + 1;   % NOTE: Cell array index is one greater than the stored value.
+                % NOTE: Cell array index is one greater than the stored value.
+                j              = iCtArray(i) + 1;
                 filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
                 RctDataList{j} = bicas.calib.read_log_modify_RCT(rctTypeId, filePath, L);
             end
