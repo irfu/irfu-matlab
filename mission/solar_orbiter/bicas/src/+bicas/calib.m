@@ -627,6 +627,18 @@ classdef calib < handle
                 % ADD LSF OFFSET
                 samplesTm = samplesCaTm{i}(:) + lsfOffsetTm;
                 
+                if BltsSrc.is_AC()
+                    % IMPLEMENTATION NOTE: DC is (optionally) detrended via
+                    % bicas.utils.apply_TF_freq in the sense of a linear fit
+                    % being removed, TF applied, and then added back. That same
+                    % algorithm is inappropriate for high-pass/band-pass
+                    % filters.
+                    % YK 2020-11-02: Detrend AC data, but do not add linear fit
+                    % back.
+                    assert(isfloat(samplesTm))
+                    samplesTm = detrend(samplesTm);
+                end
+                
                 % APPLY TRANSFER FUNCTION
                 tempSamplesAVolt = bicas.utils.apply_TF_freq(...
                     dtSec(i), samplesTm, itfIvpt, ...
