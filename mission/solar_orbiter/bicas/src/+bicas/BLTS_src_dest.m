@@ -124,6 +124,12 @@ classdef BLTS_src_dest %< handle
         function isAsr = is_ASR(obj)
             isAsr = ismember(obj.category, {'DC single', 'DC diff', 'AC diff'});
         end
+        
+        
+        
+        function isAc = is_AC(obj)
+            isAc = strcmp(obj.category, 'AC diff');
+        end
 
 
 
