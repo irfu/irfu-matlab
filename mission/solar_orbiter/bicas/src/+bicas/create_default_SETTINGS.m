@@ -523,7 +523,7 @@ function SETTINGS = create_default_SETTINGS()
     % antenna signals is still done though.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',              0);
     % Whether to disable BIAS offsets.
-    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS', 0);
+    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', 0);
     % Whether to use transfer functions or scalar multiplication for calibration
     % of signals between antennas and BIAS-LFR/TDS interface. It does not affect
     % the LFR/TDS transfer functions.
