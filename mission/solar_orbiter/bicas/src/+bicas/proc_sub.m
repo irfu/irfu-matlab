@@ -1026,76 +1026,94 @@ classdef proc_sub
 
             
             
-            %=================================
-            % Take actions based on NSO table
-            %=================================
-            testNsoEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');            
+            %========================================
+            % Take actions based on NSO events table
+            %========================================
+            testNsoIdsEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');            
             
-            [bArraysCa, nsoIdCa, iNsoNa] = NsoTable.get_NSO_timestamps(PreDc.Zv.Epoch);
-            nNso       = numel(nsoIdCa);
-            nNsoGlobal = numel(NsoTable.nsoIdCa);
+            % Variable naming convention:
+            % CDF event    = NSO event that overlaps with CDF records.
+            % Global event = NSO event in global NSO event table.
+            
+            % NOTE: iCdfEventNa = CDF events as indices to global events.
+            [bCdfEventRecordsCa, cdfEventNsoIdCa, iCdfEventNa] = NsoTable.get_NSO_timestamps(PreDc.Zv.Epoch);
+            nCdfEvents    = numel(cdfEventNsoIdCa);
+            nGlobalEvents = numel(NsoTable.evtNsoIdCa);
             L.logf('info', ...
                 ['Searched non-standard operations (NSO) table.', ...
-                ' Found %i relevant NSO entries out of %i total.'], ...
-                nNso, nNsoGlobal);
+                ' Found %i relevant NSO events out of a total number of %i NSO events.'], ...
+                nCdfEvents, nGlobalEvents);
             
-            for kNso = 1:nNso    % Index into local/CDF NSO table.                
-                iNso  = iNsoNa(kNso);     % Index into global NSO table.
-                nsoId = nsoIdCa{kNso};
+            for kCdfEvent = 1:nCdfEvents    % Index into local/CDF NSO events table.                
+                iGlobalEvent = iCdfEventNa(kCdfEvent);     % Index into global NSO events table.
+                eventNsoId   = cdfEventNsoIdCa{kCdfEvent};
                 
+                %===========================================================
+                % Log the relevant NSO event in the GLOBAL NSO events table
+                %===========================================================
                 L.logf('info', '    %s -- %s %s', ...
-                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.startTt2000Array(iNso)), ...
-                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.stopTt2000Array(iNso)), ...
-                    nsoId);
+                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
+                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array(iGlobalEvent)), ...
+                    eventNsoId);
                 
-                %========================================================
+                
+                
+                %==========================================================
                 % TEST FUNCTIONALITY
-                % Translate (selected) TEST NSO IDs into actual NSO IDs.
-                nsoIdTranslated = EJ_library.utils.translate({...
+                % ------------------
+                % Optionally translate (selected) TEST NSO IDs into actual
+                % NSO IDs.
+                %==========================================================
+                eventNsoIdTranslated = EJ_library.utils.translate({...
                     {bicas.constants.NSOID.TEST_PARTIAL_SATURATION}, bicas.constants.NSOID.PARTIAL_SATURATION; ...
                     {bicas.constants.NSOID.TEST_FULL_SATURATION},    bicas.constants.NSOID.FULL_SATURATION}, ...
-                    nsoId, nsoId);
-                if ~testNsoEnabled && ~strcmp(nsoId, nsoIdTranslated)
-                    % CASE: Not test mode. NSO ID was translated (changed).
+                    eventNsoId, eventNsoId);
+                if ~testNsoIdsEnabled && ~strcmp(eventNsoId, eventNsoIdTranslated)
+                    % CASE:   (1) Not test mode
+                    %       & (2) NSO ID was translated (changed).
                     % ==> Original NSO ID was a TEST NSO ID
                     % ==> NSO should be ignored.
-                    nsoIdTranslated = 'nothing';   % Local constant.
+                    eventNsoIdTranslated = 'nothing';   % Local constant.
                 end
-                nsoId = nsoIdTranslated;
+                eventNsoId = eventNsoIdTranslated;
                 %========================================================
                 
                 %=================================
                 % Take action depending on NSO ID
                 %=================================
                 % Temporary shorter variable name.
-                zv_QUALITY_FLAG       = PreDc.Zv.QUALITY_FLAG(bArraysCa{kNso});
-                zv_L2_QUALITY_BITMASK = PostDc.Zv.L2_QUALITY_BITMASK(bArraysCa{kNso});
+                zv_QUALITY_FLAG       = PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent});
+                zv_L2_QUALITY_BITMASK = PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
                 
-                switch(nsoId)
+                switch(eventNsoId)
                     
                     %=====================================================
                     % TEST FUNCTIONALITY
+                    % Can test the setting of QUALITY_FLAG and zvUfv.
                     case bicas.constants.NSOID.TEST_QF0
-                        if testNsoEnabled
+                        if testNsoIdsEnabled
                             zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 0, ...
                                 'includeNaN');
                         end
                     case bicas.constants.NSOID.TEST_UFV
-                        if testNsoEnabled
-                            zvUfv = zvUfv | bArraysCa{kNso};
+                        if testNsoIdsEnabled
+                            zvUfv = zvUfv | bCdfEventRecordsCa{kCdfEvent};
                         end
                     %=====================================================
 
                     case bicas.constants.NSOID.PARTIAL_SATURATION
                         zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 1, 'includeNaN');
-                        zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, ...
+                        zv_L2_QUALITY_BITMASK = bitor(...
+                            zv_L2_QUALITY_BITMASK, ...
                             bicas.constants.L2QBM_PARTIAL_SATURATION);
 
                     case bicas.constants.NSOID.FULL_SATURATION
                         zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 0, 'includeNaN');
-                        zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, ...
+                        zv_L2_QUALITY_BITMASK = bitor(...
+                            zv_L2_QUALITY_BITMASK, ...
                             bicas.constants.L2QBM_FULL_SATURATION);
-                        zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, ...
+                        zv_L2_QUALITY_BITMASK = bitor(...
+                            zv_L2_QUALITY_BITMASK, ...
                             bicas.constants.L2QBM_PARTIAL_SATURATION);
                         % NOTE: Also set PARTIAL saturation bit when FULL
                         % saturation. /YK 2020-10-02.
@@ -1112,11 +1130,11 @@ classdef proc_sub
                         % code only checks those relevant for the data (time
                         % interval) currently processed. (Therefore also checks
                         % all NSO IDs when reads NSO table.)
-                        error('Can not interpret RCS NSO ID "%s".', nsoIdCa{kNso})
+                        error('Can not interpret RCS NSO ID "%s".', cdfEventNsoIdCa{kCdfEvent})
                         
                 end
-                PreDc.Zv.QUALITY_FLAG(bArraysCa{kNso})        = zv_QUALITY_FLAG;
-                PostDc.Zv.L2_QUALITY_BITMASK(bArraysCa{kNso}) = zv_L2_QUALITY_BITMASK;
+                PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG;
+                PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK;
                 
             end    % for
             

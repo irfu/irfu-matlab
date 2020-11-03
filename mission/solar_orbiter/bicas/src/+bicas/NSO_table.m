@@ -1,13 +1,21 @@
 %
-% Store SolO non-standard operations (NSO) table and supply basic functionality.
+% Store SolO NSO table and supply basic functionality.
+%
+%
+% TERMINOLOGY
+% ===========
+% NSO       : Non-Standard Operations
+% NSO event : One continuous time interval with exactly one NSO ID attached to
+%             it.
+% NSO ID    : Unique string that identifies the actions BICAS should take.
+%             Multiple NSO events may have the same NSO ID.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-09-22
 %
 classdef NSO_table   % < handle
-    % PROPOSAL: Include read_ns_ops as static method.
-    %   CON: Must include read_ns_ops's internal helper functions.
+    % PROPOSAL: New name: NSO_events_table
     %
     % PROPOSAL: Should somehow support logging. Which RCS NSO codes are used for
     % which time interval.
@@ -23,12 +31,17 @@ classdef NSO_table   % < handle
     % testing, but only with proper setting.
     %   PROPOSAL: process_quality_filter_L2: Translate test NSO ID to proper NSO
     %   ID, but only with proper setting.
+    %
+    % PROPOSAL: Automatic test code for get_NSO_timestamps().
+    %   NOTE: Implies separating file reading from initializing object.
+    
+    
     
     properties(SetAccess=immutable, GetAccess=public)
         % NOTE: Same RCS NSO ID may occur multiple times. Not unique.
-        startTt2000Array
-        stopTt2000Array
-        nsoIdCa
+        evtStartTt2000Array
+        evtStopTt2000Array
+        evtNsoIdCa
     end
     
     
@@ -45,13 +58,13 @@ classdef NSO_table   % < handle
             NsoTable = bicas.NSO_table.read_file(xmlFilePath);
             
             EJ_library.assert.sizes(...
-                NsoTable.startTt2000Array, [-1], ...
-                NsoTable.stopTt2000Array,  [-1], ...
-                NsoTable.nsoIdCa,          [-1]);
+                NsoTable.evtStartTt2000Array, [-1], ...
+                NsoTable.evtStopTt2000Array,  [-1], ...
+                NsoTable.evtNsoIdCa,          [-1]);
 
-            obj.startTt2000Array = NsoTable.startTt2000Array;
-            obj.stopTt2000Array  = NsoTable.stopTt2000Array;
-            obj.nsoIdCa          = NsoTable.nsoIdCa;
+            obj.evtStartTt2000Array = NsoTable.evtStartTt2000Array;
+            obj.evtStopTt2000Array  = NsoTable.evtStopTt2000Array;
+            obj.evtNsoIdCa          = NsoTable.evtNsoIdCa;
         end
         
         
@@ -68,13 +81,17 @@ classdef NSO_table   % < handle
         %
         % RETURN VALUES
         % =============
-        % bArraysCa   : Cell array of arrays of logical indices into tt2000Array.
-        %               {iRcsNsoId}(iTimestamp)
-        % nsoIdCa     : List of unique RCS NSO codes. {iRcsNsoId}
-        % iEventArray : 1D array of indices into NSO event list. To be used for
-        %               logging events that affect the submitted timestamps.
+        % bEvtArraysCa
+        %       Cell array of arrays of logical indices into tt2000Array.
+        %       {iEvent}(iTimestamp)
+        % evtNsoIdCa
+        %       List of NSO IDs. {iEvent}
+        % iGlobalEventsArray
+        %       1D array of indices into NSO event list. Can be used for logging
+        %       the tabulated (global) NSO events that affect e.g. a particular
+        %       CDF.
         %
-        function [bArraysCa, nsoIdCa, iNsoArray] = get_NSO_timestamps(obj, tt2000Array)
+        function [bEvtArraysCa, evtNsoIdCa, iGlobalEventsArray] = get_NSO_timestamps(obj, tt2000Array)
             % PROPOSAL: Automatic tests.
             % PROPOSAL: Static method.
             %   PRO: More natural to have explicit table argument for automatic testing.
@@ -87,37 +104,45 @@ classdef NSO_table   % < handle
             %   PRO: Can log every instance in NSO table.
             
             bEvents = EJ_library.utils.intervals_intersect(...
-                obj.startTt2000Array, ...
-                obj.stopTt2000Array, ...            
+                obj.evtStartTt2000Array, ...
+                obj.evtStopTt2000Array, ...            
                 min(tt2000Array), ...
                 max(tt2000Array));
-            
-            % IMPLEMENTATION NOTE: Obtain subset of NSO table corresponding to
-            % tt2000Array. Removes irrelevant RCS NSO events for the code after.
-            startTt2000Array = obj.startTt2000Array(bEvents);
-            stopTt2000Array  = obj.stopTt2000Array(bEvents);
-            nsoIdCa          = obj.nsoIdCa(bEvents);
-            
-            iNsoArray        = find(bEvents);
-            
-            
 
-            % IMPLEMENTATION NOTE: nsoIdCa is NOT a list of unique NSO IDs.
+            % IMPLEMENTATION NOTE: Obtain SUBSET of NSO table EVENTS which
+            % overlap with timestamps in tt2000Array. Indirectly also removes
+            % irrelevant RCS NSO IDs (not just events) for the code after.
+            evtStartTt2000Array = obj.evtStartTt2000Array(bEvents);
+            evtStopTt2000Array  = obj.evtStopTt2000Array(bEvents);
+            evtNsoIdCa          = obj.evtNsoIdCa(bEvents);
+            
+            iGlobalEventsArray  = find(bEvents);
+
+
+
+            % IMPLEMENTATION NOTE: evtNsoIdCa is NOT a list of unique NSO IDs.
             % The return value must be a list of unique NSO IDs.
             % Must distinguish between these two.
-            nNsoId    = numel(nsoIdCa);
-            bArraysCa = cell(nNsoId, 1);
-            for iNsoId = 1:nNsoId
+            nEvents      = numel(evtNsoIdCa);
+            bEvtArraysCa = cell(nEvents, 1);
+            for iEvent = 1:nEvents
                 
-                tt2000_1 = startTt2000Array(iNsoId);
-                tt2000_2 = stopTt2000Array(iNsoId);
+                tt2000_1 = evtStartTt2000Array(iEvent);
+                tt2000_2 = evtStopTt2000Array(iEvent);
                 
                 b = false(size(tt2000Array));
                 b((tt2000_1 <= tt2000Array) & (tt2000Array <= tt2000_2)) = true;
                 
-                bArraysCa{iNsoId} = b;
+                bEvtArraysCa{iEvent, 1} = b;
             end
 
+            
+            
+            % ASSERTIONS
+            EJ_library.assert.sizes(...
+                bEvtArraysCa,       [-1], ...
+                evtNsoIdCa,         [-1], ...
+                iGlobalEventsArray, [-1])
         end    % get_NSO_timestamps
         
         
@@ -158,48 +183,54 @@ classdef NSO_table   % < handle
             % PROPOSAL: Permit multiple forms of XML time input: (t1, t2), (t1,dt), (dt, t2)
             %   CON: Might not be able to convert XML to HTML using CSS.
             
+            % List of all legal NSO IDs.
             LEGAL_NSOID_CA = struct2cell(bicas.constants.NSOID);
+            EJ_library.assert.castring_set(LEGAL_NSOID_CA)
             
             
             
-            RootElem      = xmlread(filePath);
-            TablesElem    = bicas.NSO_table.getXmlUniqChildElem(RootElem, 'table');
-            EventElemList = TablesElem.getElementsByTagName('event');
+            RootXmlElem      = xmlread(filePath);
+            TablesXmlElem    = bicas.NSO_table.getXmlUniqChildElem(RootXmlElem, 'table');
+            EventXmlElemList = TablesXmlElem.getElementsByTagName('event');
             
-            nEvents = EventElemList.getLength;
+            nEvents = EventXmlElemList.getLength;
             
-            startTt2000Array = int64(zeros(nEvents, 1));
-            stopTt2000Array  = int64(zeros(nEvents, 1));
-            nsoIdCa          = cell(nEvents, 1);
+            evtStartTt2000Array = int64(zeros(nEvents, 1));
+            evtStopTt2000Array  = int64(zeros(nEvents, 1));
+            evtNsoIdCa          = cell(nEvents, 1);
             
             for i = 1:nEvents
-                EventElem = EventElemList.item(i-1);    % NOTE: Subtract by one.
+                % NOTE: Subtract by one.
+                EventXmlElem = EventXmlElemList.item(i-1);
                 
-                startUtc = bicas.NSO_table.getXmlChildElemStr(EventElem, 'startTimeUtc');
-                stopUtc  = bicas.NSO_table.getXmlChildElemStr(EventElem, 'stopTimeUtc');
-                nsoId    = bicas.NSO_table.getXmlChildElemStr(EventElem, 'rcsNsoId');
+                startUtc = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'startTimeUtc');
+                stopUtc  = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'stopTimeUtc');
+                nsoId    = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'rcsNsoId');
+                
+                
                 
                 startTt2000 = spdfparsett2000(startUtc);
                 stopTt2000  = spdfparsett2000(stopUtc);
                 
-                % ASSERTION
-                assert(ismember(nsoId, LEGAL_NSOID_CA), 'NSO table file contains illegal NSO ID="%s".', nsoId)
+                % ASSERTIONS
+                assert(ismember(nsoId, LEGAL_NSOID_CA), ...
+                    'NSO table file contains illegal NSO ID="%s".', nsoId)
                 % IMPLEMENTATION NOTE: This assertion requires converting the UTC
                 % strings to a numerical format.
                 assert(startTt2000 < stopTt2000, ...
-                    'BICAS:read_ns_ops:FailedToReadInterpretNsOps', ...
-                    'Start time does not preceed stop time for event stated to begin at UTC "%s".', ...
+                    'BICAS:NSO_table:FailedToReadInterpretNsOps', ...
+                    'Start time does not precede stop time for NSO table event stated to begin at UTC "%s".', ...
                     startUtc)
                 
-                startTt2000Array(i, 1) = startTt2000;
-                stopTt2000Array(i, 1)  = stopTt2000;
-                nsoIdCa{i, 1}          = nsoId;
+                evtStartTt2000Array(i, 1) = startTt2000;
+                evtStopTt2000Array(i, 1)  = stopTt2000;
+                evtNsoIdCa{i, 1}          = nsoId;
             end
             
             NsoTable = struct(...
-                'startTt2000Array', {startTt2000Array}, ...
-                'stopTt2000Array',  {stopTt2000Array}, ...
-                'nsoIdCa',          {nsoIdCa});
+                'evtStartTt2000Array', {evtStartTt2000Array}, ...
+                'evtStopTt2000Array',  {evtStopTt2000Array}, ...
+                'evtNsoIdCa',          {evtNsoIdCa});
             
         end
         
@@ -219,16 +250,16 @@ classdef NSO_table   % < handle
         
         % Elem : Element that has exactly one child in the form of an element with
         %        specified tag name.
-        function ChildElem = getXmlUniqChildElem(Elem, childTagName)
-            ChildElemList = Elem.getElementsByTagName(childTagName);
-            if ~(ChildElemList.getLength() == 1)
+        function ChildXmlElem = getXmlUniqChildElem(XmlElem, childTagName)
+            ChildXmlElemList = XmlElem.getElementsByTagName(childTagName);
+            if ~(ChildXmlElemList.getLength() == 1)
                 error( ...
-                    'BICAS:read_ns_ops:FailedToReadInterpretNsOps', ...
+                    'BICAS:NSO_table:FailedToReadInterpretNsOps', ...
                     'XML element (tag name "%s") does not have exactly one child element with tag name "%s".', ...
-                    Elem.getNodeName(), childTagName)
+                    XmlElem.getNodeName(), childTagName)
             end
             
-            ChildElem = ChildElemList.item(0);
+            ChildXmlElem = ChildXmlElemList.item(0);
         end
         
         
@@ -237,20 +268,20 @@ classdef NSO_table   % < handle
         %
         % NOTE: Probably does not really assert enough to ensure that the one element is
         % a text.
-        function s = getXmlElemStr(Elem)
-            ChildNodesList = Elem.getChildNodes();
-            assert(ChildNodesList.getLength == 1, ...
-                'BICAS:read_ns_ops:FailedToReadInterpretNsOps', ...
+        function s = getXmlElemStr(XmlElem)
+            ChildXmlNodesList = XmlElem.getChildNodes();
+            assert(ChildXmlNodesList.getLength == 1, ...
+                'BICAS:NSO_table:FailedToReadInterpretNsOps', ...
                 'XML element does not have exactly one child node as expected.')
             
-            s = char(ChildNodesList.item(0).getTextContent);
+            s = char(ChildXmlNodesList.item(0).getTextContent);
         end
         
         
         
-        function s = getXmlChildElemStr(Elem, childTagName)
-            ChildElem = bicas.NSO_table.getXmlUniqChildElem(Elem, childTagName);
-            s         = bicas.NSO_table.getXmlElemStr(ChildElem);
+        function s = getXmlChildElemStr(XmlElem, childTagName)
+            ChildXmlElem = bicas.NSO_table.getXmlUniqChildElem(XmlElem, childTagName);
+            s            = bicas.NSO_table.getXmlElemStr(ChildXmlElem);
         end
         
         
