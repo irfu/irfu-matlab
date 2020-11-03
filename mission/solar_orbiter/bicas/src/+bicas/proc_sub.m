@@ -1065,8 +1065,7 @@ classdef proc_sub
                 % NSO IDs.
                 %==========================================================
                 eventNsoIdTranslated = EJ_library.utils.translate({...
-                    {bicas.constants.NSOID.TEST_PARTIAL_SATURATION}, bicas.constants.NSOID.PARTIAL_SATURATION; ...
-                    {bicas.constants.NSOID.TEST_FULL_SATURATION},    bicas.constants.NSOID.FULL_SATURATION}, ...
+                    {bicas.constants.NSOID.TEST_THRUSTER_FIRING},    bicas.constants.NSOID.THRUSTER_FIRING}, ...
                     eventNsoId, eventNsoId);
                 if ~testNsoIdsEnabled && ~strcmp(eventNsoId, eventNsoIdTranslated)
                     % CASE:   (1) Not test mode
@@ -1117,6 +1116,15 @@ classdef proc_sub
                             bicas.constants.L2QBM_PARTIAL_SATURATION);
                         % NOTE: Also set PARTIAL saturation bit when FULL
                         % saturation. /YK 2020-10-02.
+                        
+                    case bicas.constants.NSOID.THRUSTER_FIRING
+                        zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 1, 'includeNaN');
+                        % NOTE: There will be an L1 QUALITY_BITMASK bit for
+                        % thruster firings eventually according to
+                        % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
+                        % Therefore(?) not setting any bit in
+                        % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
+                        % to be set.)
                         
                     case 'nothing'
                         % CASE: Do nothing.
