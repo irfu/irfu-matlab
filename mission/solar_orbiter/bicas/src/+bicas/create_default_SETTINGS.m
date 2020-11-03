@@ -362,6 +362,9 @@ function SETTINGS = create_default_SETTINGS()
     % Whether to enable NSO IDs which are intended for test purposes only.
     S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
     
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3.
+    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',              2)
+    
     
     
     %============================================================================

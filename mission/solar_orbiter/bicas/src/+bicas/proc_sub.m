@@ -1189,6 +1189,7 @@ classdef proc_sub
             BIN_LENGTH_WOLS_NS        = int64(10e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
             
+            QUALITY_FLAG_MIN_FOR_USE = SETTINGS.get_fv('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
             
             
             %======================
@@ -1203,7 +1204,7 @@ classdef proc_sub
             
             
             
-            QUALITY_FLAG = InputLfrCwfCdf.Zv.QUALITY_FLAG;
+            zv_QUALITY_FLAG = InputLfrCwfCdf.Zv.QUALITY_FLAG;
             
             
             
@@ -1217,8 +1218,12 @@ classdef proc_sub
             % to solo.vdccal without the knowledge of the BICAS author.
             % Therefore uses extra assertions to detect such changes.
             %===================================================================
+            % Set some records to NaN.
+            zv_VDC = InputLfrCwfCdf.Zv.VDC;
+            zv_VDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
+            %
             VdcTs = TSeries(...
-                EpochTT(InputLfrCwfCdf.Zv.Epoch), InputLfrCwfCdf.Zv.VDC, ...
+                EpochTT(InputLfrCwfCdf.Zv.Epoch), zv_VDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
             %
@@ -1265,7 +1270,7 @@ classdef proc_sub
             EfieldCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
             EfieldCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
             EfieldCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            EfieldCdf.QUALITY_FLAG       = QUALITY_FLAG;
+            EfieldCdf.QUALITY_FLAG       = zv_QUALITY_FLAG;
             EfieldCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
             EfieldCdf.EDC_SRF            = zvEdcMvpm;
             
@@ -1278,7 +1283,7 @@ classdef proc_sub
             ScpotCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
             ScpotCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
             ScpotCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            ScpotCdf.QUALITY_FLAG       = QUALITY_FLAG;
+            ScpotCdf.QUALITY_FLAG       = zv_QUALITY_FLAG;
             ScpotCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
             ScpotCdf.SCPOT              = TsScpot.data;
             ScpotCdf.PSP                = TsPsp.data;
@@ -1307,7 +1312,7 @@ classdef proc_sub
             % bin values or not.
             for i = 1:nRecordsDwns
                 k = iRecordsRwnsCa{i};
-                QUALITY_FLAG_dwns(i)       = bicas.proc_sub.downsample_bin_QUALITY_FLAG(                         QUALITY_FLAG(      k));
+                QUALITY_FLAG_dwns(i)       = bicas.proc_sub.downsample_bin_QUALITY_FLAG(                         zv_QUALITY_FLAG(   k));
                 QUALITY_BITMASK_dwns(i)    = bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(InputLfrCwfCdf.Zv.QUALITY_BITMASK(   k));
                 L2_QUALITY_BITMASK_dwns(i) = bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK(k));
             end
