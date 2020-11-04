@@ -1077,6 +1077,8 @@ classdef proc_sub
                 eventNsoId = eventNsoIdTranslated;
                 %========================================================
                 
+                
+                
                 %=================================
                 % Take action depending on NSO ID
                 %=================================
@@ -1181,7 +1183,9 @@ classdef proc_sub
             % PROPOSAL: Split up in one part for non-downsampled and
             %           downsampled.
             %   CON: Shared functionality for 3 quality zVars.
-            
+
+
+
             % The only acceptable input DATASET_ID.
             INPUT_DATASET_ID          = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
             % Define length of bins, and relative position of corresponding
@@ -1367,7 +1371,6 @@ classdef proc_sub
             %=============================
             % zVars for SCPOT DOWNSAMPLED
             %=============================
-            % YK: HIGHER PRIORITY
             ScpotDwnsCdf = [];
             ScpotDwnsCdf.Epoch              = zvEpochDwns;
             ScpotDwnsCdf.QUALITY_FLAG       = NaN(nRecordsDwns, 1);

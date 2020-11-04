@@ -2,19 +2,20 @@
 % Hard-coded constants which are needed
 % -- for error handling
 % -- early, before regular settings are initialized,
-% and which  thus need to be initialized independent of settings and in a way which is unlikely to trigger errors.
+% and which  thus need to be initialized independent of settings and in a way
+% which is unlikely to trigger errors.
 %
-% NOTE: This file contains the authoritative definitions of the meaning of error codes that should (maybe) be used in
-% documentation.
+% NOTE: This file contains the authoritative definitions of the meaning of error
+% codes that should (maybe) be used in documentation.
 %
 %
 % VARIABLE NAMING CONVENTIONS
 % ===========================
 % TBW   = To Bash Wrapper.
-% EMIDP = (MATLAB) Error Message Identifier Part. One of the colon-separated parts of the MException .identifier
-%         string field (error message ID).
-%         NOTE: "Component" has a special meaning in the context of error message IDs. Therefore uses the term
-%         "part" instead.
+% EMIDP = (MATLAB) Error Message Identifier Part. One of the colon-separated
+%         parts of the MException .identifier string field (error message ID).
+%         NOTE: "Component" has a special meaning in the context of error
+%         message IDs. Therefore uses the term "part" instead.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -44,11 +45,11 @@ classdef constants   % < handle
         
         % MATLAB stdout prefix to signal to bash wrapper that the log message
         % should be passed on to STDOUT (without the prefix).
-        STDOUT_PREFIX_TBW = 'STDOUT: ';
+        STDOUT_PREFIX_TBW                 = 'STDOUT: ';
         
         % MATLAB stdout prefix to signal to bash wrapper that the log message
         % should be passed on to LOG FILE (without the prefix).
-        LOG_FILE_PREFIX_TBW = 'LOG FILE: ';
+        LOG_FILE_PREFIX_TBW               = 'LOG FILE: ';
 
         % Information to "interpret" and "translate" captured exceptions
         % --------------------------------------------------------------

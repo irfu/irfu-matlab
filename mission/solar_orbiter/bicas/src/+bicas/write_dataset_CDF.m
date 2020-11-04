@@ -56,7 +56,6 @@ function write_dataset_CDF(...
     
     
     
-    
     %===========================
     % Create (modified) dataobj
     %===========================
@@ -254,7 +253,7 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
             % NOTE: Useful to specify master CDF path in the case of having
             % multiple output datasets. Will otherwise not know which output
             % dataset is referred to. Note: Can still read master CDF from
-            % preceeding log messages.
+            % preceding log messages.
             anomalyDescrMsg = sprintf(...
                 ['Master CDF "%s" contains zVariable "%s" which has not been', ...
                 ' set (i.e. it has zero records) after adding ', ...

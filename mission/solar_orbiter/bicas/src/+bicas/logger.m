@@ -1,24 +1,28 @@
 %
-% Class used for logging. Create an instance which is then passed on to other functions for them to be able
-% to print log messages.
+% Class used for logging. Create an instance which is then passed on to other
+% functions for them to be able to print log messages.
 %
 % Print log message to MATLAB's stdout in standardized way.
 %
-% NOTE: This class provides some functionality that is meant to be useful when calling BICAS code from outside BICAS in
-% order to control the logging.
+% NOTE: This class provides some functionality that is meant to be useful when
+% calling BICAS code from outside BICAS in order to control the logging.
 % Ex: Disable logging.
 % Ex: Log to file from within MATLAB.
 %
 %
 % RATIONALE: INSTANTIATED CLASS INSTEAD OF LOGGING FUNCTIONS
 % ==========================================================
-% Improve flexibility. No matter how complex the configuration of the logging is, it can be done once when configuring
-% the class instance, and all the variables are then passed along with the object.
+% Improve flexibility. No matter how complex the configuration of the logging
+% is, it can be done once when configuring the class instance, and all the
+% variables are then passed along with the object.
 % --
-% Ex: Switch between any combination of logging to (1) file and/or (2) stdout, or (3) don't log at all.
+% Ex: Switch between any combination of logging to
+%   (1a) file and/or (1b) stdout, or (2) don't log at all.
 % Ex: Switch between log prefixes or not.
-% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.calib) can have other logging, or none.
-% Ex: Can implement accepting log messages before specifying the log file, by temporarily storing the messages.
+% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.calib) can have other
+% logging, or none.
+% Ex: Can implement accepting log messages before specifying the log file, by
+% temporarily storing the messages.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -57,8 +61,9 @@ classdef logger < handle
 
 
     properties(Access=private)
-        % IMPLEMENTATION NOTE: Constant defined here and not centrally (e.g. SETTINGS) to make sure that it is error-safe and
-        % always initialized. Needed for early initialization and error handling (try-catch).
+        % IMPLEMENTATION NOTE: Constant defined here and not centrally (e.g.
+        % SETTINGS) to make sure that it is error-safe and always initialized.
+        % Needed for early initialization and error handling (try-catch).
         %LOG_PREFIX = 'LOG FILE: ';
         
         LINE_FEED  = char(10);
@@ -79,22 +84,28 @@ classdef logger < handle
         %
         % ARGUMENTS
         % =========
-        % stdoutOption   : String constant.
-        %                   'none'
-        %                   'human-readable' : Log to stdout as is most convenient for a human reader.
-        %                   'bash wrapper'   : Log to stdout as required by BICAS bash wrapper script.
-        % logFileEnabled : Logical/numerical. Whether to write to log file.
-        %                  NOTE: Log messages are stored in a buffer until the log file is specified later, using the
-        %                  designated method.
+        % stdoutOption
+        %       String constant.
+        %           'none'
+        %           'human-readable'
+        %               Log to stdout as is most convenient for a human reader.
+        %           'bash wrapper'
+        %               Log to stdout as required by BICAS bash wrapper script.
+        % logFileEnabled
+        %       Logical/numerical. Whether to write to log file.
+        %       NOTE: Log messages are stored in a buffer until the log file is
+        %       specified later, using the designated method.
         %
         function obj = logger(stdoutOption, logFileEnabled)
             % PROPOSAL: Separate arguments for stdout and log file behaviour
             %   CON: Want short call for no logging.
             
             % ASSERTIONS
-            % IMPLEMENTATION NOTE: Assertion for number of arguments, since this used to be variable.
+            % IMPLEMENTATION NOTE: Assertion for number of arguments, since this
+            % used to be variable.
             assert(nargin == 2)
-            assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), 'Illegal argument logFileEnabled.')
+            assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), ...
+                'Illegal argument logFileEnabled.')
             logFileEnabled = logical(logFileEnabled);
             
             switch(stdoutOption)
@@ -116,25 +127,30 @@ classdef logger < handle
 
 
 
-        % Specify the log file to use, if logging to file has been enabled (assertion). Previous log messages have been
-        % buffered.
+        % Specify the log file to use, if logging to file has been enabled
+        % (assertion). Previous log messages have been buffered.
         %
         % 
         % RATIONALE: NOT USING CONSTRUCTOR
         % ================================
-        % It is useful to be able to specify log file AFTER that some logging has been done.
+        % It is useful to be able to specify log file AFTER that some logging
+        % has been done.
         %
         %
         % ARGUMENTS
         % =========
-        % logFile : Path to log file.
-        %           NOTE: If empty, then do not (ever) use log file. This option is useful if it is not known at the
-        %           time of calling the constructor whether a log file should be used or not. This way the log message
-        %           buffer can be cleared to potentially conserve RAM.
+        % logFile
+        %       Path to log file.
+        %       NOTE: If empty, then do not (ever) use log file. This option is
+        %       useful if it is not known at the time of calling the constructor
+        %       whether a log file should be used or not. This way the log
+        %       message buffer can be cleared to potentially conserve RAM.
         % 
         function obj = set_log_file(obj, logFile)
-            assert(obj.logFileEnabled,     'Trying to specify log file without having enabled log file in constructor.')
-            assert(isempty(obj.logFileId), 'Trying to specify log file twice.')
+            assert(obj.logFileEnabled, ...
+                'Trying to specify log file without having enabled log file in constructor.')
+            assert(isempty(obj.logFileId), ...
+                'Trying to specify log file twice.')
 
             if ~isempty(logFile)
                 % CASE: Set log file.
@@ -147,7 +163,8 @@ classdef logger < handle
                 if fileId == -1
                     error(...
                         'BICAS:logger:Assertion', ...
-                        'Can not open log file "%s". fopen error message: "%s"', logFile, fopenErrorMsg)
+                        'Can not open log file "%s". fopen error message: "%s"', ...
+                        logFile, fopenErrorMsg)
                     % NOTE: Does not alter the object properties.
                 end
                 obj.logFileId = fileId;
@@ -161,7 +178,8 @@ classdef logger < handle
                 obj.logFileBuffer = {};
                 
             else
-                % CASE: There should be no log file (despite constructor saying there should/could be one).
+                % CASE: There should be no log file (despite constructor saying
+                % there should/could be one).
                 
                 obj.logFileEnabled = false;
                 obj.logFileBuffer = {};
@@ -170,14 +188,17 @@ classdef logger < handle
 
 
 
-        % Fundemental method for logging. Other methods may wrap this method to provide addition functionality.
+        % Fundemental method for logging. Other methods may wrap this method to
+        % provide addition functionality.
         %
         %
         % ARGUMENTS
         % =========
         % logLevel : String constant.
-        %            NOTE: Value 'error' WILL NOT THROW ERROR. This is so that error handling code can log using this
-        %            alternative. To actually THROW an error, use function error(...) or throw an exception directly.
+        %            NOTE: Value 'error' WILL NOT THROW ERROR. This is so that
+        %            error handling code can log using this alternative. To
+        %            actually THROW an error, use function error(...) or throw
+        %            an exception directly.
         % msgStr   : Potentially multi-row string to be printed.
         %            NOTE: Multi-row strings must end with line feed (after last row).
         %
@@ -203,7 +224,8 @@ classdef logger < handle
                     obj.write_to_stdout(rcsIcdLogMsg)
                     
                 case 'bash wrapper'
-                    % String that is intended to be read by BICAS bash wrapper as stdout.
+                    % String that is intended to be read by BICAS bash wrapper
+                    % as stdout.
                     bashWrapperRecipientStr = EJ_library.str.add_prefix_on_every_row(...
                         rcsIcdLogMsg, ...
                         bicas.constants.LOG_FILE_PREFIX_TBW);
@@ -211,7 +233,9 @@ classdef logger < handle
                     obj.write_to_stdout(bashWrapperRecipientStr)
                     
                 otherwise
-                    error('BICAS:logger:Assertion', 'Illegal property value obj.stdoutOption="%s".', obj.stdoutOption)
+                    error('BICAS:logger:Assertion', ...
+                        'Illegal property value obj.stdoutOption="%s".', ...
+                        obj.stdoutOption)
             end
             
             %===================
@@ -235,16 +259,19 @@ classdef logger < handle
                 
                 % Make sure string ends with line feed
                 % ------------------------------------
-                % IMPLEMENTATION NOTE: Necessary for stderr messages to end up on separate lines. Not doing so produces
-                % some output rows (at least inside the MATLAB GUI) with mixed stderr and std out content which is hard
-                % to read.
-                % NOTE: EJ_library.str.add_prefix_on_every_row already does this for the log messages.
+                % IMPLEMENTATION NOTE: Necessary for stderr messages to end up
+                % on separate lines. Not doing so produces some output rows (at
+                % least inside the MATLAB GUI) with mixed stderr and std out
+                % content which is hard to read.
+                % NOTE: EJ_library.str.add_prefix_on_every_row already does this
+                % for the log messages.
                 stderrStr = msg;
                 if stderrStr(end) ~= obj.LINE_FEED
                     stderrStr = [stderrStr, obj.LINE_FEED];
                 end
 
-                % IMPLEMENTATION NOTE: Should not not use bashWrapperRecipientStr, since it has the wrong prefix.
+                % IMPLEMENTATION NOTE: Should not not use
+                % bashWrapperRecipientStr, since it has the wrong prefix.
                 obj.write_to_stderr(stderrStr)
             end
 
@@ -297,17 +324,22 @@ classdef logger < handle
         
         
         
-        % NOTE: Partly defined by RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3.
-        % NOTE: RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3 speaks of a "debug mode" not implemented here.
-        %       Function always prints debug-level messages.
-        % NOTE: Does NOT add bicas.constants.LOG_FILE_PREFIX_TBW required for wrapper script to recognize log
-        %       file messages in stdout. This is intentional since one may want both log message version with and
+        % NOTE: Partly defined by RCS ICD 00037, iss1/rev2, draft 2019-07-11,
+        %       Section 4.2.3.
+        % NOTE: RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3 speaks
+        %       of a "debug mode" not implemented here. Function always prints
+        %       debug-level messages.
+        % NOTE: Does NOT add bicas.constants.LOG_FILE_PREFIX_TBW required for
+        %       wrapper script to recognize log file messages in stdout. This is
+        %       intentional since one may want both log message version with and
         %       without bicas.constants.LOG_FILE_PREFIX_TBW.
         % NOTE: Could be a static method.
         %
         % RETURN VALUE
         % ============
-        % rcsIcdLogMsg : String that (1) end with line feed, (2) conforms to format for logs specified by the RCS ICD.
+        % rcsIcdLogMsg
+        %       String that (1) end with line feed, (2) conforms to format for
+        %       logs specified by the RCS ICD.
         %
         function rcsIcdLogMsg = ICD_log_msg(obj, logLevel, logMsg)
             
@@ -317,7 +349,8 @@ classdef logger < handle
                 case 'warning' ; logLevelStr = 'WARNING';
                 case 'error'   ; logLevelStr = 'ERROR';
                 otherwise
-                    error('BICAS:logger:ICD_log_msg:Assertion:IllegalArgument', 'Illegal logLevel="%s"', logLevel)
+                    error('BICAS:logger:ICD_log_msg:Assertion:IllegalArgument', ...
+                        'Illegal logLevel="%s"', logLevel)
             end
             
             rcsIcdRowTimestamp = datestr(clock, 'yyyy-mm-ddTHH:MM:SS');

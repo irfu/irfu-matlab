@@ -325,6 +325,7 @@ classdef RCT
                 % the content to the caller.
                 RctData = [];
                 RctData.FtfTpivTable = FtfTpivTable;
+                % close ; x=freqTableHz{3}; y=phaseTableDeg{3}(:,1); semilogx(x(1:end-1), diff(y)./diff(x), '.-')
                 
             catch Exc1
                 Exc2 = MException(...

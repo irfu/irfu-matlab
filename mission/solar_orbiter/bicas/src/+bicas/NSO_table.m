@@ -15,7 +15,7 @@
 % First created 2020-09-22
 %
 classdef NSO_table   % < handle
-    % PROPOSAL: New name: NSO_events_table
+    % PROPOSAL: New name: NSO_events_table, NSO_events_list
     %
     % PROPOSAL: Should somehow support logging. Which RCS NSO codes are used for
     % which time interval.
@@ -34,6 +34,15 @@ classdef NSO_table   % < handle
     %
     % PROPOSAL: Automatic test code for get_NSO_timestamps().
     %   NOTE: Implies separating file reading from initializing object.
+    %
+    % PROPOSAL: Ability to add time margins for selected NSOIDs.
+    %   PRO: Easier to change pre-existing margins than to modify the XML file.
+    %       CON: Harder for outsiders to interpret (& edit) the XML file.
+    %   Ex: thruster_firings.
+    %
+    % PROPOSAL: Validate XML table content.
+    %   PROPOSAL: Events are sorted.
+    %   PROPOSAL: Events with same NSO ID do not overlap.
     
     
     

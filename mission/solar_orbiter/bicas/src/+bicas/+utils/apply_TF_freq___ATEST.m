@@ -2,6 +2,9 @@
 % Semi-automatic test code for function "bicas.utils.apply_TF_freq".
 %
 %
+% TS = Time Series. Data in time domain.
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-13
 %
@@ -32,6 +35,10 @@ function apply_TF_freq___ATEST
     % PROPOSAL: Test scaling X_0 and X_k, k>0 differently.
     %
     % PROPOSAL: Proper functions (with longer descriptive names) for creating functions, instead of function pointers.
+    %   PRO: Can use functions everywhere, also in local functions.
+    %
+    % PROPOSAL: Use EJ_library.atest
+    %   PRO: Better isolated test setups.
     
     % EPSILON = 1e-6;
     EPSILON = 1e-4;
@@ -49,22 +56,32 @@ function apply_TF_freq___ATEST
     for iTest = 1:numel(inputCa)
         
         y2_exp = outputCa{iTest};
-        y2_res = bicas.utils.apply_TF_freq( inputCa{iTest}{:} );
+        y2_act = bicas.utils.apply_TF_freq( inputCa{iTest}{:} );
         
         n = (1:length(y2_exp))';
         y1 = inputCa{iTest}{2};
+        
+        %==============================================
+        % Plot
+        % -- Input           into apply_TF_time()
+        % -- Actual output   from apply_TF_time()
+        % -- Expected output from apply_TF_time()
+        % NOTE: All are in time-domain.
+        %==============================================
         figure
         plot(n, y1,     '-');   hold on
         plot(n, y2_exp, '-k', 'LineWidth', 2.0)
-        plot(n, y2_res, '*')
+        plot(n, y2_act, '*')
         legend('y1', 'y2\_expected', 'y2\_result')
         xlabel('Array index (not t)')
+
         
-        if ~EJ_library.utils.approx_equals(y2_res, y2_exp, EPSILON, 'NaN equal to itself')
+        
+        if ~EJ_library.utils.approx_equals(y2_act, y2_exp, EPSILON, 'NaN equal to itself')
             %error('BICAS:TEST', 'TEST FAILED')
             warning('TEST FAILED')
             
-            [y2diffMax, iY2DiffMax] = max(abs(y2_res - y2_exp))
+            [y2diffMax, iY2DiffMax] = max(abs(y2_act - y2_exp))
             %         keyboard
             %         close all
         else
@@ -77,29 +94,10 @@ end
 
 
 function [inputCa, outputCa] = define_tests()
+    
     inputCa  = {};
     outputCa = {};
-    
-    % Function for creating time samples vector.
-    tVec = @(N,dt) (0 : dt : ((N-1)*dt) )';
-    
-    %===========================================================================
-    % Function for creating another function (time domain) which is a delayed
-    % version of a specified function AND treats it as cyclic. delay>0 pushes it
-    % in the t+ direction.
-    %
-    % f  : Function pointer
-    % N  : Number of samples in time series.
-    % dt :
-    %===========================================================================
-    delayedFunc = @(f,t,delay,N,dt) (f(mod(t-delay, N*dt)));
-    
-    %===========================================================================
-    % TF that delays function, i.e. it is moved in the t+ direction (time
-    % domain), i.e. one time delay for all frequencies
-    %===========================================================================
-    delayTfZ    = @(omega, delay)   (exp(1i*omega*(-delay)));
-    
+  
     %===========================================================================
     % TF for (almost) constant Z. Implements Z(omega=0)=z0 and Z(omega>0)=z1.
     %
@@ -112,17 +110,17 @@ function [inputCa, outputCa] = define_tests()
         % Signal: Quadratic function
         % TF    : Constant delay.
         N  = 100;
-        %     N  = 10;
-        dt = 0.1;
+        % N  = 10;
+        dt    = 0.1;
         delay = 8*dt;
         
         %tfOmega = linspace(0, 4/dt, 1e6)';
-        tf     = @(omega) delayTfZ(omega, delay);
+        tf = @(omega) tf_delay(omega, delay);
         
-        t  = tVec(N, dt);
-        f = @(t) (0.5*(t-3).^2 + 5);
+        t  = time_vector_N_dt(N, dt);
+        f  = @(t) (0.5*(t-3).^2 + 5);
         y1 = f(t);
-        y2 = delayedFunc(f, t, delay, N, dt);
+        y2 = ts_delay_func(f, t, delay, N, dt);
         
         inputCa{end+1} = {dt, y1, tf};
         outputCa{end+1} = y2;
@@ -136,7 +134,7 @@ function [inputCa, outputCa] = define_tests()
         
         tf    = @(omega) constantTfZ(omega, 2, 2);
         
-        t  = tVec(N, dt);
+        t  = time_vector_N_dt(N, dt);
         f1 = @(t) (1 * ones(size(t)) );
         f2 = @(t) (2 * ones(size(t)) );
         y1 = f1(t);
@@ -148,19 +146,23 @@ function [inputCa, outputCa] = define_tests()
     
     if 1
         % Signal: Approximately one non-zero DFT component
-        % TF:     Constant Z(!), except tfZ(omega=0). Different time delays on different frequencies, which produces a chosen time delay for this specific signal.
+        % TF:     Constant Z(!), except tfZ(omega=0). Different time delays on
+        % different frequencies, which produces a chosen time delay for this
+        % specific signal.
         for N = 100:101
             %     for N = 10
             delay  = 0.60;
             dt     = 2*pi/N;
             omega0 = 1;    % Fits time interval perfectly. Perfectly periodic.
             
-            tf      = @(omega) constantTfZ(omega, 1, exp(1i*omega0*(-delay)));
-            t  = tVec(N, dt);
+            tf = @(omega) constantTfZ(omega, 1, exp(1i*omega0*(-delay)));
+            t  = time_vector_N_dt(N, dt);
+            
             f  = @(t) (3+cos(omega0 * (t-pi/5)));
             
             y1 = f(t);
-            y2 = delayedFunc(f, t, delay, N, dt);
+            y2 = ts_delay_func(f, t, delay, N, dt);
+
             
             inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
@@ -176,7 +178,7 @@ function [inputCa, outputCa] = define_tests()
             dt    = 0.1;
             delay = 3*dt;
             
-            tf    = @(omega) delayTfZ(omega, delay);
+            tf = @(omega) tf_delay(omega, delay);
             
             omega0 = 2*pi * 5/(N*dt);    % Exact DFT frequency.  ==> Good match
             %omega0 = 2*pi * 1/3;          % Arbitrary frequency.  ==> Edge effects, generally
@@ -184,11 +186,12 @@ function [inputCa, outputCa] = define_tests()
                 error('BICAS:TEST', 'Bad test config.?')
             end
             
-            t  = tVec(N, dt);
+            t  = time_vector_N_dt(N, dt);
             f = @(t) cos(omega0 * (t-pi/5));
             
             y1 = f(t);
-            y2 = delayedFunc(f,t,delay,N,dt);
+            y2 = ts_delay_func(f, t, delay, N, dt);
+
             
             inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
@@ -203,13 +206,14 @@ function [inputCa, outputCa] = define_tests()
             dt    = 0.01;
             delay = 13*dt;
             
-            tf    = @(omega) delayTfZ(omega, delay);
+            tf = @(omega) tf_delay(omega, delay);
             
-            t = tVec(N, dt);
+            t  = time_vector_N_dt(N, dt);
             
             f = @(t) exp(t);
             y1 = f(t);
-            y2 = delayedFunc(f,t,delay,N,dt);
+            y2 = ts_delay_func(f, t, delay, N, dt);
+            
             
             inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
@@ -223,18 +227,107 @@ function [inputCa, outputCa] = define_tests()
             dt    = 1 / (N-1);
             delay = 10*dt;
             
-            tfOmega = linspace(0, 4*N/dt, 1e6)';
-            tf     = @(omega) delayTfZ(omega, delay);
+            %tfOmega = linspace(0, 4*N/dt, 1e6)';
+            %tf     = @(omega) delayTfZ(omega, delay);
+            tf = @(omega) tf_delay(omega, delay);
             
-            t = tVec(N,dt);
+            t  = time_vector_N_dt(N, dt);
             
             f = @(t) ((t-5).^3 - 20*t + 25);
             y1 = f(t);
-            y2 = delayedFunc(f,t,delay,N,dt);
-            %         y1(3) = NaN;    % TEST
+            y2 = ts_delay_func(f, t, delay, N, dt);
             
             inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
         end
     end
+    
+    
+    if 1
+        %inputCa  = {};
+        %outputCa = {};
+        [inputCa, outputCa] = test_Only_keep_constant(inputCa, outputCa);
+    end
+    
+end
+
+
+
+function [inputCa, outputCa] = test_Only_keep_constant(inputCa, outputCa)
+    % TF for keeping only omega=0 component.
+    
+    N = 100;
+    dt = 1 / (N-1);
+    Z0 = -2;
+    
+    tf      = @(omega) tf_scale(omega, Z0);
+    
+    t = time_vector_N_dt(N, dt);
+    %t_middle = mean(t);
+    
+    f_const    = @(t) (10 * ones(size(t)));   % Constant part.
+    f_nonconst = @(t) (5 * sin(10*t.^3));        % Non-constant part.
+    % IMPLEMENTATION NOTE: Must remove constant part (mean) of f2.
+    y1 = f_const(t) + detrend(f_nonconst(t), 0);
+    y2 = f_const(t) * Z0;
+    
+    inputCa{end+1} = {dt, y1, tf};
+    outputCa{end+1} = y2;
+end
+
+
+
+% Create TF that delays function, i.e. it is moved in the t+ direction (time
+% domain), i.e. the same time delay (in time units) for all frequencies.
+function Z = tf_delay(omega, delay)
+%delayTfZ    = @(omega, delay)   (exp(1i*omega*(-delay)));
+
+    Z = exp(1i*omega*(-delay));
+end
+
+
+
+% Create TF that is zero except for omega=0.
+%
+% Should represent keeping only the mean and multiplying it by Z0 (real).
+%
+function Z = tf_scale(omega, Z0)
+    assert(isreal(Z0))
+    
+    Z = (omega == 0 ) * Z0;
+end
+
+
+
+% Function for creating TIME SERIES which is a delayed version of a specified
+% function (not time series) AND treats the time interval as cyclic. 
+%
+% f     : Function pointer
+% t     : Array of timestamps.
+% delay : delay>0 pushes function/data/shapes in the t+ direction.
+% N     : Number of samples in time series.
+% dt    :
+%
+function y2 = ts_delay_func(funcHandle,t, delay,N,dt)
+    % PROPOSAL: Replace by function that has argument for y data instead.
+    %   ~PROBLEM: Must determine delay in units of dt. => Rounding.
+    %       ==> Can not be used for approximate results (more manual atests).
+    y2 = funcHandle(mod(t-delay, N*dt));    
+    
+    
+%     delayedFunc = @(f,t,delay,N,dt) (f(mod(t-delay, N*dt)));
+end
+% function y2 = ts_delay(y1, delay, dt)
+%     N = numel(y1);
+%     y2 = y1( mod(1:N-delay, N*dt) );
+% end
+
+
+
+% Function for creating timestamps vector.
+function [t, t2] = time_vector_N_dt(N,dt)
+    % tVec = @(N,dt) (0 : dt : ((N-1)*dt) )';
+    
+    t2 = (N-1)*dt;
+    t  = [0 : dt : t2]';
 end

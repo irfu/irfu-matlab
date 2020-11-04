@@ -43,6 +43,7 @@
 %               >=0 : Degree of the polynomical fit used for de-trending.
 %               <0  : No de-trending.
 %               Default = -1.
+%         * retrendingEnabled
 %         * tfHighFreqLimitFraction
 %               Fraction of Nyquist frequency (1/dt). TF is regarded as zero
 %               above this frequency. Can be Inf.
@@ -76,10 +77,18 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     % PROPOSAL: Return struct.
     %   PRO: Avoid confusing return arguments.
     % PROPOSAL: Separate function for modifying TF.
+    %   NOTE: tfHighFreqLimitFraction depends on sampling frequency and can not
+    %         be done in advance.
     % PROPOSAL: One setting enableDetrendingRetrending = [enableDetrending, enableDetrending].
-    
-    % Set the order of the polynomial that should be used for detrending.
-    %N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
+    %
+    % PROPOSAL: Check that data is finite. Only call bicas.utils.apply_TF_freq
+    %           if all data is non-finite.
+    %   PRO: bicas.utils.apply_TF_freq can assume (needs to be updated) that always Z<>NaN and thereby detect if
+    %   TF can not be evaluated via NaN.
+    %       PRO: Can construct TFs in steps/parts where each part does not have
+    %       to be evaluated for all omega (return NaN if can not be evaluated).
+    %           CON: Not necessarily best solution. TFs could give error when
+    %           not being able to return value.
     
     DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
     DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;

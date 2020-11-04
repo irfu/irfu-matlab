@@ -49,8 +49,8 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% -- Modification of transfer functions to fit the input format should be done by
-%    wrapper functions and NOT by this function.
+% -- Modification of transfer functions to fit the input format should be done
+%    by wrapper functions and NOT by this function.
 %       Ex: Turn a given tabulated TF into an actual MATLAB function.
 %       Ex: Remove high frequency components for inverted lowpass filter.
 %       Ex: Remove/dampen low frequencies for inverted highpass filter.
@@ -226,9 +226,12 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     tfZLookups(iNegativeFreq) = conj(tfZLookups(iNegativeFreq));
     % ASSERTION:
     if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
+        % NOTE: Deliberately permits Z=NaN. Probably because bicas.calib is
+        % designed to create TFs that return Z=NaN for impossible combinations
+        % where it does not matter anyway. /EJ 2020-11-05
         error(...
             'BICAS:apply_TF_freq:Assertion', ...
-            'Transfer function "tf" returned non-finite value for at least one frequency.')
+            'Transfer function "tf" returned non-finite value (not NaN) for at least one frequency.')
     end
     
     

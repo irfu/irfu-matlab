@@ -13,6 +13,7 @@
 % ZV  : zVariable
 % GA  : Global Attribute (in CDF file)
 % CUR : CURRENT (type of data, dataset)
+% ENABLE(D)/DISABLE(D) always at the end of a setting key.
 %
 %
 % NOTES ON SETTINGS KEY NAMING CONVENTION
@@ -30,6 +31,48 @@
 function SETTINGS = create_default_SETTINGS()
     % PROPOSAL: Setting for latching relay? Setting for only mode 0?
     %
+    % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
+    %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
+    %
+    % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
+    %
+    % PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
+    %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
+    %
+    % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
+    %   ==> Problems with grepping log files.
+    %   NOTE: Want setting value convention to be consistent with other settings values.
+    %       Ex: CORRECT, SORT, FULL, SCALAR, ROUND
+    %   PROPOSAL: Keep as is and grep log files using surrounding characters.
+    %       Ex: " ERROR "
+    %   PROPOSAL: Use lower case "error", "warning"
+    %   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
+    %
+    % PROPOSAL: Separate function for validating/asserting settings.
+    %   NOTE: Must be done AFTER all settings have been set.
+    %   PROPOSAL: Do every time settings are set, i.e. for default values,
+    %       config file values, CLI argument values.
+    %
+    % =========================
+    % BOGIQ: SETTING KEY NAMING 
+    % =========================
+    % PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
+    %   NOTE: Name change likely influences BICAS testing code and pipeline. Should therefore only be implemented at the
+    %         right time.
+    %
+    % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
+    % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+    %
+    % PROPOSAL: Use naming convention for settings keys for testing ONLY:
+    %
+    % PROPOSAL: Relevant setting keys should always be on the form ENABLE, never DISABLE.
+    %   PRO: More consistent.
+    %   CON: Less clear what is a deviation from the default.
+    % PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLE", "DISABLE").
+    %   CON: Sounds bad to put "USE" at the end of settings key.
+    % PROPOSAL: Always use either DISABLED/ENABLED or DISABLE/ENABLE.
+    %   TODO-DEC: Which?
+    %
     % PROPOSAL: Need (settings name) terminology for temporary "bugfixes"/corrections due to bugs outside of BICAS,
     %   Ex: Bugs datasets (bugs in other RCS, ROC's pipeline).
     %   Ex: ~Corrupted data (different from bugs?)
@@ -46,31 +89,6 @@ function SETTINGS = create_default_SETTINGS()
     %   PROPOSAL: action
     %   PROPOSAL: ~anomaly
     %
-    % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
-    %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
-    %
-    % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-    % PROPOSAL: Naming convention for settings keys for testing ONLY:
-    %
-    % PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
-    %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
-    %
-    % PROPOSAL: Setting keys should always be on the form ENABLE, never DISABLE.
-    %   PRO: More consistent.
-    %   CON: Less clear what is a deviation from the default.
-    %
-    % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
-    %   ==> Problems with grepping log files.
-    %   NOTE: Want setting value convention to be consistent with other settings values.
-    %       Ex: CORRECT, SORT, FULL, SCALAR, ROUND
-    %   PROPOSAL: Keep as is and grep log files using surrounding characters.
-    %       Ex: " ERROR "
-    %   PROPOSAL: Use lower case "error", "warning"
-    %   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
-    %
-    % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
-    % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
-    %
     % PROPOSAL: Policy on usage of dataset levels in settings keys.
     %   Ex: For now, L1R refers to algorithms to use WHEN processing L1R as input
     %       Ex: PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY
@@ -79,28 +97,23 @@ function SETTINGS = create_default_SETTINGS()
     %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
     %   Ex: For now, L2 refers to algorithms to use when processing L2 as output.
     %       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
+    %   --
     %   NEED: Specify whether refers to input or output data (not necessarily datasets).
-    %       Ex: Distinguish processing L1R-->L2, L2-->L3.
-    %   NEED: Distinguish processing (science) data L1-->L2, L1R-->L2
+    %       Ex: Distinguish processing L1/L1R-->L2, L2-->L3.
+    %       PROPOSAL: Some kind of prefix before data level.
+    %           PROPOSAL: IN_L1R, OUT_L2 etc.
+    %           PROPOSAL: INPUT_CDF.L1R, OUTPUT_CDF.L2 etc.
+    %   NEED: Distinguish processing (science) data L1-->L2, L1R-->L2.
+    %   NEED: Distinguish input L1 voltage and L1 current.
     %   NEED: Distinguish
     %       (1) datasets of specific level, and
     %       (2) algorithms that run when using given input level.
-    %   PROPOSAL: Some kind of prefix before data level.
-    %       PROPOSAL: IN_L1R, OUT_L2 etc.
     %   PROPOSAL: when speaking of datasets, use
     %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
     %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
     %       PROBLEM: How distinguish from processing?
     %
-    % PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
-    %   NOTE: Name change likely influences BICAS testing code and pipeline. Should therefore only be implemented at the
-    %         right time.
-    %
-    % PROPOSAL: Separate function for validating/asserting settings.
-    %   NOTE: Must be done AFTER all settings have been set.
-    %   PROPOSAL: Do every time settings are set, i.e. for default values,
-    %       config file values, CLI argument values.
-
+    
 
 
     S = bicas.settings();
@@ -185,9 +198,7 @@ function SETTINGS = create_default_SETTINGS()
     % which duplicated settings (same timestamp, same bias setting on same
     % antenna) which would be triggered by an assertion on an assert on
     % monotonically increasing timestamps.
-    S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',           'ERROR')      % ERROR, WARNING, SORT
-    
-    S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
+    S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING, SORT
     
     % Whether to replace PAD VALUES values with NaN internally.
     % IMPORTANT NOTE: Refers to CDF _PAD_VALUES, NOT CDF _FILL_VALUES!
@@ -202,6 +213,8 @@ function SETTINGS = create_default_SETTINGS()
     % Alternate fill value to use.
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
+    S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
+    
     % For testing, when HK and SCI time are completely different and do not
     % overlap (though HK time still has to cover a larger interval than SCI).
     % Adds/subtracts HK time so that the first HK timestamp equals the first SCI
@@ -524,7 +537,7 @@ function SETTINGS = create_default_SETTINGS()
     % Disable all voltage calibration. Output dataset data contain TM units.
     % BIAS demultiplexer addition/subtraction of BLTS necessary to derive
     % antenna signals is still done though.
-    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',              0);
+    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',               0);
     % Whether to disable BIAS offsets.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', 0);
     % Whether to use transfer functions or scalar multiplication for calibration

@@ -145,7 +145,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
         % ARGUMENTS
         % =========
         % cTableFilesPattern    : Path as a sprintf pattern describing all test files with %02i or %03i representing
-        %                         the test ID nbr. NOTE: Short test ID numbers have to be preceeded by zeroes
+        %                         the test ID nbr. NOTE: Short test ID numbers have to be precedeed by zeroes
         %                         (due to filenaming convention).
         %                         Example: '4-5_TRANSFER_FUNCTION/SO_BIAS_AC_VOLTAGE_ID%02i_Ver_00_FS0_PAFM.txt'
         % testLogbookFile       : Path to testlogbook* file that describes and enumerates the files referred to by

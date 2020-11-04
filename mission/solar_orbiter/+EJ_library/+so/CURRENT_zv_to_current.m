@@ -35,7 +35,7 @@
 %     whether to give error/warn/accept, whether to use this as mitigation or
 %     not.
 % --
-% NOTE: Does NOT remove bias settings that set the bias to the preceeding value
+% NOTE: Does NOT remove bias settings that set the bias to the preceding value
 % at a later timestamp ("unnecessary later bias settings").
 %
 %
