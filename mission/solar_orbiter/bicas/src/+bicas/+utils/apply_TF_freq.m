@@ -6,27 +6,25 @@
 %
 % ALGORITHM
 % =========
-% (1) De-trend (if enabled)
-% (2) Compute DFT using MATLAB's "fft" function.
-% (3) Interpret DFT component frequencies as pairs of positive and negative
+% (1) Compute DFT using MATLAB's "fft" function.
+% (2) Interpret DFT component frequencies as pairs of positive and negative
 %     frequencies (lower and higher half of DFT components. (Interpret TF as
 %     symmetric function, Z(omega) = Z*(-omega), *=conjugate, covering positive
 %     & negative frequencies.)
-% (4) Multiply DFT coefficients with complex TF values.
-% (5) Compute inverse DFT using MATLAB's "ifft(... , 'symmetric')" function.
-% (6) Re-trend (if de-trending enabled)
+% (3) Multiply DFT coefficients with complex TF values.
+% (4) Compute inverse DFT using MATLAB's "ifft(... , 'symmetric')" function.
 %
 %
 % EXPONENT SIGN CONVENTION IN TRANSFER FUNCTIONS
 % ==============================================
-% The function/algorithm uses
-%   y1(t)     ~ e^(i*omega*t)                # Sign convention used by MATLAB's fft & ifft.
+% The function/algorithm uses the following:
+%   y1(t)     ~ e^(i*omega*t)                # Exponent sign convention used by MATLAB's fft & ifft.
 %   tf(omega) ~ e^(i*omega*(-tau))           # Transfer function supplied to this function.
 %   y2(t)     ~ e^(i*omega*t) * tf(omega)
 %             = e^(i*omega*(t-tau))
-% (weighted summing/integration over exponentials is implicit). Therefore, a TF
-% component with a positive tau represents a phase delay of tau for that
-% frequency, i.e.
+% (Weighted summing/integration over exponentials is implicit.) Therefore, a TF
+% component with a positive tau represents a positive phase delay of tau for
+% that frequency, i.e.
 %   y2(t) == y1(t-tau)
 % if e.g. y1(t) only has one frequency component.
 % NOTE: This should be the same convention as used by the Laplace transform.
@@ -37,18 +35,12 @@
 % NOTE: This function effectively implements an approximate convolution. For an
 % inverse application of a TF (de-convolution), the caller has to invert the TF
 % first.
+% --
 % NOTE: irfu-matlab contains at least two other functions for applying transfer
 % functions to data but which are not general-purpose:
 % 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency
 %                            domain; multiple ways of handling edges)
 % 2) c_efw_burst_bsc_tf.m   (short & simple)
-% NOTE: Detrending makes it impossible to modify the amplitude & phase for the
-% frequency components in the trend, e.g. to delay the signal. If the input
-% signal is interpreted as N-periodic, then de-trending affects the jump between
-% the beginning and end of the signal (reduces it in the case of linear
-% de-trending), which affects the high-frequency content(?) but probably in a
-% good way. The implementation scales the "trend" (polynomial fit) by
-% tfZ(omega==0).
 % --
 % NOTE: Presently not sure if MATLAB has standard functions for applying a
 % transfer function in the frequency domain and that is tabulated or function
@@ -57,19 +49,22 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% -- Has the ability to enable/disable de-trending to make testing easier.
-% -- Has the ability to make TF zero above cutoff. This cut-off is naturally
-%    sampling frequency-dependent and therefore not a natural part of the TF
-%    itself.
-% -- Conversion of transfer functions to fit the input format should be done by
+% -- Modification of transfer functions to fit the input format should be done by
 %    wrapper functions and NOT by this function.
 %       Ex: Turn a given tabulated TF into an actual MATLAB function.
+%       Ex: Remove high frequency components for inverted lowpass filter.
+%       Ex: Remove/dampen low frequencies for inverted highpass filter.
+% -- Modification of input/output data should be done by wrapper functions and
+%    NOT in this function.
+%       Ex: De-trending, re-trending
 % -- This function only represents the pure mathematical algorithm and therefore
 %    only works with "mathematically pure" variables and units: radians, complex
 %    amplitudes (no dB, no volt^2, no amplitude+phase). This is useful since it
-% (1) separates (a) the core processing code from (b) related but simple
-%     processing of data (changing units, different ways of representing
-%     transfer functions, checking for constant sampling rate)
+% (1) separates
+%       (a) the core processing code from
+%       (b) related but simple processing of data (changing units, different
+%           ways of representing transfer functions, checking for constant
+%           sampling rate),
 % (2) makes the potentially tricky TF-code easier to understand and check (due
 %     to (1)),
 % (3) makes a better code unit for code testing,
@@ -107,38 +102,24 @@
 % y2       : y1 after the application of the TF.
 %            If y1 contains at least one NaN, then all components in y2 will be
 %            NaN. No error will be thrown.
-% varargin : Optional settings arguments as interpreted by
-%            EJ_library.utils.interpret_settings_args.
-%   Possible settings:
-%       enableDetrending        : Override the default on whether de-trending is
-%                                 used. Default=0.
-%       tfHighFreqLimitFraction : Fraction of Nyquist frequency (1/dt). TF is
-%                                 regarded as zero above this frequency.
-%                                 Can be Inf.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-13
 %
-function [y2] = apply_TF_freq(dt, y1, tf, varargin)
+function [y2] = apply_TF_freq(dt, y1, tf)
 % TODO-NEED-INFO: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
 %
-% PROPOSAL: Function name should imply using frequency domain. Should be
-% analogous with time-domain function.
-%   apply_TF_freq
-%   apply_TF_time
-%   apply_transfer_function_freq
-%   apply_transfer_function_time
+% PROPOSAL: Option for error on NaN/Inf.
 %
 % PROPOSAL: Option for using inverse TF? Can easily be implemented in the actual call to the function though
 %           (dangerous?).
-% PROPOSAL: Option for error on NaN/Inf.
 % PROPOSAL: Eliminate dt from function. Only needed for interpreting tfOmega. Add in wrapper.
 % PROPOSAL: Eliminate de-trending. Add in wrapper.
 %   CON/NOTE: Might not be compatible with future functionality (Hann Windows etc).
 %       CON: Why? Any such functionality should be easier with a mathematically "pure" function.
 %
-% PROPOSAL: If slow to call function handle for transfer function tf, permit caller to submit table with implicit frequencies.
+% PROPOSAL: If it is slow to call the function handle for transfer function tf, permit caller to submit table with implicit frequencies.
 %   PROPOSAL: Return the Z values actually used, so that caller can call back using them.
 %   PROPOSAL: Separate function for generating such vector.
 %
@@ -150,14 +131,13 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
 
 
 
-    % Set the order of the polynomial that should be used for detrending.
-    N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
     % EMID = Error Message ID
     EMID_ARG = 'BICAS:apply_TF_freq:Assertion:IllegalArgument';
     
     %============
     % ASSERTIONS
     %============
+    assert(nargin == 3)    % Number of arguments has changed historically.
     if ~iscolumn(y1)
         error(EMID_ARG, 'Argument y1 is not a column vector.')
     elseif ~isnumeric(y1)
@@ -178,41 +158,10 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
 
 
 
-    DEFAULT_SETTINGS.enableDetrending        = 0;
-    DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
-    Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-    EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+    nSamples = length(y1);
+    
 
 
-    
-    %=========================================================================
-    % Create modified version of TF which is set to zero for high frequencies
-    %=========================================================================
-    assert(...
-        isnumeric(  Settings.tfHighFreqLimitFraction) ...
-        && isscalar(Settings.tfHighFreqLimitFraction) ...
-        && ~isnan(  Settings.tfHighFreqLimitFraction) ...
-        && (        Settings.tfHighFreqLimitFraction >= 0))
-    % NOTE: Permit Settings.tfHighFreqLimitFraction to be +Inf.
-    tfHighFreqLimitRps = Settings.tfHighFreqLimitFraction * pi/dt;   % pi/dt = 2*pi * (1/2 * 1/dt)
-    tf2 = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
-    clear tf    % Clear just to make sure it is not used later.
-
-
-
-    N = length(y1);
-    
-    if Settings.enableDetrending
-        %##########
-        % De-trend
-        %##########
-        trendFitsCoeffs1 = polyfit((1:N)', y1, N_POLYNOMIAL_COEFFS_TREND_FIT);
-        yTrend1          = polyval(trendFitsCoeffs1, (1:N)');
-        y1               = y1 - yTrend1;
-    end
-    
-    
-    
     %#############
     % Compute DFT
     %#############
@@ -257,26 +206,29 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     %tfOmegaLookups     = 2*pi * ((1:N) - 1) / (N*dt);
     %i = (tfOmegaLookups >= pi/dt);    % Indicies for which omega_k should be replaced by omega_(k-N).
     %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
-    kOmegaLookup   = [1:ceil(N/2), (ceil(N/2)+1-N):0 ];   % Modified k values used to calculate omega_k for every X_k.
-    tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / double(N*dt);
+    
+    % Modified k values (~indices) used to calculate omega_k for every X_k.
+    kOmegaLookup   = [1:ceil(nSamples/2), (ceil(nSamples/2)+1-nSamples):0 ];
+    
+    tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / double(nSamples*dt);
     
     
     
-    %====================================================================
+    %=====================================================================0
     % Find complex TF values, i.e. complex factors to multiply every DFT
     % component with
     % ------------------------------------------------------------------
-    % NOTE: De-trending (if enabled) should already have removed the
+    % NOTE: De-trending (outside function) should already have removed the
     % zero-frequency component from the in signal.
-    %====================================================================
-    tfZLookups                = tf2(abs(tfOmegaLookups));
+    %======================================================================
+    tfZLookups                = tf(abs(tfOmegaLookups));
     iNegativeFreq             = tfOmegaLookups < 0;
     tfZLookups(iNegativeFreq) = conj(tfZLookups(iNegativeFreq));
     % ASSERTION:
     if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
         error(...
             'BICAS:apply_TF_freq:Assertion', ...
-            'Transfer function tf returned non-finite value for at least one frequency.')
+            'Transfer function "tf" returned non-finite value for at least one frequency.')
     end
     
     
@@ -296,8 +248,8 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     %##############
     % Compute IDFT
     %##############
-    % IMPLEMENTATION NOTE: Uses ifft options to force yDft2 to be (interpreted as) conjugate symmetric due to possible
-    % rounding errors.
+    % IMPLEMENTATION NOTE: Uses ifft options to force yDft2 to be (interpreted
+    % as) conjugate symmetric due to possible rounding errors.
     %
     % ifft options:
     %     "ifft(..., 'symmetric') causes ifft to treat X as conjugate symmetric
@@ -310,27 +262,14 @@ function [y2] = apply_TF_freq(dt, y1, tf, varargin)
     
     
     
-    %##########
-    % Re-trend
-    %##########
-    if Settings.enableDetrending
-        % Use Z(omega=0) to scale trend, including higher order polynomial
-        % components.
-        trendFitsCoeffs2 = trendFitsCoeffs1 * tfZLookups(1);
-        
-        yTrend2 = polyval(trendFitsCoeffs2, (1:N)');
-        y2      = y2 + yTrend2;
-    end
-    
-    
-    
     % ASSERTION: Real output.
     % IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is
     % not used.
     if ~isreal(y2)
         maxAbsImag = max(abs(imag(y2)))    % Print
-        error('BICAS:apply_TF_freq:Assertion', 'y2 is not real. Bug.')
+        error('BICAS:apply_TF_freq:Assertion', 'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
     end
+    
     
     
 end

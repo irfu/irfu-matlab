@@ -1,5 +1,5 @@
 %
-% Semi-automatic test code for function "apply_TF_freq".
+% Semi-automatic test code for function "bicas.utils.apply_TF_freq".
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -83,20 +83,29 @@ function [inputCa, outputCa] = define_tests()
     % Function for creating time samples vector.
     tVec = @(N,dt) (0 : dt : ((N-1)*dt) )';
     
-    % Function for creating another function (time domain) which is a delayed version of a specified function AND treats
-    % it as cyclic. delay>0 pushes it in t+ direction.
+    %===========================================================================
+    % Function for creating another function (time domain) which is a delayed
+    % version of a specified function AND treats it as cyclic. delay>0 pushes it
+    % in the t+ direction.
+    %
     % f  : Function pointer
     % N  : Number of samples in time series.
     % dt :
+    %===========================================================================
     delayedFunc = @(f,t,delay,N,dt) (f(mod(t-delay, N*dt)));
     
-    % TF that delays function, i.e. it is moved in the t+ direction (time domain), i.e. one time delay for all
-    % frequencies
+    %===========================================================================
+    % TF that delays function, i.e. it is moved in the t+ direction (time
+    % domain), i.e. one time delay for all frequencies
+    %===========================================================================
     delayTfZ    = @(omega, delay)   (exp(1i*omega*(-delay)));
     
+    %===========================================================================
     % TF for (almost) constant Z. Implements Z(omega=0)=z0 and Z(omega>0)=z1.
+    %
     % NOTE: Must work for omega=vector.
     % NOTE: z0 should be real.
+    %===========================================================================
     constantTfZ = @(omega, z0, z1) ( (omega==0)*z0 + (omega~=0)*z1 );
     
     if 1
@@ -115,8 +124,7 @@ function [inputCa, outputCa] = define_tests()
         y1 = f(t);
         y2 = delayedFunc(f, t, delay, N, dt);
         
-        %    input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};   % Test fails legitimately
-        inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+        inputCa{end+1} = {dt, y1, tf};
         outputCa{end+1} = y2;
     end
     
@@ -134,8 +142,7 @@ function [inputCa, outputCa] = define_tests()
         y1 = f1(t);
         y2 = f2(t);
         
-        % NOTE: Test without de-trending.
-        inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+        inputCa{end+1} = {dt, y1, tf};
         outputCa{end+1} = y2;
     end
     
@@ -155,7 +162,7 @@ function [inputCa, outputCa] = define_tests()
             y1 = f(t);
             y2 = delayedFunc(f, t, delay, N, dt);
             
-            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+            inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
         end
     end
@@ -183,7 +190,7 @@ function [inputCa, outputCa] = define_tests()
             y1 = f(t);
             y2 = delayedFunc(f,t,delay,N,dt);
             
-            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
+            inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
         end
     end
@@ -204,8 +211,7 @@ function [inputCa, outputCa] = define_tests()
             y1 = f(t);
             y2 = delayedFunc(f,t,delay,N,dt);
             
-            %         input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};    % De-trend
-            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};    % De-trend
+            inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
         end
     end
@@ -227,8 +233,7 @@ function [inputCa, outputCa] = define_tests()
             y2 = delayedFunc(f,t,delay,N,dt);
             %         y1(3) = NaN;    % TEST
             
-            inputCa{end+1} = {dt, y1, tf, 'enableDetrending', 0};
-            %         input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};
+            inputCa{end+1} = {dt, y1, tf};
             outputCa{end+1} = y2;
         end
     end

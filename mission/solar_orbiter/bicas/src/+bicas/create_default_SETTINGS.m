@@ -531,12 +531,30 @@ function SETTINGS = create_default_SETTINGS()
     % of signals between antennas and BIAS-LFR/TDS interface. It does not affect
     % the LFR/TDS transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
-    % Whether to use de-trending before applying transfer functions.
-    % NOTE: Only applies to DC since detrending does now work for AC since the
-    % linear fit has to be scaled up when adding it back using a scalar value
-    % derived from the TF. For DC/low-pass TFs one can use the TF at 0 Hz, but
-    % for AC/high-pass/band-pass filters it is not obvious which value to use.
-    S.define_setting('PROCESSING.CALIBRATION.TF.DC_DETRENDING_ENABLED',     1)
+    
+    %===========================================================================
+    % Re/de-trending
+    % --------------
+    % Whether/how to use:
+    % (1a) De-trending (remove fit) before applying TF.
+    % (1b) Which degree of fit to use.
+    % (2)  Re-trending (add back fit previously removed) after applying TF.
+    % --
+    % NOTE: There is no re-trending for AC since detrending is ill-defined for
+    % non-lowpass filters, which is due to that the linear fit needs to be
+    % scaled by the TF at 0 Hz, when er-trending which does not make sense for
+    % non-lowpass filters.
+    %
+    % *_FIT_DEGREE >= 0 : Enable de-trending using a polynomial fit of this
+    %                     degree. 1 = linear.
+    % *_FIT_DEGREE  < 0 : Disable de-trending (requires disabled re-trending).
+    %
+    % YK 2020-11-02: Detrend AC data, but do not add linear fit back.
+    %===========================================================================
+    S.define_setting('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', 1)
+    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    1)
+    S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
+    
     % Frequency above which the ITF is set to zero.
     % Expressed as a fraction of the Nyquist frequency (half the sampling
     % frequency; 1 sample/s = 1 Hz).

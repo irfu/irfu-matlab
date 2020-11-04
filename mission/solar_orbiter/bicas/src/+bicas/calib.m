@@ -269,7 +269,9 @@ classdef calib < handle
         %==================================================
         
         % Corresponds to SETTINGS key-value.
-        enableDcDetrending
+        dcDetrendingDegreeOf
+        dcRetrendingEnabled
+        acDetrendingDegreeOf
         itfHighFreqLimitFraction;
                 
         % Whether to select non-BIAS RCT using global attribute
@@ -374,9 +376,11 @@ classdef calib < handle
             
             obj.lfrLsfOffsetsTm                    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
 
-            
-            
-            obj.enableDcDetrending                 = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DETRENDING_ENABLED');
+
+
+            obj.dcDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
+            obj.dcRetrendingEnabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
+            obj.acDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
             obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
             
             obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
@@ -617,6 +621,20 @@ classdef calib < handle
                 .* ...
                 BiasCalibData.itfAvpiv(omegaRps));
 
+            
+            
+            if BltsSrc.is_AC()
+                % IMPLEMENTATION NOTE: DC is (optionally) detrended via
+                % bicas.utils.apply_TF_freq_modif in the sense of a linear fit
+                % being removed, TF applied, and then added back. That same
+                % algorithm is inappropriate for non-lowpass filters.
+                detrendingDegreeOf = obj.acDetrendingDegreeOf;
+                retrendingEnabled  = 0;
+            else
+                detrendingDegreeOf = obj.dcDetrendingDegreeOf;
+                retrendingEnabled  = obj.dcRetrendingEnabled;
+            end
+            
             %=======================================
             % CALIBRATE: LFR TM --> TM --> avolt
             %=======================================
@@ -627,24 +645,14 @@ classdef calib < handle
                 % ADD LSF OFFSET
                 samplesTm = samplesCaTm{i}(:) + lsfOffsetTm;
                 
-                if BltsSrc.is_AC()
-                    % IMPLEMENTATION NOTE: DC is (optionally) detrended via
-                    % bicas.utils.apply_TF_freq in the sense of a linear fit
-                    % being removed, TF applied, and then added back. That same
-                    % algorithm is inappropriate for high-pass/band-pass
-                    % filters.
-                    % YK 2020-11-02: Detrend AC data, but do not add linear fit
-                    % back.
-                    assert(isfloat(samplesTm))
-                    samplesTm = detrend(samplesTm);
-                end
-                
-                % APPLY TRANSFER FUNCTION
-                tempSamplesAVolt = bicas.utils.apply_TF_freq(...
+                % APPLY TRANSFER FUNCTION (LFR)
+                tempSamplesAVolt = bicas.utils.apply_TF_freq_modif(...
                     dtSec(i), samplesTm, itfIvpt, ...
-                    'enableDetrending',        obj.enableDcDetrending && ~BltsSrc.is_AC(), ...
+                    'detrendingDegreeOf',      detrendingDegreeOf, ...
+                    'retrendingEnabled',       retrendingEnabled, ...
                     'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
 
+                % ADD BIAS offset
                 samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
             end
         end
@@ -689,29 +697,34 @@ classdef calib < handle
                 % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
                 BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
                 
+                if obj.lfrTdsTfDisabled
+                    tdsFactorIvpt = 1;
+                else
+                    RctList       = obj.RctDataMap('TDS-CWF');
+                    tdsFactorIvpt = RctList{cti1+1}.factorsIvpt(iBlts);
+                end
+                
                 for i = 1:numel(samplesCaTm)
                     
                     %===============================================
                     % CALIBRATE: TDS TM --> TDS/BIAS interface volt
                     %===============================================
-                    if obj.lfrTdsTfDisabled
-                        tdsFactorIvpt = 1;
-                    else
-                        RctList       = obj.RctDataMap('TDS-CWF');
-                        tdsFactorIvpt = RctList{cti1+1}.factorsIvpt(iBlts);
-                    end
-                    tempSamplesIVolt = tdsFactorIvpt * samplesCaTm{i};    % MULTIPLICATION
+                    % MULTIPLICATION
+                    tempSamplesIVolt = tdsFactorIvpt * samplesCaTm{i};
                    
                     %=====================================================
                     % CALIBRATE: TDS/BIAS interface volt --> antenna volt
                     %=====================================================
-                    % APPLY TRANSFER FUNCTION
-                    tempSamplesAVolt = bicas.utils.apply_TF_freq(...
+                    % APPLY TRANSFER FUNCTION (TDS-CWF)
+                    tempSamplesAVolt = bicas.utils.apply_TF_freq_modif(...
                         dtSec(i), ...
                         tempSamplesIVolt(:), ...
                         BiasCalibData.itfAvpiv, ...
-                        'enableDetrending',        obj.enableDcDetrending, ...
+                        'detrendingDegreeOf',      obj.dcDetrendingDegreeOf, ...
+                        'retrendingEnabled',       obj.dcRetrendingEnabled, ...
                         'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
+                    
+                    % ADD BIAS OFFSET
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
 
@@ -783,14 +796,17 @@ classdef calib < handle
                 %====================================
                 % CALIBRATE: TDS TM --> antenna volt
                 %====================================
+                % APPLY TRANSFER FUNCTION (TDS-RSWF)
                 for i = 1:numel(samplesCaTm)
-                    tempSamplesAVolt = bicas.utils.apply_TF_freq(...
+                    tempSamplesAVolt = bicas.utils.apply_TF_freq_modif(...
                         dtSec(i), ...
                         samplesCaTm{i}(:), ...
                         itf, ...
-                        'enableDetrending',        obj.enableDcDetrending, ...
+                        'detrendingDegreeOf',      obj.dcDetrendingDegreeOf, ...
+                        'retrendingEnabled',       obj.dcRetrendingEnabled, ...
                         'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
                     
+                    % ADD BIAS OFFSET
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
             else
