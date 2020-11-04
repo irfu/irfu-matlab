@@ -164,12 +164,15 @@ switch action
       axis(ud.h(2),'tight');
       irf_timeaxis(ud.h(2),'date');
       plot(ud.h(3),ud.Xminvar(:,4),ud.Xminvar(:,2));
+      hold(ud.h(3),'on');plot(ud.h(3),ud.Xminvar(1,4),ud.Xminvar(1,2),'k+');hold(ud.h(3),'off');
       xlabel(ud.h(3),'min');ylabel(ud.h(3),'max');
       axis(ud.h(3),'equal');
       grid(ud.h(3),'on');
-      plot(ud.h(4),ud.Xminvar(:,3),ud.Xminvar(:,2));
+      plot(ud.h(4),ud.Xminvar(:,3),ud.Xminvar(:,2),'handlevisibility','off');
+      hold(ud.h(4),'on');plot(ud.h(4),ud.Xminvar(1,3),ud.Xminvar(1,2),'k+');hold(ud.h(4),'off');
       xlabel(ud.h(4),'interm');
       ylabel(ud.h(4),'max');
+      legend(ud.h(4),'start','location','best');
       axis(ud.h(4),'equal');
       grid(ud.h(4),'on');
     elseif (ud.tlim(1)>=ud.tlim_mva(1) && ud.tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
