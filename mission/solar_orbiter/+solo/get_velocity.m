@@ -54,7 +54,8 @@ function soloVelocity = get_velocity(Tint, varargin)
 % 
 % Example:
 % tint = irf.tint('2020-02-11T00:00:00Z/2020-08-01T15:00:00Z'); % time interval in TT2000 UTC
-% soloVelocity = solo.get_velocity(tint, [frame]); The default frame is 'ECLIPJ2000'
+% %Get velocity in GSE
+% soloVelocity = solo.get_velocity(Tint,'frame','SOLO_GSE'); 
 % irf_plot(soloVelocity, '.');
 
 
