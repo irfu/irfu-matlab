@@ -48,7 +48,7 @@ classdef logger < handle
 %   Log to stdout.
 %
 % TODO-DEC: Should special, extra logging functionality be in this class or outside of it?
-%   Ex: bicas.calib.log_TF
+%   Ex: bicas.calib_utils.log_TF
 %   Ex: Logging for speed tests.
 %   PRO: Shorter call. Can use L.method(...) instead of bicas.logfunc(L, ...)
 %

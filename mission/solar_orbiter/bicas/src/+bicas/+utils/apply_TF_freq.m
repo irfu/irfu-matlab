@@ -87,11 +87,11 @@
 % and omega is a frequency (radians/s).
 %
 %
-% ARGUMENTS AND RETURN VALUE
-% ==========================
-% NOTE: All arguments/return value vectors are column vectors.
+% ARGUMENTS
+% =========
 % dt       : Time between each sample. Unit: seconds
-% y1       : Samples. Must be real-valued (assertion). May contain NaN.
+% y1       : Nx1. Samples. Must be real-valued (assertion).
+%            NOTE: May contain non-finite values.
 % tf       : Function handle to function z=tf(omega). z is a complex value
 %            (amplitude+phase) and has not unit.
 %            omega unit: rad/s.
@@ -99,15 +99,23 @@
 %            NOTE: If the caller wants to use a tabulated TF, then s/he should
 %            construct an anonymous function that interpolates the tabulated TF
 %            (e.g. using "interp1") and submit it as argument.
+%            NOTE: May return non-finite values. A caller that wants to catch
+%            the tf returning non-finite values should search return value
+%            "tfZLookups" for such values.
+% 
+%
+% RETURN VALUES
+% =============
 % y2       : y1 after the application of the TF.
 %            If y1 contains at least one NaN, then all components in y2 will be
 %            NaN. No error will be thrown.
+% tfZLookups :
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-13
 %
-function [y2] = apply_TF_freq(dt, y1, tf)
+function [y2, tfOmegaLookups, tfZLookups] = apply_TF_freq(dt, y1, tf)
 % TODO-NEED-INFO: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
 %
 % PROPOSAL: Option for error on NaN/Inf.
@@ -128,6 +136,11 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 %   Should be multiplied by abs(Z)?! Z-imag(z)?! Keep as is?!
 %
 % PROPOSAL: Not require column vectors. Only require 1D vectors.
+%
+% PROPOSAL: Permit submitting multiple y1 at the same time (same length, same
+%           dt, same tf).
+%   PRO: Faster?
+%       PRO: Can call tf once.
 
 
 
@@ -222,8 +235,8 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % zero-frequency component from the in signal.
     %======================================================================
     tfZLookups                = tf(abs(tfOmegaLookups));
-    iNegativeFreq             = tfOmegaLookups < 0;
-    tfZLookups(iNegativeFreq) = conj(tfZLookups(iNegativeFreq));
+    bNegativeFreq             = tfOmegaLookups < 0;
+    tfZLookups(bNegativeFreq) = conj(tfZLookups(bNegativeFreq));   % Modify some indices.
     % ASSERTION:
     if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
         % NOTE: Deliberately permits Z=NaN. Probably because bicas.calib is
@@ -272,7 +285,5 @@ function [y2] = apply_TF_freq(dt, y1, tf)
         maxAbsImag = max(abs(imag(y2)))    % Print
         error('BICAS:apply_TF_freq:Assertion', 'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
     end
-    
-    
-    
+
 end
