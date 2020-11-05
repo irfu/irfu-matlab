@@ -295,6 +295,7 @@ classdef solo_local_file_db < solo_file_db
     
     %% Get metakernel
     function solo_metakernel = get_metakernel(obj, flown_or_predicted)
+      % solo_metakernel = get_metakernel(obj, flown_or_predicted)
       % Function to get the name of a local SolO SPICE metakernel to load.
       % Due to the limitations in SPCIE it requires absolute paths to the SPICE
       % kernel files to load, this is likely different on different computers,
@@ -310,13 +311,14 @@ classdef solo_local_file_db < solo_file_db
       solo_metakernel = []; % Default empty result
       mkPath = [obj.dbRoot, filesep, 'SPICE', filesep, 'kernels', ...
           filesep, 'mk'];
-      if strcmp(flown_or_predicted, 'predicted')
-        dirs = dir([mkPath, filesep, '*pred-mk_v*.tm']);
-      elseif strcmp(flown_or_predicted, 'flown')
-        dirs = dir([mkPath, filesep, '*flown-mk_v*.tm']);
-      else
-        error('Unexpected input');
-      end
+        switch lower(flown_or_predicted)
+          case 'predicted'
+            dirs = dir([mkPath, filesep, '*pred-mk_v*.tm']);
+          case 'flown'
+            dirs = dir([mkPath, filesep, '*flown-mk_v*.tm']);
+          otherwise
+            error('Unexpected input');
+        end
       if size(dirs, 1) > 1
         % Multiple kernels could be found if executing this script at the same
         % time as syncing new kernel files
