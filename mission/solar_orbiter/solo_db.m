@@ -26,7 +26,6 @@ classdef solo_db < handle
       obj.index.enabled = false;
     end
     
-    
     function fileList = list_files(obj,filePrefix,tint,varName)
       if nargin < 4, varName = ''; end
       fileList = [];
@@ -47,6 +46,20 @@ classdef solo_db < handle
           flTmp =  db.list_files(filePrefix,tint);
         end
         fileList = [fileList flTmp]; %#ok<AGROW>
+      end
+    end
+    
+    function solo_metakernel = get_metakernel(obj, flown_or_predicted)
+      % loop through all databases (if mounted local irfu-data as well)
+      for iDb = 1:length(obj.databases)
+        db = obj.databases(iDb);
+        dbRoot = db.dbRoot;
+        if exist([dbRoot, filesep, 'SPICE'], 'dir')
+          % If root folder contains a subfolder "SPICE", then it is most
+          % likely the one database we want.
+          solo_metakernel = db.get_metakernel(flown_or_predicted);
+          break;
+        end
       end
     end
     
