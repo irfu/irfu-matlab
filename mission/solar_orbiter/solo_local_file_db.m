@@ -337,7 +337,7 @@ classdef solo_local_file_db < solo_file_db
 
       % Replace relative or remote paths with absolute path on locally mounted
       % system
-      expression = 'PATH_VALUES\s{0,}=\s{0,}(\s{0,}''[a-zA-Z_0-9\.\\]*''\s{0,}';
+      expression = 'PATH_VALUES\s{0,}=\s{0,}(\s{0,}''[a-zA-Z_0-9\.\/]*''\s{0,}';
       localKernel = regexprep(srcKernel, ...
         expression, ...
         ['PATH_VALUES = ( ''', localSpicePath.path, ''' ']);
