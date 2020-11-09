@@ -21,6 +21,7 @@ mkPath = [rootKernelPath, filesep, 'kernels', filesep, 'mk'];
 if ~exist(mkPath, 'dir')
   errStr = ['Did not find the expected metakernel path: ', mkPath];
   irf.log('critical', errStr);
+  datastore('spice_paths', p.Results.mission, []); % Clear out stored path
   error(errStr);
 end
 
@@ -67,7 +68,7 @@ metakernel = adoptMetakernel(srcMKfile.folder, srcMKfile.name);
       inputPath = input(prompt, 's');
       % Check it is a path and store it
       if exist(inputPath, 'dir')
-        datastore('spice_paths', 'rosetta', inputPath);
+        datastore('spice_paths', mission, inputPath);
         rootKernelPath = inputPath;
       else
         irf.log('critical', 'The path you specified did not exits.');
