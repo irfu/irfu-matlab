@@ -1,16 +1,18 @@
 function metakernel = get_mkernel(mission, varargin)
 % Get a locally adapted metakernel 
 % mission - one of:
-%            "rosetta"
 %           "bepicolombo"
 %           "juice"
 %           "pakersolarprobe"
+%           "rosetta"
+%           "solarorbiter"
 % flown_or_predicted - "flown"
 %                      "predicted"
 
 p = inputParser;
-defMissions = {'rosetta', 'bepicolombo', 'juice', 'parkersolarprobe'};
-addRequired(p, 'mission', @(x) any(validatestring(x, defMissions)));
+addRequired(p, 'mission', ...
+  @(x) any(validatestring(x, ...
+  {'bepicolombo', 'juice', 'parkersolarprobe', 'rosetta', 'solarorbiter'})));
 addOptional(p, 'flown_or_predicted', 'predicted', ...
   @(x) any(validatestring(x, {'flown', 'predicted'})));
 parse(p, mission, varargin{:});
@@ -31,11 +33,13 @@ flown.rosetta = 'ROS_OPS_*.TM'; % Rosetta flown mk name standard
 flown.juice = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: UPDATE WHEN JUICE has some actual flown MK.
 flown.bepicolombo = 'bc_ops_*.tm'; % BepiColombo flown
 flown.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
+flown.solarorbiter = 'solo_ANC_soc-flown-mk_v*.tm'; % SolO flown
 
 pred.rosetta = flown.rosetta; % Rosetta EOL, no more predicted
 pred.juice = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: Some other orbit senario?.
 pred.bepicolombo = 'bc_plan_*.tm'; % BepiColombo predicted
 pred.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
+pred.solarorbiter = 'solo_ANC_soc-pred-mk_v*.tm'; % SolO predicted
 
 switch p.Results.flown_or_predicted
   case 'predicted'
@@ -52,7 +56,6 @@ elseif isempty(srcMKfile)
   return
 end
 metakernel = adoptMetakernel(srcMKfile.folder, srcMKfile.name);
-
 
 %% Help function
   function rootKernelPath = get_spice_root(mission)
@@ -106,6 +109,5 @@ metakernel = adoptMetakernel(srcMKfile.folder, srcMKfile.name);
     fwrite(fileID, localKernel);
     fclose(fileID);
   end
-
 
 end
