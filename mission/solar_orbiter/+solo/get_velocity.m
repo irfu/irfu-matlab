@@ -1,10 +1,11 @@
-function soloPosition = get_position(Tint, varargin)
-%SOLO.GET_POSITION  Get the position of Solar Orbiter 
+function soloVelocity = get_velocity(Tint, varargin)
+%SOLO.GET_VELOCITY  Get the velocity of Solar Orbiter 
 %
-% soloPosition = solo.get_position(tint, PARAMS)
+% soloVelocity = solo.get_velocity(tint, PARAMS)
 %
-% A function to get the position of Solar Orbiter for a given time interval
-% Output is a TSeries object with position in the data variable "pos",
+%
+% A function to get the Velocity of Solar Orbiter for a given time interval
+% Output is a TSeries object with velocity in the data variable "soloVelocity",
 % if any positons found for the time interval "tint".
 %
 % Options:
@@ -52,11 +53,10 @@ function soloPosition = get_position(Tint, varargin)
 %                                  SOLO_HEE)
 % 
 % Example:
-%
-% Tint = irf.tint('2020-07-31T00:00:00Z/2020-08-01T15:00:00Z'); % time interval in TT2000 UTC
-% %Get predicted position in SOLO_GSE frame
-% soloPosition = solo.get_position(Tint, 'predicted','frame','SOLO_GSE'); 
-% irf_plot(soloPosition, '.');
+% tint = irf.tint('2020-02-11T00:00:00Z/2020-08-01T15:00:00Z'); % time interval in TT2000 UTC
+% %Get velocity in GSE
+% soloVelocity = solo.get_velocity(Tint,'frame','SOLO_GSE'); 
+% irf_plot(soloVelocity, '.');
 
 
 frame = 'ECLIPJ2000';
@@ -90,14 +90,14 @@ solo.db_get_metakernel(flagFlownPredicted);
 et = Tint.start.tts:t_step:Tint.stop.tts;
 
 % The position of Solar Orbiter in units of km
-pos = cspice_spkpos('solo', et, frame, 'LT+s', 'Sun');
+posvel = cspice_spkezr('solo', et, frame, 'LT+s', 'Sun'); %This gives both position and velocity
 % More frames (instead of 'ECLIPJ2000') described in/share/SPICE/Solar-Orbiter/kernels/fk/solo_ANC_soc-sci-fk_V06.tf
 
 % Convert to utc and then to TT2000 in TSeries object
 utc_tmp = cspice_et2utc(et, 'ISOC', 0);
 
 % Note pos' since it is returned as 3xN but TSeries expexcts Nx3 (where N is number of records).
-soloPosition = irf.ts_vec_xyz(EpochTT(utc_tmp), pos');
-soloPosition.units = 'km'; % Add some metadata information (read when plotting in irf_plot)
-soloPosition.coordinateSystem=frame;
+soloVelocity= irf.ts_vec_xyz(EpochTT(utc_tmp), posvel(4:6,:)');
+soloVelocity.units = 'km/s'; % Add some metadata information (read when plotting in irf_plot)
+soloVelocity.coordinateSystem=frame;
 end
