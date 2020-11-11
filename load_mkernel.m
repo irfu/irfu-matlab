@@ -1,16 +1,45 @@
 function load_mkernel(mission, varargin)
-% Get a locally adapted metakernel 
-% mission - one of:
-%           "bepicolombo"
-%           "juice"
-%           "pakersolarprobe"
-%           "rosetta"
-%           "solarorbiter"
-% flown_or_predicted - "flown"
-%                      "predicted" - default, if not provided. 
+% LOAD_MKERNEL load a locally adapted metakernel for SPICE computations
+%
+%	LOAD_MKERNEL(mission, [flown_or_predicted]) load locally adopted SPICE
+%   metakernel for "mission", in order to do orbit computations.
+%
+%   'mission' - mission to load (must be one of the following):
+%               'bepicolombo'
+%               'juice'
+%               'parkersolarprobe'
+%               'rosetta'
+%               'solarorbiter'
+%   ['flown_or_predicted'] - optional indicator of the metakernel to load:
+%          'flown'     = only the reconstructed actual flown orbit kernels.
+%          'predicted' = predicted orbit kernels files, (for past dates 
+%                        reconstructed files are loaded as well).
+%           If omitted will default to 'predicted'.
+%
+% First time loading a new mission (on any computer) load_mkernel will ask
+% user for local (root) paths to the SPICE kernel repository.
+% These paths will be remebered for future Matlab sessions, however it will
+% be reset for "mission" if it is no longer present as a path on the system
+% during next session it is trying to load metakernels for "mission".
+%
+%	Example:
+%		load_mkernel('solarorbiter', 'predicted');
+%   % Then do some calculations (position of 'solo'):
+%   Tint = irf.tint('2020-07-31T00:00:00Z/2020-08-01T15:00:00Z');
+%   et = Tint.start.tts:3600:Tint.stop.tts;
+%   pos = cspice_spkpos('solo', et, 'ECLIPJ2000', 'LT+s', 'Sun');
 %
 % Internally use a global variable "LoadedSpiceKernel" to keep track of
 % what has been loaded already.
+%
+% Important Note: The order of loaded kernels is important for the result!
+% For computation which use body a found in multiple kernels it is up to
+% YOU to ensure it is loaded correctly if YOU chose to load multiple
+% missions without clearing the loaded kernels in between.
+% Each missions own metakernel should be selfconsistent, but no guarantee
+% is given for inter-mission loading of SPICE metakernels.
+%
+% See "SPICE Kernel Required Reading", available from NASA NAIF website.
 
 p = inputParser;
 addRequired(p, 'mission', ...
@@ -49,14 +78,14 @@ if ~isempty(LoadedSpiceKernels)
   if isfield(LoadedSpiceKernels, p.Results.mission) && ~isfield(LoadedSpiceKernels.(p.Results.mission), p.Results.flown_or_predicted)
     % We have been requested a different flown_or_predicted orbit for
     % already loaded mission! This is not OKEY!
-    irf.log('warning', 'We had already loaded a kernel for mission with different flown_or_predicted status. NOT OKEY!');
+    irf.log('warning', 'We had already loaded a kernel for mission with different flown_or_predicted status. NOT OKEY! Clearing kernels.');
     % Unload all and start fresh.
     cspice_kclear();
     LoadedSpiceKernels = [];
   elseif isfield(LoadedSpiceKernels, p.Results.mission) && ~exist(LoadedSpiceKernels.(p.Results.mission).(p.Results.flown_or_predicted), 'file')
     % We have been requested a previously loaded mission and flown status,
     % but its local file no longer exist.
-    irf.log('warning', 'We had previously loaded a kernel for mission with this flown_or_predicted status, but that file is no longer present. NOT OKEY!');
+    irf.log('warning', 'We had previously loaded a kernel for mission with this flown_or_predicted status, but that file is no longer present. NOT OKEY! Clearing kernels.');
     % Unload all and start fresh.
     cspice_kclear();
     LoadedSpiceKernels = [];
@@ -77,17 +106,17 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
 
   % Default names for "flown" and "predicted" kernels, (each mission have
   % their own naming standard).
-  flown.rosetta = 'ROS_OPS_*.TM'; % Rosetta flown mk name standard
-  flown.juice = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: UPDATE WHEN JUICE has some actual flown MK.
-  flown.bepicolombo = 'bc_ops_*.tm'; % BepiColombo flown
+  flown.rosetta          = 'ROS_OPS_*.TM'; % Rosetta flown mk name standard
+  flown.juice            = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
+  flown.bepicolombo      = 'bc_ops_*.tm'; % BepiColombo flown
   flown.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
-  flown.solarorbiter = 'solo_ANC_soc-flown-mk_v*.tm'; % SolO flown
+  flown.solarorbiter     = 'solo_ANC_soc-flown-mk_v*.tm'; % SolO flown
 
-  pred.rosetta = flown.rosetta; % Rosetta EOL, no more predicted
-  pred.juice = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: Some other orbit senario?.
-  pred.bepicolombo = 'bc_plan_*.tm'; % BepiColombo predicted
-  pred.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
-  pred.solarorbiter = 'solo_ANC_soc-pred-mk_v*.tm'; % SolO predicted
+  pred.rosetta           = flown.rosetta; % Rosetta EOL, no more predicted
+  pred.juice             = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
+  pred.bepicolombo       = 'bc_plan_*.tm'; % BepiColombo predicted
+  pred.parkersolarprobe  = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
+  pred.solarorbiter      = 'solo_ANC_soc-pred-mk_v*.tm'; % SolO predicted
 
   switch p.Results.flown_or_predicted
     case 'predicted'
@@ -157,6 +186,9 @@ end
       % KERNELS_TO_LOAD   = (   
       %           '$KERNELS/ck/solo_ANC_soc-sc-iboom-ck_20180930-21000101_V01.bc'
       % to use "\" instead.
+      % FIXME (second point):
+      % Windows use EOL "CRLF" while Unix systems and most official mission repos have "LF" only.
+      % SPICE require native OS EOL char for non-binary (i.e. text) kernel files.
       irf.log('critical', 'NOTE: Windows File separations in the metakernel is not yet implemented');
     end
     % Write the local metakernel to file ("cspice_furnsh" do not like it as a
