@@ -1,9 +1,9 @@
-function solo_metakernel = db_get_metakernel(flown_or_predicted)
-% SOLO.DB_GET_METAKERNEL  Get the local SolO SPICE metakernel to load
+function db_get_metakernel(flown_or_predicted)
+% SOLO.DB_GET_METAKERNEL  Load a local SolO SPICE metakernel
 %
-% solo_metakernel = solo.db_get_metakernel(flown_or_predicted)
+% solo.db_get_metakernel(flown_or_predicted)
 %
-% Function to get a locally adapted SPICE metakernel for SolO (assuming
+% Function to load a locally adapted SPICE metakernel for SolO (assuming
 % folder "SPICE" is a subfolder of the database root).
 %
 % flown_or_predicted = 'flown' return metakernel of actually
@@ -14,5 +14,5 @@ function solo_metakernel = db_get_metakernel(flown_or_predicted)
 narginchk(1,2)
 global SOLO_DB; if isempty(SOLO_DB), solo.db_init(), end
 
-solo_metakernel = SOLO_DB.get_metakernel(flown_or_predicted);
+SOLO_DB.get_metakernel(flown_or_predicted);
 end
