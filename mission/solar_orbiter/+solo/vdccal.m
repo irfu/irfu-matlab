@@ -15,7 +15,7 @@ function [DCE_SRF,PSP,ScPot] = vdccal(VDC,EDC)
 %
 % NOTE: This function is used by BICAS for producing official datasets.
 
-a = load('d23K123_20201110_october.mat');
+a = load('d23K123.mat');
 
 d23R = a.d23.resample(VDC);
 K123R = a.K123.resample(VDC);
