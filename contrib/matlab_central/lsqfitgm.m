@@ -41,6 +41,9 @@
 %               that is in your MATLABPATH in order for this algorithm to
 %               execute properly.
 
+% Source: Monterey Bay Aquarium Research Institute
+% https://www.mbari.org/index-of-downloadable-files/
+
 function [m,b,r,sm,sb]=lsqfitgm(X,Y)
 
 % Determine slope of Y-on-X regression

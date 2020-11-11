@@ -24,6 +24,9 @@
 %             smx    =    standard deviation of the slope
 %             sbx    =    standard deviation of the y-intercept
 
+% Source: Monterey Bay Aquarium Research Institute
+% https://www.mbari.org/index-of-downloadable-files/
+
 function [mx,bx,rx,smx,sbx]=lsqfitx(X,Y)
 
 % Determine the size of the vector

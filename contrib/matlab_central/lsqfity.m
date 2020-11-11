@@ -24,6 +24,9 @@
 %             smy   =    standard deviation of the slope
 %             sby   =    standard deviation of the y-intercept
 
+% Source: Monterey Bay Aquarium Research Institute
+% https://www.mbari.org/index-of-downloadable-files/
+
 function [my,by,ry,smy,sby]=lsqfity(X,Y)
 
 % Determine the size of the vector
