@@ -1226,19 +1226,30 @@ classdef proc_sub
             % Set some records to NaN.
             zv_VDC = InputLfrCwfCdf.Zv.VDC;
             zv_VDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
+            zv_EDC = InputLfrCwfCdf.Zv.EDC;
+            zv_EDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
             %
+            % NOTE: Should TSeries objects really use TensorOrder=1 and
+            % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
+            % fo three scalars. Probably does not matter. solo.vdccal does use
+            % VDC.x, EDC.x etc.
             VdcTs = TSeries(...
                 EpochTT(InputLfrCwfCdf.Zv.Epoch), zv_VDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
-            %
-            [TsEdcSrf, TsPsp, TsScpot] = solo.vdccal(VdcTs);   % CALL EXTERNAL CODE
-            %
+            EdcTs = TSeries(...
+                EpochTT(InputLfrCwfCdf.Zv.Epoch), zv_EDC, ...
+                'TensorOrder', 1, ...
+                'repres', {'x', 'y', 'z'});
+            %-------------------------------------------------------
+            % CALL EXTERNAL CODE
+            [TsEdcSrf, TsPsp, TsScpot] = solo.vdccal(VdcTs, EdcTs);
+            %-------------------------------------------------------
             EJ_library.assert.sizes(...
                 InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
                 TsEdcSrf.data,           [-1, 3], ...
                 TsPsp.data,              [-1, 1], ...
-                TsScpot.data,            [-1, 3]);
+                TsScpot.data,            [-1, 1]);
             assert(strcmp(TsEdcSrf.units,            'mV/m'))
             assert(strcmp(TsEdcSrf.coordinateSystem, 'SRF'))
             assert(strcmp(TsPsp.units,               'V'))
@@ -1379,8 +1390,8 @@ classdef proc_sub
             ScpotDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
             ScpotDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
             %
-            ScpotDwnsCdf.SCPOT              = NaN(nRecordsDwns, 3);
-            ScpotDwnsCdf.SCPOTSTD           = NaN(nRecordsDwns, 3);
+            ScpotDwnsCdf.SCPOT              = NaN(nRecordsDwns, 1);
+            ScpotDwnsCdf.SCPOTSTD           = NaN(nRecordsDwns, 1);
             ScpotDwnsCdf.PSP                = NaN(nRecordsDwns, 1);
             ScpotDwnsCdf.PSPSTD             = NaN(nRecordsDwns, 1);
             
