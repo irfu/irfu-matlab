@@ -84,8 +84,7 @@ end
 
 t_step = 60*60; %3600 sec
 
-solo_metakernel = solo.db_get_metakernel(flagFlownPredicted);
-cspice_furnsh(solo_metakernel);
+solo.db_get_metakernel(flagFlownPredicted);
 
 % Compute et (SPICE ephemeries time, make use of input in TT2000)
 et = Tint.start.tts:t_step:Tint.stop.tts;
