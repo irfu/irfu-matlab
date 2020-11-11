@@ -1,35 +1,49 @@
-% Standalone "validation" tool for BIAS master CDFs, i.e. master (template) CDF files for any of the datasets that BICAS
-% produces.
 %
-% The code tries to verify that multiple BICAS output dataset master CDFs satisfy selected criteria as an alternative to
-% manually checking them. Checks are thus meant to be added as they are needed. The code is primarily intended as a
-% standalone tool, separate from the pipeline. It is neither intended to be "complete", nor to ever be constant and
-% "finished".
+% Standalone "validation" tool for BIAS master CDFs, i.e. master (template) CDF
+% files for any of the datasets that BICAS produces.
 %
-% IMPLEMENTATION NOTE: Uses whitelists for global attributes, zVariable names, and zVariable attributes. This is useful
-% for making sure there are no obsoleted names, misspellings, or inconsistent spelling (between datasets or zVars).
+% The code tries to verify that multiple BICAS output dataset master CDFs
+% satisfy selected criteria as an alternative to manually checking them. Checks
+% are thus meant to be added as they are needed. The code is primarily intended
+% as a standalone tool, separate from the pipeline. It is neither intended to be
+% "complete", nor to ever be constant and "finished".
+%
+% IMPLEMENTATION NOTE: Uses whitelists for global attributes, zVariable names,
+% and zVariable attributes. This is useful for making sure there are no
+% obsoleted names, misspellings, or inconsistent spelling (between datasets or
+% zVars).
+%
+%
+% NOTE 2020-11-10: Code has not been used in a long time (years). Idea still
+% relevant but code needs to be updated. Has only been used for L2, but never
+% L3.
 %
 %
 % RATIONALE
 % =========
 % This is useful when
 % (1) the formal specification for master CDFs is modified/reinterpreted.
-% (2) manually creating master CDFs based on other CDFs (e.g. from other teams, other levels), or
-% (3) one is particularly uncertain about something (one can then just add another test).
+% (2) manually creating master CDFs based on other CDFs (e.g. from other teams,
+%     other levels), or
+% (3) one is particularly uncertain about something (one can then just add
+% another test).
 %
 %
 % ARGUMENTS
 % =========
 % dirPath        : Directory path
-% filenameRegexp : Regular expression which match the entire filenames of the files to validate in the directory. The
-%                  function adds ^ (beginning of string) and $ (end of string) are added automatically to the regular
+% filenameRegexp : Regular expression which match the entire filenames of the
+%                  files to validate in the directory. The
+%                  function adds ^ (beginning of string) and $ (end of string)
+%                  are added automatically to the regular
 %                   expression.
 %
 %
 % RETURN VALUE
 % ============
-% varargout : Optional single return value. Cell array of "dataobj" objects for the validated CDF files. This is useful
-%             for manually inspecting the CDF files to investigate what is wrong.
+% varargout : Optional single return value. Cell array of "dataobj" objects for
+%             the validated CDF files. This is useful for manually inspecting
+%             the CDF files to investigate what is wrong.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -37,16 +51,48 @@
 %
 function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     % PROPOSAL: Validate values of VDC/EDC/EAC_LABEL in case they have been deleted by ROC bug.
-    
+    %
+    % PROPOSAL: Check fill values & pad values vs. zVar data type
+    %   Ex: CDF_UINT2: fill value=65535 /ISTP
+    %   Ex: CDF_UINT2: pad  value=65534 /CDF User's Guide
+    % 
+    % PROPOSAL: Check for ISTP compliance.
+    %   PROPOSAL: Check length of variable attributes.
+    %       FIELD_NAM: Max 30 chars (ISTP)
+    %       CATDESC:   Approx 80 chars (ISTP)
+    %       LABLAXIS:  See ISTP
+    % PROPOSAL: Check for SOL-SGS-TN-0009-MetadataStandard-2.4.pdf compliance
+    %   QUALITY_FLAG: CDF_UINT1
+    %   QUALITY_BITMASK: CDF_UINT2
+    % PROPOSAL: Check that {VALID,SCALE}{MIN,MAX},FILLVAL have same data type as zVar itself.
+    % PROPOSAL: QUALITY_FLAG in range 0-4 (not 0-3).
+    %
     % PROPOSAL: Check zVar attributes against list(s) of mandatory (exact?) attributes?
     %   NOTE: Not sure if all have FILLVAL.
     %
-    % TODO-NI: Useful for datasets (master CDFs filled with data)?
+    % PROPOSAL: Somehow select which checks should be made for which datasets, on which parts.
+    %   (1) Checks on all zVars in all datasets.
+    %       ISTP, SolO metadata standard, ROC/RPW standards(?)
+    %   (2) Checks on some zVars (glob.attr.) in some datasets.
+    %       	(2a) Checks on a specific level
     %
-    % PROPOSAL: Check length of variable attributes.
-    %   FIELD_NAM: Max 30 chars (ISTP)
-    %   CATDESC:   Approx 80 chars (ISTP)
-    %   LABLAXIS:  See ISTP
+    %
+    %
+    % TODO-NI: Useful also for datasets (master CDFs filled with data)?
+    %   NOTE: It is ultimately datasets that should be compliant and used, not
+    %   master CDFs.
+    %
+    % PROPOSAL: Start over with a version 2 of code.
+    %   PRO: Can implement checks immediately.
+    %
+    % PROPOSAL: Wrapper that accepts multiple paths instead of regexp. One
+    %           function for validating one CDF.
+    %   CON: Regexp still useful for execution from inside MATLAB (instead of
+    %   bash wrapper).
+    % PROPOSAL: Class with static functions.
+    %   PRO: Publicly accessible functions better for testing.
+
+    
     
     % ASSERTION
     % IMPLEMENTATION NOTE: Natural mistake to assume that there is only one argument for a single path.
@@ -137,10 +183,12 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
 
 
 
-    % Docs specifies "Acknowledgment", but ISTP specifies "Acknowledgement" (different spelling).
+    % Docs specifies "Acknowledgment", but ISTP specifies "Acknowledgement"
+    % (different spelling).
     % NOTE: Incomplete list of mandatory global attributes (too long).
-    % NOTE: Most of global attributes names have just been copied from defact datasets. There is still value in that it
-    % checks that the same global attributes are used everywhere.
+    % NOTE: Most of global attributes names have just been copied from defact
+    % datasets. There is still value in that it checks that the same global
+    % attributes are used everywhere.
     EXACT_L2_GLOBAL_ATTRIBUTES = {...
         'ACCESS_FORMAT', 'ACCESS_URL', 'Acknowledgement', 'Calibration_version', 'Dataset_ID', 'Data_type', ...
         'Data_version', 'Descriptor', 'Discipline', 'File_naming_convention', 'Generated_by', ...
@@ -251,7 +299,8 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     validate_value(CDF_DATASET_ID_descriptor, derived_CDF_DATASET_ID_descriptor, 'DATASET_ID descriptor');
     validate_glob_attr(Ga, 'Descriptor', derived_CDF_Descriptor);
     
-    % NOTE: Documentation seems to require version in SKELETON_PARENT, but in reality no dataset has it.
+    % NOTE: Documentation seems to require version in SKELETON_PARENT, but in
+    % reality no dataset has it.
     %derived_CDF_SKELETON_PARENT = sprintf('%s_V%s', CDF_DATASET_ID, CDF_Skeleton_version);
     derived_CDF_SKELETON_PARENT = sprintf('%s', CDF_DATASET_ID);
     validate_glob_attr(Ga, 'SKELETON_PARENT', derived_CDF_SKELETON_PARENT);
@@ -293,13 +342,14 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     
     
     
-    %=========================================================================================================
+    %===================================================================
     % Check Epoch
     % -----------
-    % Seems values are always strings in cdfs, although ROC-TST-GSE-NTT-00017-LES says it should be a number.
-    % Resolution, Bin_location should probably be numbers.
+    % Seems values are always strings in cdfs, although
+    % ROC-TST-GSE-NTT-00017-LES says it should be a number. Resolution,
+    % Bin_location should probably be numbers.
     % Probably a deficiency in xlsx2skt.
-    %=========================================================================================================
+    %===================================================================
     EPOCH_zVariableName = 'Epoch';   % Prescribed by the ROC-TST-GSE-NTT-00017-LES, iss2rev0.
     zVar_EPOCH_attributes = {...
         'FIELDNAM',           'Epoch'; ...
@@ -432,7 +482,8 @@ end
 % ARGUMENTS
 % =========
 % Do               : dataobj object.
-%                    NOTE: ZvsMetadata is not enough since may have to check the actual zVariable value.
+%                    NOTE: ZvsMetadata is not enough since may have to check the
+%                    actual zVariable value.
 % validateNonempty : Whether to validate that zVar is nonempty.
 %
 function validate_zv_presence(Do, zvName, validateNonempty)
@@ -457,17 +508,20 @@ end
 
 
 
-% Validate a specific value by comparing it to another value that should be identical.
+% Validate a specific value by comparing it to another value that should be
+% identical.
 % 
 % NOTE: Special case for comparing zero.
-% NOTE: Approximate comparison of numbers which can permit error even for permitted error zero (example: compare pad
-% value -1e30 with -1e30). This is an unintended effect of a lack of precision.
+% NOTE: Approximate comparison of numbers which can permit error even for
+% permitted error zero (example: compare pad value -1e30 with -1e30). This is an
+% unintended effect of a lack of precision.
 %
 % ARGUMENTS
 % =========
 % varName  : String description of value that is being validated.
 % varargin : For comparing strings - No argument
-%            For comparing numbers - Natural logarithm of permitted error, abs(log(value/comparisonValue)).
+%            For comparing numbers - Natural logarithm of permitted error,
+%            abs(log(value/comparisonValue)).
 %
 function validate_value(value, comparisonValue, varName, varargin)
     msg = sprintf('%s does not match expected value.', varName);
@@ -514,12 +568,15 @@ function validate_value(value, comparisonValue, varName, varargin)
     % Printed line N+1 : Value
     % Printed line N+2 : Comparison value
     %
-    % NOTE: Does not automatically quote values so that the caller can chose quoted/unquoted (e.g. strings/numbers).
+    % NOTE: Does not automatically quote values so that the caller can chose
+    % quoted/unquoted (e.g. strings/numbers).
+    %
     function validate_value___warning(msg, value, comparisonValue)
-        % NOTE: The value may be the filename, i.e. not something INSIDE the file. The phrases should be chosen
-        % accordingly.
+        % NOTE: The value may be the filename, i.e. not something INSIDE the
+        % file. The phrases should be chosen accordingly.
         % NOTE: Extra indentation in addition to what validation_warning adds.
-        % NOTE: Example of long var_name: "ACQUISITION_TIME_UNITS(1,2) (trimmed)" (37 characters)
+        % NOTE: Example of long var_name: "ACQUISITION_TIME_UNITS(1,2)
+        % (trimmed)" (37 characters)
         msg = [msg, sprintf('\n   Value            = %s',   value)];
         msg = [msg, sprintf('\n   Comparison value = %s\n', comparisonValue)];
         validation_warning(msg)
@@ -576,8 +633,8 @@ function value = get_map_value(map, key)
     if map.isKey(key)
         value = map(key);
     else
-        % Best to return something so that something is inserted into strings. Absence can be
-        % ambiguous, e.g. when deriving Descriptor or TEXT.
+        % Best to return something so that something is inserted into strings.
+        % Absence can be ambiguous, e.g. when deriving Descriptor or TEXT.
         % NOTE: The caller might change the case.
         value = '<Unknown>';   
     end
@@ -585,8 +642,8 @@ end
 
 
 
-% Split string using delimiter into substrings and return a specified subset of these. Verifies number of substrings.
-% Useful for analyzing e.g. dataset IDs.
+% Split string using delimiter into substrings and return a specified subset of
+% these. Verifies number of substrings. Useful for analyzing e.g. dataset IDs.
 %
 % ARGUMENTS
 % =========

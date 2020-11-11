@@ -137,7 +137,8 @@ classdef assert
 %           PROPOSAL: Condition function identical. Return boolean ahead of all other return values.
 %               Ex: [satisfied, nRecords] = ~have_sizes(zVar1, [-1], zVar2, [-1, 2048])
 %   
-%   PROPOSAL: Have assertion methods return a true/false value for assertion result. If a value is returned, then raise no error.
+%   PROPOSAL: Have assertion methods return a true/false value for assertion result.
+%             If a value is returned, then raise no error.
 %       CON: sizes() already has return values (and aritrarily many).
 %       PRO: Can be used with regular assert statements.
 %           PRO: MATLAB's assert can be used for raising exception with customized error message.
@@ -149,8 +150,9 @@ classdef assert
 %           CON: Does not work for all assertion functions
 %               Ex: castring_sets_equal --> are_castring_sets_equal? castring_sets_are_equal?
 %       CON: "assert" is a bad name for such a class.
-%       PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
-%               Use an analogous naming scheme.
+%       PROPOSAL: Create class with collection of standardized non-trivial
+%                 "condition functions", used by this "assert" class.
+%                 Use an analogous naming scheme.
 %           CON: From the point of view of other code, there is nothing special about the "conditions functions".
 %           	 They are just regular functions. Should not be specially grouped.
 %           PROPOSAL: Class name "cond".
@@ -217,7 +219,8 @@ classdef assert
         function castring_regexp(s, regexp)
             if ~any(EJ_library.str.regexpf(s, regexp))
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
+                    ['String "%s" (in its entirety) does not match any of', ...
+                    ' the specified regular expressions.'], s)
             end
         end
         
@@ -231,8 +234,9 @@ classdef assert
                 EJ_library.assert.ASSERTION_EMID, ...
                 'Expected cell array of unique strings, but is not cell array.')
             
-            % IMPLEMENTATION NOTE: For cell arrays, "unique" requires the components to be strings. Therefore does not
-            % check (again), since it is probably slow.
+            % IMPLEMENTATION NOTE: For cell arrays, "unique" requires the
+            % components to be strings. Therefore does not check (again), since
+            % it is probably slow.
             assert(numel(unique(s)) == numel(s), ...
                 EJ_library.assert.ASSERTION_EMID, ...
                 'Expected cell array of unique strings, but not all strings are unique.')
@@ -244,7 +248,8 @@ classdef assert
             % NOTE/BUG: Does not require sets to have internally unique strings.
             
             if ~isempty(setxor(set1, set2))
-                error(EJ_library.assert.ASSERTION_EMID, 'The two string sets are not equivalent.')
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    'The two string sets are not equivalent.')
             end
         end
         
@@ -253,13 +258,15 @@ classdef assert
         function castring_in_set(s, strSet)
         % PROPOSAL: Abolish
         %   PRO: Unnecessary since can use assert(ismember(s, strSet)).
-        %       CON: This gives better error messages for string not being string, for string set not being string set.
+        %       CON: This gives better error messages for string not being string,
+        %            for string set not being string set.
         
             EJ_library.assert.castring_set(strSet)
             EJ_library.assert.castring(s)
             
             if ~ismember(s, strSet)
-                error(EJ_library.assert.ASSERTION_EMID, 'Expected string in string set is not in set.')
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    'Expected string in string set is not in set.')
             end
         end
         
@@ -270,7 +277,8 @@ classdef assert
         function subset(strSubset, strSuperset)
             
             if ~EJ_library.utils.subset(strSubset, strSuperset)
-                error(EJ_library.assert.ASSERTION_EMID, 'Expected subset/superset is not a subset/superset.')
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    'Expected subset/superset is not a subset/superset.')
             end
         end
         
@@ -302,17 +310,21 @@ classdef assert
         
         function scalar(x)
             if ~isscalar(x)
-                error(EJ_library.assert.ASSERTION_EMID, 'Variable is not scalar as expected.')
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    'Variable is not scalar as expected.')
             end
         end
         
         
         
-        % Either regular file or symlink to regular file (i.e. not directory or symlink to directory).
+        % Either regular file or symlink to regular file (i.e. not directory or
+        % symlink to directory).
         % Cf. path_is_available
         function file_exists(filePath)
             if ~(exist(filePath, 'file') == 2)
-                error(EJ_library.assert.ASSERTION_EMID, 'Expected existing regular file (or symlink to regular file) "%s" can not be found.', filePath)
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    ['Expected existing regular file (or symlink to regular', ...
+                    ' file) "%s" can not be found.'], filePath)
             end
         end
         
@@ -320,7 +332,9 @@ classdef assert
         
         function dir_exists(dirPath)
             if ~exist(dirPath, 'dir')
-                error(EJ_library.assert.ASSERTION_EMID, 'Expected existing directory "%s" can not be found.', dirPath)
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    'Expected existing directory "%s" can not be found.', ...
+                    dirPath)
             end
         end
         
@@ -337,7 +351,8 @@ classdef assert
         
             if exist(path, 'file')
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'Path "%s" which was expected to point to nothing, actually points to a file or directory.', path)
+                    ['Path "%s" which was expected to point to nothing,', ...
+                    ' actually points to a file or directory.'], path)
             end
         end
 
@@ -345,10 +360,16 @@ classdef assert
 
         % ARGUMENTS
         % ==========
-        % requiredFnSet : Cell array of required field names.
-        % optionalFnSet : (a) Cell array of optional field names (i.e. allowed, but not required)
-        %                 (b) String constant 'all' : All fieldnames are allowed but not required. This is likely only
-        %                     meaningful when requiredFnSet is non-empty (not a requirement).
+        % requiredFnSet
+        %       Cell array of required field names.
+        % optionalFnSet
+        %       One of two alternatives.
+        %       (a) Cell array of optional field names (i.e. allowed, but not
+        %           required)
+        %       (b) String constant 'all'
+        %           All fieldnames are allowed but not required. This is likely
+        %           only meaningful when requiredFnSet is non-empty (not a
+        %           requirement).
         %
         function struct(S, requiredFnSet, optionalFnSet)
             % PROPOSAL: Have it apply to a set of strings (e.g. fieldnames), not a struct as such.
@@ -376,7 +397,8 @@ classdef assert
             %   PROPOSAL: struct(S, {'PointA.x', 'PointA.y'}, {'PointA.z'})
             %   PROPOSAL: struct(S, {'PointA', {'x', 'y'}}, {'PointA', {'z'}})   % Recursively
             %       Cell array means previous argument was the parent struct.
-            %   PROPOSAL: struct(S, {'name', 'ReqPointA', {{'reqX', 'reqY'}, {'optZ'}}}, {'OptPointB', {{'reqX', 'reqY'}, {'optZ'}}})
+            %   PROPOSAL: struct(S, {'name', 'ReqPointA', {{'reqX', 'reqY'}, {'optZ'}}},
+            %           {'OptPointB', {{'reqX', 'reqY'}, {'optZ'}}})
             %       Cell array means previous argument was the parent struct.
             %       Groups together required and optional with every parent struct.
             %       PRO: Optional fields can be structs with both required and optional fields, recursively.
@@ -397,12 +419,15 @@ classdef assert
             
             % disallowedFnSet = ...
             if iscell(optionalFnSet)
-                disallowedFnSet = setdiff(setdiff(structFnSet, requiredFnSet), optionalFnSet);
+                disallowedFnSet = setdiff(...
+                    setdiff(structFnSet, requiredFnSet), ...
+                    optionalFnSet);
             elseif isequal(optionalFnSet, 'all')
                 disallowedFnSet = {};
             else
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'Illegal optionalFnSet argument. Is neither cell array or string constant "all".')
+                    ['Illegal optionalFnSet argument.', ...
+                    ' Is neither cell array or string constant "all".'])
             end
             
             % Give error, with an actually useful error message.
@@ -413,7 +438,8 @@ classdef assert
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     ['Expected struct has the wrong set of fields.', ...
                     '\n    Missing fields:           %s', ...
-                    '\n    Extra (forbidden) fields: %s'], missingRequiredFnListStr, disallowedFnListStr)
+                    '\n    Extra (forbidden) fields: %s'], ...
+                    missingRequiredFnListStr, disallowedFnListStr)
             end
         end
 
@@ -428,12 +454,14 @@ classdef assert
         % nArgout : Value returned by nargout() for function handle.
         %            Analogous to nArgin.
         % 
-        % NOTE: Can not handle function handle that does not point to existing function(!)
+        % NOTE: Can not handle function handle that does not point to existing
+        % function(!)
         %
         % NOTE: Method's USEFULNESS IS LIMITED due to below reasons:
         %   NOTE: Can not distinguish between functions that 
         %       (1) only accept exactly N arguments, and
-        %       (2) accept a variable-number of arguments, including N arguments (using varargin).
+        %       (2) accept a variable-number of arguments, including N arguments
+        %           (using varargin).
         %       Analogous problem with nargout.
         %   NOTE: Empirically, nargout(anonymousFunction) == -1, always.
         %
@@ -442,13 +470,18 @@ classdef assert
             %   Ex: Accept nargin  = 3, -1,-2,-3 (accept all functions that seemingly can accept three arguments)
             %   Ex: Accept nargout = 3, -1,-2,-3 (accept all functions that seemingly can return three values)
             %   PROPOSAL: Submit exact set (numeric array) of accepted values.
+            % PROPOSAL: Do not submit/assert any specific number of arguments or
+            %           return values.
+            %   PROPOSAL: Separate assertion function.
             
             if ~isa(funcHandle, 'function_handle')
-                error(EJ_library.assert.ASSERTION_EMID, 'Expected function handle is not a function handle.')
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    'Expected function handle is not a function handle.')
             end
             if nargin(funcHandle) ~= nArgin
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'Expected function handle ("%s") has the wrong number of input arguments. nargin()=%i, nArgin=%i', ...
+                    ['Expected function handle ("%s") has the wrong number', ...
+                    ' of input arguments. nargin()=%i, nArgin=%i'], ...
                     func2str(funcHandle), nargin(funcHandle), nArgin)
             elseif nargout(funcHandle) ~= nArgout
                 % NOTE: MATLAB actually uses term "output arguments".
@@ -463,7 +496,8 @@ classdef assert
 
         function isa(v, className)
             if ~isa(v, className)
-                error(EJ_library.assert.ASSERTION_EMID, 'Expected class=%s but found class=%s.', className, class(v))
+                error(EJ_library.assert.ASSERTION_EMID, ...
+                    'Expected class=%s but found class=%s.', className, class(v))
             end
         end
         
@@ -472,8 +506,8 @@ classdef assert
         % Assert v has a non-one size in at most one dimension.
         % NOTE: Excludes 0x0, e.g. [] and ''.
         %
-        % NOTE: MATLAB's "isvector" function uses different criterion which excludes length in third or higher
-        % dimension.
+        % NOTE: MATLAB's "isvector" function uses different criterion which
+        % excludes length in third or higher dimension.
         %   isvector(ones(0,1)) == 1
         %   isvector(ones(1,0)) == 1
         %   isvector(ones(1,1,3)) == 0
@@ -553,7 +587,8 @@ classdef assert
             
             if (nUniques ~= 1) && (nTotal >= 1)
                 error(EJ_library.assert.ASSERTION_EMID, ...
-                    'Expected vector of identical values, but found %i unique values out of a total of %i values.', ...
+                    ['Expected vector of identical values, but found %i', ...
+                    ' unique values out of a total of %i values.'], ...
                     nUniques, nTotal)
             end
         end

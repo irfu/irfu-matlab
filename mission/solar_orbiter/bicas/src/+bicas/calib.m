@@ -230,6 +230,23 @@ classdef calib < handle
 %   PRO: For every modification of TFs, can easily add another field for the old
 %       version.
 %       NOTE/CON: All structs/TFs must have the same fields if true struct array.
+%
+% PROPOSAL: Have calibrate_LFR, calibrate_TDS_CWF, calibrate_TDS_RSWF return
+%           function handle to a transfer function that does everything,
+%           including offsets.
+%   CON: Useful for debugging.
+%       CON: Aren't the calibration methods available already that, if turned
+%            into function handles?!!
+%   PROPOSAL: Have ~special functions/methods for this, so that one does not use
+%             function handles wrapped in function handles (not too many
+%             anyway).
+%   NOTE: CLARIFICATION: Separate TFs with offsets and calibration metods in the
+%         time domain.
+%   PROPOSAL: Have special function that returns transfer function for every
+%             case.
+%       PRO: Useful for debugging.
+%           PRO: Plot
+%           PRO: Save to file.
 
 
 
@@ -588,11 +605,14 @@ classdef calib < handle
             %============================================
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % ASSERTIONS
-                assert(isscalar(cti2), 'BICAS:calib:IllegalArgument:Assertion', ...
+                assert(isscalar(cti2), ...
+                    'BICAS:calib:IllegalArgument:Assertion', ...
                     'Argument cti2 is not scalar.')
-                assert(cti2 >= 0,      'BICAS:calib:IllegalArgument:Assertion', ...
+                assert(cti2 >= 0, ...
+                    'BICAS:calib:IllegalArgument:Assertion', ...
                     'Illegal argument cti2=%g (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))', cti2)
-                assert(iLsf == cti2+1, 'BICAS:calib:IllegalArgument:Assertion', ...
+                assert(iLsf == cti2+1, ...
+                    'BICAS:calib:IllegalArgument:Assertion', ...
                     'cti2+1=%i != iLsf=%i (before overwriting iLsf)', cti2+1, iLsf)
                 
                 % NOTE: Only place cti2 is used.
@@ -613,17 +633,18 @@ classdef calib < handle
             end
             
             % TEST: Change sign of BIAS TF.
-            if 0
-                biasItfAvpiv = @(omegaRps) (-biasItfAvpiv(omegaRps));
-            end
+%             if 0
+%                 biasItfAvpiv = @(omegaRps) (-biasItfAvpiv(omegaRps));
+%             end
 
             %======================================
             % Create combined ITF for LFR and BIAS
             %======================================
             itfIvpt = @(omegaRps) (bicas.calib_utils.multiply_TFs(...
                 omegaRps, lfrItfIvpt, biasItfAvpiv));
-            
-            
+
+
+
             % TEST
 %             if 0
 %                 fHz = 100;
@@ -979,8 +1000,10 @@ classdef calib < handle
             bicas.calib_utils.assert_iLsf(iLsf)
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
-                % NOTE: F3 is never used for BLTS={4,5} and there is no
-                % tabulated LFR TF for it that can be returned even in principle.
+                % CASE: F3 and BLTS={4,5}
+                
+                % NOTE: There is no tabulated LFR TF and no such combination
+                % signal route, so the TF can not be returned even in principle.
                 lfrItfIvpt = bicas.calib.NAN_TF;
             else
                 RctDataList = obj.RctDataMap('LFR');
@@ -1194,7 +1217,8 @@ classdef calib < handle
 
             
 %         function tfZ = parasitic_capacitance_TF(tfOmega)
-%             % Calculate Z(omega) values for TF representing parasitic capacitances (based on analytic function).
+%             % Calculate Z(omega) values for TF representing parasitic
+%             % capacitances (based on analytic function).
 % 
 %             % Function name? "Input capacitance"?
 %             % Not read R & C from constants here? Submit as arguments?
@@ -1202,6 +1226,7 @@ classdef calib < handle
 %             impedanceOhm     =
 %             
 %             % Correct for a TF?!
+%             % 2020-11-11, EJ: Not same as in paper note.
 %             tfZ = 1 / (1 + 1j*tfOmega*capacitanceFarad*impedanceOhm);
 %             
 %             error('BICAS:calib:OperationNotImplemented', 'Function not implemented Yet.')

@@ -269,6 +269,9 @@ classdef calib_utils
         % is also therefore that this function does NOT return a function
         % pointer.
         function Z = multiply_TFs(omegaRps, tf1, tf2)
+            % PROPOSAL: Re-purpose into function that combines BIAS and
+            % non-BIAS TFs.
+            
             Z = tf1(omegaRps) ...
                 .* ...
                 tf2(omegaRps);

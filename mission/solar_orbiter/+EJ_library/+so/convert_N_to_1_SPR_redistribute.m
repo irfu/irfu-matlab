@@ -1,6 +1,8 @@
 %
-% Convert zVariable-like variable from N samples/record to 1 sample/record (from a matrix to a column vector).
-% Increases number of records.
+% Convert zVariable-like variable from N samples/record to 1 sample/record (from
+% a matrix to a column vector). Increases number of records.
+%
+% NOTE: This function is primarily intended to be used on zVar 
 %
 %
 % ARGUMENT
@@ -10,7 +12,8 @@
 %
 % RETURN VALUE
 % ============
-% zv2 : (iRecord, iChannel). Same number of components, nRecords2 = nRecords1*nSpr1
+% zv2 : (iRecord, iChannel).
+%       Same number of components, nRecords2 = nRecords1*nSpr1
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

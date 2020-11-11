@@ -97,8 +97,8 @@ function write_dataobj(filePath, ...
 % Empirically, it is possible to modify them in practice though. Therefore the
 % function only accepts the parts of a dataobj that it really needs, which still
 % means it accepts a lot of redundant information in the arguments.
-% (2) One might want to use the function for writing a CDF file without basing it on a dataobj (i.e. without basing it
-% on an existing CDF file).
+% (2) One might want to use the function for writing a CDF file without basing
+% it on a dataobj (i.e. without basing it on an existing CDF file).
 %
 %
 % IMPLEMENTATION NOTE ON "spdfcdfwrite" AND CHAR ZVARIABLES
@@ -133,7 +133,8 @@ function write_dataobj(filePath, ...
 % NOTE: No alternative gives 1 record, with multiple strings.
 % NOTE: For the above, using RecordBound makes no difference.
 % --
-% NOTE: dataobj always returns a char array but the meaning of indices seems to vary.
+% NOTE: dataobj always returns a char array but the meaning of indices seems to
+% vary.
 
 
 
