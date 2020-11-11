@@ -41,8 +41,14 @@ classdef NSO_table   % < handle
     %   Ex: thruster_firings.
     %
     % PROPOSAL: Validate XML table content.
-    %   PROPOSAL: Events are sorted.
+    %   NOTE: Already: only using valid NSO IDs.
+    %   PROPOSAL: Events are sorted in time.
     %   PROPOSAL: Events with same NSO ID do not overlap.
+    %   TODO-DEC: Where should assertions be?
+    %   	PROPOSAL: In file reading function.
+    %           CON: Bad for automatic testing.
+    %           CON: Bad for disabling tests.
+    %       PROPOSAL: 
     
     
     
@@ -60,16 +66,70 @@ classdef NSO_table   % < handle
     methods(Access=public)
     %#####################
     %#####################
-    
-        
-        
+
+
+
         function obj = NSO_table(xmlFilePath)
             NsoTable = bicas.NSO_table.read_file(xmlFilePath);
+
+
+
+            %============
+            % ASSERTIONS
+            %============
+            % PROPOSAL: Move ~all assertions to bicas.NSO_table.read_file ?
+            % PROPOSAL: Collect ~all assertions, here and in bicas.NSO_table.read_file ?
             
             EJ_library.assert.sizes(...
                 NsoTable.evtStartTt2000Array, [-1], ...
                 NsoTable.evtStopTt2000Array,  [-1], ...
                 NsoTable.evtNsoIdCa,          [-1]);
+            
+            % IMPLEMENTATION NOTE: Can not assume that both start & stop
+            % timestaps are sorted. One event may entirely contain another
+            % event.
+            % IMPLEMENTATION NOTE: Can not assume "strictly ascending" values,
+            % since events with separate NSO IDs may begin at the exact same
+            % instant.
+            assert(issorted(NsoTable.evtStartTt2000Array), ...
+                'NsoTable.evtStartTt2000Array is not sorted.')
+            
+            %----------------------------------------------------------------
+            % ASSERTION: Events with the same NSO ID do not overlap (and are
+            % time sorted)
+            %----------------------------------------------------------------
+            uniqueEvtNsoIdCa = unique(NsoTable.evtNsoIdCa);
+            for i = 1:numel(uniqueEvtNsoIdCa)
+                nsoId = uniqueEvtNsoIdCa{i};
+                b = strcmp(nsoId, NsoTable.evtNsoIdCa);
+                
+                % Sorted (earlier assertion), but not monotonically.
+                evtStartTt2000Array = NsoTable.evtStartTt2000Array(b);
+                % Can not be assumed to be sorted (no earlier assertion).
+                evtStopTt2000Array  = NsoTable.evtStopTt2000Array(b);
+                
+                % NOTE: This will catch some overlaps, but not all.
+                assert(issorted(evtStartTt2000Array, 'strictascend'), ...
+                    ['evtStartTt2000Array for nsoId="%s" is not time-sorted. ', ...
+                    'At least two events with that NSO ID overlap.'], nsoId)
+                assert(issorted(evtStopTt2000Array, 'strictascend'), ...
+                    ['evtStopTt2000Array for nsoId="%s" is not time-sorted. ', ...
+                    'At least two events with that NSO ID overlap.'], nsoId)
+            
+                % ASSERTION: Events do not overlap
+                % --------------------------------
+                % NOTE: ASSUMPTION: Start  timestamps are already time-sorted.
+                % NOTE: Transposing before 2D-->1D vector.
+                % NOTE: 'strictascend' excludes ~adjacent events.
+                temp = [...
+                    NsoTable.evtStartTt2000Array(b), ...
+                    NsoTable.evtStopTt2000Array(b)]';
+                tt2000Array = temp(:);
+                assert(issorted(tt2000Array, 'strictascend'), ...
+                    'At least two events for nsoId="%s" seem to overlap with each other.', nsoId)
+            end
+            
+            
 
             obj.evtStartTt2000Array = NsoTable.evtStartTt2000Array;
             obj.evtStopTt2000Array  = NsoTable.evtStopTt2000Array;

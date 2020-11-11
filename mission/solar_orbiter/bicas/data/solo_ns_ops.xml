@@ -9,8 +9,6 @@ stopTimeUtc   : Start & stop time as UTC strings.
 rcsNsoId      : String constant used by BICAS to set quality flags & bits, remove data etc.
                 RCS NSO = RPW Calibration Software Non-Standard Operation
 
-NOTE 2020-11-03: At this point, the table is not sorted in time.
-
 NOTE 2020-11-03: Should contain all thruster firings for time period 2020-06-01 to 2020-07-31 (inclusive). /EJ
 -->
 <table
@@ -45,12 +43,11 @@ NOTE 2020-11-03: Should contain all thruster firings for time period 2020-06-01 
         <rcsNsoId>TEST_thruster_firing</rcsNsoId>
         <description>Test 2. 2020-04-14 00:00-24:00 corresponds to local LFR SWF test dataset.</description>
     </event>
-
-
+    
     <!--
-    ##########################
-    Thruster firing NSO events
-    ##########################
+    #########################################
+    Thruster firing, full/partial NSO events
+    #########################################
     -->
 
     <event>
@@ -216,6 +213,20 @@ NOTE 2020-11-03: Should contain all thruster firings for time period 2020-06-01 
         <rcsNsoId>thruster_firing</rcsNsoId>
         <description></description>
     </event>
+    
+    
+    
+    <event>
+        <startTimeUtc>2020-07-05T09:10:00Z</startTimeUtc>
+        <stopTimeUtc> 2020-07-05T14:16:57Z</stopTimeUtc>
+        <rcsNsoId>partial_saturation</rcsNsoId>
+        <description>
+            Completely uncertain of time interval. /EJ
+        </description>
+    </event>
+    
+    
+    
     <event>
         <startTimeUtc>2020-07-06T01:04:37</startTimeUtc>
         <stopTimeUtc> 2020-07-06T01:12:11</stopTimeUtc>
@@ -234,44 +245,15 @@ NOTE 2020-11-03: Should contain all thruster firings for time period 2020-06-01 
         <rcsNsoId>thruster_firing</rcsNsoId>
         <description></description>
     </event>
-    <event>
-        <startTimeUtc>2020-07-25T13:04:43</startTimeUtc>
-        <stopTimeUtc> 2020-07-25T13:13:51</stopTimeUtc>
-        <rcsNsoId>thruster_firing</rcsNsoId>
-        <description></description>
-    </event>
     
-    <!-- 
-    #####################
-    Saturation NSO events
-    #####################
-    -->
-
-    <event>
-        <startTimeUtc>2020-07-05T09:10:00Z</startTimeUtc>
-        <stopTimeUtc> 2020-07-05T14:16:57Z</stopTimeUtc>
-        <rcsNsoId>partial_saturation</rcsNsoId>
-        <description>
-            Completely uncertain of time interval. /EJ
-        </description>
-    </event>
-
+    
+    
     <event>
         <startTimeUtc>2020-07-14T00:00:00.50Z</startTimeUtc>
         <stopTimeUtc> 2020-07-20T07:39:41.54Z</stopTimeUtc>
         <rcsNsoId>full_saturation</rcsNsoId>
         <description>Due to bad bias current commanding.</description>
     </event>
-
-<!--    <event>
-        <startTimeUtc>2020-07-24TZ</startTimeUtc>
-        <stopTimeUtc> 2020-07-24TZ</stopTimeUtc>
-        <rcsNsoId>partial_saturation</rcsNsoId>
-        <description>
-            Due to bad bias current commanding.
-        </description>
-    </event>-->
-
     <event>
         <startTimeUtc>2020-07-24T09:35:20Z</startTimeUtc>
         <stopTimeUtc> 2020-07-27T12:00:00Z</stopTimeUtc>
@@ -281,14 +263,24 @@ NOTE 2020-11-03: Should contain all thruster firings for time period 2020-06-01 
         </description>
     </event>
     
-    <event>
-        <startTimeUtc>2020-08-07T20:45:25.80Z</startTimeUtc>
-        <stopTimeUtc> 2020-08-11T21:27:03.57Z</stopTimeUtc>
-        <rcsNsoId>full_saturation</rcsNsoId>
+    
+    
+<!--    <event>
+        <startTimeUtc>2020-07-24TZ</startTimeUtc>
+        <stopTimeUtc> 2020-07-24TZ</stopTimeUtc>
+        <rcsNsoId>partial_saturation</rcsNsoId>
         <description>
-            Uncertain of beginning. /EJ
             Due to bad bias current commanding.
         </description>
-    </event>
+    </event>-->
+
+
     
+    <event>
+        <startTimeUtc>2020-07-25T13:04:43</startTimeUtc>
+        <stopTimeUtc> 2020-07-25T13:13:51</stopTimeUtc>
+        <rcsNsoId>thruster_firing</rcsNsoId>
+        <description></description>
+    </event>
+
 </table>
