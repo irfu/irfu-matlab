@@ -26,7 +26,6 @@ classdef solo_db < handle
       obj.index.enabled = false;
     end
     
-    
     function fileList = list_files(obj,filePrefix,tint,varName)
       if nargin < 4, varName = ''; end
       fileList = [];
@@ -48,6 +47,27 @@ classdef solo_db < handle
         end
         fileList = [fileList flTmp]; %#ok<AGROW>
       end
+    end
+    
+    function get_metakernel(obj, flown_or_predicted)
+      % loop through all databases (if mounted local irfu-data as well)
+      found = false;
+      for iDb = 1:length(obj.databases)
+        db = obj.databases(iDb);
+        dbRoot = db.dbRoot;
+        if exist([dbRoot, filesep, 'SPICE'], 'dir')
+          % If root folder contains a subfolder "SPICE", then it is most
+          % likely the one database we want.
+          prevSpicePath = datastore('spice_paths', 'solarorbiter');
+          if isempty(prevSpicePath)
+            datastore('spice_paths', 'solarorbiter', [dbRoot, filesep, 'SPICE']);
+          end
+          found = true;
+          load_mkernel('solarorbiter', flown_or_predicted);
+          break;
+        end
+      end
+      if ~found, irf.log('critical', 'Did not find any SPICE kernel paths, please try manually loading it using new function "load_mkernel(''solarorbiter'')"'); end
     end
     
     function res = get_variable(obj,filePrefix,varName,tint)

@@ -330,7 +330,7 @@ classdef solo_local_file_db < solo_file_db
             subDir = 'lfr_bp';    % ie combined 2nd "_" 4th (excl last digit, which is unique)
           case {'rpw-lfr-surv-cwf-b-cdag', 'rpw-lfr-surv-swf-b-cdag'}
             subDir = 'lfr_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
-          case {'rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
+          case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e','rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
             subDir = 'lfr_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
           case {'rpw-tds-surv-rswf-b-cdag', 'rpw-tds-surf-tswf-b-cdag'}
             subDir = 'tds_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
