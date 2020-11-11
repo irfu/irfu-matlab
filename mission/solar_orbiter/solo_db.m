@@ -49,18 +49,25 @@ classdef solo_db < handle
       end
     end
     
-    function solo_metakernel = get_metakernel(obj, flown_or_predicted)
+    function get_metakernel(obj, flown_or_predicted)
       % loop through all databases (if mounted local irfu-data as well)
+      found = false;
       for iDb = 1:length(obj.databases)
         db = obj.databases(iDb);
         dbRoot = db.dbRoot;
         if exist([dbRoot, filesep, 'SPICE'], 'dir')
           % If root folder contains a subfolder "SPICE", then it is most
           % likely the one database we want.
-          solo_metakernel = db.get_metakernel(flown_or_predicted);
+          prevSpicePath = datastore('spice_paths', 'solarorbiter');
+          if isempty(prevSpicePath)
+            datastore('spice_paths', 'solarorbiter', [dbRoot, filesep, 'SPICE']);
+          end
+          found = true;
+          load_mkernel('solarorbiter', flown_or_predicted);
           break;
         end
       end
+      if ~found, irf.log('critical', 'Did not find any SPICE kernel paths, please try manually loading it using new function "load_mkernel(''solarorbiter'')"'); end
     end
     
     function res = get_variable(obj,filePrefix,varName,tint)
