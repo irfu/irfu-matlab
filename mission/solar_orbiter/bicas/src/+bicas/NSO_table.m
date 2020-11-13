@@ -260,7 +260,8 @@ classdef NSO_table   % < handle
             
             
             RootXmlElem      = xmlread(filePath);
-            TablesXmlElem    = bicas.NSO_table.getXmlUniqChildElem(RootXmlElem, 'table');
+            MainXmlElem      = bicas.NSO_table.getXmlUniqChildElem(RootXmlElem, 'main');
+            TablesXmlElem    = bicas.NSO_table.getXmlUniqChildElem(MainXmlElem, 'eventsTable');
             EventXmlElemList = TablesXmlElem.getElementsByTagName('event');
             
             nEvents = EventXmlElemList.getLength;
