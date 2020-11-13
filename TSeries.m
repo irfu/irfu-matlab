@@ -19,7 +19,7 @@ classdef TSeries
   %      with other independent variables of the data product, such and a
   %      particle energy or a spectral frequency channel.
   %
-  %      For more infor on representation see Cluster Metadata Dictionary
+  %      For more info on representation see Cluster Metadata Dictionary
   %           http://caa.estec.esa.int/caa/doc_format_meta.xml
   %
   %  ARGS MACROs:

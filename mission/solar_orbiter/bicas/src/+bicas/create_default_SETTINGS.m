@@ -263,7 +263,8 @@ function SETTINGS = create_default_SETTINGS()
     % the master CDF. This indicates that something is wrong, either in the
     % master CDF or in the processing.
     S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'ERROR');   % ERROR, WARNING, USE_FILLVAL
-    % Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?) SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
+    % Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?)
+    %     SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
     % Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
     S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'ERROR');   % ERROR, WARNING
 

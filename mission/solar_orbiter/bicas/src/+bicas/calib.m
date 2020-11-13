@@ -647,7 +647,7 @@ classdef calib < handle
 
             % TEST
 %             if 0
-%                 fHz = 100;
+%                 fHz = 20;
 %                 zLimit = itfIvpt(fHz * 2*pi);
 %                 %zLimit = 1;
 %                 itfIvpt = @(omegaRps) (bicas.calib_utils.TF_LF_constant_abs_Z(itfIvpt, omegaRps, fHz, zLimit));

@@ -36,7 +36,7 @@
 %                  files to validate in the directory. The
 %                  function adds ^ (beginning of string) and $ (end of string)
 %                  are added automatically to the regular
-%                   expression.
+%                  expression.
 %
 %
 % RETURN VALUE
@@ -91,16 +91,25 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %   bash wrapper).
     % PROPOSAL: Class with static functions.
     %   PRO: Publicly accessible functions better for testing.
+    %
+    % PROPOSAL: Class with constants.
+    %   PRO: Might be shared among functions.
+    %
+    % NOTE: It appears that dataobj does not contain the CDF datatype for
+    %       zVar attributes. ==> Can not (strictly) check their data types, e.g.
+    %       that they match the zVar itself.
 
     
     
     % ASSERTION
-    % IMPLEMENTATION NOTE: Natural mistake to assume that there is only one argument for a single path.
+    % IMPLEMENTATION NOTE: Natural mistake to assume that there is only one
+    % argument for a single path.
     assert(nargin == 2, 'Wrong number of arguments.')
 
     % Needed for EJ_library.
     % Needed for sdfpcdfread?
-    % NOTE: Might run automatically run as part of user-configured MATLAB initialization.
+    % NOTE: Might run automatically run as part of user-configured MATLAB
+    % initialization.
     irf('check_path');
     
     
@@ -115,7 +124,7 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     doList = {};             % DO = dataobj
     nFiles = numel(oiList);
     for i = 1:nFiles
-        doList{end+1} = validate_BICAS_L2_master_CDF(oiList(i).fullPath);
+        doList{end+1} = validate_file(oiList(i).fullPath);
     end
     if nFiles == 0
         % IMPLEMENTATION NOTE: Useful if the caller types a regex with no matches.
@@ -137,11 +146,14 @@ end
 
 
 
+% 2020-11-12: Can only validate L2 datasets (yet).
+%
+%
 % VARIABLE NAMING CONVENTION
 % ==========================
 % CDF_* : Refers to something "concrete" in the CDF file.
 %
-function Do = validate_BICAS_L2_master_CDF(filePath)
+function Do = validate_file(filePath)
 %
 % PROPOSAL: Split validation into part applicable to all datasets, and part specifically for BICAS.
 %    PRO: Can compare the compliance of master CDF files from other groups.
@@ -183,43 +195,6 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
 
 
 
-    % Docs specifies "Acknowledgment", but ISTP specifies "Acknowledgement"
-    % (different spelling).
-    % NOTE: Incomplete list of mandatory global attributes (too long).
-    % NOTE: Most of global attributes names have just been copied from defact
-    % datasets. There is still value in that it checks that the same global
-    % attributes are used everywhere.
-    EXACT_L2_GLOBAL_ATTRIBUTES = {...
-        'ACCESS_FORMAT', 'ACCESS_URL', 'Acknowledgement', 'Calibration_version', 'Dataset_ID', 'Data_type', ...
-        'Data_version', 'Descriptor', 'Discipline', 'File_naming_convention', 'Generated_by', ...
-        'HTTP_LINK', 'Instrument_type', 'LEVEL', 'LINK_TEXT', ...
-        'APPLICABLE', 'CALIBRATION_TABLE', 'CALIBRATION_VERSION', 'CAL_ENTITY_AFFILIATION', 'CAL_ENTITY_NAME', ...
-        'CAL_EQUIPMENT', 'CAVEATS', 'Data_product', 'Datetime', 'File_ID', 'Free_field', 'Generation_date', ...
-        'Job_ID', 'LINK_TITLE', 'Logical_file_id', 'Logical_source', 'Logical_source_description', 'MODS', ...
-        'Mission_group', 'OBS_ID', 'PI_affiliation', 'PI_name', 'Parent_version', 'Parents', 'Pipeline_name', ...
-        'Pipeline_version', 'Project', 'Provider', 'REFERENCE', 'Rules_of_use', 'SKELETON_PARENT', 'SOOP_TYPE', ...
-        'SPECTRAL_RANGE_MAX', 'SPECTRAL_RANGE_MIN', 'Skeleton_version', 'Software_name', 'Software_version', 'Source_name', ...
-        'TARGET_CLASS', 'TARGET_NAME', 'TARGET_REGION', 'TEXT', 'TEXT_supplement_1', 'TIME_MAX', ...
-        'TIME_MIN', 'Validate'};
-    
-    MANDATORY_L2_ZV_NAMES = {...
-        'VDC', 'EDC', 'EAC', ...
-        'VDC_LABEL', 'EDC_LABEL', 'EAC_LABEL', ...
-        'IBIAS1', 'IBIAS2', 'IBIAS3', 'DELTA_PLUS_MINUS', ...
-        'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SAMPLING_RATE', 'SYNCHRO_FLAG'};
-    SOMETIMES_L2_ZV_NAMES = {'ACQUISITION_TIME', 'ACQUISITION_TIME_LABEL', 'ACQUISITION_TIME_UNITS'};   % Temporary. Should be abolished.
-    %SOMETIMES_L2_ZV_NAMES = {};   % Future value.
-    
-    % NOTE: Does not seem to be very many truly mandatory attribute fields.    
-    % 2020-03-25: Values are empirical.
-    % NOTE: All but Epoch require DEPEND_0.
-    % NOTE: LABLAXIS and LABL_PTR_1 are mutualy exclusive.
-    MANDATORY_ZV_ATTRIBUTES = {'FIELDNAM', 'CATDESC', 'VAR_TYPE'};
-    SOMETIMES_ZV_ATTRIBUTES = {'DISPLAY_TYPE', 'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL', 'LABLAXIS', ...
-        'UNITS', 'SCALETYP', 'MONOTON', 'TIME_BASE', 'TIME_SCALE', 'REFERENCE_POSITION', 'Resolution', ...
-        'Bin_location', 'VAR_NOTES', 'DEPEND_0', 'FORMAT', 'LABL_PTR_1', 'UNIT_PTR', 'UCD', 'DELTA_PLUS_VAR', ...
-        'DELTA_MINUS_VAR', 'SI_CONVERSION'};
-
     
     
     fprintf('--------\nValidating %s\n', filePath)
@@ -255,9 +230,12 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     %===================================
     % Validate set of global attributes
     %===================================
-    missingDisallowedGlobAttributes = setxor(EXACT_L2_GLOBAL_ATTRIBUTES, fieldnames(Ga));
+    missingDisallowedGlobAttributes = setxor(...
+        bicas.tools.vbmc.const.EXACT_L2_GLOBAL_ATTRIBUTES, ...
+        fieldnames(Ga));
     if ~isempty(missingDisallowedGlobAttributes)
-        validation_warning_list(missingDisallowedGlobAttributes, 'Found missing/disallowed global attributes:\n')
+        validation_warning_list(missingDisallowedGlobAttributes, ...
+            'Found missing/disallowed global attributes:\n')
     end
     
 
@@ -331,8 +309,11 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     %============================
     % Validate set of zVariables
     %============================
-    missingZvNames   = setdiff(MANDATORY_L2_ZV_NAMES, zvNameList);
-    forbiddenZvNames = setdiff(zvNameList, union(MANDATORY_L2_ZV_NAMES, SOMETIMES_L2_ZV_NAMES));
+    missingZvNames   = setdiff(bicas.tools.vbmc.const.MANDATORY_L2_ZV_NAMES, zvNameList);
+    forbiddenZvNames = setdiff(zvNameList, ...
+        union(...
+            bicas.tools.vbmc.const.MANDATORY_L2_ZV_NAMES, ...
+            bicas.tools.vbmc.const.SOMETIMES_L2_ZV_NAMES));
     if ~isempty(missingZvNames)
         validation_warning_list(missingZvNames, 'Can not find mandatory zVariables:\n')
     end
@@ -398,7 +379,8 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     % Validate set of zVariable attributes
     %======================================
     % Likely obsolete comment.
-    %   ROC-TST-GSESPC-00017-LES, iss01, rev 03 requires a number of zVar attributes, many of them conditionally.
+    %   ROC-TST-GSESPC-00017-LES, iss01, rev 03 requires a number of zVar
+    %       attributes, many of them conditionally.
     %   SRDB_PARAM_ID, SRDB_ENUM_ID - mandatory.
     %   LABLAXIS - conditional
     %   DISPLAY_TYPE - conditional
@@ -407,8 +389,12 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
         zvName         = zvNameList{iZv};
         zvAttrNameList = fieldnames(Zmd.(zvName).Attributes);
         
-        missingZvAttrList   = setdiff(MANDATORY_ZV_ATTRIBUTES, zvAttrNameList);        
-        forbiddenZvAttrList = setdiff(zvAttrNameList, union(MANDATORY_ZV_ATTRIBUTES, SOMETIMES_ZV_ATTRIBUTES));
+        missingZvAttrList   = setdiff(...
+            bicas.tools.vbmc.const.MANDATORY_ZV_ATTRIBUTES, ...
+            zvAttrNameList);        
+        forbiddenZvAttrList = setdiff(zvAttrNameList, union(...
+            bicas.tools.vbmc.const.MANDATORY_ZV_ATTRIBUTES, ...
+            bicas.tools.vbmc.const.SOMETIMES_ZV_ATTRIBUTES));
         if ~isempty(missingZvAttrList)
             validation_warning_list(missingZvAttrList, 'zVariable "%s" misses attributes:\n', zvName)
         end
@@ -426,7 +412,8 @@ function Do = validate_BICAS_L2_master_CDF(filePath)
     % Validate DELTA_PLUS_MINUS:CATDESC value.
     validate_zv_attribute_value(...
         Zmd, 'DELTA_PLUS_MINUS', 'CATDESC', ...
-        'Time between sample timestamp and beginning/end of integration. Total integration time is twice this value.')
+        ['Time between sample timestamp and beginning/end of integration.', ...
+        ' Total integration time is twice this value.'])
 
     %===========================================
     % Check FILLVAL
@@ -463,6 +450,7 @@ end
 
 function validate_zv_attribute_value(ZvsMetadata, zvName, zvAttrName, comparisonValue, varargin)
     % TODO-DECISION: How handle comparing different data types (MATLAB classes)?
+    %   PROPOSAL: Act differently depending zVar data type (TT2000 or not).
     
     if ~isfield(ZvsMetadata, zvName)
         validation_warning('Can not find zVariable "%s"', zvName)

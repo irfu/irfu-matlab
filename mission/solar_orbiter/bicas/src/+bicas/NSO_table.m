@@ -15,7 +15,10 @@
 % First created 2020-09-22
 %
 classdef NSO_table   % < handle
-    % PROPOSAL: New name: NSO_events_table, NSO_events_list
+    % PROPOSAL: New name
+    %   PROPOSAL: ~events
+    %   PROPOSAL: ~list
+    %       PRO: Table implies multiple dimensions more than list. List more 1D.
     %
     % PROPOSAL: Should somehow support logging. Which RCS NSO codes are used for
     % which time interval.
@@ -319,8 +322,9 @@ classdef NSO_table   % < handle
         
         
         
-        % Elem : Element that has exactly one child in the form of an element with
-        %        specified tag name.
+        % Elem
+        %   Element that has exactly one child in the form of an element
+        %   with the specified tag name.
         function ChildXmlElem = getXmlUniqChildElem(XmlElem, childTagName)
             ChildXmlElemList = XmlElem.getElementsByTagName(childTagName);
             if ~(ChildXmlElemList.getLength() == 1)

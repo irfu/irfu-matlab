@@ -30,7 +30,7 @@
 %
 function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, rctDir, NsoTable, SETTINGS, L)
     
-    % QUESTION: How verify dataset ID and dataset version against constants?
+    % TODO-NI: How verify dataset ID and dataset version against constants?
     %    NOTE: Need to read CDF first.
     %    NOTE: Need S/W mode.
     %
@@ -52,8 +52,9 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     
     
     % ASSERTION: Check that all input & output dataset paths (strings) are unique.
-    % NOTE: Manually entering CLI argument, or copy-pasting BICAS call, can easily lead to reusing the same path by mistake,
-    % and e.g. overwriting an input file.
+    % NOTE: Manually entering CLI argument, or copy-pasting BICAS call, can
+    % easily lead to reusing the same path by mistake, and e.g. overwriting an
+    % input file.
     datasetFileList = [InputFilePathMap.values(), OutputFilePathMap.values()];
     assert(numel(unique(datasetFileList)) == numel(datasetFileList), 'BICAS:execute_sw_mode:CLISyntax', ...
         'Input and output dataset paths are not all unique. This hints of a manual mistake in the CLI arguments in call to BICAS.')
@@ -81,8 +82,10 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
         %===========================================
         % ASSERTIONS: Check GlobalAttributes values
         %===========================================
-        % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(Zv) since not all zVariables have same number of
-        % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
+        % NOTE: Can not use
+        % bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(Zv) since
+        % not all zVariables have same number of records.
+        % Ex: Metadata such as ACQUISITION_TIME_UNITS.
         if ~isfield(GlobalAttributes, 'Dataset_ID')
             error('BICAS:execute_sw_mode:Assertion:DatasetFormat', ...
                 'Input dataset does not contain (any accepted variation of) the global attribute Dataset_ID.\n    File: "%s"', ...
@@ -237,7 +240,14 @@ end
 % Utility function to shorten & clarify code.
 % Not very efficient, but that is unimportant here.
 %
-% NOTE: Eliminates duplicated values.
+% Modifies OutGa such that field "fieldName" is potentially modified.
+% Essentially, do 
+%   OutGa.(fieldName) := UNION[ OutGa.(fieldName) InGa.(fieldName) ]
+% with precautions.
+%
+% NOTE: Can tolerate InGa.(fieldName) not existing. Then skipping union.
+% NOTE: Assumes that values are cell arrays (of strings).
+% NOTE: Eliminates duplicated values in end result.
 % NOTE: Removes ' ', unless it is the only value. ' ' is like a fill value for
 %       global attributes?
 function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
@@ -248,7 +258,8 @@ function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
     end
     
     % Remove ' ', unless it is the only value.
-    % HACK?
+    % NOTE: Empirically, ' ' is like a fill value (but it is probably not a
+    % formal fill value(?) since only zvars have fill values..
     outValue2 = setdiff(outValue, ' ');
     if ~isempty(outValue2)
         outValue = outValue2;

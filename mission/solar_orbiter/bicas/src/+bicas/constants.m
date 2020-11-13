@@ -102,8 +102,9 @@ classdef constants   % < handle
         %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can
         % simultaneously be used to
-        % ** reference specific constants (fields) in code
-        % ** compile list of legal NSO IDs in NSO table file.
+        % ** compile a list of legal NSO IDs in NSO table file
+        % ** reference specific constants (fields) throughout BICAS without
+        %    hardcoding the actual NSO IDs in multiple places.
         %
         % IMPLEMENTATION NOTE: One does not want to use the RCS NSO ID string
         % constants directly inside the code, in case of typos.

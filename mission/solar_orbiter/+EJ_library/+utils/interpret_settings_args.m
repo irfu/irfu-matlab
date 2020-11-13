@@ -1,16 +1,19 @@
 %
-% Utility function for interpreting settings argument(s) on a standardized syntax/format passed to functions. 
+% Utility function for interpreting settings argument(s) on a standardized
+% syntax/format passed to functions.
 %
 %
 % INTENDED USAGE
 % ==============
-% The function interprets a 1D cell array, representing a list of arguments to another function, typically the
-% external function that calls this function, and typically the external function's last arguments by using varargin.
+% The function interprets a 1D cell array, representing a list of arguments to
+% another function, typically the external function that calls this function,
+% and typically the external function's last arguments by using varargin.
 % --
-% IMPORTANT NOTE: The function does permit that settings (fields) not present in DefaultSettings are ADDED to Settings.
-% In order to require/permit a certain set of settings (keys), use an assertion for the set of field names in the
-% returned struct. Note that if there are default values for all keys, then DefaultSettings can be used to obtain the
-% list of field names.
+% IMPORTANT NOTE: The function does permit that settings (fields) not present in
+% DefaultSettings are ADDED to Settings. In order to require/permit a certain
+% set of settings (keys), use an assertion for the set of field names in the
+% returned struct. Note that if there are default values for all keys, then
+% DefaultSettings can be used to obtain the list of field names.
 %   Ex: EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 % 
 %
@@ -19,30 +22,36 @@
 % =========
 % The algorithm uses/constructs three analogous "Settings" structs.
 % DefaultSettings      = argument.
-% SettingsArg1         = argList{1}, if argList{1} exists and is a struct. Otherwise empty struct.
-% SettingsArgListPairs = remainder of argList (excluding SettingsArg1), interpreted as pairs of field name + field value.
+% SettingsArg1         = argList{1}, if argList{1} exists and is a struct.
+%                        Otherwise empty struct.
+% SettingsArgListPairs = remainder of argList (excluding SettingsArg1),
+%                        interpreted as pairs of field name + field value.
 % --
 % The functions returns a struct which is a combination (union of fields) of 
 % (1) SettingsArgListPairs
 % (2) SettingsArg1
 % (3) DefaultSettings
-% where field values are taken from the first top-most struct with that field, i.e. a higher one has precedence over a
-% lower one, e.g. (1) has precedence over (2). Therefore, the structs do not need to, but are allowed to, contain the
-% same fields.
+% where field values are taken from the first top-most struct with that field,
+% i.e. a higher one has precedence over a lower one, e.g. (1) has precedence
+% over (2). Therefore, the structs do not need to, but are allowed to, contain
+% the same fields.
 %
 %
 % LIMITATIONS
 % ===========
-% Can not handle situations where set of fields in the "full settings struct" depends on other fields.
-%   Ex: Settings.enabled = 1 implies there should be a field Settings.parameter, but Settings.enabled = 0 implies there
-%       should not.
+% Can not handle situations where set of fields in the "full settings struct"
+% depends on other fields.
+%   Ex: Settings.enabled = 1 implies there should be a field Settings.parameter,
+%       but Settings.enabled = 0 implies there should not.
 %
 %
 % ARGUMENTS
 % =========
-% DefaultSettings : Struct with default Settings to be processed (not Settings for this function).
-% argList         : Cell array representing a sequence of arguments (presumably "varargin" or subset thereof) from
-%                   another function that uses this function.
+% DefaultSettings : Struct with default Settings to be processed (not Settings
+%                   for this function).
+% argList         : Cell array representing a sequence of arguments (presumably
+%                   "varargin" or subset thereof) from another function that
+%                   uses this function.
 %                   It is either
 %                       (1) {              key1,value1, ..., keyN,valueN}
 %                       (2) {SettingsArg1, key1,value1, ..., keyN,valueN}
@@ -52,8 +61,9 @@
 % RETURN VALUES
 % =============
 % Settings    : Struct. See algorithm.
-% argList     : Cell array of strings, representing list of arguments passed to other function. Typically varargin
-%               as received from the enclosing function directly.
+% argList     : Cell array of strings, representing list of arguments passed to
+%               other function. Typically varargin as received from the
+%               enclosing function directly.
 %
 %
 % Initially created 2018-07-18 by Erik P G Johansson.
@@ -107,6 +117,8 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
     %   CON: Has not actually had the need for this. Is just "clever".
     %   NOTE: Can be implemented recursively?!!
     
+    assert(iscell(argList), 'Argument "argList" is not a cell array.')
+    
     %====================================================
     % Assign SettingsArg1: Uses first argument if struct
     %====================================================
@@ -117,9 +129,10 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
         SettingsArg1 = struct;
     end
     
-    %======================================================================================
-    % Assign SettingsArgListPairs: Uses remaining arguments interpreted as key-value pairs
-    %======================================================================================
+    %======================================================================
+    % Assign SettingsArgListPairs: Uses remaining arguments interpreted as
+    % key-value pairs
+    %======================================================================
     SettingsArgListPairs = struct;
     while true
         if numel(argList) == 0
@@ -145,7 +158,8 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
     % Take all available values from SettingsArgListPairs.
     %Settings = SettingsArgListPairs;
     
-    % NOTE: Could permit recursive settings structs, but then without checking for the existence of corresponding default key.
+    % NOTE: Could permit recursive settings structs, but then without checking
+    % for the existence of corresponding default key.
     AS2S_SETTINGS = struct(...
         'noStructs',    'Overwrite', ...
         'aIsStruct',    'Error', ...
@@ -164,22 +178,25 @@ end
 
 
 
-%=======================================================================================================================
+%================================================================================
 % Lightly modified hard-coded copy of EJ_library.utils.add_struct_to_struct
 % -------------------------------------------------------------------------
-% Modifications: Not use EJ_library.utils.interpret_settings_args (including recursive call).
+% Modifications: Not use EJ_library.utils.interpret_settings_args
+% (including recursive call).
 %
 % IMPORTANT IMPLEMENTATION NOTE
 % =============================
-% This function (EJ_library.utils.interpret_settings_args) DELIBERATELY DOES NOT USE
-% EJ_library.utils.add_struct_to_struct so that it can use EJ_library.utils.interpret_settings_args INSTEAD.
-% Both using each other would lead to ininite recursion.
-%=======================================================================================================================
+% This function (EJ_library.utils.interpret_settings_args) DELIBERATELY
+% DOES NOT USE EJ_library.utils.add_struct_to_struct so that it can use
+% EJ_library.utils.interpret_settings_args INSTEAD. Both using each other
+% would lead to ininite recursion.
+%================================================================================
 function A = add_struct_to_struct(A, B, Settings)
 
-    %=============================================================================================================
-    % IMPLEMENTATION NOTE: CAN NOT USE EJ_library.utils.interpret_settings_args SINCE IT USES THIS FUNCTION!
-    %=============================================================================================================
+    %============================================================================
+    % IMPLEMENTATION NOTE: CAN NOT USE
+    % EJ_library.utils.interpret_settings_args SINCE IT USES THIS FUNCTION!
+    %============================================================================
     if nargin == 2
         Settings = DEFAULT_SETTINGS;
     elseif nargin == 3
@@ -244,7 +261,8 @@ function A = add_struct_to_struct(A, B, Settings)
             %===========================================
             switch(Settings.onlyBField)
                 case 'Copy'
-                    A.(fieldName) = B.(fieldName);     % NOTE: Not overwrite field, but create new field in A.
+                    % NOTE: Not overwrite field, but create new field in A.
+                    A.(fieldName) = B.(fieldName);
                 case 'Error'
                     error('Field B.%s exists but not A.%s.', fieldName, fieldName)
                 otherwise

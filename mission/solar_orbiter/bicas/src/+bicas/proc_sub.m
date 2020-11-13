@@ -1194,7 +1194,7 @@ classdef proc_sub
             BIN_LENGTH_WOLS_NS        = int64(10e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
             
-            QUALITY_FLAG_MIN_FOR_USE = SETTINGS.get_fv('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
+            QUALITY_FLAG_MIN_FOR_USE  = SETTINGS.get_fv('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
             
             
             %======================
@@ -1213,7 +1213,7 @@ classdef proc_sub
             
             
             
-            %===================================================================
+            %====================================================================
             % Calculate
             %   (1) E-field, and
             %   (2) s/c potentials
@@ -1222,7 +1222,7 @@ classdef proc_sub
             % NOTE: Needs to be careful with the units, and incompatible updates
             % to solo.vdccal without the knowledge of the BICAS author.
             % Therefore uses extra assertions to detect such changes.
-            %===================================================================
+            %====================================================================
             % Set some records to NaN.
             zv_VDC = InputLfrCwfCdf.Zv.VDC;
             zv_VDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
