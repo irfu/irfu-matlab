@@ -146,13 +146,17 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %#########################
     % APPLY TRANSFER FUNCTION
     %#########################
-    [y2B, tfOmegaLookups, tfZLookups] = bicas.utils.apply_TF_freq(dt, y1B, tfB);
+    [y2B] = bicas.utils.apply_TF_freq(dt, y1B, tfB);
+    %[y2B, tfOmegaLookups, tfZLookups] = bicas.utils.apply_TF_freq(dt, y1B, tfB);
     
-    % ASSERTIONS
-    if all(isfinite(y1B)) && ~all(isfinite(tfZLookups))
-        error('BICAS:apply_TF_freq_modif:Assertion', ...
-            'Failed to evaluate transfer function for all necessary frequencies.')
-    end
+%     % ASSERTIONS
+%     if all(isfinite(y1B)) && ~all(isfinite(tfZLookups))
+%         % IMPLEMENTATION NOTE: bicas.utils.apply_TF_freq (deliberately) does not
+%         % throw error if TF returns non-finite values. This assertion should
+%         % catch that case instead.
+%         error('BICAS:apply_TF_freq_modif:Assertion', ...
+%             'Failed to evaluate transfer function for all necessary frequencies.')
+%     end
     
     
     

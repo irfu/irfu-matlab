@@ -99,23 +99,20 @@
 %            NOTE: If the caller wants to use a tabulated TF, then s/he should
 %            construct an anonymous function that interpolates the tabulated TF
 %            (e.g. using "interp1") and submit it as argument.
-%            NOTE: May return non-finite values. A caller that wants to catch
-%            the tf returning non-finite values should search return value
-%            "tfZLookups" for such values.
+%            NOTE: Function is permitted to return NaN. This will set y2 to NaN.
 % 
 %
 % RETURN VALUES
 % =============
 % y2       : y1 after the application of the TF.
 %            If y1 contains at least one NaN, then all components in y2 will be
-%            NaN. No error will be thrown.
-% tfZLookups :
+%            NaN. No error will be thrown if that is the case.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-13
 %
-function [y2, tfOmegaLookups, tfZLookups] = apply_TF_freq(dt, y1, tf)
+function [y2] = apply_TF_freq(dt, y1, tf)
 % TODO-NEED-INFO: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
 %
 % PROPOSAL: Option for error on NaN/Inf.

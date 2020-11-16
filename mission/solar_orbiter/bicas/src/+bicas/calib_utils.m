@@ -195,32 +195,41 @@ classdef calib_utils
         % NOTE: This function is effectively meant to specify how tabulated
         % transfer functions should be interpreted w.r.t. interpolation.
         %
-        % NOTE: TDS RSWF tabulated transfer functions do not cover the frequency
-        % range needed for data. Must extrapolate somehow.
+        % NOTE: LFR & TDS RSWF tabulated transfer functions do not strictly
+        % cover the frequency range needed for data. Must extrapolate somehow.
         %
         %
         % ARGUMENTS
         % =========
+        % TabTf
         % valueOutsideTable
-        %       Value used outside of tabulated frequencies. Can be set to NaN
-        %       to signal that no value can be retrieved and trigger error
-        %       elsewhere.
+        %       Value used outside of tabulated frequencies.
         %
-        function Z = eval_tabulated_TF(Tf, omegaRps, valueOutsideTable)
+        %
+        % RETURN VALUE
+        % ============
+        % Z
+        %       TF Z values corresponding to omegaRps. Always finite (if TabTf Z
+        %       values are finite (which they should be due to
+        %       EJ_library.utils.tabulated_transform assertion).
+        %
+        function Z = eval_tabulated_TF(TabTf, omegaRps, valueOutsideTable)
             % OLD COMMENTS: """"Intended specifically for INVERSE transfer
             % functions. Therefore setting Z=0 for frequencies lower than the
-            % table covers.""""            
+            % table covers.""""
             
-            % PROPOSAL: Automatic test code.
+            % PROPOSAL: valueOutsideTable only applies within some specified margins (not to infinity).
+            % PROPOSAL: Automatic test code. 
             
-            assert(isa(Tf, 'EJ_library.utils.tabulated_transform'))
+            assert(isa(TabTf, 'EJ_library.utils.tabulated_transform'))
+            assert(isfinite(valueOutsideTable))
             
             if 1
                 % NOTE: interp1 returns NaN for values outside range.
-                Z = interp1(Tf.omegaRps, Tf.Z, omegaRps, 'linear');
+                Z = interp1(TabTf.omegaRps, TabTf.Z, omegaRps, 'linear');
             else
                 % EXPERIMENTAL
-                Z = bicas.calib_utils.interpolate_TF(Tf.omegaRps, Tf.Z, omegaRps);
+                Z = bicas.calib_utils.interpolate_TF(TabTf.omegaRps, TabTf.Z, omegaRps);
             end
             % CASE: Z == NaN for omegaRps not covered by tabulated TF.
             
