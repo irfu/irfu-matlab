@@ -1,11 +1,10 @@
 %
-% UNFINISHED / EXPERIMENTAL
+% Wrapper around bicas.utils.apply_TF_freq that (potentially) modifies data and
+% TF.
 %
-% Wrapper around bicas.utils.apply_TF_freq that modifies data and TF.
 %
-
-
-% --
+% NOTES
+% =====
 % NOTE: Detrending makes it impossible to modify the amplitude & phase for the
 % frequency components in the trend (the fit), e.g. to delay the signal. If the
 % input signal is interpreted as N-periodic, then de-trending affects the jump
@@ -24,9 +23,9 @@
 %
 % TERMINOLOGY
 % ===========
-% De-trending : Removing fit on data before applying the TF. It does NOT
+% De-trending : REMOVING fit on data before applying the TF. It does NOT
 %               automatically imply RE-trending.
-% Re-trending : Adding back a scaled version of the previously removed fit when
+% Re-trending : ADDING BACK a scaled version of the previously removed fit when
 %               de-trending.
 %
 %

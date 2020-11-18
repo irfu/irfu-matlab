@@ -46,10 +46,13 @@ function write_dataset_CDF(...
             'Intended output dataset file path matches a pre-existing directory.')
     end
     % UI ASSERTION: Check for output file path collision with pre-existing file.
-    if exist(outputFile, 'file')    % Command checks for file and directory (can not do just file).
+    % Command checks for file and directory (can not do just file).
+    if exist(outputFile, 'file')
         [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
         
-        anomalyDescrMsg = sprintf('Intended output dataset file path "%s" matches a pre-existing file.', outputFile);
+        anomalyDescrMsg = sprintf(...
+            'Intended output dataset file path "%s" matches a pre-existing file.', ...
+            outputFile);
         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
             anomalyDescrMsg, 'BICAS:write_dataset_CDF')
     end
@@ -83,7 +86,8 @@ function write_dataset_CDF(...
             value, 'includeNaN');
         
         
-        DataObj = init_modif_dataobj(ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
+        DataObj = init_modif_dataobj(...
+            ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
         % NOTE: This call will fail if setting
         % OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
         % therefore ZvsSubset=[] (can not be generated).
@@ -100,14 +104,19 @@ function write_dataset_CDF(...
     % code as possible without writing file.
     [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
     if settingValue
-        L.logf('warning', 'Writing output CDF file is disabled via setting %s.', settingKey)
+        L.logf('warning', ...
+            'Writing output CDF file is disabled via setting %s.', settingKey)
         return
     end
     
     if ~settingNpefValue
+        %=====================================
+        % CASE: ACTUALLY WRITE OUTPUT DATASET
+        %=====================================
         write_nominal_dataset_CDF(DataObj, outputFile, SETTINGS, L)
     else
-        L.logf('warning', 'Writing empty output file due to setting %s.', settingNpefKey)
+        L.logf('warning', ...
+            'Writing empty output file due to setting %s.', settingNpefKey)
         write_empty_file(outputFile)
     end
 
@@ -115,15 +124,18 @@ end
 
 
 
-% Create a modified dataobj that can be written to file.
-% (dataobj is based on master CDF.)
+% Create a modified dataobj that can be written to file. The dataobj is based on
+% the master CDF.
 %
 %
 % NOTE: Assertions require that ZvsSubset contains records of data. Can not
 % easily submit "no data" for debugging purposes (deactivate processing but
 % still write file).
 %
-function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterCdfPath, outputFile, SETTINGS, L)
+function DataObj = init_modif_dataobj(...
+        ZvsSubset, GaSubset, ...
+        masterCdfPath, outputFile, SETTINGS, L)
+    
     %============
     % ASSERTIONS
     %============
@@ -139,11 +151,13 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     end
     if ~issorted(ZvsSubset.Epoch, 'strictascend')
         error('BICAS:write_dataset_CDF', ...
-            'Data for output dataset "%s" contains a zVariable Epoch that does not increase monotonically.', ...
+            ['Data for output dataset "%s" contains a zVariable Epoch', ...
+            ' that does not increase monotonically.'], ...
             outputFile)
     end
-    EJ_library.assert.struct(GlobalAttributesSubset, ...
-        {'Parents', 'Parent_version', 'Provider', 'Datetime', 'OBS_ID', 'SOOP_TYPE'}, {})
+    EJ_library.assert.struct(GaSubset, ...
+        {'Parents', 'Parent_version', 'Provider', ...
+        'Datetime', 'OBS_ID', 'SOOP_TYPE'}, {})
     
     
     
@@ -167,7 +181,8 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
         % ASSERTION: Master CDF already contains the zVariable.
         if ~isfield(DataObj.data, zvName)
             error('BICAS:write_dataset_CDF:Assertion:SWModeProcessing', ...
-                'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zvName)
+                ['Trying to write to zVariable "%s" that does not exist', ...
+                ' in the master CDF file.'], zvName)
         end
         
         zvValue = ZvsSubset.(zvName);
@@ -199,9 +214,10 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     % Log data to be written to CDF file.
     bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
     
-    %==========================
-    % Set CDF GlobalAttributes
-    %==========================
+    %===========================================================================
+    % Set those CDF global attributes for which values should not come from the
+    % master CDF
+    %===========================================================================
     DataObj.GlobalAttributes.Software_name       = bicas.constants.SWD_METADATA('SWD.identification.name');
     DataObj.GlobalAttributes.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
     % Static value?!!
@@ -209,12 +225,12 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
     DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
     DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(outputFile);
-    DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
-    DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
-    DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;
-    DataObj.GlobalAttributes.Datetime            = GlobalAttributesSubset.Datetime;
-    DataObj.GlobalAttributes.OBS_ID              = GlobalAttributesSubset.OBS_ID;
-    DataObj.GlobalAttributes.SOOP_TYPE           = GlobalAttributesSubset.SOOP_TYPE;
+    DataObj.GlobalAttributes.Parents             = GaSubset.Parents;
+    DataObj.GlobalAttributes.Parent_version      = GaSubset.Parent_version;
+    DataObj.GlobalAttributes.Provider            = GaSubset.Provider;
+    DataObj.GlobalAttributes.Datetime            = GaSubset.Datetime;
+    DataObj.GlobalAttributes.OBS_ID              = GaSubset.OBS_ID;
+    DataObj.GlobalAttributes.SOOP_TYPE           = GaSubset.SOOP_TYPE;
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
     
@@ -299,8 +315,11 @@ function DataObj = init_modif_dataobj(ZvsSubset, GlobalAttributesSubset, masterC
                 %========================
                 % CASE: Non-numeric zVar
                 %========================
-                [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
-                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, ...
+                [settingValue, settingKey] = SETTINGS.get_fv(...
+                    'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
+                bicas.default_anomaly_handling(L, ...
+                    settingValue, settingKey, ...
+                    'E+W+illegal', anomalyDescrMsg, ...
                     'BICAS:write_dataset_CDF:SWModeProcessing:DatasetFormat')
             end
         end
@@ -317,7 +336,8 @@ function write_nominal_dataset_CDF(DataObj, outputFile, SETTINGS, L)
     % Write to CDF file using write_CDF_dataobj
     %===========================================
     
-    [strictNumericZvSizePerRecord, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord');
+    [strictNumericZvSizePerRecord, settingKey] = SETTINGS.get_fv(...
+        'OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord');
     if strictNumericZvSizePerRecord
         L.logf('warning', [...
             '========================================================================================================\n', ...

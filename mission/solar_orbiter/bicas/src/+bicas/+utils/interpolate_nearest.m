@@ -1,6 +1,7 @@
 %
-% Nearest-point interpolation from (x1,y1) to (x2,y2) which only works within a certain distance xMargin of min(x1) &
-% max(x1). Outside of that interval, y2==NaN.
+% Nearest-point interpolation from (x1,y1) to (x2,y2) which only works within a
+% certain distance xMargin of min(x1) & max(x1). Outside of that interval,
+% y2==NaN.
 %
 % Basically an extension of interp1 with EXTRAPVAL=NaN.
 %
@@ -25,7 +26,8 @@
 % First created 2020-04-28
 %
 function y2 = interpolate_nearest(xMargin, x1, y1, x2)
-    % NOTE: In principle a weakness that y2 is always a double. Should ideally be same MATLAB class as y1.
+    % NOTE: In principle a weakness that y2 is always a double. Should ideally
+    % be same MATLAB class as y1.
     
     assert(xMargin >= 0)
     
@@ -36,7 +38,8 @@ function y2 = interpolate_nearest(xMargin, x1, y1, x2)
         return
         
     elseif nX1 == 1
-        % NOTE: Special treatment of scalar x1 since "interp1" does not support it.
+        % NOTE: Special treatment of scalar x1 since "interp1" does not support
+        % it.
         assert(isfinite(x1))
         
         y2 = NaN(size(x2));

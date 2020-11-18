@@ -501,7 +501,8 @@ classdef proc_sub
                     L.log('debug', 'Using LFR SCI mux mode.')
                     PreDc.Zv.MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
                 otherwise
-                    error('BICAS:proc_sub:ConfigurationBug', 'Illegal settings value %s="%s"', key, value)
+                    error('BICAS:proc_sub:ConfigurationBug', ...
+                        'Illegal settings value %s="%s"', key, value)
             end
 
             
@@ -592,7 +593,8 @@ classdef proc_sub
                             
                         otherwise
                             bicas.default_anomaly_handling(L, ...
-                                settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, 'BICAS:process_TDS_CDF_normalize:DatasetFormat')
+                                settingValue, settingKey, 'E+W+illegal', ...
+                                anomalyDescrMsg, 'BICAS:process_TDS_CDF_normalize:DatasetFormat')
                     end
                 else
                     error(anomalyDescrMsg)

@@ -30,13 +30,16 @@
 %
 classdef logger < handle
 %
-% PROBLEM: If logging to file from MATLAB, then can not (in principle) log MATLAB's own startup messages.
-% PROBLEM: If logging to file from MATLAB, then can not log errors from not being able to parse the CLI arguments, since
-%          log file is one of them.
+% PROBLEM: If logging to file from MATLAB, then can not (in principle) log
+%          MATLAB's own startup messages.
+% PROBLEM: If logging to file from MATLAB, then can not log errors from not
+%          being able to parse the CLI arguments, since log file is one of them.
 %   CON: Can use "hack" to catch log file before doing the actual parsing.
-%   CON: The types of CLI argument syntax errors not captured are very basic. Does not include not finding paths.
+%   CON: The types of CLI argument syntax errors not captured are very basic.
+%        Does not include not finding paths.
 %
-% PROPOSAL: Log from bash as before for nominal execution, AND use separate CLI log arguments to log to file from MATLAB.
+% PROPOSAL: Log from bash as before for nominal execution, AND use separate
+%           CLI log arguments to log to file from MATLAB.
 %   Ex: --log-to-file-from-matlab <log file>
 %
 % PROPOSAL: EJ_library.assert.trailing_LF
@@ -55,7 +58,8 @@ classdef logger < handle
 % PROPOSAL: Way of emphasizing selected log messages.
 %   PROPOSAL: Message is framed with "=".
 %   PROPOSAL: All text is uppercase.
-%   PROPOSAL: Inofficial logLevel='WARNING' (capitals) which is formatted and translated into a regular logLevel='warning'.
+%   PROPOSAL: Inofficial logLevel='WARNING' (capitals) which is formatted and
+%             translated into a regular logLevel='warning'.
 %   PROPOSAL: Separate log method.
 
 
@@ -148,7 +152,8 @@ classdef logger < handle
         % 
         function obj = set_log_file(obj, logFile)
             assert(obj.logFileEnabled, ...
-                'Trying to specify log file without having enabled log file in constructor.')
+                ['Trying to specify log file without having enabled', ...
+                ' log file in constructor.'])
             assert(isempty(obj.logFileId), ...
                 'Trying to specify log file twice.')
 
@@ -354,9 +359,11 @@ classdef logger < handle
             end
             
             rcsIcdRowTimestamp = datestr(clock, 'yyyy-mm-ddTHH:MM:SS');
-            rcsIcdRowPrefix    = sprintf('%s -- %s -- ', rcsIcdRowTimestamp, logLevelStr);
+            rcsIcdRowPrefix    = sprintf('%s -- %s -- ', ...
+                rcsIcdRowTimestamp, logLevelStr);
             
-            rcsIcdLogMsg = EJ_library.str.add_prefix_on_every_row(logMsg, rcsIcdRowPrefix);
+            rcsIcdLogMsg = EJ_library.str.add_prefix_on_every_row(...
+                logMsg, rcsIcdRowPrefix);
         end
 
 

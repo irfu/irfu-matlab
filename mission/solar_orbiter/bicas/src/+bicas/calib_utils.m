@@ -5,16 +5,6 @@
 % Selected functions in bicas.calib are meant to be moved here.
 % 
 %
-% ARGUMENTS
-% =========
-%
-%
-%
-% RETURN VALUES
-% =============
-%
-%
-%
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-11-05.
 %
@@ -28,20 +18,20 @@ classdef calib_utils
         
         
         % Modify TABULATED transfer functions, if needed.
-        % Tabulated TF --> Tabulated TF
+        % NOTE: Converts Tabulated TF --> Tabulated TF
         %
         % Extrapolate to 0 Hz, if needed.
         %
         % NOTE: Does NOT remove high frequencies.
         %
-        function ModifTf = extrapolate_tabulated_TF_to_zero_Hz(Tf)
+        function ModifTabTf = extrapolate_tabulated_TF_to_zero_Hz(TabTf)
             % ASSERTIONS
-            assert(Tf.omegaRps(1) > 0)
-            assert(isa(Tf, 'EJ_library.utils.tabulated_transform'))
+            assert(TabTf.omegaRps(1) > 0)
+            assert(isa(TabTf, 'EJ_library.utils.tabulated_transform'))
 
             % NOTE: Can not just use the lowest-frequency Z value for 0 Hz since
             % it has to be real (not complex).
-            Z1       = Tf.Z(1);
+            Z1       = TabTf.Z(1);
             signZ0   = sign(real(Z1));
             assert(signZ0 ~= 0, ...
                 'BICAS:calib:extrapolate_tabulated_TF_to_zero_Hz:FailedToReadInterpretRCT:Assertion', ...
@@ -49,10 +39,10 @@ classdef calib_utils
                 ' (ITF) to zero Hz due to ambiguity. real(Z(1)) = 0.'])
             Z0       = abs(Z1) * signZ0;   % Z value at 0 Hz.
             
-            omegaRps = [0;  Tf.omegaRps(:)];
-            Z        = [Z0; Tf.Z(:)       ];
+            omegaRps = [0;  TabTf.omegaRps(:)];
+            Z        = [Z0; TabTf.Z(:)       ];
             
-            ModifTf = EJ_library.utils.tabulated_transform(omegaRps, Z);
+            ModifTabTf = EJ_library.utils.tabulated_transform(omegaRps, Z);
         end
 
         
@@ -97,7 +87,7 @@ classdef calib_utils
         %       One per component per omegaPRps. NaN when omegaPRps is outside
         %       the range of the tabulated TF.
         %
-        function Zp = interpolate_TF(omegaRps, Z, omegaPRps)
+        function Zp = interpolate_TF(omegaRps, Z, omegaEvalRps)
             % NOTE: spline() extrapolates by default. interp1() does not (returns
             % NaN).
             %
@@ -108,26 +98,34 @@ classdef calib_utils
             argZ = unwrap(angle(Z));
             
             assert(all(absZ >= 0))
+%             assert(all((min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps))), ...
+%                 'Trying to extrapolate outside frequency range of tabulated transfer function.')
             
             switch(2)
                 case 1
-                    Zp = interp1(omegaRps, Z, omegaPRps, 'linear');
+                    Zp = interp1(omegaRps, Z, omegaEvalRps, 'linear');
                 case 2
-                    b = (min(omegaRps) <= omegaPRps) & (omegaPRps <= max(omegaRps));
+                    bInRange = (min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps));
                     
                     %absZ = smooth(absZ, 2);
                     %argZ = smooth(argZ, 2);
                     
-                    absZp = interp1(omegaRps, absZ, omegaPRps, 'linear');
+                    % NOTE:
+                    % ** interp1() returns NaN outside of tabulated range (by
+                    %    default).
+                    % ** spline() extrapolates outside of tabulated range (at
+                    %    least by default).
+                    
+                    absZp = interp1(omegaRps, absZ, omegaEvalRps, 'linear');
                     %absZp = spline(omegaRps, absZ, omegaPRps);
                     
-                    argZp = interp1(omegaRps, argZ, omegaPRps, 'linear');                   
+                    argZp = interp1(omegaRps, argZ, omegaEvalRps, 'linear');                   
                     %argZp = spline(omegaRps, argZ, omegaPRps);
                     
                     Zp = absZp .* exp(1i*argZp);
                     
                     % Remove extrapolation (from e.g. spline()).
-                    Zp(~b) = NaN;
+                    Zp(~bInRange) = NaN;
             end
         end
         
@@ -163,7 +161,7 @@ classdef calib_utils
             plot(Z, 'o')
             hold on
             plot(Zp, 'linewidth', 3)
-            plot(i*eps(0), '*')    % Can't (?) plot origin without trick.
+            plot(1i*eps(0), '*')    % Can't (?) plot origin without trick.
             title('Zp (complex plane)')
             grid on
             axis square
@@ -209,9 +207,8 @@ classdef calib_utils
         % RETURN VALUE
         % ============
         % Z
-        %       TF Z values corresponding to omegaRps. Always finite (if TabTf Z
-        %       values are finite (which they should be due to
-        %       EJ_library.utils.tabulated_transform assertion).
+        %       TF Z values corresponding to omegaRps. NaN for omegaRps values
+        %       outside of the range of TabTf, return NaN.
         %
         function Z = eval_tabulated_TF(TabTf, omegaRps, valueOutsideTable)
             % OLD COMMENTS: """"Intended specifically for INVERSE transfer
@@ -278,7 +275,7 @@ classdef calib_utils
         % is also therefore that this function does NOT return a function
         % pointer.
         function Z = multiply_TFs(omegaRps, tf1, tf2)
-            % PROPOSAL: Re-purpose into function that combines BIAS and
+            % PROPOSAL: Re-purpose into function only for combining BIAS and
             % non-BIAS TFs.
             
             Z = tf1(omegaRps) ...
@@ -355,6 +352,8 @@ classdef calib_utils
                 % calls from BICAS).
                 assert(numel(tfName) <= 46, ...
                     'String argument "tfName" is too long. numel(tfName)=%i.', numel(tfName))
+                % NOTE: Does not print unwrapped phase. Print ~"not unwrapped",
+                % ~"wrapped"?
                 L.logf(logLevel, ...
                     '%-46s %7.2f [Hz]: abs(Z)=%8.5f=%12s [%s], phase(Z)=% 6.1f [deg]', ...
                     tfName, freqHz, abs(Z), inverseZValueStr, ...

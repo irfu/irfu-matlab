@@ -28,7 +28,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-09
 %
-function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, rctDir, NsoTable, SETTINGS, L)
+function execute_sw_mode(...
+        SwModeInfo, InputFilePathMap, OutputFilePathMap, ...
+        masterCdfDir, rctDir, NsoTable, SETTINGS, L)
     
     % TODO-NI: How verify dataset ID and dataset version against constants?
     %    NOTE: Need to read CDF first.
@@ -56,8 +58,10 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     % easily lead to reusing the same path by mistake, and e.g. overwriting an
     % input file.
     datasetFileList = [InputFilePathMap.values(), OutputFilePathMap.values()];
-    assert(numel(unique(datasetFileList)) == numel(datasetFileList), 'BICAS:execute_sw_mode:CLISyntax', ...
-        'Input and output dataset paths are not all unique. This hints of a manual mistake in the CLI arguments in call to BICAS.')
+    assert(numel(unique(datasetFileList)) == numel(datasetFileList), ...
+        'BICAS:execute_sw_mode:CLISyntax', ...
+        ['Input and output dataset paths are not all unique.', ...
+        ' This hints of a manual mistake in the CLI arguments in call to BICAS.'])
     
     
     
@@ -75,7 +79,9 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
         % Read dataset CDF file
         %=======================
         [Zv, GlobalAttributes]             = bicas.read_dataset_CDF(inputFilePath, SETTINGS, L);
-        InputDatasetsMap(prodFuncInputKey) = struct('Zv', Zv, 'Ga', GlobalAttributes);
+        InputDatasetsMap(prodFuncInputKey) = struct(...
+            'Zv', Zv, ...
+            'Ga', GlobalAttributes);
         
         
         
@@ -107,7 +113,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
     
     
     
-    GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(InputDatasetsMap, SETTINGS, L);
+    GaSubset = derive_output_dataset_GlobalAttributes(InputDatasetsMap, SETTINGS, L);
     
     
     
@@ -151,7 +157,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
             ZvsSubset = [];
         end
         bicas.write_dataset_CDF( ...
-            ZvsSubset, GlobalAttributesSubset, outputFilePath, masterCdfPath, ...
+            ZvsSubset, GaSubset, outputFilePath, masterCdfPath, ...
             SETTINGS, L );
     end
     
@@ -188,7 +194,9 @@ end   % execute_sw_mode
 %               conventions. GlobalAttributesSubset field names have
 %               the exact names of CDF global attributes.
 %
-function OutGaSubset = derive_output_dataset_GlobalAttributes(InputDatasetsMap, SETTINGS, L)
+function OutGaSubset = derive_output_dataset_GlobalAttributes(...
+        InputDatasetsMap, SETTINGS, L)
+    
     % PGA = Parents' GlobalAttributes.
     % NOTE: Does not really need all of InputDatasetsMap as input (but it is
     % easily accessible when calling this function). Contains zVars which is

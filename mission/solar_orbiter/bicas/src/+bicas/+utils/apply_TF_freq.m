@@ -18,8 +18,10 @@
 % EXPONENT SIGN CONVENTION IN TRANSFER FUNCTIONS
 % ==============================================
 % The function/algorithm uses the following:
-%   y1(t)     ~ e^(i*omega*t)                # Exponent sign convention used by MATLAB's fft & ifft.
-%   tf(omega) ~ e^(i*omega*(-tau))           # Transfer function supplied to this function.
+%   y1(t)     ~ e^(i*omega*t)                # Exponent sign convention used by
+%                                            # MATLAB's fft & ifft.
+%   tf(omega) ~ e^(i*omega*(-tau))           # Transfer function supplied to
+%                                            # this function.
 %   y2(t)     ~ e^(i*omega*t) * tf(omega)
 %             = e^(i*omega*(t-tau))
 % (Weighted summing/integration over exponentials is implicit.) Therefore, a TF
@@ -37,7 +39,8 @@
 % first.
 % --
 % NOTE: irfu-matlab contains at least two other functions for applying transfer
-% functions to data but which are not general-purpose:
+% functions to data. These two other functions are however not general-purpose
+% (can not easily be reused):
 % 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency
 %                            domain; multiple ways of handling edges)
 % 2) c_efw_burst_bsc_tf.m   (short & simple)
@@ -47,15 +50,17 @@
 % handle.   /Erik P G Johansson 2019-09-11
 %
 %
-% IMPLEMENTATION NOTES
-% ====================
-% -- Modification of transfer functions to fit the input format should be done
-%    by wrapper functions and NOT by this function.
-%       Ex: Turn a given tabulated TF into an actual MATLAB function.
+% IMPLEMENTATION NOTES, DESIGN INTENT
+% ===================================
+% -- Modification of transfer functions should be made by wrapper functions and
+%    NOT by this function.
+%       Ex: Modificatuibs to fit the input format.
+%           Ex: Turn a given tabulated TF into an actual MATLAB function
+%               (handle).
 %       Ex: Remove high frequency components for inverted lowpass filter.
 %       Ex: Remove/dampen low frequencies for inverted highpass filter.
-% -- Modification of input/output data should be done by wrapper functions and
-%    NOT in this function.
+% -- Modification of input/output data (samples) should be done by wrapper
+%    functions and NOT in this function.
 %       Ex: De-trending, re-trending
 % -- This function only represents the pure mathematical algorithm and therefore
 %    only works with "mathematically pure" variables and units: radians, complex
@@ -81,10 +86,10 @@
 % ===========
 % DFT = Discrete Fourier Transform
 % TF  = Transfer function, ("spectrum") transfer function, i.e. transfer
-% function which modifies the spectrum content of a signal, represented in the
-% pure mathematical form as Z=Z(omega), where Z is a complex number
-% (practically, multiply frequency component of the signal in volt; not volt^2)
-% and omega is a frequency (radians/s).
+%       function which modifies the spectrum content of a signal, represented in
+%       the pure mathematical form as Z=Z(omega), where Z is a complex number
+%       (practically, multiply frequency component of the signal in volt; not
+%       volt^2) and omega is a frequency (radians/s).
 %
 %
 % ARGUMENTS
@@ -93,8 +98,7 @@
 % y1       : Nx1. Samples. Must be real-valued (assertion).
 %            NOTE: May contain non-finite values.
 % tf       : Function handle to function z=tf(omega). z is a complex value
-%            (amplitude+phase) and has not unit.
-%            omega unit: rad/s.
+%            (amplitude+phase) and has not unit. omega unit: rad/s.
 %            Will only be called for omega>=0. tf(0) must be real.
 %            NOTE: If the caller wants to use a tabulated TF, then s/he should
 %            construct an anonymous function that interpolates the tabulated TF
@@ -224,7 +228,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     
     
     
-    %=====================================================================0
+    %======================================================================
     % Find complex TF values, i.e. complex factors to multiply every DFT
     % component with
     % ------------------------------------------------------------------
@@ -234,11 +238,12 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     tfZLookups                = tf(abs(tfOmegaLookups));
     bNegativeFreq             = tfOmegaLookups < 0;
     tfZLookups(bNegativeFreq) = conj(tfZLookups(bNegativeFreq));   % Modify some indices.
-    % ASSERTION:
-    if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
-        % NOTE: Deliberately permits Z=NaN. Probably because bicas.calib is
-        % designed to create TFs that return Z=NaN for impossible combinations
-        % where it does not matter anyway. /EJ 2020-11-05
+    % ASSERTION
+    %if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
+    if ~all(~isinf(tfZLookups))
+        % NOTE: Deliberately permits Z=NaN (but not infinity) since bicas.calib
+        % is designed to create TFs that return Z=NaN for impossible
+        % combinations where it does not matter anyway. /EJ 2020-11-05
         error(...
             'BICAS:apply_TF_freq:Assertion', ...
             'Transfer function "tf" returned non-finite value (not NaN) for at least one frequency.')
