@@ -956,13 +956,15 @@ classdef calib < handle
                 case 'DC single'
                     
                     % NOTE: List of ITFs for different times.
-                    BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.DcSingleAvpiv);
+                    %BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.DcSingleAvpiv);
+                    biasItfAvpiv = BiasRct.ItfSet.dcSingleAvpiv{iCalibTimeL};
                     kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
                     offsetAVolt  = BiasRct.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
                     
                 case 'DC diff'
                     
-                    BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.DcDiffAvpiv);
+                    %BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.DcDiffAvpiv);
+                    biasItfAvpiv = BiasRct.ItfSet.dcDiffAvpiv{iCalibTimeL};
                     kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
                     if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = BiasRct.DcDiffOffsets.E12AVolt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E13AVolt(iCalibTimeH);
@@ -975,16 +977,18 @@ classdef calib < handle
                 case 'AC diff'
                     
                     if     biasHighGain == 0
-                        BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.AcLowGainAvpiv);
+                        %BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.AcLowGainAvpiv);
+                        biasItfAvpiv = BiasRct.ItfSet.acLowGainAvpiv{iCalibTimeL};
                         kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.lowGain;
                         offsetAVolt  = 0;
                     elseif biasHighGain == 1
-                        BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.AcHighGainAvpiv);
+                        %BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.AcHighGainAvpiv);
+                        biasItfAvpiv = BiasRct.ItfSet.acHighGainAvpiv{iCalibTimeL};
                         kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.highGain;
                         offsetAVolt  = 0;
                     elseif isnan(biasHighGain)
                         % CASE: GAIN unknown when it is NEEDED for calibration.
-                        BiasItfAvpiv = bicas.calib.NAN_TF;
+                        biasItfAvpiv = bicas.calib.NAN_TF;
                         kFtfIvpav    = NaN;
                         offsetAVolt  = NaN;
                     else
@@ -1004,14 +1008,14 @@ classdef calib < handle
                 offsetAVolt = 0;
             end
             if obj.useBiasTfScalar
-                % NOTE: Overwrites "BiasItfAvpiv".
-                BiasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
+                % NOTE: Overwrites "biasItfAvpiv".
+                biasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
             end
             %###################################################################
             
             
             
-            BiasCalibData.itfAvpiv    = BiasItfAvpiv;
+            BiasCalibData.itfAvpiv    = biasItfAvpiv;
             BiasCalibData.offsetAVolt = offsetAVolt;
 
 
@@ -1021,9 +1025,9 @@ classdef calib < handle
             %
             % RFTF = Rational Function (rational_func_transform object) Transfer
             % Function
-            function Tf = TF_list_2_func(RftfList)
-                Tf = @(omegaRps) (RftfList{iCalibTimeL}.eval(omegaRps));
-            end
+%             function Tf = TF_list_2_func(RftfList)
+%                 Tf = @(omegaRps) (RftfList{iCalibTimeL}.eval(omegaRps));
+%             end
         end
         
         
@@ -1358,13 +1362,24 @@ classdef calib < handle
             ItfSet = [];
             for iTf = 1:nTime
                 % INVERT: FTF --> ITF
-                ItfSet.DcSingleAvpiv{  iTf} = FtfRctSet.DcSingleAvpiv{  iTf}.inverse();
-                ItfSet.DcDiffAvpiv{    iTf} = FtfRctSet.DcDiffAvpiv{    iTf}.inverse();
-                ItfSet.AcLowGainAvpiv{ iTf} = FtfRctSet.AcLowGainAvpiv{ iTf}.inverse();
-                ItfSet.AcHighGainAvpiv{iTf} = FtfRctSet.AcHighGainAvpiv{iTf}.inverse();
+                
+                % Temporary variables which are stored in the definitions of
+                % anonymous functions later.
+                % * Might speed up code by eliminating calls to method .inverse()
+                % * Reduces size of individual expressions.
+                TempItfDcSingleAvpiv   = FtfRctSet.DcSingleAvpiv{  iTf}.inverse();
+                TempItfDcDiffAvpiv     = FtfRctSet.DcDiffAvpiv{    iTf}.inverse();
+                TempItfAcLowGainAvpiv  = FtfRctSet.AcLowGainAvpiv{ iTf}.inverse();
+                TempItfAcHighGainAvpiv = FtfRctSet.AcHighGainAvpiv{iTf}.inverse();
+                
+                ItfSet.dcSingleAvpiv{  iTf} = @(omegaRps) (TempItfDcSingleAvpiv.eval(omegaRps));
+                ItfSet.dcDiffAvpiv{    iTf} = @(omegaRps) (TempItfDcDiffAvpiv.eval(omegaRps));
+                ItfSet.acLowGainAvpiv{ iTf} = @(omegaRps) (TempItfAcLowGainAvpiv.eval(omegaRps));
+                ItfSet.acHighGainAvpiv{iTf} = @(omegaRps) (TempItfAcHighGainAvpiv.eval(omegaRps));
             end
             
             RctData.ItfSet = ItfSet;
+            
         end
         
         
@@ -1482,10 +1497,10 @@ classdef calib < handle
                 % Log transfer functions (frequency domain), selected frequencies.
                 L.logf(LL, ...
                     '    Note: Not logging the exact RCT BIAS TFs (FTFs; RctData.FtfRctSet) since the inversion is trivial.')
-                log_TF('    BIAS ITF DC single',          DC_FREQ_HZ,       RctData.ItfSet.DcSingleAvpiv)
-                log_TF('    BIAS ITF DC diff',            DC_FREQ_HZ,       RctData.ItfSet.DcDiffAvpiv)
-                log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.AcLowGainAvpiv)
-                log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.AcHighGainAvpiv)
+                log_TF('    BIAS ITF DC single',          DC_FREQ_HZ,       RctData.ItfSet.dcSingleAvpiv)
+                log_TF('    BIAS ITF DC diff',            DC_FREQ_HZ,       RctData.ItfSet.dcDiffAvpiv)
+                log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.acLowGainAvpiv)
+                log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.acHighGainAvpiv)
             end
             
             %=====================
@@ -1514,9 +1529,12 @@ classdef calib < handle
             % Nested utility function.
             % NOTE: Impicitly function of iEpochL, L, LL.
             function log_TF(name, freqArray, ItfList)
+%                 bicas.calib_utils.log_TF_function_handle(...
+%                     LL, name, 'avolt/ivolt', freqArray, ...
+%                     @(omegaRps) (ItfList{iEpochL}.eval(omegaRps)), L);
                 bicas.calib_utils.log_TF_function_handle(...
                     LL, name, 'avolt/ivolt', freqArray, ...
-                    @(omegaRps) (ItfList{iEpochL}.eval(omegaRps)), L);
+                    ItfList{iEpochL}, L);
             end
             %###################################################################
         end
