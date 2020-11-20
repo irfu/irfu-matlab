@@ -308,7 +308,8 @@ classdef calib < handle
         dcDetrendingDegreeOf
         dcRetrendingEnabled
         acDetrendingDegreeOf
-        itfHighFreqLimitFraction;
+        itfHighFreqLimitFraction
+        itfAcConstGainLowFreqRps
                 
         % Whether to select non-BIAS RCT using global attribute
         % CALIBRATION_TABLE (and CALIBRATION_TABLE_INDEX(iRecord,1)).
@@ -401,6 +402,8 @@ classdef calib < handle
             obj.dcRetrendingEnabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
             obj.acDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
             obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
+            % NOTE: Converts Hz-->rad/s
+            obj.itfAcConstGainLowFreqRps           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
             
             obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
             obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
@@ -594,123 +597,39 @@ classdef calib < handle
         %
         function samplesCaAVolt = calibrate_LFR_full(obj, ...
                 dtSec, samplesCaTm, CalSettings, cti1, cti2)
-            
-%             EJ_library.assert.struct(CalSettings, {...
-%                 'iBlts', 'BltsSrc', 'biasHighGain', ...
-%                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
-            iBlts        = CalSettings.iBlts;
-            BltsSrc      = CalSettings.BltsSrc;
-            biasHighGain = CalSettings.biasHighGain;
-            iCalibTimeL  = CalSettings.iCalibTimeL;
-            iCalibTimeH  = CalSettings.iCalibTimeH;
-            iLsf         = CalSettings.iLsf;
-            
+
             % ASSERTIONS
-            assert(iscell(samplesCaTm))
             EJ_library.assert.vector(samplesCaTm)
+            assert(iscell(samplesCaTm))
             EJ_library.assert.vector(dtSec)
             assert(numel(samplesCaTm) == numel(dtSec))
-            bicas.calib_utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
-            bicas.calib_utils.assert_iLsf(iLsf)
-            assert(isscalar(cti1))
-            assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
-            % No assertion on cti2 unless used (determined later).
 
-
-
-            %============================================
-            % Only place to potentially make use of cti2
-            %============================================
-            if obj.use_CALIBRATION_TABLE_INDEX2
-                % ASSERTIONS
-                assert(isscalar(cti2), ...
-                    'BICAS:calib:IllegalArgument:Assertion', ...
-                    'Argument cti2 is not scalar.')
-                assert(cti2 >= 0, ...
-                    'BICAS:calib:IllegalArgument:Assertion', ...
-                    'Illegal argument cti2=%g (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))', ...
-                    cti2)
-                assert(iLsf == cti2+1, ...
-                    'BICAS:calib:IllegalArgument:Assertion', ...
-                    'cti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
-                    cti2+1, iLsf)
-                
-                % NOTE: Only place cti2 is used.
-                iLsf = cti2 + 1;
-            end
-
-
-
-            %==============================
-            % Obtain calibration constants
-            %==============================            
-            BiasCalibData = obj.get_BIAS_calib_data(...
-                BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
-            biasItfAvpiv = BiasCalibData.itfAvpiv;
-            if obj.lfrTdsTfDisabled
-                lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
-            else
-                lfrItfIvpt = obj.get_LFR_ITF(cti1, iBlts, iLsf);
-            end
-            
-            % TEST: Change sign of BIAS TF.
-%             if 0
-%                 biasItfAvpiv = @(omegaRps) (-biasItfAvpiv(omegaRps));
-%             end
-
-            %======================================
-            % Create combined ITF for LFR and BIAS
-            %======================================
-            itfIvpt = @(omegaRps) (bicas.calib_utils.multiply_TFs(...
-                omegaRps, lfrItfIvpt, biasItfAvpiv));
-
-
-
-            % TEST
-%             if 0
-%                 fHz = 20;
-%                 zLimit = itfIvpt(fHz * 2*pi);
-%                 %zLimit = 1;
-%                 itfIvpt = @(omegaRps) (bicas.calib_utils.TF_LF_constant_abs_Z(itfIvpt, omegaRps, fHz, zLimit));
-%             end
-            
-            % TEST DEBUG: Invert ITF (again) to FTF.
-            %itfIvpt = @(omegaRps) (1./itfIvpt(omegaRps));
             
             
+            %=============================
+            % Obtain all calibration data
+            %=============================
+            CalibData = obj.get_BIAS_LFR_calib_data(...
+                CalSettings, cti1, cti2);
 
-            if BltsSrc.is_AC()
-                % IMPLEMENTATION NOTE: DC is (optionally) detrended via
-                % bicas.utils.apply_TF_freq_modif in the sense of a linear fit
-                % being removed, TF applied, and then added back. That same
-                % algorithm is inappropriate for non-lowpass filters.
-                detrendingDegreeOf = obj.acDetrendingDegreeOf;
-                retrendingEnabled  = 0;
-            else
-                detrendingDegreeOf = obj.dcDetrendingDegreeOf;
-                retrendingEnabled  = obj.dcRetrendingEnabled;
-            end
-            
             %=======================================
             % CALIBRATE: LFR TM --> TM --> avolt
             %=======================================
             samplesCaAVolt = cell(size(samplesCaTm));
-            lsfOffsetTm = obj.lfrLsfOffsetsTm(iLsf);
             for i = 1:numel(samplesCaTm)
                 
                 % ADD LSF OFFSET
-                samplesTm = samplesCaTm{i}(:) + lsfOffsetTm;
+                samplesTm = samplesCaTm{i}(:) + CalibData.lsfOffsetTm;
                 
                 % APPLY TRANSFER FUNCTION (BIAS + LFR)
                 tempSamplesAVolt = bicas.utils.apply_TF_freq_modif(...
-                    dtSec(i), samplesTm, itfIvpt, ...
-                    'detrendingDegreeOf',      detrendingDegreeOf, ...
-                    'retrendingEnabled',       retrendingEnabled, ...
-                    'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
+                    dtSec(i), samplesTm, CalibData.itfAvpt, ...
+                    'detrendingDegreeOf',      CalibData.detrendingDegreeOf, ...
+                    'retrendingEnabled',       CalibData.retrendingEnabled, ...
+                    'tfHighFreqLimitFraction', CalibData.itfHighFreqLimitFraction);
 
                 % ADD BIAS offset
-                samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
+                samplesCaAVolt{i} = tempSamplesAVolt + CalibData.BiasCalibData.offsetAVolt;
             end
         end
         
@@ -859,7 +778,7 @@ classdef calib < handle
                     tdsItfIvpt = RctList{cti1+1}.itfModifIvptCa{iBlts};
                 end
 
-                itf = @(omegaRps) (...
+                itfAvpt = @(omegaRps) (...
                     tdsItfIvpt(omegaRps) ...
                     .* ...
                     BiasCalibData.itfAvpiv(omegaRps));
@@ -872,7 +791,7 @@ classdef calib < handle
                     tempSamplesAVolt = bicas.utils.apply_TF_freq_modif(...
                         dtSec(i), ...
                         samplesCaTm{i}(:), ...
-                        itf, ...
+                        itfAvpt, ...
                         'detrendingDegreeOf',      obj.dcDetrendingDegreeOf, ...
                         'retrendingEnabled',       obj.dcRetrendingEnabled, ...
                         'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction);
@@ -903,18 +822,6 @@ classdef calib < handle
             iCalib = bicas.calib.get_calibration_time(...
                 Epoch, obj.RctDataMap('BIAS').epochH);
         end
-
-
-
-    end    % methods(Access=public)
-
-    
-    
-    %###################################################################################################################
-
-
-
-    methods(Access=private)
 
 
 
@@ -1074,13 +981,121 @@ classdef calib < handle
                 lfrItfIvpt = RctDataList{cti1+1}.ItfModifIvptCaCa{iLsf}{iBlts};
             end
         end
+        
+        
+        
+        % Return calibration data for LFR+BIAS calibration.
+        %
+        % RATIONALE
+        % =========
+        % Method exists to
+        % (1) simplify & clarify calibrate_LFR_full(),
+        % (2) be useful for non-BICAS code to inspect the calibration data used
+        %     for a particular calibration case, in particular the combined
+        %     (LFR+BIAS) transfer functions.
+        %     NOTE: This is also the reason why this method is public.
+        %
+        % IMPLEMENTATION NOTE: Return one struct instead of multiple return
+        % values to make sure that the caller does not confuse the return values
+        % with each other.
+        function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, cti1, cti2)
+            
+            % ASSERTIONS
+%             EJ_library.assert.struct(CalSettings, {...
+%                 'iBlts', 'BltsSrc', 'biasHighGain', ...
+%                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+            iBlts        = CalSettings.iBlts;
+            BltsSrc      = CalSettings.BltsSrc;
+            biasHighGain = CalSettings.biasHighGain;
+            iCalibTimeL  = CalSettings.iCalibTimeL;
+            iCalibTimeH  = CalSettings.iCalibTimeH;
+            iLsf         = CalSettings.iLsf;
+            
+            % ASSERTIONS
+            bicas.calib_utils.assert_iBlts(iBlts)
+            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            bicas.calib_utils.assert_iLsf(iLsf)
+            assert(isscalar(cti1))
+            assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
+            % No assertion on cti2 unless used (determined later).
+
+
+
+            %============================================
+            % Only place to potentially make use of cti2
+            %============================================
+            if obj.use_CALIBRATION_TABLE_INDEX2
+                % ASSERTIONS
+                assert(isscalar(cti2), ...
+                    'BICAS:calib:IllegalArgument:Assertion', ...
+                    'Argument cti2 is not scalar.')
+                assert(cti2 >= 0, ...
+                    'BICAS:calib:IllegalArgument:Assertion', ...
+                    'Illegal argument cti2=%g (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))', ...
+                    cti2)
+                assert(iLsf == cti2+1, ...
+                    'BICAS:calib:IllegalArgument:Assertion', ...
+                    'cti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
+                    cti2+1, iLsf)
+                
+                % NOTE: Only place cti2 is used.
+                iLsf = cti2 + 1;
+            end
+            
+            
+
+            CalData = struct();
+            
+            % (Inofficial) Experimental LFR calibration offsets.
+            CalData.lsfOffsetTm = obj.lfrLsfOffsetsTm(CalSettings.iLsf);
+
+            %=======================================================
+            % Obtain settings for bicas.utils.apply_TF_freq_modif()
+            %=======================================================
+            if CalSettings.BltsSrc.is_AC()
+                % IMPLEMENTATION NOTE: DC is (optionally) detrended via
+                % bicas.utils.apply_TF_freq_modif in the sense of a linear fit
+                % being removed, TF applied, and then added back. That same
+                % algorithm is inappropriate for non-lowpass filters.
+                CalData.detrendingDegreeOf = obj.acDetrendingDegreeOf;
+                CalData.retrendingEnabled  = 0;
+            else
+                CalData.detrendingDegreeOf = obj.dcDetrendingDegreeOf;
+                CalData.retrendingEnabled  = obj.dcRetrendingEnabled;
+            end
+            CalData.itfHighFreqLimitFraction = obj.itfHighFreqLimitFraction;
+            
+            %==============================
+            % Obtain BIAS calibration data
+            %==============================
+            CalData.BiasCalibData = obj.get_BIAS_calib_data(...
+                BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+            
+            %========================================
+            % Obtain (official) LFR calibration data
+            %========================================            
+            if obj.lfrTdsTfDisabled
+                CalData.lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
+            else
+                CalData.lfrItfIvpt = obj.get_LFR_ITF(cti1, iBlts, iLsf);
+            end
+            
+            %======================================
+            % Create combined ITF for LFR and BIAS
+            %======================================
+            CalData.itfAvpt = bicas.calib_utils.create_LFR_BIAS_ITF(...
+                CalData.lfrItfIvpt, ...
+                CalData.BiasCalibData.itfAvpiv, ...
+                BltsSrc.is_AC(), ...
+                obj.itfAcConstGainLowFreqRps);
+        end
 
 
 
     end    % methods(Access=private)
 
-    
-    
+
+
     %###################################################################################################################
 
     

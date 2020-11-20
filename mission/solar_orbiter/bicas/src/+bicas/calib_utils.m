@@ -47,26 +47,58 @@ classdef calib_utils
 
         
         
-        % EXPERIMENTAL. NOT USED YET(?)
-        %
-        % Modify TF to have constant abs(Z) for all frequencies below specified
+        % ~Modify TF to have constant gain for all frequencies below specified
         % frequency (LF=Low Frequency).
         %
-        % NOTE: Function could determine this value but asks the caller for it
-        % to avoid calling the tf every time this function is called (e.g. if it
-        % is used as a wrapper around a tf).
+        %
+        % NOTE: Special case for tf(0 rad/s) being non-finite.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % omegaRps
+        %       Arbitrary size. Numeric.
+        % omegaLimitRps
+        % zLimit
+        %       Absolute value is used as gain for frequencies lower than
+        %       omegaLimitRps. Primarily intended to be equal to be equal to
+        %       tf(omegaLimitRps), but does not have to be.
+        %       NOTE: Allowed to be NaN.
+        %       NOTE: Function could determine this value but asks the caller to
+        %       evaluate it. Since this function is meant to be used in
+        %       anonymous functions/function handles (e.g. as a wrapper around a
+        %       tf), this avoids calling argument tf every time this function is
+        %       called.
         % 
-        function Z = TF_LF_constant_abs_Z(tf, omegaRps, fLimitHz, zLimit)
+        function Z = TF_LF_constant_abs_Z(tf, omegaRps, omegaLimitRps, zLimit)
             
+            % ASSERTIONS
             assert(isa(tf, 'function_handle'))
-            %zLimit = tf(fLimitHz * 2*pi);     % TEMP
-            assert(isfinite(zLimit))
+            assert(isscalar(omegaLimitRps) && ~isnan(omegaLimitRps))
+            % IMPLEMENTATION NOTE: Must be able to handle zLimit==NaN in order
+            % to be applied to that NaN (BIAS) TF function.
+            assert(isscalar(zLimit))
             
+            
+            
+            % NOTE: May evaluate 1/0 at 0 Hz (for e.g. BIAS AC TF), but that
+            % should be overwritten afterwards.
             Z = tf(omegaRps);
-            b = omegaRps < (fLimitHz * 2*pi);
+            b = omegaRps < (omegaLimitRps);
+            
+            % Handling of special case
+            % ========================
+            % Z(0 Hz) non-finite (e.g. for BIAS AC ITF).
+            % ==> Phase is undetermined.
+            % ==> Can not set to non-zero gain with same phase as before.
+            % IMPLEMENTATION NOTE: Identifies indices before normalizing, just
+            % to be sure that condition stems from input data, not normalization
+            % bugs.
+            b2 = ~isfinite(Z(b)) & omegaRps(b)==0;
             
             Z(b) = Z(b) ./ abs(Z(b)) * abs(zLimit);
-
+            
+            Z(b(b2)) = 0;
         end
         
         
@@ -265,22 +297,34 @@ classdef calib_utils
         
         
         
-        % Function for multiplying two TFs.
-        %
-        % RATIONALE
-        % =========
-        % In principle, this function is quite unnecessary for multiplying TFs,
-        % but it is useful for putting breakpoints in when debugging TFs which
-        % are built from layers of anonymous functions and function handles. It
-        % is also therefore that this function does NOT return a function
-        % pointer.
-        function Z = multiply_TFs(omegaRps, tf1, tf2)
+        function itf = create_LFR_BIAS_ITF(itfLfr, itfBias, isAc, acConstGainLowFreqRps)
             % PROPOSAL: Re-purpose into function only for combining BIAS and
             % non-BIAS TFs.
             
-            Z = tf1(omegaRps) ...
-                .* ...
-                tf2(omegaRps);
+            assert(isscalar(isAc), islogical(isAc))
+            
+            itf = @(omegaRps) (TF_product(omegaRps));            
+            
+            if isAc()
+                % NOTE: Modifies combined LFR+BIAS TF.                
+                
+                zLimit = itf(acConstGainLowFreqRps);
+
+                itf = @(omegaRps) (bicas.calib_utils.TF_LF_constant_abs_Z(...
+                    itf, omegaRps, acConstGainLowFreqRps, zLimit));
+            end
+            
+            
+            %###################################################################
+            % IMPLEMENTATION NOTE: In principle, this function is quite
+            % unnecessary for multiplying TFs, but it is useful for putting
+            % breakpoints in when debugging TFs which are built from layers of
+            % anonymous functions and function handles.
+            function Z = TF_product(omegaRps)
+                Z = itfLfr(omegaRps) ...
+                    .* ...
+                    itfBias(omegaRps);
+            end
         end
         
         

@@ -580,6 +580,16 @@ function SETTINGS = create_default_SETTINGS()
     % YK 2020-09-15: Set inverted transfer function to zero for
     % omega>0.8*omega_Nyquist (not 0.7).
     S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.8)
+
+    % When using AC, the combined LFR+BIAS ITFs are modified to have constant
+    % gain between 0 Hz and this frequency. The gain used is taken from this
+    % frequency. Phase remains unchanged.
+    % NOTE: Setting it to 0 Hz or lower effectively disables the functionality.
+    % NOTE: This does not set gain at 0 Hz to zero, but AC de-trending
+    % influences that.
+    % NOTE: "BIAS specifications", Section 2.3.2.4 specifies (AC) "a high pass
+    % filter at 7 Hz".
+    S.define_setting('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ', 7)
     
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
