@@ -192,6 +192,7 @@ end
 % ; within a fraction of a second (~.2 sec at 99% threshod)
 % ; which one is right? I don't know.  toss the second one.
 pulse = pulse(keep);
+period = period(keep);
 periodleft = double(pulse - circshift(pulse, 1));
 if(valid_iifsunper(1))
   periodleft(1) = iifsunper(1);
