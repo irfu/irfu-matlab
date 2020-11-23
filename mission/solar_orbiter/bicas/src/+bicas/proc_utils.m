@@ -112,6 +112,7 @@ classdef proc_utils
         % RETURN VALUE
         % ============
         % ca                    : Column cell array of 1D vectors.
+        %
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
             EJ_library.assert.vector(nCopyColsPerRowArray)
             nRows = EJ_library.assert.sizes(M, [-1, NaN], nCopyColsPerRowArray, [-1, 1]);
@@ -162,7 +163,9 @@ classdef proc_utils
         %                         PROBLEM: Can not handle zvAllTt2000(1),
         %                         zvAllTt2000(end) being during positive leap
         %                         second.
-        % boundaryRefTt2000     : Must not be during leap second.
+        % boundaryRefTt2000     : Must not be during leap second. Specifies
+        %                         boundaries will be together with other
+        %                         arguments.
         % binLengthWolsNs       : Length of each bin.
         % binTimestampPosWolsNs : Position of timestamp that represents bin,
         %                         relative to beginning of bin.
@@ -188,6 +191,7 @@ classdef proc_utils
             % bin      = Time interval within which all corresponding CDF
             %            records should be condensed to one.
             % boundary = Edge of bin(s).
+            % WOLS     = WithOut Leap Seconds
             
             % PROPOSAL: Return boundariesTt2000 instead of binSizeArrayNs.
             %   PRO: More information.
@@ -198,12 +202,15 @@ classdef proc_utils
             
             % ASSERTIONS
             bicas.proc_utils.assert_zv_Epoch(zvAllTt2000)
-            assert(issorted(zvAllTt2000, 'strictascend'))    % NOTE: Algorithm assumes this.
+            % NOTE: Function algorithm assumes this monotonic increase.
+            assert(issorted(zvAllTt2000, 'strictascend'))
+            %
             bicas.proc_utils.assert_zv_Epoch(boundaryRefTt2000)
             assert(isscalar(boundaryRefTt2000))
             assert(isa(binLengthWolsNs,       'int64'))
             assert(isa(binTimestampPosWolsNs, 'int64'))
-            assert((0 <= binTimestampPosWolsNs) && (binTimestampPosWolsNs <= binLengthWolsNs))
+            assert((0 <= binTimestampPosWolsNs)...
+                && (binTimestampPosWolsNs <= binLengthWolsNs))
             
             
             
@@ -226,7 +233,9 @@ classdef proc_utils
             % Find bin boundaries & bin timestamps
             %======================================
             % "Round" ttw1 down to nearest lower interval boundary.
-            ttw1Floor = idivide(ttw1 - boundaryRefTtw, binLengthWolsNs, 'floor') * binLengthWolsNs + boundaryRefTtw;
+            ttw1Floor = ...
+                idivide(ttw1 - boundaryRefTtw, binLengthWolsNs, 'floor') ...
+                * binLengthWolsNs + boundaryRefTtw;
             
             % Find smallest number of time intervals that will cover (and exceed
             % if necessary) ttw1 to ttw2.
@@ -283,7 +292,8 @@ classdef proc_utils
         % PROPOSAL: Better name? ~set_records_NaN
 
             % ASSERTIONS
-            assert(islogical(bRowFilter))    % Mostly to make sure the caller knows that it represents true/false.
+            % Mostly to make sure the caller knows that it represents true/false.
+            assert(islogical(bRowFilter))
             assert(isfloat(zvData), ...
                 'BICAS:proc_utils:Assertion:IllegalArgument', ...
                 'Argument "data" is not a floating-point class (can therefore not represent NaN).')
@@ -644,7 +654,8 @@ classdef proc_utils
                     % Ignore. Do nothing.
                     
                 else
-                    error('BICAS:proc_utils:Assertion', 'Can not handle zVar "%s".', zvName)
+                    error('BICAS:proc_utils:Assertion', ...
+                        'Can not handle zVar "%s".', zvName)
                 end
             end
             
@@ -685,8 +696,12 @@ classdef proc_utils
             % NOTE: No check for monotonically increasing timestamps. Done
             % in other locations. Universally? Slow?
 
-            assert(iscolumn(zvEpoch),     'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')
-            assert(isa(zvEpoch, 'int64'), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')
+            assert(iscolumn(zvEpoch), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', ...
+                'Argument is not a column vector')
+            assert(isa(zvEpoch, 'int64'), ...
+                'BICAS:proc_utils:Assertion:IllegalArgument', ...
+                'Argument has the wrong class.')
 
             % Use?!!! Too processing heavy?!
             %validateattributes(Epoch, {'numeric'}, {'increasing'})
@@ -699,11 +714,14 @@ classdef proc_utils
         
             EMID = 'BICAS:proc_utils:Assertion:IllegalArgument';
         
-            assert(isa(  ACQUISITION_TIME, 'uint32'),     EMID, 'ACQUISITION_TIME is not uint32.')
+            assert(isa(  ACQUISITION_TIME, 'uint32'), ...
+                EMID, 'ACQUISITION_TIME is not uint32.')
             EJ_library.assert.sizes(ACQUISITION_TIME, [NaN, 2])
-            assert(all(  ACQUISITION_TIME(:, 1) >= 0),    EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
+            assert(all(  ACQUISITION_TIME(:, 1) >= 0), ...
+                EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
             % IMPLEMENTATION NOTE: Does not need to check for negative values due to uint32.
-            assert(all(  ACQUISITION_TIME(:, 2) < 65536), EMID, 'ACQUISITION_TIME subseconds out of range.')
+            assert(all(  ACQUISITION_TIME(:, 2) < 65536), ...
+                EMID, 'ACQUISITION_TIME subseconds out of range.')
         end
         
         

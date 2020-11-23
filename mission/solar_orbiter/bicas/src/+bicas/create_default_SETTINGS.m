@@ -31,7 +31,8 @@
 function SETTINGS = create_default_SETTINGS()
     % PROPOSAL: Setting for latching relay? Setting for only mode 0?
     %
-    % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
+    % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
+    %                                                            Not which data to use (HK or TC).
     %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
     %
     % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
@@ -175,8 +176,9 @@ function SETTINGS = create_default_SETTINGS()
     % The epoch for ACQUISITION_TIME.
     % The time in UTC at which ACQUISITION_TIME is [0,0].
     % Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
-    % PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
-    S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC',                       [2000,01,01, 12,00,00, 000,000,000]);
+    % PROPOSAL: Store the value returned by
+    %           spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
+    S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);
     
     % NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
     S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', 1)
@@ -386,8 +388,21 @@ function SETTINGS = create_default_SETTINGS()
     % Regular expressions for the filenames of RCTs
     % ---------------------------------------------
     %
-    % OFFICIAL DOCUMENTATION ON RCT FILENAME CONVENTION
-    % =================================================
+    % NOTES
+    % -----
+    % ** Regular expressions for RCT filenames are only needed when using L1
+    %    voltage datasets instead of L1R.
+    % ** BIAS & TDS have previously not followed the correct filenaming
+    %    convention but does now (2020-11-20).
+    % ** LFR do not seem to follow the filenaming convenction (2020-11-20)
+    %    NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
+    %    seconds=2_digits).
+    % ** Only the last filename in a sorted list of matching filenames will
+    %    actually be used (BICAS algorithm).
+    %
+    %
+    % OFFICIAL DOCUMENTATION ON RCT FILENAMING CONVENTION
+    % ---------------------------------------------------
     % RCT filenaming convention is described in ROC-PRO-DAT-NTT-00006-LES. This
     % document refers to the RODP.
     %
@@ -433,28 +448,13 @@ function SETTINGS = create_default_SETTINGS()
     %   Correct: SOLO_CAL_RPW-BIAS_V202004062127.cdf   # NOTE: Minus!
     %
     %
-    % RATIONALE
-    % =========
-    % RCT filenaming is implemented as settings since filenaming seems likely to
-    % change.
-    % (1) LFR & TDS do not seem to follow the filenaming convenction
-    % (2) BIAS has (previously at least) not followed the filenaming convention.
-    % (3) it is uncertain how it (doc version 1/1) can be applied to BIAS RCTs
-    % (which receiver should the BIAS RCT specify when BIAS uses the same RCT
-    % for both LFR & TDS data?).
-    %
-    % NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
-    % seconds=2_digits).
-    % NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of
-    % day, only date)
-    %
-    % Examples of de facto RCT filenames (2019 Sept + later)
+    % EXAMPLES OF DE FACTO RCT FILENAMES (2019 SEPT + LATER)
     % ------------------------------------------------------
     % BIAS:
-    %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
-    %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention,
+    %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old impl convention)
+    %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new impl convention,
     %                                                  closer to documentation)
-    %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old implemented convention)
+    %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old impl convention)
     %           SOLO_CAL_RPW_BIAS_V202004062127.cdf   (almost correct)
     % LFR:
     %       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
@@ -551,8 +551,8 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
     
     %===========================================================================
-    % Re/de-trending
-    % --------------
+    % De-/re-trending
+    % ---------------
     % Whether/how to use:
     % (1a) De-trending (remove fit) before applying TF.
     % (1b) Which degree of fit to use.
@@ -564,7 +564,7 @@ function SETTINGS = create_default_SETTINGS()
     % non-lowpass filters.
     %
     % *_FIT_DEGREE >= 0 : Enable de-trending using a polynomial fit of this
-    %                     degree. 1 = linear.
+    %                     degree. 0=constant, 1=linear, and so on.
     % *_FIT_DEGREE  < 0 : Disable de-trending (requires disabled re-trending).
     %
     % YK 2020-11-02: Detrend AC data, but do not add linear fit back.
@@ -572,6 +572,8 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', 1)
     S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    1)
     S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
+    
+    
     
     % Frequency above which the ITF is set to zero.
     % Expressed as a fraction of the Nyquist frequency (half the sampling

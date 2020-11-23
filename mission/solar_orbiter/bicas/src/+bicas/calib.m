@@ -163,9 +163,14 @@ classdef calib < handle
 %             (2) dataset representation
 %             ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
 %
+% PROPOSAL: Move out static functions, at least public static functions.
+%   PROPOSAL: Class calib_utils?
+%
 % PROPOSAL: Assertion function for CalSettings.
 %   TODO-NI: Same struct, with same fields in all cases?
 %   NOTE: Function does not know which fields are actually used.
+%
+%
 %
 % TODO-DECISION: How distribute the calibration formulas/algorithms between
 %   (1) calibrate_* functions, 
@@ -208,34 +213,30 @@ classdef calib < handle
 %   PROPOSAL: General philosophy should be that calibrate_* chooses as much as
 %             possible, and thus chooses different functions to call.
 %
+%
+%
 % PROPOSAL: Store all versions of TFs internally.
 %   Ex: FTF, ITF, tabulated ITF with extrapolation+interpolation+modification
-%   NOTE: Modification (besides inversion) happens on the combined function
-%   which is not stored beforehand.
-%   NOTE: The set of BIAS+LFR+TDS TFs is different from the set of TFs actually
-%           used (combinations of BIAS+LFR and BIAS+TDS respectively).
-%
-% PROPOSAL: Separate function for interpolation (no extrapolation) of tabulated TF.
-%
-% PROPOSAL: Store both FTFs and ITFs, despite that FTFs are not used for calibration directly.
+%   PRO: Useful for debugging. Can easily inspect & plot FTFs.
 %   NOTE: BIAS & LFR RCTs contain FTFs, TDS RCT contains ITFs.
 %   NOTE: Has to keep track of FTF/ITF before modifications (extrapolation
 %         to 0 Hz, Z=0 for high freq.).
-%   PRO: Useful for debugging. Can easily inspect & plot FTFs.
+%   NOTE: Modification (besides inversion) happens on the combined function
+%         which is not stored beforehand.
+%   NOTE: The set of BIAS+LFR+TDS TFs is different from the set of TFs actually
+%         used (combinations of BIAS+LFR and BIAS+TDS respectively).
+%   PROPOSAL: Store LFR TFs as one 1D array of structs with fields: iLsf, iBlts, ftf, itf, ...
+%       PRO: Can easily iterate over.
+%       PRO: For every modification of TFs, can easily add another field for the old
+%            version.
+%       NOTE/CON: All structs/TFs must have the same fields if true struct array.
+%
+% PROPOSAL: Separate function for interpolation (no extrapolation) of tabulated TF.
 %
 % PROPOSAL: Do not expose internal calibration data structs and let the caller
-%           specify indices. Access via
-%   methods that ask for indices.
+%           specify indices. Access via methods that ask for indices.
 %   PRO: Methods document the proper use of indices.
 %
-% PROPOSAL: Move out static functions, at least public static functions.
-%   PROPOSAL: Class calib_utils?
-%
-% PROPOSAL: Store LFR TFs as one 1D array of structs with fields: iLsf, iBlts, ftf, itf, ...
-%   PRO: Can easily iterate over.
-%   PRO: For every modification of TFs, can easily add another field for the old
-%       version.
-%       NOTE/CON: All structs/TFs must have the same fields if true struct array.
 %
 % PROPOSAL: Have calibrate_LFR, calibrate_TDS_CWF, calibrate_TDS_RSWF return
 %           function handle to a transfer function that does everything,
@@ -246,7 +247,7 @@ classdef calib < handle
 %   PROPOSAL: Have ~special functions/methods for this, so that one does not use
 %             function handles wrapped in function handles (not too many
 %             anyway).
-%   NOTE: CLARIFICATION: Separate TFs with offsets and calibration metods in the
+%   NOTE: CLARIFICATION: Separate TFs with offsets and calibration methods in the
 %         time domain.
 %   PROPOSAL: Have special function that returns transfer function for every
 %             case.
@@ -292,7 +293,7 @@ classdef calib < handle
         % ------------------------
         % BIAS scalar (simplified) calibration, not in the RCTs. For
         % debugging/testing purposes.
-        BiasScalarGain             
+        BiasScalarGain
         HkBiasCurrent
         % EXPERIMENTAL. NOTE: Technically, the name contains a tautology
         % (LFR+LSF).
@@ -866,7 +867,8 @@ classdef calib < handle
                     %BiasItfAvpiv = TF_list_2_func(BiasRct.ItfSet.DcSingleAvpiv);
                     biasItfAvpiv = BiasRct.ItfSet.dcSingleAvpiv{iCalibTimeL};
                     kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
-                    offsetAVolt  = BiasRct.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
+                    offsetAVolt  = BiasRct.dcSingleOffsetsAVolt(...
+                        iCalibTimeH, BltsSrc.antennas);
                     
                 case 'DC diff'
                     
@@ -1358,6 +1360,7 @@ classdef calib < handle
         
         
         function RctData = modify_BIAS_RCT_data(RctData)
+            
             FtfRctSet = RctData.FtfSet;
             
             % Change name of field (sic!).

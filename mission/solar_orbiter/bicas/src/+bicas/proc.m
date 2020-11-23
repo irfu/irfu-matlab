@@ -7,17 +7,27 @@
 % ===============================
 % A function with interface
 %   OutputsMap = produce_*(InputsMap, Cal)
-% where
-% Cal        : A bicas.calib object.
-% InputsMap  : containers.Map with
-%   <keys>   : String defining a name of an input ("prodFuncInputKey" in swmode_defs).
-%   <values> : A struct with data corresponding to a CDF file (zVariables+global attributes).
-% OutputsMap : containers.Map with
-%   <keys>   : String defining a name of an output ("prodFuncOutputKey" in swmode_defs).
-%   <values> : A struct with data corresponding to a CDF file (zVariables).
+% with arguments and return values:
+% Cal
+%       A bicas.calib object.
+% InputsMap
+%       containers.Map with
+%       <keys>   : String defining a name of an input ("prodFuncInputKey" in
+%                  swmode_defs).
+%       <values> : A struct with data corresponding to a CDF file
+%                  (zVariables+global attributes).
+% OutputsMap
+%       containers.Map with
+%       <keys>   : String defining a name of an output ("prodFuncOutputKey" in
+%                  swmode_defs).
+%       <values> : A struct with data corresponding to a CDF file (zVariables).
 % --
 % NOTE: In practice, anonymous functions with the correct interface are used to
 % wrap the actual implementing functions (with another interface).
+% --
+% Production functions should not assume/specify any particular
+% input dataset version, but read it out from global attributes (part of the
+% PDV).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -25,7 +35,6 @@
 %
 classdef proc
     % PROPOSAL: Other name of class.
-    %   PROPOSAL: production_functions
     %   PROPOSAL: production
     %   PROPOSAL: processing
     %       TODO-DECISION: Name relationship to proc_sub, proc_utils?
@@ -34,30 +43,6 @@ classdef proc
     %               processing_subfunctions
     %           PROPOSAL: Rename proc_utils
     %               processing_utils
-    % --
-    % TODO-DECISION: Term and naming scheme for these "complete processing functions"?
-    %   NOTE: Already used term "processing function" and process_* for partal processing.
-    %   PROPOSAL: produce_*
-    %   PROPOSAL: generate_*
-    %   PROPOSAL: derive_*
-    %   PROPOSAL: mode_*
-    %   PROPOSAL: swmode_*
-    %       CON: Already considering changing the term "s/w mode".
-    %   PROPOSAL: pipeline_*
-    %       CON: Conflicts with use of RODP, ROC-SGSE pipelines.
-    %   PROPOSAL: swmode_pipelines
-    %   PROPOSAL: process_*
-    %       CON: Already used in proc_sub.
-    %   TODO-DECISION: Include skeleton version in function names?
-    % --
-    % PROPOSAL: Production functions should not assume/specify any particular input dataset version, but read it out
-    %           from global attributes (part of the PDV).
-    % PROPOSAL: Somehow associate metadata with each function.
-    %   PRO: For a given OUTPUT dataset/PDID, one can get the list of possible input datasets/PDIDs
-    %   PROPOSAL: A given production function with a particular output dataset/PDID represents a s/w mode and will (for
-    %       the right arguments, e.g. empty) return information on the corresponding inputs (incl. for s/w descriptor).
-    % 
-    %   NOTE: Metadata associated with each s/w mode
 
     
     
@@ -67,18 +52,18 @@ classdef proc
         
         % ARGUMENTS
         % =========
-        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV
-        %                    for input CDF.
         % inputSciDsi      : The science input dataset will be interpreted as
         %                    having this DATASET_ID.
         %                    RATIONALE: InputDatasetsMap should contain the same
         %                    as a CDF global attribute but
         %                    (1) it could be missing, or
         %                    (2) sometimes one may want to read an ROC-SGSE
-        %                        dataset as if it was an RODP dataset or the other
-        %                        way around.
+        %                        dataset as if it was an RODP dataset or the
+        %                        other way around.
         %
-        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_LFR(...
+                InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, ...
+                SETTINGS, L)
             
             InputHkCdf  = InputDatasetsMap('HK_cdf');
             InputCurCdf = InputDatasetsMap('CUR_cdf');
@@ -122,11 +107,9 @@ classdef proc
 
 
 
-        % ARGUMENTS
-        % =========
-        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
-        %
-        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L2_TDS(...
+                InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, ...
+                SETTINGS, L)
             
             InputHkCdf  = InputDatasetsMap('HK_cdf');
             InputCurCdf = InputDatasetsMap('CUR_cdf');
@@ -178,14 +161,17 @@ classdef proc
         
         
         
-        function [OutputDatasetsMap] = produce_L3(InputDatasetsMap, NsoTable, SETTINGS, L)
+        function [OutputDatasetsMap] = produce_L3(...
+                InputDatasetsMap, NsoTable, ...
+                SETTINGS, L)
             
             InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
             %==============
             % Process data
             %==============
-            [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] = bicas.proc_sub.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
+            [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] = ...
+                bicas.proc_sub.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('EFIELD_cdf')      = EfieldCdf;

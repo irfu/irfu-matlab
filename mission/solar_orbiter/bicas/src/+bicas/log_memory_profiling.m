@@ -7,12 +7,8 @@
 %
 % ARGUMENTS
 % =========
-%
-%
-%
-% RETURN VALUES
-% =============
-%
+% locationName : Arbitrary string describing the location in the code/code
+%                execution that is being profiled.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -32,7 +28,10 @@ function log_memory_profiling(L, locationName)
 
     M = evalin('caller', 'whos');
 
-    firstRowStr = sprintf('%s: Variable memory use in current workspace (i.e. only a subset of memory use):\n', locationName);
+    firstRowStr = sprintf(...
+        ['%s: Variable memory use in current workspace', ...
+        ' (i.e. only a subset of memory use):\n'], ...
+        locationName);
 
 
 
@@ -95,7 +94,8 @@ function [valueStr, unit] = select_unit(valueBytes)
         valueStr = sprintf('%.1f', valueBytes / 2^10);
         unit     = 'kiB';
     else
-        valueStr = sprintf('%.0f  ', valueBytes);  % NOTE: Adds whitespace instead of decimals.
+        % NOTE: Adds whitespace instead of decimals.
+        valueStr = sprintf('%.0f  ', valueBytes);
         unit  = 'bytes';
     end
 end

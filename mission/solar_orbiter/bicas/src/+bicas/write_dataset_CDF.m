@@ -48,7 +48,8 @@ function write_dataset_CDF(...
     % UI ASSERTION: Check for output file path collision with pre-existing file.
     % Command checks for file and directory (can not do just file).
     if exist(outputFile, 'file')
-        [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
+        [settingValue, settingKey] = SETTINGS.get_fv(...
+            'OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
         
         anomalyDescrMsg = sprintf(...
             'Intended output dataset file path "%s" matches a pre-existing file.', ...
@@ -63,7 +64,8 @@ function write_dataset_CDF(...
     % Create (modified) dataobj
     %===========================
     % NPEF = No Processing Empty File
-    [settingNpefValue, settingNpefKey] = SETTINGS.get_fv('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
+    [settingNpefValue, settingNpefKey] = SETTINGS.get_fv(...
+        'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
         
         %===================================================================

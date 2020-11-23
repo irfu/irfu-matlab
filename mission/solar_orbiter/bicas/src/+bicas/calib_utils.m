@@ -18,9 +18,10 @@ classdef calib_utils
         
         
         % Modify TABULATED transfer functions, if needed.
-        % NOTE: Converts Tabulated TF --> Tabulated TF
+        % NOTE: Converts tabulated TF --> Tabulated TF
         %
-        % Extrapolate to 0 Hz, if needed.
+        % Extrapolate to 0 Hz, if needed, using the value for the lowest
+        % tabulated frequency.
         %
         % NOTE: Does NOT remove high frequencies.
         %
@@ -120,8 +121,8 @@ classdef calib_utils
         %       the range of the tabulated TF.
         %
         function Zp = interpolate_TF(omegaRps, Z, omegaEvalRps)
-            % NOTE: spline() extrapolates by default. interp1() does not (returns
-            % NaN).
+            % NOTE: spline() extrapolates by default. interp1() does not
+            % (returns NaN).
             %
             % PROPOSAL: Interpolate over log(omega)
             %   CON: Can not do for omega=0.
@@ -335,7 +336,8 @@ classdef calib_utils
             assert(isa(Tf, 'EJ_library.utils.tabulated_transform'))
             
             assert(numel(tfName) <= 38, ...
-                'String argument "tfName" is too long. numel(tfName)=%i.', numel(tfName))
+                'String argument "tfName" is too long. numel(tfName)=%i.', ...
+                numel(tfName))
             L.logf(logLevel, '%-38s f={%g--%g} [Hz]', ...
                 tfName, ...
                 Tf.omegaRps(1  )/(2*pi), ...
