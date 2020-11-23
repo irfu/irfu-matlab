@@ -9,8 +9,10 @@ function NeScp = psp2ne(PSP)
 
 % Calibraiton using plasma line 
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
+
+% based on data from 2020-04-07
 CalEntry = irf.ts_vec_xy(...
-  irf.tint('2020-04-07T00:00:00Z/2020-05-18T04:05:54Z'),...
+  irf.tint('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z'),...
   repmat([0.3835   1.4908],2,1));
 
 Cal = CalEntry;
@@ -28,8 +30,9 @@ CalEntry = irf.ts_vec_xy(...
 
 Cal = Cal.combine(CalEntry);
 
+% data until August 26
 CalEntry = irf.ts_vec_xy(...
-  irf.tint('2020-08-11T21:27:03Z/2020-08-30T23:59:59Z'),...
+  irf.tint('2020-08-11T21:27:03Z/2020-09-30T23:59:59Z'),...
   repmat([0.3116  1.6966],2,1));
 
 Cal = Cal.combine(CalEntry);
@@ -39,3 +42,8 @@ CalR = Cal.resample(PSP);
 NeScp = PSP; 
 
 NeScp.data = 10.^(CalR.x.data.*NeScp.data +CalR.y.data);
+
+NeScp.name = 'NeScp';
+NeScp.units = 'cm^-3';
+NeScp.siConversion = 'cm^-3>1e6*m^-3';
+NeScp.userData = '';
