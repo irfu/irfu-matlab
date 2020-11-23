@@ -1204,7 +1204,8 @@ classdef proc_sub
         
         % Processing function for processing L2-->L3.
         %
-        function [EfieldCdf, ScpotCdf, EfieldDwnsCdf, ScpotDwnsCdf] ...
+        function [EfieldCdf, ScpotCdf, DensityCdf, ...
+                EfieldDwnsCdf, ScpotDwnsCdf, DensityDwnsCdf] ...
                 = process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L)
             
             % PROPOSAL: Split up in one part for non-downsampled and
@@ -1327,6 +1328,29 @@ classdef proc_sub
             
             
             
+            %====================================================================
+            % Calculate density via a BICAS-external code (inside irfu-matlab)
+            % ----------------------------------------------------------------
+            % NOTE: Needs to be careful with the units, and incompatible updates
+            % to solo.vdccal without the knowledge of the BICAS author.
+            % Therefore uses extra assertions to detect such changes.
+            % 
+            % NOTE: Empirically, some return values are NaN.
+            % NOTE: "SCP" comes from the return variable name in solo.psp2ne().
+            % Do not know what it means.
+            %====================================================================
+            %-----------------------------
+            % CALL EXTERNAL CODE
+            NeScpTs = solo.psp2ne(PspTs);
+            %-----------------------------
+            EJ_library.assert.sizes(...
+                PspTs.data,   [-1, 1], ...
+                NeScpTs.data, [-1, 1]);
+            assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
+                'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
+            
+            
+            
             %====================================
             % zVars for EFIELD (not downsampled)
             %====================================
@@ -1351,13 +1375,26 @@ classdef proc_sub
             ScpotCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
             ScpotCdf.SCPOT              = ScpotTs.data;
             ScpotCdf.PSP                = PspTs.data;
+
+
+
+            %=====================================
+            % zVars for DENSITY (not downsampled)
+            %=====================================
+            DensityCdf = struct();
+            DensityCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
+            DensityCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
+            DensityCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
+            DensityCdf.QUALITY_FLAG       = zv_QUALITY_FLAG;
+            DensityCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
+            DensityCdf.DENSITY            = NeScpTs.data;
             
             
             
-            %=====================================================
-            % Calculate values used for both downsampled datasets
-            %=====================================================
-            % Find arbitrary bin boundary reference timestamp. This is used for
+            %====================================================
+            % Calculate values used for all downsampled datasets
+            %====================================================
+            % Find bin boundary reference timestamp. This is used for
             % setting the bin boundaries together with the bin length.
             v = spdfbreakdowntt2000(InputLfrCwfCdf.Zv.Epoch(1));
             % UTC subsecond (milliseconds, microseconds, nanoseconds)
@@ -1489,7 +1526,40 @@ classdef proc_sub
                     ScpotDwnsCdf.PSPSTD(i)             = pspstd;
                 end
             end
-        end
+            
+            
+            
+            %===============================
+            % zVars for DENSITY DOWNSAMPLED
+            %===============================
+            DensityDwnsCdf = [];
+            DensityDwnsCdf.Epoch              = zvEpochDwns;
+            DensityDwnsCdf.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
+            DensityDwnsCdf.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
+            DensityDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
+            DensityDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
+            %
+            DensityDwnsCdf.DENSITY            = NaN(nRecordsDwns, 1);
+            DensityDwnsCdf.DENSITYSTD         = NaN(nRecordsDwns, 1);
+            
+            for i = 1:nRecordsDwns
+                k = iRecordsDwnsCa{i};
+                if ~isempty(k)
+
+                    DensityDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
+                    DensityDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
+                    DensityDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
+                    DensityDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
+
+                    [density, densityStd] = bicas.proc_sub.downsample_bin_sci_values(...
+                        DensityCdf.DENSITY(k, :));
+
+                    DensityDwnsCdf.DENSITY(i, :)         = density;
+                    DensityDwnsCdf.DENSITYSTD(i, :)      = densityStd;
+                end
+            end
+            
+        end    % process_L2_to_L3
         
         
         
