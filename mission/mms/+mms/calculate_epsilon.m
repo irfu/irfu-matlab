@@ -98,6 +98,7 @@ end
 
 % Define lengths of variables
 lengthphi = length(PDist.depend{1,2}(1,:));
+lengthenergy = length(PDist.depend{1,1}(1,:));
 
 % Define corrected energy levels using SCpot
 energyarr = PDist.depend{1,1};
@@ -112,8 +113,8 @@ for nt = 1:length(PDist.time)
   temp33 = 2*energylog(end)-energylog(end-1);
   energyall = [temp0 energylog temp33];
   diffenall = diff(energyall);
-  energyupper = 10.^(energylog+diffenall(2:1:33)/2);
-  energylower = 10.^(energylog-diffenall(1:1:32)/2);
+  energyupper = 10.^(energylog+diffenall(2:1:lengthenergy+1)/2);
+  energylower = 10.^(energylog-diffenall(1:1:lengthenergy)/2);
   vupper = sqrt(2*qe*energyupper/pmass);
   vlower = sqrt(2*qe*energylower/pmass);
   vlower(isnan(vlower)) = 0;

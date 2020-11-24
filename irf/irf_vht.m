@@ -86,7 +86,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
   % 9.16 in ISSI book
   DVHT=sum(irf_abs(deltaE,1).^2)/length(indData);
   lambda=eig(K);
-  S=(DVHT/(2*length(indData)-3))/K;
+  S=(DVHT/(2*length(indData)-3))./K;
   dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
   dvht(2)=sqrt([0 1 0]*S*[0;1;0])*1e3;
   dvht(3)=sqrt([0 0 1]*S*[0;0;1])*1e3;

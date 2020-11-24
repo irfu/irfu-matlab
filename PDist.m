@@ -2698,13 +2698,13 @@ classdef PDist < TSeries
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end
       if size(obj.depend{1},2) == 64; irf_log('proc','PDist already has 64 energy levels.'); end
       
-      if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable
-        esteptable = zeros(obj.length,1);
-        [energies,~,esteptable] = unique(obj.depend{1},'rows'); % consider using legacy
-        energy0 = obj.depend{1}(1,:);
-        energy1 = obj.depend{1}(2,:);
-      end
-      if isequal(energy0,energy1)
+      %if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable
+      %  esteptable = zeros(obj.length,1);
+      %  [energies,~,esteptable] = unique(obj.depend{1},'rows'); % consider using legacy
+      %  energy0 = obj.depend{1}(1,:);
+      %  energy1 = obj.depend{1}(2,:);
+      %end
+      if isequal(obj.depend{1}(1,1),obj.depend{1}(2,1))
         irf_log('proc','PDist only has one set of energies, returning original PDist.')
         PD = obj;
         return
@@ -2715,6 +2715,9 @@ classdef PDist < TSeries
       PD.depend{1} = repmat(energyr,PD.length,1);
       PD.ancillary.energy = PD.depend{1};
       PD.depend{2} = phir.data;
+      
+      PD.ancillary.dt_minus = obj.ancillary.dt_minus*2;
+      PD.ancillary.dt_plus = obj.ancillary.dt_plus*2;
       
       % update delta_energy
       if isfield(PD.ancillary,'delta_energy_minus') && isfield(PD.ancillary,'delta_energy_plus')
