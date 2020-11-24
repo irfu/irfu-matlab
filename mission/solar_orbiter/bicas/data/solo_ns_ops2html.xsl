@@ -20,7 +20,7 @@ XSLT RULE FOR THE MAIN BODY
     </H1>
 
     <xsl:apply-templates select="description"/>
-    
+
     <xsl:apply-templates select="notesTable"/>
 
     <H2>Events</H2>
@@ -35,7 +35,7 @@ XSLT RULE FOR THE MAIN BODY
             </TH>
             <TH>
                 NSO ID
-                
+
             </TH>
             <TH>
                 Description (free-form)
