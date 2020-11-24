@@ -29,14 +29,15 @@ function downsample_bin_sci_values___ATEST()
     tl{end+1} = newTest(zeros(0,2), [NaN NaN], [NaN, NaN]);
     
     % mstd=0
-    tl{end+1} = newTest([1;     2;     3    ]', [1,2,3], [0,0,0]);
-    tl{end+1} = newTest([1,1;   2,2;   3,3  ]', [1,2,3], [0,0,0]);
-    tl{end+1} = newTest([1,1,1; 2,2,2; 3,3,3]', [1,2,3], [0,0,0]);
+    tl{end+1} = newTest([1,2,3              ], [1,2,3], [nan,nan,nan]);
+    tl{end+1} = newTest([1,2,3; 1,2,3       ], [1,2,3], [0,0,0]);
+    tl{end+1} = newTest([1,2,3; 1,2,3; 1,2,3], [1,2,3], [0,0,0]);
+    tl{end+1} = newTest([1    ; 1    ; 1    ], [1],     [0]);
     
     % Average of two values (special case)
-    tl{end+1} = newTest([1,2; 2,3; 3,4]',    [1.5, 2.5, 3.5], sqrt(0.5)*[1,1,1]);
+    tl{end+1} = newTest([1,2,3; 2,3,4], [1.5, 2.5, 3.5], sqrt(0.5)*[1,1,1]);
     % Nominal median
-    tl{end+1} = newTest([1,2,10]',    [2], sqrt( (1^2+0^2+8^2)/2 ));
+    tl{end+1} = newTest([1;2;10],       [2], sqrt( (1^2+0^2+8^2)/2 ));
     
     EJ_library.atest.run_tests(tl)
 end

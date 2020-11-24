@@ -94,8 +94,21 @@ classdef NSO_table   % < handle
             % IMPLEMENTATION NOTE: Can not assume "strictly ascending" values,
             % since events with separate NSO IDs may begin at the exact same
             % instant.
-            assert(issorted(NsoTable.evtStartTt2000Array), ...
-                'NsoTable.evtStartTt2000Array is not sorted.')
+            if ~issorted(NsoTable.evtStartTt2000Array)
+                iEvt = find(diff(NsoTable.evtStartTt2000Array) < 0) + 1;
+                assert(~isempty(iEvt));
+                
+                utcCa = EJ_library.cdf.TT2000_to_UTC_str_many(NsoTable.evtStartTt2000Array(iEvt));
+                
+                sCa = EJ_library.str.sprintf_many('    %s\n', utcCa);
+                timestampsListStr = strjoin(sCa);
+                
+                error('BICAS:NSO_table:FailedToReadInterpretNsOps', ...
+                    ['NsoTable.evtStartTt2000Array is not sorted. Events', ...
+                    ' beginning at the following timestamps begin earlier', ...
+                    ' than the precedeing events:\n%s'], ...
+                    timestampsListStr);
+            end
             
             %----------------------------------------------------------------
             % ASSERTION: Events with the same NSO ID do not overlap (and are

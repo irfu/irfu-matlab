@@ -1348,6 +1348,7 @@ classdef proc_sub
                 NeScpTs.data, [-1, 1]);
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
+            assert(strcmp(NeScpTs.units, 'cm^-3'))
             
             
             
@@ -1409,6 +1410,16 @@ classdef proc_sub
                 BIN_LENGTH_WOLS_NS,      BIN_TIMESTAMP_POS_WOLS_NS);
             % NOTE: Before possible removal of records.
             nRecordsDwns = numel(zvEpochDwns);
+            for i = 1:nRecordsDwns
+                nSamplesPerBin = numel(iRecordsDwnsCa{i});
+                if (1 <= nSamplesPerBin) ...
+                &&  (nSamplesPerBin < bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN)
+                    % NOTE: Does not have to test for 1 <= nSamplesPerBin, but
+                    % it makes it possible to detect (test) whether criterion is
+                    % used.
+                    iRecordsDwnsCa{i} = [];
+                end
+            end
             
             % Set zVariable-like variables with "thought-out" values also for
             % empty bins. Later code can then decide whether to use these empty

@@ -122,6 +122,15 @@ classdef constants   % < handle
         L2QBM_PARTIAL_SATURATION = uint16(1);
         L2QBM_FULL_SATURATION    = uint16(2);
         
+        
+        
+        % Minimum number of non-downsampled records per downsampled record.
+        % NOTE: Does not consider whether samples are fill values.
+        %
+        % IMPLEMENTATION NOTE: Not perfect solution since includes fill values,
+        % but easy to implement as at least a temporary algorithm.
+        N_MIN_SAMPLES_PER_DWNS_BIN = 3;
+        
     end    % properties(Constant)
     
     
