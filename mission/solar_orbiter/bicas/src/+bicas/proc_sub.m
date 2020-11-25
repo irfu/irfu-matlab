@@ -1410,16 +1410,19 @@ classdef proc_sub
                 BIN_LENGTH_WOLS_NS,      BIN_TIMESTAMP_POS_WOLS_NS);
             % NOTE: Before possible removal of records.
             nRecordsDwns = numel(zvEpochDwns);
-            for i = 1:nRecordsDwns
-                nSamplesPerBin = numel(iRecordsDwnsCa{i});
-                if (1 <= nSamplesPerBin) ...
-                &&  (nSamplesPerBin < bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN)
-                    % NOTE: Does not have to test for 1 <= nSamplesPerBin, but
-                    % it makes it possible to detect (test) whether criterion is
-                    % used.
-                    iRecordsDwnsCa{i} = [];
-                end
-            end
+%             for i = 1:nRecordsDwns
+%                 % TODO-DEC: Bad to remove non-donwsampled bins since quality
+%                 % variables depend on them ??!!!
+%                 
+%                 nSamplesPerBin = numel(iRecordsDwnsCa{i});
+%                 if (1 <= nSamplesPerBin) ...
+%                 &&  (nSamplesPerBin < bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN)
+%                     % NOTE: Does not have to test for 1 <= nSamplesPerBin, but
+%                     % it makes it possible to detect (test) whether criterion is
+%                     % used.
+%                     iRecordsDwnsCa{i} = [];
+%                 end
+%             end
             
             % Set zVariable-like variables with "thought-out" values also for
             % empty bins. Later code can then decide whether to use these empty
@@ -1485,7 +1488,7 @@ classdef proc_sub
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
-                if ~isempty(k)
+%                 if ~isempty(k)
                     
                     EfieldDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
                     EfieldDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
@@ -1493,11 +1496,12 @@ classdef proc_sub
                     EfieldDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
                     [edc_srf, edcStd_srf] = bicas.proc_sub.downsample_bin_sci_values(...
-                        EfieldCdf.EDC_SRF(k, :));
+                        EfieldCdf.EDC_SRF(k, :), ...
+                        bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
                     
                     EfieldDwnsCdf.EDC_SRF(i, :)         = edc_srf;
                     EfieldDwnsCdf.EDCSTD_SRF(i, :)      = edcStd_srf;
-                end
+%                 end
             end
             
             
@@ -1519,7 +1523,7 @@ classdef proc_sub
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
-                if ~isempty(k)
+%                 if ~isempty(k)
 
                     ScpotDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
                     ScpotDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
@@ -1527,15 +1531,17 @@ classdef proc_sub
                     ScpotDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
                     [scpot, scpotStd] = bicas.proc_sub.downsample_bin_sci_values(...
-                        ScpotCdf.SCPOT(k, :));
+                        ScpotCdf.SCPOT(k, :), ...
+                        bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
                     [psp, pspstd]     = bicas.proc_sub.downsample_bin_sci_values(...
-                        ScpotCdf.PSP(  k, :));
+                        ScpotCdf.PSP(  k, :), ...
+                        bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
                     
                     ScpotDwnsCdf.SCPOT(i, :)           = scpot;
                     ScpotDwnsCdf.SCPOTSTD(i, :)        = scpotStd;
                     ScpotDwnsCdf.PSP(i)                = psp;
                     ScpotDwnsCdf.PSPSTD(i)             = pspstd;
-                end
+%                 end
             end
             
             
@@ -1555,7 +1561,7 @@ classdef proc_sub
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
-                if ~isempty(k)
+%                 if ~isempty(k)
 
                     DensityDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
                     DensityDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
@@ -1563,24 +1569,73 @@ classdef proc_sub
                     DensityDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
                     [density, densityStd] = bicas.proc_sub.downsample_bin_sci_values(...
-                        DensityCdf.DENSITY(k, :));
+                        DensityCdf.DENSITY(k, :), ...
+                        bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
 
                     DensityDwnsCdf.DENSITY(i, :)         = density;
                     DensityDwnsCdf.DENSITYSTD(i, :)      = densityStd;
-                end
+%                 end
             end
             
         end    % process_L2_to_L3
         
         
         
-        % Derive median and modified standard deviation over dimension 1.
+        % Derive median and modified standard deviation over dimension 1. For a
+        % range of CDF records in a zVariable (at most 1D/CDF record), construct
+        % two zVariables for median+MSTD for the corresponding downsampled CDF
+        % record.
         %
-        % NOTE: Only public so automated test code can access it.
-        function [med, mstd] = downsample_bin_sci_values(zVarSegment)
-            % Only first two dimensions may be size non-one.
+        % NOTE: Can handle zero input records.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % zVarSegment    : (iCdfRecord, iChannel).
+        % nMinReqSamples : 
+        % 
+        %
+        % RETURN VALUES
+        % =============
+        % med  : (1, iChannel). 1xN. Median
+        % msdt : (1, iChannel). 1xN. Modified STandard Deviation (MSTD).
+        %
+        %
+        % NOTE: Function is only public so that automated test code can access
+        % it.
+        %
+        function [med, mstd] = downsample_bin_sci_values(...
+                zVarSegment, nMinReqSamples)
+            
+            % PROPOSAL: Move to bicas.proc_utils.
+            % PROPOSAL: Argument for minimum number of samples in each bin. If
+            %           number of samples per bin is below limit, then return
+            %           NaN.
+            %   PROPOSAL: Take NaN samples into account. Exclude them.
+            %       CON: Can not do for 
+            %
+            % PROPOSAL: Include the loop over downsampled records.
+            %   PRO: Same procedure for all downsampled datasets.            
+            %   NOTE: Future variations in procedure could be handle using
+            %   parameters.
+            %   CON: ~Can/should still not eliminate setting quality zVariables
+            %        in loop.
+            
+            % ASSERTION
+            % Only first two dimensions may be size non-one (with current
+            % implementation).
             assert(ismatrix(zVarSegment))
-            nSpr = size(zVarSegment, 2);   % SPR = Samples Per (CDF) Record
+            assert(isscalar(nMinReqSamples))
+            
+            
+            
+            nRecords = size(zVarSegment, 1);
+            nSpr     = size(zVarSegment, 2);   % SPR = Samples Per (CDF) Record
+
+            if nRecords < nMinReqSamples
+                zVarSegment = zVarSegment([], :);
+            end
+            
             
             med  = median(zVarSegment, 1);
             mstd = NaN(1, nSpr);    % Default value if zero records
@@ -1628,7 +1683,7 @@ classdef proc_sub
             assert(isa(zv_L12_QUALITY_BITMASK_segment, 'uint16'))
             
             if isempty(zv_L12_QUALITY_BITMASK_segment)
-                L12_QUALITY_BITMASK = NaN;
+                L12_QUALITY_BITMASK = 0;   % Appropriate?!! Fill value/NaN?
             else
                 L12_QUALITY_BITMASK = bicas.utils.bitops.or(zv_L12_QUALITY_BITMASK_segment);
             end
