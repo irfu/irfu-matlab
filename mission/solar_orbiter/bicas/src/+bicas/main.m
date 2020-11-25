@@ -494,7 +494,14 @@ function main_without_error_handling(cliArgumentsList, L)
             %===================
             % Read RCS NSO file
             %===================
-            rcsNsoPath = fullfile(bicasRootPath, SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH'));
+            rcsNsoRelativePath = SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
+            rcsNsoOverridePath = SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH');
+            if isempty(rcsNsoOverridePath)
+                rcsNsoPath = fullfile(bicasRootPath, rcsNsoRelativePath);
+            else
+                rcsNsoPath = rcsNsoOverridePath;
+            end
+            
             %L.logf('info', 'rcsNsoPath = "%s"', rcsNsoPath);
             L.logf('info', 'Loading RCS NSO table XML file "%s"', rcsNsoPath)
             NsoTable = bicas.NSO_table(rcsNsoPath);

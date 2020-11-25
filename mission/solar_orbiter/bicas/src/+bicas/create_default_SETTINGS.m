@@ -374,7 +374,11 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
     
     % Path to RCS NSO file. Relative to BICAS root.
-    S.define_setting('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH', fullfile('data', 'solo_ns_ops.xml'))
+    S.define_setting('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH',  fullfile('data', 'solo_ns_ops.xml'))
+    % Path to RCS NSO file for debugging purposes.
+    % If non-empty, then it overrides PROCESSING.RCS_NSO.FILE.RELATIVE_PATH.
+    % Can be set to absolute path. Intended for testing.
+    S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')
     % Whether to enable NSO IDs which are intended for test purposes only.
     S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
     

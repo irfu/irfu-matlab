@@ -1,8 +1,9 @@
 
 *~
 
-# Ignore the default BICAS master CDFs.
-data/*.cdf
+solo_ns_ops_TEST.xml
+
+
 
 # Ignore the default BICAS configuration file, so that the user can configure his/her own version.
 #
