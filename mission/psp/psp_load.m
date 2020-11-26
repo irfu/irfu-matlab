@@ -11,9 +11,13 @@
 % dataDir:  the directory with the cdf files
 % datatype: 'mag_rtn','fgm_rtn'      - FGM, RTN coordinates
 %           'mag_sc','fgm_sc'        - FGM, SC coordinates
+%           'wf_dvdc'                - DBF Digital Fields Board Differential Voltage Waveform
+%           'wf_scm'                 - DBF Digital Fields Board Search Coil Magnetometer Waveform
 %           'ac_spec_dv12'           - DFB AC-coupled Differential Voltage V12 antenas
 %           'ac_spec_dv34'           - DFB AC-coupled Differential Voltage V34 antenas
 %           'ac_spec_v5'             - DFB AC-coupled V5 Antenna Voltage, Monopole Mode
+%           'ac_spec_scmv'           - DFB AC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
+%           'ac_spec_scmu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
 %           'sweap','spc'    - sweap proton moments
 %           'ephem'          - ephemeris files
 %           variable names as in the cdf file
@@ -48,12 +52,31 @@ switch datatype
     
     hourtag={'00';'06';'12';'18'};
     
-    case {'ac_spec_dv12'}    
+  case {'wf_dvdc'}
+    filename= 'psp_fld_l2_dfb_wf_dvdc';
+    varnames = {...
+      'psp_fld_l2_dfb_wf_dVdc_sensor';...
+      'psp_fld_l2_dfb_wf_dVdc_sc'};
+    varnamesout = {'wf_dvdc_sensor';'wf_dvdc_sc'};
+    
+    hourtag={'00';'06';'12';'18'};  
+    
+  case {'wf_scm'}
+    filename= 'psp_fld_l2_dfb_wf_scm';
+    varnames = {...
+      'psp_fld_l2_dfb_wf_scm_hg_sensor';...
+      'psp_fld_l2_dfb_wf_scm_hg_sc'};
+    varnamesout = {...
+      'wf_scm_sensor';'wf_scm_sc'};
+    
+    hourtag={'00';'06';'12';'18'};    
+    
+  case {'ac_spec_dv12'}
     filename = 'psp_fld_l2_dfb_ac_spec_dV12hg';
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_dV12hg_frequency_bins';...          
       'psp_fld_l2_dfb_ac_spec_dV12hg'};
-    varnamesout = {'ac_dv12_freq_bins';'ac_dv12_ps'};
+    varnamesout = {'ac_spec_dv12_freq_bins';'ac_spec_dv12_pw'};
     
     hourtag={''};  
     
@@ -62,7 +85,7 @@ switch datatype
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_dV34hg_frequency_bins';...          
       'psp_fld_l2_dfb_ac_spec_dV34hg'};
-    varnamesout = {'ac_dv34_freq_bins';'ac_dv34_ps'};
+    varnamesout = {'ac_spec_dv34_freq_bins';'ac_spec_dv34_pw'};
     
     hourtag={''};  
     
@@ -71,9 +94,27 @@ switch datatype
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_V5hg_frequency_bins';...          
       'psp_fld_l2_dfb_ac_spec_V5hg'};
-    varnamesout = {'ac_v5_freq_bins';'ac_v5_ps'};
+    varnamesout = {'ac_spec_v5_freq_bins';'ac_spec_v5_pw'};
     
-    hourtag={''};   
+    hourtag={''};
+    
+  case {'ac_spec_scmv'}
+    filename = 'psp_fld_l2_dfb_ac_spec_SCMvlfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_SCMvlfhg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_SCMvlfhg'};
+    varnamesout = {'ac_spec_scmv_freq_bins';'ac_spec_scmv_pw'};
+    
+    hourtag={''};
+    
+  case {'ac_spec_scmu'}
+    filename = 'psp_fld_l2_dfb_ac_spec_SCMulfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_SCMulfhg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_SCMulfhg'};
+    varnamesout = {'ac_spec_scmu_freq_bins';'ac_spec_scmu_pw'};
+    
+    hourtag={''}; 
     
   case {'sweap', 'spc'}
     
