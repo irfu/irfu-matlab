@@ -47,7 +47,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
   elseif (nargin > 2) && (flag == 1)
       x=0; z=0;
       
-      K=[p(1),-p(3);-p(3),p(6)];
+      K=[p(6),-p(3);-p(3),p(1)];
       comm= {'De Hoffmann-Teller frame is calculated using 1 component of E=(0,Ey,0)';' Output velocities [vx, vz], as vy cannot be calculated (assumed = 0)'};
   else
     K=[[p(4)+p(6) -p(2) -p(3)];[-p(2) p(1)+p(6) -p(5)];[-p(3) -p(5) p(1)+p(4)]];
