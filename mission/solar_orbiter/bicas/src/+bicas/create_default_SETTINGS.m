@@ -472,9 +472,9 @@ function SETTINGS = create_default_SETTINGS()
     %
     %============================================================================
     CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-    S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
+    S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',           CDF_SUFFIX_REGEXP]);
     % 2020-11-20: LFR still uses old/illegal RCT filenaming convention.
-    S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
+    S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',       CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',  CDF_SUFFIX_REGEXP]);
     S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}', CDF_SUFFIX_REGEXP]);
     % Old/illegal filenaming convention.

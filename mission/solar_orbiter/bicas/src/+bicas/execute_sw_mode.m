@@ -1,3 +1,4 @@
+%
 % Execute a "S/W mode" as (indirectly) specified by the CLI arguments. This
 % function should be agnostic of CLI syntax.
 %
@@ -56,7 +57,8 @@ function execute_sw_mode(...
 
     
     
-    % ASSERTION: Check that all input & output dataset paths (strings) are unique.
+    % ASSERTION: Check that all input & output dataset paths (strings) are
+    % unique.
     % NOTE: Manually entering CLI argument, or copy-pasting BICAS call, can
     % easily lead to reusing the same path by mistake, and e.g. overwriting an
     % input file.
@@ -140,7 +142,8 @@ function execute_sw_mode(...
         OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, rctDir, NsoTable);
     else
         OutputDatasetsMap = [];
-        L.logf('warning', 'Disabled processing due to setting %s.', settingNpefKey)
+        L.logf('warning', ...
+            'Disabled processing due to setting %s.', settingNpefKey)
     end
     
     
@@ -162,6 +165,8 @@ function execute_sw_mode(...
         prodFuncOutputKey = OutputInfo.prodFuncOutputKey;
         outputFilePath    = OutputFilePathMap(prodFuncOutputKey);
         
+        
+        
         %========================
         % Write dataset CDF file
         %========================
@@ -171,9 +176,11 @@ function execute_sw_mode(...
                 OutputInfo.datasetId, ...
                 OutputInfo.skeletonVersion));
         
-        if ~settingNpefValue        
+        if ~settingNpefValue      
+            % CASE: Nominal
             ZvsSubset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
         else
+            % CASE: No processing.
             ZvsSubset = [];
         end
         bicas.write_dataset_CDF( ...
@@ -187,8 +194,8 @@ end   % execute_sw_mode
 
 
 
-% Function for global attributes for an output dataset from the global
-% attributes of multiple input datasets (if there are several).
+% Function for determining SOME global attributes for an output dataset given
+% the global attributes of multiple input datasets.
 %
 %
 % SOOP_TYPE, Datetime, OBS_ID
@@ -201,26 +208,36 @@ end   % execute_sw_mode
 % SBM1 datasets (at least).
 % Exception: OBS_ID is not in BIAS HK. /2020-09-17
 % --
-% BUG?/NOTE: The current implementation takes values from all the input datasets
-% that have those global attributes. Should ideally check the DATASET_IDs and
-% require attributes for some DATASET_IDs, and ignore it for others.
+% BUG?/NOTE: The current implementation (2020-11-27) takes values from all the
+% input datasets that have global attributes OBS_ID, SOOP_TYPE (not Datetime).
+%
+%
+% ARGUMENTS
+% =========
+% InputDatasetsMap
+%       NOTE: This function does not really need all of InputDatasetsMap as
+%       input (contains zVars) but the function uses that input argument since
+%       it is easily accessible where this function is called.
+%
+% NOTES
+% =====
+% This function does not really need all of InputDatasetsMap as input
+% (contains zVars) but the function uses that input argument since it is
+% easily accessible where this function is called.
 %
 %
 % RETURN VALUE
 % ============
-% OutGaSubset : Struct where each field name corresponds to a CDF
-%               global atttribute.
-%               NOTE: Deviates from the usual variable naming
-%               conventions. GlobalAttributesSubset field names have
+% OutGaSubset
+%       Struct where each field name corresponds to a CDF global atttribute.
+%       NOTE: Deviates from the usual variable naming conventions.
+%       GlobalAttributesSubset field names have
 %               the exact names of CDF global attributes.
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         InputDatasetsMap, SETTINGS, L)
     
     % PGA = Parents' GlobalAttributes.
-    % NOTE: Does not really need all of InputDatasetsMap as input (but it is
-    % easily accessible when calling this function). Contains zVars which is
-    % overkill.
 
     OutGaSubset.Parents        = {};
     OutGaSubset.Parent_version = {};
@@ -239,8 +256,9 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         % NOTE: Stores all values to be safe.
         assert(isscalar(Ga.Data_version), ...
             'BICAS:execute_sw_mode:DatasetFormat', ...
-            ['Global attribute Data_version for input dataset', ...
-            ' with key=%s is not scalar (one string).'], ...
+            ['Global attribute "Data_version" for input dataset', ...
+            ' with key=%s is not a MATLAB scalar (i.e. global attribute is', ...
+            ' not ONE string).'], ...
             keysCa{i})
         
         OutGaSubset.Parents       {end+1} = ['CDF>', Ga.Logical_file_id{1}];
@@ -277,10 +295,11 @@ end
 % with precautions.
 %
 % NOTE: Can tolerate InGa.(fieldName) not existing. Then skipping union.
-% NOTE: Assumes that values are cell arrays (of strings).
 % NOTE: Eliminates duplicated values in end result.
-% NOTE: Removes ' ', unless it is the only value. ' ' is like a fill value for
-%       global attributes?
+% NOTE: Removes ' ', unless it is the only value. ' ' is (empirically) like a
+%       fill value for global attributes.
+% NOTE: Assumes that values are cell arrays (of strings).
+%
 function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
     outValue = OutGa.(fieldName);
     
@@ -288,9 +307,10 @@ function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
         outValue = union(outValue, InGa.(fieldName));
     end
     
+    % ~HACK
     % Remove ' ', unless it is the only value.
-    % NOTE: Empirically, ' ' is like a fill value (but it is probably not a
-    % formal fill value(?) since only zvars have fill values..
+    % NOTE: Empirically, ' ' is like a fill value for global attributes (but it
+    % is probably not a formal fill value(?) since only zvars have fill values).
     outValue2 = setdiff(outValue, ' ');
     if ~isempty(outValue2)
         outValue = outValue2;

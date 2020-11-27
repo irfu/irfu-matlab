@@ -173,13 +173,15 @@ classdef proc_utils
         %
         % RETURN VALUES
         % =============
-        % zvTt2000       : Column array. ~Epoch. One timestamp per bin.
-        % iRecordsCa     : Indices to CDF records for respective bins.
-        %                  {iInterval}(i,1) = CDF record number.
-        % binSizeArrayNs : (iBin, 1). Bin size.
-        %                  RATIONALE: Useful for automatic testing, setting
-        %                  zVar DELTA_PLUS_MINUS (if one wants to account for
-        %                  leap seconds).
+        % zvTt2000
+        %       Column array. ~Epoch. One timestamp per bin.
+        % iRecordsCa
+        %       Indices to CDF records for respective bins.
+        %       {iBin}(iSamples,1) = Non-downsampled CDF record number.
+        % binSizeArrayNs
+        %       (iBin, 1). Bin size.
+        %       RATIONALE: Useful for automatic testing, setting zVar
+        %       DELTA_PLUS_MINUS (if one wants to account for leap seconds).
         %
         function [zvBinsTt2000, iRecordsCa, binSizeArrayNs] = downsample_Epoch(...
                 zvAllTt2000, boundaryRefTt2000, ...
@@ -197,6 +199,12 @@ classdef proc_utils
             %   PRO: More information.
             %   PRO: Easy to derive binSizeArrayNs = diff(boundariesTt2000);
             %   CON: Undefined (?) for special case zero bins.
+            %
+            % PROPOSAL: Argument for minimum number of samples in each bin. If
+            %           number of samples per min is below limit, then they are
+            %           excluded.
+            %   CON: Samples may be NaN, but this function does not have access
+            %        to that information.
             
 
             

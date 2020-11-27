@@ -6,16 +6,16 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-17
 %
-
+function proc_utils___ATEST
 % PROPOSAL: Generic function for testing a function without side effects. User submits function pointer, list of
 % argument lists, list of expected return results.
 %   NOTE: Has to handle approximate numeric results.
-
-function proc_utils___ATEST
     
     set_struct_field_rows___ATEST
     convert_matrix_to_cell_array_of_vectors___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
+
+    % Function that is tested is commented out.
     %convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     set_NaN_after_snapshots_end___ATEST
     downsample_Epoch___ATEST

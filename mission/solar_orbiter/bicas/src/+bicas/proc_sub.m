@@ -487,8 +487,8 @@ classdef proc_sub
             PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
             PreDc.Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
             
-
-
+            
+            
             %==================================================================
             % Set MUX_SET
             % -----------
@@ -525,8 +525,8 @@ classdef proc_sub
         % Processing function. Only "normalizes" data to account for technically
         % illegal input TDS datasets. It should try to:
         % ** modify L1 to look like L1R
-        % ** mitigate historical bugs (in the input datasets)
-        % ** mitigate for not yet implemented features (in input datasets)
+        % ** mitigate historical bugs in the input datasets
+        % ** mitigate for not yet implemented features in input datasets
         %
         function InSciNorm = process_TDS_CDF_normalize(InSci, inSciDsi, SETTINGS, L)
             
@@ -722,9 +722,9 @@ classdef proc_sub
             PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
             PreDc.Zv.useFillValues           = false(nRecords, 1);
             PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
-
-
-
+            
+            
+            
             %=====================================
             % Set PreDc.Zv.nValidSamplesPerRecord
             %=====================================
@@ -788,10 +788,11 @@ classdef proc_sub
         
 
 
-        function [OutSciZv] = process_PostDC_to_LFR_CDF(SciPreDc, SciPostDc, outputDsi, L)
-            OutSciZv    = bicas.proc_sub.process_PostDC_to_TDS_CDF(...
+        function [OutSci] = process_PostDC_to_LFR_CDF(SciPreDc, SciPostDc, outputDsi, L)
+            OutSci    = bicas.proc_sub.process_PostDC_to_TDS_CDF(...
                 SciPreDc, SciPostDc, outputDsi, L);
-            OutSciZv.BW = SciPreDc.Zv.BW;
+            
+            OutSci.BW = SciPreDc.Zv.BW;
         end
 
 
@@ -803,7 +804,7 @@ classdef proc_sub
         % This function only changes the data format (and selects data to send
         % to CDF).
         %
-        function [OutSciZv] = process_PostDC_to_TDS_CDF(SciPreDc, SciPostDc, outputDsi, L)
+        function [OutSci] = process_PostDC_to_TDS_CDF(SciPreDc, SciPostDc, outputDsi, L)
 
             % ASSERTIONS
             bicas.proc_sub.assert_PostDC(SciPostDc)
@@ -813,28 +814,25 @@ classdef proc_sub
             nSamplesPerRecordChannel  = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);
             nRecords                  = size(SciPreDc.Zv.Epoch, 1);
 
-            OutSciZv = [];
+            OutSci = [];
             
-            OutSciZv.Epoch              = SciPreDc.Zv.Epoch;
-            OutSciZv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
-            OutSciZv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
-            OutSciZv.QUALITY_FLAG       = SciPreDc.Zv.QUALITY_FLAG;
-            OutSciZv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
-            OutSciZv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
-            OutSciZv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
+            OutSci.Epoch              = SciPreDc.Zv.Epoch;
+            OutSci.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
+            OutSci.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
+            OutSci.QUALITY_FLAG       = SciPreDc.Zv.QUALITY_FLAG;
+            OutSci.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
+            OutSci.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
+            OutSci.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
 
             % NOTE: Convert aampere --> nano-aampere
-            OutSciZv.IBIAS1           = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
-            OutSciZv.IBIAS2           = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
-            OutSciZv.IBIAS3           = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
+            OutSci.IBIAS1             = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
+            OutSci.IBIAS2             = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
+            OutSci.IBIAS3             = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
             
             
             
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(outputDsi);
 
-            EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
-            EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD;
-            
             % NOTE: The two cases are different in the indexes they use for
             % OutSciZv.
             if C.isCwf
@@ -845,31 +843,38 @@ classdef proc_sub
                     ['Number of samples per CDF record is not 1, as expected.', ...
                     ' Bad input CDF?'])
                 EJ_library.assert.sizes(...
-                    OutSciZv.QUALITY_BITMASK, [nRecords, 1], ...
-                    OutSciZv.QUALITY_FLAG,    [nRecords, 1])
+                    OutSci.QUALITY_BITMASK, [nRecords, 1], ...
+                    OutSci.QUALITY_FLAG,    [nRecords, 1])
                 
                 % Try to pre-allocate to save RAM/speed up.
-                OutSciZv.VDC = nan(nRecords, 3);
-                OutSciZv.EDC = nan(nRecords, 3);
-                OutSciZv.EAC = nan(nRecords, 3);
+                OutSci.VDC = nan(nRecords, 3);
+                OutSci.EDC = nan(nRecords, 3);
+                OutSci.EAC = nan(nRecords, 3);
                 
-                OutSciZv.VDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
-                OutSciZv.VDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
-                OutSciZv.VDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
+                OutSci.VDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
+                OutSci.VDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
+                OutSci.VDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
                 
-                OutSciZv.EDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
-                OutSciZv.EDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
-                OutSciZv.EDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
+                OutSci.EDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
+                OutSci.EDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
+                OutSci.EDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
                 
-                OutSciZv.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
-                OutSciZv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
-                OutSciZv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
+                OutSci.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
+                OutSci.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
+                OutSci.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
                 
             elseif C.isSwf
                 
-                if     C.isLfr   SAMPLES_PER_RECORD_CHANNEL = EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
-                elseif C.isTds   SAMPLES_PER_RECORD_CHANNEL = EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD;
-                else             error('BICAS:proc_sub:Assertion', 'Illegal DATASET_ID classification.')
+                if     C.isLfr
+                    SAMPLES_PER_RECORD_CHANNEL = ...
+                        EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
+                elseif C.isTds
+                    SAMPLES_PER_RECORD_CHANNEL = ...
+                        EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD;
+                else
+                    error(...
+                        'BICAS:proc_sub:Assertion', ...
+                        'Illegal DATASET_ID classification.')
                 end
                 
                 % ASSERTION
@@ -882,21 +887,21 @@ classdef proc_sub
                 
                 % Try to pre-allocate to save RAM/speed up.
                 tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
-                OutSciZv.VDC = tempNaN;
-                OutSciZv.EDC = tempNaN;
-                OutSciZv.EAC = tempNaN;
+                OutSci.VDC = tempNaN;
+                OutSci.EDC = tempNaN;
+                OutSci.EAC = tempNaN;
                 
-                OutSciZv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
-                OutSciZv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
-                OutSciZv.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
+                OutSci.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
+                OutSci.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
+                OutSci.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
                 
-                OutSciZv.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
-                OutSciZv.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
-                OutSciZv.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
+                OutSci.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
+                OutSci.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
+                OutSci.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
                 
-                OutSciZv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
-                OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
-                OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
+                OutSci.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
+                OutSci.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
+                OutSci.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
                 
             else
                 error('BICAS:proc_sub:Assertion:IllegalArgument', ...
@@ -906,11 +911,11 @@ classdef proc_sub
             
             
             % ASSERTION
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
+            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSci);
             % NOTE: Not really necessary since the list of zVars will be checked
             % against the master CDF?
             % NOTE: Includes zVar "BW" (LFR L2 only).
-            EJ_library.assert.struct(OutSciZv, {...
+            EJ_library.assert.struct(OutSci, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
@@ -937,7 +942,8 @@ classdef proc_sub
             
             
             % IMPLEMENTATION NOTE: Only copy fields PreDc-->PostDc which are
-            % known to be needed in order to conserve memory.
+            % known to be needed in order to conserve memory (not sure if
+            % meaningful).
             PostDc = [];
             
 
@@ -1017,15 +1023,24 @@ classdef proc_sub
         % datasets, but on struct that are as similiar as possible for all forms
         % of L1R-->L2 processing.
         %
-        function [PreDc, PostDc] = process_quality_filter_L2(PreDc, PostDc, NsoTable, SETTINGS, L)
+        function [PreDc, PostDc] = process_quality_filter_L2(...
+                PreDc, PostDc, NsoTable, SETTINGS, L)
+            
             % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the format.
+            %   NOTE: Also overwrites voltage with fill values.
             %   PROPOSAL: Treat output PostDc as another format?
             %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
             %   PROPOSAL: Keep as is. List as optional field in assert_PostDc
             %
             % PROPOSAL: Abolish test functionality.
-            %   PRO: Can lead to bugs.
-            % PROPOSAL: Use separate NSO table for testing.
+            %   PRO: Test functionality can lead to bugs.
+            %   PRO: Can use alternative NSO table (using NSO table path override
+            %        setting).
+            % 
+            % PROPOSAL: Generalize function be used in L3.
+            %   CON: Can not be done since this function is meant to have access
+            %        to arbitrary L1/L1R and L2 data to make decisions, although
+            %        this is not much used yet.
             
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc)
@@ -1204,9 +1219,10 @@ classdef proc_sub
         
         % Processing function for processing L2-->L3.
         %
-        function [EfieldCdf, ScpotCdf, DensityCdf, ...
-                EfieldDwnsCdf, ScpotDwnsCdf, DensityDwnsCdf] ...
-                = process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L)
+        function [OutEfield,  OutEfieldDwns, ...
+                  OutScpot,   OutScpotDwns, ...
+                  OutDensity, OutDensityDwns] ...
+                = process_L2_to_L3(InLfrCwf, SETTINGS, L)
             
             % PROPOSAL: Split up in one part for non-downsampled and
             %           downsampled.
@@ -1229,6 +1245,15 @@ classdef proc_sub
             %       CON-PROPOSAL: Put shared functionality in function.
             %           CON: Slows down processing.
             %               CON: Probably negligible.
+            %
+            % PROPOSAL: Downsampled records with fewer than N samples should
+            %           set voltage to fill value.
+            %   NOTE: May affect QUALITY_FLAG(?)
+            %   PROPOSAL: Take into account whether samples are fill values.
+            %       NOTE: Leads to different behaviour for different downsampled
+            %             datasets.
+            %       NOTE: May be different for different "channels" (vary over
+            %             non-record dimensions) within the same zVar.
 
 
 
@@ -1247,8 +1272,8 @@ classdef proc_sub
             %======================
             % Normalize zVar names
             %======================
-            [InputLfrCwfCdf.Zv, fnChangeList] = ...
-                EJ_library.utils.normalize_struct_fieldnames(InputLfrCwfCdf.Zv, ...
+            [InLfrCwf.Zv, fnChangeList] = ...
+                EJ_library.utils.normalize_struct_fieldnames(InLfrCwf.Zv, ...
                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
             
             bicas.proc_sub.handle_zv_name_change(...
@@ -1257,7 +1282,7 @@ classdef proc_sub
             
             
             
-            zv_QUALITY_FLAG = InputLfrCwfCdf.Zv.QUALITY_FLAG;
+            zv_QUALITY_FLAG = InLfrCwf.Zv.QUALITY_FLAG;
             
             
             
@@ -1272,9 +1297,9 @@ classdef proc_sub
             % Therefore uses extra assertions to detect such changes.
             %====================================================================
             % Set some records to NaN.
-            zv_VDC = InputLfrCwfCdf.Zv.VDC;
+            zv_VDC = InLfrCwf.Zv.VDC;
             zv_VDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
-            zv_EDC = InputLfrCwfCdf.Zv.EDC;
+            zv_EDC = InLfrCwf.Zv.EDC;
             zv_EDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
             %
             % NOTE: Should TSeries objects really use TensorOrder=1 and
@@ -1282,11 +1307,11 @@ classdef proc_sub
             % fo three scalars. Probably does not matter. solo.vdccal does use
             % VDC.x, EDC.x etc.
             VdcTs = TSeries(...
-                EpochTT(InputLfrCwfCdf.Zv.Epoch), zv_VDC, ...
+                EpochTT(InLfrCwf.Zv.Epoch), zv_VDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
             EdcTs = TSeries(...
-                EpochTT(InputLfrCwfCdf.Zv.Epoch), zv_EDC, ...
+                EpochTT(InLfrCwf.Zv.Epoch), zv_EDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
             %-------------------------------------------------------
@@ -1294,7 +1319,7 @@ classdef proc_sub
             [EdcSrfTs, PspTs, ScpotTs] = solo.vdccal(VdcTs, EdcTs);
             %-------------------------------------------------------
             EJ_library.assert.sizes(...
-                InputLfrCwfCdf.Zv.Epoch, [-1, 1], ...
+                InLfrCwf.Zv.Epoch, [-1, 1], ...
                 EdcSrfTs.data,           [-1, 3], ...
                 PspTs.data,              [-1, 1], ...
                 ScpotTs.data,            [-1, 1]);
@@ -1355,40 +1380,40 @@ classdef proc_sub
             %====================================
             % zVars for EFIELD (not downsampled)
             %====================================
-            EfieldCdf = struct();
-            EfieldCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
-            EfieldCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
-            EfieldCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            EfieldCdf.QUALITY_FLAG       = zv_QUALITY_FLAG;
-            EfieldCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            EfieldCdf.EDC_SRF            = zvEdcMvpm;
+            OutEfield = struct();
+            OutEfield.Epoch              = InLfrCwf.Zv.Epoch;
+            OutEfield.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
+            OutEfield.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
+            OutEfield.QUALITY_FLAG       = zv_QUALITY_FLAG;
+            OutEfield.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
+            OutEfield.EDC_SRF            = zvEdcMvpm;
             
             
             
             %===================================
             % zVars for SCPOT (not downsampled)
             %===================================
-            ScpotCdf = struct();
-            ScpotCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
-            ScpotCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
-            ScpotCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            ScpotCdf.QUALITY_FLAG       = zv_QUALITY_FLAG;
-            ScpotCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            ScpotCdf.SCPOT              = ScpotTs.data;
-            ScpotCdf.PSP                = PspTs.data;
+            OutScpot = struct();
+            OutScpot.Epoch              = InLfrCwf.Zv.Epoch;
+            OutScpot.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
+            OutScpot.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
+            OutScpot.QUALITY_FLAG       = zv_QUALITY_FLAG;
+            OutScpot.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
+            OutScpot.SCPOT              = ScpotTs.data;
+            OutScpot.PSP                = PspTs.data;
 
 
 
             %=====================================
             % zVars for DENSITY (not downsampled)
             %=====================================
-            DensityCdf = struct();
-            DensityCdf.Epoch              = InputLfrCwfCdf.Zv.Epoch;
-            DensityCdf.QUALITY_BITMASK    = InputLfrCwfCdf.Zv.QUALITY_BITMASK;
-            DensityCdf.L2_QUALITY_BITMASK = InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK;
-            DensityCdf.QUALITY_FLAG       = zv_QUALITY_FLAG;
-            DensityCdf.DELTA_PLUS_MINUS   = InputLfrCwfCdf.Zv.DELTA_PLUS_MINUS;
-            DensityCdf.DENSITY            = NeScpTs.data;
+            OutDensity = struct();
+            OutDensity.Epoch              = InLfrCwf.Zv.Epoch;
+            OutDensity.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
+            OutDensity.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
+            OutDensity.QUALITY_FLAG       = zv_QUALITY_FLAG;
+            OutDensity.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
+            OutDensity.DENSITY            = NeScpTs.data;
             
             
             
@@ -1397,18 +1422,19 @@ classdef proc_sub
             %====================================================
             % Find bin boundary reference timestamp. This is used for
             % setting the bin boundaries together with the bin length.
-            v = spdfbreakdowntt2000(InputLfrCwfCdf.Zv.Epoch(1));
+            v = spdfbreakdowntt2000(InLfrCwf.Zv.Epoch(1));
             % UTC subsecond (milliseconds, microseconds, nanoseconds)
             v(7:9) = 0;
             v(6)   = 5;   % UTC second
             boundaryRefTt2000 = spdfcomputett2000(v);
             % Find
             % (1) bin timestamps (downsampled timestamps), and
-            % (2) which (non-downsampled) records belong to which bins.
-            [zvEpochDwns, iRecordsDwnsCa, binSizeArrayNs] = bicas.proc_utils.downsample_Epoch(...
-                InputLfrCwfCdf.Zv.Epoch, boundaryRefTt2000, ...
-                BIN_LENGTH_WOLS_NS,      BIN_TIMESTAMP_POS_WOLS_NS);
-            % NOTE: Before possible removal of records.
+            % (2) which (non-downsampled) records belong to which bins
+            %     (=downsampled records).
+            [zvEpochDwns, iRecordsDwnsCa, binSizeArrayNs] = ...
+                bicas.proc_utils.downsample_Epoch(...
+                    InLfrCwf.Zv.Epoch, boundaryRefTt2000, ...
+                    BIN_LENGTH_WOLS_NS,      BIN_TIMESTAMP_POS_WOLS_NS);
             nRecordsDwns = numel(zvEpochDwns);
 %             for i = 1:nRecordsDwns
 %                 % TODO-DEC: Bad to remove non-donwsampled bins since quality
@@ -1424,12 +1450,15 @@ classdef proc_sub
 %                 end
 %             end
             
-            % Set zVariable-like variables with "thought-out" values also for
-            % empty bins. Later code can then decide whether to use these empty
-            % bin values or not.
+            % Quality zVariables
+            % ------------------
+            %
+            % Set zVariable-like quality variables with "thought-out" values
+            % also for empty bins. Later code can then decide whether to use
+            % these empty bin values or not.
             % 
-            % zVar data types
-            % ===============
+            % Correct zVar data types
+            % -----------------------
             % "QUALITY_FLAG shall be a CDF_UINT1 flag"
             % "QUALITY_BITMASK shall be a CDF_UINT2 flag"
             % Source: SOL-SGS-TN-0009, "Metadata Definition for Solar Orbiter
@@ -1454,21 +1483,21 @@ classdef proc_sub
                 % Must therefore TYPECAST.
                 QUALITY_BITMASK_dwns(i)    = ...
                     bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(...
-                        uint16( InputLfrCwfCdf.Zv.QUALITY_BITMASK( k )) );
+                        uint16( InLfrCwf.Zv.QUALITY_BITMASK( k )) );
                     
                 L2_QUALITY_BITMASK_dwns(i) = ...
                     bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(...
-                        InputLfrCwfCdf.Zv.L2_QUALITY_BITMASK( k ) );
+                        InLfrCwf.Zv.L2_QUALITY_BITMASK( k ) );
             end
-            %---------------------------
+            
             % Set DELTA_PLUS_MINUS_dwns
-            %---------------------------
+            % -------------------------
             % Takes leap seconds into account.
             %
             % NOTE/BUG: Not perfect since the bin timestamp is not centered for
             % leap seconds. Epoch+-DELTA_PLUS_MINUS will thus go outside/inside
-            % the bin boundaries for leap seconds. Same problem for both
-            % positive and negative leap seconds.
+            % the bin boundaries for leap seconds. The same problem exists for
+            % both positive and negative leap seconds.
             DELTA_PLUS_MINUS_dwns = double(binSizeArrayNs / 2);
 
 
@@ -1476,31 +1505,31 @@ classdef proc_sub
             %==============================
             % zVars for EFIELD DOWNSAMPLED
             %==============================
-            EfieldDwnsCdf = [];
-            EfieldDwnsCdf.Epoch              = zvEpochDwns;
-            EfieldDwnsCdf.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
-            EfieldDwnsCdf.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
-            EfieldDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
-            EfieldDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
+            OutEfieldDwns = [];
+            OutEfieldDwns.Epoch              = zvEpochDwns;
+            OutEfieldDwns.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
+            OutEfieldDwns.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
+            OutEfieldDwns.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
+            OutEfieldDwns.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
             %
-            EfieldDwnsCdf.EDC_SRF            = NaN(nRecordsDwns, 3);
-            EfieldDwnsCdf.EDCSTD_SRF         = NaN(nRecordsDwns, 3);
+            OutEfieldDwns.EDC_SRF            = NaN(nRecordsDwns, 3);
+            OutEfieldDwns.EDCSTD_SRF         = NaN(nRecordsDwns, 3);
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
 %                 if ~isempty(k)
                     
-                    EfieldDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
-                    EfieldDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
-                    EfieldDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
-                    EfieldDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
+                    OutEfieldDwns.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
+                    OutEfieldDwns.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
+                    OutEfieldDwns.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
+                    OutEfieldDwns.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
                     [edc_srf, edcStd_srf] = bicas.proc_sub.downsample_bin_sci_values(...
-                        EfieldCdf.EDC_SRF(k, :), ...
+                        OutEfield.EDC_SRF(k, :), ...
                         bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
                     
-                    EfieldDwnsCdf.EDC_SRF(i, :)         = edc_srf;
-                    EfieldDwnsCdf.EDCSTD_SRF(i, :)      = edcStd_srf;
+                    OutEfieldDwns.EDC_SRF(i, :)         = edc_srf;
+                    OutEfieldDwns.EDCSTD_SRF(i, :)      = edcStd_srf;
 %                 end
             end
             
@@ -1509,38 +1538,38 @@ classdef proc_sub
             %=============================
             % zVars for SCPOT DOWNSAMPLED
             %=============================
-            ScpotDwnsCdf = [];
-            ScpotDwnsCdf.Epoch              = zvEpochDwns;
-            ScpotDwnsCdf.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
-            ScpotDwnsCdf.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
-            ScpotDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
-            ScpotDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
+            OutScpotDwns = [];
+            OutScpotDwns.Epoch              = zvEpochDwns;
+            OutScpotDwns.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
+            OutScpotDwns.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
+            OutScpotDwns.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
+            OutScpotDwns.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
             %
-            ScpotDwnsCdf.SCPOT              = NaN(nRecordsDwns, 1);
-            ScpotDwnsCdf.SCPOTSTD           = NaN(nRecordsDwns, 1);
-            ScpotDwnsCdf.PSP                = NaN(nRecordsDwns, 1);
-            ScpotDwnsCdf.PSPSTD             = NaN(nRecordsDwns, 1);
+            OutScpotDwns.SCPOT              = NaN(nRecordsDwns, 1);
+            OutScpotDwns.SCPOTSTD           = NaN(nRecordsDwns, 1);
+            OutScpotDwns.PSP                = NaN(nRecordsDwns, 1);
+            OutScpotDwns.PSPSTD             = NaN(nRecordsDwns, 1);
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
 %                 if ~isempty(k)
 
-                    ScpotDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
-                    ScpotDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
-                    ScpotDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
-                    ScpotDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
+                    OutScpotDwns.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
+                    OutScpotDwns.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
+                    OutScpotDwns.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
+                    OutScpotDwns.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
                     [scpot, scpotStd] = bicas.proc_sub.downsample_bin_sci_values(...
-                        ScpotCdf.SCPOT(k, :), ...
+                        OutScpot.SCPOT(k, :), ...
                         bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
                     [psp, pspstd]     = bicas.proc_sub.downsample_bin_sci_values(...
-                        ScpotCdf.PSP(  k, :), ...
+                        OutScpot.PSP(  k, :), ...
                         bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
                     
-                    ScpotDwnsCdf.SCPOT(i, :)           = scpot;
-                    ScpotDwnsCdf.SCPOTSTD(i, :)        = scpotStd;
-                    ScpotDwnsCdf.PSP(i)                = psp;
-                    ScpotDwnsCdf.PSPSTD(i)             = pspstd;
+                    OutScpotDwns.SCPOT(i, :)           = scpot;
+                    OutScpotDwns.SCPOTSTD(i, :)        = scpotStd;
+                    OutScpotDwns.PSP(i)                = psp;
+                    OutScpotDwns.PSPSTD(i)             = pspstd;
 %                 end
             end
             
@@ -1549,31 +1578,31 @@ classdef proc_sub
             %===============================
             % zVars for DENSITY DOWNSAMPLED
             %===============================
-            DensityDwnsCdf = [];
-            DensityDwnsCdf.Epoch              = zvEpochDwns;
-            DensityDwnsCdf.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
-            DensityDwnsCdf.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
-            DensityDwnsCdf.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
-            DensityDwnsCdf.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
+            OutDensityDwns = [];
+            OutDensityDwns.Epoch              = zvEpochDwns;
+            OutDensityDwns.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
+            OutDensityDwns.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
+            OutDensityDwns.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
+            OutDensityDwns.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
             %
-            DensityDwnsCdf.DENSITY            = NaN(nRecordsDwns, 1);
-            DensityDwnsCdf.DENSITYSTD         = NaN(nRecordsDwns, 1);
+            OutDensityDwns.DENSITY            = NaN(nRecordsDwns, 1);
+            OutDensityDwns.DENSITYSTD         = NaN(nRecordsDwns, 1);
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
 %                 if ~isempty(k)
 
-                    DensityDwnsCdf.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
-                    DensityDwnsCdf.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
-                    DensityDwnsCdf.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
-                    DensityDwnsCdf.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
+                    OutDensityDwns.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
+                    OutDensityDwns.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
+                    OutDensityDwns.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
+                    OutDensityDwns.DELTA_PLUS_MINUS(i)   = DELTA_PLUS_MINUS_dwns(i);
 
                     [density, densityStd] = bicas.proc_sub.downsample_bin_sci_values(...
-                        DensityCdf.DENSITY(k, :), ...
+                        OutDensity.DENSITY(k, :), ...
                         bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
 
-                    DensityDwnsCdf.DENSITY(i, :)         = density;
-                    DensityDwnsCdf.DENSITYSTD(i, :)      = densityStd;
+                    OutDensityDwns.DENSITY(i, :)         = density;
+                    OutDensityDwns.DENSITYSTD(i, :)      = densityStd;
 %                 end
             end
             
@@ -1591,8 +1620,11 @@ classdef proc_sub
         %
         % ARGUMENTS
         % =========
-        % zVarSegment    : (iCdfRecord, iChannel).
-        % nMinReqSamples : 
+        % zVarSegment
+        %       (iCdfRecord, iChannel).
+        % nMinReqSamples
+        %       Minimum number of samples (fill value or not) for not returning
+        %       fill value.
         % 
         %
         % RETURN VALUES
@@ -1638,9 +1670,10 @@ classdef proc_sub
             
             
             med  = median(zVarSegment, 1);
-            mstd = NaN(1, nSpr);    % Default value if zero records
+            mstd = NaN(1, nSpr);    % Pre-allocate.
             for i = 1:nSpr
-                mstd(1, i) = bicas.utils.modif_std_deviation(zVarSegment(:, i), med(i), 1);
+                mstd(1, i) = bicas.utils.modif_std_deviation(...
+                    zVarSegment(:, i), med(i), 1);
             end
         end
 
@@ -1657,8 +1690,11 @@ classdef proc_sub
     %##############################
         
         
-        
-        % Handles case of empty bin.
+        % Derive QUALITY_FLAG for one downsampled CDF record, from corresponding
+        % non-downsampled records (bin).
+        %
+        % NOTE: Handles empty bins.
+        %
         function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(zv_QUALITY_FLAG_segment)
             % Return NaN or 0 for empty bin?
             
@@ -1672,8 +1708,15 @@ classdef proc_sub
         
         
         
-        % L12_QUALITY_BITMASK refers to both zVariables QUALITY_BITMASK (set in
-        % L1) and L2_QUALITY_BITMASK.
+        % Derive a quality bitmask for one downsampled CDF record, from
+        % corresponding non-downsampled records (bin).
+        %
+        % NOTE: "L12_QUALITY_BITMASK" refers to both zVariables
+        %   (1) QUALITY_BITMASK (set in L1), and
+        %   (2) L2_QUALITY_BITMASK.
+        %
+        % NOTE: Handles empty bins.
+        %
         function L12_QUALITY_BITMASK = downsample_bin_L12_QUALITY_BITMASK(...
                 zv_L12_QUALITY_BITMASK_segment)
             % Return NaN or 0 for empty bin?
@@ -2163,7 +2206,8 @@ classdef proc_sub
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
                                 ssSamplesCaAVolt, size(ssSamplesTm{iBlts}, 2));
                         else
-                            ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};   % NOTE: Must be column array.
+                            % NOTE: Must be column array.
+                            ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};
                         end
                     end
                 end    % for iBlts = 1:5

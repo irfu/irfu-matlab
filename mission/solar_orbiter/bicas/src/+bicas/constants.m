@@ -25,6 +25,10 @@
 classdef constants   % < handle
     % PROPOSAL: Error category for bad input datasets (both science and HK).
     %   PRO: Has similar for RCTs.
+    %
+    % PROPOSAL: Move N_MIN_SAMPLES_PER_DWNS_BIN to settings?
+    %
+    % PROPOSAL: Log all constants.
     
     
     
@@ -57,13 +61,17 @@ classdef constants   % < handle
         %   key   = Any one of the colon-separated parts of a MATLAB error
         %           message identifier string (see "error" function).
         %   value = Struct with fields representing a type of error:
-        %       .errorCode   = The error code/number to be returned from BICAS' main function.
-        %                      IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types"
-        %                      (keys). The error-handling code (try-catch) should decide whether every message
-        %                      identifier should be used to identify only one error type if there are multiple ones to
-        %                      choose from.
-        %       .description = English human-readable text describing the error. Implicitly defines what
-        %                      kinds of errors this error code should cover.
+        %       .errorCode
+        %           The error code/number to be returned from BICAS' main
+        %           function.
+        %           IMPORTANT NOTE: A MATLAB error message identifier may match
+        %           multiple "error types" (keys). The error-handling code
+        %           (try-catch) should decide whether every message identifier
+        %           should be used to identify only one error type if there are
+        %           multiple ones to choose from.
+        %       .description
+        %           English human-readable text describing the error. Implicitly
+        %           defines what kinds of errors this error code should cover.
         %
         %
         EMIDP_2_INFO = bicas.constants.init_EMIDP_2_INFO;
@@ -165,7 +173,10 @@ classdef constants   % < handle
                 ['Calibration software meant to', ...
                 ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
                 ' (2) calibrate bias currents from L1 data.'];
-            MAP('SWD.identification.icd_version') = '1.2';   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
+            
+            % Technically wrong. In reality iss1rev2, draft 2019-07-11.
+            % 2020-11-24: Latest document version is 01/04.
+            MAP('SWD.identification.icd_version') = '1.2';
             MAP('SWD.release.version')            = '4.0.0';
             MAP('SWD.release.date')               = '2020-10-07T12:00:00Z';
             MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';

@@ -6,7 +6,10 @@ end
 
 
 function get_calibration_time___ATEST
-    new_test = @(Epoch, CalibEpochList, outputs) (EJ_library.atest.CompareFuncResult(@bicas.calib.get_calibration_time, {int64(Epoch)', int64(CalibEpochList)'}, outputs));
+    new_test = @(Epoch, CalibEpochList, outputs) (...
+        EJ_library.atest.CompareFuncResult(...
+        @bicas.calib.get_calibration_time, ...
+        {int64(Epoch)', int64(CalibEpochList)'}, outputs));
     tl = {};
     
     EV = zeros(1,0);

@@ -18,10 +18,10 @@ classdef NSO_table   % < handle
     % PROPOSAL: New name
     %   PROPOSAL: ~events
     %   PROPOSAL: ~list
-    %       PRO: Table implies multiple dimensions more than list. List more 1D.
-    %
-    % PROPOSAL: Should somehow support logging. Which RCS NSO codes are used for
-    % which time interval.
+    %       PRO: Table implies multiple dimensions more than list.
+    %            List implies ~1D (or even ~set).
+    %       NOTE: solo_ns_ops.xml.html:
+    %             Title "Non-Standard Operations (NSO) List"
     %
     % PROPOSAL: Terminology similar to MMS, mission/mms/mms_ns_ops.xml, i.e.
     %           event = one time interval in NSO table.
@@ -30,8 +30,8 @@ classdef NSO_table   % < handle
     %           operation = one time interval in NSO table.
     %   PRO: Cluster table has been used more than MMS table.
     %
-    % PROPOSAL: Some kind of feature for being able to trigger real NSO ID behaviour just for
-    % testing, but only with proper setting.
+    % PROPOSAL: Some kind of feature for being able to trigger real NSO ID
+    %           behaviour just for testing, but only with proper setting.
     %   PROPOSAL: process_quality_filter_L2: Translate test NSO ID to proper NSO
     %   ID, but only with proper setting.
     %
@@ -42,16 +42,7 @@ classdef NSO_table   % < handle
     %   PRO: Easier to change pre-existing margins than to modify the XML file.
     %       CON: Harder for outsiders to interpret (& edit) the XML file.
     %   Ex: thruster_firings.
-    %
-    % PROPOSAL: Validate XML table content.
-    %   NOTE: Already: only using valid NSO IDs.
-    %   PROPOSAL: Events are sorted in time.
-    %   PROPOSAL: Events with same NSO ID do not overlap.
-    %   TODO-DEC: Where should assertions be?
-    %   	PROPOSAL: In file reading function.
-    %           CON: Bad for automatic testing.
-    %           CON: Bad for disabling tests.
-    %       PROPOSAL: 
+    
     
     
     
@@ -90,7 +81,7 @@ classdef NSO_table   % < handle
             
             % IMPLEMENTATION NOTE: Can not assume that both start & stop
             % timestaps are sorted. One event may entirely contain another
-            % event.
+            % event (with different NSO ID).
             % IMPLEMENTATION NOTE: Can not assume "strictly ascending" values,
             % since events with separate NSO IDs may begin at the exact same
             % instant.

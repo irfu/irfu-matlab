@@ -170,16 +170,17 @@ classdef proc
             %==============
             % Process data
             %==============
-            [EfieldCdf, ScpotCdf, DensityCdf, ...
-                EfieldDwnsCdf, ScpotDwnsCdf, DensityDwnsCdf] = ...
+            [EfieldCdf,  EfieldDwnsCdf, ...
+             ScpotCdf,   ScpotDwnsCdf, ...
+             DensityCdf, DensityDwnsCdf] = ...
                 bicas.proc_sub.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('EFIELD_cdf')       = EfieldCdf;
-            OutputDatasetsMap('SCPOT_cdf')        = ScpotCdf;
-            OutputDatasetsMap('DENSITY_cdf')      = DensityCdf;
             OutputDatasetsMap('EFIELD_DWNS_cdf')  = EfieldDwnsCdf;
+            OutputDatasetsMap('SCPOT_cdf')        = ScpotCdf;
             OutputDatasetsMap('SCPOT_DWNS_cdf')   = ScpotDwnsCdf;
+            OutputDatasetsMap('DENSITY_cdf')      = DensityCdf;
             OutputDatasetsMap('DENSITY_DWNS_cdf') = DensityDwnsCdf;
         end
         

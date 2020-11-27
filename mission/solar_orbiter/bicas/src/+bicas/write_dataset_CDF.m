@@ -8,11 +8,13 @@
 %
 % ARGUMENTS
 % =========
-% ZvsSubset : Struct with those zVars which should be written to
-%             CDF. "Subset" since it excludes those zVars in the master file,
-%             and which should NOT be overwritten.
-% GaSubset  : Struct with fields representing a subset of the CDF
-%             global attributes. A specific set of fields is required.
+% ZvsSubset
+%       Struct with those zVars which should be written to CDF. "Subset" since
+%       it excludes those zVars in the master file, and which should NOT be
+%       overwritten.
+% GaSubset
+%       Struct with fields representing a subset of the CDF global attributes. A
+%       specific set of fields is required.
 % 
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
