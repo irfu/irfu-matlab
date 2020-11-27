@@ -125,11 +125,6 @@ function execute_sw_mode(...
     
     
     
-    GaSubset = derive_output_dataset_GlobalAttributes(...
-        InputDatasetsMap, SETTINGS, L);
-    
-    
-    
     %==============
     % PROCESS DATA
     %==============
@@ -178,7 +173,12 @@ function execute_sw_mode(...
         
         if ~settingNpefValue      
             % CASE: Nominal
-            ZvsSubset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
+            OutputDataset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
+            
+            ZvsSubset = OutputDataset.Zv;            
+            
+            GaSubset = derive_output_dataset_GlobalAttributes(...
+                InputDatasetsMap, OutputDataset.Ga, SETTINGS, L);
         else
             % CASE: No processing.
             ZvsSubset = [];
@@ -207,9 +207,6 @@ end   % execute_sw_mode
 % input L1R datasets, CURRENT datasets, and BIAS HK datasets. Not true for old
 % SBM1 datasets (at least).
 % Exception: OBS_ID is not in BIAS HK. /2020-09-17
-% --
-% BUG?/NOTE: The current implementation (2020-11-27) takes values from all the
-% input datasets that have global attributes OBS_ID, SOOP_TYPE (not Datetime).
 %
 %
 % ARGUMENTS
@@ -219,11 +216,11 @@ end   % execute_sw_mode
 %       input (contains zVars) but the function uses that input argument since
 %       it is easily accessible where this function is called.
 %
-% NOTES
-% =====
-% This function does not really need all of InputDatasetsMap as input
-% (contains zVars) but the function uses that input argument since it is
-% easily accessible where this function is called.
+% OutputDatasetGa
+%       Struct with fields for (subset of) global attributes that should be used
+%       for the output dataset instead of from other locations. This should come
+%       from the processing. Currently only includes:
+%           .Datetime
 %
 %
 % RETURN VALUE
@@ -235,7 +232,7 @@ end   % execute_sw_mode
 %               the exact names of CDF global attributes.
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
-        InputDatasetsMap, SETTINGS, L)
+        InputDatasetsMap, OutputDatasetGa, SETTINGS, L)
     
     % PGA = Parents' GlobalAttributes.
 
@@ -265,10 +262,25 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         OutGaSubset.Parent_version{end+1} = Ga.Data_version{1};
         OutGaSubset.Provider              = union(OutGaSubset.Provider, Ga.Provider);
 
-        OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'Datetime');
-        OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'OBS_ID');
-        OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'SOOP_TYPE');
+        %OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'OBS_ID');
+        %OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'SOOP_TYPE');
     end
+    
+    
+    
+    assert(isscalar(OutputDatasetGa.Datetime), ...
+        'BICAS:execute_sw_mode:Datetime', ...
+        ['Global attribute "Datetime" for output dataset', ...
+        ' with key=%s is not a MATLAB scalar (i.e. global attribute is', ...
+        ' not ONE string). This may be due to that the corresponding input', ...
+        ' dataset value is incorrect.'], ...
+        keysCa{i})
+    OutGaSubset.Datetime  = OutputDatasetGa.Datetime;
+    
+    OutGaSubset.OBS_ID    = OutputDatasetGa.OBS_ID;
+    OutGaSubset.SOOP_TYPE = OutputDatasetGa.SOOP_TYPE;
+    
+    
     
     % ~ASSERTION
     if ~isscalar(OutGaSubset.Parents)
@@ -300,21 +312,21 @@ end
 %       fill value for global attributes.
 % NOTE: Assumes that values are cell arrays (of strings).
 %
-function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
-    outValue = OutGa.(fieldName);
-    
-    if isfield(InGa, fieldName)
-        outValue = union(outValue, InGa.(fieldName));
-    end
-    
-    % ~HACK
-    % Remove ' ', unless it is the only value.
-    % NOTE: Empirically, ' ' is like a fill value for global attributes (but it
-    % is probably not a formal fill value(?) since only zvars have fill values).
-    outValue2 = setdiff(outValue, ' ');
-    if ~isempty(outValue2)
-        outValue = outValue2;
-    end
-    
-    OutGa.(fieldName) = outValue;
-end
+% function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
+%     outValue = OutGa.(fieldName);
+%     
+%     if isfield(InGa, fieldName)
+%         outValue = union(outValue, InGa.(fieldName));
+%     end
+%     
+%     % ~HACK
+%     % Remove ' ', unless it is the only value.
+%     % NOTE: Empirically, ' ' is like a fill value for global attributes (but it
+%     % is probably not a formal fill value(?) since only zvars have fill values).
+%     outValue2 = setdiff(outValue, ' ');
+%     if ~isempty(outValue2)
+%         outValue = outValue2;
+%     end
+%     
+%     OutGa.(fieldName) = outValue;
+% end
