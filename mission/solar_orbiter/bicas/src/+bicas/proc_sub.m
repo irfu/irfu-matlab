@@ -1390,13 +1390,21 @@ classdef proc_sub
             
             
             
-            %====================================================
+            %==================
+            % Shared variables
+            %==================
             % Global attributes, shared between all 3x2 datasets
-            %====================================================
             Ga = struct();
             Ga.Datetime           = InLfrCwf.Ga.Datetime;
             Ga.OBS_ID             = InLfrCwf.Ga.OBS_ID;
-            Ga.SOOP_TYPE          = InLfrCwf.Ga.SOOP_TYPE;            
+            Ga.SOOP_TYPE          = InLfrCwf.Ga.SOOP_TYPE;
+            % zVariables, shared between all non-downsampled datasets
+            InitialZv = struct();
+            InitialZv.Epoch              = InLfrCwf.Zv.Epoch;
+            InitialZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
+            InitialZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
+            InitialZv.QUALITY_FLAG       = zv_QUALITY_FLAG;
+            InitialZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
             
             
             
@@ -1404,14 +1412,10 @@ classdef proc_sub
             % zVars for EFIELD (not downsampled)
             %====================================
             OutEfield = struct();
-            OutEfield.Ga                    = Ga;
+            OutEfield.Ga         = Ga;
+            OutEfield.Zv         = InitialZv;
             %
-            OutEfield.Zv.Epoch              = InLfrCwf.Zv.Epoch;
-            OutEfield.Zv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
-            OutEfield.Zv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
-            OutEfield.Zv.QUALITY_FLAG       = zv_QUALITY_FLAG;
-            OutEfield.Zv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
-            OutEfield.Zv.EDC_SRF            = zvEdcMvpm;
+            OutEfield.Zv.EDC_SRF = zvEdcMvpm;
             
             
             
@@ -1419,15 +1423,11 @@ classdef proc_sub
             % zVars for SCPOT (not downsampled)
             %===================================
             OutScpot = struct();
-            OutScpot.Ga                    = Ga;
+            OutScpot.Ga       = Ga;
+            OutScpot.Zv       = InitialZv;
             %
-            OutScpot.Zv.Epoch              = InLfrCwf.Zv.Epoch;
-            OutScpot.Zv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
-            OutScpot.Zv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
-            OutScpot.Zv.QUALITY_FLAG       = zv_QUALITY_FLAG;
-            OutScpot.Zv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
-            OutScpot.Zv.SCPOT              = ScpotTs.data;
-            OutScpot.Zv.PSP                = PspTs.data;
+            OutScpot.Zv.SCPOT = ScpotTs.data;
+            OutScpot.Zv.PSP   = PspTs.data;
             
 
 
@@ -1435,14 +1435,10 @@ classdef proc_sub
             % zVars for DENSITY (not downsampled)
             %=====================================
             OutDensity = struct();
-            OutDensity.Ga                    = Ga;
+            OutDensity.Ga         = Ga;
+            OutDensity.Zv         = InitialZv;
             %
-            OutDensity.Zv.Epoch              = InLfrCwf.Zv.Epoch;
-            OutDensity.Zv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
-            OutDensity.Zv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
-            OutDensity.Zv.QUALITY_FLAG       = zv_QUALITY_FLAG;
-            OutDensity.Zv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
-            OutDensity.Zv.DENSITY            = NeScpTs.data;
+            OutDensity.Zv.DENSITY = NeScpTs.data;
             
             
             
@@ -1529,22 +1525,33 @@ classdef proc_sub
             % both positive and negative leap seconds.
             DELTA_PLUS_MINUS_dwns = double(binSizeArrayNs / 2);
 
+            
+            
+            %====================================================
+            % Shared zVariables between all downsampled datasets
+            %====================================================
+            InitialDwnsZv = struct();
+            InitialDwnsZv.Epoch              = zvEpochDwns;
+            % Below: Pre-allocations.
+            % IMPLEMENTATION NOTE: Does not set the final values here to keep it
+            % open exactly how they should be set when there are no or too few
+            % samples. For loops further below should decide.
+            InitialDwnsZv.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
+            InitialDwnsZv.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
+            InitialDwnsZv.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
+            InitialDwnsZv.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
 
+            
 
             %==============================
             % zVars for EFIELD DOWNSAMPLED
             %==============================
             OutEfieldDwns = [];
-            OutEfieldDwns.Ga                    = Ga;
+            OutEfieldDwns.Ga            = Ga;
+            OutEfieldDwns.Zv            = InitialDwnsZv;
             %
-            OutEfieldDwns.Zv.Epoch              = zvEpochDwns;
-            OutEfieldDwns.Zv.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
-            OutEfieldDwns.Zv.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
-            OutEfieldDwns.Zv.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
-            OutEfieldDwns.Zv.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
-            %
-            OutEfieldDwns.Zv.EDC_SRF            = NaN(nRecordsDwns, 3);
-            OutEfieldDwns.Zv.EDCSTD_SRF         = NaN(nRecordsDwns, 3);
+            OutEfieldDwns.Zv.EDC_SRF    = NaN(nRecordsDwns, 3);
+            OutEfieldDwns.Zv.EDCSTD_SRF = NaN(nRecordsDwns, 3);
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
@@ -1570,18 +1577,13 @@ classdef proc_sub
             % zVars for SCPOT DOWNSAMPLED
             %=============================
             OutScpotDwns = [];
-            OutScpotDwns.Ga                    = Ga;
+            OutScpotDwns.Ga          = Ga;
+            OutScpotDwns.Zv          = InitialDwnsZv;
             %
-            OutScpotDwns.Zv.Epoch              = zvEpochDwns;
-            OutScpotDwns.Zv.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
-            OutScpotDwns.Zv.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
-            OutScpotDwns.Zv.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
-            OutScpotDwns.Zv.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
-            %
-            OutScpotDwns.Zv.SCPOT              = NaN(nRecordsDwns, 1);
-            OutScpotDwns.Zv.SCPOTSTD           = NaN(nRecordsDwns, 1);
-            OutScpotDwns.Zv.PSP                = NaN(nRecordsDwns, 1);
-            OutScpotDwns.Zv.PSPSTD             = NaN(nRecordsDwns, 1);
+            OutScpotDwns.Zv.SCPOT    = NaN(nRecordsDwns, 1);
+            OutScpotDwns.Zv.SCPOTSTD = NaN(nRecordsDwns, 1);
+            OutScpotDwns.Zv.PSP      = NaN(nRecordsDwns, 1);
+            OutScpotDwns.Zv.PSPSTD   = NaN(nRecordsDwns, 1);
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
@@ -1612,16 +1614,11 @@ classdef proc_sub
             % zVars for DENSITY DOWNSAMPLED
             %===============================
             OutDensityDwns = [];
-            OutDensityDwns.Ga                    = Ga;
+            OutDensityDwns.Ga            = Ga;
+            OutDensityDwns.Zv            = InitialDwnsZv;
             %
-            OutDensityDwns.Zv.Epoch              = zvEpochDwns;
-            OutDensityDwns.Zv.QUALITY_FLAG       = NaN(nRecordsDwns, 1);
-            OutDensityDwns.Zv.QUALITY_BITMASK    = NaN(nRecordsDwns, 1);
-            OutDensityDwns.Zv.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
-            OutDensityDwns.Zv.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
-            %
-            OutDensityDwns.Zv.DENSITY            = NaN(nRecordsDwns, 1);
-            OutDensityDwns.Zv.DENSITYSTD         = NaN(nRecordsDwns, 1);
+            OutDensityDwns.Zv.DENSITY    = NaN(nRecordsDwns, 1);
+            OutDensityDwns.Zv.DENSITYSTD = NaN(nRecordsDwns, 1);
             
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
