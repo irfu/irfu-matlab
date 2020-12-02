@@ -18,6 +18,8 @@
 %           'ac_spec_v5'             - DFB AC-coupled V5 Antenna Voltage, Monopole Mode
 %           'ac_spec_scmv'           - DFB AC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
 %           'ac_spec_scmu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
+%           'rfs_lfr'                - Radio Frequency Spectrometer, RFS, Low Frequency Reciever, LFR
+%           'rfs_hfr'                - Radio Frequency Spectrometer, RFS, High Frequency Reciever, HFR
 %           'sweap','spc'    - sweap proton moments
 %           'ephem'          - ephemeris files
 %           variable names as in the cdf file
@@ -116,9 +118,31 @@ switch datatype
     
     hourtag={''}; 
     
-  case {'sweap', 'spc'}
+    case {'rfs_lfr'}
+    filename = 'psp_fld_l2_rfs_lfr';
+    varnames = {...
+      'psp_fld_l2_rfs_lfr_auto_averages_ch0_V1V2';...
+      'frequency_lfr_auto_averages_ch0_V1V2';...
+      'psp_fld_l2_rfs_lfr_auto_averages_ch1_V3V4';...
+      'frequency_lfr_auto_averages_ch1_V3V4'};
+    varnamesout = {'rfs_lfr_v1v2';'rfs_lfr_v1v2_freq';...
+      'rfs_lfr_v3v4';'rfs_lfr_v3v4_freq'};
     
+    hourtag={''};
+  
+  case {'rfs_hfr'}
+    filename = 'psp_fld_l2_rfs_hfr';
+    varnames = {...
+      'psp_fld_l2_rfs_hfr_auto_averages_ch0_V1V2';...
+      'frequency_hfr_auto_averages_ch0_V1V2';...
+      'psp_fld_l2_rfs_hfr_auto_averages_ch1_V3V4';...
+      'frequency_hfr_auto_averages_ch1_V3V4'};
+    varnamesout = {'rfs_hfr_v1v2';'rfs_hfr_v1v2_freq';...
+      'rfs_hfr_v3v4';'rfs_hfr_v3v4_freq'};
     
+    hourtag={''};  
+    
+  case {'sweap', 'spc'}    
     filename = 'psp_swp_spc_l3i';
     
     varnames = {...
