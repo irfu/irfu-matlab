@@ -48,7 +48,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
       x=0; z=0;
       
       K=[p(6),-p(3);-p(3),p(1)];
-      comm= {'De Hoffmann-Teller frame is calculated using 1 component of E=(0,Ey,0)';' Output velocities [vx, vz], as vy cannot be calculated (assumed = 0)'};
+      comm= {'De Hoffmann-Teller frame is calculated using 1 component of E=(0,Ey,0)';'Output velocities [vx, vz], as vy cannot be calculated (assumed = 0)'};
   else
     K=[[p(4)+p(6) -p(2) -p(3)];[-p(2) p(1)+p(6) -p(5)];[-p(3) -p(5) p(1)+p(4)]];
     comm= 'De Hoffmann-Teller frame is calculated using all 3 components of E=(Ex,Ey,Ez)';
@@ -84,6 +84,9 @@ if isa(e,'TSeries') && isa(b,'TSeries')
     ehtp=eht(indData);
     ep.data(:,3) = 0;
     ehtp.data(:,3) = 0;
+    deltaE=ep.data -ehtp.data;
+    [p,s]=polyfit( ehtp.data,ep.data,1);
+    cc=corrcoef(ep.data,ehtp.data);
   elseif flag == 1
       ep=e(indData);
       ehtp=eht(indData);
@@ -103,9 +106,8 @@ if isa(e,'TSeries') && isa(b,'TSeries')
     deltaE=ep.data -ehtp.data;
     [p,s]=polyfit( ehtp.data,ep.data,1);
     cc=corrcoef(ep.data,ehtp.data);
-    
   end
-  
+
   disp(['slope=' num2str(p(1),3) '  offs=' num2str(p(2),2)]);
   disp(['cc=' num2str(cc(1,2),3)]);
   
