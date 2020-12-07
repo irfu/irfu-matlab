@@ -30,6 +30,9 @@ function path = remove_trailing_slash(path)
     %           absolute path / and a relative path .. The caller know which in
     %           both cases.
     %   PROPOSAL: Assertion to exclude "/".
+    %
+    % PROPOSAL: Eliminate. Use strip(... , 'right', '/') instead.
+    %   PROPOSAL: Use "filesep".
     
     %assert(isempty(regexp('', '^/+$')))
     

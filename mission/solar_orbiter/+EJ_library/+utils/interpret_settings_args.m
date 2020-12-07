@@ -116,6 +116,12 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
     %   Ex: struct1,key1,value1,struct2,key2,value2
     %   CON: Has not actually had the need for this. Is just "clever".
     %   NOTE: Can be implemented recursively?!!
+    %
+    % PROPOSAL: Somehow make compatible with mixing arguments to multiple
+    %           destinations.
+    %   Ex; Mix arguments for conventional settings, and plotting properties.
+    %   CON: Better to group arguments together in cell arrays.
+    %   CON: Setting name collisions.
     
     assert(iscell(argList), 'Argument "argList" is not a cell array.')
     
@@ -253,7 +259,10 @@ function A = add_struct_to_struct(A, B, Settings)
                 % NOTE: RECURSIVE CALL. Needs the original Settings.
                 A.(fieldName) = add_struct_to_struct(A.(fieldName), B.(fieldName), Settings);
             else
-                error('Can not interpret string value behaviour="%s" for this combination of field values.', behaviour)
+                error(...
+                    ['Can not interpret string value behaviour="%s"', ...
+                    ' for this combination of field values.'], ...
+                    behaviour)
             end
         else
             %===========================================

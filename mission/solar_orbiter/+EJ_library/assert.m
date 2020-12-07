@@ -244,6 +244,7 @@ classdef assert
         
         
         
+        % NOTE: Does not care about dimensions.
         function castring_sets_equal(set1, set2)
             % NOTE/BUG: Does not require sets to have internally unique strings.
             
@@ -541,13 +542,20 @@ classdef assert
         % Assert the sizes of one or multiple variables.
         % See EJ_library.utils.sizes for arguments and return values.
         %
-        % NOTE: One needs to add semicolon to end of row, since has return values.
+        % NOTE: One (sometimes) needs to add semicolon to end of row, since has
+        %       return values.
         % NOTE: Can use the return values to assert conditions like n>10 (after
         %       call to this function), which this function itself can not.
         % NOTE: Returning useful values in principle make this function have
         %       both assertion and non-assertion functionality.
         %   Ex: Returning number of CDF records while simultaneously asserting
         %       consistent sizes of multiple (zv/MATLAB) variables.
+        % NOTE: Can be used to verify that sizes of variables are equal, without
+        %       constraints on numebr of dimensions.
+        %           Ex: EJ_library.assert.sizes(A, size(B))
+        %       NOTE: This takes care of problem of trailing ones (must be
+        %             normalized to be equal for equal sizes, e.g. removed) when
+        %             comparing size(A) and size(B).
         %
         function [varargout] = sizes(varargin)
             % See EJ_library.utils.sizes for BOGIQ.
