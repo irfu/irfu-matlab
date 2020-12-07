@@ -52,12 +52,13 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         %=================================================
         % Replace fill/pad values with NaN for FLOAT data
         %=================================================
-        % TODO-NI: How does/should this work with integer fields that should
+        % TODO-NI: How does/should this work with integer fields that MUST
         %          also be stored as integers internally?!!!
-        %    Ex: ACQUISITION_TIME, Epoch.
+        %    Ex: Epoch, ACQUISITION_TIME.
         % TODO-NI: How distinguish integer zVariables that could be converted to
         %          floats (and therefore use NaN)?
         if isfloat(zvValue)
+            
             [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
             if ~isempty(fillValue)
                 % CASE: There is a fill value.

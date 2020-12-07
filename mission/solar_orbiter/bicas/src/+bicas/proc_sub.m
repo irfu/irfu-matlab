@@ -1096,8 +1096,11 @@ classdef proc_sub
                 ' Found %i relevant NSO events out of a total number of %i NSO events.'], ...
                 nCdfEvents, nGlobalEvents);
             
-            for kCdfEvent = 1:nCdfEvents    % Index into local/CDF NSO events table.                
-                iGlobalEvent = iCdfEventNa(kCdfEvent);     % Index into global NSO events table.
+            % Index into LOCAL/CDF NSO events table.
+            for kCdfEvent = 1:nCdfEvents
+                
+                % Index into GLOBAL NSO events table.
+                iGlobalEvent = iCdfEventNa(kCdfEvent);
                 eventNsoId   = cdfEventNsoIdCa{kCdfEvent};
                 
                 %===========================================================
@@ -1267,6 +1270,10 @@ classdef proc_sub
             %             datasets.
             %       NOTE: May be different for different "channels" (vary over
             %             non-record dimensions) within the same zVar.
+            %
+            % PROPOSAL: BUG: Fill values in the INPUT QUALITY_FLAG,
+            % QUALITY_BITMASK, L2_QUALITY_BITMASK are not known since the
+            % variables are not double.
 
 
 
@@ -1648,6 +1655,8 @@ classdef proc_sub
         % record.
         %
         % NOTE: Can handle zero input records.
+        % NOTE: Function is only public so that automated test code can access
+        % it.
         %
         %
         % ARGUMENTS
@@ -1665,8 +1674,6 @@ classdef proc_sub
         % msdt : (1, iChannel). 1xN. Modified STandard Deviation (MSTD).
         %
         %
-        % NOTE: Function is only public so that automated test code can access
-        % it.
         %
         function [med, mstd] = downsample_bin_sci_values(...
                 zVarSegment, nMinReqSamples)
@@ -1684,6 +1691,15 @@ classdef proc_sub
             %   parameters.
             %   CON: ~Can/should still not eliminate setting quality zVariables
             %        in loop.
+            %
+            % PROPOSAL: Merge with
+            %   downsample_bin_QUALITY_FLAG
+            %   downsample_bin_L12_QUALITY_BITMASK
+            %   PRO: Centralizes the conversion from bin to downsampled CDF
+            %        record.
+            %       CON: SCPOT has two different downsampled zVariables and
+            %            therefore calls downsample_bin_sci_values() twice per
+            %            bin.
             
             % ASSERTION
             % Only first two dimensions may be size non-one (with current
@@ -1696,10 +1712,11 @@ classdef proc_sub
             nRecords = size(zVarSegment, 1);
             nSpr     = size(zVarSegment, 2);   % SPR = Samples Per (CDF) Record
 
+            % ~NORMALIZATION
             if nRecords < nMinReqSamples
+                % CASE: Too few samples. ==> Remove all samples.
                 zVarSegment = zVarSegment([], :);
             end
-            
             
             med  = median(zVarSegment, 1);
             mstd = NaN(1, nSpr);    % Pre-allocate.

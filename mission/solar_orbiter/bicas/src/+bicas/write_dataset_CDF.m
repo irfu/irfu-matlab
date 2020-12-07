@@ -245,10 +245,12 @@ function DataObj = init_modif_dataobj(...
     %               data contained in the file"
     %   States that TIME_MIN, TIME_MAX should be "Julian day" (not "modified
     %   Julian day", which e.g. OVT uses internally).
+    %
     % NOTE: Implementation does not consider the integration time of each
     % sample.
     % NOTE: juliandate() is consistent with Julian date converter at
     % https://www.onlineconversion.com/julian_date.htm
+    % NOTE: ZvsSubset.Epoch already asserted to be monotonically increasing.
     DataObj.GlobalAttributes.TIME_MIN = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(1  )));
     DataObj.GlobalAttributes.TIME_MAX = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(end)));
     
@@ -288,7 +290,8 @@ function DataObj = init_modif_dataobj(...
                 %====================
                 % CASE: Numeric zVar
                 %====================
-                [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
+                [settingValue, settingKey] = SETTINGS.get_fv(...
+                    'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
                 switch(settingValue)
                     case 'USE_FILLVAL'
                         %========================================================
@@ -298,7 +301,8 @@ function DataObj = init_modif_dataobj(...
                         % (1) there is a PD fields/zVariable Epoch, and
                         % (2) this zVariable should have as many records as Epoch.
                         L.logf('warning', ...
-                            ['Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill', ...
+                            ['Setting numeric master/output CDF zVariable', ...
+                            ' "%s" to presumed correct size using fill', ...
                             ' values due to setting "%s" = "%s".'], ...
                             zvName, settingKey, settingValue)
                         
@@ -311,7 +315,9 @@ function DataObj = init_modif_dataobj(...
                         DataObj.data.(zvName).data = zvValue;
                         
                     otherwise
-                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, ...
+                        bicas.default_anomaly_handling(L, ...
+                            settingValue, settingKey, ...
+                            'E+W+illegal', anomalyDescrMsg, ...
                             'BICAS:write_dataset_CDF:SWModeProcessing:DatasetFormat')
                 end
                 
@@ -381,7 +387,9 @@ function write_empty_file(filePath)
     % ~ASSERTION
     if fileId == -1
         % NOTE: Technically non-BICAS error ID.
-        error('BICAS:write_dataset_CDF:CanNotOpenFile', 'Can not open file: "%s"', filePath)
+        error(...
+            'BICAS:write_dataset_CDF:CanNotOpenFile', ...
+            'Can not open file: "%s"', filePath)
     end
     
     % NOTE: Does not have to write any data to create empty file.

@@ -45,7 +45,6 @@ classdef NSO_table   % < handle
     
     
     
-    
     properties(SetAccess=immutable, GetAccess=public)
         % NOTE: Same RCS NSO ID may occur multiple times. Not unique.
         evtStartTt2000Array
@@ -330,11 +329,13 @@ classdef NSO_table   % < handle
         %   Element that has exactly one child in the form of an element
         %   with the specified tag name.
         function ChildXmlElem = getXmlUniqChildElem(XmlElem, childTagName)
+            
             ChildXmlElemList = XmlElem.getElementsByTagName(childTagName);
             if ~(ChildXmlElemList.getLength() == 1)
                 error( ...
                     'BICAS:NSO_table:FailedToReadInterpretNsOps', ...
-                    'XML element (tag name "%s") does not have exactly one child element with tag name "%s".', ...
+                    ['XML element (tag name "%s") does not have exactly, ', ...
+                    ' one child element with tag name "%s" as expected.'], ...
                     XmlElem.getNodeName(), childTagName)
             end
             
@@ -343,11 +344,12 @@ classdef NSO_table   % < handle
         
         
         
-        % Elem : Element that only has one child in the form of a text.
+        % XmlElem : Element that only has one child in the form of a text.
         %
-        % NOTE: Probably does not really assert enough to ensure that the one element is
-        % a text.
+        % NOTE: Probably does not really assert enough to ensure that the one
+        % element is a text.
         function s = getXmlElemStr(XmlElem)
+            
             ChildXmlNodesList = XmlElem.getChildNodes();
             assert(ChildXmlNodesList.getLength == 1, ...
                 'BICAS:NSO_table:FailedToReadInterpretNsOps', ...
