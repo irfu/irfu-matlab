@@ -17,7 +17,7 @@
             2020-11-12, EJ: I have not managed to find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </note>
         <note>
-            2020-12-01, EJ: Should contain all thruster firings for time period 2020-02-12 to 2020-11-21 (inclusive).
+            2020-12-07, EJ: Should contain all thruster firings for time period 2020-02-12 to 2020-12-05 (inclusive).
         </note>
     </notesTable>
 
@@ -168,7 +168,6 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
-
         <event>
             <startTimeUtc>2020-06-08T16:15:00</startTimeUtc>
             <stopTimeUtc> 2020-06-08T16:23:30</stopTimeUtc>
@@ -551,6 +550,18 @@
         <event>
             <startTimeUtc>2020-11-16T01:04:20</startTimeUtc>
             <stopTimeUtc> 2020-11-16T01:20:06</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-23T01:04:19</startTimeUtc>
+            <stopTimeUtc> 2020-11-23T01:18:58</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-30T01:39:25</startTimeUtc>
+            <stopTimeUtc> 2020-11-30T01:47:44</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
