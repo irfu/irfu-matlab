@@ -19,6 +19,9 @@
         <note>
             2020-12-07, EJ: Should contain all thruster firings for time period 2020-02-12 to 2020-12-05 (inclusive).
         </note>
+        <note>
+            2020-12-08, EJ: Added saturation for 2020-11-05. Its omission hints that there might be more unknown cases of saturation. Data has not been systematically searched for saturation, but should cover most cases.
+        </note>
     </notesTable>
 
 
@@ -509,20 +512,32 @@
 
 
         <event>
-            <startTimeUtc>2020-11-04T20:30:00</startTimeUtc>
-            <stopTimeUtc> 2020-11-04T21:12:00</stopTimeUtc>
+            <startTimeUtc>2020-11-04T20:26:11</startTimeUtc>
+            <stopTimeUtc> 2020-11-04T21:11:46</stopTimeUtc>
             <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
             <description></description>
         </event>
         <event>
-            <startTimeUtc>2020-11-04T21:12:00</startTimeUtc>
-            <stopTimeUtc> 2020-11-04T22:35:00</stopTimeUtc>
+            <startTimeUtc>2020-11-04T21:11:46</startTimeUtc>
+            <stopTimeUtc> 2020-11-04T22:35:11</stopTimeUtc>
             <rcsNsoId>FULL_SATURATION</rcsNsoId>
             <description></description>
         </event>
         <event>
-            <startTimeUtc>2020-11-04T22:35:00</startTimeUtc>
-            <stopTimeUtc> 2020-11-04T23:30:00</stopTimeUtc>
+            <startTimeUtc>2020-11-04T22:35:11</startTimeUtc>
+            <stopTimeUtc> 2020-11-05T00:34:30</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-05T00:34:30</startTimeUtc>
+            <stopTimeUtc> 2020-11-05T01:50:25</stopTimeUtc>
+            <rcsNsoId>FULL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-05T01:50:25</startTimeUtc>
+            <stopTimeUtc> 2020-11-05T02:34:11</stopTimeUtc>
             <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
             <description></description>
         </event>
@@ -565,7 +580,7 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
-        
+
     </eventsTable>
 
 </main>
