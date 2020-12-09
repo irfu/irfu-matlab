@@ -20,8 +20,9 @@
 %           'ac_spec_scmu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
 %           'rfs_lfr'                - Radio Frequency Spectrometer, RFS, Low Frequency Reciever, LFR
 %           'rfs_hfr'                - Radio Frequency Spectrometer, RFS, High Frequency Reciever, HFR
-%           'sweap','spc'    - sweap proton moments
-%           'ephem'          - ephemeris files
+%           'sweap','spc'            - SWEAP proton moments
+%           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
+%           'ephem'                  - ephemeris files
 %           variable names as in the cdf file
 % dateStart & dateStop: date vectors or strings for start and stop day
 %            e.g. [yyyy mm dd] or 'yyyy/mm/dd' or  'yyyy mm dd' (read with datenum)
@@ -157,6 +158,18 @@ switch datatype
       'np1_fit';'wp1_fit';'vp1_fit_SC';'vp1_fit_RTN';...
       'np_moment';'wp_moment';'vp_moment_SC';'vp_moment_RTN';...
       'R_HCI';'V_HCI'};
+    
+    hourtag={''};
+    
+  case {'spe'}
+    filename = 'psp_swp_spe_sf0_L3_pad';
+    varnames = {...
+      'QUALITY_FLAG';'PITCHANGLE';...
+      'EFLUX_VS_ENERGY';'ENERGY_VALS';...
+      'MAGF_SC'};
+    varnamesout = {'spe_qf';'spe_pitchangle';...
+      'spe_dif_eflux_vs_en';'spe_energy';...
+      'spe_mag_SC'};
     
     hourtag={''};
     
