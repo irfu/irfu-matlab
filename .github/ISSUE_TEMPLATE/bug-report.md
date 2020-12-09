@@ -14,9 +14,9 @@ assignees: ''
 
 
 ### Step 2: Describe your environment
- * irfu-matlab branch (i.e. ``master``, ``devel``): ____
- * Matlab version used (i.e. "Matlab R2020b"): ____
- * Operating system (ie "Windows 10", "Mac OS X 10.15.6", "Linux Ubuntu 20.04"): ____
+ * irfu-matlab branch (e.g. ```master```, ```devel```): ____
+ * Matlab version used (e.g. ```Matlab R2020b```): ____
+ * Operating system (e.g. ```Windows 10```, ```Mac OS X 10.15.6```, ```Linux Ubuntu 20.04```): ____
  - [ ] A 64-bit installation of Matlab was used.
 
 
