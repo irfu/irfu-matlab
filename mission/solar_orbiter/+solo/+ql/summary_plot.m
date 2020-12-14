@@ -222,7 +222,7 @@ classdef summary_plot < handle
                 hAxes = irf_panel(panelTag);
                 hLines = irf_plot(hAxes, Ts);
                 
-                % TEMPORARY HACK?
+                % TEMPORARY HACK for argument "fade"?
                 if ~isempty(linesPropCa) && strcmp(linesPropCa{1}, 'fade')
                     solo.ql.summary_plot.fade_color(hLines)
                     linesPropCa = linesPropCa(2:end);
@@ -334,10 +334,10 @@ classdef summary_plot < handle
             zvEpoch     = zvEpoch(bRecords);
             
             % IMPLEMENTATION NOTE: Can not obviously use
-            % EJ_library.assert.sizes() to derive nRecords and nSps since
-            % zvEpoch and zvDataCa are being transformed (LSF subset,
-            % SWF-->CWF), and the values need to be derived and used in the
-            % middle of that transformation.
+            % EJ_library.assert.sizes() to derive nRecords and nSps since both
+            % zvEpoch and zvDataCa are in the process of being transformed (LSF
+            % subset, SWF-->CWF), and the values need to be derived and used in
+            % the middle of that transformation.
             nRecords    = size(zvEpoch, 1);        % NOTE: After selecting records.
             nSps        = size(zvDataCa{1}, 2);    % SPS = Samples Per Snapshot
             assert(nSps >= 2)
