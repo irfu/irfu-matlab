@@ -297,10 +297,10 @@ classdef solo_local_file_db < solo_file_db
   methods (Access=private)
     function rDir = get_remotePrefix(obj, C)
       if any(contains(C, 'rpw'))
-        % offical RPW data is keept in one separate sync folder at IRFU,
+        % offical RPW data is kept in one separate sync folder at IRFU,
         % locally produced data is kept in another folder
         if exist([obj.dbRoot, filesep, 'latest'], 'dir')
-          rDir = [obj.dbRoot, filesep, 'latest', filesep, 'RPW'];
+          rDir = [obj.dbRoot, filesep, 'latest', filesep, 'rpw'];
         else
           rDir = [obj.dbRoot, filesep, 'remote', filesep, 'data'];
         end
@@ -337,15 +337,20 @@ classdef solo_local_file_db < solo_file_db
           case {'rpw-tds-surv-rswf-e-cdag', 'rpw-tds-surf-tswf-e-cdag'}
             subDir = 'tds_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
           case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
-            subDir = 'thr';  % ie combined 2nd of the two using only first and last char?
-          case 'rpw-bia-scpot-10-seconds'
-            subDir = 'bia-scpot-10-seconds';  % Locally produced files at IRFU (may have to change in future if official)
-          case 'rpw-bia-scpot'
-            subDir = 'bia-scpot'; % Locally produced files at IRFU (may have to change in future if official)
-          case 'rpw-bia-efield-10-seconds'
-            subDir = 'bia-efield-10-seconds';  % Locally produced files at IRFU (may have to change in future if official)
-          case 'rpw-bia-efield'
-            subDir = 'bia-efield'; % Locally produced files at IRFU (may have to change in future if official)
+            subDir = 'thr';  % ie combined 2nd of the two using only first and last char?            
+
+          % Planned future official directory names to be used by ROC and that
+          % IRFU should therefore also use. As per agreement with Yuri
+          % Khotyaintsev, Thomas Chust, and Erik Johansson 2020-11-27.
+          % Do not use until ROC (& IRFU) actually starts using these.
+          % /Erik Johansson 2020-12-15.
+%           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
+%             subDir = 'lfr_density';
+%           case {'rpw-bia-efield', 'rpw-bia-efield-10-seconds'}
+%             subDir = 'lfr_efield';
+%           case {'rpw-bia-scpot', 'rpw-bia-scpot-10-seconds'}
+%             subDir = 'lfr_scpot';
+
           otherwise
             % fallback to full descriptor (used for local SOAR copy at IRFU)
             subDir = C{3};
