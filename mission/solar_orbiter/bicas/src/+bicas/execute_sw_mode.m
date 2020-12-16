@@ -236,49 +236,43 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     
     % PGA = Parents' GlobalAttributes.
 
-    OutGaSubset.Parents        = {};
+    assert(isscalar(OutputDatasetGa.Datetime), ...
+        'BICAS:execute_sw_mode:Datetime', ...
+        ['Global attribute "Datetime" for output dataset', ...
+        ' is not a MATLAB scalar (i.e. global attribute is', ...
+        ' not ONE string). This may be due to the corresponding input', ...
+        ' dataset value being incorrect.'])
+    OutGaSubset = OutputDatasetGa;
+
+
+
     OutGaSubset.Parent_version = {};
+    OutGaSubset.Parents        = {};
     OutGaSubset.Provider       = {};
-    OutGaSubset.Datetime       = {};
-    OutGaSubset.OBS_ID         = {};
-    OutGaSubset.SOOP_TYPE      = {};
-    
     keysCa = InputDatasetsMap.keys;
-    for i = 1:numel(keysCa)        
-        Ga = InputDatasetsMap(keysCa{i}).Ga;
+    for i = 1:numel(keysCa)
+        InputGa = InputDatasetsMap(keysCa{i}).Ga;
     
         % ASSERTION
         % NOTE: ROC DFMD is not completely clear on which version number should
         % be used.
         % NOTE: Stores all values to be safe.
-        assert(isscalar(Ga.Data_version), ...
+        assert(isscalar(InputGa.Data_version), ...
             'BICAS:execute_sw_mode:DatasetFormat', ...
             ['Global attribute "Data_version" for input dataset', ...
-            ' with key=%s is not a MATLAB scalar (i.e. global attribute is', ...
-            ' not ONE string).'], ...
+            ' with key=%s is not a MATLAB scalar (i.e. the global attribute is', ...
+            ' not exactly ONE string).'], ...
             keysCa{i})
         
-        OutGaSubset.Parents       {end+1} = ['CDF>', Ga.Logical_file_id{1}];
-        OutGaSubset.Parent_version{end+1} = Ga.Data_version{1};
-        OutGaSubset.Provider              = union(OutGaSubset.Provider, Ga.Provider);
-
-        %OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'OBS_ID');
-        %OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'SOOP_TYPE');
+        % 2020-12-16, EJ: Has found input datasets to have global
+        % attribute "Data_version" values which are either NUMERIC or STRINGS
+        % (e.g. "02"). Varies.
+        
+        % NOTE: Using Data_version to set Parent_version.
+        OutGaSubset.Parent_version{end+1} = InputGa.Data_version{1};
+        OutGaSubset.Parents       {end+1} = ['CDF>', InputGa.Logical_file_id{1}];
+        OutGaSubset.Provider              = union(OutGaSubset.Provider, InputGa.Provider);
     end
-    
-    
-    
-    assert(isscalar(OutputDatasetGa.Datetime), ...
-        'BICAS:execute_sw_mode:Datetime', ...
-        ['Global attribute "Datetime" for output dataset', ...
-        ' with key=%s is not a MATLAB scalar (i.e. global attribute is', ...
-        ' not ONE string). This may be due to that the corresponding input', ...
-        ' dataset value is incorrect.'], ...
-        keysCa{i})
-    OutGaSubset.Datetime  = OutputDatasetGa.Datetime;
-    
-    OutGaSubset.OBS_ID    = OutputDatasetGa.OBS_ID;
-    OutGaSubset.SOOP_TYPE = OutputDatasetGa.SOOP_TYPE;
     
     
     
@@ -294,6 +288,10 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         % NOTE: Maybe wrong choice of error ID "DatasetFormat".
     end
     
+    % ASSERTION: Required subset for every dataset.
+    EJ_library.assert.struct(OutGaSubset, ...
+        {'Parents', 'Parent_version', 'Provider', ...
+        'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
 end
 
 

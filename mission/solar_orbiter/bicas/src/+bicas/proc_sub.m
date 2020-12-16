@@ -1336,7 +1336,8 @@ classdef proc_sub
                 'repres', {'x', 'y', 'z'});
             %-------------------------------------------------------
             % CALL EXTERNAL CODE
-            [EdcSrfTs, PspTs, ScpotTs] = solo.vdccal(VdcTs, EdcTs);
+            [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
+                = solo.vdccal(VdcTs, EdcTs);
             %-------------------------------------------------------
             EJ_library.assert.sizes(...
                 InLfrCwf.Zv.Epoch, [-1, 1], ...
@@ -1386,7 +1387,7 @@ classdef proc_sub
             %====================================================================
             %-----------------------------
             % CALL EXTERNAL CODE
-            NeScpTs = solo.psp2ne(PspTs);
+            [NeScpTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
             %-----------------------------
             EJ_library.assert.sizes(...
                 PspTs.data,   [-1, 1], ...
@@ -1394,6 +1395,27 @@ classdef proc_sub
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
             assert(strcmp(NeScpTs.units, 'cm^-3'))
+            
+            
+            
+            %====================================================================
+            % Derive values for CDF global attribute "Misc_calibration_versions"
+            %====================================================================
+            CODE_VER_STR_REGEXP = '[0-9]{4}-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]';
+            assert(isempty(vdccalMatVerStr), ...
+                ['solo.vdccal() no longer returns empty vdccalMatVerStr.', ...
+                ' BICAS needs to be updated.'])
+            EJ_library.assert.castring_regexp(vdccalCodeVerStr, CODE_VER_STR_REGEXP)
+            EJ_library.assert.castring_regexp(psp2neCodeVerStr, CODE_VER_STR_REGEXP)
+            %
+            % NOTE: Does not set BICAS version since this is already encoded in
+            % global attribute "Software_version" (together with
+            % "Software_name").
+            gaEfieldScpot_Misc_calibration_versions = {};
+            gaEfieldScpot_Misc_calibration_versions{end+1} = ['solo.vdccal() code version ', vdccalCodeVerStr];
+            %
+            gaDensity_Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;            
+            gaDensity_Misc_calibration_versions{end+1}     = ['solo.psp2ne() code version ', psp2neCodeVerStr];
             
             
             
@@ -1412,17 +1434,18 @@ classdef proc_sub
             InitialZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
             InitialZv.QUALITY_FLAG       = zv_QUALITY_FLAG;
             InitialZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
-            
-            
-            
+
+
+
             %====================================
             % zVars for EFIELD (not downsampled)
             %====================================
             OutEfield = struct();
-            OutEfield.Ga         = Ga;
-            OutEfield.Zv         = InitialZv;
+            OutEfield.Ga                           = Ga;
+            OutEfield.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutEfield.Zv                           = InitialZv;
             %
-            OutEfield.Zv.EDC_SRF = zvEdcMvpm;
+            OutEfield.Zv.EDC_SRF                   = zvEdcMvpm;
             
             
             
@@ -1430,11 +1453,12 @@ classdef proc_sub
             % zVars for SCPOT (not downsampled)
             %===================================
             OutScpot = struct();
-            OutScpot.Ga       = Ga;
-            OutScpot.Zv       = InitialZv;
+            OutScpot.Ga                           = Ga;
+            OutScpot.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutScpot.Zv                           = InitialZv;
             %
-            OutScpot.Zv.SCPOT = ScpotTs.data;
-            OutScpot.Zv.PSP   = PspTs.data;
+            OutScpot.Zv.SCPOT                     = ScpotTs.data;
+            OutScpot.Zv.PSP                       = PspTs.data;
             
 
 
@@ -1442,10 +1466,11 @@ classdef proc_sub
             % zVars for DENSITY (not downsampled)
             %=====================================
             OutDensity = struct();
-            OutDensity.Ga         = Ga;
-            OutDensity.Zv         = InitialZv;
+            OutDensity.Ga                           = Ga;
+            OutDensity.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
+            OutDensity.Zv                           = InitialZv;
             %
-            OutDensity.Zv.DENSITY = NeScpTs.data;
+            OutDensity.Zv.DENSITY                   = NeScpTs.data;
             
             
             
@@ -1554,7 +1579,7 @@ classdef proc_sub
             % zVars for EFIELD DOWNSAMPLED
             %==============================
             OutEfieldDwns = [];
-            OutEfieldDwns.Ga            = Ga;
+            OutEfieldDwns.Ga            = OutEfield.Ga;
             OutEfieldDwns.Zv            = InitialDwnsZv;
             %
             OutEfieldDwns.Zv.EDC_SRF    = NaN(nRecordsDwns, 3);
@@ -1584,7 +1609,7 @@ classdef proc_sub
             % zVars for SCPOT DOWNSAMPLED
             %=============================
             OutScpotDwns = [];
-            OutScpotDwns.Ga          = Ga;
+            OutScpotDwns.Ga          = OutScpot.Ga;
             OutScpotDwns.Zv          = InitialDwnsZv;
             %
             OutScpotDwns.Zv.SCPOT    = NaN(nRecordsDwns, 1);
@@ -1621,7 +1646,7 @@ classdef proc_sub
             % zVars for DENSITY DOWNSAMPLED
             %===============================
             OutDensityDwns = [];
-            OutDensityDwns.Ga            = Ga;
+            OutDensityDwns.Ga            = OutDensity.Ga;
             OutDensityDwns.Zv            = InitialDwnsZv;
             %
             OutDensityDwns.Zv.DENSITY    = NaN(nRecordsDwns, 1);
