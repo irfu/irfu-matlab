@@ -1,14 +1,28 @@
-function NeScp = psp2ne(PSP)
-%SOSO.PSP2NE  Convert probe-to-spacecraft potential to electron density
+function [NeScp, codeVerStr] = psp2ne(PSP)
+%SOLO.PSP2NE  Convert probe-to-spacecraft potential to electron density
 %
-% NeScp = solo.psp2ne(PSP)
+% [NeScp,codeVerStr] = solo.psp2ne(PSP)
 %
 % Convert probe-to-spacecraft (PSP) potential to electron density (NeScp)
 %
 % The calibration is based on the RPW/QTN/Fpe data
+%
+% Outputs:
+%   NeScp      - Electron density
+%   codeVerStr - Version string. Used by BICAS.
+%
+% NOTE: This function is used by BICAS for producing official datasets.
 
-% Calibraiton using plasma line 
+
+% Calibration using plasma line 
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
+
+% Date string that represent the version of the function. This string is
+% used by BICAS to set a CDF global attribute in official datasets for
+% traceability.
+% NOTE: This value is meant to be be updated by hand, not by an automatic
+% timestamp, so that a constant value represents the same algorithm.
+codeVerStr = '2020-11-24T17:50:01';
 
 % based on data from 2020-04-07
 CalEntry = irf.ts_vec_xy(...

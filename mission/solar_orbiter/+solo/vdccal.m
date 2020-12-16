@@ -1,14 +1,17 @@
-function [DCE_SRF,PSP,ScPot] = vdccal(VDC,EDC)
+function [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = vdccal(VDC,EDC)
 %SOLO.VDCCAL  Calibrate VDC to get DC E and PSP
 %
-%    [DCE_SRF,PSP,ScPot] = solo.vdccal(VDC,EDC)
+%    [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = solo.vdccal(VDC,EDC)
 %
 % Inputs: VDC,EDC from L2 CWF files
 %
 % Outputs:
-%   DCE_SRF - DC electric field in SRF (Ex=0)
-%   PSP     - probe-to-spacecraft potential
-%   ScPot   - spacecraft potential (PRELIMINARY PROXY)
+%   DCE_SRF    - DC electric field in SRF (Ex=0)
+%   PSP        - probe-to-spacecraft potential
+%   ScPot      - spacecraft potential (PRELIMINARY PROXY)
+%   codeVerStr - Date format version string for function itself. Used by BICAS.
+%   matVerStr  - Date format version string for .mat file. Used by BICAS.
+%                (Not yet used.)
 %
 % Loads d23K123.mat file produced by solo.correlate_probes_batch (script)
 % NOTE: d23K123.mat needs to be updated before processing the new data.
@@ -16,6 +19,17 @@ function [DCE_SRF,PSP,ScPot] = vdccal(VDC,EDC)
 % NOTE: This function is used by BICAS for producing official datasets.
 
 a = load('d23K123.mat');
+
+% Date strings that represent the version of calibration. These strings are
+% used by BICAS to set a CDF global attribute in official datasets for
+% traceability.
+% --
+% Version of the function (not .mat file).
+% NOTE: This value is meant to be be updated by hand, not by an automatic
+% timestamp, so that a constant value represents the same function.
+codeVerStr = '2020-11-11T19:10:17';
+% Version of the .mat file. Not yet used. Meant to be read from .mat file.
+matVerStr  = [];
 
 d23R = a.d23.resample(VDC);
 K123R = a.K123.resample(VDC);
