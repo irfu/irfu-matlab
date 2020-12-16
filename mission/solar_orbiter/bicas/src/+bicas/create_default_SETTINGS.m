@@ -29,91 +29,92 @@
 % First created 2018-01-24
 %
 function SETTINGS = create_default_SETTINGS()
-    % PROPOSAL: Setting for latching relay? Setting for only mode 0?
-    %
-    % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
-    %                                                            Not which data to use (HK or TC).
-    %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
-    %
-    % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-    %
-    % PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
-    %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
-    %
-    % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
-    %   ==> Problems with grepping log files.
-    %   NOTE: Want setting value convention to be consistent with other settings values.
-    %       Ex: CORRECT, SORT, FULL, SCALAR, ROUND
-    %   PROPOSAL: Keep as is and grep log files using surrounding characters.
-    %       Ex: " ERROR "
-    %   PROPOSAL: Use lower case "error", "warning"
-    %   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
-    %
-    % PROPOSAL: Separate function for validating/asserting settings.
-    %   NOTE: Must be done AFTER all settings have been set.
-    %   PROPOSAL: Do every time settings are set, i.e. for default values,
-    %       config file values, CLI argument values.
-    %
-    % =========================
-    % BOGIQ: SETTING KEY NAMING 
-    % =========================
-    % PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
-    %   NOTE: Name change likely influences BICAS testing code and pipeline. Should therefore only be implemented at the
-    %         right time.
-    %
-    % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
-    % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
-    %
-    % PROPOSAL: Use naming convention for settings keys for testing ONLY:
-    %
-    % PROPOSAL: Relevant setting keys should always be on the form ENABLE, never DISABLE.
-    %   PRO: More consistent.
-    %   CON: Less clear what is a deviation from the default.
-    % PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLE", "DISABLE").
-    %   CON: Sounds bad to put "USE" at the end of settings key.
-    % PROPOSAL: Always use either DISABLED/ENABLED or DISABLE/ENABLE.
-    %   TODO-DEC: Which?
-    %
-    % PROPOSAL: Need (settings name) terminology for temporary "bugfixes"/corrections due to bugs outside of BICAS,
-    %   Ex: Bugs datasets (bugs in other RCS, ROC's pipeline).
-    %   Ex: ~Corrupted data (different from bugs?)
-    %   Ex: PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
-    %   NOTE: Need something is compatible with different course of action, not just permit or error.
-    %       Ex: PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY = ERROR, ROUND, PERMIT
-    %   PROPOSAL: Always include name of zVar.
-    %   PROPOSAL: "correction"
-    %   PROPOSAL: "mitigation"
-    %   PROPOSAL: "bugfix"
-    %       CON: Sounds like a bug in BICAS which it is not.
-    %   PROPOSAL: workaround
-    %   PROPOSAL: behaviour
-    %   PROPOSAL: action
-    %   PROPOSAL: ~anomaly
-    %
-    % PROPOSAL: Policy on usage of dataset levels in settings keys.
-    %   Ex: For now, L1R refers to algorithms to use WHEN processing L1R as input
-    %       Ex: PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY
-    %       NOTE: Does not have to refer to the L1R datasets as such.
-    %           Ex: L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
-    %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
-    %   Ex: For now, L2 refers to algorithms to use when processing L2 as output.
-    %       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
-    %   --
-    %   NEED: Specify whether refers to input or output data (not necessarily datasets).
-    %       Ex: Distinguish processing L1/L1R-->L2, L2-->L3.
-    %       PROPOSAL: Some kind of prefix before data level.
-    %           PROPOSAL: IN_L1R, OUT_L2 etc.
-    %           PROPOSAL: INPUT_CDF.L1R, OUTPUT_CDF.L2 etc.
-    %   NEED: Distinguish processing (science) data L1-->L2, L1R-->L2.
-    %   NEED: Distinguish input L1 voltage and L1 current.
-    %   NEED: Distinguish
-    %       (1) datasets of specific level, and
-    %       (2) algorithms that run when using given input level.
-    %   PROPOSAL: when speaking of datasets, use
-    %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
-    %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
-    %       PROBLEM: How distinguish from processing?
-    %
+% PROPOSAL: Setting for latching relay? Setting for only mode 0?
+%
+% PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
+%                                                            Not which data to use (HK or TC).
+%           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
+%
+% PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
+%
+% PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
+%   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
+%
+% PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
+%   ==> Problems with grepping log files.
+%   NOTE: Want setting value convention to be consistent with other settings values.
+%       Ex: CORRECT, SORT, FULL, SCALAR, ROUND
+%   PROPOSAL: Keep as is and grep log files using surrounding characters.
+%       Ex: " ERROR "
+%   PROPOSAL: Use lower case "error", "warning"
+%   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
+%
+% PROPOSAL: Separate function for validating/asserting settings.
+%   NOTE: Must be done AFTER all settings have been set.
+%   PROPOSAL: Do every time settings are set, i.e. for default values,
+%       config file values, CLI argument values.
+%
+% =========================
+% BOGIQ: SETTING KEY NAMING 
+% =========================
+% PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
+%   NOTE: Name change likely influences BICAS testing code and pipeline.
+%         Should therefore only be implemented at the right time.
+%
+% PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
+% PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+%
+% PROPOSAL: Use naming convention for settings keys for testing ONLY:
+%
+% PROPOSAL: Relevant setting keys should always be on the form ENABLE, never DISABLE.
+%   PRO: More consistent.
+%   CON: Less clear what is a deviation from the default.
+% PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLE", "DISABLE").
+%   CON: Sounds bad to put "USE" at the end of settings key.
+% PROPOSAL: Always use either DISABLED/ENABLED or DISABLE/ENABLE.
+%   TODO-DEC: Which?
+%
+% PROPOSAL: Need (settings name) terminology for temporary
+%           "bugfixes"/corrections due to bugs outside of BICAS,
+%   Ex: Bugs datasets (bugs in other RCS, ROC's pipeline).
+%   Ex: ~Corrupted data (different from bugs?)
+%   Ex: PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
+%   NOTE: Need something is compatible with different course of action, not just permit or error.
+%       Ex: PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY = ERROR, ROUND, PERMIT
+%   PROPOSAL: Always include name of zVar.
+%   PROPOSAL: "correction"
+%   PROPOSAL: "mitigation"
+%   PROPOSAL: "bugfix"
+%       CON: Sounds like a bug in BICAS which it is not.
+%   PROPOSAL: workaround
+%   PROPOSAL: behaviour
+%   PROPOSAL: action
+%   PROPOSAL: ~anomaly
+%
+% PROPOSAL: Policy on usage of dataset levels in settings keys.
+%   Ex: For now, L1R refers to algorithms to use WHEN processing L1R as input
+%       Ex: PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY
+%       NOTE: Does not have to refer to the L1R datasets as such.
+%           Ex: L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
+%           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
+%   Ex: For now, L2 refers to algorithms to use when processing L2 as output.
+%       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
+%   --
+%   NEED: Specify whether refers to input or output data (not necessarily datasets).
+%       Ex: Distinguish processing L1/L1R-->L2, L2-->L3.
+%       PROPOSAL: Some kind of prefix before data level.
+%           PROPOSAL: IN_L1R, OUT_L2 etc.
+%           PROPOSAL: INPUT_CDF.L1R, OUTPUT_CDF.L2 etc.
+%   NEED: Distinguish processing (science) data L1-->L2, L1R-->L2.
+%   NEED: Distinguish input L1 voltage and L1 current.
+%   NEED: Distinguish
+%       (1) datasets of specific level, and
+%       (2) algorithms that run when using given input level.
+%   PROPOSAL: when speaking of datasets, use
+%       (1) INPUT_CDF.<level>  : How to interpret, read datasets
+%       (2) OUTPUT_CDF.<level> : How to output, write datasets.
+%       PROBLEM: How distinguish from processing?
+%
     
 
 
