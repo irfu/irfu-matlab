@@ -27,7 +27,7 @@ a = load('d23K123_20201110_november.mat');
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
-codeVerStr = '2020-11-11T19:10:17';
+codeVerStr = '2020-12-17T08:58:00';
 % Version of the .mat file. Not yet used. Meant to be read from .mat file.
 matVerStr  = [];
 
