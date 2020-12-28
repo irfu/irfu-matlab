@@ -18,6 +18,10 @@
 %           'ac_spec_v5'             - DFB AC-coupled V5 Antenna Voltage, Monopole Mode
 %           'ac_spec_scmv'           - DFB AC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
 %           'ac_spec_scmu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
+%           'dc_spec_dv12'           - DFB DC-coupled Differential Voltage V1-V2 antenas
+%           'dc_spec_SCMv'           - DFB DC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
+%           'dc_spec_SCMu'           - DFB DC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
+%           'dc_spec_SCMw'           - DFB DC-coupled SCM, Low Frequency, High Gain, w-component, Sensor coordinates
 %           'rfs_lfr'                - Radio Frequency Spectrometer, RFS, Low Frequency Reciever, LFR
 %           'rfs_hfr'                - Radio Frequency Spectrometer, RFS, High Frequency Reciever, HFR
 %           'sweap','spc'            - SWEAP proton moments
@@ -119,7 +123,43 @@ switch datatype
     
     hourtag={''}; 
     
-    case {'rfs_lfr'}
+  case {'dc_spec_dv12'}
+    filename = 'psp_fld_l2_dfb_dc_spec_dV12hg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_spec_dV12hg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_spec_dV12hg'};
+    varnamesout = {'dc_dv12_freq_bins';'dc_dv12'};
+    
+    hourtag={''};
+    
+  case {'dc_spec_scmv'}
+    filename = 'psp_fld_l2_dfb_dc_spec_SCMvlfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_spec_SCMvlfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_spec_SCMvlfhg'};
+    varnamesout = {'dc_scmv_freq_bins';'dc_scmv'};
+    
+    hourtag={''};
+    
+  case {'dc_spec_scmu'}
+    filename = 'psp_fld_l2_dfb_dc_spec_SCMulfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_spec_SCMulfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_spec_SCMulfhg'};
+    varnamesout = {'dc_scmu_freq_bins';'dc_scmu'};
+    
+    hourtag={''};
+    
+  case {'dc_spec_scmw'}
+    filename = 'psp_fld_l2_dfb_dc_spec_SCMwlfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_spec_SCMwlfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_spec_SCMwlfhg'};
+    varnamesout = {'dc_scmw_freq_bins';'dc_scmw'};
+    
+    hourtag={''};
+    
+  case {'rfs_lfr'}
     filename = 'psp_fld_l2_rfs_lfr';
     varnames = {...
       'psp_fld_l2_rfs_lfr_auto_averages_ch0_V1V2';...
@@ -130,7 +170,7 @@ switch datatype
       'rfs_lfr_v3v4';'rfs_lfr_v3v4_freq'};
     
     hourtag={''};
-  
+    
   case {'rfs_hfr'}
     filename = 'psp_fld_l2_rfs_hfr';
     varnames = {...
