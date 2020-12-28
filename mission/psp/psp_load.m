@@ -128,7 +128,7 @@ switch datatype
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_dV12hg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_dV12hg'};
-    varnamesout = {'dc_spec_dv12_freq_bins';'dc_spec_dv12'};
+    varnamesout = {'dc_spec_dv12_freq_bins';'dc_spec_dv12_pw'};
     
     hourtag={''};
         
@@ -137,7 +137,7 @@ switch datatype
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMulfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMulfhg'};
-    varnamesout = {'dc_spec_scmu_freq_bins';'dc_spec_scmu'};
+    varnamesout = {'dc_spec_scmu_freq_bins';'dc_spec_scmu_pw'};
     
     hourtag={''};
     
@@ -146,7 +146,7 @@ switch datatype
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMvlfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMvlfhg'};
-    varnamesout = {'dc_spec_scmv_freq_bins';'dc_spec_scmv'};
+    varnamesout = {'dc_spec_scmv_freq_bins';'dc_spec_scmv_pw'};
     
     hourtag={''};
     
