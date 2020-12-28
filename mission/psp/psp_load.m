@@ -155,7 +155,7 @@ switch datatype
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMwlfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMwlfhg'};
-    varnamesout = {'dc_spec_scmw_freq_bins';'dc_spec_scmw'};
+    varnamesout = {'dc_spec_scmw_freq_bins';'dc_spec_scmw_pw'};
     
     hourtag={''};
     
