@@ -11,9 +11,11 @@ if nargin == 0
   help psp_var;
   return;
 end
+% find where to look for psp_variables.txt
+tmp=which('psp_var');
+pspFile = [tmp(1:end-5) 'variables.txt'];
 
-pspFile = '/Users/andris/Documents/MATLAB/psp_variables.txt';
-% read lines
+% read psp_variables.txt
 fid = fopen(pspFile,'rt');
 C = textscan(fid, '%s', 'Delimiter',''); C = C{1};
 fclose(fid);
