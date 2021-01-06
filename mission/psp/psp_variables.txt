@@ -1,0 +1,392 @@
+%%%%
+varName: xxx(can be regexP)
+fileName: xxx
+hourtag: 
+varNameShort: xxx
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_PA_E
+fileName: psp_swp_spe_sf0_L3_pad
+hourtag: 
+varNameShort: 
+related: 
+info#start
+Electron differential Energy Flux vs Pitch-angle and Energy
+info#end
+----
+
+%%%%
+varName: EFLUX
+fileName: psp_swp_spa_sf1_L2_32E
+hourtag: 
+varNameShort: spa_sf1_eflux
+related: 
+info#start
+Differential Energy Flux vs Energy/angle bin
+The units are differential energy flux and eV.
+The “sf1” product is an energy spectrum produced on the spacecraft by summing over the theta and phi directions. 
+CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products due to the method of spectra production on the SPAN-E instrument (straight summing). Thus, SF1 energy spectra are not recommended for rigid statistical analysis.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spa_sf1_L2_32E
+hourtag: 
+varNameShort: spa_sf1_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spa_sf1_L2_32E
+hourtag: 
+varNameShort: spa_sf1_quallity
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_ENERGY
+fileName: psp_swp_spe_sf0_L3_pad
+hourtag: 
+varNameShort: 
+related: 
+info#start
+Electron differential Energy Flux vs Pitch-angle and Energy
+info#end
+----
+
+%%%%
+varName: sc_pos_HCI
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: hciR
+related: 
+info#start
+PSP position in the Heliocentric Inertial system (also called Ecliptic J2000)
+units: km
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_mag_RTN_1min
+fileName: psp_fld_l2_mag_RTN_1min
+hourtag: 
+varNameShort: rtnB1min
+related: 
+info#start
+Magnetic field from which sensor??
+Sampling changes along the orbit
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_mag_RTN
+fileName: psp_fld_l2_mag_RTN
+hourtag: 6h
+varNameShort: rtnB
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_mag_SC
+fileName: psp_fld_l2_mag_SC
+hourtag: 
+varNameShort: scB
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_wf_V[1-5]dc
+fileName: psp_fld_l2_dfb_wf_vdc
+hourtag: 6h
+varNameShort: V1dc
+related: 
+info#start
+L2 Electric Potential from V[1-5]
+
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_wf_dVdc_sensor
+fileName: psp_fld_l2_dfb_wf_dvdc
+hourtag: 6h
+varNameShort: 
+related: 
+info#start
+DFB DC differential voltage waveform in sensor coordinates
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_wf_dVdc_sc
+fileName: psp_fld_l2_dfb_wf_dvdc
+hourtag: 6h
+varNameShort: scdVdc
+related: 
+info#start
+DFB DC differential voltage waveform in spacecraft coordinates
+info#end
+----
+
+%%%%
+varName: np_fit
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: npFit
+related: 
+info#start
+the bulk proton population in the solar wind is fit 
+to a group of convected Maxwellian models.
+.
+For errors check npFit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model for 
+the data. Refer to the data quality flags.This variable reflects *precision* 
+uncertainty from fitting, summed in quadrature with the *accuracy* uncertainy 
+associated with the absolute responses of the SPC sensors.
+info#end
+----
+
+%%%%
+varName: np1_fit
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: np1Fit
+related: 
+info#start
+Primary proton population density, from 1-dimensional Maxwellian fitting.
+The strongest signal peak, which generally corresponds to the bulk proton 
+population in the solar wind, is fit to a convected Maxwellian model.
+.
+For errors check np1Fit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model for 
+the data. Refer to the data quality flags.This variable reflects *precision* 
+uncertainty from fitting, summed in quadrature with the *accuracy* uncertainy 
+associated with the absolute responses of the SPC sensors.
+info#end
+----
+
+%%%%
+varName: np_moment
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: npmomFit
+related: 
+info#start
+Proton density estimate from the 0th moment of the reduced distribution function.
+This moment is a model-independant estimate of the proton density, 
+but it is subject to confusion with alpha particles when present. 
+.
+For errors check npmomFit.userData.DELTA_(PLUS,MINUS)_VAR 
+Error bars represent estimated upper and lower limits.'
+info#end
+----
+
+%%%%
+varName: wp1_fit
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: wp1Fit
+related: 
+info#start
+Primary proton population radial [most probable] thermal speed, 
+from 1-dimensional Maxwellian fitting.
+The strongest signal peak, which generally corresponds to the bulk proton 
+population in the solar wind, is fit to a convected Maxwellian model.
+This measurement most accurately represents the thermal width of 
+the reduced phase-space-distribution function along the SPC-normal 
+direction. This roughly corresponds to the radial component of 
+the temperature tensor.This is a most probable thermal speed, 
+i.e. the model distribution goes like exp(-v^2/w^2).
+.
+For errors check wp1Fit.userData.DELTA_(PLUS,MINUS)_VAR 
+1-sigma error associated with primary proton thermal speed in Maxwellian fitting.
+This uncertainty may be invalid when the Maxwellian is a poor model for 
+the data. Refer to the data quality flags.This variable reflects 
+*precision* uncertainty from fitting, summed in quadrature with 
+the *accuracy* uncertainy associated with the absolute responses 
+of the SPC sensors.
+info#end
+----
+
+%%%%
+varName: vp_fit_RTN
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: rtnVpFit
+related: 
+info#start
+Proton bulk velocity, from 1-dimensional Maxwellian fitting.
+.
+For errors check rtnVpFit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model 
+for the data. Refer to the data quality flags.The flow angles relative 
+to the SPC are obtained by comparing fluxes upon the four sensor quadrants. 
+This uncertainty incorporates uncertainties in the absolute responses 
+of the respective sensors.
+info#end
+----
+
+%%%%
+varName: vp_fit_SC
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: scVpFit
+related: 
+info#start
+Proton bulk velocity, from 1-dimensional Maxwellian fitting.
+.
+For errors check scVpFit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model 
+for the data. Refer to the data quality flags.The flow angles relative 
+to the SPC are obtained by comparing fluxes upon the four sensor quadrants. 
+This uncertainty incorporates uncertainties in the absolute responses 
+of the respective sensors.
+.
+SC system is aligned with the Solar Probe Cup. 
+In encounter orientations, the X-axis points in the spacecraft RAM direction, 
+the Z-axis points [roughly] towards the sun, and the Y-axis points 
+south relative to the solar ecliptic plane.
+.     
+This system is roughly, but not strictly aligned with the heliographic 
+RTN system (R = -Z_SC, T = X_SC, N = -Y_SC) in encounters.
+.
+Note that this system is co-moving with the spacecraft. 
+Flows from the sun appear aberrated and shifted in the spacecraft frame 
+according to the instantaneous velocity of the spacecraft.
+info#end
+----
+
+%%%%
+varName: vp_moment_RTN
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: rtnVpmom
+related: 
+info#start
+proton bulk velocity from the 1st moment of the reduced distribution 
+function in [inertial] RTN coordinate system.
+.
+For errors check rtnVpmom.userData.DELTA_(PLUS,MINUS)_VAR 
+This moment is a model-independant estimate of the proton most-probable 
+thermal speed, but it is subject to confusion with alpha particles when present. 
+Error bars represent estimated upper and lower limits.
+info#end
+----
+
+%%%%
+varName: DQF
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: DQF
+related: 
+info#start
+Array of SPC data quality indicators.
+.
+All flags are encoded as follows:
+--------------------------
+   = 0,   good/nominal/condition not present/etc 
+   > 1,  bad/problematic/condition present/etc 
+   = -1,  status not determined ("don't know")
+   < -1,  status does not matter ("don't care")
+.
+-1 ("don't know") is the default value for all flags.
+.
+The 0th flag array element is the [standardized] global quality flag, 
+signifying whether the data are suitable for use without caveate. 
+It is repeated in the "general_flag" variable.
+
+DQF has 32 columns where first 24 correspond to: 
+% (0) general flag
+% (1) primary peak low signal
+% (2) no primary peak detected
+% (3) cold primary peak or current spike detected
+% (4) sensor saturated
+% (5) primary peak not bound
+% (6) poor Maxwellian fit to primary peak
+% (7) flow direction poorly constrained or undetermined
+% (8) alpha peak low signal/not identified
+% (9) poor Maxwellian fit to alpha peak
+% (10) alpha peak not bound
+% (11) wind speed off scale high
+% (12) wind speed off scale low
+% (13) wind speed off scale unknown
+% (14) likely proton-alpha confusion
+% (15) unusually high noise levels detected
+% (16) proton full-scan mode (not peak-tracking)
+% (17) reduced data quality: anomalous periodic noise type A, (>1 Hz)
+% (18) reduced data quality: anomalous periodic noise type B (< 1Hz)
+% (19) temperature/survival heater cycling: potential fluctuations
+% (20) reduced data quality: broadband or other anomalous noise (type C)
+% (21) fragmented or incomplete spectrum measured
+% (22) energy ranging/peak tracking error
+% (23) spacecraft maneuver
+.
+Possible check - flags 1,2,4,5,6,7,11,12,13
+info#end
+----
+
+%%%%
+varName: carr_latitude
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: carrlat
+related: 
+info#start
+Carrington Latitude
+info#end
+----
+
+%%%%
+varName: carr_longitude
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: carrlong
+related: 
+info#start
+Carrington Longitude
+info#end
+----
+
+
+%%%%
+varName: general_flag
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: 
+related: 
+info#start
+Global quality flag, signifying whether the data for this epoch are 
+suitable for use without caveats.
+.
+All flags are encoded as follows:
+--------------------------
+   = 0,   good/nominal/condition not present/etc 
+   > 1,  bad/problematic/condition present/etc 
+   = -1,  status not determined ("don't know")
+   < -1,  status does not matter ("don't care")
+
+-1 ("don't know") is the default value for all flags.
+
+The user is advised to consider the quoted measurement uncertainties, 
+particularly when the general quality flag is zero.
+info#end
+----
+
+
