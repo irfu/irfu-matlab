@@ -223,18 +223,27 @@ switch datatype
     
   otherwise
     if nargin==2
-      % read in single variable from single file
+      % read in single variable from a given file
       nFiles = 1;
       varName = datatype;
       filesToLoadTable = dataDir;
-      [filename,varNameOut] = get_variable_filename(varName);
+      [filename,varName,hourtag,shortVar] = psp_var(varName);
       if isempty(filename)
         error(['Filename not known for varname: ' varName '. Consider updating psp_load().']);
       elseif (filename ~= filesToLoadTable(1:length(filename)))
         error(['varname: ' varName ' not consistent with filename: ' filesToLoadTable]);
       end
       varnames = {varName};
-      varnamesout = {varNameOut};
+      varnamesout = {shortVar};
+    elseif nargin == 4
+      % read in variable, looku up files to read from
+      nFiles = 1;
+      [filename,varName,hourtag,shortVar] = psp_var(datatype);
+      if isempty(filename)
+        error(['Filename not known for varname: ' varName '. Consider updating psp_load().']);
+      end
+      varnames = {varName};
+      varnamesout = {shortVar};
     else
       error('Data type not recognized!')
     end
@@ -377,27 +386,43 @@ end
 % GET_VARIABLE_FILENAME should return the filename for a given variable
 % name and if variable has some shortened name. Currently only a few
 % variable names are implemented
-  function [fileName,shortVarOut] = get_variable_filename(varName)
-    persistent pspVariables
-    pspVariables=[...
-      'psp_fld_l2_mag_RTN              psp_fld_l2_mag_RTN            rtnB       ';...
-      'psp_fld_l2_mag_SC               psp_fld_l2_mag_SC             scB        ';...
-      'psp_fld_l2_dfb_wf_V?dc          psp_fld_l2_dfb_wf_vdc                    ';... ? mark can be 1-5
-      'psp_fld_l2_dfb_wf_scm_hg_sensor psp_fld_l2_dfb_wf_scm                    ';...
-      'psp_fld_l2_dfb_wf_scm_hg_sc     psp_fld_l2_dfb_wf_scm                    ';...
-      'psp_fld_l2_dfb_dc_spec_dV12hg   psp_fld_l2_dfb_dc_spec_dV12hg            ';...
-      'psp_fld_l2_dfb_ac_spec_dV12hg   psp_fld_l2_dfb_ac_spec_dV12hg            ';...
-      ];
+  function [fileName,varName,hourTag,shortVar] = get_variable_filename(inpName)
+    persistent pspTable
+    pspVariables={...
+      'psp_fld_l2_dfb_wf_scm_hg_sensor','psp_fld_l2_dfb_wf_scm','','';...
+      'psp_fld_l2_dfb_wf_scm_hg_sc','psp_fld_l2_dfb_wf_scm','','';...
+      'psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_spec_dV12hg','','';...
+      'psp_fld_l2_dfb_ac_spec_dV12hg','psp_fld_l2_dfb_ac_spec_dV12hg','',''...
+      };
+    pspTable = cell2table(pspVariables,'VariableNames',{'VarName','FileName','ShortVar','HourTag'});
     for iVariable = 1:size(pspVariables,1)
-      varToTest = pspVariables(iVariable,1:length(varName));
-      if all((varName == varToTest) | (varToTest == '?')) % allows to have any number in place of '?'
-        fileName = strtrim(pspVariables(iVariable,33:58));
-        shortVarOut = strtrim(pspVariables(iVariable,63:72));
-        if isempty(shortVarOut)
-          shortVarOut = varName;
+      varToTest = pspTable.VarName{iVariable};
+      if (numel(varToTest) == numel(inpName) ...
+          && all((inpName == varToTest) | (varToTest == '?'))) % allows to have any number in place of '?'
+        assign_output; return
+      else
+        varToTest = pspTable.ShortVar{iVariable};
+        if (numel(varToTest) == numel(inpName) ...
+            && all((inpName == varToTest) | (varToTest == '?'))) % allows to have any number in place of '?'
+         assign_output;return
         end
-        irf.log('debug',['Variable: ' varName '  File Name: ' fileName]);
       end
+    end
+    irf.log('warning',['inpName:' inpName ', Variable not found!']);
+    function assign_output
+      fileName = pspTable.FileName{iVariable};
+      varName  = pspTable.VarName{iVariable};
+      hourTag  = pspTable.HourTag{iVariable};
+      if strcmp(hourTag,'6h')
+        hourTag = {'00';'06';'12';'18'};
+      else
+        hourTag = {''};
+      end
+      shortVar = pspTable.ShortVar{iVariable};
+      if isempty(shortVar)
+        shortVar = varName;
+      end
+      irf.log('debug',['inpName:' inpName ', VarName: ' varName ', FileName: ' fileName]);
     end
   end
 
