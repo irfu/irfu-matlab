@@ -11,6 +11,35 @@ info#end
 ----
 
 %%%%
+varName: psp_fld_l2_quality_flags
+fileName: psp_fld_l2_dfb_ac_spec_dV34hg
+hourtag: 
+varNameShort:
+related: 
+info#start
+FIELDS quality flags. This is a bitwise variable, 
+meaning that multiple flags can be set for a single time, 
+by adding flag values. 
+
+Current flagged values are: 
+1: FIELDS antenna bias sweep, 
+2: PSP thruster firing, 
+4: SCM Calibration, 
+8: PSP rotations for MAG calibration (MAG rolls), 
+16: FIELDS MAG calibration sequence, 
+32: SWEAP SPC in electron mode, 
+64: PSP Solar limb sensor (SLS) test. 
+128: PSP spacecraft is off umbra pointing. 
+
+A value of zero corresponds to no set flags. 
+Not all flags are relevant to all FIELDS data products, 
+refer to notes in the CDF metadata and on the FIELDS SOC 
+website for information on how the various flags impact 
+FIELDS data. Additional flagged items may be added in the future.
+info#end
+----
+
+%%%%
 varName: EFLUX_VS_PA_E
 fileName: psp_swp_spe_sf0_L3_pad
 hourtag: 
@@ -110,6 +139,18 @@ related:
 info#start
 info#end
 ----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_dV34hg
+fileName: psp_fld_l2_dfb_ac_spec_dV34hg
+hourtag: 
+varNameShort: ac_spec_dv34
+related: 
+info#start
+L2 Power Spectra for channel DV34HG
+info#end
+----
+
 
 %%%%
 varName: psp_fld_l2_dfb_wf_V[1-5]dc
