@@ -17,6 +17,7 @@ function c=irf_plot(varargin)
 %     all arguments allowed by PLOT command
 %     'subplot' - plot all x values in separate subplots
 %     'comp'    - plot vector component in separate subplots
+%     'reduce'  - reduce the number of plotted points to screen resolution
 %     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts, new time = old time - dt
 %     ['yy',factor_to_multiply] - add second axis on right, miltiply by factor_to_multiply
 %     ['linestyle',LineStyle] - define line style. Simple LineStyle can be be
@@ -89,6 +90,7 @@ marker = '-';
 flag_plot_all_data=1;
 flag_colorbar=1;
 tint=[];
+doReducedPlot = false;
 check_input_options()
 
 %% Plot separate subplots for all x components
@@ -195,7 +197,12 @@ end
 if flag_subplot==0  % One subplot
   if isstruct(x)
     % Plot a spectrogram
-    irf_spectrogram(ax,x);
+    if doReducedPlot
+      irf_spectrogram(ax,x,'reduce');
+    else
+      irf_spectrogram(ax,x);
+    end
+    
     if flag_colorbar, hcbar = colorbar(ax); end
     if ~isempty(var_desc{1})
       lab = cell(1,length(var_desc{1}.size));
@@ -213,7 +220,13 @@ if flag_subplot==0  % One subplot
     ts = t_start_epoch(time); % t_start_epoch is saved in figures user_data variable
     hca = ax;
     tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
-    if flag_yy == 0, h = plot(hca, time-ts-dt, data, marker, args{:});
+    if flag_yy == 0
+      if doReducedPlot
+        axes(hca);
+        h = reduce_plot(time-ts-dt, data, marker, args{:});
+      else
+      h = plot(hca, time-ts-dt, data, marker, args{:});
+      end
     else
       if(verLessThan('matlab','9.0'))
         h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy); % XXX FIXME
@@ -247,7 +260,12 @@ elseif flag_subplot==1 % Separate subplot for each component
   for ipl=1:npl
     hca = c(ipl);
     tag=get(hca,'tag'); ud=get(hca,'userdata');     % save
-    plot(hca, time-ts-dt, data(:,ipl), get_marker(),args{:});
+    if doReducedPlot
+      axes(hca); %#ok<LAXES>
+      reduce_plot(time-ts-dt, data(:,ipl), get_marker(),args{:});
+    else
+      plot(hca, time-ts-dt, data(:,ipl), get_marker(),args{:});
+    end
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore
     zoom_in_if_necessary(hca);
@@ -291,7 +309,12 @@ elseif flag_subplot==2 % Separate subplot for each variable
     clear tt
     
     if isstruct(y)
-      irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
+      if doReducedPlot
+        yy=y;yy.t=y.t-dt(ipl);
+        irf_spectrogram(c(ipl),yy,'reduce');
+      else
+        irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
+      end
       if flag_colorbar, hcbar = colorbar; end
       if ~isempty(var_desc{ipl})
         lab = cell(1,length(var_desc{ipl}.size));
@@ -310,7 +333,12 @@ elseif flag_subplot==2 % Separate subplot for each variable
       end
     else
       marker_cur = get_marker();
-      plot(c(ipl),t_tmp,data,marker_cur);
+      if doReducedPlot
+        axes(c(ipl)); %#ok<LAXES>
+        reduce_plot(t_tmp,data,marker_cur);
+      else
+        plot(c(ipl),t_tmp,data,marker_cur);
+      end
       grid(c(ipl),'on');
       zoom_in_if_necessary(c(ipl));
       
@@ -391,10 +419,21 @@ elseif flag_subplot==3  % components of vectors in separate panels
               ') requires argument "LineStyle" to provide colour for each line.']);
             error('More lines to plot than the number of defined colours to use.');
           end
+          if doReducedPlot
+            axes(hca); %#ok<LAXES>
+          reduce_plot(hca,(time-ts-dt(jj)), data(:,ipl),...
+            'Color', line_colors(jj,:), 'LineStyle',marker_cur)
+          else
           plot(hca,(time-ts-dt(jj)), data(:,ipl),...
             'Color', line_colors(jj,:), 'LineStyle',marker_cur)
+          end
         else
+          if doReducedPlot
+            axes(gca); %#ok<LAXES>
+            reduce_plot((time-ts-dt(jj)), data(:,ipl),marker_cur)
+          else
           plot(hca,(time-ts-dt(jj)), data(:,ipl),marker_cur)
+          end
         end
         hold(hca,'on');
       end
@@ -503,6 +542,8 @@ if nargout==0, clear c; end
           c=initialize_figure(x);
         case 'subplot'
           plot_type = 'subplot';
+        case 'reduce'
+          doReducedPlot = true;
         case 'comp'
           plot_type = 'comp';
         case 'dt'
