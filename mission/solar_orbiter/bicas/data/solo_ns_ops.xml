@@ -17,10 +17,10 @@
             2020-11-12, EJ: I have not managed to find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </note>
         <note>
-            2020-12-07, EJ: Should contain all thruster firings for time period 2020-02-12 to 2020-12-05 (inclusive).
+            2021-01-07, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-01-05 (inclusive). Only manual identifications.
         </note>
         <note>
-            2020-12-08, EJ: Added saturation for 2020-11-05. Its omission hints that there might be more unknown cases of saturation. Data has not been systematically searched for saturation, but should cover most cases.
+            2020-12-08, EJ: Added saturation for 2020-11-05. Its earlier omission hints that there might be more unknown cases of saturation. Data has not been systematically searched for saturation, but should cover most cases.
         </note>
     </notesTable>
 
@@ -580,6 +580,56 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+        <event>
+            <startTimeUtc>2020-12-07T08:44:23</startTimeUtc>
+            <stopTimeUtc> 2020-12-07T08:53:27</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-13T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2020-12-13T01:13:09</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-20T01:04:24</startTimeUtc>
+            <stopTimeUtc> 2020-12-20T01:13:35</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-24T06:39:23</startTimeUtc>
+            <stopTimeUtc> 2020-12-24T06:45:45</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-27T09:53:39</startTimeUtc>
+            <stopTimeUtc> 2020-12-27T10:02:11</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-30T00:04:20</startTimeUtc>
+            <stopTimeUtc> 2020-12-30T00:11:28</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-01T01:04:19</startTimeUtc>
+            <stopTimeUtc> 2021-01-01T01:11:44</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-02T05:58:28</startTimeUtc>
+            <stopTimeUtc> 2021-01-02T06:07:51</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unusually many thruster firings.</description>
+        </event>
+
+
 
     </eventsTable>
 
