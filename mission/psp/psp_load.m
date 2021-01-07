@@ -288,33 +288,21 @@ epochData = cell(nVar,1);
 for iFile = 1:nFiles
   
   fileToLoad=strtrim(filesToLoadTable(iFile,:));
-  irf.log('notice',['Loading: ' fileToLoad]);
-  
-  
-  % version check
-  fileFound = 0;
-  nVersion = 20; % this is the highest version to check. Please update if ever needed.
-  
-  fileToLoad_vcheck = fileToLoad;
-  for iVersion = 0:nVersion
-      
-      fileToLoad_vcheck(end-5:end-4) = num2str(iVersion,'%02d');
-      
-      if exist(fileToLoad_vcheck,'file')
-          
-          if fileFound == 1
-                            irf.log('warning',['Version conflict, Replacing ''' fileToLoad ''' with ''' fileToLoad_vcheck ''''])
-                            % give warning if two different versions of the same file exist, go tell someone, server should only keep the latest version.
-          end
-          
-          fileToLoad = fileToLoad_vcheck;
-          fileFound = 1;
-      end
-      
+  d=dir([fileToLoad(1:end-6) '*']); % list all files with different versions
+  if numel(d) == 1
+    fileToLoad = [d.folder filesep d.name];
+    irf.log('warning',['Reading: ' d.name]);
+  elseif numel(d) > 1
+    irf.log('warning','Several version files exist!')
+    fileNamesFound = sort({d(:).name}) %#ok<NOPRT>
+    irf.log('warning',['Using the latest version: ' fileNamesFound{end}])
+    fileToLoad = [d(1).folder filesep fileNamesFound{end}];
+  else
+    irf.log('warning','No file found')
+    fileToLoad = [];
   end
-  
       
-  if fileFound
+if any(fileToLoad)
       
     pspobj=dataobj(fileToLoad);
     
@@ -323,12 +311,11 @@ for iFile = 1:nFiles
       varname    = varnames{iVar};
       varnameout = varnamesout{iVar};
       
-      disp(['Loaded: ' fileToLoad ', Extracting: ' varname ', Output: ' varnameout ])
-      
       var_data=get_ts(pspobj,varname);
+      disp(['Loaded: ' varnameout ' corresponding to: ' varname ' in file: ' fileToLoad  ])
       
       if isempty(var_data.data)
-        error('Empty data!');
+        irf.log('critical','Empty data!');
         
         % first data, allocate cellarray and get metadata
       elseif isempty(varData{iVar})
@@ -343,7 +330,7 @@ for iFile = 1:nFiles
     end
     
   end
-  
+ 
   clear fileToLoad
   clear timestamp
   clear var_data
@@ -351,7 +338,7 @@ for iFile = 1:nFiles
   
 end
 
-irf.log('notice','Done loading. Merging the data...');
+irf.log('notice','Done loading. Merging data, preparing output ...');
 
 if ~outputToBase
   output = cell(1,nVar);
@@ -381,49 +368,4 @@ for iOutputVar = 1:nVar
     end
   end
   
-end
-
-% GET_VARIABLE_FILENAME should return the filename for a given variable
-% name and if variable has some shortened name. Currently only a few
-% variable names are implemented
-  function [fileName,varName,hourTag,shortVar] = get_variable_filename(inpName)
-    persistent pspTable
-    pspVariables={...
-      'psp_fld_l2_dfb_wf_scm_hg_sensor','psp_fld_l2_dfb_wf_scm','','';...
-      'psp_fld_l2_dfb_wf_scm_hg_sc','psp_fld_l2_dfb_wf_scm','','';...
-      'psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_spec_dV12hg','','';...
-      'psp_fld_l2_dfb_ac_spec_dV12hg','psp_fld_l2_dfb_ac_spec_dV12hg','',''...
-      };
-    pspTable = cell2table(pspVariables,'VariableNames',{'VarName','FileName','ShortVar','HourTag'});
-    for iVariable = 1:size(pspVariables,1)
-      varToTest = pspTable.VarName{iVariable};
-      if (numel(varToTest) == numel(inpName) ...
-          && all((inpName == varToTest) | (varToTest == '?'))) % allows to have any number in place of '?'
-        assign_output; return
-      else
-        varToTest = pspTable.ShortVar{iVariable};
-        if (numel(varToTest) == numel(inpName) ...
-            && all((inpName == varToTest) | (varToTest == '?'))) % allows to have any number in place of '?'
-         assign_output;return
-        end
-      end
-    end
-    irf.log('warning',['inpName:' inpName ', Variable not found!']);
-    function assign_output
-      fileName = pspTable.FileName{iVariable};
-      varName  = pspTable.VarName{iVariable};
-      hourTag  = pspTable.HourTag{iVariable};
-      if strcmp(hourTag,'6h')
-        hourTag = {'00';'06';'12';'18'};
-      else
-        hourTag = {''};
-      end
-      shortVar = pspTable.ShortVar{iVariable};
-      if isempty(shortVar)
-        shortVar = varName;
-      end
-      irf.log('debug',['inpName:' inpName ', VarName: ' varName ', FileName: ' fileName]);
-    end
-  end
-
 end
