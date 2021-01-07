@@ -1,4 +1,4 @@
-function [hout,hcb] = irf_spectrogram(varargin)
+function [hout,hcb,hlpe] = irf_spectrogram(varargin)
 %function [hout,hcb] = irf_spectrogram(h,t,Pxx,F,dt,dF)
 %IRF_SPECTROGRAM  plot spectrogram
 %
@@ -50,6 +50,7 @@ flagLog = true;            % want log10(data) dy default
 f_multiplier = 1;          % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
 fitColorbarLabel = true;   % fit font size of colorbar label to fit into axes size
 showColorbar = true;
+flagReducePlot = false;    % by default do not reduce spectrogram size to fit window pixels
 
 %% Check input
 if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
@@ -66,6 +67,8 @@ if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
           flagLog = true;
         case 'lin'
           flagLog = false;
+        case 'reduce' % number of spectra equal to half axes size in pixels
+          flagReducePlot = true;
         case 'donotshowcolorbar'
           showColorbar = false;
         otherwise
@@ -263,19 +266,18 @@ for comp=1:min(length(h),ncomp)
   
   tag=get(h(comp),'tag'); % keep tag during plotting
   ud=get(h(comp),'userdata'); % keep tag during plotting
-  if min(size(ff))==1 % frequency is vector
-    if ~flagLog || any(min(pp)<0) % spectra include negative values linear spectrogram
-      pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
-    else
-      pcolor(h(comp),double(tt-t_start_epoch),ff,log10(double(pp')))
-    end
-  else % frequency is matrix
-    ttt = repmat(tt,1,size(ff,2));
-    if ~flagLog || any(min(pp)<0) % spectra include negative values linear spectrogram
-      pcolor(h(comp),double(ttt-t_start_epoch),ff,double(pp))
-    else
-      pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
-    end
+  cData = double(pp); % plot double
+  cData = cData'; % cData should be size length(Y)xlength(X)
+  ff = ff';
+  if flagLog
+    cData = log10(cData);
+  end
+  xData = double(tt-t_start_epoch)';
+  if flagReducePlot
+    axes(h(comp));
+    hlpe = SpecPlotReducer(xData,ff,cData);
+  else
+    pcolor(h(comp),xData,ff,cData)
   end
   set(h(comp),'tag',tag);
   set(h(comp),'userdata',ud);
@@ -308,10 +310,16 @@ for comp=1:min(length(h),ncomp)
       if fitColorbarLabel
         irf_colorbar_fit_label_height(hcb);
       end
+    else
+      hcb{comp}= [];
     end
+  else
+    hcb{comp}= [];
   end
-  if comp==min(length(h),ncomp), irf_timeaxis;
-  else, set(h(comp),'XTicklabel','')
+  if comp==min(length(h),ncomp)
+    irf_timeaxis;
+  else
+    set(h(comp),'XTicklabel','')
   end
 end
 
