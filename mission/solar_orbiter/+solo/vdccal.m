@@ -40,12 +40,11 @@ K123R = a.K123.resample(VDC);
 Gamma1R = Gamma1.resample(VDC);
 Gamma0R = Gamma0.resample(VDC);
 ccR = cc.resample(VDC);
-cc_crit=0.7; %0.7 = arbitrary threshold. If CC>cc_crit, remove common mode otherwise do not
 
 V2corr = double(VDC.y.data) -double(d23R.data); %Remove potential offset between 2,3
 V23_corr = (V2corr+double(VDC.z.data))/2; %(V2corr+V3)/2
-V2cmr = double(V2corr)-((Gamma0R.data+V23_corr.*Gamma1R.data).*(abs(ccR.data)>cc_crit))/2; %Remove common mode from V2.
-V3cmr = double(VDC.z.data)+((Gamma0R.data+V23_corr.*Gamma1R.data).*(abs(ccR.data)>cc_crit))/2;
+V2cmr = double(V2corr)-(Gamma0R.data+V23_corr.*Gamma1R.data)/2; %Remove common mode from V2.
+V3cmr = double(VDC.z.data)+(Gamma0R.data+V23_corr.*Gamma1R.data)/2;
 
 V23 = (V2cmr + V3cmr)/2; % (V2cmr + V3) /2
 
