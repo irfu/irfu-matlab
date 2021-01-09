@@ -1,5 +1,8 @@
 function [x_reduced, y_reduced] = reduce_to_width(x, y, width, lims)
 
+% x should be n x 1 matrix
+% x_reduced is 2*witdh x 1 - matrix if reduction done
+%
 % [x_reduced, y_reduced] = reduce_to_width(x, y, width, lims)
 % 
 % (This function is primarily used by LinePlotReducer, but has been
@@ -35,69 +38,88 @@ function [x_reduced, y_reduced] = reduce_to_width(x, y, width, lims)
     % to the right to the right of the limits, and the min and max at every
     % pixel inbetween. That's 1 + 1 + 2*(width - 2) = 2*width total points.
     n_points = 2*width;
-    
     % If the data is already small, there's no need to reduce.
-    if size(x, 1) <= n_points
-        x_reduced = x;
-        y_reduced = y;
+
+    % Find the starting and stopping indices for the current limits.
+    % Rename the column. This actually makes stuff substantially
+    % faster than referencing x(:, k) all over the place. On my
+    % timing trials, this was 20x faster than referencing x(:, k)
+    % in the loop below.
+    
+    % Map the lower and upper limits to indices.
+    nx = size(x, 1);
+    if isinf(lims(1)), lims(1) = x(1);end
+    if isinf(lims(2)), lims(2) = x(end);end
+    
+    [~,lower_limit]      = binary_search(x, lims(1), 1, nx);
+    if x(lower_limit) > lims(2)
+      x_reduced = []; % no data
+      y_reduced = [];
+      return;
+    else
+      [upper_limit,~] = binary_search(x, lims(2), lower_limit, nx);
+    end
+    
+    if upper_limit-lower_limit <= n_points
+        x_reduced = x(lower_limit:upper_limit);
+        y_reduced = y(lower_limit:upper_limit);
         return;
     end
-
+    
     % Reduce the data to the new axis size.
-    x_reduced = nan(n_points, size(y, 2));
+    x_reduced = nan(n_points, 1);
     y_reduced = nan(n_points, size(y, 2));
+      
+    
+    % Make the windows mapping to each pixel.
+    x_divisions = linspace(lims(1), ...
+      lims(2), ...
+      width + 1);
+    xx = linspace(  lims(1), lims(2) ,n_points+2);
+    xx = xx(2:end-1)';
+
     for k = 1:size(y, 2)
 
-        % Find the starting and stopping indices for the current limits.
-        if k <= size(x, 2)
-            
-            % Rename the column. This actually makes stuff substantially 
-            % faster than referencing x(:, k) all over the place. On my
-            % timing trials, this was 20x faster than referencing x(:, k)
-            % in the loop below.
-            xt = x(:, k);
-
-            % Map the lower and upper limits to indices.
-            nx = size(x, 1);
-            lower_limit      = binary_search(xt, lims(1), 1,           nx);
-            [~, upper_limit] = binary_search(xt, lims(2), lower_limit, nx);
-            
-            % Make the windows mapping to each pixel.
-            x_divisions = linspace(x(lower_limit, k), ...
-                                   x(upper_limit, k), ...
-                                   width + 1);
-                               
-        end
-
+  
         % Create a place to store the indices we'll need.
-        indices = [lower_limit, zeros(1, n_points-2), upper_limit];
+        %indices = [lower_limit, zeros(1, n_points-2), upper_limit];
+        indices = nan(1, n_points);
         
         % For each pixel...
         right = lower_limit;
-        for z = 1:width-1
+        for z = 1:width
             
             % Find the window bounds.
-            left               = right;
-            [~, right]         = binary_search(xt, ...
+            left              = right;
+            if left == upper_limit,continue; end % empty bins at the end
+            if x(left) < x_divisions(z+1) && x(upper_limit) >= x_divisions(z+1)
+            [right,~]         = binary_search(x, ...
                                                x_divisions(z+1), ...
                                                left, upper_limit);
-            
+            elseif x(upper_limit) < x_divisions(z+1) % end of time series
+              right = upper_limit;
+            else % empty bin
+              if isfinite(x(right)) % remove the point if the last point in the previous bin is finite number
+                xx(2*z-1:2*z) = NaN;
+              end
+              continue 
+            end
+            if left == right,continue; end % last empty bins
             % Get the indices of the max and min.
             yt = y(left:right, k);
             [~, max_index]     = max(yt);
             [~, min_index]     = min(yt);
-            
             % Record those indices.
-            indices(2*z:2*z+1) = sort([min_index max_index]) + left - 1;
-            
+            indices(2*z-1:2*z) = sort([min_index max_index]) + left - 1;
         end
 
         % Sample the original x and y at the indices we found.
-        x_reduced(:, k) = xt(indices);
-        y_reduced(:, k) = y(indices, k);
-
+  %      x_reduced(:, k) = xt(indices);
+  %      y_reduced(:, k) = y(indices, k);
+      x_reduced(:,k) = xx;
+      y_reduced(isfinite(indices), k) = y(indices(isfinite(indices)), k);
+      
     end
-    
 end
 
 % Binary search to find boundaries of the ordered x data.
