@@ -164,7 +164,7 @@ switch lower(action)
         addpath(micePath);
         ok = irf('mice');
         if ~ok
-          disp('MICE  .. NOT OK. Please, contact irfu!');
+          disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your inteded use of irfu-matlab!');
         end
       end
     end
@@ -214,7 +214,7 @@ switch lower(action)
           disp('   and install the package and all required libraries into: ');
           disp(['   ',irf('path'),filesep,'contrib',filesep,'libirbem']);
         else
-          disp('IRBEM .. not OK. Please, contact irfu!');
+          disp('IRBEM .. not OK. Please contact IRFU if you need IRBEM for your inteded use of irfu-matlab!');
         end
         if nargout, out=false; end
         return;
@@ -225,23 +225,29 @@ switch lower(action)
       addpath(oneraPath);
       ok=irf('irbem');
       if ~ok
-        disp('IRBEM .. NOT OK. Please, contact irfu!');
+        disp('IRBEM .. NOT OK. Please contact IRFU if you need IRBEM for your inteded use of irfu-matlab!');
       end
     end
     
   case 'ceflib'
     if ~ispc
       if exist('cef_init','file') % CESR CEFLIB is installed
-        cef_init();
-        cef_verbosity(0);
-        if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
-            numel(cef_date(cef_var ('time_tags'))) == 15 && ...
-            numel(cef_var('Spacecraft_potential')) == 15 )
-          disp('CEFLIB is OK');
-          if nargout, out = true; end
-          datastore('irfu_matlab','okCeflib',true);
-        else
-          disp('There are CEFLIB problems. Please, contact irfu!');
+        try % Try but don't crash on failure (see irfu-matlab issue #66)
+          cef_init();
+          cef_verbosity(0);
+          if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
+              numel(cef_date(cef_var ('time_tags'))) == 15 && ...
+              numel(cef_var('Spacecraft_potential')) == 15 )
+            disp('CEFLIB is OK');
+            if nargout, out = true; end
+            datastore('irfu_matlab','okCeflib',true);
+          else
+            disp('There are CEFLIB problems. Please contact IRFU if you need CEF for your inteded use of irfu-matlab!');
+            if nargout, out = false; end
+            datastore('irfu_matlab','okCeflib',false);
+          end
+        catch
+          disp('There are CEFLIB problems. Please contact IRFU if you need CEF for your inteded use of irfu-matlab!');
           if nargout, out = false; end
           datastore('irfu_matlab','okCeflib',false);
         end
