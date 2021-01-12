@@ -442,7 +442,7 @@ classdef SpecPlotReducer < handle
             
               % Update the plot.
               set(o.h_plot, 'XData', x_r, 'YData', y_r, ...
-                'ZData', ones(size(c_r)), 'CData', c_r);
+                'ZData', zeros(size(c_r)), 'CData', c_r);
             end
             % We're no longer busy.
             o.busy = false;
