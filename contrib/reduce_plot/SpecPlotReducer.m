@@ -190,27 +190,7 @@ classdef SpecPlotReducer < handle
                     o.y = get(o.h_plot, 'YData');
                     o.c = get(o.h_plot, 'CData');
                     o.c_to_x_map = 1:size(o.c, 1);
-                    
-                    % If there are multiple lines, o.x will be a cell
-                    % array, which is how we use it from here on. If 
-                    % there's only one line, we need to make it a cell
-                    % array.
-                    if ~iscell(o.x)
-                        o.x = {o.x};
-                    end
-                    if ~iscell(o.y)
-                        o.y = {o.y};
-                    end
-                    if ~iscell(o.c)
-                        o.c = {o.c};
-                    end
-                    
-%                     % Format the data as columns.
-%                     for k = 1:length(o.x)
-%                         o.x{k} = o.x{k}(:);
-%                         o.y{k} = o.y{k}(:);
-%                     end
-                    
+                                        
                 end
                 
                 start = 2;
@@ -274,9 +254,6 @@ classdef SpecPlotReducer < handle
             specspecs = {};
 
             % Loop through all of the inputs.
-            ym = [];
-            cm = [];
-            
             % Rename for simplicity.
             cm = varargin{start+2};
             ym = varargin{start+1};
@@ -285,50 +262,30 @@ classdef SpecPlotReducer < handle
             % Store y, x, and a map from y index to x
             % index.
 
-              o.x{1} = xm;
-              o.y{1} = ym;
-              o.c{1} = cm;
+              o.x = xm;
+              o.y = ym;
+              o.c = cm;
               o.c_to_x_map = length(o.x);
             
             
-            start = start + 3;
+              start = start + 3;
             
             if start <= nargin
               specspecs = varargin(start:end);
             end
 
 
-            % Create cell arrays for the reduced data.
-            x_r = cell(1, length(o.y));
-            y_r = cell(1, length(o.y));
-            c_r = cell(1, length(o.y));
-            
             % Get the axes width once.
             width = get_axes_width(o.h_axes);
             o.last_width = width;
             o.last_lims  = [-inf inf];
             
-            % Reduce the data!
-            
-            nc = size(o.c{1},1);
-            ny = size(o.y{1},1);
-            
-            [x_r{1}, c_r{1}] = reduce_to_width(...
-              o.x{o.c_to_x_map(1)}', ...
-              o.c{1}', ...
+            [x_r, y_r, c_r] = reduce_spec_to_width(...
+              o.x, ...
+              o.y, ...
+              o.c, ...
               width, ...
               [-inf inf]);
-            c_r{1} = c_r{1}';
-            x_r{1} = x_r{1}(:,1)';
-            
-            if ny == nc
-              [~, y_r{1}] = reduce_to_width(...
-                o.x{o.c_to_x_map(1)}', ...
-                o.y{1}', ...
-                width, ...
-                [-inf inf]);
-              y_r{1} = y_r{1}';
-            end
             
             % If taking over a plot, just update it. Otherwise, plot it.
             if taking_over_existing_plot
@@ -346,14 +303,10 @@ classdef SpecPlotReducer < handle
                 end
                 
                 % Add the lines.
-                for k = 1:length(o.c)
-                    plot_args{end+1} = x_r{k}; %#ok<AGROW>
-                    plot_args{end+1} = y_r{k}; %#ok<AGROW>
-                    plot_args{end+1} = c_r{k}; %#ok<AGROW>
-%                     if k <= length(specspecs) && ~isempty(specspecs{k})
-%                         plot_args{end+1} = specspecs{k}; %#ok<AGROW>
-%                     end
-                end
+  
+                plot_args{end+1} = x_r; 
+                plot_args{end+1} = y_r;
+                plot_args{end+1} = c_r;
                 
                 % Add any other arguments.
 %                 plot_args = [plot_args, varargin(start:end)];
@@ -379,11 +332,7 @@ classdef SpecPlotReducer < handle
             end
             
             % Listen for changes to the x limits of the axes.
-            if verLessThan('matlab', '8.4')
-                size_cb = {'Position', 'PostSet'};
-            else
-                size_cb = {'SizeChanged'};
-            end
+            size_cb = {'SizeChanged'};
             
             % Listen for changes on the axes.
             linkaxes(o.h_axes, 'x');
@@ -392,8 +341,8 @@ classdef SpecPlotReducer < handle
                             @(~,~) o.UnitsPreSet);
                 addlistener(o.h_axes(k), 'XLim',  'PostSet', ...
                             @(~,~) o.RefreshData);
-                addlistener(o.h_axes(k), size_cb{:}, ...
-                            @(~,~) o.RefreshData);
+    %            addlistener(o.h_axes(k), size_cb{:}, ...
+     %                       @(~,~) o.RefreshData);
             end
             
             % Listen for changes on the figure itself.
@@ -482,29 +431,18 @@ classdef SpecPlotReducer < handle
                 error('SpecPlotReducer does not support handle matrix as input');
               end
               % Reduce the data.
-              nc = size(o.c{1},1);
-              ny = size(o.y{1},1);
               
-              [x_r{1}, c_r{1}] = reduce_to_width(...
-                o.x{o.c_to_x_map(1)}', ...
-                o.c{1}', ...
+              [x_r, y_r, c_r] = reduce_spec_to_width(...
+                o.x, ...
+                o.y, ...
+                o.c, ...
                 width, ...
                 lims);
-              c_r{1} = c_r{1}';
-              x_r{1} = x_r{1}(:,1)';
               
-              if ny == nc
-                [~, y_r{1}] = reduce_to_width(...
-                  o.x{o.c_to_x_map(1)}', ...
-                  o.y{1}', ...
-                  width, ...
-                  lims);
-                y_r{1} = y_r{1}';
-              end
             
               % Update the plot.
-              set(o.h_plot(k), 'XData', x_r{1}, 'YData', y_r{1}, ...
-                'ZData', ones(size(c_r{1})), 'CData', c_r{1});
+              set(o.h_plot, 'XData', x_r, 'YData', y_r, ...
+                'ZData', ones(size(c_r)), 'CData', c_r);
             end
             % We're no longer busy.
             o.busy = false;
