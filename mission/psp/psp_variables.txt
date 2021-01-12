@@ -2,6 +2,7 @@
 varName: xxx(can be regexP)
 fileName: xxx
 hourtag: 
+directory: 
 varNameShort: xxx
 related: 
 info#start
@@ -111,6 +112,7 @@ info#end
 %%%%
 varName: psp_fld_l2_mag_RTN_1min
 fileName: psp_fld_l2_mag_RTN_1min
+directory: fields/l2/mag_RTN_1min/20YY/MM/
 hourtag: 
 varNameShort: rtnB1min
 related: 
@@ -124,6 +126,7 @@ info#end
 varName: psp_fld_l2_mag_RTN
 fileName: psp_fld_l2_mag_RTN
 hourtag: 6h
+directory: fields/l2/mag_RTN/20YY/MM/
 varNameShort: rtnB
 related: 
 info#start
@@ -165,13 +168,49 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_wf_dVdc_sensor
-fileName: psp_fld_l2_dfb_wf_dvdc
+varName: psp_fld_l2_dfb_wf_V[1-5]dc
+fileName: psp_fld_l2_dfb_wf_vdc
 hourtag: 6h
-varNameShort: 
+varNameShort: V1dc
 related: 
 info#start
-DFB DC differential voltage waveform in sensor coordinates
+L2 Electric Potential from V[1-5]
+
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_dvac12
+fileName: psp_fld_l2_dfb_dbm_dvac
+hourtag: 6h
+directory: fields/l2/dfb_dbm_dvac/20YY/MM
+varNameShort: dvac12
+related: 
+info#start
+snapshots
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_dvac34
+fileName: psp_fld_l2_dfb_dbm_dvac
+hourtag: 6h
+directory: fields/l2/dfb_dbm_dvac/20YY/MM
+varNameShort: dbm_dvac34
+related: 
+info#start
+snapshots
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_vdc[1-5]
+fileName: psp_fld_l2_dfb_dbm_vdc
+hourtag: 6h
+varNameShort: dbm_vdc[1-5]
+related: 
+info#start
+snapshots
 info#end
 ----
 

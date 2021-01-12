@@ -11,31 +11,30 @@ if nargin == 0
   help psp_var;
   return;
 end
-% find where to look for psp_variables.txt
-tmp=which('psp_var');
-pspFile = [tmp(1:end-5) 'variables.txt'];
 
-% read psp_variables.txt
+doFindFile = any(strfind(vartxt,'file='));
+
+%% find and read psp_variables.txt
+tmp = which('psp_var');
+pspFile = [tmp(1:end-5) 'variables.txt'];
 fid = fopen(pspFile,'rt');
 C = textscan(fid, '%s', 'Delimiter',''); C = C{1};
 fclose(fid);
 
-%%
-% start/end of each structure
+%% split psp_variables.txt into structure array of variable 
+% line numnbers of start/end of each structure
 startIdx = find(ismember(C, '%%%%'))+1;
 endIdx = find(ismember(C, '----'))-1;
 startIdxInfo = find(ismember(C, 'info#start'))+1;
 endIdxInfo = find(ismember(C, 'info#end'))-1;
 
-% array of strucutres
+% define array of strucutres
 N = numel(startIdx);
-arr = struct('varName','','fileName','','hourtag',{''},'shortVar','','realted',{''},'info',"");
+arr = struct('varName','','fileName','','hourtag',{''},'directory','','shortVar','','realted',{''},'info',"");
 arr = repmat(arr,[N 1]);
 
 
-%%
-
-% parse and store each structure in the array
+% parse and store each variable in the structure array 
 for i=1:N
   % parse key/value of struct
   s = C(startIdx(i):startIdxInfo(i));
@@ -61,11 +60,17 @@ for i=1:N
   arr(i).info = string(C(startIdxInfo(i):endIdxInfo(i)));
 end
 
-% match
+%% match 
 doMatchNameExact = false(1,N);
 doMatchName      = false(1,N);
+
 if strcmp(vartxt,'*') % show all variables
   doMatchName(:) = true;
+elseif doFindFile
+  nameToMatch = vartxt(6:end); % remove "file=" from the beginning
+  for i=1:N
+    doMatchName(i) = strcmpi(arr(i).fileName, nameToMatch);
+  end
 else
   for i=1:N
     if strcmpi(arr(i).varName, vartxt) ...
@@ -81,6 +86,7 @@ else
   end
 end
 
+%% Output
 if nargout == 0
   % print all matching variables
   if any(doMatchNameExact)
@@ -116,8 +122,13 @@ else
     end
   else
     out = cell(1,sum(doMatchName == true));
-    for i = find(doMatchName)
-      out{i} = arr(i);
+    iMatch = find(doMatchName);
+    if numel(iMatch) == 1
+      out = arr(iMatch);
+    else
+      for i = 1:numel(iMatch)
+        out{i} = arr(iMatch(i));
+      end
     end
   end
   varargout(1)={out};

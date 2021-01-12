@@ -8,6 +8,8 @@
 % OUT = PSP_LOAD(..) output is TSeries if single variables is returned and
 % cell array if several variables have to be returned.
 %
+% [OUT,DOBJ] = PSP_LOAD(..) return also the last DATABOJ
+%
 % dataDir:  the directory with the cdf files
 % datatype: 'mag_rtn','fgm_rtn'      - FGM, RTN coordinates
 %           'mag_sc','fgm_sc'        - FGM, SC coordinates
@@ -36,12 +38,15 @@
 %   psp_load('psp_fld_l2_mag_RTN_20...cdf','mag');
 %   rtnB = psp_load('psp_fld_l2_mag_RTN_20...cdf','mag');
 
-function output = psp_load(dataDir,datatype,date_start,date_stop)
+function [output,pspobj] = psp_load(dataDir,datatype,date_start,date_stop)
 
-if nargout==0
-  outputToBase = true;
-else
-  outputToBase = false;
+outputToBase  = (nargout == 0);
+startDatenum = datenum(date_start);
+endDatenum = datenum(date_stop);
+pspobj = []; % default output
+
+if isempty(dataDir)
+  dataDir=datastore('psp','data_directory');
 end
 
 switch datatype
@@ -221,6 +226,11 @@ switch datatype
     
     hourtag={''};
     
+  case 'dbm_dvac'
+    listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvac');
+    output =get_data_dbm_dvac(listCDFFiles);
+    return;
+    
   otherwise
     if nargin==2
       % read in single variable from a given file
@@ -251,12 +261,9 @@ end
 
 if ~exist('filesToLoadTable','var')
   
+  nDays  = endDatenum-startDatenum+1; % include first day
   
-  tStart = datenum(date_start);
-  tStop  = datenum(date_stop);
-  nDays  = tStop-tStart+1; % include first day
-  
-  datenumTable   = (tStart:tStop)';
+  datenumTable   = (startDatenum:endDatenum)';
   timestampTable = datestr(datenumTable,'yyyymmdd');
   
   % sanity check
@@ -303,8 +310,8 @@ for iFile = 1:nFiles
   end
       
 if any(fileToLoad)
-      
-    pspobj=dataobj(fileToLoad);
+
+  pspobj=dataobj(fileToLoad);
     
     for iVar = 1:nVar
       
@@ -334,7 +341,6 @@ if any(fileToLoad)
   clear fileToLoad
   clear timestamp
   clear var_data
-  clear pspobj
   
 end
 
@@ -368,4 +374,60 @@ for iOutputVar = 1:nVar
     end
   end
   
+end
+
+  function out = get_file_list(fileBaseName)
+    for date = floor(startDatenum):floor(endDatenum)
+      out = psp_var(['file=' fileBaseName]);
+      if (numel(out) > 1), out = out{1}; end
+      dirBase = out.directory;
+      MM = datestr(date,'mm');
+      YY = datestr(date,'yy');
+      dirFull = strrep(dirBase,'MM',MM);
+      dirFull = strrep(dirFull,'YY',YY);
+      dirFull = [dirFull filesep fileBaseName '_' datestr(date,'YYYYmmDD')];
+      listDir = dir([dataDir filesep dirFull '*']);
+      out = fullfile({listDir.folder},{listDir.name});
+    end
+  end
+
+  function out = get_data_dbm_dvac(listCDFFiles)
+    % output is structure witf fields 
+    % .ts: time series wirt dvac12 and dvac13
+    % .startStopMatriTT: start and stop times of snapshots in TT
+    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots 
+    %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
+    dbm_dvac = double([]);
+    tStartEndSnapshTT = [];
+    tSnapLineEpoch = [];
+    tFinal = [];
+    for iFile = 1:numel(listCDFFiles)
+      fileCDF = listCDFFiles{iFile};
+      disp(['Reading: ' fileCDF]);
+      res = spdfcdfread(fileCDF,'VARIABLES', {...
+        'psp_fld_l2_dfb_dbm_dvac_time_series_TT2000',...
+        'psp_fld_l2_dfb_dbm_dvac12',...
+        'psp_fld_l2_dfb_dbm_dvac34'},...
+        'KeepEpochAsIs',true,'dataonly',true);
+      tt=res{1}; temp12 = res{2}; temp34 = res{3};
+      t=[tt(1,:);tt;tt(end,:)];t=t(:);
+      tFinal = [tFinal; t];
+      tStartEndSnapshTT = [tStartEndSnapshTT; reshape(t(diff(t)==0),2,[])'];
+      dbm_dvac_temp = nan(numel(t),2,'single');
+      vecNaN = nan(size(tt,2),1,'single');
+      dbm_dvac_temp12 = [vecNaN temp12 vecNaN]';
+      dbm_dvac_temp34 = [vecNaN temp34 vecNaN]';
+      dbm_dvac = [dbm_dvac; [dbm_dvac_temp12(:) dbm_dvac_temp34(:)]];
+    end
+    dbm_dvac(dbm_dvac < -1e30) = NaN;
+    tSnapLine = irf_time(tStartEndSnapshTT(:),'ttns>epoch');
+    tSnapLine = reshape(tSnapLine,[],2)';
+    tSnapLine(end+1,:)=NaN;
+    tSnapLine = tSnapLine(:);
+    dbm_dvac = TSeries(EpochTT(tFinal),dbm_dvac);
+    out = struct('ts',dbm_dvac,...
+      'startStopMatriTT',tStartEndSnapshTT,...
+      'startStopLineEpoch',tSnapLine);
+  end
+    
 end
