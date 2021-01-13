@@ -1,4 +1,4 @@
-function [x_reduced, y_reduced, c_reduced] = reduce_to_width(x, y, c, width, lims)
+function [x_reduced, y_reduced, c_reduced] = reduce_spec_to_width(x, y, c, width, lims)
 
 % x should be n x 1 matrix
 % y should be vector or m x n matrix
@@ -57,6 +57,7 @@ function [x_reduced, y_reduced, c_reduced] = reduce_to_width(x, y, c, width, lim
     
     % check if y is matrix of the same size as c
     isYMatrix = all(size(y) == size(c));
+    if ~isYMatrix, y_reduced = y;end % assume y is vector 
     
     [~,indLowerLimit]      = binary_search(x, lims(1), 1, nx);
     if x(indLowerLimit-mod(indLowerLimit,2)) > lims(2) % no data in the interval
@@ -74,7 +75,9 @@ function [x_reduced, y_reduced, c_reduced] = reduce_to_width(x, y, c, width, lim
                     (indUpperLimit+(mod(indUpperLimit,2)==1));
         x_reduced = x(indInterval);
         c_reduced = c(:,indInterval);
-        if isYMatrix, y_reduced = y(:,indInterval);end
+        if isYMatrix
+          y_reduced = y(:,indInterval);
+        end
         return;
     end
     
