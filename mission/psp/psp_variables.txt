@@ -40,20 +40,11 @@ FIELDS data. Additional flagged items may be added in the future.
 info#end
 ----
 
-%%%%
-varName: EFLUX_VS_PA_E
-fileName: psp_swp_spe_sf0_L3_pad
-hourtag: 
-varNameShort: 
-related: 
-info#start
-Electron differential Energy Flux vs Pitch-angle and Energy
-info#end
-----
 
 %%%%
 varName: EFLUX
 fileName: psp_swp_spa_sf1_L2_32E
+directory: sweap/spe/L2/spa_sf1/20YY/MM
 hourtag: 
 varNameShort: spa_sf1_eflux
 related: 
@@ -68,6 +59,7 @@ info#end
 %%%%
 varName: ENERGY
 fileName: psp_swp_spa_sf1_L2_32E
+directory: sweap/spe/L2/spa_sf1/20YY/MM
 hourtag: 
 varNameShort: spa_sf1_energy
 related: 
@@ -78,6 +70,7 @@ info#end
 %%%%
 varName: QUALITY_FLAG
 fileName: psp_swp_spa_sf1_L2_32E
+directory: sweap/spe/L2/spa_sf1/20YY/MM
 hourtag: 
 varNameShort: spa_sf1_quallity
 related: 
@@ -87,8 +80,21 @@ info#end
 ----
 
 %%%%
+varName: EFLUX_VS_PA_E
+fileName: psp_swp_spe_sf0_L3_pad
+directory: sweap/spe/L3/spe_sf0_pad/20YY/MM
+hourtag: 
+varNameShort: 
+related: 
+info#start
+Electron differential Energy Flux vs Pitch-angle and Energy
+info#end
+----
+
+%%%%
 varName: EFLUX_VS_ENERGY
 fileName: psp_swp_spe_sf0_L3_pad
+directory: sweap/spe/L3/spe_sf0_pad/20YY/MM
 hourtag: 
 varNameShort: 
 related: 
@@ -100,6 +106,7 @@ info#end
 %%%%
 varName: sc_pos_HCI
 fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
 varNameShort: hciR
 related: 
@@ -168,13 +175,27 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_wf_V[1-5]dc
-fileName: psp_fld_l2_dfb_wf_vdc
+varName: psp_fld_l2_dfb_wf_dVdc_sensor
+fileName: psp_fld_l2_dfb_wf_dvdc
+directory: fields/l2/dfb_wf_dvdc/20YY/MM
 hourtag: 6h
-varNameShort: V1dc
+varNameShort: wf_dvdc_sensor
 related: 
 info#start
-L2 Electric Potential from V[1-5]
+
+
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_wf_dVdc_sc
+fileName: psp_fld_l2_dfb_wf_dvdc
+directory: fields/l2/dfb_wf_dvdc/20YY/MM
+hourtag: 6h
+varNameShort: wf_dvdc_sc
+related: 
+info#start
+
 
 info#end
 ----

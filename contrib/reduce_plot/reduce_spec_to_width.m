@@ -68,9 +68,10 @@ function [x_reduced, y_reduced, c_reduced] = reduce_to_width(x, y, c, width, lim
       [indUpperLimit,~] = binary_search(x, lims(2), indLowerLimit, nx);
     end
     
+    % no reduction needed
     if indUpperLimit-indLowerLimit <= n_points
-      indInterval = (indLowerLimit-mod(indLowerLimit,2)) : ...
-                    (indUpperLimit+1-mod(indUpperLimit,2));
+      indInterval = (indLowerLimit-(mod(indLowerLimit,2)==0)) : ...
+                    (indUpperLimit+(mod(indUpperLimit,2)==1));
         x_reduced = x(indInterval);
         c_reduced = c(:,indInterval);
         if isYMatrix, y_reduced = y(:,indInterval);end

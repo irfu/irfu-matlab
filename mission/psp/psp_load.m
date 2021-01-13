@@ -29,7 +29,10 @@
 %           'sweap','spc'            - SWEAP proton moments
 %           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
 %           'ephem'                  - ephemeris files
-%           variable names as in the cdf file
+%
+% PSP_LOAD([],datatype,dateStart,dateStop)
+%           here "datatype" is any variable long or short name given in psp_variables.txt with directory described
+%
 % dateStart & dateStop: date vectors or strings for start and stop day
 %            e.g. [yyyy mm dd] or 'yyyy/mm/dd' or  'yyyy mm dd' (read with datenum)
 %
@@ -44,6 +47,7 @@ outputToBase  = (nargout == 0);
 startDatenum = datenum(date_start);
 endDatenum = datenum(date_stop);
 pspobj = []; % default output
+listCdfFiles = {};
 
 if isempty(dataDir)
   dataDir=datastore('psp','data_directory');
@@ -248,10 +252,12 @@ switch datatype
     elseif nargin == 4
       % read in variable, looku up files to read from
       nFiles = 1;
-      [filename,varName,hourtag,shortVar] = psp_var(datatype);
-      if isempty(filename)
-        error(['Filename not known for varname: ' varName '. Consider updating psp_load().']);
+      [fileBaseName,varName,hourtag,shortVar] = psp_var(datatype);
+      if isempty(fileBaseName)
+        error(['Filename not known for datatype: ' datatype '. Consider updating psp_load().']);
       end
+      listCdfFiles = get_file_list(fileBaseName);
+      nFiles = length(listCdfFiles);
       varnames = {varName};
       varnamesout = {shortVar};
     else
@@ -259,7 +265,7 @@ switch datatype
     end
 end
 
-if ~exist('filesToLoadTable','var')
+if ~exist('filesToLoadTable','var') && isempty(listCdfFiles)
   
   nDays  = endDatenum-startDatenum+1; % include first day
   
@@ -294,19 +300,23 @@ epochData = cell(nVar,1);
 
 for iFile = 1:nFiles
   
-  fileToLoad=strtrim(filesToLoadTable(iFile,:));
-  d=dir([fileToLoad(1:end-6) '*']); % list all files with different versions
-  if numel(d) == 1
-    fileToLoad = [d.folder filesep d.name];
-    irf.log('warning',['Reading: ' d.name]);
-  elseif numel(d) > 1
-    irf.log('warning','Several version files exist!')
-    fileNamesFound = sort({d(:).name}) %#ok<NOPRT>
-    irf.log('warning',['Using the latest version: ' fileNamesFound{end}])
-    fileToLoad = [d(1).folder filesep fileNamesFound{end}];
+  if ~isempty(listCdfFiles)
+    fileToLoad = listCdfFiles{iFile};
   else
-    irf.log('warning','No file found')
-    fileToLoad = [];
+    fileToLoad=strtrim(filesToLoadTable(iFile,:));
+    d=dir([fileToLoad(1:end-6) '*']); % list all files with different versions
+    if numel(d) == 1
+      fileToLoad = [d.folder filesep d.name];
+      irf.log('warning',['Reading: ' d.name]);
+    elseif numel(d) > 1
+      irf.log('warning','Several version files exist!')
+      fileNamesFound = sort({d(:).name}) %#ok<NOPRT>
+      irf.log('warning',['Using the latest version: ' fileNamesFound{end}])
+      fileToLoad = [d(1).folder filesep fileNamesFound{end}];
+    else
+      irf.log('warning','No file found')
+      fileToLoad = [];
+    end
   end
       
 if any(fileToLoad)
@@ -399,10 +409,9 @@ end
     %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
     dbm_dvac = double([]);
     tStartEndSnapshTT = [];
-    tSnapLineEpoch = [];
     tFinal = [];
-    for iFile = 1:numel(listCDFFiles)
-      fileCDF = listCDFFiles{iFile};
+    for iCdfFile = 1:numel(listCDFFiles)
+      fileCDF = listCDFFiles{iCdfFile};
       disp(['Reading: ' fileCDF]);
       res = spdfcdfread(fileCDF,'VARIABLES', {...
         'psp_fld_l2_dfb_dbm_dvac_time_series_TT2000',...
@@ -420,14 +429,14 @@ end
       dbm_dvac = [dbm_dvac; [dbm_dvac_temp12(:) dbm_dvac_temp34(:)]];
     end
     dbm_dvac(dbm_dvac < -1e30) = NaN;
-    tSnapLine = irf_time(tStartEndSnapshTT(:),'ttns>epoch');
-    tSnapLine = reshape(tSnapLine,[],2)';
-    tSnapLine(end+1,:)=NaN;
-    tSnapLine = tSnapLine(:);
+    tSnapLineEpoch = irf_time(tStartEndSnapshTT(:),'ttns>epoch');
+    tSnapLineEpoch = reshape(tSnapLineEpoch,[],2)';
+    tSnapLineEpoch(end+1,:)=NaN;
+    tSnapLineEpoch = tSnapLineEpoch(:);
     dbm_dvac = TSeries(EpochTT(tFinal),dbm_dvac);
     out = struct('ts',dbm_dvac,...
       'startStopMatriTT',tStartEndSnapshTT,...
-      'startStopLineEpoch',tSnapLine);
+      'startStopLineEpoch',tSnapLineEpoch);
   end
     
 end
