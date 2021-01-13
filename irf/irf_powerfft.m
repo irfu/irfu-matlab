@@ -306,14 +306,18 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
   % indexing), instead of bKeep (logical indexing), also seems to speed up code
   % somewhat, maybe.
   intervalSec2 = intervalSec1 + nSamplesOut/samplFreqHz;
-  bKeep        = (intervalSec1 <= timeSecArray) & (timeSecArray <= intervalSec2);
+  [~,intStart] = binary_search(timeSecArray,intervalSec1,1,numel(timeSecArray));
+  [intEnd,~] = binary_search(timeSecArray,intervalSec2,intStart,numel(timeSecArray));
+  bKeep = intStart:intEnd;
+
+  %bKeep        = (intervalSec1 <= timeSecArray) & (timeSecArray <= intervalSec2);
   %iKeep        = find(bKeep);
   %iKeep        = find(bKeep, 1, 'first') : find(bKeep, 1, 'last');
-  timeSecArray = timeSecArray(bKeep);
-  samples      = samples(     bKeep, :);
+  timeSecArrayRed = timeSecArray(bKeep);
+  samplesRed      = samples(     bKeep, :);
   
-  nTimestamps = size(samples, 1);
-  nComp       = size(samples, 2);
+  nTimestamps = size(samplesRed, 1);
+  nComp       = size(samplesRed, 2);
   
   % Find mapping between (original) sample indices and out sample indices.
   % NOTE: This is NOT a 1-to-1 mapping. Zero, one, or multiple input indices
@@ -322,7 +326,7 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
   %       samples is in principle suboptimal (averaging is better?) but is
   %       probably OK for most applications. Improve?!
   iIn  = [1:nTimestamps]';
-  iOut = round((timeSecArray-intervalSec1)*samplFreqHz + 0.5);
+  iOut = round((timeSecArrayRed-intervalSec1)*samplFreqHz + 0.5);
     
   % Ensure that code only extracts the desired data, and only assigns
   % the desired (and legal) indices.
@@ -332,9 +336,21 @@ function samplesOut = select_preprocess_data(timeSecArray, samples, intervalSec1
   iOut(~b) = [];
   
   samplesOut          = NaN(nSamplesOut, nComp);   % Pre-allocate as NaN, to be on the safe side.
-  samplesOut(iOut, :) = samples(iIn, :);
+  samplesOut(iOut, :) = samplesRed(iIn, :);
     
   samplesOut          = replace_NaN(samplesOut);
+end
+
+% Binary search to find boundaries of the ordered x data.
+function [L, U] = binary_search(x, v, L, U)
+    while L < U - 1                 % While there's space between them...
+        C = floor((L+U)/2);         % Find the midpoint
+        if x(C) < v                 % Move the lower or upper bound in.
+            L = C;
+        else
+            U = C;
+        end
+    end
 end
 
 
