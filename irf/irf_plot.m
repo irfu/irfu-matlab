@@ -701,6 +701,7 @@ if number_of_subplots>=1 && number_of_subplots<=30
   user_data.current_panel=0;
   set(hcf,'userdata',user_data);
   figure(hcf); % bring figure to front
+  irf_figmenu;
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
