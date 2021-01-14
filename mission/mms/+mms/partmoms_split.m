@@ -11,9 +11,9 @@ tmp = partvar;
 
 %%  2. make data
 for ienergy = 1: 32
-  if strfind(partvar.name, 'numberdensity')
+  if ~isempty(strfind(partvar.name, 'numberdensity'))
     c_eval('restmp? = irf.ts_scalar(tmp.time, tmp.data(:, ienergy));', ienergy);
-  elseif strfind(partvar.name, 'bulkv')
+  elseif ~isempty(strfind(partvar.name, 'bulkv'))
     c_eval('restmp? = irf.ts_vec_xyz(tmp.time, squeeze(tmp.data(:, ienergy, :)));', ienergy);
   elseif or(~isempty(strfind(partvar.name, 'temptensor')), ~isempty(strfind(partvar.name, 'prestensor')))
     c_eval('restmp? = irf.ts_tensor_xyz(tmp.time, squeeze(tmp.data(:, :, ienergy, :)));', ienergy);
