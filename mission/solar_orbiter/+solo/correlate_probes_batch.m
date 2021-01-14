@@ -7,9 +7,11 @@
 % nearby month
 Tint = irf.tint('2020-10-28T00:00:00Z/2020-12-03T23:59:59Z'); 
 
+
 VDC = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e', 'VDC', Tint);
 EDC = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e', 'EDC', Tint);
 QUAL = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e', 'QUALITY_FLAG', Tint);
+
 
 % Remover thrusters, etc
 iiBad = QUAL.data <2;
@@ -17,34 +19,71 @@ EDC.data(iiBad,:) = NaN; VDC.data(iiBad,:) = NaN;
 
 %% Step 1 - get d23
 OutTS_step1 = solo.correlate_probes(VDC, EDC);
-clf
-irf_plot(OutTS_step1,'.-')
-legend('d23 (Volts)', 'd123 (Volts)','k123, V1=k123*V23+del123','del123')
-title('Step 1')
 
-d23 = irf.ts_scalar(OutTS_step1.time,movmedian(OutTS_step1.data(:,1),11,'omitnan','Endpoints','fill'));
 
+h=irf_plot(1,'newfigure');
+irf_plot(h,OutTS_step1.d23,'.-')
+hold on
+irf_plot(h,OutTS_step1.d123,'.-');
+irf_plot(h,OutTS_step1.k123,'.-');
+irf_plot(h,OutTS_step1.del123,'.-');
+irf_plot(h,OutTS_step1.PotOffset,'.-');
+irf_plot(h,OutTS_step1.PotSlope,'.-');
+
+irf_zoom(h,'y');
+
+legend(h,'d23 (Volts)', 'd123 (Volts)','k123, V1=k123*V23+del123','del123','\Gamma_0','\Gamma_1')
+title(h,'Step 1')
+
+d23 = irf.ts_scalar(OutTS_step1.d23.time,movmedian(OutTS_step1.d23.data,11,'omitnan','Endpoints','fill'));
+Gamma0 = irf.ts_scalar(OutTS_step1.PotOffset.time,movmedian(OutTS_step1.PotOffset.data,11,'omitnan','Endpoints','fill'));
+Gamma1 = irf.ts_scalar(OutTS_step1.PotSlope.time,movmedian(OutTS_step1.PotSlope.data,11,'omitnan','Endpoints','fill'));
+CC = irf.ts_scalar(OutTS_step1.PotCorrcoeff.time,movmedian(OutTS_step1.PotCorrcoeff.data,11,'omitnan','Endpoints','fill'));
+gammastruct.Gamma0=Gamma0;
+gammastruct.Gamma1=Gamma1;
+gammastruct.cc=CC;
 %% Step 2 - get k123
-OutTS_step2 = solo.correlate_probes(VDC,EDC,d23);
+OutTS_step2 = solo.correlate_probes(VDC,EDC,d23,gammastruct);
 
-irf_plot(OutTS_step2,'.-')
-legend('d23 (Volts)', 'd123 (Volts)','k123, V1=k123*V23+del123','del123')
-title('Step 2')
 
-k123 = irf.ts_scalar(OutTS_step1.time,movmedian(OutTS_step2.data(:,3),15,'omitnan','Endpoints','fill'));
+h=irf_plot(1,'newfigure');
+irf_plot(h(1),OutTS_step2.d23,'.-')
+hold on
+irf_plot(h(1),OutTS_step2.d123,'.-');
+irf_plot(h(1),OutTS_step2.k123,'.-');
+irf_plot(h(1),OutTS_step2.del123,'.-');
+irf_plot(h(1),OutTS_step2.PotOffset,'.-');
+irf_plot(h(1),OutTS_step2.PotSlope,'.-');
+
+irf_zoom(h(1),'y');
+legend(h(1),'d23 (Volts)', 'd123 (Volts)','k123, V1=k123*V23+del123','del123','\Gamma_0','\Gamma_1')
+title(h(1),'Step 2')
+
+k123 = irf.ts_scalar(OutTS_step1.k123.time,movmedian(OutTS_step2.k123.data,15,'omitnan','Endpoints','fill'));
 
 %% Step 3 - get d123
-OutTS_l3 = solo.correlate_probes(VDC,EDC,d23,k123);
+OutTS_step3 = solo.correlate_probes(VDC,EDC,d23,gammastruct,k123);
 
-irf_plot(OutTS_l3,'.-')
-legend('d23 (Volts)', 'd123 (Volts)','k123, V1=k123*V23+del123','del123')
-title('Step 3')
+h=irf_plot(1,'newfigure');
+irf_plot(h(1),OutTS_step3.d23,'.-')
+hold on
+irf_plot(h(1),OutTS_step3.d123,'.-');
+irf_plot(h(1),OutTS_step3.k123,'.-');
+irf_plot(h(1),OutTS_step3.del123,'.-');
+irf_plot(h(1),OutTS_step3.PotOffset,'.-');
+irf_plot(h(1),OutTS_step3.PotSlope,'.-');
+irf_plot(h(1),OutTS_step3.PotCorrcoeff,'.-');
 
-d123 = irf.ts_scalar(OutTS_step1.time,movmedian(OutTS_l3.data(:,4),7,'omitnan','Endpoints','fill'));
+irf_zoom(h(1),'y');
+legend(h(1),'d23 (Volts)', 'd123 (Volts)','k123, V1=k123*V23+del123','del123','\Gamma_0','\Gamma_1','cc')
+title(h(1),'Step 3')
 
-%% Save result intoa monthly file
-K123 = irf.ts_scalar(OutTS_step1.time,[k123.data, d123.data]);
-save d23K123_20201110_november K123 d23
+d123 = irf.ts_scalar(OutTS_step1.d123.time,movmedian(OutTS_step3.del123.data,7,'omitnan','Endpoints','fill'));
+
+%% Save result into a monthly file
+
+K123 = irf.ts_scalar(OutTS_step1.d12.time,[k123.data, d123.data]);
+save d23K123_20201110_november K123 d23 Gamma0 Gamma1 CC
 
 %% Validation plot 1
 % downsample to 10 sec resolution to make plotting easier
@@ -62,6 +101,7 @@ DT = 10; nSteps =  (Tstop-Tstart)/DT;
 outTime = Tstart + ((1:nSteps)-0.5)*DT;
 
 [DCE_SRF,PSP,SCPOT] = solo.vdccal(VDC,EDC);
+
 DCE_SRF_10s = DCE_SRF.resample(outTime);
 PSP_10s = PSP.resample(outTime);
 
@@ -70,6 +110,7 @@ irf_plot({DCE_SRF_10s,k123,d123,PSP_10s})
 
 %% Validation plot 2 - reuires B from SOAR
 B_RTN = solo.db_get_ts('solo_L2_mag-rtn-normal-1-minute','B_RTN', Tint);
+% B_SRF = solo.db_get_ts('solo_L2_mag-srf-normal','B_SRF', Tint);
 B_SRF = B_RTN ;
 B_SRF.data(:,1:2) = -B_SRF.data(:,1:2);
 

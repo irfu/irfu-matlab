@@ -1,4 +1,4 @@
-function OutTS = correlate_probes(VDC,EDC,d23_inp, k123_inp)
+function OutTS = correlate_probes(VDC,EDC,d23_inp,Gamma_inp, k123_inp, d123_inp)
 %SOLO.CORRELATE_PROBES  Do LSQ fits betweent the probes signals
 %
 % OutTS = solo.correlate_probes(VDC,EDC,[d23],[k123])
@@ -18,8 +18,9 @@ function OutTS = correlate_probes(VDC,EDC,d23_inp, k123_inp)
 
 
 if nargin<3, flagD23 = false; else, flagD23 = true; end
-if nargin<4, flagK123 = false; else, flagK123 = true; end
-
+if nargin<4, flagGamma = false; else, flagGamma = true; end
+if nargin<5, flagK123 = false; else, flagK123 = true; end
+if nargin<6, flagD123 = false; else, flagD123 = true; end
 %%
 Tstart = VDC.time.start+3600;
 TstartS = Tstart.toUtc;
@@ -35,14 +36,29 @@ DT = 7200*3; % 2 hours
 nSteps =  (Tstop-Tstart)/DT;
 
 outTime = Tstart + ((1:0.5:nSteps)-0.5)*DT;
-out = NaN(outTime.length,5);
+out = NaN(outTime.length,8);
+
+cc_crit=0.7; %Only remove common mode when the correlation is greater than cc_crit.
+
 if flagD23
   d23R = d23_inp.resample(VDC);
   d23 = d23_inp.resample(outTime,'nearest'); out(:,1) = d23.data;
 end
+if flagGamma
+  Gamma0R = Gamma_inp.Gamma0.resample(VDC);
+  Gamma0 = Gamma_inp.Gamma0.resample(outTime,'nearest'); out(:,7)=Gamma0.data;
+  Gamma1R = Gamma_inp.Gamma1.resample(VDC);
+  Gamma1 = Gamma_inp.Gamma1.resample(outTime,'nearest'); out(:,6)=Gamma1.data;
+  CCR = Gamma_inp.cc.resample(VDC);
+  CC = Gamma_inp.cc.resample(outTime,'nearest'); out(:,8)=CC.data;
+end
 if flagK123
   k123R = k123_inp.resample(VDC);
   k123 = k123_inp.resample(outTime,'nearest'); out(:,3) = k123.data;
+end
+if flagD123
+    d123R=d123_inp.resample(VDC);
+    d123 = d123_inp.resample(outTime,'nearest');
 end
 
 
@@ -63,23 +79,66 @@ for i=1:outTime.length
     D23 = d23R.tlim(Tint); d23 = D23.data(idxNan);
     v23 = (v3 + v2 -d23)/2; % V23
   else
-    d23 = median(e23); 
-    v23 = (v3 + v2 -d23)/2; % V23
-    out(i,1) = d23; 
+      d23 = median(e23);
+      v23 = (v3 + v2 -d23)/2; % V23
+      out(i,1) = d23;
   end
-  d123 = median(v1) - median(v23); % V1 - V23
+  if flagGamma
+      GAMMA1=Gamma1R.tlim(Tint); Gamma1=GAMMA1.data(idxNan);
+      GAMMA0=Gamma0R.tlim(Tint); Gamma0=GAMMA0.data(idxNan);
+      CC=CCR.tlim(Tint); cc=CC.data(idxNan);
+      V2corr = v2-double(d23);
+      V23 = (V2corr+v3)/2;
+      V2cmr = V2corr-(Gamma0+Gamma1.*V23)/2;
+      V3cmr = v3+(Gamma0+Gamma1.*V23)/2;
+      v23cmr = (V3cmr+V2cmr)/2;
+  else
+      V2corr = v2 -double(d23);
+      V23 = (V2corr + v3)/2; % (V2 + V3) /2
+      V_delta23 = V2corr-v3;
+      [p,s]=polyfit(V23,V_delta23,1); %p(1)=slope. p(2)=offset.
+      cc=corrcoef(V23,V_delta23);
+      % Now we know gamma. 
+      if abs(cc)>cc_crit
+          V2cmr = V2corr-(p(1)*V23+p(2))/2; %cmr = CommonModeRemoved
+          V3cmr = v3+(p(1)*V23+p(2))/2; %cmr = CommonModeRemoved
+          
+          v23cmr = (V3cmr+V2cmr)/2; %V23 new.
+      else
+          p(1)=0;
+          p(2)=0;
+          v23cmr = v23; %V23 new.
+      end
+      
+      out(i,6)=p(1); % V23 E23 slope
+      out(i,7)=p(2); % V23 E23 offset
+      out(i,8)=cc(1,2); %V23 E23 correlation coefficient.
+  end
+
+  d123 = median(v1) - median(v23cmr); % V1 - V23
   out(i,2) = d123;
   if flagK123
     K123 = k123R.tlim(Tint); k123 = K123.data(idxNan);
-    del123 = median(v1) - median(v23.*k123); % V1 - V23
+    del123 = median(v1) - median(v23cmr.*k123); % V1 - V23
+    
   else
-    [k123,del123] = lsqfitgm(v23(idxOk),v1(idxOk));
+    [k123,del123] = lsqfitgm(v23cmr(idxOk),v1(idxOk));
     %v23corr = v23 + d123;
     % V23 vs V1
     %k123 = v23corr(idxOk)\v1(idxOk);
     out(i,3) = k123;
   end
   out(i,4) = del123;
+
 end
 
-OutTS = irf.ts_scalar(outTime,out);
+OutTS.d23 = irf.ts_scalar(outTime,out(:,1));
+OutTS.d123 = irf.ts_scalar(outTime,out(:,2));
+OutTS.k123 = irf.ts_scalar(outTime,out(:,3));
+OutTS.del123 = irf.ts_scalar(outTime,out(:,4));
+OutTS.d12 = irf.ts_scalar(outTime,out(:,5));
+OutTS.PotSlope = irf.ts_scalar(outTime,out(:,6));
+OutTS.PotOffset = irf.ts_scalar(outTime,out(:,7));
+OutTS.PotCorrcoeff = irf.ts_scalar(outTime,out(:,8));
+
+
