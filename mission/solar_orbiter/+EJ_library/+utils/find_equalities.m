@@ -85,7 +85,7 @@ function [fauxHashArray] = find_equalities(searchDistance, varargin)
         fauxHashArray(i) = i;
         
         %=======================================================
-        % Iterate over all preceeding data indices within range
+        % Iterate over all preceding data indices within range
         %=======================================================
         jEarliest = max(1,i-searchDistance);
         for j = (i-1):-1:jEarliest

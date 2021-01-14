@@ -124,7 +124,7 @@ function str = print_JSON_object_recursive(JsonObj, indentationLevel, indentFirs
                 %str = [str, settings.lineBreakStr, print_JSON_object_recursive(value, indentationLevel+1, true)];
                 
                 % Alternative 2:
-                % Left square brackets/braces continue on the preceeding line.
+                % Left square brackets/braces continue on the preceding line.
                 % Harder to visually match left & right brackets. More compact.
                 str = [str, '', print_JSON_object_recursive(value, indentationLevel+1, false, Settings)];
             end

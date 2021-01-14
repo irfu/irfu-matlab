@@ -127,8 +127,9 @@ function errorCode = main( varargin )
         irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
 
     
-    
-        errorCode = bicas.constants.EMIDP_2_INFO('NoError').errorCode;    % Default error code (i.e. no error).
+        
+        % Default error code (i.e. no error).
+        errorCode = bicas.constants.EMIDP_2_INFO('NoError').errorCode;
         main_without_error_handling(varargin, L);
         
     catch Exception1
@@ -152,12 +153,13 @@ function errorCode = main( varargin )
             %========================================================
             % CASE: Caught an error in the regular error handling(!)
             %========================================================
-            
             % NOTE: Only use very, very error-safe code here.
             %       Does not use bicas.logger or similar.
-            fprintf(2, 'Error in the MATLAB code''s error handling.\n');            % Print to stderr.
-            fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);    % Print to stderr.
-            fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);       % Print to stderr.
+            % NOTE: Prints to stderr (not stdout).
+            
+            fprintf(2, 'Error in the MATLAB code''s error handling.\n');
+            fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);
+            fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);
             
             % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section
             % 3.4.3 specifies
@@ -165,7 +167,8 @@ function errorCode = main( varargin )
             %   error code 1 : Every kind of error (!)
             errorCode = 1;
             
-            fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
+            fprintf(2, ...
+                'Exiting MATLAB application with error code %i.\n', errorCode);
             return
         end
     end
@@ -294,9 +297,12 @@ function main_without_error_handling(cliArgumentsList, L)
     % IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem
     % of calling irf('check_os') which indirectly calls system('hostname') at
     % ROC:roc2-dev.
-    L.logf('debug', 'OS environment variable PATH                 = "%s"', getenv('PATH'));
+    L.logf('debug', 'OS environment variable PATH                 = "%s"', ...
+        getenv('PATH'));
+    
     % NOTE: Useful for seeing which leap second table was actually used, e.g. at ROC.
-    L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', getenv('CDF_LEAPSECONDSTABLE'));
+    L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', ...
+        getenv('CDF_LEAPSECONDSTABLE'));
     
     
     
@@ -304,7 +310,8 @@ function main_without_error_handling(cliArgumentsList, L)
     % Derive BICAS's directory root
     %===============================
     % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
-    [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
+    % Use path of the current MATLAB file.
+    [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
     bicasRootPath         = EJ_library.fs.get_abs_path(fullfile(matlabSrcPath, '..', '..'));
     
     
@@ -390,12 +397,17 @@ function main_without_error_handling(cliArgumentsList, L)
         ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS
     
     
+
+
     
     %=========================================================
     % Modify settings according to (inofficial) CLI arguments
     %=========================================================
-    L.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
-    SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
+    L.log('info', ...
+        ['Overriding subset of in-memory settings using', ...
+        ' (optional, inofficial) CLI arguments, if any.'])
+    SETTINGS = overwrite_settings_from_strings(...
+        SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');
     
     
     
@@ -494,7 +506,14 @@ function main_without_error_handling(cliArgumentsList, L)
             %===================
             % Read RCS NSO file
             %===================
-            rcsNsoPath = fullfile(bicasRootPath, SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH'));
+            rcsNsoRelativePath = SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
+            rcsNsoOverridePath = SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH');
+            if isempty(rcsNsoOverridePath)
+                rcsNsoPath = fullfile(bicasRootPath, rcsNsoRelativePath);
+            else
+                rcsNsoPath = rcsNsoOverridePath;
+            end
+            
             %L.logf('info', 'rcsNsoPath = "%s"', rcsNsoPath);
             L.logf('info', 'Loading RCS NSO table XML file "%s"', rcsNsoPath)
             NsoTable = bicas.NSO_table(rcsNsoPath);

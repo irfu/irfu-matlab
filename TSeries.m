@@ -19,7 +19,7 @@ classdef TSeries
   %      with other independent variables of the data product, such and a
   %      particle energy or a spectral frequency channel.
   %
-  %      For more infor on representation see Cluster Metadata Dictionary
+  %      For more info on representation see Cluster Metadata Dictionary
   %           http://caa.estec.esa.int/caa/doc_format_meta.xml
   %
   %  ARGS MACROs:
@@ -1455,13 +1455,24 @@ classdef TSeries
       end
     end
     
-    function obj = tlim(obj,tint)
+    function obj = tlim(obj,tint, mode)
       %TLIM  Returns data within specified time interval
       %
-      % Ts1 = TLIM(Ts,Tint)
+      % Ts1 = TLIM(Ts,Tint, [MODE])
+      %
+      % Where MODE can be:
+      %        'and', 0 (default)
+      %        'xor', 1 
+      %
+      % Ts1 is part of the Ts that is within interval
+      % LIM.START <= X(:,1) < LIM.STOP for "AND" mode
+      %
+      % Ts1 is part of Ts outside the interval for "XOR" mode:
+      % X(:,1) < LIM.START & X(:,1) > LIM.STOP
       %
       % See also: IRF_TLIM
-      [idx,obj.t_] = obj.time.tlim(tint);
+      if nargin<3, mode = 0; end
+      [idx,obj.t_] = obj.time.tlim(tint, mode);
       nd = ndims(obj.data_);
       if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
       switch nd

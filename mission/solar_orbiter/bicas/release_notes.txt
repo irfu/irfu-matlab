@@ -50,3 +50,16 @@ Version 4.0.0
 Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)
 Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX
 Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR
+
+
+Version 4.1.0
+-------------
+Added setting quality variables based on thruster firings in
+Non-Standard Operations (NSO) table. List complete until 2020-12-05.
+Zero order AC detrending (remove mean, not linear fit), no AC re-trending
+(~bugfix; re-trending makes no sense for high-pass filtered data).
+Combined transfer functions (LFR+BIAS) for AC data are modified during
+execution to have constant gain for low freqs (prevents low frequency noise
+from being amplified.)
+Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE
+Bugfix: not crashing when reading CURRENT datasets with one bias setting.

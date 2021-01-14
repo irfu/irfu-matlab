@@ -92,17 +92,17 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %
 % Param/value-pairs with additional functionality:
 %
-% � 'GoodLineString': ignore all lines that do not contain at least one of
+% · 'GoodLineString': ignore all lines that do not contain at least one of
 %   the strings in the cell array (line filtering analogous to
 %   'BadLineString'; see EXAMPLE 3b).
 %
-% � 'SelectLineFun': a single argument element-wise Boolean function that
+% · 'SelectLineFun': a single argument element-wise Boolean function that
 %   is applied to the line numbers. If the function returns 'false' for a
 %   certain line number, that line is skipped. Line number counting starts
 %   with 1 (one) after the header lines. When using this option, the number
 %   of header lines should be passed to txt2mat, too. See EXAMPLE 3c.
 %
-% � The 'ReplaceStr' argument works similar to the 'ReplaceChar' argument.
+% · The 'ReplaceStr' argument works similar to the 'ReplaceChar' argument.
 %   It just replaces character sequences instead of single characters. A
 %   cell array containing at least one cell array of strings must be
 %   provided. Such a cell array of strings consists of <n> strings, each of
@@ -113,19 +113,19 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %   especially if the strings differ in size.
 %   Expression replacements are performed before character replacements.
 %
-% � By the help of the 'ReplaceRegExpr' argument regular expressions can be
+% · By the help of the 'ReplaceRegExpr' argument regular expressions can be
 %   replaced. The usage is analogous to 'ReplaceStr'. Regular expression
 %   replacements are carried out before any other replacement (see
 %   EXAMPLE 4 and EXAMPLE 5).
 %
-% � 'NumericType' is one of 'int8', 'int16', 'int32', 'int64', 'uint8',
+% · 'NumericType' is one of 'int8', 'int16', 'int32', 'int64', 'uint8',
 %   'uint16', 'uint32', 'uint64', 'single', or 'double' (default),
 %   determining the numeric class of the output matrix A. If the numeric
 %   class does not support NaNs, missing elements are padded with zeros
 %   instead. Reduce memory  consumption by choosing an appropriate numeric
 %   class, if needed.
 %
-% � The 'RowRange' value is a sorted positive integer two element vector
+% · The 'RowRange' value is a sorted positive integer two element vector
 %   defining an interval of data rows to be converted (header lines do not
 %   count, but lines that will be recognized as invalid - see above - do).
 %   If the vector's second element exceeds the number of valid data rows in
@@ -133,7 +133,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %   allowed as second element. It may save memory and computation time if
 %   only a small part of data has to be extracted from a huge text file.
 %
-% � The 'FilePos' value <fp> is a nonnegative integer scalar. <fp>
+% · The 'FilePos' value <fp> is a nonnegative integer scalar. <fp>
 %   characters from the beginning of the file will be ignored, i.e. not be
 %   read. If you run TXT2MAT with a 'RowRange' argument, you may
 %   use the <fpos> output as an 'FilePos' input during the next run in
@@ -141,7 +141,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %   conversion process e.g. when the file is too big to be read as a whole
 %   (see EXAMPLE 6).
 %
-% � 'ReadMode':
+% · 'ReadMode':
 %   'matrix'  Read and convert sections of multiple lines simultaneously,
 %             requiring each line to contain the same number of values.
 %             Finding an improper number of values in such a section will
@@ -165,14 +165,14 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %   'cell'    Same as 'char', but put each line of text into a separate
 %             cell of the output, see EXAMPLE 3b.
 %
-% � The 'DialogString' argument provides the text shown in the title bar of
+% · The 'DialogString' argument provides the text shown in the title bar of
 %   the file selection dialogue that may appear.
 %
-% � The 'InfoLevel' argument controls the verbosity of TXT2MAT's outputs in
+% · The 'InfoLevel' argument controls the verbosity of TXT2MAT's outputs in
 %   the command window and the message boxes. Currently known values are:
 %   0, 1, 2 (default)
 %
-% � The 'MemPar' argument provides the minimum amount of characters TXT2MAT
+% · The 'MemPar' argument provides the minimum amount of characters TXT2MAT
 %   will process simultaneously as an internal text section (= a set of
 %   text lines). It must be a positive integer. The value does not affect
 %   the outputs, but computation time and memory usage. The roughly
@@ -185,12 +185,12 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % 1) prerequisites for the automatic file format analysis before the
 %    numeric conversion (if the number of header lines and data columns is
 %    not given):
-%    � header lines can be detected by either non-numeric characters or
+%    · header lines can be detected by either non-numeric characters or
 %      a strongly deviating number of numeric items in relation to the
 %      data section (<10%)
-%    � tab, space, slash, comma, colon, and semicolon are accepted as
+%    · tab, space, slash, comma, colon, and semicolon are accepted as
 %      delimiters (e.g. "10/11/2006 08:30 1; 3.3; 0.52" is ok)
-%    � after the optional line filtering and user supplied replacements
+%    · after the optional line filtering and user supplied replacements
 %      have been carried out, the data section must contain the delimiters
 %      and the decimal numbers only (point or comma are accepted as decimal
 %      character).
@@ -232,11 +232,11 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % -------------------------------------------------------------------------
 %
 % Supposed your ascii file C:\mydata.log contains the following lines
-% �
+% »
 % 10 11 2006 08 35.225 1  3.3  0.52
 % 31 05 2008 12 12     0  0.0  0.00
 %  7 01 2010 15 23.5  -1  3.3  0.535
-% �
+% «
 % type
 %
 % A = txt2mat('C:\mydata.log',0,8);
@@ -247,20 +247,20 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %
 % Below, TXT2MAT uses its automatic file layout detection as the header
 % line and column number is not given. With the file looking like this:
-% �
+% »
 % some example data
 % plus another header line
 % 10/11/2006 08:35,225 1; 3,3; 0,52
 % 31/05/2008 12:12     0; 0,0; 0,00
 % 7/01/2010  15:23,5  -1; 3,3; 0,535
-% �
+% «
 % txt2mat('C:\mydata.log') returns the same output data matrix as above.
 %
 % =========================================================================
 % EXAMPLE 3a:     	line filtering by 'bad' markers; replacements
 % -------------------------------------------------------------------------
 %
-% �
+% »
 % ;$FILEVERSION=1.1
 % ;$STARTTIME=38546.6741619815
 % ;---+--   ----+----  --+--  ----+---  +  -+ -- -- --
@@ -268,7 +268,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %      4)         7,3  Rx         0310  8  06 6E 2B 9F
 %      5)         9,5  Warng  FFFFFFFF  4  00 00 00 08  BUSHEAVY
 %      6)        12,9  Rx         0320  8  02 E1 F6 EF
-% �
+% «
 %
 % You may specify
 % nh   = 3              % header lines,
@@ -321,7 +321,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % EXAMPLE 3b:       line filtering by 'good' markers; return char or cell
 % -------------------------------------------------------------------------
 %
-% �
+% »
 % Some colours and numbers
 % 1 yellow 1 0 0
 % 2 green  7 8 10
@@ -329,7 +329,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % 4 green  8 8 9
 % 5 green  9 7 7
 % 6 yellow 0 2 1
-% �
+% «
 %
 % If you only want the data from the lines containing the string 'green':
 %
@@ -371,12 +371,12 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %     fwrite(fid, A);   % write data
 %     fclose(fid);
 %
-%     �
+%     »
 %     Some colours and numbers
 %     2 green  7 8 10
 %     4 green  8 8 9
 %     5 green  9 7 7
-%     �
+%     «
 %
 %     - proceed with functions like textscan:
 %
@@ -402,7 +402,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % EXAMPLE 3c:       line filtering by line number
 % -------------------------------------------------------------------------
 %
-% �
+% »
 % line number and magic
 %  1    30    39    48     1    10    19    28
 %  2    38    47     7     9    18    27    29
@@ -411,7 +411,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %  5    13    15    24    33    42    44     4
 %  6    21    23    32    41    43     3    12
 %  7    22    31    40    49     2    11    20
-% �
+% «
 %
 % If you only want to read every 3rd line starting from line 4:
 %
@@ -450,13 +450,13 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % -------------------------------------------------------------------------
 %
 % Supposed your ascii file C:\mydata.log begins with the following lines:
-% �
+% »
 % datetime	%	ppm	%	ppm	Nm
 % datetime	real8	real8	real8
 % 30.10.2006 14:24:06,131	6,4459	478,519	6,5343
 % 30.10.2006 14:24:17,400	6,4093	484,959	6,5343
 % 30.10.2006 14:24:17,499	6,4093	484,959	6,5343
-% �
+% «
 % you might specify
 % nh   = 2          % header lines,
 % nc   = 9          % data columns,
@@ -490,12 +490,12 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 %
 % If the data table of your file contains some gaps that can be identified
 % by some repeated delimiters (here ;)
-% �
+% »
 % ; 02; 03; 04; 05;
 % 11; ; 13; 14; 15;
 % 21; ; 23; ;;
 % ; 32; 33; 34; 35;
-% �
+% «
 % you can fill them with NaNs by the help of 'ReplaceRegExpr':
 %
 % A = txt2mat('C:\mydata.log','ReplaceRegExpr',...
@@ -535,7 +535,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % 'matrix' mode. Besides, since TXT2MAT then does not check for line breaks
 % within the (internally processed) sections of a file, you can use the
 % block mode to fill up any output matrix with a fixed number of columns.
-% �
+% »
 %  1  2  3  4  5
 %  6  7  8  9 10
 %
@@ -545,7 +545,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % 23 24 25
 % 26 27 28 29 30
 %
-% �
+% «
 %
 % A = txt2mat('C:\mydata.txt',0,5,'ReadMode','block')
 %
@@ -586,129 +586,129 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % =========================================================================
 %
 %   See also SSCANF
-
-
 % --- Author: -------------------------------------------------------------
-%   Copyright 2005-2014 Andres
-%   $Revision: 6.60.0 $  $Date: 2014/03/23 21:52:03 $
+%   Copyright 2005-2019 Andres
+%   $Revision: 6.60.3 $  $Date: 2019/02/17 17:55:05 $
 % --- E-Mail: -------------------------------------------------------------
 % x=-2:3;
 % disp(char(round([polyval([-0.32,0.43,1.75,-5.90,-0.95,116],x),...
 %                  polyval([-4.44,9.12,29.8,-33.6,-52.9, 98],x)])))
 % you may also contact me via the author page
 % http://www.mathworks.com/matlabcentral/fileexchange/authors/30255
-% --- History -------------------------------------------------------------
+% --- History: ------------------------------------------------------------
 % 05.61
-%   � fixed bug: possible wrong headerlines output when using 'FilePos'
-%   � fixed bug: produced an error if a bad line marker string was already
+%   · fixed bug: possible wrong headerlines output when using 'FilePos'
+%   · fixed bug: produced an error if a bad line marker string was already
 %     found in the first data line
-%   � corrected user information if sscanf fails in matrix mode
-%   � added some more help lines
+%   · corrected user information if sscanf fails in matrix mode
+%   · added some more help lines
 % 05.62
-%   � allow negative NumColumns argument to capture a priori unknown
+%   · allow negative NumColumns argument to capture a priori unknown
 %     numbers of values per line
 % 05.82 beta
-%   � support regular expression replacements ('ReplaceRegExpr' argument)
-%   � consider user supplied replacements when analysing the file layout
+%   · support regular expression replacements ('ReplaceRegExpr' argument)
+%   · consider user supplied replacements when analysing the file layout
 % 05.86 beta
-%   � some code clean-up (argincheck subfunction, ...)
+%   · some code clean-up (argincheck subfunction, ...)
 % 05.86.1
-%   � fixed bug: possibly wrong numeric matlab version number detection
+%   · fixed bug: possibly wrong numeric matlab version number detection
 % 05.90
-%   � consider skippable lines when analysing the file layout
-%   � code rearrangements (subfun for line termination detection, ...)
+%   · consider skippable lines when analysing the file layout
+%   · code rearrangements (subfun for line termination detection, ...)
 % 05.96
-%   � subfuns to find line breaks / bad-line pos and to initialize output A
-%   � better handling of errors and 'degenerate' files, e.g. exit without
+%   · subfuns to find line breaks / bad-line pos and to initialize output A
+%   · better handling of errors and 'degenerate' files, e.g. exit without
 %     an error if the file selection dialogue was cancelled
 % 05.97
-%   � fixed bug: error in file analysis if first line contains bad line
+%   · fixed bug: error in file analysis if first line contains bad line
 %     marker
-%   � fixed bug: a bad line marker is ignored if the string is split up by
+%   · fixed bug: a bad line marker is ignored if the string is split up by
 %     two consecutive internal sections
-%   � better code readability in findLineBreaks subfunction
+%   · better code readability in findLineBreaks subfunction
 % 05.97.1
-%   � simplifications by skipping the header when reading from the file;
+%   · simplifications by skipping the header when reading from the file;
 %     the header is now read separately and is not affected by any
 %     replacements
-%   � corrected handling of bad line markers that already appear in header
+%   · corrected handling of bad line markers that already appear in header
 % 05.98
-%   � corrected search for long bad line marker strings that could exceed
+%   · corrected search for long bad line marker strings that could exceed
 %     text dimensions
-%   � speed-up by improved finding of line break positions
+%   · speed-up by improved finding of line break positions
 % 06.00
-%   � introduction of 'high speed' read mode "block" requiring less line
+%   · introduction of 'high speed' read mode "block" requiring less line
 %     break information
-%   � 'MemPar' buffer value changed to scalar
-%   � reduced memory demand by translating smaller text portions to char
-%   � modified help
+%   · 'MemPar' buffer value changed to scalar
+%   · reduced memory demand by translating smaller text portions to char
+%   · modified help
 % 06.01
-%   � fixed bug: possible error message in file analysis when only header
+%   · fixed bug: possible error message in file analysis when only header
 %     line number is given
 % 06.04
-%   � better handling of replacement strings containing line breaks
-%   � allow '*' in file name to use file name as open file dialogue filter
+%   · better handling of replacement strings containing line breaks
+%   · allow '*' in file name to use file name as open file dialogue filter
 % 06.12
-%   � 'good line' filter as requested by Val Schmidt
+%   · 'good line' filter as requested by Val Schmidt
 % 06.17.1
-%   � enable 'good line' filtering during automatic file analysis
-%   � new read modes 'char' and 'cell' to provide txt2mat's preprocessing
+%   · enable 'good line' filtering during automatic file analysis
+%   · new read modes 'char' and 'cell' to provide txt2mat's preprocessing
 %     features esp. for non-numeric data, too
 % 06.17.3
-%   � version number workaround for MCR execution (Leonard's remark)
+%   · version number workaround for MCR execution (Leonard's remark)
 % 06.40
-%   � input argument check by inputparser (R2007a), allowing input struct
-%   � minor changes in code and documentation
+%   · input argument check by inputparser (R2007a), allowing input struct
+%   · minor changes in code and documentation
 % 06.60
-%   � added option to select lines by line number ('SelectLineFun'), e.g.
+%   · added option to select lines by line number ('SelectLineFun'), e.g.
 %     to skip every n-th line as suggested by Kaare
-%   � reduced memory footprint and improved speed during good/bad line
+%   · reduced memory footprint and improved speed during good/bad line
 %     filtering by working in chunks
-%
+% 06.60.1
+%   · fix for header line number bug reported by valere demeter
+% 06.60.2
+%   · another fix for header line number bug and read mode "line"
+% 06.60.3
+%   · more specific argument checking for ReadMode (comment from T A) and
+%     NumericType
 % --- Wish list -----------------------------------------------------------
 
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/18430-txt2mat
 
 % LICENSE
-% Copyright (c) 2007, Andres
+% Copyright (c) 2019, Andres
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
+% modification, are permitted provided that the following conditions are met:
 %
-%  * Redistributions of source code must retain the above copyright
-%    notice, this list of conditions and the following disclaimer.
-%  * Redistributions in binary form must reproduce the above copyright
-%    notice, this list of conditions and the following disclaimer in
-%    the documentation and/or other materials provided with the distribution
-%  * Neither the name of the  nor the names
-%    of its contributors may be used to endorse or promote products derived
-%    from this software without specific prior written permission.
+% * Redistributions of source code must retain the above copyright notice, this
+%   list of conditions and the following disclaimer.
 %
-%    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-%    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-%    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-%    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-%    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-%    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-%    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-%    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-%    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-%    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-%    POSSIBILITY OF SUCH DAMAGE.
+% * Redistributions in binary form must reproduce the above copyright notice,
+%   this list of conditions and the following disclaimer in the documentation
+%   and/or other materials provided with the distribution
+% * Neither the name of  nor the names of its
+%   contributors may be used to endorse or promote products derived from this
+%   software without specific prior written permission.
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+% FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+% DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % END OF LICENSE
 
 %% Get input arguments
-
 % check the arguments by argincheck:
 arg = argincheck(varargin);
 % returns
 %       arg.val.(argname)  ->  value of the input
 %       arg.has.(argname)  ->  T/F argument was given
 %       arg.num.(argname)  ->  number of values for some non-scalar inputs
-
 % some abbreviations
 ffn       = arg.val.FileName;
 numHeader = arg.val.NumHeaderLines;
@@ -723,7 +723,6 @@ numRS     = arg.num.ReplaceStr;
 numRR     = arg.num.ReplaceRegExpr;
 numBL     = arg.num.BadLineString;
 numGL     = arg.num.GoodLineString;
-
 % ~~~~~ special handling of file name argument arg.val.FileName ~~~~~~~~~~~
 % 1) no file or path name is given -> open file dialogue
 if ~arg.has.FileName || isempty(ffn)
@@ -765,7 +764,6 @@ else
     error('txt2mat:invalidFileName','no such file or directory');
   end
 end
-
 % recheck file name (necessary e.g. after ESC in open file dialogue)
 if exist(ffn,'file')~=2
   [A,ffn,numHeader,repChar,hl,fpos] = deal([]);
@@ -774,26 +772,20 @@ if exist(ffn,'file')~=2
   end
   return
 end
-
 % generate a shortened form of the file name:
 if length(fn) < 28
   fnShort = fn;
 else
   fnShort = ['...' fn(end-24:end)];
 end
-
 arg.val.FileName = ffn;
 % ~~~~~ special handling of file name argument arg.val.FileName ~~~~~~~end~
-
 clear varargin
-
 %% Analyze data format
-
 % try some automatic data format analysis if needed (by function anatxt)
 doAnalyzeFile = ~all([arg.has.NumHeaderLines, arg.has.NumColumns]); %, is_argin_conv_str]); % commented out as so far anatxt's formatStr is only '%f'
 % switch off file analysis if read mode is 'char' or 'cell'
 doAnalyzeFile = doAnalyzeFile && ~strcmpi(arg.val.ReadMode,'char') && ~strcmpi(arg.val.ReadMode,'cell');
-
 if doAnalyzeFile
   % call subfunction anatxt:
   [anaNumHeader, anaNumColon, ~, anaRepChar, anaReadMode, ...
@@ -832,7 +824,7 @@ if doAnalyzeFile
     if numel(anaFileErr)==0
       sr_display_str = '';
       for idx = 1:numRC
-        sr_display_str = [sr_display_str ' �' repChar{idx} '�']; %#ok<AGROW>
+        sr_display_str = [sr_display_str ' »' repChar{idx} '«']; %#ok<AGROW>
       end
       disp(['* read mode: ' readMode]);
       disp(['* ' num2str(anaNumAnalyzed)        ' data lines analysed' ]);
@@ -853,10 +845,7 @@ if doAnalyzeFile
     return
   end
 end
-
-
 %% Detect line termination character
-
 if arg.val.InfoLevel >= 1
   hw = waitbar(0,'detect line termination character ...');
   set(hw,'Name',[mfilename ' - ' fnShort]);
@@ -864,7 +853,6 @@ if arg.val.InfoLevel >= 1
 else
   hasWaitbar = false;
 end
-
 lbfull = detectLineBreakCharacters(ffn);
 %   lbfull  line break character(s) as uint8, i.e.
 %           [13 10]     (cr+lf) for standard DOS / Windows files
@@ -872,14 +860,11 @@ lbfull = detectLineBreakCharacters(ffn);
 %           [13]        (cr) for Mac files
 % The DOS style values are returned as defaults if no such line breaks are
 % found.
-
 lbuint = lbfull(end);
 lbchar = char(lbuint);
 numLbfull = numel(lbfull);
-
 %% Open file and set position indicator to end of header
 % ... and extract header separately if not already done
-
 logfid = fopen(ffn);
 if numHeader > 0
   if doAnalyzeFile % header lines have already been extracted
@@ -890,7 +875,6 @@ if numHeader > 0
     if arg.has.FilePos
       fseek(logfid,filePos,'bof');
     end
-    
     %*% todo: use function getLines here
     read_len = 65536;   % (quite small) size of text sections just for header line extraction
     do_read  = true;
@@ -898,7 +882,6 @@ if numHeader > 0
     countLoop = 0;
     while do_read
       [f8p,lenf8p]    = fread(logfid,read_len,'*uint8');	% current text section
-      
       ldcp_curr       = find(f8p==lbuint);                % line break positions in current text section
       num_lb_curr     = num_lb_curr + numel(ldcp_curr);   % number of line breaks so far
       
@@ -941,21 +924,24 @@ else
     fseek(logfid,filePos,'bof');
   end
 end
-
 %% Read in ASCII file - case 1: portions only, as RowRange is given.
 % RowRange should be given if the file is too huge to be read at once by
 % fread. In this case multiple freads are used to read in consecutive
 % sections of the text. By counting the line breaks those rows of the text
 % that match the RowRange argument are added to the 'core' variable f8 that
 % is later used for the numeric conversion.
-
 % By definition, a line begins with its first character and ends with its
 % last termination character.
-
+% wip:
+%{
+function p = charpos(fn,c)
+% example: p = charpos(fn, uint8(10));
+m = memmapfile(fn);
+p = find(m.Data==c);
+%}
 if hasWaitbar
   waitbar(0.01,hw,'reading file ...');
 end
-
 if arg.has.RowRange
   do_read             = true;     % loop condition
   num_lb_prev         = 0;
@@ -963,31 +949,25 @@ if arg.has.RowRange
   f8                  = [];
   while do_read
     [f8p,lenf8p]  = fread(logfid,read_len,'*uint8');  	% current text section
-    
     ldcp_curr       = find(f8p==lbuint);                % line break positions in current text section
     num_lb_curr     = numel(ldcp_curr);
-    
     % add lines of interest to f8
     if (arg.val.RowRange(1) <= num_lb_prev+num_lb_curr+1) && (num_lb_prev < arg.val.RowRange(2))
-      
       if arg.val.RowRange(1) <= num_lb_prev + 1	% lines of interest started before current section
         sdx = 1;                                        % start index is beginning of section => the part of the section to be added to f8 includes the start of the section
       else                                                % lines of interest start within current section
         num_lines_to_omit = arg.val.RowRange(1)-1-num_lb_prev;  % how many lines not to add
         sdx = ldcp_curr(num_lines_to_omit)+1;         	% start right after the omitted lines
       end
-      
       if arg.val.RowRange(2) > num_lb_curr+num_lb_prev    % lines of interest end beyond current section
         edx = lenf8p;                                   % end index is length of section => the part of the section to be added to f8 includes the end of the section
       else                                                % lines of interest end within current section
         num_lines_to_add = arg.val.RowRange(2)-num_lb_prev;     % how many lines to add
         edx = ldcp_curr(num_lines_to_add);             	% corresponding end index
       end
-      
       f8 = [f8; f8p(sdx:edx)]; %#ok<AGROW>
       fpos = ftell(logfid)-lenf8p+edx;       % position of the latest added character
     end
-    
     % quit loop if all rows of interest are read or if end of file is reached
     if num_lb_prev >= arg.val.RowRange(2) || lenf8p<read_len
       do_read = false;
@@ -997,18 +977,14 @@ if arg.has.RowRange
   
 end
 %% Read in ASCII file - case 2: full file. Then close file.
-
 if ~arg.has.RowRange
   [f8,fcount]  = fread(logfid,Inf,'*uint8');
   fpos = fcount + filePos + lenHeader;
 end
-
 if ftell(logfid) == -1
   error(ferror(fid, 'clear'));
 end
-
 fclose(logfid);
-
 if numel(f8)==0
   A = [];
   if arg.val.InfoLevel>=1
@@ -1017,24 +993,16 @@ if numel(f8)==0
   end
   return
 end
-
-
 %% Clean up whitespaces at the end of file
-
 f8 = cleanUpFinalWhitespace(f8,lbfull);
-
-
 %% check line break position awareness
-
 hasReplacements = any([numRC,numRS,numRR] > 0 );
-
 % as finding the line breaks is time-critical, "LbAwareness" is
 % introduced to tell us what we know about line break positions:
 % 0: nothing
 % 1: the positions of the final line break in every section
 % 2: the above + the number of lines up to each of those line breaks
 % 3: all line break positions
-
 % determine the minimum reqired LbAwareness, and set a waitbar progress
 % factor >1 if there's no sscanf read:
 wbFactor = 1;
@@ -1052,12 +1020,8 @@ switch lower(readMode)
     minLbAwareness = 3;
     wbFactor = 1.9;
 end
-
-
 %% filter lines (rows)
-
 % select lines by line number and 'bad' and/or 'good' marker strings
-
 if arg.has.SelectLineFun || (numBL + numGL > 0)
   if hasWaitbar
     waitbar(wbFactor*0.10,hw,'filtering lines ...');
@@ -1067,10 +1031,7 @@ if arg.has.SelectLineFun || (numBL + numGL > 0)
 else
   LbAwareness = 0;
 end
-
-
 %% Find line break positions if necessary
-
 if LbAwareness < minLbAwareness
   
   if hasWaitbar
@@ -1111,27 +1072,20 @@ if LbAwareness < minLbAwareness
       LbAwareness = 2;
     end
   end
-  
   [idcLb,cntLb,secLbIdc] = findLineBreaks(f8, lbuint, memPar, doFindAll, doCount);
 end
-
 %% Replace (regular) expressions and characters
-
 doReplaceLb = false;   % default, to be checked below
-
 if numRR > 0
   has_length_changed = true;
 else
   has_length_changed = false; % flag for changes of length of f8 by replacements
 end
-
 if hasReplacements
   if hasWaitbar
     waitbar(wbFactor*0.20,hw,'replacing strings ...');
   end
-  
   numSectionLb = numel(secLbIdc);
-  
   % If a ReplaceStr begins with a line break character, such a character
   % will temporarily be prepended to each replacement section to apply
   % the replacement to the _first_ line of a section, too.
@@ -1165,32 +1119,24 @@ if hasReplacements
     
     if numRS > 0 || numRR > 0
       len_f8_akt = idcLb(secLbIdc(sdx)) - idcLb(secLbIdc(sdx-1));  % length of current section before replacements
-      
       % Replacements, e.g. {'odd','one','1'} replaces 'odd' and 'one' by '1'
-      
       % Regular Expression Replacements: ============================
       for vdx = 1:numRR                  % step through replacements arguments
         srarg = arg.val.ReplaceRegExpr{vdx};    	% pick a single argument...
-        
         for xdx = 1:(numel(srarg)-1)
           f8_akt = regexprep(f8_akt, srarg{xdx}, srarg{end});     % ... and perform replacements
         end % for
-        
       end % for
-      
       % Expression Replacements: ====================================
       for vdx = 1:numRS                  % step through replacements arguments
         srarg = arg.val.ReplaceStr{vdx};    	% pick a single argument...
-        
         for xdx = 1:(numel(srarg)-1)
           f8_akt = strrep(f8_akt, srarg{xdx}, srarg{end});        % ... and perform replacements
           if ~has_length_changed && (len_f8_akt~=numel(f8_akt))
             has_length_changed = true;                          % detect a change of length of f8
           end
         end % for
-        
       end % for
-      
       % update f8-sections by f8_akt ================================
       exten = numel(f8_akt) - len_f8_akt;	% extension by replacements
       
@@ -1227,13 +1173,9 @@ if hasReplacements
     end
     
   end
-  
   clear f8_akt
 end % if
-
-
 %% ReadMode 'char': exit here with char array
-
 if strcmpi(readMode,'char')
   A=char(f8.');
   if arg.val.InfoLevel>=1
@@ -1241,22 +1183,17 @@ if strcmpi(readMode,'char')
   end
   return
 end
-
-
 %% Update linebreak indices
 % see above...
-
 % if the final line break might have changed, clean up trailing whitespaces
 % here again
 if doReplaceLb || numRR > 0
   f8 = cleanUpFinalWhitespace(f8,lbfull);
 end
-
 if has_length_changed || (LbAwareness < minLbAwareness) || doReplaceLb
   if hasWaitbar
     waitbar(0.45,hw,'updating line break positions ...');
   end
-  
   if strcmpi(readMode,'block')
     % - make K1
     doFindAll = false;
@@ -1273,10 +1210,8 @@ if has_length_changed || (LbAwareness < minLbAwareness) || doReplaceLb
     doCount   = true;
     LbAwareness = 2;
   end
-  
   [idcLb,cntLb,secLbIdc] = findLineBreaks(f8, lbuint, memPar, doFindAll, doCount);
 end
-
 % Determine the total number of line breaks (including the leading 'zero'
 % line break and the eventually added final line break) depending on
 % LbAwareness. If LbAwareness is less than 2, we can't know that number.
@@ -1287,9 +1222,7 @@ elseif LbAwareness == 3
 else
   num_lf = NaN;
 end
-
 %% ReadMode 'cell': return lines in a cell array
-
 if strcmpi(readMode,'cell')
   
   f8 = char(f8).';
@@ -1302,16 +1235,12 @@ if strcmpi(readMode,'cell')
   for m = 1:num_lf-1
     A{m} = f8(idcLb(m)+1:idcLb(m+1)-numLbfull);
   end
-  
   if arg.val.InfoLevel>=1
     close(hw)
   end
   return
-  
 end
-
 %% ReadMode 'block': wilfully fill up output matrix
-
 if strcmpi(readMode,'block')
   
   if hasWaitbar
@@ -1335,7 +1264,6 @@ if strcmpi(readMode,'block')
   % examine how many elements we found in this section
   numRowsCurr      = ceil(numAtmp/numColonBlock);         % how many rows will contain these elements
   numelMissing     = numRowsCurr*numColonBlock-numAtmp;   % how many elements are missing to fill up the last of these rows
-  
   a = initializeMatrix(1,1,arg.val.NumericType,doSetNan);
   
   if numSectionLb < 3
@@ -1356,13 +1284,11 @@ if strcmpi(readMode,'block')
       numRowsGuessed = num_lf;
     end
     A = initializeMatrix(numRowsGuessed,numColonBlock,arg.val.NumericType,doSetNan);
-    
     % ... and put the first elements to it:
     startRow = 1;
     endRow   = numRowsCurr;
     Atmp = reshape([Atmp;repmat(a,numelMissing,1)],numColonBlock,numRowsCurr).';
     A(startRow:endRow,1:numColonBlock) = Atmp;
-    
     % If the first section was incomplete, the first elements of the
     % second section will be added to the last row of the first
     % section. So keep in mind the elements of the incomplete row here:
@@ -1374,14 +1300,11 @@ if strcmpi(readMode,'block')
       repeatRow = 0;
       ARepeat = [];
     end
-    
     % now step through the following sections
     for sdx = 2:numSectionLb-1
-      
       % the text positions of the current section:
       startIdcF8 = idcLb(secLbIdc(sdx))+1;
       endIdcF8   = idcLb(secLbIdc(sdx+1));
-      
       % THE conversion of this section by sscanf:
       [Atmp,count,errmsg,nextindex] = ...
         sscanf(char(f8(startIdcF8 : endIdcF8)), formatStr); %#ok<ASGLU>
@@ -1389,7 +1312,6 @@ if strcmpi(readMode,'block')
       if numAtmp == 0
         Atmp = double(Atmp);
       end
-      
       % as with the first section, add the new values the output
       % matrrix
       numRowsCurr  = ceil( (numAtmp-numelMissing) / numColonBlock );
@@ -1428,14 +1350,11 @@ if strcmpi(readMode,'block')
   end
   
 end
-
 %% ReadMode 'matrix': try converting large sections
 % sscanf will be applied to consecutive working sections consisting of
 % <ldx_rng> rows. The number of numeric values must then be a multiple of
 % the number of columns. Otherwise, or if sscanf produces an error, inform
 % the user and eventually proceed to the (slower) line-by-line conversion.
-
-
 errmsg = '';    % Init. error message variable
 if strcmpi(readMode,'auto') || strcmpi(readMode,'matrix')
   if hasWaitbar
@@ -1470,7 +1389,6 @@ if strcmpi(readMode,'auto') || strcmpi(readMode,'matrix')
       % THE conversion of this section by sscanf:
       [Atmp,count,errmsg,nextindex] = ...
         sscanf(char(f8(startIdcF8 : endIdcF8)), formatStr);
-      
       % the correponding row indices of the output matrix:
       if hasNotAllLb
         startRow       = cntLb(sdx-1)+1;
@@ -1502,7 +1420,6 @@ if strcmpi(readMode,'auto') || strcmpi(readMode,'matrix')
       if hasWaitbar && ~mod(sdx,256)
         waitbar(0.5+0.5*((sdx-1)/(numSectionLb-1)),hw)
       end
-      
     end % for sdx = 2:numSectionLb
     
     % error diagnosis and user information ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1537,7 +1454,6 @@ if strcmpi(readMode,'auto') || strcmpi(readMode,'matrix')
           lenLine = diff(idcLbCurr);
           [lenLineSorted,idclenLineSorted] = sort(lenLine);
           maxNumDisplayed = min(5,numel(lenLine));
-          
           if numelFound < numelExpected
             disp(['Found less elements (' num2str(numelFound) ') than expected (' num2str(numelExpected) ') in the current section.'])
             disp('As a hint, these are the text lines containing the least characters:')
@@ -1558,7 +1474,6 @@ if strcmpi(readMode,'auto') || strcmpi(readMode,'matrix')
     end
   end % try
 end
-
 % Quit on error if 'matrix'-mode was enforced:
 if strcmpi(readMode,'matrix') && ~isempty(errmsg)
   if arg.val.InfoLevel >= 1
@@ -1566,12 +1481,8 @@ if strcmpi(readMode,'matrix') && ~isempty(errmsg)
   end
   error(errmsg);
 end
-
-
 %% ReadMode 'line': convert line-by-line
-
 clear Atmp
-
 if strcmpi(readMode,'line') || ~isempty(errmsg)
   num_data_per_row = zeros(num_lf-1,1);
   
@@ -1588,11 +1499,9 @@ if strcmpi(readMode,'line') || ~isempty(errmsg)
     idcLb = findLineBreaks(f8, lbuint, memPar, true, false);
     num_lf = numel(idcLb);
   end
-  
   % initialize result matrix A depending on matlab version:
   width_A = max(abs(numColon),1);
   [A,A1] = initializeMatrix(num_lf-1,width_A,arg.val.NumericType,true);
-  
   if hasWaitbar
     if strcmpi(readMode,'line')
       waitbar(0.5,hw,{'reading line-by-line ...'})
@@ -1652,21 +1561,15 @@ if strcmpi(readMode,'line') || ~isempty(errmsg)
       info_ca{3,3} = [' (row no. ', num2str(numHeader+idc_more_data(1:min(10,num_more_data))'), repmat(' ...',1,num_more_data>10), ')'];
     end
     disp(strcatcell(info_ca));
-    
   end % if arg.val.InfoLevel >= 2
   
 end % if
-
 if arg.val.InfoLevel >= 1
   close(hw)
 end
-
-
 %% : : : : : subfunction ANATXT : : : : :
-
 function [anaNumHeader, anaNumColon, anaFormat, anaRepChar, anaReadMode, ...
   anaNumAnalyzed, anaHeader, anaFileErr, anaErr] = anatxt(arg)
-
 % ANATXT analyse data layout in a text file for txt2mat
 %
 % Usage:
@@ -1684,11 +1587,9 @@ function [anaNumHeader, anaNumColon, anaFormat, anaRepChar, anaReadMode, ...
 % aerrmsg       other error messages from this function
 %
 % arg           txt2mat's input argument struct
-
 %   Copyright 2006-2014 Andres
 %   $Revision: 4.00 $  $Date: 2014/03/18 14:05:08 $
 %   todo: especially this function needs a cleanup...
-
 % some preparations
 ffn             = arg.val.FileName;
 filePos         = arg.val.FilePos;
@@ -1696,21 +1597,16 @@ repChar         = arg.val.ReplaceChar;
 repStr          = arg.val.ReplaceStr;
 repReg          = arg.val.ReplaceRegExpr;
 numHeader       = arg.val.NumHeaderLines;
-
 numRR           = arg.num.ReplaceRegExpr;
 numRS           = arg.num.ReplaceStr;
 numRC           = arg.num.ReplaceChar;
 numBL           = arg.num.BadLineString;
 numGL           = arg.num.GoodLineString;
-
 [anaNumColon, anaNumAnalyzed] = deal(0);
 [anaReadMode, anaHeader, anaErr] = deal('');
 anaRepChar = {};
 anaNumHeader = numHeader;
-
-
 %% Read in file
-
 % definitions
 numCharRead = 65536;    % minimum number of characters to read
 minLines    = 10;       % minimum number of lines to read
@@ -1719,10 +1615,8 @@ if isfinite(numHeader)
 end
 valueRatio  = 0.1;      % this ratio will tell if a row has enough values
 anaFormat   = '%f';     % assume floats only (so far)
-
 hasFileErr  = false;    % init
 anaFileErr  = '';       % init
-
 fid = fopen(ffn);
 if filePos > 0
   status = fseek(fid,filePos,'bof');
@@ -1731,7 +1625,6 @@ if filePos > 0
     anaFileErr = ferror(fid,'clear');
   end
 end
-
 if ~hasFileErr
   % detect line termination character
   lbfull = detectLineBreakCharacters(ffn);
@@ -1742,10 +1635,8 @@ if ~hasFileErr
   % getLines get a set of consecutive lines from file
   % [hl,numLb,posLb,isAtEnd] = getLines(fid, minLines, minChars, offset, ...
   %                                  origin, inclWsAtEnd, lbfull, lenSection)
-  
 end
 fclose(fid);
-
 % care for some exceptions
 if hasFileErr
   anaErr = 'file operation error';
@@ -1759,26 +1650,23 @@ if numLb <= numHeader
   anaErr = 'file has not more lines than given number of header lines';
   return
 end
-
 % remember the original text before deletions and replacements
 f8Orig    = char(f8.');
 posLbOrig = posLb;
-
 if numHeader > 0
   % select post-header-part of f8
   f8 = f8(posLb(numHeader+1):end);
   numLb = numLb - numHeader;
   posLb = posLb(numHeader+1:end) - posLb(numHeader+1);
+  hasCutHeader = true;
+else
+  hasCutHeader = false;
 end
-
 %% filter lines (rows)
-
 doFilter = arg.has.SelectLineFun || (numBL + numGL > 0);
 if doFilter
   [f8, posLb, numLb, ~, isOk] = filterLines(f8, lbuint, numCharRead, arg);
 end
-
-
 %% Replace regular expressions, strings, and characters, if needed
 
 if numRS>0 || numRC>0 || numRR>0
@@ -1808,7 +1696,6 @@ if numRS>0 || numRC>0 || numRR>0
       end
     end
   end
-  
   if numRS>0
     for vdx = 1:numRS     	% step through string replacement arguments
       srarg = repStr{vdx};    % pick a single replacement argument
@@ -1817,7 +1704,6 @@ if numRS>0 || numRC>0 || numRR>0
       end
     end
   end
-  
   if numRC>0
     for vdx = 1:numRC     	% step through char replacement arguments
       srarg = repChar{vdx}; 	% pick a single replacement argument
@@ -1833,13 +1719,10 @@ if numRS>0 || numRC>0 || numRR>0
   posLb  = [0;find(isLB)];
   numLb  = numel(posLb)-1;
 end
-
 %% Find character types
-
 % further representations of the text as required below
 f8c      = char(f8.');
 f8d      = double(f8.');
-
 % types of characters:
 prnAscii = uint8([32:127, 128+32:255]);                 % printable ASCIIs
 dec_nr_p = sort(uint8('+-1234567890dDeE.NanIiFfA'));    % decimals with NaN, Inf, signs and .
@@ -1847,37 +1730,31 @@ sep_wo_k = uint8([9 32    47 58 59]);   	% separators excluding comma
 sep_wi_k = uint8([9 32 44 47 58 59]);   	% separators including comma (Tab Space ,/:;)
 komma    = uint8(',');               	% ,
 other    = setdiff(prnAscii, [sep_wi_k, dec_nr_p]); % printables without separators and decimals
-
 % characters not expected to appear in the data lines:
 is_othr = ismembc(f8d,double(other));       % switch to double for compatibility
 is_beg_othr = diff([false, is_othr]);       % true where groups of such characters begin
 idc_beg_othr = find(is_beg_othr==1);        % start indices of these groups
 [~, sidx] = sort([posLb(2:end).',idc_beg_othr]);     % in sidx, the numbers (1:num_lb) representing the linebreaks are placed between the indices of the start indices from above
 num_beg_othr_per_line = diff([0,find(sidx<=numLb)]) - 1;   % number of character groups per line
-
 % numbers enclosing a dot:
 % idc_digdotdig = regexp(f8c, '[\+\-]?\d+\.\d+([deDE][\+\-]?\d+)?', 'start');
 idc_digdotdig = regexp(f8c, '[\+\-]?\d+\.\d+([deDE][\+\-]?\d+)?');
 [~, sidx] = sort([posLb(2:end).',idc_digdotdig]);
 num_beg_digdotdig_per_line = diff([0,find(sidx<=numLb)]) - 1;
-
 % numbers enclosing a comma:
 % idc_digkomdig = regexp(f8c, '[\+\-]?\d+,\d+([eE][\+\-]?\d+)?', 'start');
 idc_digkomdig = regexp(f8c, '[\+\-]?\d+,\d+([eE][\+\-]?\d+)?');
 [~, sidx] = sort([posLb(2:end).',idc_digkomdig]);
 num_beg_digkomdig_per_line = diff([0,find(sidx<=numLb)]) - 1;
-
 % numbers without a dot or a comma:
 % idc_numbers = regexp(f8c, '[\+\-]?\d+([eE][\+\-]?\d+)?', 'start');
 idc_numbers = regexp(f8c, '[\+\-]?\d+([eE][\+\-]?\d+)?');
 [~, sidx] = sort([posLb(2:end).',idc_numbers]);
 num_beg_numbers_per_line = diff([0,find(sidx<=numLb)]) - 1;
-
 % NaN and Inf items :
 idc_nan = regexpi(f8c, '\<[\+\-]?(nan|inf)\>');
 [~, sidx] = sort([posLb(2:end).',idc_nan]);
 num_beg_nan_per_line = diff([0,find(sidx<=numLb)]) - 1;
-
 % commas enclosed by numeric digits
 % idc_kombd = regexp(f8c, '(?<=[\d]),(?=[\d])', 'start');
 % if compareversion(vn,7)
@@ -1887,20 +1764,15 @@ idc_kombd = 1+regexp(f8c, '\d,\d');
 % end
 [~, sidx] = sort([posLb(2:end).',idc_kombd]);
 num_beg_kombd_per_line = diff([0,find(sidx<=numLb)]) - 1;
-
 % two sequential commas without a (different) separator inbetween
 % idc_2kom  = regexp(f8c, ',[^\s:;],', 'start');
 idc_2kom  = regexp(f8c, ',[^\s:;/],');
-
 % commas:
 is_kom  = f8.'==komma;
 idc_kom = find(is_kom);
 [~, sidx] = sort([posLb(2:end).',idc_kom]);
 num_kom_per_line = diff([0,find(sidx<=numLb)]) - 1;
-
-
 %% Analyze
-
 if isnan(numHeader) % ~~~~~ there's no user-supplied number of header lines
   % determine number of header lines:
   numHeader = max([0, find(num_beg_othr_per_line>0)]); % for now, take the last line containing an 'other'-character
@@ -1941,36 +1813,36 @@ else % ~~~~~~~~~~~~~~~ a number of header lines was given as input argument
   end
   anaNumAnalyzed = numLb;
 end
-
+% start line index to examine number of columns
+if hasCutHeader
+  idxStartLine = 1;
+else
+  idxStartLine = numHeader+1;
+end
 % find out decimal separator character ('.' or ',')
 anaRepChar = {};    % Init. replacement character string
 SR_idx     = 0;     % Init. counter of the above
 sepchar    = '';    % Init. separator (delimiter) character
 decchar    = '.';   % Init. decimal character (default)
-
 num_values_per_line = -num_beg_digdotdig_per_line + num_beg_numbers_per_line;
-
 % Are there commas? If yes, are they decimal commas or delimiters?
-if any( num_kom_per_line(numHeader+1:end) > 0 )
+if any( num_kom_per_line(idxStartLine:end) > 0 )
   sepchar = ',';  % preliminary take comma for delimiter
   % Decimal commas are neighboured by two numeric digits ...
   % and between two commas there has to be another separator
-  if  all(num_kom_per_line(numHeader+1:end) == num_beg_kombd_per_line(numHeader+1:end)) ... % Are all commas enclosed by numeric digits?
-      && ~any(num_beg_digdotdig_per_line(numHeader+1:end) > 0) ...   % There are no numbers with dots?
-      && ~any(idc_2kom(numHeader+1:end) > 0)                         % There is no pair of commas with no other separator inbetween?
-    
+  if  all(num_kom_per_line(idxStartLine:end) == num_beg_kombd_per_line(idxStartLine:end)) ... % Are all commas enclosed by numeric digits?
+      && ~any(num_beg_digdotdig_per_line(idxStartLine:end) > 0) ...   % There are no numbers with dots?
+      && ~any(idc_2kom(idxStartLine:end) > 0)                         % There is no pair of commas with no other separator inbetween?
     decchar = ',';
     sepchar = '';
     
     num_values_per_line = -num_beg_digkomdig_per_line + num_beg_numbers_per_line; % number of values per line
   end
 end
-
 % replacement string for replacements by spaces
 % other separators
 is_wo_k_found = ismember(sep_wo_k, f8);  % Tab Space : ;
 is_other_found= ismember(other,f8);      % other printable ASCIIs
-
 % possible replacement string to replace : and ;
 sr1 = [sepchar, char(sep_wo_k([0 0 1 1 1]&is_wo_k_found))];
 % possible replacement string to replace other characters
@@ -1978,40 +1850,32 @@ sr2 = char(other(is_other_found));        % still obsolete as such lines are tre
 % Wrong! The above is not true if
 % the number of header lines is
 % given by the user.
-
 if numel([sr1,sr2])>0
   SR_idx = SR_idx + 1;
   anaRepChar{SR_idx} = [sr1, sr2, ' '];
 end
-
 % possible replacement string to replace the decimal character
 if strcmp(decchar,',')
   SR_idx = SR_idx + 1;
   anaRepChar{SR_idx} = ',.';
 end
-
 num_items_per_line = num_values_per_line + num_beg_nan_per_line;
-
-anaNumColon = max(num_items_per_line(numHeader+1:end));    % proposed number of columns
-
+% proposed number of columns:
+anaNumColon = max(num_items_per_line(idxStartLine:end));
 if isempty(anaNumColon)
   anaErr = 'no numeric data found';
   return
 end
-
 % suggest a proper read mode depending on uniformity of the number of values per
 % line
-if numel(unique(num_items_per_line(numHeader+1:end))) > 1
+if numel(unique(num_items_per_line(idxStartLine:end))) > 1
   anaReadMode = 'line';
   anaNumColon = -anaNumColon;
 else
   anaReadMode = 'auto';
 end
-
 %% : : : : : further subfunctions : : : : :
-
 function s = strcatcell(C)
-
 % STRCATCELL Concatenate strings of a 1D/2D cell array of strings
 %
 % C = {'a ','123';'b','12'}
@@ -2022,17 +1886,13 @@ function s = strcatcell(C)
 %   s =
 %     a 123
 %     b 12
-
 num_col = size(C,2);
 D = cell(1,num_col);
 for idx = 1:num_col
   D{idx} = char(C{:,idx});
 end
 s = [D{:}];
-
-
 function [w, newidcoi, vi] = cutvec(v,li,hi,doKeep,varargin)
-
 % CUTVEC remove multiple sections from a vector by linear index intervals
 %
 % Syntax:
@@ -2081,13 +1941,10 @@ function [w, newidcoi, vi] = cutvec(v,li,hi,doKeep,varargin)
 % idcoi = [1,4,7,10,13,18,20];
 %
 % [w, newidcoi, vi] = cutvec(v,li,hi,doKeep,idcoi)
-
 %   $Revision: 1.23 $
-
 lenV   = numel(v);
 has_idcoi = false;
 newidcoi=[];
-
 if nargin == 5  % indices of interest are provided
   idcoi   = int32(varargin{1});
   if ~issorted(idcoi)
@@ -2095,7 +1952,6 @@ if nargin == 5  % indices of interest are provided
   end
   has_idcoi = true;
 end
-
 if iscell(li)
   vi = endpoint2logical(lenV,li{1},hi{1},logical(doKeep{1}));
   for ci = 2:numel(li)
@@ -2104,17 +1960,12 @@ if iscell(li)
 else
   vi = endpoint2logical(lenV,li,hi,logical(doKeep));
 end
-
 if has_idcoi
   remidc   = int32(find(vi));
   newidcoi = ismembc2(idcoi,remidc);
 end
-
 w = v(vi);
-
-
 function vi = endpoint2logical(len,li,hi,doInclude)
-
 % ENDPOINT2LOGICAL convert endpoints of index intervals to logical index
 %
 % Syntax:
@@ -2129,21 +1980,16 @@ function vi = endpoint2logical(len,li,hi,doInclude)
 %               false: logical indices are 1 only outside the intervals
 %
 % vi            logical index vector
-
 % initialize output:
 if doInclude
   vi = false(len,1);
 else
   vi = true(len,1);
 end
-
 for i = 1:numel(li)
   vi(li(i):hi(i)) = doInclude;
 end
-
-
 function arg = argincheck(allargin)
-
 % ARGINCHECK get input arguments for txt2mat
 %
 % arg = argincheck(allargin)
@@ -2151,7 +1997,6 @@ function arg = argincheck(allargin)
 %       arg.val.(argname)  ->  value of the input
 %       arg.has.(argname)  ->  T/F argument was given
 %       arg.num.(argname)  ->  number of values for some non-scalar inputs
-
 % Check input argument occurence (Property/Value-pairs)
 %  1 'NumHeaderLines',     Scalar,     13
 %  2 'NumColumns',         Scalar,     100
@@ -2169,7 +2014,6 @@ function arg = argincheck(allargin)
 % 14 'ReplaceRegExpr'      CellArOfStr {{'True','1'},{'False','0'},{'#Inf','Inf'}}
 % 15 'GoodLineString'      CellAString {'OK'}
 % 16 'SelectLineFun'       FunHandle   @(rowNo) rem(rowNo-1,2) < 1
-
 % check for validated argument struct as last input to bypass further input
 % parsing (undocumented, untested -> todo)
 hasValidatedArgStruct = false;  % default
@@ -2179,7 +2023,6 @@ if ~isempty(allargin) && isstruct(allargin{end})
     hasValidatedArgStruct = true;
   end
 end
-
 if hasValidatedArgStruct
   % carry over validated inputs
   arg = argStruct;
@@ -2211,7 +2054,6 @@ else
   p.addParamValue('ReplaceExpr'   , {}  , @(x)isempty(x)||iscell(x))
   %-- parse inputs:
   p.parse(allargin{2:end})
-  
   % rearrange input argument parsing results to a nested struct called
   % 'arg', with
   % arg.val.(name) holding the values of the inputs
@@ -2231,7 +2073,6 @@ else
   end
   
   % ~~~ additional checks ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
   % error if both old and new param names occur, accept if solely old one
   % 'ConvString' -> 'Format'
   if arg.has.ConvString && arg.has.Format
@@ -2263,12 +2104,10 @@ else
     error('txt2mat:wrongColumns', ...
       'NumColumns must be integer.')
   end
-  
   % change empty format string to default
   if isempty(arg.val.Format)
     arg.val.Format = '%f';
   end
-  
   % wrap a single string ReplaceChar into a cell
   if ischar(arg.val.ReplaceChar)
     arg.val.ReplaceChar = {arg.val.ReplaceChar};
@@ -2276,7 +2115,6 @@ else
     %    'for future versions, please use a cell array of strings for character replacements.')
   end
   arg.num.ReplaceChar    = numel(arg.val.ReplaceChar);
-  
   % add number of bad and good line strings
   arg.num.BadLineString  = numel(arg.val.BadLineString);
   arg.num.GoodLineString = numel(arg.val.GoodLineString);
@@ -2292,7 +2130,6 @@ else
     error('txt2mat:ReplaceStr', ...
       'ReplaceStr must be a cell array of two-element cell arrays of strings.')
   end
-  
   % check if ReplaceRegExpr is empty or has correct Find+Replace string pairs
   if arg.has.ReplaceRegExpr && ~isempty(arg.val.ReplaceRegExpr) && ~( ...
       (iscellstr(arg.val.ReplaceRegExpr)&&(numel(arg.val.ReplaceRegExpr)==2)) ...
@@ -2300,7 +2137,14 @@ else
     error('txt2mat:ReplaceRegExpr', ...
       'ReplaceRegExpr must be a cell array of two-element cell arrays of strings.')
   end
-  
+  % check if ReadMode has any of the known values
+  if arg.has.ReadMode
+    knownReadModes = {'matrix','line','auto','block','char','cell'};
+    if ~any(strcmpi(arg.val.ReadMode,knownReadModes))
+      error('txt2mat:unknownReadMode', ...
+        ['ReadMode ''' arg.val.ReadMode ''' is not known.'])
+    end
+  end
   % force ReadMode to 'line' if NumColumns < 0
   if arg.has.NumColumns && arg.val.NumColumns < 0
     arg.val.ReadMode = 'line';
@@ -2342,12 +2186,21 @@ else
     end
   end
   
+  % check if NumericType has any of the known values
+  if arg.has.NumericType
+    knownNumericTypes = {'int8','int16','int32','int64','uint8', ...
+      'uint16','uint32','uint64','single','double'};
+    if ~any(strcmpi(arg.val.NumericType,knownNumericTypes))
+      error('txt2mat:unknownNumericType', ...
+        ['NumericType ''' arg.val.NumericType ''' is not known.'])
+    end
+  end
+  % force ReadMode to 'line' if NumColumns < 0
   % ~~~ additional checks ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ end ~
   
   % confirm arg struct validation for repeated usage (future version)
   arg.isValidated = true;
 end
-
 % add file name
 if numel(allargin) >= 1
   arg.val.FileName = allargin{1};
@@ -2356,10 +2209,7 @@ else
   arg.val.FileName = '';
   arg.has.FileName = false;
 end
-
-
 function lb = detectLineBreakCharacters(ffn)
-
 % DETECTLINEBREAKCHARACTERS find out type of line termination of a file
 %
 % lb = detectLineBreakCharacters(ffn)
@@ -2373,7 +2223,6 @@ function lb = detectLineBreakCharacters(ffn)
 %
 % The DOS style values are returned as defaults if no such line breaks are
 % found.
-
 % www.editpadpro.com/tricklinebreak.html :
 % Line Breaks in Windows, UNIX & Macintosh Text Files
 % A problem that often bites people working with different platforms, such
@@ -2384,7 +2233,6 @@ function lb = detectLineBreakCharacters(ffn)
 % terminate lines. UNIX (Including Linux and FreeBSD) uses an LF character
 % only. The Apple Macintosh, finally, uses a CR character only. In other
 % words: a complete mess.
-
 lfuint   = uint8(10);       % LineFeed
 cruint   = uint8(13);       % CarriageReturn
 crlfuint = [cruint,lfuint];
@@ -2392,26 +2240,20 @@ lfchar   = char(10); %#ok<CHARTEN>
 crchar   = char(13);
 crlfchar = [crchar,lfchar];
 readlen  = 16384;
-
 % Cycle through file and read until we find line termination characters or
 % we reach the end of file.
 % Possible line breaks are: cr+lf (default), lf, cr
-
 logfid = fopen(ffn);
 has_found_lbs = false;
 while ~has_found_lbs
-  
   [f8,cntr] = fread(logfid,readlen,'*char');
-  
   pos_crlf = strfind(f8',crlfchar);
   pos_lf   = strfind(f8',lfchar);
   pos_cr   = strfind(f8(1:end-1)',crchar);
   % here we ignored a cr at the end as it might belong to a cr+lf
   % combination (later we'll step back one byte in the file position to
   % avoid overlooking such a single cr)
-  
   num_lbs = [numel(pos_crlf),numel(pos_lf),numel(pos_cr)];
-  
   if all(num_lbs==0)
     fseek(logfid, -1, 0);    % step back one byte
     
@@ -2434,10 +2276,8 @@ while ~has_found_lbs
   end
 end
 fclose(logfid);
-
 function [txt, posLb0, cntLbMod, idxSecEndLb, isOk] = ...
   filterLines(txt, uintLb, startLenSbs, arg)
-
 % FILTERLINES loop through sections of txt and remove unwanted lines
 %
 % [txt, posLb0, cntLbMod, idxSecEndLb, isOk] = ...
@@ -2460,13 +2300,11 @@ function [txt, posLb0, cntLbMod, idxSecEndLb, isOk] = ...
 %   idxSecEndLb posLb0(idxSecEndLb) are the positions of the line breaks
 %               at the section borders
 %   isOk        true: line from input txt is kept, false: line is removed
-
 % some abbreviations:
 goodStr = arg.val.GoodLineString;
 badStr  = arg.val.BadLineString;
 numGood = numel(goodStr);
 numBad  = numel(badStr);
-
 % initializations for the text section loop
 doRead   = true;
 idxRdLo  = 0;	% idxRdLo: start index of a full section to be read from
@@ -2487,7 +2325,6 @@ while doRead        % loop through text sections
   % prepare building a section of txt that contains line breaks
   workSec = zeros(lenWork,1, 'uint8');    % initialize content of section
   isLbSec = false(lenWork,1);      % will be true at line break positions
-  
   % loop through subsections until at least one line break is found to
   % ensure we have complete lines in the current section
   hasNoLb = true;
@@ -2522,7 +2359,6 @@ while doRead        % loop through text sections
   end
   
   % ~~~ line selection by function and good/bad line strings ~~~~~~~~~~~~
-  
   % apply the selection function on the current line numbers
   if arg.has.SelectLineFun
     % test line numbers to decide which lines (i.e. rows) to keep
@@ -2622,16 +2458,12 @@ while doRead        % loop through text sections
     idxSecEndLb(cntSecMod+1) = idxSecEndLb(cntSecMod)+numLbMod;
   end
 end
-
 % remove overallocated parts from the outputs:
 txt         = txt(1:idxWrLo);
 posLb0      = posLb0(1:cntLbMod+1);
 idxSecEndLb = idxSecEndLb(1:cntSecMod+1);
-
-
 function [idcLb, cntLb, secLbIdc] = ...
   findLineBreaks(f8, uintLb, lenSection, doFindAll, doCount)
-
 % FINDLINEBREAKS find line break indices
 %
 % [idcLb, cntLb, secLbIdc, idcBad] = ...
@@ -2661,15 +2493,11 @@ function [idcLb, cntLb, secLbIdc] = ...
 % doCount       count number of every line break in cntLb - this is active
 %               only in the non-trivial case when only the last line
 %               break in a section has to be found
-
 %   $Revision: 4.00 $
-
 lenF8   = numel(f8);
 idxLo 	= 1;   % init., start index of a section processed in a loop
 cntLb   = [];
-
 numSection = ceil(lenF8/lenSection);
-
 if doFindAll    % ~~~~~~~~~~~~ find all line break positions ~~~~~~~~~~~~~~
   % In what follows, the text will repeatedly be processed in consecutive
   % sections of length <lenSection> to help avoid memory problems.
@@ -2679,7 +2507,6 @@ if doFindAll    % ~~~~~~~~~~~~ find all line break positions ~~~~~~~~~~~~~~
   while idxLo <= lenF8
     loopCntr = loopCntr + 1;
     idxHi = min(idxLo - 1 + lenSection,lenF8);	% end index of current section
-    
     % find line breaks in current section
     isLb = f8(idxLo:idxHi)==uintLb;
     crPosLb = find(isLb)+idxLo-1;
@@ -2688,20 +2515,19 @@ if doFindAll    % ~~~~~~~~~~~~ find all line break positions ~~~~~~~~~~~~~~
       % preallocate idcLb with estimated number of line breaks
       idcLb = zeros((1+numSection+1)*(numCrLb+1), 1);
     end
-    
     % collect line break indices
     idcLb(lbCntr+2:lbCntr+numCrLb+1) = crPosLb;
     
-    secLbIdc(loopCntr+1) = numel(idcLb);
+    % collect indices of section end lines
+    secLbIdc(loopCntr+1) = lbCntr+numCrLb+1; % fixed in 6.60.2
     
-    idxLo = idxHi + 1;                      % start index for the following loop
+    idxLo = idxHi + 1;                       % start index for the following loop
     lbCntr = lbCntr + numCrLb;
   end % while
   
   idcLb = idcLb(1:lbCntr+1);
   
 else    % ~~~~~~ find last line break position of each section only ~~~~~~~
-  
   % Preallocate maximum space for output variables:
   if doCount
     cntLb = zeros(numSection+1,1);
@@ -2710,11 +2536,9 @@ else    % ~~~~~~ find last line break position of each section only ~~~~~~~
   
   lbCntr = 0; % keep in mind how many line breaks have been found,
   % as some sections might not contain a line break at all
-  
   % Find line break indices within lenSection distance
   while idxLo <= lenF8
     idxHi = min(idxLo - 1 + lenSection,lenF8);   % end index of current section
-    
     % parse backwards to find the last line break of the section
     cntr = 0;
     doKeepOnLooking = true;
@@ -2748,9 +2572,7 @@ else    % ~~~~~~ find last line break position of each section only ~~~~~~~
   secLbIdc = (1:numel(idcLb)).';
   
 end     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 function [A,a] = initializeMatrix(numRows,numColumns,numericType,doSetNan)
-
 % INITIALIZEMATRIX initialize result matrix A depending on matlab version
 %
 % [A,a] = initializeMatrix(numRows,numColumns,numericType,...
@@ -2764,7 +2586,6 @@ function [A,a] = initializeMatrix(numRows,numColumns,numericType,doSetNan)
 % numericType           numeric type string ('double','single',...)
 % doSetNan              logical - if true, set outputs to NaNs rather than
 %                       zeros if the numericType allows NaNs
-
 if doSetNan && (strcmpi(numericType,'double') || ...
     strcmpi(numericType,'single'))
   A = NaN(numRows,numColumns,numericType);
@@ -2773,22 +2594,17 @@ else
   A = zeros(numRows,numColumns,numericType);
   a = 0;
 end
-
-
 function f8 = cleanUpFinalWhitespace(f8,lbfull)
-
 % CLEANUPFINALWHITESPACE replace final whitespaces by spaces + line break
 %
 % f8 = cleanUpFinalWhitespace(f8,lbfull)
 % with
 % f8        text as uint8-vector
 % lbfull    full line break characters as uint8-vector
-
 spuint   = uint8(32);   % Space (= ascii whitespace limit) as uint8
 num_lbfull = numel(lbfull);
 cnt_trail_white = 0;
 is_ws_at_end = true;
-
 while is_ws_at_end  % step through the endmost characters
   if f8(end-cnt_trail_white) <= spuint        % is it a whitespace?
     cnt_trail_white = cnt_trail_white + 1;
@@ -2804,10 +2620,7 @@ while is_ws_at_end  % step through the endmost characters
     is_ws_at_end = false;
   end
 end % while
-
-
 function [f8, l, pLb, isAtEnd] = getLines(fid,minLines,varargin)
-
 % getLines get a set of consecutive lines from file
 %
 % [hl,numLb,posLb,isAtEnd] = getLines(fid, minLines, minChars, offset, ...
@@ -2837,27 +2650,21 @@ function [f8, l, pLb, isAtEnd] = getLines(fid,minLines,varargin)
 % numLb         number of lines, i.e. number of line breaks in hl
 % posLb         line break positions in hl, including an added leading zero
 % isAtEnd       true if the end of hl corresponds to the end of file
-
 %   $Revision: 2.11 $
-
 % set defaults for opt. inputs:
 % minChars, offset,origin,inclWsAtEnd,lbfull,lenSection
 optargs = {0, 0, 'cof', false, uint8([13 10]),  65536};
-
 % skip any new inputs if they are empty
 isEmptyArg = cellfun('isempty', varargin);
-
 % overwrite defaults with non-emty arguments in varargin
 optargs(~isEmptyArg) = varargin(~isEmptyArg);
 
 % assign to variables
 [minChars, offset, origin, inclWsAtEnd, lbfull, lenSection] = optargs{:};
-
 % move to requested file position
 if offset ~= 0 || ~strcmpi(origin,'cof')
   fseek(fid,offset,origin);
 end
-
 % get number of the file's remaining bytes from current position:
 bytePos = ftell(fid);
 fseek(fid, 0, 'eof');
@@ -2867,30 +2674,23 @@ numByte = byteEnd-bytePos;
 spuint  = uint8(32);   % Space (= ascii whitespace limit) as uint8
 lbuint  = lbfull(end);
 lenLb   = numel(lbfull);
-
 [f8c,nF8c]	= fread(fid,lenSection,'*uint8');	% current text section
-
 isIn = nF8c < numByte;      % not at the end of text?
 pLbc = find(f8c==lbuint); 	% current line break positions
 nLbc = numel(pLbc);         % number of line breaks so far
 gLb  = max([0;pLbc]);       % greatest line break position
-
 % continue reading if not enough line breaks or characters have been read
 % and if we're not at the end of the file
 doRead = ((nLbc < minLines) || gLb < minChars) && isIn;
-
 if doRead       % estimate output sizes and preallocate
   f8 = zeros(min( max(ceil(nF8c/nLbc*minLines), minChars), ...
     numByte),1,'uint8');
   pLb = zeros(max(1+minLines+ceil(nLbc/nF8c), ...
     ceil(nLbc/nF8c*minChars) ), 1);
 end
-
 % start to write to outputs
 f8(1:nF8c,1)    = f8c;
 pLb(1:nLbc+1,1) = [0;pLbc];
-
-
 f = nF8c;     % counts number of characters read from fid
 l = nLbc;     % counts number of line breaks
 while doRead
@@ -2898,11 +2698,9 @@ while doRead
   [f8c,nF8c]	= fread(fid,lenSection,'*uint8');	% current text section
   pLbc     	= find(f8c==lbuint);	% position of current line breaks
   nLbc    	= numel(pLbc);          % number   of current line breaks
-  
   % continue to write to outputs
   f8(f+1:f+nF8c)      = f8c;
   pLb(l+2:l+nLbc+1,1)	= f   + pLbc;
-  
   % prepare reading next section
   if nLbc > 0                 % if there are new line breaks...
     gLb = pLb(l+nLbc+1);    % ...update greatest line break position
@@ -2912,7 +2710,6 @@ while doRead
   isIn    = f < numByte;      % end of text?
   doRead  = ((l < minLines) || (gLb < minChars) ) && isIn;
 end
-
 if ((l < minLines) || (gLb < minChars)) && f > 0 && ...
     f8(f) ~= lbuint && ...
     (  inclWsAtEnd || any(f8(pLb(l+1)+1:f) > spuint ) )
@@ -2925,7 +2722,6 @@ if ((l < minLines) || (gLb < minChars)) && f > 0 && ...
   l          = l + 1;
   pLb(l+1,1) = f;
 end
-
 if l < minLines || pLb(1+l) < minChars
   % having read up to the end of the file, delete overallocated parts of
   % pLb and f8

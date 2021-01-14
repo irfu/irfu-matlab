@@ -13,6 +13,7 @@
 % ZV  : zVariable
 % GA  : Global Attribute (in CDF file)
 % CUR : CURRENT (type of data, dataset)
+% ENABLE(D)/DISABLE(D) always at the end of a setting key.
 %
 %
 % NOTES ON SETTINGS KEY NAMING CONVENTION
@@ -30,6 +31,49 @@
 function SETTINGS = create_default_SETTINGS()
     % PROPOSAL: Setting for latching relay? Setting for only mode 0?
     %
+    % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
+    %                                                            Not which data to use (HK or TC).
+    %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
+    %
+    % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
+    %
+    % PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
+    %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
+    %
+    % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
+    %   ==> Problems with grepping log files.
+    %   NOTE: Want setting value convention to be consistent with other settings values.
+    %       Ex: CORRECT, SORT, FULL, SCALAR, ROUND
+    %   PROPOSAL: Keep as is and grep log files using surrounding characters.
+    %       Ex: " ERROR "
+    %   PROPOSAL: Use lower case "error", "warning"
+    %   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
+    %
+    % PROPOSAL: Separate function for validating/asserting settings.
+    %   NOTE: Must be done AFTER all settings have been set.
+    %   PROPOSAL: Do every time settings are set, i.e. for default values,
+    %       config file values, CLI argument values.
+    %
+    % =========================
+    % BOGIQ: SETTING KEY NAMING 
+    % =========================
+    % PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
+    %   NOTE: Name change likely influences BICAS testing code and pipeline. Should therefore only be implemented at the
+    %         right time.
+    %
+    % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
+    % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+    %
+    % PROPOSAL: Use naming convention for settings keys for testing ONLY:
+    %
+    % PROPOSAL: Relevant setting keys should always be on the form ENABLE, never DISABLE.
+    %   PRO: More consistent.
+    %   CON: Less clear what is a deviation from the default.
+    % PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLE", "DISABLE").
+    %   CON: Sounds bad to put "USE" at the end of settings key.
+    % PROPOSAL: Always use either DISABLED/ENABLED or DISABLE/ENABLE.
+    %   TODO-DEC: Which?
+    %
     % PROPOSAL: Need (settings name) terminology for temporary "bugfixes"/corrections due to bugs outside of BICAS,
     %   Ex: Bugs datasets (bugs in other RCS, ROC's pipeline).
     %   Ex: ~Corrupted data (different from bugs?)
@@ -46,31 +90,6 @@ function SETTINGS = create_default_SETTINGS()
     %   PROPOSAL: action
     %   PROPOSAL: ~anomaly
     %
-    % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
-    %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
-    %
-    % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-    % PROPOSAL: Naming convention for settings keys for testing ONLY:
-    %
-    % PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
-    %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
-    %
-    % PROPOSAL: Setting keys should always be on the form ENABLE, never DISABLE.
-    %   PRO: More consistent.
-    %   CON: Less clear what is a deviation from the default.
-    %
-    % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
-    %   ==> Problems with grepping log files.
-    %   NOTE: Want setting value convention to be consistent with other settings values.
-    %       Ex: CORRECT, SORT, FULL, SCALAR, ROUND
-    %   PROPOSAL: Keep as is and grep log files using surrounding characters.
-    %       Ex: " ERROR "
-    %   PROPOSAL: Use lower case "error", "warning"
-    %   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
-    %
-    % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
-    % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
-    %
     % PROPOSAL: Policy on usage of dataset levels in settings keys.
     %   Ex: For now, L1R refers to algorithms to use WHEN processing L1R as input
     %       Ex: PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY
@@ -79,28 +98,23 @@ function SETTINGS = create_default_SETTINGS()
     %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
     %   Ex: For now, L2 refers to algorithms to use when processing L2 as output.
     %       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
+    %   --
     %   NEED: Specify whether refers to input or output data (not necessarily datasets).
-    %       Ex: Distinguish processing L1R-->L2, L2-->L3.
-    %   NEED: Distinguish processing (science) data L1-->L2, L1R-->L2
+    %       Ex: Distinguish processing L1/L1R-->L2, L2-->L3.
+    %       PROPOSAL: Some kind of prefix before data level.
+    %           PROPOSAL: IN_L1R, OUT_L2 etc.
+    %           PROPOSAL: INPUT_CDF.L1R, OUTPUT_CDF.L2 etc.
+    %   NEED: Distinguish processing (science) data L1-->L2, L1R-->L2.
+    %   NEED: Distinguish input L1 voltage and L1 current.
     %   NEED: Distinguish
     %       (1) datasets of specific level, and
     %       (2) algorithms that run when using given input level.
-    %   PROPOSAL: Some kind of prefix before data level.
-    %       PROPOSAL: IN_L1R, OUT_L2 etc.
     %   PROPOSAL: when speaking of datasets, use
     %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
     %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
     %       PROBLEM: How distinguish from processing?
     %
-    % PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
-    %   NOTE: Name change likely influences BICAS testing code and pipeline. Should therefore only be implemented at the
-    %         right time.
-    %
-    % PROPOSAL: Separate function for validating/asserting settings.
-    %   NOTE: Must be done AFTER all settings have been set.
-    %   PROPOSAL: Do every time settings are set, i.e. for default values,
-    %       config file values, CLI argument values.
-
+    
 
 
     S = bicas.settings();
@@ -162,8 +176,9 @@ function SETTINGS = create_default_SETTINGS()
     % The epoch for ACQUISITION_TIME.
     % The time in UTC at which ACQUISITION_TIME is [0,0].
     % Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
-    % PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
-    S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC',                       [2000,01,01, 12,00,00, 000,000,000]);
+    % PROPOSAL: Store the value returned by
+    %           spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
+    S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);
     
     % NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
     S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', 1)
@@ -185,9 +200,7 @@ function SETTINGS = create_default_SETTINGS()
     % which duplicated settings (same timestamp, same bias setting on same
     % antenna) which would be triggered by an assertion on an assert on
     % monotonically increasing timestamps.
-    S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',           'ERROR')      % ERROR, WARNING, SORT
-    
-    S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
+    S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING, SORT
     
     % Whether to replace PAD VALUES values with NaN internally.
     % IMPORTANT NOTE: Refers to CDF _PAD_VALUES, NOT CDF _FILL_VALUES!
@@ -202,6 +215,8 @@ function SETTINGS = create_default_SETTINGS()
     % Alternate fill value to use.
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
+    S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
+    
     % For testing, when HK and SCI time are completely different and do not
     % overlap (though HK time still has to cover a larger interval than SCI).
     % Adds/subtracts HK time so that the first HK timestamp equals the first SCI
@@ -250,7 +265,8 @@ function SETTINGS = create_default_SETTINGS()
     % the master CDF. This indicates that something is wrong, either in the
     % master CDF or in the processing.
     S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'ERROR');   % ERROR, WARNING, USE_FILLVAL
-    % Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?) SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
+    % Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?)
+    %     SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
     % Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
     S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'ERROR');   % ERROR, WARNING
 
@@ -358,9 +374,16 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
     
     % Path to RCS NSO file. Relative to BICAS root.
-    S.define_setting('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH', fullfile('data', 'solo_ns_ops.xml'))
+    S.define_setting('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH',  fullfile('data', 'solo_ns_ops.xml'))
+    % Path to RCS NSO file for debugging purposes.
+    % If non-empty, then it overrides PROCESSING.RCS_NSO.FILE.RELATIVE_PATH.
+    % Can be set to absolute path. Intended for testing.
+    S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')
     % Whether to enable NSO IDs which are intended for test purposes only.
     S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
+    
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3.
+    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',              2)
     
     
     
@@ -369,8 +392,21 @@ function SETTINGS = create_default_SETTINGS()
     % Regular expressions for the filenames of RCTs
     % ---------------------------------------------
     %
-    % OFFICIAL DOCUMENTATION ON RCT FILENAME CONVENTION
-    % =================================================
+    % NOTES
+    % -----
+    % ** Regular expressions for RCT filenames are only needed when using L1
+    %    voltage datasets instead of L1R.
+    % ** BIAS & TDS have previously not followed the correct filenaming
+    %    convention but does now (2020-11-20).
+    % ** LFR do not seem to follow the filenaming convenction (2020-11-20)
+    %    NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
+    %    seconds=2_digits).
+    % ** Only the last filename in a sorted list of matching filenames will
+    %    actually be used (BICAS algorithm).
+    %
+    %
+    % OFFICIAL DOCUMENTATION ON RCT FILENAMING CONVENTION
+    % ---------------------------------------------------
     % RCT filenaming convention is described in ROC-PRO-DAT-NTT-00006-LES. This
     % document refers to the RODP.
     %
@@ -416,28 +452,13 @@ function SETTINGS = create_default_SETTINGS()
     %   Correct: SOLO_CAL_RPW-BIAS_V202004062127.cdf   # NOTE: Minus!
     %
     %
-    % RATIONALE
-    % =========
-    % RCT filenaming is implemented as settings since filenaming seems likely to
-    % change.
-    % (1) LFR & TDS do not seem to follow the filenaming convenction
-    % (2) BIAS has (previously at least) not followed the filenaming convention.
-    % (3) it is uncertain how it (doc version 1/1) can be applied to BIAS RCTs
-    % (which receiver should the BIAS RCT specify when BIAS uses the same RCT
-    % for both LFR & TDS data?).
-    %
-    % NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
-    % seconds=2_digits).
-    % NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of
-    % day, only date)
-    %
-    % Examples of de facto RCT filenames (2019 Sept + later)
+    % EXAMPLES OF DE FACTO RCT FILENAMES (2019 SEPT + LATER)
     % ------------------------------------------------------
     % BIAS:
-    %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
-    %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention,
+    %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old impl convention)
+    %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new impl convention,
     %                                                  closer to documentation)
-    %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old implemented convention)
+    %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old impl convention)
     %           SOLO_CAL_RPW_BIAS_V202004062127.cdf   (almost correct)
     % LFR:
     %       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
@@ -445,18 +466,22 @@ function SETTINGS = create_default_SETTINGS()
     % TDS:
     %           SOLO_CAL_RCT-TDS-LFM-CWF-E_V20190128.cdf
     %           SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20190128.cdf
+    %           SOLO_CAL_RPW-TDS-LFM-CWF-E_V20200512000000.cdf
+    %           SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20200512000000.cdf
     %           (Two types of calibration files, but only RODP versions)
     %
-    % NOTE: Only the last filename in a sorted list of matching filenames will
-    % actually be used.
     %============================================================================
     CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-    S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
-    S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
-    S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
-    S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
-    
+    S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',           CDF_SUFFIX_REGEXP]);
+    % 2020-11-20: LFR still uses old/illegal RCT filenaming convention.
+    S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',       CDF_SUFFIX_REGEXP]);
+    S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',  CDF_SUFFIX_REGEXP]);
+    S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}', CDF_SUFFIX_REGEXP]);
+    % Old/illegal filenaming convention.
+    %S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
+    %S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
 
+    
     
     % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX
     % (in every record), that contains an index to calibration data inside a
@@ -521,19 +546,39 @@ function SETTINGS = create_default_SETTINGS()
     % Disable all voltage calibration. Output dataset data contain TM units.
     % BIAS demultiplexer addition/subtraction of BLTS necessary to derive
     % antenna signals is still done though.
-    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',              0);
+    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',               0);
     % Whether to disable BIAS offsets.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', 0);
     % Whether to use transfer functions or scalar multiplication for calibration
     % of signals between antennas and BIAS-LFR/TDS interface. It does not affect
     % the LFR/TDS transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
-    % Whether to use de-trending before applying transfer functions.
-    % NOTE: Only applies to DC since detrending does now work for AC since the
-    % linear fit has to be scaled up when adding it back using a scalar value
-    % derived from the TF. For DC/low-pass TFs one can use the TF at 0 Hz, but
-    % for AC/high-pass/band-pass filters it is not obvious which value to use.
-    S.define_setting('PROCESSING.CALIBRATION.TF.DC_DETRENDING_ENABLED',     1)
+    
+    %===========================================================================
+    % De-/re-trending
+    % ---------------
+    % Whether/how to use:
+    % (1a) De-trending (remove fit) before applying TF.
+    % (1b) Which degree of fit to use.
+    % (2)  Re-trending (add back fit previously removed) after applying TF.
+    % --
+    % NOTE: There is no re-trending for AC since detrending is ill-defined for
+    % non-lowpass filters, which is due to that the linear fit needs to be
+    % scaled by the TF at 0 Hz, when er-trending which does not make sense for
+    % non-lowpass filters.
+    %
+    % *_FIT_DEGREE >= 0 : Enable de-trending using a polynomial fit of this
+    %                     degree. 0=constant, 1=linear, and so on.
+    % *_FIT_DEGREE  < 0 : Disable de-trending (requires disabled re-trending).
+    %
+    % YK 2020-11-02: Detrend AC data, but do not add linear fit back.
+    %===========================================================================
+    S.define_setting('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', 1)
+    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    1)
+    S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
+    
+    
+    
     % Frequency above which the ITF is set to zero.
     % Expressed as a fraction of the Nyquist frequency (half the sampling
     % frequency; 1 sample/s = 1 Hz).
@@ -541,6 +586,16 @@ function SETTINGS = create_default_SETTINGS()
     % YK 2020-09-15: Set inverted transfer function to zero for
     % omega>0.8*omega_Nyquist (not 0.7).
     S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.8)
+
+    % When using AC, the combined LFR+BIAS ITFs are modified to have constant
+    % gain between 0 Hz and this frequency. The gain used is taken from this
+    % frequency. Phase remains unchanged.
+    % NOTE: Setting it to 0 Hz or lower effectively disables the functionality.
+    % NOTE: This does not set gain at 0 Hz to zero, but AC de-trending
+    % influences that.
+    % NOTE: "BIAS specifications", Section 2.3.2.4 specifies (AC) "a high pass
+    % filter at 7 Hz".
+    S.define_setting('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ', 7)
     
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage

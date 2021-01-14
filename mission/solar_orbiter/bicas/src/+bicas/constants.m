@@ -2,19 +2,20 @@
 % Hard-coded constants which are needed
 % -- for error handling
 % -- early, before regular settings are initialized,
-% and which  thus need to be initialized independent of settings and in a way which is unlikely to trigger errors.
+% and which  thus need to be initialized independent of settings and in a way
+% which is unlikely to trigger errors.
 %
-% NOTE: This file contains the authoritative definitions of the meaning of error codes that should (maybe) be used in
-% documentation.
+% NOTE: This file contains the authoritative definitions of the meaning of error
+% codes that should (maybe) be used in documentation.
 %
 %
 % VARIABLE NAMING CONVENTIONS
 % ===========================
 % TBW   = To Bash Wrapper.
-% EMIDP = (MATLAB) Error Message Identifier Part. One of the colon-separated parts of the MException .identifier
-%         string field (error message ID).
-%         NOTE: "Component" has a special meaning in the context of error message IDs. Therefore uses the term
-%         "part" instead.
+% EMIDP = (MATLAB) Error Message Identifier Part. One of the colon-separated
+%         parts of the MException .identifier string field (error message ID).
+%         NOTE: "Component" has a special meaning in the context of error
+%         message IDs. Therefore uses the term "part" instead.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -24,6 +25,10 @@
 classdef constants   % < handle
     % PROPOSAL: Error category for bad input datasets (both science and HK).
     %   PRO: Has similar for RCTs.
+    %
+    % PROPOSAL: Move N_MIN_SAMPLES_PER_DWNS_BIN to settings?
+    %
+    % PROPOSAL: Log all constants.
     
     
     
@@ -44,11 +49,11 @@ classdef constants   % < handle
         
         % MATLAB stdout prefix to signal to bash wrapper that the log message
         % should be passed on to STDOUT (without the prefix).
-        STDOUT_PREFIX_TBW = 'STDOUT: ';
+        STDOUT_PREFIX_TBW                 = 'STDOUT: ';
         
         % MATLAB stdout prefix to signal to bash wrapper that the log message
         % should be passed on to LOG FILE (without the prefix).
-        LOG_FILE_PREFIX_TBW = 'LOG FILE: ';
+        LOG_FILE_PREFIX_TBW               = 'LOG FILE: ';
 
         % Information to "interpret" and "translate" captured exceptions
         % --------------------------------------------------------------
@@ -56,13 +61,17 @@ classdef constants   % < handle
         %   key   = Any one of the colon-separated parts of a MATLAB error
         %           message identifier string (see "error" function).
         %   value = Struct with fields representing a type of error:
-        %       .errorCode   = The error code/number to be returned from BICAS' main function.
-        %                      IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types"
-        %                      (keys). The error-handling code (try-catch) should decide whether every message
-        %                      identifier should be used to identify only one error type if there are multiple ones to
-        %                      choose from.
-        %       .description = English human-readable text describing the error. Implicitly defines what
-        %                      kinds of errors this error code should cover.
+        %       .errorCode
+        %           The error code/number to be returned from BICAS' main
+        %           function.
+        %           IMPORTANT NOTE: A MATLAB error message identifier may match
+        %           multiple "error types" (keys). The error-handling code
+        %           (try-catch) should decide whether every message identifier
+        %           should be used to identify only one error type if there are
+        %           multiple ones to choose from.
+        %       .description
+        %           English human-readable text describing the error. Implicitly
+        %           defines what kinds of errors this error code should cover.
         %
         %
         EMIDP_2_INFO = bicas.constants.init_EMIDP_2_INFO;
@@ -101,8 +110,9 @@ classdef constants   % < handle
         %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can
         % simultaneously be used to
-        % ** reference specific constants (fields) in code
-        % ** compile list of legal NSO IDs in NSO table file.
+        % ** compile a list of legal NSO IDs in NSO table file
+        % ** reference specific constants (fields) throughout BICAS without
+        %    hardcoding the actual NSO IDs in multiple places.
         %
         % IMPLEMENTATION NOTE: One does not want to use the RCS NSO ID string
         % constants directly inside the code, in case of typos.
@@ -110,15 +120,24 @@ classdef constants   % < handle
         NSOID = struct(...
             'TEST_QF0',                'TEST_QUALITY_FLAG_0', ...
             'TEST_UFV',                'TEST_UFV', ...            
-            'TEST_PARTIAL_SATURATION', 'TEST_partial_saturation', ...
-            'TEST_FULL_SATURATION',    'TEST_full_saturation', ...
-            'PARTIAL_SATURATION',      'partial_saturation', ...
-            'FULL_SATURATION',         'full_saturation');
+            'TEST_THRUSTER_FIRING',    'TEST_THRUSTER_FIRING', ...
+            'PARTIAL_SATURATION',      'PARTIAL_SATURATION', ...
+            'FULL_SATURATION',         'FULL_SATURATION', ...
+            'THRUSTER_FIRING',         'THRUSTER_FIRING');
         
         % Define the bits in L2_QUALITY_BITMASK (L2QBM).
         % Intended for bit operations.
         L2QBM_PARTIAL_SATURATION = uint16(1);
         L2QBM_FULL_SATURATION    = uint16(2);
+        
+        
+        
+        % Minimum number of non-downsampled records per downsampled record.
+        % NOTE: Does not consider whether samples are fill values.
+        %
+        % IMPLEMENTATION NOTE: Not perfect solution since includes fill values,
+        % but easy to implement as at least a temporary algorithm.
+        N_MIN_SAMPLES_PER_DWNS_BIN = 3;
         
     end    % properties(Constant)
     
@@ -154,9 +173,11 @@ classdef constants   % < handle
                 ['Calibration software meant to', ...
                 ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
                 ' (2) calibrate bias currents from L1 data.'];
-            MAP('SWD.identification.icd_version') = '1.2';   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-            MAP('SWD.release.version')            = '4.0.0';
-            MAP('SWD.release.date')               = '2020-10-07T12:00:00Z';
+            
+            % 2020-11-24: Latest document version is 01/04.
+            MAP('SWD.identification.icd_version') = '1.4';
+            MAP('SWD.release.version')            = '4.1.0';
+            MAP('SWD.release.date')               = '2020-12-07T18:48:00Z';
             MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
             MAP('SWD.release.contact')            = 'erjo@irfu.se';
             MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -170,10 +191,17 @@ classdef constants   % < handle
             % ['Modified default settings: inverted transfer function', ...
             % ' cutoff at 0.8*omega_Nyquist, duplicate bias current gives error'];
             % /v3.1.1
+%             MAP('SWD.release.modification')       = ...
+%                 ['Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)', ...
+%                 '; Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX', ...
+%                 '; Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR'];   % v4.0.0
             MAP('SWD.release.modification')       = ...
-                ['Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)', ...
-                '; Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX', ...
-                '; Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR'];   % v4.0.0
+                ['Non-Standard Operations (NSO) table for thruster firings up until 2020-12-05', ...
+                '; Zero order AC detrending, no AC re-trending', ...
+                '; Combined transfer functions (LFR+BIAS) modified during', ...
+                ' execution to have constant gain for low freqs. for AC data', ...
+                '; Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE', ...
+                '; Bugfix: not crashing when reading CURRENT datasets with one bias setting'];   % v4.1.0
             MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
             % Appropriate branch? "master" instead?
             %

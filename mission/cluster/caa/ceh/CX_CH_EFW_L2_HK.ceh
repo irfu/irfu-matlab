@@ -11,6 +11,9 @@ END_META       =   DATASET_ID
 START_META     =   DATASET_TITLE
    ENTRY       =   "Instrument bias, puck and guard settings"
 END_META       =   DATASET_TITLE
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Instrument_Status"
+END_META       =   DATASET_TYPE
 START_META     =   DATASET_DESCRIPTION
    ENTRY       =   "This dataset contains settings (bias current, puck and guard voltages)"
    ENTRY       =   "of the EFW experiment on the Cluster CXXX spacecraft"
@@ -30,6 +33,16 @@ END_META       =   MAX_TIME_RESOLUTION
 START_META     =   PROCESSING_LEVEL
    ENTRY       =   "Calibrated"
 END_META       =   PROCESSING_LEVEL
+
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "publication based upon use of these data"
+END_META       =   ACKNOWLEDGEMENT
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                   Variables                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -263,5 +276,4 @@ START_VARIABLE      = V_GUARD_P4__CXXX_CP_EFW_L2_HK
   SIGNIFICANT_DIGITS= 6
   LABLAXIS          = "GUARD4"
   DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
-END_VARIABLE        = V_GUARD_P4__CXXX_CP_EFW_L2_HK 
-!
+END_VARIABLE        = V_GUARD_P4__CXXX_CP_EFW_L2_HK

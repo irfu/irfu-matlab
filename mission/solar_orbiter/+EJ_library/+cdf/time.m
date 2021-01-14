@@ -18,7 +18,7 @@
 % First created 2020-10-21
 %
 classdef time   % < handle
-    % PROPOSAL: Automatic test code.
+    % PROPOSAL: Should be package.
     %
     % PROPOSAL: Add more CDF time functions.
     %   Ex: TT2000_to_datevec, TT2000_to_UTC_str.

@@ -45,7 +45,8 @@ function path = get_abs_path(path)
         end
         
         if ~exist(path, 'dir')
-            [dirPath, basename, suffix] = fileparts(path);   % NOTE: If ends with slash, then everything is assigned to dirPath!
+            % NOTE: If ends with slash, then everything is assigned to dirPath!
+            [dirPath, basename, suffix] = fileparts(path);
             
             % Uses MATLAB trick to convert path to absolute path.
             %dirPath = cd(cd(dirPath));
@@ -58,11 +59,14 @@ function path = get_abs_path(path)
             path = whatInfo.path;
         end
         
-        path = regexp(path, '^(/.*[^/]|/)', 'match');    % Remove trailing slashes, except for system root.
+        % Remove trailing slashes, except for system root.
+        path = regexp(path, '^(/.*[^/]|/)', 'match');
         path = path{1};
         
     catch Exc
-        error('get_abs_path:FailedToConvertPath', 'Failed to convert path "%s" to an absolute path.\nExc.message = "%s"', path, Exc.message)
+        error('get_abs_path:FailedToConvertPath', ...
+            'Failed to convert path "%s" to an absolute path.\nExc.message = "%s"', ...
+            path, Exc.message)
     end
     
 end

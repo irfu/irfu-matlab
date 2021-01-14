@@ -1,5 +1,6 @@
 %
-% Wrapper around stdout_print but prints with pattern+parameters.
+% Wrapper around bicas.stdout_print() but prints with pattern+parameters.
+% See that function.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

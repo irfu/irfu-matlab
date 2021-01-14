@@ -5,7 +5,8 @@
 %
 % RETURN VALUES
 % =============
-% Zvs              : ZVS = zVariables Struct. One field per zVariable (using the same name). The content of every such field equals the
+% Zvs              : ZVS = zVariables Struct. One field per zVariable (using
+%                    the same name). The content of every such field equals the
 %                    content of the corresponding zVar.
 % GlobalAttributes : Struct returned from "dataobj".
 %
@@ -20,6 +21,8 @@
 % bicas.executed_sw_mode.
 %
 function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
+    
+    tTicToc = tic();
     
     disableReplacePadValue        = SETTINGS.get_fv('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED');
     [ofvZvList,  ovfZvSettingKey] = SETTINGS.get_fv('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES');
@@ -49,17 +52,21 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         %=================================================
         % Replace fill/pad values with NaN for FLOAT data
         %=================================================
-        % QUESTION: How does/should this work with integer fields that should also be stored as integers internally?!!!
-        %    Ex: ACQUISITION_TIME, Epoch.
-        % QUESTION: How distinguish integer zVariables that could be converted to floats (and therefore use NaN)?
+        % TODO-NI: How does/should this work with integer fields that MUST
+        %          also be stored as integers internally?!!!
+        %    Ex: Epoch, ACQUISITION_TIME.
+        % TODO-NI: How distinguish integer zVariables that could be converted to
+        %          floats (and therefore use NaN)?
         if isfloat(zvValue)
+            
             [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
             if ~isempty(fillValue)
                 % CASE: There is a fill value.
                 
                 if any(ismember(zvName, ofvZvList))
                     L.logf('warning', ...
-                        'Overriding input CDF fill value with %d due to settings "%s" and "%s".', ...
+                        ['Overriding input CDF fill value with %d', ...
+                        ' due to settings "%s" and "%s".'], ...
                         ofvFillVal, ovfZvSettingKey, ovfFvSettingKey)
                     fillValue = ofvFillVal;
                 end
@@ -70,8 +77,11 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
                 zvValue = EJ_library.utils.replace_value(zvValue, padValue,  NaN);
             end
         else
-            % Disable?! Only print warning if actually finds fill value which is not replaced?
-            %L.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
+            % Disable?! Only print warning if actually finds fill value which is
+            % not replaced?
+            %L.logf('warning', ...
+            %   ['Can not handle replace fill/pad values for zVariable', ...
+            %   ' "%s" when reading "%s".'], zVariableName, filePath))
         end
         
         Zvs.(zvName) = zvValue;
@@ -96,12 +106,16 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/7#note_11016
     % states that the correct string is "Dataset_ID".
     %=================================================================================
-    [GlobalAttributes, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
-        {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}}, 'Assert one matching candidate');
+    [GlobalAttributes, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(...
+        DataObj.GlobalAttributes, ...
+        {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}}, ...
+        'Assert one matching candidate');
     msgFunc = @(oldFn, newFn) (sprintf(...
-        'Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s".\n', ...
+        ['Global attribute in input dataset', ...
+        '\n    "%s"\nuses illegal alternative "%s" instead of "%s".\n'], ...
         filePath, oldFn, newFn));
-    bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
+    bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, ...
+        msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
     
     
     
@@ -109,73 +123,97 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     % Checks on Epoch
     %=================
     if ~isfield(Zvs, 'Epoch')
-        error('BICAS:read_dataset_CDF:DatasetFormat', 'Input dataset "%s" has no zVariable Epoch.', filePath)
+        error('BICAS:read_dataset_CDF:DatasetFormat', ...
+            'Input dataset "%s" has no zVariable Epoch.', filePath)
     end
     if isempty(Zvs.Epoch)
-        error('BICAS:read_dataset_CDF:DatasetFormat', 'Input dataset "%s" contains an empty zVariable Epoch.', filePath)
+        error('BICAS:read_dataset_CDF:DatasetFormat', ...
+            'Input dataset "%s" contains an empty zVariable Epoch.', filePath)
     end
     
     
     
-    %===============================================================================================
+    %=========================================================================
     % ASSERTION: Increasing Epoch values
     % ----------------------------------
     % Examples:
     % solo_L1_rpw-lfr-surv-cwf-cdag_20200212_V01.cdf   (decrements 504 times)
-    % solo_L1_rpw-lfr-surv-swf-cdag_20200212_V01.cdf   (1458 identical consecutive pairs of values)
+    % solo_L1_rpw-lfr-surv-swf-cdag_20200212_V01.cdf   (1458 identical
+    %                                                   consecutive pairs of
+    %                                                   values)
     % solo_HK_rpw-bia_20200212_V01.cdf                 (decrements once)
-    %===============================================================================================
-    % IMPLEMENTATION NOTE: SOLO_L1_RPW-BIA-CURRENT have increasing Epoch, but not always MONOTONICALLY increasing Epoch.
-    if ~issorted(Zvs.Epoch)   % Check for increasing values, but NOT monotonically increasing.
+    %=========================================================================
+    % IMPLEMENTATION NOTE: SOLO_L1_RPW-BIA-CURRENT have increasing Epoch, but
+    % not always MONOTONICALLY increasing Epoch.
+    %
+    % Check for increasing values, but NOT monotonically increasing.
+    if ~issorted(Zvs.Epoch)
         
-        anomalyDescrMsg = sprintf('Input dataset "%s"\ncontains an Epoch zVariable which values do not monotonically increment.\n', filePath);
+        anomalyDescrMsg = sprintf(...
+            ['Input dataset "%s"\ncontains an Epoch zVariable', ...
+            ' which values do not monotonically increment.\n'], ...
+            filePath);
         
-        [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
+        [settingValue, settingKey] = SETTINGS.get_fv(...
+            'INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
         switch(settingValue)
             case 'SORT'
-                bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                bicas.default_anomaly_handling(...
+                    L, settingValue, settingKey, 'other', ...
                     anomalyDescrMsg)
                 
                 % Sort (data) zVariables according to Epoch.
                 [~, iSort] = sort(Zvs.Epoch);
                 Zvs = select_ZVS_indices(Zvs, iSort);
                 
-                %             % NOTE: Sorting Epoch does not remove identical values. Must therefore check again.
-                %             if ~issorted(Zvs.Epoch, 'strictascend')
-                %                 error('BICAS:read_dataset_CDF:DatasetFormat', ...
-                %                     ['zVariable Epoch in input dataset "%s"\n does not increase non-monotonically even after sorting.', ...
-                %                     ' It must contain multiple identical values (or the sorting algorithm does not work).'], ...
-                %                     filePath)
-                %             end
-                
+                % % NOTE: Sorting Epoch does not remove identical values. Must therefore check again.
+                % if ~issorted(Zvs.Epoch, 'strictascend')
+                %     error('BICAS:read_dataset_CDF:DatasetFormat', ...
+                %         ['zVariable Epoch in input dataset "%s"\n does not increase non-monotonically even after sorting.', ...
+                %         ' It must contain multiple identical values (or the sorting algorithm does not work).'], ...
+                %         filePath)
+                % end
+
             otherwise
-                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                bicas.default_anomaly_handling(...
+                    L, settingValue, settingKey, ...
+                    'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:read_dataset_CDF:DatasetFormat')
         end
     end
     
     
     
-    L.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', GlobalAttributes.Dataset_ID{1})
-    L.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', GlobalAttributes.Skeleton_version{1})
+    L.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', ...
+        GlobalAttributes.Dataset_ID{1})
+    L.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', ...
+        GlobalAttributes.Skeleton_version{1})
     
+    % Just printing filename to avoid that actual time information is too far
+    % right.
+    bicas.log_speed_profiling(L, ...
+        sprintf('%s: %s', mfilename, EJ_library.fs.get_name(filePath)), ...
+        tTicToc)
 end
 
 
 
-function Zvs = select_ZVS_indices(Zvs, iArray)
-% Function that modifies ZVS to only contain specified records in specified order.
+% Function that modifies ZVS to only contain specified records in specified
+% order.
 %
 % Can be used for
 % ** Re-ordering records (sorting Epoch).
 % ** Filtering records (only keeping some).
 %
-% NOTE: Only want to modify the zVariables that contain data, i.e. for which CDF variable attribute DEPEND_0=Epoch, not
-% metadata e.g. ACQUISITION_TIME_UNITS. Code does not use rigorous condition. Should ideally use zVariable attribute
+% NOTE: Only want to modify the zVariables that contain data, i.e. for which CDF
+% variable attribute DEPEND_0=Epoch, not metadata e.g. ACQUISITION_TIME_UNITS.
+% Code does not use rigorous condition. Should ideally use zVariable attribute
 % DEPEND_0. Is therefore not a generic function.
-
-    % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S); since want to ignore but permit
-    % fields/zVars with other number of records.
+%
+function Zvs = select_ZVS_indices(Zvs, iArray)
+    % NOTE: Can not use
+    % bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S); since want
+    % to ignore but permit fields/zVars with other number of records.
     
     fnList = fieldnames(Zvs);
     
@@ -183,7 +221,8 @@ function Zvs = select_ZVS_indices(Zvs, iArray)
         fn = fnList{iZv};
         Zv = Zvs.(fn);
         
-        % IMPLEMENTATION NOTE: Using size to distinguish data & metadata zVariables.
+        % IMPLEMENTATION NOTE: Using size to distinguish data & metadata
+        % zVariables.
         if size(Zv, 1) == size(Zvs.Epoch, 1)
             Zv = Zv(iArray, :,:,:,:,:,:,:);
         end

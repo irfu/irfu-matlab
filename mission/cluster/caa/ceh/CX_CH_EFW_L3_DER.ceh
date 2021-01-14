@@ -11,6 +11,9 @@ END_META       =   DATASET_ID
 START_META     =   DATASET_TITLE
    ENTRY       =   "Raw E-field offsets (4 sec resolution)"
 END_META       =   DATASET_TITLE
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Support_Data"
+END_META       =   DATASET_TYPE
 START_META     =   DATASET_DESCRIPTION
    ENTRY       =   "This dataset contains DC offsets of raw (spinning) electric"
    ENTRY       =   "field signal measured by different probe pairs of the EFW"
@@ -31,6 +34,16 @@ END_META       =   PROCESSING_LEVEL
 START_META     =   DATASET_CAVEATS
    ENTRY       =   "*CXXX_CQ_EFW_DER"
 END_META       =   DATASET_CAVEATS
+
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "publication based upon use of these data"
+END_META       =   ACKNOWLEDGEMENT
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                   Variables                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -53,7 +66,7 @@ START_VARIABLE      = dER__CXXX_CP_EFW_L3_DER
   FLUCTUATIONS      = "Waveform"
   CATDESC           = "Raw electric field DC offset (p12/32, p34)"
   FIELDNAM          = "Raw electric field DC offset (p12/32, p34)"
-  SI_CONVERSION     = "1.0e-3>V m-1"
+  SI_CONVERSION     = "1.0e-3>V m^-1"
   UNITS             = "mV/m"
   FILLVAL           = -1000000000.000
   QUALITY           = 3

@@ -1,6 +1,7 @@
 %
-% Utility for modifying a genuine dataset CDF file to contain varied (random) data useful for manually comparing BICAS'
-% input and output CDF files. This is useful for testing.
+% Utility for modifying a genuine dataset CDF file to contain varied (random)
+% data useful for manually comparing BICAS' input and output CDF files. This is
+% useful for testing.
 %
 % NOTE: Unmaintained. Likely needs updating.
 %
@@ -93,14 +94,18 @@ end
 
 % Create random data variable of the same size and the same MATLAB class.
 %
-% settings:
-%   .min, .max                   : Inclusive range
-%   .recordTransitionProbability : Probability that consecutive values (over records) are separately random values.
-%                                  (Note that they can still be identical, if generated separately)
+% Settings:
+%   .min, .max
+%       Inclusive range
+%   .recordTransitionProbability
+%       Probability that consecutive values (over records) are separately random
+%       values. (Note that they can still be identical, if generated separately)
+%
 function randomData = replace_with_random_data(actualData, fillValue, Settings)
     
     % Set to random numerical values.
-    randomData = floor(Settings.min + (Settings.max - Settings.min+1) * rand(size(actualData)));
+    randomData = floor(...
+        Settings.min + (Settings.max - Settings.min+1) * rand(size(actualData)));
     
     % Make consecutive records similar or not.
     % PROPOSAL: Combine with generating random numbers.
@@ -115,7 +120,8 @@ function randomData = replace_with_random_data(actualData, fillValue, Settings)
     % Replace random components with fill value.
     randomData(rand(size(actualData)) < Settings.fractionFillValues) = fillValue;
     
-    % Set MATLAB class to the original one. This is important when writing to the CDF file.
+    % Set MATLAB class to the original one. This is important when writing to
+    % the CDF file.
     randomData = cast(randomData, class(actualData));
     
 end

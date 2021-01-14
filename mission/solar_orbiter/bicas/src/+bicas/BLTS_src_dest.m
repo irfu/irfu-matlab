@@ -6,12 +6,13 @@
 %     ** "GND"
 %     ** that its origin is unknown (mux mode unknown)
 % OR
-% (2) ~SIGNAL STORAGE: how the BLTS should be stored in the dataset (since output datasets are only designed to store
-% data measured data as ASRs), i.e.
+% (2) ~SIGNAL STORAGE: how the BLTS should be stored in the dataset (since
+%     output datasets are only designed to store data measured data as ASRs),
+%     i.e.
 %     ** an ASR (DC single/DC diff/AC diff)
 %     ** nowhere (mux mode unknown).
-% NOTE: One instance of this class represents either one of the two above alternatives. "src_dest" should thus be
-% interpreted as "source OR dest".
+% NOTE: One instance of this class represents either one of the two above
+% alternatives. "src_dest" should thus be interpreted as "source OR dest".
 %
 % Immutable.
 %
@@ -66,7 +67,8 @@ classdef BLTS_src_dest %< handle
             
             % ASSERTIONS: antenna
             assert(isnumeric(antennas))
-            assert(all(ismember(antennas, [1,2,3])))    % NOTE: OK for empty "antennas".
+            % NOTE: OK for empty value, [].
+            assert(all(ismember(antennas, [1,2,3])))
             if isequal(size(antennas), [0,0])
                 % CASE: No antennas
                 
@@ -84,7 +86,9 @@ classdef BLTS_src_dest %< handle
                 assert(antennas(1) < antennas(2))
                 
             else
-                error('BICAS:BLTS_src_dest:Assertion:IllegalArgument', 'Trying to define illegal BLTS_src_dest.')
+                error(...
+                    'BICAS:BLTS_src_dest:Assertion:IllegalArgument', ...
+                    'Trying to define illegal BLTS_src_dest.')
             end
             
             % ASSERTION: category
@@ -111,7 +115,9 @@ classdef BLTS_src_dest %< handle
                     % Represents that the BLTS should be routed to nowhere.
                 otherwise
                     % ASSERTION
-                    error('BICAS:BLTS_src_dest:Assertion:IllegalArgument', 'Illegal argument category="%s".', category)
+                    error(...
+                        'BICAS:BLTS_src_dest:Assertion:IllegalArgument', ...
+                        'Illegal argument category="%s".', category)
             end
             
             % Assign object.

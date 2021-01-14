@@ -178,14 +178,16 @@ function [condSatisfied, varargout] = sizes(varargin)
     end
     assert(nOutputDims <= iOutputDim, ...
         'sizes:Assertion', ...
-        'There are more requested output values than there are arbitrary (potentially linked) dimension sizes.')
+        ['There are more requested output values than there are', ...
+        ' arbitrary (potentially linked) dimension sizes.'])
     
     
     
     %==============================================
     % ASSERTION: Explicitly stated dimension sizes
     %==============================================
-    b = (sizeConstrArray >= 0);    % NOTE: Relies on that (NaN >= 0) returns false.
+    % NOTE: Relies on that (NaN >= 0) returns false.
+    b = (sizeConstrArray >= 0);
     if ~all(sizeConstrArray(b) == sizeArray(b))
         condSatisfied = false;
         return
@@ -201,12 +203,13 @@ function [condSatisfied, varargout] = sizes(varargin)
     %===========================================
     if ~all(isnan(sizeConstrArray))
         error('sizes:Assertion', ...
-            ['Size constraints contains negative numbers that can not be interpreted as constraints.'])
+            ['Size constraints contains negative numbers that', ...
+            ' can not be interpreted as constraints.'])
     end
     
-    %==============================================================================
+    %===========================================================================
     % NOTE: Ignore size constraint NaN. Does not need to be explicitly checked.
-    %==============================================================================
+    %===========================================================================
     
     condSatisfied = true;
 end

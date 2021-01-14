@@ -50,7 +50,10 @@ function run_tests(testList)
     assert(iscell(testList), 'Argument testList is not a cell array.')
     
     for iTest = 1:numel(testList)
-        TestData = testList{iTest}.run();
+        Test = testList{iTest};
+        assert(isobject(Test) & isscalar(Test), '"Test" is not a scalar object. Argument "testList" is misconfigured.')
+        
+        TestData = Test.run();
         EJ_library.assert.struct(TestData, {'success', 'resultDescrText', 'Parameters', 'Result'}, {});
         
         fprintf('TEST %2i: ', iTest)

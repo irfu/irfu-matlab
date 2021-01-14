@@ -4,6 +4,7 @@
 %
 classdef bitops
     % PROPOSAL: Automatic test code.
+    % PROPOSAL: Convert to simple function in proc_utils.
     
 
     

@@ -16,9 +16,11 @@
 %
 function [name, parentPath] = get_name(path)
     % PROPOSAL: Generalize to accepting cell array of paths.
+    %   PRO: More convenient.
     %   CON: Easy to use cellfun.
     %       Ex: cellfun(@EJ_library.fs.get_name, {DsmdArray1.path}', 'UniformOutput', false)
-    %   CON: Provides no extra value, e.g. speed, except for convenience over using cellfun.
+    %   CON: Provides no extra value, e.g. speed (except convenience).
+    %   CON: Output would have to change to cell arrays.
     %
     % PROPOSAL: Remove trailing slash.
     

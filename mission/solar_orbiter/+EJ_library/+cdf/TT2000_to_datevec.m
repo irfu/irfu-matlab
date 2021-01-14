@@ -22,7 +22,7 @@
 function dateVecUtc = TT2000_to_datevec(tt2000)
     % PROPOSAL: Separate wrapper function to handle spdfbreakdowntt2000 special case.
     
-    assert(iscolumn(tt2000))
+    assert(iscolumn(tt2000), 'Argument tt2000 is not a column array.')
     
     % CASE: tt2000 is a Nx1 array.
     

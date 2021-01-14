@@ -1,11 +1,13 @@
 %
-% Help function or initializing an empty struct. Useful for initializing an empty struct array with fieldnames, and of a
-% given size (e.g. 0x1 instead of 0x0).
+% Help function or initializing an empty struct. Useful for initializing an
+% empty struct array with fieldnames, and of a given size (e.g. 0x1 instead of
+% 0x0).
 %
 %
 % ARGUMENTS
 % =========
-% size     : 1D numeric array. If size implies a non-zero number of elemnts, then the fields will all be set to [].
+% size     : 1D numeric array. If size implies a non-zero number of elemnts,
+%            then the fields will all be set to [].
 % varargin : Arbitrary number of arguments representing fieldnames.
 %
 %
@@ -27,7 +29,8 @@ function S = empty_struct(size, varargin)
     if isempty(varargin)
         % CASE: Create struct with no fieldnames
         
-        % IMPLEMENTATION NOTE: Not obvious how to create a struct array without fields. Uses trick to achieve it.
+        % IMPLEMENTATION NOTE: Not obvious how to create an EMPTY struct ARRAY
+        % without fields. Uses trick to achieve it.
         S = rmfield(struct('a', cell(size)), 'a');
     else
         % CASE: Create struct with fieldnames
