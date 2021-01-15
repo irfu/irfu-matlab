@@ -1,7 +1,7 @@
-function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice)
+function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice,axisnorm,w_pe,m_i)
 %IRF_DISP_SURF_PL   Plot the cold plasma dispersion surfaces
 %
-%  IRF_DISP_SURF_PL(K_PERP_MAX,K_PAR_MAX,W,EXTRAPAR,SURFCHOICE,COLCHOICE)
+%  IRF_DISP_SURF_PL(K_PERP_MAX,K_PAR_MAX,W,EXTRAPAR,SURFCHOICE,COLCHOICE,AXISNORM)
 %  plots the dispersion surfaces calculated by IRF_DISP_SURFCALC.
 %
 %  This function is essential for IRF_DISP_SURF.
@@ -12,6 +12,8 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
 %  EXTRAPAR = the extra parameters from IRF_DISP_SURFCALC
 %  SURFCHOICE = vector explaining which of the surfaces to plot
 %  COLCHOICE = number telling how the surface will be painted
+%  AXISNORM = how axes in the plots are normalized, 1 is electron constants
+%  and 2 is ion constants
 %
 % $Id$
 
@@ -30,6 +32,8 @@ kc_x=linspace(0,kc_x_max,35);
 
 [az,el]=view;
 
+% for backwards compatability
+if nargin<7; axisnorm = 1; w_pe = nan; m_i = nan; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set some variables according to the colorchoice
@@ -136,6 +140,25 @@ w4(:,:)=wfinal(7,:,:);color4(:,:)=extraparam(colorchoice,7,:,:);
 w5(:,:)=wfinal(6,:,:);color5(:,:)=extraparam(colorchoice,6,:,:);
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Convert kc_x, kc_z, w1,...w5 to ion units if requested
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if axisnorm == 2
+    % convert k to k*di = k*Va/wci
+    wfac = m_i;
+    kFac = sqrt(m_i)/w_pe;
+    
+    w1 = wfac*w1;
+    w2 = wfac*w2;
+    w3 = wfac*w3;
+    w4 = wfac*w4;
+    w5 = wfac*w5;
+    kc_x = kFac*kc_x;
+    kc_z = kFac*kc_z;
+    kc_x_max = kFac*kc_x_max;
+    kc_z_max = kFac*kc_z_max;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot the surfaces we want
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -161,9 +184,15 @@ if surfchoice(5)
   hold on
 end
 
-xlabel('k_\perp c/\omega_{ce}')
-ylabel('k_{||} c/\omega_{ce}')
-zlabel('\omega/\omega_{ce}')
+if axisnorm==2
+    xlabel('k_\perp V_A/\omega_{ci}')
+    ylabel('k_{||} V_A/\omega_{ci}')
+    zlabel('\omega/\omega_{ci}')
+else
+    xlabel('k_\perp c/\omega_{ce}')
+    ylabel('k_{||} c/\omega_{ce}')
+    zlabel('\omega/\omega_{ce}')
+end
 
 set(gca,'xlim',[0 kc_x_max]);
 set(gca,'ylim',[0 kc_z_max]);
