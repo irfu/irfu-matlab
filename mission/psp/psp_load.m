@@ -3,6 +3,9 @@
 %
 % PSP_LOAD(dataDir,datatype,dateStart,dateStop)
 %
+% PSP_LOAD([],datatype,dateStart,dateStop) will use PSP data directory saved
+% by datastore. If not defined will ask the first time.
+%
 % PSP_LOAD(cdfFile,datatype) return variables into MATLAB base
 %
 % OUT = PSP_LOAD(..) output is TSeries if single variables is returned and
@@ -29,9 +32,7 @@
 %           'sweap','spc'            - SWEAP proton moments
 %           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
 %           'ephem'                  - ephemeris files
-%
-% PSP_LOAD([],datatype,dateStart,dateStop)
-%           here "datatype" is any variable long or short name given in psp_variables.txt with directory described
+%           'XXX'                    - where XXX is long or short name of variables in the list "psp_var *"
 %
 % dateStart & dateStop: date vectors or strings for start and stop day
 %            e.g. [yyyy mm dd] or 'yyyy/mm/dd' or  'yyyy mm dd' (read with datenum)
@@ -48,9 +49,20 @@ startDatenum = datenum(date_start);
 endDatenum = datenum(date_stop);
 pspobj = []; % default output
 listCdfFiles = {};
+useStoredPspDirectory = false;
 
 if isempty(dataDir)
-  dataDir=datastore('psp','data_directory');
+  if isempty(dataDir)
+    disp('Your PSP directory is not defined!')
+    disp('Please enter the location of the PSP data directory.');
+    disp('In that folder should be at least subfolders "fields" and "sweap"');
+    disp('that has the same structure as the ones on the FIELDS and SWEAP servers.');
+    dataDir = input('full directory path without ending slash:','s');
+    datastore('psp','data_directory',dataDir);
+  else
+    dataDir=datastore('psp','data_directory');
+    useStoredPspDirectory = true;
+  end
 end
 
 switch datatype
@@ -258,6 +270,9 @@ switch datatype
       end
       listCdfFiles = get_file_list(fileBaseName);
       nFiles = length(listCdfFiles);
+      if nFiles == 0
+        irf.log('critical','No cdf files found'); return;
+      end
       varnames = {varName};
       varnamesout = {shortVar};
     else
@@ -289,8 +304,12 @@ if ~exist('filesToLoadTable','var') && isempty(listCdfFiles)
       iFile = iFile + 1;
     end
   end
-  filesToLoadTable= strcat(dataDir,filesep,filename,'_',filesToLoadTable,'_v00','.cdf');
-  
+  if useStoredPspDirectory
+    dataDirList = char(getDataDir(filename,datenumTable));
+    filesToLoadTable = strcat(dataDirList,filesep,filename,'_',filesToLoadTable,'_v00','.cdf');
+  else
+    filesToLoadTable= strcat(dataDir,filesep,filename,'_',filesToLoadTable,'_v00','.cdf');
+  end
 end
 
 nVar      = length(varnames);
@@ -385,12 +404,28 @@ for iOutputVar = 1:nVar
   end
   
 end
-
+  function out = getDataDir(fileBaseName,datenumTable)
+    % datenumTable is array of datenums
+    % out is cellarray of directories
+    out = psp_var(['file=' fileBaseName]);
+    if (numel(out) > 1), out = out{1}; end
+    dirBase = out.directory;
+    out = cell(numel(datenumTable),1);
+    for i  = 1:numel(datenumTable)
+      MM = datestr(datenumTable(i),'mm');
+      YY = datestr(datenumTable(i),'yy');
+      dirFull = strrep(dirBase,'MM',MM);
+      dirFull = strrep(dirFull,'YY',YY);
+      out{i} = [dataDir filesep dirFull];
+    end
+  end
+    
   function out = get_file_list(fileBaseName)
+    % uses startDatenum adn endDatenum, maybe should be made as arguments
+    out = psp_var(['file=' fileBaseName]);
+    if (numel(out) > 1), out = out{1}; end
+    dirBase = out.directory;
     for date = floor(startDatenum):floor(endDatenum)
-      out = psp_var(['file=' fileBaseName]);
-      if (numel(out) > 1), out = out{1}; end
-      dirBase = out.directory;
       MM = datestr(date,'mm');
       YY = datestr(date,'yy');
       dirFull = strrep(dirBase,'MM',MM);
