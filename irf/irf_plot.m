@@ -311,9 +311,9 @@ elseif flag_subplot==2 % Separate subplot for each variable
     if isstruct(y)
       if doReducedPlot
         yy=y;yy.t=y.t-dt(ipl);
-        irf_spectrogram(c(ipl),yy,'reduce');
+        c(ipl)=irf_spectrogram(c(ipl),yy,'reduce');
       else
-        irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
+        c(ipl)=irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
       end
       if flag_colorbar, hcbar = colorbar; end
       if ~isempty(var_desc{ipl})
