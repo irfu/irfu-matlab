@@ -1,9 +1,194 @@
 %%%%
 varName: xxx(can be regexP)
 fileName: xxx
-hourtag: 
 directory: 
+hourtag: 
 varNameShort: xxx
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_rfs_lfr_auto_averages_ch0_V1V2
+fileName: psp_fld_l2_rfs_lfr
+directory: fields/l2/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: rfs_lfr_v1v2
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_rfs_lfr_auto_averages_ch1_V3V4
+fileName: psp_fld_l2_rfs_lfr
+directory: fields/l2/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: rfs_lfr_v3v4
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_rfs_hfr_auto_averages_ch0_V1V2
+fileName: psp_fld_l2_rfs_hfr
+directory: fields/l2/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: rfs_hfr_v1v2
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_rfs_hfr_auto_averages_ch1_V3V4
+fileName: psp_fld_l2_rfs_hfr
+directory: fields/l2/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: rfs_hfr_v3v4
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_dV12hg
+fileName: psp_fld_l2_dfb_ac_spec_dV12hg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_V12hg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_dV34hg
+fileName: psp_fld_l2_dfb_ac_spec_dV34hg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_V34hg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_dV12hg
+fileName: psp_fld_l2_dfb_dc_spec_dV12hg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_V12hg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_dV34hg
+fileName: psp_fld_l2_dfb_dc_spec_dV34hg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_V34hg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_SCMulfhg
+fileName: psp_fld_l2_dfb_dc_spec_SCMulfhg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_scmu_lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_SCMvlfhg
+fileName: psp_fld_l2_dfb_dc_spec_SCMvlfhg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_scmv_lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_SCMwlfhg
+fileName: psp_fld_l2_dfb_dc_spec_SCMwlfhg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_scmw_lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_SCMulfhg
+fileName: psp_fld_l2_dfb_ac_spec_SCMulfhg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_scmu_lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_SCMvlfhg
+fileName: psp_fld_l2_dfb_ac_spec_SCMvlfhg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_scmv_lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+
+%%%%
+varName: psp_fld_l2_dfb_wf_scm_hg_sensor
+fileName: psp_fld_l2_dfb_wf_scm
+hourtag: 6h
+directory: fields/l2/dfb_wf_scm/20YY/MM
+varNameShort: wf_scm_sensor
 related: 
 info#start
 xxx
