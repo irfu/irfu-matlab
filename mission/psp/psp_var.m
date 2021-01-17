@@ -37,17 +37,13 @@ arr = repmat(arr,[N 1]);
 % parse and store each variable in the structure array 
 for i=1:N
   % parse key/value of struct
-  s = C(startIdx(i):startIdxInfo(i));
+  s = C(startIdx(i):startIdxInfo(i)-2);
   s = regexp(s,'(\w+)\s*[:=]\s*([^%$]*)(?:%[^$]*)?','tokens','once');
-  s = vertcat(s{:});
-  
-  %  try to parse as numbers
-  v = str2double(s(:,2));
-  s(~isnan(v),2) = num2cell(v(~isnan(v)));
   
   % store: struct.key = value
-  for j=1:size(s,1)
-    arr(i).(s{j,1}) = s{j,2};
+  for j=1:numel(s)
+    keytoken = s{j};
+    arr(i).(keytoken{1}) = keytoken{2};
   end
   
   % fix hourtag
