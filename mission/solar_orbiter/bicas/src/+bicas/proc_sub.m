@@ -145,7 +145,8 @@ classdef proc_sub
             if ~issorted(hkEpoch, 'strictascend')
                 % NOTE: ACQUISITION_TIME in test file
                 % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-                % is not monotonically increasing (in fact, it is completely strange).
+                % is not monotonically increasing (in fact, it is completely
+                % strange).
                 error('HK timestamps do not increase monotonically (USE_ZV_ACQUISITION_TIME_HK=%g).', ...
                     USE_ZV_ACQUISITION_TIME_HK)
             end
@@ -1308,8 +1309,8 @@ classdef proc_sub
             
             %====================================================================
             % Calculate both
-            %   (1) E-field, and
-            %   (2) s/c potentials
+            %   (1) ELECTRIC FIELD, and
+            %   (2) SPACECRAFT POTENTIALS
             % via the same BICAS-external code (inside irfu-matlab)
             % -----------------------------------------------------
             % NOTE: Needs to be careful with the units, and incompatible updates
@@ -1324,8 +1325,8 @@ classdef proc_sub
             %
             % NOTE: Should TSeries objects really use TensorOrder=1 and
             % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
-            % fo three scalars. Probably does not matter. solo.vdccal does use
-            % VDC.x, EDC.x etc.
+            % fo three scalars. Probably does not matter. solo.vdccal() does
+            % indeed use VDC.x, EDC.x etc.
             VdcTs = TSeries(...
                 EpochTT(InLfrCwf.Zv.Epoch), zv_VDC, ...
                 'TensorOrder', 1, ...
@@ -1334,16 +1335,16 @@ classdef proc_sub
                 EpochTT(InLfrCwf.Zv.Epoch), zv_EDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
-            %-------------------------------------------------------
+            %-----------------------------------------------------------------
             % CALL EXTERNAL CODE
             [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
                 = solo.vdccal(VdcTs, EdcTs);
-            %-------------------------------------------------------
+            %-----------------------------------------------------------------
             EJ_library.assert.sizes(...
                 InLfrCwf.Zv.Epoch, [-1, 1], ...
-                EdcSrfTs.data,           [-1, 3], ...
-                PspTs.data,              [-1, 1], ...
-                ScpotTs.data,            [-1, 1]);
+                EdcSrfTs.data,     [-1, 3], ...
+                PspTs.data,        [-1, 1], ...
+                ScpotTs.data,      [-1, 1]);
             assert(strcmp(EdcSrfTs.units,            'mV/m'))
             assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF'))
             assert(strcmp(PspTs.units,               'V'))
@@ -1375,7 +1376,7 @@ classdef proc_sub
             
             
             %====================================================================
-            % Calculate density via a BICAS-external code (inside irfu-matlab)
+            % Calculate DENSITY via a BICAS-external code (inside irfu-matlab)
             % ----------------------------------------------------------------
             % NOTE: Needs to be careful with the units, and incompatible updates
             % to solo.vdccal without the knowledge of the BICAS author.

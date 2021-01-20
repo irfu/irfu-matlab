@@ -215,7 +215,6 @@ end   % execute_sw_mode
 %       NOTE: This function does not really need all of InputDatasetsMap as
 %       input (contains zVars) but the function uses that input argument since
 %       it is easily accessible where this function is called.
-%
 % OutputDatasetGa
 %       Struct with fields for (subset of) global attributes that should be used
 %       for the output dataset instead of from other locations. This should come
