@@ -1,37 +1,46 @@
 %
-% Takes a structure "A" and adds to it the fields of a structure "B". If a field exists in both structures, then
-% Settings determines what happens. Can be recursive.
+% Takes a structure "A" and adds to it the fields of a structure "B". If a field
+% exists in both structures, then Settings determines what happens. Can be
+% recursive.
 %
 %
 % NOTES
 % =====
 % NOTE: The operation is NOT symmetric in "A" and "B".
-% NOTE: The algorithm can ALMOST be generalized to struct arrays. The conceptual cruxes are
-%   (1) a non-empty struct array field can be struct or non-struct for different components
-%   (2) an empty struct array field does not have a class (neither struct or non-struct)
-%   A user could iterate over struct array components and call the function for each component separately.
+% NOTE: The algorithm can ALMOST be generalized to struct arrays. The conceptual
+%   cruxes are:
+%   (1) a non-empty struct array field can be struct or non-struct for different
+%       components,
+%   (2) an empty struct array field does not have a class (neither struct
+%       or non-struct)
+%   A user could iterate over struct array components and call the function for
+%   each component separately.
 % --
 % NOTE: EJ_library.utils.merge_structs is similar.
 %
 %
 % ARGUMENTS
 % =========
-%   A       : Struct array. The fields of "B" will be added to this struct.
-%   B       : Struct array. Same size as A.
-%               NOTE: Struct arrays only work if algorithm does not need to read field values, ie. no collisions.
+% A         : Struct array. The fields of "B" will be added to this struct.
+% B         : Struct array. Same size as A.
+%             NOTE: Struct arrays only work if algorithm does not need to read
+%             field values, ie. no collisions.
 % varargin  : As interpreted by EJ_library.utils.interpret_settings_args.
 %       noStructs,
 %       aIsStruct,
 %       bIsStruct,
 %       abAreStructs : 
-%           Above settings are string constants. They represent how to react for different cases of duplicate fields,
-%           depending on which of the two fields are structs themselves. Each field in this argument is a string with
-%           one of the following values:
+%           Above settings are string constants. They represent how to react for
+%           different cases of duplicate fields, depending on which of the two
+%           fields are structs themselves. Each field in this argument is a
+%           string with one of the following values:
 %              "Overwrite"  : The field in "A" is overwritten by the field in "B".
 %              "Do nothing" :
-%              "Recurse"    : Only valid if both fields are structs. Apply the function on the two fields.
+%              "Recurse"    : Only valid if both fields are structs. Apply the
+%                             function on the two fields.
 %              "Error"      : Default value.
-%       .onlyBField : String constant. 'Copy', 'Error'. What to do if field is present in B, but not A.
+%       .onlyBField : String constant. 'Copy', 'Error'. What to do if field is
+%                     present in B, but not A.
 %
 %
 % RETURN VALUE
@@ -57,7 +66,8 @@ function A = add_struct_to_struct(A, B, varargin)
 %   CON: Can not use it since it calls this function! Would get infinite recursion!!!
 %
 % PROPOSAL: Policy alternative for requiring a field in "A" to overwrite.
-%   PRO: Useful for EJ_library.utils.interpret_settings_args.
+%   Ex: Useful for EJ_library.utils.interpret_settings_args.
+%   Ex: BICAS: write_dataset_CDF: init_modif_dataobj
 %   PROPOSAL: Settings.onlyBfield = 'Error'
 %   CON: Caller can assert that A fieldnames are superset of B fieldsnames.
 %       CON: Not trivial expression.
@@ -65,7 +75,8 @@ function A = add_struct_to_struct(A, B, varargin)
 %
 % NOTE: In reality designed for merging "compatible" data structures (types are compatible; field names may or may not overlap).
 % ==> Does not need so many cases.
-% ==> Ambiguous if a struct within a struct of settings is to be regarded as a value or as another container for settings (not clear where to end recursion).
+% ==> Ambiguous if a struct within a struct of settings is to be regarded as a
+%     value or as another container for settings (not clear where to end recursion).
 % ==> Ambiguous whether to copy/overwrite or not. ==> Operation can not be automatically selected by algorithm.
 %
 % PROPOSAL: Want to be able to think of structs (recursive) as sets, with or without overlap (intersection).
@@ -130,16 +141,21 @@ function A = add_struct_to_struct(A, B, varargin)
             end
 
             if     strcmp(behaviour, 'Error')
-                error('Structures share identically named fields "%s".', fieldName)
+                error('Structures share identically named fields "%s".', ...
+                    fieldName)
             elseif strcmp(behaviour, 'Overwrite')
                 A.(fieldName) = B.(fieldName);
             elseif strcmp(behaviour, 'Do nothing')
                 % Do nothing.
             elseif strcmp(behaviour, 'Recurse') && (abAreStructs)
+                %====================================================
                 % NOTE: RECURSIVE CALL. Needs the original Settings.
-                A.(fieldName) = EJ_library.utils.add_struct_to_struct(A.(fieldName), B.(fieldName), Settings);
+                %====================================================
+                A.(fieldName) = EJ_library.utils.add_struct_to_struct(...
+                    A.(fieldName), B.(fieldName), Settings);
             else
-                error('Can not interpret string value behaviour="%s" for this combination of field values.', behaviour)
+                error(['Can not interpret string value behaviour="%s" for', ...
+                    ' this combination of field values.'], behaviour)
             end
         else
             %===========================================
@@ -147,8 +163,8 @@ function A = add_struct_to_struct(A, B, varargin)
             %===========================================
             switch(Settings.onlyBField)
                 case 'Copy'
-                    %A.(fieldName) = B.(fieldName);            % NOTE: Not overwrite field, but create new field in A.
-                    [A.(fieldName)] = deal(B.(fieldName));    % NOTE: Not overwrite field, but create new field in A.
+                    % NOTE: Not overwrite field, but create new field in A.
+                    [A.(fieldName)] = deal(B.(fieldName));
                 case 'Error'
                     error('Field B.%s exists but not A.%s.', fieldName, fieldName)
                 otherwise
