@@ -36,7 +36,7 @@ if nvars>0
         tt = findva(dobj,field,v1_s);
         if ~isempty(tt)
           if found
-            irf.log('warining','found both LABEL_X and DEPEND_X'),
+            irf.log('warning','found both LABEL_X and DEPEND_X'),
           else
             dep_x(d,:) = {tt,field};
             found_any = 1;
@@ -54,7 +54,7 @@ if nvars>0
           end
           if isempty(tvar)  % can be time variable itself because there is no DEPEND_O for a T variable
             res=[];
-            irf.log('warining','No DEPEND_O for a T variable');
+            irf.log('warning','No DEPEND_O for a T variable');
             return;
           end
         end

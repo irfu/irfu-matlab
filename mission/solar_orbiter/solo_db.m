@@ -201,7 +201,7 @@ classdef solo_db < handle
               elseif iscell(c1{iN, iM}) && iscell(c2{iN,iM})
                 if ~comp_cell(c1{iN, iM},c2{iN,iM}), return , end
               else
-                irf.log('warining','can only compare chars')
+                irf.log('warning','can only compare chars')
                 res = true; return
               end
               
