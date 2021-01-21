@@ -298,20 +298,41 @@ classdef solo_local_file_db < solo_file_db
   end
   
   methods (Access=private)
+      
+    % Return ONE directory tree root depending on instrument.
     function rDir = get_remotePrefix(obj, C)
-      if any(contains(C, 'rpw'))
-        % offical RPW data is kept in one separate sync folder at IRFU,
-        % locally produced data is kept in another folder
-        if exist([obj.dbRoot, filesep, 'latest'], 'dir')
-          rDir = [obj.dbRoot, filesep, 'latest', filesep, 'rpw'];
+      % Descriptor contains instrument and data product descriptor part
+      % separated by "-".
+      instr = strsplit(C{3}, '-');
+      instr = instr{1};
+        
+      if strcmp(instr, 'rpw')
+        % CASE: Searching for RPW data.
+          
+        if exist(fullfile(obj.dbRoot, 'latest'), 'dir')
+          % CASE: RPW BIAS data (L2, L3) processed at IRFU.
+          % Ex: obj.dbRoot = /data/solo/data_irfu/
+          rDir = fullfile(obj.dbRoot, 'latest', 'rpw');
         else
-          rDir = [obj.dbRoot, filesep, 'remote', filesep, 'data'];
+          % CASE: RPW data (all subsystems) mirrored from ROC/LESIA.
+          % Ex: obj.dbRoot = /data/solo/
+          rDir = fullfile(obj.dbRoot, 'remote', 'data');
         end
       else
-        % All other instruments are kept in a "soar" sync folder, sorted
-        % in per instrument folder
-        instr = strsplit(C{3}, '-'); % Descriptor contains instrument and dataproduct descriptor part separated by "-".
-        rDir = [obj.dbRoot, filesep, 'soar', filesep, instr{1}];
+        % CASE: Searching for non-RPW data.
+        
+        rDir = fullfile(obj.dbRoot, 'soar', instr);
+        if exist(rDir, 'dir')
+            % CASE: obj.dbRoot is /data/solo/ folder ==> Direct to SOAR mirror.
+            return
+        end
+        
+        rDir = fullfile(obj.dbRoot, instr);
+        if exist(rDir, 'dir')
+            % CASE: obj.dbRoot is general folder for (multiple) non-RPW instruments.
+            % Ex: obj.dbRoot = /data/solo/data_manual/
+            return
+        end
       end
     end % get_remotePrefix
     
