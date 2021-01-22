@@ -250,6 +250,13 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
         '1.1; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Calibrates currents.');
     
+    % Behaviour when the output CDF glob.attr. "Datetime" is not a scalar string
+    % (not a list of strings).
+    % NOTE: Somewhat deceiving to call this "OUTPUT_CDF" since the anomaly is
+    % likely due to the same anomaly in the corresponding input CDF.
+    % NOTE: Warning useful to handle old L2 datasets with non-scalar "Datetime".
+    S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY', 'ERROR')   % ERROR, WARNING
+
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.TDS',         'TDS team')
