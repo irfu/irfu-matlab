@@ -52,6 +52,7 @@ listCdfFiles = {};
 useStoredPspDirectory = false;
 
 if isempty(dataDir)
+  dataDir=datastore('psp','data_directory');
   if isempty(dataDir)
     disp('Your PSP directory is not defined!')
     disp('Please enter the location of the PSP data directory.');
@@ -59,10 +60,8 @@ if isempty(dataDir)
     disp('that has the same structure as the ones on the FIELDS and SWEAP servers.');
     dataDir = input('full directory path without ending slash:','s');
     datastore('psp','data_directory',dataDir);
-  else
-    dataDir=datastore('psp','data_directory');
-    useStoredPspDirectory = true;
   end
+  useStoredPspDirectory = true;
 end
 
 switch datatype
