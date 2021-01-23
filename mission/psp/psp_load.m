@@ -32,6 +32,7 @@
 %           'sweap','spc'            - SWEAP proton moments
 %           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
 %           'ephem'                  - ephemeris files
+%           'dbm_dvac'               - times series of electric field snapshots
 %           'XXX'                    - where XXX is long or short name of variables in the list "psp_var *"
 %
 % dateStart & dateStop: date vectors or strings for start and stop day
@@ -243,7 +244,7 @@ switch datatype
     
   case 'dbm_dvac'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvac');
-    output =get_data_dbm_dvac(listCDFFiles);
+    output       = get_data_dbm_dvac(listCDFFiles);
     return;
     
   otherwise
@@ -467,8 +468,9 @@ end
     tSnapLineEpoch = reshape(tSnapLineEpoch,[],2)';
     tSnapLineEpoch(end+1,:)=NaN;
     tSnapLineEpoch = tSnapLineEpoch(:);
-    dbm_dvac = TSeries(EpochTT(tFinal),dbm_dvac);
-    out = struct('ts',dbm_dvac,...
+    dbm_dvac    = TSeries(EpochTT(tFinal),dbm_dvac);
+    dbm_dvac_sc = psp_coordinate_transform(dbm_dvac,'e>sc');
+    out = struct('ts_v12v34',dbm_dvac,'ts_sc',dbm_dvac_sc,...
       'startStopMatriTT',tStartEndSnapshTT,...
       'startStopLineEpoch',tSnapLineEpoch);
   end
