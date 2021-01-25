@@ -18,7 +18,10 @@ function [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = vdccal(VDC,EDC)
 %
 % NOTE: This function is used by BICAS for producing official datasets.
 
-a = load('d23K123.mat');
+%a = load('d23K123_20201110_november.mat');
+a = load('d23K123_20210124');
+
+
 
 %===========================================================================
 % Date strings that represent the version of calibration. These strings are
@@ -29,9 +32,17 @@ a = load('d23K123.mat');
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
 %===========================================================================
-codeVerStr = '2020-11-11T19:10:17';
+codeVerStr = '2020-12-17T08:58:00';
 % Version of the .mat file. Not yet used. Meant to be read from .mat file.
 matVerStr  = [];
+
+
+
+Gamma0 = a.Gamma0;
+Gamma1 = a.Gamma1;
+cc = a.CC;
+
+
 
 %=============================================================================
 % "Normalize" input data, i.e. data on any one of two legitimate formats is
@@ -57,13 +68,20 @@ VDC.data(bReconstr, 3) = VDC.x.data(bReconstr);
 
 d23R  = a.d23.resample(VDC);
 K123R = a.K123.resample(VDC);
+Gamma1R = Gamma1.resample(VDC);
+Gamma0R = Gamma0.resample(VDC);
+ccR = cc.resample(VDC);
 
-V2corr = double(VDC.y.data) -double(d23R.data);
+V2corr = double(VDC.y.data) -double(d23R.data); %Remove potential offset between 2,3
+V23_corr = (V2corr+double(VDC.z.data))/2; %(V2corr+V3)/2
+V2cmr = double(V2corr)-(Gamma0R.data+V23_corr.*Gamma1R.data)/2; %Remove common mode from V2.
+V3cmr = double(VDC.z.data)+(Gamma0R.data+V23_corr.*Gamma1R.data)/2;
 
-V23 = (V2corr + double(VDC.z.data))/2; % (V2 + V3) /2
-V23corr = (V23.*K123R.data(:,1) + K123R.data(:,2));
+V23 = (V2cmr + V3cmr)/2; % (V2cmr + V3) /2
 
-PSP = irf.ts_scalar(VDC.time,(V23corr + double(VDC.x.data))/2);
+V23corr = (V23.*K123R.data(:,1) + K123R.data(:,2)); %Correcting V23 to V1
+
+PSP = irf.ts_scalar(VDC.time,(V23corr + double(VDC.x.data))/2); %Compute PSP from corrected quantities.
 PSP.units = 'V';
 
 
@@ -74,8 +92,8 @@ ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
 ScPot.units = PSP.units;
 
 % Ey_SRF = V3 - V2, 6.99 - 1/2 of distance between the antennas
-E23 = double(EDC.z.data) -double(d23R.data);
-Ey_SRF = -E23*1e3/6.99;
+V_delta23_corr = V2cmr-V3cmr; %Fixed V2-V3.
+Ey_SRF = -V_delta23_corr*1e3/6.99;
 
 % Ez_SRF = V23 - V1
 %E12 = double(EDC.x.data) - PSP.data*0.1269; % correct for common mode
