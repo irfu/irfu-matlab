@@ -254,7 +254,7 @@ function SETTINGS = create_default_SETTINGS()
     % NOTE: Somewhat deceiving to call this "OUTPUT_CDF" since the anomaly is
     % likely due to the same anomaly in the corresponding input CDF.
     % NOTE: Warning useful to handle old L2 datasets with non-scalar "Datetime".
-    S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY', 'ERROR')   % ERROR, WARNING
+    S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY', 'WARNING')   % ERROR, WARNING
 
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
