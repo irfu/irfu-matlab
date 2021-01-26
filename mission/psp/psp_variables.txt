@@ -12,11 +12,11 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_rfs_lfr_auto_averages_ch0_V1V2
+varName: psp_fld_l2_rfs_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
 fileName: psp_fld_l2_rfs_lfr
 directory: fields/l2/rfs_lfr/20YY/MM
 hourtag: 
-varNameShort: rfs_lfr_v1v2
+varNameShort: rfs_lfr_(v1v2|v3v4)
 related: 
 info#start
 xxx
@@ -24,25 +24,13 @@ xxx
 info#end
 ----
 
-%%%%
-varName: psp_fld_l2_rfs_lfr_auto_averages_ch1_V3V4
-fileName: psp_fld_l2_rfs_lfr
-directory: fields/l2/rfs_lfr/20YY/MM
-hourtag: 
-varNameShort: rfs_lfr_v3v4
-related: 
-info#start
-xxx
-xxx
-info#end
-----
 
 %%%%
-varName: psp_fld_l2_rfs_hfr_auto_averages_ch0_V1V2
+varName: psp_fld_l2_rfs_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
 fileName: psp_fld_l2_rfs_hfr
 directory: fields/l2/rfs_hfr/20YY/MM
 hourtag: 
-varNameShort: rfs_hfr_v1v2
+varNameShort: rfs_hfr_(v1v2|v3v4)
 related: 
 info#start
 xxx
@@ -50,25 +38,27 @@ xxx
 info#end
 ----
 
-%%%%
-varName: psp_fld_l2_rfs_hfr_auto_averages_ch1_V3V4
-fileName: psp_fld_l2_rfs_hfr
-directory: fields/l2/rfs_hfr/20YY/MM
-hourtag: 
-varNameShort: rfs_hfr_v3v4
-related: 
-info#start
-xxx
-xxx
-info#end
-----
 
 %%%%
-varName: psp_fld_l2_dfb_ac_spec_dV12hg
-fileName: psp_fld_l2_dfb_ac_spec_dV12hg
+varName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
+fileName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
 directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
-varNameShort: ac_spec_V12hg
+varNameShort: ac_spec_V(12|34)hg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
+fileName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_V(12|34)hg
 related: 
 info#start
 xxx
@@ -77,104 +67,25 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_ac_spec_dV34hg
-fileName: psp_fld_l2_dfb_ac_spec_dV34hg
+varName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w)lfhg
+fileName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w)lfhg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_scm(u|v|w)_lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
+fileName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
 directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
-varNameShort: ac_spec_V34hg
-related: 
-info#start
-xxx
-xxx
-info#end
-----
-
-%%%%
-varName: psp_fld_l2_dfb_dc_spec_dV12hg
-fileName: psp_fld_l2_dfb_dc_spec_dV12hg
-directory: fields/l2/dfb_dc_spec/20YY/MM
-hourtag: 
-varNameShort: dc_spec_V12hg
-related: 
-info#start
-xxx
-xxx
-info#end
-----
-
-%%%%
-varName: psp_fld_l2_dfb_dc_spec_dV34hg
-fileName: psp_fld_l2_dfb_dc_spec_dV34hg
-directory: fields/l2/dfb_dc_spec/20YY/MM
-hourtag: 
-varNameShort: dc_spec_V34hg
-related: 
-info#start
-xxx
-xxx
-info#end
-----
-
-%%%%
-varName: psp_fld_l2_dfb_dc_spec_SCMulfhg
-fileName: psp_fld_l2_dfb_dc_spec_SCMulfhg
-directory: fields/l2/dfb_dc_spec/20YY/MM
-hourtag: 
-varNameShort: dc_spec_scmu_lfhg
-related: 
-info#start
-xxx
-xxx
-info#end
-----
-
-%%%%
-varName: psp_fld_l2_dfb_dc_spec_SCMvlfhg
-fileName: psp_fld_l2_dfb_dc_spec_SCMvlfhg
-directory: fields/l2/dfb_dc_spec/20YY/MM
-hourtag: 
-varNameShort: dc_spec_scmv_lfhg
-related: 
-info#start
-xxx
-xxx
-info#end
-----
-
-%%%%
-varName: psp_fld_l2_dfb_dc_spec_SCMwlfhg
-fileName: psp_fld_l2_dfb_dc_spec_SCMwlfhg
-directory: fields/l2/dfb_dc_spec/20YY/MM
-hourtag: 
-varNameShort: dc_spec_scmw_lfhg
-related: 
-info#start
-xxx
-xxx
-info#end
-----
-
-
-%%%%
-varName: psp_fld_l2_dfb_ac_spec_SCMulfhg
-fileName: psp_fld_l2_dfb_ac_spec_SCMulfhg
-directory: fields/l2/dfb_ac_spec/20YY/MM
-hourtag: 
-varNameShort: ac_spec_scmu_lfhg
-related: 
-info#start
-xxx
-xxx
-info#end
-----
-
-
-%%%%
-varName: psp_fld_l2_dfb_ac_spec_SCMvlfhg
-fileName: psp_fld_l2_dfb_ac_spec_SCMvlfhg
-directory: fields/l2/dfb_ac_spec/20YY/MM
-hourtag: 
-varNameShort: ac_spec_scmv_lfhg
+varNameShort: ac_spec_scm(u|v|w)_lfhg
 related: 
 info#start
 xxx
@@ -304,7 +215,7 @@ info#end
 %%%%
 varName: psp_fld_l2_mag_RTN_1min
 fileName: psp_fld_l2_mag_RTN_1min
-directory: fields/l2/mag_RTN_1min/20YY/MM/
+directory: fields/l2/mag_RTN_1min/20YY/MM
 hourtag: 
 varNameShort: rtnB1min
 related: 
@@ -318,7 +229,7 @@ info#end
 varName: psp_fld_l2_mag_RTN
 fileName: psp_fld_l2_mag_RTN
 hourtag: 6h
-directory: fields/l2/mag_RTN/20YY/MM/
+directory: fields/l2/mag_RTN/20YY/MM
 varNameShort: rtnB
 related: 
 info#start
@@ -328,6 +239,7 @@ info#end
 %%%%
 varName: psp_fld_l2_mag_SC
 fileName: psp_fld_l2_mag_SC
+directory: fields/l2/mag_SC/20YY/MM
 hourtag: 
 varNameShort: scB
 related: 
@@ -336,22 +248,11 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_ac_spec_dV34hg
-fileName: psp_fld_l2_dfb_ac_spec_dV34hg
-hourtag: 
-varNameShort: ac_spec_dv34
-related: 
-info#start
-L2 Power Spectra for channel DV34HG
-info#end
-----
-
-
-%%%%
-varName: psp_fld_l2_dfb_wf_V[1-5]dc
+varName: psp_fld_l2_dfb_wf_V(1|2|3|4|5)dc
 fileName: psp_fld_l2_dfb_wf_vdc
+directory: fields/l2/dfb_wf_vdc/20YY/MM
 hourtag: 6h
-varNameShort: V1dc
+varNameShort: V(1|2|3|4|5)dc
 related: 
 info#start
 L2 Electric Potential from V[1-5]
@@ -360,60 +261,37 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_wf_dVdc_sensor
+varName: psp_fld_l2_dfb_wf_dVdc_(sensor|sc)
 fileName: psp_fld_l2_dfb_wf_dvdc
 directory: fields/l2/dfb_wf_dvdc/20YY/MM
 hourtag: 6h
-varNameShort: wf_dvdc_sensor
+varNameShort: wf_dvdc_(sensor|sc)
 related: 
 info#start
-
-
+DFB DC differential voltage waveform
 info#end
 ----
 
-%%%%
-varName: psp_fld_l2_dfb_wf_dVdc_sc
-fileName: psp_fld_l2_dfb_wf_dvdc
-directory: fields/l2/dfb_wf_dvdc/20YY/MM
-hourtag: 6h
-varNameShort: wf_dvdc_sc
-related: 
-info#start
-
-
-info#end
-----
 
 %%%%
-varName: psp_fld_l2_dfb_dbm_dvac12
+varName: psp_fld_l2_dfb_dbm_dvac(12|34)
 fileName: psp_fld_l2_dfb_dbm_dvac
 hourtag: 6h
 directory: fields/l2/dfb_dbm_dvac/20YY/MM
-varNameShort: dvac12
+varNameShort: dbm_dvac(12|34)
 related: 
 info#start
 snapshots
 info#end
 ----
 
-%%%%
-varName: psp_fld_l2_dfb_dbm_dvac34
-fileName: psp_fld_l2_dfb_dbm_dvac
-hourtag: 6h
-directory: fields/l2/dfb_dbm_dvac/20YY/MM
-varNameShort: dbm_dvac34
-related: 
-info#start
-snapshots
-info#end
-----
 
 %%%%
-varName: psp_fld_l2_dfb_dbm_vdc[1-5]
+varName: psp_fld_l2_dfb_dbm_vdc(1|2|3|4|5)
 fileName: psp_fld_l2_dfb_dbm_vdc
+directory: fields/l2/dfb_dbm_vdc/20YY/MM
 hourtag: 6h
-varNameShort: dbm_vdc[1-5]
+varNameShort: dbm_vdc(1|2|3|4|5)
 related: 
 info#start
 snapshots
@@ -421,15 +299,17 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_wf_dVdc_sc
-fileName: psp_fld_l2_dfb_wf_dvdc
+varName: psp_fld_l2_dfb_dbm_scmhgu
+fileName: psp_fld_l2_dfb_dbm_scm
+directory: fields/l2/dfb_dbm_scm/20YY/MM
 hourtag: 6h
-varNameShort: scdVdc
+varNameShort: dbm_scmhgu
 related: 
 info#start
-DFB DC differential voltage waveform in spacecraft coordinates
+snapshots
 info#end
 ----
+
 
 %%%%
 varName: np_fit
@@ -471,6 +351,7 @@ info#end
 %%%%
 varName: np_moment
 fileName: psp_swp_spc_l3i
+direcotry: sweap/spc/L3/20YY/MM
 hourtag: 
 varNameShort: npmomFit
 related: 
@@ -562,6 +443,7 @@ info#end
 %%%%
 varName: vp_moment_RTN
 fileName: psp_swp_spc_l3i
+direcotry: sweap/spc/L3/20YY/MM
 hourtag: 
 varNameShort: rtnVpmom
 related: 
