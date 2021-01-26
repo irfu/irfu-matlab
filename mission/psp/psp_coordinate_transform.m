@@ -3,7 +3,7 @@ function TSout = psp_coordinate_transform(TSin,flag)
 %
 % PSP_COORDINATE_TRANSFORM(TSeries,flagConversion) convert TSeries to
 % another reference frame defined by flagConversion. flagCVonversion can be
-% one of: 'E>sc','sc>E'
+% one of: 'E>sc','sc>E', 'sc>SCM', 'SCM>sc' (capitalization not important)
 %
 % Example: 
 %
@@ -20,6 +20,15 @@ switch lower(flag)
     doRotateOnlyXY = true;
   case 'sc>e'
     M = [cosd(55) sind(55) 0;-cosd(40) sind(40) 0; 0 0 1];
+    doRotateOnlyXY = true;
+  case 'sc>scm'
+    M = [[ 0.81654 -0.40827 -0.40827];...
+         [ 0       -0.70715  0.70715];...
+         [-0.57729 -0.57729 -0.57729]];
+  case 'scm>sc'
+    M = [[ 0.81654 0        -0.57729];...
+         [-0.40827 -0.70715 -0.57729];...
+         [-0.40827 -0.70715 -0.57729]];
   otherwise
     irf.log('critical','transformation not defined'); return;
 end
