@@ -104,6 +104,10 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Thplus_gsm_hpca_srvy_l2', 'Theplus_gsm_hpca_srvy_l2', 'Theplusplus_gsm_hpca_srvy_l2', 'Toplus_gsm_hpca_srvy_l2',...
 %     'Nhplus_hpca_sitl',
 %     'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2'
+%  EPD [FEEPS+EIS]: 
+%     'Omnifluxion_epd_feeps_brst_l2', 'Omnifluxelectron_epd_feeps_brst_l2', ...
+%     'Omnifluxion_epd_feeps_srvy_l2', 'Omnifluxelectron_epd_feeps_srvy_l2', ...
+%     'Omnifluxion_epd_eis_brst_l2', 'Omnifluxion_epd_eis_srvy_l2' 
 %  EDI:
 %     'Flux-amb-pm2_edi_brst_l2'
 %  ASPOC:
@@ -267,9 +271,9 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...
   'Nhplus_hpca_sitl','aspoc_status',...
   'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2',...
-  'Omnifluxion_epd_feeps_brst_l2','Omnifluxion_epd_eis_brst_l2',...
-  'Omnifluxion_epd_eis_fast_l2'
-  }; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Omnifluxion_epd_feeps_brst_l2', 'Omnifluxelectron_epd_feeps_brst_l2', ...
+  'Omnifluxion_epd_feeps_srvy_l2', 'Omnifluxelectron_epd_feeps_srvy_l2', ...
+  'Omnifluxion_epd_eis_brst_l2', 'Omnifluxion_epd_eis_srvy_l2' }; % XXX THESE MUST BE THE SAME VARS AS BELOW
 
 if strcmp(varStr,'vars') % collect all vars, for testing
   res = vars;
@@ -1031,15 +1035,28 @@ end
           return
         end
         dobj = dataobj([file_list(1).path '/' file_list(1).name]);
-        
         for iSen = 0:5
-          pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_P4_flux_t' num2str(iSen)];
+            switch Vr.tmmode
+                case 'brst'
+                    pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_P4_flux_t' num2str(iSen)];
+                case 'srvy'
+                    pref = ['mms' mmsIdS '_epd_eis_phxtof_proton_P4_flux_t' num2str(iSen)];
+                otherwise, error('invalid mode')
+            end
           tmpvar = mms.db_get_ts(dsetName,pref,Tint);
           if not(isempty(tmpvar))
-            EISdpf{iSen+1} = comb_ts(tmpvar);          
-            energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy']);
-            energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
-            energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+            EISdpf{iSen+1} = comb_ts(tmpvar); 
+            switch Vr.tmmode
+                case 'brst'
+                    energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy']);
+                    energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
+                    energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+                case 'srvy'
+                    energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy']);
+                    energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
+                    energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+                otherwise, error('invalid mode')            
+            end                  
           end
         end
         % check if energies are equal or not.
@@ -1075,9 +1092,10 @@ end
           case 'electron'
             Ecorr = eEcorr;
             Gfact = eGfact;
-            switch mode
+%            switch mode        % comment on 2021-01-26; 
+            switch Vr.tmmode
               case 'brst', sensors = [1:5, 9:12];
-              case 'fast', sensors = [3:5, 11:12];
+              case 'srvy', sensors = [3:5, 11:12];          % 'fast' --> 'srvy' 2021-01-26;
               otherwise, error('invalid mode')
             end
           otherwise, error('invalid species')
