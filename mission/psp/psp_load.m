@@ -6,6 +6,9 @@
 % PSP_LOAD([],datatype,dateStart,dateStop) will use PSP data directory saved
 % by datastore. If not defined will ask the first time.
 %
+% PSP_LOAD(datatype) uses saved PSP directory and global variables
+% dateStart, dateStop. Data are downloaded if missing from the directory.
+% 
 % PSP_LOAD(cdfFile,datatype) return variables into MATLAB base
 %
 % OUT = PSP_LOAD(..) output is TSeries if single variables is returned and
@@ -43,16 +46,27 @@
 %   psp_load('psp_fld_l2_mag_RTN_20...cdf','mag');
 %   rtnB = psp_load('psp_fld_l2_mag_RTN_20...cdf','mag');
 
-function [output,pspobj] = psp_load(dataDir,datatype,date_start,date_stop)
+function [output,pspobj] = psp_load(arg1,datatype,date_start,date_stop)
 
+global dateStart dateEnd
 outputToBase  = (nargout == 0);
-startDatenum = datenum(date_start);
-endDatenum = datenum(date_stop);
+if nargin == 1
+  datatype = arg1;
+  startDatenum = datenum(dateStart); % globals
+  endDatenum = datenum(dateEnd);
+else
+  dataDir = arg1;
+  if nargin >=3
+    startDatenum = datenum(date_start);
+    endDatenum = datenum(date_stop);
+  end
+end
 pspobj = []; % default output
 listCdfFiles = {};
 useStoredPspDirectory = false;
 
-if isempty(dataDir)
+
+if ~exist('dataDir') || isempty(dataDir)
   dataDir=datastore('psp','data_directory');
   if isempty(dataDir)
     disp('Your PSP directory is not defined!')
@@ -248,7 +262,65 @@ switch datatype
     return;
     
   otherwise
-    if nargin==2
+    if nargin == 1 % psp_load(varName) assumes global dateStart dateEnd
+      % read in variable, lookup up files to read from
+      out = psp_var(datatype);
+      fileBaseName = out.fileName;
+      if isempty(fileBaseName)
+        error(['Filename not known for datatype: ' datatype '. Consider updating psp_load().']);
+      end
+      
+      varName = out.varName;
+      hourtag = out.hourtag;
+      shortVar = out.varNameShort;
+
+      listCdfFiles = get_file_list(fileBaseName);
+      nFiles = length(listCdfFiles);
+      if nFiles == 0
+        irf.log('critical',['No cdf files found for fileBaseName=' fileBaseName ]);
+        doGetFiles = irf_ask('Shall I download? [y/n] [%]>','doGetFiles','y');
+        if strcmp(doGetFiles,'y')
+          dataSubDir = get_data_dir(fileBaseName,startDatenum:endDatenum);
+          dataPath = get_data_path(fileBaseName,startDatenum:endDatenum);
+          if strcmp(dataSubDir{1}(1:5),'sweap')
+            webserver = 'http://sweap.cfa.harvard.edu/pub/data/sci/';
+          elseif strcmp(dataSubDir{1}(1:6),'fields')
+            webserver = 'http://research.ssl.berkeley.edu/data/psp/data/sci/';
+          end
+          for iDir = 1:numel(dataSubDir)
+            dirPath = dataPath{iDir};
+            mkdir(dirPath);
+            wwwDir = [webserver dataSubDir{iDir}];
+            tt = webread(wwwDir);
+            ff = regexp(tt,'([\w]*.cdf)','tokens');
+            files = arrayfun(@(x) (x{1}),ff);
+            files = unique(files);
+            fileDates = regexp(files,'.*_(20\d\d\d\d\d\d)\d*_v.*.cdf','tokens');
+            iFilesToGet = find(ind_dates_in_datenum_interval(fileDates));
+            if any(iFilesToGet)
+              for ii = 1:numel(iFilesToGet)
+                irf.log('warning',['Downloading: ' files{iFilesToGet(ii)}]);
+                wwwLink = [wwwDir '/' files{iFilesToGet(ii)}];
+                filePath = [dirPath '/' files{iFilesToGet(ii)}];
+                irf.log('warning',['Downloading: ' wwwLink]);
+                outFileName = websave(filePath,wwwLink);
+                irf.log('warning',['Downloaded to: ' outFileName]);
+              end
+            else
+              irf.log('warning','No files to download from the server matching the date');
+            end
+          end
+          listCdfFiles = get_file_list(fileBaseName);
+          nFiles = length(listCdfFiles);
+          if nFiles == 0
+            irf.log('warning','No data to load');
+            return;
+          end
+        end
+      end
+      varnames = {varName};
+      varnamesout = {shortVar};
+    elseif nargin==2
       % read in single variable from a given file
       nFiles = 1;
       varName = datatype;
@@ -262,16 +334,20 @@ switch datatype
       varnames = {varName};
       varnamesout = {shortVar};
     elseif nargin == 4
-      % read in variable, looku up files to read from
+      % read in variable, lookup up files to read from
       nFiles = 1;
-      [fileBaseName,varName,hourtag,shortVar] = psp_var(datatype);
+      out = psp_var(datatype);
+      fileBaseName = out.fileName;
+      varName = out.varName;
+      hourtag = out.hourtag;
+      shortVar = out.varNameShort;
       if isempty(fileBaseName)
         error(['Filename not known for datatype: ' datatype '. Consider updating psp_load().']);
       end
       listCdfFiles = get_file_list(fileBaseName);
       nFiles = length(listCdfFiles);
       if nFiles == 0
-        irf.log('critical','No cdf files found'); return;
+        irf.log('critical',['No cdf files found for fileBaseName = ' fileBaseName]); return;
       end
       varnames = {varName};
       varnamesout = {shortVar};
@@ -305,7 +381,7 @@ if ~exist('filesToLoadTable','var') && isempty(listCdfFiles)
     end
   end
   if useStoredPspDirectory
-    dataDirList = char(getDataDir(filename,datenumTable));
+    dataDirList = char(get_data_path(filename,datenumTable));
     filesToLoadTable = strcat(dataDirList,filesep,filename,'_',filesToLoadTable,'_v00','.cdf');
   else
     filesToLoadTable= strcat(dataDir,filesep,filename,'_',filesToLoadTable,'_v00','.cdf');
@@ -404,7 +480,18 @@ for iOutputVar = 1:nVar
   end
   
 end
-  function out = getDataDir(fileBaseName,datenumTable)
+
+ function iFilesToGet = ind_dates_in_datenum_interval(fileDates)
+   iFilesToGet = false(numel(fileDates),1);
+   for iFileDates = 1: numel(fileDates)
+     dd = datenum(fileDates{iFileDates}{:},'yyyymmdd');
+     if dd >= startDatenum && dd <= endDatenum
+       iFilesToGet(iFileDates) = true;
+     end
+   end
+ end
+            
+  function out = get_data_dir(fileBaseName,datenumTable)
     % datenumTable is array of datenums
     % out is cellarray of directories
     out = psp_var(['file=' fileBaseName]);
@@ -416,10 +503,19 @@ end
       YY = datestr(datenumTable(i),'yy');
       dirFull = strrep(dirBase,'MM',MM);
       dirFull = strrep(dirFull,'YY',YY);
-      out{i} = [dataDir filesep dirFull];
+      out{i} = dirFull;
+    end
+    out = unique(out);
+  end
+
+  function out = get_data_path(fileBaseName,datenumTable)
+    % adds local dataDir path 
+    out = get_data_dir(fileBaseName,datenumTable);
+    for iOut = 1: numel(out)
+      out{iOut} = [dataDir filesep out{iOut}];
     end
   end
-    
+
   function out = get_file_list(fileBaseName)
     % uses startDatenum adn endDatenum, maybe should be made as arguments
     out = psp_var(['file=' fileBaseName]);
