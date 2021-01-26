@@ -12,19 +12,24 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 %   codeVerStr - Version string. Used by BICAS.
 %
 % NOTE: This function is used by BICAS for producing official datasets.
-
-
+%
 % Calibration using plasma line 
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
 
+
+
+%===========================================================================
 % Date string that represent the version of the function. This string is
 % used by BICAS to set a CDF global attribute in official datasets for
 % traceability.
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
+%===========================================================================
 codeVerStr = '2020-11-24T17:50:01';
 
-% based on data from 2020-04-07
+
+
+% Based on data from 2020-04-07
 CalEntry = irf.ts_vec_xy(...
   irf.tint('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z'),...
   repmat([0.3835   1.4908],2,1));

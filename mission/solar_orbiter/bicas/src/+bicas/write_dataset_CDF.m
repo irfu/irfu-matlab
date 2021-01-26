@@ -159,9 +159,6 @@ function DataObj = init_modif_dataobj(...
             ' that does not increase monotonically.'], ...
             outputFile)
     end
-    EJ_library.assert.struct(GaSubset, ...
-        {'Parents', 'Parent_version', 'Provider', ...
-        'Datetime', 'OBS_ID', 'SOOP_TYPE'}, {})
     
     
     
@@ -229,12 +226,6 @@ function DataObj = init_modif_dataobj(...
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
     DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
     DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(outputFile);
-    DataObj.GlobalAttributes.Parents             = GaSubset.Parents;
-    DataObj.GlobalAttributes.Parent_version      = GaSubset.Parent_version;
-    DataObj.GlobalAttributes.Provider            = GaSubset.Provider;
-    DataObj.GlobalAttributes.Datetime            = GaSubset.Datetime;
-    DataObj.GlobalAttributes.OBS_ID              = GaSubset.OBS_ID;
-    DataObj.GlobalAttributes.SOOP_TYPE           = GaSubset.SOOP_TYPE;
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
     
@@ -257,6 +248,23 @@ function DataObj = init_modif_dataobj(...
     % ROC DFMD hints that value should not be set dynamically. (See meaning of
     % non-italic black text for global attribute name in table.)
     %DataObj.GlobalAttribute.CAVEATS = ?!!
+    
+    
+    
+    %======================================================================
+    % Use GaSubset to overwrite pre-existing (assertion) global attributes
+    %======================================================================
+    fnList = fieldnames(GaSubset);
+    for iFn = 1:numel(fnList)
+        fn = fnList{iFn};
+        
+        assert(isfield(DataObj.GlobalAttributes, fn), ...
+            'BICAS:write_dataset_CDF:init_modif_dataobj:DatasetFormat', ...
+            ['Master CDF does not appear to contain global attribute', ...
+            ' "%s" which the BICAS processing has produced/set.'], fn)
+        
+        DataObj.GlobalAttributes.(fn) = GaSubset.(fn);
+    end
     
     
     

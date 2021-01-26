@@ -18,8 +18,12 @@ function [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = vdccal(VDC,EDC)
 %
 % NOTE: This function is used by BICAS for producing official datasets.
 
-a = load('d23K123_20201110_november.mat');
+%a = load('d23K123_20201110_november.mat');
+a = load('d23K123_20210124');
 
+
+
+%===========================================================================
 % Date strings that represent the version of calibration. These strings are
 % used by BICAS to set a CDF global attribute in official datasets for
 % traceability.
@@ -27,15 +31,34 @@ a = load('d23K123_20201110_november.mat');
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
-codeVerStr = '2020-12-17T08:58:00';
+%===========================================================================
+codeVerStr = '2021-01-26T12:00:00';
 % Version of the .mat file. Not yet used. Meant to be read from .mat file.
 matVerStr  = [];
+
+
 
 Gamma0 = a.Gamma0;
 Gamma1 = a.Gamma1;
 cc = a.CC;
 
-d23R = a.d23.resample(VDC);
+
+
+%=============================================================================
+% Find data points/CDF records for which only V1_DC is available
+%
+% NOTE: solo.vdccal() only uses DC data (not AC). For mux=0, there are two
+% cases:
+% (1) all single probes (DC) available
+% (2) only probe 1 (DC) available.
+% NOTE: Only works for mux=0,2,3,4 (not mux=1).
+% NOTE: Ignores EDC argument.
+%==============================================================================
+bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
+
+
+
+d23R  = a.d23.resample(VDC);
 K123R = a.K123.resample(VDC);
 Gamma1R = Gamma1.resample(VDC);
 Gamma0R = Gamma0.resample(VDC);
@@ -50,10 +73,17 @@ V23 = (V2cmr + V3cmr)/2; % (V2cmr + V3) /2
 
 V23corr = (V23.*K123R.data(:,1) + K123R.data(:,2)); %Correcting V23 to V1
 
+
 PSP = irf.ts_scalar(VDC.time,(V23corr + double(VDC.x.data))/2); %Compute PSP from corrected quantities.
+
+% Use alternate, simpler "calculation" for single-probe data.
+PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
+
 PSP.units = 'V';
 
-PLASMA_POT = 1.5; SHORT_FACTOR = 2.5; % XXX: these are just adhoc numbers
+
+
+PLASMA_POT = 1.5; SHORT_FACTOR = 2.5; % XXX: these are just ad hoc numbers.
 
 ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
 ScPot.units = PSP.units;
@@ -71,4 +101,3 @@ Ez_SRF = Ez_SRF*1e3/6.97;
 DCE_SRF = irf.ts_vec_xyz(VDC.time,[Ey_SRF*0 Ey_SRF Ez_SRF]);
 DCE_SRF.units = 'mV/m';
 DCE_SRF.coordinateSystem = 'SRF';
-

@@ -32,7 +32,7 @@
 function execute_sw_mode(...
         SwModeInfo, InputFilePathMap, OutputFilePathMap, ...
         masterCdfDir, rctDir, NsoTable, SETTINGS, L)
-    
+
     % TODO-NI: How verify dataset ID and dataset version against constants?
     %    NOTE: Need to read CDF first.
     %    NOTE: Need S/W mode.
@@ -55,8 +55,8 @@ function execute_sw_mode(...
     % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
     %   NOTE: These do not use NaN, but fill values.
 
-    
-    
+
+
     % ASSERTION: Check that all input & output dataset paths (strings) are
     % unique.
     % NOTE: Manually entering CLI argument, or copy-pasting BICAS call, can
@@ -68,9 +68,9 @@ function execute_sw_mode(...
         ['Input and output dataset paths are not all unique.', ...
         ' This hints of a manual mistake', ...
         ' in the CLI arguments in call to BICAS.'])
-    
-    
-    
+
+
+
     %=================================
     % READ CDFs
     % ---------
@@ -80,7 +80,7 @@ function execute_sw_mode(...
     for i = 1:length(SwModeInfo.inputsList)
         prodFuncInputKey = SwModeInfo.inputsList(i).prodFuncInputKey;
         inputFilePath    = InputFilePathMap(prodFuncInputKey);
-        
+
         %=======================
         % Read dataset CDF file
         %=======================
@@ -89,9 +89,9 @@ function execute_sw_mode(...
         InputDatasetsMap(prodFuncInputKey) = struct(...
             'Zv', Zv, ...
             'Ga', GlobalAttributes);
-        
-        
-        
+
+
+
         %===========================================
         % ASSERTIONS: Check GlobalAttributes values
         %===========================================
@@ -106,7 +106,7 @@ function execute_sw_mode(...
                 inputFilePath)
         end
         cdfDatasetId = GlobalAttributes.Dataset_ID{1};
-        
+
         if ~strcmp(cdfDatasetId, SwModeInfo.inputsList(i).datasetId)
             [settingValue, settingKey] = SETTINGS.get_fv(...
                 'INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY');
@@ -122,9 +122,9 @@ function execute_sw_mode(...
                 'E+W+illegal', anomalyDescrMsg, 'BICAS:DatasetFormat')
         end
     end
-    
-    
-    
+
+
+
     %==============
     % PROCESS DATA
     %==============
@@ -140,9 +140,9 @@ function execute_sw_mode(...
         L.logf('warning', ...
             'Disabled processing due to setting %s.', settingNpefKey)
     end
-    
-    
-    
+
+
+
     %==================================
     % WRITE CDFs
     % ----------
@@ -156,12 +156,12 @@ function execute_sw_mode(...
     % ITERATE
     for iOutputCdf = 1:length(SwModeInfo.outputsList)
         OutputInfo = SwModeInfo.outputsList(iOutputCdf);
-        
+
         prodFuncOutputKey = OutputInfo.prodFuncOutputKey;
         outputFilePath    = OutputFilePathMap(prodFuncOutputKey);
-        
-        
-        
+
+
+
         %========================
         % Write dataset CDF file
         %========================
@@ -170,15 +170,16 @@ function execute_sw_mode(...
             bicas.get_master_CDF_filename(...
                 OutputInfo.datasetId, ...
                 OutputInfo.skeletonVersion));
-        
-        if ~settingNpefValue      
+
+        if ~settingNpefValue
             % CASE: Nominal
             OutputDataset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
-            
-            ZvsSubset = OutputDataset.Zv;            
-            
+
+            ZvsSubset = OutputDataset.Zv;
+
             GaSubset = derive_output_dataset_GlobalAttributes(...
-                InputDatasetsMap, OutputDataset.Ga, SETTINGS, L);
+                InputDatasetsMap, OutputDataset.Ga, ...
+                EJ_library.fs.get_name(outputFilePath), SETTINGS, L);
         else
             % CASE: No processing.
             ZvsSubset = [];
@@ -187,9 +188,9 @@ function execute_sw_mode(...
             ZvsSubset, GaSubset, outputFilePath, masterCdfPath, ...
             SETTINGS, L );
     end
-    
-    
-    
+
+
+
 end   % execute_sw_mode
 
 
@@ -215,7 +216,6 @@ end   % execute_sw_mode
 %       NOTE: This function does not really need all of InputDatasetsMap as
 %       input (contains zVars) but the function uses that input argument since
 %       it is easily accessible where this function is called.
-%
 % OutputDatasetGa
 %       Struct with fields for (subset of) global attributes that should be used
 %       for the output dataset instead of from other locations. This should come
@@ -230,58 +230,62 @@ end   % execute_sw_mode
 %       NOTE: Deviates from the usual variable naming conventions.
 %       GlobalAttributesSubset field names have
 %               the exact names of CDF global attributes.
+% outputFilename
+%       Output dataset filename. Could potentially be used for deriving
+%       Glob.attrs. Datetime (time interval string), Data_version,
+%       (DATASET_ID).
+%       NOTE: Not yet used. 
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
-        InputDatasetsMap, OutputDatasetGa, SETTINGS, L)
-    
+        InputDatasetsMap, OutputDatasetGa, outputFilename, SETTINGS, L)
+
     % PGA = Parents' GlobalAttributes.
 
-    OutGaSubset.Parents        = {};
+    if ~isscalar(OutputDatasetGa.Datetime)
+        [settingValue, settingKey] = SETTINGS.get_fv(...
+            'OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY');
+        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+            ['Global attribute "Datetime" for output dataset', ...
+            ' is not a MATLAB scalar (i.e. the global attribute does not consist', ...
+            ' of exactly ONE string). This may be due to the corresponding input', ...
+            ' dataset value being similarily incorrect.'], ...
+            'BICAS:execute_sw_mode:Datetime')
+    end
+
+    OutGaSubset = OutputDatasetGa;
+
+
+
     OutGaSubset.Parent_version = {};
+    OutGaSubset.Parents        = {};
     OutGaSubset.Provider       = {};
-    OutGaSubset.Datetime       = {};
-    OutGaSubset.OBS_ID         = {};
-    OutGaSubset.SOOP_TYPE      = {};
-    
     keysCa = InputDatasetsMap.keys;
-    for i = 1:numel(keysCa)        
-        Ga = InputDatasetsMap(keysCa{i}).Ga;
-    
+    for i = 1:numel(keysCa)
+        InputGa = InputDatasetsMap(keysCa{i}).Ga;
+
         % ASSERTION
         % NOTE: ROC DFMD is not completely clear on which version number should
         % be used.
         % NOTE: Stores all values to be safe.
-        assert(isscalar(Ga.Data_version), ...
+        assert(isscalar(InputGa.Data_version), ...
             'BICAS:execute_sw_mode:DatasetFormat', ...
             ['Global attribute "Data_version" for input dataset', ...
-            ' with key=%s is not a MATLAB scalar (i.e. global attribute is', ...
-            ' not ONE string).'], ...
+            ' with key=%s is not a MATLAB scalar (i.e. the global attribute is', ...
+            ' not exactly ONE string).'], ...
             keysCa{i})
-        
-        OutGaSubset.Parents       {end+1} = ['CDF>', Ga.Logical_file_id{1}];
-        OutGaSubset.Parent_version{end+1} = Ga.Data_version{1};
-        OutGaSubset.Provider              = union(OutGaSubset.Provider, Ga.Provider);
 
-        %OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'OBS_ID');
-        %OutGaSubset = add_to_set_if_found(Ga, OutGaSubset, 'SOOP_TYPE');
+        % 2020-12-16, EJ: Has found input datasets to have global
+        % attribute "Data_version" values which are either NUMERIC or STRINGS
+        % (e.g. "02"). Varies.
+
+        % NOTE: Using Data_version to set Parent_version.
+        OutGaSubset.Parent_version{end+1} = InputGa.Data_version{1};
+        OutGaSubset.Parents       {end+1} = ['CDF>', InputGa.Logical_file_id{1}];
+        OutGaSubset.Provider              = union(OutGaSubset.Provider, InputGa.Provider);
     end
-    
-    
-    
-    assert(isscalar(OutputDatasetGa.Datetime), ...
-        'BICAS:execute_sw_mode:Datetime', ...
-        ['Global attribute "Datetime" for output dataset', ...
-        ' with key=%s is not a MATLAB scalar (i.e. global attribute is', ...
-        ' not ONE string). This may be due to that the corresponding input', ...
-        ' dataset value is incorrect.'], ...
-        keysCa{i})
-    OutGaSubset.Datetime  = OutputDatasetGa.Datetime;
-    
-    OutGaSubset.OBS_ID    = OutputDatasetGa.OBS_ID;
-    OutGaSubset.SOOP_TYPE = OutputDatasetGa.SOOP_TYPE;
-    
-    
-    
+
+
+
     % ~ASSERTION
     if ~isscalar(OutGaSubset.Parents)
         [settingValue, settingKey] = SETTINGS.get_fv(...
@@ -293,7 +297,11 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
             'BICAS:execute_sw_mode:DatasetFormat')
         % NOTE: Maybe wrong choice of error ID "DatasetFormat".
     end
-    
+
+    % ASSERTION: Required subset for every dataset.
+    EJ_library.assert.struct(OutGaSubset, ...
+        {'Parents', 'Parent_version', 'Provider', ...
+        'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
 end
 
 
@@ -302,7 +310,7 @@ end
 % Not very efficient, but that is unimportant here.
 %
 % Modifies OutGa such that field "fieldName" is potentially modified.
-% Essentially, do 
+% Essentially, do
 %   OutGa.(fieldName) := UNION[ OutGa.(fieldName) InGa.(fieldName) ]
 % with precautions.
 %
@@ -314,11 +322,11 @@ end
 %
 % function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
 %     outValue = OutGa.(fieldName);
-%     
+%
 %     if isfield(InGa, fieldName)
 %         outValue = union(outValue, InGa.(fieldName));
 %     end
-%     
+%
 %     % ~HACK
 %     % Remove ' ', unless it is the only value.
 %     % NOTE: Empirically, ' ' is like a fill value for global attributes (but it
@@ -327,6 +335,6 @@ end
 %     if ~isempty(outValue2)
 %         outValue = outValue2;
 %     end
-%     
+%
 %     OutGa.(fieldName) = outValue;
 % end

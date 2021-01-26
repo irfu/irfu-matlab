@@ -31,7 +31,7 @@
 % - PostDC = Post-(Demuxing & Calibration) Data
 %       Data format that includes calibrated currents & calibrated & demuxed
 %       voltages.
-% 
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager_old.m.
@@ -73,20 +73,20 @@ classdef proc_sub
     methods(Static, Access=public)
     %#############################
     %#############################
-        
-        
-        
+
+
+
         % Processing function
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
-        
+
             % ASSERTIONS
             EJ_library.assert.struct(InSci, {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(InHk,  {'Zv', 'Ga'}, {})
 
             HkSciTime = [];
-            
-            
-            
+
+
+
             %===================================================================
             % Select whether HK should use
             %   (1) Epoch, or
@@ -102,14 +102,14 @@ classdef proc_sub
                 hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_TT2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
                     ACQUISITION_TIME_EPOCH_UTC);
-                
+
                 L.logf('warning', 'Using HK zVar ACQUISITION_TIME instead of Epoch.')
             else
                 hkEpoch = InHk.Zv.Epoch;
             end
-            
-            
-            
+
+
+
             %==================================================================
             % Log time intervals to enable comparing available SCI and HK data
             %==================================================================
@@ -134,7 +134,7 @@ classdef proc_sub
                 L.log('warning', '===================================================================')
                 L.log('warning', 'Moving/adjusting HK time to begin at the same timestamp as voltage.')
                 L.log('warning', '===================================================================')
-                hkEpoch = hkEpoch - hkEpoch(1) + InSci.Zv.Epoch(1); 
+                hkEpoch = hkEpoch - hkEpoch(1) + InSci.Zv.Epoch(1);
             end
 
 
@@ -145,27 +145,28 @@ classdef proc_sub
             if ~issorted(hkEpoch, 'strictascend')
                 % NOTE: ACQUISITION_TIME in test file
                 % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-                % is not monotonically increasing (in fact, it is completely strange).
+                % is not monotonically increasing (in fact, it is completely
+                % strange).
                 error('HK timestamps do not increase monotonically (USE_ZV_ACQUISITION_TIME_HK=%g).', ...
                     USE_ZV_ACQUISITION_TIME_HK)
             end
             if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 hk1RelativeSec = 1e-9 * (min(hkEpoch) - min(InSci.Zv.Epoch));
                 hk2RelativeSec = 1e-9 * (max(hkEpoch) - max(InSci.Zv.Epoch));
-                
+
                 anomalyDescrMsg = sprintf(...
                     ['HK time range is not a superset of SCI time range.', ...
                     ' Can not reliably interpolate HK data for all of SCI.', ...
                     ' HK begins %g s AFTER SCI begins. HK ends %g s BEFORE SCI ends.'], ...
                     hk1RelativeSec, ...
                     -hk2RelativeSec);
-                
+
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
             if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
-                
+
                 % NOTE: "WARNING" (rather than error) only makes sense if it is
                 % possible to later meaningfully permit non-intersection.
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
@@ -173,9 +174,9 @@ classdef proc_sub
                     'SCI and HK time ranges do not overlap in time.', ...
                     'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
-            
-            
-            
+
+
+
             % NOTE: Requires >=2 records.
             hkEpochExtrapMargin = mode(diff(hkEpoch)) / 2;
 
@@ -211,17 +212,17 @@ classdef proc_sub
             % ASSERTIONS
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
         end
-        
-        
-        
+
+
+
         function currentSAmpere = process_CUR_to_CUR_on_SCI_TIME(sciEpoch, InCur, SETTINGS, L)
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
-            
+
             % ASSERTIONS
             EJ_library.assert.struct(InCur, {'Zv', 'Ga'}, {})
-            
-            
-            
+
+
+
             %===================================================================
             % CDF ASSERTION: CURRENT data begins before SCI data (i.e. there is
             % enough CURRENT data).
@@ -230,20 +231,20 @@ classdef proc_sub
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
                 sciEpochUtcStr    = EJ_library.cdf.TT2000_to_UTC_str(min(sciEpoch));
                 curEpochMinUtcStr = EJ_library.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
-                
+
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
-                
+
                 anomalyDescrMsg = sprintf(...
                     ['Bias current data begins %g s (%s) AFTER voltage data begins (%s).', ....
                     ' Can therefore not determine currents for all voltage timestamps.'], ...
                     curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
-                
+
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:SWModeProcessing')
             end
-            
-            
-            
+
+
+
             %====================================================================
             % CDF ASSERTION: Epoch increases (not monotonically)
             % --------------------------------------------------
@@ -257,19 +258,19 @@ classdef proc_sub
             assert(issorted(InCur.Zv.Epoch), ...
                 'BICAS:proc_sub:DatasetFormat', ...
                 'CURRENT timestamps zVar Epoch does not increase (all antennas combined).')
-            
+
             % NOTE: bicas.proc_sub.interpolate_current checks that Epoch
             % increases monotonically.
             currentNanoSAmpere = [];
             currentNanoSAmpere(:,1) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
             currentNanoSAmpere(:,2) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
             currentNanoSAmpere(:,3) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
-            
+
             currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
-        
-        
-        
+
+
+
         % Processing function. Only "normalizes" data to account for technically
         % illegal input LFR datasets. This should try to:
         % ** modify L1 to look like L1R
@@ -277,47 +278,47 @@ classdef proc_sub
         % ** mitigate for not yet implemented features (in input datasets)
         %
         function InSciNorm = process_LFR_CDF_normalize(InSci, inSciDsi, SETTINGS, L)
-            
+
             % Default behaviour: Copy values, except for values which are
             % modified later
             InSciNorm = InSci;
-            
+
             nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
-            
-            
-            
+
+
+
             %===================================
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
             InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(...
-                InSci.Zv, nRecords, inSciDsi);            
-            
-            
-            
+                InSci.Zv, nRecords, inSciDsi);
+
+
+
             %========================
             % Normalize SYNCHRO_FLAG
             %========================
             has_SYNCHRO_FLAG      = isfield(InSci.Zv, 'SYNCHRO_FLAG');
             has_TIME_SYNCHRO_FLAG = isfield(InSci.Zv, 'TIME_SYNCHRO_FLAG');
             if      has_SYNCHRO_FLAG && ~has_TIME_SYNCHRO_FLAG
-                
+
                 % CASE: Everything nominal.
                 InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.SYNCHRO_FLAG;
-                
+
             elseif ~has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
-                
+
                 % CASE: Input CDF uses wrong zVar name.
                 [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     'Found zVar TIME_SYNCHRO_FLAG instead of SYNCHRO_FLAG.')
                 L.log('warning', 'Using illegally named zVar TIME_SYNCHRO_FLAG as SYNCHRO_FLAG.')
                 InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
-                
+
             elseif has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
-                
+
                 % CASE: Input CDF has two zVars: one with correct name, one with
                 % incorrect name
-                
+
                 %------------------------
                 % "Normal" normalization
                 %------------------------
@@ -333,7 +334,7 @@ classdef proc_sub
                     % (non-empty) may BOTH be present. "DEFINITION BUG" in
                     % definition of datasets/skeleton?
                     % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf /2020-03-17
-                    
+
                     InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
                 else
                     error('BICAS:process_LFR_CDF_normalize:DatasetFormat', ...
@@ -343,8 +344,8 @@ classdef proc_sub
                 error('BICAS:process_LFR_CDF_normalize:DatasetFormat', ...
                     'Input dataset does not have zVar SYNCHRO_FLAG as expected.')
             end
-            
-            
+
+
 
             %=======================================================================================================
             % Set QUALITY_BITMASK, QUALITY_FLAG:
@@ -366,24 +367,24 @@ classdef proc_sub
             % PROPOSAL: Regard as "normalization" code. ==> Group together with other normalization code.
             %=======================================================================================================
             [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
-            
+
             InSciNorm.Zv.QUALITY_BITMASK = bicas.proc_sub.normalize_LFR_zVar_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.Zv.QUALITY_BITMASK, 'QUALITY_BITMASK');
-            
+
             InSciNorm.Zv.QUALITY_FLAG    = bicas.proc_sub.normalize_LFR_zVar_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.Zv.QUALITY_FLAG,    'QUALITY_FLAG');
-            
+
             % ASSERTIONS
             EJ_library.assert.sizes(...
                 InSciNorm.Zv.QUALITY_BITMASK, [nRecords, 1], ...
                 InSciNorm.Zv.QUALITY_FLAG,    [nRecords, 1])
 
         end    % process_LFR_CDF_normalize
-        
-        
-        
+
+
+
         % Processing function. Convert LFR CDF data to PreDC.
         %
         % IMPLEMENTATION NOTE: Does not modify InSci in an attempt to save RAM
@@ -395,11 +396,11 @@ classdef proc_sub
             % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining
             % "virtual snapshot" length. Should only be relevant for
             % V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
-            
+
             % ASSERTIONS: VARIABLES
             EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
-            
+
             % ASSERTIONS: CDF
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
                 'BICAS:process_LFR_CDF_to_PreDC:DatasetFormat', ...
@@ -441,7 +442,7 @@ classdef proc_sub
             %===================================================================
             % IMPLEMENTATION NOTE: E & V must be floating-point so that values
             % can be set to NaN.
-            % 
+            %
             % Switch last two indices of E.
             % ==> index 2 = "snapshot" sample index, including for CWF
             %               (sample/record, "snapshots" consisting of 1 sample).
@@ -450,7 +451,7 @@ classdef proc_sub
             %               equivalent to any particular diffs).
             %===================================================================
             E = single(permute(InSci.Zv.E, [1,3,2]));
-            
+
             % ASSERTIONS
             nCdfSamplesPerRecord = EJ_library.assert.sizes(...
                 InSci.Zv.V, [nRecords, -1], ...
@@ -462,7 +463,7 @@ classdef proc_sub
 
 
             PreDc = [];
-            
+
             PreDc.Zv.samplesCaTm    = cell(5,1);
             PreDc.Zv.samplesCaTm{1} = single(InSci.Zv.V);
             % Copy values, except when zvRx==0 (==>NaN).
@@ -470,7 +471,7 @@ classdef proc_sub
             PreDc.Zv.samplesCaTm{3} = bicas.proc_utils.filter_rows( E(:,:,2), zv_Rx==0 );
             PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), zv_Rx==1 );
             PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), zv_Rx==1 );
-            
+
             PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
             PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc_utils.derive_DELTA_PLUS_MINUS(...
                 zvFreqHz, nCdfSamplesPerRecord);
@@ -480,15 +481,15 @@ classdef proc_sub
             PreDc.Zv.useFillValues           = ~logical(InSci.Zv.BW);
             PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
             PreDc.Zv.iLsf                    = iLsfZv;
-            
+
             PreDc.Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
             PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
-            
+
             PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
             PreDc.Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
-            
-            
-            
+
+
+
             %==================================================================
             % Set MUX_SET
             % -----------
@@ -507,25 +508,25 @@ classdef proc_sub
                         'Illegal settings value %s="%s"', key, value)
             end
 
-            
-            
+
+
             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
-            
+
             PreDc.hasSnapshotFormat = C.isLfrSurvSwf;
             PreDc.isLfr             = true;
             PreDc.isTdsCwf          = false;
-            
 
-            
+
+
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
-            
+
         end    % process_LFR_CDF_to_PreDC
-        
-        
-        
+
+
+
         % Processing function. Only "normalizes" data to account for technically
         % illegal input TDS datasets. It should try to:
         % ** modify L1 to look like L1R
@@ -533,24 +534,24 @@ classdef proc_sub
         % ** mitigate for not yet implemented features in input datasets
         %
         function InSciNorm = process_TDS_CDF_normalize(InSci, inSciDsi, SETTINGS, L)
-            
+
             % Default behaviour: Copy values, except for values which are
             % modified later
             InSciNorm = InSci;
-            
+
             nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
-            
+
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
-            
-            
+
+
             %===================================
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
             InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub.normalize_CALIBRATION_TABLE_INDEX(...
                 InSci.Zv, nRecords, inSciDsi);
-            
-            
-            
+
+
+
             %===========================================================
             % Normalize zVar name SYNCHRO_FLAG
             % --------------------------------
@@ -564,13 +565,13 @@ classdef proc_sub
                 InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
                 'Assert one matching candidate');
-            
+
             bicas.proc_sub.handle_zv_name_change(...
                 fnChangeList, inSciDsi, SETTINGS, L, ...
                 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
 
-            
-            
+
+
             %=========================
             % Normalize SAMPLING_RATE
             %=========================
@@ -580,7 +581,7 @@ classdef proc_sub
                 anomalyDescrMsg = ...
                     ['Finds illegal, stated sampling frequency', ...
                     ' 255 in TDS L1/L1R LFM-RSWF dataset.'];
-                
+
                 if C.isTdsRswf
                     switch(settingValue)
                         case 'CORRECT'
@@ -599,7 +600,7 @@ classdef proc_sub
                                 'Using workaround to modify instances of sampling frequency 255-->32768.')
                             bicas.default_anomaly_handling(L, ...
                                 settingValue, settingKey, 'other', anomalyDescrMsg)
-                            
+
                         otherwise
                             bicas.default_anomaly_handling(L, ...
                                 settingValue, settingKey, 'E+W+illegal', ...
@@ -609,9 +610,9 @@ classdef proc_sub
                     error(anomalyDescrMsg)
                 end
             end
-            
-            
-            
+
+
+
             if C.isTdsRswf
                 %============================================================
                 % Check for and handle illegal input data, zVar SAMPS_PER_CH
@@ -625,12 +626,12 @@ classdef proc_sub
                 zv_SAMPS_PER_CH_corrected = cast(zv_SAMPS_PER_CH_corrected, class(InSci.Zv.SAMPS_PER_CH));
                 zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MIN);
                 zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MAX);
-                
+
                 if any(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH)
                     % CASE: SAMPS_PER_CH has at least one illegal value
-                    
+
                     SAMPS_PER_CH_badValues = unique(InSci.Zv.SAMPS_PER_CH(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH));
-                    
+
                     badValuesDisplayStr = strjoin(arrayfun(...
                         @(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');
                     anomalyDescrMsg = sprintf(...
@@ -640,7 +641,7 @@ classdef proc_sub
                         EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MIN, ...
                         EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MAX, ...
                         badValuesDisplayStr);
-                    
+
                     [settingValue, settingKey] = SETTINGS.get_fv(...
                         'PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
                     switch(settingValue)
@@ -655,9 +656,9 @@ classdef proc_sub
                                 ' values with values, rounded to valid', ...
                                 ' values due to setting %s.'], ...
                                 settingKey)
-                            
+
                             InSciNorm.Zv.SAMPS_PER_CH = zv_SAMPS_PER_CH_corrected;
-                            
+
                         otherwise
                             bicas.default_anomaly_handling(L, ...
                                 settingValue, settingKey, 'E+W+illegal', ...
@@ -667,11 +668,11 @@ classdef proc_sub
                     end    % switch
                 end    % if
             end    % if
-            
+
         end    % process_TDS_CDF_normalize
-        
-        
-        
+
+
+
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
         function PreDc = process_TDS_CDF_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
         %
@@ -684,9 +685,9 @@ classdef proc_sub
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
-            
 
-            
+
+
             % ASSERTIONS: CDF
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
                 'BICAS:process_TDS_CDF_to_PreDC:DatasetFormat', ...
@@ -705,16 +706,16 @@ classdef proc_sub
             else             assert(nCdfSamplesPerRecord == 1)
             end
 
-            
-            
+
+
             % TODO-NI: Why convert to double? To avoid precision problems when
             % doing math with other variables?
             freqHzZv = double(InSci.Zv.SAMPLING_RATE);
-            
-            
-            
+
+
+
             PreDc = [];
-            
+
             PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
             PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc_utils.derive_DELTA_PLUS_MINUS(...
                 freqHzZv, nCdfSamplesPerRecord);
@@ -726,9 +727,9 @@ classdef proc_sub
             PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
             PreDc.Zv.useFillValues           = false(nRecords, 1);
             PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
-            
-            
-            
+
+
+
             %=====================================
             % Set PreDc.Zv.nValidSamplesPerRecord
             %=====================================
@@ -760,14 +761,14 @@ classdef proc_sub
                 ' (nCdfMaxSamplesPerSnapshot=%i).'], ...
                 max(PreDc.Zv.nValidSamplesPerRecord), ...
                 nCdfSamplesPerRecord)
-            
+
 
 
             %==========================
             % Set PreDc.Zv.samplesCaTm
             %==========================
             modif_WAVEFORM_DATA = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
-            
+
             PreDc.Zv.samplesCaTm    = cell(5,1);
             PreDc.Zv.samplesCaTm{1} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.Zv.nValidSamplesPerRecord );
             PreDc.Zv.samplesCaTm{2} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.Zv.nValidSamplesPerRecord );
@@ -780,7 +781,7 @@ classdef proc_sub
             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
-            
+
             PreDc.isLfr             = false;
             PreDc.isTdsCwf          = C.isTdsCwf;
             PreDc.hasSnapshotFormat = C.isTdsRswf;
@@ -791,15 +792,15 @@ classdef proc_sub
 
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
-            
+
         end    % process_TDS_CDF_to_PreDC
-        
+
 
 
         function [OutSci] = process_PostDC_to_LFR_CDF(SciPreDc, SciPostDc, outputDsi, L)
             OutSci    = bicas.proc_sub.process_PostDC_to_TDS_CDF(...
                 SciPreDc, SciPostDc, outputDsi, L);
-            
+
             OutSci.Zv.BW = SciPreDc.Zv.BW;
         end
 
@@ -823,7 +824,7 @@ classdef proc_sub
             nRecords                  = size(SciPreDc.Zv.Epoch, 1);
 
             OutSci = [];
-            
+
             OutSci.Zv.Epoch              = SciPreDc.Zv.Epoch;
             OutSci.Zv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
             OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
@@ -836,19 +837,19 @@ classdef proc_sub
             OutSci.Zv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
             OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
-            
+
             OutSci.Ga.Datetime  = SciPreDc.Ga.Datetime;
             OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
             OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
-            
-            
-            
+
+
+
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(outputDsi);
 
             % NOTE: The two cases are different in the indexes they use for
             % OutSciZv.
             if C.isCwf
-                
+
                 % ASSERTIONS
                 assert(nSamplesPerRecordChannel == 1, ...
                     'BICAS:proc_sub:Assertion:IllegalArgument', ...
@@ -857,27 +858,27 @@ classdef proc_sub
                 EJ_library.assert.sizes(...
                     OutSci.Zv.QUALITY_BITMASK, [nRecords, 1], ...
                     OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
-                
+
                 % Try to pre-allocate to save RAM/speed up.
                 tempNaN = nan(nRecords, 3);
                 OutSci.Zv.VDC = tempNaN;
                 OutSci.Zv.EDC = tempNaN;
                 OutSci.Zv.EAC = tempNaN;
-                
+
                 OutSci.Zv.VDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
                 OutSci.Zv.VDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
                 OutSci.Zv.VDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
-                
+
                 OutSci.Zv.EDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
                 OutSci.Zv.EDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
                 OutSci.Zv.EDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
-                
+
                 OutSci.Zv.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
                 OutSci.Zv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                 OutSci.Zv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
-                
+
             elseif C.isSwf
-                
+
                 if     C.isLfr
                     SAMPLES_PER_RECORD_CHANNEL = ...
                         EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
@@ -889,7 +890,7 @@ classdef proc_sub
                         'BICAS:proc_sub:Assertion', ...
                         'Illegal DATASET_ID classification.')
                 end
-                
+
                 % ASSERTION
                 assert(nSamplesPerRecordChannel == SAMPLES_PER_RECORD_CHANNEL, ...
                     'BICAS:proc_sub:Assertion:IllegalArgument', ...
@@ -897,32 +898,32 @@ classdef proc_sub
                     ' %i, as expected. Bad Input CDF?'], ...
                     nSamplesPerRecordChannel, ...
                     SAMPLES_PER_RECORD_CHANNEL)
-                
+
                 % Try to pre-allocate to save RAM/speed up.
                 tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
                 OutSci.Zv.VDC = tempNaN;
                 OutSci.Zv.EDC = tempNaN;
                 OutSci.Zv.EAC = tempNaN;
-                
+
                 OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
                 OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
                 OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
-                
+
                 OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
                 OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
                 OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
-                
+
                 OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
                 OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                 OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
-                
+
             else
                 error('BICAS:proc_sub:Assertion:IllegalArgument', ...
                     'Function can not produce outputDsi=%s.', outputDsi)
             end
-            
-            
-            
+
+
+
             % ASSERTION
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
             % NOTE: Not really necessary since the list of zVars will be checked
@@ -932,11 +933,11 @@ classdef proc_sub
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
-            
+
         end    % process_PostDC_to_TDS_CDF
-        
-        
-        
+
+
+
         % Processing function. Derive PostDC from PreDc, i.e. demux and
         % calibrate data. Function is in large part a wrapper around
         % "calibrate_demux_voltages".
@@ -946,26 +947,26 @@ classdef proc_sub
         %
         function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, SETTINGS, L)
             % PROPOSAL: Separate function for calibrating currents.
-            
+
             tTicToc = tic();
 
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc);
-            
-            
-            
+
+
+
             % IMPLEMENTATION NOTE: Only copy fields PreDc-->PostDc which are
             % known to be needed in order to conserve memory (not sure if
             % meaningful).
             PostDc = [];
-            
+
 
 
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
             PostDc.Zv.DemuxerOutput = bicas.proc_sub.calibrate_demux_voltages(PreDc, Cal, L);
-            
+
 
 
             %#########################
@@ -974,7 +975,7 @@ classdef proc_sub
             currentSAmpere = bicas.proc_sub.process_CUR_to_CUR_on_SCI_TIME(...
                 PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
             currentTm      = bicas.calib.calibrate_current_sampere_to_TM(currentSAmpere);
-            
+
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);
             [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(iCalibLZv);
@@ -984,14 +985,14 @@ classdef proc_sub
             for iSubseq = 1:nSubseq
                 iFirst = iFirstList(iSubseq);
                 iLast  = iLastList(iSubseq);
-                
+
                 iRecords = iFirst:iLast;
-                
+
                 L.logf('info', 'Records %7i-%7i : %s -- %s', ...
                     iFirst, iLast, ...
                     bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
                     bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
-                
+
                 for iAnt = 1:3
                     %--------------------
                     % CALIBRATE CURRENTS
@@ -1001,20 +1002,20 @@ classdef proc_sub
                 end
             end
             PostDc.Zv.currentAAmpere = currentAAmpere;
-            
-            
-            
+
+
+
             % ASSERTION
             bicas.proc_sub.assert_PostDC(PostDc)
-            
+
             nRecords = size(PreDc.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
                 'bicas.proc_sub.process_calibrate_demux', tTicToc, ...
                 nRecords, 'record')
         end    % process_calibrate_demux
-        
-        
-        
+
+
+
         % Processing function (L1/L1R-->L2; not L2-->L3).
         %
         % Overwrite selected data in selected CDF records with fill values/NaN.
@@ -1038,7 +1039,7 @@ classdef proc_sub
         %
         function [PreDc, PostDc] = process_quality_filter_L2(...
                 PreDc, PostDc, NsoTable, SETTINGS, L)
-            
+
             % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the format.
             %   NOTE: Also overwrites voltage with fill values.
             %   PROPOSAL: Treat output PostDc as another format?
@@ -1049,43 +1050,43 @@ classdef proc_sub
             %   PRO: Test functionality can lead to bugs.
             %   PRO: Can use alternative NSO table (using NSO table path override
             %        setting).
-            % 
+            %
             % PROPOSAL: Generalize function be used in L3.
             %   CON: Can not be done since this function is meant to have access
             %        to arbitrary L1/L1R and L2 data to make decisions, although
             %        this is not much used yet.
-            
+
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc)
             bicas.proc_sub.assert_PostDC(PostDc)
             nRecords = EJ_library.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
-            
-            
+
+
             % NOTE: Preallocates and adds zVar to PostDc.
             PostDc.Zv.L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
-            
-            
-            
+
+
+
             %============================================
             % Find CDF records to remove due to settings
             %============================================
             zvUfvSettings = bicas.proc_sub.get_UFV_records_from_settings(...
                 PreDc.Zv.Epoch, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
-            
+
             zvUfv = PreDc.Zv.useFillValues | zvUfvSettings;
 
-            
-            
+
+
             %========================================
             % Take actions based on NSO events table
             %========================================
-            testNsoIdsEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');            
-            
+            testNsoIdsEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');
+
             % Variable naming convention:
             % CDF event    = NSO event that overlaps with CDF records.
             % Global event = NSO event in global NSO event table.
-            
+
             % NOTE: iCdfEventNa = CDF events as indices to global events.
             [bCdfEventRecordsCa, cdfEventNsoIdCa, iCdfEventNa] = ...
                 NsoTable.get_NSO_timestamps(PreDc.Zv.Epoch);
@@ -1095,14 +1096,14 @@ classdef proc_sub
                 ['Searched non-standard operations (NSO) table.', ...
                 ' Found %i relevant NSO events out of a total number of %i NSO events.'], ...
                 nCdfEvents, nGlobalEvents);
-            
+
             % Index into LOCAL/CDF NSO events table.
             for kCdfEvent = 1:nCdfEvents
-                
+
                 % Index into GLOBAL NSO events table.
                 iGlobalEvent = iCdfEventNa(kCdfEvent);
                 eventNsoId   = cdfEventNsoIdCa{kCdfEvent};
-                
+
                 %===========================================================
                 % Log the relevant NSO event in the GLOBAL NSO events table
                 %===========================================================
@@ -1110,9 +1111,9 @@ classdef proc_sub
                     EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
                     EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array(iGlobalEvent)), ...
                     eventNsoId);
-                
-                
-                
+
+
+
                 %==========================================================
                 % TEST FUNCTIONALITY
                 % ------------------
@@ -1132,18 +1133,18 @@ classdef proc_sub
                 end
                 eventNsoId = eventNsoIdTranslated;
                 %========================================================
-                
-                
-                
+
+
+
                 %=================================
                 % Take action depending on NSO ID
                 %=================================
                 % Temporary shorter variable name.
                 zv_QUALITY_FLAG       = PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent});
                 zv_L2_QUALITY_BITMASK = PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
-                
+
                 switch(eventNsoId)
-                    
+
                     %=====================================================
                     % TEST FUNCTIONALITY
                     % Can test the setting of QUALITY_FLAG and zvUfv.
@@ -1198,15 +1199,15 @@ classdef proc_sub
                         % all NSO IDs when reads NSO table.)
                         error('Can not interpret RCS NSO ID "%s".', ...
                             cdfEventNsoIdCa{kCdfEvent})
-                        
+
                 end
                 PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG;
                 PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK;
-                
+
             end    % for
-            
-            
-            
+
+
+
             %=================================================================
             % Set zVariables for CURRENTS and VOLTAGES to NaN based on zvUfv.
             %=================================================================
@@ -1228,18 +1229,18 @@ classdef proc_sub
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc)
             bicas.proc_sub.assert_PostDC(PostDc)
-            
+
         end    % process_quality_filter_L2
-        
-        
-        
+
+
+
         % Processing function for processing L2-->L3.
         %
         function [OutEfield,  OutEfieldDwns, ...
                   OutScpot,   OutScpotDwns, ...
                   OutDensity, OutDensityDwns] ...
                 = process_L2_to_L3(InLfrCwf, SETTINGS, L)
-            
+
             % PROPOSAL: Split up in one part for non-downsampled and
             %           downsampled.
             % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
@@ -1271,9 +1272,11 @@ classdef proc_sub
             %       NOTE: May be different for different "channels" (vary over
             %             non-record dimensions) within the same zVar.
             %
-            % PROPOSAL: BUG: Fill values in the INPUT QUALITY_FLAG,
+            % BUG: Fill values in the INPUT QUALITY_FLAG,
             % QUALITY_BITMASK, L2_QUALITY_BITMASK are not known since the
             % variables are not double.
+            %   PROPOSAL: Use double also for CDF integer variables so NaN can
+            %             represent fill value also for these.
 
 
 
@@ -1283,33 +1286,33 @@ classdef proc_sub
             % bin timestamps.
             BIN_LENGTH_WOLS_NS        = int64(10e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
-            
+
             QUALITY_FLAG_MIN_FOR_USE  = SETTINGS.get_fv(...
                 'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
-            
-            
-            
+
+
+
             %======================
             % Normalize zVar names
             %======================
             [InLfrCwf.Zv, fnChangeList] = ...
                 EJ_library.utils.normalize_struct_fieldnames(InLfrCwf.Zv, ...
                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
-            
+
             bicas.proc_sub.handle_zv_name_change(...
                 fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', ...
                 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-            
-            
-            
+
+
+
             zv_QUALITY_FLAG = InLfrCwf.Zv.QUALITY_FLAG;
-            
-            
-            
+
+
+
             %====================================================================
             % Calculate both
-            %   (1) E-field, and
-            %   (2) s/c potentials
+            %   (1) ELECTRIC FIELD, and
+            %   (2) SPACECRAFT POTENTIALS
             % via the same BICAS-external code (inside irfu-matlab)
             % -----------------------------------------------------
             % NOTE: Needs to be careful with the units, and incompatible updates
@@ -1324,8 +1327,8 @@ classdef proc_sub
             %
             % NOTE: Should TSeries objects really use TensorOrder=1 and
             % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
-            % fo three scalars. Probably does not matter. solo.vdccal does use
-            % VDC.x, EDC.x etc.
+            % fo three scalars. Probably does not matter. solo.vdccal() does
+            % indeed use VDC.x, EDC.x etc.
             VdcTs = TSeries(...
                 EpochTT(InLfrCwf.Zv.Epoch), zv_VDC, ...
                 'TensorOrder', 1, ...
@@ -1334,28 +1337,29 @@ classdef proc_sub
                 EpochTT(InLfrCwf.Zv.Epoch), zv_EDC, ...
                 'TensorOrder', 1, ...
                 'repres', {'x', 'y', 'z'});
-            %-------------------------------------------------------
+            %-----------------------------------------------------------------
             % CALL EXTERNAL CODE
-            [EdcSrfTs, PspTs, ScpotTs] = solo.vdccal(VdcTs, EdcTs);
-            %-------------------------------------------------------
+            [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
+                = solo.vdccal(VdcTs, EdcTs);
+            %-----------------------------------------------------------------
             EJ_library.assert.sizes(...
                 InLfrCwf.Zv.Epoch, [-1, 1], ...
-                EdcSrfTs.data,           [-1, 3], ...
-                PspTs.data,              [-1, 1], ...
-                ScpotTs.data,            [-1, 1]);
+                EdcSrfTs.data,     [-1, 3], ...
+                PspTs.data,        [-1, 1], ...
+                ScpotTs.data,      [-1, 1]);
             assert(strcmp(EdcSrfTs.units,            'mV/m'))
             assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF'))
             assert(strcmp(PspTs.units,               'V'))
             assert(strcmp(ScpotTs.units,             'V'))
-            
-            
-            
+
+
+
             %===================================================================
             % Normalize E-field
             % -----------------
             % Set E_x = NaN, but ONLY if assertion deems that the corresponding
             % information is missing.
-            % 
+            %
             % IMPLEMENTATION NOTE: solo.vdccal set antenna 1 to be zero, if the
             % source data is non-fill value/NaN, but NaN if fill value. Must
             % therefore check for both zero and NaN.
@@ -1370,23 +1374,23 @@ classdef proc_sub
                 ' BICAS needs to be updated to reflect this.'])
             zvEdcMvpm(:, 1) = NaN;
             clear TsEdc
-            
-            
-            
+
+
+
             %====================================================================
-            % Calculate density via a BICAS-external code (inside irfu-matlab)
+            % Calculate DENSITY via a BICAS-external code (inside irfu-matlab)
             % ----------------------------------------------------------------
             % NOTE: Needs to be careful with the units, and incompatible updates
             % to solo.vdccal without the knowledge of the BICAS author.
             % Therefore uses extra assertions to detect such changes.
-            % 
+            %
             % NOTE: Empirically, some return values are NaN.
             % NOTE: "SCP" comes from the return variable name in solo.psp2ne().
             % Do not know what it means.
             %====================================================================
             %-----------------------------
             % CALL EXTERNAL CODE
-            NeScpTs = solo.psp2ne(PspTs);
+            [NeScpTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
             %-----------------------------
             EJ_library.assert.sizes(...
                 PspTs.data,   [-1, 1], ...
@@ -1394,9 +1398,33 @@ classdef proc_sub
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
             assert(strcmp(NeScpTs.units, 'cm^-3'))
-            
-            
-            
+
+
+
+            %====================================================================
+            % Derive values for CDF global attribute "Misc_calibration_versions"
+            %====================================================================
+            % Reg.exp. equivalent to: yyyy-mm-ddThh:mm:ss
+            CODE_VER_STR_REGEXP = '[0-9]{4}-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]';
+            assert(isempty(vdccalMatVerStr), ...
+                ['solo.vdccal() no longer returns empty vdccalMatVerStr.', ...
+                ' BICAS needs to be updated.'])
+            EJ_library.assert.castring_regexp(vdccalCodeVerStr, CODE_VER_STR_REGEXP)
+            EJ_library.assert.castring_regexp(psp2neCodeVerStr, CODE_VER_STR_REGEXP)
+            %
+            % NOTE: Does not set BICAS version since this is already encoded in
+            % global attribute "Software_version" (together with
+            % "Software_name").
+            gaEfieldScpot_Misc_calibration_versions = {};
+            gaEfieldScpot_Misc_calibration_versions{end+1} = ...
+                ['solo.vdccal() code version ', vdccalCodeVerStr];
+            %
+            gaDensity_Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            gaDensity_Misc_calibration_versions{end+1}     = ...
+                ['solo.psp2ne() code version ', psp2neCodeVerStr];
+
+
+
             %==================
             % Shared variables
             %==================
@@ -1412,43 +1440,46 @@ classdef proc_sub
             InitialZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
             InitialZv.QUALITY_FLAG       = zv_QUALITY_FLAG;
             InitialZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
-            
-            
-            
+
+
+
             %====================================
             % zVars for EFIELD (not downsampled)
             %====================================
             OutEfield = struct();
-            OutEfield.Ga         = Ga;
-            OutEfield.Zv         = InitialZv;
+            OutEfield.Ga                           = Ga;
+            OutEfield.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutEfield.Zv                           = InitialZv;
             %
-            OutEfield.Zv.EDC_SRF = zvEdcMvpm;
-            
-            
-            
+            OutEfield.Zv.EDC_SRF                   = zvEdcMvpm;
+
+
+
             %===================================
             % zVars for SCPOT (not downsampled)
             %===================================
             OutScpot = struct();
-            OutScpot.Ga       = Ga;
-            OutScpot.Zv       = InitialZv;
+            OutScpot.Ga                           = Ga;
+            OutScpot.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutScpot.Zv                           = InitialZv;
             %
-            OutScpot.Zv.SCPOT = ScpotTs.data;
-            OutScpot.Zv.PSP   = PspTs.data;
-            
+            OutScpot.Zv.SCPOT                     = ScpotTs.data;
+            OutScpot.Zv.PSP                       = PspTs.data;
+
 
 
             %=====================================
             % zVars for DENSITY (not downsampled)
             %=====================================
             OutDensity = struct();
-            OutDensity.Ga         = Ga;
-            OutDensity.Zv         = InitialZv;
+            OutDensity.Ga                           = Ga;
+            OutDensity.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
+            OutDensity.Zv                           = InitialZv;
             %
-            OutDensity.Zv.DENSITY = NeScpTs.data;
-            
-            
-            
+            OutDensity.Zv.DENSITY                   = NeScpTs.data;
+
+
+
             %====================================================
             % Calculate values used for all downsampled datasets
             %====================================================
@@ -1471,7 +1502,7 @@ classdef proc_sub
 %             for i = 1:nRecordsDwns
 %                 % TODO-DEC: Bad to remove non-donwsampled bins since quality
 %                 % variables depend on them ??!!!
-%                 
+%
 %                 nSamplesPerBin = numel(iRecordsDwnsCa{i});
 %                 if (1 <= nSamplesPerBin) ...
 %                 &&  (nSamplesPerBin < bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN)
@@ -1481,14 +1512,14 @@ classdef proc_sub
 %                     iRecordsDwnsCa{i} = [];
 %                 end
 %             end
-            
+
             % Quality zVariables
             % ------------------
             %
             % Set zVariable-like quality variables with "thought-out" values
             % also for empty bins. Later code can then decide whether to use
             % these empty bin values or not.
-            % 
+            %
             % Correct zVar data types
             % -----------------------
             % "QUALITY_FLAG shall be a CDF_UINT1 flag"
@@ -1505,23 +1536,23 @@ classdef proc_sub
             L2_QUALITY_BITMASK_dwns = zeros(nRecordsDwns, 1, 'uint16');
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
-                
+
                 QUALITY_FLAG_dwns(i)       = ...
                     bicas.proc_sub.downsample_bin_QUALITY_FLAG(...
                         zv_QUALITY_FLAG( k) );
-                    
+
                 % IMPLEMENTATION NOTE: 2020-11-23: L2 zVar "QUALITY_BITMASK" is
                 % mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
                 % Must therefore TYPECAST.
                 QUALITY_BITMASK_dwns(i)    = ...
                     bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(...
                         uint16( InLfrCwf.Zv.QUALITY_BITMASK( k )) );
-                    
+
                 L2_QUALITY_BITMASK_dwns(i) = ...
                     bicas.proc_sub.downsample_bin_L12_QUALITY_BITMASK(...
                         InLfrCwf.Zv.L2_QUALITY_BITMASK( k ) );
             end
-            
+
             % Set DELTA_PLUS_MINUS_dwns
             % -------------------------
             % Takes leap seconds into account.
@@ -1532,8 +1563,8 @@ classdef proc_sub
             % both positive and negative leap seconds.
             DELTA_PLUS_MINUS_dwns = double(binSizeArrayNs / 2);
 
-            
-            
+
+
             %====================================================
             % Shared zVariables between all downsampled datasets
             %====================================================
@@ -1548,22 +1579,22 @@ classdef proc_sub
             InitialDwnsZv.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
             InitialDwnsZv.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
 
-            
+
 
             %==============================
             % zVars for EFIELD DOWNSAMPLED
             %==============================
             OutEfieldDwns = [];
-            OutEfieldDwns.Ga            = Ga;
+            OutEfieldDwns.Ga            = OutEfield.Ga;
             OutEfieldDwns.Zv            = InitialDwnsZv;
             %
             OutEfieldDwns.Zv.EDC_SRF    = NaN(nRecordsDwns, 3);
             OutEfieldDwns.Zv.EDCSTD_SRF = NaN(nRecordsDwns, 3);
-            
+
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
 %                 if ~isempty(k)
-                    
+
                     OutEfieldDwns.Zv.QUALITY_FLAG(i)       = QUALITY_FLAG_dwns(i);
                     OutEfieldDwns.Zv.QUALITY_BITMASK(i)    = QUALITY_BITMASK_dwns(i);
                     OutEfieldDwns.Zv.L2_QUALITY_BITMASK(i) = L2_QUALITY_BITMASK_dwns(i);
@@ -1572,26 +1603,26 @@ classdef proc_sub
                     [edc_srf, edcStd_srf] = bicas.proc_sub.downsample_bin_sci_values(...
                         OutEfield.Zv.EDC_SRF(k, :), ...
                         bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
-                    
+
                     OutEfieldDwns.Zv.EDC_SRF(i, :)         = edc_srf;
                     OutEfieldDwns.Zv.EDCSTD_SRF(i, :)      = edcStd_srf;
 %                 end
             end
-            
-            
-            
+
+
+
             %=============================
             % zVars for SCPOT DOWNSAMPLED
             %=============================
             OutScpotDwns = [];
-            OutScpotDwns.Ga          = Ga;
+            OutScpotDwns.Ga          = OutScpot.Ga;
             OutScpotDwns.Zv          = InitialDwnsZv;
             %
             OutScpotDwns.Zv.SCPOT    = NaN(nRecordsDwns, 1);
             OutScpotDwns.Zv.SCPOTSTD = NaN(nRecordsDwns, 1);
             OutScpotDwns.Zv.PSP      = NaN(nRecordsDwns, 1);
             OutScpotDwns.Zv.PSPSTD   = NaN(nRecordsDwns, 1);
-            
+
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
 %                 if ~isempty(k)
@@ -1607,26 +1638,26 @@ classdef proc_sub
                     [psp, pspstd]     = bicas.proc_sub.downsample_bin_sci_values(...
                         OutScpot.Zv.PSP(  k, :), ...
                         bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN);
-                    
+
                     OutScpotDwns.Zv.SCPOT(i, :)           = scpot;
                     OutScpotDwns.Zv.SCPOTSTD(i, :)        = scpotStd;
                     OutScpotDwns.Zv.PSP(i)                = psp;
                     OutScpotDwns.Zv.PSPSTD(i)             = pspstd;
 %                 end
             end
-            
-            
-            
+
+
+
             %===============================
             % zVars for DENSITY DOWNSAMPLED
             %===============================
             OutDensityDwns = [];
-            OutDensityDwns.Ga            = Ga;
+            OutDensityDwns.Ga            = OutDensity.Ga;
             OutDensityDwns.Zv            = InitialDwnsZv;
             %
             OutDensityDwns.Zv.DENSITY    = NaN(nRecordsDwns, 1);
             OutDensityDwns.Zv.DENSITYSTD = NaN(nRecordsDwns, 1);
-            
+
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
 %                 if ~isempty(k)
@@ -1644,11 +1675,11 @@ classdef proc_sub
                     OutDensityDwns.Zv.DENSITYSTD(i, :)      = densityStd;
 %                 end
             end
-            
+
         end    % process_L2_to_L3
-        
-        
-        
+
+
+
         % Derive median and modified standard deviation over dimension 1. For a
         % range of CDF records in a zVariable (at most 1D/CDF record), construct
         % two zVariables for median+MSTD for the corresponding downsampled CDF
@@ -1666,7 +1697,7 @@ classdef proc_sub
         % nMinReqSamples
         %       Minimum number of samples (fill value or not) for not returning
         %       fill value.
-        % 
+        %
         %
         % RETURN VALUES
         % =============
@@ -1677,16 +1708,16 @@ classdef proc_sub
         %
         function [med, mstd] = downsample_bin_sci_values(...
                 zVarSegment, nMinReqSamples)
-            
+
             % PROPOSAL: Move to bicas.proc_utils.
             % PROPOSAL: Argument for minimum number of samples in each bin. If
             %           number of samples per bin is below limit, then return
             %           NaN.
             %   PROPOSAL: Take NaN samples into account. Exclude them.
-            %       CON: Can not do for 
+            %       CON: Can not do for
             %
             % PROPOSAL: Include the loop over downsampled records.
-            %   PRO: Same procedure for all downsampled datasets.            
+            %   PRO: Same procedure for all downsampled datasets.
             %   NOTE: Future variations in procedure could be handle using
             %   parameters.
             %   CON: ~Can/should still not eliminate setting quality zVariables
@@ -1700,15 +1731,15 @@ classdef proc_sub
             %       CON: SCPOT has two different downsampled zVariables and
             %            therefore calls downsample_bin_sci_values() twice per
             %            bin.
-            
+
             % ASSERTION
             % Only first two dimensions may be size non-one (with current
             % implementation).
             assert(ismatrix(zVarSegment))
             assert(isscalar(nMinReqSamples))
-            
-            
-            
+
+
+
             nRecords = size(zVarSegment, 1);
             nSpr     = size(zVarSegment, 2);   % SPR = Samples Per (CDF) Record
 
@@ -1717,7 +1748,7 @@ classdef proc_sub
                 % CASE: Too few samples. ==> Remove all samples.
                 zVarSegment = zVarSegment([], :);
             end
-            
+
             med  = median(zVarSegment, 1);
             mstd = NaN(1, nSpr);    % Pre-allocate.
             for i = 1:nSpr
@@ -1727,18 +1758,18 @@ classdef proc_sub
         end
 
 
-        
-    end    % methods(Static, Access=public)
-            
 
-    
+    end    % methods(Static, Access=public)
+
+
+
     %##############################
     %##############################
     methods(Static, Access=private)
     %##############################
     %##############################
-        
-        
+
+
         % Derive QUALITY_FLAG for one downsampled CDF record, from corresponding
         % non-downsampled records (bin).
         %
@@ -1746,7 +1777,7 @@ classdef proc_sub
         %
         function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(zv_QUALITY_FLAG_segment)
             % Return NaN or 0 for empty bin?
-            
+
             % IMPLEMENTATION NOTE: Just using min([zv_QUALITY_FLAG; 0]) does not work.
             if isempty(zv_QUALITY_FLAG_segment)
                 QUALITY_FLAG = 0;
@@ -1754,9 +1785,9 @@ classdef proc_sub
                 QUALITY_FLAG = min(zv_QUALITY_FLAG_segment);
             end
         end
-        
-        
-        
+
+
+
         % Derive a quality bitmask for one downsampled CDF record, from
         % corresponding non-downsampled records (bin).
         %
@@ -1769,20 +1800,20 @@ classdef proc_sub
         function L12_QUALITY_BITMASK = downsample_bin_L12_QUALITY_BITMASK(...
                 zv_L12_QUALITY_BITMASK_segment)
             % Return NaN or 0 for empty bin?
-            
+
             % IMPLEMENTATION NOTE: 2020-11-23: L2 zVar "QUALITY_BITMASK" is
             % mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
             assert(isa(zv_L12_QUALITY_BITMASK_segment, 'uint16'))
-            
+
             if isempty(zv_L12_QUALITY_BITMASK_segment)
                 L12_QUALITY_BITMASK = 0;   % Appropriate?!! Fill value/NaN?
             else
                 L12_QUALITY_BITMASK = bicas.utils.bitops.or(zv_L12_QUALITY_BITMASK_segment);
             end
         end
-        
-        
-        
+
+
+
         % Wrapper around bicas.proc_sub.handle_struct_name_change to be used
         % locally.
         %
@@ -1797,15 +1828,15 @@ classdef proc_sub
                 ['Input dataset DATASET_ID=%s uses an alternative', ...
                 ' but illegal(?) zVariable name "%s" instead of "%s".'], ...
                 inSciDsi, oldFieldname, newFieldname));
-            
+
             bicas.handle_struct_name_change(fnChangeList, ...
                 SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
         end
-        
-        
-        
+
+
+
         % Local utility function to shorten & clarify code.
-        % 
+        %
         % ARGUMENTS
         % =========
         % zv1 : zVar-like variabel or empty. Column vector (Nx1) or empty.
@@ -1817,7 +1848,7 @@ classdef proc_sub
         %
         function zv2 = normalize_LFR_zVar_empty(...
                 L, settingValue, settingKey, nRecords, zv1, zvName)
-            
+
             if ~isempty(zv1)
                 % Do nothing (except assertion later).
                 zv2 = zv1;
@@ -1829,16 +1860,16 @@ classdef proc_sub
                         bicas.default_anomaly_handling(L, ...
                             settingValue, settingKey, 'other', ...
                             anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
-                        
+
                         L.logf('warning', 'Using fill values for %s.', zvName)
                         zv2 = nan(nRecords, 1);
-                        
+
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
                             anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
                 end
             end
-            
+
             EJ_library.assert.sizes(zv2, [NaN])
         end
 
@@ -1850,9 +1881,9 @@ classdef proc_sub
         % for L1R, but not L1.
         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
                 ZvStruct, nRecords, inputDsi)
-            
+
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputDsi);
-            
+
             if C.isL1r
                 CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
             elseif C.isL1
@@ -1862,23 +1893,23 @@ classdef proc_sub
                     ['Can not normalize CALIBRATION_TABLE_INDEX', ...
                     ' for this DATASET_ID classification.'])
             end
-            
+
             EJ_library.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
         end
 
-        
-        
+
+
         % Wrapper around EJ_library.so.CURRENT_zv_to_current_interpolate for
         % anomaly handling.
         function sciZv_IBIASx = zv_TC_to_current(...
                 curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
-            
+
             % TEST:
 %             curZv_Epoch(4:6) = curZv_Epoch(4:6)-(86400e9)
 %             [~, iSort] = sort(curZv_Epoch)
 %             curZv_Epoch   = curZv_Epoch  (iSort);
 %             curZv_IBIAS_x = curZv_IBIAS_x(iSort);
-            
+
             %====================
             % Calibrate currents
             %====================
@@ -1886,9 +1917,9 @@ classdef proc_sub
                 curZv_Epoch, ...
                 curZv_IBIAS_x, ...
                 sciZv_Epoch);
-            
-            
-            
+
+
+
             if duplicateAnomaly
                 %====================================================
                 % Handle anomaly: Non-monotonically increasing Epoch
@@ -1898,7 +1929,7 @@ classdef proc_sub
                 anomalyDescriptionMsg = [...
                     'Bias current data contain duplicate settings, with identical timestamps', ...
                     ' and identical bias settings on the same antenna.'];
-                
+
                 switch(settingValue)
                     case 'REMOVE_DUPLICATES'
                         bicas.default_anomaly_handling(L, ...
@@ -1915,22 +1946,22 @@ classdef proc_sub
                             'BICAS:proc_sub:SWModeProcessing:DatasetFormat')
                 end
             end
-            
+
         end    % bicas.proc_sub.zv_TC_to_current
-        
-        
-        
+
+
+
         function assert_PreDC(PreDc)
             EJ_library.assert.struct(PreDc, ...
                 {'Zv', 'Ga', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
-            
+
             EJ_library.assert.struct(PreDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', ...
                 'iLsf', 'DIFF_GAIN', ...
                 'MUX_SET', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
                 'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
                 {'BW'});
-            
+
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
 
             assert(isa(PreDc.Zv.freqHz, 'double'))
@@ -1941,20 +1972,20 @@ classdef proc_sub
         function assert_PostDC(PostDc)
             EJ_library.assert.struct(PostDc, ...
                 {'Zv'}, {});
-            
+
             EJ_library.assert.struct(PostDc.Zv, ...
                 {'DemuxerOutput', 'currentAAmpere'}, {'L2_QUALITY_BITMASK'});
-            
+
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
-    
-    
-    
+
+
+
         % Find CDF records to remove based on settings (not data itself, almost,
         % since MUX mode is data).
         %
         % Ex: Sweeps
-        % 
+        %
         function zvUseFillValues = get_UFV_records_from_settings(...
                 zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
             % PROPOSAL: Only derive UFV records based on settings. Not take
@@ -1962,10 +1993,10 @@ classdef proc_sub
             %           records from settings and BW respectively can be done
             %           outside (trivial).
             % PROPOSAL: Separate function for logging which records that should be removed.
-            
+
             bicas.proc_utils.assert_zv_Epoch(zvEpoch)
             assert(islogical(isLfr));
-            
+
             %===============
             % Read settings
             %===============
@@ -1975,7 +2006,7 @@ classdef proc_sub
             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
             end
             [removeMarginSec, settingMarginKey] = SETTINGS.get_fv(settingMarginKey);
-            
+
             %==========================================
             % Find exact indices/CDF records to remove
             %==========================================
@@ -1983,7 +2014,7 @@ classdef proc_sub
                 zvEpoch, ...
                 ismember(zv_MUX_SET, muxModesRemove), ...
                 removeMarginSec * 1e9);
-            
+
             %=====
             % Log
             %=====
@@ -1999,9 +2030,9 @@ classdef proc_sub
                 removeMarginSec);
             bicas.proc_sub.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
         end
-        
-        
-        
+
+
+
         % Log UFV records
         %
         % NOTE: Only logs (including header) if there are records to remove.
@@ -2011,12 +2042,12 @@ classdef proc_sub
             [i1Array, i2Array] = EJ_library.utils.split_by_false(zvUfv);
             nUfvIntervals = numel(i1Array);
             if nUfvIntervals > 0
-                
+
                 %==============
                 % Log settings
                 %==============
                 L.logf(LL, logHeaderStr)
-                
+
                 %===============
                 % Log intervals
                 %===============
@@ -2029,7 +2060,7 @@ classdef proc_sub
                         iCdfRecord1, iCdfRecord2, utc1, utc2);
                 end
             end
-            
+
         end
 
 
@@ -2070,7 +2101,7 @@ classdef proc_sub
         % PROPOSAL: Move processing of one subsequence (one for-loop iteration) into its own function.
 
             %tTicToc  = tic();
-            
+
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
             assert(iscell(  PreDc.Zv.samplesCaTm))
@@ -2104,8 +2135,8 @@ classdef proc_sub
             iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
             iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
 
-            
-            
+
+
             %===================================================================
             % (1) Find continuous subsequences of records with identical
             %     settings.
@@ -2129,7 +2160,7 @@ classdef proc_sub
             L.logf('info', ...
                 ['Calibrating voltages - ', ...
                 ' One sequence of records with identical settings at a time.'])
-            
+
             for iSubseq = 1:nSubseq
 
                 iFirst = iFirstList(iSubseq);
@@ -2148,7 +2179,7 @@ classdef proc_sub
                 iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
                 ufv_ss                     = PreDc.Zv.useFillValues(          iFirst);
                 CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
-                
+
                 % PROPOSAL: Make into "proper" table.
                 %   NOTE: Can not use EJ_library.str.assist_print_table since
                 %         it requires the entire table to pre-exist.
@@ -2192,7 +2223,7 @@ classdef proc_sub
                         PreDc.Zv.Epoch(iLast) - PreDc.Zv.Epoch(iFirst)) ...
                         / (iLast-iFirst) * 1e-9;   % TEMPORARY?
                 end
-                
+
                 biasHighGain = DIFF_GAIN_ss;
 
 
@@ -2210,12 +2241,12 @@ classdef proc_sub
                     elseif ismember(BltsSrcAsrArray(iBlts).category, {'GND', '2.5V Ref'})
                         % ==> No calibration.
                         ssSamplesAVolt{iBlts} = ssSamplesTm{iBlts};
-                        
+
                     else
                         assert(BltsSrcAsrArray(iBlts).is_ASR())
                         % ==> Calibrate (unless explicitly stated that should
                         % not)
-                        
+
                         if PreDc.hasSnapshotFormat
                             ssSamplesCaTm = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...
                                 double(ssSamplesTm{iBlts}), ssZvNValidSamplesPerRecord);
@@ -2223,7 +2254,7 @@ classdef proc_sub
                             assert(all(ssZvNValidSamplesPerRecord == 1))
                             ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
                         end
-                        
+
                         %######################
                         %######################
                         %  CALIBRATE VOLTAGES
@@ -2250,7 +2281,7 @@ classdef proc_sub
                             PreDc.isLfr, PreDc.isTdsCwf, CalSettings, ...
                             CALIBRATION_TABLE_INDEX_ss, ufv_ss);
                         %#######################################################
-                        
+
                         if PreDc.hasSnapshotFormat
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
                                 ssSamplesCaAVolt, size(ssSamplesTm{iBlts}, 2));
@@ -2260,21 +2291,21 @@ classdef proc_sub
                         end
                     end
                 end    % for iBlts = 1:5
-                
+
                 %====================================
                 % DEMULTIPLEXER: DERIVE MISSING ASRs
                 %====================================
                 [~, SsAsrSamplesAVolt] = bicas.demultiplexer.main(...
                     MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
-                
+
                 % Add demuxed sequence to the to-be complete set of records.
                 AsrSamplesAVolt = bicas.proc_utils.set_struct_field_rows(...
                     AsrSamplesAVolt, SsAsrSamplesAVolt, iFirst:iLast);
-                
+
             end    % for iSubseq = 1:length(iFirstList)
-            
-            
-            
+
+
+
             % NOTE: Assumes no "return" statement.
             %bicas.log_speed_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages', tTicToc, nRecords, 'record')
             %bicas.log_memory_profiling(L, 'bicas.proc_sub.calibrate_demux_voltages:end')
@@ -2283,5 +2314,5 @@ classdef proc_sub
 
 
     end    % methods(Static, Access=private)
-        
+
 end

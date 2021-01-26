@@ -300,7 +300,8 @@ function main_without_error_handling(cliArgumentsList, L)
     L.logf('debug', 'OS environment variable PATH                 = "%s"', ...
         getenv('PATH'));
     
-    % NOTE: Useful for seeing which leap second table was actually used, e.g. at ROC.
+    % NOTE: Useful for seeing which leap second table was actually used, e.g. at
+    % ROC.
     L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', ...
         getenv('CDF_LEAPSECONDSTABLE'));
     
@@ -312,7 +313,8 @@ function main_without_error_handling(cliArgumentsList, L)
     % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
     % Use path of the current MATLAB file.
     [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-    bicasRootPath         = EJ_library.fs.get_abs_path(fullfile(matlabSrcPath, '..', '..'));
+    bicasRootPath         = EJ_library.fs.get_abs_path(...
+        fullfile(matlabSrcPath, '..', '..'));
     
     
     
@@ -323,7 +325,8 @@ function main_without_error_handling(cliArgumentsList, L)
     % arguments. Should therefore not merge this with printing settings. This
     % might help debug why settings were not set.
     L.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
-    % Working directory useful for debugging the use of relative directory arguments.
+    % Working directory useful for debugging the use of relative directory
+    % arguments.
     L.logf('info', 'Current working directory: pwd           = "%s"', pwd);
     L.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
     L.logf('info',   '===============================================')
@@ -387,7 +390,9 @@ function main_without_error_handling(cliArgumentsList, L)
     if ~isempty(CliData.configFile)
         configFile = CliData.configFile;
     else
-        configFile = fullfile(bicasRootPath, bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
+        configFile = fullfile(...
+            bicasRootPath, ...
+            bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
     end
     L.logf('info', 'configFile = "%s"', configFile)
     rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
@@ -452,7 +457,8 @@ function main_without_error_handling(cliArgumentsList, L)
                 % NOTE: Misspelled "--version" etc. would be interpreted as S/W
                 % mode and produce error here too.
                 error('BICAS:main:CLISyntax', ...
-                    'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
+                    ['Can not interpret first argument "%s" as a S/W mode', ...
+                    ' (or any other legal first argument).'], ...
                     CliData.swModeArg);
             end
             
@@ -493,8 +499,10 @@ function main_without_error_handling(cliArgumentsList, L)
             %==========================
             % NOTE: Reading environment variables first here, where they are
             % needed.
-            rctDir       = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-            masterCdfDir = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+            rctDir       = read_env_variable(SETTINGS, L, ...
+                'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+            masterCdfDir = read_env_variable(SETTINGS, L, ...
+                'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
             L.logf('info', 'rctDir       = "%s"', rctDir)
             L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
 
@@ -528,7 +536,8 @@ function main_without_error_handling(cliArgumentsList, L)
                 masterCdfDir, rctDir, NsoTable, SETTINGS, L )
             
         otherwise
-            error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
+            error('BICAS:main:Assertion', ...
+                'Illegal value functionalityMode="%s"', functionalityMode)
     end    % if ... else ... / switch
     
     
@@ -636,7 +645,7 @@ function print_help(SETTINGS)
     errorCodesList = cellfun(@(x) (x.errorCode), bicas.constants.EMIDP_2_INFO.values);
     [~, iSort] = sort(errorCodesList);
     empidList          = bicas.constants.EMIDP_2_INFO.keys;
-    errorTypesInfoList = bicas.constants.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
+    errorTypesInfoList = bicas.constants.EMIDP_2_INFO.values;   % Cell array of structs (unsorted).
     empidList          = empidList(iSort);
     errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
     bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')
@@ -663,7 +672,8 @@ function v = read_env_variable(SETTINGS, L, envVarName, overrideSettingKey)
     if isempty(settingsOverrideValue)
         v = getenv(envVarName);
     else
-        L.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', ...
+        L.logf('info', ...
+            'Environment variable "%s" overridden by setting\n    %s = "%s"\n', ...
             envVarName, overrideSettingKey, settingsOverrideValue)
         v = settingsOverrideValue;
     end
@@ -671,7 +681,8 @@ function v = read_env_variable(SETTINGS, L, envVarName, overrideSettingKey)
     % UI ASSERTION
     if isempty(v)
         error('BICAS:main:Assertion', ...
-            ['Can not set internal variable corresponding to environment variable "%s" from either', ...
+            ['Can not set internal variable corresponding to', ...
+            ' environment variable "%s" from either', ...
             ' (1) the environment variable, or (2) settings key value %s="%s".'], ...
             envVarName, overrideSettingKey, settingsOverrideValue)
     end
@@ -700,7 +711,8 @@ end
 % NOTE/BUG: No good checking (assertion) of whether the string format of a
 % vector makes sense.
 %
-function SETTINGS = overwrite_settings_from_strings(SETTINGS, ModifiedSettingsMap, valueSource)
+function SETTINGS = overwrite_settings_from_strings(...
+        SETTINGS, ModifiedSettingsMap, valueSource)
     
     keysList = ModifiedSettingsMap.keys;
     for iModifSetting = 1:numel(keysList)
@@ -709,7 +721,8 @@ function SETTINGS = overwrite_settings_from_strings(SETTINGS, ModifiedSettingsMa
         
         % ASSERTION
         if ~isa(newValueAsString, 'char')
-            error('BICAS:settings:Assertion:IllegalArgument', 'Map value is not a string.')
+            error('BICAS:settings:Assertion:IllegalArgument', ...
+                'Map value is not a string.')
         end
         
         %==================================================

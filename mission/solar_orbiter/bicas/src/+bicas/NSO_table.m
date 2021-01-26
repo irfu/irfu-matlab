@@ -71,7 +71,9 @@ classdef NSO_table   % < handle
             % ASSERTIONS
             %============
             % PROPOSAL: Move ~all assertions to bicas.NSO_table.read_file ?
-            % PROPOSAL: Collect ~all assertions, here and in bicas.NSO_table.read_file ?
+            % PROPOSAL: Collect ~all assertions, in constructor (here) and in
+            %           bicas.NSO_table.read_file ?
+            % PROPOSAL: Check that FULL_SATURATION and PARTIAL SATURATION do not overlap.
             
             EJ_library.assert.sizes(...
                 NsoTable.evtStartTt2000Array, [-1], ...
@@ -88,7 +90,8 @@ classdef NSO_table   % < handle
                 iEvt = find(diff(NsoTable.evtStartTt2000Array) < 0) + 1;
                 assert(~isempty(iEvt));
                 
-                utcCa = EJ_library.cdf.TT2000_to_UTC_str_many(NsoTable.evtStartTt2000Array(iEvt));
+                utcCa = EJ_library.cdf.TT2000_to_UTC_str_many(...
+                    NsoTable.evtStartTt2000Array(iEvt));
                 
                 sCa = EJ_library.str.sprintf_many('    %s\n', utcCa);
                 timestampsListStr = strjoin(sCa);
@@ -124,7 +127,7 @@ classdef NSO_table   % < handle
             
                 % ASSERTION: Events do not overlap
                 % --------------------------------
-                % NOTE: ASSUMPTION: Start  timestamps are already time-sorted.
+                % NOTE: ASSUMPTION: Start timestamps are already time-sorted.
                 % NOTE: Transposing before 2D-->1D vector.
                 % NOTE: 'strictascend' excludes ~adjacent events.
                 temp = [...
@@ -132,7 +135,8 @@ classdef NSO_table   % < handle
                     NsoTable.evtStopTt2000Array(b)]';
                 tt2000Array = temp(:);
                 assert(issorted(tt2000Array, 'strictascend'), ...
-                    'At least two events for nsoId="%s" seem to overlap with each other.', nsoId)
+                    ['At least two events for nsoId="%s"', ...
+                    ' seem to overlap with each other.'], nsoId)
             end
             
             
