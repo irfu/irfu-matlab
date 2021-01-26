@@ -3,7 +3,7 @@ function varargout = psp_var(vartxt)
 %
 % PSP_VAR * - display all variables
 % PSP_VAR xx - display variables matching xx
-% X=PSP_VAR('varName') - get variable 'varName' information 
+% X=PSP_VAR('varName') - get variable 'varName' information into structure
 %
 % See also: PSP
 
@@ -58,6 +58,8 @@ end
 
 %% match 
 doMatchNameExact = false(1,N);
+doMatchNameExpand = false(1,N);
+doMatchNameShort = false(1,N);
 doMatchName      = false(1,N);
 
 if strcmp(vartxt,'*') % show all variables
@@ -65,17 +67,25 @@ if strcmp(vartxt,'*') % show all variables
 elseif doFindFile
   nameToMatch = vartxt(6:end); % remove "file=" from the beginning
   for i=1:N
-    doMatchName(i) = strcmpi(arr(i).fileName, nameToMatch);
+    if any(regexpi(nameToMatch,['^' arr(i).fileName '$']))
+      doMatchName(i) = true;
+    end
   end
 else
   for i=1:N
-    if strcmpi(arr(i).varName, vartxt) ...
-        || any(regexpi(vartxt,['^' arr(i).varName '$'])) ...
-        || any(regexpi(vartxt,['' arr(i).varNameShort '$']))
+    if strcmpi(arr(i).varName, vartxt)
       doMatchNameExact(i) = true;
       iMatchExact = i; 
-    end
-    if any(regexpi(arr(i).varName,vartxt)) ||...
+    elseif any(regexpi(vartxt,['^' arr(i).varName '$']))
+      doMatchNameExact(i) = true;
+      doMatchNameExpand(i) = true;
+      iMatchExact = i; 
+    elseif any(regexpi(vartxt,['' arr(i).varNameShort '$']))
+      doMatchNameExact(i) = true;
+      doMatchNameExpand(i) = true;
+      doMatchNameShort(i) = true;
+      iMatchExact = i; 
+    elseif any(regexpi(arr(i).varName,vartxt)) ||...
         any(regexpi(arr(i).varNameShort,vartxt))
       doMatchName(i) = true;
     end
@@ -113,8 +123,27 @@ elseif nargout == 4 && any(doMatchNameExact)
 else
   if any(doMatchNameExact)
     out = arr(iMatchExact);
-    if any(regexpi(vartxt,['^' arr(iMatchExact).varName '$'])) % varName matched regexp
-      out.varName = vartxt;
+    if doMatchNameExpand(iMatchExact)
+      if doMatchNameShort(iMatchExact)
+         out.varNameShort = vartxt;
+        varShortList = list_variables(arr(iMatchExact).varNameShort);
+        varList = list_variables(arr(iMatchExact).varName);
+        fileList = list_variables(arr(iMatchExact).fileName);
+        out.varName = varList{strcmp(vartxt,varShortList)};
+        if numel(fileList) > 1
+          out.fileName = fileList{strcmp(vartxt,varShortList)};
+        end       
+        
+      else
+        out.varName = vartxt;
+        varShortList = list_variables(arr(iMatchExact).varNameShort);
+        varList = list_variables(arr(iMatchExact).varName);
+        fileList = list_variables(arr(iMatchExact).fileName);
+        out.varNameShort = varShortList{strcmp(vartxt,varList)};
+        if numel(fileList) > 1
+          out.fileName = fileList{strcmp(vartxt,varList)};
+        end
+      end
     end
   else
     out = cell(1,sum(doMatchName == true));
@@ -128,4 +157,44 @@ else
     end
   end
   varargout(1)={out};
+end
+
+  function varList = list_variables(varFilter)
+    %UNTITLED Summary of this function goes here
+    %   Detailed explanation goes here
+    tokens  = regexp(varFilter,'\(([\w\|]*)\)','tokens');
+    outbase = regexp(varFilter,'\(([\w\|]*)\)','split');
+    nTok    = numel(tokens);
+    valArr  = cell(size(tokens));
+    nVal    = ones(nTok,1);
+    
+    % create template
+    for iTok = 1 : nTok
+      valArr{iTok} = regexp(tokens{iTok}{:},'\|','split');
+      nVal(iTok) = numel(valArr{iTok});
+    end
+    
+    nOutput = prod(nVal);
+    
+    varList = cell(nOutput,1);
+    varPerm = cell(nOutput,nTok);
+    indSort = zeros(nOutput,1);
+    
+    for iTok = 1:nTok
+      for iVal = 1:nVal(iTok)
+        indPerm = iVal:nVal:nOutput;
+        varPerm(indPerm,iTok)=valArr{iTok}(iVal);
+        indSort((1:nOutput/nVal(iTok))+nOutput/nVal(iTok)*(iVal-1)) = indPerm;
+      end
+      varPerm=varPerm(indSort,:);
+    end
+    
+    for iOut = 1 : nOutput
+      for iBase = 1:nTok
+        varList{iOut} = [varList{iOut} outbase{iBase} varPerm{iOut,iBase}];
+      end
+      varList{iOut} = [varList{iOut} outbase{end}];
+    end
+    
+  end
 end
