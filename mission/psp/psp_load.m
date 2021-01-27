@@ -302,7 +302,7 @@ switch datatype
             webserver = 'http://sweap.cfa.harvard.edu/pub/data/sci/';
             webOptions = {};
           elseif strcmp(dataSubDir{1}(1:6),'fields')
-            webserver = 'http://research.ssl.berkeley.edu/data/psp/data/sci/';
+            webserver = 'https://research.ssl.berkeley.edu/data/psp/data/sci/';
             webOptions = webOptionsSSL;
           end
           for iDir = 1:numel(dataSubDir)
@@ -509,7 +509,7 @@ for iOutputVar = 1:nVar
   
 end
 
- function iFilesToGet = ind_dates_in_datenum_interval(fileDates)
+  function iFilesToGet = ind_dates_in_datenum_interval(fileDates)
    iFilesToGet = false(numel(fileDates),1);
    for iFileDates = 1: numel(fileDates)
      dd = datenum(fileDates{iFileDates}{:},'yyyymmdd');
