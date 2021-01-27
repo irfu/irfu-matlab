@@ -36,7 +36,7 @@
 %           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
 %           'ephem'                  - ephemeris files
 %           'dbm_dvac'               - times series of electric field snapshots
-%           'XXX'                    - where XXX is long or short name of variables in the list "psp_var *"
+%           'XXX'                    - where XXX is long or short name of variables in the list "PSP_VAR *"
 %
 % dateStart & dateStop: date vectors or strings for start and stop day
 %            e.g. [yyyy mm dd] or 'yyyy/mm/dd' or  'yyyy mm dd' (read with datenum)
@@ -47,8 +47,24 @@
 %   rtnB = psp_load('psp_fld_l2_mag_RTN_20...cdf','mag');
 
 function [output,pspobj] = psp_load(arg1,datatype,date_start,date_stop)
-
 global dateStart dateEnd
+persistent webOptionsSSL
+if isnumeric(webOptionsSSL) 
+  % first run of function
+  userName = datastore('psp','usernameSSL');
+  if isempty(userName)
+    webOptionsSSL = {};
+    disp('If you have access to the latest PSP data');
+    disp('then from the matlab command line enter the PSP credentials.')
+    disp('>datastore(''psp'',''usernameSSL'',''xxx'');')
+    disp('>datastore(''psp'',''passwordSSL'',''xxx'');')
+  else
+    passWord = datastore('psp','passwordSSL');
+    webOptionsSSL = weboptions('HeaderFields',{'Authorization',...
+    ['Basic ' matlab.net.base64encode([userName ':' passWord])]});
+  end
+end
+
 outputToBase  = (nargout == 0);
 if nargin == 1
   datatype = arg1;
@@ -284,14 +300,16 @@ switch datatype
           dataPath = get_data_path(fileBaseName,startDatenum:endDatenum);
           if strcmp(dataSubDir{1}(1:5),'sweap')
             webserver = 'http://sweap.cfa.harvard.edu/pub/data/sci/';
+            webOptions = {};
           elseif strcmp(dataSubDir{1}(1:6),'fields')
             webserver = 'http://research.ssl.berkeley.edu/data/psp/data/sci/';
+            webOptions = webOptionsSSL;
           end
           for iDir = 1:numel(dataSubDir)
             dirPath = dataPath{iDir};
             mkdir(dirPath);
             wwwDir = [webserver dataSubDir{iDir}];
-            tt = webread(wwwDir);
+            tt = webread(wwwDir,webOptions);
             ff = regexp(tt,'([\w]*.cdf)','tokens');
             files = arrayfun(@(x) (x{1}),ff);
             files = unique(files);
@@ -303,7 +321,7 @@ switch datatype
                 wwwLink = [wwwDir '/' files{iFilesToGet(ii)}];
                 filePath = [dirPath '/' files{iFilesToGet(ii)}];
                 irf.log('warning',['Downloading: ' wwwLink]);
-                outFileName = websave(filePath,wwwLink);
+                outFileName = websave(filePath,wwwLink,webOptions);
                 irf.log('warning',['Downloaded to: ' outFileName]);
               end
             else
@@ -316,6 +334,8 @@ switch datatype
             irf.log('warning','No data to load');
             return;
           end
+        else
+          return;
         end
       end
       varnames = {varName};

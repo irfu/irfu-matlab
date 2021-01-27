@@ -1,13 +1,12 @@
 %%%%
-varName: xxx(can be regexP)
-fileName: xxx
-directory: 
-hourtag: 
-varNameShort: xxx
-related: 
+varName: xxx(can be regexP, e.g. "dc_coupled_V(12|34)") 
+fileName: xxx (can be regexp with the same selections as varName, e.g. "file_V(12|34)"
+directory: xxxx 
+hourtag: empty or "6h"
+varNameShort: xxx (can be regexp with the same selections as varName, e.g. "dcV(12|34)"
+related: not used (idea to link in display)
 info#start
-xxx
-xxx
+As much information as useful from command line to see to describe data
 info#end
 ----
 
@@ -38,6 +37,18 @@ xxx
 info#end
 ----
 
+%%%%
+varName: psp_fld_l2_dfb_ac_bpf_dV(12|34)hg
+fileName: psp_fld_l2_dfb_ac_bpf_dV(12|34)hg
+directory: fields/l2/dfb_ac_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_ac_bpf_dV(12|34)hg
+related: 
+info#start
+Band pass data.
+info#end
+----
+
 
 %%%%
 varName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
@@ -47,8 +58,9 @@ hourtag:
 varNameShort: ac_spec_V(12|34)hg
 related: 
 info#start
-xxx
-xxx
+High-rate ac power spectra are limited in coverage to the first 
+one eighth of each cycle. 
+The power spectral data undergo a lossy amplitude compression.
 info#end
 ----
 
@@ -114,6 +126,10 @@ hourtag:
 varNameShort:
 related: 
 info#start
+Quality flags are on a 1 minute cadence, 
+identifying intervals where instrument or spacecraft activities 
+can affect the measurements.  0 signifies the absence of any flags. 
+
 FIELDS quality flags. This is a bitwise variable, 
 meaning that multiple flags can be set for a single time, 
 by adding flag values. 
@@ -256,7 +272,12 @@ varNameShort: V(1|2|3|4|5)dc
 related: 
 info#start
 L2 Electric Potential from V[1-5]
-
+The data contained in these Level 2 files is differential voltage data 
+(in Volts), not electric field data (in Volts/m). The sign for these 
+data types is generally opposite: i.e. a positive dVx corresponds to 
+a negative Ex. In previous versions (up to v02) the sign chosen was 
+appropriate for electric field data, not differential voltage data. 
+This is corrected in v03.
 info#end
 ----
 
@@ -269,6 +290,12 @@ varNameShort: wf_dvdc_(sensor|sc)
 related: 
 info#start
 DFB DC differential voltage waveform
+The data contained in these Level 2 files is differential voltage data 
+(in Volts), not electric field data (in Volts/m). The sign for these 
+data types is generally opposite: i.e. a positive dVx corresponds to 
+a negative Ex. In previous versions (up to v02) the sign chosen was 
+appropriate for electric field data, not differential voltage data. 
+This is corrected in v03.
 info#end
 ----
 
@@ -282,6 +309,8 @@ varNameShort: dbm_dvac(12|34)
 related: 
 info#start
 snapshots
+AC coupling: single-pole high-pass filters (−3 dB @100 Hz)
+and four-pole low-pass Bessel filters with a −3 dB @60 kHz
 info#end
 ----
 
@@ -299,14 +328,19 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_dbm_scmhgu
+varName: psp_fld_l2_dfb_dbm_scm(h|l)gu
 fileName: psp_fld_l2_dfb_dbm_scm
 directory: fields/l2/dfb_dbm_scm/20YY/MM
 hourtag: 6h
-varNameShort: dbm_scmhgu
+varNameShort: dbm_scm(h|l)gu
 related: 
 info#start
-snapshots
+SCM snapshot waveforms.
+During Encounters 3 and 4, most SCM burst waveforms were recorded in 
+low gain mode, due to large intermittent signals related to the SCM 
+anomaly described under https://fields.ssl.berkeley.edu/data/#scm-anomaly. 
+Starting from Encounter 5, the DFB was configured to always record 
+SCM burst waveforms in high gain.
 info#end
 ----
 
