@@ -30,7 +30,7 @@ endIdxInfo = find(ismember(C, 'info#end'))-1;
 
 % define array of strucutres
 N = numel(startIdx);
-arr = struct('varName','','fileName','','hourtag',{''},'directory','','shortVar','','realted',{''},'info',"");
+arr = struct('varName','','fileName','','hourtag',{''},'directory','','varNameShort','','related',{''},'info',"");
 arr = repmat(arr,[N 1]);
 
 
@@ -125,10 +125,10 @@ else
     out = arr(iMatchExact);
     if doMatchNameExpand(iMatchExact)
       if doMatchNameShort(iMatchExact)
-         out.varNameShort = vartxt;
         varShortList = list_variables(arr(iMatchExact).varNameShort);
         varList = list_variables(arr(iMatchExact).varName);
         fileList = list_variables(arr(iMatchExact).fileName);
+        out.varNameShort = vartxt;
         out.varName = varList{strcmp(vartxt,varShortList)};
         if numel(fileList) > 1
           out.fileName = fileList{strcmp(vartxt,varShortList)};
@@ -182,7 +182,7 @@ end
     
     for iTok = 1:nTok
       for iVal = 1:nVal(iTok)
-        indPerm = iVal:nVal:nOutput;
+        indPerm = iVal:nVal(iTok):nOutput;
         varPerm(indPerm,iTok)=valArr{iTok}(iVal);
         indSort((1:nOutput/nVal(iTok))+nOutput/nVal(iTok)*(iVal-1)) = indPerm;
       end

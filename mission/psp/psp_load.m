@@ -277,6 +277,11 @@ switch datatype
     output       = get_data_dbm_dvac(listCDFFiles);
     return;
     
+  case 'dbm_scm'
+    listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_scm');
+    output       = get_data_dbm_scm(listCDFFiles);
+    return;
+    
   otherwise
     if nargin == 1 % psp_load(varName) assumes global dateStart dateEnd
       % read in variable, lookup up files to read from
@@ -562,12 +567,12 @@ end
 
   function out = get_data_dbm_dvac(listCDFFiles)
     % output is structure witf fields 
-    % .ts: time series wirt dvac12 and dvac13
+    % .ts: time series with two columns dvac12 and dvac13
+    % .ts_sc: time series in sc coordinate system
     % .startStopMatriTT: start and stop times of snapshots in TT
     % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots 
     %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
     dbm_dvac = double([]);
-    tStartEndSnapshTT = [];
     tFinal = [];
     for iCdfFile = 1:numel(listCDFFiles)
       fileCDF = listCDFFiles{iCdfFile};
@@ -580,23 +585,73 @@ end
       tt=res{1}; temp12 = res{2}; temp34 = res{3};
       t=[tt(1,:);tt;tt(end,:)];t=t(:);
       tFinal = [tFinal; t];
-      tStartEndSnapshTT = [tStartEndSnapshTT; reshape(t(diff(t)==0),2,[])'];
-      dbm_dvac_temp = nan(numel(t),2,'single');
       vecNaN = nan(size(tt,2),1,'single');
       dbm_dvac_temp12 = [vecNaN temp12 vecNaN]';
       dbm_dvac_temp34 = [vecNaN temp34 vecNaN]';
       dbm_dvac = [dbm_dvac; [dbm_dvac_temp12(:) dbm_dvac_temp34(:)]];
     end
+    tStartStopTT = reshape(tFinal(diff(tFinal)==0),2,[])';
     dbm_dvac(dbm_dvac < -1e30) = NaN;
-    tSnapLineEpoch = irf_time(tStartEndSnapshTT(:),'ttns>epoch');
-    tSnapLineEpoch = reshape(tSnapLineEpoch,[],2)';
-    tSnapLineEpoch(end+1,:)=NaN;
-    tSnapLineEpoch = tSnapLineEpoch(:);
     dbm_dvac    = TSeries(EpochTT(tFinal),dbm_dvac);
     dbm_dvac_sc = psp_coordinate_transform(dbm_dvac,'e>sc');
-    out = struct('ts_v12v34',dbm_dvac,'ts_sc',dbm_dvac_sc,...
-      'startStopMatriTT',tStartEndSnapshTT,...
-      'startStopLineEpoch',tSnapLineEpoch);
+    out = struct('ts',dbm_dvac,'ts_sc',dbm_dvac_sc,...
+      'startStopTT',tStartStopTT);
   end
-    
+ 
+  function out = get_data_dbm_scm(listCDFFiles)
+    % output is structure witf fields 
+    % .ts: time series with 3 coumns - SCM u,v.w
+    % .startStopMatriTT: start and stop times of snapshots in TT
+    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots 
+    %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
+    dbm_scm_hg = double([]);
+    dbm_scm_lg = double([]);
+    tHGFinal = [];
+    tLGFinal = [];
+    for iCdfFile = 1:numel(listCDFFiles)
+      fileCDF = listCDFFiles{iCdfFile};
+      disp(['Reading: ' fileCDF]);
+      res = spdfcdfread(fileCDF,'VARIABLES', {...
+        'psp_fld_l2_dfb_dbm_scmlg_time_series_TT2000',...
+        'psp_fld_l2_dfb_dbm_scmlgu',...
+        'psp_fld_l2_dfb_dbm_scmlgv',...
+        'psp_fld_l2_dfb_dbm_scmlgw',...
+        'psp_fld_l2_dfb_dbm_scmhg_time_series_TT2000',...
+        'psp_fld_l2_dfb_dbm_scmhgu',...
+        'psp_fld_l2_dfb_dbm_scmhgv',...
+        'psp_fld_l2_dfb_dbm_scmhgw'},...
+        'KeepEpochAsIs',true,'dataonly',true);
+      ttLG=res{1}; lgu = res{2}; lgv = res{3}; lgw = res{4}; 
+      ttHG=res{5}; hgu = res{6}; hgv = res{7}; hgw = res{8}; 
+      % create continuous timeline marking start/stop times of snapshots
+      % with additional time point with the same time value
+      if any(ttLG)
+        tLG=[ttLG(1,:);ttLG;ttLG(end,:)];tLG=tLG(:);
+        tLGFinal = [tLGFinal; tLG];
+        vecNaN = nan(size(ttLG,2),1,'single');
+        dbm_scm_u = [vecNaN lgu vecNaN]';
+        dbm_scm_v = [vecNaN lgv vecNaN]';
+        dbm_scm_w = [vecNaN lgw vecNaN]';
+        dbm_scm_lg = [dbm_scm_lg; [dbm_scm_u(:) dbm_scm_v(:) dbm_scm_w(:)]];
+      end
+      if any(ttHG)
+        tHG=[ttHG(1,:);ttHG;ttHG(end,:)];tHG=tHG(:);
+        tHGFinal = [tHGFinal; tHG];
+        vecNaN = nan(size(ttHG,2),1,'single');
+        dbm_scm_u = [vecNaN hgu vecNaN]';
+        dbm_scm_v = [vecNaN hgv vecNaN]';
+        dbm_scm_w = [vecNaN hgw vecNaN]';
+        dbm_scm_hg = [dbm_scm_hg; [dbm_scm_u(:) dbm_scm_v(:) dbm_scm_w(:)]];
+      end
+    end
+    tStartStopTTLG = reshape(tLGFinal(diff(tLGFinal)==0),2,[])';
+    tStartStopTTHG = reshape(tHGFinal(diff(tHGFinal)==0),2,[])';
+    dbm_scm_lg(dbm_scm_lg < -1e30) = NaN;
+    dbm_scm_hg(dbm_scm_hg < -1e30) = NaN;
+    dbm_scmLG   = TSeries(EpochTT(tLGFinal),dbm_scm_lg);
+    dbm_scmHG   = TSeries(EpochTT(tHGFinal),dbm_scm_hg);
+    out = struct('ts_LG',dbm_scmLG,'ts_HG',dbm_scmHG,...
+      'startStopTTLG',tStartStopTTLG,'startStopTTHG',tStartStopTTHG);
+  end
+
 end

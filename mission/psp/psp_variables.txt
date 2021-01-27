@@ -328,11 +328,11 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_dbm_scm(h|l)gu
+varName: psp_fld_l2_dfb_dbm_scm(h|l)g(u|v|w)
 fileName: psp_fld_l2_dfb_dbm_scm
 directory: fields/l2/dfb_dbm_scm/20YY/MM
 hourtag: 6h
-varNameShort: dbm_scm(h|l)gu
+varNameShort: dbm_scm(h|l)g(u|v|w)
 related: 
 info#start
 SCM snapshot waveforms.
