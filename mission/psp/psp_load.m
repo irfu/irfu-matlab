@@ -309,7 +309,11 @@ switch datatype
             dirPath = dataPath{iDir};
             mkdir(dirPath);
             wwwDir = [webserver dataSubDir{iDir}];
-            tt = webread(wwwDir,webOptions);
+            if isempty(webOptions)
+              tt = webread(wwwDir);
+            else
+              tt = webread(wwwDir,webOptions);
+            end
             ff = regexp(tt,'([\w]*.cdf)','tokens');
             files = arrayfun(@(x) (x{1}),ff);
             files = unique(files);
@@ -321,7 +325,11 @@ switch datatype
                 wwwLink = [wwwDir '/' files{iFilesToGet(ii)}];
                 filePath = [dirPath '/' files{iFilesToGet(ii)}];
                 irf.log('warning',['Downloading: ' wwwLink]);
-                outFileName = websave(filePath,wwwLink,webOptions);
+                if isempty(webOptions)
+                  outFileName = websave(filePath,wwwLink);
+                else
+                  outFileName = websave(filePath,wwwLink,webOptions);
+                end
                 irf.log('warning',['Downloaded to: ' outFileName]);
               end
             else
