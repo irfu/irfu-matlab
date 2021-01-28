@@ -131,6 +131,12 @@ end
 % Create a modified dataobj that can be written to file. The dataobj is based on
 % the master CDF.
 %
+% NOTE: Only uses global attribute values from
+%   (1) GaSubset, and
+%   (2) master CDF.
+% bicas.execute_sw_mode: derive_output_dataset_GlobalAttributes() which sets
+% global attributes dynamically.
+%
 %
 % NOTE: Assertions require that ZvsSubset contains records of data. Can not
 % easily submit "no data" for debugging purposes (deactivate processing but
@@ -214,73 +220,8 @@ function DataObj = init_modif_dataobj(...
     
     % Log data to be written to CDF file.
     bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
-    
-    %===========================================================================
-    % Set those CDF global attributes for which values should not come from the
-    % master CDF
-    %===========================================================================
-    DataObj.GlobalAttributes.Software_name       = bicas.constants.SWD_METADATA('SWD.identification.name');
-    DataObj.GlobalAttributes.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
-    % Static value?!!
-    DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');
-    % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
-    DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
-    DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(outputFile);
-    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
-    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
-    
-    %---------------------------------------------------------------------------
-    % "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009:
-    %   "TIME_MIN   The date and time of the beginning of the first acquisition
-    %               for the data contained in the file"
-    %   "TIME_MAX   The date and time of the end of the last acquisition for the
-    %               data contained in the file"
-    %   States that TIME_MIN, TIME_MAX should be "Julian day" (not "modified
-    %   Julian day", which e.g. OVT uses internally).
-    %
-    % NOTE: Implementation does not consider the integration time of each
-    % sample.
-    % NOTE: juliandate() is consistent with Julian date converter at
-    % https://www.onlineconversion.com/julian_date.htm
-    % NOTE: ZvsSubset.Epoch already asserted to be monotonically increasing.
-    %
-    % NOTE: Exact format unclear from documentation, autochecks.
-    % NOTE: Issue for autochecks on L3:
-    %       https://gitlab.obspm.fr/ROC/DataPool/-/issues/16
-    % check_cdf_istp.solo_L3_rpw-bia.txt:
-    %   """"
-    % 	Global attribute TIME_MAX is of type CDF_DOUBLE.
-    % 	    Datatypes other than CDF_CHAR may be problematic.
-    % 	Global attribute TIME_MIN is of type CDF_DOUBLE.
-    % 	    Datatypes other than CDF_CHAR may be problematic.""""
-    % NOTE: ROC data reprocessed ~2021-01-25,
-    % solo_L1_rpw-bia-current-cdag_20201201-20201231_V01.cdf (version number
-    % probably not part of official versioning) uses
-    %     TIME_MIN (1 entry):
-    %         0 (CDF_CHAR/17):        "2459184.982450046"
-    %     TIME_MAX (1 entry):
-    %         0 (CDF_CHAR/17):        "2459215.007218565"
-    % Note the number of decimals. No exponent. Other files with ten decimals.
-    %
-    % PROPOSAL: Copy values from the corresponding values from the relevant input dataset.
-    %   CON: Does not work for downsampled.
-    %   CON: There has historically been problems with copying bad values from
-    %        not-up-to-date input datasets.
-    %---------------------------------------------------------------------------
-    % NOTE: Choosing 10 decimals (instead of 9) so that time resolution is
-    % higher than highest LFR sampling frequency (not sure of highest for
-    % TDS-LFM).
-    TIME_MINMAX_FORMAT = '%.10f';
-    gaTimeMinNbr = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(1  )));
-    gaTimeMaxNbr = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(end)));
-    DataObj.GlobalAttributes.TIME_MIN = sprintf(TIME_MINMAX_FORMAT, gaTimeMinNbr);
-    DataObj.GlobalAttributes.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
-    
-    % ROC DFMD hints that value should not be set dynamically. (See meaning of
-    % non-italic black text for global attribute name in table.)
-    %DataObj.GlobalAttribute.CAVEATS = ?!!
-    
-    
+
+
     
     %======================================================================
     % Use GaSubset to overwrite pre-existing (assertion) global attributes
@@ -411,15 +352,8 @@ end
 
 
 
-function logicalFileId = get_logical_file_id(filePath)
-    % Use the filename without suffix.
-    [~, basename, ~] = fileparts(filePath);
-    logicalFileId = basename;
-end
-
-
-
-% NOTE: Should always overwrite file.
+% NOTE: Should always overwrite any pre-existing file.
+%
 function write_empty_file(filePath)
     fileId = fopen(filePath, 'w');    
     

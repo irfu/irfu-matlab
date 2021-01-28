@@ -18,12 +18,6 @@
 % ======
 % - Sets GlobalAttributes.Generation_date in local time (no fixed time zone,
 %   e.g. UTC+0).
-% - Calls derive_output_dataset_GlobalAttributes for ALL input dataset and uses
-%   the result for ALL output datasets.
-%   ==> If a S/W mode has multiple output datasets based on different sets of
-%   input datasets, then the GlobalAttributes might be wrong. Should ideally be
-%   run on the exact input datasets (~EIn PDs) used to produce a specific output
-%   dataset.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -178,7 +172,7 @@ function execute_sw_mode(...
             ZvsSubset = OutputDataset.Zv;
 
             GaSubset = derive_output_dataset_GlobalAttributes(...
-                InputDatasetsMap, OutputDataset.Ga, ...
+                InputDatasetsMap, OutputDataset, ...
                 EJ_library.fs.get_name(outputFilePath), SETTINGS, L);
         else
             % CASE: No processing.
@@ -195,8 +189,13 @@ end   % execute_sw_mode
 
 
 
-% Function for determining SOME global attributes for an output dataset given
-% the global attributes of multiple input datasets.
+% Function for dynamically deriving global attributes for a specific output dataset
+% given the global attributes of multiple input datasets.
+%
+% NOTE: Some of the global attribute values determined here are
+%   (1) unique for this particular output dataset,
+%   (2) common for all output datasets for the current s/w mode,
+%   (3) common for alla output datasets.
 %
 %
 % SOOP_TYPE, Datetime, OBS_ID
@@ -216,11 +215,14 @@ end   % execute_sw_mode
 %       NOTE: This function does not really need all of InputDatasetsMap as
 %       input (contains zVars) but the function uses that input argument since
 %       it is easily accessible where this function is called.
-% OutputDatasetGa
-%       Struct with fields for (subset of) global attributes that should be used
-%       for the output dataset instead of from other locations. This should come
-%       from the processing. Currently only includes:
-%           .Datetime
+% OutputDataset
+%       Struct from processing with fields
+%           Ga.(globAttrName)
+%               Subset of global attribute values that should be used. Currently
+%               only includes:
+%                   .Datetime
+%           .Zv.(zvName)
+%               zVariables.
 %
 %
 % RETURN VALUE
@@ -237,11 +239,11 @@ end   % execute_sw_mode
 %       NOTE: Not yet used. 
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
-        InputDatasetsMap, OutputDatasetGa, outputFilename, SETTINGS, L)
+        InputDatasetsMap, OutputDataset, outputFilename, SETTINGS, L)
 
     % PGA = Parents' GlobalAttributes.
 
-    if ~isscalar(OutputDatasetGa.Datetime)
+    if ~isscalar(OutputDataset.Ga.Datetime)
         [settingValue, settingKey] = SETTINGS.get_fv(...
             'OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY');
         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
@@ -252,7 +254,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
             'BICAS:execute_sw_mode:Datetime')
     end
 
-    OutGaSubset = OutputDatasetGa;
+    OutGaSubset = OutputDataset.Ga;
 
 
 
@@ -286,6 +288,69 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
 
 
 
+    OutGaSubset.Software_name       = bicas.constants.SWD_METADATA('SWD.identification.name');
+    OutGaSubset.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
+    % Static value?!!
+    OutGaSubset.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');
+    % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
+    OutGaSubset.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
+    OutGaSubset.Logical_file_id     = get_logical_file_id(outputFilename);
+    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
+    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
+
+    %---------------------------------------------------------------------------
+    % "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009:
+    %   "TIME_MIN   The date and time of the beginning of the first acquisition
+    %               for the data contained in the file"
+    %   "TIME_MAX   The date and time of the end of the last acquisition for the
+    %               data contained in the file"
+    %   States that TIME_MIN, TIME_MAX should be "Julian day" (not "modified
+    %   Julian day", which e.g. OVT uses internally).
+    %
+    % NOTE: Implementation does not consider the integration time of each
+    % sample.
+    % NOTE: juliandate() is consistent with Julian date converter at
+    % https://www.onlineconversion.com/julian_date.htm
+    % NOTE: ZvsSubset.Epoch already asserted to be monotonically increasing.
+    %
+    % NOTE: Exact format unclear from documentation, autochecks.
+    % NOTE: Issue for autochecks on L3:
+    %       https://gitlab.obspm.fr/ROC/DataPool/-/issues/16
+    % check_cdf_istp.solo_L3_rpw-bia.txt:
+    %   """"
+    % 	Global attribute TIME_MAX is of type CDF_DOUBLE.
+    % 	    Datatypes other than CDF_CHAR may be problematic.
+    % 	Global attribute TIME_MIN is of type CDF_DOUBLE.
+    % 	    Datatypes other than CDF_CHAR may be problematic.""""
+    % NOTE: ROC data reprocessed ~2021-01-25,
+    % solo_L1_rpw-bia-current-cdag_20201201-20201231_V01.cdf (version number
+    % probably not part of official versioning) uses
+    %     TIME_MIN (1 entry):
+    %         0 (CDF_CHAR/17):        "2459184.982450046"
+    %     TIME_MAX (1 entry):
+    %         0 (CDF_CHAR/17):        "2459215.007218565"
+    % Note the number of decimals. No exponent. Other files with ten decimals.
+    %
+    % PROPOSAL: Copy values from the corresponding values from the relevant input dataset.
+    %   CON: Does not work for downsampled.
+    %   CON: There has historically been problems with copying bad values from
+    %        not-up-to-date input datasets.
+    %---------------------------------------------------------------------------
+    % NOTE: Choosing 10 decimals (instead of 9) so that time resolution is
+    % higher than highest LFR sampling frequency (not sure of highest for
+    % TDS-LFM).
+    TIME_MINMAX_FORMAT = '%.10f';
+    gaTimeMinNbr = juliandate(EJ_library.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(1  )));
+    gaTimeMaxNbr = juliandate(EJ_library.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(end)));
+    OutGaSubset.TIME_MIN = sprintf(TIME_MINMAX_FORMAT, gaTimeMinNbr);
+    OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
+    
+    % ROC DFMD hints that value should not be set dynamically. (See meaning of
+    % non-italic black text for global attribute name in table.)
+    %DataObj.GlobalAttribute.CAVEATS = ?!!
+
+    
+    
     % ~ASSERTION
     if ~isscalar(OutGaSubset.Parents)
         [settingValue, settingKey] = SETTINGS.get_fv(...
@@ -306,35 +371,11 @@ end
 
 
 
-% Utility function to shorten & clarify code.
-% Not very efficient, but that is unimportant here.
+% NOTE: Only works correctly for files that follow the official filenaming scheme.
 %
-% Modifies OutGa such that field "fieldName" is potentially modified.
-% Essentially, do
-%   OutGa.(fieldName) := UNION[ OutGa.(fieldName) InGa.(fieldName) ]
-% with precautions.
-%
-% NOTE: Can tolerate InGa.(fieldName) not existing. Then skipping union.
-% NOTE: Eliminates duplicated values in end result.
-% NOTE: Removes ' ', unless it is the only value. ' ' is (empirically) like a
-%       fill value for global attributes.
-% NOTE: Assumes that values are cell arrays (of strings).
-%
-% function OutGa = add_to_set_if_found(InGa, OutGa, fieldName)
-%     outValue = OutGa.(fieldName);
-%
-%     if isfield(InGa, fieldName)
-%         outValue = union(outValue, InGa.(fieldName));
-%     end
-%
-%     % ~HACK
-%     % Remove ' ', unless it is the only value.
-%     % NOTE: Empirically, ' ' is like a fill value for global attributes (but it
-%     % is probably not a formal fill value(?) since only zvars have fill values).
-%     outValue2 = setdiff(outValue, ' ');
-%     if ~isempty(outValue2)
-%         outValue = outValue2;
-%     end
-%
-%     OutGa.(fieldName) = outValue;
-% end
+% NOTE: Does not change case.
+function logicalFileId = get_logical_file_id(filePath)
+    % Use the filename without suffix.
+    [~, basename, ~] = fileparts(filePath);
+    logicalFileId = basename;
+end
