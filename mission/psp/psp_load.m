@@ -556,6 +556,7 @@ end
     out = psp_var(['file=' fileBaseName]);
     if (numel(out) > 1), out = out{1}; end
     dirBase = out.directory;
+    out = {[]};
     for date = floor(startDatenum):floor(endDatenum)
       MM = datestr(date,'mm');
       YY = datestr(date,'yy');
@@ -563,7 +564,7 @@ end
       dirFull = strrep(dirFull,'YY',YY);
       dirFull = [dirFull filesep fileBaseName '_' datestr(date,'YYYYmmDD')];
       listDir = dir([dataDir filesep dirFull '*']);
-      out = fullfile({listDir.folder},{listDir.name});
+      out = [out fullfile({listDir.folder},{listDir.name})];
     end
   end
 

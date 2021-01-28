@@ -385,7 +385,7 @@ info#end
 %%%%
 varName: np_moment
 fileName: psp_swp_spc_l3i
-direcotry: sweap/spc/L3/20YY/MM
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
 varNameShort: npmomFit
 related: 
@@ -477,7 +477,7 @@ info#end
 %%%%
 varName: vp_moment_RTN
 fileName: psp_swp_spc_l3i
-direcotry: sweap/spc/L3/20YY/MM
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
 varNameShort: rtnVpmom
 related: 
