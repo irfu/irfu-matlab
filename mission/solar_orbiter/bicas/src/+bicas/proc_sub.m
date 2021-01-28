@@ -510,7 +510,7 @@ classdef proc_sub
 
 
 
-            PreDc.Ga.Datetime       = InSci.Ga.Datetime;
+%             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
 
@@ -778,7 +778,7 @@ classdef proc_sub
 
 
 
-            PreDc.Ga.Datetime       = InSci.Ga.Datetime;
+%             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
 
@@ -838,7 +838,7 @@ classdef proc_sub
             OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
 
-            OutSci.Ga.Datetime  = SciPreDc.Ga.Datetime;
+%             OutSci.Ga.Datetime  = SciPreDc.Ga.Datetime;
             OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
             OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
 
@@ -1430,7 +1430,7 @@ classdef proc_sub
             %==================
             % Global attributes, shared between all 3x2 datasets
             Ga = struct();
-            Ga.Datetime           = InLfrCwf.Ga.Datetime;
+%             Ga.Datetime           = InLfrCwf.Ga.Datetime;
             Ga.OBS_ID             = InLfrCwf.Ga.OBS_ID;
             Ga.SOOP_TYPE          = InLfrCwf.Ga.SOOP_TYPE;
             % zVariables, shared between all non-downsampled datasets

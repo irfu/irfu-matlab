@@ -232,28 +232,26 @@ end   % execute_sw_mode
 %       NOTE: Deviates from the usual variable naming conventions.
 %       GlobalAttributesSubset field names have
 %               the exact names of CDF global attributes.
-% outputFilename
-%       Output dataset filename. Could potentially be used for deriving
-%       Glob.attrs. Datetime (time interval string), Data_version,
-%       (DATASET_ID).
-%       NOTE: Not yet used. 
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         InputDatasetsMap, OutputDataset, outputFilename, SETTINGS, L)
 
-    % PGA = Parents' GlobalAttributes.
+    % ASSERTIONS
+    EJ_library.assert.struct(OutputDataset.Ga, ...
+        {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
+%     if ~isscalar(OutputDataset.Ga.Datetime)
+%         [settingValue, settingKey] = SETTINGS.get_fv(...
+%             'OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY');
+%         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+%             ['Global attribute "Datetime" for output dataset', ...
+%             ' is not a MATLAB scalar (i.e. the global attribute does not consist', ...
+%             ' of exactly ONE string). This may be due to the corresponding input', ...
+%             ' dataset value being similarily incorrect.'], ...
+%             'BICAS:execute_sw_mode:Datetime')
+%     end
 
-    if ~isscalar(OutputDataset.Ga.Datetime)
-        [settingValue, settingKey] = SETTINGS.get_fv(...
-            'OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY');
-        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-            ['Global attribute "Datetime" for output dataset', ...
-            ' is not a MATLAB scalar (i.e. the global attribute does not consist', ...
-            ' of exactly ONE string). This may be due to the corresponding input', ...
-            ' dataset value being similarily incorrect.'], ...
-            'BICAS:execute_sw_mode:Datetime')
-    end
-
+    
+    
     OutGaSubset = OutputDataset.Ga;
 
 
@@ -294,7 +292,15 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     OutGaSubset.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
     OutGaSubset.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
-    OutGaSubset.Logical_file_id     = get_logical_file_id(outputFilename);
+    
+    [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = parse_output_filename(outputFilename);
+
+    OutGaSubset.Logical_file_id     = logicalFileId;
+    % Logical_source: Overwrites skeleton value. Can otherwise not handle -cdag.
+    OutGaSubset.Logical_source      = logicalSource;    
+    OutGaSubset.Data_version        = dataVersionStr;
+    OutGaSubset.Datetime            = timeIntervalStr;
+    
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
 
@@ -371,11 +377,25 @@ end
 
 
 
-% NOTE: Only works correctly for files that follow the official filenaming scheme.
+% NOTE: Only works correctly for files that follow the official filenaming
+% scheme. logicalFileId does not work for e.g. IRFU-internal filenaming extension.
 %
 % NOTE: Does not change case.
-function logicalFileId = get_logical_file_id(filePath)
-    % Use the filename without suffix.
-    [~, basename, ~] = fileparts(filePath);
+%
+function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = parse_output_filename(filename)
+    [~, basename, ~] = fileparts(filename);
+
+    % NOTE: Will include IRFU-internal filenaming extension.
     logicalFileId = basename;
+
+    R = EJ_library.so.adm.parse_dataset_filename(filename);
+    assert(~isempty(R), 'BICAS:Assertion', ...
+        ['Can not parse dataset filename "%s" and therefore not', ...
+        ' derive values for global attributes', ...
+        ' (Logical_source, Data_version, Datetime). Filename does not appear', ...
+        ' to follow filenaming conventions.'], filename)
+
+    logicalSource   = R.fnDatasetIdCdag;
+    dataVersionStr  = R.versionStr;
+    timeIntervalStr = R.timeIntervalStr;
 end
