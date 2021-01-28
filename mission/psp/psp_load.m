@@ -312,7 +312,9 @@ switch datatype
           end
           for iDir = 1:numel(dataSubDir)
             dirPath = dataPath{iDir};
-            mkdir(dirPath);
+            if ~exist(dirPath,'dir')
+              mkdir(dirPath);
+            end
             wwwDir = [webserver dataSubDir{iDir}];
             if isempty(webOptions)
               tt = webread(wwwDir);
