@@ -296,7 +296,7 @@ switch datatype
       shortVar = out.varNameShort;
 
       listCdfFiles = get_file_list(fileBaseName);
-      nFiles = length(listCdfFiles);
+      nFiles = numel(listCdfFiles{:});
       if nFiles == 0
         irf.log('critical',['No cdf files found for fileBaseName=' fileBaseName ]);
         doGetFiles = irf_ask('Shall I download? [y/n] [%]>','doGetFiles','y');
