@@ -23,7 +23,7 @@ narginchk(0,2)
 if nargin==0
   localFileDbRoot = datastore('solo_db','local_file_db_root');
   if isempty(localFileDbRoot)
-    irf.log('warining','local_file_db_root empty - run solo.db_init()')
+    irf.log('warning','local_file_db_root empty - run solo.db_init()')
   else
     localFileDb = solo_local_file_db(localFileDbRoot);
     SOLO_DB.add_db(localFileDb);

@@ -108,7 +108,7 @@ end
 % return in case inputs are empty
 if numel(x)==0 || numel(y)==0
   out=[];
-  irf.log('warining','Some of input is empty, returning empty ouput');
+  irf.log('warning','Some of input is empty, returning empty ouput');
   return;
 end
 
