@@ -13,12 +13,11 @@ function [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = vdccal(VDC,EDC)
 %   matVerStr  - Date format version string for .mat file. Used by BICAS.
 %                (Not yet used.)
 %
-% Loads d23K123.mat file produced by solo.correlate_probes_batch (script)
-% NOTE: d23K123.mat needs to be updated before processing the new data.
+% Loads .mat file produced by solo.correlate_probes_batch (script)
+% NOTE: .mat needs to be updated before processing the new data.
 %
 % NOTE: This function is used by BICAS for producing official datasets.
 
-%a = load('d23K123_20201110_november.mat');
 a = load('d23K123_20210129');
 
 
