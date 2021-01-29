@@ -296,7 +296,7 @@ switch datatype
       shortVar = out.varNameShort;
 
       listCdfFiles = get_file_list(fileBaseName);
-      nFiles = numel(listCdfFiles{:});
+      nFiles = numel(listCdfFiles);
       if nFiles == 0
         irf.log('critical',['No cdf files found for fileBaseName=' fileBaseName ]);
         doGetFiles = irf_ask('Shall I download? [y/n] [%]>','doGetFiles','y');
@@ -430,7 +430,7 @@ epochData = cell(nVar,1);
 
 for iFile = 1:nFiles
   
-  if ~isempty(listCdfFiles)
+  if numel(listCdfFiles{:})>0
     fileToLoad = listCdfFiles{iFile};
   else
     fileToLoad=strtrim(filesToLoadTable(iFile,:));
@@ -556,7 +556,7 @@ end
     out = psp_var(['file=' fileBaseName]);
     if (numel(out) > 1), out = out{1}; end
     dirBase = out.directory;
-    out = {[]};
+    out = {};
     for date = floor(startDatenum):floor(endDatenum)
       MM = datestr(date,'mm');
       YY = datestr(date,'yy');
