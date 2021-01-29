@@ -19,7 +19,7 @@ function [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = vdccal(VDC,EDC)
 % NOTE: This function is used by BICAS for producing official datasets.
 
 %a = load('d23K123_20201110_november.mat');
-a = load('d23K123_20210124');
+a = load('d23K123_20210129');
 
 
 
