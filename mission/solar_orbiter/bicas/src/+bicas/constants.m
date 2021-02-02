@@ -193,7 +193,7 @@ classdef constants   % < handle
             % must lead to update the version number.
             % """"""""
             MAP('SWD.release.version')            = '5.0.0';
-            MAP('SWD.release.date')               = '2021-02-02T11:15:00Z';
+            MAP('SWD.release.date')               = '2021-02-02T15:15:00Z';
             MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
             MAP('SWD.release.contact')            = 'erjo@irfu.se';
             MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -221,7 +221,6 @@ classdef constants   % < handle
             MAP('SWD.release.modification')       = ...
                 ['Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26', ...
                 '; Better output CDF standards compliance', ...
-                '; Derive some L3 data also when having only one DC probe (i.e. when measuring AC diffs)', ...
                 '; Using new master CDFs']; % v5.0.0
             MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
             % Appropriate branch? "master" instead?

@@ -8,11 +8,11 @@
     },
     "release": {
         "version":      "5.0.0",
-        "date":         "2021-02-02T11:15:00Z",
+        "date":         "2021-02-02T15:15:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26; Better output CDF standards compliance; Derive some L3 data also when having only one DC probe (i.e. when measuring AC diffs); Using new master CDFs",
+        "modification": "Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26; Better output CDF standards compliance; Using new master CDFs",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {
