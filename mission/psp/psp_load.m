@@ -430,7 +430,7 @@ epochData = cell(nVar,1);
 
 for iFile = 1:nFiles
   
-  if numel(listCdfFiles{:})>0
+  if numel(listCdfFiles)>0
     fileToLoad = listCdfFiles{iFile};
   else
     fileToLoad=strtrim(filesToLoadTable(iFile,:));
@@ -562,8 +562,10 @@ end
       YY = datestr(date,'yy');
       dirFull = strrep(dirBase,'MM',MM);
       dirFull = strrep(dirFull,'YY',YY);
+      dirFull = strrep(dirFull,'/',filesep);
       dirFull = [dirFull filesep fileBaseName '_' datestr(date,'YYYYmmDD')];
       listDir = dir([dataDir filesep dirFull '*']);
+      irf.log('debug',['Listing files in: ' dataDir filesep dirFull '*']);
       out = [out fullfile({listDir.folder},{listDir.name})];
     end
   end
