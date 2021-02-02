@@ -303,19 +303,20 @@ classdef solo_local_file_db < solo_file_db
     function rDir = get_remotePrefix(obj, C)
       % Descriptor contains instrument and data product descriptor part
       % separated by "-".
-      instr = strsplit(C{3}, '-');
-      instr = instr{1};
+      
+      temp      = strsplit(C{3}, '-');
+      instr     = temp{1};
         
       if strcmp(instr, 'rpw')
         % CASE: Searching for RPW data.
           
         if exist(fullfile(obj.dbRoot, 'latest'), 'dir')
           % CASE: RPW BIAS data (L2, L3) processed at IRFU.
-          % Ex: obj.dbRoot = /data/solo/data_irfu/
+          % Ex: obj.dbRoot == /data/solo/data_irfu/
           rDir = fullfile(obj.dbRoot, 'latest', 'rpw');
         else
           % CASE: RPW data (all subsystems) mirrored from ROC/LESIA.
-          % Ex: obj.dbRoot = /data/solo/
+          % Ex: obj.dbRoot == /data/solo/
           rDir = fullfile(obj.dbRoot, 'remote', 'data');
         end
       else
@@ -323,14 +324,15 @@ classdef solo_local_file_db < solo_file_db
         
         rDir = fullfile(obj.dbRoot, 'soar', instr);
         if exist(rDir, 'dir')
-            % CASE: obj.dbRoot is /data/solo/ folder ==> Direct to SOAR mirror.
+            % CASE: Direct to SOAR mirror.
+            % Ex: obj.dbRoot == /data/solo/ folder
             return
         end
         
         rDir = fullfile(obj.dbRoot, instr);
         if exist(rDir, 'dir')
             % CASE: obj.dbRoot is general folder for (multiple) non-RPW instruments.
-            % Ex: obj.dbRoot = /data/solo/data_manual/
+            % Ex: obj.dbRoot == /data/solo/data_manual/
             return
         end
       end
@@ -338,30 +340,34 @@ classdef solo_local_file_db < solo_file_db
     
     function fileDir = get_fileDir(~, C)
       levelDir = C{2}; % "L2" (or "L1R", "L1", "L3", "HK")
+      
+      % Normalization. Remove '-cdag', if present.
+      descr = regexprep(C{3}, '-cdag$', '');
+
       if ismember(levelDir, {'L2', 'L3'})
-        switch C{3}
-          case 'rpw-lfr-surv-asm-cdag'
+        switch descr
+          case 'rpw-lfr-surv-asm'
             subDir = 'lfr_asm'; % ie combined 2nd "_" 4th
-          case 'rpw-tds-surv-hist1d-cdag'
+          case 'rpw-tds-surv-hist1d'
             subDir = 'hist1d';  % ie 4th
-          case 'rpw-tds-surv-hist2d-cdag'
+          case 'rpw-tds-surv-hist2d'
             subDir = 'hist2d';  % ie 4th
-          case 'rpw-tds-surv-mamp-cdag'
+          case 'rpw-tds-surv-mamp'
             subDir = 'mamp';    % ie 4th
-          case 'rpw-tds-surv-stat-cdag'
+          case 'rpw-tds-surv-stat'
             subDir = 'stat';    % ie 4th
-          case {'rpw-lfr-surv-bp1-cdag', 'rpw-lfr-surv-bp2-cdag'}
+          case {'rpw-lfr-surv-bp1', 'rpw-lfr-surv-bp2'}
             subDir = 'lfr_bp';    % ie combined 2nd "_" 4th (excl last digit, which is unique)
-          case {'rpw-lfr-surv-cwf-b-cdag', 'rpw-lfr-surv-swf-b-cdag'}
+          case {'rpw-lfr-surv-cwf-b', 'rpw-lfr-surv-swf-b'}
             subDir = 'lfr_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
-          case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e','rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
+          case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e','rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e'}
             subDir = 'lfr_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
-          case {'rpw-tds-surv-rswf-b-cdag', 'rpw-tds-surf-tswf-b-cdag'}
+          case {'rpw-tds-surv-rswf-b', 'rpw-tds-surf-tswf-b'}
             subDir = 'tds_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
-          case {'rpw-tds-surv-rswf-e-cdag', 'rpw-tds-surf-tswf-e-cdag'}
+          case {'rpw-tds-surv-rswf-e', 'rpw-tds-surf-tswf-e'}
             subDir = 'tds_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
-          case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
-            subDir = 'thr';  % ie combined 2nd of the two using only first and last char?            
+          case {'rpw-hfr-surv', 'rpw-tnr-surv'}
+            subDir = 'thr';  % ie combined 2nd of the two using only first and last char?
 
           % Planned future official directory names to be used by ROC and that
           % IRFU should therefore also use. As per agreement with Yuri
@@ -372,14 +378,16 @@ classdef solo_local_file_db < solo_file_db
           % /Erik Johansson 2020-12-15.
 %           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
 %             subDir = 'lfr_density';
-%           case {'rpw-bia-efield', 'rpw-bia-efield-10-seconds'}
+%           case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}
 %             subDir = 'lfr_efield';
-%           case {'rpw-bia-scpot', 'rpw-bia-scpot-10-seconds'}
+%           case {'rpw-bia-scpot',   'rpw-bia-scpot-10-seconds'}
 %             subDir = 'lfr_scpot';
+          case {'rpw-tnr-fp'}
+            subDir = 'tnr_fp';
 
           otherwise
             % Fallback to full descriptor (used for local SOAR copy at IRFU).
-            subDir = C{3};
+            subDir = descr;
         end
         fileDir = fullfile(levelDir, subDir);
       else
