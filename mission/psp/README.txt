@@ -3,10 +3,10 @@
 Goto directory where you want to mirror FIELDS data into directory "fields" and SWEAP data into directory "sweap".
 
 % FIELDS data (the example downloads 2020 data) 
-wget -c -N  --http-user=xxxx --http-password=xxxxxxxx -e robots=off --recursive --wait=2 -A "*_2020*_v0x*" --no-parent --level=inf --reject-regex '[\?]'  --cut-dirs=4  http://research.ssl.berkeley.edu/data/psp/data/sci/fields/l2
+wget -c -N  --http-user=xxxx --http-password=xxxxxxxx -e robots=off --recursive --wait=2 -A "*_2020*_v0x*" --no-parent --level=inf --reject-regex '[\?]'  --cut-dirs=4 -nH  http://research.ssl.berkeley.edu/data/psp/data/sci/fields/l2
 
 % SWEAP data (the example downloads 2020 data)
-wget -c -N -e robots=off --recursive --wait=2 -A "*_2020*_v0x*" --no-parent --level=inf --reject-regex '[\?]'  --cut-dirs=3 http://sweap.cfa.harvard.edu/pub/data/sci/
+wget -c -N -e robots=off --recursive --wait=2 -A "*_2020*_v0x*" --no-parent --level=inf --reject-regex '[\?]'  --cut-dirs=3 -nH http://sweap.cfa.harvard.edu/pub/data/sci/
 
 See also https://gist.github.com/pulupa/fd1b6810091a347fccaf1657cadefe39
 
