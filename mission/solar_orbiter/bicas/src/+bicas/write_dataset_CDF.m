@@ -39,16 +39,18 @@ function write_dataset_CDF(...
     % TODO-DEC: Should function find the master CDF file itself?
     %===========================================================================
     
-    
-    
+    %============
+    % ASSERTIONS
+    %============
     % UI ASSERTION: Check for directory collision. Always error.
     if exist(outputFile, 'dir')     % Checks for directory.
         error(...
             'BICAS:write_dataset_CDF', ...
             'Intended output dataset file path matches a pre-existing directory.')
     end
-    % UI ASSERTION: Check for output file path collision with pre-existing file.
-    % Command checks for file and directory (can not do just file).
+    % UI ASSERTION: Check for output file path collision with pre-existing file
+    %               or directory.
+    % Command checks for file and directory (should not do just file).
     if exist(outputFile, 'file')
         [settingValue, settingKey] = SETTINGS.get_fv(...
             'OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
@@ -192,7 +194,7 @@ function DataObj = init_modif_dataobj(...
                 ' in the master CDF file.'], zvName)
         end
         
-        zvValue = ZvsSubset.(zvName);
+        zvValue         = ZvsSubset.(zvName);
         ZvsLog.(zvName) = zvValue;
         
         %======================================================================

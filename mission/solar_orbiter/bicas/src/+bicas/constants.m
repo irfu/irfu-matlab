@@ -150,16 +150,6 @@ classdef constants   % < handle
         % Various S/W descriptor (SWD) release data for the entire software (not
         % specific outputs)
         % ----------------------------------------------------------------------
-        % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
-        % Users":
-        % """"""""
-        % 2.2.3 RCS versioning
-        % The RCS version must be a unique number sequence identifier “X.Y.Z”,
-        % where “X” is an integer indicating the release (major changes, not
-        % necessarily retro-compatible), “Y” is an integer indicating the issue
-        % (minor changes, necessarily retro-compatible) and “Z” is an integer
-        % indicating a revision (e.g., bug correction).
-        % """"""""
         %
         function MAP = init_swd_metadata()
             MAP = containers.Map();
@@ -176,6 +166,32 @@ classdef constants   % < handle
             
             % 2020-11-24: Latest document version is 01/04.
             MAP('SWD.identification.icd_version') = '1.4';
+            
+            % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
+            % Users":
+            % """"""""
+            % 2.2.3 RCS versioning
+            % The RCS version must be a unique number sequence identifier “X.Y.Z”,
+            % where “X” is an integer indicating the release (major changes, not
+            % necessarily retro-compatible), “Y” is an integer indicating the issue
+            % (minor changes, necessarily retro-compatible) and “Z” is an integer
+            % indicating a revision (e.g., bug correction).
+            % """"""""
+            %
+            %  ROC-PRO-PIP-ICD-00037-LES, "RPW Calibration Software Interface
+            %  Control Document", 01/04:
+            % """"""""
+            % "version" : Current version of the S/W. The RCS version shall be a unique number
+            % sequence identifier “X.Y.Z”, where “X” is an integer indicating the release (major
+            % changes, not necessarily retro-compatible), “Y” is an integer indicating the issue (minor
+            % changes, necessarily retro-compatible) and “Z” is an integer indicating a revision (e.g.,
+            % bug correction). The first stable release of software (S/W) must have its major number
+            % “X” equals to 1, its minor number “Y” equals to 0 and its revision number “Z” equals
+            % to 0 (i.e., “1.0.0”). S/W preliminary versions (e.g., alpha, beta, etc.) must have their
+            % version number “X” equals to 0 and must not have a character as a prefix/suffix
+            % (“0.Y.Zb” for the 0.Y.Z beta version for instance). In all cases, any change in the S/W
+            % must lead to update the version number.
+            % """"""""
             MAP('SWD.release.version')            = '4.1.0';
             MAP('SWD.release.date')               = '2020-12-07T18:48:00Z';
             MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
