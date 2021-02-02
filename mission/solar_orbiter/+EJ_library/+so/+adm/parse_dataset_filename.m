@@ -95,9 +95,10 @@
 %
 % RETURN VALUES
 % =============
-% Result : If not a recognizable dataset : []
-%          If     a recognizable dataset : Struct with a varying set of fields,
-%          depending on the filenaming convention the filename adheres to.
+% Result : If not a recognizable dataset filename: []
+%          If     a recognizable dataset filename:
+%               Struct with a varying set of fields,
+%               depending on the filenaming convention the filename adheres to.
 %   Fields always present:
 %       .datasetId            : DATASET_ID. (Always uppercase.)
 %       .isCdag               : Logical. Whether or not the file is a CDAG
@@ -215,6 +216,9 @@ function R = parse_dataset_filename(filename)
     %       Ex: regexp constants
     %   PROPOSAL: One top-level function that handles all filenaming conventions
     %             together. Should assign(?) string for identified convention.
+    %
+    % PROPOSAL: Return value for basename without IRFU-internal filenaming
+    %           extension.
 
     NO_MATCH_RETURN_VALUE = [];
     
