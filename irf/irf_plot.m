@@ -88,7 +88,7 @@ scaleyy = 1;
 plot_type = '';
 marker = '-';
 flag_plot_all_data=1;
-flag_colorbar=1;
+showColorbar  = true;
 tint=[];
 doReducedPlot = false;
 check_input_options()
@@ -203,7 +203,7 @@ if flag_subplot==0  % One subplot
       irf_spectrogram(ax,x);
     end
     
-    if flag_colorbar, hcbar = colorbar(ax); end
+    if showColorbar, hcbar = colorbar(ax); end
     if ~isempty(var_desc{1})
       lab = cell(1,length(var_desc{1}.size));
       for v = 1:length(var_desc{1}.size)
@@ -311,11 +311,10 @@ elseif flag_subplot==2 % Separate subplot for each variable
     if isstruct(y)
       if doReducedPlot
         yy=y;yy.t=y.t-dt(ipl);
-        c(ipl)=irf_spectrogram(c(ipl),yy,'reduce');
+        [c(ipl),hcbar]=irf_spectrogram(c(ipl),yy,'reduce');
       else
-        c(ipl)=irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
+        [c(ipl),hcbar]=irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
       end
-      if flag_colorbar, hcbar = colorbar; end
       if ~isempty(var_desc{ipl})
         lab = cell(1,length(var_desc{ipl}.size));
         for v = 1:length(var_desc{ipl}.size)
@@ -587,7 +586,7 @@ if nargout==0, clear c; end
           marker = args{2};
           l = 2;
         case 'nocolorbar'
-          flag_colorbar=0;
+          showColorbar=0;
           l = 1;
         otherwise
           marker = args{1};

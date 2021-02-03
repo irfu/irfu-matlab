@@ -39,6 +39,7 @@ field_list={'DEPEND_0','data','nrec','dim','name','variance','UNITS'};
 ud = rmfield(ud,field_list(isfield(ud,field_list)));
 
 repres = [];
+tensorOrder = [];
 if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
   tensorOrder = data.TENSOR_ORDER; ud = rmfield(ud,'TENSOR_ORDER');
   if ischar(tensorOrder), tensorOrder = str2double(tensorOrder); end
@@ -56,27 +57,30 @@ if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
       error('TensorOrder>2 not supported')
   end
 else % guessing for Non-CAA data
-  tensorOrder = length(data.variance(3:end));
+  isTimeSeriesTensor = false;
+  tensorOrderGuess = length(data.variance(3:end));
   
-  switch tensorOrder
-    case 0 % scalar
+  switch tensorOrderGuess
     case 1 % vector
-      if data.dim(1)==2
-        repres = {'x','y'};
-      elseif data.dim(1)==3
-        repres = {'x','y','z'};
-      else, tensorOrder = 0; % TENSOR_ORDER=0 can be omitted in CAA files
+      if data.dim(1)==2 || data.dim(1)==3
+        isTimeSeriesTensor = true;
+        tensorOrder = 1;
       end
     case 2 % tensor
-    otherwise
-      error('TensorOrder>2 not supported')
+      if (data.dim(1)==2 || data.dim(1)==3) && (data.dim(2)==2 || data.dim(2)==3) 
+        isTimeSeriesTensor = true;
+        tensorOrder = 2;
+      end
   end
 end
-if isempty(repres)
-  res = TSeries(Time,data.data,'TensorOrder',tensorOrder);
+if isTimeSeriesTensor
+  if isempty(repres) && isfinite(tensorOrder)
+    res = TSeries(Time,data.data,'TensorOrder',tensorOrder);
+  elseif isfinite(repres) && isfinite(tensorOrder)
+    res = TSeries(Time,data.data,'TensorOrder',tensorOrder,'repres',repres);
+  end
 else
-  res = TSeries(Time,data.data,'TensorOrder',tensorOrder,...
-    'repres',repres);
+  res = TSeries(Time,data.data);
 end
 res.name = data.name;
 if isfield(data,'UNITS'), res.units = data.UNITS;

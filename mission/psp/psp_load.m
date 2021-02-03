@@ -8,7 +8,7 @@
 %
 % PSP_LOAD(datatype) uses saved PSP directory and global variables
 % dateStart, dateStop. Data are downloaded if missing from the directory.
-% 
+%
 % PSP_LOAD(cdfFile,datatype) return variables into MATLAB base
 %
 % OUT = PSP_LOAD(..) output is TSeries if single variables is returned and
@@ -48,9 +48,10 @@
 
 function [output,pspobj] = psp_load(arg1,datatype,date_start,date_stop)
 global dateStart dateEnd
-persistent webOptionsSSL
-if isnumeric(webOptionsSSL) 
-  % first run of function
+persistent webOptionsSSL doGetFiles
+
+% define webOptionsSSL during the first run of the funciton
+if isnumeric(webOptionsSSL)
   userName = datastore('psp','usernameSSL');
   if isempty(userName)
     webOptionsSSL = {};
@@ -61,7 +62,7 @@ if isnumeric(webOptionsSSL)
   else
     passWord = datastore('psp','passwordSSL');
     webOptionsSSL = weboptions('HeaderFields',{'Authorization',...
-    ['Basic ' matlab.net.base64encode([userName ':' passWord])]});
+      ['Basic ' matlab.net.base64encode([userName ':' passWord])]});
   end
 end
 
@@ -81,7 +82,7 @@ pspobj = []; % default output
 listCdfFiles = {};
 useStoredPspDirectory = false;
 
-
+% If data directory not given, read in the stored value
 if ~exist('dataDir') || isempty(dataDir)
   dataDir=datastore('psp','data_directory');
   if isempty(dataDir)
@@ -117,7 +118,7 @@ switch datatype
       'psp_fld_l2_dfb_wf_dVdc_sc'};
     varnamesout = {'wf_dvdc_sensor';'wf_dvdc_sc'};
     
-    hourtag={'00';'06';'12';'18'};  
+    hourtag={'00';'06';'12';'18'};
     
   case {'wf_scm'}
     filename= 'psp_fld_l2_dfb_wf_scm';
@@ -127,30 +128,30 @@ switch datatype
     varnamesout = {...
       'wf_scm_sensor';'wf_scm_sc'};
     
-    hourtag={'00';'06';'12';'18'};    
+    hourtag={'00';'06';'12';'18'};
     
   case {'ac_spec_dv12'}
     filename = 'psp_fld_l2_dfb_ac_spec_dV12hg';
     varnames = {...
-      'psp_fld_l2_dfb_ac_spec_dV12hg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_dV12hg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_dV12hg'};
     varnamesout = {'ac_spec_dv12_freq_bins';'ac_spec_dv12_pw'};
     
-    hourtag={''};  
+    hourtag={''};
     
   case {'ac_spec_dv34'}
     filename = 'psp_fld_l2_dfb_ac_spec_dV34hg';
     varnames = {...
-      'psp_fld_l2_dfb_ac_spec_dV34hg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_dV34hg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_dV34hg'};
     varnamesout = {'ac_spec_dv34_freq_bins';'ac_spec_dv34_pw'};
     
-    hourtag={''};  
+    hourtag={''};
     
   case {'ac_spec_v5'}
     filename = 'psp_fld_l2_dfb_ac_spec_V5hg';
     varnames = {...
-      'psp_fld_l2_dfb_ac_spec_V5hg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_V5hg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_V5hg'};
     varnamesout = {'ac_spec_v5_freq_bins';'ac_spec_v5_pw'};
     
@@ -159,7 +160,7 @@ switch datatype
   case {'ac_spec_scmv'}
     filename = 'psp_fld_l2_dfb_ac_spec_SCMvlfhg';
     varnames = {...
-      'psp_fld_l2_dfb_ac_spec_SCMvlfhg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_SCMvlfhg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_SCMvlfhg'};
     varnamesout = {'ac_spec_scmv_freq_bins';'ac_spec_scmv_pw'};
     
@@ -168,11 +169,11 @@ switch datatype
   case {'ac_spec_scmu'}
     filename = 'psp_fld_l2_dfb_ac_spec_SCMulfhg';
     varnames = {...
-      'psp_fld_l2_dfb_ac_spec_SCMulfhg_frequency_bins';...          
+      'psp_fld_l2_dfb_ac_spec_SCMulfhg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_SCMulfhg'};
     varnamesout = {'ac_spec_scmu_freq_bins';'ac_spec_scmu_pw'};
     
-    hourtag={''}; 
+    hourtag={''};
     
   case {'dc_spec_dv12'}
     filename = 'psp_fld_l2_dfb_dc_spec_dV12hg';
@@ -182,7 +183,7 @@ switch datatype
     varnamesout = {'dc_spec_dv12_freq_bins';'dc_spec_dv12_pw'};
     
     hourtag={''};
-        
+    
   case {'dc_spec_scmu'}
     filename = 'psp_fld_l2_dfb_dc_spec_SCMulfhg';
     varnames = {...
@@ -232,9 +233,9 @@ switch datatype
     varnamesout = {'rfs_hfr_v1v2';'rfs_hfr_v1v2_freq';...
       'rfs_hfr_v3v4';'rfs_hfr_v3v4_freq'};
     
-    hourtag={''};  
+    hourtag={''};
     
-  case {'sweap', 'spc'}    
+  case {'sweap', 'spc'}
     filename = 'psp_swp_spc_l3i';
     
     varnames = {...
@@ -283,78 +284,16 @@ switch datatype
     return;
     
   otherwise
-    if nargin == 1 % psp_load(varName) assumes global dateStart dateEnd
-      % read in variable, lookup up files to read from
+    if nargin == 1 || nargin == 4
+      % read in variables defined in psp_var
       out = psp_var(datatype);
-      fileBaseName = out.fileName;
-      if isempty(fileBaseName)
-        error(['Filename not known for datatype: ' datatype '. Consider updating psp_load().']);
-      end
-      
-      varName = out.varName;
-      hourtag = out.hourtag;
-      shortVar = out.varNameShort;
-
+      fileBaseName = out.fileName;      
+      varnames  = {out.varName};
+      hourtag  = out.hourtag;
+      varnamesout = {out.varNameShort};
       listCdfFiles = get_file_list(fileBaseName);
       nFiles = numel(listCdfFiles);
-      if nFiles == 0
-        irf.log('critical',['No cdf files found for fileBaseName=' fileBaseName ]);
-        doGetFiles = irf_ask('Shall I download? [y/n] [%]>','doGetFiles','y');
-        if strcmp(doGetFiles,'y')
-          dataSubDir = get_data_dir(fileBaseName,startDatenum:endDatenum);
-          dataPath = get_data_path(fileBaseName,startDatenum:endDatenum);
-          if strcmp(dataSubDir{1}(1:5),'sweap')
-            webserver = 'http://sweap.cfa.harvard.edu/pub/data/sci/';
-            webOptions = {};
-          elseif strcmp(dataSubDir{1}(1:6),'fields')
-            webserver = 'https://research.ssl.berkeley.edu/data/psp/data/sci/';
-            webOptions = webOptionsSSL;
-          end
-          for iDir = 1:numel(dataSubDir)
-            dirPath = dataPath{iDir};
-            if ~exist(dirPath,'dir')
-              mkdir(dirPath);
-            end
-            wwwDir = [webserver dataSubDir{iDir}];
-            if isempty(webOptions)
-              tt = webread(wwwDir);
-            else
-              tt = webread(wwwDir,webOptions);
-            end
-            ff = regexp(tt,'([\w]*.cdf)','tokens');
-            files = arrayfun(@(x) (x{1}),ff);
-            files = unique(files);
-            fileDates = regexp(files,'.*_(20\d\d\d\d\d\d)\d*_v.*.cdf','tokens');
-            iFilesToGet = find(ind_dates_in_datenum_interval(fileDates));
-            if any(iFilesToGet)
-              for ii = 1:numel(iFilesToGet)
-                irf.log('warning',['Downloading: ' files{iFilesToGet(ii)}]);
-                wwwLink = [wwwDir '/' files{iFilesToGet(ii)}];
-                filePath = [dirPath '/' files{iFilesToGet(ii)}];
-                irf.log('warning',['Downloading: ' wwwLink]);
-                if isempty(webOptions)
-                  outFileName = websave(filePath,wwwLink);
-                else
-                  outFileName = websave(filePath,wwwLink,webOptions);
-                end
-                irf.log('warning',['Downloaded to: ' outFileName]);
-              end
-            else
-              irf.log('warning','No files to download from the server matching the date');
-            end
-          end
-          listCdfFiles = get_file_list(fileBaseName);
-          nFiles = length(listCdfFiles);
-          if nFiles == 0
-            irf.log('warning','No data to load');
-            return;
-          end
-        else
-          return;
-        end
-      end
-      varnames = {varName};
-      varnamesout = {shortVar};
+
     elseif nargin==2
       % read in single variable from a given file
       nFiles = 1;
@@ -365,24 +304,6 @@ switch datatype
         error(['Filename not known for varname: ' varName '. Consider updating psp_load().']);
       elseif (filename ~= filesToLoadTable(1:length(filename)))
         error(['varname: ' varName ' not consistent with filename: ' filesToLoadTable]);
-      end
-      varnames = {varName};
-      varnamesout = {shortVar};
-    elseif nargin == 4
-      % read in variable, lookup up files to read from
-      nFiles = 1;
-      out = psp_var(datatype);
-      fileBaseName = out.fileName;
-      varName = out.varName;
-      hourtag = out.hourtag;
-      shortVar = out.varNameShort;
-      if isempty(fileBaseName)
-        error(['Filename not known for datatype: ' datatype '. Consider updating psp_load().']);
-      end
-      listCdfFiles = get_file_list(fileBaseName);
-      nFiles = length(listCdfFiles);
-      if nFiles == 0
-        irf.log('critical',['No cdf files found for fileBaseName = ' fileBaseName]); return;
       end
       varnames = {varName};
       varnamesout = {shortVar};
@@ -435,6 +356,11 @@ for iFile = 1:nFiles
   else
     fileToLoad=strtrim(filesToLoadTable(iFile,:));
     d=dir([fileToLoad(1:end-6) '*']); % list all files with different versions
+    if isempty(d)
+      irf.log('warning','No data, trying to download.');
+      download_data(filename,datenumTable)
+      d=dir([fileToLoad(1:end-6) '*']);
+    end
     if numel(d) == 1
       fileToLoad = [d.folder filesep d.name];
       irf.log('warning',['Reading: ' d.name]);
@@ -448,10 +374,10 @@ for iFile = 1:nFiles
       fileToLoad = [];
     end
   end
-      
-if any(fileToLoad)
-
-  pspobj=dataobj(fileToLoad);
+  
+  if any(fileToLoad)
+    
+    pspobj=dataobj(fileToLoad);
     
     for iVar = 1:nVar
       
@@ -477,7 +403,7 @@ if any(fileToLoad)
     end
     
   end
- 
+  
   clear fileToLoad
   clear timestamp
   clear var_data
@@ -490,10 +416,14 @@ if ~outputToBase
   output = cell(1,nVar);
 end
 
-% Fix the output 
+% Fix the output
 for iOutputVar = 1:nVar
   
-  varname_out = varnamesout{iOutputVar};
+  if isempty(varnamesout{iOutputVar})
+    varname_out = varnames{iOutputVar};
+  else
+    varname_out = varnamesout{iOutputVar};
+  end
   indEmptyFiles = false(length(varData{iOutputVar}),1);
   for i=1:length(varData{iOutputVar})
     if isempty(varData{iOutputVar}{i})
@@ -517,15 +447,15 @@ for iOutputVar = 1:nVar
 end
 
   function iFilesToGet = ind_dates_in_datenum_interval(fileDates)
-   iFilesToGet = false(numel(fileDates),1);
-   for iFileDates = 1: numel(fileDates)
-     dd = datenum(fileDates{iFileDates}{:},'yyyymmdd');
-     if dd >= startDatenum && dd <= endDatenum
-       iFilesToGet(iFileDates) = true;
-     end
-   end
- end
-            
+    iFilesToGet = false(numel(fileDates),1);
+    for iFileDates = 1: numel(fileDates)
+      dd = datenum(fileDates{iFileDates}{:},'yyyymmdd');
+      if dd >= startDatenum && dd <= endDatenum
+        iFilesToGet(iFileDates) = true;
+      end
+    end
+  end
+
   function out = get_data_dir(fileBaseName,datenumTable)
     % datenumTable is array of datenums
     % out is cellarray of directories
@@ -538,21 +468,22 @@ end
       YY = datestr(datenumTable(i),'yy');
       dirFull = strrep(dirBase,'MM',MM);
       dirFull = strrep(dirFull,'YY',YY);
+      dirFull = strrep(dirFull,'/',filesep);
       out{i} = dirFull;
     end
     out = unique(out);
   end
 
   function out = get_data_path(fileBaseName,datenumTable)
-    % adds local dataDir path 
+    % adds local dataDir path
     out = get_data_dir(fileBaseName,datenumTable);
     for iOut = 1: numel(out)
       out{iOut} = [dataDir filesep out{iOut}];
     end
   end
 
-  function out = get_file_list(fileBaseName)
-    % uses startDatenum adn endDatenum, maybe should be made as arguments
+  function out = get_file_list_old(fileBaseName)
+    % uses startDatenum and endDatenum
     out = psp_var(['file=' fileBaseName]);
     if (numel(out) > 1), out = out{1}; end
     dirBase = out.directory;
@@ -570,12 +501,34 @@ end
     end
   end
 
+  function out = get_file_list(fileBaseName)
+    % uses startDatenum and endDatenum
+    out = psp_var(['file=' fileBaseName]);
+    if (numel(out) > 1), out = out{1}; end
+    dirBase = out.directory;
+    out = {};
+    
+    for date = floor(startDatenum):floor(endDatenum)
+      dirs = get_data_dir(fileBaseName,date);
+      dirFull = [dirs{1} filesep fileBaseName '_' datestr(date,'YYYYmmDD')];
+      listDirFilter = [dataDir filesep dirFull '*'];
+      listDir = dir(listDirFilter);
+      irf.log('debug',['Listing files in: ' listDirFilter]);
+      if numel(listDir) == 0
+        irf.log('critical',['No cdf files found for fileBaseName=' fileBaseName ]);
+        download_data(fileBaseName,date);
+        listDir = dir(listDirFilter);
+      end
+      out = [out fullfile({listDir.folder},{listDir.name})];
+    end
+  end
+
   function out = get_data_dbm_dvac(listCDFFiles)
-    % output is structure witf fields 
+    % output is structure witf fields
     % .ts: time series with two columns dvac12 and dvac13
     % .ts_sc: time series in sc coordinate system
     % .startStopMatriTT: start and stop times of snapshots in TT
-    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots 
+    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
     %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
     dbm_dvac = double([]);
     tFinal = [];
@@ -602,12 +555,12 @@ end
     out = struct('ts',dbm_dvac,'ts_sc',dbm_dvac_sc,...
       'startStopTT',tStartStopTT);
   end
- 
+
   function out = get_data_dbm_scm(listCDFFiles)
-    % output is structure witf fields 
+    % output is structure witf fields
     % .ts: time series with 3 coumns - SCM u,v.w
     % .startStopMatriTT: start and stop times of snapshots in TT
-    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots 
+    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
     %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
     dbm_scm_hg = double([]);
     dbm_scm_lg = double([]);
@@ -626,8 +579,8 @@ end
         'psp_fld_l2_dfb_dbm_scmhgv',...
         'psp_fld_l2_dfb_dbm_scmhgw'},...
         'KeepEpochAsIs',true,'dataonly',true);
-      ttLG=res{1}; lgu = res{2}; lgv = res{3}; lgw = res{4}; 
-      ttHG=res{5}; hgu = res{6}; hgv = res{7}; hgw = res{8}; 
+      ttLG=res{1}; lgu = res{2}; lgv = res{3}; lgw = res{4};
+      ttHG=res{5}; hgu = res{6}; hgv = res{7}; hgw = res{8};
       % create continuous timeline marking start/stop times of snapshots
       % with additional time point with the same time value
       if any(ttLG)
@@ -657,6 +610,62 @@ end
     dbm_scmHG   = TSeries(EpochTT(tHGFinal),dbm_scm_hg);
     out = struct('ts_LG',dbm_scmLG,'ts_HG',dbm_scmHG,...
       'startStopTTLG',tStartStopTTLG,'startStopTTHG',tStartStopTTHG);
+  end
+
+  function download_data(fileBaseName,dateNum)
+    if isempty(doGetFiles) ...
+      || ( ~strcmp(doGetFiles,'N') && ~strcmp(doGetFiles,'Y') )
+      doGetFiles = irf_ask('Shall I download Y-yes to all, y-yes? [Y/y/n/N] [%]>','doGetFiles','Y');
+    end
+    
+    if ~strcmpi(doGetFiles,'y'),return;end
+    
+    dataSubDir = get_data_dir(fileBaseName,dateNum);
+    dataPath = get_data_path(fileBaseName,dateNum);
+    
+    % define data servers and weboptions
+    if strcmp(dataSubDir{1}(1:5),'sweap')
+      webserver = 'http://sweap.cfa.harvard.edu/pub/data/sci/';
+      webOptions = {};
+    elseif strcmp(dataSubDir{1}(1:6),'fields')
+      webserver = 'https://research.ssl.berkeley.edu/data/psp/data/sci/';
+      webOptions = webOptionsSSL;
+    end
+    
+    for iDir = 1:numel(dataSubDir)
+      dirPath = dataPath{iDir};
+      if ~exist(dirPath,'dir')
+        mkdir(dirPath);
+      end
+      wwwDir = [webserver dataSubDir{iDir}];
+      if isempty(webOptions)
+        tt = webread(wwwDir);
+      else
+        tt = webread(wwwDir,webOptions);
+      end
+      ff = regexp(tt,'([\w]*.cdf)','tokens');
+      files = arrayfun(@(x) (x{1}),ff);
+      files = unique(files);
+      fileDates = regexp(files,'.*_(20\d\d\d\d\d\d)\d*_v.*.cdf','tokens');
+      iFilesToGet = find(ind_dates_in_datenum_interval(fileDates));
+      if any(iFilesToGet)
+        for ii = 1:numel(iFilesToGet)
+          irf.log('warning',['Downloading: ' files{iFilesToGet(ii)}]);
+          wwwLink = [wwwDir '/' files{iFilesToGet(ii)}];
+          filePath = [dirPath '/' files{iFilesToGet(ii)}];
+          irf.log('warning',['Downloading: ' wwwLink]);
+          if isempty(webOptions)
+            outFileName = websave(filePath,wwwLink);
+          else
+            outFileName = websave(filePath,wwwLink,webOptions);
+          end
+          irf.log('warning',['Downloaded to: ' outFileName]);
+        end
+      else
+        irf.log('warning','No files to download from the server matching the date');
+      end
+    end
+    
   end
 
 end
