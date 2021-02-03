@@ -368,23 +368,20 @@ classdef solo_local_file_db < solo_file_db
             subDir = 'tds_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
           case {'rpw-hfr-surv', 'rpw-tnr-surv'}
             subDir = 'thr';  % ie combined 2nd of the two using only first and last char?
-
-          % Planned future official directory names to be used by ROC and that
-          % IRFU should therefore also use. As per agreement with Yuri
-          % Khotyaintsev, Thomas Chust, and Erik Johansson 2020-11-27. Do not
-          % use until ROC actually starts using these, and the corresponding
-          % IRFU-local /data/solo/data_irfu/latest/L3/ subdirectories have been
-          % correspondingly updated.
-          % /Erik Johansson 2020-12-15.
-%           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
-%             subDir = 'lfr_density';
-%           case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}
-%             subDir = 'lfr_efield';
-%           case {'rpw-bia-scpot',   'rpw-bia-scpot-10-seconds'}
-%             subDir = 'lfr_scpot';
           case {'rpw-tnr-fp'}
             subDir = 'tnr_fp';
 
+          % Official directory names used by ROC and that IRFU should therefore
+          % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
+          % Erik Johansson 2020-11-27.
+          % /Erik Johansson 2020-12-15.
+          case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
+            subDir = 'lfr_density';
+          case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}
+            subDir = 'lfr_efield';
+          case {'rpw-bia-scpot',   'rpw-bia-scpot-10-seconds'}
+            subDir = 'lfr_scpot';
+            
           otherwise
             % Fallback to full descriptor (used for local SOAR copy at IRFU).
             subDir = descr;
