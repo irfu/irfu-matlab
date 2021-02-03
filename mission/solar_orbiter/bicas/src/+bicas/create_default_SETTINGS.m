@@ -298,7 +298,7 @@ function SETTINGS = create_default_SETTINGS()
     %   Master CDFs: Multiple samples/snapshot.
     %   BICAS code:  1 sample/snapshot.
     % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
-    S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
 
 
 
