@@ -63,3 +63,10 @@ execution to have constant gain for low freqs (prevents low frequency noise
 from being amplified.)
 Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE
 Bugfix: not crashing when reading CURRENT datasets with one bias setting.
+
+
+Version 5.0.0
+-------------
+Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26.
+Better output CDF standards compliance.
+Using new master CDFs.

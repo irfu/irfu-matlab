@@ -150,16 +150,6 @@ classdef constants   % < handle
         % Various S/W descriptor (SWD) release data for the entire software (not
         % specific outputs)
         % ----------------------------------------------------------------------
-        % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
-        % Users":
-        % """"""""
-        % 2.2.3 RCS versioning
-        % The RCS version must be a unique number sequence identifier “X.Y.Z”,
-        % where “X” is an integer indicating the release (major changes, not
-        % necessarily retro-compatible), “Y” is an integer indicating the issue
-        % (minor changes, necessarily retro-compatible) and “Z” is an integer
-        % indicating a revision (e.g., bug correction).
-        % """"""""
         %
         function MAP = init_swd_metadata()
             MAP = containers.Map();
@@ -176,8 +166,34 @@ classdef constants   % < handle
             
             % 2020-11-24: Latest document version is 01/04.
             MAP('SWD.identification.icd_version') = '1.4';
-            MAP('SWD.release.version')            = '4.1.0';
-            MAP('SWD.release.date')               = '2020-12-07T18:48:00Z';
+            
+            % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
+            % Users":
+            % """"""""
+            % 2.2.3 RCS versioning
+            % The RCS version must be a unique number sequence identifier “X.Y.Z”,
+            % where “X” is an integer indicating the release (major changes, not
+            % necessarily retro-compatible), “Y” is an integer indicating the issue
+            % (minor changes, necessarily retro-compatible) and “Z” is an integer
+            % indicating a revision (e.g., bug correction).
+            % """"""""
+            %
+            %  ROC-PRO-PIP-ICD-00037-LES, "RPW Calibration Software Interface
+            %  Control Document", 01/04:
+            % """"""""
+            % "version" : Current version of the S/W. The RCS version shall be a unique number
+            % sequence identifier “X.Y.Z”, where “X” is an integer indicating the release (major
+            % changes, not necessarily retro-compatible), “Y” is an integer indicating the issue (minor
+            % changes, necessarily retro-compatible) and “Z” is an integer indicating a revision (e.g.,
+            % bug correction). The first stable release of software (S/W) must have its major number
+            % “X” equals to 1, its minor number “Y” equals to 0 and its revision number “Z” equals
+            % to 0 (i.e., “1.0.0”). S/W preliminary versions (e.g., alpha, beta, etc.) must have their
+            % version number “X” equals to 0 and must not have a character as a prefix/suffix
+            % (“0.Y.Zb” for the 0.Y.Z beta version for instance). In all cases, any change in the S/W
+            % must lead to update the version number.
+            % """"""""
+            MAP('SWD.release.version')            = '5.0.0';
+            MAP('SWD.release.date')               = '2021-02-02T15:15:00Z';
             MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
             MAP('SWD.release.contact')            = 'erjo@irfu.se';
             MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -195,13 +211,17 @@ classdef constants   % < handle
 %                 ['Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)', ...
 %                 '; Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX', ...
 %                 '; Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR'];   % v4.0.0
+%             MAP('SWD.release.modification')       = ...
+%                 ['Non-Standard Operations (NSO) table for thruster firings up until 2020-12-05', ...
+%                 '; Zero order AC detrending, no AC re-trending', ...
+%                 '; Combined transfer functions (LFR+BIAS) modified during', ...
+%                 ' execution to have constant gain for low freqs. for AC data', ...
+%                 '; Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE', ...
+%                 '; Bugfix: not crashing when reading CURRENT datasets with one bias setting'];   % v4.1.0
             MAP('SWD.release.modification')       = ...
-                ['Non-Standard Operations (NSO) table for thruster firings up until 2020-12-05', ...
-                '; Zero order AC detrending, no AC re-trending', ...
-                '; Combined transfer functions (LFR+BIAS) modified during', ...
-                ' execution to have constant gain for low freqs. for AC data', ...
-                '; Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE', ...
-                '; Bugfix: not crashing when reading CURRENT datasets with one bias setting'];   % v4.1.0
+                ['Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26', ...
+                '; Better output CDF standards compliance', ...
+                '; Using new master CDFs']; % v5.0.0
             MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
             % Appropriate branch? "master" instead?
             %

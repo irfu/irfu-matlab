@@ -176,7 +176,12 @@ classdef assert
 %       PROPOSAL: datevec(dv, nComp)    % nComp = 3,6
 %   NOTE: Variants with 1 or many rows.
 %       PROPOSAL: datevec(dv, nComp, oneManyRows)
-
+%
+% PROPOSAL: Assertion like path_is_available() but for string pattern.
+%   Ex: Assertion that file (dataset? document?) of any version does not exist
+%       at location.
+%       Ex: Dataset does not exist in /data/solo/soar/.
+%
 
 
     properties(Constant, Access=private)
@@ -413,6 +418,11 @@ classdef assert
             %                 instead (if only required field names).
             %
             % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
+            %
+            % PROPOSAL: Separate out condition function.
+            %   PRO: Useful for distinguishing between multiple "struct
+            %   formats".
+            %       Ex: EJ_library.so.adm.create_dataset_filename().
             
             structFnSet          = fieldnames(S);
             

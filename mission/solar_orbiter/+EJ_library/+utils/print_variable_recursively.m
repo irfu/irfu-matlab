@@ -1,19 +1,22 @@
 %
-% Print the contents of a MATLAB variable recursively. Intended for getting an overview of the contents of complex
-% variables consisting of nested structures, nested cell arrays, etc. useful for debugging.
+% Print the contents of a MATLAB variable recursively. Intended for getting an
+% overview of the contents of complex variables consisting of nested structures,
+% nested cell arrays, etc. useful for debugging.
 %
 %
 % ARGUMENTS
 % =========
 % varName  : String that will be used as a (top-level) variable name.
 % v        : The variable which contents will be printed.
-% varargin : Settings as interpreted by EJ_library.utils.interpret_settings. See implementation.
+% varargin : Settings as interpreted by EJ_library.utils.interpret_settings. See
+%            implementation.
 %
 %
 % DISPLAYING STRINGS
 % ==================
 % The function displays every string in one of two different ways:
-% (1) BAE = Begin After Equals : More compact. Better for strings with few/no line breaks.
+% (1) BAE = Begin After Equals : More compact. Better for strings with few/no
+%                                line breaks.
 % (2) BNR = Begin on New Row   : Useful for strings with many line breaks.
 %   Setting stringsBnrMinNonemptyRows determines when to use which.
 %
@@ -89,23 +92,32 @@ function print_variable_recursively(varName, v, varargin)
 % PROPOSAL: Make "=" line up, at least among siblings.
 % PROPOSAL: Rename "printParentSeparately" --> "printParentsSeparately" (plural)
 
-% Define default settings.
-DEFAULT_SETTINGS = [];
-DEFAULT_SETTINGS.maxNArrayComponents       = Inf;      % Max number of array components to print.
-DEFAULT_SETTINGS.stringsMaxDisplayLen      = Inf;      % Max length of printed strings.
-DEFAULT_SETTINGS.maxRecursionDepth         = Inf;      % First function call is level 0. Counting may not be perfectly implemented.
-DEFAULT_SETTINGS.indent                    = false;    % Visualisera underträd mha indentering. Implicerar en extra rad för föräldern till varje underträd.
-DEFAULT_SETTINGS.indentationLength         = 4;        % Indentation length that is added per recursion level, if indentation is used.
-DEFAULT_SETTINGS.printParentSeparately     = true;
-DEFAULT_SETTINGS.stringsEscape             = true;     % Whether to display (some) special characters using escape codes.
-%DEFAULT_SETTINGS.stringsBnrMinNonemptyRows = 3';       % Criterion for whether to use BNR.
-DEFAULT_SETTINGS.stringsSsMaxLength        = 120;      % Max length on (pre-escaped) substrings before dividing into more lines.
-
-Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})    % Require DEFAULT_SETTINGS to contain all possible settings.
-
-print_NESTED('', varName, v, 0, Settings)
-
+    % Define default settings.
+    DEFAULT_SETTINGS = [];
+    
+    % Max number of array components to print.
+    DEFAULT_SETTINGS.maxNArrayComponents       = Inf;
+    % Max length of printed strings.
+    DEFAULT_SETTINGS.stringsMaxDisplayLen      = Inf;
+    % First function call is level 0. Counting may not be perfectly implemented.
+    DEFAULT_SETTINGS.maxRecursionDepth         = Inf;
+    % Visualize sub-tree using indentation. Implies one extra row for the parent of every sub-tree.
+    DEFAULT_SETTINGS.indent                    = false;
+    % Indentation length that is added per recursion level, if indentation is used.
+    DEFAULT_SETTINGS.indentationLength         = 4;
+    DEFAULT_SETTINGS.printParentSeparately     = true;
+    % Whether to display (some) special characters using escape codes.
+    DEFAULT_SETTINGS.stringsEscape             = true;
+    % Criterion for whether to use BNR.
+    %DEFAULT_SETTINGS.stringsBnrMinNonemptyRows = 3';
+    % Max length on (pre-escaped) substrings before dividing into more lines.
+    DEFAULT_SETTINGS.stringsSsMaxLength        = 120;
+    
+    Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+    % Require DEFAULT_SETTINGS to contain all possible settings.
+    EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+    
+    print_NESTED('', varName, v, 0, Settings)
 end
 
 
@@ -148,9 +160,11 @@ function print_NESTED(fullParentName, varName, v, recursionDepth, Settings)
         end        
         %if Settings.indent || Settings.printParentSeparately   % Why checking for .indent?
         if isempty(childrenVList) || Settings.printParentSeparately
-            % NOTE: Want to always write parent if it has no children. Will oterwise not be reprented at all.
+            % NOTE: Want to always write parent if it has no children. Will
+            %       otherwise not be reprented at all.
             %   Ex: Empty struct.
-            fprintf(1, '%s%s   (size %s, class "%s")\n', prefixStr, varName, size_str(v), class(v));
+            fprintf(1, '%s%s   (size %s, class "%s")\n', ...
+                prefixStr, varName, size_str(v), class(v));
         end
         
         %============================
@@ -163,7 +177,10 @@ function print_NESTED(fullParentName, varName, v, recursionDepth, Settings)
             nPrintComponents = min(length(childrenVList), Settings.maxNArrayComponents);
         end
         for i = 1:nPrintComponents
-            print_NESTED(childrensFullParentName, childrenNamesList{i}, childrenVList{i}, recursionDepth+1, Settings)    % RECURSIVE CALL
+            % RECURSIVE CALL
+            print_NESTED(...
+                childrensFullParentName, childrenNamesList{i}, ...
+                childrenVList{i}, recursionDepth+1, Settings)
         end
         if nPrintComponents < nChildren
             fprintf(1, '%s ... (too many array components; total %i components/cells)\n', ...
@@ -178,11 +195,14 @@ end
 
 % Take a variable and either
 % (1) create the appropriate one-row display string, or
-% (2) identify and return the variable's children and their "relative names" (cf "relative paths").
+% (2) identify and return the variable's children and their "relative names" (cf
+%     "relative paths").
 %
-% This function is NOT recursive, but is intended to be used by other recursive code.
-% This means that this function decides which variable values should be interpreted as having children or not, e.g.
-% character strings (which are really row vectors).
+% This function is NOT recursive, but is intended to be used by other recursive
+% code. This means that this function decides which variable values should be
+% interpreted as having children or not, e.g. character strings (which are
+% really row vectors).
+%
 %
 % RETURN VALUES
 % =============
@@ -200,19 +220,25 @@ end
 %
 %
 % NOTE: DOES NOT IMPLEMENT ALL CASES.
-% NOTE: canHaveChildren is useful for some types of printing when the "parent node" should be printed.
+% NOTE: canHaveChildren is useful for some types of printing when
+%       the "parent node" should be printed.
 % NOTE: canHaveChildren can be true at the same time as there are no children.
 %   Ex: Struct without fields, empty array/cell array.
 % NOTE: Not entirely clear how to treat all cases
-%   Ex: Empty char/numeric/cell array, empty struct -- Should it be printed on its own line even when there is no header line?
-%   Ex: Single component char/numeric array         -- Should it be printed with an index   even when there is no header line?
+%   Ex: Empty char/numeric/cell array, empty struct
+%       -- Should it be printed on its own line even when there is no header line?
+%   Ex: Single component char/numeric array
+%       -- Should it be printed with an index   even when there is no header line?
 %
-% ~BUG: Single-component (non-array) structs will be displayed as a length-one struct array.
+% ~BUG: Single-component (non-array) structs will be displayed as a length-one
+%       struct array.
 % BUG: Can not handle non-row, non-empty char arrays.
 
 function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = interpret(v, Settings)
-% PROPOSAL: Replace "canHaveChildren" and "displayValue" with headerStr (always returned). headerStr can be used (1) as a
-% summary for variables which can have children but do not, (2) for header/title lines when indenting, (3) optional .
+% PROPOSAL: Replace "canHaveChildren" and "displayValue" with headerStr (always
+%           returned). headerStr can be used (1) as a summary for variables
+%           which can have children but do not, (2) for header/title lines when
+%           indenting, (3) optional .
 %
     LF = char(10);
     
@@ -220,9 +246,10 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
     childrenNamesList = {};
     valueDisplayStr   = [];
     
-    % IMPLEMENTATION NOTE: Cases are sorted in a hierarchical manner. The top-most category is number of
-    % components/children (char arrays since row arrays and empty arrays need to be treated specially).
-    % Second-top-most category is type of data.
+    % IMPLEMENTATION NOTE: Cases are sorted in a hierarchical manner. The
+    % top-most category is number of components/children (char arrays since row
+    % arrays and empty arrays need to be treated specially). Second-top-most
+    % category is type of data.
     
     if ischar(v) && (is_row(v) || all(size(v) == [0,0]))
         % CASE: Regular string (one row or empty)
@@ -244,7 +271,8 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
             
             % Optionally shorten content string
             if length(v) > Settings.stringsMaxDisplayLen
-                valueContentStr = sprintf('%s...', v(1:Settings.stringsMaxDisplayLen));   % NOTE: Technically adding characters.
+                % NOTE: Technically adding characters.
+                valueContentStr = sprintf('%s...', v(1:Settings.stringsMaxDisplayLen));
                 valueCommentStr = sprintf('too many chars; first %i chars of %i', ...
                     Settings.stringsMaxDisplayLen, length(v));
             else
@@ -259,10 +287,21 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
                 valueDisplayStrList = special_chars_2_escape_codes(valueDisplayStrList);
             end
             
-            % Construct one single long string for display.
-            valueDisplayStrList      = remove_linebreaks(valueDisplayStrList);                                               % Remove content line breaks (not escape codes).
-            valueDisplayStrList      = cellfun(@(x) (sprintf('''%s''', x)), valueDisplayStrList, 'UniformOutput', false);    % Quote every substring.
-            valueDisplayStrList{end} = sprintf('%s   (%s)', valueDisplayStrList{end}, valueCommentStr);                      % Add comment string to last string.
+            % --------------------------------------------
+            % Construct one single long string for display
+            % --------------------------------------------
+            
+            % Remove content line breaks (not escape codes).
+            valueDisplayStrList      = remove_linebreaks(valueDisplayStrList);
+            
+            % Quote every substring.
+            valueDisplayStrList      = cellfun(...
+                @(x) (sprintf('''%s''', x)), ...
+                valueDisplayStrList, 'UniformOutput', false);
+            
+            % Add comment string to last string.
+            valueDisplayStrList{end} = sprintf('%s   (%s)', ...
+                valueDisplayStrList{end}, valueCommentStr);
             
             if numel(valueDisplayStrList) == 1
                 valueDisplayStr = valueDisplayStrList{1};
@@ -278,17 +317,21 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
         
         if isnumeric(v) || islogical(v)
             canHaveChildren = false;    % A bit wrong.
-            valueDisplayStr = sprintf('[]   (size %s, class "%s")', size_str(v), class(v));   % Print array size.
+            % Print array size.
+            valueDisplayStr = sprintf('[]   (size %s, class "%s")', size_str(v), class(v));
             
         elseif iscell(v)
             canHaveChildren = false;    % A bit wrong.
-            valueDisplayStr = sprintf('{}   (size %s, class "%s")', size_str(v), class(v));   % Print array size.            
+            % Print array size.
+            valueDisplayStr = sprintf('{}   (size %s, class "%s")', size_str(v), class(v));
             
         elseif isstruct(v) || isobject(v)
             % NOTE: Only gets the PUBLIC properties of objects/classes.
 % 
             canHaveChildren = false;
-            valueDisplayStr = sprintf('(size %s, class "%s", with fields: %s)', size_str(v), class(v), strjoin(fieldnames(v), ', '));
+            valueDisplayStr = sprintf(...
+                '(size %s, class "%s", with fields: %s)', ...
+                size_str(v), class(v), strjoin(fieldnames(v), ', '));
 
         else
             error('Can not handle this variable size or type. class(v)="%s"', class(v))
@@ -334,7 +377,8 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
         elseif isa(v, 'function_handle')
             canHaveChildren = false;
             
-            %valueDisplayStr = sprintf('%s: nargin=%i, nargout=%i (function handle)', func2str(v), nargin(v), nargout(v));
+            %valueDisplayStr = sprintf('%s: nargin=%i, nargout=%i (function handle)', ...
+            %    func2str(v), nargin(v), nargout(v));
             valueDisplayStr = sprintf('%s (function handle)', func2str(v));
 
         else
@@ -369,7 +413,8 @@ end   % function
 
 
 
-% Convert a "linear index" into "subscript values" (see "ind2sub"), i.e. converts a single linear matrix index (for matrix of arbitrary dimension) into
+% Convert a "linear index" into "subscript values" (see "ind2sub"), i.e.
+% converts a single linear matrix index (for matrix of arbitrary dimension) into
 % multiple indices, one per matrix dimension.
 function s = index_str(siz, i)
     iCellArray = cell(1, numel(siz), 1);
@@ -379,8 +424,9 @@ end
 
 
 
-% Return display string representing the array size (the result of "size", i.e. all arrays incl. struct arrays, cell
-% arrays) of an arbitrary variable, e.g. "3x4", "1x0".
+% Return display string representing the array size (the result of "size", i.e.
+% all arrays incl. struct arrays, cell arrays) of an arbitrary variable, e.g.
+% "3x4", "1x0".
 function str = size_str(v)
     str = regexprep(num2str(size(v)), ' *', 'x');
 end
@@ -422,7 +468,8 @@ function s = special_chars_2_escape_codes(s)
     % PROPOSAL: Make into generic function.
     %   PRO: Automatic testing.
     
-    % Escape codes for characters that will be displayed as such. Escape codes here are defined by sprintf.
+    % Escape codes for characters that will be displayed as such. Escape codes
+    % here are defined by sprintf.
     % \\ must come first. Will otherwise affect other substitutions.
     ESC_STR_LIST = {'\\', '\n', '\r', '\t'};
 
@@ -444,15 +491,16 @@ function strList = split_content_str(s, maxSsLength)
     
     assert(maxSsLength>=1)
     
-    % IMPLEMENTATION NOTE: Can not use regexp(s, '\n', 'split')
-    % since we want to keep the line breaking character in the substrings.
-    % Split into substrings, where each substring contains the longest possible sequence of non-LF characters followed
-    % by either (1) LF, or (2) end-of-string.
+    % IMPLEMENTATION NOTE: Can not use regexp(s, '\n', 'split') since we want to
+    % keep the line breaking character in the substrings. Split into substrings,
+    % where each substring contains the longest possible sequence of non-LF
+    % characters followed by either (1) LF, or (2) end-of-string.
     %strList1 = regexp(s, '[^\n]*(\n|$)', 'split');
     
-    % Split into substrings, where each substring contains the longest possible sequence of non-LF characters (that is
-    % no longer than maxSsLength-1 characters) followed by exactly one character of either (1) a non-LF charcter (2) a
-    % LF, or (3) end-of-string.
+    % Split into substrings, where each substring contains the longest possible
+    % sequence of non-LF characters (that is no longer than maxSsLength-1
+    % characters) followed by exactly one character of either (1) a non-LF
+    % charcter (2) a LF, or (3) end-of-string.
     strList = regexp(s, sprintf('[^\n]{0,%i}([^\n]|\n|$)', maxSsLength-1), 'match');
 
     % ASSERTION: Length of all substrings == length of original string

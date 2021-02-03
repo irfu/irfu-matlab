@@ -297,7 +297,8 @@ function SETTINGS = create_default_SETTINGS()
     % master CDFs and BICAS code. Thus only affects SWF/RSWF, not CWF.
     %   Master CDFs: Multiple samples/snapshot.
     %   BICAS code:  1 sample/snapshot.
-    S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      0)
+    % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)
 
 
 

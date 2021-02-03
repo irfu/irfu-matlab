@@ -80,8 +80,8 @@ classdef proc_sub
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
 
             % ASSERTIONS
-            EJ_library.assert.struct(InSci, {'Zv', 'Ga'}, {})
-            EJ_library.assert.struct(InHk,  {'Zv', 'Ga'}, {})
+            EJ_library.assert.struct(InSci, {'Zv', 'Ga', 'filePath'}, {})
+            EJ_library.assert.struct(InHk,  {'Zv', 'Ga', 'filePath'}, {})
 
             HkSciTime = [];
 
@@ -147,7 +147,9 @@ classdef proc_sub
                 % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
                 % is not monotonically increasing (in fact, it is completely
                 % strange).
-                error('HK timestamps do not increase monotonically (USE_ZV_ACQUISITION_TIME_HK=%g).', ...
+                error([...
+                    'HK timestamps do not increase monotonically', ...
+                    ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
                     USE_ZV_ACQUISITION_TIME_HK)
             end
             if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
@@ -161,7 +163,8 @@ classdef proc_sub
                     hk1RelativeSec, ...
                     -hk2RelativeSec);
 
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
+                [settingValue, settingKey] = SETTINGS.get_fv(...
+                    'PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
@@ -169,7 +172,8 @@ classdef proc_sub
 
                 % NOTE: "WARNING" (rather than error) only makes sense if it is
                 % possible to later meaningfully permit non-intersection.
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
+                [settingValue, settingKey] = SETTINGS.get_fv(...
+                    'PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
                     'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
@@ -219,7 +223,7 @@ classdef proc_sub
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS
-            EJ_library.assert.struct(InCur, {'Zv', 'Ga'}, {})
+            EJ_library.assert.struct(InCur, {'Zv', 'Ga', 'filePath'}, {})
 
 
 
@@ -232,7 +236,8 @@ classdef proc_sub
                 sciEpochUtcStr    = EJ_library.cdf.TT2000_to_UTC_str(min(sciEpoch));
                 curEpochMinUtcStr = EJ_library.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
 
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
+                [settingValue, settingKey] = SETTINGS.get_fv(...
+                    'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
 
                 anomalyDescrMsg = sprintf(...
                     ['Bias current data begins %g s (%s) AFTER voltage data begins (%s).', ....
@@ -398,7 +403,7 @@ classdef proc_sub
             % V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
+            EJ_library.assert.struct(InSci,     {'Zv', 'Ga', 'filePath'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             % ASSERTIONS: CDF
@@ -510,7 +515,7 @@ classdef proc_sub
 
 
 
-            PreDc.Ga.Datetime       = InSci.Ga.Datetime;
+%             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
 
@@ -646,7 +651,8 @@ classdef proc_sub
                         'PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
                     switch(settingValue)
                         case 'ROUND'
-                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                            bicas.default_anomaly_handling(...
+                                L, settingValue, settingKey, 'other', ...
                                 anomalyDescrMsg, ...
                                 'BICAS:proc_sub:process_TDS_CDF_normalize:Assertion:DatasetFormat')
                             % NOTE: Logging the mitigation, NOT the anomaly
@@ -681,7 +687,7 @@ classdef proc_sub
         % snapshots. Need to use NaN/fill value.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
+            EJ_library.assert.struct(InSci,     {'Zv', 'Ga', 'filePath'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
@@ -778,7 +784,7 @@ classdef proc_sub
 
 
 
-            PreDc.Ga.Datetime       = InSci.Ga.Datetime;
+%             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
 
@@ -838,7 +844,7 @@ classdef proc_sub
             OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
 
-            OutSci.Ga.Datetime  = SciPreDc.Ga.Datetime;
+%             OutSci.Ga.Datetime  = SciPreDc.Ga.Datetime;
             OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
             OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
 
@@ -1430,7 +1436,7 @@ classdef proc_sub
             %==================
             % Global attributes, shared between all 3x2 datasets
             Ga = struct();
-            Ga.Datetime           = InLfrCwf.Ga.Datetime;
+%             Ga.Datetime           = InLfrCwf.Ga.Datetime;
             Ga.OBS_ID             = InLfrCwf.Ga.OBS_ID;
             Ga.SOOP_TYPE          = InLfrCwf.Ga.SOOP_TYPE;
             % zVariables, shared between all non-downsampled datasets
