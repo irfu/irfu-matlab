@@ -35,7 +35,7 @@ end
 
 if ((nargin < 4) || (isempty(Fs)))
   if isaTSeries
-    Fs = 1/(inp.time(2)-inp.time(1));
+    Fs = 1/median(inp.time(2:end)-inp.time(1:end-1));
   else
     Fs=1/(inp(2,1)-inp(1,1));
   end
