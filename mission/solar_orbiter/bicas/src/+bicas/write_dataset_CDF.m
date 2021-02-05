@@ -189,96 +189,10 @@ function DataObj = init_modif_dataobj(...
     for iPdFieldName = 1:length(pdFieldNameList)
         zvName = pdFieldNameList{iPdFieldName};
         
-        % ASSERTION: Master CDF already contains the zVariable.
-        if ~isfield(DataObj.data, zvName)
-            error('BICAS:write_dataset_CDF:Assertion:SWModeProcessing', ...
-                ['Trying to write to zVariable "%s" that does not exist', ...
-                ' in the master CDF file.'], zvName)
-        end
-        
-        % PD = Processing Data. Indicates that this is the unaltered value from
-        %      processing.
         zvValuePd       = ZvsSubset.(zvName);
         ZvsLog.(zvName) = zvValuePd;
-        
-        %======================================================================
-        % Prepare PDV zVariable value to save to CDF:
-        % (1) Replace NaN-->fill value
-        % (2) Convert to the right MATLAB class
-        %
-        % NOTE: If both fill values and pad values have been replaced with NaN
-        % (when reading CDF), then the code can not distinguish between fill
-        % values and pad values.
-        %======================================================================
-        if isfloat(zvValuePd)
-            [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
-            zvValueTemp    = EJ_library.utils.replace_value(zvValuePd, NaN, fillValue);
-        else
-            zvValueTemp    = zvValuePd;
-        end
-        matlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
-            DataObj.data.(zvName).type, 'Permit MATLAB classes');
-        zvValueCdf  = cast(zvValueTemp, matlabClass);
-        
-        
-        
-        %==============================================================
-        % Modify zVar attrs. SCALEMIN, SCALEMAX according to zVar data
-        %
-        % EXPERIMENTAL - INCOMPLETE IMPLEMENTATION
-        % ------------------------------------------------------------
-        % NOTE: Must handle fill values when deriving min & max.
-        %   NOTE: For floats: Use zvValuePd (not cvValueCdf).
-        %   NOTE: Must handle zVars with ONLY fill values.
-        %
-        % NOTE: For some zVars, SCALEMIN & SCALEMAX will not be wrong, but may
-        % also not be very meaningful.
-        % NOTE: Some zVars might not change, i.e. min=max.
-        %   Ex: IBIAS1/2/3, SYNCHRO_FLAG
-        %
-        % PROPOSAL: Assertion for absence of NaN.
-        %==============================================================        
-        if isfloat(zvValuePd) && 0    % DISABLED
-            i = find(strcmp(DataObj.VariableAttributes.SCALEMAX(:,1), zvName));
-            assert(isscalar(i))
-            
-            zva_SCALEMIN_master = DataObj.VariableAttributes.SCALEMIN{i,2};
-            zva_SCALEMAX_master = DataObj.VariableAttributes.SCALEMAX{i,2};
-            
-            % NOTE: Epoch SCALEMAX is string (dataset bug?) /2021-02-05
-            % ==> SCALEMAX_master not numeric when zvValue is.
-            if isnumeric(zva_SCALEMIN_master) && isnumeric(zva_SCALEMAX_master)
-            
-                zva_SCALEMIN_Pd = min(zvValuePd, [], 'all');
-                zva_SCALEMAX_Pd = max(zvValuePd, [], 'all');
-                assert(~isnan(zva_SCALEMIN_Pd))
-                assert(~isnan(zva_SCALEMAX_Pd))
-            
-                L.logf('debug', 'zvName              = %s', zvName)
-                L.logf('debug', 'zva_SCALEMIN_master = %g', zva_SCALEMIN_master)
-                L.logf('debug', 'zva_SCALEMIN_Pd     = %g', zva_SCALEMIN_Pd)
-                L.logf('debug', 'zva_SCALEMAX_master = %g', zva_SCALEMAX_master)
-                L.logf('debug', 'zva_SCALEMAX_Pd     = %g', zva_SCALEMAX_Pd)
-                
-                %=======================================================
-                % DECISION POINT: How to set/update SCALEMIN & SCALEMAX
-                %=======================================================
-                zva_SCALEMIN_new = zva_SCALEMIN_Pd;
-                zva_SCALEMAX_new = zva_SCALEMAX_Pd;
-                
-                % NOTE: zvValue has already been typecast to CDF type, but any
-                % (future?) algorithm (above) for setting values may cancel
-                % that. Must therefore typecast again, just to be sure.
-                zva_SCALEMIN_new = cast(zva_SCALEMIN_new, matlabClass);
-                zva_SCALEMAX_new = cast(zva_SCALEMAX_new, matlabClass);
-            
-                DataObj.VariableAttributes.SCALEMIN{i,2} = zva_SCALEMIN_new;
-                DataObj.VariableAttributes.SCALEMAX{i,2} = zva_SCALEMAX_new;
-            end
-        end
-        
-        % Set zVariable.
-        DataObj.data.(zvName).data = zvValueCdf;
+
+        DataObj = handle_PD_zVar(DataObj, zvName, zvValuePd);
     end
     
     
@@ -319,6 +233,105 @@ function DataObj = init_modif_dataobj(...
     end    % for
     
 end    % init_modif_dataobj
+
+
+
+% Function used by init_modif_dataobj() for using zVars from processing, to
+% overwrite zVars in dataobj (from master CDF).
+% 
+% ARGUMENTS
+% =========
+% zvValuePd
+%       zVar value from processing (unaltered). PD = Processing Data.
+%
+function DataObj = handle_PD_zVar(DataObj, zvName, zvValuePd)
+    
+    % ASSERTION: Master CDF already contains the zVariable.
+    if ~isfield(DataObj.data, zvName)
+        error('BICAS:write_dataset_CDF:Assertion:SWModeProcessing', ...
+            ['Trying to write to zVariable "%s" that does not exist', ...
+            ' in the master CDF file.'], zvName)
+    end
+    
+    %======================================================================
+    % Prepare PDV zVariable value to save to CDF:
+    % (1) Replace NaN-->fill value
+    % (2) Convert to the right MATLAB class
+    %
+    % NOTE: If both fill values and pad values have been replaced with NaN
+    % (when reading CDF), then the code can not distinguish between fill
+    % values and pad values.
+    %======================================================================
+    if isfloat(zvValuePd)
+        [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
+        zvValueTemp    = EJ_library.utils.replace_value(zvValuePd, NaN, fillValue);
+    else
+        zvValueTemp    = zvValuePd;
+    end
+    matlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
+        DataObj.data.(zvName).type, 'Permit MATLAB classes');
+    zvValueCdf  = cast(zvValueTemp, matlabClass);
+    
+    %==============================================================
+    % Modify zVar attrs. SCALEMIN, SCALEMAX according to zVar data
+    %
+    % EXPERIMENTAL - INCOMPLETE IMPLEMENTATION
+    % ------------------------------------------------------------
+    % NOTE: Must handle fill values when deriving min & max.
+    %   NOTE: For floats: Use zvValuePd (not cvValueCdf).
+    %   NOTE: Must handle zVars with ONLY fill values.
+    %
+    % NOTE: For some zVars, SCALEMIN & SCALEMAX will not be wrong, but may
+    % also not be very meaningful.
+    % NOTE: Some zVars might not change, i.e. min=max.
+    %   Ex: IBIAS1/2/3, SYNCHRO_FLAG
+    %
+    % PROPOSAL: Assume (& assert) that fill values are used instead of NaN (both
+    %           floats and integers. Convert zVar to 1D vector, remove fill
+    %           values, then derive min & max.
+    %==============================================================
+    if isfloat(zvValuePd) && 0                       % ######################### DISABLED
+        i = find(strcmp(DataObj.VariableAttributes.SCALEMAX(:,1), zvName));
+        assert(isscalar(i))
+        
+        zva_SCALEMIN_master = DataObj.VariableAttributes.SCALEMIN{i,2};
+        zva_SCALEMAX_master = DataObj.VariableAttributes.SCALEMAX{i,2};
+        
+        % NOTE: Epoch SCALEMAX is string (dataset bug?) /2021-02-05
+        % ==> SCALEMAX_master not numeric when zvValue is.
+        if isnumeric(zva_SCALEMIN_master) && isnumeric(zva_SCALEMAX_master)
+            
+            zva_SCALEMIN_Pd = min(zvValuePd, [], 'all');
+            zva_SCALEMAX_Pd = max(zvValuePd, [], 'all');
+            assert(~isnan(zva_SCALEMIN_Pd))
+            assert(~isnan(zva_SCALEMAX_Pd))
+            
+            L.logf('debug', 'zvName              = %s', zvName)
+            L.logf('debug', 'zva_SCALEMIN_master = %g', zva_SCALEMIN_master)
+            L.logf('debug', 'zva_SCALEMIN_Pd     = %g', zva_SCALEMIN_Pd)
+            L.logf('debug', 'zva_SCALEMAX_master = %g', zva_SCALEMAX_master)
+            L.logf('debug', 'zva_SCALEMAX_Pd     = %g', zva_SCALEMAX_Pd)
+            
+            %=======================================================
+            % DECISION POINT: How to set/update SCALEMIN & SCALEMAX
+            %=======================================================
+            zva_SCALEMIN_new = zva_SCALEMIN_Pd;
+            zva_SCALEMAX_new = zva_SCALEMAX_Pd;
+            
+            % NOTE: zvValue has already been typecast to CDF type, but any
+            % (future?) algorithm (above) for setting values may cancel
+            % that. Must therefore typecast again, just to be sure.
+            zva_SCALEMIN_new = cast(zva_SCALEMIN_new, matlabClass);
+            zva_SCALEMAX_new = cast(zva_SCALEMAX_new, matlabClass);
+            
+            DataObj.VariableAttributes.SCALEMIN{i,2} = zva_SCALEMIN_new;
+            DataObj.VariableAttributes.SCALEMAX{i,2} = zva_SCALEMAX_new;
+        end
+    end
+    
+    % Set zVariable.
+    DataObj.data.(zvName).data = zvValueCdf;
+end
 
 
 
