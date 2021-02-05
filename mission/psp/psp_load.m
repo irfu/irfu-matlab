@@ -83,7 +83,7 @@ listCdfFiles = {};
 useStoredPspDirectory = false;
 
 % If data directory not given, read in the stored value
-if ~exist('dataDir') || isempty(dataDir)
+if ~exist('dataDir','var') || isempty(dataDir)
   dataDir=datastore('psp','data_directory');
   if isempty(dataDir)
     disp('Your PSP directory is not defined!')
@@ -482,25 +482,6 @@ end
     end
   end
 
-  function out = get_file_list_old(fileBaseName)
-    % uses startDatenum and endDatenum
-    out = psp_var(['file=' fileBaseName]);
-    if (numel(out) > 1), out = out{1}; end
-    dirBase = out.directory;
-    out = {};
-    for date = floor(startDatenum):floor(endDatenum)
-      MM = datestr(date,'mm');
-      YY = datestr(date,'yy');
-      dirFull = strrep(dirBase,'MM',MM);
-      dirFull = strrep(dirFull,'YY',YY);
-      dirFull = strrep(dirFull,'/',filesep);
-      dirFull = [dirFull filesep fileBaseName '_' datestr(date,'YYYYmmDD')];
-      listDir = dir([dataDir filesep dirFull '*']);
-      irf.log('debug',['Listing files in: ' dataDir filesep dirFull '*']);
-      out = [out fullfile({listDir.folder},{listDir.name})];
-    end
-  end
-
   function out = get_file_list(fileBaseName)
     % uses startDatenum and endDatenum
     out = psp_var(['file=' fileBaseName]);
@@ -620,8 +601,8 @@ end
     
     if ~strcmpi(doGetFiles,'y'),return;end
     
-    dataSubDir = get_data_dir(fileBaseName,dateNum);
-    dataPath = get_data_path(fileBaseName,dateNum);
+    dataSubDir = get_data_dir( fileBaseName,dateNum);
+    dataPath   = get_data_path(fileBaseName,dateNum);
     
     % define data servers and weboptions
     if strcmp(dataSubDir{1}(1:5),'sweap')
@@ -643,16 +624,28 @@ end
       else
         tt = webread(wwwDir,webOptions);
       end
-      ff = regexp(tt,'([\w]*.cdf)','tokens');
-      files = arrayfun(@(x) (x{1}),ff);
-      files = unique(files);
-      fileDates = regexp(files,'.*_(20\d\d\d\d\d\d)\d*_v.*.cdf','tokens');
+      
+      % find latest version files (sort descending by version and keep
+      % unique file basenames
+      ff = regexp(tt,'([\w]*)_v([\d]*).cdf','tokens');
+      ffFull = arrayfun(@(x) x{1}, regexp(tt,'([\w]*_v[\d]*.cdf)','tokens'));
+      
+      filesBase = arrayfun(@(x) (x{1}{1}),ff,'UniformOutput',false);
+      filesVersion = arrayfun(@(x) str2num(x{1}{2}),ff);
+      [filesVersionSorted,indSort] = sort(filesVersion,'descend');
+      filesBaseSorted = filesBase(indSort);
+      ffFullSorted = ffFull(indSort); 
+      [filesBaseUnique,indUnique] = unique(filesBaseSorted);
+      filesUnique = ffFullSorted(indUnique);
+      fileDates = regexp(filesUnique,'.*_(20\d\d\d\d\d\d)\d*_v.*.cdf','tokens');
+      
+      % find files with dates in the interval requested
       iFilesToGet = find(ind_dates_in_datenum_interval(fileDates));
       if any(iFilesToGet)
         for ii = 1:numel(iFilesToGet)
-          irf.log('warning',['Downloading: ' files{iFilesToGet(ii)}]);
-          wwwLink = [wwwDir '/' files{iFilesToGet(ii)}];
-          filePath = [dirPath '/' files{iFilesToGet(ii)}];
+          irf.log('warning',['Downloading: ' filesUnique{iFilesToGet(ii)}]);
+          wwwLink = [wwwDir '/' filesUnique{iFilesToGet(ii)}];
+          filePath = [dirPath '/' filesUnique{iFilesToGet(ii)}];
           irf.log('warning',['Downloading: ' wwwLink]);
           if isempty(webOptions)
             outFileName = websave(filePath,wwwLink);
