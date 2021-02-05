@@ -312,76 +312,87 @@ function DataObj = init_modif_dataobj(...
         zvName = fn{1};
         
         if isempty(DataObj.data.(zvName).data)
-            %==============================================================
-            % CASE: zVariable has zero records.
-            % This indicates that it should have been set using PDV field.
-            %==============================================================
             
-            % NOTE: Useful to specify master CDF path in the case of having
-            % multiple output datasets. Will otherwise not know which output
-            % dataset is referred to. Note: Can still read master CDF from
-            % preceding log messages.
-            anomalyDescrMsg = sprintf(...
-                ['Master CDF "%s" contains zVariable "%s" which has not been', ...
-                ' set (i.e. it has zero records) after adding ', ...
-                'processing data. This should only happen for incomplete processing.'], ...
-                masterCdfPath, zvName);
+            DataObj = handle_empty_zVar_anomaly(DataObj, zvName);
             
-            matlabClass   = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
-                DataObj.data.(zvName).type, 'Permit MATLAB classes');
-            isNumericZVar = isnumeric(cast(0.000, matlabClass));
+        end    % if isempty(DataObj.data.(zvName).data)
+    end    % for
+    
+end    % init_modif_dataobj
+
+
+
+% Function used by init_modif_dataobj() when finding empty zVar.
+% 
+function DataObj = handle_empty_zVar_anomaly(DataObj, zvName)
+    %==============================================================
+    % CASE: zVariable has zero records.
+    % This indicates that it should have been set using PDV field.
+    %==============================================================
+    
+    % NOTE: Useful to specify master CDF path in the case of having
+    % multiple output datasets. Will otherwise not know which output
+    % dataset is referred to. Note: Can still read master CDF from
+    % preceding log messages.
+    anomalyDescrMsg = sprintf(...
+        ['Master CDF "%s" contains zVariable "%s" which has not been', ...
+        ' set (i.e. it has zero records) after adding ', ...
+        'processing data. This should only happen for incomplete processing.'], ...
+        masterCdfPath, zvName);
+    
+    matlabClass   = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
+        DataObj.data.(zvName).type, 'Permit MATLAB classes');
+    isNumericZVar = isnumeric(cast(0.0, matlabClass));
+    
+    if isNumericZVar
+        %====================
+        % CASE: Numeric zVar
+        %====================
+        [settingValue, settingKey] = SETTINGS.get_fv(...
+            'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
+        switch(settingValue)
             
-            if isNumericZVar
-                %====================
-                % CASE: Numeric zVar
-                %====================
-                [settingValue, settingKey] = SETTINGS.get_fv(...
-                    'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
-                switch(settingValue)
-                    
-                    case 'USE_FILLVAL'
-                        %========================================================
-                        % Create correctly-sized zVariable data with fill values
-                        %========================================================
-                        % NOTE: Assumes that
-                        % (1) there is a PD fields/zVariable Epoch, and
-                        % (2) this zVariable should have as many records as Epoch.
-                        L.logf('warning', ...
-                            ['Setting numeric master/output CDF zVariable', ...
-                            ' "%s" to presumed correct size using fill', ...
-                            ' values due to setting "%s" = "%s".'], ...
-                            zvName, settingKey, settingValue)
-                        
-                        nEpochRecords  = size(ZvsSubset.Epoch, 1);
-                        [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
-                        zvSize  = [nEpochRecords, DataObj.data.(fn{1}).dim];
-                        zvValueTemp = cast(zeros(zvSize), matlabClass);
-                        zvValueCdf  = EJ_library.utils.replace_value(zvValueTemp, 0, fillValue);
-                        
-                        DataObj.data.(zvName).data = zvValueCdf;
-                        
-                    otherwise
-                        bicas.default_anomaly_handling(L, ...
-                            settingValue, settingKey, ...
-                            'E+W+illegal', anomalyDescrMsg, ...
-                            'BICAS:write_dataset_CDF:SWModeProcessing:DatasetFormat')
-                end
+            case 'USE_FILLVAL'
+                %=========================================================
+                % Create correctly-sized zVariable using only fill values
+                %=========================================================
+                % NOTE: Assumes that
+                % (1) there is a PD fields/zVariable Epoch, and
+                % (2) this zVariable should have as many records as Epoch.
+                L.logf('warning', ...
+                    ['Setting numeric master/output CDF zVariable', ...
+                    ' "%s" to presumed correct size using fill', ...
+                    ' values due to setting "%s" = "%s".'], ...
+                    zvName, settingKey, settingValue)
                 
-            else
-                %========================
-                % CASE: Non-numeric zVar
-                %========================
-                [settingValue, settingKey] = SETTINGS.get_fv(...
-                    'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
+                nEpochRecords  = size(ZvsSubset.Epoch, 1);
+                [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
+                zvSize      = [nEpochRecords, DataObj.data.(fn{1}).dim];
+                zvValueTemp = cast(zeros(zvSize), matlabClass);
+                zvValueCdf  = EJ_library.utils.replace_value(zvValueTemp, 0, fillValue);
+                
+                DataObj.data.(zvName).data = zvValueCdf;
+                
+            otherwise
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, ...
                     'E+W+illegal', anomalyDescrMsg, ...
                     'BICAS:write_dataset_CDF:SWModeProcessing:DatasetFormat')
-            end
         end
-    end
+        
+    else
+        %========================
+        % CASE: Non-numeric zVar
+        %========================
+        [settingValue, settingKey] = SETTINGS.get_fv(...
+            'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
+        bicas.default_anomaly_handling(L, ...
+            settingValue, settingKey, ...
+            'E+W+illegal', anomalyDescrMsg, ...
+            'BICAS:write_dataset_CDF:SWModeProcessing:DatasetFormat')
+    end    % if isNumericZVar
     
-end    % init_modif_dataobj
+end
 
 
 
