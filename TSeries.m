@@ -282,6 +282,7 @@ classdef TSeries
       
       function [ok,msg] = validate_representation(x)
         ok = []; msg = '';
+        if isempty(x), ok = true; return; end % if not specified return
         sDim = size(obj.data,iDim+1); tb = obj.BASIS{obj.tensorBasis_};
         if sDim>length(tb)
           msg = sprintf(...
@@ -811,7 +812,8 @@ classdef TSeries
       %
       %   TS.UMINUS(TS)
       %   -TS
-      Ts = -1*obj;
+      Ts = obj;
+      Ts.data = - obj.data;
     end
     
     function Ts = dot(obj,obj1)
@@ -936,6 +938,18 @@ classdef TSeries
     
     function Ts = mtimes(obj1,obj2)
       %MTIMES  Matrix and scalar multiplication '*'.
+      
+      % take first the simple cases of multiplication with scalar number
+      if isa(obj1,'TSeries') && isnumeric(obj2) && isscalar(obj2)
+        Ts = obj1;
+        Ts.data = obj1.data * obj2;
+        return;
+      end
+      if isa(obj2,'TSeries') && isnumeric(obj1) && isscalar(obj1)
+        Ts = obj2;
+        Ts.data = obj2.data * obj1;
+        return;
+      end
       
       % Check dimensions of input
       if isa(obj1,'TSeries')
