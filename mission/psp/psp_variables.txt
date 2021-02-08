@@ -493,6 +493,31 @@ info#end
 ----
 
 %%%%
+varName: vp_moment_SC
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: scVpmom
+related: 
+info#start
+proton bulk velocity from the 1st moment of the reduced distribution 
+function in SC coordinate system.
+.
+SC system is aligned with the Solar Probe Cup. 
+In encounter orientations, the X-axis points in the spacecraft RAM direction, 
+the Z-axis points [roughly] towards the sun, and the Y-axis points 
+south relative to the solar ecliptic plane.
+.     
+This system is roughly, but not strictly aligned with the heliographic 
+RTN system (R = -Z_SC, T = X_SC, N = -Y_SC) in encounters.
+.
+Note that this system is co-moving with the spacecraft. 
+Flows from the sun appear aberrated and shifted in the spacecraft frame 
+according to the instantaneous velocity of the spacecraft.
+info#end
+----
+
+%%%%
 varName: DQF
 fileName: psp_swp_spc_l3i
 hourtag: 
