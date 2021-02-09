@@ -443,7 +443,7 @@ end
       YY = datestr(datenumTable(i),'yy');
       dirFull = strrep(dirBase,'MM',MM);
       dirFull = strrep(dirFull,'YY',YY);
-      dirFull = strrep(dirFull,'/',filesep);
+%      dirFull = strrep(dirFull,'/',filesep);
       out{i} = dirFull;
     end
     out = unique(out);
@@ -594,6 +594,7 @@ end
         mkdir(dirPath);
       end
       wwwDir = [webserver dataSubDir{iDir}];
+      irf.log('debug',['Getting file list from www: ' wwwDir]);
       if isempty(webOptions)
         tt = webread(wwwDir);
       else
