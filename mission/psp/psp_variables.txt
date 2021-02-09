@@ -55,7 +55,7 @@ varName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
 fileName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
 directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
-varNameShort: ac_spec_dV(12|34)hg
+varNameShort: ac_spec_dv(12|34)
 related: 
 info#start
 High-rate ac power spectra are limited in coverage to the first 
@@ -70,7 +70,7 @@ varName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
 fileName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
 directory: fields/l2/dfb_dc_spec/20YY/MM
 hourtag: 
-varNameShort: dc_spec_V(12|34)hg
+varNameShort: dc_spec_v(12|34)
 related: 
 info#start
 xxx
@@ -107,11 +107,11 @@ info#end
 
 
 %%%%
-varName: psp_fld_l2_dfb_wf_scm_hg_sensor
+varName: psp_fld_l2_dfb_wf_scm_(lg|hg)_sensor
 fileName: psp_fld_l2_dfb_wf_scm
 hourtag: 6h
 directory: fields/l2/dfb_wf_scm/20YY/MM
-varNameShort: wf_scm_hg_sensor
+varNameShort: wf_scm_(lg|hg)_sensor
 related: 
 info#start
 xxx
@@ -165,7 +165,9 @@ info#start
 Differential Energy Flux vs Energy/angle bin
 The units are differential energy flux and eV.
 The “sf1” product is an energy spectrum produced on the spacecraft by summing over the theta and phi directions. 
-CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products due to the method of spectra production on the SPAN-E instrument (straight summing). Thus, SF1 energy spectra are not recommended for rigid statistical analysis.
+CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products 
+due to the method of spectra production on the SPAN-E instrument (straight summing). 
+Thus, SF1 energy spectra are not recommended for rigid statistical analysis.
 info#end
 ----
 
@@ -185,7 +187,7 @@ varName: QUALITY_FLAG
 fileName: psp_swp_spa_sf1_L2_32E
 directory: sweap/spe/L2/spa_sf1/20YY/MM
 hourtag: 
-varNameShort: spa_sf1_quality_flag
+varNameShort: spa_sf1_qf
 related: 
 info#start
 Quality flag is specified for the whole file not for separate time points.
@@ -269,7 +271,7 @@ varName: psp_fld_l2_dfb_wf_V(1|2|3|4|5)dc
 fileName: psp_fld_l2_dfb_wf_vdc
 directory: fields/l2/dfb_wf_vdc/20YY/MM
 hourtag: 6h
-varNameShort: wf_V(1|2|3|4|5)dc
+varNameShort: wf_v(1|2|3|4|5)dc
 related: 
 info#start
 L2 Electric Potential from V[1-5]

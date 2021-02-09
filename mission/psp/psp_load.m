@@ -97,36 +97,11 @@ if ~exist('dataDir','var') || isempty(dataDir)
 end
 
 switch datatype
-  case {'mag_rtn', 'fgm_rtn'}
-    filename= 'psp_fld_l2_mag_RTN';
-    varnames = {'psp_fld_l2_mag_RTN'};
-    varnamesout = {'rtnB'};
-    
-    hourtag={'00';'06';'12';'18'};
-    
-  case {'mag_sc', 'fgm_sc'}
-    filename= 'psp_fld_l2_mag_SC';
-    varnames = {'psp_fld_l2_mag_SC'};
-    varnamesout = {'scB'};
-    
-    hourtag={'00';'06';'12';'18'};
-    
-  case {'wf_dvdc'}
-    filename= 'psp_fld_l2_dfb_wf_dvdc';
-    varnames = {...
-      'psp_fld_l2_dfb_wf_dVdc_sensor';...
-      'psp_fld_l2_dfb_wf_dVdc_sc'};
-    varnamesout = {'wf_dvdc_sensor';'wf_dvdc_sc'};
-    
-    hourtag={'00';'06';'12';'18'};
     
   case {'wf_scm'}
     filename= 'psp_fld_l2_dfb_wf_scm';
-    varnames = {...
-      'psp_fld_l2_dfb_wf_scm_hg_sensor';...
-      'psp_fld_l2_dfb_wf_scm_hg_sc'};
-    varnamesout = {...
-      'wf_scm_sensor';'wf_scm_sc'};
+    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
+    varnamesout = {'wf_scm_sensor'};
     
     hourtag={'00';'06';'12';'18'};
     
