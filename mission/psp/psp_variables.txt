@@ -83,7 +83,7 @@ varName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w)lfhg
 fileName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w)lfhg
 directory: fields/l2/dfb_dc_spec/20YY/MM
 hourtag: 
-varNameShort: dc_spec_scm(u|v|w)_lfhg
+varNameShort: dc_spec_scm(u|v|w)lfhg
 related: 
 info#start
 xxx
@@ -97,7 +97,7 @@ varName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
 fileName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
 directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
-varNameShort: ac_spec_scm(u|v|w)_lfhg
+varNameShort: ac_spec_scm(u|v|w)lfhg
 related: 
 info#start
 xxx
@@ -234,7 +234,7 @@ varName: psp_fld_l2_mag_RTN_1min
 fileName: psp_fld_l2_mag_RTN_1min
 directory: fields/l2/mag_RTN_1min/20YY/MM
 hourtag: 
-varNameShort: rtnB1min
+varNameShort: mag_rtn_1min
 related: 
 info#start
 Magnetic field from which sensor??
