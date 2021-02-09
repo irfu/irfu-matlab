@@ -193,6 +193,7 @@ Quality flag is specified for the whole file not for separate time points.
 info#end
 ----
 
+%%%%
 varName: EFLUX
 fileName: psp_swp_spb_sf1_L2_32E
 directory: sweap/spe/L2/spb_sf1/20YY/MM
