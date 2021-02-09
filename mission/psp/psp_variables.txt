@@ -530,7 +530,7 @@ varName: DQF
 fileName: psp_swp_spc_l3i
 directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: scp_dqf
+varNameShort: spc_dqf
 related: 
 info#start
 Array of SPC data quality indicators.
