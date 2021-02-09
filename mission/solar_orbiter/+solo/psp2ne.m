@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2020-11-24T17:50:01';
+codeVerStr = '2021-02-09T17:13:00';
 
 
 
@@ -49,11 +49,35 @@ CalEntry = irf.ts_vec_xy(...
 
 Cal = Cal.combine(CalEntry);
 
-% data until August 26
+% data until Sept 4
 CalEntry = irf.ts_vec_xy(...
-  irf.tint('2020-08-11T21:27:03Z/2020-09-30T23:59:59Z'),...
-  repmat([0.3116  1.6966],2,1));
+  irf.tint('2020-08-11T21:27:03Z/2020-09-04T23:59:59Z'),...
+  repmat([0.2863  1.6844],2,1));
 
+Cal = Cal.combine(CalEntry);
+
+% data for Sept 5
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2020-09-05T00:00:00Z/2020-09-13T23:59:59Z'),...
+  repmat([0.3104  1.5638],2,1));
+Cal = Cal.combine(CalEntry);
+
+%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2020-09-14T00:00:00Z/2020-11-02T23:59:59Z'),...
+  repmat([0.2921  1.4582],2,1));
+Cal = Cal.combine(CalEntry);
+
+%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2020-11-03T00:00:00Z/2020-11-30T23:59:59Z'),...
+  repmat([0.3199  1.5274],2,1));
+Cal = Cal.combine(CalEntry);
+
+%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2020-12-01T00:00:00Z/2020-12-14T23:59:59Z'),...
+  repmat([0.2956  1.6881],2,1));
 Cal = Cal.combine(CalEntry);
 
 %% calibrate
