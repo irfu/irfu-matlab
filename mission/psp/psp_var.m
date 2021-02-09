@@ -6,70 +6,37 @@ function varargout = psp_var(vartxt)
 % X=PSP_VAR('varName') - get variable 'varName' information into structure
 %
 % See also: PSP
+persistent C arr startIdx endIdx N
 
+%% find and read psp_variables.txt
+if isempty(C)
+  C = importdata(...
+    [fileparts(which('psp_var')) filesep 'psp_variables.txt']...
+    );
+  parse_psp_variables_file;
+end
+
+%%
 if nargin == 0
   help psp_var;
   return;
 end
 
+%% 
 doFindFile = any(strfind(vartxt,'file='));
 
-%% find and read psp_variables.txt
-tmp = which('psp_var');
-pspFile = [tmp(1:end-5) 'variables.txt'];
-fid = fopen(pspFile,'rt');
-C = textscan(fid, '%s', 'Delimiter',''); C = C{1};
-fclose(fid);
-
-%% split psp_variables.txt into structure array of variable 
-% line numnbers of start/end of each structure
-startIdx = find(ismember(C, '%%%%'))+1;
-endIdx = find(ismember(C, '----'))-1;
-startIdxInfo = find(ismember(C, 'info#start'))+1;
-endIdxInfo = find(ismember(C, 'info#end'))-1;
-
-% define array of strucutres
-N = numel(startIdx);
-arr = struct('varName','','fileName','','hourtag',{''},'directory','','varNameShort','','related',{''},'info',"");
-arr = repmat(arr,[N 1]);
-
-
-% parse and store each variable in the structure array 
-for i=1:N
-  % parse key/value of struct
-  s = C(startIdx(i):startIdxInfo(i)-2);
-  s = regexp(s,'(\w+)\s*[:=]\s*([^%$]*)(?:%[^$]*)?','tokens','once');
-  
-  % store: struct.key = value
-  for j=1:numel(s)
-    keytoken = s{j};
-    arr(i).(keytoken{1}) = keytoken{2};
-  end
-  
-  % fix hourtag
-  if isempty(arr(i).hourtag)
-    arr(i).hourtag={''};
-  elseif strcmp(arr(i).hourtag,'6h')
-    arr(i).hourtag={'00';'06';'12';'18'};
-  end
-  % read info
-  arr(i).info = string(C(startIdxInfo(i):endIdxInfo(i)));
-end
-
 %% match 
-doMatchNameExact = false(1,N);
+doMatchNameExact  = false(1,N);
 doMatchNameExpand = false(1,N);
-doMatchNameShort = false(1,N);
-doMatchName      = false(1,N);
+doMatchNameShort  = false(1,N);
+doMatchName       = false(1,N);
 
 if strcmp(vartxt,'*') % show all variables
   doMatchName(:) = true;
 elseif doFindFile
   nameToMatch = vartxt(6:end); % remove "file=" from the beginning
-  for i=1:N
-    if any(regexpi(nameToMatch,['^' arr(i).fileName '$']))
-      doMatchName(i) = true;
-    end
+  for i=1:N  
+    doMatchName(i) = any(regexpi(nameToMatch,['^' arr(i).fileName '$']));
   end
 else
   for i=1:N
@@ -93,21 +60,11 @@ else
 end
 
 %% Output
-if nargout == 0
-  % print all matching variables
-  if any(doMatchNameExact)
-    fprintf('%s\n',C{startIdx(iMatchExact)-1:endIdx(iMatchExact)+1});
-  else
-    if numel(find(doMatchName))> 1
-      for i = find(doMatchName)
-        fprintf('%s\n',['<a href="matlab: psp_var ' arr(i).varName '">' arr(i).varName '</a>']);
-      end
-      else
-      for i = find(doMatchName)
-        fprintf('%s\n',C{startIdx(i)-1:endIdx(i)+1});
-      end
+if nargout == 0  % print all matching variables
+    display_variable_description(doMatchNameExact);
+    if ~any(doMatchNameExact)
+      display_variable_description(doMatchName);
     end
-  end
 elseif nargout == 4 && any(doMatchNameExact)
   %[fileName,varName,hourTag,shortVar] 
   if any(doMatchNameExact)
@@ -126,8 +83,8 @@ else
     if doMatchNameExpand(iMatchExact)
       if doMatchNameShort(iMatchExact)
         varShortList = list_variables(arr(iMatchExact).varNameShort);
-        varList = list_variables(arr(iMatchExact).varName);
-        fileList = list_variables(arr(iMatchExact).fileName);
+        varList      = list_variables(arr(iMatchExact).varName);
+        fileList     = list_variables(arr(iMatchExact).fileName);
         out.varNameShort = vartxt;
         out.varName = varList{strcmp(vartxt,varShortList)};
         if numel(fileList) > 1
@@ -137,8 +94,8 @@ else
       else
         out.varName = vartxt;
         varShortList = list_variables(arr(iMatchExact).varNameShort);
-        varList = list_variables(arr(iMatchExact).varName);
-        fileList = list_variables(arr(iMatchExact).fileName);
+        varList      = list_variables(arr(iMatchExact).varName);
+        fileList     = list_variables(arr(iMatchExact).fileName);
         out.varNameShort = varShortList{strcmp(vartxt,varList)};
         if numel(fileList) > 1
           out.fileName = fileList{strcmp(vartxt,varList)};
@@ -159,9 +116,35 @@ else
   varargout(1)={out};
 end
 
+%% NESTED FUNCTIONS
+  function display_variable_link(iVarList)
+    if islogical(iVarList)
+      iVarList = find(iVarList);
+    end
+    for iVar = iVarList
+        fprintf('%s\n',['<a href="matlab: psp_var ' arr(iVar).varName '">' arr(iVar).varName '</a>']);
+    end
+  end
+
+  function display_variable_description(iVarList)
+    % if more than 1 variable then print out list
+    if islogical(iVarList)
+      iVarList = find(iVarList);
+    end
+    if isempty(iVarList),return; end
+    if numel(iVarList) > 1
+      display_variable_link(iVarList);
+      return;
+    end
+    for iVar = iVarList
+        fprintf('%s\n',C{startIdx(iVar)-1:endIdx(iVar)+1});
+    end
+  end
+
   function varList = list_variables(varFilter)
-    %UNTITLED Summary of this function goes here
-    %   Detailed explanation goes here
+    % LIST_VARIABLE expands regexp variable filter to a list of all possible variable names
+    %  Returns cell array with all possible variable names
+    % Ex: p(1|2|3) becomes {'p1','p2','p3'}
     tokens  = regexp(varFilter,'\(([\w\|]*)\)','tokens');
     outbase = regexp(varFilter,'\(([\w\|]*)\)','split');
     nTok    = numel(tokens);
@@ -194,6 +177,44 @@ end
         varList{iOut} = [varList{iOut} outbase{iBase} varPerm{iOut,iBase}];
       end
       varList{iOut} = [varList{iOut} outbase{end}];
+    end
+    
+  end
+
+  function parse_psp_variables_file
+    %% split psp_variables.txt into structure array of variable
+    % line numnbers of start/end of each structure
+    startIdx = find(ismember(C, '%%%%'))+1;
+    endIdx   = find(ismember(C, '----'))-1;
+    startIdxInfo = find(ismember(C, 'info#start'))+1;
+    endIdxInfo   = find(ismember(C, 'info#end'))-1;
+    
+    % define array of strucutres
+    N = numel(startIdx);
+    arr = struct('varName','','fileName','','hourtag',{''},'directory','','varNameShort','','related',{''},'info',"");
+    arr = repmat(arr,[N 1]);
+    
+    
+    % parse and store each variable in the structure array
+    for i=1:N
+      % parse key/value of struct
+      s = C(startIdx(i):startIdxInfo(i)-2);
+      s = regexp(s,'(\w+)\s*[:=]\s*([^%$]*)(?:%[^$]*)?','tokens','once');
+      
+      % store: struct.key = value
+      for j=1:numel(s)
+        keytoken = s{j};
+        arr(i).(keytoken{1}) = keytoken{2};
+      end
+      
+      % fix hourtag
+      if isempty(arr(i).hourtag)
+        arr(i).hourtag={''};
+      elseif strcmp(arr(i).hourtag,'6h')
+        arr(i).hourtag={'00';'06';'12';'18'};
+      end
+      % read info
+      arr(i).info = string(C(startIdxInfo(i):endIdxInfo(i)));
     end
     
   end
