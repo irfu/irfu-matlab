@@ -153,7 +153,6 @@ FIELDS data. Additional flagged items may be added in the future.
 info#end
 ----
 
-
 %%%%
 varName: EFLUX
 fileName: psp_swp_spa_sf1_L2_32E
@@ -194,6 +193,45 @@ Quality flag is specified for the whole file not for separate time points.
 info#end
 ----
 
+varName: EFLUX
+fileName: psp_swp_spb_sf1_L2_32E
+directory: sweap/spe/L2/spb_sf1/20YY/MM
+hourtag: 
+varNameShort: spb_sf1_eflux
+related: 
+info#start
+SF1: Differential Energy Flux vs Energy/angle bin measured by the SPAN-B sensor localized on the ant-ram side of the spacecraft.
+The units are differential energy flux and eV.
+The “sf1” product is an energy spectrum produced on the spacecraft by summing over the theta and phi directions. 
+CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products 
+due to the method of spectra production on the SPAN-E instrument (straight summing). 
+Thus, SF1 energy spectra are not recommended for rigid statistical analysis.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spb_sf1_L2_32E
+directory: sweap/spe/L2/spb_sf1/20YY/MM
+hourtag: 
+varNameShort: spb_sf1_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spb_sf1_L2_32E
+directory: sweap/spe/L2/spb_sf1/20YY/MM
+hourtag: 
+varNameShort: spb_sf1_qf
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
 %%%%
 varName: EFLUX_VS_PA_E
 fileName: psp_swp_spe_sf0_L3_pad
@@ -215,6 +253,114 @@ varNameShort: spe_sf0_pad_eflux_vs_energy
 related: 
 info#start
 Electron differential Energy Flux vs Pitch-angle and Energy
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_qf
+related: 
+info#start
+Proton partial density
+info#end
+----
+
+%%%%
+varName: DENS
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_dens
+related: 
+info#start
+Proton partial density
+info#end
+----
+
+%%%%
+varName: VEL
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_vel
+related: 
+info#start
+Proton velocity
+info#end
+----
+
+%%%%
+varName: T_TENSOR
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_t_tensor
+related: 
+info#start
+Proton temperature
+info#end
+----
+
+%%%%
+varName: TEMP
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_temp
+related: 
+info#start
+Proton temperature
+info#end
+----
+
+%%%%
+varName: MAGF_INST
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_magf_inst
+related: 
+info#start
+Magneric field in intrument coordinates
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_ENERGY
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_eflux_vs_en
+related: 
+info#start
+Proton differential Energy Flux vs Energy
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_THETA
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_eflux_vs_theta
+related: 
+info#start
+Proton differential Energy Flux vs Theta
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_PHI
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_eflux_vs_phi
+related: 
+info#start
+Proton differential Energy Flux vs Phi
 info#end
 ----
 

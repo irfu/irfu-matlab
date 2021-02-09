@@ -32,8 +32,9 @@
 %           'dc_spec_SCMw'           - DFB DC-coupled SCM, Low Frequency, High Gain, w-component, Sensor coordinates
 %           'rfs_lfr'                - Radio Frequency Spectrometer, RFS, Low Frequency Reciever, LFR
 %           'rfs_hfr'                - Radio Frequency Spectrometer, RFS, High Frequency Reciever, HFR
-%           'sweap','spc'            - SWEAP proton moments
+%           'spc'                    - SWEAP Solar Probe Cup data for proton moments
 %           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
+%           'spi'                    - SWEAP SPAN-I Partial Proton Moments, Differential Energy Eflux 
 %           'ephem'                  - ephemeris files
 %           'dbm_dvac'               - times series of electric field snapshots
 %           'XXX'                    - where XXX is long or short name of variables in the list "PSP_VAR *"
@@ -210,7 +211,7 @@ switch datatype
     
     hourtag={''};
     
-  case {'sweap', 'spc'}
+  case {'spc'}
     filename = 'psp_swp_spc_l3i';
     
     varnames = {...
@@ -240,6 +241,22 @@ switch datatype
     
     hourtag={''};
     
+  case {'spi'}
+    filename = 'psp_swp_spi_sf00_L3_mom_INST';
+    varnames = {...
+      'QUALITY_FLAG';...
+      'DENS';'VEL';'T_TENSOR';'TEMP';...
+      'MAGF_SC';'MAGF_INST';...
+      'EFLUX_VS_ENERGY';'EFLUX_VS_THETA';'EFLUX_VS_PHI';...
+      'ENERGY_VALS';'THETA_VALS';'PHI_VALS'};
+    varnamesout = {'spi_qf';...
+      'spi_dens';'spi_vel';'spi_t_tensor';'spi_temp';...
+      'spi_mag_SC';'spi_mag_inst';...
+      'spi_eflux_vs_en';'spi_eflux_theta';'spi_eflux_phi';...
+      'spe_energy';'spi_theta';'spi_phi'};
+    
+    hourtag={''};
+
   case 'ephem'
     
     filename = 'spp_fld_l1_ephem_spp_rtn_';
