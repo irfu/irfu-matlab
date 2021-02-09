@@ -55,7 +55,7 @@ varName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
 fileName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
 directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
-varNameShort: ac_spec_V(12|34)hg
+varNameShort: ac_spec_dV(12|34)hg
 related: 
 info#start
 High-rate ac power spectra are limited in coverage to the first 
@@ -111,7 +111,7 @@ varName: psp_fld_l2_dfb_wf_scm_hg_sensor
 fileName: psp_fld_l2_dfb_wf_scm
 hourtag: 6h
 directory: fields/l2/dfb_wf_scm/20YY/MM
-varNameShort: wf_scm_sensor
+varNameShort: wf_scm_hg_sensor
 related: 
 info#start
 xxx
@@ -122,6 +122,7 @@ info#end
 %%%%
 varName: psp_fld_l2_quality_flags
 fileName: psp_fld_l2_dfb_ac_spec_dV34hg
+directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
 varNameShort:
 related: 
@@ -184,7 +185,7 @@ varName: QUALITY_FLAG
 fileName: psp_swp_spa_sf1_L2_32E
 directory: sweap/spe/L2/spa_sf1/20YY/MM
 hourtag: 
-varNameShort: spa_sf1_quallity
+varNameShort: spa_sf1_quality_flag
 related: 
 info#start
 Quality flag is specified for the whole file not for separate time points.
@@ -196,7 +197,7 @@ varName: EFLUX_VS_PA_E
 fileName: psp_swp_spe_sf0_L3_pad
 directory: sweap/spe/L3/spe_sf0_pad/20YY/MM
 hourtag: 
-varNameShort: 
+varNameShort: spe_sf0_pad_eflux_vs_pa
 related: 
 info#start
 Electron differential Energy Flux vs Pitch-angle and Energy
@@ -208,7 +209,7 @@ varName: EFLUX_VS_ENERGY
 fileName: psp_swp_spe_sf0_L3_pad
 directory: sweap/spe/L3/spe_sf0_pad/20YY/MM
 hourtag: 
-varNameShort: 
+varNameShort: spe_sf0_pad_eflux_vs_energy
 related: 
 info#start
 Electron differential Energy Flux vs Pitch-angle and Energy
@@ -220,7 +221,7 @@ varName: sc_pos_HCI
 fileName: psp_swp_spc_l3i
 directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: hciR
+varNameShort: sc_pos_hci
 related: 
 info#start
 PSP position in the Heliocentric Inertial system (also called Ecliptic J2000)
@@ -246,7 +247,7 @@ varName: psp_fld_l2_mag_RTN
 fileName: psp_fld_l2_mag_RTN
 hourtag: 6h
 directory: fields/l2/mag_RTN/20YY/MM
-varNameShort: rtnB
+varNameShort: mag_rtn
 related: 
 info#start
 info#end
@@ -257,7 +258,7 @@ varName: psp_fld_l2_mag_SC
 fileName: psp_fld_l2_mag_SC
 directory: fields/l2/mag_SC/20YY/MM
 hourtag: 
-varNameShort: scB
+varNameShort: mag_sc
 related: 
 info#start
 info#end
@@ -268,7 +269,7 @@ varName: psp_fld_l2_dfb_wf_V(1|2|3|4|5)dc
 fileName: psp_fld_l2_dfb_wf_vdc
 directory: fields/l2/dfb_wf_vdc/20YY/MM
 hourtag: 6h
-varNameShort: V(1|2|3|4|5)dc
+varNameShort: wf_V(1|2|3|4|5)dc
 related: 
 info#start
 L2 Electric Potential from V[1-5]
@@ -348,8 +349,9 @@ info#end
 %%%%
 varName: np_fit
 fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: npFit
+varNameShort: spc_np_fit
 related: 
 info#start
 the bulk proton population in the solar wind is fit 
@@ -366,8 +368,9 @@ info#end
 %%%%
 varName: np1_fit
 fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: np1Fit
+varNameShort: spc_np1_fit
 related: 
 info#start
 Primary proton population density, from 1-dimensional Maxwellian fitting.
@@ -387,7 +390,7 @@ varName: np_moment
 fileName: psp_swp_spc_l3i
 directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: npmomFit
+varNameShort: spc_np_moment
 related: 
 info#start
 Proton density estimate from the 0th moment of the reduced distribution function.
@@ -402,8 +405,9 @@ info#end
 %%%%
 varName: wp1_fit
 fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: wp1Fit
+varNameShort: spc_wp1_fit
 related: 
 info#start
 Primary proton population radial [most probable] thermal speed, 
@@ -429,8 +433,9 @@ info#end
 %%%%
 varName: vp_fit_RTN
 fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: rtnVpFit
+varNameShort: spc_vp_fit_rtn
 related: 
 info#start
 Proton bulk velocity, from 1-dimensional Maxwellian fitting.
@@ -447,8 +452,9 @@ info#end
 %%%%
 varName: vp_fit_SC
 fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: scVpFit
+varNameShort: spc_vp_fit_sc
 related: 
 info#start
 Proton bulk velocity, from 1-dimensional Maxwellian fitting.
@@ -479,7 +485,7 @@ varName: vp_moment_RTN
 fileName: psp_swp_spc_l3i
 directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: rtnVpmom
+varNameShort: spc_vp_moment_rtn
 related: 
 info#start
 proton bulk velocity from the 1st moment of the reduced distribution 
@@ -497,7 +503,7 @@ varName: vp_moment_SC
 fileName: psp_swp_spc_l3i
 directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: scVpmom
+varNameShort: spc_vp_moment_sc
 related: 
 info#start
 proton bulk velocity from the 1st moment of the reduced distribution 
@@ -520,8 +526,9 @@ info#end
 %%%%
 varName: DQF
 fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: DQF
+varNameShort: scp_dqf
 related: 
 info#start
 Array of SPC data quality indicators.
@@ -596,7 +603,7 @@ info#end
 varName: general_flag
 fileName: psp_swp_spc_l3i
 hourtag: 
-varNameShort: 
+varNameShort: spc_general_flag
 related: 
 info#start
 Global quality flag, signifying whether the data for this epoch are 
