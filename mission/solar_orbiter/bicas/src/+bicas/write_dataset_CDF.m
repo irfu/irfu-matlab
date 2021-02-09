@@ -192,7 +192,7 @@ function DataObj = init_modif_dataobj(...
         zvValuePd       = ZvsSubset.(zvName);
         ZvsLog.(zvName) = zvValuePd;
 
-        DataObj = handle_PD_zVar(DataObj, zvName, zvValuePd);
+        DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L);
     end
     
     
@@ -244,7 +244,12 @@ end    % init_modif_dataobj
 % zvValuePd
 %       zVar value from processing (unaltered). PD = Processing Data.
 %
-function DataObj = handle_PD_zVar(DataObj, zvName, zvValuePd)
+%
+% SHORTENINGS
+% ===========
+% ZVA = zVariable Attribute
+%
+function DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L)
     
     % ASSERTION: Master CDF already contains the zVariable.
     if ~isfield(DataObj.data, zvName)
@@ -262,70 +267,99 @@ function DataObj = handle_PD_zVar(DataObj, zvName, zvValuePd)
     % (when reading CDF), then the code can not distinguish between fill
     % values and pad values.
     %======================================================================
+    [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
     if isfloat(zvValuePd)
-        [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
-        zvValueTemp    = EJ_library.utils.replace_value(zvValuePd, NaN, fillValue);
+        %[fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
+        zvValueTemp = EJ_library.utils.replace_value(zvValuePd, NaN, fillValue);
     else
-        zvValueTemp    = zvValuePd;
+        zvValueTemp = zvValuePd;
     end
-    matlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
+    cdfMatlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
-    zvValueCdf  = cast(zvValueTemp, matlabClass);
+    zvValueCdf  = cast(zvValueTemp, cdfMatlabClass);
     
-    %==============================================================
-    % Modify zVar attrs. SCALEMIN, SCALEMAX according to zVar data
-    %
-    % EXPERIMENTAL - INCOMPLETE IMPLEMENTATION
-    % ------------------------------------------------------------
+    
+    
+    %===========================================================================
+    % Set zVar attrs. SCALEMIN, SCALEMAX according to zVar data
+    % ---------------------------------------------------------
     % NOTE: Must handle fill values when deriving min & max.
     %   NOTE: For floats: Use zvValuePd (not cvValueCdf).
     %   NOTE: Must handle zVars with ONLY fill values.
     %
-    % NOTE: For some zVars, SCALEMIN & SCALEMAX will not be wrong, but may
-    % also not be very meaningful.
+    % TODO-DECISION: How handle zVars with only fill value/NaN?
+    %       Ex: EAC when no AC diff data
+    %       Ex: BW=0
+    %           Ex: SBM1, SBM2 test data
+    %   PROPOSAL: Set SCALEMIN=SCALEMAX=0
+    %   PROPOSAL: Keep SCALEMIN, SCALEMAX from skeleton.
+    %   PROPOSAL: Set to fill value.
+    %       CON: Legal?
+    %
+    % NOTE: For some zVars, SCALEMIN & SCALEMAX will not be wrong, but may also
+    % not be very meaningful.
     % NOTE: Some zVars might not change, i.e. min=max.
     %   Ex: IBIAS1/2/3, SYNCHRO_FLAG
     %
-    % PROPOSAL: Assume (& assert) that fill values are used instead of NaN (both
-    %           floats and integers. Convert zVar to 1D vector, remove fill
-    %           values, then derive min & max.
-    %==============================================================
-    if isfloat(zvValuePd) && 0                       % ######################### DISABLED
-        i = find(strcmp(DataObj.VariableAttributes.SCALEMAX(:,1), zvName));
-        assert(isscalar(i))
+    % NOTE: Implementation seems to work for floats.
+    %===========================================================================
+    if isnumeric(zvValueCdf)
+        iZv = find(strcmp(DataObj.VariableAttributes.SCALEMAX(:,1), zvName));
+        assert(isscalar(iZv))
         
-        zva_SCALEMIN_master = DataObj.VariableAttributes.SCALEMIN{i,2};
-        zva_SCALEMAX_master = DataObj.VariableAttributes.SCALEMAX{i,2};
+        % Remove fill values
+        zvValueCdfLin = zvValueCdf(:);
+        zvValueCdfLin(zvValueCdfLin == fillValue) = [];
+        assert(all(~isnan(zvValueCdfLin)), ...
+            'BICAS:write_dataset_CDF:Assertion', ...
+            'zvValuePdLin for zvName="%s" contains NaN despite being expected not to.', ...
+            zvName)
+        
+        % SCALEMIN/-MAX from master CDFs.
+        SCALEMIN_zvaMaster = DataObj.VariableAttributes.SCALEMIN{iZv, 2};
+        SCALEMAX_zvaMaster = DataObj.VariableAttributes.SCALEMAX{iZv, 2};
         
         % NOTE: Epoch SCALEMAX is string (dataset bug?) /2021-02-05
         % ==> SCALEMAX_master not numeric when zvValue is.
-        if isnumeric(zva_SCALEMIN_master) && isnumeric(zva_SCALEMAX_master)
+        if isnumeric(SCALEMIN_zvaMaster) && isnumeric(SCALEMAX_zvaMaster)
             
-            zva_SCALEMIN_Pd = min(zvValuePd, [], 'all');
-            zva_SCALEMAX_Pd = max(zvValuePd, [], 'all');
-            assert(~isnan(zva_SCALEMIN_Pd))
-            assert(~isnan(zva_SCALEMAX_Pd))
+            % SCALEMIN/-MAX from processed data.
+            SCALEMIN_zvaPd = min(zvValueCdfLin, [], 'all');
+            SCALEMAX_zvaPd = max(zvValueCdfLin, [], 'all');
             
-            L.logf('debug', 'zvName              = %s', zvName)
-            L.logf('debug', 'zva_SCALEMIN_master = %g', zva_SCALEMIN_master)
-            L.logf('debug', 'zva_SCALEMIN_Pd     = %g', zva_SCALEMIN_Pd)
-            L.logf('debug', 'zva_SCALEMAX_master = %g', zva_SCALEMAX_master)
-            L.logf('debug', 'zva_SCALEMAX_Pd     = %g', zva_SCALEMAX_Pd)
+            %L.logf('debug', 'zvName             = %s', zvName)
+            %L.logf('debug', 'SCALEMIN_zvaMaster = %g', SCALEMIN_zvaMaster)
+            %L.logf('debug', 'SCALEMIN_zvaPd     = %g', SCALEMIN_zvaPd)
+            %L.logf('debug', 'SCALEMAX_zvaMaster = %g', SCALEMAX_zvaMaster)
+            %L.logf('debug', 'SCALEMAX_zvaPd     = %g', SCALEMAX_zvaPd)
             
-            %=======================================================
-            % DECISION POINT: How to set/update SCALEMIN & SCALEMAX
-            %=======================================================
-            zva_SCALEMIN_new = zva_SCALEMIN_Pd;
-            zva_SCALEMAX_new = zva_SCALEMAX_Pd;
+            %===============================================================
+            % DECISION POINT: Set/update SCALEMIN & SCALEMAX used in actual
+            % output CDF.
+            %===============================================================
+            if ~isempty(zvValueCdfLin)
+                % CASE: There is a min & max.
+                assert(~isempty(SCALEMIN_zvaPd))
+                assert(~isempty(SCALEMAX_zvaPd))
+                
+                SCALEMIN_zvaCdf = SCALEMIN_zvaPd;
+                SCALEMAX_zvaCdf = SCALEMAX_zvaPd;
+            else
+                % CASE: There is no min/max due to absence of non-fill value
+                % data.
+                SCALEMIN_zvaCdf = 0;    % NOTE: Must later be typecast.
+                SCALEMAX_zvaCdf = 0;
+            end
             
             % NOTE: zvValue has already been typecast to CDF type, but any
-            % (future?) algorithm (above) for setting values may cancel
-            % that. Must therefore typecast again, just to be sure.
-            zva_SCALEMIN_new = cast(zva_SCALEMIN_new, matlabClass);
-            zva_SCALEMAX_new = cast(zva_SCALEMAX_new, matlabClass);
+            % (future?) algorithm (above) for setting values may cancel that
+            % (e.g. for constants). Must therefore typecast again, just to be
+            % sure.
+            SCALEMIN_zvaCdf = cast(SCALEMIN_zvaCdf, cdfMatlabClass);
+            SCALEMAX_zvaCdf = cast(SCALEMAX_zvaCdf, cdfMatlabClass);
             
-            DataObj.VariableAttributes.SCALEMIN{i,2} = zva_SCALEMIN_new;
-            DataObj.VariableAttributes.SCALEMAX{i,2} = zva_SCALEMAX_new;
+            DataObj.VariableAttributes.SCALEMIN{iZv,2} = SCALEMIN_zvaCdf;
+            DataObj.VariableAttributes.SCALEMAX{iZv,2} = SCALEMAX_zvaCdf;
         end
     end
     
