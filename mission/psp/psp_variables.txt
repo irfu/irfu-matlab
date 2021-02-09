@@ -55,7 +55,7 @@ varName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
 fileName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
 directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
-varNameShort: ac_spec_dv(12|34)
+varNameShort: ac_spec_dv(12|34)hg
 related: 
 info#start
 High-rate ac power spectra are limited in coverage to the first 
@@ -70,7 +70,7 @@ varName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
 fileName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
 directory: fields/l2/dfb_dc_spec/20YY/MM
 hourtag: 
-varNameShort: dc_spec_v(12|34)
+varNameShort: dc_spec_v(12|34)hg
 related: 
 info#start
 xxx
