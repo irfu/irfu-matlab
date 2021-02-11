@@ -46,6 +46,14 @@ function [out] = irf_shock_gui(scd,varName)
 %   TODO: Fix all velocity methods
 %       Replace uicontrols with text objects
 
+%   Update 1: 
+%       By Ahmad Lalti,  on 5-2-2021. 
+%       Update descrition: 
+%       - Give the option for manually inputing the
+%         upstream and downstream parameters.
+%       - Display the magnetic field and velocity as vectors and not as
+%         norms
+
 
 
 %% Structure of ud:
@@ -140,6 +148,9 @@ if ischar(scd)
       set(gcf,'userdata',ud)
     case 'plot_omni'
       plot_omni(ud)
+    case 'manual_input'
+      ud = manual_input(ud);
+      set(gcf,'userdata',ud)
     case 'calc' % click calculate
       % time is set between up- and downstream intervals
       ud.params.t = irf_time(mean([ud.tu(2),ud.td(1)]),'epoch>epochtt');
@@ -148,6 +159,8 @@ if ischar(scd)
       ud.params.tintd = irf_time(ud.td,'epoch>epochtt');
       ud.params.tintf = irf_time(ud.tf,'epoch>epochtt');
       
+      % check for manual input to overwrite other inputs
+      ud = manual_input(ud);
       % get shock parameters (Mach #, beta, Fcp,...)
       ud.shp.par = irf_shock_parameters(ud.params);
       
@@ -162,6 +175,7 @@ if ischar(scd)
       ud.shp.nvec = irf_shock_normal(ud.params);
       
       ud.shp.data = ud.params;
+      
       ud = display_prop(ud);
       
       
@@ -463,9 +477,9 @@ post(:,3) = 0.4;
 % height
 post(:,4) = 0.15;
 % first column left
-post(1:ceil(nt/2),1) = 0.05;
+post(1:ceil(nt/2),1) = 0.15;
 % second column left
-post(ceil(nt/2)+1:end,1) = 0.505;
+post(ceil(nt/2)+1:end,1) = 0.65;
 % first column up
 post(1:ceil(nt/2),2) = fliplr(linspace(0.05,0.8,ceil(nt/2)));
 % second column up
@@ -473,6 +487,7 @@ post(ceil(nt/2)+1:end,2) = fliplr(linspace(0.05,0.8,nt-ceil(nt/2)));
 
 % make the text boxes
 for k = 1:nt
+
   ud.uih.cl.(par_name{k}) = uicontrol('style','text',...
     'Units', 'normalized',...
     'position',post(k,:),...
@@ -480,6 +495,12 @@ for k = 1:nt
     'Parent',ud.uih.par.panel,...
     'HorizontalAlignment','left',...
     'string',[par_str{k},' = ']);
+  ud.uih.cl.([par_name{k} 'c'])=uicontrol('Style','togglebutton',...
+      'Units','normalized',...
+      'Position',[post(k,1)-0.1 post(k,2)+0.05 0.07 0.07],...
+      'Parent',ud.uih.par.panel,...
+      'Callback','irf_shock_gui(''manual_input'')');
+
 end
 
 %% Calculate panel
@@ -629,20 +650,48 @@ function [ud] = display_vals(ud) % print up/downstream values
 % Now displays norm of vectors because it is shorter.
 
 % norm of magnetic field vector
-ud.uih.cl.Bu.String = ['Bu = ',num2str(round(norm(ud.params.Bu),2)),' nT'];
-ud.uih.cl.Bd.String = ['Bd = ',num2str(round(norm(ud.params.Bd),2)),' nT'];
+if ~isfield(ud.uih.cl,'Bum')
+temp=round((ud.params.Bu),2);
+ud.uih.cl.Bu.String = ['Bu = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') nT'];
+clear temp
+end
+if ~isfield(ud.uih.cl,'Bud')
+temp=round((ud.params.Bd),2);
+ud.uih.cl.Bd.String = ['Bd = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') nT'];
+clear temp
+end
 % destiny
+if ~isfield(ud.uih.cl,'num')
 ud.uih.cl.nu.String = ['nu = ',num2str(round(ud.params.nu,2)),' /cc'];
+end
+if ~isfield(ud.uih.cl,'ndm')
 ud.uih.cl.nd.String = ['nd = ',num2str(round(ud.params.nd,2)),' /cc'];
+end
 % velocity
-ud.uih.cl.Vu.String = ['Vu = ',num2str(round(norm(ud.params.Vu),2)),' km/s'];
-ud.uih.cl.Vd.String = ['Vd = ',num2str(round(norm(ud.params.Vd),2)),' km/s'];
+if ~isfield(ud.uih.cl,'Vum')
+temp=round((ud.params.Vu));
+ud.uih.cl.Vu.String = ['Vu = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') km/s'];
+clear temp
+end
+if ~isfield(ud.uih.cl,'Vdm')
+temp=round((ud.params.Vd));    
+ud.uih.cl.Vd.String = ['Vd = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') km/s'];
+clear temp
+end
 % electron temperature
+if ~isfield(ud.uih.cl,'Teum')
 ud.uih.cl.Teu.String = ['Teu = ',num2str(round(ud.params.Teu,2)),' eV'];
+end
+if ~isfield(ud.uih.cl,'Tedm')
 ud.uih.cl.Ted.String = ['Ted = ',num2str(round(ud.params.Ted,2)),' eV'];
+end
 % ion temperature
+if ~isfield(ud.uih.cl,'Tium')
 ud.uih.cl.Tiu.String = ['Tiu = ',num2str(round(ud.params.Tiu,2)),' eV'];
+end
+if ~isfield(ud.uih.cl,'Tidm')
 ud.uih.cl.Tid.String = ['Tid = ',num2str(round(ud.params.Tid,2)),' eV'];
+end
 end
 
 
@@ -856,3 +905,63 @@ for i = 1:4
 end
 
 end
+
+function [ud] = manual_input(ud)
+
+par_name = {'Bu','nu','Vu','Teu','Tiu','Bd','nd','Vd','Ted','Tid'};
+Uns = {'nT','/cc','Km/s','eV','eV','nT','/cc','Km/s','eV','eV'};
+par_str = par_name;
+
+% positions of text boxes
+nt = length(par_name);
+post = zeros(nt,4);
+% width
+post(:,3) = 0.4;
+% height
+post(:,4) = 0.15;
+% first column left
+post(1:ceil(nt/2),1) = 0.15;
+% second column left
+post(ceil(nt/2)+1:end,1) = 0.65;
+% first column up
+post(1:ceil(nt/2),2) = fliplr(linspace(0.05,0.8,ceil(nt/2)));
+% second column up
+post(ceil(nt/2)+1:end,2) = fliplr(linspace(0.05,0.8,nt-ceil(nt/2)));
+
+% make the text boxes
+for k = 1:nt
+
+   if ud.uih.cl.([par_name{k} 'c']).Value && ~isfield(ud.uih.cl,[par_name{k} 'm'])
+       ud.uih.cl.(par_name{k}).String=[par_str{k},' = '];
+       
+
+       ud.uih.cl.([par_name{k} 'm'])=uicontrol('Style','edit',...
+      'Units','normalized',...
+      'Position',[post(k,1)+0.09 post(k,2)+0.01 0.15 0.15],...
+      'Parent',ud.uih.par.panel,...
+      'String',num2str(round(100*ud.params.(par_name{k}))/100),'Callback','irf_shock_gui(''calc'')');
+  
+       ud.uih.cl.([par_name{k} 't2'])=uicontrol('Style','text',...
+      'Units','normalized',...
+      'Position',[post(k,1)+0.24 post(k,2)+0.02 0.15 0.1],...
+      'Parent',ud.uih.par.panel,...
+      'String',Uns{k},'FontSize',12,'HorizontalAlignment','left');
+  
+   elseif ud.uih.cl.([par_name{k} 'c']).Value && isfield(ud.uih.cl,[par_name{k} 'm'])
+       ud.params.(par_name{k}) = cell2mat(textscan(ud.uih.cl.([par_name{k} 'm']).String,'%f'))';  
+      
+   elseif isfield(ud.uih.cl,[par_name{k} 'm'])
+       delete(ud.uih.cl.([par_name{k} 'm']));
+       ud.uih.cl = rmfield(ud.uih.cl, [par_name{k} 'm']);
+       delete(ud.uih.cl.([par_name{k} 't2']));
+       ud.uih.cl = rmfield(ud.uih.cl, [par_name{k} 't2']);
+       ud = get_avg_field(ud,ud.scd,{'u'});
+       ud = set_omni(ud);
+       ud = display_vals(ud);
+   end
+
+end
+
+
+end
+
