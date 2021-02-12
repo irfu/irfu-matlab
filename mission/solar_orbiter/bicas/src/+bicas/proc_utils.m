@@ -54,6 +54,27 @@ classdef proc_utils
         
         
         
+        % Wrapper around bicas.handle_struct_name_change() to be used
+        % locally.
+        %
+        % ARGUMENTS
+        % =========
+        % inSciDsi : Input SCI DATASET_ID which contains the zVariable.
+        % varargin : Passed on to bicas.handle_struct_name_change as its
+        %            varargin.
+        %
+        function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
+            anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
+                ['Input dataset DATASET_ID=%s uses an alternative', ...
+                ' but illegal(?) zVariable name "%s" instead of "%s".'], ...
+                inSciDsi, oldFieldname, newFieldname));
+
+            bicas.handle_struct_name_change(fnChangeList, ...
+                SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
+        end
+
+
+
         function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
         % For every cell in a cell array, select an index range in the first
         % dimension for every cell array component.
