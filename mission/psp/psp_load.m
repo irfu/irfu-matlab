@@ -237,7 +237,7 @@ switch datatype
       'EFLUX_VS_PA_E'};
     varnamesout = {'spe_sf0_pad_qf';'spe_sf0_pad_pa';...
       'spe_sf0_pad_eflux_vs_en';'spe_sf0_pad_en';...
-      'spe_sf0_pad_eflux_vs_pa'};
+      'spe_sf0_pad_eflux_vs_pa_en'};
     
     hourtag={''};
     
