@@ -36,6 +36,8 @@
 %           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
 %           'spi'                    - SWEAP SPAN-I Partial Proton Moments, Differential Energy Eflux 
 %           'ephem'                  - ephemeris files
+%           'pl_spi'                 - Loads only density data to be used in the plasma line code
+%           'pl_rfs_lfr'             - Loads V1V2 data in both averaged and high-resolution for the plasma line code
 %           'dbm_dvac'               - times series of electric field snapshots
 %           'XXX'                    - where XXX is long or short name of variables in the list "PSP_VAR *"
 %
@@ -256,12 +258,31 @@ switch datatype
       'spi_sf00_energy';'spi_sf00_theta';'spi_sf00_phi'};
     
     hourtag={''};
-
+    
   case 'ephem'
     
     filename = 'spp_fld_l1_ephem_spp_rtn_';
     varnames = {'position';'velocity'};
     varnamesout = {'R_ephem';'V_ephem'};
+    
+    hourtag={''};
+    
+  case {'pl_spi'}
+    filename = 'psp_swp_spi_sf00_L3_mom_INST';
+    varnames = {'DENS'};
+    varnamesout = {'spi_sf00_dens'};
+    
+    hourtag={''};
+    
+  case {'pl_rfs_lfr'}
+    filename = 'psp_fld_l2_rfs_lfr';
+    varnames = {...
+      'psp_fld_l2_rfs_lfr_auto_averages_ch0_V1V2';...
+      'frequency_lfr_auto_averages_ch0_V1V2';...
+      'psp_fld_l2_rfs_lfr_hires_averages_ch0_V1V2';...
+      'frequency_lfr_hires_averages_ch0_V1V2'};
+    varnamesout = {'rfs_lfr_v1v2';'rfs_lfr_v1v2_freq';...
+      'rfs_lfr_v1v2_hr';'rfs_lfr_v1v2_freq_hr'};
     
     hourtag={''};
     
