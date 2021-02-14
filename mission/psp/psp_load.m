@@ -37,7 +37,7 @@
 %           'spi'                    - SWEAP SPAN-I Partial Proton Moments, Differential Energy Eflux 
 %           'ephem'                  - ephemeris files
 %           'pl_spi'                 - Loads only density data to be used in the plasma line code
-%           'pl_rfs_lfr'             - Loads V1V2 data in both averaged and high-resolution for the plasma line code
+%           'pl_rfs_lfr'             - Loads V1V2 data in both auto and high-resolution for the plasma line code
 %           'dbm_dvac'               - times series of electric field snapshots
 %           'XXX'                    - where XXX is long or short name of variables in the list "PSP_VAR *"
 %
