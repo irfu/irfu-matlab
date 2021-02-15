@@ -1,4 +1,4 @@
-irfu-matlab
+irfu-matlab [![Build Status](https://travis-ci.com/irfu/irfu-matlab.svg?branch=master)](https://travis-ci.com/irfu/irfu-matlab)
 ===========
 
 Acknowledgment
