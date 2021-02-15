@@ -39,16 +39,18 @@ function write_dataset_CDF(...
     % TODO-DEC: Should function find the master CDF file itself?
     %===========================================================================
     
-    
-    
+    %============
+    % ASSERTIONS
+    %============
     % UI ASSERTION: Check for directory collision. Always error.
     if exist(outputFile, 'dir')     % Checks for directory.
         error(...
             'BICAS:write_dataset_CDF', ...
             'Intended output dataset file path matches a pre-existing directory.')
     end
-    % UI ASSERTION: Check for output file path collision with pre-existing file.
-    % Command checks for file and directory (can not do just file).
+    % UI ASSERTION: Check for output file path collision with pre-existing file
+    %               or directory.
+    % Command checks for file and directory (should not do just file).
     if exist(outputFile, 'file')
         [settingValue, settingKey] = SETTINGS.get_fv(...
             'OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
@@ -131,6 +133,12 @@ end
 % Create a modified dataobj that can be written to file. The dataobj is based on
 % the master CDF.
 %
+% NOTE: Only uses global attribute values from
+%   (1) GaSubset, and
+%   (2) master CDF.
+% bicas.execute_sw_mode: derive_output_dataset_GlobalAttributes() which sets
+% global attributes dynamically.
+%
 %
 % NOTE: Assertions require that ZvsSubset contains records of data. Can not
 % easily submit "no data" for debugging purposes (deactivate processing but
@@ -159,9 +167,6 @@ function DataObj = init_modif_dataobj(...
             ' that does not increase monotonically.'], ...
             outputFile)
     end
-    EJ_library.assert.struct(GaSubset, ...
-        {'Parents', 'Parent_version', 'Provider', ...
-        'Datetime', 'OBS_ID', 'SOOP_TYPE'}, {})
     
     
     
@@ -189,7 +194,7 @@ function DataObj = init_modif_dataobj(...
                 ' in the master CDF file.'], zvName)
         end
         
-        zvValue = ZvsSubset.(zvName);
+        zvValue         = ZvsSubset.(zvName);
         ZvsLog.(zvName) = zvValue;
         
         %======================================================================
@@ -217,46 +222,23 @@ function DataObj = init_modif_dataobj(...
     
     % Log data to be written to CDF file.
     bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
+
+
     
-    %===========================================================================
-    % Set those CDF global attributes for which values should not come from the
-    % master CDF
-    %===========================================================================
-    DataObj.GlobalAttributes.Software_name       = bicas.constants.SWD_METADATA('SWD.identification.name');
-    DataObj.GlobalAttributes.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
-    % Static value?!!
-    DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');
-    % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
-    DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
-    DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(outputFile);
-    DataObj.GlobalAttributes.Parents             = GaSubset.Parents;
-    DataObj.GlobalAttributes.Parent_version      = GaSubset.Parent_version;
-    DataObj.GlobalAttributes.Provider            = GaSubset.Provider;
-    DataObj.GlobalAttributes.Datetime            = GaSubset.Datetime;
-    DataObj.GlobalAttributes.OBS_ID              = GaSubset.OBS_ID;
-    DataObj.GlobalAttributes.SOOP_TYPE           = GaSubset.SOOP_TYPE;
-    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
-    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
-    
-    % "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009:
-    %   "TIME_MIN   The date and time of the beginning of the first acquisition
-    %               for the data contained in the file"
-    %   "TIME_MAX   The date and time of the end of the last acquisition for the
-    %               data contained in the file"
-    %   States that TIME_MIN, TIME_MAX should be "Julian day" (not "modified
-    %   Julian day", which e.g. OVT uses internally).
-    %
-    % NOTE: Implementation does not consider the integration time of each
-    % sample.
-    % NOTE: juliandate() is consistent with Julian date converter at
-    % https://www.onlineconversion.com/julian_date.htm
-    % NOTE: ZvsSubset.Epoch already asserted to be monotonically increasing.
-    DataObj.GlobalAttributes.TIME_MIN = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(1  )));
-    DataObj.GlobalAttributes.TIME_MAX = juliandate(EJ_library.cdf.TT2000_to_datevec(ZvsSubset.Epoch(end)));
-    
-    % ROC DFMD hints that value should not be set dynamically. (See meaning of
-    % non-italic black text for global attribute name in table.)
-    %DataObj.GlobalAttribute.CAVEATS = ?!!
+    %======================================================================
+    % Use GaSubset to overwrite pre-existing (assertion) global attributes
+    %======================================================================
+    fnList = fieldnames(GaSubset);
+    for iFn = 1:numel(fnList)
+        fn = fnList{iFn};
+        
+        assert(isfield(DataObj.GlobalAttributes, fn), ...
+            'BICAS:write_dataset_CDF:init_modif_dataobj:DatasetFormat', ...
+            ['Master CDF does not appear to contain global attribute', ...
+            ' "%s" which the BICAS processing has produced/set.'], fn)
+        
+        DataObj.GlobalAttributes.(fn) = GaSubset.(fn);
+    end
     
     
     
@@ -372,15 +354,8 @@ end
 
 
 
-function logicalFileId = get_logical_file_id(filePath)
-    % Use the filename without suffix.
-    [~, basename, ~] = fileparts(filePath);
-    logicalFileId = basename;
-end
-
-
-
-% NOTE: Should always overwrite file.
+% NOTE: Should always overwrite any pre-existing file.
+%
 function write_empty_file(filePath)
     fileId = fopen(filePath, 'w');    
     

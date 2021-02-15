@@ -1,10 +1,13 @@
 %
-% Replace every occurrence of a specific value (incl. NaN) in an array. Handles NaN as any other value.
+% Replace every occurrence of a specific value (incl. NaN) in an array. Handles
+% NaN as any other value.
 %
 %
 % IMPLEMENTATION NOTE: Can not use "changem" since:
-% (1) it does not handle replacement NaN-->x (needed when writing CDF files). The reverse works though.
-% (2) it does not check (assert) if the old or new values fit into the data (given the data type).
+% (1) it does not handle replacement NaN-->x (needed when writing CDF files).
+%     The reverse works though.
+% (2) it does not check (assert) if the old or new values fit into the data
+%     (given the data type).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -18,7 +21,8 @@ function x = replace_value(x, oldValue, newValue)
     assert(isscalar(oldValue), 'Argument oldValue is not scalar.')
     assert(isscalar(newValue), 'Argument newValue is not scalar.')
     if ~isfloat(x) && (isnan(oldValue) || isnan(newValue))
-        error('BICAS:replace_value:Assertion:IllegalArgument', 'Using NaN for non-float data.')
+        error('BICAS:replace_value:Assertion:IllegalArgument', ...
+            'Using NaN for non-float data.')
     end
     
     % NOTE: Works for non-vectors.

@@ -117,6 +117,7 @@ function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(str, regexp
     %       TODO-NI: Can modify to use negative lookbehind+lookahead?
     
     
+    
     %==================================
     % Interpret, verify nonMatchPolicy
     %==================================
@@ -158,7 +159,8 @@ function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(str, regexp
             if assertMatch
                 % ASSERTION
                 error('regexp_str_parts:Assertion', ...
-                    'Could not match regular expression "%s" to the beginning of the remainder of the string, "%s".', ...
+                    ['Could not match regular expression "%s" to', ...
+                    ' the beginning of the remainder of the string, "%s".'], ...
                     regexpCa{i}, remainingStr)
             else
                 % NOTE: subStrCa partially completed.
@@ -185,7 +187,8 @@ function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(str, regexp
         if assertMatch
             % ASSERTION
             error('regexp_str_parts:Assertion', ...
-                'Only the beginning of argument str="%s" matches the submitted regular expressions.', ...
+                ['Only the beginning of argument str="%s" matches', ...
+                ' the submitted regular expressions.'], ...
                 str)
         else
             isPerfectMatch = false;

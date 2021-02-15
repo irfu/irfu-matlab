@@ -72,19 +72,19 @@ classdef solo_local_file_db < solo_file_db
         for year = TStart.year:TStop.year
           moStart = 1; moStop = 12;
           if year==TStart.year, moStart = TStart.month; end
-          if year==TStop.year, moStop = TStop.month; end
+          if year==TStop.year,  moStop  = TStop.month;  end
           for mo = moStart:moStop
             moDir = sprintf('%s%s%s%s%d%s%02d',rDir,filesep,fDir,filesep,year,filesep,mo);
             curDir = moDir;
             if ismember(C{2}, {'L2', 'L3'})
-              % L2 or L3
+              % L2, L3 have monthly subfolders.
               dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
               limited_sci_list;
             else
-              % L1, L1R, HK etc have daily subfolders
+              % L1, L1R, HK etc have daily subfolders.
               dStart = 1; dStop = 31;
               if year==TStart.year && mo==TStart.month, dStart=TStart.day; end
-              if year==TStop.year && mo==TStop.month, dStop = TStop.day; end
+              if year==TStop.year  && mo==TStop.month,  dStop = TStop.day; end
               for day = dStart:dStop
                 curDir = [moDir filesep sprintf('%02d',day)];
                 dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
@@ -92,7 +92,7 @@ classdef solo_local_file_db < solo_file_db
               end
             end
           end
-        end
+        end    % for
 
         function t = get_times(tt)
           utc = tt.toUtc();
@@ -104,7 +104,7 @@ classdef solo_local_file_db < solo_file_db
           t.sec   = str2double(utc(18:end-1));
         end
         function limited_sci_list()
-          listingD = dir([curDir filesep dPref '*.cdf']); % SolO have only latest file of each type
+          listingD = dir([fullfile(curDir, dPref) '*.cdf']); % SolO have only latest file of each type.
           if isempty(listingD), return, end
           if isempty(dateFormat)
             % Are we looking for files with 8 or the full 14 digits
@@ -120,7 +120,7 @@ classdef solo_local_file_db < solo_file_db
             end
             % Create reconstructed file names for our interval
             startFile = [filePrefix, '_', tint.start.toUtc(dateFormat), '_V00.cdf'];
-            stopFile = [filePrefix, '_', tint.stop.toUtc(dateFormat), '_V99.cdf'];
+            stopFile  = [filePrefix, '_', tint.stop.toUtc(dateFormat),  '_V99.cdf'];
           end
           % Find index of files with names which timewise are sorted
           % between our "startFile" and "stopFile" names.
@@ -140,10 +140,13 @@ classdef solo_local_file_db < solo_file_db
           if isempty(tmpIndex), return, end
           listingD = listingD(tmpIndex);
           arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
-        end
-      end
+        end    % limited_sci_list
+      end    % list_sci_tint
       
       %% LIST SCI
+      %
+      % What does this do? Combine all available time intervals?
+      % Cf list_sci_tint().
       function list_sci()
         rDir = get_remotePrefix(obj, C);
         fDir = get_fileDir(obj, C);
@@ -295,73 +298,102 @@ classdef solo_local_file_db < solo_file_db
   end
   
   methods (Access=private)
+      
+    % Return ONE directory tree root depending on instrument.
     function rDir = get_remotePrefix(obj, C)
-      if any(contains(C, 'rpw'))
-        % offical RPW data is kept in one separate sync folder at IRFU,
-        % locally produced data is kept in another folder
-        if exist([obj.dbRoot, filesep, 'latest'], 'dir')
-          rDir = [obj.dbRoot, filesep, 'latest', filesep, 'rpw'];
+      % Descriptor contains instrument and data product descriptor part
+      % separated by "-".
+      
+      temp      = strsplit(C{3}, '-');
+      instr     = temp{1};
+        
+      if strcmp(instr, 'rpw')
+        % CASE: Searching for RPW data.
+          
+        if exist(fullfile(obj.dbRoot, 'latest'), 'dir')
+          % CASE: RPW BIAS data (L2, L3) processed at IRFU.
+          % Ex: obj.dbRoot == /data/solo/data_irfu/
+          rDir = fullfile(obj.dbRoot, 'latest', 'rpw');
         else
-          rDir = [obj.dbRoot, filesep, 'remote', filesep, 'data'];
+          % CASE: RPW data (all subsystems) mirrored from ROC/LESIA.
+          % Ex: obj.dbRoot == /data/solo/
+          rDir = fullfile(obj.dbRoot, 'remote', 'data');
         end
       else
-        % All other instruments are kept in a "soar" sync folder, sorted
-        % in per instrument folder
-        instr = strsplit(C{3}, '-'); % Descriptor contains instrument and dataproduct descriptor part separated by "-".
-        rDir = [obj.dbRoot, filesep, 'soar', filesep, instr{1}];
+        % CASE: Searching for non-RPW data.
+        
+        rDir = fullfile(obj.dbRoot, 'soar', instr);
+        if exist(rDir, 'dir')
+            % CASE: Direct to SOAR mirror.
+            % Ex: obj.dbRoot == /data/solo/ folder
+            return
+        end
+        
+        rDir = fullfile(obj.dbRoot, instr);
+        if exist(rDir, 'dir')
+            % CASE: obj.dbRoot is general folder for (multiple) non-RPW instruments.
+            % Ex: obj.dbRoot == /data/solo/data_manual/
+            return
+        end
       end
     end % get_remotePrefix
     
     function fileDir = get_fileDir(~, C)
       levelDir = C{2}; % "L2" (or "L1R", "L1", "L3", "HK")
+      
+      % Normalization. Remove '-cdag', if present.
+      descr = regexprep(C{3}, '-cdag$', '');
+
       if ismember(levelDir, {'L2', 'L3'})
-        switch C{3}
-          case 'rpw-lfr-surv-asm-cdag'
+        switch descr
+          case 'rpw-lfr-surv-asm'
             subDir = 'lfr_asm'; % ie combined 2nd "_" 4th
-          case 'rpw-tds-surv-hist1d-cdag'
+          case 'rpw-tds-surv-hist1d'
             subDir = 'hist1d';  % ie 4th
-          case 'rpw-tds-surv-hist2d-cdag'
+          case 'rpw-tds-surv-hist2d'
             subDir = 'hist2d';  % ie 4th
-          case 'rpw-tds-surv-mamp-cdag'
+          case 'rpw-tds-surv-mamp'
             subDir = 'mamp';    % ie 4th
-          case 'rpw-tds-surv-stat-cdag'
+          case 'rpw-tds-surv-stat'
             subDir = 'stat';    % ie 4th
-          case {'rpw-lfr-surv-bp1-cdag', 'rpw-lfr-surv-bp2-cdag'}
+          case {'rpw-lfr-surv-bp1', 'rpw-lfr-surv-bp2'}
             subDir = 'lfr_bp';    % ie combined 2nd "_" 4th (excl last digit, which is unique)
-          case {'rpw-lfr-surv-cwf-b-cdag', 'rpw-lfr-surv-swf-b-cdag'}
+          case {'rpw-lfr-surv-cwf-b', 'rpw-lfr-surv-swf-b'}
             subDir = 'lfr_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
-          case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e','rpw-lfr-surv-cwf-e-cdag', 'rpw-lfr-surv-swf-e-cdag'}
+          case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e','rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e'}
             subDir = 'lfr_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
-          case {'rpw-tds-surv-rswf-b-cdag', 'rpw-tds-surf-tswf-b-cdag'}
+          case {'rpw-tds-surv-rswf-b', 'rpw-tds-surf-tswf-b'}
             subDir = 'tds_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
-          case {'rpw-tds-surv-rswf-e-cdag', 'rpw-tds-surf-tswf-e-cdag'}
+          case {'rpw-tds-surv-rswf-e', 'rpw-tds-surf-tswf-e'}
             subDir = 'tds_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)
-          case {'rpw-hfr-surv-cdag', 'rpw-tnr-surv-cdag'}
-            subDir = 'thr';  % ie combined 2nd of the two using only first and last char?            
+          case {'rpw-hfr-surv', 'rpw-tnr-surv'}
+            subDir = 'thr';  % ie combined 2nd of the two using only first and last char?
+          case {'rpw-tnr-fp'}
+            subDir = 'tnr_fp';
 
-          % Planned future official directory names to be used by ROC and that
-          % IRFU should therefore also use. As per agreement with Yuri
-          % Khotyaintsev, Thomas Chust, and Erik Johansson 2020-11-27.
-          % Do not use until ROC (& IRFU) actually starts using these.
+          % Official directory names used by ROC and that IRFU should therefore
+          % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
+          % Erik Johansson 2020-11-27.
           % /Erik Johansson 2020-12-15.
-%           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
-%             subDir = 'lfr_density';
-%           case {'rpw-bia-efield', 'rpw-bia-efield-10-seconds'}
-%             subDir = 'lfr_efield';
-%           case {'rpw-bia-scpot', 'rpw-bia-scpot-10-seconds'}
-%             subDir = 'lfr_scpot';
-
+          case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
+            subDir = 'lfr_density';
+          case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}
+            subDir = 'lfr_efield';
+          case {'rpw-bia-scpot',   'rpw-bia-scpot-10-seconds'}
+            subDir = 'lfr_scpot';
+            
           otherwise
-            % fallback to full descriptor (used for local SOAR copy at IRFU)
-            subDir = C{3};
+            % Fallback to full descriptor (used for local SOAR copy at IRFU).
+            subDir = descr;
         end
-        fileDir = [levelDir, filesep, subDir];
+        fileDir = fullfile(levelDir, subDir);
       else
         % Keep it ("HK", "L1R" etc. as these do not have separate subfolders based on descriptor)
         fileDir = levelDir;
       end
     end % get_fileDir
     
+    % UNUSED FUNCTION?!
     function p = get_path_to_file(obj,fileName)
       C = strsplit(lower(fileName),'_');
       if strcmpi(fileName(end-3:end),'.cdf')

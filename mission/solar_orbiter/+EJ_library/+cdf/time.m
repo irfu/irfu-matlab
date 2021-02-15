@@ -52,6 +52,18 @@ classdef time   % < handle
         % Range of days around epoch for which TT2000WOLS can be represented.
         % Must be less than corresponding range for TT2000.
         TT2000WOLS_DAY_RANGE = 290*365;
+        
+    end
+    
+    
+    
+    properties(Constant, Access=public)
+        % Empirical: spdfparsett2000() returns this value for non-empty strings
+        % when it can not interpret it as a UTC string.
+        % PROPOSAL: Better name?
+        % TODO-NI: Used by spdf code for other purposes too?
+        %TT2000_CAN_NOT_INTERPRET_STR = int64(-9223372036854775805);
+        TT2000_CAN_NOT_INTERPRET_STR = spdfparsett2000('A');
     end
     
     
