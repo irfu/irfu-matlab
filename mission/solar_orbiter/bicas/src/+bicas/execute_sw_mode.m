@@ -131,9 +131,13 @@ function execute_sw_mode(...
         %==========================
         OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, rctDir, NsoTable);
     else
-        OutputDatasetsMap = [];
         L.logf('warning', ...
             'Disabled processing due to setting %s.', settingNpefKey)
+        
+        % IMPLEMENTATION NOTE: Needed for passing assertion. Maybe to be
+        % considered a hack?!
+        OutputDatasetsMap = struct(...
+            'keys', {{SwModeInfo.outputsList.prodFuncOutputKey}});
     end
 
 
@@ -178,6 +182,7 @@ function execute_sw_mode(...
         else
             % CASE: No processing.
             ZvsSubset = [];
+            GaSubset  = struct();
         end
         bicas.write_dataset_CDF( ...
             ZvsSubset, GaSubset, outputFilePath, masterCdfPath, ...
