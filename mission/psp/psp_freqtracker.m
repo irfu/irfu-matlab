@@ -250,8 +250,8 @@ DensityData = ((((PlasmaLine.data*2*pi).^2)*Me*epso)/e^2)/1e6;
 WeightedDensityData = ((((WeightedPlasmaLine.data*2*pi).^2)*Me*epso)/e^2)/1e6;
 DensityTS = TSeries(testrfs_lfr_v1v2_freq.time,DensityData); %density timeseries
 WeightedDensityTS = TSeries(testrfs_lfr_v1v2_freq.time,WeightedDensityData); %density timeseries
-WeightedDensityTSSmoothed = MMS_smooth_TS(WeightedDensityTS,3);
-DensityTSSmoothed = MMS_smooth_TS(DensityTS,3);
+WeightedDensityDataSmoothed = movmean(WeightedDensityData,3);
+WeightedDensityTSSmoothed =  TSeries(testrfs_lfr_v1v2_freq.time,WeightedDensityDataSmoothed); %density timeseries
 
 if generateplot == true
     h = irf_plot(1,'newfigure');
