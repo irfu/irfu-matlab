@@ -108,7 +108,7 @@ e = Units.e;
 epso = Units.eps0;
 mu0 = Units.mu0;
 Mp_Me = Mp/Me; % ratio of proton and electron mass;
-
+MatlabVersion = version('-release');
 
 %% Organizing input parameters and desirable output
 if nargin == 0
@@ -181,7 +181,6 @@ if initialdensitydata == true
     SubAssistingData =  tlim(AssistingData{2},tint);
     defaultinitialfreqvalue =  sqrt((SubAssistingData.data(1)*1e6)*e^2/Me/epso)/2/pi; % 9e3*sqrt(initialdensitydata.data(1));
     PlasmaLineFromFrequency =  sqrt((SubAssistingData*1e6)*e^2/Me/epso)/2/pi;
-    
     [~,initialfreq] = min(abs(freqTS.data(1,:) - defaultinitialfreqvalue));
 end
 
@@ -213,7 +212,7 @@ for i=1:length(testrfs_lfr_v1v2.time)
     end
     
     DataFrequency = [DataFrequency,testrfs_lfr_v1v2_freq.data(i,initialfreq)];
-    NormalizedWeightedAmplitudeArray = normalize(testrfs_lfr_v1v2.data(i,initialfreq-1:initialfreq+1));
+    NormalizedWeightedAmplitudeArray = normalize(testrfs_lfr_v1v2.data(i,initialfreq-1:initialfreq+1),'norm',1);
     WeightedResult = sum(testrfs_lfr_v1v2_freq.data(i,initialfreq-1:initialfreq+1).*NormalizedWeightedAmplitudeArray);
     DataFrequencyWeightedAverage = [DataFrequencyWeightedAverage,WeightedResult];
     
@@ -242,7 +241,6 @@ if metricsdesplay == true
     end
 end
 %% Plotting
-
 PlasmaLine = TSeries(testrfs_lfr_v1v2_freq.time,DataFrequency');
 WeightedPlasmaLine = TSeries(testrfs_lfr_v1v2_freq.time,DataFrequencyWeightedAverage');
 
