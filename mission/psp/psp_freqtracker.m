@@ -1,99 +1,98 @@
 %                               INFORMATION                               %
-%{
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
----------------------------------------------------------------------------
-                                DESCRIPTION
----------------------------------------------------------------------------
-A simple funcion following a specific frequency based on the increased amplitude
-(in this example the plasma line) at the nearby bins spectrogram (e.g. from PSP lfr) 
-
-Below you can find a detailed description of input/output and possible
-future updates/implementations.
-
-REQUIREMENTS: irfu-matlab (pspdevel), setargs, set up datastore
-path for psp_load
-
-%All outputs are optional.
-%All inpuits are optional but you need to provide either a day or a start
-%and stop period.
-e.g. 
-1) start = [2020 06 09 03 00 00] ; stop =  [2020 06 09 04 00 00];
-2) fullday = [2020 06 09] ;
----------------------------------------------------------------------------
-                                INPUT
----------------------------------------------------------------------------
-'initialfreq'           - bin for initial frequency (default = 30)
-'minfreq'               - minimum frequency bin (default = initialfreq-10)
-'maxfreq'               - minimum frequency bin (default = initialfreq+10)
-'binrange'              - bin range to search for higher amplitude (default = 2)
-'tolerancelevel'        - rough estimation of background level to avoid changing
-                          too frequenctly. See code below on how it is computed.
-'recoverer'             - assisting parameter to return to a logical range of
-                          values in case of "spikes" (default = 5)
-'generateplot'          - generate plot for spectrum (default = false)
-'metricsdesplay'        - display metrics of routine (default = true)
-'initialdensitydata'    - assist initial frequency finder with spi data
-                          (default = true
-'densitycomparisonplot' - generate density comparison plots (default =
-                           alse)
-
----------------------------------------------------------------------------
-                                OUTPUT
----------------------------------------------------------------------------
-[A,B,C,D]
-
-A = Structure with plasma line TS and weighted plasma line TS
-B = Strcture with density TS and weighted density TS
-C = Structure with low resolution frequency & amplitude from lfr
-D = Timeseries of density from spi data
-
----------------------------------------------------------------------------
-                                TODO
----------------------------------------------------------------------------
-
-TOP PRIORITY
-
-- Write code that works with hires data from rfs (ONGOING)
-
-HIGH PRIORITY
-
-- Establishing background tolerance level changing over time in case
-of different fluxes or density in close proximity.
-
-- Re-visit algorithm to optimize computational time
-and add a few callbacks in case of errors.
-
-LOW PRIORITY
-
-- Quality index based on differences for other instruments. (in other
-words, when plasma line is hard to read, trust the other instruments)
-
-- Allow dynamic hyperparameter optimization within the for loop (changing
-the default parameters when things are changing drastically)
-
-- Extra outputs/inputs (saving plots, etc.)
-
-- Update with current updated irfu_matlab routines
-
----------------------------------------------------------------------------
-                                EXAMPLES 
-                          see irfu/plots/psp/
----------------------------------------------------------------------------
-
-start = [2020 06 09 03 00 00] ;
-stop =  [2020 06 09 04 00 00];
-fullday = [2020 06 09] ;
-
-plasmaline = FreqTracking(start,stop);
-[plasmaline,DensityTS,pspdata,InitialDensityTS] = psp_freqtracker(start,stop,'initialdensitydata',true,'generateplot',true,'densitycomparisonplot',true);
-[plasmaline,~,pspdata,~] = psp_freqtracker(fullday,'generateplot',false);
-
----------------------------------------------------------------------------
-
--Savvas Raptis & Sabrina Tigik Ferrao
-KTH, Royal Institute of Technology
-savvra@kth.se
-2021
+% 
+% ---------------------------------------------------------------------------
+%                                 DESCRIPTION
+% ---------------------------------------------------------------------------
+% A simple funcion following a specific frequency based on the increased amplitude
+% (in this example the plasma line) at the nearby bins spectrogram (e.g. from PSP lfr) 
+% 
+% Below you can find a detailed description of input/output and possible
+% future updates/implementations.
+% 
+% REQUIREMENTS: irfu-matlab (pspdevel), setargs, set up datastore
+% path for psp_load
+% 
+% %All outputs are optional.
+% %All inpuits are optional but you need to provide either a day or a start
+% %and stop period.
+% e.g. 
+% 1) start = [2020 06 09 03 00 00] ; stop =  [2020 06 09 04 00 00];
+% 2) fullday = [2020 06 09] ;
+% ---------------------------------------------------------------------------
+%                                 INPUT
+% ---------------------------------------------------------------------------
+% 'initialfreq'           - bin for initial frequency (default = 30)
+% 'minfreq'               - minimum frequency bin (default = initialfreq-10)
+% 'maxfreq'               - minimum frequency bin (default = initialfreq+10)
+% 'binrange'              - bin range to search for higher amplitude (default = 2)
+% 'tolerancelevel'        - rough estimation of background level to avoid changing
+%                           too frequenctly. See code below on how it is computed.
+% 'recoverer'             - assisting parameter to return to a logical range of
+%                           values in case of "spikes" (default = 5)
+% 'generateplot'          - generate plot for spectrum (default = false)
+% 'metricsdesplay'        - display metrics of routine (default = true)
+% 'initialdensitydata'    - assist initial frequency finder with spi data
+%                           (default = true
+% 'densitycomparisonplot' - generate density comparison plots (default =
+%                            alse)
+% 
+% ---------------------------------------------------------------------------
+%                                 OUTPUT
+% ---------------------------------------------------------------------------
+% [A,B,C,D]
+% 
+% A = Structure with plasma line TS and weighted plasma line TS
+% B = Strcture with density TS and weighted density TS
+% C = Structure with low resolution frequency & amplitude from lfr
+% D = Timeseries of density from spi data
+% 
+% ---------------------------------------------------------------------------
+%                                 TODO
+% ---------------------------------------------------------------------------
+% 
+% TOP PRIORITY
+% 
+% - Write code that works with hires data from rfs (ONGOING)
+% 
+% HIGH PRIORITY
+% 
+% - Establishing background tolerance level changing over time in case
+% of different fluxes or density in close proximity.
+% 
+% - Re-visit algorithm to optimize computational time
+% and add a few callbacks in case of errors.
+% 
+% LOW PRIORITY
+% 
+% - Quality index based on differences for other instruments. (in other
+% words, when plasma line is hard to read, trust the other instruments)
+% 
+% - Allow dynamic hyperparameter optimization within the for loop (changing
+% the default parameters when things are changing drastically)
+% 
+% - Extra outputs/inputs (saving plots, etc.)
+% 
+% - Update with current updated irfu_matlab routines
+% 
+% ---------------------------------------------------------------------------
+%                                 EXAMPLES 
+%                           see irfu/plots/psp/
+% ---------------------------------------------------------------------------
+% 
+% start = [2020 06 09 03 00 00] ;
+% stop =  [2020 06 09 04 00 00];
+% fullday = [2020 06 09] ;
+% 
+% plasmaline = FreqTracking(start,stop);
+% [plasmaline,DensityTS,pspdata,InitialDensityTS] = psp_freqtracker(start,stop,'initialdensitydata',true,'generateplot',true,'densitycomparisonplot',true);
+% [plasmaline,~,pspdata,~] = psp_freqtracker(fullday,'generateplot',false);
+% 
+% ---------------------------------------------------------------------------
+% 
+% -Savvas Raptis & Sabrina Tigik Ferrao
+% KTH, Royal Institute of Technology
+% savvra@kth.se
+% 2021
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %}
 
