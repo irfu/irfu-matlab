@@ -457,6 +457,9 @@
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
  if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
 
+ 2017-11-07T14:52:00Z 2017-11-07T23:59:59Z 4 % force max algorithm for Ps
+   [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
 2017-11-09T15:00:00Z 2017-11-09T23:59:59Z 124 % force MS offsets
  [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
