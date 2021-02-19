@@ -15,6 +15,8 @@ psp_freqtracker(start,stop,'initialdensitydata',false,'initialfreq',30,'binrange
 % (+-2) will give a better plot
 [PlasmaLine,DensityTS,Pspdata,InitialDensityTS] = psp_freqtracker(start,stop,'initialdensitydata',true,'generateplot',true,'densitycomparisonplot',true);
 
+% One can also track a full day but this will generally provide a weaker
+% characterization.
 %[PlasmaLine,~,Pspdata,~] = psp_freqtracker(fullday,'generateplot',false);
 
     

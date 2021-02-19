@@ -1,11 +1,11 @@
-%                               INFORMATION                               %
-% 
-% ---------------------------------------------------------------------------
+%                                 INFORMATION                             %
+% -------------------------------------------------------------------------
 %                                 DESCRIPTION
-% ---------------------------------------------------------------------------
-% A simple funcion following a specific frequency based on the increased amplitude
-% (in this example the plasma line) at the nearby bins spectrogram (e.g. from PSP lfr) 
-% 
+% -------------------------------------------------------------------------
+% A simple funcion following a specific frequency based on the increased 
+% amplitude(in this example the plasma line) at the nearby bins 
+% spectrogram (e.g. from PSP lfr)  
+%
 % Below you can find a detailed description of input/output and possible
 % future updates/implementations.
 % 
@@ -18,9 +18,9 @@
 % e.g. 
 % 1) start = [2020 06 09 03 00 00] ; stop =  [2020 06 09 04 00 00];
 % 2) fullday = [2020 06 09] ;
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 %                                 INPUT
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 % 'initialfreq'           - bin for initial frequency (default = 30)
 % 'minfreq'               - minimum frequency bin (default = initialfreq-10)
 % 'maxfreq'               - minimum frequency bin (default = initialfreq+10)
@@ -36,9 +36,9 @@
 % 'densitycomparisonplot' - generate density comparison plots (default =
 %                            alse)
 % 
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 %                                 OUTPUT
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 % [A,B,C,D]
 % 
 % A = Structure with plasma line TS and weighted plasma line TS
@@ -46,9 +46,9 @@
 % C = Structure with low resolution frequency & amplitude from lfr
 % D = Timeseries of density from spi data
 % 
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 %                                 TODO
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 % 
 % TOP PRIORITY
 % 
@@ -74,10 +74,10 @@
 % 
 % - Update with current updated irfu_matlab routines
 % 
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 %                                 EXAMPLES 
 %                           see irfu/plots/psp/
-% ---------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 % 
 % start = [2020 06 09 03 00 00] ;
 % stop =  [2020 06 09 04 00 00];
@@ -87,6 +87,10 @@
 % [plasmaline,DensityTS,pspdata,InitialDensityTS] = psp_freqtracker(start,stop,'initialdensitydata',true,'generateplot',true,'densitycomparisonplot',true);
 % [plasmaline,~,pspdata,~] = psp_freqtracker(fullday,'generateplot',false);
 % 
+% TIP: providing initial density data usually works fine, however, in some
+% cases due to the underestimation/overestimation of the density it is
+% better to visually see the spectrogram and provide an initial bin using
+% initialfreq
 % ---------------------------------------------------------------------------
 % 
 % -Savvas Raptis & Sabrina Tigik Ferrao
