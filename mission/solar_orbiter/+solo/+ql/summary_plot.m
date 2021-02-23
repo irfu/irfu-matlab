@@ -42,6 +42,8 @@ classdef summary_plot < handle
     %           wrapper functions for doing that instead.
     %
     % PROPOSAL: Let plot_* scripts do more of the customizing via e.g. wrappers.
+    %
+    % PROPOSAL: Rename. Not (MATLAB) plot, but (MATLAB) figure.
 
 
 
@@ -425,7 +427,8 @@ classdef summary_plot < handle
         % Converts from zVar-like variables to what is actually used for plotting.
         %
         function add_panel_spectrogram_SWF_LSF(obj, ...
-            panelTagSignalsStr, zvEpoch, zvData, zvSamplFreqHz, iLsf, trLegend, colLimits)
+            panelTagSignalsStr, zvEpoch, zvData, ...
+            zvSamplFreqHz, iLsf, trLegend, colLimits)
         
             assert(~obj.figureComplete)
             
@@ -466,7 +469,8 @@ classdef summary_plot < handle
             assert(~obj.figureComplete)
             
             nPanels = numel(obj.pcfcCa);
-            assert(nPanels > 0, 'Class is configured with zero panels. Can not handle this case.')
+            assert(nPanels > 0, ...
+                'Class is configured with zero panels. Can not handle this case.')
             
             irf_plot(nPanels, 'newfigure');
             
@@ -491,10 +495,12 @@ classdef summary_plot < handle
             %=============================
             % Adjust the height of panels
             %=============================
-            % 'Position' : [left bottom width height]. Size and location, excluding a margin for the labels.
+            % 'Position' : [left bottom width height]. Size and location,
+            % excluding a margin for the labels.
             positionCa = get(hAxesArray, 'Position');    % CA = Cell Array
             yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
-            % Panel height before distributing height segments. Assumes that panels are adjacent to each other.
+            % Panel height before distributing height segments. Assumes that
+            % panels are adjacent to each other.
             heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
             
             heightPanelArray2 = EJ_library.utils.distribute_segments(...
@@ -512,8 +518,6 @@ classdef summary_plot < handle
             
             
 
-            %EJ_library.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
-    
             solo.ql.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
             
             obj.figureComplete = true;
@@ -610,7 +614,8 @@ classdef summary_plot < handle
             
             
             
-            TsCa = solo.ql.summary_plot.snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
+            TsCa = solo.ql.summary_plot.snapshot_per_record_2_TSeries(...
+                zvEpoch, zvData, samplingFreqHz);
             nTs  = numel(TsCa);
             
             hAxes = irf_panel(panelTag);
@@ -635,9 +640,11 @@ classdef summary_plot < handle
                 
                 % IMPLEMENTATION NOTE: Later needs the snapshot centers in the
                 % same time system as Specrec.t (epoch Unix).
-                ssCenterEpochUnixArray(i) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
+                ssCenterEpochUnixArray(i) = ...
+                    (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
             end
-            sssMaxWidthSecArray = solo.ql.summary_plot.derive_max_spectrum_width(ssCenterEpochUnixArray);
+            sssMaxWidthSecArray = ...
+                solo.ql.summary_plot.derive_max_spectrum_width(ssCenterEpochUnixArray);
             
             %====================================================================
             % Set the display locations of individual spectras (override
@@ -666,7 +673,8 @@ classdef summary_plot < handle
                     nTime = numel(SpecrecCa{i}.t);
                     % Distance from SS center to center of first/last FFT.
                     distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);
-                    SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
+                    SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) ...
+                        + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
                     SpecrecCa{i}.dt = ones(nTime, 1) * sssWidthSec/(2*nTime);
                 end
             end

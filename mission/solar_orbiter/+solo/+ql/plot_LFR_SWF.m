@@ -57,7 +57,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %   PROPOSAL: Enlarge each snapshot spectrum until it reaches neighbour (roughly).
     %       Use min(timeToSnapshotBefore, timeToSnapshotafter) as max radius.
     %
-    % Old TODO: YK's "fixup" 2020-10-13
+    % Old TODO: YK's "fixup" 2020-10-13 -- DONE
     %   hswf = solo.ql.plot_LFR_SWF([RPWPATH LRFFILE]);%% fixup
     %   load cmap
     %   colormap(cmap)
@@ -74,6 +74,8 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %   caxis(hswf(8),[-10 -7])
     %   caxis(hswf(9),[-10 -7])
     %   2020-10-13: Should already have been implemented.
+    %
+    % PROPOSAL: Rename. Not (MATLAB) plot, but (MATLAB) figure.
     
     
 

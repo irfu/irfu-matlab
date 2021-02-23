@@ -88,6 +88,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     % PROPOSAL: Change package name to sp (summary plots).
     %
     % PROPOSAL: Settings for disabling spectrum etc.
+    % PROPOSAL: Rename. Not (MATLAB) plot, but (MATLAB) figure.
     
     D = dataobj(filePath);
     epoch = D.data.Epoch.data;

@@ -1,0 +1,308 @@
+#!/bin/bash
+#====================================================================================
+#
+# BOGIQ:
+# ------
+# PROPOSAL: Assertion for no single quote in strings.
+# PROPOSAL: Assertion for MATLAB path paths being real directory paths.
+# 
+# TODO-DECISION: Hur hantera fall där man vill anropa två MATLAB-skript i följd?
+#   Ex: ca_generate_CLAA
+#       time matlab -nojvm -nodesktop -r "cd('~/matlab_copy'); init_matlab('spis_Cassini') ; erikpgjohansson.ca.generate_std([$ibegin_year, $ibegin_doy], [$eend_year, $eend_doy]); quit"
+#   PROPOSAL: Skapa en ny matlab-funktion som anropar båda matlab-skript.
+#       
+# PROPOSAL: Argument för nuvarande katalog.
+# PROPOSAL: MATLAB code must return exit code which is returned to bash?
+#   PROPOSAL: Optional?
+#   NOTE: MATLAB code can print to stderr.
+#
+# NOTE/BUG: Has observed Lapdog via ro_pipeline hanging after completing. Possibly this can be solved using -nodisplay.
+#   NOTE: Used run_MATLAB_code with -nojvm -nodesktop (NOT -nodisplay).
+# """"""""
+# create_LBL_files: 447 s (elapsed wall time)
+# lapdog: DONE!
+# Warning:
+# Connection to the X11 Display Server (localhost:13.0) has been lost.
+# No more graphics windows can no longer be displayed in this session.
+# Graphics Objects can still be printed, and all commands should still work.
+# We recommend that you try to save your current session and exit. 
+# >> Warning:
+# Connection to the X11 Display Server (localhost:13.0) has been lost.
+# No more graphics windows can no longer be displayed in this session.
+# Graphics Objects can still be printed, and all commands should still work.
+# We recommend that you try to save your current session and exit. 
+# """"""""
+# 
+#====================================================================================
+
+
+
+declare -r ARGUMENT_SEPARATOR="--"
+declare -r ERROR_CODE=99
+declare -r MATLAB_FLAGS="-nodesktop -nodisplay"   # Exclude -r
+# Unclear if -nojvm is needed.
+# Absence of -nojvm is needed by MATLAB's "parpol" which is required(?) by
+# Elias Odelstad's code for generating EOG files.
+
+
+
+#==============================
+# SUBROUTINE: Print help info.
+#==============================
+print_help_info() { #-------------------------------------------------------------
+cat << SCRIPT_INFO
+
+Run specified MATLAB code.
+
+The purpose of this script is to make easier to run MATLAB code from various bash scripts.
+
+
+Arguments: <MATLAB executable> <MATLAB path paths> ${ARGUMENT_SEPARATOR} <MATLAB function> <MATLAB code arguments>
+
+
+    <MATLAB path paths>     Paths that will be supplied to MATLAB's "addpath" command. 
+                            Must not contain CR, single quote.
+    <MATLAB code arguments> Strings that will supplied to the specified function as string arguments.
+                            Must not contain CR, single quote.
+
+
+NOTE: Unclear if it works for all versions of MATLAB. Does work with MATLAB R2009a, R2016a.
+NOTE: MATLAB is called with -nodisplay.
+NOTE: The script does not allow for making a MATLAB addpath(genpath(...)) command.
+      (Can be implemented via the MATLAB code that is called though.)
+NOTE: Command will be executed followed by semicolon. ==> No "default printout".
+NOTE: Will exit MATLAB in case of error:
+    (1) Can not find MATLAB code.
+    (2) MATLAB code that is called generated error.
+    Error code $ERROR_CODE.
+
+
+Script initially created 2018-04-13 by Erik P G Johansson.
+SCRIPT_INFO
+} #-------------------------------------------------------------------------------
+
+
+
+if [ "$1" == "--help" ] ; then
+    if [ "1" != "$#" ] ; then
+        # If any other parameter, then error.
+        echo "Wrong number of arguments." >> /dev/stderr
+        exit 1
+    fi
+
+    print_help_info
+    exit 0
+fi
+
+
+
+#=================================
+# Error handling: Parameter check
+#=================================
+if [[ $# -lt 3 ]] ; then
+    echo "Wrong number of arguments." >> /dev/stderr
+    exit 1
+fi
+
+
+
+#=========================
+# Interpret CLI arguments
+#=========================
+declare -r MATLAB_exec="$1"
+# declare -r MATLAB_working_dir="$2"
+shift
+
+# ASSERTION: MATLAB executable exists.
+if [[ ! -x "$MATLAB_exec" ]] ; then
+    echo "Can not find MATLAB executable \"$MATLAB_exec\"." >> /dev/stderr
+    exit 1
+fi
+
+# Find "argument separator"
+for ((i=1; i<=$#; i++)) ; do
+    if [[ "${!i}" = "$ARGUMENT_SEPARATOR" ]] ; then
+        #echo "Found argument separator"
+        declare -r i_div=$i
+        break
+    fi
+done
+# echo "i_div = $i_div"    # DEBUG
+
+# ASSERTION: There is an argument separator
+if [[ -z "$i_div" ]] ; then   # If string is empty...
+    echo "Can not find argument separator \"$ARGUMENT_SEPARATOR\"." >> /dev/stderr
+    exit 1
+fi
+
+MATLAB_paths_array=("${@:1:$i_div-1}")
+shift $i_div    # NOTE: The shift removes arguments up to and INCLUDING the argument separator itself.
+
+# ASSERTION: Argument separator is not last argument (there must be at least one after it).
+if [[ $# -lt 1 ]] ; then
+    echo "No MATLAB function argument (no argument after argument separator \"$ARGUMENT_SEPARATOR\")." >> /dev/stderr
+    exit 1
+fi
+
+# NOTE: Includes "MATLAB package path" to the function, e.g. "erikpgjohansson.ro.lapsus.create_C2D2_from_CALIB1_DERIV1".
+MATLAB_func_name="$1"
+shift
+MATLAB_func_arguments_array=("$@")
+
+
+
+#======================================================================================================
+# Convert arguments into one long string that MATLAB code can interpret as a list of string arguments.
+# 
+# NOTE: Can not handle arguments containing the character single quote '.
+# NOTE: An empty argument list will result in an empty variable.
+# 
+# 
+# ARGUMENTS
+# =========
+# Arbitrary number of strings which are interpreted as strings in MATLAB.
+# 
+# 
+# RETURN VALUE
+# ============
+# $MATLAB_arg_list_str
+#======================================================================================================
+construct_MATLAB_arg_list_str() {
+    MATLAB_arg_list_str=''    # GLOBAL VARIABLE (STRING) for return arguments
+    
+    for argument in "$@"
+    do
+        # ASSERTION: Argument must not contain CR
+        # ---------------------------------------
+        # IMPLEMENTATION NOTE:
+        # In principle we only want to check the new field value argument, but it easier
+        # to just check all arguments.
+        # If an argument contains CR, then the call to MATLAB fails, presumably because the composition of
+        # the command string used for calling MATLAB fails somehow and it is very difficult for the user to
+        # figure out that the CR is the cause.
+        if [[ "$argument" == *$'\r'* ]] ; then
+            echo "ERROR: Found argument containing CR." >> /dev/stderr
+            exit 1
+        fi
+
+        # Add to list/string.
+        if [[ -z "$MATLAB_arg_list_str" ]] ; then
+            # CASE: Empty string
+            MATLAB_arg_list_str="'$argument'"
+        else
+            MATLAB_arg_list_str="$MATLAB_arg_list_str, '$argument'"
+        fi
+    done
+}
+
+
+
+# Construct MATLAB "addpath" command.
+construct_MATLAB_arg_list_str "${MATLAB_paths_array[@]}"
+if [[ -z "$MATLAB_arg_list_str" ]] ; then
+    MATLAB_addpath_cmd=""
+else
+    MATLAB_addpath_cmd="addpath($MATLAB_arg_list_str);"
+fi
+
+
+
+# Construct MATLAB function call command.
+# NOTE: One can call a function without arguments with syntax "func()".
+construct_MATLAB_arg_list_str "${MATLAB_func_arguments_array[@]}"
+MATLAB_func_call_cmd="$MATLAB_func_name($MATLAB_arg_list_str);"
+
+
+
+# DEBUG
+echo "MATLAB_exec                 = $MATLAB_exec"
+echo "MATLAB_paths_array          = ${MATLAB_paths_array[@]}"
+echo "MATLAB_func_name            = $MATLAB_func_name"
+echo "MATLAB_func_arguments_array = ${MATLAB_func_arguments_array[@]}"
+# IMPLEMENTATION NOTE: Useful for copy-pasting to MATLAB prompt for debugging.
+echo "MATLAB_func_call_cmd        = $MATLAB_func_call_cmd"
+
+
+
+#=================================================================================================
+# Construct full sequence of MATLAB commands
+# ------------------------------------------
+# NOTE: This code contains line which are later removed.
+# wlb  = with    line breaks
+# wolb = without line breaks
+# 
+# IMPLEMENTATION NOTE: It is useful to have try-catch statement. An error when calling
+# specified function will otherwise lead to
+# that the "exit" statement not being reached and that MATLAB will not exit, i.e.
+# the script will "hang" at an open MATLAB prompt.
+# Such errors include (1) MATLAB not finding the specified function, and (2) the specified
+# function triggering an error.
+# 
+# IMPLEMENTATION NOTE: 
+# (1) In the past it was observed that for unknown reasons, having \n in the fprintf
+# strings causes MATLAB to ~hang (wait for user input at prompt), even if no MATLAB error.
+# (2) In the past it was obeserved that for unknown reasons, having \n in the fprintf
+# strings caused the shell (bash) to no display characters until one used the "reset" command.
+# For unknown reason, these issues are not present on birra  (2018-07-09).
+# 2018-07-12: MATLAB hangs (wait for user input at prompt) when running on spis if using fprintf.
+#=================================================================================================
+#         disp(sprintf('exception.message="%s"', exception.message));
+#         disp(sprintf('%s, row %i', exception.stack(i).name, exception.stack(i).line));
+#         fprintf(2, '\nERROR in MATLAB code\n');
+#         fprintf(2, 'exception.message="%s"', exception.message);
+#         fprintf(2, '%s, row %i', exception.stack(i).name, exception.stack(i).line);
+read -r -d '' MATLAB_cmd_seq_wlb << CONTENT
+    $MATLAB_addpath_cmd
+    exitCode = 0;
+    try;
+        $MATLAB_func_call_cmd
+    catch exception;
+        
+        disp(sprintf('exception.message="%s"', exception.message));
+        
+        len = length(exception.stack);
+        if (~isempty(len)) ;
+            for i=1:len ;
+                disp(sprintf('%s, row %i', exception.stack(i).name, exception.stack(i).line));
+            end;
+        end;
+        exitCode = $ERROR_CODE;
+    end;
+    exit(exitCode);
+CONTENT
+# Remove line breaks from MATLAB code.
+# ASSUMPTION: Requires that the MATLAB code
+# (1) ends every line with ";"
+# (2) has no comments.
+MATLAB_cmd_seq_wolb=$(echo "$MATLAB_cmd_seq_wlb" | tr -d '\n')
+
+
+
+# DEBUG
+# echo -----------------------------------------------------------------
+# echo "MATLAB_cmd_seq_wlb = $MATLAB_cmd_seq_wlb"
+# echo -----------------------------------------------------------------
+# echo "MATLAB_cmd_seq_wolb = $MATLAB_cmd_seq_wolb"
+# echo -----------------------------------------------------------------
+
+
+
+#==================================================================================
+# MATLAB options:
+#     -nodesktop           - Do not start the MATLAB desktop. Use the current
+#                            terminal for commands. The Java virtual machine
+#                            will be started.
+#     -nojvm               - Shut off all Java support by not starting the
+#                            Java virtual machine. In particular the MATLAB
+#                            desktop will not be started.
+#     -r MATLAB_command    - Start MATLAB and execute the MATLAB_command.
+#     -nodisplay           - Do not display any X commands. The MATLAB
+#                            desktop will not be started. However, unless
+#                            -nojvm is also provided the Java virtual machine
+#                            will be started.
+#
+# time "$MATLAB_exec" -nojvm -nodesktop -r "$MATLAB_cmd_seq"   # WORKS
+#==================================================================================
+# NOTE: Must use double quotes, not single quotes for MATLAB_cmd_seq.
+eval "\"$MATLAB_exec\"" $MATLAB_FLAGS -r "\"$MATLAB_cmd_seq_wolb\""
+exit $?
