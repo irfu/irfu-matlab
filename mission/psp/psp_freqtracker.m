@@ -170,14 +170,14 @@ startepochtt = irf_time(start,'vector>epochtt');
 stopepochtt = irf_time(stop,'vector>epochtt');
 tint  = irf.tint(startepochtt,stopepochtt);
 
-testrfs_lfr_v1v2_freq = tlim(freqTS,tint); %Splitting the dataset
-testrfs_lfr_v1v2 = tlim(amplTS,tint);  %Splitting the dataset
+testrfs_lfr_v3v4_freq = tlim(freqTS,tint); %Splitting the dataset
+testrfs_lfr_v3v4 = tlim(amplTS,tint);  %Splitting the dataset
 
-rfs_lfr_v1v2_spec=struct('t', testrfs_lfr_v1v2_freq.time.epochUnix);
-rfs_lfr_v1v2_spec.p = testrfs_lfr_v1v2.data(:,1:size(testrfs_lfr_v1v2.data,2));
-rfs_lfr_v1v2_spec.f = single(testrfs_lfr_v1v2_freq.data(:,1:size(testrfs_lfr_v1v2_freq.data,2)));
-rfs_lfr_v1v2_spec.p_label={['log10 (' testrfs_lfr_v1v2.units ')']};
-rfs_lfr_v1v2_spec.f_label={testrfs_lfr_v1v2_freq.units};
+rfs_lfr_v3v4_spec=struct('t', testrfs_lfr_v3v4_freq.time.epochUnix);
+rfs_lfr_v3v4_spec.p = testrfs_lfr_v3v4.data(:,1:size(testrfs_lfr_v3v4.data,2));
+rfs_lfr_v3v4_spec.f = single(testrfs_lfr_v3v4_freq.data(:,1:size(testrfs_lfr_v3v4_freq.data,2)));
+rfs_lfr_v3v4_spec.p_label={['log10 (' testrfs_lfr_v3v4.units ')']};
+rfs_lfr_v3v4_spec.f_label={testrfs_lfr_v3v4_freq.units};
 
 if initialdensitydata == true
     AssistingData = psp_load([],'spi', [start(1) start(2) start(3)], [start(1) start(2) start(3)]); % Download 1 day of data to local datastore path (edit datastore to change or add first argument with a path)    
@@ -201,22 +201,22 @@ spikecounter=0;
 
 %% Tracker of frequency
 
-for i=1:length(testrfs_lfr_v1v2.time)
+for i=1:length(testrfs_lfr_v3v4.time)
     
-    MaximumAmplitude = testrfs_lfr_v1v2.data(i,initialfreq-binrange:initialfreq+binrange);
+    MaximumAmplitude = testrfs_lfr_v3v4.data(i,initialfreq-binrange:initialfreq+binrange);
     
     [~, maxindex] = find(max(MaximumAmplitude)==MaximumAmplitude);
     
-    if maxindex ~= binrange+1 && (max(MaximumAmplitude) - testrfs_lfr_v1v2.data(i,initialfreq))> tolerancelevel
+    if maxindex ~= binrange+1 && (max(MaximumAmplitude) - testrfs_lfr_v3v4.data(i,initialfreq))> tolerancelevel
         %disp(['changing initial frequency from ', num2str(initialfreq), ' to ', num2str(initialfreq-binrange-1+maxindex)])
         initialfreq = initialfreq-binrange-1+maxindex;
         frequencytracker = [frequencytracker, initialfreq ] ;
         TrackerNumber = TrackerNumber +1;
     end
     
-    DataFrequency = [DataFrequency,testrfs_lfr_v1v2_freq.data(i,initialfreq)];
-    NormalizedWeightedAmplitudeArray = normalize(testrfs_lfr_v1v2.data(i,initialfreq-1:initialfreq+1),'norm',1);
-    WeightedResult = sum(testrfs_lfr_v1v2_freq.data(i,initialfreq-1:initialfreq+1).*NormalizedWeightedAmplitudeArray);
+    DataFrequency = [DataFrequency,testrfs_lfr_v3v4_freq.data(i,initialfreq)];
+    NormalizedWeightedAmplitudeArray = normalize(testrfs_lfr_v3v4.data(i,initialfreq-1:initialfreq+1),'norm',1);
+    WeightedResult = sum(testrfs_lfr_v3v4_freq.data(i,initialfreq-1:initialfreq+1).*NormalizedWeightedAmplitudeArray);
     DataFrequencyWeightedAverage = [DataFrequencyWeightedAverage,WeightedResult];
     
     if initialfreq < minfreq || initialfreq > maxfreq
@@ -244,19 +244,19 @@ if metricsdesplay == true
     end
 end
 %% Plotting
-PlasmaLine = TSeries(testrfs_lfr_v1v2_freq.time,DataFrequency');
-WeightedPlasmaLine = TSeries(testrfs_lfr_v1v2_freq.time,DataFrequencyWeightedAverage');
+PlasmaLine = TSeries(testrfs_lfr_v3v4_freq.time,DataFrequency');
+WeightedPlasmaLine = TSeries(testrfs_lfr_v3v4_freq.time,DataFrequencyWeightedAverage');
 
 DensityData = ((((PlasmaLine.data*2*pi).^2)*Me*epso)/e^2)/1e6;
 WeightedDensityData = ((((WeightedPlasmaLine.data*2*pi).^2)*Me*epso)/e^2)/1e6;
-DensityTS = TSeries(testrfs_lfr_v1v2_freq.time,DensityData); %density timeseries
-WeightedDensityTS = TSeries(testrfs_lfr_v1v2_freq.time,WeightedDensityData); %density timeseries
+DensityTS = TSeries(testrfs_lfr_v3v4_freq.time,DensityData); %density timeseries
+WeightedDensityTS = TSeries(testrfs_lfr_v3v4_freq.time,WeightedDensityData); %density timeseries
 WeightedDensityDataSmoothed = movmean(WeightedDensityData,3);
-WeightedDensityTSSmoothed =  TSeries(testrfs_lfr_v1v2_freq.time,WeightedDensityDataSmoothed); %density timeseries
+WeightedDensityTSSmoothed =  TSeries(testrfs_lfr_v3v4_freq.time,WeightedDensityDataSmoothed); %density timeseries
 
 if generateplot == true
     h = irf_plot(1,'newfigure');
-    [hcc, hcd] = irf_spectrogram(h(1),rfs_lfr_v1v2_spec,'donotfitcolorbarlabel');
+    [hcc, hcd] = irf_spectrogram(h(1),rfs_lfr_v3v4_spec,'donotfitcolorbarlabel');
     set(h(1),'Yscale', 'log')
     irf_zoom(h(1),'y',[7e4 1.5e6])
     hcc.YScale = 'log';
@@ -272,7 +272,7 @@ if generateplot == true
         hd = irf_plot(h(1),PlasmaLineFromFrequency,'color','black','LineWidth',1.5);
     end
     l1 = ylabel(hcc,'Hz','FontSize',11);
-    legend(hcc,{'lfr v1v2','Weighted plasma line','Plasma Line SPI'},'textcolor','white','color','none','Interpreter','tex','FontSize',15,'location','northeast','Box','off')
+    legend(hcc,{'lfr v3v4','Weighted plasma line','Plasma Line SPI'},'textcolor','white','color','none','Interpreter','tex','FontSize',15,'location','northeast','Box','off')
     hold(hcc,'off')
 end
 
@@ -304,11 +304,11 @@ elseif nargout == 2
 elseif nargout == 3
     varargout {1} = {PlasmaLine,WeightedPlasmaLine};
     varargout {2} = {DensityTS,WeightedDensityTSSmoothed};
-    varargout {3} = {testrfs_lfr_v1v2_freq,testrfs_lfr_v1v2};
+    varargout {3} = {testrfs_lfr_v3v4_freq,testrfs_lfr_v3v4};
 elseif nargout == 4 && initialdensitydata == true
     varargout {1} = {PlasmaLine,WeightedPlasmaLine};
     varargout {2} = {DensityTS,WeightedDensityTSSmoothed};
-    varargout {3} = {testrfs_lfr_v1v2_freq,testrfs_lfr_v1v2};
+    varargout {3} = {testrfs_lfr_v3v4_freq,testrfs_lfr_v3v4};
     varargout {4} = SubAssistingData;
     
 end
