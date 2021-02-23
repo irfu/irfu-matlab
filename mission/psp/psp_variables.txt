@@ -102,6 +102,83 @@ The power spectral data undergo a lossy amplitude compression.
 info#end
 ----
 
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg_frequency_bins
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_dv12_dv34_freq_bins
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+Frequency bins for the dV12hg-dV34hg cross spectra data.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_power_ch(1|2)_dV(12|34)hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_pw_dv(12|34)
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Power for channels DV12HG and DV34HG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_coh_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_coh_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Coherence between channel DV12HG and channel DV34HG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_phase_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_ph_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Phase of channel DV34HG relative to channel dV12hg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_crossterm_Real_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_xterm_Re_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Real Part of Crossterm (FT_1 x FT_2^*) for channel DV12HG and dV34hg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_crossterm_Imag_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_xterm_Im_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Imag Part of Crossterm (FT_1 x FT_2^*) for channel DV12HG and dV34hg.
+info#end
+----
 
 %%%%
 varName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
@@ -129,7 +206,6 @@ xxx
 info#end
 ----
 
-
 %%%%
 varName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
 fileName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
@@ -142,7 +218,6 @@ xxx
 xxx
 info#end
 ----
-
 
 %%%%
 varName: psp_fld_l2_dfb_wf_scm_(lg|hg)_sensor
