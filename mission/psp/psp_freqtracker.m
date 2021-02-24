@@ -9,7 +9,7 @@
 % Below you can find a detailed description of input/output and possible
 % future updates/implementations.
 % 
-% REQUIREMENTS: irfu-matlab (pspdevel), setargs, set up datastore
+% REQUIREMENTS: irfu-matlab (pspdevel), set up datastore
 % path for psp_load
 % 
 % %All outputs are optional.
@@ -155,20 +155,28 @@ defaultargs = {'fullday',defaultstarttime,'start', defaultstarttime, 'stop', def
     'metricsdesplay',true, 'initialdensitydata',true, 'densitycomparisonplot',false};
 
 
+p = inputParser;
+for i=1:size(defaultargs,2)/2
+    p.addParameter(defaultargs{2*i-1},defaultargs{2*i});
+end
+parse(p,varargin{:});
+imported_arguments = p.Results;
+
 disp('The arguments choosen are:') 
-argstruct   = setargs(defaultargs, varargin) % showing arguments used
+disp(p.Results)
 
 
-if size(start,2) <4  %% Small hotfix to allow different initial inputs
-    start = [start 00] ;
-    stop = [stop 24] ;
+
+if size(imported_arguments.start,2) <4  %% Small hotfix to allow different initial inputs
+    imported_arguments.start = [imported_arguments.start 00] ;
+    imported_arguments.stop = [imported_arguments.stop 24] ;
 end 
 
-start = [start(1) start(2) start(3) start(4) 00 00] ; %Small hotfix on times to avoid a bug with minutes being different than zero
-stop =  [stop(1) stop(2) stop(3) stop(4) 00 00]; %Small hotfix on times to avoid a bug with minutes being different than zero
-startepochtt = irf_time(start,'vector>epochtt');
-stopepochtt = irf_time(stop,'vector>epochtt');
-tint  = irf.tint(startepochtt,stopepochtt);
+imported_arguments.start = [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3) imported_arguments.start(4) 00 00] ; %Small hotfix on times to avoid a bug with minutes being different than zero
+imported_arguments.stop =  [imported_arguments.stop(1) imported_arguments.stop(2) imported_arguments.stop(3) imported_arguments.stop(4) 00 00]; %Small hotfix on times to avoid a bug with minutes being different than zero
+imported_arguments.startepochtt = irf_time(imported_arguments.start,'vector>epochtt');
+imported_arguments.stopepochtt = irf_time(imported_arguments.stop,'vector>epochtt');
+tint  = irf.tint(imported_arguments.startepochtt,imported_arguments.stopepochtt);
 
 testrfs_lfr_v3v4_freq = tlim(freqTS,tint); %Splitting the dataset
 testrfs_lfr_v3v4 = tlim(amplTS,tint);  %Splitting the dataset
@@ -179,16 +187,16 @@ rfs_lfr_v3v4_spec.f = single(testrfs_lfr_v3v4_freq.data(:,1:size(testrfs_lfr_v3v
 rfs_lfr_v3v4_spec.p_label={['log10 (' testrfs_lfr_v3v4.units ')']};
 rfs_lfr_v3v4_spec.f_label={testrfs_lfr_v3v4_freq.units};
 
-if initialdensitydata == true
-    AssistingData = psp_load([],'spi', [start(1) start(2) start(3)], [start(1) start(2) start(3)]); % Download 1 day of data to local datastore path (edit datastore to change or add first argument with a path)    
+if imported_arguments.initialdensitydata == true
+    AssistingData = psp_load([],'spi', [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3)], [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3)]); % Download 1 day of data to local datastore path (edit datastore to change or add first argument with a path)    
     SubAssistingData =  tlim(AssistingData{2},tint);
-    defaultinitialfreqvalue =  sqrt((SubAssistingData.data(1)*1e6)*e^2/Me/epso)/2/pi; % 9e3*sqrt(initialdensitydata.data(1));
+    defaultimported_arguments.initialfreqvalue =  sqrt((SubAssistingData.data(1)*1e6)*e^2/Me/epso)/2/pi; % 9e3*sqrt(imported_arguments.initialdensitydata.data(1));
     PlasmaLineFromFrequency =  sqrt((SubAssistingData*1e6)*e^2/Me/epso)/2/pi;
-    [~,initialfreq] = min(abs(freqTS.data(1,:) - defaultinitialfreqvalue));
+    [~,imported_arguments.initialfreq] = min(abs(freqTS.data(1,:) - defaultimported_arguments.initialfreqvalue));
 end
 
 %--------------------------------------------------------------------------
-%% Actual function starts below.
+%% Actual function imported_arguments.starts below.
 %--------------------------------------------------------------------------
 
 
@@ -203,37 +211,37 @@ spikecounter=0;
 
 for i=1:length(testrfs_lfr_v3v4.time)
     
-    MaximumAmplitude = testrfs_lfr_v3v4.data(i,initialfreq-binrange:initialfreq+binrange);
+    MaximumAmplitude = testrfs_lfr_v3v4.data(i,imported_arguments.initialfreq-imported_arguments.binrange:imported_arguments.initialfreq+imported_arguments.binrange);
     
     [~, maxindex] = find(max(MaximumAmplitude)==MaximumAmplitude);
     
-    if maxindex ~= binrange+1 && (max(MaximumAmplitude) - testrfs_lfr_v3v4.data(i,initialfreq))> tolerancelevel
-        %disp(['changing initial frequency from ', num2str(initialfreq), ' to ', num2str(initialfreq-binrange-1+maxindex)])
-        initialfreq = initialfreq-binrange-1+maxindex;
-        frequencytracker = [frequencytracker, initialfreq ] ;
+    if maxindex ~= imported_arguments.binrange+1 && (max(MaximumAmplitude) - testrfs_lfr_v3v4.data(i,imported_arguments.initialfreq))> imported_arguments.tolerancelevel
+        %disp(['changing initial frequency from ', num2str(imported_arguments.initialfreq), ' to ', num2str(imported_arguments.initialfreq-imported_arguments.binrange-1+maxindex)])
+        imported_arguments.initialfreq = imported_arguments.initialfreq-imported_arguments.binrange-1+maxindex;
+        frequencytracker = [frequencytracker, imported_arguments.initialfreq ] ;
         TrackerNumber = TrackerNumber +1;
     end
     
-    DataFrequency = [DataFrequency,testrfs_lfr_v3v4_freq.data(i,initialfreq)];
-    NormalizedWeightedAmplitudeArray = normalize(testrfs_lfr_v3v4.data(i,initialfreq-1:initialfreq+1),'norm',1);
-    WeightedResult = sum(testrfs_lfr_v3v4_freq.data(i,initialfreq-1:initialfreq+1).*NormalizedWeightedAmplitudeArray);
+    DataFrequency = [DataFrequency,testrfs_lfr_v3v4_freq.data(i,imported_arguments.initialfreq)];
+    NormalizedWeightedAmplitudeArray = normalize(testrfs_lfr_v3v4.data(i,imported_arguments.initialfreq-1:imported_arguments.initialfreq+1),'norm',1);
+    WeightedResult = sum(testrfs_lfr_v3v4_freq.data(i,imported_arguments.initialfreq-1:imported_arguments.initialfreq+1).*NormalizedWeightedAmplitudeArray);
     DataFrequencyWeightedAverage = [DataFrequencyWeightedAverage,WeightedResult];
     
-    if initialfreq < minfreq || initialfreq > maxfreq
+    if imported_arguments.initialfreq < imported_arguments.minfreq || imported_arguments.initialfreq > imported_arguments.maxfreq
         spikecounter = spikecounter + 1;
         warning('Possible spike encounter: Re-evaluate the tracking')
-        tempinitialfreq = initialfreq;
-        if initialfreq > maxfreq
-            initialfreq = min(frequencytracker(TrackerNumber-recoverer:end));
-        else initialfreq = max(frequencytracker(TrackerNumber-recoverer:end));
+        tempimported_arguments.initialfreq = imported_arguments.initialfreq;
+        if imported_arguments.initialfreq > imported_arguments.maxfreq
+            imported_arguments.initialfreq = min(frequencytracker(TrackerNumber-imported_arguments.recoverer:end));
+        else imported_arguments.initialfreq = max(frequencytracker(TrackerNumber-imported_arguments.recoverer:end));
         end
-        disp(['changing initial frequency from ', num2str(tempinitialfreq) ' to ',num2str(initialfreq)])
+        disp(['changing initial frequency from ', num2str(tempimported_arguments.initialfreq) ' to ',num2str(imported_arguments.initialfreq)])
     end
 end
 
 %% Displaying metrics
 
-if metricsdesplay == true
+if imported_arguments.metricsdesplay == true
     disp('Metrics of proccedure:')
     disp('----------------------')
     disp(['Tracking frequency for: ' 'TODO'])
@@ -254,7 +262,7 @@ WeightedDensityTS = TSeries(testrfs_lfr_v3v4_freq.time,WeightedDensityData); %de
 WeightedDensityDataSmoothed = movmean(WeightedDensityData,3);
 WeightedDensityTSSmoothed =  TSeries(testrfs_lfr_v3v4_freq.time,WeightedDensityDataSmoothed); %density timeseries
 
-if generateplot == true
+if imported_arguments.generateplot == true
     h = irf_plot(1,'newfigure');
     [hcc, hcd] = irf_spectrogram(h(1),rfs_lfr_v3v4_spec,'donotfitcolorbarlabel');
     set(h(1),'Yscale', 'log')
@@ -268,7 +276,7 @@ if generateplot == true
     hold(hcc,'on')
     %hb = irf_plot(h(1),PlasmaLine,'color','white','LineWidth',1.5);
     hc = irf_plot(h(1),WeightedPlasmaLine,'--','color','white','LineWidth',1.5);
-    if initialdensitydata == true
+    if imported_arguments.initialdensitydata == true
         hd = irf_plot(h(1),PlasmaLineFromFrequency,'color','black','LineWidth',1.5);
     end
     l1 = ylabel(hcc,'Hz','FontSize',11);
@@ -276,12 +284,12 @@ if generateplot == true
     hold(hcc,'off')
 end
 
-if densitycomparisonplot == true
+if imported_arguments.densitycomparisonplot == true
     k = irf_plot(1,'newfigure');
     hca = irf_panel('density');
     hold(hca,'on');
     irf_plot(WeightedDensityTSSmoothed,'LineWidth',1.5)
-    if initialdensitydata == true
+    if imported_arguments.initialdensitydata == true
         irf_plot(SubAssistingData)
         ylim([min([DensityTS.data])-50,max([SubAssistingData.data])+50])
     else
@@ -305,7 +313,7 @@ elseif nargout == 3
     varargout {1} = {PlasmaLine,WeightedPlasmaLine};
     varargout {2} = {DensityTS,WeightedDensityTSSmoothed};
     varargout {3} = {testrfs_lfr_v3v4_freq,testrfs_lfr_v3v4};
-elseif nargout == 4 && initialdensitydata == true
+elseif nargout == 4 && imported_arguments.initialdensitydata == true
     varargout {1} = {PlasmaLine,WeightedPlasmaLine};
     varargout {2} = {DensityTS,WeightedDensityTSSmoothed};
     varargout {3} = {testrfs_lfr_v3v4_freq,testrfs_lfr_v3v4};
