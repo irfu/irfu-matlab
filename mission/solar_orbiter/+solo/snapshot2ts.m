@@ -63,5 +63,5 @@ for iFreq = 1:length(freqs)
     if flagAddNan,  cc(lSnapshot,:) = NaN; end
     dataOut(:,i) = cc(:);
   end
-  res.(sprintf('f%d',freq)) = irf.ts_scalar(Time,dataOut);
+  res.(sprintf('f%d',round(freq))) = irf.ts_scalar(Time,dataOut);
 end
