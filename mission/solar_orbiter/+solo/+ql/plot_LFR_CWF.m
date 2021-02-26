@@ -99,32 +99,6 @@ function hAxesArray = plot_LFR_CWF(filePath)
     vAc23         = get_CDF_zv_data(D, 'EAC', 3);
     zvSamplFreqHz = D.data.SAMPLING_RATE.data;
     clear D
-
-%     if 0
-%         % DEBUG: Limit records
-%         I1 = 1.12e5;
-%         I2 = 1.20e5;
-%         
-%         epoch = epoch(I1:I2);
-%         vDc1  = vDc1( I1:I2);
-%         vDc12 = vDc12(I1:I2);
-%         vDc23 = vDc23(I1:I2);
-%         vAc12 = vAc12(I1:I2);
-%         vAc23 = vAc23(I1:I2);
-%         zvSamplFreqHz = zvSamplFreqHz(I1:I2);
-%         
-%         fprintf('Limiting records to %s -- %s\n', ...
-%             EJ_library.cdf.TT2000_to_UTC_str(epoch(1)), ...
-%             EJ_library.cdf.TT2000_to_UTC_str(epoch(end)))
-%     end
-
-
-    
-%     TsVdc1  = irf.ts_scalar(epoch, vDc1);
-%     TsVdc12 = irf.ts_scalar(epoch, vDc12);
-%     TsVdc23 = irf.ts_scalar(epoch, vDc23);
-    %TsVac12 = irf.ts_scalar(epoch, vAc12);
-    %TsVac23 = irf.ts_scalar(epoch, vAc23);
     
     Sp = solo.ql.summary_plot();
     
@@ -144,7 +118,7 @@ end
 
 
 
-function data = get_CDF_zv_data(D, zvName, i2)
+function zv = get_CDF_zv_data(D, zvName, i2)
     
     % TEMPORARY: For backward compatibility.
     if strcmp(zvName, 'VDC') && isfield(D.data, 'V')
@@ -154,6 +128,6 @@ function data = get_CDF_zv_data(D, zvName, i2)
     end
     
     fillValue = getfillval(D, zvName);
-    data = D.data.(zvName).data(:, i2);
-    data = changem(data, NaN, fillValue);
+    zv = D.data.(zvName).data(:, i2);
+    zv = changem(zv, NaN, fillValue);
 end

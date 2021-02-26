@@ -126,7 +126,8 @@ elseif ismatrix(data) && isnumeric(data) && (size(data, 2)>=1)
   samples      = data(:, 2:end);
   usingTSeries = false;
 else
-  error('Argument "data" is neither (1) TSeries, nor (2) numeric 2D array with at least one column.')
+  error(['Argument "data" is neither (1) TSeries, nor', ...
+      ' (2) numeric 2D array with at least one column.'])
 end
 % NOTE: samples(iTime, i)
 assert(ndims(samples) <= 2, ...
