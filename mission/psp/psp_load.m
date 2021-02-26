@@ -21,12 +21,18 @@
 %           'mag_sc','fgm_sc'        - FGM, SC coordinates
 %           'wf_dvdc'                - DBF Digital Fields Board Differential Voltage Waveform
 %           'wf_scm'                 - DBF Digital Fields Board Search Coil Magnetometer Waveform
-%           'ac_spec_dv12'           - DFB AC-coupled Differential Voltage V12 antenas
-%           'ac_spec_dv34'           - DFB AC-coupled Differential Voltage V34 antenas
-%           'ac_spec_v5'             - DFB AC-coupled V5 Antenna Voltage, Monopole Mode
+%           'ac_bpf_dv34'            - DFB AC-coupled Differential Voltage, V3-V4 Antennae, Bandpass filtered, High Gain
+%           'ac_bpf_SCMulfhg'        - DFB AC-coupled SCM, Bandpass filtered, Low Frequency, High Gain, u-component
+%           'ac_bpf_SCMumfhg'        - DFB AC-coupled SCM, Bandpass filtered, Medium Frequency, High Gain, u-component
+%           'ac_spec_dv12'           - DFB AC-coupled Differential Voltage, V1-V2 Antennae, Dipole Mode, Spectra, High Gain
+%           'ac_spec_dv34'           - DFB AC-coupled Differential Voltage, V3-V4 Antennae, Dipole Mode, Spectra, High Gain
+%           'ac_spec_v5'             - DFB AC-coupled V5 Antenna Voltage, Monopole Mode, Auto Spectra, High Gain
 %           'ac_xspec'               - DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra
 %           'ac_spec_scmv'           - DFB AC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
 %           'ac_spec_scmu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
+%           'dc_bpf_dv34'            - DFB DC-coupled Diff Volt V34 antenas Bandpass Filtered (BPF)
+%           'dc_bpf_SCMulfhg'        - DFB DC-coupled SCM, Bandpass filtered, Low Frequency, High Gain, u-component
+%           'dc_bpf_SCMvlfhg'        - DFB DC-coupled SCM, Bandpass filtered, Low Frequency, High Gain, v-component
 %           'dc_spec_dv12'           - DFB DC-coupled Differential Voltage V1-V2 antenas
 %           'dc_spec_SCMv'           - DFB DC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
 %           'dc_spec_SCMu'           - DFB DC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
@@ -109,6 +115,39 @@ switch datatype
     
     hourtag={'00';'06';'12';'18'};
     
+  case {'ac_bpf_dv34'}
+    filename = 'psp_fld_l2_dfb_ac_bpf_dV34hg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_bpf_dV34hg_frequency_bins';...
+      'psp_fld_l2_dfb_ac_bpf_dV34hg_avg';...
+      'psp_fld_l2_dfb_ac_bpf_dV34hg_peak'};
+    varnamesout = {'dfb_ac_bpf_dv34_freq_bins';...
+      'dfb_ac_bpf_dv34_avg';'dfb_ac_bpf_dv34_peak'};
+    
+    hourtag={''};
+    
+  case {'ac_bpf_SCMulfhg'}
+    filename = 'psp_fld_l2_dfb_ac_bpf_SCMulfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_bpf_SCMulfhg_frequency_bins';...
+      'psp_fld_l2_dfb_ac_bpf_SCMulfhg_avg';...
+      'psp_fld_l2_dfb_ac_bpf_SCMulfhg_peak'};
+    varnamesout = {'dfb_ac_bpf_SCMulfhg_freq_bins';...
+      'dfb_ac_bpf_SCMulfhg_avg';'dfb_ac_bpf_SCMulfhg_peak'};
+        
+    hourtag={''};
+      
+  case {'ac_bpf_SCMumfhg'}
+    filename = 'psp_fld_l2_dfb_ac_bpf_SCMumfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_bpf_SCMumfhg_frequency_bins';...
+      'psp_fld_l2_dfb_ac_bpf_SCMumfhg_avg';...
+      'psp_fld_l2_dfb_ac_bpf_SCMumfhg_peak'};
+    varnamesout = {'dfb_ac_bpf_SCMumfhg_freq_bins';...
+      'dfb_ac_bpf_SCMumfhg_avg';'dfb_ac_bpf_SCMumfhg_peak'};
+        
+    hourtag={''};  
+    
   case {'ac_spec_dv12'}
     filename = 'psp_fld_l2_dfb_ac_spec_dV12hg';
     varnames = {...
@@ -171,7 +210,40 @@ switch datatype
       'ac_xspec_xterm_Im_dv12_dv34'};
     
     hourtag={''};
+  
+  case {'dc_bpf_dv34'}
+    filename = 'psp_fld_l2_dfb_dc_bpf_dV34hg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_bpf_dV34hg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_bpf_dV34hg_avg';...
+      'psp_fld_l2_dfb_dc_bpf_dV34hg_peak'};
+    varnamesout = {'dfb_dc_bpf_dv34_freq_bins';...
+      'dfb_dc_bpf_dv34_avg';'dfb_dc_bpf_dv34_peak'};
     
+    hourtag={''};
+    
+  case {'dc_bpf_SCMulfhg'}
+    filename = 'psp_fld_l2_dfb_dc_bpf_SCMulfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_bpf_SCMulfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_bpf_SCMulfhg_avg';...
+      'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak'};
+    varnamesout = {'dfb_dc_bpf_SCMulfhg_freq_bins';...
+      'dfb_dc_bpf_SCMulfhg_avg';'dfb_dc_bpf_SCMulfhg_peak'};
+        
+    hourtag={''};
+      
+  case {'dc_bpf_SCMvlfhg'}
+    filename = 'psp_fld_l2_dfb_dc_bpf_SCMvlfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_bpf_SCMvlfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_bpf_SCMvlfhg_avg';...
+      'psp_fld_l2_dfb_dc_bpf_SCMvlfhg_peak'};
+    varnamesout = {'dfb_dc_bpf_SCMvlfhg_freq_bins';...
+      'dfb_dc_bpf_SCMvlfhg_avg';'dfb_dc_bpf_SCMvlfhg_peak'};
+        
+    hourtag={''};
+
   case {'dc_spec_dv12'}
     filename = 'psp_fld_l2_dfb_dc_spec_dV12hg';
     varnames = {...
