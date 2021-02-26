@@ -379,9 +379,14 @@ classdef summary_plot < handle
         % yLabelNonUnit : y label without unit (unit is at the color bar;
         %                 Assumes "Ts" uses volt).
         %
-        function add_panel_spectrogram_CWF(obj, panelTag, zvEpoch, zvData, zvSamplingFreqHz, yLabelNonUnit)
+        function add_panel_spectrogram_CWF(obj, ...
+                panelTag, zvEpoch, zvData, ...
+                zvSamplingFreqHz, yLabelNonUnit, colLimits)
+            
+            % ASSERTIONS
             assert(~obj.figureComplete)
-            assert(nargin == 1+5)
+            assert(nargin == 1+6)
+            EJ_library.assert.sizes(colLimits, [1,2])
             
             obj.add_panel_internal_vars(...
                 @() (panel_spectrogram()), zvEpoch, 0, 1);
@@ -411,12 +416,13 @@ classdef summary_plot < handle
                 irf_spectrogram(hAxes, Specrec);    % Replaces irf_plot
                 
                 set(hAxes, 'yscale','log')
-                %caxis(hAxes, [-13, -4])
+
                 % NOTE: Adding frequency unit on separate row.
                 ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})
                 
                 colormap(solo.ql.summary_plot.COLORMAP)
                 
+                caxis(hAxes, colLimits)
                 set(hAxes, 'YTick', [0.1, 1, 10, 100, 1e3, 1e4, 1e5])
             end
         end

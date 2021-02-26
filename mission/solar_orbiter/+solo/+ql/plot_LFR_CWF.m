@@ -128,9 +128,9 @@ function hAxesArray = plot_LFR_CWF(filePath)
     
     Sp = solo.ql.summary_plot();
     
-    Sp.add_panel_spectrogram_CWF( 'V1 DC spectrogram', epoch, vDc1,  zvSamplFreqHz, 'V1\_DC');
-    Sp.add_panel_spectrogram_CWF('V12 DC spectrogram', epoch, vDc12, zvSamplFreqHz, 'V12\_DC');
-    Sp.add_panel_spectrogram_CWF('V23 DC spectrogram', epoch, vDc23, zvSamplFreqHz, 'V23\_DC');
+    Sp.add_panel_spectrogram_CWF( 'V1 DC spectrogram', epoch, vDc1,  zvSamplFreqHz, 'V1\_DC',  [-7, -3]);
+    Sp.add_panel_spectrogram_CWF('V12 DC spectrogram', epoch, vDc12, zvSamplFreqHz, 'V12\_DC', [-8, -4]);
+    Sp.add_panel_spectrogram_CWF('V23 DC spectrogram', epoch, vDc23, zvSamplFreqHz, 'V23\_DC', [-9, -5]);
 
     Sp.add_panel_time_series_CWF( 'V1 DC time series', epoch, vDc1,  'V1_DC [V]',  0);
     Sp.add_panel_time_series_CWF('V12 DC time series', epoch, vDc12, 'V12_DC [V]', 0);
