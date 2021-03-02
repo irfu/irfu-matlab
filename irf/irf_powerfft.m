@@ -109,6 +109,11 @@ assert(isscalar(samplFreqHz), 'Argument samplFreqHz is not scalar.')
 % problems. Historically, this had lead to spectrumTimeSec1 not incrementing.
 samplFreqHz = double(samplFreqHz); 
 
+% IMPLEMENTATION NOTE: If nFft is single-precision (or integer, probably),
+% rather than double-precision, then this can lead to numerical problems.
+% Historically, this had lead to iSti1 being larger than timeSecArray indices.
+nFft = double(nFft);
+
 
 
 %=======================================================================
