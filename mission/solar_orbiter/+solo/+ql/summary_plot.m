@@ -71,8 +71,14 @@ classdef summary_plot < handle
     properties(Constant)
 
         % NOTE: More samples per spectrum is faster (sic!).
-        %N_SAMPLES_PER_SPECTRUM = 512;    % Speed test
-        N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
+        %N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
+        N_SAMPLES_PER_SPECTRUM_LFR_SWF = 2048;  % /YK 2021-03-02
+        % Select samples/FFT to produce the same minimum frequency.
+        % /YK 2021-03-02
+        % FH = Function Handle
+        N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (cwfSamplFreqHz / (16/128));
+
+
         
         % Fraction of the (minimum) time distance between snapshots (centers)
         % that will be used for displaying the spectra. E.g. 1.0 means that
@@ -81,10 +87,11 @@ classdef summary_plot < handle
         % between snapshot spectras.
         SNAPSHOT_WIDTH_FRACTION  = 0.90;
         
-        % Overlap in successive time intervals for separate FFTs.
+        % Overlap in successive time intervals for separate CWF FFTs.
         % Percent, not fraction.
-        %SPECTRUM_OVERLAP_PERCENT = 0;
-        SPECTRUM_OVERLAP_PERCENT = 50;
+        % Disabled since presumably slow. Triggers bug in MTEST(CWF).
+        SPECTRUM_OVERLAP_PERCENT_CWF = 0;
+        %SPECTRUM_OVERLAP_PERCENT_CWF = 50;   % /YK 2020?
             
         % Colormap used for spectras.
         COLORMAP = load('cmap').cmap;
@@ -429,10 +436,14 @@ classdef summary_plot < handle
                     
                     iSsArray = iSs1Array(jSs) : iSs2Array(jSs);
                     
-                    % NOTE: 0% spectrum overlap. Correct?
-                    SpecrecCa{jSs} = irf_powerfft(Ts(iSsArray), ...
-                        solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM, ...
-                        zvSamplingFreqHz(iSs1Array(jSs)));
+                    samplFreqHz = zvSamplingFreqHz(iSs1Array(jSs));
+                    nSamplPerSpectrum = solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
+                    
+                    SpecrecCa{jSs} = irf_powerfft(...
+                        Ts(iSsArray), ...
+                        nSamplPerSpectrum, ...
+                        samplFreqHz, ...
+                        solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
                 end
                 
                 Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
@@ -671,9 +682,8 @@ classdef summary_plot < handle
                 Ts = TsCa{i};
                 
                 SpecrecCa{i} = irf_powerfft(Ts, ...
-                    solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM, ...
-                    samplingFreqHz, ...
-                    solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT);
+                    solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
+                    samplingFreqHz);
                 
                 % IMPLEMENTATION NOTE: Later needs the snapshot centers in the
                 % same time system as Specrec.t (epoch Unix).
