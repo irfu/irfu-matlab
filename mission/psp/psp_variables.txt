@@ -200,6 +200,21 @@ info#end
 ----
 
 %%%%
+varName: psp_fld_l2_dfb_ac_spec_V5hg
+fileName: psp_fld_l2_dfb_ac_spec_V5hg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_v5hg
+related: 
+info#start
+AC-coupled V5 Antenna Voltage, Monopole Mode, Auto Spectra, High Gain.
+High-rate ac power spectra are limited in coverage to the first 
+one eighth of each cycle.  
+The power spectral data undergo a lossy amplitude compression.
+info#end
+----
+
+%%%%
 varName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg_frequency_bins
 fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
 directory: fields/l2/dfb_ac_xspec/20YY/MM
