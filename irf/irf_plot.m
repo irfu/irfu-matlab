@@ -17,7 +17,7 @@ function c=irf_plot(varargin)
 %     all arguments allowed by PLOT command
 %     'subplot' - plot all x values in separate subplots
 %     'comp'    - plot vector component in separate subplots
-%     'reduce'  - reduce the number of plotted points to screen resolution
+%     'reduce'  - reduce the number of plotted points to screen resolution (faster plotting for large datasets)
 %     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts, new time = old time - dt
 %     ['yy',factor_to_multiply] - add second axis on right, miltiply by factor_to_multiply
 %     ['linestyle',LineStyle] - define line style. Simple LineStyle can be be
@@ -684,16 +684,18 @@ if number_of_subplots>=1 && number_of_subplots<=30
   end
   clf;
   all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
-  subplot_width=all_axis_position(3)-all_axis_position(1);
-  subplot_height=(all_axis_position(4)-all_axis_position(2))/number_of_subplots;
+  subplotWidth=all_axis_position(3)-all_axis_position(1);
+  subplotHeight=(all_axis_position(4)-all_axis_position(2))/number_of_subplots;
   for j=1:number_of_subplots
     c(j)=axes('position',[all_axis_position(1) ...
-      all_axis_position(4)-j*subplot_height ...
-      subplot_width subplot_height]); % [x y dx dy]
+      all_axis_position(4)-j*subplotHeight ...
+      subplotWidth subplotHeight]); % [x y dx dy]
     %        c(j)=irf_subplot(number_of_subplots,1,-j);
     cla(c(j));
-    set(c(j),'box','on');
-    set(c(j),'tag','');
+    c(j).Interactions = [zoomInteraction regionZoomInteraction rulerPanInteraction];
+    c(j).Toolbar = [];
+    c(j).Box = 'on';
+    c(j).Tag = '';
   end
   user_data = get(gcf,'userdata');
   user_data.subplot_handles = c;
