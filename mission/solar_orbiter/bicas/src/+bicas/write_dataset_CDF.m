@@ -23,12 +23,7 @@
 %
 function write_dataset_CDF(...
         ZvsSubset, GaSubset, outputFile, masterCdfPath, SETTINGS, L)
-    
-    % PROPOSAL: Use setting PROCESSING.ZV_QUALITY_FLAG_MAX to cap zVar
-    %   QUALITY_FLAG.
-    %   PRO: Replaces other code in multiple locations.
-    %   PRO/CON: Presumes that every output dataset has a zVar QUALITY_FLAG.
-    
+
     %===========================================================================
     % This function needs GlobalAttributes values from the input files:
     %    One value per file:      Data_version (for setting Parent_version).
@@ -81,7 +76,9 @@ function write_dataset_CDF(...
         % PROPOSAL: Turn into generic function for capping QUALITY_FLAG based on
         % arbitrary setting.
         [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
-        assert((0 < value) && (value <= 3), 'Illegal setting "%s"=%i.', key, value)
+        assert((0 < value) && (value <= 3), ...
+            'BICAS:Assertion:ConfigurationBug', ...
+            'Illegal BICAS setting "%s"=%i.', key, value)
         if value < 3
             L.logf('warning', ...
                 'Using setting %s = %i to set a zVar QUALITY_FLAG global max value.', ...
@@ -121,6 +118,9 @@ function write_dataset_CDF(...
         %=====================================
         write_nominal_dataset_CDF(DataObj, outputFile, SETTINGS, L)
     else
+        %=====================================================
+        % CASE: Write EMPTY output dataset file (for testing)
+        %=====================================================
         L.logf('warning', ...
             'Writing empty output file due to setting %s.', settingNpefKey)
         write_empty_file(outputFile)
@@ -138,7 +138,6 @@ end
 %   (2) master CDF.
 % bicas.execute_sw_mode: derive_output_dataset_GlobalAttributes() which sets
 % global attributes dynamically.
-%
 %
 % NOTE: Assertions require that ZvsSubset contains records of data. Can not
 % easily submit "no data" for debugging purposes (deactivate processing but

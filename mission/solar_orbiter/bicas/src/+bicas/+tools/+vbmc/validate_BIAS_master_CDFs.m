@@ -76,6 +76,9 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %   (2) Checks on some zVars (glob.attr.) in some datasets.
     %       	(2a) Checks on a specific level
     %
+    % PROPOSAL: Check that no duplicate global attributes, if ignoring case.
+    %   Ex: CALIBRATION_VERSION + Calibration_version
+    %
     %
     %
     % TODO-NI: Useful also for datasets (master CDFs filled with data)?

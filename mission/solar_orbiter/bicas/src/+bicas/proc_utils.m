@@ -823,11 +823,16 @@ classdef proc_utils
         
         
         
-        % Assert that cell array components all have the same number of rows.
+        % Assert that all cell array components have the same number of rows.
+        % This is useful when cell array components represent zVar-like data,
+        % where rows represent CDF records.
         %
-        % c : Cell array.
-        function assert_cell_array_comps_have_same_N_rows(c)
-            nRowsArray = cellfun(@(v) (size(v,1)), c, 'UniformOutput', true);
+        % ARGUMENTS
+        % =========
+        % ca : Cell array
+        %
+        function assert_cell_array_comps_have_same_N_rows(ca)
+            nRowsArray = cellfun(@(v) (size(v,1)), ca, 'UniformOutput', true);
             EJ_library.assert.all_equal( nRowsArray )
         end
 

@@ -1487,7 +1487,7 @@ classdef proc_sub12
 
         % Demultiplex and calibrate voltages.
         %
-        % NOTE: Can handle arrays of any size as long as the sizes are
+        % NOTE: Can handle arrays of any size if the sizes are
         % consistent.
         %
         function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, L)

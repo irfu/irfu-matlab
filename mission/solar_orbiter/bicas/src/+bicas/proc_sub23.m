@@ -30,7 +30,26 @@ classdef proc_sub23
 %
 % PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets.
 %
-% PROPOSAL: Move to here: bicas.proc_utils.downsample_Epoch()
+% PROPOSAL: Move to here: bicas.proc_utils.downsample_Epoch().
+%   ~CON: Has test code in proc_utils___ATEST(). Needs to be publically accessible.
+%   NOTE: Should have more test code for code that downsamples.
+%
+% PROPOSAL: Test code for code that downsamples.
+%   Ex: proc_sub23.downsample_bin_L12_QUALITY_BITMASK()
+%   Ex: proc_sub23.downsample_bin_QUALITY_FLAG()
+%   Ex: proc_sub23.downsample_bin_sci_values() -- Already has test code
+%   Ex: proc_utils.downsample_Epoch()          -- Already has test code
+%   --
+%   PRO: Can verify now uncertain edge cases.
+%       Ex: Quality zVars when science data=fill values.
+%       PRO: Can verify future bugfix for integer quality zVar=fill value when
+%            there is no science data.
+%
+% PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT.
+%   PRO: Faster
+%       CON: Not very heavy operation.
+%   PRO: Leads to better organization of code.
+%       PRO: process_L2_to_L3() is too large and should be split up anyway.
 %
 %##############################################################################################
 
@@ -82,11 +101,22 @@ classdef proc_sub23
             %       NOTE: May be different for different "channels" (vary over
             %             non-record dimensions) within the same zVar.
             %
-            % BUG: Fill values in the INPUT QUALITY_FLAG,
-            % QUALITY_BITMASK, L2_QUALITY_BITMASK are not known since the
-            % variables are not double.
+            % BUG: Fill values in the __INPUT__
+            %   QUALITY_FLAG,
+            %   QUALITY_BITMASK,
+            %   L2_QUALITY_BITMASK are not known/recognized since the variables
+            %   are not double.
+            %   NOTE: L1 QUALITY_BITMASK seems to use the wrong value (255) as
+            %         fill value (FILLVAL=65535). ==> A bug fix would not fix
+            %         the entire issue.
             %   PROPOSAL: Use double also for CDF integer variables so NaN can
             %             represent fill value also for these.
+            %
+            % BUG:    downsample_bin_sci_values()
+            %      uses N_MIN_SAMPLES_PER_DWNS_BIN, but
+            %         downsample_bin_L12_QUALITY_BITMASK() and
+            %         downsample_bin_QUALITY_FLAG()
+            %      do not.
 
 
 
@@ -513,8 +543,6 @@ classdef proc_sub23
         % =============
         % med  : (1, iChannel). 1xN. Median
         % msdt : (1, iChannel). 1xN. Modified STandard Deviation (MSTD).
-        %
-        %
         %
         function [med, mstd] = downsample_bin_sci_values(...
                 zVarSegment, nMinReqSamples)

@@ -254,6 +254,12 @@ classdef calib < handle
 %       PRO: Useful for debugging.
 %           PRO: Plot
 %           PRO: Save to file.
+%
+% PROPOSAL: Be able to return values for glob.attrs.
+%       CAL_ENTITY_NAME,
+%       CAL_ENTITY_AFFILIATION,
+%       CAL_EQUIPMENT
+%       since on per RCT (CALIBRATION_TABLE entries).
 
 
 

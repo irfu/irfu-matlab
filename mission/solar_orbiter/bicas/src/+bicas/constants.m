@@ -227,8 +227,6 @@ classdef constants   % < handle
             %
             % Relative path to BICAS executable. See RCS ICD.
             MAP('SWD.environment.executable')     = 'roc/bicas';
-            % NOTE: See also setting
-            % OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
             
             
 
