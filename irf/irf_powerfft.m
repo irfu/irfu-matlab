@@ -169,15 +169,16 @@ assert(issorted(tAllDataSec, 'strictascend'), 'Timestamps are not sorted.')
 
 
 
-tAllDataSec1 = tAllDataSec(1,   1);
-tAllDataSec2 = tAllDataSec(end, 1);
+t1AllDataSec = tAllDataSec(1,   1);
+t2AllDataSec = tAllDataSec(end, 1);
 nTimeAllData = numel(tAllDataSec);
 nComp        = size(samplesAllData, 2);
-% fix() : Round toward zero.
-% nSpec = Number of spectras which spectras should be made.
-nSpec          = fix(((tAllDataSec2-tAllDataSec1)*samplFreqHz+1) * (1+overlap)/nFft);    % LIKELY BUG wrt. "overlap".
-t1FirstSpecSec = tAllDataSec1 - 0.5/samplFreqHz;   % Time of beginning of the FIRST spectrum.
+t1FirstSpecSec = t1AllDataSec - 0.5/samplFreqHz;   % Beginning of the FIRST spectrum.
+t2LastSpecSec  = t2AllDataSec + 0.5/samplFreqHz;   % End       of the LAST  spectrum.
 lenSpecSec     = nFft/samplFreqHz;                 % Length (in time) of one spectrum.
+% Approximate (ideal) time between beginnings of successive spectra (help variable).
+specDistSec = (1-overlap)*lenSpecSec;
+nSpec       = ceil((t2LastSpecSec - t1FirstSpecSec - lenSpecSec) / specDistSec + 1);
 
 
 
@@ -237,12 +238,18 @@ Specrec.t = zeros(nSpec,1);    % Pre-allocate
 %
 samplesSpecCa = cell(nSpec, 1);
 i1Spec        = int32(1);   % Index to first sample in spectrum iSpec.
-for iSpec = 1:nSpec     % NOT USING "parfor"
+%-----------------------------------------------------------------------------
+% Pre-calculate beginning and end (in time) of all spectra.
+% IMPLEMENTATION NOTE: Storing pre-calculated values, to ensure that both loops
+% over spectra use the same values.
+%-----------------------------------------------------------------------------
+iSpecArray = 1:nSpec;
+%f = (iSpecArray-1) / (nSpec-1);   % Runs from 0 to 1.
+%t1SpecSec = t1FirstSpecSec * (1-f) + (t2LastSpecSec-lenSpecSec) * f;
+t1SpecSec = linspace(t1FirstSpecSec, t2LastSpecSec-lenSpecSec, nSpec);
+t2SpecSec = t1SpecSec + lenSpecSec;
+for iSpec = iSpecArray     % NOT USING "parfor"
     
-  % Find beginning and end of current spectrum (in time/seconds).
-  t1SpecSec = t1FirstSpecSec + (1-overlap)*lenSpecSec*(iSpec-1);
-  t2SpecSec = t1SpecSec      + nFft/samplFreqHz;
-  
   %=============================================================================
   % Find index interval i1:i2 for the samples of the current spectrum
   % -----------------------------------------------------------------
@@ -252,13 +259,13 @@ for iSpec = 1:nSpec     % NOT USING "parfor"
   % which is slower.
   % /Erik P G Johansson 2020-09-14.
   %=============================================================================
-  while tAllDataSec(i1Spec) < t1SpecSec
+  while tAllDataSec(i1Spec) < t1SpecSec(iSpec)
       i1Spec = i1Spec + 1;
   end
   % NOTE: May have that ~(tAllDataSec(i1) <= t2SpecSec).
   % ==> Must begin with i2=i1-1.
   i2Spec = i1Spec-1;
-  while (i2Spec+1 <= nTimeAllData) && (tAllDataSec(i2Spec+1) <= t2SpecSec)
+  while (i2Spec+1 <= nTimeAllData) && (tAllDataSec(i2Spec+1) <= t2SpecSec(iSpec))
       i2Spec = i2Spec + 1;
   end
   
@@ -272,7 +279,7 @@ for iSpec = 1:nSpec     % NOT USING "parfor"
   % Extract samples to use for deriving spectrum
   %==============================================
   %samplesSpecCa{iSpec} = select_preprocess_data(tAllDataSec, samplesAllData, t1SpecSec, samplFreqHz, nFft);
-  samplesSpecCa{iSpec} = select_preprocess_data3(tAllDataSec, samplesAllData, t1SpecSec, samplFreqHz, nFft, i1Spec, i2Spec);
+  samplesSpecCa{iSpec} = select_preprocess_data3(tAllDataSec, samplesAllData, t1SpecSec(iSpec), samplFreqHz, nFft, i1Spec, i2Spec);
   %samplesSpecCa{iSpec} = select_preprocess_data2(tAllDataSec, samplesAllData, t1SpecSec, samplFreqHz, nFft);
 end
 
@@ -282,10 +289,8 @@ end
 % Iterate over spectra: Set Specrec .p, .t
 %==========================================
 for iSpec = 1:nSpec
-    
-  t1SpecSec = t1FirstSpecSec + (1-overlap)*lenSpecSec*(iSpec-1);
   
-  Specrec.t(iSpec) = t1SpecSec + lenSpecSec*0.5;   % Center of time interval
+  Specrec.t(iSpec) = t1SpecSec(iSpec) + lenSpecSec*0.5;   % Center of time interval
   if usingTSeries
       Specrec.t(iSpec) = EpochUnix.from_ttns(int64(Specrec.t(iSpec) * 1e9));
   end
