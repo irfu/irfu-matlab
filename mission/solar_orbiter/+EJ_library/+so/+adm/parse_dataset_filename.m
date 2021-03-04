@@ -21,9 +21,9 @@
 % NOTE: Does not work on RCTs (technically has no DATASET_ID).
 % NOTE: Should be possible to use together with
 %       EJ_library.so.adm.create_dataset_filename().
-% NOTE: Can not handle e.g.
+% NOTE/BUG: Can not handle e.g.
 %       solo_L1_swa-eas2-NM3D_20201027T000007-20201027T030817_V01.cdf
-%       since it has mixed case (in the descriptor; not level).
+%       since it has mixed case in the descriptor (not level).
 %
 %
 % RECOGNIZED FILENAMING CONVENTION
@@ -219,6 +219,8 @@ function R = parse_dataset_filename(filename)
     %
     % PROPOSAL: Return value for basename without IRFU-internal filenaming
     %           extension.
+    %
+    % PROPOSAL: Try to speed up somehow.
 
     NO_MATCH_RETURN_VALUE = [];
     

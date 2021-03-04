@@ -6,6 +6,12 @@
 % used successfully for plots elsewhere.
 %
 %
+% NAMING CONVENTIONS
+% ==================
+% LSF  = LFR Sampling Frequency
+% PCFC = Panel Creation Function Call
+%
+%
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-10-13
 %
@@ -42,14 +48,37 @@ classdef summary_plot < handle
     %           wrapper functions for doing that instead.
     %
     % PROPOSAL: Let plot_* scripts do more of the customizing via e.g. wrappers.
+    %
+    % PROPOSAL: Rename. Not (MATLAB) plot, but (MATLAB) figure.
+    %
+    % TODO: Varying samples/FFT.  /YK 2021-03-02
+    %     samples/FFT
+    %     F0 = 24576 Hz --> 2048 (SWF)
+    %     F1 =  4096 Hz --> 32768 (CWF), 2048 (SWF)
+    %     F2 =   256 Hz --> 2048 (CWF), 2048 (SWF)
+    %     F3 =    16 Hz --> 128 (CWF)
+    %     NOTE: 2048 for all SWF (since snapshots=248)
+    %     NOTE: Samples/FFT for F1-F3 chosen such that minimum spectrum
+    %           frequency is the same.
+    %
+    % TODO: Spectrum YLim should correspond to f_min. /YK 2021-03-02
+    %   f_min (spectrum) = f_sample/n_fft
+    %   NOTE: f_max not so important since log y scale (and frequencies are
+    %         linear).
 
 
 
     properties(Constant)
 
         % NOTE: More samples per spectrum is faster (sic!).
-        %N_SAMPLES_PER_SPECTRUM = 512;    % Speed test
-        N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
+        %N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
+        N_SAMPLES_PER_SPECTRUM_LFR_SWF = 2048;  % /YK 2021-03-02
+        % Select samples/FFT to produce the same minimum frequency.
+        % /YK 2021-03-02
+        % FH = Function Handle
+        N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (cwfSamplFreqHz / (16/128));
+
+
         
         % Fraction of the (minimum) time distance between snapshots (centers)
         % that will be used for displaying the spectra. E.g. 1.0 means that
@@ -58,15 +87,17 @@ classdef summary_plot < handle
         % between snapshot spectras.
         SNAPSHOT_WIDTH_FRACTION  = 0.90;
         
-        % Overlap in successive time intervals for separate FFTs.
+        % Overlap in successive time intervals for separate CWF FFTs.
         % Percent, not fraction.
-        %SPECTRUM_OVERLAP_PERCENT = 0;
-        SPECTRUM_OVERLAP_PERCENT = 50;
+        % Disabled since presumably slow. Triggers bug in MTEST(CWF).
+        SPECTRUM_OVERLAP_PERCENT_CWF = 0;
+        %SPECTRUM_OVERLAP_PERCENT_CWF = 50;   % /YK 2020?
             
         % Colormap used for spectras.
         COLORMAP = load('cmap').cmap;
         
-        % 0.0 = Fade to white. 1.0 = No fading.
+        % 0.0 = Fade to white
+        % 1.0 = No fading
         C_FADE = 0.7;
         
         LEGEND_TOP_LEFT_POSITION  = [0.02 0.98];
@@ -80,7 +111,6 @@ classdef summary_plot < handle
         
         figureComplete = false;
         
-        % PCFC = Panel Creation Function Call
         pcfcCa = {};
         
         minTt2000 = int64( Inf);
@@ -377,9 +407,14 @@ classdef summary_plot < handle
         % yLabelNonUnit : y label without unit (unit is at the color bar;
         %                 Assumes "Ts" uses volt).
         %
-        function add_panel_spectrogram_CWF(obj, panelTag, zvEpoch, zvData, zvSamplingFreqHz, yLabelNonUnit)
+        function add_panel_spectrogram_CWF(obj, ...
+                panelTag, zvEpoch, zvData, ...
+                zvSamplingFreqHz, yLabelNonUnit, colLimits)
+            
+            % ASSERTIONS
             assert(~obj.figureComplete)
-            assert(nargin == 1+5)
+            assert(nargin == 1+6)
+            EJ_library.assert.sizes(colLimits, [1,2])
             
             obj.add_panel_internal_vars(...
                 @() (panel_spectrogram()), zvEpoch, 0, 1);
@@ -392,29 +427,37 @@ classdef summary_plot < handle
                 
                 hAxes = irf_panel(panelTag);
                 
-                % SS = SubSequence
-                [iSs1Array, iSs2Array, nSs] = EJ_library.utils.split_by_change(zvSamplingFreqHz);
+                % SS = SubSequence. Sequence with constant sampling frequency
+                %      according to zvSamplingFreqHz.
+                [iSs1Array, iSs2Array, nSs] = ...
+                    EJ_library.utils.split_by_change(zvSamplingFreqHz);
                 SpecrecCa = cell(nSs, 1);
                 parfor jSs = 1:nSs    % PARFOR
                     
                     iSsArray = iSs1Array(jSs) : iSs2Array(jSs);
                     
-                    SpecrecCa{jSs} = irf_powerfft(Ts(iSsArray), ...
-                        solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM, ...
-                        zvSamplingFreqHz(iSs1Array(jSs)));
+                    samplFreqHz = zvSamplingFreqHz(iSs1Array(jSs));
+                    nSamplPerSpectrum = solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
+                    
+                    SpecrecCa{jSs} = irf_powerfft(...
+                        Ts(iSsArray), ...
+                        nSamplPerSpectrum, ...
+                        samplFreqHz, ...
+                        solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
                 end
                 
                 Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
-                Specrec.p_label = {'log_{10} [V^2/Hz]'};     % Replaces colorbarlabel
-                irf_spectrogram(hAxes, Specrec);    % Replaces irf_plot
+                Specrec.p_label = {'log_{10} [V^2/Hz]'};   % Replaces colorbarlabel
+                irf_spectrogram(hAxes, Specrec);           % Replaces irf_plot
                 
                 set(hAxes, 'yscale','log')
-                %caxis(hAxes, [-13, -4])
+
                 % NOTE: Adding frequency unit on separate row.
                 ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})
                 
                 colormap(solo.ql.summary_plot.COLORMAP)
                 
+                caxis(hAxes, colLimits)
                 set(hAxes, 'YTick', [0.1, 1, 10, 100, 1e3, 1e4, 1e5])
             end
         end
@@ -422,10 +465,12 @@ classdef summary_plot < handle
         
         
         % Convenient wrapper around spectrum_panel.
-        % Converts from zVar-like variables to what is actually used for plotting.
+        % Converts from zVar-like variables to what is actually used for
+        % plotting.
         %
         function add_panel_spectrogram_SWF_LSF(obj, ...
-            panelTagSignalsStr, zvEpoch, zvData, zvSamplFreqHz, iLsf, trLegend, colLimits)
+            panelTagSignalsStr, zvEpoch, zvData, ...
+            zvSamplFreqHz, iLsf, trLegend, colLimits)
         
             assert(~obj.figureComplete)
             
@@ -466,7 +511,8 @@ classdef summary_plot < handle
             assert(~obj.figureComplete)
             
             nPanels = numel(obj.pcfcCa);
-            assert(nPanels > 0, 'Class is configured with zero panels. Can not handle this case.')
+            assert(nPanels > 0, ...
+                'Class is configured with zero panels. Can not handle this case.')
             
             irf_plot(nPanels, 'newfigure');
             
@@ -491,10 +537,12 @@ classdef summary_plot < handle
             %=============================
             % Adjust the height of panels
             %=============================
-            % 'Position' : [left bottom width height]. Size and location, excluding a margin for the labels.
+            % 'Position' : [left bottom width height]. Size and location,
+            % excluding a margin for the labels.
             positionCa = get(hAxesArray, 'Position');    % CA = Cell Array
             yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
-            % Panel height before distributing height segments. Assumes that panels are adjacent to each other.
+            % Panel height before distributing height segments. Assumes that
+            % panels are adjacent to each other.
             heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
             
             heightPanelArray2 = EJ_library.utils.distribute_segments(...
@@ -512,8 +560,6 @@ classdef summary_plot < handle
             
             
 
-            %EJ_library.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
-    
             solo.ql.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
             
             obj.figureComplete = true;
@@ -534,7 +580,10 @@ classdef summary_plot < handle
         
         
         
-        function add_panel_internal_vars(obj, pcfc, zvTt2000, panelHeightFixedSize, panelHeightWeight)
+        function add_panel_internal_vars(obj, ...
+                pcfc, zvTt2000, ...
+                panelHeightFixedSize, panelHeightWeight)
+            
             % PROPOSAL: Use for assert(~obj.figureComplete) (only place).
             %   PROPOSAL: Rename function to make this inclusion more natural: ~add_panel_PCFC
             
@@ -592,13 +641,15 @@ classdef summary_plot < handle
         % tlLegend : Top-left  (TL) legend string.
         % trLegend : Top-right (TR) legend string.
         %
+        %
         % SHORTENINGS
         % ===========
         % SS  : SnapShot
         % SSS : SnapShot Spectrogram
         %
         function hAxes = panel_spectrogram_snapshots(...
-                panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend, colorLimits)
+                panelTag, zvEpoch, zvData, ...
+                samplingFreqHz, tlLegend, trLegend, colLimits)
             
             % NOTE: Multiple-row labels causes trouble for the time series'
             % ylabels.
@@ -606,11 +657,12 @@ classdef summary_plot < handle
             % IMPLEMENTATION NOTE: Implemented to potentially be modified in the
             % future to handle TDS snapshots that vary in length.
             
-            EJ_library.assert.sizes(colorLimits, [1,2])
+            EJ_library.assert.sizes(colLimits, [1,2])
             
             
             
-            TsCa = solo.ql.summary_plot.snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
+            TsCa = solo.ql.summary_plot.snapshot_per_record_2_TSeries(...
+                zvEpoch, zvData, samplingFreqHz);
             nTs  = numel(TsCa);
             
             hAxes = irf_panel(panelTag);
@@ -630,14 +682,16 @@ classdef summary_plot < handle
                 Ts = TsCa{i};
                 
                 SpecrecCa{i} = irf_powerfft(Ts, ...
-                    solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM, samplingFreqHz, ...
-                    solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT);
+                    solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
+                    samplingFreqHz);
                 
                 % IMPLEMENTATION NOTE: Later needs the snapshot centers in the
                 % same time system as Specrec.t (epoch Unix).
-                ssCenterEpochUnixArray(i) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
+                ssCenterEpochUnixArray(i) = ...
+                    (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
             end
-            sssMaxWidthSecArray = solo.ql.summary_plot.derive_max_spectrum_width(ssCenterEpochUnixArray);
+            sssMaxWidthSecArray = ...
+                solo.ql.summary_plot.derive_max_spectrum_width(ssCenterEpochUnixArray);
             
             %====================================================================
             % Set the display locations of individual spectras (override
@@ -666,7 +720,8 @@ classdef summary_plot < handle
                     nTime = numel(SpecrecCa{i}.t);
                     % Distance from SS center to center of first/last FFT.
                     distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);
-                    SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
+                    SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) ...
+                        + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
                     SpecrecCa{i}.dt = ones(nTime, 1) * sssWidthSec/(2*nTime);
                 end
             end
@@ -684,7 +739,7 @@ classdef summary_plot < handle
             
             colormap(solo.ql.summary_plot.COLORMAP)
             
-            caxis(hAxes, colorLimits)
+            caxis(hAxes, colLimits)
             set(hAxes, 'YTick', [0.1, 1, 10, 100])
         end
         
@@ -698,9 +753,9 @@ classdef summary_plot < handle
         % zvData  : NxM array. (iRecord, iSampleWithinSnapshot). 1 record=1 snapshot.
         % TsCa    : {iSnapshot} 1D cell array of TSeries.
         %           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB
-        %           confuses indexing a TSeries array (with brackets) with some special
-        %           TSeries functionality for calling its code with brackets (calling
-        %           TSeries' method "subsref").
+        %           confuses indexing a TSeries array (with brackets) with some
+        %           special TSeries functionality for calling its code with
+        %           brackets (calling TSeries' method "subsref").
         %
         % IMPLEMENTATION NOTE: Function is written to some day be easily extended to be
         % used for use with TDS's length-varying snapshots.
@@ -740,7 +795,8 @@ classdef summary_plot < handle
         %
         function sssMaxWidthArray = derive_max_spectrum_width(ssCenterArray)
             % Use distance to nearest snapshot for each snapshot separately.
-            % NOTE: Should NOT be multiplied by two, since using entire distance.
+            % NOTE: Should NOT be multiplied by two, since using entire
+            % distance.
             sssMaxWidthArray = min([Inf; diff(ssCenterArray(:))], [diff(ssCenterArray(:)); Inf]);
             
             % Use smallest distance between any two consecutive snapshots (one
@@ -765,13 +821,14 @@ classdef summary_plot < handle
         %
         % ARGUMENTS
         % =========
-        % SpecrecCa : Cell array of "Specrec" structs as returned by irf_powerfft, but
-        %             with .dt (column array) added to it.
-        %             NOTE: Requires dt (column array of scalars).
-        %             NOTE: Assumes that all specrec use the same frequencies.
-        %             IMPLEMENTATION NOTE: Uses cell array instead of struct array to be
-        %             able to handle (and ignore) the case specrec = [] which can be
-        %             returned by irf_powerfft.
+        % SpecrecCa
+        %       Cell array of "Specrec" structs as returned by irf_powerfft, but
+        %       with .dt (column array) added to it.
+        %       NOTE: Requires dt (column array of scalars).
+        %       NOTE: Assumes that all specrec use the same frequencies.
+        %       IMPLEMENTATION NOTE: Uses cell array instead of struct array to
+        %       be able to handle (and ignore) the case specrec = [] which can
+        %       be returned by irf_powerfft.
         %
         % RETURN VALUE
         % ============
