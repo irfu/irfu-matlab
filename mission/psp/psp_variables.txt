@@ -599,10 +599,23 @@ varName: sc_pos_HCI
 fileName: psp_swp_spc_l3i
 directory: sweap/spc/L3/20YY/MM
 hourtag: 
-varNameShort: sc_pos_hci
+varNameShort: spc_sc_pos_hci
 related: 
 info#start
 PSP position in the Heliocentric Inertial system (also called Ecliptic J2000)
+units: km
+info#end
+----
+
+%%%%
+varName: sc_vel_HCI
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_sc_vel_hci
+related: 
+info#start
+PSP velocity in the Heliocentric Inertial system (also called Ecliptic J2000)
 units: km
 info#end
 ----
@@ -723,6 +736,41 @@ SCM burst waveforms in high gain.
 info#end
 ----
 
+%%%%
+varName: SC_frame
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_sc_frame
+related: 
+info#start
+The Parker Solar Probe spacecraft coordinate system.
+info#end
+----
+
+%%%%
+varName: RTN_frame
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_rtn_frame
+related: 
+info#start
+The inertial Radial-Tangential-Normal frame.
+info#end
+----
+
+%%%%
+varName: HCI_LABL
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_hci_coord
+related: 
+info#start
+HCI coordinate system.
+info#end
+----
 
 %%%%
 varName: np_fit
