@@ -100,9 +100,12 @@ classdef summary_plot < handle
         
         % Cover F0, F1.
         % NOTE: Does not cover F1, F2 in SBM1, SBM2.
+%         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
+%             EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+%             EJ_library.so.constants.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
             EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
-            EJ_library.so.constants.LFR_F2_HZ / 2];
+            Inf];
         
 
         
@@ -116,8 +119,8 @@ classdef summary_plot < handle
         % Overlap in successive time intervals for separate CWF FFTs.
         % Percent, not fraction.
         % Disabled since presumably slow. Triggers bug in MTEST(CWF).
-        SPECTRUM_OVERLAP_PERCENT_CWF = 0;
-        %SPECTRUM_OVERLAP_PERCENT_CWF = 50;   % /YK 2020?
+        %SPECTRUM_OVERLAP_PERCENT_CWF = 0;
+        SPECTRUM_OVERLAP_PERCENT_CWF = 50;   % /YK 2020?
             
         % Colormap used for spectras.
         COLORMAP = load('cmap').cmap;
