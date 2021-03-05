@@ -241,13 +241,13 @@ switch lower(action)
       data.v2=eval(['[' get(data.vec2Hndl,'string') ']']);
       if length(data.v2)==1, data.flag_v2=0;end
     end
-    %% USE MMS_CONST.Phaseshift.p1 etc..
-    phase_p1=data.phase/180*pi + pi/6;
-    phase_p3=data.phase/180*pi + 2*pi/3;
-    phase_p2=data.phase/180*pi + 7*pi/6;
-    phase_p4=data.phase/180*pi + 5*pi/3;
-    phase_b1=data.phase/180*pi + pi/4;
-    phase_b2=data.phase/180*pi + 5*pi/4;
+    % USE MMS_CONST.Phaseshift.p1 etc..
+    phase_p1=data.phase/180*pi - MMS_CONST.Phaseshift.p1;
+    phase_p3=data.phase/180*pi - MMS_CONST.Phaseshift.p3;
+    phase_p2=data.phase/180*pi - MMS_CONST.Phaseshift.p2;
+    phase_p4=data.phase/180*pi - MMS_CONST.Phaseshift.p4;
+    phase_b1=data.phase/180*pi - MMS_CONST.Phaseshift.dfg;
+    phase_b2=data.phase/180*pi - MMS_CONST.Phaseshift.afg;
     rp1=[60*cos(phase_p1) 60*sin(phase_p1) 0]; %#ok<NASGU>
     rp2=[60*cos(phase_p2) 60*sin(phase_p2) 0]; %#ok<NASGU>
     rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0]; %#ok<NASGU>
