@@ -31,38 +31,39 @@ if P_L23_only
   datatypes={ 'P' 'P' 'HK' };
   levels= [2 3 2];
 else
-  % all new
+  % all new data except internal burst
   datatypes={ 'P' 'P' 'P' 'E' 'E' 'E' 'HK' 'DER' 'SFIT' };
   levels =  [  1   2   3   1   2   3   2     3     3 ];
+
   % debug
-  %	  datatypes={ 'DER' 'SFIT' };
-  %	  levels =  [   3     3 ];
-  
+  %datatypes={ 'DER' 'SFIT' };
+  %levels =  [   3     3 ];
+
   % preliminary data only
-  %	  datatypes={ 'P' 'P' 'HK'};
-  %	  levels= [2 3 2];
-  
+  %datatypes={ 'P' 'P' 'HK'};
+  %levels= [2 3 2];
+
   % internal burst only
-  %	  levels=[1 2 2 2];
-  %	  datatypes={'IB' 'PB' 'EB' 'BB'};
-  
+  %levels=[1 2 2 2];
+  %datatypes={'IB' 'PB' 'EB' 'BB'};
+
   % all new + old
-  %	  datatypes={ 'P' 'E' 'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT' };
-  %	  levels =  [  1   1   1    1    1    1    1     1      1    2   3    3    2   3   2    3 ];
-  
+  %datatypes={ 'P' 'E' 'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT' };
+  %levels =  [  1   1   1    1    1    1    1     1      1    2   3    3    2   3   2    3 ];
+
   % all old
-  %	  datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT'};
-  %	  levels=    [1     1   1    1    1     1      1    2   3    3    2   3   2    3];
+  %datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT'};
+  %levels=    [1    1    1    1    1     1      1    2   3    3    2   3   2    3];
 end
 
 switch year
   % EXCEPTIONS {sat# 'datatype'} or if datatype P or E {sat# 'datatype' level} ex. { 4 'E' 2 }
   case 2001
-    % 		  if month <= 7   % probe 1 failure on C1 28 December 2001 (this if statement is wrong)
+    %		if month <= 7   % probe 1 failure on C1 28 December 2001 (this if statement is wrong)
     exceptions={ {1 'P32'} {2 'P32'} {3 'P32'} {4 'P32'}};
-    %		  else
-    %			  exceptions={ {2 'P3'} {1 'P32'} {2 'P32'} {3 'P32'} {4 'P32'}};
-    %		  end
+    %		else
+    %			exceptions={ {2 'P3'} {1 'P32'} {2 'P32'} {3 'P32'} {4 'P32'}};
+    %		end
   case 2002
     if month <= 7
       exceptions={ {1 'P1'} {2 'P3'} {1 'P12'} {1 'P32'} {2 'P32'} {3 'P32'} {4 'P32'}};
@@ -126,6 +127,8 @@ switch year
   case 2018
     exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
   case 2019
+    exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
+  case 2020
     exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
   otherwise
     error('Year out of range.')

@@ -1,0 +1,106 @@
+#!/bin/bash
+#====================================================================================
+#
+# BOGIQ:
+# ------
+# 
+#====================================================================================
+
+
+
+#==============================
+# SUBROUTINE: Print help info.
+#==============================
+print_help_info() { #-------------------------------------------------------------
+cat << "SCRIPT_INFO"
+
+Generate BIAS summary plots for one day.
+
+
+NOTE: Can handle absence of datasets. Will fail for multiple matching datasets
+(multiple versions of the same DATASET_ID).
+NOTE: Plot generation may take a significant amount of time, ~10 minutes per plot for
+large datasets that include spectra (i.e. CWF+SWF, but not HK).
+
+
+Arguments: matlab_executable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
+
+
+Script initially created 2021-02-23 by Erik P G Johansson.
+SCRIPT_INFO
+} #-------------------------------------------------------------------------------
+
+
+
+if [ "$1" == "--help" ] ; then
+    if [ "1" != "$#" ] ; then
+        # If any other parameter, then error.
+        echo "Wrong number of arguments." >> /dev/stderr
+        exit 1
+    fi
+
+    print_help_info
+    exit 0
+fi
+
+
+
+#================================
+# ASSERTION: Number of arguments
+#================================
+if [[ "$#" != 6 ]] ; then
+    echo "Wrong number of arguments." >> /dev/stderr
+    exit 1
+fi
+
+
+
+declare -r MATLAB_FUNCTION="solo.ql.bia_ql3"
+
+#=====================
+# Interpret arguments
+#=====================
+# NOTE: MATLAB code does argument assertions.
+declare -r matlab_exec="$1"
+declare -r YYYYMMDD="$2"
+declare -r matlab_func_args=("${@:2:4}")
+declare -r log_dir="$6"
+
+
+
+declare -r log_file="${log_dir}/bia_ql_${YYYYMMDD}.log"    # Filename format as requested.
+declare -r temp=$(dirname "$0")
+declare -r bin_dir=$(readlink -f "$temp")
+declare -r irfumatlab_so_dir=$(   readlink -f "$bin_dir/../..")
+declare -r irfumatlab_dir=$(readlink -f "$bin_dir/../../../..")
+declare -r matlab_code_dirs=("$irfumatlab_dir" "$irfumatlab_so_dir")
+
+
+
+main_body() {
+    echo "Current time: $(date +%F:%H:%M:%S)"
+
+    # DEBUG
+    echo "log_file         = $log_file"
+    echo "bin_dir          = $bin_dir"
+    echo "matlab_func_args = ${matlab_func_args[@]}"
+    echo "matlab_code_dirs = ${matlab_code_dirs[@]}"
+
+    #==================================================
+    # CALL MATLAB CODE VIA GENERIC UTILITY BASH SCRIPT
+    #==================================================
+    # NOTE: Uses relative directory to find other bash executable so as to avoid forcing
+    # the user to add directory to the shell PATH.
+    # Good? Bad?
+    eval "$bin_dir"/bia_ql3_run_MATLAB_code "${matlab_exec}" "${matlab_code_dirs[@]}" \
+    -- "$MATLAB_FUNCTION" "${matlab_func_args[@]}"
+
+
+
+    echo "Current time: $(date +%F:%H:%M:%S)"
+    echo "Completed call to MATLAB"
+}
+
+
+
+main_body > "$log_file"
