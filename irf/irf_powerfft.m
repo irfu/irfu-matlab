@@ -18,6 +18,8 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(...
 %                         columns are data), or
 %                     (2) a TSeries object. May contain one sample per
 %                         timestamp, or a 1D vector of samples per timestamp.
+%                         Note: (2) is more likely to correctly handle leap
+%                         seconds.
 %   nFft           - Length of time covered by every spectrum, as measured by
 %                    the number of samples when sampled at exactly sampling
 %                    frequency samplFreqHz. This is also the number of samples
@@ -33,7 +35,7 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(...
 %		.t(iTime)
 %          - Numeric column array. Time of each individual spectrum [seconds].
 %            If "data" is a numeric matrix, then same time format as data time.
-%            If "data" is a TSeries, then time format epoch unix.
+%            If "data" is a TSeries, then time format is epoch unix.
 %		.p{iDataComp}(iTime, iFreq)
 %          - Cell array of same-sized numeric 2D arrays of spectrum values.
 %            NaN if too little underlying data for the particular spectrum.
@@ -106,7 +108,7 @@ end
 
 assert(isscalar(overlapPercent))
 assert( 0<=overlapPercent || overlapPercent<100, ...
-    'Argument overlapPercent is not in the range 0..100-.')
+  'Argument overlapPercent is not in the range 0..100-.')
 overlap = overlapPercent * 0.01;
 assert(isscalar(samplFreqHz), 'Argument samplFreqHz is not scalar.')
 
@@ -143,8 +145,8 @@ end
 % NOTE: samplesAllData(iTime, i)
 % NOTE: Assertion only relevant when argument "data" is TSeries.
 assert(ndims(samplesAllData) <= 2, ...
-    ['Argument "data" must be at most 1D per timestamp but is not.', ...
-    ' This function is not yet designed to handle this case (yet).'])
+  ['Argument "data" must be at most 1D per timestamp but is not.', ...
+  ' This function is not yet designed to handle this case (yet).'])
 
 % Just to convince the reader of this source code that "data" is not used
 % herafter.
@@ -165,7 +167,11 @@ tAllDataSec = tAllDataSec(iKeep);
 % even more.
 samplesAllData = samplesAllData(iKeep, :, :, :, :, :);
 
-assert(issorted(tAllDataSec, 'strictascend'), 'Timestamps are not sorted.')
+
+
+assert(issorted(tAllDataSec, 'strictascend'), ...
+  ['Timestamps are not monotonically increasing. This may e.g. be due to', ...
+  ' leap seconds if the caller is not using TSeries for argument "data".'])
 
 
 
@@ -244,8 +250,6 @@ i1Spec        = int32(1);   % Index to first sample in spectrum iSpec.
 % over spectra use the same values.
 %-----------------------------------------------------------------------------
 iSpecArray = 1:nSpec;
-%f = (iSpecArray-1) / (nSpec-1);   % Runs from 0 to 1.
-%t1SpecSec = t1FirstSpecSec * (1-f) + (t2LastSpecSec-lenSpecSec) * f;
 t1SpecSec = linspace(t1FirstSpecSec, t2LastSpecSec-lenSpecSec, nSpec);
 t2SpecSec = t1SpecSec + lenSpecSec;
 for iSpec = iSpecArray     % NOT USING "parfor"
@@ -260,13 +264,13 @@ for iSpec = iSpecArray     % NOT USING "parfor"
   % /Erik P G Johansson 2020-09-14.
   %=============================================================================
   while tAllDataSec(i1Spec) < t1SpecSec(iSpec)
-      i1Spec = i1Spec + 1;
+    i1Spec = i1Spec + 1;
   end
-  % NOTE: May have that ~(tAllDataSec(i1) <= t2SpecSec).
-  % ==> Must begin with i2=i1-1.
+  % NOTE: May have that tAllDataSec(i1Spec) > t2SpecSec.
+  % ==> Must begin with t2SpecSec = i1Spec-1.
   i2Spec = i1Spec-1;
   while (i2Spec+1 <= nTimeAllData) && (tAllDataSec(i2Spec+1) <= t2SpecSec(iSpec))
-      i2Spec = i2Spec + 1;
+    i2Spec = i2Spec + 1;
   end
   
   % Only use below assertions when debugging/testing (code is slow).
@@ -290,9 +294,22 @@ end
 %==========================================
 for iSpec = 1:nSpec
   
-  Specrec.t(iSpec) = t1SpecSec(iSpec) + lenSpecSec*0.5;   % Center of time interval
+  % Center of time interval
+  Specrec.t(iSpec) = t1SpecSec(iSpec) + lenSpecSec*0.5;
   if usingTSeries
-      Specrec.t(iSpec) = EpochUnix.from_ttns(int64(Specrec.t(iSpec) * 1e9));
+    % IMPLEMENTATION NOTE: Converts time
+    % TTNS (TT2000 in seconds; with leap seconds)
+    % --> Epoch UNIX (seconds without(?) leap seconds).
+    % Could do this time conversion in the normalization stage at beginning of
+    % function. Doing it here has historical reasons, plus the slight
+    % advantage of correctly(?) handling leap seconds, if the caller supplies
+    % a TSeries object. Converting earlier should lead to timestamps during
+    % positive leap seconds being represented as NOT incrementing
+    % monotonically, which could screw up this function's the algorithms. This
+    % might be in vain though since the final time format still does not
+    % handle leap seconds correctly. Should lead to graphic error in
+    % irf_spectrogram().
+    Specrec.t(iSpec) = EpochUnix.from_ttns(int64(Specrec.t(iSpec) * 1e9));
   end
   
   %samplesSpec = select_preprocess_data(tAllDataSec, samplesAllData, t1SpecSec, samplFreqHz, nFft);

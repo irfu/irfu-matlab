@@ -10,7 +10,6 @@
 % First created 2020-06-26
 %
 classdef constants
-    % PROPOSAL: "LFR" in name of LFR sampling frequencies.
     
     properties(Constant)
         

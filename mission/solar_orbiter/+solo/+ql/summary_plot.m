@@ -65,11 +65,17 @@ classdef summary_plot < handle
     %   f_min (spectrum) = f_sample/n_fft
     %   NOTE: f_max not so important since log y scale (and frequencies are
     %         linear).
+    %
+    % ~BUG: Use of EJ_library.graph.escape_str() is likely inconsistent, given
+    % how calls are made from plot_LFR_CWF/SWF.
+    %
+    % PROPOSAL: Speed up by disabling drawing until all modifications have been
+    %           made.
 
 
 
     properties(Constant)
-
+        
         % NOTE: More samples per spectrum is faster (sic!).
         
         % Same samples/spectrum independent of sampling frequency.
@@ -105,7 +111,7 @@ classdef summary_plot < handle
         % spectras are adjacent between snapshots (for minimum snapshot
         % distance). Less than 1.0 means that there will be some empty space
         % between snapshot spectras.
-        SNAPSHOT_WIDTH_FRACTION  = 0.90;
+        SNAPSHOT_WIDTH_FRACTION = 0.90;
         
         % Overlap in successive time intervals for separate CWF FFTs.
         % Percent, not fraction.
@@ -290,7 +296,8 @@ classdef summary_plot < handle
                     irf_legend(hAxes, trLegend, ...
                         solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
                 end
-            end
+            end    % function
+            
         end
         
         
@@ -431,6 +438,17 @@ classdef summary_plot < handle
                 panelTag, zvEpoch, zvData, ...
                 zvSamplingFreqHz, yLabelNonUnit, colLimits)
             
+            % TEST
+            if 0
+                tt1 = spdfparsett2000('2020-08-19T19:00:00');
+                tt2 = spdfparsett2000('2020-08-19T20:00:00');
+                b = (tt1 <= zvEpoch) & (zvEpoch <= tt2);
+                zvEpoch          = zvEpoch(b);
+                zvData           = zvData(b);
+                zvSamplingFreqHz = zvSamplingFreqHz(b);
+            end
+            
+            
             % ASSERTIONS
             assert(~obj.figureComplete)
             assert(nargin == 1+6)
@@ -443,6 +461,7 @@ classdef summary_plot < handle
             
             
             
+            
             function hAxes = panel_spectrogram()
                 
                 hAxes = irf_panel(panelTag);
@@ -451,13 +470,15 @@ classdef summary_plot < handle
                 %      according to zvSamplingFreqHz.
                 [iSs1Array, iSs2Array, nSs] = ...
                     EJ_library.utils.split_by_change(zvSamplingFreqHz);
+
                 SpecrecCa = cell(nSs, 1);
                 parfor jSs = 1:nSs    % PARFOR
                     
                     iSsArray = iSs1Array(jSs) : iSs2Array(jSs);
                     
-                    samplFreqHz = zvSamplingFreqHz(iSs1Array(jSs));
-                    nSamplPerSpectrum = solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
+                    samplFreqHz       = zvSamplingFreqHz(iSs1Array(jSs));
+                    nSamplPerSpectrum = ...
+                        solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
                     
                     SpecrecCa{jSs} = irf_powerfft(...
                         Ts(iSsArray), ...
@@ -466,9 +487,12 @@ classdef summary_plot < handle
                         solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
                 end
                 
-                Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
+                Specrec   = EJ_library.utils.merge_Specrec(SpecrecCa);
+
                 Specrec.p_label = {'log_{10} [V^2/Hz]'};   % Replaces colorbarlabel
-                irf_spectrogram(hAxes, Specrec);           % Replaces irf_plot
+                % irf_spectrogram() replaces irf_plot
+                % NOTE: Adds ylabel indicating frequency.
+                irf_spectrogram(hAxes, Specrec);
                 
                 set(hAxes, 'yscale','log')
 
@@ -476,7 +500,6 @@ classdef summary_plot < handle
                 hAxes.YLabel.String = {yLabelNonUnit; hAxes.YLabel.String};
                 
                 colormap(solo.ql.summary_plot.COLORMAP)
-                
                 caxis(hAxes, colLimits)
                 set(hAxes, 'YTick', 10.^[-3:5])
                 
@@ -565,7 +588,7 @@ classdef summary_plot < handle
             %=============================
             % 'Position' : [left bottom width height]. Size and location,
             % excluding a margin for the labels.
-            positionCa = get(hAxesArray, 'Position');    % CA = Cell Array
+            positionCa        = get(hAxesArray, 'Position');
             yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
             % Panel height before distributing height segments. Assumes that
             % panels are adjacent to each other.
@@ -657,13 +680,16 @@ classdef summary_plot < handle
         
         
         
-        % Make spectrogram for time series consisting of snapshots (one sampling
-        % frequency). Spectrogram for each snapshot is expanded in time for
-        % easy-of-use.
+        % Make spectrogram for time series consisting of snapshots. Spectrogram
+        % for each snapshot is expanded in time for easy-of-use.
+        %
+        % NOTE: Data can in principle have multiple sampling frequencies. The
+        % one specified is for irf_powerfft().
         %
         %
         % ARGUMENTS
         % =========
+        % samplingFreqHz : Used by irf_powerfft().
         % tlLegend : Top-left  (TL) legend string.
         % trLegend : Top-right (TR) legend string.
         %
@@ -696,8 +722,8 @@ classdef summary_plot < handle
             %====================
             % Calculate spectras
             %====================
-            % IMPLEMENTATION NOTE: irf_powerfft is the most time-consuming part
-            % of this code.
+            % IMPLEMENTATION NOTE: irf_powerfft() is the most time-consuming
+            % part of this code.
             %
             % NOTE: Using for-->parfor speeds up plot_LFR_SWF by
             % 29.912231 s-->21.303145 s (irony). /2020-09-04
@@ -719,13 +745,13 @@ classdef summary_plot < handle
             sssMaxWidthSecArray = ...
                 solo.ql.summary_plot.derive_max_spectrum_width(ssCenterEpochUnixArray);
             
-            %====================================================================
+            %===================================================================
             % Set the display locations of individual spectras (override
             % defaults). Separately stretch out the collection of spectras that
             % stems from every snapshot.
             % IMPLEMENTATION NOTE: This can not be done in the first loop in
             % order to derive the (minimum) snapshot time distance.
-            %====================================================================
+            %===================================================================
             for i = 1:numel(TsCa)
                 bKeep(i) = ~isempty(SpecrecCa{i});
                 if ~isempty(SpecrecCa{i})
@@ -733,15 +759,14 @@ classdef summary_plot < handle
                     
                     sssWidthSec = sssMaxWidthSecArray(i) * solo.ql.summary_plot.SNAPSHOT_WIDTH_FRACTION;
                     
-                    %SpecrecCa{i} = solo.ql.downsample_Specrec(SpecrecCa{i}, 10);    % TEST
-                    
+                    %===========================================================
                     % Stretch out spectra (for given snapshot) in time to be
                     % ALMOST adjacent between snapshots.
-                    % NOTE: Specrec.dt is not set by irf_powerfft so there is no
-                    % default value that can be scaled up.
+                    % NOTE: Specrec.dt is not set by irf_powerfft() so there is
+                    % no default value that can be scaled up.
                     % NOTE: Uses original spectrum positions and re-positions
                     % them relative to snapshot center.
-                    
+                    %===========================================================
                     % Number of timestamps, but also spectras (within snapshot).
                     nTime = numel(SpecrecCa{i}.t);
                     % Distance from SS center to center of first/last FFT.
@@ -756,7 +781,9 @@ classdef summary_plot < handle
             Specrec = solo.ql.summary_plot.merge_specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
-            irf_spectrogram(hAxes, Specrec);   % Replaces irf_plot
+            % irf_spectrogram() replaces irf_plot
+            % NOTE: Adds ylabel indicating frequency.
+            irf_spectrogram(hAxes, Specrec);
             
             set(hAxes, 'yscale','log')
             
@@ -846,7 +873,7 @@ classdef summary_plot < handle
         
         
         % Merge multiple instances of "specrec" structs as returned by
-        % irf_powerfft, with identical frequencies.
+        % irf_powerfft(), with identical frequencies.
         % NOTE: Optionally added fields must be added after merging.
         % NOTE: Cf EJ_library.utils.merge_Specrec which is more powerful but
         % which is unnecessary here since only merging spectras with the same
@@ -855,13 +882,13 @@ classdef summary_plot < handle
         % ARGUMENTS
         % =========
         % SpecrecCa
-        %       Cell array of "Specrec" structs as returned by irf_powerfft, but
-        %       with .dt (column array) added to it.
+        %       Cell array of "Specrec" structs as returned by irf_powerfft(),
+        %       but with .dt (column array) added to it.
         %       NOTE: Requires dt (column array of scalars).
         %       NOTE: Assumes that all specrec use the same frequencies.
         %       IMPLEMENTATION NOTE: Uses cell array instead of struct array to
         %       be able to handle (and ignore) the case specrec = [] which can
-        %       be returned by irf_powerfft.
+        %       be returned by irf_powerfft().
         %
         % RETURN VALUE
         % ============
@@ -871,7 +898,9 @@ classdef summary_plot < handle
             % PROPOSAL: Assertion for frequencies.
             
             Specrec.f  = [];
-            Specrec.p  = {[]};   % NOTE: Must 1x1 cell array. The array INSIDE the cell array is added to.
+            % NOTE: Must be 1x1 cell array. The array INSIDE the cell array is
+            % added to.
+            Specrec.p  = {[]};
             Specrec.t  = [];
             Specrec.dt = [];
             
@@ -883,10 +912,14 @@ classdef summary_plot < handle
                     assert(iscolumn(S.dt), 'S.dt is not a column.')
                     assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
                     
-                    Specrec.f    = S.f;                       % NOTE: Not adding to array, but setting it in its entirety.
-                    Specrec.p{1} = [Specrec.p{1}; S.p{1}];    % NOTE: Add to array inside cell array.
-                    Specrec.t    = [Specrec.t;    S.t(:)];    % NOTE: Has to be column vector.
-                    Specrec.dt   = [Specrec.dt;   S.dt(:)];   % NOTE: Has to be column vector.
+                    % NOTE: Not adding to array, but setting it in its entirety.
+                    Specrec.f    = S.f;
+                    % NOTE: Add to array inside cell array.
+                    Specrec.p{1} = [Specrec.p{1}; S.p{1}];
+                    % NOTE: Has to be column vector.
+                    Specrec.t    = [Specrec.t;    S.t(:)];
+                    % NOTE: Has to be column vector.
+                    Specrec.dt   = [Specrec.dt;   S.dt(:)];
                 end
             end
             
@@ -895,13 +928,14 @@ classdef summary_plot < handle
         
         
         
+        % Fade color (move toward white).
         function fade_color(hArray)
             
             for i = 1:numel(hArray)
                 legendColor = get(hArray(i), 'Color');
                 legendColor = 1 - solo.ql.summary_plot.C_FADE*(1-legendColor);
                 
-                set(hArray(i), 'Color', legendColor);   % Fade color (move toward white).
+                set(hArray(i), 'Color', legendColor);
             end
         end
         
