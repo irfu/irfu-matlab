@@ -71,13 +71,33 @@ classdef summary_plot < handle
     properties(Constant)
 
         % NOTE: More samples per spectrum is faster (sic!).
-        %N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
-        N_SAMPLES_PER_SPECTRUM_LFR_SWF = 2048;  % /YK 2021-03-02
-        % Select samples/FFT to produce the same minimum frequency.
-        % /YK 2021-03-02
-        % FH = Function Handle
-        N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (cwfSamplFreqHz / (16/128));
+        
+        % Same samples/spectrum independent of sampling frequency.
+        N_SAMPLES_PER_SPECTRUM_LFR_SWF = ...
+            EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
+        
+        % Cover F0-F2.
+        % NOTE: Does not need to hard-code limits for SWF spectrograms since
+        % each SWF spectrogram only contains data for one sampling frequency.
+        % ==> Autoscaling is OK.
 
+
+
+        % Select/derive samples/FFT from sampling frequency to produce the same
+        % minimum frequency. F3=>128 samples/spectrum. /YK 2021-03-02
+        %
+        % FH = Function Handle
+        N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
+        N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
+            cwfSamplFreqHz / ...
+            (EJ_library.so.constants.LFR_F3_HZ/solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3));
+        
+        % Cover F0, F1.
+        % NOTE: Does not cover F1, F2 in SBM1, SBM2.
+        LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
+            EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+            EJ_library.so.constants.LFR_F2_HZ / 2];
+        
 
         
         % Fraction of the (minimum) time distance between snapshots (centers)
@@ -452,13 +472,19 @@ classdef summary_plot < handle
                 
                 set(hAxes, 'yscale','log')
 
-                % NOTE: Adding frequency unit on separate row.
-                ylabel(hAxes, {yLabelNonUnit; 'f [Hz]'})
+                % NOTE: Adding string to pre-existing ylabel.
+                hAxes.YLabel.String = {yLabelNonUnit; hAxes.YLabel.String};
                 
                 colormap(solo.ql.summary_plot.COLORMAP)
                 
                 caxis(hAxes, colLimits)
-                set(hAxes, 'YTick', [0.1, 1, 10, 100, 1e3, 1e4, 1e5])
+                set(hAxes, 'YTick', 10.^[-3:5])
+                
+                % IMPLEMENTATION NOTE: USING "HACK". See
+                % find_child_irfspectrogram_y_unit().
+                axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+                ylim(hAxes, solo.ql.summary_plot.LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ / axesFreqUnitHz)
+                
             end
         end
         
@@ -737,10 +763,17 @@ classdef summary_plot < handle
             irf_legend(hAxes, tlLegend, solo.ql.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
             irf_legend(hAxes, trLegend, solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
             
-            colormap(solo.ql.summary_plot.COLORMAP)
+            colormap(solo.ql.summary_plot.COLORMAP)            
+            caxis(hAxes, colLimits)            
+            % NOTE: Chosen ticks should cover both Hz and kHz, for all sampling
+            % frequencies.
+            set(hAxes, 'YTick', 10.^[-3:3])
             
-            caxis(hAxes, colLimits)
-            set(hAxes, 'YTick', [0.1, 1, 10, 100])
+            % IMPLEMENTATION NOTE: USING "HACK". See
+            % find_child_irfspectrogram_y_unit().
+            axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+            minFreqHz      = samplingFreqHz / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF;
+            ylim(hAxes, [minFreqHz, inf] / axesFreqUnitHz)
         end
         
         
@@ -870,6 +903,44 @@ classdef summary_plot < handle
                 
                 set(hArray(i), 'Color', legendColor);   % Fade color (move toward white).
             end
+        end
+        
+        
+        
+        % HACK SOLUTION TO PRACTICAL PROBLEM.
+        %
+        % Detect the unit (scaling) used by irf_spectrogram by comparing
+        % graphical object data with Specrec.
+        %
+        % PROBLEM THAT THIS FUNCTION TRIES TO SOLVE
+        % =========================================
+        % irf_spectrogram() automatically scales the y values (Hz or kHz), without
+        % informing the caller of what it chooses:
+        % F2    => Hz,
+        % F0-F1 => kHz.
+        % Can therefore not manually scale the axes. Do not know how to detect
+        % this properly. Can therefore use this function to detect this scale.
+        %
+        function yUnit = find_child_irfspectrogram_y_unit(hAxes, Specrec)
+            CLASS_NAME = 'matlab.graphics.primitive.Surface';
+            
+            % Find the relevant child object.
+            % IMPLEMENTATION NOTE: Immediately after a call to irf_spectrogram()
+            % alone, hAxes may only have only one child (the relevant one). Code
+            % does not want to assume that since children might be added by
+            % other code calls to e.g. irf_legend() adds other children.
+            childClassesCa = arrayfun(@class, hAxes.Children, 'UniformOutput', false);
+            i            = find(ismember(childClassesCa, CLASS_NAME));
+            
+            assert(isscalar(i), ...
+                'Did not find exactly one axes child objects of MATLAB class %s.', CLASS_NAME)
+            
+            objYMax     = max(hAxes.Children(i).YData);
+            specFreqMax = max(Specrec.f);
+            
+            % NOTE: Assumes that scale is always on form 10^(integer), and that
+            % YData is a bit rounded (empirically true).
+            yUnit = 10^round(log10(specFreqMax/objYMax));
         end
 
 
