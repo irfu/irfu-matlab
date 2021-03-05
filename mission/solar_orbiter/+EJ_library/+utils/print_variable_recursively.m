@@ -8,8 +8,9 @@
 % =========
 % varName  : String that will be used as a (top-level) variable name.
 % v        : The variable which contents will be printed.
-% varargin : Settings as interpreted by EJ_library.utils.interpret_settings. See
-%            implementation.
+% varargin
+%       Settings as interpreted by EJ_library.utils.interpret_settings. See
+%       implementation.
 %
 %
 % DISPLAYING STRINGS
@@ -48,7 +49,6 @@ function print_variable_recursively(varName, v, varargin)
 % PROPOSAL: Line up equal signs among children of same parent.
 %   PRO: More easily readable.
 %   PRO: More elegant. ==> Can use function for more "formal" printouts.
-%       Ex: EJ_library.atest.automatically_test_function, incl. exceptions.
 %
 % BUG: maxRecursionDepth<Inf + prinParentsSeparately=false will not print children with children (non-leafs).
 % BUG? Settings.printParentSeparately does not work?

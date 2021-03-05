@@ -85,7 +85,7 @@ function plot_HK(filePath)
     % BUG: Multiple dates below shared x axis, after zooming (automatic global re-setting of x axis?).
     %
     % 
-    %
+    % PROPOSAL: Return hAxesArray like other plot_* functions.
     %
     % PROPOSAL: ylabel [TM], [TM units].
     
