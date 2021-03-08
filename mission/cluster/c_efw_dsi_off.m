@@ -28,8 +28,9 @@ Damp = 1.1*ones(1,4);
 % Table of SW/SH offsets
 % t>=toepoch([2018 11 19 21 00 0]), Ddsi = [ x x x x ]; 
 % elseif t>=toepoch([2018 06 23 06 00 0]), Ddsi = [ x x x x ]; % Force MS offset for months when don't enter SW.
-  
-if t>=toepoch([2017 03 24 12 00 0]), Ddsi = [ -0.14 1.73  00 -0.13 ];
+
+if t>=toepoch([2017 09 01 00 00 0]), Ddsi = [ -0.10 1.91  00 -0.09 ];
+elseif t>=toepoch([2017 03 24 12 00 0]), Ddsi = [ -0.14 1.73  00 -0.13 ];
 elseif t>=toepoch([2017 03 23 12 00 0]), Ddsi = [ -1.14 1.73  00 -0.13 ];
 elseif t>=toepoch([2017 01 01 00 00 0]), Ddsi = [ -0.14 1.73  00 -0.13 ];
 elseif t>=toepoch([2016 01 01 00 00 0]), Ddsi = [ -0.36 1.95  00 -1.15 ];
@@ -119,7 +120,8 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2017 01 01 00 0 0]), Ddsi = [ 0.26 2.44 00 0.25 ];
+if t>=toepoch([2018 01 01 00 0 0]), Ddsi = [ -0.06 2.45 00 0.16 ];
+elseif t>=toepoch([2017 01 01 00 0 0]), Ddsi = [ 0.26 2.44 00 0.25 ];
 elseif t>=toepoch([2016 01 01 00 0 0]), Ddsi = [ -0.17 2.45 00 -0.51 ];
 elseif t>=toepoch([2015 01 01 00 0 0]), Ddsi = [ -0.02 2.89 00 -0.44 ]; % curves fixed
 elseif t>=toepoch([2014 10 16 00 0 0]), Ddsi = [ 0.18  3.7  0.71  0 ]; % Only C3 has a good curve
