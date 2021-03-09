@@ -591,7 +591,14 @@ classdef summary_plot < handle
             %=============================
             % 'Position' : [left bottom width height]. Size and location,
             % excluding a margin for the labels.
-            positionCa        = get(hAxesArray, 'Position');
+            % IMPLEMENTATION NOTE: get() returns numeric array or cell array
+            % depending on the number of axes. Must normalize for other code to
+            % work. In practice, this is only necessary when disabling all
+            % axes/plots except one while debugging.
+            positionTemp        = get(hAxesArray, 'Position');
+            if iscell(positionTemp)   positionCa = positionTemp;
+            else                      positionCa = {positionTemp};
+            end
             yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
             % Panel height before distributing height segments. Assumes that
             % panels are adjacent to each other.
