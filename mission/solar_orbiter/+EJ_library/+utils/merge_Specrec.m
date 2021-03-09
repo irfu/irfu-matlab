@@ -39,8 +39,9 @@
 % RETURN VALUES
 % =============
 % Specrec
-%       "Specrec" struct as returned by irf_powerfft(). Consists of the merger
-%       of structs in SpecrecCa. p=NaN for values not assigned by any argument.
+%       "Specrec" struct. Consists of the merger of structs in SpecrecCa.
+%       Specrec.p{1}(i,j)==NaN for values/indices not assigned by any argument
+%       to this function.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -65,7 +66,7 @@ function Specrec = merge_Specrec(SpecrecCa)
 
     % Remove empty Specrecs, which indeed are legal return results from
     % irf_powerfft().
-    bEmpty     = cellfun(@isempty, SpecrecCa);
+    bEmpty    = cellfun(@isempty, SpecrecCa);
     SpecrecCa = SpecrecCa(~bEmpty);
     
     N = numel(SpecrecCa);
@@ -162,7 +163,12 @@ end
 
 
 % Replace NaN values with nearest non-NaN value, unless outside range of non-NaN
-% values
+% values.
+%
+% ARGUMENTS
+% =========
+% x, y : Same-sized 1D arrays.
+%
 function y = use_nearest_nonNaN(x,y)
     bFinite = ~isnan(y);
     x2 = x(bFinite);

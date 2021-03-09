@@ -10,6 +10,9 @@
 % ==================
 % LSF  = LFR Sampling Frequency
 % PCFC = Panel Creation Function Call
+% SPS  = Samples Per Snapshot
+% SS   = SnapShot
+% SSS  = SnapShot Spectrogram/Spectrum
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -66,11 +69,14 @@ classdef summary_plot < handle
     %   NOTE: f_max not so important since log y scale (and frequencies are
     %         linear).
     %
-    % ~BUG: Use of EJ_library.graph.escape_str() is likely inconsistent, given
+    % ~BUG: The use/non-use of EJ_library.graph.escape_str() is likely inconsistent, given
     % how calls are made from plot_LFR_CWF/SWF.
     %
     % PROPOSAL: Speed up by disabling drawing until all modifications have been
     %           made.
+    %
+    % PROPOSAL: Reorg. methods (fewer?) and have them use
+    %       EJ_library.utils.interpret_settings_args() for any customization.
 
 
 
@@ -82,35 +88,36 @@ classdef summary_plot < handle
         N_SAMPLES_PER_SPECTRUM_LFR_SWF = ...
             EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
         
-        % Cover F0-F2.
-        % NOTE: Does not need to hard-code limits for SWF spectrograms since
-        % each SWF spectrogram only contains data for one sampling frequency.
-        % ==> Autoscaling is OK.
+        
 
-
-
-        % Select/derive samples/FFT from sampling frequency to produce the same
-        % minimum frequency. F3=>128 samples/spectrum. /YK 2021-03-02
+        % Select #samples/FFT from sampling frequency to produce the same minimum
+        % frequency. F3=>128 samples/spectrum. /YK 2021-03-02
         %
         % FH = Function Handle
         N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
         N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
-            cwfSamplFreqHz / ...
-            (EJ_library.so.constants.LFR_F3_HZ/solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3));
+            cwfSamplFreqHz / EJ_library.so.constants.LFR_F3_HZ ...
+            * solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
         
-        % Cover F0, F1.
-        % NOTE: Does not cover F1, F2 in SBM1, SBM2.
+        % Min & max frequencies in LFR __CWF__ plots.
+        % Should at least cover F2-F3 (SURV-CWF), maybe not SBM1, SBM2 (F1, F2).
+        %
+        % NOTE: Does not need to hard-code limits for __SWF__ spectrograms
+        % (F0-F2) since each SWF spectrogram only contains data for one sampling
+        % frequency. ==> CWF Autoscaling is OK.
+        %
 %         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
 %             EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
 %             EJ_library.so.constants.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-            EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+            EJ_library.so.constants.LFR_F3_HZ ...
+            / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
 
         
         % Fraction of the (minimum) time distance between snapshots (centers)
-        % that will be used for displaying the spectra. E.g. 1.0 means that
+        % that will be used for displaying the spectra. 1.0 means that
         % spectras are adjacent between snapshots (for minimum snapshot
         % distance). Less than 1.0 means that there will be some empty space
         % between snapshot spectras.
@@ -183,6 +190,7 @@ classdef summary_plot < handle
             
             
             
+            % NOTE: NESTED FUNCTION
             function hAxes = panel_plot_bit_series()
                 
                 CHANNEL_NAME_POS = solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION;
@@ -276,6 +284,7 @@ classdef summary_plot < handle
             
             
             
+            % NOTE: NESTED FUNCTION
             function hAxes = panel_time_series()
                 
                 hAxes = irf_panel(panelTag);
@@ -441,16 +450,17 @@ classdef summary_plot < handle
                 panelTag, zvEpoch, zvData, ...
                 zvSamplingFreqHz, yLabelNonUnit, colLimits)
             
-            % TEST
+            % DEBUG: Limit time range.
             if 0
-                tt1 = spdfparsett2000('2020-08-19T19:00:00');
-                tt2 = spdfparsett2000('2020-08-19T20:00:00');
+%                 tt1 = spdfparsett2000('2020-08-19T19:00:00');
+%                 tt2 = spdfparsett2000('2020-08-19T20:00:00');
+                tt1 = spdfparsett2000('2020-08-19T00:00:00');
+                tt2 = spdfparsett2000('2020-08-19T24:00:00');
                 b = (tt1 <= zvEpoch) & (zvEpoch <= tt2);
                 zvEpoch          = zvEpoch(b);
                 zvData           = zvData(b);
                 zvSamplingFreqHz = zvSamplingFreqHz(b);
             end
-            
             
             % ASSERTIONS
             assert(~obj.figureComplete)
@@ -464,7 +474,7 @@ classdef summary_plot < handle
             
             
             
-            
+            % NOTE: NESTED FUNCTION
             function hAxes = panel_spectrogram()
                 
                 hAxes = irf_panel(panelTag);
@@ -489,8 +499,8 @@ classdef summary_plot < handle
                         samplFreqHz, ...
                         solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
                 end
-                
-                Specrec   = EJ_library.utils.merge_Specrec(SpecrecCa);
+                                
+                Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
 
                 Specrec.p_label = {'log_{10} [V^2/Hz]'};   % Replaces colorbarlabel
                 % irf_spectrogram() replaces irf_plot
@@ -524,6 +534,16 @@ classdef summary_plot < handle
             panelTagSignalsStr, zvEpoch, zvData, ...
             zvSamplFreqHz, iLsf, trLegend, colLimits)
         
+            % DEBUG: Limit time range.
+            if 0
+                tt1 = spdfparsett2000('2021-01-01T00:00:00');
+                tt2 = spdfparsett2000('2021-01-02T13:00:00');
+                b = (tt1 <= zvEpoch) & (zvEpoch <= tt2);
+                zvEpoch       = zvEpoch(b);
+                zvData        = zvData(b, :);
+                zvSamplFreqHz = zvSamplFreqHz(b);
+            end
+            
             assert(~obj.figureComplete)
             
             samplFreqHz = EJ_library.so.constants.LSF_HZ(iLsf);
@@ -703,12 +723,6 @@ classdef summary_plot < handle
         % tlLegend : Top-left  (TL) legend string.
         % trLegend : Top-right (TR) legend string.
         %
-        %
-        % SHORTENINGS
-        % ===========
-        % SS  : SnapShot
-        % SSS : SnapShot Spectrogram
-        %
         function hAxes = panel_spectrogram_snapshots(...
                 panelTag, zvEpoch, zvData, ...
                 samplingFreqHz, tlLegend, trLegend, colLimits)
@@ -838,11 +852,8 @@ classdef summary_plot < handle
             [nRecords, nSps] = EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2]);
-            %assert(size(zvEpoch, 1) == size(zvData, 1))   % Same number of records
             bicas.proc_utils.assert_zv_Epoch(zvEpoch)
             
-            %nRecords = size(zvData, 1);
-            %nSps     = size(zvData, 2);
             assert(nSps >= 2)
             
             % Relative timestamps inside CDF record/snapshot.
@@ -974,10 +985,11 @@ classdef summary_plot < handle
             % does not want to assume that since children might be added by
             % other code calls to e.g. irf_legend() adds other children.
             childClassesCa = arrayfun(@class, hAxes.Children, 'UniformOutput', false);
-            i            = find(ismember(childClassesCa, CLASS_NAME));
+            i              = find(ismember(childClassesCa, CLASS_NAME));
             
             assert(isscalar(i), ...
-                'Did not find exactly one axes child objects of MATLAB class %s.', CLASS_NAME)
+                'Did not find exactly one axes child objects of MATLAB class %s.', ...
+                CLASS_NAME)
             
             objYMax     = max(hAxes.Children(i).YData);
             specFreqMax = max(Specrec.f);

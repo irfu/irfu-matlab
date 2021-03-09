@@ -182,7 +182,8 @@ nComp        = size(samplesAllData, 2);
 t1FirstSpecSec = t1AllDataSec - 0.5/samplFreqHz;   % Beginning of the FIRST spectrum.
 t2LastSpecSec  = t2AllDataSec + 0.5/samplFreqHz;   % End       of the LAST  spectrum.
 lenSpecSec     = nFft/samplFreqHz;                 % Length (in time) of one spectrum.
-% Approximate (ideal) time between beginnings of successive spectra (help variable).
+% Approximate (ideal) time between beginnings of successive spectra (help
+% variable).
 specDistSec = (1-overlap)*lenSpecSec;
 
 % IMPLEMENTATION NOTE: Timestamps might not follow the stated sampling rate
