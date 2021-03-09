@@ -114,7 +114,23 @@ classdef summary_plot < handle
             / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
+        % Maximum width (in time) used for displaying a snapshot
+        % spectogram/spectrum. 
+        % IMPLEMENTATION NOTE: Intended to prevent spectograms for free-standing
+        % snapshot from becoming too wide when the code tries to use the
+        % distance to the nearest snapshot to determine display width.
+        % NOTE: A freestanding snapshot at beginning/end of day leads to half
+        % the spectrum going outside the plot.
+        % Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20210102_V04.cdf has a
+        % freestanding snapshot at beginning of day.
+        % 
+        % S = Seconds (unit)
+        MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S = 60*10;   % Arbitrary
 
+        % Maximum width (in time) used for displaying a CWF spectogram/spectrum.
+        MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S = 128/16;    % ~Arbitrary, almost.
+        
+        
         
         % Fraction of the (minimum) time distance between snapshots (centers)
         % that will be used for displaying the spectra. 1.0 means that
@@ -493,11 +509,17 @@ classdef summary_plot < handle
                     nSamplPerSpectrum = ...
                         solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
                     
-                    SpecrecCa{jSs} = irf_powerfft(...
+                    S = irf_powerfft(...
                         Ts(iSsArray), ...
                         nSamplPerSpectrum, ...
                         samplFreqHz, ...
                         solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
+                    
+                    S = solo.ql.summary_plot.add_Specrec_dt(...
+                        S, ...
+                        solo.ql.summary_plot.MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S);
+                    
+                    SpecrecCa{jSs} = S;
                 end
                                 
                 Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
@@ -767,7 +789,9 @@ classdef summary_plot < handle
                     (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
             end
             sssMaxWidthSecArray = ...
-                solo.ql.summary_plot.derive_max_spectrum_width(ssCenterEpochUnixArray);
+                solo.ql.summary_plot.get_distance_to_nearest(...
+                    ssCenterEpochUnixArray, ...
+                    solo.ql.summary_plot.MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S);
             
             %===================================================================
             % Set the display locations of individual spectras (override
@@ -776,10 +800,11 @@ classdef summary_plot < handle
             % IMPLEMENTATION NOTE: This can not be done in the first loop in
             % order to derive the (minimum) snapshot time distance.
             %===================================================================
-            for i = 1:numel(TsCa)
-                bKeep(i) = ~isempty(SpecrecCa{i});
+            bKeep = false(nTs, 1);
+            for i = 1:nTs
+                
                 if ~isempty(SpecrecCa{i})
-                    %ssLengthSec = TsCa{i}.time.stop.epochUnix - TsCa{i}.time.start.epochUnix;
+                    bKeep(i) = true;
                     
                     sssWidthSec = sssMaxWidthSecArray(i) * solo.ql.summary_plot.SNAPSHOT_WIDTH_FRACTION;
                     
@@ -794,15 +819,18 @@ classdef summary_plot < handle
                     % Number of timestamps, but also spectras (within snapshot).
                     nTime = numel(SpecrecCa{i}.t);
                     % Distance from SS center to center of first/last FFT.
-                    distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);
+                    distToSssEdgeT  = sssWidthSec/2 - sssWidthSec/(2*nTime);
                     SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) ...
                         + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
                     SpecrecCa{i}.dt = ones(nTime, 1) * sssWidthSec/(2*nTime);
+                else
+                    bKeep(i) = false;
                 end
             end
             
             SpecrecCa(~bKeep) = [];
-            Specrec = solo.ql.summary_plot.merge_specrec(SpecrecCa);
+            %Specrec = solo.ql.summary_plot.merge_Specrec(SpecrecCa);
+            Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
             % irf_spectrogram() replaces irf_plot
@@ -870,81 +898,56 @@ classdef summary_plot < handle
         
         
         
-        % For every snapshot, return the available width (in time; centered on
-        % snapshot center) for displaying the snapshot spectrogram. Time offset
-        % and unit unimportant. Argument and return values have same unit.
-        %
-        function sssMaxWidthArray = derive_max_spectrum_width(ssCenterArray)
-            % Use distance to nearest snapshot for each snapshot separately.
-            % NOTE: Should NOT be multiplied by two, since using entire
-            % distance.
-            sssMaxWidthArray = min([Inf; diff(ssCenterArray(:))], [diff(ssCenterArray(:)); Inf]);
+        % Add .dt values to Specrec struct based on nearest spectra (.t
+        % timestamps). This is useful before merging multiple Specrec.
+        function S = add_Specrec_dt(S, max2Dt)
+            EJ_library.assert.struct(S, {'t', 'p', 'f'}, {})
             
-            % Use smallest distance between any two consecutive snapshots (one
-            % global value for all snapshots). Sometimes yields too narrow
-            % spectrograms.
-            % Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20200228_V01.cdf
-            %sssMaxWidthArray = min(diff(ssCenterArray)) * ones(size(ssCenterArray));
+            specMaxWidthArray = solo.ql.summary_plot.get_distance_to_nearest(...
+                S.t, max2Dt);
             
-            % NOTE: Can not assume that both input and output have same size, only same
-            % length.
-            assert(numel(ssCenterArray) == numel(sssMaxWidthArray))
+            S.dt = specMaxWidthArray/2;
         end
         
         
         
-        % Merge multiple instances of "specrec" structs as returned by
-        % irf_powerfft(), with identical frequencies.
-        % NOTE: Optionally added fields must be added after merging.
-        % NOTE: Cf EJ_library.utils.merge_Specrec which is more powerful but
-        % which is unnecessary here since only merging spectras with the same
-        % frequencies (underlying data uses the same sampling frequency).
+        % Get distance to nearest neighbour for an array of sorted numeric
+        % values.
+        %
+        % INTENDED USE
+        % ============
+        % Determine maximum display width of spectrogram for individual
+        % snapshots based on the center timestamps in sequence of snapshots.
+        % Determine maximum display width of spectrograms for sequences of
+        % constant sampling frequency. Based on the center timestamps in
+        % sequence of spectras.
+        % SHORTCOMING: Algorithm "fails" for length=1 array (e.g. freestanding
+        % snapshots, which are not part of a sequence of snapshots). The
+        % argument for upper limit is intended for this case.
         %
         % ARGUMENTS
         % =========
-        % SpecrecCa
-        %       Cell array of "Specrec" structs as returned by irf_powerfft(),
-        %       but with .dt (column array) added to it.
-        %       NOTE: Requires dt (column array of scalars).
-        %       NOTE: Assumes that all specrec use the same frequencies.
-        %       IMPLEMENTATION NOTE: Uses cell array instead of struct array to
-        %       be able to handle (and ignore) the case specrec = [] which can
-        %       be returned by irf_powerfft().
-        %
-        % RETURN VALUE
-        % ============
-        % Specrec   : Struct array that can be used by irf_spectrogram.
-        %
-        function Specrec = merge_specrec(SpecrecCa)
-            % PROPOSAL: Assertion for frequencies.
+        % x         : 1D numeric array. Sorted.
+        % maxResult : Artificial upper limit on individua return result values.
+        % 
+        function distToNearestArray = get_distance_to_nearest(xArray, maxResult)
+            xArray = xArray(:);
             
-            Specrec.f  = [];
-            % NOTE: Must be 1x1 cell array. The array INSIDE the cell array is
-            % added to.
-            Specrec.p  = {[]};
-            Specrec.t  = [];
-            Specrec.dt = [];
+            % Derive distance to nearest snapshot for each snapshot separately.
+            % NOTE: Should NOT be multiplied by two, since using entire
+            % distance.
+%             distToNearestArray = min(...
+%                 [Inf; diff(xArray)     ], ...
+%                 [     diff(xArray); Inf]);
+            distToNearestArray = min(...
+                diff([-Inf; xArray     ]), ...
+                diff([      xArray; Inf]));
             
-            for i = 1:numel(SpecrecCa)
-                
-                S = SpecrecCa{i};
-                if ~isempty(S)
-                    EJ_library.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
-                    assert(iscolumn(S.dt), 'S.dt is not a column.')
-                    assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
-                    
-                    % NOTE: Not adding to array, but setting it in its entirety.
-                    Specrec.f    = S.f;
-                    % NOTE: Add to array inside cell array.
-                    Specrec.p{1} = [Specrec.p{1}; S.p{1}];
-                    % NOTE: Has to be column vector.
-                    Specrec.t    = [Specrec.t;    S.t(:)];
-                    % NOTE: Has to be column vector.
-                    Specrec.dt   = [Specrec.dt;   S.dt(:)];
-                end
-            end
+            % NOTE: Can not assume that both input and output have same size,
+            % only same length.
+            assert(numel(xArray) == numel(distToNearestArray))
             
-            assert(issorted(Specrec.t))   % Not sure if good assertion.
+            distToNearestArray = min(distToNearestArray, maxResult);
         end
         
         
@@ -998,6 +1001,65 @@ classdef summary_plot < handle
             % YData is a bit rounded (empirically true).
             yUnit = 10^round(log10(specFreqMax/objYMax));
         end
+        
+        
+        
+        % Merge multiple instances of "specrec" structs as returned by
+        % irf_powerfft(), with identical frequencies.
+        %
+        % NOTE: Optionally added fields must be added after merging.
+        % NOTE: Cf EJ_library.utils.merge_Specrec() which is more powerful but
+        % which is unnecessary here since only merging spectras with the same
+        % frequencies (underlying data uses the same sampling frequency).
+        %
+        % ARGUMENTS
+        % =========
+        % SpecrecCa
+        %       Cell array of "Specrec" structs as returned by irf_powerfft(),
+        %       but with .dt (column array) added to it.
+        %       NOTE: Requires dt (column array of scalars).
+        %       NOTE: Assumes that all specrec use the same frequencies.
+        %       IMPLEMENTATION NOTE: Uses cell array instead of struct array to
+        %       be able to handle (and ignore) the case specrec = [] which can
+        %       be returned by irf_powerfft().
+        %
+        % RETURN VALUE
+        % ============
+        % Specrec   : Struct array that can be used by irf_spectrogram.
+        %
+%         function Specrec = merge_Specrec(SpecrecCa)
+%             % PROPOSAL: Assertion for frequencies.
+%             
+%             Specrec.f  = [];
+%             % NOTE: Must be 1x1 cell array. The array INSIDE the cell array is
+%             % added to.
+%             Specrec.p  = {[]};
+%             Specrec.t  = [];
+%             Specrec.dt = [];
+%             
+%             for i = 1:numel(SpecrecCa)
+%                 
+%                 S = SpecrecCa{i};
+%                 if ~isempty(S)
+%                     
+%                     % ASSERTIONS
+%                     EJ_library.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
+%                     assert(iscolumn(S.dt), 'S.dt is not a column.')
+%                     assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
+%                     
+%                     % NOTE: Not adding to array, but setting it in its entirety.
+%                     Specrec.f    = S.f;
+%                     % NOTE: Add to array inside cell array.
+%                     Specrec.p{1} = [Specrec.p{1}; S.p{1}];
+%                     % NOTE: Has to be column vector.
+%                     Specrec.t    = [Specrec.t;    S.t(:)];
+%                     % NOTE: Has to be column vector.
+%                     Specrec.dt   = [Specrec.dt;   S.dt(:)];
+%                 end
+%             end
+%             
+%             assert(issorted(Specrec.t))   % Not sure if good assertion.
+%         end
 
 
 
