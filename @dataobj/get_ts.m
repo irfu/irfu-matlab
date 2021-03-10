@@ -41,6 +41,7 @@ ud = rmfield(ud,field_list(isfield(ud,field_list)));
 repres = [];
 tensorOrder = [];
 if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
+  isTimeSeriesTensor = true;
   tensorOrder = data.TENSOR_ORDER; ud = rmfield(ud,'TENSOR_ORDER');
   if ischar(tensorOrder), tensorOrder = str2double(tensorOrder); end
   switch tensorOrder
@@ -76,7 +77,7 @@ end
 if isTimeSeriesTensor
   if isempty(repres) && isfinite(tensorOrder)
     res = TSeries(Time,data.data,'TensorOrder',tensorOrder);
-  elseif isfinite(repres) && isfinite(tensorOrder)
+  elseif ~isempty(repres) && isfinite(tensorOrder)
     res = TSeries(Time,data.data,'TensorOrder',tensorOrder,'repres',repres);
   end
 else
