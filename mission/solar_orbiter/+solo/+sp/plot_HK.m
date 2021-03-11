@@ -154,7 +154,7 @@ function plot_HK(filePath)
 
     
 
-    Sp = solo.ql.summary_plot();
+    Sp = solo.sp.summary_plot();
     
     
     

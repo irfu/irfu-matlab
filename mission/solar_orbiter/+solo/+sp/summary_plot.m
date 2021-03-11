@@ -97,7 +97,7 @@ classdef summary_plot < handle
         N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
         N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
             cwfSamplFreqHz / EJ_library.so.constants.LFR_F3_HZ ...
-            * solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
+            * solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
         
         % Min & max frequencies in LFR __CWF__ plots.
         % Should at least cover F2-F3 (SURV-CWF), maybe not SBM1, SBM2 (F1, F2).
@@ -107,11 +107,11 @@ classdef summary_plot < handle
         % frequency. ==> CWF Autoscaling is OK.
         %
 %         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-%             EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+%             EJ_library.so.constants.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
 %             EJ_library.so.constants.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
             EJ_library.so.constants.LFR_F3_HZ ...
-            / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+            / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
         % Maximum width (in time) used for displaying a snapshot
@@ -209,7 +209,7 @@ classdef summary_plot < handle
             % NOTE: NESTED FUNCTION
             function hAxes = panel_plot_bit_series()
                 
-                CHANNEL_NAME_POS = solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION;
+                CHANNEL_NAME_POS = solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION;
                 
                 % ASSERTIONS
                 assert(all(ismember(zvB, [0,1])))
@@ -249,7 +249,7 @@ classdef summary_plot < handle
                 hLines(1).Color = [0,0,1];
                 hLines(2).Color = [1,0,0];
                 
-                solo.ql.summary_plot.fade_color(hLines)
+                solo.sp.summary_plot.fade_color(hLines)
                 
                 
                 
@@ -308,7 +308,7 @@ classdef summary_plot < handle
                 
                 % TEMPORARY HACK for argument "fade"?
                 if ~isempty(linesPropCa) && strcmp(linesPropCa{1}, 'fade')
-                    solo.ql.summary_plot.fade_color(hLines)
+                    solo.sp.summary_plot.fade_color(hLines)
                     linesPropCa = linesPropCa(2:end);
                 end
                 
@@ -318,11 +318,11 @@ classdef summary_plot < handle
                 ylabel(hAxes, yLabel)
                 if ~isempty(tlLegend)
                     irf_legend(hAxes, tlLegend, ...
-                        solo.ql.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
+                        solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
                 end
                 if ~isempty(trLegend)
                     irf_legend(hAxes, trLegend, ...
-                        solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
+                        solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
                 end
             end    % function
             
@@ -507,17 +507,17 @@ classdef summary_plot < handle
                     
                     samplFreqHz       = zvSamplingFreqHz(iSs1Array(jSs));
                     nSamplPerSpectrum = ...
-                        solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
+                        solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
                     
                     S = irf_powerfft(...
                         Ts(iSsArray), ...
                         nSamplPerSpectrum, ...
                         samplFreqHz, ...
-                        solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
+                        solo.sp.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
                     
-                    S = solo.ql.summary_plot.add_Specrec_dt(...
+                    S = solo.sp.summary_plot.add_Specrec_dt(...
                         S, ...
-                        solo.ql.summary_plot.MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S);
+                        solo.sp.summary_plot.MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S);
                     
                     SpecrecCa{jSs} = S;
                 end
@@ -534,14 +534,14 @@ classdef summary_plot < handle
                 % NOTE: Adding string to pre-existing ylabel.
                 hAxes.YLabel.String = {yLabelNonUnit; hAxes.YLabel.String};
                 
-                colormap(solo.ql.summary_plot.COLORMAP)
+                colormap(solo.sp.summary_plot.COLORMAP)
                 caxis(hAxes, colLimits)
                 set(hAxes, 'YTick', 10.^[-3:5])
                 
                 % IMPLEMENTATION NOTE: USING "HACK". See
                 % find_child_irfspectrogram_y_unit().
-                axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
-                ylim(hAxes, solo.ql.summary_plot.LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ / axesFreqUnitHz)
+                axesFreqUnitHz = solo.sp.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+                ylim(hAxes, solo.sp.summary_plot.LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ / axesFreqUnitHz)
                 
             end
         end
@@ -576,7 +576,7 @@ classdef summary_plot < handle
             zvEpoch = zvEpoch(bRecords, :);
             zvData  = zvData( bRecords, :);
 
-            pcfc = @() (solo.ql.summary_plot.panel_spectrogram_snapshots(...
+            pcfc = @() (solo.sp.summary_plot.panel_spectrogram_snapshots(...
                 sprintf('%s %s spectrogram', panelTagSignalsStr, lsfName), ...
                 zvEpoch, ...
                 zvData, ...
@@ -661,7 +661,7 @@ classdef summary_plot < handle
             
             
 
-            solo.ql.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
+            solo.sp.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
             
             obj.figureComplete = true;
         end
@@ -759,7 +759,7 @@ classdef summary_plot < handle
             
             
             
-            TsCa = solo.ql.summary_plot.snapshot_per_record_2_TSeries(...
+            TsCa = solo.sp.summary_plot.snapshot_per_record_2_TSeries(...
                 zvEpoch, zvData, samplingFreqHz);
             nTs  = numel(TsCa);
             
@@ -780,7 +780,7 @@ classdef summary_plot < handle
                 Ts = TsCa{i};
                 
                 SpecrecCa{i} = irf_powerfft(Ts, ...
-                    solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
+                    solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
                     samplingFreqHz);
                 
                 % IMPLEMENTATION NOTE: Later needs the snapshot centers in the
@@ -789,9 +789,9 @@ classdef summary_plot < handle
                     (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
             end
             sssMaxWidthSecArray = ...
-                solo.ql.summary_plot.get_distance_to_nearest(...
+                solo.sp.summary_plot.get_distance_to_nearest(...
                     ssCenterEpochUnixArray, ...
-                    solo.ql.summary_plot.MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S);
+                    solo.sp.summary_plot.MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S);
             
             %===================================================================
             % Set the display locations of individual spectras (override
@@ -806,7 +806,7 @@ classdef summary_plot < handle
                 if ~isempty(SpecrecCa{i})
                     bKeep(i) = true;
                     
-                    sssWidthSec = sssMaxWidthSecArray(i) * solo.ql.summary_plot.SNAPSHOT_WIDTH_FRACTION;
+                    sssWidthSec = sssMaxWidthSecArray(i) * solo.sp.summary_plot.SNAPSHOT_WIDTH_FRACTION;
                     
                     %===========================================================
                     % Stretch out spectra (for given snapshot) in time to be
@@ -829,7 +829,7 @@ classdef summary_plot < handle
             end
             
             SpecrecCa(~bKeep) = [];
-            %Specrec = solo.ql.summary_plot.merge_Specrec(SpecrecCa);
+            %Specrec = solo.sp.summary_plot.merge_Specrec(SpecrecCa);
             Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
@@ -839,10 +839,10 @@ classdef summary_plot < handle
             
             set(hAxes, 'yscale','log')
             
-            irf_legend(hAxes, tlLegend, solo.ql.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
-            irf_legend(hAxes, trLegend, solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
+            irf_legend(hAxes, tlLegend, solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
+            irf_legend(hAxes, trLegend, solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
             
-            colormap(solo.ql.summary_plot.COLORMAP)            
+            colormap(solo.sp.summary_plot.COLORMAP)            
             caxis(hAxes, colLimits)            
             % NOTE: Chosen ticks should cover both Hz and kHz, for all sampling
             % frequencies.
@@ -850,8 +850,8 @@ classdef summary_plot < handle
             
             % IMPLEMENTATION NOTE: USING "HACK". See
             % find_child_irfspectrogram_y_unit().
-            axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
-            minFreqHz      = samplingFreqHz / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF;
+            axesFreqUnitHz = solo.sp.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+            minFreqHz      = samplingFreqHz / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF;
             ylim(hAxes, [minFreqHz, inf] / axesFreqUnitHz)
         end
         
@@ -903,7 +903,7 @@ classdef summary_plot < handle
         function S = add_Specrec_dt(S, max2Dt)
             EJ_library.assert.struct(S, {'t', 'p', 'f'}, {})
             
-            specMaxWidthArray = solo.ql.summary_plot.get_distance_to_nearest(...
+            specMaxWidthArray = solo.sp.summary_plot.get_distance_to_nearest(...
                 S.t, max2Dt);
             
             S.dt = specMaxWidthArray/2;
@@ -957,7 +957,7 @@ classdef summary_plot < handle
             
             for i = 1:numel(hArray)
                 legendColor = get(hArray(i), 'Color');
-                legendColor = 1 - solo.ql.summary_plot.C_FADE*(1-legendColor);
+                legendColor = 1 - solo.sp.summary_plot.C_FADE*(1-legendColor);
                 
                 set(hArray(i), 'Color', legendColor);
             end

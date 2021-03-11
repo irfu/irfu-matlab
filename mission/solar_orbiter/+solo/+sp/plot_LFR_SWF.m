@@ -34,7 +34,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %
     % BOGIQ:
     % =====
-    % POLICY: Combined BOGIQ for ~all quicklook plot code: See solo.ql.summary_plot.
+    % POLICY: Combined BOGIQ for ~all quicklook plot code: See solo.sp.summary_plot.
     %
     % TODO-DECISION: How submit data to spectrum_panel?
     %   NEED: Should also work for TDS's varying-length snapshots?
@@ -58,7 +58,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %       Use min(timeToSnapshotBefore, timeToSnapshotafter) as max radius.
     %
     % Old TODO: YK's "fixup" 2020-10-13 -- DONE
-    %   hswf = solo.ql.plot_LFR_SWF([RPWPATH LRFFILE]);%% fixup
+    %   hswf = solo.sp.plot_LFR_SWF([RPWPATH LRFFILE]);%% fixup
     %   load cmap
     %   colormap(cmap)
     %   set(hswf(1:3),'YTick',[0.1 1 10])
@@ -122,13 +122,15 @@ function hAxesArray = plot_LFR_SWF(filePath)
     
     
     
-    Sp = solo.ql.summary_plot();
+    Sp = solo.sp.summary_plot();
     
     if ~ENABLE_SPECTROGRAM_DIFFS
         displayDcDiffs = 0;
         displayAcDiffs = 0;
-    end    
-    
+    end
+
+
+
     if ENABLE_SPECTROGRAMS
         % IMPLEMENTATION NOTE: One could almost make a for loop over LFR
         % sampling frequencies (F0..F2) here. The current structure is however
