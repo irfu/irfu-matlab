@@ -26,7 +26,7 @@ end
 ylabel(h(2),'|B| (nT)','interpreter','tex','fontsize',fsize);
 
 %Spectra h(3), h(4)
-if ~isempty(data.B_burst)
+if ~isempty(data.B)
     bb = data.B;
     if median(diff((bb.time.epochUnix))) < 0.1250*0.95
         fMag = 128; fMax = 7;
