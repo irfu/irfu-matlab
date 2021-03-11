@@ -1,5 +1,7 @@
 %% Specify solar orbiter database.
-% For data on the server the following two are sufficient.
+% For data on the server the following two are sufficient. You also need
+% V_RPW.mat and V_RPW_1h.mat, found on solo/data_yuri.
+
 solo.db_init('local_file_db','/Volumes/solo/');
 solo.db_init('local_file_db','/Volumes/solo/data_irfu');
 
@@ -27,7 +29,9 @@ for iTint=1:length(times_1d)-1
     
     %Load data
     load('V_RPW_1h'); %This is the .mat file containing RPW speeds at 1h resolution.
-    % The file should be in the same folder as this script (quicklook_main)
+    % The file should be in the current path. This file can be found in
+    % solo/data_yuri
+    
     data.Vrpw = V_RPW_1h.tlim(Tint);
     
     %E-field:
