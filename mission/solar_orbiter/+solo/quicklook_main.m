@@ -1,45 +1,77 @@
-%% Specify Solar Orbiter database.
+%
+% Generate multiple IRFU-local types of quicklooks (files) for SolO data (not
+% just RPW) for a specified time interval.
+%
+% Intended for batch processing.
+%
+%
+% ARGUMENTS
+% =========
+% utcBegin, utcEnd : Strings.
+%       Defines time interval for which quicklooks should be generated.
+% outputDir : Path to directory.
+%       NOTE: Will create subdirectories if not pre-existing.
+%
+%
+% NOTE: Uses SPICE implicitly, and therefore relies on some path convention.
+% NOTE: Still uses some hard-coded paths for locating datasets.
+%
+%
+% Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
+% Uppsala, Sweden. Modified by Erik P G Johansson.
+%
+function quicklook_main(utcBegin, utcEnd, speedDataDir, outputDir)
+
+% IMPLEMENTATION NOTE: Needed to make "DB" work.
+irf
+
+
+
+% Specify Solar Orbiter database.
 % For data on the server the following two are sufficient. You also need
 % V_RPW.mat and V_RPW_1h.mat, found on solo/data_yuri.
-
-%clear all   % TEMP
-
-solo.db_init('local_file_db','/data/solo/');
-solo.db_init('local_file_db','/data/solo/data_irfu');
+solo.db_init('local_file_db', '/data/solo/');
+solo.db_init('local_file_db', '/data/solo/data_irfu');
 
 % Setup cache
 solo.db_init('db_cache_size_max',4096)
 solo.db_cache('on','save')
 
-
-
-%% Specify time interval for plots
-TIME_INTERVAL = irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
-
-%OUTPUT_DIR = '/home/erjo/temp/qli';
-OUTPUT_DIR = '.';
-SPEED_DIR  = '/data/solo/data_yuri';
-
-% Speeds up solo.quicklooks_24_6_2_h which is useful for testing purposes.
+% Speeds up solo.quicklooks_24_6_2_h(). Useful for testing.
 DISABLE_B = 0;
 
-%% Specify folders for saving the plots
-
-PATHS.path_2h  = fullfile(OUTPUT_DIR, '2h' );    % Path to folder for 2-hour overviews
-PATHS.path_6h  = fullfile(OUTPUT_DIR, '6h' );    % Path to folder for 6-hour overviews
-PATHS.path_24h = fullfile(OUTPUT_DIR, '24h');    % Path to folder for 24-hour overviews
-PATHS.path_1w  = fullfile(OUTPUT_DIR, '1w' );    % Path to folder for 1w overviews
-
+% Specify subdirectories for saving the respective types of plots.
+PATHS.path_2h  = fullfile(outputDir, '2h' );
+PATHS.path_6h  = fullfile(outputDir, '6h' );
+PATHS.path_24h = fullfile(outputDir, '24h');
+PATHS.path_1w  = fullfile(outputDir, '1w' );
 
 
-%% Run the code for 2, 6, 24 hours.
-times_1d = make_tints(TIME_INTERVAL,1);% Daily time-intervals
+
+% Specify time interval for plots
+TimeInterval = irf.tint(utcBegin, utcEnd);
+
+% Create subdirectories
+% NOTE: Works if subdirectories pre-exist.
+for fnCa = fieldnames(PATHS)'
+    dirPath = PATHS.(fnCa{1});
+    [parentDir, dirBasename, dirSuffix] = fileparts(dirPath);
+    [success, msg] = mkdir(parentDir, [dirBasename, dirSuffix]);
+    assert(success, 'Failed to create directory "%s". %s', dirPath, msg)
+end
+
+
+
+%=============================================
+% Run the code for 2-, 6-, 24-hour quicklooks
+%=============================================
+times_1d = make_tints(TimeInterval,1);% Daily time-intervals
 
 % Load data
 % This is the .mat file containing RPW speeds at 1h resolution.
 % The file should be in the current path. This file can be found in
 % /solo/data/data_yuri/.
-S = load(fullfile(SPEED_DIR, 'V_RPW_1h'));
+S = load(fullfile(speedDataDir, 'V_RPW_1h'));
 
 for iTint=1:length(times_1d)-1
     % Time interval
@@ -78,16 +110,18 @@ for iTint=1:length(times_1d)-1
 
 end
 
-%return    % TEST
 
-%% Run the code for weekly overviews.
-times_7d = make_tints(TIME_INTERVAL,7);% weekly time-intervals
+
+%===================================
+% Run the code for weekly overviews
+%===================================
+times_7d = make_tints(TimeInterval,7);% weekly time-intervals
 
 
 % Load data
 % This is the .mat file containing RPW speeds at 6h resolution.
 % The file should be in the same folder as this script (quicklook_main).
-S = load(fullfile(SPEED_DIR, 'V_RPW'));
+S = load(fullfile(speedDataDir, 'V_RPW'));
 
 for iTint=1:length(times_7d)-1
     % Time interval
@@ -124,8 +158,8 @@ end
 
 
 
-%% Auxilliary function
-
+% Auxilliary function
+%
 function out_times=make_tints(inputTint,days)
 
     t0       = inputTint(1);
@@ -136,3 +170,7 @@ function out_times=make_tints(inputTint,days)
     out_times = t0+dt;
 
 end
+
+
+
+end    % function
