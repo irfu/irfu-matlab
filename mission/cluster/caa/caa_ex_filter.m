@@ -98,7 +98,8 @@ for ic = cl_id
     end
     if ~isempty(ns_ops)
       ns_ops_intervals = [caa_get_ns_ops_int(data(1,1), data(end,1)-data(1,1), ns_ops, 'bad_data')' ...
-        caa_get_ns_ops_int(data(1,1), data(end,1)-data(1,1), ns_ops, 'bad_tm')']';
+        caa_get_ns_ops_int(data(1,1), data(end,1)-data(1,1), ns_ops, 'bad_tm')' ...
+        caa_get_ns_ops_int(data(1,1), data(end,1)-data(1,1), ns_ops, 'high_bias')']';
       if ~isempty(ns_ops_intervals)
         ns_ops_intervals(:,1)=ns_ops_intervals(:,1)-4;
         ns_ops_intervals(:,2)=ns_ops_intervals(:,2)+4;
