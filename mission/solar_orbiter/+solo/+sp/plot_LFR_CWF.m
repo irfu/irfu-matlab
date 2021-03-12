@@ -100,7 +100,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     zvSamplFreqHz = D.data.SAMPLING_RATE.data;
     clear D
     
-    Sp = solo.ql.summary_plot();
+    Sp = solo.sp.summary_plot();
     
     Sp.add_panel_spectrogram_CWF( 'V1 DC spectrogram', zvEpoch, zvDc1,  zvSamplFreqHz, 'V1\_DC',  [-7, -3]);
     Sp.add_panel_spectrogram_CWF('V12 DC spectrogram', zvEpoch, zvDc12, zvSamplFreqHz, 'V12\_DC', [-8, -4]);

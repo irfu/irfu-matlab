@@ -126,6 +126,8 @@ for j=1:length(h)
   set(h(j),'layer','top');
 end
 
+set(get(get(hp,'Annotation'),'LegendInformation'),'IconDisplayStyle','off') % do not display the mark as a legend entry
+
 if nargout > 0
   outhandle = hp;
 end

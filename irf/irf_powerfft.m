@@ -182,9 +182,19 @@ nComp        = size(samplesAllData, 2);
 t1FirstSpecSec = t1AllDataSec - 0.5/samplFreqHz;   % Beginning of the FIRST spectrum.
 t2LastSpecSec  = t2AllDataSec + 0.5/samplFreqHz;   % End       of the LAST  spectrum.
 lenSpecSec     = nFft/samplFreqHz;                 % Length (in time) of one spectrum.
-% Approximate (ideal) time between beginnings of successive spectra (help variable).
+% Approximate (ideal) time between beginnings of successive spectra (help
+% variable).
 specDistSec = (1-overlap)*lenSpecSec;
-nSpec       = ceil((t2LastSpecSec - t1FirstSpecSec - lenSpecSec) / specDistSec + 1);
+
+% IMPLEMENTATION NOTE: Timestamps might not follow the stated sampling rate
+% (the argument) exactly, but only approximately. This is important for
+% snapshots where one might want to have exactly one spectrum per snapshot.
+% Not rounding may lead to bad choices of number of spectra, e.g. two
+% spectras based on exactly the same samples (empirical), or no spectrum
+% (potentially) when the snapshot is just slightly too short (timestamps too
+% close together; correct number of samples). Therefore, do not use e.g. "ceil".
+% Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20210102_V04.cdf
+nSpec       = round((t2LastSpecSec - t1FirstSpecSec - lenSpecSec) / specDistSec + 1);
 
 
 
