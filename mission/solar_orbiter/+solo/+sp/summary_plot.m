@@ -275,22 +275,45 @@ classdef summary_plot < handle
         % to be very general and to be called from wrapper methods. It can hence
         % be allowed to have many settings & arguments.
         %
+        % NOTE: Ultimately (indirectly) used for both CWF and SWF data.
+        %
         % ARGUMENTS
         % =========
         % panelTag      :
-        % zvData        : Array. (iRecord). ~CWF data.
-        % yLabelNonUnit : y label with unit.
+        % zvData        : Array. (iRecord, iChannel). ~CWF data.
+        % varargin
+        %       Arguments as interpreted by
+        %       EJ_library.utils.interpret_settings_args().
+        %           yLabel
+        %           linesPropCa
+        %               Key-value properties arguments to set for the line
+        %               object.
+        %           axesPropCa
+        %               Key-value properties arguments to set for the axes
+        %               object.
         % --
         % tlLegend : Top-left  (TL) legend. Empty if not used.
         % trLegend : Top-right (TR) legend. Empty if not used.
         %            Cell array of strings, one per
         %            scalar time series.
         %
-        function add_panel_time_series_CWF_general(obj, panelTag, ...
-            zvEpoch, zvData, linesPropCa, axesPropCa, yLabel, tlLegend, trLegend)
+        function add_panel_time_series_general(obj, panelTag, ...
+            zvEpoch, zvData, varargin)
+        
+            SETTINGS.fadeLines   = 0;
+            SETTINGS.linesPropCa = {};
+            SETTINGS.axesPropCa  = {};
+            SETTINGS.yLabel      = '';
+            SETTINGS.tlLegend    = {};
+            SETTINGS.trLegend    = {};
+            Settings = EJ_library.utils.interpret_settings_args(SETTINGS, varargin);
+            EJ_library.assert.struct(Settings, fieldnames(SETTINGS), {})
+            
+            
             
             assert(~obj.figureComplete)
-            assert(nargin == 1+8)
+            
+            
             
             % NOTE: Implicitly an assertion on argument sizes.
             Ts = irf.ts_scalar(zvEpoch, zvData);
@@ -306,22 +329,21 @@ classdef summary_plot < handle
                 hAxes = irf_panel(panelTag);
                 hLines = irf_plot(hAxes, Ts);
                 
-                % TEMPORARY HACK for argument "fade"?
-                if ~isempty(linesPropCa) && strcmp(linesPropCa{1}, 'fade')
+                if Settings.fadeLines
                     solo.sp.summary_plot.fade_color(hLines)
-                    linesPropCa = linesPropCa(2:end);
                 end
                 
-                if ~isempty(linesPropCa)   set(hLines, linesPropCa{:});   end
-                if ~isempty(axesPropCa)    set(hAxes,  axesPropCa {:});   end
+                if ~isempty(Settings.linesPropCa)   set(hLines, Settings.linesPropCa{:});   end
+                if ~isempty(Settings.axesPropCa)    set(hAxes,  Settings.axesPropCa {:});   end
                 
-                ylabel(hAxes, yLabel)
-                if ~isempty(tlLegend)
-                    irf_legend(hAxes, tlLegend, ...
+                ylabel(hAxes, Settings.yLabel)
+                
+                if ~isempty(Settings.tlLegend)
+                    irf_legend(hAxes, Settings.tlLegend, ...
                         solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
                 end
-                if ~isempty(trLegend)
-                    irf_legend(hAxes, trLegend, ...
+                if ~isempty(Settings.trLegend)
+                    irf_legend(hAxes, Settings.trLegend, ...
                         solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
                 end
             end    % function
@@ -342,8 +364,8 @@ classdef summary_plot < handle
                 zvData = zvData - mean(zvData, 'omitnan');
             end
         
-            obj.add_panel_time_series_CWF_general(panelTag, ...
-                zvEpoch, zvData, {}, {}, yLabel, {}, {})
+            obj.add_panel_time_series_general(panelTag, ...
+                zvEpoch, zvData, 'yLabel', yLabel)
         end
         
         
@@ -361,10 +383,14 @@ classdef summary_plot < handle
             zvEpoch = D.data.Epoch.data;
             zvData  = D.data.(zvName).data;            
             
-            % CALL INSTANCE METHOD            
-            obj.add_panel_time_series_CWF_general(...
-                panelTag, zvEpoch, zvData, [{'fade'}, linesPropCa], axesPropCa, ...
-                '', {}, {EJ_library.graph.escape_str(zvName)})
+            % CALL INSTANCE METHOD
+            obj.add_panel_time_series_general(...
+                panelTag, zvEpoch, zvData, ...
+                'fadeLines',   1, ...
+                'linesPropCa', linesPropCa, ...
+                'axesPropCa',  axesPropCa, ...
+                'tlLegend',    {}, ...
+                'trLegend',    {EJ_library.graph.escape_str(zvName)})
         end
         
         
@@ -373,7 +399,7 @@ classdef summary_plot < handle
         %
         % ARGUMENTS
         % =========
-        % D           : dataobj
+        % D           : dataobj (sic!)
         % zVarNamesCa : Length 3 cell array of zVar names.
         %
         function add_panel_time_series3_HK(obj, D, zvNamesCa)
@@ -388,21 +414,25 @@ classdef summary_plot < handle
                 D.data.(zvNamesCa{2}).data, ...
                 D.data.(zvNamesCa{3}).data];
             
-            
-            
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series_CWF_general(panelTag, zvEpoch, zvData, ...
-                {'fade'}, {}, '', {}, {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
+            obj.add_panel_time_series_general(panelTag, zvEpoch, zvData, ...
+                'fadeLines', 1, ...
+                'trLegend',  {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
         end
         
 
 
         % Add panel for time series for SWF data (one snapshot per row) for one
-        % specified LFR sampling frequency (LSF). Uses only the samples of the
-        % specified sampling frequency.
+        % specified LFR sampling frequency (LSF). One call filters out the
+        % samples of the specified LFR sampling frequency.
         %
         % NOTE: Removes mean from each snapshot separately (both DC & AC)
         % NOTE: Can also handle TDS snapshots some day?
+        %
+        % ARGUMENTS
+        % ========
+        % zvDataCa
+        %       Cell array of signals, each of which is a ~zVar.
         %
         function add_panel_time_series_SWF_LSF(obj, panelTagSignalsStr, ...
                 zvEpoch, zvDataCa, zvSamplFreqHz, iLsf, trLegend, removeMean)
@@ -447,9 +477,12 @@ classdef summary_plot < handle
             
             
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series_CWF_general(...
+            obj.add_panel_time_series_general(...
                 sprintf('%s %s time series', panelTagSignalsStr, lsfName), ...
-                zvEpoch, [zvDataCa{:}], {}, {}, '[V]', lsfName, trLegend)
+                zvEpoch, [zvDataCa{:}], ...
+                'yLabel',   '[V]', ...
+                'tlLegend', lsfName, ...
+                'trLegend', trLegend)
         end
         
         
