@@ -37,7 +37,7 @@ irf_legend(h(3),{'N_{e,RPW} ',' N_{i,PAS}'},[0.98 0.16],'Fontsize',legsize);
 irf_zoom(h(3),'y');
 
 if ~isempty(data.Tpas)
-    irf_plot(h(4),data.Tpas.tlim(Tint),'color',colors(2,:),'linewdith',lwidth);
+    irf_plot(h(4),data.Tpas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
 end
 ylabel(h(4),'T_i (eV)','interpreter','tex','fontsize',fsize);
 irf_zoom(h(4),'y');
