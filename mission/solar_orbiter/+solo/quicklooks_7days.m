@@ -44,9 +44,9 @@ irf_zoom(h(4),'y');
 
 % y,z PAS velocities
 if ~isempty(data.Vpas)
-    irf_plot(h(5),V_pas.y.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(5),data.Vpas.y.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
     hold(h(5),'on');
-    irf_plot(h(5),V_pas.z.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
+    irf_plot(h(5),data.Vpas.z.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
 end
 irf_legend(h(5),{'','v_{y}','v_{z}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(5),'y');
@@ -57,7 +57,7 @@ if ~isempty(data.Vrpw)
     irf_plot(h(6),data.Vrpw,'o-','color',colors(1,:));
 end
 if ~isempty(data.Vpas)
-    irf_plot(h(6),V_pas.x.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(6),data.Vpas.x.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
 end
 irf_legend(h(6),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',legsize);
 irf_zoom(h(6),'y');
