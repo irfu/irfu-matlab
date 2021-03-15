@@ -21,18 +21,23 @@ classdef utils   % < handle
         % regions of non-NaN indices.
         function zv = merge_zvs(zv1, zv2)
             EJ_library.assert.sizes(...
-                zv1, [-1], ...
-                zv2, [-1])
+                zv1, [-1, -2], ...
+                zv2, [-1, -2])
             
             b1 = ~isnan(zv1);
             b2 = ~isnan(zv2);
             
-            assert(~all(b1 & b2))
+            % ASSERTION: Non-NaN components do not overlap, i.e. it is
+            % unambiguous which non-NaN values to use.
+            assert( all(~(b1 & b2), 'all'))
             
             zv     = zv1;
             zv(b2) = zv2(b2);
             
         end
+        
+        
+        
     end
     
 end
