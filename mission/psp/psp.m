@@ -75,14 +75,16 @@ end
 % List of encounters with ENLIL plots <a href="https://sppgway.jhuapl.edu/encounters#enc1">www</a>
 %   V1 2018-10-03/08:44
 % Enc1 2018-11-06/03:27  35.6 Rs  0.166 AU
-% Enc2 2019-04-04/22:39  35.6 Rs
-% Enc3 2019-09-01/17:50  35.6 Rs
+% Enc2 2019-04-04/22:39  35.6 Rs  0.166 AU
+% Enc3 2019-09-01/17:50  35.6 Rs  0.166 AU (no SPC data)
 %   V2 2019-12-26/18:14
 % Enc4 2020-01-29/09:37  27.8 Rs  0.129 AU
-% Enc5 2020-06-07/08:23  27.8 Rs
+% Enc5 2020-06-07/08:23  27.8 Rs  0.129 AU
 %   V3 2020-07-11
 % Enc6 2020-09-27/09:16  20.3 Rs  0.094 AU
-% Enc7 2021-01-17/17:40  20.3 Rs
+% Enc7 2021-01-17/17:40  20.3 Rs  0.094 AU
+%
+% 
 
 %% ##Payload
 % FIELDS paper: <a href="https://doi.org/10.1002/2016JA022344">Malaspina 2016</a>
