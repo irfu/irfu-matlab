@@ -85,7 +85,6 @@ function hAxesArray = plot_LFR_SWF(filePath)
     ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS = 0;   % DEFAULT 0. Useful for debugging (runs through all code).
     PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 1;
     ENABLE_SPECTROGRAMS                   = 1;   % DEFAULT 1. Useful for debugging non-spectrogram code.
-    ENABLE_SPECTROGRAM_DIFFS              = 1;   % DEFAULT 1. Useful for debugging spectrogram code.
     
     D = dataobj(filePath);
     
@@ -98,23 +97,26 @@ function hAxesArray = plot_LFR_SWF(filePath)
     zvAc23        = get_CDF_zv_data(D, 'EAC', 3);
     clear D
     
+    hasDcDiffs = any(~isnan(zvDc12(:))) || any(~isnan(zvDc23(:)));
+    hasAcDiffs = any(~isnan(zvAc12(:))) || any(~isnan(zvAc23(:)));
     
+    % ASSERTIONS
+    if      hasDcDiffs && hasAcDiffs && ~PERMIT_SIMULTANEOUS_DC_AC_DIFFS
+        error('Dataset (CDF file) contains both DC diff and AC diff data. Can not handle this case.')
+    elseif ~hasDcDiffs && ~hasAcDiffs
+        error('Dataset (CDF file) contains neither DC diff nor AC diff data. Can not handle this case.')
+    end
+
+    zvDcAc12 = solo.sp.utils.merge_zvs(zvDc12, zvAc12);
+    zvDcAc23 = solo.sp.utils.merge_zvs(zvDc23, zvAc23);
     
     %=================================================================
     % Determine whether DC diffs, AC diffs, or both should be plotted
     %=================================================================
-    hasDcDiffs = any(~isnan(zvDc12(:))) || any(~isnan(zvDc23(:)));
-    hasAcDiffs = any(~isnan(zvAc12(:))) || any(~isnan(zvAc23(:)));
     if ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS
         displayDcDiffs = 1;
         displayAcDiffs = 1;
     else
-        % ASSERTIONS
-        if      hasDcDiffs && hasAcDiffs && ~PERMIT_SIMULTANEOUS_DC_AC_DIFFS
-            error('Dataset (CDF file) contains both DC diff and AC diff data. Can not handle this case.')
-        elseif ~hasDcDiffs && ~hasAcDiffs
-            error('Dataset (CDF file) contains neither DC diff nor AC diff data. Can not handle this case.')
-        end
         
         displayDcDiffs = hasDcDiffs;
         displayAcDiffs = hasAcDiffs;
@@ -123,11 +125,6 @@ function hAxesArray = plot_LFR_SWF(filePath)
     
     
     Sp = solo.sp.summary_plot();
-    
-    if ~ENABLE_SPECTROGRAM_DIFFS
-        displayDcDiffs = 0;
-        displayAcDiffs = 0;
-    end
 
 
 
@@ -140,39 +137,21 @@ function hAxesArray = plot_LFR_SWF(filePath)
         %=================
         % F0 spectrograms
         %=================
-        Sp.add_panel_spectrogram_SWF_LSF('V1 DC', zvEpoch, zvDc1,  zvSamplRateHz, 1, 'V1\_DC', [-11,-7]);
-        if displayDcDiffs
-            Sp.add_panel_spectrogram_SWF_LSF('V12 DC', zvEpoch, zvDc12, zvSamplRateHz, 1, 'V12\_DC', [-13,-10]);
-            Sp.add_panel_spectrogram_SWF_LSF('V23 DC', zvEpoch, zvDc23, zvSamplRateHz, 1, 'V23\_DC', [-13,-10]);
-        end
-        if displayAcDiffs
-            Sp.add_panel_spectrogram_SWF_LSF('V12 AC', zvEpoch, zvAc12, zvSamplRateHz, 1, 'V12\_AC', [-13,-10]);
-            Sp.add_panel_spectrogram_SWF_LSF('V23 AC', zvEpoch, zvAc23, zvSamplRateHz, 1, 'V23\_AC', [-13,-10]);
-        end
+        Sp.add_panel_spectrogram_SWF_LSF('V1 DC',     zvEpoch, zvDc1,    zvSamplRateHz, 1, 'V1\_DC',     [-11, -7]);
+        Sp.add_panel_spectrogram_SWF_LSF('V12 DC/AC', zvEpoch, zvDcAc12, zvSamplRateHz, 1, 'V12\_DC/AC', [-13,-10]);
+        Sp.add_panel_spectrogram_SWF_LSF('V23 DC/AC', zvEpoch, zvDcAc23, zvSamplRateHz, 1, 'V23\_DC/AC', [-13,-10]);
         %=================
         % F1 spectrograms
         %=================
-        Sp.add_panel_spectrogram_SWF_LSF('V1 DC', zvEpoch, zvDc1,  zvSamplRateHz, 2, 'V1\_DC', [-9,-5]);
-        if displayDcDiffs
-            Sp.add_panel_spectrogram_SWF_LSF('V12 DC', zvEpoch, zvDc12, zvSamplRateHz, 2, 'V12\_DC', [-11,-8]);
-            Sp.add_panel_spectrogram_SWF_LSF('V23 DC', zvEpoch, zvDc23, zvSamplRateHz, 2, 'V23\_DC', [-11,-8]);
-        end
-        if displayAcDiffs
-            Sp.add_panel_spectrogram_SWF_LSF('V12 AC', zvEpoch, zvAc12, zvSamplRateHz, 2, 'V12\_AC', [-11,-8]);
-            Sp.add_panel_spectrogram_SWF_LSF('V23 AC', zvEpoch, zvAc23, zvSamplRateHz, 2, 'V23\_AC', [-11,-8]);
-        end
+        Sp.add_panel_spectrogram_SWF_LSF('V1 DC',     zvEpoch, zvDc1,    zvSamplRateHz, 2, 'V1\_DC',     [ -9,-5]);
+        Sp.add_panel_spectrogram_SWF_LSF('V12 DC/AC', zvEpoch, zvDcAc12, zvSamplRateHz, 2, 'V12\_DC/AC', [-11,-8]);
+        Sp.add_panel_spectrogram_SWF_LSF('V23 DC/AC', zvEpoch, zvDcAc23, zvSamplRateHz, 2, 'V23\_DC/AC', [-11,-8]);
         %=================
         % F2 spectrograms
         %=================
-        Sp.add_panel_spectrogram_SWF_LSF('V1 DC', zvEpoch, zvDc1,  zvSamplRateHz, 3, 'V1\_DC', [-8,-5]);
-        if displayDcDiffs
-            Sp.add_panel_spectrogram_SWF_LSF('V12 DC', zvEpoch, zvDc12, zvSamplRateHz, 3, 'V12\_DC', [-10,-7]);
-            Sp.add_panel_spectrogram_SWF_LSF('V23 DC', zvEpoch, zvDc23, zvSamplRateHz, 3, 'V23\_DC', [-10,-7]);
-        end
-        if displayAcDiffs
-            Sp.add_panel_spectrogram_SWF_LSF('V12 AC', zvEpoch, zvAc12, zvSamplRateHz, 3, 'V12\_AC', [-10,-7]);
-            Sp.add_panel_spectrogram_SWF_LSF('V23 AC', zvEpoch, zvAc23, zvSamplRateHz, 3, 'V23\_AC', [-10,-7]);
-        end
+        Sp.add_panel_spectrogram_SWF_LSF('V1 DC',     zvEpoch, zvDc1,    zvSamplRateHz, 3, 'V1\_DC',     [ -8,-5]);
+        Sp.add_panel_spectrogram_SWF_LSF('V12 DC/AC', zvEpoch, zvDcAc12, zvSamplRateHz, 3, 'V12\_DC/AC', [-10,-7]);
+        Sp.add_panel_spectrogram_SWF_LSF('V23 DC/AC', zvEpoch, zvDcAc23, zvSamplRateHz, 3, 'V23\_DC/AC', [-10,-7]);
     end
     %===========================================================================
     % F0-F2 time series
