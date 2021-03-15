@@ -352,20 +352,21 @@ classdef summary_plot < handle
         
         
         
+        % ARGUMENTS
+        % =========
+        % zvData    : (iTime, iChannel)
+        %       zVar-like variable.
+        %
         function add_panel_time_series_CWF(obj, panelTag, ...
-            zvEpoch, zvData, yLabel, removeMean)
+            zvEpoch, zvData, yLabel, varargin)
         
-            assert(isscalar(removeMean))
+            % ASSERTIONS
             EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
-                zvData,  [-1])
-        
-            if removeMean
-                zvData = zvData - mean(zvData, 'omitnan');
-            end
+                zvData,  [-1, -2])
         
             obj.add_panel_time_series_general(panelTag, ...
-                zvEpoch, zvData, 'yLabel', yLabel)
+                zvEpoch, zvData, 'yLabel', yLabel, varargin{:})
         end
         
         
