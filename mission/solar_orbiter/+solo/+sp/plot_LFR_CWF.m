@@ -117,7 +117,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     
     Sp.add_panel_time_series_CWF( 'V1 DC time series', zvEpoch, zvDc1,  'V1_DC [V]');
     Sp.add_panel_time_series_CWF('V12 DC/AC time series', zvEpoch, [zvDc12, zvAc12], 'V12_DC/AC [V]', 'trLegend', {'DC', 'AC'});
-    Sp.add_panel_time_series_CWF('V23 DC/AC time series', zvEpoch, [zvDc23, zvAc23], 'V12_DC/AC [V]', 'trLegend', {'DC', 'AC'});
+    Sp.add_panel_time_series_CWF('V23 DC/AC time series', zvEpoch, [zvDc23, zvAc23], 'V23_DC/AC [V]', 'trLegend', {'DC', 'AC'});
     
     hAxesArray = Sp.finalize('LFR CWF L2', filePath);
 
