@@ -30,8 +30,8 @@ classdef summary_plot < handle
     %       Ex: Enlarge separate snapshots.
     %
     % PROPOSAL: Merge add_panel_spectrogram_SWF_LSF &
-    %                 panel_spectrogram_snapshots.
-    %   CON: panel_spectrogram_snapshots designed to also be used for TDS
+    %                 panel_spectrogram_SWF.
+    %   CON: panel_spectrogram_SWF designed to also be used for TDS
     %        snapshots (in the future).
     %
     % PROPOSAL: Build add_panel_* functions more using interpret_settings_args() for last arguments).
@@ -144,7 +144,7 @@ classdef summary_plot < handle
         % Disabled since presumably slow. Triggers bug in MTEST(CWF).
         %SPECTRUM_OVERLAP_PERCENT_CWF = 0;
         SPECTRUM_OVERLAP_PERCENT_CWF = 50;   % /YK 2020?
-            
+
         % Colormap used for spectras.
         COLORMAP = load('cmap').cmap;
         
@@ -379,6 +379,7 @@ classdef summary_plot < handle
         %
         function add_panel_time_series1_HK(obj, D, zvName, linesPropCa, axesPropCa)
             % NOTE: Automatically derives panel tag.
+            
             panelTag = zvName;
             
             zvEpoch = D.data.Epoch.data;
@@ -458,7 +459,9 @@ classdef summary_plot < handle
             nSps        = size(zvDataCa{1}, 2);    % SPS = Samples Per Snapshot
             assert(nSps >= 2)
             
-            zvEpoch  = EJ_library.so.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
+            zvEpoch = EJ_library.so.convert_N_to_1_SPR_Epoch(...
+                zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
+            
             for i = 1:nChannels
                 zvData = zvDataCa{i}(bRecords, :);
                 
@@ -610,7 +613,7 @@ classdef summary_plot < handle
             zvEpoch = zvEpoch(bRecords, :);
             zvData  = zvData( bRecords, :);
 
-            pcfc = @() (solo.sp.summary_plot.panel_spectrogram_snapshots(...
+            pcfc = @() (solo.sp.summary_plot.panel_spectrogram_SWF(...
                 sprintf('%s %s spectrogram', panelTagSignalsStr, lsfName), ...
                 zvEpoch, ...
                 zvData, ...
@@ -779,9 +782,9 @@ classdef summary_plot < handle
         % tlLegend : Top-left  (TL) legend string.
         % trLegend : Top-right (TR) legend string.
         %
-        function hAxes = panel_spectrogram_snapshots(...
-                panelTag, zvEpoch, zvData, ...
-                samplingFreqHz, tlLegend, trLegend, colLimits)
+        function hAxes = panel_spectrogram_SWF(...
+                panelTag, zvEpoch, zvData, samplingFreqHz, ...
+                tlLegend, trLegend, colLimits)
             
             % NOTE: Multiple-row labels causes trouble for the time series'
             % ylabels.
@@ -876,7 +879,7 @@ classdef summary_plot < handle
             irf_legend(hAxes, tlLegend, solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
             irf_legend(hAxes, trLegend, solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
             
-            colormap(solo.sp.summary_plot.COLORMAP)            
+            colormap(solo.sp.summary_plot.COLORMAP)
             caxis(hAxes, colLimits)            
             % NOTE: Chosen ticks should cover both Hz and kHz, for all sampling
             % frequencies.

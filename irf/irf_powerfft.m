@@ -154,9 +154,9 @@ clear data
 
 
 
-%====================================
-% Remove samples with timestamp==NaN
-%====================================
+%======================================================
+% Remove samples with TIMESTAMP==NaN (not sample==NaN)
+%======================================================
 iKeep = find(~isnan(tAllDataSec));
 if isempty(iKeep)
   error('All timestamps are NaN.');

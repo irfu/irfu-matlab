@@ -7,9 +7,6 @@
 % by the spdf* TT2000 functions.
 %
 %
-% NOTE: Compare EJ_library.utils.extract_subinteger.
-%
-%
 % CONVENTIONS
 % ===========
 % MRD = Mixed Radix Digits, i.e. the digits in mixed radix number.

@@ -153,8 +153,12 @@ function hAxesArray = plot_LFR_SWF(filePath)
         Sp.add_panel_spectrogram_SWF_LSF('V12 DC/AC', zvEpoch, zvDcAc12, zvSamplRateHz, 3, 'V12\_DC/AC', [-10,-7]);
         Sp.add_panel_spectrogram_SWF_LSF('V23 DC/AC', zvEpoch, zvDcAc23, zvSamplRateHz, 3, 'V23\_DC/AC', [-10,-7]);
     end
+    
+    
+    
     %===========================================================================
     % F0-F2 time series
+    % -----------------
     % IMPLEMENTATION NOTE: Panel tags have to be unique, or otherwise the axes
     % will be reused.
     %===========================================================================
@@ -184,7 +188,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
         % AC diffs (no single)
         %======================
         % NOTE: Assumes that DC single+diffs have already been plotted (in
-        % separate panels).
+        % separate panels). There should be another "if" statement for that.
         for iLsf = 1:3
             Sp.add_panel_time_series_SWF_LSF(...
                 'V12,V23 AC', zvEpoch, {zvAc12, zvAc23}, zvSamplRateHz, iLsf, ...
