@@ -113,7 +113,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     % Good color scale? Which use?
     % Was [-9, -5] for DC only till YK suggested adding AC. /2021-03-15
     % Ex: 2020-08-06, 2020-06-29: high intensities ==> max
-    Sp.add_panel_spectrogram_CWF('V23 DC/AC spectrogram', zvEpoch, zvDcAc23, zvSamplFreqHz, 'V23\_DC/AC', [-8.5, -5.5]);
+    Sp.add_panel_spectrogram_CWF('V23 DC/AC spectrogram', zvEpoch, zvDcAc23, zvSamplFreqHz, 'V23\_DC/AC', [-8.5, -6.0]);
     
     Sp.add_panel_time_series_CWF( 'V1 DC time series', zvEpoch, zvDc1,  'V1_DC [V]');
     Sp.add_panel_time_series_CWF('V12 DC/AC time series', zvEpoch, [zvDc12, zvAc12], 'V12_DC/AC [V]', 'trLegend', {'DC', 'AC'});
