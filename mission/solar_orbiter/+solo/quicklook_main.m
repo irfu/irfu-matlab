@@ -17,6 +17,9 @@
 %
 % ARGUMENTS
 % =========
+% runNonweeklyPlots, runWeeklyPlots
+%       Whether to run the resp. groups of plots.
+%       NOTE: Permits chars "0" and "1" for when calling from bash.
 % utcBegin, utcEnd : Strings.
 %       Defines time interval for which quicklooks should be generated.
 % outputDir : Path to directory.
@@ -26,7 +29,7 @@
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
 % Uppsala, Sweden. Modified by Erik P G Johansson.
 %
-function quicklook_main(utcBegin, utcEnd, speedDataDir, outputDir)
+function quicklook_main(runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd, speedDataDir, outputDir)
 % PROPOSAL: Log wall time used.
 %   NOTE: ~Can not time per plot.
 %   PROPOSAL: Log wall time per day of data.
@@ -36,6 +39,11 @@ function quicklook_main(utcBegin, utcEnd, speedDataDir, outputDir)
 %   NOTE: Would need to have arguments for debugging constants like DISABLE_B etc.
 % PROPOSAL: Arguments for processing only weekly or nonweekly plots.
 %   PRO: Useful for rerunning only relevant subsets.
+
+
+
+runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
+runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
 
 
 
@@ -63,10 +71,7 @@ solo.db_cache('on', 'save')
 % Constants
 %===========
 % "Disabling B" speeds up solo.quicklooks_24_6_2_h(). Useful for testing.
-ENABLE_B               = 1;
-% Useful for testing/debugging.
-ENABLE_NONWEEKLY_PLOTS = 1;
-ENABLE_WEEKLY_PLOTS    = 1;
+ENABLE_B = 1;
 
 % Specify subdirectories for saving the respective types of plots.
 PATHS.path_2h  = fullfile(outputDir, '2h' );
@@ -100,7 +105,7 @@ end
 %=============================================
 % Run the code for 2-, 6-, 24-hour quicklooks
 %=============================================
-if ENABLE_NONWEEKLY_PLOTS
+if runNonweeklyPlots
     
     times_1d = make_tints(TimeInterval,1); % Daily time-intervals
 
@@ -154,7 +159,7 @@ end
 %===================================
 % Run the code for weekly overviews
 %===================================
-if ENABLE_WEEKLY_PLOTS
+if runWeeklyPlots
     
     times_7d = make_tints(TimeInterval,7);% weekly time-intervals
     
@@ -204,6 +209,8 @@ wallTimeSec   = toc(tSec);
 wallTimeHours = wallTimeSec/3600;
 plotsTimeDays = (TimeInterval.tts(2) - TimeInterval.tts(1)) / 86400;
 
+% NOTE: Execution speed may vary by orders of magnitude depending on settings
+% (nonweekly vs weekly plots). May therefore want scientific notation.
 fprintf('Wall time used:                  %g [h]\n',     wallTimeHours);
 fprintf('Wall time used per day of plots: %g [h/day]\n', wallTimeHours / plotsTimeDays);
 
@@ -261,4 +268,25 @@ function OutputTs = cell_array_TS_to_TS(InputTs)
         end
     end
     
+end
+
+
+
+% Interpret argument for main function interface. Intended accept and normalize
+% arguments which are either
+% (1) MATLAB-friendly (numeric/logical), or
+% (2) bash script-friendly (strings).
+%
+function value = interpret_argument_flag(arg)
+    assert(isscalar(arg), 'Flag argument is not scalar.')
+    
+    if isnumeric(arg) || islogical(arg)
+        value = logical(arg);
+    elseif ischar(arg) && arg=='0'
+        value = false;
+    elseif ischar(arg) && arg=='1'
+        value = true;
+    else
+        error('Can not interpret argument flag. Illegal format.')
+    end
 end
