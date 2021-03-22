@@ -48,6 +48,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %   'facMatrix'    - specify rotation matrix to FAC system
 %   'mwidthcoef'   - specify coefficient to multiple Morlet wavelet width by. 1
 %   corresponds to standard Morlet wavelet.
+%   'deltaT'           - step between spectra in seconds
 %
 %  Examples:
 %
@@ -64,6 +65,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 % collaborative research project which has received funding from the
 % European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
 % under grant agreement n. 284520.
+ticStart = tic;
 
 % Begin temporary fix to convert TS format to older format (Must include spacecraft position)
 if isa(e,'TSeries')
@@ -135,6 +137,11 @@ while 1
         error('NAV requires a second integer argument')
       end
       nWavePeriodToAverage = args{2}; l = 2;
+    case 'deltat'
+      if length(args)==1 || ~isnumeric(args{2}) 
+        error('NAV requires a second integer argument')
+      end
+      deltaT = args{2}; l = 2;
     case 'facmatrix'
       if length(args)==1 || ~isstruct(args{2}) ||...
           ~isfield(args{2},'t') || ~isfield(args{2},'rotMatrix')
@@ -190,8 +197,12 @@ else
     error('FREQ_INT must be [f_min f_max], f_min<f_max')
   end
   other_range=1;
-  outSampling = freq_int(2)/5;
-  deltaT = 1/outSampling;
+  if exist('deltaT','var')
+    outSampling = 1/deltaT;
+  else
+    outSampling = freq_int(2)/5;
+    deltaT = 1/outSampling;
+  end
   outTime = (dB(1,1):deltaT:dB(end,1))' + deltaT/2; outTime(end) = [];
 end
 if wantEE % Check the sampling rate
@@ -312,6 +323,7 @@ if wantEE
 else
   fprintf('irf_ebsp ... calculate B wavelet transform ....');
 end
+
 
 %% Loop through all frequencies
 ndata = length(inTime); nfreq = length(a); ndataOut=length(outTime);
@@ -610,7 +622,6 @@ for i=1:length(idxNanEISR2)-1
     end
   end
 end
-
 
 
 %%
