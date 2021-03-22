@@ -80,22 +80,22 @@ for iTint=1:length(times_1d)-1
     Data.Vrpw = S.V_RPW_1h.tlim(Tint);
 
     % E-field:
-    Data.E = solo.db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
+    Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
 
     % RPW density:
-    Data.Ne = solo.db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
+    Data.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
 
     % B-field:
-    Data.B = solo.db_get_ts('solo_L2_mag-srf-normal','B_SRF', Tint);
+    Data.B = db_get_ts('solo_L2_mag-srf-normal','B_SRF', Tint);
 
     % Proton & alpha temperature:
-    Data.Tpas = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
+    Data.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
 
     % Proton & alpha velocity:
-    Data.Vpas = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','V_SRF', Tint);
+    Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_SRF', Tint);
 
     % Proton & alpha density:
-    Data.Npas = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
+    Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
 
     % Solar Orbiter position
     % Note: solopos uses SPICE, but should be taken care of by
@@ -129,22 +129,22 @@ for iTint=1:length(times_7d)-1
     data2.Vrpw = S.V_RPW.tlim(Tint);
 
     % E-field:
-    data2.E = solo.db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
+    data2.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
 
     % RPW density:
-    data2.Ne = solo.db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
+    data2.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
 
     % B-field:
-    data2.B = solo.db_get_ts('solo_L2_mag-rtn-normal-1-minute','B_RTN', Tint);
+    data2.B = db_get_ts('solo_L2_mag-rtn-normal-1-minute','B_RTN', Tint);
 
     % Proton & alpha temperature:
-    data2.Tpas = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
+    data2.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
 
     % Proton & alpha velocity:
-    data2.Vpas = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','V_SRF', Tint);
+    data2.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_SRF', Tint);
 
     % Proton & alpha density:
-    data2.Npas = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
+    data2.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
 
     % Solar Orbiter position
     % Note: solopos uses SPICE, but should be taken care of by
@@ -174,3 +174,38 @@ end
 
 
 end    % function
+
+% Wrapper around solo.db_get_ts() that normalizes the output to a TSeries.
+%
+% NOTE: solo.db_get_ts() has been observed to return cell array of TSeries
+% (instead of TSeries) for Npas, Tpas and Vpas for
+% solo.quicklook_main('2020-10-21T00:00:00', '2020-10-28T00:00:00', '/data/solo/data_yuri', ...)
+% There might be other cases but those are as of yet unknown.
+% /Erik P G Johansson 2021-03-22
+%
+function Ts = db_get_ts(varargin)
+    Ts = solo.db_get_ts(varargin{:});
+    
+    % Normalize (TSeries or cell array) --> TSeries.
+    if iscell(Ts)
+        Ts = cell_array_TS_to_TS(Ts);
+    end
+end
+
+
+
+% Takes a cell-array of TSeries and merges them to one TSeries.
+function OutputTs = cell_array_TS_to_TS(InputTs)
+    
+    assert(iscell(InputTs))
+
+    nCells   = numel(InputTs);
+    OutputTs = InputTs{1};
+
+    if nCells>1
+        for iCell = 2:nCells    % NOTE: Begins at 2.
+            OutputTs = OutputTs.combine(InputTs{iCell});
+        end
+    end
+    
+end
