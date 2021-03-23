@@ -55,7 +55,7 @@ fi
 
 
 
-declare -r MATLAB_FUNCTION="solo.ql.bia_ql3"
+declare -r MATLAB_FUNCTION="solo.sp.bia_ql3"
 
 #=====================
 # Interpret arguments
