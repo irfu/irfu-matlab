@@ -9,7 +9,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-27.
 %
-function plot_HK(filePath)
+function hAxesArray = plot_HK(filePath)
     % SOLO_HK_RPW-BIA_V01 zVariables:
     %
     % Variable Information (0 rVariable, 38 zVariables)
@@ -194,7 +194,7 @@ function plot_HK(filePath)
 
 
     
-    Sp.finalize('BIAS HK', filePath);
+    hAxesArray = Sp.finalize('BIAS HK', filePath);
 
 end
 
