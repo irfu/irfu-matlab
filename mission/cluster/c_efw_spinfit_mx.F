@@ -13,8 +13,8 @@ c
 #include "fintrf.h"
 #define MAXTERMS_FIT 9
 #define NaN -159e7
-#ifndef mwSize
-# define mwSize integer*4
+#ifndef mwsize
+# define mwsize integer*4
 #endif
 
 
@@ -33,27 +33,22 @@ c data   - EFW data from pair in mV/m, should correspond to te
 c pha    - phase of the current boom pair in radians, should correspond to te
 
 	
-	mwPointer plhs(*), prhs(*)
+	mwpointer plhs(*), prhs(*)
 C-----------------------------------------------------------------------
 C
 
 	integer nlhs, nrhs, mxIsNumeric
-#if MX_HAS_INTERLEAVED_COMPLEX
-	mwPointer mxGetDoubles
-#else
-	mwPointer mxGetPr
-#endif
-	mwPointer mxCreateDoubleMatrix
-	mwSize mxGetM, mxGetN
-	mwSize m, n, size
+	mwpointer mxGetPr, mxCreateDoubleMatrix
+	mwsize mxGetM, mxGetN
+	mwsize m, n, size
 	
-	mwPointer pr_tmp, pr_te, pr_data, pr_pha
+	mwpointer pr_tmp, pr_te, pr_data, pr_pha
 	integer maxit, minpts, nterms
 c local
 	real*8 tvar
 	integer ndata, nspins
 	integer*8 tstart
-	mwPointer pr_ts, pr_sfit, pr_sdev, pr_iter, pr_nout
+	mwpointer pr_ts, pr_sfit, pr_sdev, pr_iter, pr_nout
 	
 	intrinsic nint
 	
@@ -75,11 +70,7 @@ c	maxit		argument #1
 	if (size .ne. 1) then
 		call mexErrMsgTxt('MAXIT must be scalar')
 	endif
-#if MX_HAS_INTERLEAVED_COMPLEX
-	pr_tmp = mxGetDoubles(prhs(1))
-#else
 	pr_tmp = mxGetPr(prhs(1))
-#endif
 	call mxCopyPtrToReal8(pr_tmp, tvar, 1)
 	maxit = nint(tvar)
 	if (maxit .lt. 1) then
@@ -94,11 +85,7 @@ c	nterms		argument #3
 	if (size .ne. 1) then
 		call mexErrMsgTxt('NTERMS must be scalar')
 	endif
-#if MX_HAS_INTERLEAVED_COMPLEX
-	pr_tmp = mxGetDoubles(prhs(3))
-#else
 	pr_tmp = mxGetPr(prhs(3))
-#endif
 	call mxCopyPtrToReal8(pr_tmp, tvar, 1)
 	nterms = nint(tvar)
 	if (nterms .le. 1 .or. nterms .gt. MAXTERMS_FIT .or.
@@ -114,11 +101,7 @@ c	minpts		argument #2
 	if (size .ne. 1) then
 		call mexErrMsgTxt('MINPTS must be scalar')
 	endif
-#if MX_HAS_INTERLEAVED_COMPLEX
-	pr_tmp = mxGetDoubles(prhs(2))
-#else
 	pr_tmp = mxGetPr(prhs(2))
-#endif
 	call mxCopyPtrToReal8(pr_tmp, tvar, 1)
 	minpts = nint(tvar)
 	if (minpts .le. nterms) then
@@ -132,11 +115,7 @@ c	te		argument #4
 	if (m .ne. 1) then
 		call mexErrMsgTxt('TE must be n x 1 vector')
 	endif
-#if MX_HAS_INTERLEAVED_COMPLEX
-	pr_tmp = mxGetDoubles(prhs(4))
-#else
 	pr_te = mxGetPr(prhs(4))
-#endif
 	
 c	e-field		argument #5
 	m = mxGetM(prhs(5))
@@ -144,11 +123,7 @@ c	e-field		argument #5
 	if (m .ne. 1) then
 		call mexErrMsgTxt('DATA must be n x 1 vector')
 	endif
-#if MX_HAS_INTERLEAVED_COMPLEX
-	pr_tmp = mxGetDoubles(prhs(5))
-#else
 	pr_data = mxGetPr(prhs(5))
-#endif
 	if (n .ne. ndata) then
 		call mexErrMsgTxt('TE and DATA must be of the same length')
 	endif
@@ -159,11 +134,7 @@ c	phase		argument #6
 	if (m .ne. 1) then
 		call mexErrMsgTxt('phase must be n x 1 vector')
 	endif
-#if MX_HAS_INTERLEAVED_COMPLEX
-	pr_tmp = mxGetDoubles(prhs(6))
-#else
 	pr_pha = mxGetPr(prhs(6))
-#endif
 	if (n .ne. ndata) then
 		call mexErrMsgTxt('TE and PHA must be of the same length')
 	endif
@@ -184,19 +155,11 @@ c
 	plhs(4) = mxCreateDoubleMatrix(1,nspins,0)
 	plhs(5) = mxCreateDoubleMatrix(1,nspins,0)
 	
-#if MX_HAS_INTERLEAVED_COMPLEX
-	pr_ts = mxGetDoubles(plhs(1))
-	pr_sfit = mxGetDoubles(plhs(2))
-	pr_sdev  = mxGetDoubles(plhs(3))
-	pr_iter = mxGetDoubles(plhs(4))
-	pr_nout = mxGetDoubles(plhs(5))
-#else
 	pr_ts = mxGetPr(plhs(1))
 	pr_sfit = mxGetPr(plhs(2))
 	pr_sdev  = mxGetPr(plhs(3))
 	pr_iter = mxGetPr(plhs(4))
 	pr_nout = mxGetPr(plhs(5))
-#endif
 c	write(*,*) 'Ready to go.'
 
 	call spinfit( maxit,minpts,nterms,tstart,
