@@ -98,22 +98,37 @@ function hAxesArray = plot_LFR_CWF(filePath)
     zvAc12        = get_CDF_zv_data(D, 'EAC', 1);
     zvAc23        = get_CDF_zv_data(D, 'EAC', 3);
     zvSamplFreqHz = D.data.SAMPLING_RATE.data;
-    clear D
+    clear D    % To prove that D will not be used later.
+    
+    zvAc12 = remove_mean(zvAc12);
+    zvAc23 = remove_mean(zvAc23);
+    
+    zvDcAc12 = solo.sp.utils.merge_zvs(zvDc12, zvAc12);
+    zvDcAc23 = solo.sp.utils.merge_zvs(zvDc23, zvAc23);
     
     Sp = solo.sp.summary_plot();
     
-    Sp.add_panel_spectrogram_CWF( 'V1 DC spectrogram', zvEpoch, zvDc1,  zvSamplFreqHz, 'V1\_DC',  [-7, -3]);
-    Sp.add_panel_spectrogram_CWF('V12 DC spectrogram', zvEpoch, zvDc12, zvSamplFreqHz, 'V12\_DC', [-8, -4]);
-    Sp.add_panel_spectrogram_CWF('V23 DC spectrogram', zvEpoch, zvDc23, zvSamplFreqHz, 'V23\_DC', [-9, -5]);
-
-    Sp.add_panel_time_series_CWF( 'V1 DC time series', zvEpoch, zvDc1,  'V1_DC [V]',  0);
-    Sp.add_panel_time_series_CWF('V12 DC time series', zvEpoch, zvDc12, 'V12_DC [V]', 0);
-    Sp.add_panel_time_series_CWF('V23 DC time series', zvEpoch, zvDc23, 'V23_DC [V]', 0);
-    Sp.add_panel_time_series_CWF('V12 AC time series', zvEpoch, zvAc12, 'V12_AC [V]', 1);
-    Sp.add_panel_time_series_CWF('V23 AC time series', zvEpoch, zvAc23, 'V23_AC [V]', 1);
-
+    Sp.add_panel_spectrogram_CWF( 'V1 DC spectrogram',    zvEpoch, zvDc1,    zvSamplFreqHz, 'V1\_DC',     [-7, -3]);
+    Sp.add_panel_spectrogram_CWF('V12 DC/AC spectrogram', zvEpoch, zvDcAc12, zvSamplFreqHz, 'V12\_DC/AC', [-8, -4]);
+    % Good color scale? Which use?
+    % Was [-9, -5] for DC only till YK suggested adding AC. /2021-03-15
+    % Ex: 2020-08-06, 2020-06-29: high intensities ==> max
+    Sp.add_panel_spectrogram_CWF('V23 DC/AC spectrogram', zvEpoch, zvDcAc23, zvSamplFreqHz, 'V23\_DC/AC', [-8.5, -6.0]);
+    
+    Sp.add_panel_time_series_CWF( 'V1 DC time series',    zvEpoch,  zvDc1,           'V1_DC [V]');
+    Sp.add_panel_time_series_CWF('V12 DC/AC time series', zvEpoch, [zvDc12, zvAc12], 'V12_DC/AC [V]', 'trLegend', {'DC', 'AC'});
+    Sp.add_panel_time_series_CWF('V23 DC/AC time series', zvEpoch, [zvDc23, zvAc23], 'V23_DC/AC [V]', 'trLegend', {'DC', 'AC'});
+    
     hAxesArray = Sp.finalize('LFR CWF L2', filePath);
 
+end
+
+
+
+% IMPLEMENTATION NOTE: Must be able to handle NaN.
+% Empirically: Using detrend() returns NaN if any samples are NaN.
+function x = remove_mean(x)
+    x = x - mean(x, 'omitnan');
 end
 
 

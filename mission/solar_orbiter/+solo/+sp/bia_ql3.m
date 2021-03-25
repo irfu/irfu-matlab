@@ -14,7 +14,8 @@
 % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/42
 % for the OS SHELL interface requested by ROC.
 % > shellExecutable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
-% This code is therefore not very versatile.
+% This function's interface mirrors the bash/OS script interface to simplify the
+% bash wrapper script. The code is therefore not very versatile.
 %
 %
 % NOTES
@@ -32,9 +33,10 @@
 % ARGUMENTS
 % =========
 % hkBiaDir
-%       Path to (day) directory with HK.
+%       Path to (day) directory with BIAS HK datasets directly underneath it.
 % lfrWfDirPath
-%       Path to (day) directory with L2 LFR CWF + SWF.
+%       Path to (day) directory with L2 LFR CWF + SWF datasets directly
+%       underneath it.
 % --
 % NOTE: Code fails gracefully and continues if the HK or CWF/SWF datasets or
 % directories do not exist. This is useful since datasets as well as directories
