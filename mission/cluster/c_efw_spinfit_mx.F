@@ -8,7 +8,6 @@ c mex -v c_efw_spinfit_mx.F FFLAGS='$FFLAGS -O2 -mtune=opteron -funroll-loops'
 c 
 c for gfortran under Linux, use the -ffixed-line-length-none flag.
 c
-c $Id$
 c
 #include "fintrf.h"
 #define MAXTERMS_FIT 9
@@ -55,6 +54,7 @@ c local
 	integer*8 tstart
 	mwPointer pr_ts, pr_sfit, pr_sdev, pr_iter, pr_nout
 	
+c	set default rounding be to nearest integer
 	intrinsic nint
 	
 c	write(*,*) 'starting ...'
@@ -63,9 +63,9 @@ c
 c check for proper number of arguments
 c
 	if (nrhs .ne. 6) then
-	call mexErrMsgTxt('c_efw_spinfit_mx needs six input args')
+		call mexErrMsgTxt('c_efw_spinfit_mx needs six input args')
 	elseif (nlhs .gt. 5) then
-	call mexErrMsgTxt('c_efw_spinfit_mx needs five output args')
+		call mexErrMsgTxt('c_efw_spinfit_mx needs five output args')
 	endif
 
 c	maxit		argument #1
