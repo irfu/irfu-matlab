@@ -1,4 +1,4 @@
-% function quicklooks_7days(data,paths,Tint)
+function quicklooks_7days(data,paths,Tint)
 % Given data in the struct 'data' (see solo.quicklook_main), generates
 % plots and saves in the paths specified in the struct 'paths' (see
 % solo.quicklook_main). Tint should be a 7-day time interval, e.g.
