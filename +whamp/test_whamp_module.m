@@ -73,9 +73,30 @@ classdef test_whamp_module < matlab.unittest.TestCase
         'flagSolutionFound',    int32(1), ...
         'flagTooHeavilyDamped', int32(0), ...
         'flagNoConvergence',    int32(0));
-      testCase.verifyEqual(testCase.output.flagSolutionFound, expOutput.flagSolutionFound); % strict equal
-      testCase.verifyEqual(testCase.output.VGZ, expOutput.VGZ, 'AbsTol', 0.01); % equal within some error margin
-      %% TODO: Write some more verificaitons
+      % Now verify output with expected output (allow for some margin of
+      % error in some floating point parameters)
+      testCase.verifyEqual(testCase.output.kperp, expOutput.kperp);
+      testCase.verifyEqual(testCase.output.kpar,  expOutput.kpar);
+      testCase.verifyEqual(testCase.output.f,     expOutput.f,   'RelTol', 0.01); % within some error margin (+/-1% in this case)
+      testCase.verifyEqual(testCase.output.Ex,    expOutput.Ex,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.Ey,    expOutput.Ey,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.Ez,    expOutput.Ez,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.Bx,    expOutput.Bx,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.By,    expOutput.By,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.Bz,    expOutput.Bz,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.Sx,    expOutput.Sx,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.Sy,    expOutput.Sy,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.Sz,    expOutput.Sz,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.EB,    expOutput.EB,  'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.VGP,   expOutput.VGP);
+      testCase.verifyEqual(testCase.output.VGZ,   expOutput.VGZ, 'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.SGP,   expOutput.SGP);
+      testCase.verifyEqual(testCase.output.SGZ,   expOutput.SGZ, 'RelTol', 0.01);
+      testCase.verifyEqual(testCase.output.u,     expOutput.u,   'RelTol', 0.01);
+      % And flags should of course be strict equal
+      testCase.verifyEqual(testCase.output.flagSolutionFound,    expOutput.flagSolutionFound);
+      testCase.verifyEqual(testCase.output.flagTooHeavilyDamped, expOutput.flagTooHeavilyDamped);
+      testCase.verifyEqual(testCase.output.flagNoConvergence,    expOutput.flagNoConvergence);
     end
   end
 end
