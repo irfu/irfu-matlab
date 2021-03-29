@@ -56,7 +56,7 @@ irf
 %================================
 % Specify Solar Orbiter database
 %================================
-% For data on the server the following two are sufficient. You also need
+% For data on the IRFU server the following two are sufficient. You also need
 % V_RPW.mat and V_RPW_1h.mat, found on solo/data_yuri.
 solo.db_init('local_file_db', '/data/solo/');
 solo.db_init('local_file_db', '/data/solo/data_irfu');
