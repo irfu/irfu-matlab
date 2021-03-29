@@ -1,4 +1,4 @@
-% function quicklooks_24_6_2_h(data,paths,Tint)
+function quicklooks_24_6_2_h(data,paths,Tint)
 % Given data in the struct 'data' (see solo.quicklook_main), generates
 % plots and saves in the paths specified in the struct 'paths' (see
 % solo.quicklook_main). Computes spectrum of B, so takes a while to run.
@@ -300,7 +300,7 @@ for i6h = 1:4
     irf_zoom(h(1),'y');
     %Zoom on N/|B| plot..
     Neflag = ~isempty(data.Ne.tlim(Tint_6h));
-    Npasflag = ~isempty(data.Npas.tlim(Tint_6h));
+    Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_6h));
     if Neflag && Npasflag
         yyaxis(h(2),'left');
         h(2).YLim=[min(floor([min(data.Npas.tlim(Tint_6h).data),min(data.Ne.tlim(Tint_6h).data)])),...
@@ -312,7 +312,7 @@ for i6h = 1:4
         yyaxis(h(2),'left');
         h(2).YLim=[floor(min(data.Npas.tlim(Tint_6h).data)),ceil(max(data.Npas.tlim(Tint_6h).data))];
     end
-    if ~isempty(data.B.tlim(Tint_6h))
+    if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_6h))
         yyaxis(h(2),'right');
         h(2).YLim=[floor(min(data.B.abs.tlim(Tint_6h).data)),ceil(max(data.B.abs.tlim(Tint_6h).data))];
     end
@@ -386,7 +386,7 @@ for i6h = 1:4
         irf_zoom(h(1),'y');
         
         Neflag = ~isempty(data.Ne.tlim(Tint_2h));
-        Npasflag = ~isempty(data.Npas.tlim(Tint_2h));
+        Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_2h));
         if Neflag && Npasflag
             yyaxis(h(2),'left');
             h(2).YLim=[min(floor([min(data.Npas.tlim(Tint_2h).data),min(data.Ne.tlim(Tint_2h).data)])),...
@@ -398,7 +398,7 @@ for i6h = 1:4
             yyaxis(h(2),'left');
             h(2).YLim=[floor(min(data.Npas.tlim(Tint_2h).data)),ceil(max(data.Npas.tlim(Tint_2h).data))];
         end
-        if ~isempty(data.B.tlim(Tint_2h))
+        if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_2h))
             yyaxis(h(2),'right');
             h(2).YLim=[floor(min(data.B.abs.tlim(Tint_2h).data)),ceil(max(data.B.abs.tlim(Tint_2h).data))];
         end
