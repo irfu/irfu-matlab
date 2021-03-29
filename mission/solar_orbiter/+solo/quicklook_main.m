@@ -120,7 +120,7 @@ if runNonweeklyPlots
         Tint=irf.tint(times_1d(iTint), times_1d(iTint+1));
         
         Data.Vrpw = S.V_RPW_1h.tlim(Tint);
-        
+        %%
         % E-field:
         Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
         
@@ -128,13 +128,13 @@ if runNonweeklyPlots
         Data.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
         
         % B-field:
-        Data.B = db_get_ts('solo_L2_mag-srf-normal','B_SRF', Tint);
+        Data.B = db_get_ts('solo_L2_mag-rtn-normal','B_RTN', Tint);
         
         % Proton & alpha temperature:
         Data.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
         
         % Proton & alpha velocity:
-        Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_SRF', Tint);
+        Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
         
         % Proton & alpha density:
         Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
@@ -142,7 +142,25 @@ if runNonweeklyPlots
         % Solar Orbiter position
         % Note: solopos uses SPICE, but should be taken care of by
         % "solo.get_position".
-        Data.solopos = solo.get_position(Tint,'frame','SOLO_SUN_RTN');
+        posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');        
+        if ~isempty(posSolO)
+            [radius, lon, lat] = cspice_reclat(posSolO.data');
+            Data.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
+        else
+            Data.solopos=posSolO;
+        end
+        
+        % Earth position (also uses SPICE)
+        dt=60*60;
+        et = Tint.start.tts:dt:Tint.stop.tts;
+        posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+        if ~isempty(posEarth)
+            [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
+            Data.earthpos = [E_radius',E_lon',E_lat'];    
+        else
+            Data.earthpos=[];
+        end
+        
         
         if ~ENABLE_B
             Data.B = [];
@@ -169,9 +187,10 @@ if runWeeklyPlots
     S = load(fullfile(speedDataDir, 'V_RPW'));
     
     for iTint=1:length(times_7d)-1
-        
+  
         % Time interval
         Tint = irf.tint(times_7d(iTint), times_7d(iTint+1));
+        
         Data2.Vrpw = S.V_RPW.tlim(Tint);
         
         % E-field:
@@ -187,7 +206,7 @@ if runWeeklyPlots
         Data2.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
         
         % Proton & alpha velocity:
-        Data2.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_SRF', Tint);
+        Data2.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
         
         % Proton & alpha density:
         Data2.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
@@ -195,7 +214,27 @@ if runWeeklyPlots
         % Solar Orbiter position
         % Note: solopos uses SPICE, but should be taken care of by
         % "solo.get_position".
-        Data2.solopos = solo.get_position(Tint,'frame','SOLO_SUN_RTN');
+        posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');        
+        if ~isempty(posSolO)
+            [radius, lon, lat] = cspice_reclat(posSolO.data');
+            Data2.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
+        else
+            Data2.solopos=posSolO;
+        end
+        
+        % Earth position (also uses SPICE)
+        dt=60*60;
+        et = Tint.start.tts:dt:Tint.stop.tts;
+        Tlength=Tint(end)-Tint(1);
+        dTimes = 0:dt:Tlength;
+        Times = Tint(1)+dTimes;
+        posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+        if ~isempty(posEarth)
+            [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
+            Data2.earthpos = irf.ts_vec_xyz(Times,[E_radius',E_lon',E_lat']);    
+        else
+            Data2.earthpos=TSeries();
+        end
         
         % Plot data and save figure
         solo.quicklooks_7days(Data2,PATHS,Tint)
