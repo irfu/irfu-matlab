@@ -6,6 +6,62 @@
 % The variable name cli can be used to refer to the cluster satellite number.
 % pwd can be used to refer to the appropriate l1 storage directory.
 
+2018-06-05T18:00:00Z 2018-06-06T02:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-12T12:00:00Z 2018-06-12T23:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-15T06:00:00Z 2018-06-15T08:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-16T15:00:00Z 2018-06-17T08:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-18T18:00:00Z 2018-06-19T08:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-20T15:00:00Z 2018-06-21T23:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-22T21:00:00Z 2018-06-22T23:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-25T06:00:00Z 2018-06-25T14:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-25T21:00:00Z 2018-06-25T23:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-27T15:00:00Z 2018-06-28T11:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2018-06-30T03:00:00Z 2018-06-30T05:59:59Z 124  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+
 2018-08-05T00:00:00Z 2018-08-07T23:59:59Z 14  % force MS offsets
  [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
