@@ -301,7 +301,7 @@ for i6h = 1:4
     irf_zoom(h(1:8),'x',Tint_6h);
     irf_zoom(h(1),'y');
     %Zoom on N/|B| plot..
-    Neflag = ~isempty(data.Ne.tlim(Tint_6h));
+    Neflag = ~isempty(data.Ne.tlim(Tint_6h)) && ~all(isnan(data.Ne.tlim(Tint_6h).data));
     Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_6h));
     if Neflag && Npasflag
         yyaxis(h(2),'left');
@@ -387,7 +387,7 @@ for i6h = 1:4
         irf_zoom(h(1:8),'x',Tint_2h);
         irf_zoom(h(1),'y');
         
-        Neflag = ~isempty(data.Ne.tlim(Tint_2h));
+        Neflag = ~isempty(data.Ne.tlim(Tint_2h)) && ~all(isnan(data.Ne.tlim(Tint_2h).data));
         Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_2h));
         if Neflag && Npasflag
             yyaxis(h(2),'left');
