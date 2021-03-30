@@ -105,19 +105,35 @@ PATHS.path_1w  = fullfile(outputDir, '1w' );
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
 VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 
-% Beginning of SPICE kernels.
-% MISSION_BEGIN = irf.time_array('2020-02-12T00:00:00');
+% Define boundary of weeks. Beginning of stated weekday.
+% NOTE: First day of data (launch+2 days) is 2020-02-12, a Wednesday.
+% Therefore using Wednesday as beginning of "week" for weekly plots (until
+% someone complains).
+% IMPLEMENTATION NOTE: 
+FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 
 
 
 tSec = tic();
 
+
+
+%=================================
 % Specify time interval for plots
-TimeInterval      = irf.tint(utcBegin, utcEnd);
-% TimeIntervalWeeks = irf.tint(...
-%     round_to_week(TimeInterval(1),  1), ...
-%     round_to_week(TimeInterval(2), -1));
-TimeIntervalWeeks      = TimeInterval;
+%=================================
+% Non-weekly plots.
+TimeIntervalNonWeeks = irf.tint(utcBegin, utcEnd);
+% Weekly plots
+tWeeksBegin = round_to_week(TimeIntervalNonWeeks(1),  1, FIRST_DAY_OF_WEEK);
+tWeeksEnd   = round_to_week(TimeIntervalNonWeeks(2), -1, FIRST_DAY_OF_WEEK);
+if tWeeksBegin <= tWeeksEnd
+    TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksEnd);
+else
+    % Empty week. ~Hackish.
+    TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksBegin);
+end
+% TimeIntervalWeeks = TimeInterval;
+
 
 
 %=======================
@@ -139,7 +155,7 @@ end
 %=============================================
 if runNonweeklyPlots
     
-    times_1d = make_tints(TimeInterval, 1); % Daily time-intervals
+    times_1d = make_tints(TimeIntervalNonWeeks, 1); % Daily time-intervals
 
     % Load data
     % This is the .mat file containing RPW speeds at 1h resolution.
@@ -278,7 +294,7 @@ end
 
 wallTimeSec   = toc(tSec);
 wallTimeHours = wallTimeSec/3600;
-plotsTimeDays = (TimeInterval.tts(2) - TimeInterval.tts(1)) / 86400;
+plotsTimeDays = (TimeIntervalNonWeeks.tts(2) - TimeIntervalNonWeeks.tts(1)) / 86400;
 
 % NOTE: Execution speed may vary by orders of magnitude depending on settings
 % (nonweekly vs weekly plots). May therefore want scientific notation.
@@ -361,4 +377,38 @@ function value = interpret_argument_flag(arg)
     else
         error('Can not interpret argument flag. Illegal format.')
     end
+end
+
+
+
+% Round timestamp down/up to beginning of week.
+%
+% t1, t2 : GenericTimeArray, scalar.
+function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
+    
+    assert(ismember(roundDir, [-1, 1]))
+
+
+
+    dv1  = EJ_library.cdf.TT2000_to_datevec(t1.ttns);
+    dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
+    
+    % Round to midnight.
+    dt1b = dateshift(dt1a, 'start', 'day');
+    if (roundDir == 1) && (dt1a ~= dt1b)
+        % IMPLEMENTATION NOTE: dateshift(..., 'end', 'day') "rounds" to one day after if
+        % timestamp is already midnight. Therefore do not want use that.
+        dt1b = dt1b + days(1);
+    end
+    
+    % Round to week boundary, as defined by beginningOfWeek.
+    % NOTE: dateshift( 'dayofweek' ) rounds to next match, including potentially
+    % the same day.
+    dt1c = dateshift(dt1b, 'dayofweek', firstDayOfWeek);
+    if (roundDir == -1) && (dt1b ~= dt1c)
+        dt1c = dt1c - days(7);
+    end
+    
+    tt2000 = EJ_library.cdf.datevec_to_TT2000(datevec(dt1c));
+    t2     = irf.time_array(tt2000);
 end
