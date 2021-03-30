@@ -17,6 +17,9 @@
 %
 % ARGUMENTS
 % =========
+% logoPath
+%       Path to IRF logo image.
+%       Empty ==> Do not plot any logo.
 % vhtDataDir
 %       Path to directory containing VHT (velocity) .mat files.
 % outputDir
@@ -33,7 +36,7 @@
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
 % Uppsala, Sweden. Modified by Erik P G Johansson.
 %
-function quicklook_main(vhtDataDir, outputDir, runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+function quicklook_main(logoPath, vhtDataDir, outputDir, runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 %
 % PROPOSAL: Log wall time used.
 %   NOTE: ~Can not time per plot.
@@ -196,7 +199,7 @@ if runNonweeklyPlots
         end
 
         % Plot data and save figure
-        solo.quicklooks_24_6_2_h(Data,PATHS,Tint)
+        solo.quicklooks_24_6_2_h(Data,PATHS,Tint,logoPath)
         
     end    % for
 end
@@ -266,7 +269,7 @@ if runWeeklyPlots
         end
         
         % Plot data and save figure
-        solo.quicklooks_7days(Data2,PATHS,Tint)
+        solo.quicklooks_7days(Data2,PATHS,Tint,logoPath)
         
     end    % for
 end

@@ -1,4 +1,4 @@
-function quicklooks_7days(data,paths,Tint)
+function quicklooks_7days(data,paths,Tint,logoPath)
 % Given data in the struct 'data' (see solo.quicklook_main), generates
 % plots and saves in the paths specified in the struct 'paths' (see
 % solo.quicklook_main). Tint should be a 7-day time interval, e.g.
@@ -114,8 +114,10 @@ logopos(3)=0.05;
 logopos(4)=logopos(3)*1095/800;
 ha2=axes('position',logopos);
 
-[x, map]=imread('irf_logo.png');
-image(x)
+if ~isempty(logoPath)
+    [x, map]=imread(logoPath);
+    image(x)
+end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
 tempdate=datestr(date,2);
