@@ -1,14 +1,14 @@
-c Spin fit routine obtained from KTH and matlab interface to it.
-c yuri@irfu.se, 2007
-c
-c This is a new 64-bit compatible version
-c
-c compile with the following flags for the best speed:
-c mex -v c_efw_spinfit_mx.F FFLAGS='$FFLAGS -O2 -mtune=opteron -funroll-loops'
-c 
-c for gfortran under Linux, use the -ffixed-line-length-none flag.
-c
-c
+C Spin fit routine obtained from KTH and matlab interface to it.
+C yuri@irfu.se, 2007
+C
+C This is a new 64-bit compatible version
+C
+C compile with the following flags for the best speed:
+C mex -v c_efw_spinfit_mx.F FFLAGS='$FFLAGS -O2 -mtune=opteron -funroll-loops'
+C 
+C for gfortran under Linux, use the -ffixed-line-length-none flag.
+C
+C
 #include "fintrf.h"
 #define MAXTERMS_FIT 9
 #define NaN -159e7
@@ -20,16 +20,16 @@ c
 	subroutine mexFunction(nlhs, plhs, nrhs, prhs)
 	
 	implicit none
-c	[ts,sfit,sdev,iter,nout] = ...
-c                  c_efw_spinfit_mx(maxit,minpts,nterms,te,data,pha);
-c
-c maxit  - maximum number of iterations (zero means infinity)
-c minpts - minimum fraction of spin to perform fit (1=all points)
-c nterms - number of terms to fit
-c t0     - start of the first spin
-c te     - EFW time in seconds (epoch)
-c data   - EFW data from pair in mV/m, should correspond to te
-c pha    - phase of the current boom pair in radians, should correspond to te
+C	[ts,sfit,sdev,iter,nout] = ...
+C                  c_efw_spinfit_mx(maxit,minpts,nterms,te,data,pha);
+C
+C maxit  - maximum number of iterations (zero means infinity)
+C minpts - minimum fraction of spin to perform fit (1=all points)
+C nterms - number of terms to fit
+C t0     - start of the first spin
+C te     - EFW time in seconds (epoch)
+C data   - EFW data from pair in mV/m, should correspond to te
+C pha    - phase of the current boom pair in radians, should correspond to te
 
 	
 	mwPointer plhs(*), prhs(*)
@@ -48,27 +48,27 @@ C
 	
 	mwPointer pr_tmp, pr_te, pr_data, pr_pha
 	integer maxit, minpts, nterms
-c local
+C local
 	real*8 tvar
 	integer ndata, nspins
 	integer*8 tstart
 	mwPointer pr_ts, pr_sfit, pr_sdev, pr_iter, pr_nout
 	
-c	set default rounding be to nearest integer
+C	set default rounding be to nearest integer
 	intrinsic nint
 	
-c	write(*,*) 'starting ...'
+C	write(*,*) 'starting ...'
 
-c
-c check for proper number of arguments
-c
+C
+C check for proper number of arguments
+C
 	if (nrhs .ne. 6) then
 		call mexErrMsgTxt('c_efw_spinfit_mx needs six input args')
 	elseif (nlhs .gt. 5) then
 		call mexErrMsgTxt('c_efw_spinfit_mx needs five output args')
 	endif
 
-c	maxit		argument #1
+C	maxit		argument #1
 	m = mxGetM(prhs(1))
 	n = mxGetN(prhs(1))
 	size = m*n
@@ -85,9 +85,9 @@ c	maxit		argument #1
 	if (maxit .lt. 1) then
 		call mexErrMsgTxt('MAXIT must be a positive nonzero number')
 	endif
-c	write(*,*) 'maxit: ',maxit
+C	write(*,*) 'maxit: ',maxit
 
-c	nterms		argument #3
+C	nterms		argument #3
 	m = mxGetM(prhs(3))
 	n = mxGetN(prhs(3))
 	size = m*n
@@ -105,9 +105,9 @@ c	nterms		argument #3
      +	mod(nterms,2) .eq. 0) then
 		call mexErrMsgTxt('NTERMS must be one of 3,5,7,9')
 	endif
-c	write(*,*) 'nterms: ',nterms
+C	write(*,*) 'nterms: ',nterms
 
-c	minpts		argument #2
+C	minpts		argument #2
 	m = mxGetM(prhs(2))
 	n = mxGetN(prhs(2))
 	size = m*n
@@ -124,9 +124,9 @@ c	minpts		argument #2
 	if (minpts .le. nterms) then
 		call mexErrMsgTxt('MINPTS must be larger than NTERMS')
 	endif
-c	write(*,*) 'minpts: ',minpts
+C	write(*,*) 'minpts: ',minpts
 	
-c	te		argument #4
+C	te		argument #4
 	m = mxGetM(prhs(4))
 	ndata = mxGetN(prhs(4))
 	if (m .ne. 1) then
@@ -138,7 +138,7 @@ c	te		argument #4
 	pr_te = mxGetPr(prhs(4))
 #endif
 	
-c	e-field		argument #5
+C	e-field		argument #5
 	m = mxGetM(prhs(5))
 	n = mxGetN(prhs(5))
 	if (m .ne. 1) then
@@ -153,7 +153,7 @@ c	e-field		argument #5
 		call mexErrMsgTxt('TE and DATA must be of the same length')
 	endif
 	
-c	phase		argument #6
+C	phase		argument #6
 	m = mxGetM(prhs(6))
 	n = mxGetN(prhs(6))
 	if (m .ne. 1) then
@@ -168,15 +168,15 @@ c	phase		argument #6
 		call mexErrMsgTxt('TE and PHA must be of the same length')
 	endif
 	
-c	compute number of spins
+C	compute number of spins
 	call getTStartNSpins(%val(pr_te),ndata,tstart,nspins)
-c	write(*,*) 'nspins: ', nspins
-c	write(*,*) 'tstart: ', tstart
-c	write(*,*) 'All inputs are ready.'
+C	write(*,*) 'nspins: ', nspins
+C	write(*,*) 'tstart: ', tstart
+C	write(*,*) 'All inputs are ready.'
 
-c
-c prepare output
-c
+C
+C prepare output
+C
 
 	plhs(1) = mxCreateDoubleMatrix(1,nspins,0)
 	plhs(2) = mxCreateDoubleMatrix(nterms,nspins,0)
@@ -197,67 +197,67 @@ c
 	pr_iter = mxGetPr(plhs(4))
 	pr_nout = mxGetPr(plhs(5))
 #endif
-c	write(*,*) 'Ready to go.'
+C	write(*,*) 'Ready to go.'
 
 	call spinfit( maxit,minpts,nterms,tstart,
      + nspins,ndata,%val(pr_te),%val(pr_data),
      + %val(pr_pha),%val(pr_ts),%val(pr_sfit),%val(pr_sdev),
      + %val(pr_iter),%val(pr_nout))
 	
-c	write(*,*) 'returning...'
+C	write(*,*) 'returning...'
 	
 	return
 	end
 
-c
-c Compure number of spins
-c
+C
+C Compure number of spins
+C
 	subroutine getTStartNSpins(te,ndata,tstart,nspins)
 	implicit none
-c in
+C in
 	integer ndata
 	real*8 te(ndata)
-c out
+C out
 	integer nspins
 	integer*8 tstart
 	
-c	write(*,*) 'te(1):', te(1)
-c	write(*,*) 'te(end):', te(ndata)
+C	write(*,*) 'te(1):', te(1)
+C	write(*,*) 'te(end):', te(ndata)
 	
 	tstart = te(1)/4
 	tstart = tstart*4
-c	write(*,*) 'tstart:', tstart
+C	write(*,*) 'tstart:', tstart
 	nspins = (te(ndata) - tstart)/4 + 1
 	
 	return
 	end
 
-c
-c call onesfit for every spin
-c
+C
+C call onesfit for every spin
+C
 	subroutine spinfit(maxit,minpts,nterms,t0,nspins,ndata,
      +	te,az,pha,ts,sfit,sdev,iter,nout)
 	implicit none
-c in
+C in
 	integer maxit, minpts, nterms, nspins, ndata
 	integer*8 t0
 	real*8 te(ndata), az(ndata), pha(ndata)
-c out
+C out
 	real*8 ts(nspins),sfit(nterms,nspins),sdev(nspins),iter(nspins)
 	real*8 nout(nspins)
-c local
+C local
 	integer idx, nn, i, j, idxs, idxe, ierr, niter, nbad
 	integer lim, spinstart
 	real*8 x(MAXTERMS_FIT), sigma
 	real*8 dt
 
-c initialize arrays
-c	write(*,*) 'spinfit: init arrays'
+C initialize arrays
+C	write(*,*) 'spinfit: init arrays'
 	do i = 1, nspins
-c		ts(i) =  t0 +(i-1)*4.0 +2.0
+C		ts(i) =  t0 +(i-1)*4.0 +2.0
 		dt = (i-1)*4.0 +2.0
 		ts(i) = (i-1)*4.0 +2.0 + dble(t0)
-c		write(*,*) 'i: ',i,' dt:', dt,' ts(i)-t0:',ts(i)-t0
+C		write(*,*) 'i: ',i,' dt:', dt,' ts(i)-t0:',ts(i)-t0
 	end do
 	do i = 1, nspins
 		do j = 1, nterms
@@ -274,20 +274,20 @@ c		write(*,*) 'i: ',i,' dt:', dt,' ts(i)-t0:',ts(i)-t0
 		nout(i) = NaN
 	end do
 	
-c	check if we have at least one spin of data
+C	check if we have at least one spin of data
 	if (ndata .lt. minpts) return
 	
 	idx = 1
 	do i=1, nspins
-c		write(*,*) 'spin: ',i
+C		write(*,*) 'spin: ',i
 		spinstart =  t0 +(i-1)*4
 		idxs = 0
 		idxe = 0
 		
 		do while (idxe .eq. 0)
-c			write(*,*) 'spin: ',i,' idx:',idx,' left: ',spinstart+4-te(idx)
+C			write(*,*) 'spin: ',i,' idx:',idx,' left: ',spinstart+4-te(idx)
 
-c			first point alredy more then one spin later then the first one
+C			first point alredy more then one spin later then the first one
 			if ( (idxs .eq. 0) .and. (te(idx) .ge. (spinstart+4) ) ) then
 				idxe = -1
 			else
@@ -297,18 +297,18 @@ c			first point alredy more then one spin later then the first one
 			endif
 		end do
 		
-c		check number of data points
+C		check number of data points
 		nn = idxe-idxs+1
-c		write(*,*) 'got: ',nn,' min:',minpts
+C		write(*,*) 'got: ',nn,' min:',minpts
 		if ( nn .gt. minpts) then
-c			write(*,*) 'start: ',idxs,' stop:',idxe
+C			write(*,*) 'start: ',idxs,' stop:',idxe
 			call onesfit(nterms,maxit,niter,lim,nn,pha(idxs),az(idxs),nbad,
      + x,sigma,ierr)
 			if (ierr .eq. 0) then
-c			write(*,*) '         spin: ok'
+C			write(*,*) '         spin: ok'
 				do j=1, nterms
 					sfit(j,i) = x(j)
-c					write(*,*) 'x(j):',x(j)
+C					write(*,*) 'x(j):',x(j)
 				end do
 				sdev(i) = sigma
 				iter(i) = real(niter)
@@ -320,54 +320,54 @@ c					write(*,*) 'x(j):',x(j)
 	return
 	end
 	
-c Module name: SFIT
-c
-c By:
-c Bengt H. Nilsson, KTH
-c
-c Module description:
-c
-c Modified:
-c by Yuri Khotyaintsev for g77 compiler
-c 1) replace structures
-c 2) use automatic array instead of pointers
+C Module name: SFIT
+C
+C By:
+C Bengt H. Nilsson, KTH
+C
+C Module description:
+C
+C Modified:
+C by Yuri Khotyaintsev for g77 compiler
+C 1) replace structures
+C 2) use automatic array instead of pointers
 
 	subroutine onesfit (fnterms,fitmax,fiter,flim,
      + nn,apha,az,nbad,x,sigma,ier)
 
-c Function name: SFIT
-c
-c Description:
-c Fit x(1)+x(2)*cos(pha)+x(3)*sin(pha)
-c         +x(4)*cos(2*pha)+x(5)*sin(2*pha)+... to data
-c
-c Constraints:
-c
-c Interface:
-c fit - structure containing fitting control
-c nn - number of data points
-c apha - array of phases
-c az - array of data
-c bad - array indicating bad points
-c x - array for resulting coefficients from fit
-c sigma - output value
-c ier - error indicator
-c
-c Returns: none
+C Function name: SFIT
+C
+C Description:
+C Fit x(1)+x(2)*cos(pha)+x(3)*sin(pha)
+C         +x(4)*cos(2*pha)+x(5)*sin(2*pha)+... to data
+C
+C Constraints:
+C
+C Interface:
+C fit - structure containing fitting control
+C nn - number of data points
+C apha - array of phases
+C az - array of data
+C bad - array indicating bad points
+C x - array for resulting coefficients from fit
+C sigma - output value
+C ier - error indicator
+C
+C Returns: none
 
 	implicit none
 
-c input
+C input
 	real*8 fomega
 	integer fnterms,fitmax,fiter,flim
 	integer nn
 	real*8 apha(nn),az(nn)
-c output
+C output
 	logical*1 bad(nn)
-c	real*8 rbad(nn)
+C	real*8 rbad(nn)
 	real*8 x(MAXTERMS_FIT),sigma
 	integer ier, nbad
-c local
+C local
 	real*8 omega
 	real*8 arg,pha,y
 	real*8 s(MAXTERMS_FIT,MAXTERMS_FIT+1),w(MAXTERMS_FIT+1),
@@ -387,15 +387,15 @@ c local
 	if (fnterms .gt. MAXTERMS_FIT .or.
      + mod(fnterms,2) .eq. 0) goto 999
 
-c	write(*,*) 'onesfit E:'
-c10	format(F6.4)
-c	do i = 1,nn
-c		write(*,10) az(i)
-c	end do
-c	write(*,*) 'onesfit PHA:'
-c	do i = 1,nn
-c		write(*,*) apha(i)
-c	end do
+C	write(*,*) 'onesfit E:'
+C10	format(F6.4)
+C	do i = 1,nn
+C		write(*,10) az(i)
+C	end do
+C	write(*,*) 'onesfit PHA:'
+C	do i = 1,nn
+C		write(*,*) apha(i)
+C	end do
 
 C Build normal equations system
 	do row = 1,fnterms
@@ -502,41 +502,41 @@ C Subtract from normal equations
 999	do i = 1,nn
 		if (bad(i)) then
 			nbad = nbad +1
-c			rbad(i) = 1.
-c			write(*,*) 'bad: ', i
-c		else
-c			rbad(i) = 0.
+C			rbad(i) = 1.
+C			write(*,*) 'bad: ', i
+C		else
+C			rbad(i) = 0.
 		end if
 	end do
 	
 	return
 	end
 	
-c Module name: SOLVE
-c
-c By:
-c Bengt H. Nilsson, KTH
-c
-c Module description:
-c
-c Modified:
+C Module name: SOLVE
+C
+C By:
+C Bengt H. Nilsson, KTH
+C
+C Module description:
+C
+C Modified:
 
 	SUBROUTINE SOLVE (A,N,X,IER)
 
-c Function name: SOLVE
-c
-c Description:
-c equation solver.
-c
-c Constraints:
-c
-c Interface:
-c A - equation system
-c N - number of equations
-c X - result
-c IER - error indicator
-c
-c Returns:
+C Function name: SOLVE
+C
+C Description:
+C equation solver.
+C
+C Constraints:
+C
+C Interface:
+C A - equation system
+C N - number of equations
+C X - result
+C IER - error indicator
+C
+C Returns:
 
 	implicit none
 
