@@ -86,8 +86,8 @@ Au=149597871; %Astronomical unit.
 
 if ~isempty(data.solopos.tlim(Tint))
     teststr = ['SolO: ',[' R=',sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/Au),'Au, '],...
-        [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'°, '],...
-        [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'°']];
+        [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'\circ, '],...
+        [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'\circ']];
     text1=text(h(7),-0.11,-0.4,teststr,'units','normalized','fontsize',18);
 
 
@@ -99,7 +99,7 @@ end
 
 % Add Earth longitude as text.
 if ~isempty(data.earthpos)
-    teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos.data(1,2)*180/pi)),'°'];
+    teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos.data(1,2)*180/pi)),'\circ'];
     text2=text(h(7),-0.11,-0.65,teststr,'units','normalized','fontsize',18);
 else
     teststr=char();

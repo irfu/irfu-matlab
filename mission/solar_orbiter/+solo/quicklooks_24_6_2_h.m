@@ -168,8 +168,8 @@ h(2).YLabel.Position=h(3).YLabel.Position;
 Au=149597871; %km
 if ~isempty(data.solopos.tlim(Tint))
     teststr = ['SolO: ',[sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/Au),'Au, '],...
-        [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'°, '],...
-        [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'°']];
+        [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'\circ, '],...
+        [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'\circ']];
     text1=text(h(8),-0.11,-0.5,teststr,'units','normalized','fontsize',18);
 else
     teststr=char();
@@ -178,7 +178,7 @@ end
 
 % Add Earth longitude as text.
 if ~isempty(data.earthpos)
-    teststr =['Earth: EcLon ',sprintf('%d',round(data.earthpos(1,2)*180/pi)),'°'];
+    teststr =['Earth: EcLon ',sprintf('%d',round(data.earthpos(1,2)*180/pi)),'\circ'];
     text2=text(h(8),-0.11,-0.75,teststr,'units','normalized','fontsize',18);
 else
     teststr=char();
@@ -361,8 +361,8 @@ for i6h = 1:4
     %Update text
     if ~isempty(data.solopos.tlim(Tint_6h))
         teststr = ['SolO: ',[sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/Au),'Au, '],...
-            [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'°, '],...
-            [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'°']];        
+            [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
+            [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'\circ']];
         text1.String=teststr;
     else
         text1.String=[];
@@ -448,8 +448,8 @@ for i6h = 1:4
         %Update text
         if ~isempty(data.solopos.tlim(Tint_2h))
             teststr = ['SolO: ',[sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/Au),'Au, '],...
-                [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'°, '],...
-                [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'°']];
+                [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
+                [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'\circ']];
             text1.String=teststr;
         else
             text1.String=[];
