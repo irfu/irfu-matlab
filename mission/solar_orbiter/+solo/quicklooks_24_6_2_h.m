@@ -314,7 +314,7 @@ for i6h = 1:4
         yyaxis(h(2),'left');
         h(2).YLim=[floor(min(data.Npas.tlim(Tint_6h).data)),ceil(max(data.Npas.tlim(Tint_6h).data))];
     end
-    if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_6h))
+    if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_6h)) && ~all(isnan(data.B.abs.tlim(Tint_6h).data))
         yyaxis(h(2),'right');
         h(2).YLim=[floor(min(data.B.abs.tlim(Tint_6h).data)),ceil(max(data.B.abs.tlim(Tint_6h).data))];
     end
@@ -400,7 +400,7 @@ for i6h = 1:4
             yyaxis(h(2),'left');
             h(2).YLim=[floor(min(data.Npas.tlim(Tint_2h).data)),ceil(max(data.Npas.tlim(Tint_2h).data))];
         end
-        if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_2h))
+        if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_2h)) && ~all(isnan(data.B.abs.tlim(Tint_2h).data))
             yyaxis(h(2),'right');
             h(2).YLim=[floor(min(data.B.abs.tlim(Tint_2h).data)),ceil(max(data.B.abs.tlim(Tint_2h).data))];
         end
