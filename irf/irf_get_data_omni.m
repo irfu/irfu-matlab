@@ -316,6 +316,7 @@ if getDataSuccess % success in downloading from internet
   end
   if isempty(cstart) % no data returned
     irf.log('warning','Can not get OMNI data from internet!');
+    display(c)
     f=[];
     return
   end
