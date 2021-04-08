@@ -226,7 +226,8 @@ function DataObj = init_modif_dataobj(...
         
         if isempty(DataObj.data.(zvName).data)
             
-            DataObj = handle_empty_zVar_anomaly(DataObj, zvName);
+            DataObj = handle_empty_zVar_anomaly(DataObj, zvName, ...
+                masterCdfPath, SETTINGS, L);
             
         end    % if isempty(DataObj.data.(zvName).data)
     end    % for
@@ -370,7 +371,9 @@ end
 
 % Function used by init_modif_dataobj() when finding empty zVar.
 % 
-function DataObj = handle_empty_zVar_anomaly(DataObj, zvName)
+function DataObj = handle_empty_zVar_anomaly(...
+        DataObj, zvName, masterCdfPath, SETTINGS, L)
+    
     %==============================================================
     % CASE: zVariable has zero records.
     % This indicates that it should have been set using PDV field.
