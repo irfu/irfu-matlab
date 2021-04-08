@@ -155,7 +155,7 @@ nComp     = size(samples, 2);
 % fix() : Round toward zero.
 % nSpectras = Number of time intervals for which spectras should be made.
 % STI = Spectrum Time Interval
-nSti         = fix(((timeSec2-timeSec1)*samplFreqHz+1) * (1+overlap)/nFft);
+nSti         = fix( ( (timeSec2-timeSec1)*samplFreqHz + 1 ) / (1-overlap) / nFft );
 stiFirstSec1 = timeSec1 - 0.5/samplFreqHz;   % Time of beginning of first STI.
 stiLengthSec = nFft/samplFreqHz;             % Length of one STI.
 
