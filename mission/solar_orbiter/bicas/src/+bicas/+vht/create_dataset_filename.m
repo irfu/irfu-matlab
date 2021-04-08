@@ -17,7 +17,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-03-30.
 %
-function filename = derive_dataset_filename(yearMonth, verNbr)
+function filename = create_dataset_filename(yearMonth, verNbr)
     % PROPOSAL: Automatic test code.
     %
     % Cf. "solo_L1_rpw-bia-current-cdag_20200401-20200430_V04.cdf"

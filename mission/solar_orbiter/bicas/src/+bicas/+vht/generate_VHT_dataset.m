@@ -41,37 +41,20 @@
 % Author: Erik P G Johansson, IRF Uppsala, Sweden
 % First created 2021-03-26.
 %
-function generate_VHT_datasets(...
-        matFilePath, masterCdfDir, yearMonth, outputDir, outputVerNbr, ...
+function generate_VHT_dataset(...
+        masterCdfDir, yearMonth, matFilePath, outputFile, ...
         emptyDatasetPolicy)
 %
-% TODO-DEC: Behaviour fro time interval without data?
-%   PROPOSAL: Error
-%   PROPOSAL: Produce empty dataset
-%   PROPOSAL: Do nothing.
-%
 % PROPOSAL: Write code so that it can be transplanted/moved to BICAS proper.
-%   CON: Can not be done if requires multiple input dataset of same
+%   CON: Can not be done since it requires multiple input datasets of same
 %        DATASET_ID.
 %
-% TODO-DEC: How specify time interval?
-%   PROPOSAL: Year-month
-%   PROPOSAL: Timestamp object. Any timestamp in month interval suffices.
+% TODO-DEC: How specify month?
+%   PROPOSAL: Year+month array, explicitly
+%   PROPOSAL: Some timestamp object. Any timestamp in month interval suffices.
 %       PROPOSAL: EpochTT
 %       PROPOSAL: datetime
 %       CON: Easy to extract year+month from timestamp formats.
-%
-% PROPOSAL: Separate into multiple scripts.
-%   PROPOSAL: Collect in separate package.
-%       PROPOSAL: +vht/
-%       TODO-DEC: Location?
-%           PROPOSAL: root-level.
-%               CON: Collisions.
-%           PROPOSAL: bicas.vht
-%
-%   PROPOSAL: Batch script: Select output dataset versions automatically.
-%   PROPOSAL: Process one file in-->one file out.
-%       NOTE: Will read entire .mat file every time. ~Inefficient.
 %
 % TODO-DEC: How set QUALITY_FLAG, QUALITY_BITMASK, L2_QUALITY_BITMASK ?
 %   TODO-NI: Required? Does YK want them?
@@ -79,10 +62,10 @@ function generate_VHT_datasets(...
 %   PROPOSAL: Set using relevant L2 input file behind data?
 %       NOTE: Input L2 files use different time resolution.
 %
-% TODO: Derive parents.
+% PROPOSAL: Argument for master CDF file, not directory.
 %
 % TEST CALL:
-% bicas.vht.generate_VHT_datasets('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty')
+% bicas.vht.generate_VHT_dataset('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty')
     
     DATASET_ID             = 'SOLO_L3_RPW-BIA-VHT';
     MASTER_CDF_VERSION_STR = '01';
@@ -97,7 +80,7 @@ function generate_VHT_datasets(...
     
     BICAS_SETTINGS = bicas.create_default_SETTINGS();
     BICAS_SETTINGS.make_read_only();
-    BICAS_L = bicas.logger('human-readable', false);
+    BICAS_L        = bicas.logger('human-readable', false);
     
     
     
@@ -154,7 +137,7 @@ function generate_VHT_datasets(...
     %==========================
     Zv = [];
     Zv.Epoch            = V_RPW.time.ttns;
-    Zv.Vx_SRF           = V_RPW.data;
+    Zv.VX_SRF           = V_RPW.data;
     Zv.DELTA_PLUS_MINUS = DELTA_PLUS_MINUS_NS + Zv.Epoch*0;
 
     Ga = [];
@@ -170,17 +153,13 @@ function generate_VHT_datasets(...
     %=====================
     % Create dataset file
     %=====================
-    %GaSubset = struct();
-    
-    outputFile = fullfile(...
-        outputDir, ...
-        bicas.vht.derive_dataset_filename(yearMonth, outputVerNbr));
     masterCdfFileName = bicas.get_master_CDF_filename(...
-                DATASET_ID, ...
-                MASTER_CDF_VERSION_STR);
+        DATASET_ID, ...
+        MASTER_CDF_VERSION_STR);
     masterCdfPath = fullfile(masterCdfDir, masterCdfFileName);
     
-    InputDatasetsMap = containers.Map();    % NO PARENTS! -- TEMP    
+    InputDatasetsMap = containers.Map();    % NO PARENTS! -- TEMP
+    
     %---------------------------------------------------------------------------
     % IMPORTANT NOTE: BICAS uses
     % execute_sw_mode:derive_output_dataset_GlobalAttributes() to derive many
@@ -195,6 +174,7 @@ function generate_VHT_datasets(...
         EJ_library.fs.get_name(outputFile), BICAS_SETTINGS, BICAS_L);
     
     bicas.write_dataset_CDF(...
-        Zv, GaSubset, outputFile, masterCdfPath, BICAS_SETTINGS, BICAS_L)
+        Zv, GaSubset, outputFile, masterCdfPath, ...
+        BICAS_SETTINGS, BICAS_L)
 
 end
