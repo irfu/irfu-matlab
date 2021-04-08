@@ -22,9 +22,9 @@
 % =========
 % The algorithm uses/constructs three analogous "Settings" structs.
 % DefaultSettings      = argument.
-% SettingsArg1         = argList{1}, if argList{1} exists and is a struct.
+% SettingsArg1         = argsCa{1}, if argsCa{1} exists and is a struct.
 %                        Otherwise empty struct.
-% SettingsArgListPairs = remainder of argList (excluding SettingsArg1),
+% SettingsArgListPairs = remainder of argsCa (excluding SettingsArg1),
 %                        interpreted as pairs of field name + field value.
 % --
 % The functions returns a struct which is a combination (union of fields) of 
@@ -49,7 +49,7 @@
 % =========
 % DefaultSettings : Struct with default Settings to be processed (not Settings
 %                   for this function).
-% argList         : Cell array representing a sequence of arguments (presumably
+% argsCa          : Cell array representing a sequence of arguments (presumably
 %                   "varargin" or subset thereof) from another function that
 %                   uses this function.
 %                   It is either
@@ -61,14 +61,14 @@
 % RETURN VALUES
 % =============
 % Settings    : Struct. See algorithm.
-% argList     : Cell array of strings, representing list of arguments passed to
+% argsCa      : Cell array of strings, representing list of arguments passed to
 %               other function. Typically varargin as received from the
 %               enclosing function directly.
 %
 %
 % Initially created 2018-07-18 by Erik P G Johansson.
 %
-function Settings = interpret_settings_args(DefaultSettings, argList)
+function Settings = interpret_settings_args(DefaultSettings, argsCa)
     % PROPOSAL: Assert SettingsArg1 and SettingsArgListPairs fields to always exist in DefaultSettings.
     %   CON: Makes it impossible to have default values for some settings/fields, but not for others.
     %   PROPOSAL: Option/flag for this behaviour.
@@ -123,14 +123,14 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
     %   CON: Better to group arguments together in cell arrays.
     %   CON: Setting name collisions.
     
-    assert(iscell(argList), 'Argument "argList" is not a cell array.')
+    assert(iscell(argsCa), 'Argument "argsCa" is not a cell array.')
     
     %====================================================
     % Assign SettingsArg1: Uses first argument if struct
     %====================================================
-    if numel(argList) >= 1 && isstruct(argList{1})
-        SettingsArg1 = argList{1};
-        argList      = argList(2:end);    % NOTE: Shortens argList.
+    if numel(argsCa) >= 1 && isstruct(argsCa{1})
+        SettingsArg1 = argsCa{1};
+        argsCa       = argsCa(2:end);    % NOTE: Shortens argsCa.
     else
         SettingsArg1 = struct;
     end
@@ -141,20 +141,20 @@ function Settings = interpret_settings_args(DefaultSettings, argList)
     %======================================================================
     SettingsArgListPairs = struct;
     while true
-        if numel(argList) == 0
+        if numel(argsCa) == 0
             break
 
-        elseif numel(argList) == 1
+        elseif numel(argsCa) == 1
             error('Uneven number of string-value arguments.')
             
-        elseif numel(argList) >= 2
-            if ~ischar(argList{1})
+        elseif numel(argsCa) >= 2
+            if ~ischar(argsCa{1})
                 error('Expected string argument is not string.')
             end
             
-            SettingsArgListPairs.(argList{1}) = argList{2};
+            SettingsArgListPairs.(argsCa{1}) = argsCa{2};
             
-            argList = argList(3:end);
+            argsCa = argsCa(3:end);
         end
     end
     
