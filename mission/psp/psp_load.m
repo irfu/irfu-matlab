@@ -391,6 +391,9 @@ switch datatype
     if nargin == 1 || nargin == 4
       % read in variables defined in psp_var
       out = psp_var(datatype);
+      if isempty(out)
+        error('Data type not recognized!');
+      end
       fileBaseName = out.fileName;      
       varnames  = {out.varName};
       hourtag  = out.hourtag;
