@@ -690,12 +690,7 @@ if number_of_subplots>=1 && number_of_subplots<=30
     c(j)=axes('position',[all_axis_position(1) ...
       all_axis_position(4)-j*subplotHeight ...
       subplotWidth subplotHeight]); % [x y dx dy]
-    %        c(j)=irf_subplot(number_of_subplots,1,-j);
     cla(c(j));
-    c(j).Interactions = [zoomInteraction regionZoomInteraction rulerPanInteraction];
-    c(j).Toolbar = [];
-    c(j).Box = 'on';
-    c(j).Tag = '';
   end
   user_data = get(gcf,'userdata');
   user_data.subplot_handles = c;
