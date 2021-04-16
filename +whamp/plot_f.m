@@ -275,7 +275,7 @@ if nargout >= 1
   varargout{1} = h;
 end
 if nargout == 2
-  if plotPSDvsE
+  if plotPSDvsV
     varargout{2}=f;
     varargout{3}=vtot/unitsVelocity;
   elseif plotPSDvsE

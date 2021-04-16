@@ -31,7 +31,7 @@ a = load('d23K123_20210129');
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
 %===========================================================================
-codeVerStr = '2021-01-26T12:00:00';
+codeVerStr = '2021-04-08T14:00:00';
 % Version of the .mat file. Not yet used. Meant to be read from .mat file.
 matVerStr  = [];
 
@@ -91,11 +91,12 @@ ScPot.units = PSP.units;
 V_delta23_corr = V2cmr-V3cmr; %Fixed V2-V3.
 Ey_SRF = -V_delta23_corr*1e3/6.99;
 
-% Ez_SRF = V23 - V1
-%E12 = double(EDC.x.data) - PSP.data*0.1269; % correct for common mode
-%Ez_SRF = -(E12 + E23/2) *1e3/6.97;
-Ez_SRF = V23corr - double(VDC.x.data);	% V23 - V1	
-Ez_SRF = Ez_SRF*1e3/6.97;
+% Ez_SRF = V23corr - V1
+% Here we use the antenna length of 11.2 m, which correponds to 
+% the distance between the center of ANT1 and a symmetric antenna on the 
+% other side having voltage V23 corr.
+Ez_SRF = V23corr - double(VDC.x.data);	
+Ez_SRF = Ez_SRF*1e3/11.2;
 
 DCE_SRF = irf.ts_vec_xyz(VDC.time,[Ey_SRF*0 Ey_SRF Ez_SRF]);
 DCE_SRF.units = 'mV/m';
