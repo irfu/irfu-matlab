@@ -42,7 +42,7 @@
 % First created 2021-03-26.
 %
 function generate_VHT_dataset(...
-        masterCdfDir, yearMonth, matFilePath, outputFile, ...
+        masterCdfPath, yearMonth, matFilePath, outputFile, ...
         emptyDatasetPolicy)
 %
 % PROPOSAL: Write code so that it can be transplanted/moved to BICAS proper.
@@ -62,19 +62,18 @@ function generate_VHT_dataset(...
 %   PROPOSAL: Set using relevant L2 input file behind data?
 %       NOTE: Input L2 files use different time resolution.
 %
-% PROPOSAL: Argument for master CDF file, not directory.
-%
 % TEST CALL:
 % bicas.vht.generate_VHT_dataset('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty')
     
-    DATASET_ID             = 'SOLO_L3_RPW-BIA-VHT';
-    MASTER_CDF_VERSION_STR = '01';
-    DELTA_PLUS_MINUS_NS    = int64(3*3600*1e9);
+%     DATASET_ID                  = 'SOLO_L3_RPW-BIA-VHT';
+%     MASTER_CDF_VERSION_STR      = '01';
+    EXPECTED_SAMPLE_INTERVAL_NS = int64(10*60*1e9);    % For assertion.
+    DELTA_PLUS_MINUS_NS         = int64(1800*1e9);
     
     % ASSERTIONS
     assert(ischar(matFilePath))
     assert((length(yearMonth) == 2) && isnumeric(yearMonth))
-    EJ_library.assert.dir_exists(masterCdfDir)
+    %EJ_library.assert.dir_exists(masterCdfDir)
     
     
     
@@ -91,10 +90,11 @@ function generate_VHT_dataset(...
     % ASSERTION: .mat file
     mostCommonTimeDiffSec = mode(diff(V_RPW.time.ttns));
     assert(...
-        mostCommonTimeDiffSec == 2*DELTA_PLUS_MINUS_NS, ...
+        mostCommonTimeDiffSec == EXPECTED_SAMPLE_INTERVAL_NS, ...
         ['Timestamps in %s (mostCommonTimeDiffSec=%i) do not seem consistent', ...
-        ' with the expected DELTA_PLUS_MINUS = %i'], ...
-        mostCommonTimeDiffSec, DELTA_PLUS_MINUS_NS)
+        ' with the expected time intervals between samples,', ...
+        ' EXPECTED_SAMPLE_INTERVAL_NS = %i'], ...
+        matFilePath, mostCommonTimeDiffSec, EXPECTED_SAMPLE_INTERVAL_NS)
 
     %==============================================
     % Only keep data for the specified time period
@@ -153,10 +153,10 @@ function generate_VHT_dataset(...
     %=====================
     % Create dataset file
     %=====================
-    masterCdfFileName = bicas.get_master_CDF_filename(...
-        DATASET_ID, ...
-        MASTER_CDF_VERSION_STR);
-    masterCdfPath = fullfile(masterCdfDir, masterCdfFileName);
+%     masterCdfFileName = bicas.get_master_CDF_filename(...
+%         DATASET_ID, ...
+%         MASTER_CDF_VERSION_STR);
+%     masterCdfPath = fullfile(masterCdfDir, masterCdfFileName);
     
     InputDatasetsMap = containers.Map();    % NO PARENTS! -- TEMP
     
