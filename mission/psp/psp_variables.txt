@@ -719,6 +719,19 @@ info#end
 ----
 
 %%%%
+varName: psp_fld_l2_dfb_dbm_dvdc(12|34)
+fileName: psp_fld_l2_dfb_dbm_dvdc
+hourtag: 6h
+directory: fields/l2/dfb_dbm_dvdc/20YY/MM
+varNameShort: dbm_dvdc(12|34)
+related: 
+info#start
+snapshots
+DC coupling: DC Burst Differential Voltage
+info#end
+----
+
+%%%%
 varName: psp_fld_l2_dfb_dbm_vdc(1|2|3|4|5)
 fileName: psp_fld_l2_dfb_dbm_vdc
 directory: fields/l2/dfb_dbm_vdc/20YY/MM
