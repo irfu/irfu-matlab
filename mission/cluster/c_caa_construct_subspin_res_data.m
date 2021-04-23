@@ -209,8 +209,12 @@ elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]
   rapid.data(:,:,:,nan_en)=[]; % remove NaN energy data
   % read pitch angle information
   variable_pitch_name=['Electron_Pitch_' variable_name(regexp(variable_name,'_C?_')+(1:4)) 'CP_RAP_EPITCH'];
-  variable_pitch=c_caa_var_get(variable_pitch_name);
+  variable_pitch=c_caa_var_get(variable_pitch_name,'mat');
   rapid_pitch=rapid.data;
+  [~,ivar,irap]=intersect(variable_pitch.t,rapid.t);
+  variable_pitch.t=variable_pitch.t(ivar);
+  variable_pitch.data=variable_pitch.data(ivar,:,:);
+  rapid_pitch = rapid_pitch(irap,:,:,:);
   for j=1:size(rapid_pitch,4), rapid_pitch(:,:,:,j)=permute(variable_pitch.data,[1 3 2]);end
   dataraw=ftheta(rapid.data,rapid_pitch,theta);
   dataraw=permute(dataraw,[1 3 2 4]); % permute in order [time, azimuth, pitch, energery]
