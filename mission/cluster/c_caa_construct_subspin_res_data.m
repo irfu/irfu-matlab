@@ -199,7 +199,10 @@ elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]
   enunits=getfield(getv(dataobject,variable.DEPEND_1),'UNITS');
   enlabel=getfield(getv(dataobject,variable.DEPEND_1),'LABLAXIS');
   enlabel=[enlabel ' [' enunits ']'];
-  phi=rapid.dep_x{2}.data(1,:);
+  phi=rapid.dep_x{2}.data(:);
+  if size(phi,1) > 1 && size(phi,2) > 1,
+    phi = phi(1,:);
+  end
   theta=10:20:180; % pitch angles
   en=sqrt(rapid.dep_x{1}.data(1,:).*...
     (rapid.dep_x{1}.data(1,:)+rapid.dep_x{1}.DELTA_PLUS(1,:))); % DELTA_MINUS = 0
