@@ -47,7 +47,7 @@ function [varargout]=plot_f(varargin)
 %  Oxygen = struct('m',16,'n',1,'t',10,'a',5,'vd',1,'d',1,'b',0);
 % [h,f,vp,vz] = whamp.plot_f(Oxygen,'km/s');
 %
-% WHAMP quick reference: https://github.com/irfu/whamp/blob/master/whamp_manual.pdf?raw=true
+% WHAMP quick reference: https://github.com/irfu/whamp/blob/master/doc/whamp_quick_reference/whamp_quick_reference.pdf
 % original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
 
 Units = irf_units;
