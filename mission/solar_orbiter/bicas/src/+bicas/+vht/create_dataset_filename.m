@@ -35,5 +35,5 @@ function filename = create_dataset_filename(yearMonth, verNbr)
     
     yearMonthStr = sprintf('%04i%02i%02i-%04i%02i%02i', dv1(1:3), dv2(1:3));
     
-    filename = sprintf('solo_L3_rpw-bia-vht_%s_V%02i.cdf', yearMonthStr, verNbr);
+    filename = sprintf('solo_L3_rpw-bia-vht-cdag_%s_V%02i.cdf', yearMonthStr, verNbr);
 end

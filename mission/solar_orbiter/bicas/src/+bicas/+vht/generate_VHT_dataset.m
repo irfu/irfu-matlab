@@ -45,7 +45,7 @@
 % First created 2021-03-26.
 %
 function generate_VHT_dataset(...
-        masterCdfPath, yearMonth, matFilePath, outputFile, ...
+        masterCdfPath, yearMonth, matFilePath, InputDatasetsMap, outputFile, ...
         emptyDatasetPolicy)
 %
 % PROPOSAL: Write code so that it can be transplanted/moved to BICAS proper.
@@ -73,10 +73,17 @@ function generate_VHT_dataset(...
     EXPECTED_SAMPLE_INTERVAL_NS = int64(10*60*1e9);    % For assertion.
     DELTA_PLUS_MINUS_NS         = int64(1800*1e9);
     
+    % Used for assertion on data.
+    % NOTE: Velocity is negative due to coordinate system.
+    VX_SRF_MIN_KMPS = -1500;
+    VX_SRF_MAX_KMPS =  0;
+    
+    
+    
     % ASSERTIONS
     assert(ischar(matFilePath))
     assert((length(yearMonth) == 2) && isnumeric(yearMonth))
-    %EJ_library.assert.dir_exists(masterCdfDir)
+    assert(isa(InputDatasetsMap, 'containers.Map'))
     
     
     
@@ -98,6 +105,12 @@ function generate_VHT_dataset(...
         ' with the expected time intervals between samples,', ...
         ' EXPECTED_SAMPLE_INTERVAL_NS = %i'], ...
         matFilePath, mostCommonTimeDiffSec, EXPECTED_SAMPLE_INTERVAL_NS)
+    % NOTE: bicas.write_dataset_CDF() should replace NaN-->Fill value, but given
+    % that VHT .mat file contains data gaps as absence of timestamps, it would
+    % be surprising if it contained NaN.
+    assert(all(~isnan(V_RPW.data)), 'Found NaN in V_RPW.data.')
+    assert(all((VX_SRF_MIN_KMPS <= V_RPW.data) & (V_RPW.data <= VX_SRF_MAX_KMPS)))
+    
 
     %==============================================
     % Only keep data for the specified time period
@@ -158,12 +171,8 @@ function generate_VHT_dataset(...
     %=====================
     % Create dataset file
     %=====================
-%     masterCdfFileName = bicas.get_master_CDF_filename(...
-%         DATASET_ID, ...
-%         MASTER_CDF_VERSION_STR);
-%     masterCdfPath = fullfile(masterCdfDir, masterCdfFileName);
     
-    InputDatasetsMap = containers.Map();    % NO PARENTS! -- TEMP
+    %InputDatasetsMap = containers.Map();    % NO PARENT DATASETS! -- TEMP
     
     %---------------------------------------------------------------------------
     % IMPORTANT NOTE: BICAS uses
