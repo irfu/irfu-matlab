@@ -18,8 +18,8 @@
 % 
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
-% First created 2020-06-24 as a separate file, by moving out the function from
-% bicas.executed_sw_mode.
+% First created 2020-06-24 as a separate file, by moving the function out from
+% bicas.executed_sw_mode().
 %
 function write_dataset_CDF(...
         ZvsSubset, GaSubset, outputFile, masterCdfPath, SETTINGS, L)
@@ -96,9 +96,10 @@ function write_dataset_CDF(...
         
         DataObj = init_modif_dataobj(...
             ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
-        % NOTE: This call will fail if setting
+        % IMPLEMENTATION NOTE: This call will fail if setting
         % OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
-        % therefore ZvsSubset=[] (can not be generated).
+        % therefore ZvsSubset=[] (can not be generated). Must therefore check
+        % for this first.
     end
     
     

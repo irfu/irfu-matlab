@@ -3,8 +3,9 @@
 % BICAS functionality for constructing datasets.
 %
 %
-% Code for generating L3 VHT datasets from .mat file, ONLY. .mat file with data
-% is produced by Konrad Steinvall & Yuri Khotyaintsev (2021-03-31).
+% Code for generating one L3 VHT dataset from .mat file, ONLY. The .mat file
+% with data is produced by Konrad Steinvall & Yuri Khotyaintsev (2021-03-31).
+%
 %
 % IMPLEMENTATION NOTE
 % ===================
@@ -29,6 +30,8 @@
 %
 % ARGUMENTS
 % =========
+% yearMonth
+%       1D vector: [yearNbr, monthNbr]
 % emptyDatasetPolicy
 %       How to handle months without data.
 %
@@ -99,7 +102,7 @@ function generate_VHT_dataset(...
     %==============================================
     % Only keep data for the specified time period
     %==============================================
-    % Beginning & end of month.
+    % Beginning & end of calendar month.
     dv1 = datevec(datetime([yearMonth(1), yearMonth(2),   1]));
     dv2 = datevec(datetime([yearMonth(1), yearMonth(2)+1, 1]));
     % IMPLEMENTATION NOTE: Slight hack using intermediate UTC string, but there
@@ -122,7 +125,9 @@ function generate_VHT_dataset(...
                     yearMonth(:))
                 
             case 'ignore empty'
-                fprintf('There is no data for yearMonth=[%d, %d]. Ignoring.\n', yearMonth(:))
+                fprintf(...
+                    'There is no data for yearMonth=[%d, %d]. Ignoring.\n', ...
+                    yearMonth(:))
                 return
                 
             otherwise
@@ -144,7 +149,7 @@ function generate_VHT_dataset(...
     Ga.OBS_ID    = ' ';
     Ga.SOOP_TYPE = ' ';
     
-    OutputDataset = [];
+    OutputDataset    = [];
     OutputDataset.Zv = Zv;
     OutputDataset.Ga = Ga;
 

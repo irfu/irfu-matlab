@@ -13,11 +13,11 @@
 % =====
 % NOTE: Meant to cover DATASET_IDs widely.
 %   ** Old DATASET_IDs beginning with ROC-SGSE, in order to cover old filenames.
-%   ** Datasets unrelated to BIAS processing.
-%   ** Partly lower case DATASET_ID (found in filenames)
+%   ** Datasets unrelated to BIAS processing, including other instruments.
+%   ** Lower case filenames.
 %   ** Recognize -cdag
-% NOTE: Lowercase DATASET_ID in filenames are recognized, and returned
-%       uppercase.
+% NOTE: Lowercase DATASET_ID in filenames are recognized, and returned as
+%       uppercase DATASET_ID.
 % NOTE: Does not work on RCTs (technically has no DATASET_ID).
 % NOTE: Should be possible to use together with
 %       EJ_library.so.adm.create_dataset_filename().
@@ -135,6 +135,7 @@
 % First created 2019-12-17.
 %
 function R = parse_dataset_filename(filename)
+    %
     % PROPOSAL: Translate ROC-SGSE_* DATASET_IDs to SOLO_*.
     %   CON: Better to let the caller decide.
     %       PROPOSAL: Separate function for translating, normalizing DATASET_ID.
@@ -246,8 +247,8 @@ function R = parse_dataset_filename(filename)
     %
     % NOTE: Lowercase DATASET_ID+CDAG always have uppercase dataset level.
     [fnDatasetIdCdag, str, n] = EJ_library.str.read_token(trueBasename, 1, ...
-        '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3)_RPW-[A-Z0-2-]*', ...
-        '(solo|roc-sgse)_(HK|L1|L1R|L2|L3)_rpw-[a-z0-2-]*');
+        '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3)_[A-Z0-2-]*', ...
+        '(solo|roc-sgse)_(HK|L1|L1R|L2|L3)_[a-z0-2-]*');
     switch(n)
         case 1
             R.dsicdagCase  = 'upper';

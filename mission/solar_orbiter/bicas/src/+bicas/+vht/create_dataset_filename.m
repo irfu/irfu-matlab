@@ -2,11 +2,13 @@
 % Derive official filename for one VHT dataset file.
 %
 % NOTE: Technically uses hardcoded DATASET_ID.
+% NOTE: Always generates CDAG filename.
 %
 %
 % ARGUMENTS
 % =========
-%
+% yearMonth
+%       1D vector: [yearNbr, monthNbr]
 %
 %
 % RETURN VALUES
@@ -22,6 +24,7 @@ function filename = create_dataset_filename(yearMonth, verNbr)
     %
     % Cf. "solo_L1_rpw-bia-current-cdag_20200401-20200430_V04.cdf"
     
+    % ASSERTIONS
     assert((length(yearMonth) == 2) && isnumeric(yearMonth))
     assert(isscalar(verNbr) && isnumeric(verNbr))
     

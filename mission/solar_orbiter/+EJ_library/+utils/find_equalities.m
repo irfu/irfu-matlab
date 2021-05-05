@@ -1,43 +1,51 @@
 %
-% Given a set of same-sized arrays in one dimension, find all sets of indices for which the array components are all
-% equal.
+% Given a set of same-sized arrays in one dimension, find all sets of indices
+% for which the array components are all equal.
 %
 % NOTE: Counts NaN as equal to itself.
 % NOTE: Is faster the more nearby indices (within searchDistance) are equal.
 % NOTE: Implementation uses "isequaln", i.e.
-%   -- IMPORTANT NOTE: Does not care about MATLAB class, not even recursively, e.g. {'A'} == {65}.
+%   -- IMPORTANT NOTE: Does not care about MATLAB class, not even recursively,
+%      e.g. {'A'} == {65}.
 %   -- Does not care about the order of fieldnames in structs
 %   -- Counts NaN as equal to itself.
 %
 %
 % ARGUMENTS
 % =========
-% searchDistance : Distance (in dimension 1) over which equalities will be searched for.
-%                  NOTE: Allowed to be inf.
-% varargin       : Arbitrary number of arrays with equal number of rows (size N in dimension 1).
+% searchDistance
+%       Distance (in dimension 1) over which equalities will be searched for.
+%       NOTE: Allowed to be inf.
+% varargin
+%       Arbitrary number of arrays with equal number of rows (size N in
+%       dimension 1).
 %
 %
 % RETURN VALUE
 % ============
-% fauxHashArray : Nx1 numeric array.
-%                   fauxHashArray(i) == fauxHashArray(j): Data are equal, always.
-%                   fauxHashArray(i) <> fauxHashArray(j): Data are inequal, if abs(i-j) <= searchDistance
-%                 NOTE: The exact numerical values used may change as there is no obviously natural way of setting them.
+% fauxHashArray
+%       Nx1 numeric array.
+%       fauxHashArray(i) == fauxHashArray(j): Data are equal, always.
+%       fauxHashArray(i) <> fauxHashArray(j): Data are inequal, if
+%                                             abs(i-j) <= searchDistance
+%       NOTE: The exact numerical values used may change as there is no
+%       obviously natural way of setting them.
 %
 %
 % Author: Erik P G Johansson
 % Initially created 2020-04-10
 %
 function [fauxHashArray] = find_equalities(searchDistance, varargin)
+    %
     % PROPOSAL: Better name
     %   PROPOSAL: Imply equality between index values, not variables.
     % PROPOSAL: Speed test.
     %
     % PROPOSAL: Terminology change: faux hash=fauxHash --> pseudohash
     %
-    % PROPOSAL: Recursive call for each array separately. The run algorithm to merge fhArrays.
+    % PROPOSAL: Recursive call for each array separately. Then run algorithm to merge fhArrays.
     %   PRO: More likely to find more equalities within each array separately. ==> Potentially faster.
-    %   PRO: Can merge multiple NX1 fhArrays to one NxM array. ==> Potentially faster
+    %   PRO: Can merge multiple Nx1 fhArrays to one NxM array. ==> Potentially faster
     %       PRO: Useful for hashing (unclear if makes sense though).
     %   ~CON: The algorithm as it stands is the algorithm to merge fhArrays.
     % 
@@ -58,6 +66,8 @@ function [fauxHashArray] = find_equalities(searchDistance, varargin)
     %
     % PROPOSAL: Have the algorithm predict the next equality given an already identified repeating sequence.
     %   PRO: Could reduce the number of equality tests. ==> Speed up code
+    %
+    % PROPOSAL: Use unique() for numeric arrays.
     
     nVariableArgs = numel(varargin);
     
@@ -69,7 +79,8 @@ function [fauxHashArray] = find_equalities(searchDistance, varargin)
         if iArg == 1
             nRows = nRowsI;
         end        
-        assert(nRows == nRowsI, 'Data arguments do not have the same size in dimension 1.')
+        assert(nRows == nRowsI, ...
+            'Data arguments do not have the same size in dimension 1.')
     end
     
     %===============================
@@ -80,14 +91,14 @@ function [fauxHashArray] = find_equalities(searchDistance, varargin)
     for i = 1:nRows
 
         % Assume unique hash until proven otherwise (tentative value).
-        % NOTE: Using initial value "i" means that equal data indices refer to the first occurrence.
-        % Not the only choice.
+        % NOTE: Using initial value "i" means that equal data indices refer to
+        % the first occurrence. Not the only choice.
         fauxHashArray(i) = i;
         
         %=======================================================
         % Iterate over all preceding data indices within range
         %=======================================================
-        jEarliest = max(1,i-searchDistance);
+        jEarliest = max(1, i-searchDistance);
         for j = (i-1):-1:jEarliest
             
             %==========================================
@@ -109,7 +120,7 @@ function [fauxHashArray] = find_equalities(searchDistance, varargin)
             end
             
         end
-        
+
 %         if ~ijEqual && (j == jEarliest)
 %             guaranteesAllEqualities = false;
 %         end

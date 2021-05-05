@@ -108,6 +108,7 @@ classdef logger < handle
             % IMPLEMENTATION NOTE: Assertion for number of arguments, since this
             % used to be variable.
             assert(nargin == 2)
+            assert(isscalar(logFileEnabled))
             assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), ...
                 'Illegal argument logFileEnabled.')
             logFileEnabled = logical(logFileEnabled);
@@ -199,13 +200,16 @@ classdef logger < handle
         %
         % ARGUMENTS
         % =========
-        % logLevel : String constant.
-        %            NOTE: Value 'error' WILL NOT THROW ERROR. This is so that
-        %            error handling code can log using this alternative. To
-        %            actually THROW an error, use function error(...) or throw
-        %            an exception directly.
-        % msgStr   : Potentially multi-row string to be printed.
-        %            NOTE: Multi-row strings must end with line feed (after last row).
+        % logLevel
+        %       String constant.
+        %       NOTE: Value 'error' WILL NOT THROW ERROR. This is so that error
+        %       handling code can log using this alternative. To actually THROW
+        %       an error, use function error(...) or throw an exception
+        %       directly.
+        % msgStr
+        %       Potentially multi-row string to be printed.
+        %       NOTE: Multi-row strings must end with line feed (after last
+        %       row).
         %
         %
         % Author: Erik P G Johansson, IRF, Uppsala, Sweden
