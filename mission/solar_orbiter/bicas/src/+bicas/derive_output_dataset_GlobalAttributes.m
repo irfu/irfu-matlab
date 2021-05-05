@@ -71,8 +71,8 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     keysCa = InputDatasetsMap.keys;
     for i = 1:numel(keysCa)
         
-        InputGa       = InputDatasetsMap(keysCa{i}).Ga;
-        inputFilename = EJ_library.fs.get_name(InputDatasetsMap(keysCa{i}).filePath);
+        InputDatasetInfo = InputDatasetsMap(keysCa{i});
+        InputGa          = InputDatasetInfo.Ga;
 
         % ASSERTION
         % NOTE: ROC DFMD is not completely clear on which version number should
@@ -137,11 +137,23 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         % NOTE: Using Data_version to set Parent_version.
         %OutGaSubset.Parent_version{end+1} = InputGa.Data_version{1};   % Number, not string. Correct?!
         %OutGaSubset.Parents       {end+1} = ['CDF>', InputGa.Logical_file_id{1}];
-        OutGaSubset.Provider              = union(OutGaSubset.Provider, InputGa.Provider);
+        if isfield(InputGa, 'Provider')
+            OutGaSubset.Provider = union(OutGaSubset.Provider, InputGa.Provider);
+        else
+            % IMPLEMENTATION NOTE: MAG datasets have been observed to not have
+            % glob.attr. "Provider". VHT datasets have MAG datasets as parents.
+            % /2021-05-05
+            % Ex: solo_L2_mag-srf-normal_20200701_V02.cdf
+            L.logf('warning', ...
+                'Input dataset "%s"\ndoes not have CDF global attribute "Provider".\n', ...
+                InputDatasetInfo.filePath)
+        end
         
         % NOTE: Parsing INPUT dataset filename to set some global attributes.
-        [logicalFileId, ~, dataVersionStr, ~] = parse_dataset_filename(inputFilename);
-        OutGaSubset.Parent_version{end+1} = dataVersionStr;    % Sets string, not number. Correct?
+        [logicalFileId, ~, dataVersionStr, ~] = parse_dataset_filename(...
+            EJ_library.fs.get_name(InputDatasetInfo.filePath));
+        % Sets string, not number. Correct?
+        OutGaSubset.Parent_version{end+1} = dataVersionStr;
         OutGaSubset.Parents       {end+1} = ['CDF>', logicalFileId];
 
     end
