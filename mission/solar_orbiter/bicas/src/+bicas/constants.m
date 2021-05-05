@@ -139,6 +139,10 @@ classdef constants   % < handle
         % but easy to implement as at least a temporary algorithm.
         N_MIN_SAMPLES_PER_DWNS_BIN = 3;
         
+
+
+        GA_MODS = bicas.constants.init_GA_MODS();
+
     end    % properties(Constant)
     
     
@@ -278,6 +282,209 @@ classdef constants   % < handle
                 ErrorTypeInfo = struct(...
                     'errorCode',   errorCode, ...
                     'description', errorDescription);
+            end
+            
+        end
+        
+        
+        
+        % Initialize data structure containing the CDF global attribute (GA)
+        % MODS.
+        function MAP = init_GA_MODS()
+            % PROPOSAL: Exclude VHT since not produced by BICAS.
+            % PROPOSAL: Use function to create MODS entries.
+            %   CON: Makes strings less readable.
+            %   CON: Makes overlap between similar entries harder.
+            %   PRO: Enforces correct format.
+            %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
+            
+            % RCS ICD 01/05 draft 2021-05-04, Table 4, on MODS:
+            % """"It shall be at least one entry for each release of
+            % the RCS software that brings significant change in
+            % the data content. Entry format shall be
+            % “YYYY-MM-DD :: change #1 short description | change
+            % #2 short description”,
+            % where YYYY, MM and DD are respectively the year,
+            % month and day of the new RCS release. Then followed
+            % by the change descriptions, which shall be separated
+            % by the pipe character (“|”)""""
+            
+            MAP = containers.Map('KeyType', 'char', 'ValueType', 'Any');
+            
+            %===================================================================
+            % Empty lists of MODS entries for different (groups of) DATASET_IDs
+            %===================================================================
+            L2_LFR_SURV_SBM12_CWF = {};
+            L2_LFR_SWF           = {};
+            L2_TDS_CWF           = {};
+            L2_TDS_RSWF          = {};
+            %
+            L3_DENSITY     = {};
+            L3_DENSITY_10S = {};
+            L3_EFIELD      = {};
+            L3_EFIELD_10S  = {};
+            L3_SCPOT       = {};
+            L3_SCPOT_10S   = {};
+            %
+            L3_VHT = {};
+            
+            
+            
+            %##############################################################
+            % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DATASET_IDs
+            %##############################################################
+            
+            %===================================================================
+            % L2
+            % --
+            % NOTE: L2 dates should be taken from ROC's BICAS git repo commits.
+            %===================================================================
+            % BICAS v1.0.0 : No MODS needed.
+            
+            % BICAS v2.0.1
+            s = '2020-05-18 :: Bias currents bugfixed to be correct unit.';
+            L2_LFR_SURV_SBM12_CWF{end+1} = s;
+            L2_LFR_SWF{end+1}  = s;
+            L2_TDS_CWF{end+1}  = s;
+            L2_TDS_RSWF{end+1} = s;
+            
+            % BICAS v3.0.0
+            sTds = ...
+                ['2020-07-07 :: Bias currents changed to nA (not ampere).', ...
+                ' | Ignoring frequencies above high-frequency cutoff at 0.7 times Nyquist frequency.'];
+            sLfr = [sTds, ' | Hereafter copying LFR L1 zVar BW.'];            
+            L2_LFR_SURV_SBM12_CWF{end+1} = sLfr;
+            L2_LFR_SWF{end+1}  = sLfr;
+            L2_TDS_CWF{end+1}  = sTds;
+            L2_TDS_RSWF{end+1} = sTds;
+            
+            % BICAS v3.1.0
+            s = ['2020-09-01 :: Bugfix to handle LFR L1 zVar BW=0.', ...
+                ' | Crude sweep removal.', ...
+                ' | Preliminary setting of QUALITY_FLAG (max 2).'];
+            L2_LFR_SURV_SBM12_CWF{end+1} = s;
+            L2_LFR_SWF{end+1}  = s;
+            L2_TDS_CWF{end+1}  = s;
+            L2_TDS_RSWF{end+1} = s;
+          
+            % BICAS v3.1.1
+            s = ['2020-09-15 :: ', ...
+                'Ignoring frequencies above high-frequency cutoff at 0.8', ...
+                ' (instead of 0.7) times Nyquist frequency.'];
+            L2_LFR_SURV_SBM12_CWF{end+1} = s;
+            L2_LFR_SWF{end+1}  = s;
+            L2_TDS_CWF{end+1}  = s;
+            L2_TDS_RSWF{end+1} = s;
+            
+            % BICAS v4.0.0
+            s = ['2020-10-07 :: ', ...
+                'Uses table to set zVars QUALITY_FLAG and L2_QUALITY_BITMASK.'];
+            L2_LFR_SURV_SBM12_CWF{end+1} = s;
+            L2_LFR_SWF{end+1}  = s;
+            L2_TDS_CWF{end+1}  = s;
+            L2_TDS_RSWF{end+1} = s;
+
+            % BICAS v4.1.0
+            sTds = ['2020-12-07 :: ', ...
+                'Set QUALITY_FLAG and L2_QUALITY_BITMASK based on tabulated thruster firings.'];
+            sLfr = [sTds, ...
+                ' | Bugfixed AC detrending that only removes mean and does not add linear component (mostly SWF).', ...
+                ' | Inverting AC using artificial constant gain for low frequencies to not amplify noise.'];
+            L2_LFR_SURV_SBM12_CWF{end+1} = sLfr;
+            L2_LFR_SWF{end+1}  = sLfr;
+            L2_TDS_CWF{end+1}  = sTds;
+            L2_TDS_RSWF{end+1} = sTds;
+            
+            % BICAS v5.0.0: No L2 MODS entries.
+            
+            
+            
+            %===================================================================
+            % L3 DENSITY+EFIELD+SCPOT (not VHT)
+            % ---------------------------------
+            % NOTE: L3 dates are effectively determined by dataset deliveries to
+            % ROC were generated.
+            %===================================================================
+            % NOTE: No MODS entries for initial delivery.
+            % NOTE: Including VHT, since VHT uses the same BICAS functions for
+            % writing datasets (including
+            % bicas.derive_output_dataset_GlobalAttributes).
+            
+            % Delivery 1: ~2021-01-29
+            % (relevant for determining MODS between delivery 1 and 2).
+            
+            % Delivery 2: ~2021-02-16
+            % NOTE: Master CDFs updated according to feedback. ==> No MODS.
+            % psp2ne.m updated ==> DENSITY
+            s = '2021-02-16 :: Updated algorithm for density.';
+            L3_DENSITY{end+1}     = s;
+            L3_DENSITY_10S{end+1} = s;
+            
+            % Delivery 3: ~2021-04-09
+            % vdccal.m updated ==> EFIELD updated.
+            s = '2021-04-09 :: Updated antenna scaling of E_z.';
+            L3_EFIELD{end+1}      = s;
+            L3_EFIELD_10S{end+1}  = s;
+            
+            
+            
+            %=================================================================
+            % L3 VHT
+            % ------
+            % NOTE: L3 dates are effectively determined by deliveries to ROC.
+            %=================================================================
+            % NOTE: No MODS entries for initial delivery.
+            %
+            % 2020-05-05: There has not been any second delivery, and therefore
+            % no MODS.
+            
+            % L3_VHT{end+1} = 
+            
+            
+            
+            %=====================================================
+            % Assign MODS entries to final data structure
+            % -------------------------------------------
+            % NOTE: Same list for all three SURV-CWF DATASET_IDs.
+            %=====================================================
+            MAP('SOLO_L2_RPW-LFR-SURV-CWF-E') = L2_LFR_SURV_SBM12_CWF;
+            MAP('SOLO_L2_RPW-LFR-SBM1-CWF-E') = L2_LFR_SURV_SBM12_CWF;
+            MAP('SOLO_L2_RPW-LFR-SBM2-CWF-E') = L2_LFR_SURV_SBM12_CWF;
+            MAP('SOLO_L2_RPW-LFR-SURV-SWF-E') = L2_LFR_SWF;
+            MAP('SOLO_L2_RPW-TDS-LFM-CWF-E')  = L2_TDS_CWF;
+            MAP('SOLO_L2_RPW-TDS-LFM-RSWF-E') = L2_TDS_RSWF;
+            
+            MAP('SOLO_L3_RPW-BIA-DENSITY')            = L3_DENSITY;
+            MAP('SOLO_L3_RPW-BIA-DENSITY-10-SECONDS') = L3_DENSITY_10S;
+            MAP('SOLO_L3_RPW-BIA-EFIELD')             = L3_EFIELD;
+            MAP('SOLO_L3_RPW-BIA-EFIELD-10-SECONDS')  = L3_EFIELD_10S;
+            MAP('SOLO_L3_RPW-BIA-SCPOT')              = L3_SCPOT;
+            MAP('SOLO_L3_RPW-BIA-SCPOT-10-SECONDS')   = L3_SCPOT_10S;
+            MAP('SOLO_L3_RPW-BIA_VHT')                = L3_VHT;
+            
+            
+            
+            % ASSERTIONS
+            for keyCa = MAP.keys
+                MODS = MAP(keyCa{1});
+                for i = 1:numel(MODS)
+                    s = MODS{i};
+                    
+                    EJ_library.assert.castring_regexp(s, ...
+                        '20[1-9][0-9]-[0-1][0-9]-[0-3][0-9] :: [-=_|.() a-zA-Z0-9]+')
+                    
+                    % No more than one whitespace per occurrence.
+                    assert(~contains(s, '  '))
+                    
+                    % All pipes surrounded by whitespace.
+                    iPipes1 = strfind(s, '. | ') + 2;
+                    iPipes2 = strfind(s,  '|');
+                    assert(isequal(iPipes1, iPipes2))
+                end
+                
+                % ASSERT: All strings are unique.
+                EJ_library.assert.castring_set(MODS)
+                
             end
             
         end

@@ -292,6 +292,11 @@ function SETTINGS = create_default_SETTINGS()
     %   BICAS code:  1 sample/snapshot.
     % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
     S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
+    
+    % Whether to enable setting glob.attr. MODS.
+    % 2021-05-05: Disabled on request by ROC, until next full reprocessing at
+    % ROC.
+    S.define_setting('OUTPUT_CDF.GA_MODS_ENABLED', 0)    % 0/false, 1/true
 
 
 

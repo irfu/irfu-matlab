@@ -51,7 +51,8 @@
 % execute_sw_mode().
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
-        InputDatasetsMap, OutputDataset, outputFilename, SETTINGS, L)
+        InputDatasetsMap, OutputDataset, outputFilename, outputDatasetId, ...
+        SETTINGS, L)
 
     % PROPOSAL: Automatic test code.
     
@@ -63,11 +64,13 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     
     OutGaSubset = OutputDataset.Ga;
 
-
-
     OutGaSubset.Parent_version = {};
     OutGaSubset.Parents        = {};
     OutGaSubset.Provider       = {};
+    
+    %=============================
+    % Iterate over INPUT datasets
+    %=============================
     keysCa = InputDatasetsMap.keys;
     for i = 1:numel(keysCa)
         
@@ -229,6 +232,16 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     gaTimeMaxNbr = juliandate(EJ_library.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(end)));
     OutGaSubset.TIME_MIN = sprintf(TIME_MINMAX_FORMAT, gaTimeMinNbr);
     OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
+    
+
+    enableMods = SETTINGS.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
+    
+    MODS = bicas.constants.GA_MODS(outputDatasetId);
+    if ~isempty(MODS) && enableMods
+        OutGaSubset.MODS = MODS;
+    end
+    
+    
     
     % ROC DFMD hints that value should not be set dynamically. (See meaning of
     % non-italic black text for global attribute name in table.)
