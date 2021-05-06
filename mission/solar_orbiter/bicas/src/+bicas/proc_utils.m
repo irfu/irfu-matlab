@@ -28,7 +28,8 @@ classdef proc_utils
 %    NOTE: Time conversion may require moving the zero-point within the snapshot/record.
 %    PROPOSAL: : All have nSamplesPerOldRecord as column vector.
 %       PRO: LFR.
-%    PROPOSAL: First convert column data to 2D data (with separate functions), then reshape to 1D with one common function.
+%    PROPOSAL: First convert column data to 2D data (with separate functions),
+%              then reshape to 1D with one common function.
 %       CON: Does not work for ACQUISITION_TIME since two columns.
 %
 % PROPOSAL: Split up SPR functions.
@@ -69,7 +70,8 @@ classdef proc_utils
                 ' but illegal(?) zVariable name "%s" instead of "%s".'], ...
                 inSciDsi, oldFieldname, newFieldname));
 
-            bicas.handle_struct_name_change(fnChangeList, ...
+            bicas.handle_struct_name_change(...
+                fnChangeList, ...
                 SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
         end
 
@@ -93,6 +95,7 @@ classdef proc_utils
         % Generic utility function.
         % Overwrite struct fields at specific field rows using other struct
         % fields.
+        %
         %
         % ARGUMENTS
         % =========
@@ -124,19 +127,26 @@ classdef proc_utils
 
         % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
         %
+        %
         % ARGUMENTS
         % =========
-        % M                     : 2D matrix
-        % nCopyColsPerRowVec    : 1D column vector.
-        %                         {i}=Number of elements to copy from M{i,:}.
+        % M                    : 2D matrix
+        % nCopyColsPerRowArray : 1D column vector. Numeric.
+        %                        {i}=Number of elements to copy from M{i,:}.
         %
         % RETURN VALUE
         % ============
-        % ca                    : Column cell array of 1D vectors.
+        % ca                   : Column cell array of 1D vectors.
         %
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
+            
+            % ASSERTIONS
             EJ_library.assert.vector(nCopyColsPerRowArray)
-            nRows = EJ_library.assert.sizes(M, [-1, NaN], nCopyColsPerRowArray, [-1, 1]);
+            nRows = EJ_library.assert.sizes(...
+                M,                    [-1, NaN], ...
+                nCopyColsPerRowArray, [-1, 1]);
+            
+            
             
             ca = cell(size(M, 1), 1);
             for iRow = 1:nRows
@@ -154,7 +164,8 @@ classdef proc_utils
         %                      NOTE: Sets unset elements to NaN.
         % nCopyColsPerRowVec : 1D vector. {i}=Length of ca{i}=Number of
         %                      elements copyied to M{i,:}.
-        function [M, nCopyColsPerRowVec] = convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
+        function [M, nCopyColsPerRowVec] = ...
+                convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
             assert(iscell(ca))
             EJ_library.assert.vector(ca)
             assert(isscalar(nMatrixColumns))
@@ -325,7 +336,8 @@ classdef proc_utils
             assert(islogical(bRowFilter))
             assert(isfloat(zvData), ...
                 'BICAS:proc_utils:Assertion:IllegalArgument', ...
-                'Argument "data" is not a floating-point class (can therefore not represent NaN).')
+                ['Argument "data" is not a floating-point class (can', ...
+                ' therefore not represent NaN).'])
             % Not really necessary to require row vector, only 1D vector.
             EJ_library.assert.sizes(...
                 zvData,     [-1, NaN, NaN], ...
@@ -363,7 +375,9 @@ classdef proc_utils
 
 
         
-        function tt2000 = ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
+        function tt2000 = ACQUISITION_TIME_to_TT2000(...
+                ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
+        %
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for
         % Epoch in CDF files.
         % 
@@ -394,7 +408,8 @@ classdef proc_utils
         
 
         
-        function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(tt2000, ACQUISITION_TIME_EPOCH_UTC)
+        function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(...
+                tt2000, ACQUISITION_TIME_EPOCH_UTC)
         % Convert from tt2000 to ACQUISITION_TIME.
         %
         % ARGUMENTS
@@ -412,12 +427,15 @@ classdef proc_utils
 
             % NOTE: Important to type cast to double because of multiplication
             % AT = ACQUISITION_TIME
-            atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;
+            atSeconds = double(int64(tt2000) - ...
+                spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;
             
             % ASSERTION: ACQUISITION_TIME must not be negative.
             if any(atSeconds < 0)
-                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
-                    'Can not produce ACQUISITION_TIME (uint32) with negative number of integer seconds.')
+                error(...
+                    'BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
+                    ['Can not produce ACQUISITION_TIME (uint32) with', ...
+                    ' negative number of integer seconds.'])
             end
             
             atSeconds = round(atSeconds*65536) / 65536;
@@ -519,32 +537,32 @@ classdef proc_utils
 
 
         function ColumnStrs = log_array(varName, varValue, varType, SETTINGS)
-            % Logs statistics on the contents of a numeric variable (any
-            % dimensionality):
-            %   ** Array size
-            %   ** Number of and percentage NaN,
-            %   ** unique values, min-max.
-            % Primarily intended for zVariables and derivatives thereof. Can be
-            % useful for knowing which settings are used (e.g. DIFF_GAIN),
-            % constant/varying bias current, suspect input datasets.
-            %
-            % IMPLEMENTATION NOTE: Deliberately short function name to not
-            % clutter the log.
-            %
-            %
-            % ARGUMENTS
-            % =========
-            % varName  :
-            % varValue :
-            % varType  : String constant. 'numeric' or 'Epoch'.
-            %            Determines how varValue is interpreted.
-            %
-            %
-            % RETURN VALUE
-            % ============
-            % ColumnStrs : Struct with fields corresponding to different column
-            %              values for one row in a table.
-            %
+        % Logs statistics on the contents of a numeric variable (any
+        % dimensionality):
+        %   ** Array size
+        %   ** Number of and percentage NaN,
+        %   ** unique values, min-max.
+        % Primarily intended for zVariables and derivatives thereof. Can be
+        % useful for knowing which settings are used (e.g. DIFF_GAIN),
+        % constant/varying bias current, suspect input datasets.
+        %
+        % IMPLEMENTATION NOTE: Deliberately short function name to not
+        % clutter the log.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % varName  :
+        % varValue :
+        % varType  : String constant. 'numeric' or 'Epoch'.
+        %            Determines how varValue is interpreted.
+        %
+        %
+        % RETURN VALUE
+        % ============
+        % ColumnStrs : Struct with fields corresponding to different column
+        %              values for one row in a table.
+        %
             
             % PROPOSAL: Handle fill/pad value?
             % PROPOSAL: Move to +utils.
@@ -564,7 +582,8 @@ classdef proc_utils
             % Construct string: variable size
             %=================================
             % Create comma-separated list of numbers.
-            sizeStr = strjoin(arrayfun(@(n) num2str(n), size(varValue), 'UniformOutput', 0),',');
+            sizeStr = strjoin(arrayfun(...
+                @(n) num2str(n), size(varValue), 'UniformOutput', 0),',');
             sizeStr = sprintf('(%s)', sizeStr);
             
             switch(varType)
@@ -648,7 +667,8 @@ classdef proc_utils
         function log_zVars(Zvs, SETTINGS, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
-            %   Ex: process_HK_CDF_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
+            %   Ex: process_HK_CDF_to_HK_on_SCI_TIME: Print different versions
+            %       of time for comparison. Want whitespace
             %
             % PROPOSAL: For min-max values, also print difference.
             %   Ex: Time difference for Epoch.
@@ -660,26 +680,31 @@ classdef proc_utils
 
             fnList     = fieldnames(Zvs);
             ColumnStrs = EJ_library.utils.empty_struct([0,1], ...
-                'name', 'size', 'nNan', 'percentageNan', 'nUniqueValues', 'values');
+                'name', 'size', 'nNan', 'percentageNan', ...
+                'nUniqueValues', 'values');
             
             for iFn = 1:numel(fnList)
                 zvName  = fnList{iFn};
                 zvValue = Zvs.(zvName);
                 
                 if iscolumn(zvValue) && isa(zvValue, 'int64') ...
-                        && any(EJ_library.str.regexpf(zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
+                        && any(EJ_library.str.regexpf(...
+                        zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch', SETTINGS);
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(...
+                        zvName, zvValue, 'Epoch', SETTINGS);
                     
                 elseif isnumeric(zvValue)
                     % CASE: Non-Epoch-like numeric variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'numeric', SETTINGS);
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(...
+                        zvName, zvValue, 'numeric', SETTINGS);
                     
                 elseif ischar(zvValue)
                     
-                    % Example of string valued (but irrelevant) CDF zVariables: ACQUISITION_TIME_LABEL
+                    % Example of string valued (but irrelevant) CDF zVariables:
+                    % ACQUISITION_TIME_LABEL
                     % Ignore. Do nothing.
                     
                 else
@@ -697,8 +722,9 @@ classdef proc_utils
             dataStrs(:,5) = {ColumnStrs(:).nUniqueValues}';
             dataStrs(:,6) = {ColumnStrs(:).values}';
             columnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
-            [HEADER_STRS, dataStrs, columnWidths] = EJ_library.str.assist_print_table(...
-                HEADER_STRS, dataStrs,  columnAdjustments);
+            [HEADER_STRS, dataStrs, columnWidths] = ...
+                EJ_library.str.assist_print_table(...
+                    HEADER_STRS, dataStrs,  columnAdjustments);
 
             L.log(LL, strjoin(HEADER_STRS, ' '))
             L.log(LL, repmat('=', 1, sum(columnWidths) + numel(HEADER_STRS) - 1))
@@ -707,7 +733,8 @@ classdef proc_utils
             end
             L.logf(LL, [...
                 '    #NaN = Number of NaN\n', ...
-                '    #Uniq = Number of unique values incl. NaN which counts as equal to itself.\n', ...
+                '    #Uniq = Number of unique values incl.', ...
+                    ' NaN which counts as equal to itself.\n', ...
                 '    Mm = min-max\n', ...
                 '    Us = Unique values (explicitly listed)\n'])
         end
@@ -722,8 +749,8 @@ classdef proc_utils
         
         % Assert that variable is an "zVar Epoch-like" variable.
         function assert_zv_Epoch(zvEpoch)
-            % NOTE: No check for monotonically increasing timestamps. Done
-            % in other locations. Universally? Slow?
+            % NOTE: No check for monotonically increasing timestamps. Done in
+            % other locations. Universally? Slow?
 
             assert(iscolumn(zvEpoch), ...
                 'BICAS:proc_utils:Assertion:IllegalArgument', ...
@@ -748,7 +775,8 @@ classdef proc_utils
             EJ_library.assert.sizes(ACQUISITION_TIME, [NaN, 2])
             assert(all(  ACQUISITION_TIME(:, 1) >= 0), ...
                 EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
-            % IMPLEMENTATION NOTE: Does not need to check for negative values due to uint32.
+            % IMPLEMENTATION NOTE: Does not need to check for negative values
+            % due to uint32.
             assert(all(  ACQUISITION_TIME(:, 2) < 65536), ...
                 EMID, 'ACQUISITION_TIME subseconds out of range.')
         end
@@ -799,7 +827,9 @@ classdef proc_utils
                     
                     fieldNamesList2 = fieldnames(fieldValue);
                     for iFn2 = 1:length(fieldNamesList2)
-                        nRowsArray(end+1) = size(fieldValue.(fieldNamesList2{iFn2}), 1);
+                        nRowsArray(end+1) = size(...
+                            fieldValue.(fieldNamesList2{iFn2}), ...
+                            1);
                     end
                     
                 else
@@ -816,7 +846,8 @@ classdef proc_utils
             % NOTE: length==0 valid for struct containing zero numeric fields.
             if length(unique(nRowsArray)) > 1    
                 error('BICAS:proc_utils:Assertion', ...
-                    ['Numeric fields and cell array components in struct do not have the same number', ...
+                    ['Numeric fields and cell array components', ...
+                    ' in struct do not have the same number', ...
                     ' of rows (likely corresponding to CDF zVar records).'])
             end
         end

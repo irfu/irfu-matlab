@@ -35,10 +35,10 @@ classdef proc_sub23
 %   NOTE: Should have more test code for code that downsamples.
 %
 % PROPOSAL: Test code for code that downsamples.
-%   Ex: proc_sub23.downsample_bin_L12_QUALITY_BITMASK()
-%   Ex: proc_sub23.downsample_bin_QUALITY_FLAG()
-%   Ex: proc_sub23.downsample_bin_sci_values() -- Already has test code
-%   Ex: proc_utils.downsample_Epoch()          -- Already has test code
+%   Ex: bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK() -- Too trivial?
+%   Ex: bicas.proc_sub23.downsample_bin_QUALITY_FLAG()        -- Too trivial?
+%   Ex: bicas.proc_sub23.downsample_bin_sci_values()          -- Already has test code
+%   Ex: bicas.proc_sub23.downsample_Epoch()                   -- Already has test code
 %   --
 %   PRO: Can verify now uncertain edge cases.
 %       Ex: Quality zVars when science data=fill values.
@@ -50,6 +50,10 @@ classdef proc_sub23
 %       CON: Not very heavy operation.
 %   PRO: Leads to better organization of code.
 %       PRO: process_L2_to_L3() is too large and should be split up anyway.
+%
+% PROPOSAL: QUALITY_FLAG and L2_QUALITY_BITMASK should be FILL VALUE (not zero) for empty
+%           bins.
+%   PROBLEM: BICAS might not support that behaviour yet. /2021-05-06
 %
 %##############################################################################################
 
@@ -74,7 +78,7 @@ classdef proc_sub23
             %           downsampled.
             % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
             %           (still combine non-downsampled and downsampled).
-            %   CON: Slows down over all processing.
+            %   CON: Slows down overall processing.
             %       PRO: Must read same L2 dataset multiple times.
             %       PRO: Must read L3 SCPOT dataset to produce L3 DENSITY dataset.
             %   CON: There is much shared functionality for 3 quality zVars.
@@ -109,10 +113,12 @@ classdef proc_sub23
             %   NOTE: L1 QUALITY_BITMASK seems to use the wrong value (255) as
             %         fill value (FILLVAL=65535). ==> A bug fix would not fix
             %         the entire issue.
+            %         NOTE: This is due to a ROC bug.
+            %               https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/48
             %   PROPOSAL: Use double also for CDF integer variables so NaN can
             %             represent fill value also for these.
             %
-            % BUG:    downsample_bin_sci_values()
+            % BUG: downsample_bin_sci_values()
             %      uses N_MIN_SAMPLES_PER_DWNS_BIN, but
             %         downsample_bin_L12_QUALITY_BITMASK() and
             %         downsample_bin_QUALITY_FLAG()
@@ -206,12 +212,13 @@ classdef proc_sub23
             % Ex: Dataset 2020-08-01
             %===================================================================
             zvEdcMvpm = EdcSrfTs.data;    % MVPM = mV/m
-            % IMPLEMENTATION NOTE: ismember does not work for NaN.
+            % IMPLEMENTATION NOTE: ismember() does not work for NaN.
             assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
                 ['EDC for antenna 1 returned from', ...
-                ' solo.vdccal() is not zero or NaN and can therefore not be', ...
-                ' assumed to be unknown anymore.', ...
-                ' BICAS needs to be updated to reflect this.'])
+                ' solo.vdccal() is neither zero nor NaN and can therefore', ...
+                ' not be assumed to be unknown anymore.', ...
+                ' Verify that this is correct solo.vdccal() behaviour and', ...
+                ' (if correct) then update BICAS to handle this.'])
             zvEdcMvpm(:, 1) = NaN;
             clear TsEdc
 
@@ -259,7 +266,8 @@ classdef proc_sub23
             gaEfieldScpot_Misc_calibration_versions{end+1} = ...
                 ['solo.vdccal() code version ', vdccalCodeVerStr];
             %
-            gaDensity_Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            gaDensity_Misc_calibration_versions = ...
+                gaEfieldScpot_Misc_calibration_versions;
             gaDensity_Misc_calibration_versions{end+1}     = ...
                 ['solo.psp2ne() code version ', psp2neCodeVerStr];
 
@@ -337,7 +345,7 @@ classdef proc_sub23
             [zvEpochDwns, iRecordsDwnsCa, binSizeArrayNs] = ...
                 bicas.proc_utils.downsample_Epoch(...
                     InLfrCwf.Zv.Epoch, boundaryRefTt2000, ...
-                    BIN_LENGTH_WOLS_NS,      BIN_TIMESTAMP_POS_WOLS_NS);
+                    BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS);
             nRecordsDwns = numel(zvEpochDwns);
 %             for i = 1:nRecordsDwns
 %                 % TODO-DEC: Bad to remove non-donwsampled bins since quality
@@ -609,13 +617,13 @@ classdef proc_sub23
 
 
 
-        % Derive QUALITY_FLAG for one downsampled CDF record, from corresponding
+        % Derive QUALITY_FLAG for ONE downsampled CDF record, from corresponding
         % non-downsampled records (bin).
         %
         % NOTE: Handles empty bins.
         %
         function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(zv_QUALITY_FLAG_segment)
-            % Return NaN or 0 for empty bin?
+            % TODO-DEC: Return NaN/fill value or 0 for empty bin?
 
             % IMPLEMENTATION NOTE: Just using min([zv_QUALITY_FLAG; 0]) does not work.
             if isempty(zv_QUALITY_FLAG_segment)
@@ -627,7 +635,7 @@ classdef proc_sub23
 
 
 
-        % Derive a quality bitmask for one downsampled CDF record, from
+        % Derive a quality bitmask for ONE downsampled CDF record, from
         % corresponding non-downsampled records (bin).
         %
         % NOTE: "L12_QUALITY_BITMASK" refers to both zVariables
@@ -638,16 +646,17 @@ classdef proc_sub23
         %
         function L12_QUALITY_BITMASK = downsample_bin_L12_QUALITY_BITMASK(...
                 zv_L12_QUALITY_BITMASK_segment)
-            % Return NaN or 0 for empty bin?
+            % TODO-DEC: Return NaN/fill value or 0 for empty bin?
 
             % IMPLEMENTATION NOTE: 2020-11-23: L2 zVar "QUALITY_BITMASK" is
             % mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
             assert(isa(zv_L12_QUALITY_BITMASK_segment, 'uint16'))
 
             if isempty(zv_L12_QUALITY_BITMASK_segment)
-                L12_QUALITY_BITMASK = 0;   % Appropriate?!! Fill value/NaN?
+                L12_QUALITY_BITMASK = 0;
             else
-                L12_QUALITY_BITMASK = bicas.utils.bitops.or(zv_L12_QUALITY_BITMASK_segment);
+                L12_QUALITY_BITMASK = bicas.utils.bitops.or(...
+                    zv_L12_QUALITY_BITMASK_segment);
             end
         end
 

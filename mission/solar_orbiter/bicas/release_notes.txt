@@ -31,7 +31,7 @@ Uses LFR mux mode.
 
 Version 3.1.0
 -------------
-Bugfix to handle LFR zVar BW=0.
+Bugfix to handle LFR L1 zVar BW=0.
 Preliminary sweep removal.
 Performance improvement (speed-up).
 Preliminary setting of zVar QUALITY_FLAG (max 2).
