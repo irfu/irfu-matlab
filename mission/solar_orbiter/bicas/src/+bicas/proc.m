@@ -52,14 +52,14 @@ classdef proc
         
         % ARGUMENTS
         % =========
-        % inputSciDsi      : The science input dataset will be interpreted as
-        %                    having this DATASET_ID.
-        %                    RATIONALE: InputDatasetsMap should contain the same
-        %                    as a CDF global attribute but
-        %                    (1) it could be missing, or
-        %                    (2) sometimes one may want to read an ROC-SGSE
-        %                        dataset as if it was an RODP dataset or the
-        %                        other way around.
+        % inputSciDsi
+        %       The science input dataset will be interpreted as having this
+        %       DATASET_ID.
+        %       RATIONALE: InputDatasetsMap should contain the same as a CDF
+        %       global attribute but
+        %       (1) it could be missing, or
+        %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
+        %           was an RODP dataset or the other way around.
         %
         function [OutputDatasetsMap] = produce_L2_LFR(...
                 InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, ...
@@ -170,17 +170,17 @@ classdef proc
             %==============
             % Process data
             %==============
-            [EfieldCdf,  EfieldDwnsCdf, ...
-             ScpotCdf,   ScpotDwnsCdf, ...
-             DensityCdf, DensityDwnsCdf] = ...
+            [EfieldOrisCdf,  EfieldDwnsCdf, ...
+             ScpotOrisCdf,   ScpotDwnsCdf, ...
+             DensityOrisCdf, DensityDwnsCdf] = ...
                 bicas.proc_sub23.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
 
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('EFIELD_cdf')       = EfieldCdf;
+            OutputDatasetsMap('EFIELD_ORIS_cdf')  = EfieldOrisCdf;
             OutputDatasetsMap('EFIELD_DWNS_cdf')  = EfieldDwnsCdf;
-            OutputDatasetsMap('SCPOT_cdf')        = ScpotCdf;
+            OutputDatasetsMap('SCPOT_ORIS_cdf')   = ScpotOrisCdf;
             OutputDatasetsMap('SCPOT_DWNS_cdf')   = ScpotDwnsCdf;
-            OutputDatasetsMap('DENSITY_cdf')      = DensityCdf;
+            OutputDatasetsMap('DENSITY_ORIS_cdf') = DensityOrisCdf;
             OutputDatasetsMap('DENSITY_DWNS_cdf') = DensityDwnsCdf;
         end
         

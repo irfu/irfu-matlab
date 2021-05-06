@@ -14,12 +14,14 @@
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
 % See bicas.calib.
-% ZV  : CDF zVariable, or something analogous to it. If refers to CDF:ish
-%       content, then the first index corresponds to the CDF record.
-% SPR : Samples Per (CDF) Record. Only refers to actual data (currents,
-%       voltages), not metadata.
-% UFV : Use Fill Values (refers to records which data should overwritten with
-%       fill values)
+% ZV   : CDF zVariable, or something analogous to it. If refers to CDF:ish
+%        content, then the first index corresponds to the CDF record.
+% SPR  : Samples Per (CDF) Record. Only refers to actual data (currents,
+%        voltages), not metadata.
+% UFV  : Use Fill Values (refers to records which data should overwritten with
+%        fill values)
+% ORIS : Oiginal sampling (frequency), as opposed to DWNS.
+% DWNS : Downsampled, as opposed to ORIS.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -65,13 +67,14 @@ classdef proc_sub23
     
         % Processing function for processing L2-->L3 (not VHT).
         %
-        function [OutEfield,  OutEfieldDwns, ...
-                  OutScpot,   OutScpotDwns, ...
-                  OutDensity, OutDensityDwns] ...
+        function [OutEfieldOris,  OutEfieldDwns, ...
+                  OutScpotOris,   OutScpotDwns, ...
+                  OutDensityOris, OutDensityDwns] ...
                 = process_L2_to_L3(InLfrCwf, SETTINGS, L)
 
             % PROPOSAL: Split up in one part for non-downsampled and
             %           downsampled.
+            %
             % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
             %           (still combine non-downsampled and downsampled).
             %   CON: Slows down overall processing.
@@ -87,21 +90,6 @@ classdef proc_sub23
             %           Downsampling of quality variables
             %               (QUALITY_FLAG, QUALITY_BITMASK, L2_QUALITY_BITMASK).
             %           DELTA_PLUS_MINUS_dwns
-            %       --
-            %       CON-PROPOSAL: Put shared functionality in function.
-            %           CON: Slows down processing.
-            %               CON: Probably negligible.
-            %
-            % PROPOSAL: Downsampled records with fewer than N samples should
-            %           set voltage to fill value.
-            %   NOTE: May affect QUALITY_FLAG, L2_QUALITY_BITMASK, QUALITY_BITMASK(?)
-            %   PROPOSAL: QUALITY_FLAG=fill value; 
-            %             QUALITY_BITMASK and L2_QUALITY_BITMASK = union of bin bits.
-            %   PROPOSAL: Take into account whether samples are fill values.
-            %       NOTE: Leads to different behaviour for different downsampled
-            %             datasets.
-            %       NOTE: May be different for different "channels" (vary over
-            %             non-record dimensions) within the same zVar.
             %
             % BUG: Fill values in the __INPUT__
             %   QUALITY_FLAG,
@@ -116,21 +104,10 @@ classdef proc_sub23
             %   PROPOSAL: Use double also for CDF integer variables so NaN can
             %             represent fill value also for these.
             %
-            % BUG?: Uses N_MIN_SAMPLES_PER_DWNS_BIN:
-            %           downsample_bin_sci_values()
-            %       Do not use N_MIN_SAMPLES_PER_DWNS_BIN:
-            %           downsample_bin_L12_QUALITY_BITMASK()
-            %           downsample_bin_QUALITY_FLAG()
-            %       This is inconsistent.
-            %
-            %
-            %
-            % PROPOSAL: Simplify/refactor code that creates zVars for
-            %           downsampled datasets.
-            %   Function for downsampling data zVars, including initialization
-            %   of NaN-vectors.
-            %   Function for setting quality variables, potentially influenced
-            %   by downsampled data zVars: empty bins, fill values.
+            % NOTE: L2 LFR-CWF-E skt had zVar
+            %   QUALITY_BITMASK=CDF_UINT1, fill value=255 (wrong)
+            % until skt V12 when it was changed to
+            %   QUALITY_BITMASK=CDF_UINT2, fill value 65535 (correct).
 
 
             
@@ -149,9 +126,6 @@ classdef proc_sub23
             CODE_VER_STR_REGEXP = ...
                 '[0-9]{4}-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]';
             
-            QUALITY_FLAG_MIN_FOR_USE  = SETTINGS.get_fv(...
-                'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
-
 
 
             %======================
@@ -167,11 +141,11 @@ classdef proc_sub23
 
 
 
-            %==============================================================
-            % Call BICAS-external code to calculate EFIELD, SCPOT, DENSITY
-            %==============================================================
-            R = bicas.proc_sub23.calc_EFIELD_SCPOT(...
-                    InLfrCwf.Zv, QUALITY_FLAG_MIN_FOR_USE);
+            %=================================================================
+            % Call BICAS-external code to calculate (EFIELD, SCPOT) + DENSITY
+            %=================================================================
+            R = bicas.proc_sub23.calc_EFIELD_SCPOT(InLfrCwf.Zv, SETTINGS);
+            %
             [NeScpTs, psp2neCodeVerStr] = bicas.proc_sub23.calc_DENSITY(R.PspTs);
 
 
@@ -202,181 +176,64 @@ classdef proc_sub23
 
 
 
-            %==================
-            % Shared variables
-            %==================
-            % Global attributes, shared between ALL 3x2 datasets
+            %=========================================
+            % Misc. variables shared between datasets
+            %=========================================
+            % Global attributes, shared between ALL 3x2 datasets.
             InitialGa = struct();
-            InitialGa.OBS_ID             = InLfrCwf.Ga.OBS_ID;
-            InitialGa.SOOP_TYPE          = InLfrCwf.Ga.SOOP_TYPE;
-            % zVariables, shared between all NON-DOWNSAMPLED datasets
-            InitialZv = struct();
-            InitialZv.Epoch              = InLfrCwf.Zv.Epoch;
-            InitialZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
-            InitialZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
-            InitialZv.QUALITY_FLAG       = InLfrCwf.Zv.QUALITY_FLAG;
-            InitialZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
+            InitialGa.OBS_ID                 = InLfrCwf.Ga.OBS_ID;
+            InitialGa.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
+            % zVariables, shared between all ORIS/NON-DOWNSAMPLED datasets.
+            InitialOrisZv = struct();
+            InitialOrisZv.Epoch              = InLfrCwf.Zv.Epoch;
+            InitialOrisZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
+            InitialOrisZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
+            InitialOrisZv.QUALITY_FLAG       = InLfrCwf.Zv.QUALITY_FLAG;
+            InitialOrisZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
             %
-            InitialOutDataset = struct(...
+            InitialOris = struct(...
                 'Ga', InitialGa, ...
-                'Zv', InitialZv);
-
+                'Zv', InitialOrisZv);
+            clear InitialZv
+            %
+            [InitialDwnsZv, iRecordsInBinCa] = bicas.proc_sub23.init_shared_downsampled(...
+                InLfrCwf.Zv, ...
+                BIN_LENGTH_WOLS_NS, ...
+                BIN_TIMESTAMP_POS_WOLS_NS);
+            InitialDwns = struct('Zv', InitialDwnsZv);
+            % NOTE: Not setting DWNS .Ga here, since DWNS datasets later copy
+            % .Ga from the respective ORIS datasets.
+            
 
 
             %====================================
             % zVars for EFIELD (not downsampled)
             %====================================
-            OutEfield = InitialOutDataset;
-            OutEfield.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutEfieldOris = InitialOris;
+            OutEfieldOris.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutEfield.Zv.EDC_SRF                   = R.zvEdcMvpm;
+            OutEfieldOris.Zv.EDC_SRF                   = R.zvEdcMvpm;
 
 
 
             %===================================
             % zVars for SCPOT (not downsampled)
             %===================================
-            OutScpot = InitialOutDataset;
-            OutScpot.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutScpotOris = InitialOris;
+            OutScpotOris.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutScpot.Zv.SCPOT                     = R.ScpotTs.data;
-            OutScpot.Zv.PSP                       = R.PspTs.data;
+            OutScpotOris.Zv.SCPOT                     = R.ScpotTs.data;
+            OutScpotOris.Zv.PSP                       = R.PspTs.data;
 
 
 
             %=====================================
             % zVars for DENSITY (not downsampled)
             %=====================================
-            OutDensity = InitialOutDataset;
-            OutDensity.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
+            OutDensityOris = InitialOris;
+            OutDensityOris.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
             %
-            OutDensity.Zv.DENSITY                   = NeScpTs.data;
-
-
-
-            %====================================================
-            % Calculate values used for all downsampled datasets
-            %====================================================
-            % Find bin boundary reference timestamp. This is used for
-            % setting the bin boundaries together with the bin length.
-            v = spdfbreakdowntt2000(InLfrCwf.Zv.Epoch(1));
-            % UTC subsecond (milliseconds, microseconds, nanoseconds)
-            v(6)   = 5;   % UTC second
-            v(7:9) = 0;
-            boundaryRefTt2000 = spdfcomputett2000(v);
-            % Find
-            % (1) bin timestamps (downsampled timestamps to represent each bin),
-            %     and
-            % (2) which (non-downsampled) records belong to which bins
-            %     (=downsampled records).
-            [zvEpochDwns, iRecordsDwnsCa, ~, binSizeArrayNs] = ...
-                bicas.proc_sub23.downsample_Epoch(...
-                    InLfrCwf.Zv.Epoch, ...
-                    boundaryRefTt2000, ...
-                    BIN_LENGTH_WOLS_NS, ...
-                    BIN_TIMESTAMP_POS_WOLS_NS);
-            nRecordsDwns = numel(zvEpochDwns);
-            
-            
-            
-            %====================================================================
-            % Derive downsampled versions of quality zVariables
-            % -------------------------------------------------
-            %
-            % QUALITY_BITMASK and L2_QUALITY_BITMASK
-            % --------------------------------------
-            % QUALITY_BITMASK and L2_QUALITY_BITMASK should by their very
-            % definition only be COPIED FROM LOWER ARCHIVING LEVELS (input
-            % datasets). However, in practice they have to be modified somewhat
-            % due to the downsampling, but this should under any circumstance be
-            % independent of the data/data processing (non-quality variables)
-            % itself.
-            %
-            % There are two cases which need to be handled/configured
-            % intelligently:
-            % (1) Calculate a combined value for every bin with AT LEAST ONE
-            %     non-downsampled timestamp.
-            % (2) Set value for every bin with ZERO non-downsampled timestamps.
-            %     (Zero? fill value?)
-            %
-            %
-            % QUALITY_FLAG
-            % ------------
-            % QUALITY_FLAG needs to be downsampled like QUALITY_BITMASK and
-            % L2_QUALITY_BITMASK with the difference that the final value could
-            % ADDITIONALLY potentially be modified due to non-quality variable
-            % data processing. The code is designed to anticipate this
-            % possibility.
-            % Ex: >=1 timestamps/bin but below threshold.
-            %       ==> mean=mstd=NaN.
-            %       ==> QUALITY_FLAG=0? fill value?
-            % Ex: >1 timestamps/bin and over threshold, some data samples=NaN
-            %       ==> mean=mstd=NaN.
-            %       ==> QUALITY_FLAG=0? fill value?
-            %
-            %
-            % Correct zVar data types
-            % -----------------------
-            % "QUALITY_FLAG shall be a CDF_UINT1 flag"
-            % "QUALITY_BITMASK shall be a CDF_UINT2 flag"
-            % Source: SOL-SGS-TN-0009, "Metadata Definition for Solar Orbiter
-            % Science Data"
-            % --
-            % "The optional CDF_UINT2 zVariable L2_QUALITY_BITMASK /.../"
-            % Source:
-            % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
-            %====================================================================
-            % Pre-allocate
-            QUALITY_FLAG_dwns       = zeros(nRecordsDwns, 1, 'uint8');
-            QUALITY_BITMASK_dwns    = zeros(nRecordsDwns, 1, 'uint16');
-            L2_QUALITY_BITMASK_dwns = zeros(nRecordsDwns, 1, 'uint16');
-            for i = 1:nRecordsDwns
-                k = iRecordsDwnsCa{i};
-
-                QUALITY_FLAG_dwns(i) = ...
-                    bicas.proc_sub23.downsample_bin_QUALITY_FLAG(...
-                        InLfrCwf.Zv.QUALITY_FLAG( k) );
-
-                % IMPLEMENTATION NOTE:
-                % 2020-11-23: L2 zVar "QUALITY_BITMASK" is mistakenly
-                % uint8/CDF_UINT1 when it should be uint16/CDF_UINT2. Must
-                % therefore TYPECAST.
-                % 2021-05-06: L2 zVar "QUALITY_BITMASK" type was changed from
-                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V11.skt: CDF_UTIN1
-                % to 
-                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
-                %   (SKELETON_MODS: V12=Feb 2021)
-                % .
-                QUALITY_BITMASK_dwns(i)    = ...
-                    bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK(...
-                        uint16( InLfrCwf.Zv.QUALITY_BITMASK( k ) ) );
-
-                L2_QUALITY_BITMASK_dwns(i) = ...
-                    bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK(...
-                        InLfrCwf.Zv.L2_QUALITY_BITMASK( k ) );
-            end
-
-
-
-            %============================================================
-            % Shared zVariables between all DOWNSAMPLED datasets
-            %
-            % (Initial value for QUALITY_FLAG; might be modified later.)
-            %============================================================
-            InitialDwnsZv = struct();
-            InitialDwnsZv.Epoch              = zvEpochDwns;
-            InitialDwnsZv.QUALITY_FLAG       = QUALITY_FLAG_dwns;
-            InitialDwnsZv.QUALITY_BITMASK    = QUALITY_BITMASK_dwns;
-            InitialDwnsZv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK_dwns;
-            %
-            % NOTE: Takes leap seconds into account.
-            % NOTE/BUG: DELTA_PLUS_MINUS not perfect since the bin timestamp is
-            % not centered for leap seconds. Epoch+-DELTA_PLUS_MINUS will thus
-            % go outside/inside the bin boundaries for leap seconds. The same
-            % problem exists for both positive and negative leap seconds.
-            InitialDwnsZv.DELTA_PLUS_MINUS   = double(binSizeArrayNs / 2);
-            %
-            InitialDwns = struct('Zv', InitialDwnsZv);
+            OutDensityOris.Zv.DENSITY                   = NeScpTs.data;
 
 
 
@@ -384,13 +241,13 @@ classdef proc_sub23
             % zVars for EFIELD DOWNSAMPLED
             %==============================
             OutEfieldDwns    = InitialDwns;
-            OutEfieldDwns.Ga = OutEfield.Ga;
+            OutEfieldDwns.Ga = OutEfieldOris.Ga;
             %
             [OutEfieldDwns.Zv.EDC_SRF, ...
              OutEfieldDwns.Zv.EDCSTD_SRF] = bicas.proc_sub23.downsample_sci_zVar(...
-                OutEfield.Zv.EDC_SRF, ...
+                OutEfieldOris.Zv.EDC_SRF, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
-                iRecordsDwnsCa);
+                iRecordsInBinCa);
             %
             % NOTE: Merge across samples in same record.
             %b = all(isnan(OutEfieldDwns.Zv.EDC_SRF), 2);
@@ -402,19 +259,19 @@ classdef proc_sub23
             % zVars for SCPOT DOWNSAMPLED
             %=============================
             OutScpotDwns    = InitialDwns;
-            OutScpotDwns.Ga = OutScpot.Ga;
+            OutScpotDwns.Ga = OutScpotOris.Ga;
             %
             [OutScpotDwns.Zv.SCPOT, ...
              OutScpotDwns.Zv.SCPOTSTD] = bicas.proc_sub23.downsample_sci_zVar(...
-                OutScpot.Zv.SCPOT, ...
+                OutScpotOris.Zv.SCPOT, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
-                iRecordsDwnsCa);
+                iRecordsInBinCa);
             %
             [OutScpotDwns.Zv.PSP, ...
              OutScpotDwns.Zv.PSPSTD] = bicas.proc_sub23.downsample_sci_zVar(...
-                OutScpot.Zv.PSP, ...
+                OutScpotOris.Zv.PSP, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
-                iRecordsDwnsCa);
+                iRecordsInBinCa);
             %
             %b = isnan(OutScpotDwns.Zv.SCPOT) & ...
             %    isnan(OutScpotDwns.Zv.PSP);
@@ -426,21 +283,21 @@ classdef proc_sub23
             % zVars for DENSITY DOWNSAMPLED
             %===============================
             OutDensityDwns    = InitialDwns;
-            OutDensityDwns.Ga = OutDensity.Ga;
+            OutDensityDwns.Ga = OutDensityOris.Ga;
             %
             [OutDensityDwns.Zv.DENSITY, ...
              OutDensityDwns.Zv.DENSITYSTD] = bicas.proc_sub23.downsample_sci_zVar(...
-                OutDensity.Zv.DENSITY, ...
+                OutDensityOris.Zv.DENSITY, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
-                iRecordsDwnsCa);
+                iRecordsInBinCa);
             %
             %b = isnan(OutDensityDwns.Zv.DENSITY);
             %OutDensityDwns.Zv.QUALITY_FLAG(b) = 0;
 
         end    % process_L2_to_L3
-        
-        
-        
+
+
+
         % Downsample a single NxM science zVar.
         %
         % Use bins and for every bin, derive median and modified standard
@@ -459,7 +316,7 @@ classdef proc_sub23
         % nMinReqSamples
         %       Minimum number of samples (fill value or not) for not returning
         %       fill value.
-        % iRecordsDwnsCa
+        % iRecordsInBinCa
         %       Column cell array. {iBin, 1}
         %
         %
@@ -472,7 +329,7 @@ classdef proc_sub23
         %                   useful for setting QUALITY_FLAG. Not used(?).
         %
         function [zvMed, zvMstd, bTooFewRecords] = downsample_sci_zVar(...
-                zv, nMinReqRecords, iRecordsDwnsCa)
+                zv, nMinReqRecords, iRecordsInBinCa)
             
             % PROPOSAL: Incorporate bicas.proc_sub23.downsample_bin_sci_values()
             %           in this function.
@@ -486,8 +343,8 @@ classdef proc_sub23
             assert(isfloat(zv))
             assert(nMinReqRecords >= 0)
             [nSpr, nRecordsDwns] = EJ_library.assert.sizes(...
-                zv,             [NaN, -1], ...
-                iRecordsDwnsCa, [-2]);
+                zv,              [NaN, -1], ...
+                iRecordsInBinCa, [-2]);
             
             % Pre-allocate
             zvMed          = NaN(  nRecordsDwns, nSpr);
@@ -495,9 +352,9 @@ classdef proc_sub23
             bTooFewRecords = false(nRecordsDwns, 1);    % Default values.
 
             for iBin = 1:nRecordsDwns
-                k = iRecordsDwnsCa{iBin};
+                k           = iRecordsInBinCa{iBin};
                 
-                binZv    = zv(k, :);
+                binZv       = zv(k, :);
                 nBinRecords = size(binZv, 1);
 
                 if nBinRecords < nMinReqRecords
@@ -524,6 +381,7 @@ classdef proc_sub23
             end
             
         end
+
 
 
         % NOTE: THIS FUNCTION HAS BEEN COPIED INTO downsample_sci_zVar().
@@ -764,7 +622,12 @@ classdef proc_sub23
         %     other.
         %
         function R = calc_EFIELD_SCPOT(...
-                InLfrCwfZv, QUALITY_FLAG_minForUse)
+                InLfrCwfZv, SETTINGS)
+            
+            QUALITY_FLAG_minForUse = SETTINGS.get_fv(...
+                'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
+
+
             
             % Shorten recurring variables.
             zv_VDC   = InLfrCwfZv.VDC;
@@ -852,9 +715,9 @@ classdef proc_sub23
             R.vdccalMatVerStr  = vdccalMatVerStr;
             
         end
-        
-        
-        
+
+
+
         % Calculate DENSITY via a BICAS-external code solo.psp2ne() (still
         % inside irfu-matlab).
         %
@@ -883,6 +746,146 @@ classdef proc_sub23
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
             assert(strcmp(NeScpTs.units, 'cm^-3'))
+            
+        end
+
+
+
+        % Derive values which are used by all DOWNSAMPLED datasets.
+        %
+        % RETURN VALUES
+        % =============
+        % InitialDwnsZv
+        %       Struct with zVariables. 
+        % iRecordsInBinCa
+        %       Distribution of non-downsampled records in bins.
+        %
+        function [InitialDwnsZv, iRecordsInBinCa] = init_shared_downsampled(...
+                InLfrCwfZv, binLengthWolsNs, binTimestampPosWolsNs)
+            
+            %================
+            % Calculate bins
+            %================
+            % Find bin boundary reference timestamp. This is used for
+            % setting the bin boundaries together with the bin length.
+            v = spdfbreakdowntt2000(InLfrCwfZv.Epoch(1));
+            % UTC subsecond (milliseconds, microseconds, nanoseconds)
+            v(6)   = 5;   % UTC second
+            v(7:9) = 0;
+            boundaryRefTt2000 = spdfcomputett2000(v);
+            % Find
+            % (1) bin timestamps (downsampled timestamps to represent each bin),
+            %     and
+            % (2) which (non-downsampled) records belong to which bins
+            %     (=downsampled records).
+            [zvEpochDwns, iRecordsInBinCa, ~, binSizeArrayNs] = ...
+                bicas.proc_sub23.downsample_Epoch(...
+                    InLfrCwfZv.Epoch, ...
+                    boundaryRefTt2000, ...
+                    binLengthWolsNs, ...
+                    binTimestampPosWolsNs);
+            nRecordsDwns = numel(zvEpochDwns);
+            
+            
+            
+            %====================================================================
+            % Derive downsampled versions of quality zVariables
+            % -------------------------------------------------
+            %
+            % QUALITY_BITMASK and L2_QUALITY_BITMASK
+            % --------------------------------------
+            % QUALITY_BITMASK and L2_QUALITY_BITMASK should by their very
+            % definition only be COPIED FROM LOWER ARCHIVING LEVELS (input
+            % datasets). However, in practice they have to be modified somewhat
+            % due to the downsampling, but this should under any circumstance be
+            % independent of the data/data processing (non-quality variables)
+            % itself.
+            %
+            % There are two cases which need to be handled/configured
+            % intelligently:
+            % (1) Calculate a combined value for every bin with AT LEAST ONE
+            %     non-downsampled timestamp.
+            % (2) Set value for every bin with ZERO non-downsampled timestamps.
+            %     (Zero? fill value?)
+            %
+            %
+            % QUALITY_FLAG
+            % ------------
+            % IMPORTANT: QUALITY_FLAG needs to be downsampled like
+            % QUALITY_BITMASK and L2_QUALITY_BITMASK with the difference that
+            % the final value could ADDITIONALLY POTENTIALLY later (in the
+            % execution) be modified due to non-quality variable data
+            % processing. The code is designed to anticipate this possibility.
+            % Ex: >=1 timestamps/bin but below threshold.
+            %       ==> mean=mstd=NaN.
+            %       ==> QUALITY_FLAG=0? fill value?
+            % Ex: >1 timestamps/bin and over threshold, some data samples=NaN
+            %       ==> mean=mstd=NaN.
+            %       ==> QUALITY_FLAG=0? fill value?
+            %
+            %
+            % Correct zVar data types
+            % -----------------------
+            % "QUALITY_FLAG shall be a CDF_UINT1 flag"
+            % "QUALITY_BITMASK shall be a CDF_UINT2 flag"
+            % Source: SOL-SGS-TN-0009, "Metadata Definition for Solar Orbiter
+            % Science Data"
+            % --
+            % "The optional CDF_UINT2 zVariable L2_QUALITY_BITMASK /.../"
+            % Source:
+            % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
+            %====================================================================
+            % Pre-allocate
+            QUALITY_FLAG_dwns       = zeros(nRecordsDwns, 1, 'uint8');
+            QUALITY_BITMASK_dwns    = zeros(nRecordsDwns, 1, 'uint16');
+            L2_QUALITY_BITMASK_dwns = zeros(nRecordsDwns, 1, 'uint16');
+            for i = 1:nRecordsDwns
+                k = iRecordsInBinCa{i};
+
+                QUALITY_FLAG_dwns(i) = ...
+                    bicas.proc_sub23.downsample_bin_QUALITY_FLAG(...
+                        InLfrCwfZv.QUALITY_FLAG( k) );
+
+                % IMPLEMENTATION NOTE:
+                % 2020-11-23: L2 zVar "QUALITY_BITMASK" is mistakenly
+                % uint8/CDF_UINT1 when it should be uint16/CDF_UINT2. Must
+                % therefore TYPECAST.
+                % 2021-05-06: L2 zVar "QUALITY_BITMASK" type was changed from
+                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V11.skt: CDF_UTIN1
+                % to 
+                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
+                %   (SKELETON_MODS: V12=Feb 2021)
+                % .
+                QUALITY_BITMASK_dwns(i)    = ...
+                    bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK(...
+                        uint16(...
+                            InLfrCwfZv.QUALITY_BITMASK( k ))...
+                        );
+
+                L2_QUALITY_BITMASK_dwns(i) = ...
+                    bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK(...
+                        InLfrCwfZv.L2_QUALITY_BITMASK( k ) );
+            end
+
+
+
+            %============================================================
+            % Shared zVariables between all DOWNSAMPLED datasets
+            %
+            % (Initial value for QUALITY_FLAG; might be modified later.)
+            %============================================================
+            InitialDwnsZv = struct();
+            InitialDwnsZv.Epoch              = zvEpochDwns;
+            InitialDwnsZv.QUALITY_FLAG       = QUALITY_FLAG_dwns;
+            InitialDwnsZv.QUALITY_BITMASK    = QUALITY_BITMASK_dwns;
+            InitialDwnsZv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK_dwns;
+            %
+            % NOTE: Takes leap seconds into account.
+            % NOTE/BUG: DELTA_PLUS_MINUS not perfect since the bin timestamp is
+            % not centered for leap seconds. Epoch+-DELTA_PLUS_MINUS will thus
+            % go outside/inside the bin boundaries for leap seconds. The same
+            % problem exists for both positive and negative leap seconds.
+            InitialDwnsZv.DELTA_PLUS_MINUS   = double(binSizeArrayNs / 2);
             
         end
 

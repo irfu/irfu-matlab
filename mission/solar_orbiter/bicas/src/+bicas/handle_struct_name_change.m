@@ -1,6 +1,6 @@
 %
 % To be used to analyze the result of use of
-% EJ_library.utils.normalize_struct_fieldnames. React depending on SETTINGS.
+% EJ_library.utils.normalize_struct_fieldnames(). React depending on SETTINGS.
 %
 %
 % ARGUMENTS
