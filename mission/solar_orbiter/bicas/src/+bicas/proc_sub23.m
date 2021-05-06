@@ -153,100 +153,12 @@ classdef proc_sub23
 
 
 
-            zv_QUALITY_FLAG = InLfrCwf.Zv.QUALITY_FLAG;
-
-
-
-            %====================================================================
-            % Calculate both
-            %   (1) ELECTRIC FIELD, and
-            %   (2) SPACECRAFT POTENTIALS
-            % via the same BICAS-external code (inside irfu-matlab)
-            % -----------------------------------------------------
-            % NOTE: Needs to be careful with the units, and incompatible updates
-            % to solo.vdccal without the knowledge of the BICAS author.
-            % Therefore uses extra assertions to detect such changes.
-            %====================================================================
-            % Set some records to NaN.
-            zv_VDC = InLfrCwf.Zv.VDC;
-            zv_VDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
-            zv_EDC = InLfrCwf.Zv.EDC;
-            zv_EDC(zv_QUALITY_FLAG < QUALITY_FLAG_MIN_FOR_USE, :) = NaN;
-            %
-            % NOTE: Should TSeries objects really use TensorOrder=1 and
-            % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
-            % fo three scalars. Probably does not matter. solo.vdccal() does
-            % indeed use VDC.x, EDC.x etc.
-            VdcTs = TSeries(...
-                EpochTT(InLfrCwf.Zv.Epoch), zv_VDC, ...
-                'TensorOrder', 1, ...
-                'repres', {'x', 'y', 'z'});
-            EdcTs = TSeries(...
-                EpochTT(InLfrCwf.Zv.Epoch), zv_EDC, ...
-                'TensorOrder', 1, ...
-                'repres', {'x', 'y', 'z'});
-            %-----------------------------------------------------------------
-            % CALL EXTERNAL CODE
-            [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
-                = solo.vdccal(VdcTs, EdcTs);
-            clear VdcTs EdcTs
-            %-----------------------------------------------------------------
-            EJ_library.assert.sizes(...
-                InLfrCwf.Zv.Epoch, [-1, 1], ...
-                EdcSrfTs.data,     [-1, 3], ...
-                PspTs.data,        [-1, 1], ...
-                ScpotTs.data,      [-1, 1]);
-            assert(strcmp(EdcSrfTs.units,            'mV/m'))
-            assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF'))
-            assert(strcmp(PspTs.units,               'V'))
-            assert(strcmp(ScpotTs.units,             'V'))
-
-
-
-            %===================================================================
-            % Normalize E-field
-            % -----------------
-            % Set E_x = NaN, but ONLY if assertion deems that the corresponding
-            % information is missing.
-            %
-            % IMPLEMENTATION NOTE: solo.vdccal set antenna 1 to be zero, if the
-            % source data is non-fill value/NaN, but NaN if fill value. Must
-            % therefore check for both zero and NaN.
-            % Ex: Dataset 2020-08-01
-            %===================================================================
-            zvEdcMvpm = EdcSrfTs.data;    % MVPM = mV/m
-            % IMPLEMENTATION NOTE: ismember() does not work for NaN.
-            assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
-                ['EDC for antenna 1 returned from', ...
-                ' solo.vdccal() is neither zero nor NaN and can therefore', ...
-                ' not be assumed to be unknown anymore.', ...
-                ' Verify that this is correct solo.vdccal() behaviour and', ...
-                ' (if correct) then update BICAS to handle this.'])
-            zvEdcMvpm(:, 1) = NaN;
-
-
-
-            %====================================================================
-            % Calculate DENSITY via a BICAS-external code (inside irfu-matlab)
-            % ----------------------------------------------------------------
-            % NOTE: Needs to be careful with the units, and incompatible updates
-            % to solo.vdccal without the knowledge of the BICAS author.
-            % Therefore uses extra assertions to detect such changes.
-            %
-            % NOTE: Empirically, some return values are NaN.
-            % NOTE: "SCP" comes from the return variable name in solo.psp2ne().
-            % Do not know what it means.
-            %====================================================================
-            %-----------------------------
-            % CALL EXTERNAL CODE
-            [NeScpTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
-            %-----------------------------
-            EJ_library.assert.sizes(...
-                PspTs.data,   [-1, 1], ...
-                NeScpTs.data, [-1, 1]);
-            assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
-                'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
-            assert(strcmp(NeScpTs.units, 'cm^-3'))
+            %==============================================================
+            % Call BICAS-external code to calculate EFIELD, SCPOT, DENSITY
+            %==============================================================
+            R = bicas.proc_sub23.calc_EFIELD_SCPOT(...
+                    InLfrCwf.Zv, QUALITY_FLAG_MIN_FOR_USE);
+            [NeScpTs, psp2neCodeVerStr] = bicas.proc_sub23.calc_DENSITY(R.PspTs);
 
 
 
@@ -255,45 +167,46 @@ classdef proc_sub23
             %====================================================================
             % Reg.exp. equivalent to: yyyy-mm-ddThh:mm:ss
             CODE_VER_STR_REGEXP = '[0-9]{4}-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]';
-            assert(isempty(vdccalMatVerStr), ...
-                ['solo.vdccal() no longer returns empty vdccalMatVerStr.', ...
-                ' BICAS needs to be updated.'])
-            EJ_library.assert.castring_regexp(vdccalCodeVerStr, CODE_VER_STR_REGEXP)
-            EJ_library.assert.castring_regexp(psp2neCodeVerStr, CODE_VER_STR_REGEXP)
+            assert(isempty(R.vdccalMatVerStr), ...
+                ['solo.vdccal() no longer returns empty vdccalMatVerStr', ...
+                ' (string representing the version of the corresponding', ...
+                ' .mat file). BICAS therefore needs to be updated.'])
+            EJ_library.assert.castring_regexp(R.vdccalCodeVerStr, CODE_VER_STR_REGEXP)
+            EJ_library.assert.castring_regexp(psp2neCodeVerStr,   CODE_VER_STR_REGEXP)
             %
-            % NOTE: Does not set BICAS version since this is already encoded in
+            % NOTE: Should not add BICAS version to glob.attr.
+            % "Misc_calibration_versions" since this is already encoded in
             % global attribute "Software_version" (together with
             % "Software_name").
-            gaEfieldScpot_Misc_calibration_versions = {};
-            gaEfieldScpot_Misc_calibration_versions{end+1} = ...
-                ['solo.vdccal() code version ', vdccalCodeVerStr];
             %
-            gaDensity_Misc_calibration_versions = ...
-                gaEfieldScpot_Misc_calibration_versions;
-            gaDensity_Misc_calibration_versions{end+1}     = ...
-                ['solo.psp2ne() code version ', psp2neCodeVerStr];
+            % NOTE: Density Misc_calibration_versions contains both versions,
+            % since density is derived from PSP.
+            vdccalStr = ['solo.vdccal() code version ', R.vdccalCodeVerStr];
+            psp2neStr = ['solo.psp2ne() code version ', psp2neCodeVerStr];
+            gaEfieldScpot_Misc_calibration_versions = {vdccalStr};
+            gaDensity_Misc_calibration_versions     = {vdccalStr, psp2neStr};
 
 
 
             %==================
             % Shared variables
             %==================
-            % Global attributes, shared between all 3x2 datasets
+            % Global attributes, shared between ALL 3x2 datasets
             InitialGa = struct();
             InitialGa.OBS_ID             = InLfrCwf.Ga.OBS_ID;
             InitialGa.SOOP_TYPE          = InLfrCwf.Ga.SOOP_TYPE;
-            % zVariables, shared between all non-downsampled datasets
+            % zVariables, shared between all NON-DOWNSAMPLED datasets
             InitialZv = struct();
             InitialZv.Epoch              = InLfrCwf.Zv.Epoch;
             InitialZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
             InitialZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
-            InitialZv.QUALITY_FLAG       = zv_QUALITY_FLAG;
+            InitialZv.QUALITY_FLAG       = InLfrCwf.Zv.QUALITY_FLAG;
             InitialZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
             %
             InitialOutDataset = struct(...
                 'Ga', InitialGa, ...
                 'Zv', InitialZv);
-            
+
 
 
             %====================================
@@ -302,7 +215,7 @@ classdef proc_sub23
             OutEfield = InitialOutDataset;
             OutEfield.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutEfield.Zv.EDC_SRF                   = zvEdcMvpm;
+            OutEfield.Zv.EDC_SRF                   = R.zvEdcMvpm;
 
 
 
@@ -312,8 +225,8 @@ classdef proc_sub23
             OutScpot = InitialOutDataset;
             OutScpot.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutScpot.Zv.SCPOT                     = ScpotTs.data;
-            OutScpot.Zv.PSP                       = PspTs.data;
+            OutScpot.Zv.SCPOT                     = R.ScpotTs.data;
+            OutScpot.Zv.PSP                       = R.PspTs.data;
 
 
 
@@ -338,7 +251,8 @@ classdef proc_sub23
             v(6)   = 5;   % UTC second
             boundaryRefTt2000 = spdfcomputett2000(v);
             % Find
-            % (1) bin timestamps (downsampled timestamps), and
+            % (1) bin timestamps (downsampled timestamps to represent each bin),
+            %     and
             % (2) which (non-downsampled) records belong to which bins
             %     (=downsampled records).
             [zvEpochDwns, iRecordsDwnsCa, binSizeArrayNs] = ...
@@ -363,9 +277,14 @@ classdef proc_sub23
             % Quality zVariables
             % ------------------
             %
-            % Set zVariable-like quality variables with "thought-out" values
-            % also for empty bins. Later code can then decide whether to use
-            % these empty bin values or not.
+            % Set zVariable-like quality variables with "thought-out" values.
+            % Later code can then decide whether to use these, or to modify
+            % them.
+            %
+            % NOTE: As of now, quality flags are set INDEPENDENT of the
+            % (1) number of timestamps per bin
+            % (2) whether downsampled time series resulted in fill values.
+            %    
             %
             % Correct zVar data types
             % -----------------------
@@ -383,14 +302,22 @@ classdef proc_sub23
             L2_QUALITY_BITMASK_dwns = zeros(nRecordsDwns, 1, 'uint16');
             for i = 1:nRecordsDwns
                 k = iRecordsDwnsCa{i};
+                
 
                 QUALITY_FLAG_dwns(i)       = ...
                     bicas.proc_sub23.downsample_bin_QUALITY_FLAG(...
-                        zv_QUALITY_FLAG( k) );
+                        InLfrCwf.Zv.QUALITY_FLAG( k) );
 
-                % IMPLEMENTATION NOTE: 2020-11-23: L2 zVar "QUALITY_BITMASK" is
-                % mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
-                % Must therefore TYPECAST.
+                % IMPLEMENTATION NOTE:
+                % 2020-11-23: L2 zVar "QUALITY_BITMASK" is mistakenly
+                % uint8/CDF_UINT1 when it should be uint16/CDF_UINT2. Must
+                % therefore TYPECAST.
+                % 2021-05-06: L2 zVar "QUALITY_BITMASK" type was changed from
+                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V11.skt: CDF_UTIN1
+                % to 
+                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
+                %   (SKELETON_MODS: V12=Feb 2021)
+                % .
                 QUALITY_BITMASK_dwns(i)    = ...
                     bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK(...
                         uint16( InLfrCwf.Zv.QUALITY_BITMASK( k )) );
@@ -413,7 +340,7 @@ classdef proc_sub23
 
 
             %====================================================
-            % Shared zVariables between all downsampled datasets
+            % Shared zVariables between all DOWNSAMPLED datasets
             %====================================================
             InitialDwnsZv = struct();
             InitialDwnsZv.Epoch              = zvEpochDwns;
@@ -426,14 +353,15 @@ classdef proc_sub23
             InitialDwnsZv.L2_QUALITY_BITMASK = NaN(nRecordsDwns, 1);
             InitialDwnsZv.DELTA_PLUS_MINUS   = NaN(nRecordsDwns, 1);
 
+            InitialDwns = struct('Zv', InitialDwnsZv);
+
 
 
             %==============================
             % zVars for EFIELD DOWNSAMPLED
             %==============================
-            OutEfieldDwns = [];
+            OutEfieldDwns = InitialDwns;
             OutEfieldDwns.Ga            = OutEfield.Ga;
-            OutEfieldDwns.Zv            = InitialDwnsZv;
             %
             OutEfieldDwns.Zv.EDC_SRF    = NaN(nRecordsDwns, 3);
             OutEfieldDwns.Zv.EDCSTD_SRF = NaN(nRecordsDwns, 3);
@@ -461,9 +389,8 @@ classdef proc_sub23
             %=============================
             % zVars for SCPOT DOWNSAMPLED
             %=============================
-            OutScpotDwns = [];
+            OutScpotDwns = InitialDwns;
             OutScpotDwns.Ga          = OutScpot.Ga;
-            OutScpotDwns.Zv          = InitialDwnsZv;
             %
             OutScpotDwns.Zv.SCPOT    = NaN(nRecordsDwns, 1);
             OutScpotDwns.Zv.SCPOTSTD = NaN(nRecordsDwns, 1);
@@ -498,9 +425,8 @@ classdef proc_sub23
             %===============================
             % zVars for DENSITY DOWNSAMPLED
             %===============================
-            OutDensityDwns = [];
+            OutDensityDwns = InitialDwns;
             OutDensityDwns.Ga            = OutDensity.Ga;
-            OutDensityDwns.Zv            = InitialDwnsZv;
             %
             OutDensityDwns.Zv.DENSITY    = NaN(nRecordsDwns, 1);
             OutDensityDwns.Zv.DENSITYSTD = NaN(nRecordsDwns, 1);
@@ -738,6 +664,150 @@ classdef proc_sub23
     methods(Static, Access=private)
     %##############################
     %##############################
+    
+    
+    
+        % Calculate both
+        %   (1) ELECTRIC FIELD, and
+        %   (2) SPACECRAFT POTENTIALS
+        % via the same BICAS-external code solo.vdccal() (still inside
+        % irfu-matlab).
+        %
+        % Largely a wrapper around solo.vdccal().
+        %
+        % NOTE: Needs to be careful with the units, and incompatible updates to
+        % solo.vdccal() without the knowledge of the BICAS author. Therefore
+        % uses extra assertions to detect such changes.
+        %
+        % RETURN VALUE
+        % ============
+        % R : Struct with multiple variables.
+        %     NOTE: Return values are packaged as a struct to provide named
+        %     return values and avoid confusing similar return results with each
+        %     other.
+        %
+        function R = calc_EFIELD_SCPOT(...
+                InLfrCwfZv, QUALITY_FLAG_minForUse)
+            
+            % Shorten recurring variables.
+            zv_VDC   = InLfrCwfZv.VDC;
+            zv_EDC   = InLfrCwfZv.EDC;
+            zv_Epoch = InLfrCwfZv.Epoch;            
+            
+            %======================================================
+            % Create input variables for solo.vdccal()
+            % ----------------------------------------
+            % Set records to NaN for QUALITY_FLAG below threshold.
+            %======================================================
+            bDoNotUse = InLfrCwfZv.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            zv_VDC(bDoNotUse, :) = NaN;
+            zv_EDC(bDoNotUse, :) = NaN;
+            %
+            % NOTE: Should TSeries objects really use TensorOrder=1 and
+            % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
+            % fo three scalars. Probably does not matter. solo.vdccal() does
+            % indeed use VDC.x, EDC.x etc.
+            VdcTs = TSeries(...
+                EpochTT(zv_Epoch), zv_VDC, ...
+                'TensorOrder', 1, ...
+                'repres',      {'x', 'y', 'z'});
+            EdcTs = TSeries(...
+                EpochTT(zv_Epoch), zv_EDC, ...
+                'TensorOrder', 1, ...
+                'repres',      {'x', 'y', 'z'});
+            
+            
+            
+            %==========================
+            % CALL BICAS-EXTERNAL CODE
+            %==========================
+            [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
+                = solo.vdccal(VdcTs, EdcTs);
+            clear VdcTs EdcTs
+            %==========================
+            
+            
+            
+            % ASSERTIONS
+            EJ_library.assert.sizes(...
+                zv_Epoch,      [-1, 1], ...
+                EdcSrfTs.data, [-1, 3], ...
+                PspTs.data,    [-1, 1], ...
+                ScpotTs.data,  [-1, 1]);
+            assert(strcmp(EdcSrfTs.units,            'mV/m'))
+            assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF'))
+            assert(strcmp(PspTs.units,               'V'))
+            assert(strcmp(ScpotTs.units,             'V'))
+            
+            
+            
+            %===================================================================
+            % Normalize the representation of E-field X-component
+            % (EdcSrfTs --> zvEdcMvpm)
+            % ---------------------------------------------------
+            % Set E_x = NaN, but ONLY if assertion deems that the corresponding
+            % information is missing.
+            %
+            % IMPLEMENTATION NOTE: solo.vdccal set antenna 1 to be zero, if the
+            % source data is non-fill value/NaN, but NaN if fill value. Must
+            % therefore check for both zero and NaN.
+            % Ex: Dataset 2020-08-01
+            %===================================================================
+            zvEdcMvpm = EdcSrfTs.data;    % MVPM = mV/m
+            clear EdcSrfTs
+            % IMPLEMENTATION NOTE: ismember() does not work for NaN.
+            assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
+                ['EDC for antenna 1 returned from', ...
+                ' solo.vdccal() is neither zero nor NaN and can therefore', ...
+                ' not be assumed to be unknown anymore.', ...
+                ' Verify that this is correct solo.vdccal() behaviour and', ...
+                ' (if correct) then update BICAS to handle this.'])
+            zvEdcMvpm(:, 1) = NaN;
+            
+            
+            
+            % Prepare return struct.
+            R = [];
+            R.PspTs            = PspTs;
+            R.ScpotTs          = ScpotTs;
+            R.zvEdcMvpm        = zvEdcMvpm;
+            R.vdccalCodeVerStr = vdccalCodeVerStr;
+            R.vdccalMatVerStr  = vdccalMatVerStr;
+            
+        end
+        
+        
+        
+        % Calculate DENSITY via a BICAS-external code solo.psp2ne() (still
+        % inside irfu-matlab).
+        %
+        % Largely a wrapper around solo.psp2ne().
+        % 
+        % NOTE: Needs to be careful with the units, and incompatible updates to
+        % solo.vdccal() without the knowledge of the BICAS author. Therefore
+        % uses extra assertions to detect such changes.
+        %
+        % NOTE: Empirically, some return values are NaN.
+        % NOTE: Shortening "SCP" comes from the return variable name in
+        % solo.psp2ne(). Do not know what it means.
+        %
+        function [NeScpTs, psp2neCodeVerStr] = calc_DENSITY(PspTs)
+            
+            %==========================
+            % CALL BICAS-EXTERNAL CODE
+            %==========================
+            [NeScpTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
+            %==========================
+            
+            % ASSERTIONS
+            EJ_library.assert.sizes(...
+                PspTs.data,   [-1, 1], ...
+                NeScpTs.data, [-1, 1]);
+            assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
+                'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
+            assert(strcmp(NeScpTs.units, 'cm^-3'))
+            
+        end
 
 
 
@@ -749,7 +819,8 @@ classdef proc_sub23
         function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(zv_QUALITY_FLAG_segment)
             % TODO-DEC: Return NaN/fill value or 0 for empty bin?
 
-            % IMPLEMENTATION NOTE: Just using min([zv_QUALITY_FLAG; 0]) does not work.
+            % IMPLEMENTATION NOTE: Just using min([zv_QUALITY_FLAG_segment; 0])
+            % does not work.
             if isempty(zv_QUALITY_FLAG_segment)
                 QUALITY_FLAG = 0;
             else
