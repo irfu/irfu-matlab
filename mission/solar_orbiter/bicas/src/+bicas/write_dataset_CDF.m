@@ -67,33 +67,6 @@ function write_dataset_CDF(...
         'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
         
-        % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
-        % /2021-04-08
-        if isfield(ZvsSubset, 'QUALITY_FLAG')
-            %===================================================================
-            % Set global max value for zVar QUALITY_FLAG
-            % ------------------------------------------
-            % NOTE: min(... 'includeNaN') implies that NaN always counts as the
-            % lowest value.
-            %===================================================================
-            % PROPOSAL: Turn into generic function for capping QUALITY_FLAG based on
-            % arbitrary setting.
-            [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
-            assert((0 < value) && (value <= 3), ...
-                'BICAS:Assertion:ConfigurationBug', ...
-                'Illegal BICAS setting "%s"=%i.', key, value)
-            if value < 3
-                L.logf('warning', ...
-                    'Using setting %s = %i to set a zVar QUALITY_FLAG global max value.', ...
-                    key, value);
-            end
-            ZvsSubset.QUALITY_FLAG = min(...
-                ZvsSubset.QUALITY_FLAG, ...
-                value, 'includeNaN');
-        end
-        
-        
-        
         DataObj = init_modif_dataobj(...
             ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
         % IMPLEMENTATION NOTE: This call will fail if setting
@@ -196,6 +169,37 @@ function DataObj = init_modif_dataobj(...
         
         zvValuePd       = ZvsSubset.(zvName);
         ZvsLog.(zvName) = zvValuePd;
+        
+        
+
+        % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
+        % /2021-04-08
+        if isfield(ZvsSubset, 'QUALITY_FLAG')
+            fillValue = getfillval(DataObj, 'QUALITY_FLAG');
+            %[fillValue, ~] = get_fill_pad_values(DataObj, 'QUALITY_FLAG');
+            
+            %===================================================================
+            % Set global max value for zVar QUALITY_FLAG
+            % ------------------------------------------
+            % NOTE: Ignore fill values.
+            %===================================================================
+            [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
+            assert(isfinite(value) && (0 < value) && (value <= 3), ...
+                'BICAS:Assertion:ConfigurationBug', ...
+                'Illegal BICAS setting "%s"=%i.', key, value)
+            if value < 3
+                L.logf('warning', ...
+                    ['Using setting %s = %i to set zVar QUALITY_FLAG', ...
+                    ' global max value.'], ...
+                    key, value);
+            end
+            b = ZvsSubset.QUALITY_FLAG ~= fillValue;
+            ZvsSubset.QUALITY_FLAG(b, :) = min(...
+                ZvsSubset.QUALITY_FLAG(b, :), ...
+                value);
+        end
+        
+        
 
         DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L);
     end
