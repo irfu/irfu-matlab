@@ -81,8 +81,8 @@ classdef proc_sub12
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
 
             % ASSERTIONS
-            EJ_library.assert.struct(InSci, {'Zv', 'Ga', 'filePath'}, {})
-            EJ_library.assert.struct(InHk,  {'Zv', 'Ga', 'filePath'}, {})
+            EJ_library.assert.struct(InSci, {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            EJ_library.assert.struct(InHk,  {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
 
             HkSciTime = [];
 
@@ -224,7 +224,7 @@ classdef proc_sub12
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS
-            EJ_library.assert.struct(InCur, {'Zv', 'Ga', 'filePath'}, {})
+            EJ_library.assert.struct(InCur, {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
 
 
 
@@ -406,7 +406,7 @@ classdef proc_sub12
             % V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'Ga', 'filePath'}, {})
+            EJ_library.assert.struct(InSci,     {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             % ASSERTIONS: CDF
@@ -690,7 +690,7 @@ classdef proc_sub12
         % snapshots. Need to use NaN/fill value.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'Ga', 'filePath'}, {})
+            EJ_library.assert.struct(InSci,     {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);

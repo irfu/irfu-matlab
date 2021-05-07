@@ -5,10 +5,16 @@
 %
 % RETURN VALUES
 % =============
-% Zvs              : ZVS = zVariables Struct. One field per zVariable (using
-%                    the same name). The content of every such field equals the
-%                    content of the corresponding zVar.
-% GlobalAttributes : Struct returned from "dataobj".
+% Data
+%       Struct with fields
+%       .Zv
+%           One field per zVariable (using the same name).
+%           The content of every such field equals the content of the corresponding
+%           zVar.
+%       .ZvFv
+%           zVar fill values. One field per zVariable (using the same name).
+%       .Ga
+%           Global attributes. Struct returned from "dataobj".
 %
 %
 % NOTE: Fill & pad values are replaced with NaN for numeric data types.
@@ -20,7 +26,7 @@
 % First created 2020-09-17 as a separate file, by moving out the function from
 % bicas.executed_sw_mode.
 %
-function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
+function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     tTicToc = tic();
     
@@ -40,8 +46,9 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     % Copy zVariables (only the data) into analogous fields in smaller struct
     %=========================================================================
     L.log('info', 'Converting dataobj (CDF data structure) to PDV.')
-    Zvs               = struct();
-    ZvsLog            = struct();   % zVariables for logging.
+    Zvs    = struct();
+    ZvFvs  = struct();
+    ZvsLog = struct();   % zVariables for logging.
     zVariableNameList = fieldnames(DataObj.data);
     for iZv = 1:length(zVariableNameList)
         zvName  = zVariableNameList{iZv};
@@ -49,6 +56,9 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         
         ZvsLog.(zvName) = zvValue;
         
+        [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
+        ZvFvs.(zvName) = fillValue;
+            
         %=================================================
         % Replace fill/pad values with NaN for FLOAT data
         %=================================================
@@ -59,7 +69,6 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         %          floats (and therefore use NaN)?
         if isfloat(zvValue)
             
-            [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
             if ~isempty(fillValue)
                 % CASE: There is a fill value.
                 
@@ -188,6 +197,15 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         GlobalAttributes.Dataset_ID{1})
     L.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', ...
         GlobalAttributes.Skeleton_version{1})
+
+
+
+    Dataset = struct(...
+        'Zv',   Zvs, ...
+        'ZvFv', ZvFvs, ...
+        'Ga',   GlobalAttributes);
+    
+    
     
     % Just printing filename to avoid that actual time information is too far
     % right.

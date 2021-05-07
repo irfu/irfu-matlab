@@ -197,7 +197,7 @@ classdef proc_sub23
             clear InitialZv
             %
             [InitialDwnsZv, iRecordsInBinCa] = bicas.proc_sub23.init_shared_downsampled(...
-                InLfrCwf.Zv, ...
+                InLfrCwf, ...
                 BIN_LENGTH_WOLS_NS, ...
                 BIN_TIMESTAMP_POS_WOLS_NS);
             InitialDwns = struct('Zv', InitialDwnsZv);
@@ -761,14 +761,14 @@ classdef proc_sub23
         %       Distribution of non-downsampled records in bins.
         %
         function [InitialDwnsZv, iRecordsInBinCa] = init_shared_downsampled(...
-                InLfrCwfZv, binLengthWolsNs, binTimestampPosWolsNs)
+                InLfrCwf, binLengthWolsNs, binTimestampPosWolsNs)
             
             %================
             % Calculate bins
             %================
             % Find bin boundary reference timestamp. This is used for
             % setting the bin boundaries together with the bin length.
-            v = spdfbreakdowntt2000(InLfrCwfZv.Epoch(1));
+            v = spdfbreakdowntt2000(InLfrCwf.Zv.Epoch(1));
             % UTC subsecond (milliseconds, microseconds, nanoseconds)
             v(6)   = 5;   % UTC second
             v(7:9) = 0;
@@ -780,7 +780,7 @@ classdef proc_sub23
             %     (=downsampled records).
             [zvEpochDwns, iRecordsInBinCa, ~, binSizeArrayNs] = ...
                 bicas.proc_sub23.downsample_Epoch(...
-                    InLfrCwfZv.Epoch, ...
+                    InLfrCwf.Zv.Epoch, ...
                     boundaryRefTt2000, ...
                     binLengthWolsNs, ...
                     binTimestampPosWolsNs);
@@ -844,7 +844,8 @@ classdef proc_sub23
 
                 QUALITY_FLAG_dwns(i) = ...
                     bicas.proc_sub23.downsample_bin_QUALITY_FLAG(...
-                        InLfrCwfZv.QUALITY_FLAG( k) );
+                        InLfrCwf.Zv.QUALITY_FLAG( k ), ...
+                        InLfrCwf.ZvFv.QUALITY_FLAG);
 
                 % IMPLEMENTATION NOTE:
                 % 2020-11-23: L2 zVar "QUALITY_BITMASK" is mistakenly
@@ -858,13 +859,13 @@ classdef proc_sub23
                 % .
                 QUALITY_BITMASK_dwns(i)    = ...
                     bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK(...
-                        uint16(...
-                            InLfrCwfZv.QUALITY_BITMASK( k ))...
-                        );
+                        uint16( InLfrCwf.Zv.QUALITY_BITMASK( k ) ), ...
+                        InLfrCwf.ZvFv.QUALITY_BITMASK);
 
                 L2_QUALITY_BITMASK_dwns(i) = ...
                     bicas.proc_sub23.downsample_bin_L12_QUALITY_BITMASK(...
-                        InLfrCwfZv.L2_QUALITY_BITMASK( k ) );
+                        InLfrCwf.Zv.L2_QUALITY_BITMASK( k ), ...
+                        InLfrCwf.ZvFv.L2_QUALITY_BITMASK);
             end
 
 
@@ -896,15 +897,20 @@ classdef proc_sub23
         %
         % NOTE: Handles empty bins.
         %
-        function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(zv_QUALITY_FLAG_segment)
-            % TODO-DEC: Return NaN/fill value or 0 for empty bin?
+        function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(...
+                zv_QUALITY_FLAG_bin, fillValue)
 
-            % IMPLEMENTATION NOTE: Just using min([zv_QUALITY_FLAG_segment; 0])
-            % does not work.
-            if isempty(zv_QUALITY_FLAG_segment)
-                QUALITY_FLAG = 0;
+            % Remove records with fill values.
+            b = zv_QUALITY_FLAG_bin ~= fillValue;            
+            zv_QUALITY_FLAG_bin = zv_QUALITY_FLAG_bin(b, :, :);
+            
+            % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
+            % does not work if one wants to return 0 for empty bins.
+            if isempty(zv_QUALITY_FLAG_bin)
+                QUALITY_FLAG = fillValue;
             else
-                QUALITY_FLAG = min(zv_QUALITY_FLAG_segment);
+                % CASE: zv_QUALITY_FLAG_bin contains no fill values.
+                QUALITY_FLAG = min(zv_QUALITY_FLAG_bin);
             end
         end
 
@@ -920,18 +926,21 @@ classdef proc_sub23
         % NOTE: Handles empty bins.
         %
         function L12_QUALITY_BITMASK = downsample_bin_L12_QUALITY_BITMASK(...
-                zv_L12_QUALITY_BITMASK_segment)
-            % TODO-DEC: Return NaN/fill value or 0 for empty bin?
+                zv_L12_QUALITY_BITMASK_bin, fillValue)
 
             % IMPLEMENTATION NOTE: 2020-11-23: L2 zVar "QUALITY_BITMASK" is
             % mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
-            assert(isa(zv_L12_QUALITY_BITMASK_segment, 'uint16'))
+            assert(isa(zv_L12_QUALITY_BITMASK_bin, 'uint16'))
+            
+            % Remove records with fill values.
+            b = zv_L12_QUALITY_BITMASK_bin ~= fillValue;
+            zv_L12_QUALITY_BITMASK_bin = zv_L12_QUALITY_BITMASK_bin(b, :, :);
 
-            if isempty(zv_L12_QUALITY_BITMASK_segment)
-                L12_QUALITY_BITMASK = 0;
+            if isempty(zv_L12_QUALITY_BITMASK_bin)
+                L12_QUALITY_BITMASK = fillValue;
             else
                 L12_QUALITY_BITMASK = bicas.utils.bitops.or(...
-                    zv_L12_QUALITY_BITMASK_segment);
+                    zv_L12_QUALITY_BITMASK_bin);
             end
         end
 
