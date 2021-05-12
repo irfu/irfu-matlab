@@ -49,10 +49,7 @@ classdef proc_sub23
 %   PRO: Leads to better organization of code.
 %       PRO: process_L2_to_L3() is too large and should be split up anyway.
 %
-% PROPOSAL: QUALITY_FLAG and L2_QUALITY_BITMASK should be FILL VALUE (not zero) for empty
-%           bins.
-%   PROBLEM: BICAS might not support that behaviour yet. /2021-05-06
-%
+% PROPOSAL: Move utility functions to separate class/file bicas.dwns_utils.
 %##############################################################################################
 
 
@@ -66,6 +63,16 @@ classdef proc_sub23
     
     
         % Processing function for processing L2-->L3 (not VHT).
+        %
+        % NOTE: Function assumes that (some) fill values for integer-valued
+        % zVariables are identical in input and output datasets.
+        %
+        % NOTE: Function does not discard data with QUALITY_FLAG==fill value, as
+        % opposed to QUALITY_FLAG < threshold.
+        %
+        % NOTE: Sets QUALITY_FLAG==fill value when ALL data in record is NaN.
+        % Both ORIS and DWNS. The same is not(?) enforced in L2 processing, but
+        % should maybe be. /EJ 2021-05-12
         %
         function [OutEfieldOris,  OutEfieldDwns, ...
                   OutScpotOris,   OutScpotDwns, ...
@@ -88,12 +95,7 @@ classdef proc_sub23
             %               (QUALITY_FLAG, QUALITY_BITMASK, L2_QUALITY_BITMASK).
             %           DELTA_PLUS_MINUS_dwns
             %
-            % BUG: Fill values in the __INPUT__
-            %   QUALITY_FLAG,
-            %   QUALITY_BITMASK,
-            %   L2_QUALITY_BITMASK are not known/recognized since the variables
-            %   are not double.
-            %   NOTE: Unrelated ROC BUG:
+            % NOTE: ROC BUG:
             %               https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/48
             %         L1 QUALITY_BITMASK seems to use the wrong value (255) as
             %         fill value (FILLVAL=65535). ==> A bug fix would not fix
@@ -145,6 +147,17 @@ classdef proc_sub23
             R = bicas.proc_sub23.calc_EFIELD_SCPOT(InLfrCwf.Zv, SETTINGS);
             %
             [NeScpTs, psp2neCodeVerStr] = bicas.proc_sub23.calc_DENSITY(R.PspTs);
+
+
+            
+            %===================================================================
+            % ~HACK: MODIFY INPUT ARGUMENT InLfrCwf
+            % -------------------------------------
+            % IMPLEMENTATION NOTE: This is to modify QUALITY_FLAG for both ORIS
+            % and DWNS datasets. In principle, this is to keep the interface to
+            % init_shared_downsampled() simple.
+            %===================================================================
+            InLfrCwf.Zv.QUALITY_FLAG(R.bNotUsed) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
 
 
@@ -210,6 +223,10 @@ classdef proc_sub23
             OutEfieldOris.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
             OutEfieldOris.Zv.EDC_SRF                   = R.zvEdcMvpm;
+            %
+            b = all(isnan(OutEfieldOris.Zv.EDC_SRF), 2);
+            OutEfieldOris.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+        
 
 
             %======================
@@ -220,6 +237,10 @@ classdef proc_sub23
             %
             OutScpotOris.Zv.SCPOT                     = R.ScpotTs.data;
             OutScpotOris.Zv.PSP                       = R.PspTs.data;
+            %
+            b = isnan(OutScpotOris.Zv.SCPOT) & ...
+                isnan(OutScpotOris.Zv.PSP);
+            OutScpotOris.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
 
 
@@ -230,6 +251,9 @@ classdef proc_sub23
             OutDensityOris.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
             %
             OutDensityOris.Zv.DENSITY                   = NeScpTs.data;
+            %
+            b = isnan(OutDensityOris.Zv.DENSITY);
+            OutDensityOris.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
 
 
@@ -246,8 +270,8 @@ classdef proc_sub23
                 iRecordsInBinCa);
             %
             % NOTE: Merge across samples in same record.
-            %b = all(isnan(OutEfieldDwns.Zv.EDC_SRF), 2);
-            %OutEfieldDwns.Zv.QUALITY_FLAG(b) = 0;
+            b = all(isnan(OutEfieldDwns.Zv.EDC_SRF), 2);
+            OutEfieldDwns.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
             
 
@@ -269,9 +293,9 @@ classdef proc_sub23
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
                 iRecordsInBinCa);
             %
-            %b = isnan(OutScpotDwns.Zv.SCPOT) & ...
-            %    isnan(OutScpotDwns.Zv.PSP);
-            %OutScpotDwns.Zv.QUALITY_FLAG(b) = 0;
+            b = isnan(OutScpotDwns.Zv.SCPOT) & ...
+                isnan(OutScpotDwns.Zv.PSP);
+            OutScpotDwns.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
 
 
@@ -287,8 +311,8 @@ classdef proc_sub23
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
                 iRecordsInBinCa);
             %
-            %b = isnan(OutDensityDwns.Zv.DENSITY);
-            %OutDensityDwns.Zv.QUALITY_FLAG(b) = 0;
+            b = isnan(OutDensityDwns.Zv.DENSITY);
+            OutDensityDwns.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
         end    % process_L2_to_L3
 
@@ -577,9 +601,9 @@ classdef proc_sub23
             % ----------------------------------------
             % Set records to NaN for QUALITY_FLAG below threshold.
             %======================================================
-            bDoNotUse = InLfrCwfZv.QUALITY_FLAG < QUALITY_FLAG_minForUse;
-            zv_VDC(bDoNotUse, :) = NaN;
-            zv_EDC(bDoNotUse, :) = NaN;
+            bNotUsed = InLfrCwfZv.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            zv_VDC(bNotUsed, :) = NaN;
+            zv_EDC(bNotUsed, :) = NaN;
             %
             % NOTE: Should TSeries objects really use TensorOrder=1 and
             % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
@@ -651,6 +675,7 @@ classdef proc_sub23
             R.zvEdcMvpm        = zvEdcMvpm;
             R.vdccalCodeVerStr = vdccalCodeVerStr;
             R.vdccalMatVerStr  = vdccalMatVerStr;
+            R.bNotUsed         = bNotUsed;
             
         end
 
