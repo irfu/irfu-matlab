@@ -52,11 +52,42 @@ function downsample_sci_zVar___ATEST
             {med, mstd});
     end
 
-    % ERA = Empty Rows (size=0) Array
-    ERA = zeros(1,0);
+    
+    AS10 = zeros(1,0);   % AS10 = Array Size 1x0
+    N = NaN;
+
+
+    % Empty data, zero records, zero columns.
+    add_test_1_bin(zeros(0,0), 0, AS10, AS10);
+    add_test_1_bin(zeros(2,0), 0, AS10, AS10);
+    add_test_1_bin(zeros(0,2), 0, NaN(1,2), NaN(1,2));
+    
+    % mstd=0
+    add_test_1_bin([1,2,3              ], 0, [1,2,3], [nan,nan,nan]);
+    add_test_1_bin([1,2,3; 1,2,3       ], 0, [1,2,3], [0,0,0]);
+    add_test_1_bin([1,2,3; 1,2,3; 1,2,3], 0, [1,2,3], [0,0,0]);
+    add_test_1_bin([1    ; 1    ; 1    ], 0, [1],     [0]);
+    
+    % Test nMinReqSamples
+    % -------------------
+    % Enough samples
+    add_test_1_bin([1,2,3; 1,2,3; 1,2,3], 3, [1,2,3], [0,0,0]);
+    % Not enough samples
+    add_test_1_bin([1,2,3; 1,2,3; 1,2,3], 4, [N,N,N], [N,N,N]);
+    % Not enough samples if removes NaN.
+    add_test_1_bin([1,2,3; 1,2,3; 1,2,N],        3, [1,2,N], [0,0,N]);
+    % Enough samples even if removes NaN.
+    add_test_1_bin([1,2,3; 1,2,3; 1,2,N; 1,2,3], 3, [1,2,3], [0,0,0]);
 
     
-    if 1
+    
+    % Average of two values (special case)
+    add_test_1_bin([1,2,3; 2,3,4], 0, [1.5, 2.5, 3.5], sqrt(0.5)*[1,1,1]);
+    % Nominal median
+    add_test_1_bin([1;2;10],       0, [2], sqrt( (1^2+0^2+8^2)/2 ));
+
+    
+    
     add_test_N_bin([1,2; 2,3], 1, {1, 2}, [1,2; 2,3], NaN(2,2))
     
     add_test_N_bin(...
@@ -91,31 +122,7 @@ function downsample_sci_zVar___ATEST
         [NaN, NaN; ...
          NaN, NaN; 
          sqrt(4*1^2  )/2 * [1,1]])
-    end
-    
-    
-    
-    if 1
-    % Empty data
-    add_test_1_bin(zeros(0,0), 0, ERA, ERA);
-    add_test_1_bin(zeros(0,2), 0, [NaN NaN], [NaN, NaN]);
-    
-    % mstd=0
-    add_test_1_bin([1,2,3              ], 0, [1,2,3], [nan,nan,nan]);
-    add_test_1_bin([1,2,3; 1,2,3       ], 0, [1,2,3], [0,0,0]);
-    add_test_1_bin([1,2,3; 1,2,3; 1,2,3], 0, [1,2,3], [0,0,0]);
-    add_test_1_bin([1    ; 1    ; 1    ], 0, [1],     [0]);
-    
-    % Test nMinReqSamples
-    add_test_1_bin([1,2,3; 1,2,3; 1,2,3], 3, [1,2,3], [0,0,0]);
-    add_test_1_bin([1,2,3; 1,2,3; 1,2,3], 4, [nan,nan,nan], [nan,nan,nan]);
-    
-    
-    % Average of two values (special case)
-    add_test_1_bin([1,2,3; 2,3,4], 0, [1.5, 2.5, 3.5], sqrt(0.5)*[1,1,1]);
-    % Nominal median
-    add_test_1_bin([1;2;10],       0, [2], sqrt( (1^2+0^2+8^2)/2 ));
-    end
+
     
     
     EJ_library.atest.run_tests(tl)

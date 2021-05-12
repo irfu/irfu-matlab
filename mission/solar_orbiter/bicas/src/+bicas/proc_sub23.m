@@ -303,6 +303,13 @@ classdef proc_sub23
         % NOTE: Can handle zero records in bin.
         % NOTE: Function is only public so that automated test code can access
         % it.
+        % NOTE: Can handle varying number of NaN in different zVar columns
+        % (different channels).
+        %
+        % IMPLEMENTATION NOTE: Must count non-NaN samples for every channel (in
+        % each bin) separately. This is a relevant use case since e.g. E-field
+        % has Ex=NaN only, i.e. one can have bins with different number of NaN
+        % in different columns.
         %
         %
         % ARGUMENTS
@@ -318,21 +325,12 @@ classdef proc_sub23
         %
         % RETURN VALUES
         % =============
-        % zvMed          : (iBin, iChannel). Median
-        % zvMstd         : (iBin, iChannel). Modified STandard Deviation (MSTD).
-        % bTooFewRecords : (iBin, 1). Logical. Whether number of samples fell
-        %                   below threshold for particular bin. Potentially
-        %                   useful for setting QUALITY_FLAG. Not used(?).
+        % zvMed  : (iBin, iChannel). Median.
+        % zvMstd : (iBin, iChannel). Modified STandard Deviation (MSTD).
         %
-        function [zvMed, zvMstd, bTooFewRecords] = downsample_sci_zVar(...
+        function [zvMed, zvMstd] = downsample_sci_zVar(...
                 zv, nMinReqRecords, iRecordsInBinCa)
             
-            % PROPOSAL: Incorporate bicas.proc_sub23.downsample_bin_sci_values()
-            %           in this function.
-            %   NOTE: Only used here.
-            %   PRO: Faster?
-            %   PRO: Clearer?
-            %
             % PROPOSAL: Require nMinReqSamples >= 1? Code can handle 0, though it gives NaN.
 
             % ASSERTION
@@ -342,10 +340,11 @@ classdef proc_sub23
                 zv,              [NaN, -1], ...
                 iRecordsInBinCa, [-2]);
             
+            
+            
             % Pre-allocate
-            zvMed          = NaN(  nRecordsDwns, nSpr);
-            zvMstd         = NaN(  nRecordsDwns, nSpr);
-            bTooFewRecords = false(nRecordsDwns, 1);    % Default values.
+            zvMed  = NaN(  nRecordsDwns, nSpr);
+            zvMstd = NaN(  nRecordsDwns, nSpr);
 
             for iBin = 1:nRecordsDwns
                 k           = iRecordsInBinCa{iBin};
@@ -353,20 +352,33 @@ classdef proc_sub23
                 binZv       = zv(k, :);
                 nBinRecords = size(binZv, 1);
 
-                if nBinRecords < nMinReqRecords
-                    % CASE: Too few samples.
-                    binMed     = NaN;
-                    binMstd    = NaN;                    
-                    bTooFewRecords(iBin) = true;
-                else
+                % (1) Pre-allocate (e.g. in case of zero samples/record).
+                % (2) Set default values in case of too few records.
+                binMed  = NaN(1, nSpr);
+                binMstd = binMed;
 
-                    binMed  = median(binZv, 1);
-                    binMstd = NaN(1, nSpr);    % Pre-allocate.
-                    for j = 1:nSpr
-                        binMstd(1, j) = bicas.utils.modif_std_deviation(...
-                            binZv(:, j), ...
-                            binMed(j), ...
-                            1);
+                if nBinRecords >= nMinReqRecords
+                    % CASE: Enough records, but not necessarily non-NaN samples.
+                    
+                    for iChannel = 1:nSpr
+                        
+                        % Vector of non-NaN samples, for one specific bin
+                        % column.
+                        tempSamples = binZv(:, iChannel);
+                        samples     = tempSamples(~isnan(tempSamples));
+                        
+                        if size(samples, 1) < nMinReqRecords
+                            % CASE: Too few non-NaN samples.
+                            binMed(iChannel)  = NaN;
+                            binMstd(iChannel) = NaN;
+                        else
+                            % CASE: Enough non-NaN samples.
+                            binMed(iChannel)  = median(samples, 1);
+                            binMstd(iChannel) = bicas.utils.modif_std_deviation(...
+                                samples, ...
+                                binMed(iChannel), ...
+                                1);
+                        end
                     end
                 end
                 
