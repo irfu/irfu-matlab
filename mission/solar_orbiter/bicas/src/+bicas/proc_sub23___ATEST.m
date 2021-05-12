@@ -5,7 +5,6 @@
 %
 function proc_sub23___ATEST()
     downsample_sci_zVar___ATEST()
-    %downsample_bin_sci_values___ATEST()
     downsample_Epoch___ATEST
 end
 
@@ -30,7 +29,11 @@ end
 function downsample_sci_zVar___ATEST
     
     tl = {};
+
+    % function [zvMed, zvMstd, bTooFewRecords] = downsample_sci_zVar(...
+    %                 zv, nMinReqRecords, iRecordsInBinCa)
     
+    % Create test with exactly ONE BIN.
     function add_test_1_bin(zv, nMinReqSamples, med, mstd)
         tl{end+1} = EJ_library.atest.CompareFuncResult(...
             @bicas.proc_sub23.downsample_sci_zVar, ...
@@ -38,6 +41,7 @@ function downsample_sci_zVar___ATEST
             {med, mstd});
     end
 
+	% Create test with N BINS (i.e. an arbitrary call).
     function add_test_N_bin(zv, nMinReqSamples, iRecordsDwnsCa, med, mstd)
         assert(isrow(iRecordsDwnsCa))
         assert_iRecordsDwnsCa(iRecordsDwnsCa, zv)
@@ -116,50 +120,6 @@ function downsample_sci_zVar___ATEST
     
     EJ_library.atest.run_tests(tl)
 end
-
-
-% 
-% function downsample_bin_sci_values___ATEST()
-%     
-%     tl = {};
-%     
-%     function add_test(zvSegment, nMinReqSamples, med, mstd)
-%         tl{end+1} = EJ_library.atest.CompareFuncResult(...
-%             @bicas.proc_sub23.downsample_bin_sci_values, ...
-%             {zvSegment, nMinReqSamples}, ...
-%             {med, mstd});
-%     end
-%     
-% %     newTestExc = @(zVarSegment, nMinReqSamples) (...
-% %         EJ_library.atest.CompareFuncResult(...
-% %         @bicas.proc_sub23.downsample_bin_sci_values, ...
-% %         {zVarSegment}, ...
-% %         {med, mstd}));
-% 
-%     ERA = zeros(1,0);
-%     
-%     % Empty data
-%     add_test(zeros(0,0), 0, ERA, ERA);
-%     add_test(zeros(0,2), 0, [NaN NaN], [NaN, NaN]);
-%     
-%     % mstd=0
-%     add_test([1,2,3              ], 0, [1,2,3], [nan,nan,nan]);
-%     add_test([1,2,3; 1,2,3       ], 0, [1,2,3], [0,0,0]);
-%     add_test([1,2,3; 1,2,3; 1,2,3], 0, [1,2,3], [0,0,0]);
-%     add_test([1    ; 1    ; 1    ], 0, [1],     [0]);
-%     
-%     % Test nMinReqSamples
-%     add_test([1,2,3; 1,2,3; 1,2,3], 3, [1,2,3], [0,0,0]);
-%     add_test([1,2,3; 1,2,3; 1,2,3], 4, [nan,nan,nan], [nan,nan,nan]);
-%     
-%     
-%     % Average of two values (special case)
-%     add_test([1,2,3; 2,3,4], 0, [1.5, 2.5, 3.5], sqrt(0.5)*[1,1,1]);
-%     % Nominal median
-%     add_test([1;2;10],       0, [2], sqrt( (1^2+0^2+8^2)/2 ));
-%     
-%     EJ_library.atest.run_tests(tl)
-% end
 
 
 

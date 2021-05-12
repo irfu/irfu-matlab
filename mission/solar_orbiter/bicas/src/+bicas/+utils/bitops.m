@@ -4,7 +4,6 @@
 %
 classdef bitops
     % PROPOSAL: Automatic test code.
-    % PROPOSAL: Convert to simple function in proc_utils.
     
 
     
@@ -20,7 +19,13 @@ classdef bitops
         % ARGUMENTS
         % =========
         % a : Non-empty vector of non-negative integers.
+        %
         function b = or(a)
+            % PROPOSAL: Convert to simple function in proc_utils.
+            % PROPOSAL: Can be replaced by any().
+            %   CON: No it can't. any() operates on logical, not the multiple
+            %        bits in integers.
+            
             assert(~isempty(a))
             
             b = a(1);

@@ -2,12 +2,14 @@
 %
 % ARGUMENTS
 % =========
-% Do        : dataobj object.
+% Do
+%       dataobj object.
 %
 %
 % RETURN VALUES
 % =============
-% fillValue : Empty if there is no fill value.
+% fillValue
+%       Empty if there is no fill value.
 % padValue
 %
 %
@@ -20,6 +22,10 @@ function [fillValue, padValue] = get_fill_pad_values(Do, zvName)
     % PROPOSAL: Remake into just using the do.Variables array?
     %    NOTE: Has to derive CDF variable type from do.Variables too.
     % PROPOSAL: Incorporate into dataobj?! Isn't there a buggy function/method there already?
+    %
+    % PROPOSAL: Use irfu-matlab's getfillval() instead.
+    %   CON: This function also returns pad value. There is no known getpadval().
+    %   CON: Can not handle TT2000 (?)
     
     % NOTE: Special function for dataobj.
     fillValue = getfillval(Do, zvName);

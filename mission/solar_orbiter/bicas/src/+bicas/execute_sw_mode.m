@@ -121,6 +121,7 @@ function execute_sw_mode(...
     %==============
     % PROCESS DATA
     %==============
+    % NPEF = No Processing, Empty File
     [settingNpefValue, settingNpefKey] = SETTINGS.get_fv(...
         'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
@@ -150,7 +151,7 @@ function execute_sw_mode(...
     EJ_library.assert.castring_sets_equal(...
         OutputDatasetsMap.keys, ...
         {SwModeInfo.outputsList.prodFuncOutputKey});
-    % ITERATE
+    %
     for iOutputCdf = 1:length(SwModeInfo.outputsList)
         OutputInfo = SwModeInfo.outputsList(iOutputCdf);
 

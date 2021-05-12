@@ -107,7 +107,7 @@ classdef logger < handle
             % ASSERTIONS
             % IMPLEMENTATION NOTE: Assertion for number of arguments, since this
             % used to be variable.
-            assert(nargin == 2)
+            assert(nargin == 2, 'Not two arguments.')
             assert(isscalar(logFileEnabled))
             assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), ...
                 'Illegal argument logFileEnabled.')

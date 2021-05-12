@@ -72,9 +72,6 @@ classdef proc_sub23
                   OutDensityOris, OutDensityDwns] ...
                 = process_L2_to_L3(InLfrCwf, SETTINGS, L)
 
-            % PROPOSAL: Split up in one part for non-downsampled and
-            %           downsampled.
-            %
             % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
             %           (still combine non-downsampled and downsampled).
             %   CON: Slows down overall processing.
@@ -104,10 +101,11 @@ classdef proc_sub23
             %   PROPOSAL: Use double also for CDF integer variables so NaN can
             %             represent fill value also for these.
             %
-            % NOTE: L2 LFR-CWF-E skt had zVar
+            % NOTE: L2 LFR-CWF-E skt previously had zVar
             %   QUALITY_BITMASK=CDF_UINT1, fill value=255 (wrong)
             % until skt V12 when it was changed to
             %   QUALITY_BITMASK=CDF_UINT2, fill value 65535 (correct).
+            %
 
 
             
@@ -138,8 +136,8 @@ classdef proc_sub23
             bicas.proc_utils.handle_zv_name_change(...
                 fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', ...
                 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-
-
+            
+            
 
             %=================================================================
             % Call BICAS-external code to calculate (EFIELD, SCPOT) + DENSITY
@@ -174,16 +172,16 @@ classdef proc_sub23
             gaEfieldScpot_Misc_calibration_versions = {vdccalStr};
             gaDensity_Misc_calibration_versions     = {vdccalStr, psp2neStr};
 
-
-
+            
+            
             %=========================================
             % Misc. variables shared between datasets
             %=========================================
-            % Global attributes, shared between ALL 3x2 datasets.
+            % Global attributes -- shared between all ORIS+DWNS datasets.
             InitialGa = struct();
             InitialGa.OBS_ID                 = InLfrCwf.Ga.OBS_ID;
             InitialGa.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
-            % zVariables, shared between all ORIS/NON-DOWNSAMPLED datasets.
+            % zVariables -- shared between all ORIS datasets.
             InitialOrisZv = struct();
             InitialOrisZv.Epoch              = InLfrCwf.Zv.Epoch;
             InitialOrisZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
@@ -194,31 +192,29 @@ classdef proc_sub23
             InitialOris = struct(...
                 'Ga', InitialGa, ...
                 'Zv', InitialOrisZv);
-            clear InitialZv
             %
             [InitialDwnsZv, iRecordsInBinCa] = bicas.proc_sub23.init_shared_downsampled(...
                 InLfrCwf, ...
                 BIN_LENGTH_WOLS_NS, ...
                 BIN_TIMESTAMP_POS_WOLS_NS);
             InitialDwns = struct('Zv', InitialDwnsZv);
-            % NOTE: Not setting DWNS .Ga here, since DWNS datasets later copy
-            % .Ga from the respective ORIS datasets.
+            % NOTE: Not setting DWNS .Ga/global attributes here, since DWNS
+            % datasets later copy .Ga from the respective ORIS datasets.
             
 
 
-            %====================================
-            % zVars for EFIELD (not downsampled)
-            %====================================
+            %=======================
+            % zVars for EFIELD ORIS
+            %=======================
             OutEfieldOris = InitialOris;
             OutEfieldOris.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
             OutEfieldOris.Zv.EDC_SRF                   = R.zvEdcMvpm;
 
 
-
-            %===================================
-            % zVars for SCPOT (not downsampled)
-            %===================================
+            %======================
+            % zVars for SCPOT ORIS
+            %======================
             OutScpotOris = InitialOris;
             OutScpotOris.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
@@ -227,9 +223,9 @@ classdef proc_sub23
 
 
 
-            %=====================================
-            % zVars for DENSITY (not downsampled)
-            %=====================================
+            %========================
+            % zVars for DENSITY ORIS
+            %========================
             OutDensityOris = InitialOris;
             OutDensityOris.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
             %
@@ -384,76 +380,6 @@ classdef proc_sub23
 
 
 
-        % NOTE: THIS FUNCTION HAS BEEN COPIED INTO downsample_sci_zVar().
-        % OBSOLETE.
-        % 
-        % Derive median and modified standard deviation over dimension 1. For a
-        % range of CDF records in a zVariable (at most 1D/CDF record), construct
-        % two zVariables for median+MSTD for the corresponding downsampled CDF
-        % record.
-        %
-        % NOTE: Can handle zero input records.
-        % NOTE: Function is only public so that automated test code can access
-        % it.
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % zvSegment
-        %       (iCdfRecord, iChannel).
-        % nMinReqSamples
-        %       Minimum number of samples (fill value or not) for not returning
-        %       fill value.
-        %
-        %
-        % RETURN VALUES
-        % =============
-        % med  : (1, iChannel). 1xN. Median
-        % mstd : (1, iChannel). 1xN. Modified STandard Deviation (MSTD).
-        %
-%         function [med, mstd] = downsample_bin_sci_values(...
-%                 zvSegment, nMinReqSamples)
-% 
-%             % PROPOSAL: Argument for minimum number of samples in each bin. If
-%             %           number of samples per bin is below limit, then return
-%             %           NaN.
-%             %   PROPOSAL: Take NaN samples into account. Exclude them.
-%             %       CON: Can not do for
-%             %
-%             % PROPOSAL: Include the loop over downsampled records.
-%             %   PRO: Same procedure for all downsampled datasets.
-%             %   NOTE: Future variations in procedure could be handle using
-%             %   parameters.
-%             %   CON: ~Can/should still not eliminate setting quality zVariables
-%             %        in loop.
-%             %
-%             % ASSERTION
-%             % Only first two dimensions may be size non-one (with current
-%             % implementation).
-%             assert(ismatrix(zvSegment))
-%             assert(isscalar(nMinReqSamples))
-% 
-% 
-% 
-%             nRecords = size(zvSegment, 1);
-%             nSpr     = size(zvSegment, 2);   % SPR = Samples Per (CDF) Record
-% 
-%             % ~NORMALIZATION
-%             if nRecords < nMinReqSamples
-%                 % CASE: Too few samples. ==> Remove all samples. ==> MSTD=NaN
-%                 zvSegment = zvSegment([], :);
-%             end
-% 
-%             med  = median(zvSegment, 1);
-%             mstd = NaN(1, nSpr);    % Pre-allocate.
-%             for i = 1:nSpr
-%                 mstd(1, i) = bicas.utils.modif_std_deviation(...
-%                     zvSegment(:, i), med(i), 1);
-%             end
-%         end
-        
-        
-        
         % Utility function for downsampling data by grouping together adjacent
         % time intervals that have the same length when discounting leap
         % seconds.
@@ -763,6 +689,10 @@ classdef proc_sub23
         function [InitialDwnsZv, iRecordsInBinCa] = init_shared_downsampled(...
                 InLfrCwf, binLengthWolsNs, binTimestampPosWolsNs)
             
+            %assert(islogical(bNotUsed))
+            assert(isscalar(binLengthWolsNs))
+            assert(isscalar(binTimestampPosWolsNs))
+            
             %================
             % Calculate bins
             %================
@@ -901,8 +831,8 @@ classdef proc_sub23
                 zv_QUALITY_FLAG_bin, fillValue)
 
             % Remove records with fill values.
-            b = zv_QUALITY_FLAG_bin ~= fillValue;            
-            zv_QUALITY_FLAG_bin = zv_QUALITY_FLAG_bin(b, :, :);
+            bUse = (zv_QUALITY_FLAG_bin ~= fillValue);
+            zv_QUALITY_FLAG_bin = zv_QUALITY_FLAG_bin(bUse, :, :);
             
             % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
             % does not work if one wants to return 0 for empty bins.

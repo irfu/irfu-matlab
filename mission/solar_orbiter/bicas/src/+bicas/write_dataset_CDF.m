@@ -2,6 +2,10 @@
 % Function that writes one dataset CDF file.
 %
 %
+% NOTE: Replaces NaN-->fill value (according to master CDF) for floats
+% (write_dataobj() does not do this).
+%
+%
 % BUG: write_nominal_dataset_CDF seems to only be able to overwrite pre-existing
 % (proper) CDF files, but not empty pre-existing files.
 %
@@ -62,7 +66,7 @@ function write_dataset_CDF(...
     %===========================
     % Create (modified) dataobj
     %===========================
-    % NPEF = No Processing Empty File
+    % NPEF = No Processing, Empty File
     [settingNpefValue, settingNpefKey] = SETTINGS.get_fv(...
         'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
@@ -109,8 +113,7 @@ end
 
 
 
-% Create a modified dataobj that can be written to file. The dataobj is based on
-% the master CDF.
+% Create a modified dataobj, based on a master CDF, that can be written to file.
 %
 % NOTE: Only uses global attribute values from
 %   (1) GaSubset, and
@@ -148,12 +151,17 @@ function DataObj = init_modif_dataobj(...
     
     
     
+    ZvsLog  = struct();   % zVars for logging.
+    
+    
+    
     %======================
     % Read master CDF file
     %======================
     L.logf('info', 'Reading master CDF file: "%s"', masterCdfPath)
     DataObj = dataobj(masterCdfPath);
-    ZvsLog  = struct();   % zVars for logging.
+    
+    
     
     %==================================================================
     % Iterate over all OUTPUT PD field names
@@ -162,8 +170,8 @@ function DataObj = init_modif_dataobj(...
     % NOTE: ~zVariables from processing, i.e. not zVars in master CDF.
     %==================================================================
     % NOTE: Only sets a SUBSET of the zVariables in master CDF.
-    pdFieldNameList = fieldnames(ZvsSubset);
     L.log('info', 'Converting PDV to dataobj (CDF data structure)')
+    pdFieldNameList = fieldnames(ZvsSubset);
     for iPdFieldName = 1:length(pdFieldNameList)
         zvName = pdFieldNameList{iPdFieldName};
         
@@ -270,23 +278,23 @@ function DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L)
     
     %======================================================================
     % Prepare PDV zVariable value to save to CDF:
-    % (1) Replace NaN-->fill value
-    % (2) Convert to the right MATLAB class
+    % (1) floats: Replace NaN-->fill value
+    % (2) Convert zVar variable to the corresponding MATLAB class specified in
+    %     the master CDF.
     %
     % NOTE: If both fill values and pad values have been replaced with NaN
     % (when reading CDF), then the code can not distinguish between fill
-    % values and pad values.
+    % values and pad values writing the CDF.
     %======================================================================
     [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
     if isfloat(zvValuePd)
-        %[fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
         zvValueTemp = EJ_library.utils.replace_value(zvValuePd, NaN, fillValue);
     else
         zvValueTemp = zvValuePd;
     end
     cdfMatlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
-    zvValueCdf  = cast(zvValueTemp, cdfMatlabClass);
+    zvValueCdf     = cast(zvValueTemp, cdfMatlabClass);
     
     
     
@@ -380,6 +388,11 @@ end
 
 
 % Function used by init_modif_dataobj() when finding empty zVar.
+%
+% ARGUMENTS
+% =========
+% masterCdfPath
+%       NOTE: Only needed for anomaly description message.
 % 
 function DataObj = handle_empty_zVar_anomaly(...
         DataObj, zvName, masterCdfPath, SETTINGS, L)

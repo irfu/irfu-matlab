@@ -17,7 +17,7 @@
 %           Global attributes. Struct returned from "dataobj".
 %
 %
-% NOTE: Fill & pad values are replaced with NaN for numeric data types.
+% NOTE: Fill & pad values are replaced with NaN for float zVars.
 %       Other CDF data (attributes) are ignored.
 % NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
 %
@@ -65,8 +65,6 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
         % TODO-NI: How does/should this work with integer fields that MUST
         %          also be stored as integers internally?!!!
         %    Ex: Epoch, ACQUISITION_TIME.
-        % TODO-NI: How distinguish integer zVariables that could be converted to
-        %          floats (and therefore use NaN)?
         if isfloat(zvValue)
             
             if ~isempty(fillValue)
@@ -85,17 +83,11 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
             if ~disableReplacePadValue
                 zvValue = EJ_library.utils.replace_value(zvValue, padValue,  NaN);
             end
-        else
-            % Disable?! Only print warning if actually finds fill value which is
-            % not replaced?
-            %L.logf('warning', ...
-            %   ['Can not handle replace fill/pad values for zVariable', ...
-            %   ' "%s" when reading "%s".'], zVariableName, filePath))
         end
         
         Zvs.(zvName) = zvValue;
     end
-    
+
     
     
     % Log data read from CDF file
@@ -128,9 +120,9 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     
-    %=================
-    % Checks on Epoch
-    %=================
+    %===================
+    % ASSERTIONS: Epoch
+    %===================
     if ~isfield(Zvs, 'Epoch')
         error('BICAS:read_dataset_CDF:DatasetFormat', ...
             'Input dataset "%s" has no zVariable Epoch.', filePath)
@@ -166,6 +158,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
         [settingValue, settingKey] = SETTINGS.get_fv(...
             'INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
         switch(settingValue)
+            
             case 'SORT'
                 bicas.default_anomaly_handling(...
                     L, settingValue, settingKey, 'other', ...

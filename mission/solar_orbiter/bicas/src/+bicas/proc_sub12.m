@@ -518,7 +518,6 @@ classdef proc_sub12
 
 
 
-%             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
 
@@ -787,7 +786,6 @@ classdef proc_sub12
 
 
 
-%             PreDc.Ga.Datetime       = InSci.Ga.Datetime;
             PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
             PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
 
@@ -847,7 +845,6 @@ classdef proc_sub12
             OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
             OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
 
-%             OutSci.Ga.Datetime  = SciPreDc.Ga.Datetime;
             OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
             OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
 
