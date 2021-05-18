@@ -168,7 +168,7 @@ classdef swmode_defs
             inputDashEList            = {'-E'};
             swmSuffixList             = {''};
             swmPurposeAmendmList      = {''};
-            if SETTINGS.get_fv('SW_MODES.L1_LFR_TDS_ENABLED')
+            if SETTINGS.get_fv('SW_MODES.L1-L2_ENABLED')
                 inputDatasetLevelList{end+1} = 'L1';
                 inputDashEList{end+1}        = '';
                 swmSuffixList{end+1}         = '_L1';

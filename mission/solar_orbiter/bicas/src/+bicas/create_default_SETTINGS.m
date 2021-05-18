@@ -150,8 +150,8 @@ function SETTINGS = create_default_SETTINGS()
     % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
     % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
     % opposed to L1 current datasets.
-    S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
-    % Enable s/w modes for processing L2-->L3 datasets.
+    S.define_setting('SW_MODES.L1-L2_ENABLED',      0);
+    % Enable s/w mode for processing L2-->L3 datasets.
     S.define_setting('SW_MODES.L2-L3_ENABLED',      0);
 
 
