@@ -13,7 +13,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-10
 %
-classdef proc_utils
+classdef utils
 %
 % PROPOSAL: POLICY: No functions which set "policy"/configure the output of
 % datasets.
@@ -48,7 +48,7 @@ classdef proc_utils
         function utcStr = TT2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
             
-            bicas.proc_utils.assert_zv_Epoch(zvTt2000)
+            bicas.proc.utils.assert_zv_Epoch(zvTt2000)
             
             utcStr = EJ_library.cdf.TT2000_to_UTC_str(zvTt2000);
         end
@@ -82,7 +82,7 @@ classdef proc_utils
         % dimension for every cell array component.
             
             % ASSERTIONS
-            bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
+            bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(c1)
             
             for i = 1:numel(c1)
                 c2{i} = c1{i}(iFirst:iLast, :, :,:,:,:);
@@ -106,8 +106,8 @@ classdef proc_utils
         % iRowsArray : 1D array. Same length as number of rows in SNew fields.
 
             % ASSERTIONS
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
-            nRowsSa = bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SNew);
+            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S);
+            nRowsSa = bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(SNew);
             assert(numel(iRowsArray) == nRowsSa)
             EJ_library.assert.castring_sets_equal(fieldnames(S), fieldnames(SNew))
             
@@ -274,7 +274,7 @@ classdef proc_utils
         % tt2000 : NOTE: int64
         %
         
-            bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
+            bicas.proc.utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
             
             % at = ACQUISITION_TIME
             ACQUISITION_TIME = double(ACQUISITION_TIME);
@@ -300,7 +300,7 @@ classdef proc_utils
         %
         
             % ASSERTIONS
-            bicas.proc_utils.assert_zv_Epoch(tt2000)
+            bicas.proc.utils.assert_zv_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
             % AT = ACQUISITION_TIME
@@ -347,11 +347,11 @@ classdef proc_utils
 %         % clear; t_rec = [1;2;3;4]; f = [5;1;5;20]; N=length(t_rec); M=5; I_sample=repmat(0:(M-1), [N, 1]); F=repmat(f, [1,M]); T_rec = repmat(t_rec, [1,M]); T = T_rec + I_sample./F; reshape(T', [numel(T), 1])
 %             
 %             % ASSERTIONS
-%             bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
+%             bicas.proc.utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
 % 
-%             tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
+%             tt2000_1           = bicas.proc.utils.ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
 %             tt2000_2           = EJ_library.so.convert_N_to_1_SPR_Epoch(     tt2000_1,           nSpr, freqWithinRecords);
-%             ACQUISITION_TIME_2 = bicas.proc_utils.TT2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
+%             ACQUISITION_TIME_2 = bicas.proc.utils.TT2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
 %         end
         
         
@@ -500,17 +500,17 @@ classdef proc_utils
 
                 case 'Epoch'
                     % ASSERTIONS
-                    bicas.proc_utils.assert_zv_Epoch(varValue)
+                    bicas.proc.utils.assert_zv_Epoch(varValue)
                     
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
                     
                     if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
-                        epochMinStr = bicas.proc_utils.TT2000_to_UTC_str(min(varValue));
-                        epochMaxStr = bicas.proc_utils.TT2000_to_UTC_str(max(varValue));
+                        epochMinStr = bicas.proc.utils.TT2000_to_UTC_str(min(varValue));
+                        epochMaxStr = bicas.proc.utils.TT2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
-                        bicas.proc_utils.assert_zv_Epoch(uniqueValues)
+                        bicas.proc.utils.assert_zv_Epoch(uniqueValues)
                         valueStrs = EJ_library.cdf.TT2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
                     else
@@ -569,13 +569,13 @@ classdef proc_utils
                         zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(...
+                    ColumnStrs(end+1) = bicas.proc.utils.log_array(...
                         zvName, zvValue, 'Epoch', SETTINGS);
                     
                 elseif isnumeric(zvValue)
                     % CASE: Non-Epoch-like numeric variable.
                     
-                    ColumnStrs(end+1) = bicas.proc_utils.log_array(...
+                    ColumnStrs(end+1) = bicas.proc.utils.log_array(...
                         zvName, zvValue, 'numeric', SETTINGS);
                     
                 elseif ischar(zvValue)

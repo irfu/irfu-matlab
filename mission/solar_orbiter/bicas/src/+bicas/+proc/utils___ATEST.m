@@ -25,7 +25,7 @@ end
 
 function set_struct_field_rows___ATEST
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
-        @bicas.proc_utils.set_struct_field_rows, inputs, outputs));
+        @bicas.proc.utils.set_struct_field_rows, inputs, outputs));
     tl = {};
     
     % VERY INCOMPLETE TEST SUITE.
@@ -53,7 +53,7 @@ end
 
 function convert_matrix_to_cell_array_of_vectors___ATEST
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
-        @bicas.proc_utils.convert_matrix_to_cell_array_of_vectors, inputs, outputs));
+        @bicas.proc.utils.convert_matrix_to_cell_array_of_vectors, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({zeros(0,1), zeros(0,1)}, {cell(0,1)});
@@ -67,7 +67,7 @@ end
 
 function convert_cell_array_of_vectors_to_matrix___ATEST
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
-        @bicas.proc_utils.convert_cell_array_of_vectors_to_matrix, inputs, outputs));
+        @bicas.proc.utils.convert_cell_array_of_vectors_to_matrix, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({cell(0,1),        5},   {ones(0,5), ones(0,1)});
@@ -85,7 +85,7 @@ end
 %     % NOTE: Tests should actually be independent of the exact value(!)
 %     ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
 % 
-%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_ACQUISITION_TIME, inputs, outputs));
+%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc.utils.convert_N_to_1_SPR_ACQUISITION_TIME, inputs, outputs));
 %     tl = {};
 %     
 %     tl{end+1} = new_test( {uint32([123, 100]), 1, 100, ACQUISITION_TIME_EPOCH_UTC}, {uint32([123, 100])});    
@@ -99,7 +99,7 @@ end
 
 
 function set_NaN_after_snapshots_end___ATEST
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.set_NaN_after_snapshots_end, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc.utils.set_NaN_after_snapshots_end, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({ones(0,4),              ones(0,1)},   {ones(0,4)});

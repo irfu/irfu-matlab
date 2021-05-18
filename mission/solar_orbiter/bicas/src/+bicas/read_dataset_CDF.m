@@ -91,7 +91,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     % Log data read from CDF file
-    bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
+    bicas.proc.utils.log_zVars(ZvsLog, SETTINGS, L)
     
     
     
@@ -223,7 +223,7 @@ end
 %
 function Zvs = select_ZVS_indices(Zvs, iArray)
     % NOTE: Can not use
-    % bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S); since want
+    % bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S); since want
     % to ignore but permit fields/zVars with other number of records.
     
     fnList = fieldnames(Zvs);

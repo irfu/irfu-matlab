@@ -1,6 +1,6 @@
 %
-% Set of "production functions", functions for producing one specific output
-% dataset PDV from the necessary input dataset PDVs.
+% Set of "production functions" (PF), functions for producing one specific
+% output dataset PDV from the necessary input dataset PDVs.
 %
 %
 % DEFINITION: PRODUCTION FUNCTION
@@ -33,7 +33,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-30
 %
-classdef proc
+classdef pf
     % PROPOSAL: Other name of class.
     %   PROPOSAL: production
     %   PROPOSAL: processing
@@ -92,12 +92,12 @@ classdef proc
             %==============
             % Process data
             %==============
-            HkSciTimePd           = bicas.proc_sub12.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
-            InputSciCdf           = bicas.proc_sub12.process_LFR_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
-            SciPreDc              = bicas.proc_sub12.process_LFR_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDc             = bicas.proc_sub12.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal,    SETTINGS, L);
-            [SciPreDc, SciPostDc] = bicas.proc_sub12.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
-            OutputSciCdf          = bicas.proc_sub12.process_PostDC_to_LFR_CDF(       SciPreDc, SciPostDc, outputDsi, L);
+            HkSciTimePd           = bicas.proc.L1RL2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
+            InputSciCdf           = bicas.proc.L1RL2.process_LFR_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc.L1RL2.process_LFR_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDc             = bicas.proc.L1RL2.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal,    SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc.L1RL2.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            OutputSciCdf          = bicas.proc.L1RL2.process_PostDC_to_LFR_CDF(       SciPreDc, SciPostDc, outputDsi, L);
             
             
             
@@ -146,12 +146,12 @@ classdef proc
             %==============
             % Process data
             %==============
-            HkSciTimePd           = bicas.proc_sub12.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
-            InputSciCdf           = bicas.proc_sub12.process_TDS_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
-            SciPreDc              = bicas.proc_sub12.process_TDS_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDc             = bicas.proc_sub12.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal, SETTINGS, L);
-            [SciPreDc, SciPostDc] = bicas.proc_sub12.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
-            OutputSciCdf          = bicas.proc_sub12.process_PostDC_to_TDS_CDF(       SciPreDc, SciPostDc, outputDsi, L);
+            HkSciTimePd           = bicas.proc.L1RL2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
+            InputSciCdf           = bicas.proc.L1RL2.process_TDS_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc.L1RL2.process_TDS_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            SciPostDc             = bicas.proc.L1RL2.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal, SETTINGS, L);
+            [SciPreDc, SciPostDc] = bicas.proc.L1RL2.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
+            OutputSciCdf          = bicas.proc.L1RL2.process_PostDC_to_TDS_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
             
             
@@ -173,7 +173,7 @@ classdef proc
             [EfieldOrisCdf,  EfieldDwnsCdf, ...
              ScpotOrisCdf,   ScpotDwnsCdf, ...
              DensityOrisCdf, DensityDwnsCdf] = ...
-                bicas.proc_sub23.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
+                bicas.proc.L2L3.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('EFIELD_ORIS_cdf')  = EfieldOrisCdf;

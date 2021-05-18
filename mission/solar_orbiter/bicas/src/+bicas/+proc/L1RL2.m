@@ -1,6 +1,6 @@
 %
 % Class that collects "processing functions" as public static methods. Only
-% covers processing L1/L1R-->L2 ("12" in the name).
+% covers processing L1/L1R-->L2.
 %
 % This class is not meant to be instantiated.
 %
@@ -37,7 +37,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager_old.m.
 %
-classdef proc_sub12
+classdef L1RL2
 %#######################################################################################################################
 %
 % PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets.
@@ -46,7 +46,7 @@ classdef proc_sub12
 %   PROPOSAL: proc_LFR
 %   PROPOSAL: proc_TDS
 %   PROPOSAL: proc_demux_calib
-%   PROPOSAL: Local utility functions are moved to bicas.proc_utils.
+%   PROPOSAL: Local utility functions are moved to bicas.proc.utils.
 %
 % PROPOSAL: Submit zVar variable attributes.
 %   PRO: Can interpret fill values.
@@ -57,13 +57,11 @@ classdef proc_sub12
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
 %
-% PROPOSAL:   process_calibrate_demux
-%           & calibrate_demux_voltages
+% PROPOSAL:   process_calibrate_demux()
+%           & calibrate_demux_voltages()
 %           should only accept the needed zVars and variables.
 %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
 %         from struct.
-%
-% PROPOSAL: Redefine PostDC to something that include L2_QUALITY_BITMASK.
 %
 %#######################################################################################################################
 
@@ -100,7 +98,7 @@ classdef proc_sub12
             ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
             USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
             if USE_ZV_ACQUISITION_TIME_HK
-                hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_TT2000(...
+                hkEpoch = bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
                     ACQUISITION_TIME_EPOCH_UTC);
 
@@ -119,15 +117,15 @@ classdef proc_sub12
             TimeVars.SCI_Epoch = InSci.Zv.Epoch;
             if isfield(InHk.Zv, 'ACQUISITION_TIME')
                 TimeVars.HK_ACQUISITION_TIME_tt2000 = ...
-                    bicas.proc_utils.ACQUISITION_TIME_to_TT2000(...
+                    bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                         InHk.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
             if isfield(InSci.Zv, 'ACQUISITION_TIME') && ~isempty(InSci.Zv.ACQUISITION_TIME)
                 TimeVars.SCI_ACQUISITION_TIME_tt2000 = ...
-                    bicas.proc_utils.ACQUISITION_TIME_to_TT2000(...
+                    bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
-            bicas.proc_utils.log_zVars(TimeVars, SETTINGS, L);
+            bicas.proc.utils.log_zVars(TimeVars, SETTINGS, L);
 
 
 
@@ -166,7 +164,8 @@ classdef proc_sub12
 
                 [settingValue, settingKey] = SETTINGS.get_fv(...
                     'PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
-                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                bicas.default_anomaly_handling(L, ...
+                    settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
             if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
@@ -175,7 +174,8 @@ classdef proc_sub12
                 % possible to later meaningfully permit non-intersection.
                 [settingValue, settingKey] = SETTINGS.get_fv(...
                     'PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
-                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                bicas.default_anomaly_handling(L, ...
+                    settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
                     'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
@@ -220,7 +220,8 @@ classdef proc_sub12
 
 
 
-        function currentSAmpere = process_CUR_to_CUR_on_SCI_TIME(sciEpoch, InCur, SETTINGS, L)
+        function currentSAmpere = process_CUR_to_CUR_on_SCI_TIME(...
+                sciEpoch, InCur, SETTINGS, L)
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS
@@ -254,7 +255,7 @@ classdef proc_sub12
             %====================================================================
             % CDF ASSERTION: Epoch increases (not monotonically)
             % --------------------------------------------------
-            % NOTE: bicas.proc_sub12.zv_TC_to_current() checks (and handles)
+            % NOTE: bicas.proc.L1RL2.zv_TC_to_current() checks (and handles)
             % that Epoch increases monotonically, but only for each antenna
             % separately (which does not capture all cases). Therefore checks
             % that Epoch is (non-monotonically) increasing.
@@ -266,12 +267,12 @@ classdef proc_sub12
                 'BICAS:proc_sub:DatasetFormat', ...
                 'CURRENT timestamps zVar Epoch does not increase (all antennas combined).')
 
-            % NOTE: bicas.proc_sub12.zv_TC_to_current() checks that Epoch
+            % NOTE: bicas.proc.L1RL2.zv_TC_to_current() checks that Epoch
             % increases monotonically.
             currentNanoSAmpere = [];
-            currentNanoSAmpere(:,1) = bicas.proc_sub12.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,2) = bicas.proc_sub12.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,3) = bicas.proc_sub12.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,1) = bicas.proc.L1RL2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,2) = bicas.proc.L1RL2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,3) = bicas.proc.L1RL2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
 
             currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
@@ -298,7 +299,7 @@ classdef proc_sub12
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
             InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
-                bicas.proc_sub12.normalize_CALIBRATION_TABLE_INDEX(...
+                bicas.proc.L1RL2.normalize_CALIBRATION_TABLE_INDEX(...
                     InSci.Zv, nRecords, inSciDsi);
 
 
@@ -376,11 +377,11 @@ classdef proc_sub12
             %=======================================================================================================
             [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
 
-            InSciNorm.Zv.QUALITY_BITMASK = bicas.proc_sub12.normalize_LFR_zVar_empty(...
+            InSciNorm.Zv.QUALITY_BITMASK = bicas.proc.L1RL2.normalize_LFR_zVar_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.Zv.QUALITY_BITMASK, 'QUALITY_BITMASK');
 
-            InSciNorm.Zv.QUALITY_FLAG    = bicas.proc_sub12.normalize_LFR_zVar_empty(...
+            InSciNorm.Zv.QUALITY_FLAG    = bicas.proc.L1RL2.normalize_LFR_zVar_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.Zv.QUALITY_FLAG,    'QUALITY_FLAG');
 
@@ -475,13 +476,13 @@ classdef proc_sub12
             PreDc.Zv.samplesCaTm    = cell(5,1);
             PreDc.Zv.samplesCaTm{1} = single(InSci.Zv.V);
             % Copy values, except when zvRx==0 (==>NaN).
-            PreDc.Zv.samplesCaTm{2} = bicas.proc_utils.filter_rows( E(:,:,1), zv_Rx==0 );
-            PreDc.Zv.samplesCaTm{3} = bicas.proc_utils.filter_rows( E(:,:,2), zv_Rx==0 );
-            PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), zv_Rx==1 );
-            PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), zv_Rx==1 );
+            PreDc.Zv.samplesCaTm{2} = bicas.proc.utils.filter_rows( E(:,:,1), zv_Rx==0 );
+            PreDc.Zv.samplesCaTm{3} = bicas.proc.utils.filter_rows( E(:,:,2), zv_Rx==0 );
+            PreDc.Zv.samplesCaTm{4} = bicas.proc.utils.filter_rows( E(:,:,1), zv_Rx==1 );
+            PreDc.Zv.samplesCaTm{5} = bicas.proc.utils.filter_rows( E(:,:,2), zv_Rx==1 );
 
             PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
-            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc_utils.derive_DELTA_PLUS_MINUS(...
+            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
                 zvFreqHz, nCdfSamplesPerRecord);
             PreDc.Zv.freqHz                  = zvFreqHz;
             PreDc.Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
@@ -528,7 +529,7 @@ classdef proc_sub12
 
 
             % ASSERTIONS
-            bicas.proc_sub12.assert_PreDC(PreDc)
+            bicas.proc.L1RL2.assert_PreDC(PreDc)
 
         end    % process_LFR_CDF_to_PreDC
 
@@ -554,7 +555,7 @@ classdef proc_sub12
             %===================================
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
-            InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc_sub12.normalize_CALIBRATION_TABLE_INDEX(...
+            InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1RL2.normalize_CALIBRATION_TABLE_INDEX(...
                 InSci.Zv, nRecords, inSciDsi);
 
 
@@ -573,7 +574,7 @@ classdef proc_sub12
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
                 'Assert one matching candidate');
 
-            bicas.proc_utils.handle_zv_name_change(...
+            bicas.proc.utils.handle_zv_name_change(...
                 fnChangeList, inSciDsi, SETTINGS, L, ...
                 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
 
@@ -725,7 +726,7 @@ classdef proc_sub12
             PreDc = [];
 
             PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
-            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc_utils.derive_DELTA_PLUS_MINUS(...
+            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
                 freqHzZv, nCdfSamplesPerRecord);
             PreDc.Zv.freqHz                  = freqHzZv;
             PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
@@ -778,9 +779,9 @@ classdef proc_sub12
             modif_WAVEFORM_DATA = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
 
             PreDc.Zv.samplesCaTm    = cell(5,1);
-            PreDc.Zv.samplesCaTm{1} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.Zv.nValidSamplesPerRecord );
-            PreDc.Zv.samplesCaTm{2} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.Zv.nValidSamplesPerRecord );
-            PreDc.Zv.samplesCaTm{3} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.Zv.nValidSamplesPerRecord );
+            PreDc.Zv.samplesCaTm{1} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.Zv.nValidSamplesPerRecord );
+            PreDc.Zv.samplesCaTm{2} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.Zv.nValidSamplesPerRecord );
+            PreDc.Zv.samplesCaTm{3} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.Zv.nValidSamplesPerRecord );
             PreDc.Zv.samplesCaTm{4} = nan(nRecords, nCdfSamplesPerRecord);
             PreDc.Zv.samplesCaTm{5} = nan(nRecords, nCdfSamplesPerRecord);
 
@@ -798,14 +799,14 @@ classdef proc_sub12
 
 
             % ASSERTIONS
-            bicas.proc_sub12.assert_PreDC(PreDc)
+            bicas.proc.L1RL2.assert_PreDC(PreDc)
 
         end    % process_TDS_CDF_to_PreDC
 
 
 
         function [OutSci] = process_PostDC_to_LFR_CDF(SciPreDc, SciPostDc, outputDsi, L)
-            OutSci    = bicas.proc_sub12.process_PostDC_to_TDS_CDF(...
+            OutSci    = bicas.proc.L1RL2.process_PostDC_to_TDS_CDF(...
                 SciPreDc, SciPostDc, outputDsi, L);
 
             OutSci.Zv.BW = SciPreDc.Zv.BW;
@@ -823,7 +824,7 @@ classdef proc_sub12
         function [OutSci] = process_PostDC_to_TDS_CDF(SciPreDc, SciPostDc, outputDsi, L)
 
             % ASSERTIONS
-            bicas.proc_sub12.assert_PostDC(SciPostDc)
+            bicas.proc.L1RL2.assert_PostDC(SciPostDc)
 
 
 
@@ -931,7 +932,7 @@ classdef proc_sub12
 
 
             % ASSERTION
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
+            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
             % NOTE: Not really necessary since the list of zVars will be checked
             % against the master CDF?
             % NOTE: Includes zVar "BW" (LFR L2 only).
@@ -957,7 +958,7 @@ classdef proc_sub12
             tTicToc = tic();
 
             % ASSERTION
-            bicas.proc_sub12.assert_PreDC(PreDc);
+            bicas.proc.L1RL2.assert_PreDC(PreDc);
 
 
 
@@ -971,14 +972,14 @@ classdef proc_sub12
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
-            PostDc.Zv.DemuxerOutput = bicas.proc_sub12.calibrate_demux_voltages(PreDc, Cal, L);
+            PostDc.Zv.DemuxerOutput = bicas.proc.L1RL2.calibrate_demux_voltages(PreDc, Cal, L);
 
 
 
             %#########################
             % Calibrate bias CURRENTS
             %#########################
-            currentSAmpere = bicas.proc_sub12.process_CUR_to_CUR_on_SCI_TIME(...
+            currentSAmpere = bicas.proc.L1RL2.process_CUR_to_CUR_on_SCI_TIME(...
                 PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
             currentTm      = bicas.calib.calibrate_current_sampere_to_TM(currentSAmpere);
 
@@ -996,8 +997,8 @@ classdef proc_sub12
 
                 L.logf('info', 'Records %7i-%7i : %s -- %s', ...
                     iFirst, iLast, ...
-                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
+                    bicas.proc.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
+                    bicas.proc.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
 
                 for iAnt = 1:3
                     %--------------------
@@ -1012,11 +1013,11 @@ classdef proc_sub12
 
 
             % ASSERTION
-            bicas.proc_sub12.assert_PostDC(PostDc)
+            bicas.proc.L1RL2.assert_PostDC(PostDc)
 
             nRecords = size(PreDc.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
-                'bicas.proc_sub12.process_calibrate_demux', tTicToc, ...
+                'bicas.proc.L1RL2.process_calibrate_demux', tTicToc, ...
                 nRecords, 'record')
         end    % process_calibrate_demux
 
@@ -1063,8 +1064,8 @@ classdef proc_sub12
             %        this is not much used yet.
 
             % ASSERTION
-            bicas.proc_sub12.assert_PreDC(PreDc)
-            bicas.proc_sub12.assert_PostDC(PostDc)
+            bicas.proc.L1RL2.assert_PreDC(PreDc)
+            bicas.proc.L1RL2.assert_PostDC(PostDc)
             nRecords = EJ_library.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
 
@@ -1077,7 +1078,7 @@ classdef proc_sub12
             %============================================
             % Find CDF records to remove due to settings
             %============================================
-            zvUfvSettings = bicas.proc_sub12.get_UFV_records_from_settings(...
+            zvUfvSettings = bicas.proc.L1RL2.get_UFV_records_from_settings(...
                 PreDc.Zv.Epoch, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
 
             zvUfv = PreDc.Zv.useFillValues | zvUfvSettings;
@@ -1221,7 +1222,7 @@ classdef proc_sub12
             logHeaderStr = sprintf(...
                 ['All interval(s) of CDF records for which data should be set', ...
                 ' to fill values (i.e. removed), regardless of reason.\n']);
-            bicas.proc_sub12.log_UFV_records(PreDc.Zv.Epoch, zvUfv, logHeaderStr, L)
+            bicas.proc.L1RL2.log_UFV_records(PreDc.Zv.Epoch, zvUfv, logHeaderStr, L)
             %
             PostDc.Zv.currentAAmpere(zvUfv, :) = NaN;
             %
@@ -1233,8 +1234,8 @@ classdef proc_sub12
 
 
             % ASSERTION
-            bicas.proc_sub12.assert_PreDC(PreDc)
-            bicas.proc_sub12.assert_PostDC(PostDc)
+            bicas.proc.L1RL2.assert_PreDC(PreDc)
+            bicas.proc.L1RL2.assert_PostDC(PostDc)
 
         end    % process_quality_filter_L2
 
@@ -1364,7 +1365,7 @@ classdef proc_sub12
                 end
             end
 
-        end    % bicas.proc_sub12.zv_TC_to_current
+        end    % bicas.proc.L1RL2.zv_TC_to_current
 
 
 
@@ -1379,7 +1380,7 @@ classdef proc_sub12
                 'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', 'useFillValues'}, ...
                 {'BW'});
 
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
+            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
 
             assert(isa(PreDc.Zv.freqHz, 'double'))
         end
@@ -1393,7 +1394,7 @@ classdef proc_sub12
             EJ_library.assert.struct(PostDc.Zv, ...
                 {'DemuxerOutput', 'currentAAmpere'}, {'L2_QUALITY_BITMASK'});
 
-            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
+            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
 
 
@@ -1411,7 +1412,7 @@ classdef proc_sub12
             %           outside (trivial).
             % PROPOSAL: Separate function for logging which records that should be removed.
 
-            bicas.proc_utils.assert_zv_Epoch(zvEpoch)
+            bicas.proc.utils.assert_zv_Epoch(zvEpoch)
             assert(islogical(isLfr));
 
             %===============
@@ -1445,7 +1446,7 @@ classdef proc_sub12
                 strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '), ...
                 settingMarginKey, ...
                 removeMarginSec);
-            bicas.proc_sub12.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
+            bicas.proc.L1RL2.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
         end
 
 
@@ -1524,7 +1525,7 @@ classdef proc_sub12
             assert(iscell(  PreDc.Zv.samplesCaTm))
             EJ_library.assert.vector(PreDc.Zv.samplesCaTm)
             assert(numel(PreDc.Zv.samplesCaTm) == 5)
-            bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(PreDc.Zv.samplesCaTm)
+            bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(PreDc.Zv.samplesCaTm)
             [nRecords, nSamplesPerRecordChannel] = EJ_library.assert.sizes(...
                 PreDc.Zv.MUX_SET,        [-1,  1], ...
                 PreDc.Zv.DIFF_GAIN,      [-1,  1], ...
@@ -1607,8 +1608,8 @@ classdef proc_sub12
                     ' freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
                     ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
-                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.proc_utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
+                    bicas.proc.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
+                    bicas.proc.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
                     MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, ...
                     iCalibL_ss, iCalibH_ss, ufv_ss, ...
                     CALIBRATION_TABLE_INDEX_ss(1), ...
@@ -1626,7 +1627,7 @@ classdef proc_sub12
 
 
                 % Extract subsequence of DATA records to "demux".
-                ssSamplesTm                = bicas.proc_utils.select_row_range_from_cell_comps(...
+                ssSamplesTm                = bicas.proc.utils.select_row_range_from_cell_comps(...
                     PreDc.Zv.samplesCaTm, iFirst, iLast);
                 % NOTE: "zVariable" (i.e. first index=record) for only the
                 % current subsequence.
@@ -1665,7 +1666,7 @@ classdef proc_sub12
                         % not)
 
                         if PreDc.hasSnapshotFormat
-                            ssSamplesCaTm = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...
+                            ssSamplesCaTm = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
                                 double(ssSamplesTm{iBlts}), ssZvNValidSamplesPerRecord);
                         else
                             assert(all(ssZvNValidSamplesPerRecord == 1))
@@ -1700,7 +1701,7 @@ classdef proc_sub12
                         %#######################################################
 
                         if PreDc.hasSnapshotFormat
-                            [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
+                            [ssSamplesAVolt{iBlts}, ~] = bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
                                 ssSamplesCaAVolt, size(ssSamplesTm{iBlts}, 2));
                         else
                             % NOTE: Must be column array.
@@ -1716,7 +1717,7 @@ classdef proc_sub12
                     MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
 
                 % Add demuxed sequence to the to-be complete set of records.
-                AsrSamplesAVolt = bicas.proc_utils.set_struct_field_rows(...
+                AsrSamplesAVolt = bicas.proc.utils.set_struct_field_rows(...
                     AsrSamplesAVolt, SsAsrSamplesAVolt, iFirst:iLast);
 
             end    % for iSubseq = 1:length(iFirstList)
@@ -1724,8 +1725,8 @@ classdef proc_sub12
 
 
             % NOTE: Assumes no "return" statement.
-            %bicas.log_speed_profiling(L, 'bicas.proc_sub12.calibrate_demux_voltages', tTicToc, nRecords, 'record')
-            %bicas.log_memory_profiling(L, 'bicas.proc_sub12.calibrate_demux_voltages:end')
+            %bicas.log_speed_profiling(L, 'bicas.proc.L1RL2.calibrate_demux_voltages', tTicToc, nRecords, 'record')
+            %bicas.log_memory_profiling(L, 'bicas.proc.L1RL2.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
 
 

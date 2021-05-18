@@ -917,7 +917,7 @@ classdef summary_plot < handle
             [nRecords, nSps] = EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2]);
-            bicas.proc_utils.assert_zv_Epoch(zvEpoch)
+            bicas.proc.utils.assert_zv_Epoch(zvEpoch)
             
             assert(nSps >= 2)
             

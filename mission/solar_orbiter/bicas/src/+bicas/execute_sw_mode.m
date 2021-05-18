@@ -89,7 +89,7 @@ function execute_sw_mode(...
         % ASSERTIONS: Check global attributes values
         %============================================
         % NOTE: Can not use
-        % bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(Zv) since
+        % bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv) since
         % not all zVariables have same number of records.
         % Ex: Metadata such as ACQUISITION_TIME_UNITS.
         if ~isfield(InputDataset.Ga, 'Dataset_ID')
