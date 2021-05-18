@@ -161,6 +161,20 @@ classdef pf
         
         
         
+        function [OutputDatasetsMap] = produce_L2_to_L2_CWF_DWNS(...
+                InputDatasetsMap, ...
+                SETTINGS, L)
+            
+            InLfrCwf = InputDatasetsMap('ORIS_cdf');
+            
+            OutLfrCwfDwns = bicas.proc.L2L2.process_LFRCWF_to_DWNS(InLfrCwf, SETTINGS, L);
+            
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('DWNS_cdf') = OutLfrCwfDwns;
+        end
+        
+        
+        
         function [OutputDatasetsMap] = produce_L2_to_L3(...
                 InputDatasetsMap, ...
                 SETTINGS, L)

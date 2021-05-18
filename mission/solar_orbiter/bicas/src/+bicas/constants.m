@@ -454,6 +454,12 @@ classdef constants   % < handle
             MAP('SOLO_L2_RPW-TDS-LFM-CWF-E')  = L2_TDS_CWF;
             MAP('SOLO_L2_RPW-TDS-LFM-RSWF-E') = L2_TDS_RSWF;
             
+            % NOTE: Inofficial dataset. Sensible not strictly required.
+            % NOTE: Formal parent dataset(s) might be changed due to
+            % reorganizing s/w mode, which could change the technically correct
+            % value.
+            MAP('SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND') = L2_LFR_SURV_SBM12_CWF;
+            
             MAP('SOLO_L3_RPW-BIA-DENSITY')            = L3_DENSITY;
             MAP('SOLO_L3_RPW-BIA-DENSITY-10-SECONDS') = L3_DENSITY_10S;
             MAP('SOLO_L3_RPW-BIA-EFIELD')             = L3_EFIELD;

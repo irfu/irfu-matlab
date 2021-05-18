@@ -150,7 +150,9 @@ function SETTINGS = create_default_SETTINGS()
     % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
     % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
     % opposed to L1 current datasets.
-    S.define_setting('SW_MODES.L1-L2_ENABLED',      0);
+    S.define_setting('SW_MODES.L1-L2_ENABLED',          0);
+    % Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
+    S.define_setting('SW_MODES.L2-L2_CWF-DWNS_ENABLED', 0);
     % Enable s/w mode for processing L2-->L3 datasets.
     S.define_setting('SW_MODES.L2-L3_ENABLED',      0);
 
@@ -388,8 +390,14 @@ function SETTINGS = create_default_SETTINGS()
     % Whether to enable NSO IDs which are intended for test purposes only.
     S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
 
-    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3.
-    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',              2)
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
+    % EFIELD, and SCPOT data; both ORIS and DWNS.
+    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN', 2)
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
+    % L2 LFR-SURV-CWF-E-1-SECONDS.
+    % NOTE: This does not affect the corresponding ORIS dataset and is therefore
+    % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
+    S.define_setting('PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN',  2)
 
 
 
