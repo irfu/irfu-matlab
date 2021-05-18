@@ -395,10 +395,8 @@ function main_without_error_handling(cliArgumentsList, L)
             bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
     end
     L.logf('info', 'configFile = "%s"', configFile)
-    rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
-    ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
     L.log('info', 'Overriding subset of in-memory settings using config file.')
-    SETTINGS.override_values_from_strings(ConfigFileSettingsVsMap, 'configuration file')
+    bicas.override_settings_from_config_file(configFile, SETTINGS, L)
     
     
     
