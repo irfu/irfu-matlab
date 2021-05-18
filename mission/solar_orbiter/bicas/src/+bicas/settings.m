@@ -208,6 +208,74 @@ classdef settings < handle
 
         
         
+        % Override multiple settings, where the values are strings but converted
+        % to numerical values as needed. Primarily intended for updating
+        % settings with values from CLI arguments and/or config file (which by
+        % their nature have string values).
+        %
+        % NOTE: Indirectly specifies the syntax for string values which
+        % represent non-string-valued settings.
+        %
+        % NOTE/BUG: No good checking (assertion) of whether the string format of
+        % a vector makes sense.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % ModifiedSettingsAsStrings
+        %   containers.Map
+        %   <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS key.
+        %   <values> = Settings values AS STRINGS.
+        %              Preserves the type of settings value for strings and
+        %              numerics. If the pre-existing value is numeric, then the
+        %              argument value will be converted to a number. Numeric row
+        %              vectors are represented as a comma separated-list (no
+        %              brackets), e.g. "1,2,3".
+        %              Empty numeric vectors can not be represented.
+        %
+        %
+        function obj = override_values_from_strings(...
+                obj, ModifiedSettingsMap, valueSource)
+
+            keysList = ModifiedSettingsMap.keys;
+            for iModifSetting = 1:numel(keysList)
+                key              = keysList{iModifSetting};
+                newValueAsString = ModifiedSettingsMap(key);
+
+                % ASSERTION
+                if ~isa(newValueAsString, 'char')
+                    error('BICAS:settings:Assertion:IllegalArgument', ...
+                        'Map value is not a string.')
+                end
+
+                %==================================================
+                % Convert string value to appropriate MATLAB class.
+                %==================================================
+                switch(obj.get_setting_value_type(key))
+                    
+                    case 'numeric'
+                        newValue = textscan(newValueAsString, '%f', ...
+                            'Delimiter', ',');
+                        newValue = newValue{1}';    % Row vector.
+                        
+                    case 'string'
+                        newValue = newValueAsString;
+                        
+                    otherwise
+                        error('BICAS:settings:Assertion:ConfigurationBug', ...
+                            ['Can not handle the MATLAB class=%s of', ...
+                            ' internal setting "%s".'], ...
+                            class(oldValue), key)
+                end
+
+                % Overwrite old setting.
+                obj.override_value(key, newValue, valueSource);
+            end
+
+        end
+
+
+
         function keyList = get_keys(obj)
             keyList = obj.DataMap.keys;
         end
