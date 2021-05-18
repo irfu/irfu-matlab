@@ -290,24 +290,35 @@ classdef constants   % < handle
         
         % Initialize data structure containing the CDF global attribute (GA)
         % MODS.
+        %
+        % RCS ICD 01/05 draft 2021-05-04, Table 4, on MODS:
+        % =================================================
+        % """"It shall be at least one entry for each release of
+        % the RCS software that brings significant change in
+        % the data content. Entry format shall be
+        % “YYYY-MM-DD :: change #1 short description | change
+        % #2 short description”,
+        % where YYYY, MM and DD are respectively the year,
+        % month and day of the new RCS release. Then followed
+        % by the change descriptions, which shall be separated
+        % by the pipe character (“|”)""""
+        %
         function MAP = init_GA_MODS()
             % PROPOSAL: Exclude VHT since not produced by BICAS.
-            % PROPOSAL: Use function to create MODS entries.
+            % PROPOSAL: Use function to create MODS entries (strings).
             %   CON: Makes strings less readable.
             %   CON: Makes overlap between similar entries harder.
             %   PRO: Enforces correct format.
             %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
-            
-            % RCS ICD 01/05 draft 2021-05-04, Table 4, on MODS:
-            % """"It shall be at least one entry for each release of
-            % the RCS software that brings significant change in
-            % the data content. Entry format shall be
-            % “YYYY-MM-DD :: change #1 short description | change
-            % #2 short description”,
-            % where YYYY, MM and DD are respectively the year,
-            % month and day of the new RCS release. Then followed
-            % by the change descriptions, which shall be separated
-            % by the pipe character (“|”)""""
+            %
+            % PROPOSAL: Utility function to add entry for selected DATASET_IDs.
+            %       add_entry(entryStr, datasetIdsCa).
+            %       Verify that specified DATASET_IDs are valid keys.
+            %   PRO: Less use of temporary string variables. ==> Less risk of
+            %        mistakes.
+            %   CON: DATASET_IDs are long for being repeated hardcoded constants.
+            %   PROPOSAL: Define lists of datasets if adding to recurring sets of
+            %             DATASET_IDs.
             
             MAP = containers.Map('KeyType', 'char', 'ValueType', 'Any');
             
@@ -395,7 +406,7 @@ classdef constants   % < handle
             L2_TDS_CWF{end+1}  = sTds;
             L2_TDS_RSWF{end+1} = sTds;
             
-            % BICAS v5.0.0: No L2 MODS entries.
+            % BICAS v5.0.0 (already delivered): No new L2 MODS entries (if excluding NSOPS update).
             
             
             
@@ -411,7 +422,8 @@ classdef constants   % < handle
             % bicas.derive_output_dataset_GlobalAttributes).
             
             % Delivery 1: ~2021-01-29
-            % (relevant for determining MODS between delivery 1 and 2).
+            % NOTE: No entries, but the date is needed for determining MODS
+            % between delivery 1 and 2.
             
             % Delivery 2: ~2021-02-16
             % NOTE: Master CDFs updated according to feedback. ==> No MODS.
@@ -433,8 +445,11 @@ classdef constants   % < handle
             % ------
             % NOTE: L3 dates are effectively determined by deliveries to ROC.
             %=================================================================
-            % NOTE: No MODS entries for initial delivery.
-            %
+            
+            % Delivery 1: 2021-04-27 (Generation_time)
+            % NOTE: No entries, but the date is needed for determining MODS
+            % between delivery 1 and 2.
+            
             % 2020-05-05: There has not been any second delivery, and therefore
             % no MODS.
             
@@ -447,14 +462,14 @@ classdef constants   % < handle
             % -------------------------------------------
             % NOTE: Same list for all three SURV-CWF DATASET_IDs.
             %=====================================================
-            MAP('SOLO_L2_RPW-LFR-SURV-CWF-E') = L2_LFR_SURV_SBM12_CWF;
             MAP('SOLO_L2_RPW-LFR-SBM1-CWF-E') = L2_LFR_SURV_SBM12_CWF;
             MAP('SOLO_L2_RPW-LFR-SBM2-CWF-E') = L2_LFR_SURV_SBM12_CWF;
+            MAP('SOLO_L2_RPW-LFR-SURV-CWF-E') = L2_LFR_SURV_SBM12_CWF;
             MAP('SOLO_L2_RPW-LFR-SURV-SWF-E') = L2_LFR_SWF;
             MAP('SOLO_L2_RPW-TDS-LFM-CWF-E')  = L2_TDS_CWF;
             MAP('SOLO_L2_RPW-TDS-LFM-RSWF-E') = L2_TDS_RSWF;
             
-            % NOTE: Inofficial dataset. Sensible not strictly required.
+            % NOTE: INOFFICIAL DATASET. Sensible not strictly required.
             % NOTE: Formal parent dataset(s) might be changed due to
             % reorganizing s/w mode, which could change the technically correct
             % value.

@@ -142,12 +142,12 @@ classdef L1RL2
             % WARNINGS / ERRORS
             %===================
             if ~issorted(hkEpoch, 'strictascend')
-                % NOTE: ACQUISITION_TIME in test file
+                % NOTE: zVar ACQUISITION_TIME in test file
                 % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
                 % is not monotonically increasing (in fact, it is completely
                 % strange).
-                error([...
-                    'HK timestamps do not increase monotonically', ...
+                error(...
+                    ['HK timestamps do not increase monotonically', ...
                     ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
                     USE_ZV_ACQUISITION_TIME_HK)
             end
@@ -612,7 +612,8 @@ classdef L1RL2
                         otherwise
                             bicas.default_anomaly_handling(L, ...
                                 settingValue, settingKey, 'E+W+illegal', ...
-                                anomalyDescrMsg, 'BICAS:process_TDS_CDF_normalize:DatasetFormat')
+                                anomalyDescrMsg, ...
+                                'BICAS:process_TDS_CDF_normalize:DatasetFormat')
                     end
                 else
                     error(anomalyDescrMsg)
@@ -638,7 +639,8 @@ classdef L1RL2
                 if any(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH)
                     % CASE: SAMPS_PER_CH has at least one illegal value
 
-                    SAMPS_PER_CH_badValues = unique(InSci.Zv.SAMPS_PER_CH(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH));
+                    SAMPS_PER_CH_badValues = unique(InSci.Zv.SAMPS_PER_CH(...
+                        zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH));
 
                     badValuesDisplayStr = strjoin(arrayfun(...
                         @(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');

@@ -18,14 +18,11 @@
 %        content, then the first index corresponds to the CDF record.
 % SPR  : Samples Per (CDF) Record. Only refers to actual data (currents,
 %        voltages), not metadata.
-% UFV  : Use Fill Values (refers to records which data should overwritten with
-%        fill values)
 % ORIS : Oiginal sampling (frequency), as opposed to DWNS.
 % DWNS : Downsampled, as opposed to ORIS.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2017-02-10, with source code from data_manager_old.m.
 %
 classdef L2L3
 %
@@ -351,7 +348,10 @@ classdef L2L3
             % ----------------------------------------
             % Set records to NaN for QUALITY_FLAG below threshold.
             %======================================================
+            % NOTE: Comparison will technically fail for QUALITY_FLAG fill
+            % value, but that is acceptable (ideal result is ambiguous anyway).
             bNotUsed = InLfrCwfZv.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            clear InLfrCwfZv
             zv_VDC(bNotUsed, :) = NaN;
             zv_EDC(bNotUsed, :) = NaN;
             %
@@ -443,6 +443,9 @@ classdef L2L3
         % NOTE: Empirically, some return values are NaN.
         % NOTE: Shortening "SCP" comes from the return variable name in
         % solo.psp2ne(). Do not know what it means.
+        %
+        % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
+        % relies on PSP values for which this has already been done.
         %
         function [NeScpTs, psp2neCodeVerStr] = calc_DENSITY(PspTs)
             

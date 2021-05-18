@@ -38,7 +38,8 @@
 %
 %
 % ~BUG POTENTIAL: Support for 1D cell arrays may not be completely implemented.
-%   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1). Inconvenient.
+%   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1).
+%         Inconvenient.
 % 
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -107,7 +108,7 @@ classdef settings < handle
 
 
 
-    %###################################################################################################################
+    %###########################################################################
 
         
     
@@ -195,7 +196,8 @@ classdef settings < handle
                     obj.get_setting_value_type(key))
                 error('BICAS:settings:Assertion:IllegalArgument', ...
                     ['New settings value does not match the type of the', ...
-                    ' old settings value.'])
+                    ' old settings value for key "%s".'], ...
+                    key)
             end
 
             % IMPLEMENTATION NOTE: The syntax
@@ -213,6 +215,8 @@ classdef settings < handle
         % settings with values from CLI arguments and/or config file (which by
         % their nature have string values).
         %
+        % Essentially a wrapper around .override_value().
+        %
         % NOTE: Indirectly specifies the syntax for string values which
         % represent non-string-valued settings.
         %
@@ -223,16 +227,16 @@ classdef settings < handle
         % ARGUMENTS
         % =========
         % ModifiedSettingsAsStrings
-        %   containers.Map
-        %   <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS key.
-        %   <values> = Settings values AS STRINGS.
-        %              Preserves the type of settings value for strings and
-        %              numerics. If the pre-existing value is numeric, then the
-        %              argument value will be converted to a number. Numeric row
-        %              vectors are represented as a comma separated-list (no
-        %              brackets), e.g. "1,2,3".
-        %              Empty numeric vectors can not be represented.
-        %
+        %       containers.Map
+        %       <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS
+        %                  key.
+        %       <values> = Settings values AS STRINGS.
+        %                  Preserves the type of settings value for strings and
+        %                  numerics. If the pre-existing value is numeric, then
+        %                  the argument value will be converted to a number.
+        %                  Numeric row vectors are represented as a comma
+        %                  separated-list (no brackets), e.g. "1,2,3". Empty
+        %                  numeric vectors can not be represented.
         %
         function obj = override_values_from_strings(...
                 obj, ModifiedSettingsMap, valueSource)
@@ -318,8 +322,8 @@ classdef settings < handle
         
         
         
-        % Return settings value for a given, existing key.
-        % Only works when object is read-only, and the settings have their final values.
+        % Return settings value for a given, existing key. Only works when
+        % object is read-only, and the settings have their final values.
         %
         % IMPLEMENTATION NOTE: Short function name since function is called many
         % times, often repeatedly. FV = Final value

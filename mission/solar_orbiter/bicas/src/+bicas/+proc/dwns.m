@@ -15,9 +15,8 @@ classdef dwns   % < handle
     %   --
     %   PRO: Can verify now uncertain edge cases.
     %           Ex: Quality zVars when science data=fill values.
-    %       PRO: Can verify future bugfix for integer quality zVar=fill value when
+    %       PRO: Can verify bugfix for integer quality zVar=fill value when
     %            there is no science data.
-    %
 
     
     %#######################

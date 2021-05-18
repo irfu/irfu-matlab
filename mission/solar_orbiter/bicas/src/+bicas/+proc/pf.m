@@ -1,15 +1,15 @@
 %
-% Set of "production functions" (PF), functions for producing one specific
-% output dataset PDV from the necessary input dataset PDVs.
+% Set of almost "production functions" (PF), functions for producing one
+% specific output dataset PDV from the necessary input dataset PDVs. The
+% functions here can easily be used to create anonymous functions which adhere
+% to the interface required to be a "production function" (below).
 %
 %
 % DEFINITION: PRODUCTION FUNCTION
 % ===============================
 % A function with interface
-%   OutputsMap = produce_*(InputsMap, Cal)
+%   OutputsMap = produce_*(InputsMap, rctDir, NsoTable)
 % with arguments and return values:
-% Cal
-%       A bicas.calib object.
 % InputsMap
 %       containers.Map with
 %       <keys>   : String defining a name of an input ("prodFuncInputKey" in
@@ -34,15 +34,6 @@
 % First created 2019-07-30
 %
 classdef pf
-    % PROPOSAL: Other name of class.
-    %   PROPOSAL: production
-    %   PROPOSAL: processing
-    %       TODO-DECISION: Name relationship to proc_sub, proc_utils?
-    %           PROPOSAL: Rename proc_sub
-    %               processing_functions
-    %               processing_subfunctions
-    %           PROPOSAL: Rename proc_utils
-    %               processing_utils
 
     
     

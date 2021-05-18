@@ -57,10 +57,6 @@ function SETTINGS = create_default_SETTINGS()
 % =========================
 % BOGIQ: SETTING KEY NAMING
 % =========================
-% PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
-%   NOTE: Name change likely influences BICAS testing code and pipeline.
-%         Should therefore only be implemented at the right time.
-%
 % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
 % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
 %
@@ -140,7 +136,7 @@ function SETTINGS = create_default_SETTINGS()
     % When logging contents of matrix/vector, maximum number of unique values
     % printed before switching to shorter representation (min-max range)
     S.define_setting('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED', 5);
-    % When logging contents of TT2000 vector (in practise zVar Epoch), maximum
+    % When logging contents of TT2000 vector (in practice zVar Epoch), maximum
     % number of unique TT2000 values printed before switching to shorter
     % representation (min-max range).
     S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
@@ -154,7 +150,7 @@ function SETTINGS = create_default_SETTINGS()
     % Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
     S.define_setting('SW_MODES.L2-L2_CWF-DWNS_ENABLED', 0);
     % Enable s/w mode for processing L2-->L3 datasets.
-    S.define_setting('SW_MODES.L2-L3_ENABLED',      0);
+    S.define_setting('SW_MODES.L2-L3_ENABLED',          0);
 
 
 
@@ -185,14 +181,14 @@ function SETTINGS = create_default_SETTINGS()
     % NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
     S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', 1)
     % NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
-    S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
+    S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
 
-    S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
+    S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
 
     % Require input CDF Global Attribute "DATASET_ID" to match the expected
     % value.
-    S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
-    S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
+    S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY', 'WARNING')    % ERROR, WARNING
+    S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
     % NOTE: This modification applies BEFORE
     % PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
@@ -328,6 +324,10 @@ function SETTINGS = create_default_SETTINGS()
 
     % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are
     % empty.
+    % Needed for test files
+    %   ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf
+    %   ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E_6b05822_CNE_V02.cdf
+    %   These are not used any more. /2020-10-07
     S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'ERROR')   % ERROR, USE_FILL_VALUE
 
     % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
@@ -360,7 +360,7 @@ function SETTINGS = create_default_SETTINGS()
     % Settings for when to remove data by setting it to fill value
     % ------------------------------------------------------------
     % "L2" refers to output datasets. Both voltage and current data. In
-    % practise, this functionality is there as a temporary solution for removing
+    % practice, this functionality is there as a temporary solution for removing
     % sweeps.
     %============================================================================
     S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
@@ -392,7 +392,7 @@ function SETTINGS = create_default_SETTINGS()
 
     % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
     % EFIELD, and SCPOT data; both ORIS and DWNS.
-    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN', 2)
+    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',     2)
     % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
     % L2 LFR-SURV-CWF-E-1-SECONDS.
     % NOTE: This does not affect the corresponding ORIS dataset and is therefore
