@@ -3,3 +3,9 @@
 *.asv
 fort.6
 .caa.log
+
+
+# IRF logo needed by mission/solar_orbiter/+solo/quicklook_main.m etc.
+# Not included in irfu-matlab to prevent non-IRFU people from (automatically)
+# creating quicklooks with IRF logo.
+irf_logo.png
