@@ -147,6 +147,11 @@ classdef constants   % < handle
     
     
 
+    %########################
+    %########################
+    % PRIVATE STATIC METHODS
+    %########################
+    %########################
     methods(Static, Access=private)
         
         
@@ -305,39 +310,67 @@ classdef constants   % < handle
         %
         function MAP = init_GA_MODS()
             % PROPOSAL: Exclude VHT since not produced by BICAS.
-            % PROPOSAL: Use function to create MODS entries (strings).
+            %   CON: Production uses BICAS infrastrucutre for writing datasets.
+            %
+            % PROPOSAL: Use function to create MODS entry strings.
             %   CON: Makes strings less readable.
             %   CON: Makes overlap between similar entries harder.
             %   PRO: Enforces correct format.
             %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
             %
-            % PROPOSAL: Utility function to add entry for selected DATASET_IDs.
-            %       add_entry(entryStr, datasetIdsCa).
+            % PROPOSAL: Utility function to add entry for selected DATASET_IDs. -- IMPLEMENTED
+            %       add_entry(MAP, entryStr, datasetIdsCa).
             %       Verify that specified DATASET_IDs are valid keys.
+            %   PRO: One call corresponds to one conceptual adding of a BICAS
+            %        update.
             %   PRO: Less use of temporary string variables. ==> Less risk of
             %        mistakes.
             %   CON: DATASET_IDs are long for being repeated hardcoded constants.
+            %   --
+            %   PROPOSAL: Incorporate assertion on entry strings.
             %   PROPOSAL: Define lists of datasets if adding to recurring sets of
             %             DATASET_IDs.
             
+            
+            %===========================================
+            % Lists of commonly used groups DATASET_IDs
+            %===========================================
+            L2_LFR_DSIs = {...
+                'SOLO_L2_RPW-LFR-SBM1-CWF-E', ...
+                'SOLO_L2_RPW-LFR-SBM2-CWF-E', ...
+                'SOLO_L2_RPW-LFR-SURV-CWF-E', ...
+                'SOLO_L2_RPW-LFR-SURV-SWF-E', ...
+                };
+            L2_TDS_DSIs = {...
+                'SOLO_L2_RPW-TDS-LFM-CWF-E', ...
+                'SOLO_L2_RPW-TDS-LFM-RSWF-E'};            
+            % DES = Density+EField+Scpot (not VHT).
+            L3_DES_DSIs = {...
+                'SOLO_L3_RPW-BIA-DENSITY', ...
+                'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS', ...
+                'SOLO_L3_RPW-BIA-EFIELD', ...
+                'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS', ...
+                'SOLO_L3_RPW-BIA-SCPOT', ...
+                'SOLO_L3_RPW-BIA-SCPOT-10-SECONDS'};
+            
+            
+            
+            %================================================================
+            % Initialize MAP (data struct with all MODS entries), with empty
+            % lists for every (relevant) DATASET_ID
+            %================================================================
             MAP = containers.Map('KeyType', 'char', 'ValueType', 'Any');
             
-            %===================================================================
-            % Empty lists of MODS entries for different (groups of) DATASET_IDs
-            %===================================================================
-            L2_LFR_SURV_SBM12_CWF = {};
-            L2_LFR_SWF           = {};
-            L2_TDS_CWF           = {};
-            L2_TDS_RSWF          = {};
-            %
-            L3_DENSITY     = {};
-            L3_DENSITY_10S = {};
-            L3_EFIELD      = {};
-            L3_EFIELD_10S  = {};
-            L3_SCPOT       = {};
-            L3_SCPOT_10S   = {};
-            %
-            L3_VHT = {};
+            bicas.constants.add_empty_MODS_list(MAP, L2_LFR_DSIs)
+            bicas.constants.add_empty_MODS_list(MAP, L2_TDS_DSIs)
+            % NOTE: INOFFICIAL DATASET. Sensible not strictly required.
+            % NOTE: Formal parent dataset(s) might be changed due to
+            % reorganizing s/w mode, which could change the technically correct
+            % value.
+            bicas.constants.add_empty_MODS_list(MAP, {'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'})
+            
+            bicas.constants.add_empty_MODS_list(MAP, L3_DES_DSIs)
+            bicas.constants.add_empty_MODS_list(MAP, {'SOLO_L3_RPW-BIA-VHT'})
             
             
             
@@ -348,63 +381,74 @@ classdef constants   % < handle
             %===================================================================
             % L2
             % --
-            % NOTE: L2 dates should be taken from ROC's BICAS git repo commits.
+            % NOTE: L2 dates should be taken from ROC's BICAS git repo commits
+            % since those represent deliveries to ROC.
             %===================================================================
             % BICAS v1.0.0 : No MODS needed.
             
             % BICAS v2.0.1
-            s = '2020-05-18 :: Bias currents bugfixed to be correct unit.';
-            L2_LFR_SURV_SBM12_CWF{end+1} = s;
-            L2_LFR_SWF{end+1}  = s;
-            L2_TDS_CWF{end+1}  = s;
-            L2_TDS_RSWF{end+1} = s;
+            bicas.constants.add_MODS_entry(MAP, ...
+                '2020-05-18 :: Bias currents bugfixed to be correct unit.', ...
+                [L2_LFR_DSIs(:)', ...
+                 L2_TDS_DSIs(:)'])
+            
+            
             
             % BICAS v3.0.0
             sTds = ...
                 ['2020-07-07 :: Bias currents changed to nA (not ampere).', ...
                 ' | Ignoring frequencies above high-frequency cutoff at 0.7 times Nyquist frequency.'];
             sLfr = [sTds, ' | Hereafter copying LFR L1 zVar BW.'];            
-            L2_LFR_SURV_SBM12_CWF{end+1} = sLfr;
-            L2_LFR_SWF{end+1}  = sLfr;
-            L2_TDS_CWF{end+1}  = sTds;
-            L2_TDS_RSWF{end+1} = sTds;
+            bicas.constants.add_MODS_entry(MAP, sLfr, ...
+                L2_LFR_DSIs)
+            bicas.constants.add_MODS_entry(MAP, sTds, ...
+                L2_TDS_DSIs)    
+            clear sLfr sTds
+            
+            
             
             % BICAS v3.1.0
-            s = ['2020-09-01 :: Bugfix to handle LFR L1 zVar BW=0.', ...
-                ' | Crude sweep removal.', ...
-                ' | Preliminary setting of QUALITY_FLAG (max 2).'];
-            L2_LFR_SURV_SBM12_CWF{end+1} = s;
-            L2_LFR_SWF{end+1}  = s;
-            L2_TDS_CWF{end+1}  = s;
-            L2_TDS_RSWF{end+1} = s;
+            bicas.constants.add_MODS_entry(MAP, ...
+                ['2020-09-01 :: Bugfix to handle LFR L1 zVar BW=0.', ...
+                ' | Crude sweep removal based on mux mode.', ...
+                ' | Preliminary setting of QUALITY_FLAG (max 2).'], [...
+                L2_LFR_DSIs(:)', ...
+                L2_TDS_DSIs(:)'])
+            
+            
           
             % BICAS v3.1.1
-            s = ['2020-09-15 :: ', ...
+            bicas.constants.add_MODS_entry(MAP, ...
+                ['2020-09-15 :: ', ...
                 'Ignoring frequencies above high-frequency cutoff at 0.8', ...
-                ' (instead of 0.7) times Nyquist frequency.'];
-            L2_LFR_SURV_SBM12_CWF{end+1} = s;
-            L2_LFR_SWF{end+1}  = s;
-            L2_TDS_CWF{end+1}  = s;
-            L2_TDS_RSWF{end+1} = s;
+                ' (instead of 0.7) times Nyquist frequency.'], ...
+                [L2_LFR_DSIs(:)', ...
+                 L2_TDS_DSIs(:)'])
+            
+            
             
             % BICAS v4.0.0
-            s = ['2020-10-07 :: ', ...
-                'Uses table to set zVars QUALITY_FLAG and L2_QUALITY_BITMASK.'];
-            L2_LFR_SURV_SBM12_CWF{end+1} = s;
-            L2_LFR_SWF{end+1}  = s;
-            L2_TDS_CWF{end+1}  = s;
-            L2_TDS_RSWF{end+1} = s;
+            bicas.constants.add_MODS_entry(MAP, ...
+                ['2020-10-07 :: ', ...
+                'Uses table to set zVars QUALITY_FLAG and L2_QUALITY_BITMASK.'], ...
+                [L2_LFR_DSIs(:)', ...
+                 L2_TDS_DSIs(:)'])
 
+            
+            
             % BICAS v4.1.0
             sTds = ['2020-12-07 :: ', ...
                 'Set QUALITY_FLAG and L2_QUALITY_BITMASK based on tabulated thruster firings.'];
             sLfr = [sTds, ...
                 ' | Bugfixed AC detrending that only removes mean and does not add linear component (mostly SWF).', ...
                 ' | Inverting AC using artificial constant gain for low frequencies to not amplify noise.'];
-            L2_LFR_SURV_SBM12_CWF{end+1} = sLfr;
-            L2_LFR_SWF{end+1}  = sLfr;
-            L2_TDS_CWF{end+1}  = sTds;
-            L2_TDS_RSWF{end+1} = sTds;
+            bicas.constants.add_MODS_entry(MAP, sLfr, ...
+                L2_LFR_DSIs)
+            bicas.constants.add_MODS_entry(MAP, sTds, ...
+                L2_TDS_DSIs)    
+            clear sLfr sTds
+            
+            
             
             % BICAS v5.0.0 (already delivered): No new L2 MODS entries (if excluding NSOPS update).
             
@@ -425,18 +469,32 @@ classdef constants   % < handle
             % NOTE: No entries, but the date is needed for determining MODS
             % between delivery 1 and 2.
             
+            
+            
             % Delivery 2: ~2021-02-16
             % NOTE: Master CDFs updated according to feedback. ==> No MODS.
             % psp2ne.m updated ==> DENSITY
-            s = '2021-02-16 :: Updated algorithm for density.';
-            L3_DENSITY{end+1}     = s;
-            L3_DENSITY_10S{end+1} = s;
+            bicas.constants.add_MODS_entry(MAP, ...
+                '2021-02-16 :: Updated algorithm for density.', ...
+                {'SOLO_L3_RPW-BIA-DENSITY', ...
+                 'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'})
+            
+            
             
             % Delivery 3: ~2021-04-09
             % vdccal.m updated ==> EFIELD updated.
-            s = '2021-04-09 :: Updated antenna scaling of E_z.';
-            L3_EFIELD{end+1}      = s;
-            L3_EFIELD_10S{end+1}  = s;
+            bicas.constants.add_MODS_entry(MAP, ...
+                '2021-04-09 :: Updated antenna scaling of E_z.', ...
+                {'SOLO_L3_RPW-BIA-EFIELD', ...
+                 'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'})
+            
+            
+            
+            % NEXT DELIVERY
+%             s = '?? :: Better handling of edge cases of fill values in quality variables and data.';
+%             bicas.constants.add_MODS_entry(MAP, s, ...
+%                 L3_DES_DSIs)
+%             clear s
             
             
             
@@ -450,68 +508,94 @@ classdef constants   % < handle
             % NOTE: No entries, but the date is needed for determining MODS
             % between delivery 1 and 2.
             
-            % 2020-05-05: There has not been any second delivery, and therefore
+            % 2020-05-19: There has not been any second delivery, and therefore
             % no MODS.
             
-            % L3_VHT{end+1} = 
             
             
-            
-            %=====================================================
-            % Assign MODS entries to final data structure
-            % -------------------------------------------
-            % NOTE: Same list for all three SURV-CWF DATASET_IDs.
-            %=====================================================
-            MAP('SOLO_L2_RPW-LFR-SBM1-CWF-E') = L2_LFR_SURV_SBM12_CWF;
-            MAP('SOLO_L2_RPW-LFR-SBM2-CWF-E') = L2_LFR_SURV_SBM12_CWF;
-            MAP('SOLO_L2_RPW-LFR-SURV-CWF-E') = L2_LFR_SURV_SBM12_CWF;
-            MAP('SOLO_L2_RPW-LFR-SURV-SWF-E') = L2_LFR_SWF;
-            MAP('SOLO_L2_RPW-TDS-LFM-CWF-E')  = L2_TDS_CWF;
-            MAP('SOLO_L2_RPW-TDS-LFM-RSWF-E') = L2_TDS_RSWF;
-            
-            % NOTE: INOFFICIAL DATASET. Sensible not strictly required.
-            % NOTE: Formal parent dataset(s) might be changed due to
-            % reorganizing s/w mode, which could change the technically correct
-            % value.
-            MAP('SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND') = L2_LFR_SURV_SBM12_CWF;
-            
-            MAP('SOLO_L3_RPW-BIA-DENSITY')            = L3_DENSITY;
-            MAP('SOLO_L3_RPW-BIA-DENSITY-10-SECONDS') = L3_DENSITY_10S;
-            MAP('SOLO_L3_RPW-BIA-EFIELD')             = L3_EFIELD;
-            MAP('SOLO_L3_RPW-BIA-EFIELD-10-SECONDS')  = L3_EFIELD_10S;
-            MAP('SOLO_L3_RPW-BIA-SCPOT')              = L3_SCPOT;
-            MAP('SOLO_L3_RPW-BIA-SCPOT-10-SECONDS')   = L3_SCPOT_10S;
-            MAP('SOLO_L3_RPW-BIA_VHT')                = L3_VHT;
-            
-            
-            
-            % ASSERTIONS
+            % ASSERTION
             for keyCa = MAP.keys
-                MODS = MAP(keyCa{1});
-                for i = 1:numel(MODS)
-                    s = MODS{i};
-                    
-                    EJ_library.assert.castring_regexp(s, ...
-                        '20[1-9][0-9]-[0-1][0-9]-[0-3][0-9] :: [-=_|.() a-zA-Z0-9]+')
-                    
-                    % No more than one whitespace per occurrence.
-                    assert(~contains(s, '  '))
-                    
-                    % All pipes surrounded by whitespace.
-                    iPipes1 = strfind(s, '. | ') + 2;
-                    iPipes2 = strfind(s,  '|');
-                    assert(isequal(iPipes1, iPipes2))
-                end
-                
-                % ASSERT: All strings are unique.
-                EJ_library.assert.castring_set(MODS)
+                % ASSERT: All strings are unique for DATASET_ID.
+                EJ_library.assert.castring_set(MAP(keyCa{1}))
                 
             end
             
+        end    % init_GA_MODS
+        
+        
+        
+        function add_empty_MODS_list(Map, datasetIdsCa)
+            
+            for i = 1:numel(datasetIdsCa)
+                dsi = datasetIdsCa{i};
+                
+                % ASSERTION: dsi is an unused key
+                % -------------------------------
+                % IMPLEMENTATION NOTE: In principle overkill since later code
+                % effectively contains the same assertion but without proper
+                % error message), but it is actually useful when configuring
+                % hardcoded values manually.
+                if Map.isKey(dsi)
+                    error('BICAS:Assertion', ...
+                        'Map already has a key dsi="%s".', dsi)
+                end
+                
+                % NOTE: Effectively (additional) assertion on that "dsi" is a
+                % valid key.
+                Map(dsi) = {};
+            end
         end
         
         
         
-    end    % methods(Static)
+        function add_MODS_entry(Map, entryStr, datasetIdsCa)
+            % PROPOSAL: "Flatten" datasetIdsCa if cell arrays of cell arrays.
+            
+            % ASSERTIONS
+            bicas.constants.assert_MODS_entry_str(entryStr)
+            EJ_library.assert.castring_set(datasetIdsCa)
+            
+            for i = 1:numel(datasetIdsCa)
+                dsi = datasetIdsCa{i};
+                
+                % ASSERTION: dsi is a valid key
+                % -----------------------------
+                % IMPLEMENTATION NOTE: In principle overkill since later code
+                % effectively contains the same assertion but without proper
+                % error message), but it is actually useful when configuring
+                % hardcoded values manually.
+                if ~Map.isKey(dsi)
+                    error('BICAS:Assertion', ...
+                        'Map does not have key dsi="%s".', dsi)
+                end
+                
+                % NOTE: Effectively (additional) assertion on that "dsi" is a
+                % valid key.
+                MODS        = Map(dsi);
+                MODS{end+1} = entryStr;
+                Map(dsi)    = MODS;
+            end
+        end
+        
+        
+        
+        % Assert that a string is on the format required by ROC for a single
+        % MODS entry.
+        function assert_MODS_entry_str(s)
+            EJ_library.assert.castring_regexp(s, ...
+                '20[1-9][0-9]-[0-1][0-9]-[0-3][0-9] :: [-=_|.() a-zA-Z0-9]+')
+
+            % No more than one whitespace per occurrence.
+            assert(~contains(s, '  '))
+
+            % All pipes surrounded by whitespace.
+            iPipes1 = strfind(s, '. | ') + 2;
+            iPipes2 = strfind(s,  '|');
+            assert(isequal(iPipes1, iPipes2))
+        end
+        
+        
+        
+    end    % methods(Static, Access=private)
 
 end
