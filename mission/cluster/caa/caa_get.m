@@ -104,6 +104,9 @@ if isempty(mode_list), cd(old_pwd), return, end
 [starts,ii] = sort([mode_list.st]);
 dts = [mode_list.dt]; dts = dts(ii);
 for j = ii
+  if regexp(var_name,'^mTMode([1-4]|?)$')==1
+    tt = [mode_list(j).st mode_list(j).mode];
+  else
   cd(mode_list(j).dir);
   if HAVE_LOAD_ARGS
     eval(['[ok, tt, msg] = c_load(' eval_str ');']);
@@ -140,6 +143,7 @@ for j = ii
     else, continue
     end
   end
+end
   
   if isempty(data), data = tt;
   elseif ~(isstruct(data) || isstruct(tt))
@@ -153,22 +157,6 @@ for j = ii
     end
     data.(['int' num2str(j)]) = tt;
     data.(['int' num2str(j)]).mode_list = mode_list(j);
-  end
-end
-
-if 1  % This is a bugfix (for caa_identify_problems) to include e.g. saturation
-  % intervals which start BEFORE the chosen (e.g. 1800-2100) data interval.
-  % irf_tlim (old method, below) does NOT include these (border) cases!
-  if ~isempty(data) && ~isstruct(data)
-    data_time_lower = st;
-    data_time_upper = st + dt;
-    problem_start = data(:, 1);
-    problem_stop = data(:, 2);
-    row_index = (problem_start >= data_time_lower & problem_start < data_time_upper) | ...
-      (problem_stop  >  data_time_lower & problem_stop <= data_time_upper) | ...
-      (problem_start <= data_time_lower & problem_stop >= data_time_upper);
-    data = data(row_index,:);
-    clear data_time_lower data_time_upper problem_start problem_stop row_index
   end
 end
 

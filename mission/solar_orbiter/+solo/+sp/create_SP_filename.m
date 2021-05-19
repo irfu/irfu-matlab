@@ -3,7 +3,7 @@
 %
 %
 % NOTE: For exact filenaming convention, see
-% solo.ql.create_SP_basename.
+% solo.sp.create_SP_basename.
 %
 %
 % ARGUMENTS
@@ -22,9 +22,9 @@
 function filename = create_SP_filename(srcDatasetId, dateVec3, versionNbr)
     % YK 2020-0x-xx: Use png.
     %
-    % PROPOSAL: Merge with solo.ql.create_SP_basename().
+    % PROPOSAL: Merge with solo.sp.create_SP_basename().
     
-    spBasename = solo.ql.create_SP_basename(...
+    spBasename = solo.sp.create_SP_basename(...
         srcDatasetId, dateVec3, versionNbr);
     filename   = sprintf('%s.png', spBasename);
 end

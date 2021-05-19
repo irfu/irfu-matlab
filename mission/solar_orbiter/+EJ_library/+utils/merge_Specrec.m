@@ -54,7 +54,7 @@ function Specrec = merge_Specrec(SpecrecCa)
     %       CON: When function is applied, coordinates have already been merged, and it is hard to calculate the max
     %            nearest distance for replacing NaN to use.
     %
-    % PROPOSAL: Move to irfu-matlab's solo.ql?!!
+    % PROPOSAL: Move to irfu-matlab's solo.sp?!!
     %
     % PROPOSAL: Have time_pad_NaN() handle having only one timestamp? Zero (timestamps?)
     %

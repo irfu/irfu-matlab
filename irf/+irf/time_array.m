@@ -10,7 +10,7 @@ function TaTT = time_array(tStart,dtArray)
 %   dtArray is an array of time values measured since tStart. dtArray can be
 %     specified in seconds (double) or nanoseconds (int64).
 %   tArray is time array given either as GenericTimeArray, UTC or TT in
-%     seconds (doubel or nanoseconds (int64)
+%     seconds (double or nanoseconds (int64))
 % Output:
 %  TaTT time array as EpochTT
 %

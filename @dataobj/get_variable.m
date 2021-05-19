@@ -57,7 +57,7 @@ for iName=1:length(varAttNames)
   attrMatName = variable_mat_name(attr);
   % Detect recursive deps
   if strcmp(parent,attrMatName)
-    irf.log('warning',['databj:get_variable:cyclic_dep',...
+    irf.log('warning',['dataobj:get_variable:cyclic_dep',...
       ['Cyclic dependecy: ' parent ' <-> ' varName]]);
     continue
   end

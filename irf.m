@@ -207,6 +207,8 @@ switch lower(action)
           disp('   check that in maci64 section MAC OS version number');
           disp('   corresponds to your OS version, e.g. 10.9 for Mavericks.');
           disp('   run in matlab > mex -setup');
+          disp('Or see an alternative workaround here:');
+          disp('  <a href="https://github.com/irfu/irfu-matlab/issues/61#issuecomment-797499907">https://github.com/irfu/irfu-matlab/issues/61#issuecomment-797499907</a>');
         elseif ispc
           disp('IRBEM .. not OK. If this package is required for your intended use of irfu-matlab:');
           disp('   Please follow the installation instructions for Windows');

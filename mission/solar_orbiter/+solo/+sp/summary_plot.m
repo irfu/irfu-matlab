@@ -30,8 +30,8 @@ classdef summary_plot < handle
     %       Ex: Enlarge separate snapshots.
     %
     % PROPOSAL: Merge add_panel_spectrogram_SWF_LSF &
-    %                 panel_spectrogram_snapshots.
-    %   CON: panel_spectrogram_snapshots designed to also be used for TDS
+    %                 panel_spectrogram_SWF.
+    %   CON: panel_spectrogram_SWF designed to also be used for TDS
     %        snapshots (in the future).
     %
     % PROPOSAL: Build add_panel_* functions more using interpret_settings_args() for last arguments).
@@ -97,7 +97,7 @@ classdef summary_plot < handle
         N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
         N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
             cwfSamplFreqHz / EJ_library.so.constants.LFR_F3_HZ ...
-            * solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
+            * solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
         
         % Min & max frequencies in LFR __CWF__ plots.
         % Should at least cover F2-F3 (SURV-CWF), maybe not SBM1, SBM2 (F1, F2).
@@ -107,11 +107,11 @@ classdef summary_plot < handle
         % frequency. ==> CWF Autoscaling is OK.
         %
 %         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-%             EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+%             EJ_library.so.constants.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
 %             EJ_library.so.constants.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
             EJ_library.so.constants.LFR_F3_HZ ...
-            / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+            / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
         % Maximum width (in time) used for displaying a snapshot
@@ -144,7 +144,7 @@ classdef summary_plot < handle
         % Disabled since presumably slow. Triggers bug in MTEST(CWF).
         %SPECTRUM_OVERLAP_PERCENT_CWF = 0;
         SPECTRUM_OVERLAP_PERCENT_CWF = 50;   % /YK 2020?
-            
+
         % Colormap used for spectras.
         COLORMAP = load('cmap').cmap;
         
@@ -209,7 +209,7 @@ classdef summary_plot < handle
             % NOTE: NESTED FUNCTION
             function hAxes = panel_plot_bit_series()
                 
-                CHANNEL_NAME_POS = solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION;
+                CHANNEL_NAME_POS = solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION;
                 
                 % ASSERTIONS
                 assert(all(ismember(zvB, [0,1])))
@@ -249,7 +249,7 @@ classdef summary_plot < handle
                 hLines(1).Color = [0,0,1];
                 hLines(2).Color = [1,0,0];
                 
-                solo.ql.summary_plot.fade_color(hLines)
+                solo.sp.summary_plot.fade_color(hLines)
                 
                 
                 
@@ -275,22 +275,45 @@ classdef summary_plot < handle
         % to be very general and to be called from wrapper methods. It can hence
         % be allowed to have many settings & arguments.
         %
+        % NOTE: Ultimately (indirectly) used for both CWF and SWF data.
+        %
         % ARGUMENTS
         % =========
         % panelTag      :
-        % zvData        : Array. (iRecord). ~CWF data.
-        % yLabelNonUnit : y label with unit.
+        % zvData        : Array. (iRecord, iChannel). ~CWF data.
+        % varargin
+        %       Arguments as interpreted by
+        %       EJ_library.utils.interpret_settings_args().
+        %           yLabel
+        %           linesPropCa
+        %               Key-value properties arguments to set for the line
+        %               object.
+        %           axesPropCa
+        %               Key-value properties arguments to set for the axes
+        %               object.
         % --
         % tlLegend : Top-left  (TL) legend. Empty if not used.
         % trLegend : Top-right (TR) legend. Empty if not used.
         %            Cell array of strings, one per
         %            scalar time series.
         %
-        function add_panel_time_series_CWF_general(obj, panelTag, ...
-            zvEpoch, zvData, linesPropCa, axesPropCa, yLabel, tlLegend, trLegend)
+        function add_panel_time_series_general(obj, panelTag, ...
+            zvEpoch, zvData, varargin)
+        
+            SETTINGS.fadeLines   = 0;
+            SETTINGS.linesPropCa = {};
+            SETTINGS.axesPropCa  = {};
+            SETTINGS.yLabel      = '';
+            SETTINGS.tlLegend    = {};
+            SETTINGS.trLegend    = {};
+            Settings = EJ_library.utils.interpret_settings_args(SETTINGS, varargin);
+            EJ_library.assert.struct(Settings, fieldnames(SETTINGS), {})
+            
+            
             
             assert(~obj.figureComplete)
-            assert(nargin == 1+8)
+            
+            
             
             % NOTE: Implicitly an assertion on argument sizes.
             Ts = irf.ts_scalar(zvEpoch, zvData);
@@ -306,23 +329,22 @@ classdef summary_plot < handle
                 hAxes = irf_panel(panelTag);
                 hLines = irf_plot(hAxes, Ts);
                 
-                % TEMPORARY HACK for argument "fade"?
-                if ~isempty(linesPropCa) && strcmp(linesPropCa{1}, 'fade')
-                    solo.ql.summary_plot.fade_color(hLines)
-                    linesPropCa = linesPropCa(2:end);
+                if Settings.fadeLines
+                    solo.sp.summary_plot.fade_color(hLines)
                 end
                 
-                if ~isempty(linesPropCa)   set(hLines, linesPropCa{:});   end
-                if ~isempty(axesPropCa)    set(hAxes,  axesPropCa {:});   end
+                if ~isempty(Settings.linesPropCa)   set(hLines, Settings.linesPropCa{:});   end
+                if ~isempty(Settings.axesPropCa)    set(hAxes,  Settings.axesPropCa {:});   end
                 
-                ylabel(hAxes, yLabel)
-                if ~isempty(tlLegend)
-                    irf_legend(hAxes, tlLegend, ...
-                        solo.ql.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
+                ylabel(hAxes, Settings.yLabel)
+                
+                if ~isempty(Settings.tlLegend)
+                    irf_legend(hAxes, Settings.tlLegend, ...
+                        solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
                 end
-                if ~isempty(trLegend)
-                    irf_legend(hAxes, trLegend, ...
-                        solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
+                if ~isempty(Settings.trLegend)
+                    irf_legend(hAxes, Settings.trLegend, ...
+                        solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
                 end
             end    % function
             
@@ -330,20 +352,21 @@ classdef summary_plot < handle
         
         
         
+        % ARGUMENTS
+        % =========
+        % zvData    : (iTime, iChannel)
+        %       zVar-like variable.
+        %
         function add_panel_time_series_CWF(obj, panelTag, ...
-            zvEpoch, zvData, yLabel, removeMean)
+            zvEpoch, zvData, yLabel, varargin)
         
-            assert(isscalar(removeMean))
+            % ASSERTIONS
             EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
-                zvData,  [-1])
+                zvData,  [-1, -2])
         
-            if removeMean
-                zvData = zvData - mean(zvData, 'omitnan');
-            end
-        
-            obj.add_panel_time_series_CWF_general(panelTag, ...
-                zvEpoch, zvData, {}, {}, yLabel, {}, {})
+            obj.add_panel_time_series_general(panelTag, ...
+                zvEpoch, zvData, 'yLabel', yLabel, varargin{:})
         end
         
         
@@ -356,15 +379,20 @@ classdef summary_plot < handle
         %
         function add_panel_time_series1_HK(obj, D, zvName, linesPropCa, axesPropCa)
             % NOTE: Automatically derives panel tag.
+            
             panelTag = zvName;
             
             zvEpoch = D.data.Epoch.data;
             zvData  = D.data.(zvName).data;            
             
-            % CALL INSTANCE METHOD            
-            obj.add_panel_time_series_CWF_general(...
-                panelTag, zvEpoch, zvData, [{'fade'}, linesPropCa], axesPropCa, ...
-                '', {}, {EJ_library.graph.escape_str(zvName)})
+            % CALL INSTANCE METHOD
+            obj.add_panel_time_series_general(...
+                panelTag, zvEpoch, zvData, ...
+                'fadeLines',   1, ...
+                'linesPropCa', linesPropCa, ...
+                'axesPropCa',  axesPropCa, ...
+                'tlLegend',    {}, ...
+                'trLegend',    {EJ_library.graph.escape_str(zvName)})
         end
         
         
@@ -373,7 +401,7 @@ classdef summary_plot < handle
         %
         % ARGUMENTS
         % =========
-        % D           : dataobj
+        % D           : dataobj (sic!)
         % zVarNamesCa : Length 3 cell array of zVar names.
         %
         function add_panel_time_series3_HK(obj, D, zvNamesCa)
@@ -388,21 +416,25 @@ classdef summary_plot < handle
                 D.data.(zvNamesCa{2}).data, ...
                 D.data.(zvNamesCa{3}).data];
             
-            
-            
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series_CWF_general(panelTag, zvEpoch, zvData, ...
-                {'fade'}, {}, '', {}, {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
+            obj.add_panel_time_series_general(panelTag, zvEpoch, zvData, ...
+                'fadeLines', 1, ...
+                'trLegend',  {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
         end
         
 
 
         % Add panel for time series for SWF data (one snapshot per row) for one
-        % specified LFR sampling frequency (LSF). Uses only the samples of the
-        % specified sampling frequency.
+        % specified LFR sampling frequency (LSF). One call filters out the
+        % samples of the specified LFR sampling frequency.
         %
         % NOTE: Removes mean from each snapshot separately (both DC & AC)
         % NOTE: Can also handle TDS snapshots some day?
+        %
+        % ARGUMENTS
+        % ========
+        % zvDataCa
+        %       Cell array of signals, each of which is a ~zVar.
         %
         function add_panel_time_series_SWF_LSF(obj, panelTagSignalsStr, ...
                 zvEpoch, zvDataCa, zvSamplFreqHz, iLsf, trLegend, removeMean)
@@ -427,7 +459,9 @@ classdef summary_plot < handle
             nSps        = size(zvDataCa{1}, 2);    % SPS = Samples Per Snapshot
             assert(nSps >= 2)
             
-            zvEpoch  = EJ_library.so.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
+            zvEpoch = EJ_library.so.convert_N_to_1_SPR_Epoch(...
+                zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
+            
             for i = 1:nChannels
                 zvData = zvDataCa{i}(bRecords, :);
                 
@@ -447,9 +481,12 @@ classdef summary_plot < handle
             
             
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series_CWF_general(...
+            obj.add_panel_time_series_general(...
                 sprintf('%s %s time series', panelTagSignalsStr, lsfName), ...
-                zvEpoch, [zvDataCa{:}], {}, {}, '[V]', lsfName, trLegend)
+                zvEpoch, [zvDataCa{:}], ...
+                'yLabel',   '[V]', ...
+                'tlLegend', lsfName, ...
+                'trLegend', trLegend)
         end
         
         
@@ -507,17 +544,17 @@ classdef summary_plot < handle
                     
                     samplFreqHz       = zvSamplingFreqHz(iSs1Array(jSs));
                     nSamplPerSpectrum = ...
-                        solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
+                        solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
                     
                     S = irf_powerfft(...
                         Ts(iSsArray), ...
                         nSamplPerSpectrum, ...
                         samplFreqHz, ...
-                        solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
+                        solo.sp.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
                     
-                    S = solo.ql.summary_plot.add_Specrec_dt(...
+                    S = solo.sp.summary_plot.add_Specrec_dt(...
                         S, ...
-                        solo.ql.summary_plot.MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S);
+                        solo.sp.summary_plot.MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S);
                     
                     SpecrecCa{jSs} = S;
                 end
@@ -534,14 +571,14 @@ classdef summary_plot < handle
                 % NOTE: Adding string to pre-existing ylabel.
                 hAxes.YLabel.String = {yLabelNonUnit; hAxes.YLabel.String};
                 
-                colormap(solo.ql.summary_plot.COLORMAP)
+                colormap(solo.sp.summary_plot.COLORMAP)
                 caxis(hAxes, colLimits)
                 set(hAxes, 'YTick', 10.^[-3:5])
                 
                 % IMPLEMENTATION NOTE: USING "HACK". See
                 % find_child_irfspectrogram_y_unit().
-                axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
-                ylim(hAxes, solo.ql.summary_plot.LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ / axesFreqUnitHz)
+                axesFreqUnitHz = solo.sp.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+                ylim(hAxes, solo.sp.summary_plot.LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ / axesFreqUnitHz)
                 
             end
         end
@@ -576,7 +613,7 @@ classdef summary_plot < handle
             zvEpoch = zvEpoch(bRecords, :);
             zvData  = zvData( bRecords, :);
 
-            pcfc = @() (solo.ql.summary_plot.panel_spectrogram_snapshots(...
+            pcfc = @() (solo.sp.summary_plot.panel_spectrogram_SWF(...
                 sprintf('%s %s spectrogram', panelTagSignalsStr, lsfName), ...
                 zvEpoch, ...
                 zvData, ...
@@ -661,7 +698,7 @@ classdef summary_plot < handle
             
             
 
-            solo.ql.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
+            solo.sp.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
             
             obj.figureComplete = true;
         end
@@ -745,9 +782,9 @@ classdef summary_plot < handle
         % tlLegend : Top-left  (TL) legend string.
         % trLegend : Top-right (TR) legend string.
         %
-        function hAxes = panel_spectrogram_snapshots(...
-                panelTag, zvEpoch, zvData, ...
-                samplingFreqHz, tlLegend, trLegend, colLimits)
+        function hAxes = panel_spectrogram_SWF(...
+                panelTag, zvEpoch, zvData, samplingFreqHz, ...
+                tlLegend, trLegend, colLimits)
             
             % NOTE: Multiple-row labels causes trouble for the time series'
             % ylabels.
@@ -759,7 +796,7 @@ classdef summary_plot < handle
             
             
             
-            TsCa = solo.ql.summary_plot.snapshot_per_record_2_TSeries(...
+            TsCa = solo.sp.summary_plot.snapshot_per_record_2_TSeries(...
                 zvEpoch, zvData, samplingFreqHz);
             nTs  = numel(TsCa);
             
@@ -780,7 +817,7 @@ classdef summary_plot < handle
                 Ts = TsCa{i};
                 
                 SpecrecCa{i} = irf_powerfft(Ts, ...
-                    solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
+                    solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
                     samplingFreqHz);
                 
                 % IMPLEMENTATION NOTE: Later needs the snapshot centers in the
@@ -789,9 +826,9 @@ classdef summary_plot < handle
                     (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
             end
             sssMaxWidthSecArray = ...
-                solo.ql.summary_plot.get_distance_to_nearest(...
+                solo.sp.summary_plot.get_distance_to_nearest(...
                     ssCenterEpochUnixArray, ...
-                    solo.ql.summary_plot.MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S);
+                    solo.sp.summary_plot.MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S);
             
             %===================================================================
             % Set the display locations of individual spectras (override
@@ -806,7 +843,7 @@ classdef summary_plot < handle
                 if ~isempty(SpecrecCa{i})
                     bKeep(i) = true;
                     
-                    sssWidthSec = sssMaxWidthSecArray(i) * solo.ql.summary_plot.SNAPSHOT_WIDTH_FRACTION;
+                    sssWidthSec = sssMaxWidthSecArray(i) * solo.sp.summary_plot.SNAPSHOT_WIDTH_FRACTION;
                     
                     %===========================================================
                     % Stretch out spectra (for given snapshot) in time to be
@@ -829,7 +866,7 @@ classdef summary_plot < handle
             end
             
             SpecrecCa(~bKeep) = [];
-            %Specrec = solo.ql.summary_plot.merge_Specrec(SpecrecCa);
+            %Specrec = solo.sp.summary_plot.merge_Specrec(SpecrecCa);
             Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
@@ -839,10 +876,10 @@ classdef summary_plot < handle
             
             set(hAxes, 'yscale','log')
             
-            irf_legend(hAxes, tlLegend, solo.ql.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
-            irf_legend(hAxes, trLegend, solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
+            irf_legend(hAxes, tlLegend, solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
+            irf_legend(hAxes, trLegend, solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
             
-            colormap(solo.ql.summary_plot.COLORMAP)            
+            colormap(solo.sp.summary_plot.COLORMAP)
             caxis(hAxes, colLimits)            
             % NOTE: Chosen ticks should cover both Hz and kHz, for all sampling
             % frequencies.
@@ -850,8 +887,8 @@ classdef summary_plot < handle
             
             % IMPLEMENTATION NOTE: USING "HACK". See
             % find_child_irfspectrogram_y_unit().
-            axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
-            minFreqHz      = samplingFreqHz / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF;
+            axesFreqUnitHz = solo.sp.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+            minFreqHz      = samplingFreqHz / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF;
             ylim(hAxes, [minFreqHz, inf] / axesFreqUnitHz)
         end
         
@@ -903,7 +940,7 @@ classdef summary_plot < handle
         function S = add_Specrec_dt(S, max2Dt)
             EJ_library.assert.struct(S, {'t', 'p', 'f'}, {})
             
-            specMaxWidthArray = solo.ql.summary_plot.get_distance_to_nearest(...
+            specMaxWidthArray = solo.sp.summary_plot.get_distance_to_nearest(...
                 S.t, max2Dt);
             
             S.dt = specMaxWidthArray/2;
@@ -957,7 +994,7 @@ classdef summary_plot < handle
             
             for i = 1:numel(hArray)
                 legendColor = get(hArray(i), 'Color');
-                legendColor = 1 - solo.ql.summary_plot.C_FADE*(1-legendColor);
+                legendColor = 1 - solo.sp.summary_plot.C_FADE*(1-legendColor);
                 
                 set(hArray(i), 'Color', legendColor);
             end
