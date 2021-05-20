@@ -314,18 +314,16 @@ classdef dwns   % < handle
             zvBinsTt2000     = EJ_library.cdf.time.TT2000WOLS_to_TT2000(zvBinsTtw);
             binSizeArrayNs   = diff(boundariesTt2000);
             
-            %==================
+            %===================================================================
             % Assign iRecordCa
-            %==================
-            % NOTE: THIS LOOP IS VERY SLOW. SEEMS TO CONSTITUTE MOST OF
-            % THE PROCESSING TIME (BPTD TEST DATASET).
-            iRecordsInBinCa = cell( nBins, 1);
-            for iBin = 1:nBins
-
-                iRecordsInBinCa{iBin} = find(...
-                      (boundariesTt2000(iBin) <= zvAllTt2000)...
-                    & (zvAllTt2000            <  boundariesTt2000(iBin+1)));
-            end
+            % ----------------
+            % For every DWNS record/bin, derive indices to the corresponding
+            % ORIS CDF records.
+            %===================================================================
+            % NOTE: DERIVING iRecordsInBinCa IS A SUBSTANTIAL PART OF THE
+            % PROCESSING TIME (ESPECIALLY FOR LARGER DATASETS).
+            iRecordsInBinCa = bicas.utils.get_bin_indices(...
+                zvAllTt2000, boundariesTt2000, 10);
 
 
 
