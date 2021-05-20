@@ -28,9 +28,12 @@ function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)
         infoStr = sprintf('%s: %g [s]', codeName, wallTimeSec);
     elseif nargin == 5
         % NOTE: Adds "s" after unit to get plural.
+        % IMPLEMENTATION NOTE: nUnits might be an integer. Must convert to
+        % double for division to work.
+        %   Ex: bicas.proc.dwns.get_downsampling_bins(): nBins
         infoStr = sprintf('%s: %g [s], %g [s/%s], %g [%ss]', ...
             codeName, ...
-            wallTimeSec, wallTimeSec/nUnits, unitName, nUnits, unitName);
+            wallTimeSec, wallTimeSec/double(nUnits), unitName, nUnits, unitName);
     else
         error('Illegal number of arguments.')
     end
