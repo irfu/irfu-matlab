@@ -3,8 +3,11 @@ function TSout = psp_coordinate_transform(TSin,flag)
 %
 % PSP_COORDINATE_TRANSFORM(TSeries,flagConversion) convert TSeries to
 % another reference frame defined by flagConversion. flagCVonversion can be
-% one of: 'E>sc','sc>E', 'sc>SCM', 'SCM>sc' (capitalization not important)
-%
+% one of (capitalization not important): 
+% 'E>sc','sc>E'     - convert between electric field coordinates E and spacecraft coordinates
+% 'sc>SCM','SCM>sc' - convert between search coild SCM and spacecraft coordinates
+% 'spi>sc'          - convert between SPI coordinates and spacecraft
+%                     coordinates (see Woodham+ 2020, https://arxiv.org/abs/2010.10379)
 % Example: 
 %
 %  TS_SC = psp_coordinate_transform(TS_E,'E>sc')
@@ -29,6 +32,10 @@ switch lower(flag)
     M = [[ 0.81654 0        -0.57729];...
          [-0.40827 -0.70715 -0.57729];...
          [-0.40827 -0.70715 -0.57729]];
+  case 'spi>sc'
+    a = cos(200);
+    b = sin(20);
+    M = [[ 0 -a a];[0 a -b];[1 0 0]];
   otherwise
     irf.log('critical','transformation not defined'); return;
 end
