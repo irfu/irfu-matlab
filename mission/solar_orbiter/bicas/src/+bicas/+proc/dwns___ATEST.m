@@ -3,7 +3,7 @@
 %
 function dwns___ATEST
     downsample_sci_zVar___ATEST()
-    get_downsampling_bins___ATEST
+    get_downsampling_bins___ATEST()
 end
 
 
@@ -35,8 +35,9 @@ function downsample_sci_zVar___ATEST
     end
 
     
+    
     AS10 = zeros(1,0);   % AS10 = Array Size 1x0
-    N = NaN;
+    N    = NaN;
 
 
     % Empty data, zero records, zero columns.
@@ -124,6 +125,8 @@ function get_downsampling_bins___ATEST
             iRecordsCa, ...
             nRecordsPerBin, ...
             binSizeArrayNs)
+        
+        % NOTE: Ignoring abolished return value nRecordsPerBin.
 
         tl{end+1} = EJ_library.atest.CompareFuncResult(...
             @bicas.proc.dwns.get_downsampling_bins, ...
@@ -131,14 +134,17 @@ function get_downsampling_bins___ATEST
             {spdfparsett2000(zvAllUtcCa), ...
             spdfparsett2000(boundaryRefUtc), ...
             int64(intervalLengthWolsNs), ...
-            int64(timestampPosWolsNs)}, ...
+            int64(timestampPosWolsNs), ...
+            L}, ...
             ...
             {spdfparsett2000(zvIntervalsUtcCa), ...
             iRecordsCa(:), ...
-            nRecordsPerBin(:), ...
             binSizeArrayNs(:)});
     end
     
+    
+    
+    L = bicas.logger('none', 0);
     
     % ECA = Empty Column (size=0) Array
     ECA = zeros(0,1);

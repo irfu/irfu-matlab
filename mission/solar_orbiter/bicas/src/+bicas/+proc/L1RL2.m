@@ -955,7 +955,6 @@ classdef L1RL2
         % functions.
         %
         function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, SETTINGS, L)
-            % PROPOSAL: Separate function for calibrating currents.
 
             tTicToc = tic();
 

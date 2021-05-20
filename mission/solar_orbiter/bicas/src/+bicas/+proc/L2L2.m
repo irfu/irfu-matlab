@@ -72,6 +72,10 @@ classdef L2L2   % < handle
             %            ==> Faster identification of files+modes.
             %       PRO: More automatic synching of ORIS and DWNS versions.
             
+            tTicToc = tic();
+
+
+
             %===========
             % Constants
             %===========
@@ -95,15 +99,18 @@ classdef L2L2   % < handle
             [Zv, iRecordsInBinCa] = bicas.proc.dwns.init_shared_downsampled(...
                 InLfrCwf, ...
                 BIN_LENGTH_WOLS_NS, ...
-                BIN_TIMESTAMP_POS_WOLS_NS);
+                BIN_TIMESTAMP_POS_WOLS_NS, ...
+                L);
             OutLfrCwfDwns = struct(...
                 'Ga', Ga, ...
                 'Zv', Zv);
+            nRecordsDwns = numel(iRecordsInBinCa);
             
             
             
             zv_VDC = InLfrCwf.Zv.VDC;
             zv_EDC = InLfrCwf.Zv.EDC;
+            nRecordsOris = numel(InLfrCwf.Zv.Epoch);
             
             
             
@@ -129,18 +136,30 @@ classdef L2L2   % < handle
              OutLfrCwfDwns.Zv.VDCSTD] = bicas.proc.dwns.downsample_sci_zVar(...
                 zv_VDC, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
-                iRecordsInBinCa);
+                iRecordsInBinCa, ...
+                L);
             
             [OutLfrCwfDwns.Zv.EDC, ...
              OutLfrCwfDwns.Zv.EDCSTD] = bicas.proc.dwns.downsample_sci_zVar(...
                 zv_EDC, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
-                iRecordsInBinCa);
-        end
+                iRecordsInBinCa, ...
+                L);
+            
+            
+            
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.L2L2.process_LFRCWF_to_DWNS', tTicToc, ...
+                nRecordsOris, 'ORIS record')
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.L2L2.process_LFRCWF_to_DWNS', tTicToc, ...
+                nRecordsDwns, 'DWNS record')
+
+        end    % process_LFRCWF_to_DWNS
 
 
 
-    end
+    end    % methods(Static)
 
 
 

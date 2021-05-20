@@ -30,6 +30,7 @@ classdef dwns   % < handle
 
         % Derive values which are used by all DOWNSAMPLED datasets.
         %
+        %
         % RETURN VALUES
         % =============
         % InitialDwnsZv
@@ -38,9 +39,12 @@ classdef dwns   % < handle
         %       Distribution of non-downsampled records in bins.
         %
         function [InitialDwnsZv, iRecordsInBinCa] = init_shared_downsampled(...
-                InLfrCwf, binLengthWolsNs, binTimestampPosWolsNs)
+                InLfrCwf, binLengthWolsNs, binTimestampPosWolsNs, L)
             
-            %assert(islogical(bNotUsed))
+            tTicToc = tic();
+
+
+
             assert(isscalar(binLengthWolsNs))
             assert(isscalar(binTimestampPosWolsNs))
             
@@ -59,12 +63,14 @@ classdef dwns   % < handle
             %     and
             % (2) which (non-downsampled) records belong to which bins
             %     (=downsampled records).
-            [zvEpochDwns, iRecordsInBinCa, ~, binSizeArrayNs] = ...
+            [zvEpochDwns, iRecordsInBinCa, binSizeArrayNs] = ...
                 bicas.proc.dwns.get_downsampling_bins(...
                     InLfrCwf.Zv.Epoch, ...
                     boundaryRefTt2000, ...
                     binLengthWolsNs, ...
-                    binTimestampPosWolsNs);
+                    binTimestampPosWolsNs, ...
+                    L);
+            nRecordsOris = numel(InLfrCwf.Zv.Epoch);
             nRecordsDwns = numel(zvEpochDwns);
             
             
@@ -120,10 +126,10 @@ classdef dwns   % < handle
             QUALITY_FLAG_dwns       = zeros(nRecordsDwns, 1, 'uint8');
             QUALITY_BITMASK_dwns    = zeros(nRecordsDwns, 1, 'uint16');
             L2_QUALITY_BITMASK_dwns = zeros(nRecordsDwns, 1, 'uint16');
-            for i = 1:nRecordsDwns
-                k = iRecordsInBinCa{i};
+            for iBin = 1:nRecordsDwns
+                k = iRecordsInBinCa{iBin};
 
-                QUALITY_FLAG_dwns(i) = ...
+                QUALITY_FLAG_dwns(iBin) = ...
                     bicas.proc.dwns.downsample_bin_QUALITY_FLAG(...
                         InLfrCwf.Zv.QUALITY_FLAG( k ), ...
                         InLfrCwf.ZvFv.QUALITY_FLAG);
@@ -138,12 +144,12 @@ classdef dwns   % < handle
                 %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
                 %   (SKELETON_MODS: V12=Feb 2021)
                 % .
-                QUALITY_BITMASK_dwns(i)    = ...
+                QUALITY_BITMASK_dwns(iBin)    = ...
                     bicas.proc.dwns.downsample_bin_L12_QUALITY_BITMASK(...
                         uint16( InLfrCwf.Zv.QUALITY_BITMASK( k ) ), ...
                         InLfrCwf.ZvFv.QUALITY_BITMASK);
 
-                L2_QUALITY_BITMASK_dwns(i) = ...
+                L2_QUALITY_BITMASK_dwns(iBin) = ...
                     bicas.proc.dwns.downsample_bin_L12_QUALITY_BITMASK(...
                         InLfrCwf.Zv.L2_QUALITY_BITMASK( k ), ...
                         InLfrCwf.ZvFv.L2_QUALITY_BITMASK);
@@ -168,7 +174,15 @@ classdef dwns   % < handle
             % go outside/inside the bin boundaries for leap seconds. The same
             % problem exists for both positive and negative leap seconds.
             InitialDwnsZv.DELTA_PLUS_MINUS   = double(binSizeArrayNs / 2);
-            
+
+
+
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dwns.init_shared_downsampled', tTicToc, ...
+%                 nRecordsOris, 'ORIS record')
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dwns.init_shared_downsampled', tTicToc, ...
+%                 nRecordsDwns, 'DWNS record')
         end
 
 
@@ -198,15 +212,12 @@ classdef dwns   % < handle
         % RETURN VALUES
         % =============
         % zvTt2000
-        %       Column array. ~Epoch. One timestamp per bin.
+        %       Column array. Downsampled Epoch-like zVar. One timestamp per
+        %       bin.
         % iRecordsInBinCa
         %       Column cell array.
         %       Indices to CDF records for respective bins.
         %       {iBin, 1}(iSamples,1) = Non-downsampled CDF record number.
-        % nRecordsPerBin
-        %       Column array. (iBin, 1) = Number of non-downsampled records in
-        %       bin. Could be useful for setting QUALITY_FLAG. Currently not
-        %       used(?).
         % binSizeArrayNs
         %       (iBin, 1). Bin size.
         %       RATIONALE: Useful for automatic testing, setting zVar
@@ -221,10 +232,10 @@ classdef dwns   % < handle
         %             should be condensed to one.
         % boundary = Edge of bin(s).
         %
-        function [zvBinsTt2000, iRecordsInBinCa, nRecordsPerBin, binSizeArrayNs] = ...
+        function [zvBinsTt2000, iRecordsInBinCa, binSizeArrayNs] = ...
             get_downsampling_bins(...
                 zvAllTt2000, boundaryRefTt2000, ...
-                binLengthWolsNs, binTimestampPosWolsNs)
+                binLengthWolsNs, binTimestampPosWolsNs, L)
             
             % PROPOSAL: Return boundariesTt2000 instead of binSizeArrayNs.
             %   PRO: More information.
@@ -236,10 +247,19 @@ classdef dwns   % < handle
             %           excluded.
             %   CON: Samples may be NaN, but this function does not have access
             %        to that information.
+            %
+            % PROPOSAL: Better name that implies that it is not a generic
+            %           function (works on Epoch with leap seconds).
+            
+            
+            
+            tTicToc = tic();
             
 
             
             % ASSERTIONS
+            % ----------
+            % Does not assert monotonic increase.
             bicas.proc.utils.assert_zv_Epoch(zvAllTt2000)
             % NOTE: Function algorithm assumes this monotonic increase.
             assert(issorted(zvAllTt2000, 'strictascend'))
@@ -256,9 +276,13 @@ classdef dwns   % < handle
             
             if isempty(zvAllTt2000)
                 % CASE: zvAllTt2000 is empty.
+                
+                % NOTE: Later calls to
+                % EJ_library.cdf.time.TT2000_to_TT2000WOLS() are not applicable
+                % if there is no timestamp. Must therefore have special case.
+                
                 zvBinsTt2000    = int64(ones(0,1));
                 iRecordsInBinCa = cell(0,1);
-                nRecordsPerBin  = zeros(0,1);
                 binSizeArrayNs  = zeros(0,1);
                 return
             end
@@ -293,22 +317,28 @@ classdef dwns   % < handle
             %==================
             % Assign iRecordCa
             %==================
+            % NOTE: THIS LOOP IS VERY SLOW. SEEMS TO CONSTITUTE MOST OF
+            % THE PROCESSING TIME (BPTD TEST DATASET).
             iRecordsInBinCa = cell( nBins, 1);
-            nRecordsPerBin  = zeros(nBins, 1);
-            for i = 1:nBins
-                % Slow?
-                % PROPOSAL: Speed up by using that zvTt2000 and boundaries are
-                % sorted. Iterate over records, stopping at boundaries.
-                iRecordsInBinCa{i} = find(...
-                      (boundariesTt2000(i) <= zvAllTt2000)...
-                    & (zvAllTt2000         <  boundariesTt2000(i+1)));
-                
-                nRecordsPerBin(i) = length(iRecordsInBinCa{i});
+            for iBin = 1:nBins
+
+                iRecordsInBinCa{iBin} = find(...
+                      (boundariesTt2000(iBin) <= zvAllTt2000)...
+                    & (zvAllTt2000            <  boundariesTt2000(iBin+1)));
             end
+
+
+
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.dwns.get_downsampling_bins', tTicToc, ...
+                numel(zvAllTt2000), 'ORIS record')
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.dwns.get_downsampling_bins', tTicToc, ...
+                nBins,              'DWNS record')
         end
         
-
-
+        
+        
         % Downsample a single NxM science zVar.
         %
         % Use bins and for every bin, derive median and modified standard
@@ -344,27 +374,34 @@ classdef dwns   % < handle
         % zvMstd : (iBin, iChannel). Modified STandard Deviation (MSTD).
         %
         function [zvMed, zvMstd] = downsample_sci_zVar(...
-                zv, nMinReqRecords, iRecordsInBinCa)
+                zv, nMinReqRecords, iRecordsInBinCa, L)
             
             % PROPOSAL: Require nMinReqSamples >= 1? Code can handle 0, though it gives NaN.
+            
+            
+            
+            tTicToc = tic();
+            
+            
 
             % ASSERTION
             assert(isfloat(zv))
             assert(nMinReqRecords >= 0)
-            [nSpr, nRecordsDwns] = EJ_library.assert.sizes(...
-                zv,              [NaN, -1], ...
+            [nRecordsOris, nRecordsDwns, nSpr] = EJ_library.assert.sizes(...
+                zv,              [-1, -3], ...
                 iRecordsInBinCa, [-2]);
             
             
             
             % Pre-allocate
-            zvMed  = NaN(  nRecordsDwns, nSpr);
-            zvMstd = NaN(  nRecordsDwns, nSpr);
+            zvMed  = NaN(nRecordsDwns, nSpr);
+            zvMstd = NaN(nRecordsDwns, nSpr);
 
             for iBin = 1:nRecordsDwns
                 k           = iRecordsInBinCa{iBin};
                 
                 binZv       = zv(k, :);
+                % Number of ORIS records in bin.
                 nBinRecords = size(binZv, 1);
 
                 % (1) Pre-allocate (e.g. in case of zero samples/record).
@@ -401,9 +438,18 @@ classdef dwns   % < handle
                 zvMstd(iBin, :) = binMstd;
                 
                 % clear binMed binMstd
-            end
+            end    % for
             
-        end
+            
+            
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dwns.downsample_sci_zVar', tTicToc, ...
+%                 nRecordsOris, 'ORIS record')
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dwns.downsample_sci_zVar', tTicToc, ...
+%                 nRecordsDwns,              'DWNS record')
+            
+        end    % downsample_sci_zVar
 
 
 
