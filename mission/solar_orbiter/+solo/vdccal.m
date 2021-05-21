@@ -61,7 +61,7 @@ matVerStr  = [];
 %load Probe-potential discontinuities
 discontTimes=solo.ProbePotDiscontinuities;
 mainTint = irf.tint(VDC_inp.time(1),VDC_inp.time(end));
-sub_int_times = EpochTT(split_tint(mainTint,discontTimes));
+sub_int_times = EpochTT(solo.split_tint(mainTint,discontTimes));
 
 %Predefine output variables:
 DCE_SRF_out=irf.ts_vec_xyz(EpochTT([]),double.empty(0,3));

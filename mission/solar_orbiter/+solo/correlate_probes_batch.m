@@ -13,7 +13,7 @@ Tint = irf.tint('2021-02-01T00:00:00Z/2021-02-28T23:59:59.99Z')+[-1,1]*margin;
 % If there is a discontinuity in the data, e.g. potential jumps due to the
 % solar panels, as in late 2020, early 2021, generate subintervals and
 % apply the analysis on them separately.
-sub_int_times = EpochTT(split_tint(Tint,discontTimes));
+sub_int_times = EpochTT(solo.split_tint(Tint,discontTimes));
 
 %Pre-define output variables:
 DCE_SRF=irf.ts_vec_xyz(EpochTT([]),double.empty(0,3));
