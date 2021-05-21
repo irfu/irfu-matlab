@@ -43,7 +43,7 @@ end
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
 %===========================================================================
-codeVerStr = '2021-04-08T14:00:00';
+codeVerStr = '2021-05-21T12:00:00';
 % Version of the .mat file. Not yet used. Meant to be read from .mat file.
 matVerStr  = [];
 
