@@ -146,8 +146,8 @@ classdef L2L3
             %====================================================================
             % Derive values for CDF global attribute "Misc_calibration_versions"
             %====================================================================
-            assert(isempty(R.vdccalMatVerStr), ...
-                ['solo.vdccal() no longer returns an empty vdccalMatVerStr', ...
+            assert(~isempty(R.vdccalMatVerStr), ...
+                ['solo.vdccal() returns an empty vdccalMatVerStr', ...
                 ' (string representing the version of the corresponding', ...
                 ' .mat file). BICAS therefore needs to be updated.'])
             EJ_library.assert.castring_regexp(R.vdccalCodeVerStr, CODE_VER_STR_REGEXP)
@@ -158,14 +158,14 @@ classdef L2L3
             % global attribute "Software_version" (together with
             % "Software_name").
             %
-            % NOTE: There version string for the solo.vdccal() .mat file has not
-            % been implemented yet.
-            % NOTE: Density Misc_calibration_versions contains both versions,
-            % since density is derived from PSP.
-            vdccalStr = ['solo.vdccal() code version ', R.vdccalCodeVerStr];
-            psp2neStr = ['solo.psp2ne() code version ', psp2neCodeVerStr];
-            gaEfieldScpot_Misc_calibration_versions = {vdccalStr};
-            gaDensity_Misc_calibration_versions     = {vdccalStr, psp2neStr};
+            % NOTE: Density "Misc_calibration_versions" contains all three
+            % versions, since density is derived from PSP.
+            vdccalStr    = ['solo.vdccal() code version ',     R.vdccalCodeVerStr];
+            vdccalMatStr = ['solo.vdccal() calibration file ', R.vdccalMatVerStr];
+            psp2neStr    = ['solo.psp2ne() code version ',     psp2neCodeVerStr];
+            gaEfieldScpot_Misc_calibration_versions = {vdccalStr, vdccalMatStr};
+            gaDensity_Misc_calibration_versions     = ...
+                [gaEfieldScpot_Misc_calibration_versions, {psp2neStr}];
 
             
             
@@ -390,8 +390,11 @@ classdef L2L3
             %==========================
             % CALL BICAS-EXTERNAL CODE
             %==========================
+            % NOTE: Not specifying the calibration file implies using the
+            % calibration file (hardcoded) that shall be used for official
+            % datasets.
             [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
-                = solo.vdccal(VdcTs, EdcTs);
+                = solo.vdccal(VdcTs, EdcTs, []);
             clear VdcTs EdcTs
             %==========================
             
