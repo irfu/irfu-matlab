@@ -13,25 +13,31 @@ function [DCE_SRF_out,PSP_out,ScPot_out,codeVerStr,matVerStr] = vdccal(VDC_inp,E
 %   PSP        - probe-to-spacecraft potential
 %   ScPot      - spacecraft potential (PRELIMINARY PROXY)
 %   codeVerStr - Date format version string for function itself. Used by BICAS.
-%   matVerStr  - Date format version string for .mat file. Used by BICAS.
-%                (Not yet used.)
+%   matVerStr  - Version string representing .mat file. Currently filename.
+%                Used by BICAS.
 %
 % Loads .mat file produced by solo.correlate_probes_batch (script) if
 % calfile_name is empty.
 % NOTE: .mat needs to be updated before processing the new data.
 %
-% NOTE: This function is used by BICAS for producing official datasets.
+% NOTE: This function is used by BICAS for producing official L3 datasets.
 
-% Check if a calibration file is specified, otherwise choose the
-% calibration filed used by BICAS for producing official datasets.
+
+
+% Act depending on whether a calibration file is specified or not.
 if isempty(calfile_name)
-    % calibration file used by BICAS for producing official datasets.
-    a = load('d23K123_20210521.mat');
+    % Caller did not specify calibration file.
+    % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
+    % OFFICIAL DATASETS.
+    calfile_name = 'd23K123_20210521.mat';
 else
-    % specified calibration file. Useful for debugging/testing new
+    % Caller specified calibration file. Useful for debugging/testing new
     % calibrations.
-    a = load(calfile_name);
+    
+    % (Do nothing.)
 end
+a = load(calfile_name);
+
 
 
 %===========================================================================
@@ -44,8 +50,9 @@ end
 % timestamp, so that a constant value represents the same function.
 %===========================================================================
 codeVerStr = '2021-05-21T12:00:00';
-% Version of the .mat file. Not yet used. Meant to be read from .mat file.
-matVerStr  = [];
+% Version of the .mat file. Using filename, or at least for now.
+[~, basename, suffix] = fileparts(calfile_name);
+matVerStr  = [basename, suffix];   % Only use filename, not entire path.
 
 %=============================================================================
 % Find data points/CDF records for which only V1_DC is available
@@ -55,7 +62,7 @@ matVerStr  = [];
 % (1) all single probes (DC) available
 % (2) only probe 1 (DC) available.
 % NOTE: Only works for mux=0,2,3,4 (not mux=1).
-% NOTE: Ignores EDC_inp argument.
+% NOTE: Currently ignores EDC_inp argument.
 %==============================================================================
 
 %load Probe-potential discontinuities
@@ -132,4 +139,5 @@ end %for
     DCE_SRF_out.coordinateSystem = 'SRF';
     PSP_out.units = 'V';
     ScPot_out.units=PSP_out.units;
-end
+    
+end %function
