@@ -35,7 +35,7 @@ switch lower(flag)
   case 'spi>sc'
     a = cos(20);
     b = sin(20);
-    M = [[ 0 -a a];[0 a -b];[1 0 0]];
+    M = [[ 0 -b -a];[0 a -b];[1 0 0]];
   otherwise
     irf.log('critical','transformation not defined'); return;
 end
@@ -69,7 +69,14 @@ if doRotateOnlyXY
   end
   TSout=TSin.clone(TSin.time,dataOut);
 else
-  irf.log('critical','not implemented');
+  dataOut = dataInp*0;
+  for iCompOut = 1:3
+    for iCompInp = 1:3
+      dataOut(:,iCompOut)=dataOut(:,iCompOut) + ...
+        M(iCompOut,iCompInp) * dataInp(:,iCompInp);
+    end
+  end
+  TSout=TSin.clone(TSin.time,dataOut);
 end
 
 
