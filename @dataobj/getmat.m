@@ -36,7 +36,7 @@ dim = length(data.variance(3:end));
 if dim <=1
   plot_data = double(data.data)';
   if isfield(dep,'DEPEND_O') % add time column as first column
-    if strcmpi(dep.DEPEND_O.type,'tt2000')
+    if isfield(dep.DEPEND_O,'type') && strcmpi(dep.DEPEND_O.type,'tt2000')
       timeLine = EpochTT(dep.DEPEND_O.data).epochUnix;
     else, timeLine = dep.DEPEND_O.data;
     end
