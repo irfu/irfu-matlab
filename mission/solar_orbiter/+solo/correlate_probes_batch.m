@@ -34,7 +34,7 @@ for isub=1:length(sub_int_times)-1
     VDC.data(iiBad,:) = NaN;
     
     %% Step 1 - get d23
-    OutTS_step1 = new_correlate_probes(VDC, EDC);
+    OutTS_step1 = solo.correlate_probes(VDC, EDC);
     
     %%
     h=irf_plot(1,'newfigure');
@@ -62,7 +62,7 @@ for isub=1:length(sub_int_times)-1
     gammastruct.Gamma1=Gamma1;
     gammastruct.cc=CC;
     %% Step 2 - get k123
-    OutTS_step2 = new_correlate_probes(VDC,EDC,d23,k23,gammastruct);
+    OutTS_step2 = solo.correlate_probes(VDC,EDC,d23,k23,gammastruct);
     
     
     h=irf_plot(1,'newfigure');
@@ -82,7 +82,7 @@ for isub=1:length(sub_int_times)-1
     k123 = irf.ts_scalar(OutTS_step1.k123.time,movmedian(OutTS_step2.k123.data,15,'omitnan','Endpoints','fill'));
     
     %% Step 3 - get d123
-    OutTS_step3 = new_correlate_probes(VDC,EDC,d23,k23,gammastruct,k123);
+    OutTS_step3 = solo.correlate_probes(VDC,EDC,d23,k23,gammastruct,k123);
     
     h=irf_plot(1,'newfigure');
     irf_plot(h(1),OutTS_step3.d23,'.-')
@@ -121,7 +121,7 @@ for isub=1:length(sub_int_times)-1
     DT = 10; nSteps =  (Tstop-Tstart)/DT;
     outTime = Tstart + ((1:nSteps)-0.5)*DT;
     %% Apply calibration on data in the interval
-    [DCE_SRF_temp,PSP_temp,SCPOT_temp] = new_vdccal(VDC,[],filenamestr);
+    [DCE_SRF_temp,PSP_temp,SCPOT_temp] = solo.vdccal(VDC,[],filenamestr);
     DCE_SRF_10s_temp = DCE_SRF_temp.resample(outTime);
     PSP_10s_temp = PSP_temp.resample(outTime);
     
@@ -141,7 +141,7 @@ end
 % obtained using the combined calibration files. The two should be exactly
 % the same.
 if 0
-    [DCE_SRF_comb,PSP_comb,~] = new_vdccal(VDC,[],'d23K123_20210511_combined_parts');
+    [DCE_SRF_comb,PSP_comb,~] = solo.vdccal(VDC,[],'d23K123_20210511_combined_parts');
     DCE_SRF_10s=DCE_SRF_comb.resample(outTime);
     PSP_10s = PSP_comb.resample(outTime);
 end
