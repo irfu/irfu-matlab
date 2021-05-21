@@ -6,7 +6,7 @@ function TSout = psp_coordinate_transform(TSin,flag)
 % one of (capitalization not important): 
 % 'E>sc','sc>E'     - convert between electric field coordinates E and spacecraft coordinates
 % 'sc>SCM','SCM>sc' - convert between search coild SCM and spacecraft coordinates
-% 'spi>sc'          - convert between SPI coordinates and spacecraft
+% 'spi>sc','sc>spi' - convert between SPI instrument coordinates and spacecraft
 %                     coordinates (see Woodham+ 2020, https://arxiv.org/abs/2010.10379)
 % Example: 
 %
@@ -36,6 +36,12 @@ switch lower(flag)
     a = cos(20);
     b = sin(20);
     M = [[ 0 -b -a];[0 a -b];[1 0 0]];
+  case 'sc>spi'
+    a = cos(20);
+    b = sin(20);
+    aa = a/(a*a+b*b);
+    bb = b/(a*a+b*b);
+    M = [[0 0 1];[ -bb aa 0];[-aa -bb 0]];
   otherwise
     irf.log('critical','transformation not defined'); return;
 end
