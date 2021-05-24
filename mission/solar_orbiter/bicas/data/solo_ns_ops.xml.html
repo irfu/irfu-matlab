@@ -7,16 +7,16 @@
 <H1 ALIGN="center">
     Non-Standard Operations (NSO) List
     </H1>
-        Manually written Non-Standard Operations (NSO) List used by BICAS (SolO/RPW/BIAS calibration and data processing). Contains "events", i.e. time intervals, each one labelled with a standardized string (<B>NSO ID</B>, or <B>RCS NSO ID</B>) that BICAS can interpret. BICAS uses this list to modify how datasets are processed, e.g. by setting zVariables QUALITY_FLAG and/or L2_QUALITY_BITMASK, replacing data with fill values, and/or omitting data from L3.
+        Manually written Non-Standard Operations (NSO) list used by BICAS (SolO/RPW/BIAS calibration and data processing). Contains "events", i.e. time intervals, each one labelled with a standardized string (<B>NSO ID</B>, or <B>RCS NSO ID</B>) that BICAS can interpret. BICAS uses this list to modify how datasets are processed, e.g. by setting zVariables QUALITY_FLAG and/or L2_QUALITY_BITMASK, replacing data with fill values, and/or omitting data from L3 etc.
     <H2>Notes</H2>
         <P>
             2020-11-12, EJ: I have not managed to find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </P>
         <P>
-            2020-12-08, EJ: Added saturation for 2020-11-05. Its earlier omission hints that there might be more unknown cases of saturation. Data has not been systematically searched for saturation, but should cover most cases.
+            2021-05-24, EJ: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </P>
         <P>
-            2021-03-11, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-03-06 (inclusive). Only manual identifications.
+            2021-05-24, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-05-08 (inclusive). Only manually identified thuster firings.
         </P>
     <H2>Events</H2>
 <TABLE style="width:100%" cellpadding="5" cellspacing="1" border="1">
@@ -732,6 +732,60 @@
 <td> 2021-03-01T01:17:49</td>
 <td>THRUSTER_FIRING</td>
 <td></td>
+</tr>
+        <tr>
+<td>2021-03-08T01:04:26</td>
+<td> 2021-03-08T01:16:27</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-03-15T01:04:13</td>
+<td> 2021-03-15T01:15:19</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-03-22T01:04:16</td>
+<td> 2021-03-22T01:13:55</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-03-29T01:04:27</td>
+<td> 2021-03-29T01:12:37</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-04-05T01:04:17</td>
+<td> 2021-04-05T01:13:49</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-04-12T01:04:29</td>
+<td> 2021-04-12T01:13:48</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-04-19T01:04:10</td>
+<td> 2021-04-19T01:13:37</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-04-26T01:04:26</td>
+<td> 2021-04-26T01:12:57</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-05-03T01:04:32</td>
+<td> 2021-05-03T01:13:30</td>
+<td>THRUSTER_FIRING</td>
+<td>Different shape than normal (in PSP; bumps more distinctly negative instead of positive), but still unambiguous.</td>
 </tr>
 
 
