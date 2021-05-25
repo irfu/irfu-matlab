@@ -1,10 +1,10 @@
 %
-% Automatic test code for bicas.demultiplexer.
+% Automatic test code for bicas.proc.L1RL2.demuxer.
 %
 % Very basic tests at this stage. Could be improved but unsure how much is
 % meaningful.
 %
-function demultiplexer___ATEST
+function demuxer___ATEST
     main___ATEST
     complement_ASR___ATEST
 end
@@ -29,7 +29,7 @@ function complement_ASR___ATEST
     
     
     function new_test(inputFieldsCa)
-        A = bicas.demultiplexer.complement_ASR( struct(inputFieldsCa{:}) );
+        A = bicas.proc.L1RL2.demuxer.complement_ASR( struct(inputFieldsCa{:}) );
         
         % Test all possible relationsships.
         %
@@ -56,7 +56,7 @@ end
 
 
 function main___ATEST()
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.demultiplexer.main, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc.L1RL2.demuxer.main, inputs, outputs));
     tl = {};
     
     V1   = 10;

@@ -809,7 +809,7 @@ classdef L1RL2
         %
         % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN for CWF.
         %
-        % PROPOSAL: Integrate into bicas.demultiplexer (as method).
+        % PROPOSAL: Integrate into bicas.proc.L1RL2.demuxer (as method).
         % NOTE: Calibration is really separate from the demultiplexer. Demultiplexer only needs to split into
         %       subsequences based on mux mode and latching relay, nothing else.
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
@@ -852,7 +852,7 @@ classdef L1RL2
                 'acV13', tempVoltageArray, ...
                 'acV23', tempVoltageArray);
 
-            dlrUsing12zv = bicas.demultiplexer_latching_relay(PreDc.Zv.Epoch);
+            dlrUsing12zv = bicas.proc.L1RL2.demuxer_latching_relay(PreDc.Zv.Epoch);
             iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
             iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
 
@@ -931,7 +931,7 @@ classdef L1RL2
                 % NOTE: Call demultiplexer with no samples. Only for collecting
                 % information on which BLTS channels are connected to which
                 % ASRs.
-                [BltsSrcAsrArray, ~] = bicas.demultiplexer.main(...
+                [BltsSrcAsrArray, ~] = bicas.proc.L1RL2.demuxer.main(...
                     MUX_SET_ss, dlrUsing12_ss, {[],[],[],[],[]});
 
 
@@ -1023,7 +1023,7 @@ classdef L1RL2
                 %====================================
                 % DEMULTIPLEXER: DERIVE MISSING ASRs
                 %====================================
-                [~, SsAsrSamplesAVolt] = bicas.demultiplexer.main(...
+                [~, SsAsrSamplesAVolt] = bicas.proc.L1RL2.demuxer.main(...
                     MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
 
                 % Add demuxed sequence to the to-be complete set of records.

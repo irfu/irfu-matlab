@@ -34,7 +34,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %
-function dlrUsing12 = demultiplexer_latching_relay(Epoch)
+function dlrUsing12 = demuxer_latching_relay(Epoch)
 % PROPOSAL: SETTING for overriding.
 
     bicas.proc.utils.assert_zv_Epoch(Epoch)
