@@ -61,24 +61,24 @@ classdef pf
             InputSciCdf = InputDatasetsMap('SCI_cdf');
 
             %==============================
-            % Configure bicas.calib object
+            % Configure bicas.proc.L1RL2.cal object
             %==============================
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
             useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1r;
             useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1r;
             
             if useCtRcts
-                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
+                NonBiasRctDataMap = bicas.proc.L1RL2.cal.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, 'LFR', ...
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
                     InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     InputSciCdf.Zv.BW, ...
                     L);
             else
-                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
+                NonBiasRctDataMap = bicas.proc.L1RL2.cal.find_read_non_BIAS_RCTs_by_regexp(...
                     rctDir, SETTINGS, L);
             end
-            Cal = bicas.calib(NonBiasRctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
+            Cal = bicas.proc.L1RL2.cal(NonBiasRctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
             %==============
             % Process data
@@ -107,7 +107,7 @@ classdef pf
             InputSciCdf = InputDatasetsMap('SCI_cdf');
             
             %==============================
-            % Configure bicas.calib object
+            % Configure bicas.proc.L1RL2.cal object
             %==============================
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
             C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
@@ -122,17 +122,17 @@ classdef pf
             useCti2   = false;    % Always false for TDS.
             
             if useCtRcts
-                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
+                NonBiasRctDataMap = bicas.proc.L1RL2.cal.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                     rctDir, rctTypeId, ...
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
                     InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     [], ...   % =zv_BW (only for LFR).
                     L);
             else
-                NonBiasRctDataMap = bicas.calib.find_read_non_BIAS_RCTs_by_regexp(...
+                NonBiasRctDataMap = bicas.proc.L1RL2.cal.find_read_non_BIAS_RCTs_by_regexp(...
                     rctDir, SETTINGS, L);
             end
-            Cal = bicas.calib(NonBiasRctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
+            Cal = bicas.proc.L1RL2.cal(NonBiasRctDataMap, rctDir, useCtRcts, useCti2, SETTINGS, L);
             
             %==============
             % Process data

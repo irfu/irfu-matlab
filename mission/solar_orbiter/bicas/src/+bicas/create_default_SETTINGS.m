@@ -615,7 +615,7 @@ function SETTINGS = create_default_SETTINGS()
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
     % corresponds to interface volt.
-    % NOTE: This useful for separately using bicas.calib for analyzing BIAS
+    % NOTE: This useful for separately using bicas.proc.L1RL2.cal for analyzing BIAS
     % standalone calibration tables (BSACT).
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
 

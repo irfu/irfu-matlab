@@ -19,7 +19,7 @@
 %
 % DEFINITIONS
 % ===========
-% See bicas.calib.
+% See bicas.proc.L1RL2.cal.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -34,7 +34,7 @@ classdef BLTS_src_dest %< handle
     %       NOTE/CON: Slightly impractical for routings which depend on the latching relay.
     %
     % PROPOSAL: Other name that does not reference BLTS.
-    %   See bicas.calib BOGIQ.
+    %   See bicas.proc.L1RL2.cal BOGIQ.
     %   PRO: Reference to BLTS is confusing.
     %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
     %

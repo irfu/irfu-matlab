@@ -13,7 +13,7 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
-% See bicas.calib.
+% See bicas.proc.L1RL2.cal.
 % ZV  : CDF zVariable, or something analogous to it. If refers to CDF:ish
 %       content, then the first index corresponds to the CDF record.
 % SPR : Samples Per (CDF) Record. Only refers to actual data (currents,
@@ -324,7 +324,7 @@ classdef L1RL2
             %#########################
             currentSAmpere = bicas.proc.L1RL2.process_CUR_to_CUR_on_SCI_TIME(...
                 PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
-            currentTm      = bicas.calib.calibrate_current_sampere_to_TM(currentSAmpere);
+            currentTm      = bicas.proc.L1RL2.cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);

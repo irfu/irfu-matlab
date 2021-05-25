@@ -241,7 +241,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % ASSERTION
     %if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
     if ~all(~isinf(tfZLookups))
-        % NOTE: Deliberately permits Z=NaN (but not infinity) since bicas.calib
+        % NOTE: Deliberately permits Z=NaN (but not infinity) since bicas.proc.L1RL2.cal
         % is designed to create TFs that return Z=NaN for impossible
         % combinations where it does not matter anyway. /EJ 2020-11-05
         error(...

@@ -28,7 +28,7 @@
 % DEFINITIONS
 % ===========
 % DLR : Demultiplexer Latching Relay
-% See bicas.calib.
+% See bicas.proc.L1RL2.cal.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

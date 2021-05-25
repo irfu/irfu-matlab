@@ -1,14 +1,14 @@
 %
-% Collection of utility functions used by bicas.calib to reduce its size. Only
+% Collection of utility functions used by bicas.proc.L1RL2.cal to reduce its size. Only
 % meant to contain static methods.
 %
-% Selected functions in bicas.calib are meant to be moved here.
+% Selected functions in bicas.proc.L1RL2.cal are meant to be moved here.
 % 
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-11-05.
 %
-classdef calib_utils
+classdef cal_utils
     % PROPOSAL: Automatic test code.
 
 
@@ -164,7 +164,7 @@ classdef calib_utils
         
         
         
-        % Manual test code for bicas.calib_utils.interpolate_TF().
+        % Manual test code for bicas.proc.L1RL2.cal_utils.interpolate_TF().
         %
         function interpolate_TF___MTEST()
             % IMPORTANT NOTE: Tranposing with apostrophe in MATLAB also complex
@@ -185,7 +185,7 @@ classdef calib_utils
             
             
             
-            Zp = bicas.calib_utils.interpolate_TF(omega, Z, omegaP);
+            Zp = bicas.proc.L1RL2.cal_utils.interpolate_TF(omega, Z, omegaP);
             
             %=====================
             % Plot input & output
@@ -259,7 +259,7 @@ classdef calib_utils
                 Z = interp1(TabTf.omegaRps, TabTf.Z, omegaRps, 'linear');
             else
                 % EXPERIMENTAL
-                Z = bicas.calib_utils.interpolate_TF(TabTf.omegaRps, TabTf.Z, omegaRps);
+                Z = bicas.proc.L1RL2.cal_utils.interpolate_TF(TabTf.omegaRps, TabTf.Z, omegaRps);
             end
             % CASE: Z == NaN for omegaRps not covered by tabulated TF.
             
@@ -311,7 +311,7 @@ classdef calib_utils
                 
                 zLimit = itf(acConstGainLowFreqRps);
 
-                itf = @(omegaRps) (bicas.calib_utils.TF_LF_constant_abs_Z(...
+                itf = @(omegaRps) (bicas.proc.L1RL2.cal_utils.TF_LF_constant_abs_Z(...
                     itf, omegaRps, acConstGainLowFreqRps, zLimit));
             end
             
@@ -461,7 +461,7 @@ end    % classdef calib_utils
 %                     subplot(4,1, 2)
 %                     semilogx(omegaHz, angle(Z))
 % 
-%                     itfIvpt = @(omegaRps) (bicas.calib.TF_w_constant_abs_Z_LF(itfIvpt, omegaRps, OMEGA_LIMIT_RPS, zLimit));
+%                     itfIvpt = @(omegaRps) (bicas.proc.L1RL2.cal.TF_w_constant_abs_Z_LF(itfIvpt, omegaRps, OMEGA_LIMIT_RPS, zLimit));
 %                     Z = itfIvpt(omegaRps);
 %                     
 %                     subplot(4,1, 3)

@@ -19,7 +19,7 @@
 % Ex: Switch between any combination of logging to
 %   (1a) file and/or (1b) stdout, or (2) don't log at all.
 % Ex: Switch between log prefixes or not.
-% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.calib) can have other
+% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.proc.L1RL2.cal) can have other
 % logging, or none.
 % Ex: Can implement accepting log messages before specifying the log file, by
 % temporarily storing the messages.
@@ -51,7 +51,7 @@ classdef logger < handle
 %   Log to stdout.
 %
 % TODO-DEC: Should special, extra logging functionality be in this class or outside of it?
-%   Ex: bicas.calib_utils.log_TF_function_handle
+%   Ex: bicas.proc.L1RL2.cal_utils.log_TF_function_handle
 %   Ex: Logging for speed tests.
 %   PRO: Shorter call. Can use L.method(...) instead of bicas.logfunc(L, ...)
 %
