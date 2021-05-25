@@ -49,7 +49,7 @@ a = load(calfile_name);
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
 %===========================================================================
-codeVerStr = '2021-05-21T12:00:00';
+codeVerStr = '2021-05-25T12:00:00';
 % Version of the .mat file. Using filename, or at least for now.
 [~, basename, suffix] = fileparts(calfile_name);
 matVerStr  = [basename, suffix];   % Only use filename, not entire path.
@@ -80,7 +80,26 @@ ScPot_out=irf.ts_scalar(EpochTT([]),[]);
 
 for isub=1:length(sub_int_times)-1
     
-    subTint=sub_int_times(isub:isub+1);
+    tempTint=sub_int_times(isub:isub+1);
+    % Find the closest discontinuities.
+    last_discont = EpochTT(max(discontTimes.epoch(tempTint(1).epoch>=discontTimes.epoch)));
+    next_discont = EpochTT(min(discontTimes.epoch(tempTint(end).epoch<=discontTimes.epoch)));
+ 
+    % Extend the time interval to the closest discontinuities (this is to
+    % avoid problems that occur if VDC contains very little data).
+    if ~isempty(last_discont) && ~isempty(next_discont)
+        subTint=irf.tint(last_discont,next_discont);
+    elseif isempty(last_discont)
+        % If there are no discontinuities before the specified time,
+        % increase interval by 10 hours before.
+        subTint = irf.tint(tempTint(1)+(-10*60*60),next_discont);
+    elseif isempty(next_discont)
+        % If there are no discontinuities after the specified time,
+        % increase interval by 10 hours after.
+        subTint = irf.tint(last_discont,tempTint(end)+(10*60*60));
+    end
+
+    %%
     VDC = VDC_inp.tlim(subTint);
     
     bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
