@@ -84,11 +84,11 @@ classdef pf
             % Process data
             %==============
             HkSciTimePd           = bicas.proc.L1RL2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
-            InputSciCdf           = bicas.proc.L1RL2.process_LFR_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
-            SciPreDc              = bicas.proc.L1RL2.process_LFR_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            InputSciCdf           = bicas.proc.L1RL2.lfr.process_normalize_CDF(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc.L1RL2.lfr.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDc             = bicas.proc.L1RL2.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal,    SETTINGS, L);
             [SciPreDc, SciPostDc] = bicas.proc.L1RL2.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
-            OutputSciCdf          = bicas.proc.L1RL2.process_PostDC_to_LFR_CDF(       SciPreDc, SciPostDc, outputDsi, L);
+            OutputSciCdf          = bicas.proc.L1RL2.lfr.process_PostDC_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
             
             
             
@@ -138,11 +138,11 @@ classdef pf
             % Process data
             %==============
             HkSciTimePd           = bicas.proc.L1RL2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
-            InputSciCdf           = bicas.proc.L1RL2.process_TDS_CDF_normalize(       InputSciCdf, inputSciDsi, SETTINGS, L);
-            SciPreDc              = bicas.proc.L1RL2.process_TDS_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
+            InputSciCdf           = bicas.proc.L1RL2.tds.process_normalize_CDF(       InputSciCdf, inputSciDsi, SETTINGS, L);
+            SciPreDc              = bicas.proc.L1RL2.tds.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
             SciPostDc             = bicas.proc.L1RL2.process_calibrate_demux(         SciPreDc, InputCurCdf, Cal, SETTINGS, L);
             [SciPreDc, SciPostDc] = bicas.proc.L1RL2.process_quality_filter_L2(       SciPreDc, SciPostDc, NsoTable, SETTINGS, L);
-            OutputSciCdf          = bicas.proc.L1RL2.process_PostDC_to_TDS_CDF(       SciPreDc, SciPostDc, outputDsi, L);
+            OutputSciCdf          = bicas.proc.L1RL2.tds.process_PostDC_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
             
             
