@@ -269,6 +269,8 @@ classdef constants   % < handle
             MAP('MatlabCodeErrorHandlingError') = init_struct(1, 'The MATLAB code''s own error handling failed.');
             MAP('CLISyntax')                    = init_struct(1, 'Can not interpret command-line interface (CLI) arguments syntax.');
             MAP('PathNotFound')                 = init_struct(1, 'A specified directory or file does not exist.');
+            MAP('PathNotAvailable')             = init_struct(1, 'A specified file can not be created since the path matches a pre-existing file/directory.');
+            MAP('CanNotOpenFile')               = init_struct(1, 'Can not open a file for reading/writing.');
             MAP('OperationNotImplemented')      = init_struct(1, 'Execution has reached a portion of the code that has not been implemented yet.');
             MAP('Assertion')                    = init_struct(1, 'Detected an internal state that should never be possible in a bug-free code that receives correct inputs.');
             MAP('IllegalArgument')              = init_struct(1, 'An argument to an internal function had an illegal value.');

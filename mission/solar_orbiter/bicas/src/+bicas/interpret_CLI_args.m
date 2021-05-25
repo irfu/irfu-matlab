@@ -156,7 +156,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
             CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(sipOptionValues);
             
         otherwise
-            error('BICAS:interpret_CLI_args:Assertion', 'Illegal CliData.functionalityMode value.')
+            error('BICAS:Assertion', 'Illegal CliData.functionalityMode value.')
     end
     
     
@@ -193,7 +193,7 @@ function Map = convert_SIP_OptionValues_2_Map(optionValues)
         key = optionValues(iSip).optionHeader(3:end);
         %key = temp(3:end);
         if Map.isKey(key)
-            error('BICAS:interpret_CLI_args:CLISyntax', 'Specifying same specific input parameter (argument) more than once.')
+            error('BICAS:CLISyntax', 'Specifying same specific input parameter (argument) more than once.')
         end
         Map(key) = optionValues(iSip).optionValues{1};
     end

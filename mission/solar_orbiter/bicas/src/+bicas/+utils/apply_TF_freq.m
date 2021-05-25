@@ -146,7 +146,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 
 
     % EMID = Error Message ID
-    EMID_ARG = 'BICAS:apply_TF_freq:Assertion:IllegalArgument';
+    EMID_ARG = 'BICAS:Assertion:IllegalArgument';
     
     %============
     % ASSERTIONS
@@ -245,7 +245,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
         % is designed to create TFs that return Z=NaN for impossible
         % combinations where it does not matter anyway. /EJ 2020-11-05
         error(...
-            'BICAS:apply_TF_freq:Assertion', ...
+            'BICAS:Assertion', ...
             'Transfer function "tf" returned non-finite value (not NaN) for at least one frequency.')
     end
     
@@ -285,7 +285,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % not used.
     if ~isreal(y2)
         maxAbsImag = max(abs(imag(y2)))    % Print
-        error('BICAS:apply_TF_freq:Assertion', 'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
+        error('BICAS:Assertion', 'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
     end
 
 end

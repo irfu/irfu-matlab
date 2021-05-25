@@ -91,7 +91,7 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
     assert(iscell(cliArgumentsList), 'cliArgumentsList is not a cell array.')
     EJ_library.assert.vector(cliArgumentsList)
     % if length(cliArgumentsList) ~= numel(cliArgumentsList)
-    %     error('BICAS:parse_CLI_options:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
+    %     error('BICAS:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
     % end
     EJ_library.assert.isa(OptionsConfigMap, 'containers.Map')
     
@@ -123,18 +123,18 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
         
         if strcmp(OptionConfig.occurrenceRequirement, '0-1')
             if numel(optionValues) > 1
-                error('BICAS:parse_CLI_options:CLISyntax', ...
+                error('BICAS:CLISyntax', ...
                     'Found more than one occurrence of command-line option "%s".', OptionConfig.optionHeaderRegexp)
             end
         elseif strcmp(OptionConfig.occurrenceRequirement, '1')
             if numel(optionValues) ~= 1
-                error('BICAS:parse_CLI_options:CLISyntax', ...
+                error('BICAS:CLISyntax', ...
                     'Could not find required command-line option matching regular expression "%s".', OptionConfig.optionHeaderRegexp)
             end
         elseif strcmp(OptionConfig.occurrenceRequirement, '0-inf')
             ;   % Do nothing.
         else
-            error('BICAS:parse_CLI_options:Assertion', ...
+            error('BICAS:Assertion', ...
                 'Can not interpret occurrenceRequirement="%s".', OptionConfig.occurrenceRequirement)
         end
     end
@@ -169,12 +169,12 @@ function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(cliArguments
         % CASE: Argument list does not conform to configuration.
         
         % NOTE: Phrase chosen for case that there may be multiple sequences of arguments which are parsed separately.
-        error('BICAS:parse_CLI_options:CLISyntax', ...
+        error('BICAS:CLISyntax', ...
             'Can not interpret command-line argument "%s". It is not a permitted option header in this sequence of arguments.', ...
             cliArgument)
     elseif nMatchingOptions >= 2
         % CASE: Configuration is wrong.
-        error('BICAS:parse_CLI_options:Assertion', 'Can interpret CLI option in multiple ways, because the interpretation of CLI arguments is badly configured.')
+        error('BICAS:Assertion', 'Can interpret CLI option in multiple ways, because the interpretation of CLI arguments is badly configured.')
     end
     
     
@@ -189,7 +189,7 @@ function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(cliArguments
     iCliArgLastValue = iCliArg + OptionConfig.nValues;
     % ASSERTION: Argument list does not conform to configuration.
     if iCliArgLastValue > length(cliArgumentsList)
-        error('BICAS:parse_CLI_options:CLISyntax', ...
+        error('BICAS:CLISyntax', ...
             'Can not find the argument(s) that is/are expected to follow command-line option header "%s".', cliArgument)
     end
 

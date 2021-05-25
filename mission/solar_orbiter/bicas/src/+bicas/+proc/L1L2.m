@@ -175,7 +175,7 @@ classdef L1L2
                     'PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:L1L2:DatasetFormat:SWModeProcessing')
+                    anomalyDescrMsg, 'BICAS:DatasetFormat:SWModeProcessing')
             end
             if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
 
@@ -186,7 +186,7 @@ classdef L1L2
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
-                    'BICAS:L1L2:SWModeProcessing')
+                    'BICAS:SWModeProcessing')
             end
 
 
@@ -256,7 +256,7 @@ classdef L1L2
                     curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
 
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:L1L2:SWModeProcessing')
+                    anomalyDescrMsg, 'BICAS:SWModeProcessing')
             end
 
 
@@ -273,7 +273,7 @@ classdef L1L2
             %           separately, but not even increasing when combined.
             %====================================================================
             assert(issorted(InCur.Zv.Epoch), ...
-                'BICAS:L1L2:DatasetFormat', ...
+                'BICAS:DatasetFormat', ...
                 'CURRENT timestamps zVar Epoch does not increase (all antennas combined).')
 
             % NOTE: bicas.proc.L1L2.zv_TC_to_current() checks that Epoch
@@ -689,7 +689,7 @@ classdef L1L2
                         bicas.default_anomaly_handling(L, ...
                             settingValue, settingKey, 'E+illegal', ...
                             anomalyDescriptionMsg, ...
-                            'BICAS:L1L2:SWModeProcessing:DatasetFormat')
+                            'BICAS:SWModeProcessing:DatasetFormat')
                 end
             end
 

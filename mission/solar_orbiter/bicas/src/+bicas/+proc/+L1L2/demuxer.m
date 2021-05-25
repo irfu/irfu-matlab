@@ -373,7 +373,7 @@ classdef demuxer
                         % from other DC signals.
                         
                     else
-                        error('BICAS:demuxer:main:Assertion:IllegalArgument:DatasetFormat', ...
+                        error('BICAS:Assertion:IllegalArgument:DatasetFormat', ...
                             'Illegal argument value demuxMode=%g.', demuxMode)
                     end
             end    % switch
@@ -538,7 +538,7 @@ classdef demuxer
             elseif numel(varargin) == 2
                 R.dest = bicas.proc.L1L2.BLTS_src_dest(varargin{1}, varargin{2});
             else
-                error('BICAS:demuxer:Assertion:IllegalArgument', ...
+                error('BICAS:Assertion:IllegalArgument', ...
                     'Illegal number of extra arguments.')
             end
         end
@@ -576,7 +576,7 @@ classdef demuxer
 %             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_AC_V13)   fn = 'acV13';
 %             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_AC_V23)   fn = 'acV23';
 %             else
-%                 error('BICAS:demuxer:Assertion:IllegalArgument', ...
+%                 error('BICAS:Assertion:IllegalArgument', ...
 %                     'Illegal argument BltsDest.')
 %             end
             
@@ -587,7 +587,7 @@ classdef demuxer
                     return
                 end
             end
-            error('BICAS:demuxer:Assertion:IllegalArgument', ...
+            error('BICAS:Assertion:IllegalArgument', ...
                 'Illegal argument BltsDest.')
         end
         

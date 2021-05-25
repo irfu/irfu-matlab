@@ -124,7 +124,7 @@ classdef logger < handle
                     obj.stdoutOption = 'bash wrapper';
                     
                 otherwise
-                    error('Illegal argument "%s".', stdoutOption)
+                    error('BICAS:Assertion', 'Illegal argument "%s".', stdoutOption)
             end
             
             obj.logFileEnabled = logFileEnabled;
@@ -168,8 +168,8 @@ classdef logger < handle
                 [fileId, fopenErrorMsg] = fopen(logFile, 'w');
                 if fileId == -1
                     error(...
-                        'BICAS:logger:Assertion', ...
-                        'Can not open log file "%s". fopen error message: "%s"', ...
+                        'BICAS:CanNotOpenFile', ...
+                        'Can not open log file "%s" for writing. fopen error message: "%s"', ...
                         logFile, fopenErrorMsg)
                     % NOTE: Does not alter the object properties.
                 end
@@ -242,7 +242,7 @@ classdef logger < handle
                     obj.write_to_stdout(bashWrapperRecipientStr)
                     
                 otherwise
-                    error('BICAS:logger:Assertion', ...
+                    error('BICAS:Assertion', ...
                         'Illegal property value obj.stdoutOption="%s".', ...
                         obj.stdoutOption)
             end
@@ -358,7 +358,7 @@ classdef logger < handle
                 case 'warning' ; logLevelStr = 'WARNING';
                 case 'error'   ; logLevelStr = 'ERROR';
                 otherwise
-                    error('BICAS:logger:ICD_log_msg:Assertion:IllegalArgument', ...
+                    error('BICAS:Assertion:IllegalArgument', ...
                         'Illegal logLevel="%s"', logLevel)
             end
             

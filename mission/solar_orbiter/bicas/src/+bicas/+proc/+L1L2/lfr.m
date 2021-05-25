@@ -86,11 +86,11 @@ classdef lfr   % < handle
 
                     InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
                 else
-                    error('BICAS:process_normalize_CDF:DatasetFormat', ...
+                    error('BICAS:DatasetFormat', ...
                         'Input dataset has both zVar SYNCHRO_FLAG and TIME_SYNCHRO_FLAG.')
                 end
             else
-                error('BICAS:process_normalize_CDF:DatasetFormat', ...
+                error('BICAS:DatasetFormat', ...
                     'Input dataset does not have zVar SYNCHRO_FLAG as expected.')
             end
 
@@ -152,7 +152,7 @@ classdef lfr   % < handle
 
             % ASSERTIONS: CDF
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
-                'BICAS:process_CDF_to_PreDC:DatasetFormat', ...
+                'BICAS:DatasetFormat', ...
                 'Voltage (science) dataset timestamps Epoch do not increase monotonously.')
             nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
 
@@ -253,7 +253,7 @@ classdef lfr   % < handle
                     L.log('debug', 'Using LFR SCI mux mode.')
                     PreDc.Zv.MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
                 otherwise
-                    error('BICAS:L1L2:ConfigurationBug', ...
+                    error('BICAS:ConfigurationBug', ...
                         'Illegal settings value %s="%s"', key, value)
             end
 
@@ -321,14 +321,14 @@ classdef lfr   % < handle
                     case 'USE_FILL_VALUE'
                         bicas.default_anomaly_handling(L, ...
                             settingValue, settingKey, 'other', ...
-                            anomalyDescrMsg, 'BICAS:L1L2:DatasetFormat:SWModeProcessing')
+                            anomalyDescrMsg, 'BICAS:DatasetFormat:SWModeProcessing')
 
                         L.logf('warning', 'Using fill values for %s.', zvName)
                         zv2 = nan(nRecords, 1);
 
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
-                            anomalyDescrMsg, 'BICAS:L1L2:DatasetFormat:SWModeProcessing')
+                            anomalyDescrMsg, 'BICAS:DatasetFormat:SWModeProcessing')
                 end
             end
 

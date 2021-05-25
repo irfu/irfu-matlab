@@ -33,7 +33,7 @@ function s = strrep_many(s, varargin)
         elseif numel(varargin) == 0
             return
         else
-            error('Not same number of arguments for old substrings and new substrings.')
+            error('BICAS:Assertion', 'Not same number of arguments for old substrings and new substrings.')
         end
         
         s = strrep(s, oldSs, newSs);

@@ -59,7 +59,7 @@ function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)
             codeName, ...
             wallTimeSec, wallTimeSec/double(nUnits), unitName, nUnits, unitName);
     else
-        error('Illegal number of arguments.')
+        error('BICAS:Assertion', 'Illegal number of arguments.')
     end
     
     L.logf('debug', ...
