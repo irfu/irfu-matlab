@@ -148,14 +148,14 @@ classdef calib < handle
 %       (1) Antenna signals (AC, DC, singles, diffs)
 %       (2) All possible sources of signals of which (1) is a subset (a diff counts as a source).
 %           PROPOSAL: Be able to use for both physical signal sources, and for where to place in dataset.
-%               PRO: Can use acronym for both, and for class bicas.BLTS_src_dest.
+%               PRO: Can use acronym for both, and for class bicas.proc.L1RL2.BLTS_src_dest.
 %           PROPOSAL: PSS  = Physical Signal Source
 %           PROPOSAL: PS   = Physical Signal
 %           PROPOSAL: PSSD = Physical Signal Source or Destination
 %           PROPOSAL: PSSR = Physical Signal Source or Representation
 %           PROPOSAL: PSSR = Physical Signal Source or Dataset Representation
 %
-% PROPOSAL: Other name for bicas.BLTS_src_dest that does not reference BLTS.
+% PROPOSAL: Other name for bicas.proc.L1RL2.BLTS_src_dest that does not reference BLTS.
 %   PRO: Reference to BLTS is confusing.
 %   PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR.
 %   PROPOSAL: Have different classes and acronyms for
@@ -598,7 +598,7 @@ classdef calib < handle
         % samplesAVolt : 1D cell array of numeric 1D arrays.
         % CalSettings  : Struct that groups together arguments
         %   .iBlts     : 1..5.
-        %   .BltsSrc   : bicas.BLTS_src_dest describing where the signal comes
+        %   .BltsSrc   : bicas.proc.L1RL2.BLTS_src_dest describing where the signal comes
         %                from.
         %   ...
         %
@@ -663,7 +663,7 @@ classdef calib < handle
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.calib_utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
@@ -751,7 +751,7 @@ classdef calib < handle
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.calib_utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
@@ -856,7 +856,7 @@ classdef calib < handle
             % and the value is needed.
             
             % ASSERTION
-            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
@@ -1021,7 +1021,7 @@ classdef calib < handle
             
             % ASSERTIONS
             bicas.calib_utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
             bicas.calib_utils.assert_iLsf(iLsf)
             assert(isscalar(cti1))
             assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
