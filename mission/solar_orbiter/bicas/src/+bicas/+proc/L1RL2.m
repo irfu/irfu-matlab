@@ -1054,7 +1054,7 @@ classdef L1RL2
             %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
             %   PROPOSAL: Keep as is. List as optional field in assert_PostDc
             %
-            % PROPOSAL: Abolish test functionality.
+            % PROPOSAL: Abolish test functionality. -- IMPLEMENTED
             %   PRO: Test functionality can lead to bugs.
             %   PRO: Can use alternative NSO table (using NSO table path override
             %        setting).
@@ -1089,7 +1089,7 @@ classdef L1RL2
             %========================================
             % Take actions based on NSO events table
             %========================================
-            testNsoIdsEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');
+            %testNsoIdsEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');
 
             % Variable naming convention:
             % CDF event    = NSO event that overlaps with CDF records.
@@ -1128,18 +1128,18 @@ classdef L1RL2
                 % Optionally translate (selected) TEST NSO IDs into actual
                 % NSO IDs.
                 %==========================================================
-                eventNsoIdTranslated = EJ_library.utils.translate({...
-                    {bicas.constants.NSOID.TEST_THRUSTER_FIRING}, ...
-                     bicas.constants.NSOID.THRUSTER_FIRING}, ...
-                    eventNsoId, eventNsoId);
-                if ~testNsoIdsEnabled && ~strcmp(eventNsoId, eventNsoIdTranslated)
-                    % CASE:   (1) Not test mode
-                    %       & (2) NSO ID was translated (changed).
-                    % ==> Original NSO ID was a TEST NSO ID
-                    % ==> NSO should be ignored.
-                    eventNsoIdTranslated = 'nothing';   % Local constant.
-                end
-                eventNsoId = eventNsoIdTranslated;
+%                 eventNsoIdTranslated = EJ_library.utils.translate({...
+%                     {bicas.constants.NSOID.TEST_THRUSTER_FIRING}, ...
+%                      bicas.constants.NSOID.THRUSTER_FIRING}, ...
+%                     eventNsoId, eventNsoId);
+%                 if ~testNsoIdsEnabled && ~strcmp(eventNsoId, eventNsoIdTranslated)
+%                     % CASE:   (1) Not test mode
+%                     %       & (2) NSO ID was translated (changed).
+%                     % ==> Original NSO ID was a TEST NSO ID
+%                     % ==> NSO should be ignored.
+%                     eventNsoIdTranslated = 'nothing';   % Local constant.
+%                 end
+%                 eventNsoId = eventNsoIdTranslated;
                 %========================================================
 
 
@@ -1156,15 +1156,15 @@ classdef L1RL2
                     %=====================================================
                     % TEST FUNCTIONALITY
                     % Can test the setting of QUALITY_FLAG and zvUfv.
-                    case bicas.constants.NSOID.TEST_QF0
-                        if testNsoIdsEnabled
-                            zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 0, ...
-                                'includeNaN');
-                        end
-                    case bicas.constants.NSOID.TEST_UFV
-                        if testNsoIdsEnabled
-                            zvUfv = zvUfv | bCdfEventRecordsCa{kCdfEvent};
-                        end
+%                     case bicas.constants.NSOID.TEST_QF0
+%                         if testNsoIdsEnabled
+%                             zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 0, ...
+%                                 'includeNaN');
+%                         end
+%                     case bicas.constants.NSOID.TEST_UFV
+%                         if testNsoIdsEnabled
+%                             zvUfv = zvUfv | bCdfEventRecordsCa{kCdfEvent};
+%                         end
                     %=====================================================
 
                     case bicas.constants.NSOID.PARTIAL_SATURATION
@@ -1193,11 +1193,11 @@ classdef L1RL2
                         % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
                         % to be set.)
 
-                    case 'nothing'
-                        % CASE: Do nothing.
-                        % This case is necessary so that test NSO IDs can be
-                        % translated to something harmless when tests are
-                        % disabled.
+%                     case 'nothing'
+%                         % CASE: Do nothing.
+%                         % This case is necessary so that test NSO IDs can be
+%                         % translated to something harmless when tests are
+%                         % disabled.
 
                     otherwise
                         % ASSERTION
