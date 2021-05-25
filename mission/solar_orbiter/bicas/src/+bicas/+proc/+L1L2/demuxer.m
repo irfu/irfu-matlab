@@ -1,8 +1,8 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
-%   bicas.proc.L1RL2.demuxer.main.
-%   bicas.proc.L1RL2.BLTS_src_dest
+%   bicas.proc.L1L2.demuxer.main.
+%   bicas.proc.L1L2.BLTS_src_dest
 %
 %
 % NOTE
@@ -21,7 +21,7 @@
 %
 % DEFINITIONS
 % ===========
-% See bicas.proc.L1RL2.cal, bicas.proc.L1RL2.demuxer_latching_relay.
+% See bicas.proc.L1L2.cal, bicas.proc.L1L2.demuxer_latching_relay.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -39,69 +39,69 @@ classdef demuxer
     properties(Access=private, Constant)
         
         % IMPLEMENTATION NOTE: Reasons to pre-define
-        %   (1) bicas.proc.L1RL2.BLTS_src_dest objects, and
+        %   (1) bicas.proc.L1L2.BLTS_src_dest objects, and
         %   (2) structs created by
-        % bicas.proc.L1RL2.demuxer.routing (consisting of bicas.proc.L1RL2.BLTS_src_dest objects):
-        % ** Only makes constructor calls when bicas.proc.L1RL2.demuxer is
+        % bicas.proc.L1L2.demuxer.routing (consisting of bicas.proc.L1L2.BLTS_src_dest objects):
+        % ** Only makes constructor calls when bicas.proc.L1L2.demuxer is
         %    (statically) initialized, not every time the
-        %    bicas.proc.L1RL2.demuxer.main function is called.
+        %    bicas.proc.L1L2.demuxer.main function is called.
         %    ==> Faster
-        % ** Makes all necessary calls bicas.proc.L1RL2.BLTS_src_dest constructor
+        % ** Makes all necessary calls bicas.proc.L1L2.BLTS_src_dest constructor
         %    immediately, regardless of for which arguments the
-        %    bicas.proc.L1RL2.demuxer.main function is called (in particular mux
+        %    bicas.proc.L1L2.demuxer.main function is called (in particular mux
         %    mode).
         %    ==> Tests more code immediately.
         %    ==> Finds routing bugs faster.
         
-        SRC_DC_V1  = bicas.proc.L1RL2.BLTS_src_dest('DC single', [1]);
-        SRC_DC_V2  = bicas.proc.L1RL2.BLTS_src_dest('DC single', [2]);
-        SRC_DC_V3  = bicas.proc.L1RL2.BLTS_src_dest('DC single', [3]);
-        SRC_DC_V12 = bicas.proc.L1RL2.BLTS_src_dest('DC diff',   [1,2]);
-        SRC_DC_V13 = bicas.proc.L1RL2.BLTS_src_dest('DC diff',   [1,3]);
-        SRC_DC_V23 = bicas.proc.L1RL2.BLTS_src_dest('DC diff',   [2,3]);
-        SRC_AC_V12 = bicas.proc.L1RL2.BLTS_src_dest('AC diff',   [1,2]);
-        SRC_AC_V13 = bicas.proc.L1RL2.BLTS_src_dest('AC diff',   [1,3]);
-        SRC_AC_V23 = bicas.proc.L1RL2.BLTS_src_dest('AC diff',   [2,3]);
+        SRC_DC_V1  = bicas.proc.L1L2.BLTS_src_dest('DC single', [1]);
+        SRC_DC_V2  = bicas.proc.L1L2.BLTS_src_dest('DC single', [2]);
+        SRC_DC_V3  = bicas.proc.L1L2.BLTS_src_dest('DC single', [3]);
+        SRC_DC_V12 = bicas.proc.L1L2.BLTS_src_dest('DC diff',   [1,2]);
+        SRC_DC_V13 = bicas.proc.L1L2.BLTS_src_dest('DC diff',   [1,3]);
+        SRC_DC_V23 = bicas.proc.L1L2.BLTS_src_dest('DC diff',   [2,3]);
+        SRC_AC_V12 = bicas.proc.L1L2.BLTS_src_dest('AC diff',   [1,2]);
+        SRC_AC_V13 = bicas.proc.L1L2.BLTS_src_dest('AC diff',   [1,3]);
+        SRC_AC_V23 = bicas.proc.L1L2.BLTS_src_dest('AC diff',   [2,3]);
 
         % Define constants, each one representing different routings.
-        ROUTING_DC_V1  = bicas.proc.L1RL2.demuxer.routing('DC single', [1]);
-        ROUTING_DC_V2  = bicas.proc.L1RL2.demuxer.routing('DC single', [2]);
-        ROUTING_DC_V3  = bicas.proc.L1RL2.demuxer.routing('DC single', [3]);
-        ROUTING_DC_V12 = bicas.proc.L1RL2.demuxer.routing('DC diff',   [1,2]);
-        ROUTING_DC_V13 = bicas.proc.L1RL2.demuxer.routing('DC diff',   [1,3]);
-        ROUTING_DC_V23 = bicas.proc.L1RL2.demuxer.routing('DC diff',   [2,3]);
-        ROUTING_AC_V12 = bicas.proc.L1RL2.demuxer.routing('AC diff',   [1,2]);
-        ROUTING_AC_V13 = bicas.proc.L1RL2.demuxer.routing('AC diff',   [1,3]);
-        ROUTING_AC_V23 = bicas.proc.L1RL2.demuxer.routing('AC diff',   [2,3]);
+        ROUTING_DC_V1  = bicas.proc.L1L2.demuxer.routing('DC single', [1]);
+        ROUTING_DC_V2  = bicas.proc.L1L2.demuxer.routing('DC single', [2]);
+        ROUTING_DC_V3  = bicas.proc.L1L2.demuxer.routing('DC single', [3]);
+        ROUTING_DC_V12 = bicas.proc.L1L2.demuxer.routing('DC diff',   [1,2]);
+        ROUTING_DC_V13 = bicas.proc.L1L2.demuxer.routing('DC diff',   [1,3]);
+        ROUTING_DC_V23 = bicas.proc.L1L2.demuxer.routing('DC diff',   [2,3]);
+        ROUTING_AC_V12 = bicas.proc.L1L2.demuxer.routing('AC diff',   [1,2]);
+        ROUTING_AC_V13 = bicas.proc.L1L2.demuxer.routing('AC diff',   [1,3]);
+        ROUTING_AC_V23 = bicas.proc.L1L2.demuxer.routing('AC diff',   [2,3]);
 
-        ROUTING_25VREF_1_TO_DC_V1     = bicas.proc.L1RL2.demuxer.routing('2.5V Ref',  [], 'DC single', [1]);
-        ROUTING_25VREF_2_TO_DC_V2     = bicas.proc.L1RL2.demuxer.routing('2.5V Ref',  [], 'DC single', [2]);
-        ROUTING_25VREF_3_TO_DC_V3     = bicas.proc.L1RL2.demuxer.routing('2.5V Ref',  [], 'DC single', [3]);
-        ROUTING_GND_1_TO_V1_LF        = bicas.proc.L1RL2.demuxer.routing('GND',       [], 'DC single', [1]);
-        ROUTING_GND_2_TO_V2_LF        = bicas.proc.L1RL2.demuxer.routing('GND',       [], 'DC single', [2]);
-        ROUTING_GND_3_TO_V3_LF        = bicas.proc.L1RL2.demuxer.routing('GND',       [], 'DC single', [3]);
-        ROUTING_UNKNOWN_1_TO_NOTHING  = bicas.proc.L1RL2.demuxer.routing('Unknown',   [], 'Nowhere',   []);
-        ROUTING_UNKNOWN_2_TO_NOTHING  = bicas.proc.L1RL2.demuxer.routing('Unknown',   [], 'Nowhere',   []);
-        ROUTING_UNKNOWN_3_TO_NOTHING  = bicas.proc.L1RL2.demuxer.routing('Unknown',   [], 'Nowhere',   []);
-%         ROUTING_UNKNOWN_1_TO_V1_LF    = bicas.proc.L1RL2.demuxer.routing('Unknown',   [], 'DC single', [1]);
-%         ROUTING_UNKNOWN_2_TO_V2_LF    = bicas.proc.L1RL2.demuxer.routing('Unknown',   [], 'DC single', [2]);
-%         ROUTING_UNKNOWN_3_TO_V3_LF    = bicas.proc.L1RL2.demuxer.routing('Unknown',   [], 'DC single', [3]);
+        ROUTING_25VREF_1_TO_DC_V1     = bicas.proc.L1L2.demuxer.routing('2.5V Ref',  [], 'DC single', [1]);
+        ROUTING_25VREF_2_TO_DC_V2     = bicas.proc.L1L2.demuxer.routing('2.5V Ref',  [], 'DC single', [2]);
+        ROUTING_25VREF_3_TO_DC_V3     = bicas.proc.L1L2.demuxer.routing('2.5V Ref',  [], 'DC single', [3]);
+        ROUTING_GND_1_TO_V1_LF        = bicas.proc.L1L2.demuxer.routing('GND',       [], 'DC single', [1]);
+        ROUTING_GND_2_TO_V2_LF        = bicas.proc.L1L2.demuxer.routing('GND',       [], 'DC single', [2]);
+        ROUTING_GND_3_TO_V3_LF        = bicas.proc.L1L2.demuxer.routing('GND',       [], 'DC single', [3]);
+        ROUTING_UNKNOWN_1_TO_NOTHING  = bicas.proc.L1L2.demuxer.routing('Unknown',   [], 'Nowhere',   []);
+        ROUTING_UNKNOWN_2_TO_NOTHING  = bicas.proc.L1L2.demuxer.routing('Unknown',   [], 'Nowhere',   []);
+        ROUTING_UNKNOWN_3_TO_NOTHING  = bicas.proc.L1L2.demuxer.routing('Unknown',   [], 'Nowhere',   []);
+%         ROUTING_UNKNOWN_1_TO_V1_LF    = bicas.proc.L1L2.demuxer.routing('Unknown',   [], 'DC single', [1]);
+%         ROUTING_UNKNOWN_2_TO_V2_LF    = bicas.proc.L1L2.demuxer.routing('Unknown',   [], 'DC single', [2]);
+%         ROUTING_UNKNOWN_3_TO_V3_LF    = bicas.proc.L1L2.demuxer.routing('Unknown',   [], 'DC single', [3]);
         % NOTE: BLTS 4 & 5 are never unknown.
         
         % Table to connect BLTS destinations with ASR fieldnamnes (FN).
         BLTS_DEST_ASR_FN_TABLE = {...
-            bicas.proc.L1RL2.demuxer.SRC_DC_V1,  'dcV1'; ...
-            bicas.proc.L1RL2.demuxer.SRC_DC_V2,  'dcV2'; ...
-            bicas.proc.L1RL2.demuxer.SRC_DC_V3,  'dcV3'; ...
-            bicas.proc.L1RL2.demuxer.SRC_DC_V12, 'dcV12'; ...
-            bicas.proc.L1RL2.demuxer.SRC_DC_V13, 'dcV13'; ...
-            bicas.proc.L1RL2.demuxer.SRC_DC_V23, 'dcV23'; ...
-            bicas.proc.L1RL2.demuxer.SRC_AC_V12, 'acV12'; ...
-            bicas.proc.L1RL2.demuxer.SRC_AC_V13, 'acV13'; ...
-            bicas.proc.L1RL2.demuxer.SRC_AC_V23, 'acV23'; ...
+            bicas.proc.L1L2.demuxer.SRC_DC_V1,  'dcV1'; ...
+            bicas.proc.L1L2.demuxer.SRC_DC_V2,  'dcV2'; ...
+            bicas.proc.L1L2.demuxer.SRC_DC_V3,  'dcV3'; ...
+            bicas.proc.L1L2.demuxer.SRC_DC_V12, 'dcV12'; ...
+            bicas.proc.L1L2.demuxer.SRC_DC_V13, 'dcV13'; ...
+            bicas.proc.L1L2.demuxer.SRC_DC_V23, 'dcV23'; ...
+            bicas.proc.L1L2.demuxer.SRC_AC_V12, 'acV12'; ...
+            bicas.proc.L1L2.demuxer.SRC_AC_V13, 'acV13'; ...
+            bicas.proc.L1L2.demuxer.SRC_AC_V23, 'acV23'; ...
             };
         
-        ASR_FIELDNAMES_CA = bicas.proc.L1RL2.demuxer.BLTS_DEST_ASR_FN_TABLE(:, 2);
+        ASR_FIELDNAMES_CA = bicas.proc.L1L2.demuxer.BLTS_DEST_ASR_FN_TABLE(:, 2);
     end
 
 
@@ -163,7 +163,7 @@ classdef demuxer
         %                      NOTE: Can be NaN to represent unknown demux mode.
         %                      Implies that AsrSamplesVolt fields are correctly
         %                      sized with NaN values.
-        % dlrUsing12         : See bicas.proc.L1RL2.demuxer_latching_relay.
+        % dlrUsing12         : See bicas.proc.L1L2.demuxer_latching_relay.
         % bltsSamplesAVolt   : Cell array of vectors/matrices, length 5.
         %                      {iBlts} = Vector/matrix with sample values
         %                      for that BLTS channel, calibrated as for ASR.
@@ -174,7 +174,7 @@ classdef demuxer
         %
         % RETURN VALUES
         % =============
-        % BltsSrcArray   : Array of bicas.proc.L1RL2.BLTS_src_dest objects.
+        % BltsSrcArray   : Array of bicas.proc.L1L2.BLTS_src_dest objects.
         %                  (iBlts) = Represents the origin of the corresponding
         %                  BLTS.
         % AsrSamplesVolt : Samples for all ASRs (singles, diffs) which can
@@ -235,14 +235,14 @@ classdef demuxer
             
             
             if dlrUsing12
-                ROUTING_DC_V1x = bicas.proc.L1RL2.demuxer.ROUTING_DC_V12;
-                ROUTING_AC_V1x = bicas.proc.L1RL2.demuxer.ROUTING_AC_V12;
+                ROUTING_DC_V1x = bicas.proc.L1L2.demuxer.ROUTING_DC_V12;
+                ROUTING_AC_V1x = bicas.proc.L1L2.demuxer.ROUTING_AC_V12;
             else
-                ROUTING_DC_V1x = bicas.proc.L1RL2.demuxer.ROUTING_DC_V13;
-                ROUTING_AC_V1x = bicas.proc.L1RL2.demuxer.ROUTING_AC_V13;
+                ROUTING_DC_V1x = bicas.proc.L1L2.demuxer.ROUTING_DC_V13;
+                ROUTING_AC_V1x = bicas.proc.L1L2.demuxer.ROUTING_AC_V13;
             end
 
-            import bicas.proc.L1RL2.demuxer.*
+            import bicas.proc.L1L2.demuxer.*
 
             % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux
             % mode, but the code hard-codes this separately for every case (i.e.
@@ -252,11 +252,11 @@ classdef demuxer
                 case 0   % "Standard operation" : We have all information.
                     
                     % Summarize the routing.
-                    RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V1;
-                    RoutingArray(2) =                          ROUTING_DC_V1x;
-                    RoutingArray(3) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V23;
-                    RoutingArray(4) =                          ROUTING_AC_V1x;
-                    RoutingArray(5) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V23;
+                    RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_DC_V1;
+                    RoutingArray(2) =                         ROUTING_DC_V1x;
+                    RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_DC_V23;
+                    RoutingArray(4) =                         ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
                     %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     % Derive the ASRs not in the BLTS.
@@ -270,11 +270,11 @@ classdef demuxer
 
                 case 1   % Probe 1 fails
 
-                    RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V2;
-                    RoutingArray(2) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V3;
-                    RoutingArray(3) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V23;
-                    RoutingArray(4) =                          ROUTING_AC_V1x;
-                    RoutingArray(5) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V23;
+                    RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_DC_V2;
+                    RoutingArray(2) = bicas.proc.L1L2.demuxer.ROUTING_DC_V3;
+                    RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_DC_V23;
+                    RoutingArray(4) =                         ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
                     %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3
@@ -283,11 +283,11 @@ classdef demuxer
                     
                 case 2   % Probe 2 fails
                     
-                    RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V1;
-                    RoutingArray(2) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V3;
-                    RoutingArray(3) =                          ROUTING_DC_V1x;
-                    RoutingArray(4) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V13;
-                    RoutingArray(5) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V23;
+                    RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_DC_V1;
+                    RoutingArray(2) = bicas.proc.L1L2.demuxer.ROUTING_DC_V3;
+                    RoutingArray(3) =                         ROUTING_DC_V1x;
+                    RoutingArray(4) = bicas.proc.L1L2.demuxer.ROUTING_AC_V13;
+                    RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
                     %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
 %                     if dlrUsing12
@@ -302,11 +302,11 @@ classdef demuxer
                     
                 case 3   % Probe 3 fails
 
-                    RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V1;
-                    RoutingArray(2) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V2;
-                    RoutingArray(3) =                          ROUTING_DC_V1x;
-                    RoutingArray(4) =                          ROUTING_AC_V1x;
-                    RoutingArray(5) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V23;
+                    RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_DC_V1;
+                    RoutingArray(2) = bicas.proc.L1L2.demuxer.ROUTING_DC_V2;
+                    RoutingArray(3) =                         ROUTING_DC_V1x;
+                    RoutingArray(4) =                         ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
                     %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
 
 %                     if dlrUsing12
@@ -321,11 +321,11 @@ classdef demuxer
                     
                 case 4   % Calibration mode 0
                     
-                    RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V1;
-                    RoutingArray(2) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V2;
-                    RoutingArray(3) = bicas.proc.L1RL2.demuxer.ROUTING_DC_V3;
-                    RoutingArray(4) =                          ROUTING_AC_V1x;
-                    RoutingArray(5) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V23;
+                    RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_DC_V1;
+                    RoutingArray(2) = bicas.proc.L1L2.demuxer.ROUTING_DC_V2;
+                    RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_DC_V3;
+                    RoutingArray(4) =                         ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
                     %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
 %                     As.dcV12 = As.dcV1 - As.dcV2;
@@ -336,16 +336,16 @@ classdef demuxer
 
                     switch(demuxMode)
                         case 5
-                            RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_25VREF_1_TO_DC_V1;
-                            RoutingArray(2) = bicas.proc.L1RL2.demuxer.ROUTING_25VREF_2_TO_DC_V2;
-                            RoutingArray(3) = bicas.proc.L1RL2.demuxer.ROUTING_25VREF_3_TO_DC_V3;
+                            RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_25VREF_1_TO_DC_V1;
+                            RoutingArray(2) = bicas.proc.L1L2.demuxer.ROUTING_25VREF_2_TO_DC_V2;
+                            RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_25VREF_3_TO_DC_V3;
                         case {6,7}
-                            RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_GND_1_TO_V1_LF;
-                            RoutingArray(2) = bicas.proc.L1RL2.demuxer.ROUTING_GND_2_TO_V2_LF;
-                            RoutingArray(3) = bicas.proc.L1RL2.demuxer.ROUTING_GND_3_TO_V3_LF;
+                            RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_GND_1_TO_V1_LF;
+                            RoutingArray(2) = bicas.proc.L1L2.demuxer.ROUTING_GND_2_TO_V2_LF;
+                            RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_GND_3_TO_V3_LF;
                     end
-                    RoutingArray(4) =                          ROUTING_AC_V1x;
-                    RoutingArray(5) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V23;
+                    RoutingArray(4) =                         ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
                     %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
 %                     As.dcV12 = As.dcV1 - As.dcV2;
@@ -361,11 +361,11 @@ classdef demuxer
                         % mux modes (but does depend on the latching relay). Can
                         % therefore route them also when the mux mode is
                         % unknown.
-                        RoutingArray(1) = bicas.proc.L1RL2.demuxer.ROUTING_UNKNOWN_1_TO_NOTHING;
-                        RoutingArray(2) = bicas.proc.L1RL2.demuxer.ROUTING_UNKNOWN_2_TO_NOTHING;
-                        RoutingArray(3) = bicas.proc.L1RL2.demuxer.ROUTING_UNKNOWN_3_TO_NOTHING;
-                        RoutingArray(4) =                          ROUTING_AC_V1x;
-                        RoutingArray(5) = bicas.proc.L1RL2.demuxer.ROUTING_AC_V23;
+                        RoutingArray(1) = bicas.proc.L1L2.demuxer.ROUTING_UNKNOWN_1_TO_NOTHING;
+                        RoutingArray(2) = bicas.proc.L1L2.demuxer.ROUTING_UNKNOWN_2_TO_NOTHING;
+                        RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_UNKNOWN_3_TO_NOTHING;
+                        RoutingArray(4) =                         ROUTING_AC_V1x;
+                        RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
                         %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                         
                         % BUG/NOTE: Does not set any DC samples. Therefore just
@@ -392,7 +392,7 @@ classdef demuxer
             
             
             % ASSERTIONS
-            EJ_library.assert.struct(As, bicas.proc.L1RL2.demuxer.ASR_FIELDNAMES_CA, {})
+            EJ_library.assert.struct(As, bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA, {})
             assert(numel(RoutingArray) == 5)
             assert(isstruct(RoutingArray))
             
@@ -436,7 +436,7 @@ classdef demuxer
             %       b = b1 & b2 & ~b12;
             %       As.dcV12(b, :) = As.dcV1(b, :) - As.dcV2(b, :);
             
-            N_ASR_FIELDNAMES = numel(bicas.proc.L1RL2.demuxer.ASR_FIELDNAMES_CA);
+            N_ASR_FIELDNAMES = numel(bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA);
             
             %================
             % Derive AC ASRs
@@ -444,7 +444,7 @@ classdef demuxer
             % AC ASRs are separate from DC. Does not have to be in loop.
             % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
             % nFnAfter == 9 condition does not work.
-            As = bicas.proc.L1RL2.demuxer.complete_relation(As, 'acV13', 'acV12', 'acV23');
+            As = bicas.proc.L1L2.demuxer.complete_relation(As, 'acV13', 'acV12', 'acV23');
 
             %================
             % Derive DC ASRs
@@ -455,11 +455,11 @@ classdef demuxer
                 % deriving diffs since it is better to derive a diff from
                 % (initially available) diffs rather than singles, directly or
                 % indirectly, if possible.
-                As = bicas.proc.L1RL2.demuxer.complete_relation(As, 'dcV13', 'dcV12', 'dcV23');
+                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV13', 'dcV12', 'dcV23');
                 
-                As = bicas.proc.L1RL2.demuxer.complete_relation(As, 'dcV1',  'dcV12', 'dcV2');
-                As = bicas.proc.L1RL2.demuxer.complete_relation(As, 'dcV1',  'dcV13', 'dcV3');
-                As = bicas.proc.L1RL2.demuxer.complete_relation(As, 'dcV2',  'dcV23', 'dcV3');
+                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV1',  'dcV12', 'dcV2');
+                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV1',  'dcV13', 'dcV3');
+                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV2',  'dcV23', 'dcV3');
                 nFnAfter = numel(fieldnames(As));
                 
                 if (nFnBefore == nFnAfter) || (nFnAfter == 9)
@@ -479,13 +479,13 @@ classdef demuxer
             %===================================================================
             tempNaN = nan(size(As.acV12));    % Use first field in fieldnames?
             for iFn = 1:N_ASR_FIELDNAMES
-                fn = bicas.proc.L1RL2.demuxer.ASR_FIELDNAMES_CA{iFn};
+                fn = bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA{iFn};
                 if ~isfield(As, fn)
                     As.(fn) = tempNaN;
                 end
             end
             
-            EJ_library.assert.struct(As, bicas.proc.L1RL2.demuxer.ASR_FIELDNAMES_CA, {})
+            EJ_library.assert.struct(As, bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA, {})
             
             AsrSamplesAVolt = As;
         end
@@ -512,15 +512,15 @@ classdef demuxer
         % ARGUMENTS
         % =========
         % srcCategory, srcAntennas : Used to initialize .src
-        %                            bicas.proc.L1RL2.BLTS_src_dest.
+        %                            bicas.proc.L1L2.BLTS_src_dest.
         % varargin                 : 0 or 2 arguments.
         %                            Used to initialize .dest
-        %                            bicas.proc.L1RL2.BLTS_src_dest.
+        %                            bicas.proc.L1L2.BLTS_src_dest.
         %
         %
         % RETURN VALUE
         % ============
-        % R : Struct. Fields are bicas.proc.L1RL2.BLTS_src_dest.
+        % R : Struct. Fields are bicas.proc.L1L2.BLTS_src_dest.
         %   .src  : Where the physical signal in BLTS ultimately comes from.
         %           This is used to determine how the signal should be
         %           calibrated.
@@ -531,12 +531,12 @@ classdef demuxer
             % PROPOSAL: Turn return value into class.
             
             R     = struct();
-            R.src = bicas.proc.L1RL2.BLTS_src_dest(srcCategory, srcAntennas);
+            R.src = bicas.proc.L1L2.BLTS_src_dest(srcCategory, srcAntennas);
             
             if numel(varargin) == 0
                 R.dest = R.src;
             elseif numel(varargin) == 2
-                R.dest = bicas.proc.L1RL2.BLTS_src_dest(varargin{1}, varargin{2});
+                R.dest = bicas.proc.L1L2.BLTS_src_dest(varargin{1}, varargin{2});
             else
                 error('BICAS:demuxer:Assertion:IllegalArgument', ...
                     'Illegal number of extra arguments.')
@@ -553,7 +553,7 @@ classdef demuxer
             
             for iBlts = 1:5
                 if ~strcmp(RoutingArray(iBlts).dest.category, 'Nowhere')
-                    asrFn = bicas.proc.L1RL2.demuxer.get_ASR_fieldname( RoutingArray(iBlts).dest );
+                    asrFn = bicas.proc.L1L2.demuxer.get_ASR_fieldname( RoutingArray(iBlts).dest );
                     AsrSamples.(asrFn) = BltsSamplesAVolt{iBlts};
                 end
             end
@@ -566,21 +566,21 @@ classdef demuxer
         function fn = get_ASR_fieldname(BltsDest)
             % PROPOSAL: New name implying "destination".
             
-%             if     isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_DC_V1)    fn = 'dcV1';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_DC_V2)    fn = 'dcV2';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_DC_V3)    fn = 'dcV3';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_DC_V12)   fn = 'dcV12';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_DC_V13)   fn = 'dcV13';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_DC_V23)   fn = 'dcV23';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_AC_V12)   fn = 'acV12';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_AC_V13)   fn = 'acV13';
-%             elseif isequal(BltsDest, bicas.proc.L1RL2.demuxer.SRC_AC_V23)   fn = 'acV23';
+%             if     isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_DC_V1)    fn = 'dcV1';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_DC_V2)    fn = 'dcV2';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_DC_V3)    fn = 'dcV3';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_DC_V12)   fn = 'dcV12';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_DC_V13)   fn = 'dcV13';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_DC_V23)   fn = 'dcV23';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_AC_V12)   fn = 'acV12';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_AC_V13)   fn = 'acV13';
+%             elseif isequal(BltsDest, bicas.proc.L1L2.demuxer.SRC_AC_V23)   fn = 'acV23';
 %             else
 %                 error('BICAS:demuxer:Assertion:IllegalArgument', ...
 %                     'Illegal argument BltsDest.')
 %             end
             
-            BLTS_DEST_ASR_FN_TABLE = bicas.proc.L1RL2.demuxer.BLTS_DEST_ASR_FN_TABLE;
+            BLTS_DEST_ASR_FN_TABLE = bicas.proc.L1L2.demuxer.BLTS_DEST_ASR_FN_TABLE;
             for i =1:size(BLTS_DEST_ASR_FN_TABLE, 1)
                 if isequal(BltsDest, BLTS_DEST_ASR_FN_TABLE{i, 1})
                     fn = BLTS_DEST_ASR_FN_TABLE{i, 2};

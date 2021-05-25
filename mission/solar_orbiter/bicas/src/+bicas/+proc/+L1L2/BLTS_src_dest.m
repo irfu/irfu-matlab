@@ -19,7 +19,7 @@
 %
 % DEFINITIONS
 % ===========
-% See bicas.proc.L1RL2.cal.
+% See bicas.proc.L1L2.cal.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -30,11 +30,11 @@ classdef BLTS_src_dest %< handle
     % PROPOSAL: Make publically un-instantiable. Define a fixed set of legal instances accessible via constants.
     %   PRO: Limiting the number of instantiations speeds up the code. Having assertions is then no downside.
     %   CON: Unpractical to access via names instead of numbers.
-    %   CON-PROPOSAL: Have the bicas.proc.L1RL2.demuxer.main use its own pre-defined constants.
+    %   CON-PROPOSAL: Have the bicas.proc.L1L2.demuxer.main use its own pre-defined constants.
     %       NOTE/CON: Slightly impractical for routings which depend on the latching relay.
     %
     % PROPOSAL: Other name that does not reference BLTS.
-    %   See bicas.proc.L1RL2.cal BOGIQ.
+    %   See bicas.proc.L1L2.cal BOGIQ.
     %   PRO: Reference to BLTS is confusing.
     %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
     %

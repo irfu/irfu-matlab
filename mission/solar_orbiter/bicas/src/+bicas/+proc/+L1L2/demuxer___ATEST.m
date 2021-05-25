@@ -1,5 +1,5 @@
 %
-% Automatic test code for bicas.proc.L1RL2.demuxer.
+% Automatic test code for bicas.proc.L1L2.demuxer.
 %
 % Very basic tests at this stage. Could be improved but unsure how much is
 % meaningful.
@@ -29,7 +29,7 @@ function complement_ASR___ATEST
     
     
     function new_test(inputFieldsCa)
-        A = bicas.proc.L1RL2.demuxer.complement_ASR( struct(inputFieldsCa{:}) );
+        A = bicas.proc.L1L2.demuxer.complement_ASR( struct(inputFieldsCa{:}) );
         
         % Test all possible relationsships.
         %
@@ -56,7 +56,7 @@ end
 
 
 function main___ATEST()
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc.L1RL2.demuxer.main, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc.L1L2.demuxer.main, inputs, outputs));
     tl = {};
     
     V1   = 10;
@@ -87,7 +87,7 @@ function main___ATEST()
         assert( numel(categoryArray) == numel(antennasArray) )
         
         for i =1:numel(categoryArray)
-            BltsSrcArray(i) = bicas.proc.L1RL2.BLTS_src_dest(...
+            BltsSrcArray(i) = bicas.proc.L1L2.BLTS_src_dest(...
                 categoryArray{i}, ...
                 antennasArray{i});
         end

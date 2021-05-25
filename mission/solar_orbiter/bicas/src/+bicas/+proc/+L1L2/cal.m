@@ -148,14 +148,14 @@ classdef cal < handle
 %       (1) Antenna signals (AC, DC, singles, diffs)
 %       (2) All possible sources of signals of which (1) is a subset (a diff counts as a source).
 %           PROPOSAL: Be able to use for both physical signal sources, and for where to place in dataset.
-%               PRO: Can use acronym for both, and for class bicas.proc.L1RL2.BLTS_src_dest.
+%               PRO: Can use acronym for both, and for class bicas.proc.L1L2.BLTS_src_dest.
 %           PROPOSAL: PSS  = Physical Signal Source
 %           PROPOSAL: PS   = Physical Signal
 %           PROPOSAL: PSSD = Physical Signal Source or Destination
 %           PROPOSAL: PSSR = Physical Signal Source or Representation
 %           PROPOSAL: PSSR = Physical Signal Source or Dataset Representation
 %
-% PROPOSAL: Other name for bicas.proc.L1RL2.BLTS_src_dest that does not reference BLTS.
+% PROPOSAL: Other name for bicas.proc.L1L2.BLTS_src_dest that does not reference BLTS.
 %   PRO: Reference to BLTS is confusing.
 %   PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR.
 %   PROPOSAL: Have different classes and acronyms for
@@ -267,7 +267,7 @@ classdef cal < handle
         
         % containers.Map: RCT Type ID --> Info about RCT type.
         % Its keys defines the set of RCT Type ID strings.
-        RCT_TYPES_MAP       = bicas.proc.L1RL2.cal.init_RCT_Types_Map();
+        RCT_TYPES_MAP       = bicas.proc.L1L2.cal.init_RCT_Types_Map();
         
         % Local constant for convenience.
         NAN_TF              = @(omegaRps) (omegaRps * NaN);
@@ -357,7 +357,7 @@ classdef cal < handle
         % The class (instance methods, including constructor) deliberately does
         % not READ the non-BIAS RCTs. This is useful since
         % ** it makes it possible to inspect & modify the RCT content before
-        %    submitting it to bicas.proc.L1RL2.cal
+        %    submitting it to bicas.proc.L1L2.cal
         % ** it completely separates the RCT-reading from the class
         %    (modularization)
         % ** it simplifies the constructor somewhat since it does not need to
@@ -369,7 +369,7 @@ classdef cal < handle
             % ASSERTIONS
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
             assert(~ismember('BIAS', NonBiasRctDataMap.keys))
-            EJ_library.assert.subset(NonBiasRctDataMap.keys, bicas.proc.L1RL2.cal.RCT_TYPES_MAP.keys)
+            EJ_library.assert.subset(NonBiasRctDataMap.keys, bicas.proc.L1L2.cal.RCT_TYPES_MAP.keys)
             
             %=======================
             % Assign obj.RctDataMap
@@ -378,12 +378,12 @@ classdef cal < handle
             % ----------------------------------
             % Create RCT data map entry for BIAS
             % ----------------------------------
-            filenameRegexp = SETTINGS.get_fv(bicas.proc.L1RL2.cal.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
+            filenameRegexp = SETTINGS.get_fv(bicas.proc.L1L2.cal.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
             filePath       = bicas.RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
             % IMPLEMENTATION NOTE: It has been observed that value sometimes
             % survives from previous runs, despite being an instance variable.
             % Unknown why. Therefore explicitly overwrites it.
-            obj.RctDataMap('BIAS') = bicas.proc.L1RL2.cal.read_RCT_modify_log('BIAS', filePath, L);
+            obj.RctDataMap('BIAS') = bicas.proc.L1L2.cal.read_RCT_modify_log('BIAS', filePath, L);
             % -------------------------------------
              % Add RCT data map entry for non-BIAS
              % -------------------------------------
@@ -598,7 +598,7 @@ classdef cal < handle
         % samplesAVolt : 1D cell array of numeric 1D arrays.
         % CalSettings  : Struct that groups together arguments
         %   .iBlts     : 1..5.
-        %   .BltsSrc   : bicas.proc.L1RL2.BLTS_src_dest describing where the signal comes
+        %   .BltsSrc   : bicas.proc.L1L2.BLTS_src_dest describing where the signal comes
         %                from.
         %   ...
         %
@@ -662,8 +662,8 @@ classdef cal < handle
             EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
-            bicas.proc.L1RL2.cal_utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
+            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
+            assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
@@ -750,8 +750,8 @@ classdef cal < handle
             EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
-            bicas.proc.L1RL2.cal_utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
+            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
+            assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
@@ -780,7 +780,7 @@ classdef cal < handle
                     tdsItfIvpt = @(omegaRps) (ones(omegaRps));
                 else
                     RctList = obj.RctDataMap('TDS-RSWF');
-                    %tdsItfIvpt = @(omegaRps) (bicas.proc.L1RL2.cal_utils.eval_tabulated_TF(...
+                    %tdsItfIvpt = @(omegaRps) (bicas.proc.L1L2.cal_utils.eval_tabulated_TF(...
                     %    RctList{cti1+1}.ItfModifIvptList{iBlts}, omegaRps));
                     tdsItfIvpt = RctList{cti1+1}.itfModifIvptCa{iBlts};
                 end
@@ -819,14 +819,14 @@ classdef cal < handle
 
 
         function iCalib = get_calibration_time_L(obj, Epoch)
-            iCalib = bicas.proc.L1RL2.cal.get_calibration_time(...
+            iCalib = bicas.proc.L1L2.cal.get_calibration_time(...
                 Epoch, obj.RctDataMap('BIAS').epochL);
         end
 
 
 
         function iCalib = get_calibration_time_H(obj, Epoch)
-            iCalib = bicas.proc.L1RL2.cal.get_calibration_time(...
+            iCalib = bicas.proc.L1L2.cal.get_calibration_time(...
                 Epoch, obj.RctDataMap('BIAS').epochH);
         end
 
@@ -856,7 +856,7 @@ classdef cal < handle
             % and the value is needed.
             
             % ASSERTION
-            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
+            assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
@@ -903,7 +903,7 @@ classdef cal < handle
                         offsetAVolt  = 0;
                     elseif isnan(biasHighGain)
                         % CASE: GAIN unknown when it is NEEDED for calibration.
-                        biasItfAvpiv = bicas.proc.L1RL2.cal.NAN_TF;
+                        biasItfAvpiv = bicas.proc.L1L2.cal.NAN_TF;
                         kFtfIvpav    = NaN;
                         offsetAVolt  = NaN;
                     else
@@ -955,15 +955,15 @@ classdef cal < handle
         function lfrItfIvpt = get_LFR_ITF(obj, cti1, iBlts, iLsf)
             % ASSERTIONS
             assert(cti1 >= 0)
-            bicas.proc.L1RL2.cal_utils.assert_iBlts(iBlts)
-            bicas.proc.L1RL2.cal_utils.assert_iLsf(iLsf)
+            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
+            bicas.proc.L1L2.cal_utils.assert_iLsf(iLsf)
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 % CASE: F3 and BLTS={4,5}
                 
                 % NOTE: There is no tabulated LFR TF and no such combination
                 % signal route, so the TF can not be returned even in principle.
-                lfrItfIvpt = bicas.proc.L1RL2.cal.NAN_TF;
+                lfrItfIvpt = bicas.proc.L1L2.cal.NAN_TF;
             else
                 RctDataList = obj.RctDataMap('LFR');
                 
@@ -984,7 +984,7 @@ classdef cal < handle
                     ' value is wrong or that BICAS did not try to load the corresponding', ...
                     ' RCT in glob. attr. CALIBRATION_TABLE.'], cti1)
                 
-%                 lfrItfIvpt = @(omegaRps) (bicas.proc.L1RL2.cal_utils.eval_tabulated_TF(...
+%                 lfrItfIvpt = @(omegaRps) (bicas.proc.L1L2.cal_utils.eval_tabulated_TF(...
 %                     RctDataList{cti1+1}.ItfModifIvptTable{iLsf}{iBlts}, omegaRps));
                 lfrItfIvpt = RctDataList{cti1+1}.ItfModifIvptCaCa{iLsf}{iBlts};
             end
@@ -1020,9 +1020,9 @@ classdef cal < handle
             iLsf         = CalSettings.iLsf;
             
             % ASSERTIONS
-            bicas.proc.L1RL2.cal_utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.proc.L1RL2.BLTS_src_dest'))
-            bicas.proc.L1RL2.cal_utils.assert_iLsf(iLsf)
+            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
+            assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
+            bicas.proc.L1L2.cal_utils.assert_iLsf(iLsf)
             assert(isscalar(cti1))
             assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
             % No assertion on cti2 unless used (determined later).
@@ -1091,7 +1091,7 @@ classdef cal < handle
             %======================================
             % Create combined ITF for LFR and BIAS
             %======================================
-            CalData.itfAvpt = bicas.proc.L1RL2.cal_utils.create_LFR_BIAS_ITF(...
+            CalData.itfAvpt = bicas.proc.L1L2.cal_utils.create_LFR_BIAS_ITF(...
                 CalData.lfrItfIvpt, ...
                 CalData.BiasCalibData.itfAvpiv, ...
                 BltsSrc.is_AC(), ...
@@ -1124,7 +1124,7 @@ classdef cal < handle
         %       requires user to not use CALIBRATION_TABLE_INDEX.
         %
         % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time.
-        % However, it is useful to be able to initialize bicas.proc.L1RL2.cal so that it
+        % However, it is useful to be able to initialize bicas.proc.L1L2.cal so that it
         % can simultanteously calibrate all kinds of data for debugging
         % purposes. Therefore loads ALL non-BIAS RCT types.
         %
@@ -1134,8 +1134,8 @@ classdef cal < handle
         % RctDataMap : containers.Map. One key per non-BIAS RCT type ID. Value =
         %              1x1 cell array with RCT data.
         %              IMPLEMENTATION NOTE: Returns containers.Map to provide
-        %              the same interface to bicas.proc.L1RL2.cal constructor as
-        %              bicas.proc.L1RL2.cal.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE.
+        %              the same interface to bicas.proc.L1L2.cal constructor as
+        %              bicas.proc.L1L2.cal.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE.
         % 
         function RctDataMap = find_read_non_BIAS_RCTs_by_regexp(rctDir, SETTINGS, L)
             
@@ -1143,11 +1143,11 @@ classdef cal < handle
             
             for rctTypeId = {'LFR', 'TDS-CWF', 'TDS-RSWF'}
                 
-                settingKey     = bicas.proc.L1RL2.cal.RCT_TYPES_MAP(...
+                settingKey     = bicas.proc.L1L2.cal.RCT_TYPES_MAP(...
                     rctTypeId{1}).filenameRegexpSettingKey;
                 filenameRegexp = SETTINGS.get_fv(settingKey);
                 filePath       = bicas.RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
-                RctDataList    = {bicas.proc.L1RL2.cal.read_RCT_modify_log(...
+                RctDataList    = {bicas.proc.L1L2.cal.read_RCT_modify_log(...
                     rctTypeId{1}, filePath, L)};
                 
                 % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so
@@ -1194,8 +1194,8 @@ classdef cal < handle
         %              is the content of the corresponding RCT mentioned in
         %              ga_CALIBRATION_TABLE.
         %              IMPLEMENTATION NOTE: Returns containers.Map to provide
-        %              the same interface to bicas.proc.L1RL2.cal constructor as
-        %              bicas.proc.L1RL2.cal.find_read_non_BIAS_RCTs_by_regexp.
+        %              the same interface to bicas.proc.L1L2.cal constructor as
+        %              bicas.proc.L1L2.cal.find_read_non_BIAS_RCTs_by_regexp.
         %
         function RctDataMap = find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                 rctDir, rctTypeId, ...
@@ -1236,7 +1236,7 @@ classdef cal < handle
                 % NOTE: Cell array index is one greater than the stored value.
                 j              = iCtArray(i) + 1;
                 filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
-                RctDataList{j} = bicas.proc.L1RL2.cal.read_RCT_modify_log(...
+                RctDataList{j} = bicas.proc.L1L2.cal.read_RCT_modify_log(...
                     rctTypeId, filePath, L);
             end
             
@@ -1347,10 +1347,10 @@ classdef cal < handle
             % NOTE: Not TF.
             MODIFY_TDS_CWF_DATA_FUNC = @(S) (S);
             
-            RctTypesMap('BIAS')     = entry(@bicas.RCT.read_BIAS_RCT,     @bicas.proc.L1RL2.cal.modify_BIAS_RCT_data,     @bicas.proc.L1RL2.cal.log_BIAS_RCT,      'PROCESSING.RCT_REGEXP.BIAS');
-            RctTypesMap('LFR')      = entry(@bicas.RCT.read_LFR_RCT,      @bicas.proc.L1RL2.cal.modify_LFR_RCT_data,      @bicas.proc.L1RL2.cal.log_LFR_RCTs,      'PROCESSING.RCT_REGEXP.LFR');
-            RctTypesMap('TDS-CWF')  = entry(@bicas.RCT.read_TDS_CWF_RCT,  MODIFY_TDS_CWF_DATA_FUNC,              @bicas.proc.L1RL2.cal.log_TDS_CWF_RCTs,  'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
-            RctTypesMap('TDS-RSWF') = entry(@bicas.RCT.read_TDS_RSWF_RCT, @bicas.proc.L1RL2.cal.modify_TDS_RSWF_RCT_data, @bicas.proc.L1RL2.cal.log_TDS_RSWF_RCTs, 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
+            RctTypesMap('BIAS')     = entry(@bicas.RCT.read_BIAS_RCT,     @bicas.proc.L1L2.cal.modify_BIAS_RCT_data,     @bicas.proc.L1L2.cal.log_BIAS_RCT,      'PROCESSING.RCT_REGEXP.BIAS');
+            RctTypesMap('LFR')      = entry(@bicas.RCT.read_LFR_RCT,      @bicas.proc.L1L2.cal.modify_LFR_RCT_data,      @bicas.proc.L1L2.cal.log_LFR_RCTs,      'PROCESSING.RCT_REGEXP.LFR');
+            RctTypesMap('TDS-CWF')  = entry(@bicas.RCT.read_TDS_CWF_RCT,  MODIFY_TDS_CWF_DATA_FUNC,                      @bicas.proc.L1L2.cal.log_TDS_CWF_RCTs,  'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
+            RctTypesMap('TDS-RSWF') = entry(@bicas.RCT.read_TDS_RSWF_RCT, @bicas.proc.L1L2.cal.modify_TDS_RSWF_RCT_data, @bicas.proc.L1L2.cal.log_TDS_RSWF_RCTs, 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
             
             %###################################################################
             function Entry = entry(readRctFunc, modifyRctFunc, logRctFunc, filenameRegexpSettingKey)
@@ -1423,7 +1423,7 @@ classdef cal < handle
                     ItfIvpt = FtfRctTpivCaCa{iLsf}{iBlts}.inverse();
                     
                     % MODIFY tabulated ITF
-                    ItfModifIvpt = bicas.proc.L1RL2.cal_utils.extrapolate_tabulated_TF_to_zero_Hz(ItfIvpt);
+                    ItfModifIvpt = bicas.proc.L1L2.cal_utils.extrapolate_tabulated_TF_to_zero_Hz(ItfIvpt);
                     
                     % MODIFY tabulated ITF --> Function TF
                     %
@@ -1444,7 +1444,7 @@ classdef cal < handle
                     % F3=   16 Hz: f={0.01--    8} [Hz]
                     VALUE_OUTSIDE_TABLE = 0;
                     %VALUE_OUTSIDE_TABLE = NaN;   % Does not work. See comments above.
-                    itfModifIvpt = @(omegaRps) (bicas.proc.L1RL2.cal_utils.eval_tabulated_TF(...
+                    itfModifIvpt = @(omegaRps) (bicas.proc.L1L2.cal_utils.eval_tabulated_TF(...
                         ItfModifIvpt, omegaRps, VALUE_OUTSIDE_TABLE));
                     clear ItfModifIvpt
                     
@@ -1477,7 +1477,7 @@ classdef cal < handle
                 
                 % MODIFY __tabulated__ ITF
                 % (Does NOT wrap function handle in function handle.)
-                ItfModifIvpt = bicas.proc.L1RL2.cal_utils.extrapolate_tabulated_TF_to_zero_Hz(ItfRctIvpt);
+                ItfModifIvpt = bicas.proc.L1L2.cal_utils.extrapolate_tabulated_TF_to_zero_Hz(ItfRctIvpt);
                 
                 % MODIFY tabulated ITF --> function ITF
                 %
@@ -1485,7 +1485,7 @@ classdef cal < handle
                 % already made extrapolation). TDS-RSWF data requires
                 % extrapolation.
                 VALUE_OUTSIDE_TABLE = 0;
-                itfModifIvpt = @(omegaRps) (bicas.proc.L1RL2.cal_utils.eval_tabulated_TF(...
+                itfModifIvpt = @(omegaRps) (bicas.proc.L1L2.cal_utils.eval_tabulated_TF(...
                     ItfModifIvpt, omegaRps, VALUE_OUTSIDE_TABLE));
                 
                 
@@ -1504,7 +1504,7 @@ classdef cal < handle
             
             DC_FREQ_HZ       = [0];   % Single & diffs.
             AC_DIFF_FREQS_HZ = [0, 1000];
-            LL               = bicas.proc.L1RL2.cal.RCT_DATA_LL;
+            LL               = bicas.proc.L1L2.cal.RCT_DATA_LL;
             
             %=====================
             % Iterate over EpochL
@@ -1515,8 +1515,8 @@ classdef cal < handle
                     EJ_library.cdf.TT2000_to_UTC_str(RctData.epochL(iEpochL)))
                 
                 % Log bias current calibration
-                L.logf(LL, '    BIAS current offsets: %s [aampere]',         bicas.proc.L1RL2.cal_utils.vector_string('% 10e', RctData.Current.offsetsAAmpere(iEpochL, :)))
-                L.logf(LL, '    BIAS current gain   : %s [aampere/TM unit]', bicas.proc.L1RL2.cal_utils.vector_string('% 10e', RctData.Current.gainsAapt(     iEpochL, :)))
+                L.logf(LL, '    BIAS current offsets: %s [aampere]',         bicas.proc.L1L2.cal_utils.vector_string('% 10e', RctData.Current.offsetsAAmpere(iEpochL, :)))
+                L.logf(LL, '    BIAS current gain   : %s [aampere/TM unit]', bicas.proc.L1L2.cal_utils.vector_string('% 10e', RctData.Current.gainsAapt(     iEpochL, :)))
                 
                 % Log transfer functions (frequency domain), selected frequencies.
                 L.logf(LL, ...
@@ -1541,10 +1541,10 @@ classdef cal < handle
                     EJ_library.cdf.TT2000_to_UTC_str(RctData.epochH(iEpochH)))
                 
                 L.logf(LL, '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
-                    bicas.proc.L1RL2.cal_utils.vector_string('%g', ...
+                    bicas.proc.L1L2.cal_utils.vector_string('%g', ...
                     RctData.dcSingleOffsetsAVolt(iEpochH, :)))
                 L.logf(LL, '    BIAS DC diff   voltage offsets (E12,E13,E23): %s [avolt]', ...
-                    bicas.proc.L1RL2.cal_utils.vector_string('%g', ...
+                    bicas.proc.L1L2.cal_utils.vector_string('%g', ...
                     dcDiffOffsetsAVolt(iEpochH)))
 
             end
@@ -1553,10 +1553,10 @@ classdef cal < handle
             % Nested utility function.
             % NOTE: Impicitly function of iEpochL, L, LL.
             function log_TF(name, freqArray, ItfList)
-%                 bicas.proc.L1RL2.cal_utils.log_TF_function_handle(...
+%                 bicas.proc.L1L2.cal_utils.log_TF_function_handle(...
 %                     LL, name, 'avolt/ivolt', freqArray, ...
 %                     @(omegaRps) (ItfList{iEpochL}.eval(omegaRps)), L);
-                bicas.proc.L1RL2.cal_utils.log_TF_function_handle(...
+                bicas.proc.L1L2.cal_utils.log_TF_function_handle(...
                     LL, name, 'avolt/ivolt', freqArray, ...
                     ItfList{iEpochL}, L);
             end
@@ -1583,8 +1583,8 @@ classdef cal < handle
                     itfNamePrefix = sprintf('LFR, F%i, BLTS/BIAS_%i', iLsf-1, iBlts);
                     
                     itfName = sprintf('%s FTF (as in RCT)', itfNamePrefix);
-                    bicas.proc.L1RL2.cal_utils.log_TF_tabulated(...
-                        bicas.proc.L1RL2.cal.RCT_DATA_LL, ...
+                    bicas.proc.L1L2.cal_utils.log_TF_tabulated(...
+                        bicas.proc.L1L2.cal.RCT_DATA_LL, ...
                         itfName, ...
                         RctData.FtfRctTpivCaCa{iLsf}{iBlts}, ...
                         L);
@@ -1592,8 +1592,8 @@ classdef cal < handle
                     itfIvpt          = RctData.ItfModifIvptCaCa{iLsf}{iBlts};
                     itfName = sprintf('%s ITF (modif., interp.)', itfNamePrefix);
                     
-                    bicas.proc.L1RL2.cal_utils.log_TF_function_handle(...
-                        bicas.proc.L1RL2.cal.RCT_DATA_LL, ...
+                    bicas.proc.L1L2.cal_utils.log_TF_function_handle(...
+                        bicas.proc.L1L2.cal.RCT_DATA_LL, ...
                         itfName, ...
                         'ivolt/TM unit', FREQ_HZ, itfIvpt, L)
                     
@@ -1607,9 +1607,9 @@ classdef cal < handle
         % Analogous to log_BIAS_RCT.
         function log_TDS_CWF_RCTs(RctData, L)
             
-            L.logf(bicas.proc.L1RL2.cal.RCT_DATA_LL, ...
+            L.logf(bicas.proc.L1L2.cal.RCT_DATA_LL, ...
                 'TDS CWF calibration factors: %s [ivolt/TM]', ...
-                bicas.proc.L1RL2.cal_utils.vector_string('%g', RctData.factorsIvpt));
+                bicas.proc.L1L2.cal_utils.vector_string('%g', RctData.factorsIvpt));
         end
         
         
@@ -1623,20 +1623,20 @@ classdef cal < handle
             for iBlts = 1:3
                 itfNamePrefix = sprintf('TDS RSWF, BLTS/BIAS_%i, ITF', iBlts);
                 
-                bicas.proc.L1RL2.cal_utils.log_TF_tabulated(...
-                    bicas.proc.L1RL2.cal.RCT_DATA_LL, ...
+                bicas.proc.L1L2.cal_utils.log_TF_tabulated(...
+                    bicas.proc.L1L2.cal.RCT_DATA_LL, ...
                     sprintf('%s (as in RCT)', itfNamePrefix), ...
                     RctData.ItfRctIvptCa{iBlts}, ...
                     L);
                 
-%                 bicas.proc.L1RL2.cal_utils.log_TF_tabulated(...
-%                     bicas.proc.L1RL2.cal.RCT_DATA_LL, ...
+%                 bicas.proc.L1L2.cal_utils.log_TF_tabulated(...
+%                     bicas.proc.L1L2.cal.RCT_DATA_LL, ...
 %                     sprintf('%s (modified)', itfNamePrefix), ...
 %                     RctData.ItfModifIvptList{iBlts}, ...
 %                     L);
                 
-                bicas.proc.L1RL2.cal_utils.log_TF_function_handle(...
-                    bicas.proc.L1RL2.cal.RCT_DATA_LL, ...
+                bicas.proc.L1L2.cal_utils.log_TF_function_handle(...
+                    bicas.proc.L1L2.cal.RCT_DATA_LL, ...
                     sprintf('%s (modif., interp.)', itfNamePrefix), ...
                     'ivolt/TM unit', FREQ_HZ, RctData.itfModifIvptCa{iBlts}, L)
             end
@@ -1664,12 +1664,12 @@ classdef cal < handle
         %
         function RctData = read_RCT_modify_log(rctTypeId, filePath, L)
             
-            L.logf(bicas.proc.L1RL2.cal.READING_RCT_PATH_LL, ...
+            L.logf(bicas.proc.L1L2.cal.READING_RCT_PATH_LL, ...
                 'Reading RCT (rctTypeId=%s): "%s"', rctTypeId, filePath)
             
-            readRctFunc   = bicas.proc.L1RL2.cal.RCT_TYPES_MAP(rctTypeId).readRctFunc;
-            modifyRctFunc = bicas.proc.L1RL2.cal.RCT_TYPES_MAP(rctTypeId).modifyRctFunc;
-            logRctFunc    = bicas.proc.L1RL2.cal.RCT_TYPES_MAP(rctTypeId).logRctFunc;
+            readRctFunc   = bicas.proc.L1L2.cal.RCT_TYPES_MAP(rctTypeId).readRctFunc;
+            modifyRctFunc = bicas.proc.L1L2.cal.RCT_TYPES_MAP(rctTypeId).modifyRctFunc;
+            logRctFunc    = bicas.proc.L1L2.cal.RCT_TYPES_MAP(rctTypeId).logRctFunc;
             
             RctData = readRctFunc(filePath);
             RctData = modifyRctFunc(RctData);

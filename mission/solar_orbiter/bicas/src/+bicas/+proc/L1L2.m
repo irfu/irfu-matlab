@@ -13,7 +13,7 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
-% See bicas.proc.L1RL2.cal.
+% See bicas.proc.L1L2.cal.
 % ZV  : CDF zVariable, or something analogous to it. If refers to CDF:ish
 %       content, then the first index corresponds to the CDF record.
 % SPR : Samples Per (CDF) Record. Only refers to actual data (currents,
@@ -37,10 +37,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager_old.m.
 %
-classdef L1RL2
+classdef L1L2
 %#######################################################################################################################
 %
-% PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets.
+% PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets. -- ABANDONED?
 %
 % PROPOSAL: Split into smaller files.
 %   NOTE: All functions 2021-05-25:
@@ -55,8 +55,7 @@ classdef L1RL2
 %         function zvUseFillValues = get_UFV_records_from_settings(...
 %         function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
 %         function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, L)
-%   PROPOSAL: bicas.proc.L1RL2.demux_calib
-%   PROPOSAL: Local utility functions are moved to bicas.proc.utils.
+%   PROPOSAL: bicas.proc.L1L2.dc (demux_calib)
 %
 % PROPOSAL: Submit zVar variable attributes.
 %   PRO: Can interpret fill values.
@@ -176,7 +175,7 @@ classdef L1RL2
                     'PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:L1RL2:DatasetFormat:SWModeProcessing')
+                    anomalyDescrMsg, 'BICAS:L1L2:DatasetFormat:SWModeProcessing')
             end
             if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
 
@@ -187,7 +186,7 @@ classdef L1RL2
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
-                    'BICAS:L1RL2:SWModeProcessing')
+                    'BICAS:L1L2:SWModeProcessing')
             end
 
 
@@ -257,7 +256,7 @@ classdef L1RL2
                     curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
 
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:L1RL2:SWModeProcessing')
+                    anomalyDescrMsg, 'BICAS:L1L2:SWModeProcessing')
             end
 
 
@@ -265,7 +264,7 @@ classdef L1RL2
             %====================================================================
             % CDF ASSERTION: Epoch increases (not monotonically)
             % --------------------------------------------------
-            % NOTE: bicas.proc.L1RL2.zv_TC_to_current() checks (and handles)
+            % NOTE: bicas.proc.L1L2.zv_TC_to_current() checks (and handles)
             % that Epoch increases monotonically, but only for each antenna
             % separately (which does not capture all cases). Therefore checks
             % that Epoch is (non-monotonically) increasing.
@@ -274,15 +273,15 @@ classdef L1RL2
             %           separately, but not even increasing when combined.
             %====================================================================
             assert(issorted(InCur.Zv.Epoch), ...
-                'BICAS:L1RL2:DatasetFormat', ...
+                'BICAS:L1L2:DatasetFormat', ...
                 'CURRENT timestamps zVar Epoch does not increase (all antennas combined).')
 
-            % NOTE: bicas.proc.L1RL2.zv_TC_to_current() checks that Epoch
+            % NOTE: bicas.proc.L1L2.zv_TC_to_current() checks that Epoch
             % increases monotonically.
             currentNanoSAmpere = [];
-            currentNanoSAmpere(:,1) = bicas.proc.L1RL2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,2) = bicas.proc.L1RL2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,3) = bicas.proc.L1RL2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,1) = bicas.proc.L1L2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,2) = bicas.proc.L1L2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,3) = bicas.proc.L1L2.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
 
             currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
@@ -301,7 +300,7 @@ classdef L1RL2
             tTicToc = tic();
 
             % ASSERTION
-            bicas.proc.L1RL2.assert_PreDC(PreDc);
+            bicas.proc.L1L2.assert_PreDC(PreDc);
 
 
 
@@ -315,16 +314,16 @@ classdef L1RL2
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
-            PostDc.Zv.DemuxerOutput = bicas.proc.L1RL2.calibrate_demux_voltages(PreDc, Cal, L);
+            PostDc.Zv.DemuxerOutput = bicas.proc.L1L2.calibrate_demux_voltages(PreDc, Cal, L);
 
 
 
             %#########################
             % Calibrate bias CURRENTS
             %#########################
-            currentSAmpere = bicas.proc.L1RL2.process_CUR_to_CUR_on_SCI_TIME(...
+            currentSAmpere = bicas.proc.L1L2.process_CUR_to_CUR_on_SCI_TIME(...
                 PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
-            currentTm      = bicas.proc.L1RL2.cal.calibrate_current_sampere_to_TM(currentSAmpere);
+            currentTm      = bicas.proc.L1L2.cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);
@@ -356,11 +355,11 @@ classdef L1RL2
 
 
             % ASSERTION
-            bicas.proc.L1RL2.assert_PostDC(PostDc)
+            bicas.proc.L1L2.assert_PostDC(PostDc)
 
             nRecords = size(PreDc.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
-                'bicas.proc.L1RL2.process_calibrate_demux', tTicToc, ...
+                'bicas.proc.L1L2.process_calibrate_demux', tTicToc, ...
                 nRecords, 'record')
         end    % process_calibrate_demux
 
@@ -390,7 +389,7 @@ classdef L1RL2
         function [PreDc, PostDc] = process_quality_filter_L2(...
                 PreDc, PostDc, NsoTable, SETTINGS, L)
 
-            % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the format.
+            % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the PostDc format.
             %   NOTE: Also overwrites voltage with fill values.
             %   PROPOSAL: Treat output PostDc as another format?
             %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
@@ -401,14 +400,14 @@ classdef L1RL2
             %   PRO: Can use alternative NSO table (using NSO table path override
             %        setting).
             %
-            % PROPOSAL: Generalize function be used in L3.
+            % PROPOSAL: Generalize function to be used in L3.
             %   CON: Can not be done since this function is meant to have access
             %        to arbitrary L1/L1R and L2 data to make decisions, although
             %        this is not much used yet.
 
             % ASSERTION
-            bicas.proc.L1RL2.assert_PreDC(PreDc)
-            bicas.proc.L1RL2.assert_PostDC(PostDc)
+            bicas.proc.L1L2.assert_PreDC(PreDc)
+            bicas.proc.L1L2.assert_PostDC(PostDc)
             nRecords = EJ_library.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
 
@@ -421,7 +420,7 @@ classdef L1RL2
             %============================================
             % Find CDF records to remove due to settings
             %============================================
-            zvUfvSettings = bicas.proc.L1RL2.get_UFV_records_from_settings(...
+            zvUfvSettings = bicas.proc.L1L2.get_UFV_records_from_settings(...
                 PreDc.Zv.Epoch, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
 
             zvUfv = PreDc.Zv.useFillValues | zvUfvSettings;
@@ -459,7 +458,7 @@ classdef L1RL2
                 %===========================================================
                 L.logf('info', '    %s -- %s %s', ...
                     EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
-                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array(iGlobalEvent)), ...
+                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGlobalEvent)), ...
                     eventNsoId);
 
 
@@ -565,7 +564,7 @@ classdef L1RL2
             logHeaderStr = sprintf(...
                 ['All interval(s) of CDF records for which data should be set', ...
                 ' to fill values (i.e. removed), regardless of reason.\n']);
-            bicas.proc.L1RL2.log_UFV_records(PreDc.Zv.Epoch, zvUfv, logHeaderStr, L)
+            bicas.proc.L1L2.log_UFV_records(PreDc.Zv.Epoch, zvUfv, logHeaderStr, L)
             %
             PostDc.Zv.currentAAmpere(zvUfv, :) = NaN;
             %
@@ -577,8 +576,8 @@ classdef L1RL2
 
 
             % ASSERTION
-            bicas.proc.L1RL2.assert_PreDC(PreDc)
-            bicas.proc.L1RL2.assert_PostDC(PostDc)
+            bicas.proc.L1L2.assert_PreDC(PreDc)
+            bicas.proc.L1L2.assert_PostDC(PostDc)
 
         end    % process_quality_filter_L2
 
@@ -655,11 +654,7 @@ classdef L1RL2
         function sciZv_IBIASx = zv_TC_to_current(...
                 curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
 
-            % TEST:
-%             curZv_Epoch(4:6) = curZv_Epoch(4:6)-(86400e9)
-%             [~, iSort] = sort(curZv_Epoch)
-%             curZv_Epoch   = curZv_Epoch  (iSort);
-%             curZv_IBIAS_x = curZv_IBIAS_x(iSort);
+
 
             %====================
             % Calibrate currents
@@ -694,11 +689,11 @@ classdef L1RL2
                         bicas.default_anomaly_handling(L, ...
                             settingValue, settingKey, 'E+illegal', ...
                             anomalyDescriptionMsg, ...
-                            'BICAS:L1RL2:SWModeProcessing:DatasetFormat')
+                            'BICAS:L1L2:SWModeProcessing:DatasetFormat')
                 end
             end
 
-        end    % bicas.proc.L1RL2.zv_TC_to_current
+        end    % bicas.proc.L1L2.zv_TC_to_current
 
 
 
@@ -749,7 +744,7 @@ classdef L1RL2
                 strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '), ...
                 settingMarginKey, ...
                 removeMarginSec);
-            bicas.proc.L1RL2.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
+            bicas.proc.L1L2.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
         end
 
 
@@ -809,7 +804,7 @@ classdef L1RL2
         %
         % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN for CWF.
         %
-        % PROPOSAL: Integrate into bicas.proc.L1RL2.demuxer (as method).
+        % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
         % NOTE: Calibration is really separate from the demultiplexer. Demultiplexer only needs to split into
         %       subsequences based on mux mode and latching relay, nothing else.
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
@@ -852,7 +847,7 @@ classdef L1RL2
                 'acV13', tempVoltageArray, ...
                 'acV23', tempVoltageArray);
 
-            dlrUsing12zv = bicas.proc.L1RL2.demuxer_latching_relay(PreDc.Zv.Epoch);
+            dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
             iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
             iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
 
@@ -931,7 +926,7 @@ classdef L1RL2
                 % NOTE: Call demultiplexer with no samples. Only for collecting
                 % information on which BLTS channels are connected to which
                 % ASRs.
-                [BltsSrcAsrArray, ~] = bicas.proc.L1RL2.demuxer.main(...
+                [BltsSrcAsrArray, ~] = bicas.proc.L1L2.demuxer.main(...
                     MUX_SET_ss, dlrUsing12_ss, {[],[],[],[],[]});
 
 
@@ -1023,7 +1018,7 @@ classdef L1RL2
                 %====================================
                 % DEMULTIPLEXER: DERIVE MISSING ASRs
                 %====================================
-                [~, SsAsrSamplesAVolt] = bicas.proc.L1RL2.demuxer.main(...
+                [~, SsAsrSamplesAVolt] = bicas.proc.L1L2.demuxer.main(...
                     MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
 
                 % Add demuxed sequence to the to-be complete set of records.
@@ -1035,8 +1030,8 @@ classdef L1RL2
 
 
             % NOTE: Assumes no "return" statement.
-            %bicas.log_speed_profiling(L, 'bicas.proc.L1RL2.calibrate_demux_voltages', tTicToc, nRecords, 'record')
-            %bicas.log_memory_profiling(L, 'bicas.proc.L1RL2.calibrate_demux_voltages:end')
+            %bicas.log_speed_profiling(L, 'bicas.proc.L1L2.calibrate_demux_voltages', tTicToc, nRecords, 'record')
+            %bicas.log_memory_profiling(L, 'bicas.proc.L1L2.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
 
 

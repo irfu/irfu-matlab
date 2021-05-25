@@ -39,7 +39,7 @@ classdef lfr   % < handle
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
             InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
-                bicas.proc.L1RL2.normalize_CALIBRATION_TABLE_INDEX(...
+                bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
                     InSci.Zv, nRecords, inSciDsi);
 
 
@@ -117,11 +117,11 @@ classdef lfr   % < handle
             %=======================================================================================================
             [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
 
-            InSciNorm.Zv.QUALITY_BITMASK = bicas.proc.L1RL2.lfr.normalize_zVar_empty(...
+            InSciNorm.Zv.QUALITY_BITMASK = bicas.proc.L1L2.lfr.normalize_zVar_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.Zv.QUALITY_BITMASK, 'QUALITY_BITMASK');
 
-            InSciNorm.Zv.QUALITY_FLAG    = bicas.proc.L1RL2.lfr.normalize_zVar_empty(...
+            InSciNorm.Zv.QUALITY_FLAG    = bicas.proc.L1L2.lfr.normalize_zVar_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.Zv.QUALITY_FLAG,    'QUALITY_FLAG');
 
@@ -253,7 +253,7 @@ classdef lfr   % < handle
                     L.log('debug', 'Using LFR SCI mux mode.')
                     PreDc.Zv.MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
                 otherwise
-                    error('BICAS:L1RL2:ConfigurationBug', ...
+                    error('BICAS:L1L2:ConfigurationBug', ...
                         'Illegal settings value %s="%s"', key, value)
             end
 
@@ -269,14 +269,14 @@ classdef lfr   % < handle
 
 
             % ASSERTIONS
-            bicas.proc.L1RL2.assert_PreDC(PreDc)
+            bicas.proc.L1L2.assert_PreDC(PreDc)
 
         end    % process_CDF_to_PreDC
 
 
 
         function [OutSci] = process_PostDC_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
-            OutSci    = bicas.proc.L1RL2.tds.process_PostDC_to_CDF(...
+            OutSci    = bicas.proc.L1L2.tds.process_PostDC_to_CDF(...
                 SciPreDc, SciPostDc, outputDsi, L);
 
             OutSci.Zv.BW = SciPreDc.Zv.BW;
@@ -321,14 +321,14 @@ classdef lfr   % < handle
                     case 'USE_FILL_VALUE'
                         bicas.default_anomaly_handling(L, ...
                             settingValue, settingKey, 'other', ...
-                            anomalyDescrMsg, 'BICAS:L1RL2:DatasetFormat:SWModeProcessing')
+                            anomalyDescrMsg, 'BICAS:L1L2:DatasetFormat:SWModeProcessing')
 
                         L.logf('warning', 'Using fill values for %s.', zvName)
                         zv2 = nan(nRecords, 1);
 
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
-                            anomalyDescrMsg, 'BICAS:L1RL2:DatasetFormat:SWModeProcessing')
+                            anomalyDescrMsg, 'BICAS:L1L2:DatasetFormat:SWModeProcessing')
                 end
             end
 
