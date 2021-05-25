@@ -1,33 +1,44 @@
 %
-% Interprets a MATLAB variable as a JSON object and turns it into a string for printing/writing to file.
+% Interprets a MATLAB variable as a JSON object and turns it into a string for
+% printing/writing to file.
 %
 %
 % ARGUMENTS AND RETURN VALUE
 % ==========================
-% JsonObj            : Recursively nested data structure that can be interpreted as a JSON object.
-%                      - struct/containers.Map: Field names/keys are interpreted as "JSON object names".
-%                                               Values are interpreted recursively.
-%                      - cell array           : "JSON arrays/sets".
-% indentSize         : Number of whitespace per indentation level.
+% JsonObj            
+%       Recursively nested data structure that can be interpreted as a JSON
+%       object.
+%       - struct/containers.Map:
+%           Field names/keys are interpreted as "JSON object names".
+%           Values are interpreted recursively.
+%       - cell array:
+%           "JSON arrays/sets".
+% indentSize
+%       Number of whitespace per indentation level.
 %
 %
 % RETURN VALUE
 % ============
-% str                : Indented multi-line string that is suitable for printing and human reading.
-%                      NOTE: Uses line feed character for line breaks.
+% str
+%       Indented multi-line string that is suitable for printing and human
+%       reading.
+%       NOTE: Uses line feed character for line breaks.
 %
 %
 % NOTES
 % =====
-% This is NOT a rigorous implementation based on a good understanding of JSON objects.
+% This is NOT a rigorous implementation based on a good understanding of JSON
+% objects.
 % It therefore
 % ** does not check for permitted characters.
-% ** likely does not support all the functionality of JSON
-%   ** JSON might permit more types of "leaves"/objects than supported by this function.
+% ** likely does not support all the functionality of JSON:
+%   ** JSON might permit more types of "leaves"/objects than supported by this
+%      function.
 % --
 % Reasons to support:
 %   struct         : Easier to hard-code. For backward compatibility.
-%                    (Fieldnames are restricted. ==> object name strings are restricted.)
+%                    (Fieldnames are restricted. ==> object name strings are
+%                    restricted.)
 %   containers.Map : Can handle any object name string string.
 %
 %
@@ -36,9 +47,11 @@
 %
 function str = JSON_object_str(JsonObj, indentSize)
     %
-    % NOTE: Concerning the JSON syntax: "Whitespace is allowed and ignored around or between syntactic elements (values and
-    % punctuation, but not within a string value). Four specific characters are considered whitespace for this purpose:
-    % space, horizontal tab, line feed, and carriage return. JSON does not provide any syntax for comments."
+    % NOTE: Concerning the JSON syntax: "Whitespace is allowed and ignored
+    % around or between syntactic elements (values and punctuation, but not
+    % within a string value). Four specific characters are considered whitespace
+    % for this purpose: space, horizontal tab, line feed, and carriage return.
+    % JSON does not provide any syntax for comments."
     % Source: https://en.wikipedia.org/wiki/JSON
     %
     % PROPOSAL: Automatic test.
@@ -54,14 +67,17 @@ end
 
 
 
-%###################################################################################################
+%###############################################################################
+
 
 
 % Recursive function that does the actual interpretation.
 %
-% indentFirstLine : True/false; Determines whether the first line should be indented.
-%                   Can be useful for some layouts (placement of whitespace and line feeds).
-function str = print_JSON_object_recursive(JsonObj, indentationLevel, indentFirstLine, Settings)
+% indentFirstLine
+%       True/false; Determines whether the first line should be indented.
+%       Can be useful for some layouts (placement of whitespace and line feeds).
+function str = print_JSON_object_recursive(...
+        JsonObj, indentationLevel, indentFirstLine, Settings)
     
     %lineBreakStr = char(10);    % Should be same as sprintf('\n').
     INDENT_0_STR = repmat(' ', 1, Settings.indentSize *  indentationLevel   );
@@ -83,7 +99,9 @@ function str = print_JSON_object_recursive(JsonObj, indentationLevel, indentFirs
         
         for i = 1:length(JsonObj)
             % NOTE: RECURSIVE CALL
-            str = [str, print_JSON_object_recursive(JsonObj{i}, indentationLevel+1, true, Settings)];
+            str = [str, ...
+                print_JSON_object_recursive(JsonObj{i}, ...
+                indentationLevel+1, true, Settings)];
             
             if i < length(JsonObj)
                 str = [str, ','];
@@ -93,7 +111,8 @@ function str = print_JSON_object_recursive(JsonObj, indentationLevel, indentFirs
         str = [str, INDENT_0_STR, ']'];   % NOTE: No line break.
         
     elseif isstruct(JsonObj) || isa(JsonObj, 'containers.Map')
-        % CASE: Struct/containers.Map - Interpret every field/key as (named) JSON object.
+        % CASE: Struct/containers.Map - Interpret every field/key as (named)
+        %                               JSON object.
         
         [keysCa, valuesCa] = normalize_struct_Map_2_CA(JsonObj);
         
@@ -113,20 +132,26 @@ function str = print_JSON_object_recursive(JsonObj, indentationLevel, indentFirs
             
             if ischar(value)
                 % CASE: char value
-                fillStr = repmat(' ', 1, maxLengthKey+4 - length(keyStr));    % NOTE: Hard-coded constant (esthethics).
+                
+                % NOTE: Hard-coded constant (aesthetics).
+                fillStr = repmat(' ', 1, maxLengthKey+4 - length(keyStr));
                 str     = [str, fillStr, sprintf('"%s"', value)];
             else
-                % CASE: Non-char value ==> recurse
+                % CASE: Non-char value ==> RECURSIVE CALL
                 
                 % Alternative 1:
                 % Left square brackets/braces begin on their own line.
-                % Left & right brackets line up (same indentation). Is less (visually) compact.
-                %str = [str, settings.lineBreakStr, print_JSON_object_recursive(value, indentationLevel+1, true)];
+                % Left & right brackets line up (same indentation). Is less
+                % (visually) compact.
+%                 str = [str, settings.lineBreakStr, ...
+%                     print_JSON_object_recursive(...
+%                         value, indentationLevel+1, true)];
                 
                 % Alternative 2:
                 % Left square brackets/braces continue on the preceding line.
                 % Harder to visually match left & right brackets. More compact.
-                str = [str, '', print_JSON_object_recursive(value, indentationLevel+1, false, Settings)];
+                str = [str, '', print_JSON_object_recursive(...
+                    value, indentationLevel+1, false, Settings)];
             end
             
             if i < length(keysCa)
@@ -139,7 +164,8 @@ function str = print_JSON_object_recursive(JsonObj, indentationLevel, indentFirs
         str = [str, INDENT_0_STR, '}'];   % NOTE: No line break.
         
     else
-        error('BICAS:Assertion:IllegalArgument', 'Disallowed variable type. Neither structure nor cell array.')
+        error('BICAS:Assertion:IllegalArgument', ...
+            'Disallowed variable type. Neither structure nor cell array.')
     end
     
 end    % print_JSON_object_recursive

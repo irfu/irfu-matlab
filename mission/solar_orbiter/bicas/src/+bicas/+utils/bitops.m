@@ -21,7 +21,7 @@ classdef bitops
         % a : Non-empty vector of non-negative integers.
         %
         function b = or(a)
-            % PROPOSAL: Convert to simple function in proc_utils.
+            % PROPOSAL: Convert to simple function in bicas.proc.utils.
             % PROPOSAL: Can be replaced by any().
             %   CON: No it can't. any() operates on logical, not the multiple
             %        bits in integers.

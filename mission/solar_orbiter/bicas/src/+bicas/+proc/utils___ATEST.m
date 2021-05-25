@@ -1,12 +1,12 @@
-% Automated test code for functions in proc_utils.
+% Automated test code for functions in bicas.proc.utils.
 %
-% NOTE: Does NOT test all functions in proc_utils.
+% NOTE: Does NOT test all functions in bicas.proc.utils.
 % 
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-17
 %
-function proc_utils___ATEST
+function utils___ATEST
 % PROPOSAL: Generic function for testing a function without side effects. User submits function pointer, list of
 % argument lists, list of expected return results.
 %   NOTE: Has to handle approximate numeric results.

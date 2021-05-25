@@ -34,7 +34,6 @@ classdef L2L3
 
 
 
-
     %#############################
     %#############################
     methods(Static, Access=public)
@@ -390,9 +389,9 @@ classdef L2L3
             %==========================
             % CALL BICAS-EXTERNAL CODE
             %==========================
-            % NOTE: Not specifying the calibration file implies using the
-            % calibration file (hardcoded) that shall be used for official
-            % datasets.
+            % NOTE: Not specifying calibration file.
+            % ==> Use current official calibration file, hardcoded in
+            %     solo.vdccal(), that should be used for official datasets.
             [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
                 = solo.vdccal(VdcTs, EdcTs, []);
             clear VdcTs EdcTs
@@ -454,7 +453,7 @@ classdef L2L3
         % Calculate DENSITY via a BICAS-external code solo.psp2ne() (still
         % inside irfu-matlab).
         %
-        % Largely a wrapper around solo.psp2ne().
+        % Essentially a wrapper around solo.psp2ne().
         % 
         % NOTE: Needs to be careful with the units, and incompatible updates to
         % solo.vdccal() without the knowledge of the BICAS author. Therefore

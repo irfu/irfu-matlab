@@ -50,8 +50,10 @@
 % LSF    = LFR Sampling Frequency (F0...F3)
 %          NOTE: When used as an array index, 1=F0, ..., 4=F3.
 % TF     = Transfer function (Z=Z(omega))
-% FTF    = Forward Transfer Function = TF that describes physical input-to-output (not the reverse)
-% ITF    = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
+% FTF    = Forward Transfer Function = TF that describes physical
+%          INPUT-to-OUTPUT (not the reverse)
+% ITF    = Inverse Transfer Function = TF that describes physical
+%          OUTPUT-to-INPUT (not the reverse)
 % CTI    = CALIBRATION_TABLE_INDEX (zVar)
 % CTI1   = First  value in record of zVar CALIBRATION_TABLE_INDEX.
 % CTI2   = Second value in record of zVar CALIBRATION_TABLE_INDEX.
@@ -598,8 +600,8 @@ classdef cal < handle
         % samplesAVolt : 1D cell array of numeric 1D arrays.
         % CalSettings  : Struct that groups together arguments
         %   .iBlts     : 1..5.
-        %   .BltsSrc   : bicas.proc.L1L2.BLTS_src_dest describing where the signal comes
-        %                from.
+        %   .BltsSrc   : bicas.proc.L1L2.BLTS_src_dest describing where the
+        %                signal comes from.
         %   ...
         %
         function samplesCaAVolt = calibrate_LFR_full(obj, ...
@@ -1124,18 +1126,19 @@ classdef cal < handle
         %       requires user to not use CALIBRATION_TABLE_INDEX.
         %
         % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time.
-        % However, it is useful to be able to initialize bicas.proc.L1L2.cal so that it
-        % can simultanteously calibrate all kinds of data for debugging
+        % However, it is useful to be able to initialize bicas.proc.L1L2.cal so
+        % that it can simultanteously calibrate all kinds of data for debugging
         % purposes. Therefore loads ALL non-BIAS RCT types.
         %
         %
         % RETURN VALUE
         % ============
-        % RctDataMap : containers.Map. One key per non-BIAS RCT type ID. Value =
-        %              1x1 cell array with RCT data.
-        %              IMPLEMENTATION NOTE: Returns containers.Map to provide
-        %              the same interface to bicas.proc.L1L2.cal constructor as
-        %              bicas.proc.L1L2.cal.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE.
+        % RctDataMap : containers.Map.
+        %       One key per non-BIAS RCT type ID. Value = 1x1 cell array with
+        %       RCT data.
+        %       IMPLEMENTATION NOTE: Returns containers.Map to provide the same
+        %       interface to bicas.proc.L1L2.cal constructor as
+        %       bicas.proc.L1L2.cal.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE.
         % 
         function RctDataMap = find_read_non_BIAS_RCTs_by_regexp(rctDir, SETTINGS, L)
             

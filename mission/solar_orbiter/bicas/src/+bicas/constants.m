@@ -110,7 +110,7 @@ classdef constants   % < handle
         %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can
         % simultaneously be used to
-        % ** compile a list of legal NSO IDs in NSO table file
+        % ** compile a complete list of legal NSO IDs in NSO table file
         % ** reference specific constants (fields) throughout BICAS without
         %    hardcoding the actual NSO IDs in multiple places.
         %
@@ -137,6 +137,9 @@ classdef constants   % < handle
         %
         % IMPLEMENTATION NOTE: Not perfect solution since includes fill values,
         % but easy to implement as at least a temporary algorithm.
+        %
+        % NOTE: Currently used for both L2 downsampled and L3 downsampled.
+        % /2021-05-24
         N_MIN_SAMPLES_PER_DWNS_BIN = 3;
         
 
@@ -170,7 +173,8 @@ classdef constants   % < handle
             MAP('SWD.identification.identifier')  = 'BICAS';
             MAP('SWD.identification.description') = ...
                 ['Calibration software meant to', ...
-                ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
+                ' (1) calibrate electric field L2 data from', ...
+                    ' electric L1R LFR and TDS (LFM) data, and', ...
                 ' (2) calibrate bias currents from L1 data.'];
             
             % 2020-11-24: Latest document version is 01/04.
@@ -180,26 +184,30 @@ classdef constants   % < handle
             % Users":
             % """"""""
             % 2.2.3 RCS versioning
-            % The RCS version must be a unique number sequence identifier “X.Y.Z”,
-            % where “X” is an integer indicating the release (major changes, not
-            % necessarily retro-compatible), “Y” is an integer indicating the issue
-            % (minor changes, necessarily retro-compatible) and “Z” is an integer
-            % indicating a revision (e.g., bug correction).
+            % The RCS version must be a unique number sequence identifier
+            % “X.Y.Z”, where “X” is an integer indicating the release (major
+            % changes, not necessarily retro-compatible), “Y” is an integer
+            % indicating the issue (minor changes, necessarily retro-compatible)
+            % and “Z” is an integer indicating a revision (e.g., bug
+            % correction).
             % """"""""
             %
             %  ROC-PRO-PIP-ICD-00037-LES, "RPW Calibration Software Interface
             %  Control Document", 01/04:
             % """"""""
-            % "version" : Current version of the S/W. The RCS version shall be a unique number
-            % sequence identifier “X.Y.Z”, where “X” is an integer indicating the release (major
-            % changes, not necessarily retro-compatible), “Y” is an integer indicating the issue (minor
-            % changes, necessarily retro-compatible) and “Z” is an integer indicating a revision (e.g.,
-            % bug correction). The first stable release of software (S/W) must have its major number
-            % “X” equals to 1, its minor number “Y” equals to 0 and its revision number “Z” equals
-            % to 0 (i.e., “1.0.0”). S/W preliminary versions (e.g., alpha, beta, etc.) must have their
-            % version number “X” equals to 0 and must not have a character as a prefix/suffix
-            % (“0.Y.Zb” for the 0.Y.Z beta version for instance). In all cases, any change in the S/W
-            % must lead to update the version number.
+            % "version" : Current version of the S/W. The RCS version shall be a
+            % unique number sequence identifier “X.Y.Z”, where “X” is an integer
+            % indicating the release (major changes, not necessarily
+            % retro-compatible), “Y” is an integer indicating the issue (minor
+            % changes, necessarily retro-compatible) and “Z” is an integer
+            % indicating a revision (e.g., bug correction). The first stable
+            % release of software (S/W) must have its major number “X” equals to
+            % 1, its minor number “Y” equals to 0 and its revision number “Z”
+            % equals to 0 (i.e., “1.0.0”). S/W preliminary versions (e.g.,
+            % alpha, beta, etc.) must have their version number “X” equals to 0
+            % and must not have a character as a prefix/suffix (“0.Y.Zb” for the
+            % 0.Y.Z beta version for instance). In all cases, any change in the
+            % S/W must lead to update the version number.
             % """"""""
             MAP('SWD.release.version')            = '5.0.0';
             MAP('SWD.release.date')               = '2021-02-02T15:15:00Z';
@@ -242,13 +250,17 @@ classdef constants   % < handle
             %======================
             % ASSERTIONS: SETTINGS
             %======================
-            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
-            EJ_library.assert.castring_regexp(MAP('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
+            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), ...
+                '[0-9]+\.[0-9]+\.[0-9]+')
+            EJ_library.assert.castring_regexp(MAP('SWD.release.date'), ...
+                '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
             % Validate S/W release version
             % ----------------------------
-            % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
-            % NOTE: It is hard to thoroughly follow the description, but the end result should be under
-            % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
+            % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file
+            % validation scheme implies this regex.
+            % NOTE: It is hard to thoroughly follow the description, but the end
+            % result should be under release-->version-->pattern (not to be
+            % confused with release_dataset-->version--pattern).
             EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
 
         end
@@ -263,25 +275,58 @@ classdef constants   % < handle
             
             MAP = containers.Map('KeyType', 'char', 'ValueType', 'any');
             
-            MAP('NoError')                      = init_struct(0, 'No error');
-            MAP('BadMatlabVersion')             = init_struct(1, 'Using the wrong MATLAB version.');
-            MAP('UntranslatableErrorMsgId')     = init_struct(1, 'Error occurred, but code can not translate the error''s MATLAB message identifier into any of BICAS''s internal standard error codes.');
-            MAP('MatlabCodeErrorHandlingError') = init_struct(1, 'The MATLAB code''s own error handling failed.');
-            MAP('CLISyntax')                    = init_struct(1, 'Can not interpret command-line interface (CLI) arguments syntax.');
-            MAP('PathNotFound')                 = init_struct(1, 'A specified directory or file does not exist.');
-            MAP('PathNotAvailable')             = init_struct(1, 'A specified file can not be created since the path matches a pre-existing file/directory.');
-            MAP('CanNotOpenFile')               = init_struct(1, 'Can not open a file for reading/writing.');
-            MAP('OperationNotImplemented')      = init_struct(1, 'Execution has reached a portion of the code that has not been implemented yet.');
-            MAP('Assertion')                    = init_struct(1, 'Detected an internal state that should never be possible in a bug-free code that receives correct inputs.');
-            MAP('IllegalArgument')              = init_struct(1, 'An argument to an internal function had an illegal value.');
-            MAP('SWModeProcessing')             = init_struct(1, 'Error in s/w mode processing (processing datasets).');
-            MAP('DatasetFormat')                = init_struct(1, 'Error when interpreting (official CDF) input datasets, including master CDF files.');
-            MAP('IllegalCodeConfiguration')     = init_struct(1, 'Bad hard-coded configuration (or possibly configurable setting but should not be), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain user-controlled input.');
-            MAP('CannotInterpretConfigFile')    = init_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
-            MAP('ConfigurationBug')             = init_struct(1, 'Trying to configure BICAS in an illegal way.');
-            MAP('FailedToReadInterpretRCT')     = init_struct(1, 'Can not interpret the content of the calibration file (RCT) file, e.g. because the RCT contains invalid calibration values.');
-            MAP('FailedToReadInterpretNsOps')   = init_struct(1, 'Can not read or interpret the content of the non-standard operations file.');
-            MAP('CannotFindRegexMatchingRCT')   = init_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
+            MAP('NoError')                      = init_struct(0, ...
+                'No error');
+            MAP('BadMatlabVersion')             = init_struct(1, ...
+                'Using the wrong MATLAB version.');
+            MAP('UntranslatableErrorMsgId')     = init_struct(1, ...
+                ['Error occurred, but code can not translate the error''s', ...
+                ' MATLAB message identifier into any of BICAS''s internal', ...
+                ' standard error codes.']);
+            MAP('MatlabCodeErrorHandlingError') = init_struct(1, ...
+                'The MATLAB code''s own error handling failed.');
+            MAP('CLISyntax')                    = init_struct(1, ...
+                'Can not interpret command-line interface (CLI) arguments syntax.');
+            MAP('PathNotFound')                 = init_struct(1, ...
+                'A specified directory or file does not exist.');
+            MAP('PathNotAvailable')             = init_struct(1, ...
+                ['A specified file can not be created since the path', ...
+                ' matches a pre-existing file/directory.']);
+            MAP('CanNotOpenFile')               = init_struct(1, ...
+                'Can not open a file for reading/writing.');
+            MAP('OperationNotImplemented')      = init_struct(1, ...
+                ['Execution has reached a portion of the code that has', ...
+                ' not been implemented yet.']);
+            MAP('Assertion')                    = init_struct(1, ...
+                ['Detected an internal state that should never be possible', ...
+                ' in a bug-free code that receives correct inputs.']);
+            MAP('IllegalArgument')              = init_struct(1, ...
+                'An argument to an internal function had an illegal value.');
+            MAP('SWModeProcessing')             = init_struct(1, ...
+                'Error in s/w mode processing (processing datasets).');
+            MAP('DatasetFormat')                = init_struct(1, ...
+                ['Error when interpreting (official CDF) input datasets,', ...
+                ' including master CDF files.']);
+            MAP('IllegalCodeConfiguration')     = init_struct(1, ...
+                ['Bad hard-coded configuration (or possibly configurable', ...
+                ' setting but should not be), e.g. constants, S/W', ...
+                ' descriptor. This should ideally indicate a pure code', ...
+                ' bug, i.e. it is not triggered by certain user-controlled input.']);
+            MAP('CannotInterpretConfigFile')    = init_struct(1, ...
+                ['Can not interpret the content of the configuration file.', ...
+                ' This implies a problem with the syntax.']);
+            MAP('ConfigurationBug')             = init_struct(1, ...
+                'Trying to configure BICAS in an illegal way.');
+            MAP('FailedToReadInterpretRCT')     = init_struct(1, ...
+                ['Can not interpret the content of the calibration file', ...
+                ' (RCT) file, e.g. because the RCT contains invalid', ...
+                ' calibration values.']);
+            MAP('FailedToReadInterpretNsOps')   = init_struct(1, ...
+                ['Can not read or interpret the content of the non-standard', ...
+                ' operations file.']);
+            MAP('CannotFindRegexMatchingRCT')   = init_struct(1, ...
+                ['Can not find any matching calibration file to read. No', ...
+                ' file matches regular expression.']);
             
             % IMPLEMENTATION NOTE: Using a nested function merely to keep the
             % function call short.
@@ -319,19 +364,6 @@ classdef constants   % < handle
             %   CON: Makes overlap between similar entries harder.
             %   PRO: Enforces correct format.
             %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
-            %
-            % PROPOSAL: Utility function to add entry for selected DATASET_IDs. -- IMPLEMENTED
-            %       add_entry(MAP, entryStr, datasetIdsCa).
-            %       Verify that specified DATASET_IDs are valid keys.
-            %   PRO: One call corresponds to one conceptual adding of a BICAS
-            %        update.
-            %   PRO: Less use of temporary string variables. ==> Less risk of
-            %        mistakes.
-            %   CON: DATASET_IDs are long for being repeated hardcoded constants.
-            %   --
-            %   PROPOSAL: Incorporate assertion on entry strings.
-            %   PROPOSAL: Define lists of datasets if adding to recurring sets of
-            %             DATASET_IDs.
             
             
             %===========================================
@@ -399,7 +431,8 @@ classdef constants   % < handle
             % BICAS v3.0.0
             sTds = ...
                 ['2020-07-07 :: Bias currents changed to nA (not ampere).', ...
-                ' | Ignoring frequencies above high-frequency cutoff at 0.7 times Nyquist frequency.'];
+                ' | Ignoring frequencies above high-frequency cutoff at', ...
+                ' 0.7 times Nyquist frequency.'];
             sLfr = [sTds, ' | Hereafter copying LFR L1 zVar BW.'];            
             bicas.constants.add_MODS_entry(MAP, sLfr, ...
                 L2_LFR_DSIs)
@@ -440,10 +473,13 @@ classdef constants   % < handle
             
             % BICAS v4.1.0
             sTds = ['2020-12-07 :: ', ...
-                'Set QUALITY_FLAG and L2_QUALITY_BITMASK based on tabulated thruster firings.'];
+                'Set QUALITY_FLAG and L2_QUALITY_BITMASK based on', ...
+                ' tabulated thruster firings.'];
             sLfr = [sTds, ...
-                ' | Bugfixed AC detrending that only removes mean and does not add linear component (mostly SWF).', ...
-                ' | Inverting AC using artificial constant gain for low frequencies to not amplify noise.'];
+                ' | Bugfixed AC detrending that only removes mean and does', ...
+                  ' not add linear component (mostly SWF).', ...
+                ' | Inverting AC using artificial constant gain for low', ...
+                  ' frequencies to not amplify noise.'];
             bicas.constants.add_MODS_entry(MAP, sLfr, ...
                 L2_LFR_DSIs)
             bicas.constants.add_MODS_entry(MAP, sTds, ...
@@ -452,7 +488,8 @@ classdef constants   % < handle
             
             
             
-            % BICAS v5.0.0 (already delivered): No new L2 MODS entries (if excluding NSOPS update).
+            % BICAS v5.0.0 (already delivered):
+            % No new L2 MODS entries (if excluding NSOPS update).
             
             
             

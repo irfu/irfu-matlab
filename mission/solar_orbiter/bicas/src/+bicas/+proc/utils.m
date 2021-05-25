@@ -2,8 +2,6 @@
 % Collection of minor utility functions (in the form of static methods) used for
 % data processing.
 %
-% proc_utils = processing utilities
-%
 %
 % TERMINOLOGY
 % ===========
@@ -35,7 +33,6 @@ classdef utils
 % PROPOSAL: Split up SPR functions.
 %   convert_N_to_1_SPR_redistribute     -- Keep
 %   convert_N_to_1_SPR_Epoch            -- increment_in_record + convert_N_to_1_SPR_redistribute
-%   convert_N_to_1_SPR_ACQUISITION_TIME -- Keep
 %   convert_1_to_1_SPR_by_repeating     -- convert_1_to_N_SPR_by_repeating + convert_N_to_1_SPR_redistribute
 %   TODO-NI: Already done? Partially?
 
@@ -280,18 +277,21 @@ classdef utils
             ACQUISITION_TIME = double(ACQUISITION_TIME);
             atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;
             % NOTE: spdfcomputett2000 returns int64 (as it should).
-            tt2000 = spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) + int64(atSeconds * 1e9);
+            tt2000 = spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) ...
+                + int64(atSeconds * 1e9);
         end
         
 
         
         function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(...
                 tt2000, ACQUISITION_TIME_EPOCH_UTC)
+        %
         % Convert from tt2000 to ACQUISITION_TIME.
         %
         % ARGUMENTS
         % =========
-        % t_tt2000         : Nx1 vector. Required to be int64 like the real zVar Epoch.
+        % t_tt2000
+        %       Nx1 vector. Required to be int64 like the real zVar Epoch.
         %
         % RETURN VALUE
         % ============
@@ -327,35 +327,6 @@ classdef utils
 
 
 
-%         function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(...
-%             ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC)
-%         % Function intended for converting ACQUISITION_TIME (always one time per
-%         % record) from many samples/record to one sample/record. See
-%         % convert_N_to_1_SPR_Epoch which is analogous.
-%         % 
-%         % ARGUMENTS AND RETURN VALUES
-%         % ===========================
-%         % ACQUISITION_TIME_1         : Nx2 vector.
-%         % freqWithinRecords          : Nx2 vector.
-%         % ACQUISITION_TIME_2         : Nx2 vector.
-%         % ACQUISITION_TIME_EPOCH_UTC : UTC as 1x9 row vector.
-%         %
-%         % NOTE: Theoretically, the function should be independent of the exact
-%         % value of ACQUISITION_TIME_EPOCH_UTC.
-% 
-%         % Command-line algorithm "test code":
-%         % clear; t_rec = [1;2;3;4]; f = [5;1;5;20]; N=length(t_rec); M=5; I_sample=repmat(0:(M-1), [N, 1]); F=repmat(f, [1,M]); T_rec = repmat(t_rec, [1,M]); T = T_rec + I_sample./F; reshape(T', [numel(T), 1])
-%             
-%             % ASSERTIONS
-%             bicas.proc.utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
-% 
-%             tt2000_1           = bicas.proc.utils.ACQUISITION_TIME_to_TT2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
-%             tt2000_2           = EJ_library.so.convert_N_to_1_SPR_Epoch(     tt2000_1,           nSpr, freqWithinRecords);
-%             ACQUISITION_TIME_2 = bicas.proc.utils.TT2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
-%         end
-        
-        
-        
         function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
         %
         % Derive value for zVar DELTA_PLUS_MINUS.
@@ -398,7 +369,8 @@ classdef utils
                 % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
                 % that the unit is the same as for Epoch.
                 % NOTE: Seems to work for more than 2D.
-                zv_DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;    % Unit: nanoseconds
+                % Unit: nanoseconds
+                zv_DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;
             end
             zv_DELTA_PLUS_MINUS = cast(zv_DELTA_PLUS_MINUS, ...
                 EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...

@@ -84,6 +84,7 @@ classdef L2L2   % < handle
             BIN_LENGTH_WOLS_NS        = int64(1e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
 
+            % 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data.
             QUALITY_FLAG_minForUse = SETTINGS.get_fv(...
                 'PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN');
 
@@ -127,11 +128,11 @@ classdef L2L2   % < handle
             
             
             
-            %===================================
+            %===============================================
             % Downsample
             % ----------
-            % NOTE: Exclude EAC. /YK 2021-05-11
-            %===================================
+            % NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
+            %===============================================
             [OutLfrCwfDwns.Zv.VDC, ...
              OutLfrCwfDwns.Zv.VDCSTD] = bicas.proc.dwns.downsample_sci_zVar(...
                 zv_VDC, ...
