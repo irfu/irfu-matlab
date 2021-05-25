@@ -94,7 +94,9 @@ function Record = create_calib_table_record_DCC(testIdNbr, inputVoltageLogbookVo
     % Convenience function for assigning components in struct array.
     % NOTE: Does not assign all values, only some.
     %
-    % NOTE: Arguments are deliberately in the same order as the quoted testlogbook*.txt printouts.
+    % NOTE: Arguments are deliberately in the same order as the quoted
+    % testlogbook*.txt printouts.
+    %
     % PROPOSAL: Make into nested function
     % PROPOSAL: Abolish.
     % if length(varargin) == 0
@@ -102,7 +104,7 @@ function Record = create_calib_table_record_DCC(testIdNbr, inputVoltageLogbookVo
     % elseif length(varargin) == 1
     %     acGain = varargin{1};
     % else
-    %     error('BICAS:create_calib_table_record:Assertion', 'Illegal number of arguments.')
+    %     error('Illegal number of arguments.')
     % end
     
     Record = struct(...
@@ -274,17 +276,23 @@ function Test = test_data_IC()
     
     
     
-    Test = EJ_library.atest.CompareFuncResult(@solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'IC'}, {exp});
+    Test = EJ_library.atest.CompareFuncResult(...
+        @solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'IC'}, {exp});
     
 end
 
 
 
-function Record = create_calib_table_record_DCV_TF(testIdNbr, muxMode, outputChNbr, inputChNbr, acGain, invertedInput, commonModeInput)
+function Record = create_calib_table_record_DCV_TF(...
+        testIdNbr, muxMode, outputChNbr, inputChNbr, acGain, ...
+        invertedInput, commonModeInput)
+    %
     % Convenience function for assigning components in struct array.
     % NOTE: Does not assign all values, only some.
     %
-    % NOTE: Arguments are deliberately in the same order as the quoted testlogbook*.txt printouts.
+    % NOTE: Arguments are deliberately in the same order as the quoted
+    % testlogbook*.txt printouts.
+    %
     % PROPOSAL: Make into nested function
     % PROPOSAL: Abolish.
     % if length(varargin) == 0
@@ -292,7 +300,7 @@ function Record = create_calib_table_record_DCV_TF(testIdNbr, muxMode, outputChN
     % elseif length(varargin) == 1
     %     acGain = varargin{1};
     % else
-    %     error('BICAS:create_calib_table_record:Assertion', 'Illegal number of arguments.')
+    %     error('Illegal number of arguments.')
     % end
     
     Record = struct(...
@@ -310,7 +318,8 @@ end
 
 
 function StructArray = set_field(StructArray, nLastIndices, fieldName, fieldValue)
-    % Utility function for assigning a specified field in the last N components in a 1D struct array.
+    % Utility function for assigning a specified field in the last N components
+    % in a 1D struct array.
     
     for i = numel(StructArray) + [(-nLastIndices+1) : 0]
         StructArray(i).(fieldName) = fieldValue;
