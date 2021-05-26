@@ -127,15 +127,18 @@ for j=1:length(h)
 end
 
 % do not display the mark as a legend entry
-hMarks = get(hp,'Annotation');
-if numel(hMarks) > 1
-  for iMark = 1:numel(h)
-    set(get(hMarks{iMark},'LegendInformation'),'IconDisplayStyle','off') 
+% hp might not have been set if used on a spectrogram
+if isgraphics(hp)
+  hMarks = get(hp,'Annotation');
+  if numel(hMarks) > 1
+    for iMark = 1:numel(h)
+      set(get(hMarks{iMark},'LegendInformation'),'IconDisplayStyle','off')
+    end
+  else
+    set(get(hMarks,'LegendInformation'),'IconDisplayStyle','off')
   end
-else
-  set(get(hMarks,'LegendInformation'),'IconDisplayStyle','off')
 end
-
+    
 
 
 if nargout > 0
