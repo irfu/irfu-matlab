@@ -1,8 +1,8 @@
-function out = polarization(t,Ex,Ey,sizeFFT,avnumber)
+function out = polarization(t,x,y,sizeFFT,avnumber)
 
 %POLARIZATION  Calculate polarization parameters for a given equidistant signal
 %
-% out = POLARIZATION(t,Ex,Ey,step,av,thresh,plotflag) calculates the polarization
+% out = POLARIZATION(t,x,y,sizeFFT,average) calculates the polarization
 % parameters for a given signal. The polarisation parameters are the
 % Horizontal Spectral Intensity, the Horizontal Degree of
 % Polarization, the Degree of Pure Circular Polarization and the
@@ -13,7 +13,7 @@ function out = polarization(t,Ex,Ey,sizeFFT,avnumber)
 %  t        = time (in epoch)
 %  Ex, Ey   = The x and y components of the signal
 %  sizeFFT  = size of each FFT (default 256)
-%  av       = number of spectra to average over (default 4)
+%  average  = number of spectra to average over (default 4)
 %
 % OUTPUT is structure with following fields:
 %  out.tiltAngleDeg
@@ -32,7 +32,7 @@ function out = polarization(t,Ex,Ey,sizeFFT,avnumber)
 %
 
 %% Check the input
-%warning off
+
 if nargin>7
   error('Too many arguments')
 end
@@ -45,13 +45,17 @@ end
 if nargin<3
   error('Too few arguments')
 end
+if numel(t) < 4
+  error('Time series should have at least 4 points');
+end
 
-Ex=Ex(:);
-Ey=Ey(:);
+x=x(:);
+y=y(:);
 
 %% Check the sampling rate
 
-sampl = 1/(t(2)-t(1));
+% when analysing snapshots sometimes the first step is zero, therefore take 2nd step
+sampl = 1/(t(3)-t(2)); 
 
 %% Create the Hamming window function
 
@@ -63,13 +67,13 @@ normalisation=w*w'/sizeFFT;
 
 n=sizeFFT-1;
 nd2=ceil(n/2);
-for j=1:sizeFFT/2:length(Ex)-sizeFFT
-  Yx=fft(detrend(Ex(j:j+sizeFFT-1)).*w.');
-  Yy=fft(detrend(Ey(j:j+sizeFFT-1)).*w.');
+for j=1:sizeFFT/2:length(x)-sizeFFT
+  Yx=fft(detrend(x(j:j+sizeFFT-1)).*w.');
+  Yy=fft(detrend(y(j:j+sizeFFT-1)).*w.');
   Yx(1)=[];
   Yy(1)=[];
-  fEx(:,2*((j-1)/sizeFFT+1)-1)=Yx(1:nd2)/n;
-  fEy(:,2*((j-1)/sizeFFT+1)-1)=Yy(1:nd2)/n;
+  fX(:,2*((j-1)/sizeFFT+1)-1)=Yx(1:nd2)/n;
+  fY(:,2*((j-1)/sizeFFT+1)-1)=Yy(1:nd2)/n;
   T(2*((j-1)/sizeFFT+1)-1)=t(j+sizeFFT/2);
 end
 
@@ -80,10 +84,10 @@ freq = sampl*(1:nd2)/(nd2)*nyq;
 
 %% Calculate the polarisation parameters
 
-I=real(fEx.*conj(fEx)+fEy.*conj(fEy))/normalisation;
-Q=real(fEx.*conj(fEx)-fEy.*conj(fEy))/normalisation;
-U=2*real(fEx.*conj(fEy))/normalisation;
-V=2*imag(fEx.*conj(fEy))/normalisation;
+I=real(fX.*conj(fX)+fY.*conj(fY))/normalisation;
+Q=real(fX.*conj(fX)-fY.*conj(fY))/normalisation;
+U=2*real(fX.*conj(fY))/normalisation;
+V=2*imag(fX.*conj(fY))/normalisation;
 
 %% Create mean values
 
@@ -94,10 +98,10 @@ for j=1:avnumber
   Utemp=Utemp+[zeros(sizeFFT/2,j-1),U,zeros(sizeFFT/2,avnumber-j)];
   Vtemp=Vtemp+[zeros(sizeFFT/2,j-1),V,zeros(sizeFFT/2,avnumber-j)];
 end
-Imean=Itemp(:,1:size(fEx,2))/avnumber; Imean=Imean(:,avnumber:end);
-Qmean=Qtemp(:,1:size(fEx,2))/avnumber; Qmean=Qmean(:,avnumber:end);
-Umean=Utemp(:,1:size(fEx,2))/avnumber; Umean=Umean(:,avnumber:end);
-Vmean=Vtemp(:,1:size(fEx,2))/avnumber; Vmean=Vmean(:,avnumber:end);
+Imean=Itemp(:,1:size(fX,2))/avnumber; Imean=Imean(:,avnumber:end);
+Qmean=Qtemp(:,1:size(fX,2))/avnumber; Qmean=Qmean(:,avnumber:end);
+Umean=Utemp(:,1:size(fX,2))/avnumber; Umean=Umean(:,avnumber:end);
+Vmean=Vtemp(:,1:size(fX,2))/avnumber; Vmean=Vmean(:,avnumber:end);
 T=T(avnumber:end);
 
 root=sqrt(Qmean.*Qmean+Umean.*Umean+Vmean.*Vmean);
@@ -111,5 +115,3 @@ out.powerSpectralDensity = (2*n*Imean/sampl)';
 out.frequency            = freq;
 out.time                 = T(:);
 
-%suptitle(datestr(epoch2date(t0),31))
-warning on
