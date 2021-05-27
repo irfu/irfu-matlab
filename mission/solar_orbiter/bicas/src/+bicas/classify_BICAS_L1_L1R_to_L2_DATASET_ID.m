@@ -21,9 +21,6 @@
 %
 function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
     % PROPOSAL: Automatic test code.
-    % PROPOSAL: Should be part of BICAS.
-    %   PRO: Directly related to and defined by BICAS, despite being relevant
-    %        outside of BICAS.
     
     [~, datasetLevel, descriptor] = ...
         EJ_library.so.adm.disassemble_DATASET_ID(datasetId);

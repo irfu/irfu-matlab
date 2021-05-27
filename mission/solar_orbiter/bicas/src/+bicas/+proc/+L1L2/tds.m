@@ -33,7 +33,7 @@ classdef tds   % < handle
 
             nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
 
-            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
 
 
             %===================================
@@ -179,7 +179,7 @@ classdef tds   % < handle
             EJ_library.assert.struct(InSci,     {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
-            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
 
 
 
@@ -332,7 +332,7 @@ classdef tds   % < handle
 
 
 
-            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(outputDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(outputDsi);
 
             % NOTE: The two cases are different in the indexes they use for
             % OutSciZv.

@@ -165,7 +165,7 @@ classdef lfr   % < handle
 
 
 
-            C = EJ_library.so.adm.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
 
 
 
