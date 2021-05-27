@@ -260,11 +260,11 @@ classdef dwns   % < handle
             % ASSERTIONS
             % ----------
             % Does not assert monotonic increase.
-            bicas.proc.utils.assert_zv_Epoch(zvAllTt2000)
+            bicas.utils.assert_zv_Epoch(zvAllTt2000)
             % NOTE: Function algorithm assumes this monotonic increase.
             assert(issorted(zvAllTt2000, 'strictascend'))
             %
-            bicas.proc.utils.assert_zv_Epoch(boundaryRefTt2000)
+            bicas.utils.assert_zv_Epoch(boundaryRefTt2000)
             assert(isscalar(boundaryRefTt2000))
             assert(isscalar(binLengthWolsNs))
             assert(isa(binLengthWolsNs,       'int64'))

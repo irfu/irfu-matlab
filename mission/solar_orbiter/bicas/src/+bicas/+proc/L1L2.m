@@ -129,7 +129,7 @@ classdef L1L2
                     bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
-            bicas.proc.utils.log_zVars(TimeVars, SETTINGS, L);
+            bicas.utils.log_zVars(TimeVars, SETTINGS, L);
 
 
 
@@ -521,7 +521,7 @@ classdef L1L2
             %           outside (trivial).
             % PROPOSAL: Separate function for logging which records that should be removed.
 
-            bicas.proc.utils.assert_zv_Epoch(zvEpoch)
+            bicas.utils.assert_zv_Epoch(zvEpoch)
             assert(islogical(isLfr));
 
             %===============

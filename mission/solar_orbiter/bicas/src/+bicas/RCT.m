@@ -227,8 +227,8 @@ classdef RCT
                 % ASSERTIONS:
                 % All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %==============================================================
-                bicas.proc.utils.assert_zv_Epoch(RctData.epochL)
-                bicas.proc.utils.assert_zv_Epoch(RctData.epochH)
+                bicas.utils.assert_zv_Epoch(RctData.epochL)
+                bicas.utils.assert_zv_Epoch(RctData.epochH)
                 validateattributes(RctData.epochL, {'numeric'}, {'increasing'})
                 validateattributes(RctData.epochH, {'numeric'}, {'increasing'})
 

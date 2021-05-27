@@ -91,7 +91,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     % Log data read from CDF file
-    bicas.proc.utils.log_zVars(ZvsLog, SETTINGS, L)
+    bicas.utils.log_zVars(ZvsLog, SETTINGS, L)
     
     
     
