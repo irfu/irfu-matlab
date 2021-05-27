@@ -49,7 +49,7 @@ a = load(calfile_name);
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
 %===========================================================================
-codeVerStr = '2021-05-25T12:00:00';
+codeVerStr = '2021-05-27T09:00:00';
 % Version of the .mat file. Using filename, or at least for now.
 [~, basename, suffix] = fileparts(calfile_name);
 matVerStr  = [basename, suffix];   % Only use filename, not entire path.
@@ -66,7 +66,12 @@ matVerStr  = [basename, suffix];   % Only use filename, not entire path.
 %==============================================================================
 
 %load Probe-potential discontinuities
-discontTimes=solo.ProbePotDiscontinuities;
+allDiscontTimes=solo.ProbePotDiscontinuities;
+%Time interval defined by the calibration file
+calTint = irf.tint(a.d23.time(1),a.d23.time(end));
+%We only care about discontinuities inside the calibration interval
+discontTimes = EpochTT(allDiscontTimes.epoch(allDiscontTimes.epoch<=calTint.epoch(2)));
+
 mainTint = irf.tint(VDC_inp.time(1),VDC_inp.time(end));
 sub_int_times = EpochTT(solo.split_tint(mainTint,discontTimes));
 
@@ -91,12 +96,12 @@ for isub=1:length(sub_int_times)-1
         subTint=irf.tint(last_discont,next_discont);
     elseif isempty(last_discont)
         % If there are no discontinuities before the specified time,
-        % increase interval by 10 hours before.
-        subTint = irf.tint(tempTint(1)+(-10*60*60),next_discont);
+        % increase interval by 2 days before.
+        subTint = irf.tint(tempTint(1)+(-2*24*60*60),next_discont);
     elseif isempty(next_discont)
         % If there are no discontinuities after the specified time,
-        % increase interval by 10 hours after.
-        subTint = irf.tint(last_discont,tempTint(end)+(10*60*60));
+        % increase interval by 2 days after.
+        subTint = irf.tint(last_discont,tempTint(end)+(2*24*60*60));
     end
 
     %%
