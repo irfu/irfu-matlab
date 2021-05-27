@@ -424,6 +424,7 @@ classdef assert
             %   formats".
             %       Ex: EJ_library.so.adm.create_dataset_filename().
             
+            assert(isstruct(S))
             structFnSet          = fieldnames(S);
             
             missingRequiredFnSet = setdiff(requiredFnSet, structFnSet);

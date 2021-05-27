@@ -6,9 +6,11 @@
 %
 % ARGUMENTS
 % =========
-% size     : 1D numeric array. If size implies a non-zero number of elemnts,
-%            then the fields will all be set to [].
-% varargin : Arbitrary number of arguments representing fieldnames.
+% size     
+%       1D numeric array. If size implies a non-zero number of elemnts, then the
+%       fields will all be set to [].
+% varargin
+%       Arbitrary number of arguments representing fieldnames.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden

@@ -4,14 +4,16 @@
 %
 % ARGUMENTS
 % =========
-% datasetId : DATASET_ID for any BICAS processing L1/L1R-->L2 datasets.
-%             Assertion error if other DATASET_ID.
-%             NOTE: Excludes CURRENT, SWEEP, HK, L3 datasets.
+% datasetId
+%       DATASET_ID for any BICAS processing L1/L1R-->L2 datasets.
+%       Assertion error if other DATASET_ID.
+%       NOTE: Excludes CURRENT, SWEEP, HK, L3 datasets.
 %
 %
 % RETURN VALUES
 % =============
-% C : Struct with fields for relevant flags.
+% C
+%       Struct with fields for relevant flags.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -19,20 +21,25 @@
 %
 function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
     % PROPOSAL: Automatic test code.
+    % PROPOSAL: Should be part of BICAS.
+    %   PRO: Directly related to and defined by BICAS, despite being relevant
+    %        outside of BICAS.
     
-    [~, datasetLevel, descriptor] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
+    [~, datasetLevel, descriptor] = ...
+        EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
     
     C.isL1  = false;
     C.isL1r = false;
     C.isL2  = false;
     % One flag per type of input/output voltage data.
-    % IMPLEMENTATION NOTE: Avoiding the flag name isLfrCwf since it is ambiguous. isLfrSurvSwf is chosen in analogy with isLfrSurvCwf.
+    % IMPLEMENTATION NOTE: Avoiding the flag name isLfrCwf since it is
+    % ambiguous. isLfrSurvSwf is chosen in analogy with isLfrSurvCwf.
     C.isLfrSbm1    = false;
     C.isLfrSbm2    = false;
     C.isLfrSurvCwf = false;
     C.isLfrSurvSwf = false;
     C.isTdsCwf     = false;
-    C.isTdsRswf    = false;    
+    C.isTdsRswf    = false;
     
     switch(datasetLevel)
         case 'L1'
@@ -48,7 +55,9 @@ function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
             descriptorNormalized = descriptor(1:end-2);
             
         otherwise
-            error('datasetId="%s" is not a legal BICAS L1/L1R input DATASET_ID.', datasetId)
+            error(...
+                'datasetId="%s" is not a legal BICAS L1/L1R input DATASET_ID.', ...
+                datasetId)
     end
     
     switch(descriptorNormalized)
@@ -59,7 +68,9 @@ function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
         case 'RPW-TDS-LFM-CWF'  ; C.isTdsCwf     = true;
         case 'RPW-TDS-LFM-RSWF' ; C.isTdsRswf    = true;
         otherwise
-            error('datasetId="%s" is not a legal BICAS L1/L1R input DATASET_ID.', datasetId)
+            error(...
+                'datasetId="%s" is not a legal BICAS L1/L1R input DATASET_ID.', ...
+                datasetId)
     end
     
     %================================================

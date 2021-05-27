@@ -17,8 +17,8 @@
 % DUPLICATE BIAS ANOMALY
 % ======================
 % There has historically been a mitigatable data anomaly in the CURRENT datasets
-% in the form of repeated bias current values (same timestamp, same bias current).
-% This was due to a ROC GitLab BICAS issue #17,
+% in the form of repeated bias current values (same timestamp, same bias
+% current). This was due to a ROC GitLab BICAS issue #17,
 % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/17
 % The ROC issue should be fixed now. /Erik P G Johansson, 2020-09-15
 %
@@ -41,24 +41,29 @@
 %
 % ARGUMENTS
 % =========
-% t1        : Nx1 vector. Increasing (sorted; assertion), not necessarily
-%             monotonically. Time. Time representation unimportant as long as
-%             increases with time. Can be e.g. TT2000.
-% zvIBIASx1 : Nx1 vector. Floating-point. Same length as t1. Bias values.
-%             NOTE: NaN is fill value (not e.g. -1e31).
+% t1
+%       Nx1 vector. Increasing (sorted; assertion), not necessarily
+%       monotonically. Time. Time representation unimportant as long as
+%       increases with time. Can be e.g. TT2000.
+% zvIBIASx1
+%       Nx1 vector. Floating-point. Same length as t1. Bias values.
+%       NOTE: NaN is fill value (not e.g. -1e31).
 %
 %
 % RETURN VALUES
 % =============
-% t2                : 1D vector. Time. Same type of time as t1.
-%                     Subset of timestamps t1. See algorithm.
-% zvIBIASx2         : 1D vector. Current values at t2. Double.
-% duplicatesAnomaly : Whether has detected known anomaly mentioned above in
-%                     SOLO_L1_RPW-BIA-CURRENT datasets. Iff 1/true, then found
-%                     duplicate timestamps, with the SAME bias current.
-%                     NOTE: Bias current is still unambiguous in this case and
-%                     the function is designed to handle this case.
-%                     RATIONALE: Caller (e.g. BICAS) can give error, warning.
+% t2                
+%       1D vector. Time. Same type of time as t1.
+%       Subset of timestamps t1. See algorithm.
+% zvIBIASx2
+%       1D vector. Current values at t2. Double.
+% duplicatesAnomaly
+%       Whether has detected known anomaly mentioned above in
+%       SOLO_L1_RPW-BIA-CURRENT datasets. Iff 1/true, then found duplicate
+%       timestamps, with the SAME bias current.
+%       NOTE: Bias current is still unambiguous in this case and the
+%       function is designed to handle this case.
+%       RATIONALE: Caller (e.g. BICAS) can give error, warning.
 %
 %
 %
@@ -110,14 +115,16 @@ function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current(t1, zvIBIASx
         % Set bDupl = whether component (timestamp) is followed by identical
         % value (duplicate).
         bDupl = (diff(t1) == 0);
-        bDupl = [bDupl(:); false];   % Add last component to maintain same vector length.
+        % Add last component to maintain same vector length.
+        bDupl = [bDupl(:); false]; 
         iDupl = find(bDupl);
         
         % ASSERTION: Successive duplicate timestamps correspond to identical
         % bias settings.
         assert(all(zvIBIASx1(iDupl) == zvIBIASx1(iDupl+1)), ...
             'TC_to_current:Assertion', ...
-            'Bias currents contain non-equal current values on equal timestamps on the same antenna.');
+            ['Bias currents contain non-equal current values on equal', ...
+            ' timestamps on the same antenna.']);
         
         %=============================
         % Mitigate: Remove duplicates
@@ -129,7 +136,8 @@ function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current(t1, zvIBIASx
         % ASSERTION: Epoch increases monotonically (after mitigation)
         assert(issorted(t1, 'strictascend'), ...
             'CURRENT_zv_to_current:Assertion', ...
-            'Bias current timestamps do not increase monotonically after removing duplicate bias settings.')
+            ['Bias current timestamps do not increase monotonically after', ...
+            ' removing duplicate bias settings.'])
     else
         % CASE: Timestamps do increase monotonically.
         duplicatesAnomaly = 0;
