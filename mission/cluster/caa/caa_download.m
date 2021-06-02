@@ -118,14 +118,14 @@ end
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
 % https://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
-Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa/aio/';
-Default.Csa.urlQuery            = 'product-action?&NON_BROWSER';
-Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';
-Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';
-Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';
-Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';
-Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
-Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
+Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
+Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
+Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
+Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
+Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';  %% FIXME: METADATA changed drastically with move to "tap"
+Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
+Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
+Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
 Default.Csa.urlListFormat       = '&RETURN_TYPE=CSV';
 Default.Csa.urlNotifyOn         = '';
 Default.Csa.urlNotifyOff        = '&NO_NOTIFY';
@@ -161,9 +161,9 @@ elseif nargout>0 && nargin>0 % [..]=caa_download(..)
   doLog = false;
 end
 
-if nargin>=1 % check if first argument is not caa zip or tar.gz file link
+if nargin>=1 % check if first argument is not caa .zip or tar.gz or .tgz file link
   if ischar(tint) && ...
-      (any(regexp(tint,'\.zip')) || any(regexp(tint,'\.tar.gz'))) % tint is file link
+      (any(regexp(tint,'\.(tar.gz)|(tgz)|(zip)'))) % tint is file link
     specifiedFileLink = true;
     if nargin > 1
       varargin=[dataset varargin];
