@@ -40,7 +40,7 @@ end
 %% Create index file
 if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
   irf.log('warning','Getting all metadata from CAA, be very patient...');
-  urlMetaData = 'https://csaint.esac.esa.int/csa/aio/product-action';
+  urlMetaData = 'https://csaint.esac.esa.int/csa/aio/product-action';  %% FIXME: Cluster move to TAP, url change but Header requests (counts as data) does not yet supported as of 2021-06-02 according to https://www.cosmos.esa.int/web/csa/caiototap
   csaID = get_url_identity;
   % Create temporary directory, download and unpack files
   tempDir = tempname;
