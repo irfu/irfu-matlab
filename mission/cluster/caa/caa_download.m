@@ -122,11 +122,12 @@ Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
 Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
-Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';  %% FIXME: METADATA changed drastically with move to "tap"
+%Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';  %% FIXME: METADATA changed drastically with move to "tap"
+Default.Csa.urlInventory        = 'tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=CSV';
 Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
 Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
-Default.Csa.urlListFormat       = '&RETURN_TYPE=CSV';
+Default.Csa.urlListFormat       = '&FORMAT=CSV';
 Default.Csa.urlNotifyOn         = '';
 Default.Csa.urlNotifyOff        = '&NO_NOTIFY';
 Default.Csa.urlDataset          = '&DATASET_ID=';
@@ -324,7 +325,7 @@ end
 caaQuery            = [Caa.urlServer urlQuery urlIdentity urlDataFormat...
   urlFileInterval urlNonotify urlIngestedSince];
 caaStream           = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
-caaInventory        = [Caa.urlServer Caa.urlInventory       urlListFormat ];
+caaInventory        = [Caa.urlServer Caa.urlInventory];
 caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
 caaListDataset	    = [Caa.urlServer Caa.urlListDataset     urlListFormat ];
 caaListDatasetDesc  = [Caa.urlServer Caa.urlListDatasetDesc urlListFormat ];
@@ -406,9 +407,9 @@ if specifiedTimeInterval
   t2UTC = tintUTC(divider+1:end);
   queryTime = ['&START_DATE=' t1UTC '&END_DATE=' t2UTC];
   queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2UTC '''',...
-    ' AND FILE.END_DATE >= ''' t1UTC ''''];
-  queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2UTC '''',...
-    ' AND DATASET_INVENTORY.END_TIME >= ''' t1UTC ''''];
+    ' AND FILE.END_DATE >= ''' t1UTC ''''];  %FIXME rewrite to use "+" and sql style..
+  queryTimeInventory = ['+AND+start_time<=''' t2UTC '''',...
+    '+AND+end_time>=''' t1UTC '''+ORDER+BY+start_time'];
 end
 
 %% define queryDataset and queryDatasetInventory
@@ -807,7 +808,8 @@ end
       end
     end
     queryDataset = ['&DATASET_ID=' filter];
-    queryDatasetInventory = ['&QUERY=DATASET.DATASET_ID like ''' csa_parse_url(filter) ''''];
+    % queryDatasetInventory = ['&QUERY=DATASET.DATASET_ID like ''' csa_parse_url(filter) ''''];
+    queryDatasetInventory = ['&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory+WHERE+dataset_id+like+''' csa_parse_url(filter) ''''];
   end
 
 % Nested function. Get CSA identity
