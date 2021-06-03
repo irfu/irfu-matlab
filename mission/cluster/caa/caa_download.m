@@ -123,7 +123,7 @@ Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 %Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';  %% FIXME: METADATA changed drastically with move to "tap"
-Default.Csa.urlInventory        = 'tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=CSV';
+Default.Csa.urlInventory        = 'tap/sync?REQUEST=doQuery&LANG=ADQL';
 Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
 Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
@@ -325,7 +325,7 @@ end
 caaQuery            = [Caa.urlServer urlQuery urlIdentity urlDataFormat...
   urlFileInterval urlNonotify urlIngestedSince];
 caaStream           = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
-caaInventory        = [Caa.urlServer Caa.urlInventory];
+caaInventory        = [Caa.urlServer Caa.urlInventory       urlListFormat ];
 caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
 caaListDataset	    = [Caa.urlServer Caa.urlListDataset     urlListFormat ];
 caaListDatasetDesc  = [Caa.urlServer Caa.urlListDatasetDesc urlListFormat ];
@@ -643,28 +643,28 @@ end
     if(isempty(tmpGetRequest))
       [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave introduced in R2014b
     else
-      %       if verLessThan('matlab','8.4')
+            if verLessThan('matlab','8.4')
       [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
         'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
-      %       else
-      %         indUser = strcmp(tmpGetRequest, 'USERNAME');
-      %         indPass = strcmp(tmpGetRequest, 'PASSWORD');
-      %         webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
-      %           'Username', tmpGetRequest{find(indUser)+1}, ...
-      %           'Password', tmpGetRequest{find(indPass)+1});
-      %         tmpGetRequest(indUser) = []; % Clear USERNAME
-      %         tmpGetRequest(indUser(1:end-1)) = [];
-      %         indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
-      %         tmpGetRequest(indPass) = [];
-      %         tmpGetRequest(indPass(1:end-1)) = [];
-      %         try
-      %           downloadedFile = websave(downloadedFile, urlLink, ...
-      %             tmpGetRequest{:}, webOpt);
-      %           isZipFileReady = true;
-      %         catch
-      %           isZipFileReady = false;
-      %         end
-      %       end
+            else
+              indUser = strcmp(tmpGetRequest, 'USERNAME');
+              indPass = strcmp(tmpGetRequest, 'PASSWORD');
+              webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+                'Username', tmpGetRequest{find(indUser)+1}, ...
+                'Password', tmpGetRequest{find(indPass)+1});
+              tmpGetRequest(indUser) = []; % Clear USERNAME
+              tmpGetRequest(indUser(1:end-1)) = [];
+              indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+              tmpGetRequest(indPass) = [];
+              tmpGetRequest(indPass(1:end-1)) = [];
+              try
+                downloadedFile = websave(downloadedFile, urlLink, ...
+                  tmpGetRequest{:}, webOpt);
+                isZipFileReady = true;
+              catch
+                isZipFileReady = false;
+              end
+            end
     end
     
     if isZipFileReady %
@@ -929,9 +929,11 @@ function [url, getRequest] = splitUrlLink(urlLink)
 % CSA is to replace thier interface from 2016/05/04 onward.
 if(~isempty(regexpi(urlLink,'password')))
   % It it a password protected page being requested, split it.
-  tmpSplit = strsplit(urlLink,'&');
-  url = strrep(tmpSplit{1}, '?',''); % strip "?"
-  for ii=2:length(tmpSplit)
+  urlLink = strsplit(urlLink, '?');
+  url = urlLink{1};
+  tmpSplit = strsplit(urlLink{2},'&');
+  % url = strrep(tmpSplit{1}, '?',''); % strip "?"
+  for ii=1:length(tmpSplit)
     tmpSplit2 = strsplit(tmpSplit{ii},'=');
     % Single element, such as "NON_BROWSER", Add "1" as second argument.
     if(size(tmpSplit2,2)==1), tmpSplit2{2}='1'; end
