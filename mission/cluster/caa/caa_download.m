@@ -122,7 +122,6 @@ Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
 Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
-%Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';  %% FIXME: METADATA changed drastically with move to "tap"
 Default.Csa.urlInventory        = 'tap/sync?REQUEST=doQuery&LANG=ADQL';
 Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
 Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
@@ -583,7 +582,9 @@ end
       if(isempty(tmpGetRequest))
         [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave introduced in R2014b
       else
-        %         if verLessThan('matlab', '8.4')
+        %         if verLessThan('matlab', '8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
+        % websave was introduced in 2014b, but websave failed for
+        % Cluster data with Username/Password on 2019b so this is a fallback.
         [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
           'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
         %         else
@@ -643,9 +644,11 @@ end
     if(isempty(tmpGetRequest))
       [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave introduced in R2014b
     else
-            if verLessThan('matlab','8.4')
-      [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
-        'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
+            if verLessThan('matlab','8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
+              % websave was introduced in 2014b, but websave failed for
+              % Cluster data with Username/Password on 2019b so this is a fallback.
+              [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
+                'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
             else
               indUser = strcmp(tmpGetRequest, 'USERNAME');
               indPass = strcmp(tmpGetRequest, 'PASSWORD');
@@ -795,6 +798,8 @@ end
     if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list files
       if strcmpi(dataset,'list') && strcmpi(dataset,'listdesc') % list all files
         filter='*';
+      elseif isequal(lower(dataset), 'inventory')
+        filter='*';  % called with only "inventory".
       else                        % list only filtered files
         filter=dataset(strfind(dataset,':')+1:end);
       end
@@ -808,7 +813,6 @@ end
       end
     end
     queryDataset = ['&DATASET_ID=' filter];
-    % queryDatasetInventory = ['&QUERY=DATASET.DATASET_ID like ''' csa_parse_url(filter) ''''];
     queryDatasetInventory = ['&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory+WHERE+dataset_id+like+''' csa_parse_url(filter) ''''];
   end
 
@@ -927,12 +931,11 @@ end
 function [url, getRequest] = splitUrlLink(urlLink)
 % Help function to split CSA url requests to account for new interface.
 % CSA is to replace thier interface from 2016/05/04 onward.
-if(~isempty(regexpi(urlLink,'password')))
+if(~isempty(regexpi(urlLink,'password', 'once')))
   % It it a password protected page being requested, split it.
   urlLink = strsplit(urlLink, '?');
   url = urlLink{1};
   tmpSplit = strsplit(urlLink{2},'&');
-  % url = strrep(tmpSplit{1}, '?',''); % strip "?"
   for ii=1:length(tmpSplit)
     tmpSplit2 = strsplit(tmpSplit{ii},'=');
     % Single element, such as "NON_BROWSER", Add "1" as second argument.
