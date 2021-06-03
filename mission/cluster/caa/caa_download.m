@@ -865,14 +865,16 @@ end
     TT=irf.TimeTable;
     switch returnTimeTable
       case 'inventory'
-        %"DATASET_INVENTORY.DATASET_ID","DATASET_INVENTORY.START_DATE","DATASET_INVENTORY.END_DATE"
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+        % "dataset_id","start_time","end_time",num_instances,inventory_version
+        % with one first line header as header (similar to "sqlite .headers on")
+        textLine = textscan(caalog, '%q %q %q %d %d', 'HeaderLines', 1, ...
+          'Delimiter', ',');
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).dataset] = deal(textLine{1}{1:end});
         for jj = 1:numel(TT.UserData)
-          TT.UserData(jj).number = str2double(textLine{4}{1+jj});
+          TT.UserData(jj).number = textLine{4}(jj);
+          TT.UserData(jj).version = textLine{5}(jj);
         end
-        [TT.UserData(:).version]=deal(textLine{5}{2:end});
       case 'fileinventory'
         %"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
         textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
@@ -893,8 +895,8 @@ end
       otherwise
         return;
     end
-    tStart = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{2}(2:end));
-    tEnd   = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{3}(2:end));
+    tStart = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{2}(1:end));
+    tEnd   = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{3}(1:end));
     tint = [tStart tEnd];
     TT.TimeInterval=tint;
     TT.Header = {};
