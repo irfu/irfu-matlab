@@ -118,14 +118,19 @@ end
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
 % https://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
+% Some are split cells, ie. "{, }" as metadata request may need to insert
+% format or other parameters before the ADQL (sql-style) query (which gets
+% appended with further search parameters based on used input).
 Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
 Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
-Default.Csa.urlInventory        = 'tap/sync?REQUEST=doQuery&LANG=ADQL';
+Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
 Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
+%Possible correction: Default.Csa.urlFileInventory = 'tap/sync?REQUEST=doQuery&LANG=ADQL&QUERY=SELECT+logical_file_id,start_date,end_date,caa_ingestion_data,inventory_version+FROM+csa.v_file'; % FIXME: TABLE name unknown and untested
 Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
-Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
+%Possible correction: Default.Csa.urlListDataset   = {'tap/sync?REQUEST=doQuery&LANG=ADQL&', 'QUERY=SELECT+dataset_id,start_date,end_date,title+FROM+csa.v_dataset'};
+Default.Csa.urlListDatasetDesc  = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title,description+FROM+csa.v_dataset'};
 Default.Csa.urlListFormat       = '&FORMAT=CSV';
 Default.Csa.urlNotifyOn         = '';
 Default.Csa.urlNotifyOff        = '&NO_NOTIFY';
@@ -324,10 +329,10 @@ end
 caaQuery            = [Caa.urlServer urlQuery urlIdentity urlDataFormat...
   urlFileInterval urlNonotify urlIngestedSince];
 caaStream           = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
-caaInventory        = [Caa.urlServer Caa.urlInventory       urlListFormat ];
+caaInventory        = [Caa.urlServer, Caa.urlInventory{1}, urlListFormat, Caa.urlInventory{2} ];
 caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
 caaListDataset	    = [Caa.urlServer Caa.urlListDataset     urlListFormat ];
-caaListDatasetDesc  = [Caa.urlServer Caa.urlListDatasetDesc urlListFormat ];
+caaListDatasetDesc  = [Caa.urlServer, Caa.urlListDatasetDesc{1}, urlListFormat, Caa.urlListDatasetDesc{2} ];
 
 %% Check status of downloads if needed
 if checkDownloadStatus    % check/show status of downloads from .caa file
@@ -796,10 +801,11 @@ end
     % for wildcards, inventory requests use '%' as wildcard,
     % while data requests use '*' (something that was not easy to implement)
     if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list files
+      %% FIXME: ThoNi possible bug here "&&" can it be true for both, should it not be "||"?
       if strcmpi(dataset,'list') && strcmpi(dataset,'listdesc') % list all files
         filter='*';
-      elseif isequal(lower(dataset), 'inventory')
-        filter='*';  % called with only "inventory".
+      elseif isequal(lower(dataset), 'inventory') || isequal(lower(dataset), 'listdesc')
+        filter='*';  % called with only "inventory" or only "listdesc".
       else                        % list only filtered files
         filter=dataset(strfind(dataset,':')+1:end);
       end
@@ -813,7 +819,7 @@ end
       end
     end
     queryDataset = ['&DATASET_ID=' filter];
-    queryDatasetInventory = ['&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory+WHERE+dataset_id+like+''' csa_parse_url(filter) ''''];
+    queryDatasetInventory = ['+WHERE+dataset_id+like+''' csa_parse_url(filter) ''''];
   end
 
 % Nested function. Get CSA identity
@@ -887,8 +893,13 @@ end
         TT.UserData(numel(textLine{1})).dataset = [];
         [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
       case 'listdesc'
-        %DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"', 'HeaderLines', 1);
+        % dataset_id,"start_date","end_date",title,"description" (Some are
+        % qouted, some others are not).
+        % FIXME: some fields may contain nothing...
+        % Example line: 'C3_CG_MULT_COMP_E_HIA_FGM_EFW_TS_PS,,,,' which
+        % breaks the following....
+        textLine=textscan(caalog,'%[^",],"%[^",]","%[^",]",%[^,],"%[^"]"', ...
+          'HeaderLines', 1);
         TT.UserData(numel(textLine{1})).dataset = [];
         [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
         [TT.UserData(:).description] = deal(textLine(:).description);
