@@ -877,20 +877,20 @@ end
         end
       case 'fileinventory'
         %"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).filename]=deal(textLine{1}{2:end});
-        [TT.UserData(:).caaIngestionDate]=deal(textLine{4}{2:end});
+        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"', 'HeaderLines', 1);
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).filename]=deal(textLine{1}{1:end});
+        [TT.UserData(:).caaIngestionDate]=deal(textLine{4}{1:end});
       case 'list'
         %DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"', 'HeaderLines', 1);
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
       case 'listdesc'
         %DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"', 'HeaderLines', 1);
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
         [TT.UserData(:).description] = deal(textLine(:).description);
       otherwise
         return;
