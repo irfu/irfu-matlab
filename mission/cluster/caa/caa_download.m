@@ -911,7 +911,7 @@ end
         end
         % we have now have plain a CSV result
         textLine=textscan(sprintf(caalog), ...
-          '%s %s %s %s %s', ...
+          '%s %q %q %s %s', ...
           'Delimiter', ',', ...
           'HeaderLines', 1);
         TT.UserData(numel(textLine{1})).dataset = [];
@@ -922,8 +922,10 @@ end
       otherwise
         return;
     end
-    tStart = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{2}(1:end));
-    tEnd   = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{3}(1:end));
+    tStart = arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{2}(1:end), ...
+      'UniformOutput', false);
+    tEnd   = arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{3}(1:end), ...
+      'UniformOutput', false);
     tint = [tStart tEnd];
     TT.TimeInterval=tint;
     TT.Header = {};
