@@ -894,15 +894,31 @@ end
         [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
       case 'listdesc'
         % dataset_id,"start_date","end_date",title,"description" (Some are
-        % qouted, some others are not).
+        % quoted, some others are not).
         % FIXME: some fields may contain nothing...
         % Example line: 'C3_CG_MULT_COMP_E_HIA_FGM_EFW_TS_PS,,,,' which
-        % breaks the following....
-        textLine=textscan(caalog,'%[^",],"%[^",]","%[^",]",%[^,],"%[^"]"', ...
+        % breaks some decoding.. Also some fields are quoted for some
+        % dataproducts while not quoted for others. Some are multiple lines
+        % and some are single lines, making decoding almost impossible as
+        % a standard "csv" file. Fix this be an initial cleanup.
+        % Locate all quoted segments in returned "csv"
+        qoutes = find(ismember(caalog, '"'));
+        for i=length(qoutes):-2:1
+          % do we have "CR" "LF" "," (csv files with extra commas is really
+          % bad) in this quoted segment? Remove them.
+          indNewLines = ismember(caalog(qoutes(i-1):qoutes(i)), char([10 13 44]));
+          caalog([false(1, qoutes(i-1)-1), indNewLines]) = [];
+        end
+        % we have now have plain a CSV result
+        textLine=textscan(sprintf(caalog), ...
+          '%s %s %s %s %s', ...
+          'Delimiter', ',', ...
           'HeaderLines', 1);
         TT.UserData(numel(textLine{1})).dataset = [];
         [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
-        [TT.UserData(:).description] = deal(textLine(:).description);
+        [TT.UserData(:).description] = deal(textLine{5}{1:end});
+        % FIXME: Add some FillValues for Empty entires? Otherwise
+        % tStart&tEnd below will fail...
       otherwise
         return;
     end
