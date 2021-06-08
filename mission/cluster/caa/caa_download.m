@@ -902,13 +902,15 @@ end
         % and some are single lines, making decoding almost impossible as
         % a standard "csv" file. Fix this be an initial cleanup.
         % Locate all quoted segments in returned "csv"
-        qoutes = find(ismember(caalog, '"'));
-        for i=length(qoutes):-2:1
-          % do we have "CR" "LF" "," (csv files with extra commas is really
-          % bad) in this quoted segment? Remove them.
-          indNewLines = ismember(caalog(qoutes(i-1):qoutes(i)), char([10 13 44]));
-          caalog([false(1, qoutes(i-1)-1), indNewLines]) = [];
+        quotes = find(ismember(caalog, '"'));
+        quoteInd = false(size(caalog));
+        for i=1:2:length(quotes)
+          quoteInd(quotes(i):quotes(i+1)) = true;
         end
+        % do we have "CR" "LF" "," (csv files with extra commas is really bad)
+        % in this quoted segment? Remove them.
+        indNewlineInQuote = bitand(ismember(caalog, char([10 13 44])), quoteInd);
+        caalog(indNewlineInQuote) = [];
         % we have now have plain a CSV result
         textLine=textscan(sprintf(caalog), ...
           '%s %q %q %s %s', ...
