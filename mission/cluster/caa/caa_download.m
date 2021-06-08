@@ -128,8 +128,7 @@ Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FI
 Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
 Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
 %Possible correction: Default.Csa.urlFileInventory = 'tap/sync?REQUEST=doQuery&LANG=ADQL&QUERY=SELECT+logical_file_id,start_date,end_date,caa_ingestion_data,inventory_version+FROM+csa.v_file'; % FIXME: TABLE name unknown and untested
-Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';  %% FIXME: METADATA changed with move to "tap"
-%Possible correction: Default.Csa.urlListDataset   = {'tap/sync?REQUEST=doQuery&LANG=ADQL&', 'QUERY=SELECT+dataset_id,start_date,end_date,title+FROM+csa.v_dataset'};
+Default.Csa.urlListDataset      = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title+FROM+csa.v_dataset'};
 Default.Csa.urlListDatasetDesc  = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title,description+FROM+csa.v_dataset'};
 Default.Csa.urlListFormat       = '&FORMAT=CSV';
 Default.Csa.urlNotifyOn         = '';
@@ -331,7 +330,7 @@ caaQuery            = [Caa.urlServer urlQuery urlIdentity urlDataFormat...
 caaStream           = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
 caaInventory        = [Caa.urlServer, Caa.urlInventory{1}, urlListFormat, Caa.urlInventory{2} ];
 caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
-caaListDataset	    = [Caa.urlServer Caa.urlListDataset     urlListFormat ];
+caaListDataset	    = [Caa.urlServer, Caa.urlListDataset{1}, urlListFormat, Caa.urlListDataset{2} ];
 caaListDatasetDesc  = [Caa.urlServer, Caa.urlListDatasetDesc{1}, urlListFormat, Caa.urlListDatasetDesc{2} ];
 
 %% Check status of downloads if needed
@@ -804,8 +803,8 @@ end
       %% FIXME: ThoNi possible bug here "&&" can it be true for both, should it not be "||"?
       if strcmpi(dataset,'list') && strcmpi(dataset,'listdesc') % list all files
         filter='*';
-      elseif isequal(lower(dataset), 'inventory') || isequal(lower(dataset), 'listdesc')
-        filter='*';  % called with only "inventory" or only "listdesc".
+      elseif isequal(lower(dataset), 'inventory') || isequal(lower(dataset), 'listdesc') || isequal(lower(dataset), 'list')
+        filter='*';  % called with only "inventory" or only "listdesc" or only "list".
       else                        % list only filtered files
         filter=dataset(strfind(dataset,':')+1:end);
       end
@@ -888,39 +887,55 @@ end
         [TT.UserData(:).filename]=deal(textLine{1}{1:end});
         [TT.UserData(:).caaIngestionDate]=deal(textLine{4}{1:end});
       case 'list'
-        %DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"', 'HeaderLines', 1);
-        TT.UserData(numel(textLine{1})).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
-      case 'listdesc'
-        % dataset_id,"start_date","end_date",title,"description" (Some are
-        % quoted, some others are not).
-        % FIXME: some fields may contain nothing...
-        % Example line: 'C3_CG_MULT_COMP_E_HIA_FGM_EFW_TS_PS,,,,' which
-        % breaks some decoding.. Also some fields are quoted for some
-        % dataproducts while not quoted for others. Some are multiple lines
-        % and some are single lines, making decoding almost impossible as
-        % a standard "csv" file. Fix this be an initial cleanup.
+        % dataset_id,"start_date","end_date",title
+        % Note: Some are quoted, some others are not it is not consistent.
+        % Second note: Some fields may contain nothing and some contain
+        % commas making decoding almost impossible as standard "csv" file.
+        % This must be cleaned up before decoding.
         % Locate all quoted segments in returned "csv"
         quotes = find(ismember(caalog, '"'));
         quoteInd = false(size(caalog));
         for i=1:2:length(quotes)
           quoteInd(quotes(i):quotes(i+1)) = true;
         end
-        % do we have "CR" "LF" "," (csv files with extra commas is really bad)
-        % in this quoted segment? Remove them.
+        % do we have any "CR" "LF" "," (csv files with extra commas is
+        % really bad) in quoted segment? Remove them.
+        % It does not appear to contain CR/LF here in the quoted strings
+        % but check for them anyhow, similar to "listdesc".
         indNewlineInQuote = bitand(ismember(caalog, char([10 13 44])), quoteInd);
         caalog(indNewlineInQuote) = [];
         % we have now have plain a CSV result
         textLine=textscan(sprintf(caalog), ...
-          '%s %q %q %s %s', ...
+          '%s %q %q %s', ... % start_time and end_time is always quoted if present
+          'Delimiter', ',', ...
+          'HeaderLines', 1);
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
+      case 'listdesc'
+        % dataset_id,"start_date","end_date",title,"description"
+        % Note: Some are quoted, some others are not it is not consistent.
+        % Second note: Some fields may contain nothing and some are
+        % multiple lines and some are single lines, making decoding almost
+        % impossible as standard "csv" file. This must be cleaned up before
+        % decoding.
+        % Locate all quoted segments in returned "csv"
+        quotes = find(ismember(caalog, '"'));
+        quoteInd = false(size(caalog));
+        for i=1:2:length(quotes)
+          quoteInd(quotes(i):quotes(i+1)) = true;
+        end
+        % do we have any "CR" "LF" "," (csv files with extra commas is
+        % really bad) in quoted segment? Remove them.
+        indNewlineInQuote = bitand(ismember(caalog, char([10 13 44])), quoteInd);
+        caalog(indNewlineInQuote) = [];
+        % we have now have plain a CSV result
+        textLine=textscan(sprintf(caalog), ...
+          '%s %q %q %s %s', ... % start_time and end_time is always quoted if present
           'Delimiter', ',', ...
           'HeaderLines', 1);
         TT.UserData(numel(textLine{1})).dataset = [];
         [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
         [TT.UserData(:).description] = deal(textLine{5}{1:end});
-        % FIXME: Add some FillValues for Empty entires? Otherwise
-        % tStart&tEnd below will fail...
       otherwise
         return;
     end
