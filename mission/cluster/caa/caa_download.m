@@ -126,8 +126,9 @@ Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
-Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
-%Possible correction: Default.Csa.urlFileInventory = 'tap/sync?REQUEST=doQuery&LANG=ADQL&QUERY=SELECT+logical_file_id,start_date,end_date,caa_ingestion_data,inventory_version+FROM+csa.v_file'; % FIXME: TABLE name unknown and untested
+%Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
+%Possible correction:
+Default.Csa.urlFileInventory    = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+logical_file_id,start_date,end_date,caa_ingestion_data,inventory_version+FROM+csa.v_file'}; % FIXME: table name works (but which exact fields it contains is unknown and needs testing)!
 Default.Csa.urlListDataset      = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title+FROM+csa.v_dataset'};
 Default.Csa.urlListDatasetDesc  = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title,description+FROM+csa.v_dataset'};
 Default.Csa.urlListFormat       = '&FORMAT=CSV';
@@ -259,7 +260,7 @@ end
 % caa.dataset - dataset to download
 % caa.tintiso - time interval
 % caa.zip - zip files to download
-% caa.status - status ('submitted','downloaded','finnished')
+% caa.status - status ('submitted','downloaded','finished')
 % caa.timeofrequest - in matlab time units
 
 %%
@@ -325,13 +326,13 @@ end
 if any(strfind(urlDataFormat,'&format'))% change/add defaults, hasn't added these to above flag checking
   urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
-caaQuery            = [Caa.urlServer urlQuery urlIdentity urlDataFormat...
-  urlFileInterval urlNonotify urlIngestedSince];
-caaStream           = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
-caaInventory        = [Caa.urlServer, Caa.urlInventory{1}, urlListFormat, Caa.urlInventory{2} ];
-caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
-caaListDataset	    = [Caa.urlServer, Caa.urlListDataset{1}, urlListFormat, Caa.urlListDataset{2} ];
-caaListDatasetDesc  = [Caa.urlServer, Caa.urlListDatasetDesc{1}, urlListFormat, Caa.urlListDatasetDesc{2} ];
+caaQuery            = [Caa.urlServer, urlQuery, urlIdentity, urlDataFormat, ...
+  urlFileInterval, urlNonotify, urlIngestedSince];
+caaStream           = [Caa.urlServer, Caa.urlStream, urlIdentity, urlIngestedSince];
+caaInventory        = [Caa.urlServer, Caa.urlInventory{1},       urlListFormat, Caa.urlInventory{2}];
+caaFileInventory    = [Caa.urlServer, Caa.urlFileInventory{1},   urlListFormat, Caa.urlFileInventory{2}];
+caaListDataset      = [Caa.urlServer, Caa.urlListDataset{1},     urlListFormat, Caa.urlListDataset{2}];
+caaListDatasetDesc  = [Caa.urlServer, Caa.urlListDatasetDesc{1}, urlListFormat, Caa.urlListDatasetDesc{2}];
 
 %% Check status of downloads if needed
 if checkDownloadStatus    % check/show status of downloads from .caa file
@@ -355,7 +356,7 @@ if checkDownloadStatus    % check/show status of downloads from .caa file
   jobsToRemove = false(1,length(caa));
   jobsFinished = false(1,length(caa));
   for j=1:length(caa) % go through jobs
-    if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finnished') || strcmpi(caa{j}.status,'finished') % 'finnished shoudl be removed after some time % do nothing
+    if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finished') % do nothing
       jobsFinished(j) = true;
     elseif strcmpi(caa{j}.status,'submitted')
       disp(['=== Checking status of job nr: ' num2str(j) '==='])
@@ -409,8 +410,10 @@ if specifiedTimeInterval
   t1UTC = tintUTC(1:divider-1);
   t2UTC = tintUTC(divider+1:end);
   queryTime = ['&START_DATE=' t1UTC '&END_DATE=' t2UTC];
-  queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2UTC '''',...
-    ' AND FILE.END_DATE >= ''' t1UTC ''''];  %FIXME rewrite to use "+" and sql style..
+  %queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2UTC '''',...
+  %  ' AND FILE.END_DATE >= ''' t1UTC ''''];  %FIXME rewrite to use "+" and sql style..
+  queryTimeFileInventory = ['+AND+start_date<=''' t2UTC '''',...
+    '+AND+end_date>=''' t1UTC '''+ORDER+BY+start_date']; % FIXME: Untested!
   queryTimeInventory = ['+AND+start_time<=''' t2UTC '''',...
     '+AND+end_time>=''' t1UTC '''+ORDER+BY+start_time'];
 end
