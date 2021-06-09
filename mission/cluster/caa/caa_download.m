@@ -126,9 +126,7 @@ Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
 Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
-%Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';  %% FIXME: METADATA changed with move to "tap"
-%Possible correction:
-Default.Csa.urlFileInventory    = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+logical_file_id,start_date,end_date,caa_ingestion_data,inventory_version+FROM+csa.v_file'}; % FIXME: table name works (but which exact fields it contains is unknown and needs testing)!
+Default.Csa.urlFileInventory    = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+logical_file_id,file_start_date,file_end_date,caa_ingestion_date+FROM+csa.v_file'};
 Default.Csa.urlListDataset      = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title+FROM+csa.v_dataset'};
 Default.Csa.urlListDatasetDesc  = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title,description+FROM+csa.v_dataset'};
 Default.Csa.urlListFormat       = '&FORMAT=CSV';
@@ -410,10 +408,8 @@ if specifiedTimeInterval
   t1UTC = tintUTC(1:divider-1);
   t2UTC = tintUTC(divider+1:end);
   queryTime = ['&START_DATE=' t1UTC '&END_DATE=' t2UTC];
-  %queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2UTC '''',...
-  %  ' AND FILE.END_DATE >= ''' t1UTC ''''];  %FIXME rewrite to use "+" and sql style..
-  queryTimeFileInventory = ['+AND+start_date<=''' t2UTC '''',...
-    '+AND+end_date>=''' t1UTC '''+ORDER+BY+start_date']; % FIXME: Untested!
+  queryTimeFileInventory = ['+AND+file_start_date<=''' t2UTC '''',...
+    '+AND+file_end_date>=''' t1UTC '''+ORDER+BY+file_start_date'];
   queryTimeInventory = ['+AND+start_time<=''' t2UTC '''',...
     '+AND+end_time>=''' t1UTC '''+ORDER+BY+start_time'];
 end
@@ -456,7 +452,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
     urlListDatasets = [caaListDataset queryDatasetInventory];
     returnTimeTable='list';
   elseif any(strfind(dataset,'fileinventory'))
-    urlListDatasets = [caaFileInventory queryDatasetInventory ];
+    urlListDatasets = [caaFileInventory queryDatasetInventory '+AND+active=1'];
     returnTimeTable='fileinventory';
   elseif any(strfind(dataset,'inventory'))
     urlListDatasets = [caaInventory queryDatasetInventory ];
@@ -884,8 +880,9 @@ end
           TT.UserData(jj).version = textLine{5}(jj);
         end
       case 'fileinventory'
-        %"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"', 'HeaderLines', 1);
+        % "logical_file_id","file_start_date","file_end_date","caa_ingestion_date"
+        textLine = textscan(caalog, '%q %q %q %q', 'HeaderLines', 1, ...
+          'Delimiter', ',');
         TT.UserData(numel(textLine{1})).dataset = [];
         [TT.UserData(:).filename]=deal(textLine{1}{1:end});
         [TT.UserData(:).caaIngestionDate]=deal(textLine{4}{1:end});
