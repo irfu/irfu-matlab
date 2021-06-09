@@ -166,7 +166,7 @@ end
 
 if nargin>=1 % check if first argument is not caa .zip or tar.gz or .tgz file link
   if ischar(tint) && ...
-      (any(regexp(tint,'\.(tar.gz)|(tgz)|(zip)'))) % tint is file link
+      (any(regexp(tint,'\.((tar.gz)|(tgz)|(zip))'))) % tint is file link
     specifiedFileLink = true;
     if nargin > 1
       varargin=[dataset varargin];
