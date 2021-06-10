@@ -31,8 +31,8 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
 %
 % Input flags
-%   'file_interval=..' - see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
-%   'format=..'		- see command line manual http://goo.gl/VkkoI, default 'format=cdf'
+%   'file_interval=..' - see command line manual https://caa.esac.esa.int/documents/CAA-EST-CMDLINE-0015.pdf, default 'file_interval=72hours'
+%   'format=..'		- see command line manual https://caa.esac.esa.int/documents/CAA-EST-CMDLINE-0015.pdf, default 'format=cdf'
 %   'nowildcard'	- download the dataset without any expansion in the name and not checking if data are there
 %   'overwrite'		- overwrite files in directory (to keep single cdf file)
 %   'schedule'		- schedule the download, (returns zip file link)
@@ -154,7 +154,7 @@ downloadDirectory       = './CAA/';% local directory where to put downloaded dat
 %% check input
 if nargin==0 % [..]=caa_download
   checkDownloadStatus=true;
-elseif  nargin == 1 && ischar(tint) && strcmpi('test',tint)  % [..]=caa_download('testcsa')
+elseif  nargin == 1 && ischar(tint) && strcmpi('test',tint)  % [..]=caa_download('test')
   downloadStatus = test_csa;
   if nargout == 0, clear downloadStatus;end
   return;
