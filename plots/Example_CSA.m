@@ -15,14 +15,13 @@ tint = irf_time(tintIso,'utc>tint');
 %tint=[irf_time([2002 8 21 7 50 0]) irf_time([2002 8 21 8 0 0])];
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-% download data from CAA or CSA (needed only once!!!!!)
+% download data from CSA (needed only once!!!!!)
 if 1 % put to 0 if data already downloaded !!!!
-  dataArchive = 'csa'; % can be 'caa'
-  caa_download(tint,'C1_CP_FGM_5VPS'             ,dataArchive)
-  caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux',dataArchive)
-  caa_download(tint,'C1_CP_EFW_L3_P'             ,dataArchive)
-  caa_download(tint,'C1_CP_STA_PSD'              ,dataArchive)
-  caa_download(tint,'C1_CP_AUX_POSGSE_1M'        ,dataArchive)
+  caa_download(tint,'C1_CP_FGM_5VPS')
+  caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux')
+  caa_download(tint,'C1_CP_EFW_L3_P')
+  caa_download(tint,'C1_CP_STA_PSD')
+  caa_download(tint,'C1_CP_AUX_POSGSE_1M')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
