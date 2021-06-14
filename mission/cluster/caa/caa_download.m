@@ -407,11 +407,15 @@ if specifiedTimeInterval
   divider=strfind(tintUTC,'/');
   t1UTC = tintUTC(1:divider-1);
   t2UTC = tintUTC(divider+1:end);
+  % data
   queryTime = ['&START_DATE=' t1UTC '&END_DATE=' t2UTC];
+  % meta data (list, listdesc, inventory and fileinventory)
   queryTimeFileInventory = ['+AND+file_start_date<=''' t2UTC '''',...
     '+AND+file_end_date>=''' t1UTC '''+ORDER+BY+file_start_date'];
   queryTimeInventory = ['+AND+start_time<=''' t2UTC '''',...
     '+AND+end_time>=''' t1UTC '''+ORDER+BY+start_time'];
+  queryTimeList = ['+AND+start_date<=''', t2UTC, '''', ...
+    '+AND+end_date>=''', t1UTC, '''+ORDER+BY+start_date'];
 end
 
 %% define queryDataset and queryDatasetInventory
@@ -461,6 +465,8 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
   if specifiedTimeInterval
     if any(strfind(dataset,'fileinventory'))
       urlListDatasets = [urlListDatasets queryTimeFileInventory];
+    elseif any(strfind(dataset, 'list'))
+      urlListDatasets = [urlListDatasets, queryTimeList];
     else
       urlListDatasets = [urlListDatasets queryTimeInventory];
     end
