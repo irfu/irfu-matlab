@@ -221,11 +221,11 @@ if ~isempty(varargin) % check for additional flags
     elseif any(strcmpi('caa',flag)) % download from CAA instead of CAA
       irf.log('warning','caa_download(): flag ''caa'' is not supported anymore. CAA interface is closed and only CSA download is available');
     elseif strcmpi('json',flag) % set query format to JSON
-      urlListFormat = '&RETURN_TYPE=JSON';
+      urlListFormat = '&FORMAT=JSON';
     elseif strcmpi('csv',flag) % set query format to CSV
-      urlListFormat = '&RETURN_TYPE=CSV';
+      urlListFormat = '&FORMAT=CSV';
     elseif strcmpi('votable',flag) % set query format to VOTABLE
-      urlListFormat = '&RETURN_TYPE=votable';
+      urlListFormat = '&FORMAT=VOTable';
     elseif strfind(lower(flag),'downloaddirectory=') %#ok<STRIFCND>
       downloadDirectory = flag(strfind(flag,'=')+1:end);
       if downloadDirectory(end) ~= filesep...
