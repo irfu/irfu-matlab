@@ -574,7 +574,6 @@ end
     % download data file, if success status=1 and file is uncompressed and moved
     % to data directory, downloadedFile is set to empty. If there is no
     % gz- data file , status=0 and downloadedFile is set to the downloaded file.
-    if  ~strfind(urlLink,'.gz');  error('urlLink is not gz file!') ; end %#ok<STRIFCND>
     
     status = 0; % default
     if doDataStreaming
