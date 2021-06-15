@@ -20,7 +20,7 @@ classdef TSeries
   %      particle energy or a spectral frequency channel.
   %
   %      For more info on representation see Cluster Metadata Dictionary
-  %           http://caa.estec.esa.int/caa/doc_format_meta.xml
+  %           https://caa.esac.esa.int/caa/doc_format_meta.xml
   %
   %  ARGS MACROs:
   %      'vec_xyz','vec_rtp','vec_rlp','vec_rpz' - 3D vectors
