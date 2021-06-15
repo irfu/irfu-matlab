@@ -435,7 +435,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
       downloadStatus = ttTemp;
       return;
     end
-    tint = [min(ttTemp.TimeInterval(:)) max(ttTemp.TimeInterval(:))];
+    tint = [min(ttTemp.TimeInterval{:}) max(ttTemp.TimeInterval{:})];
     if any(strfind(dataset,'fileinventory'))
       ttTemp = caa_download(tint,['fileinventory:' filter]);
     else
