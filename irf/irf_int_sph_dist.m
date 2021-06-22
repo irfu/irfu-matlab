@@ -63,6 +63,7 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %% Check for flags in input
 % Set default values
 xphat = [1,0,0]; % axes projection is done against in 1D, x-axis in 2D
+yphat = [0,1,0];
 zphat = [0,0,1]; % integrate along this axes in 2D, has no use in 1D
 nMC = 10; % number of Monte Carlo iterations
 vzint = [-inf,inf]; % limit on out-of-plane velocity
@@ -114,10 +115,17 @@ end
 
 % complete RH system
 xphat = xphat./sqrt(sum(xphat.^2));
-yphat = cross(zphat,xphat); % zphat define as default [0 0 1] or read in as optional input above
-yphat = yphat./sqrt(sum(yphat.^2));
-zphat = cross(xphat,yphat); % z = cross(x,cross(z,x)) % enforce z to be orthogonal to x
-zphat = zphat./sqrt(sum(zphat.^2));
+if ~isequal(xphat,zphat)
+  yphat = cross(zphat,xphat); % zphat define as default [0 0 1] or read in as optional input above
+  yphat = yphat./sqrt(sum(yphat.^2));
+  zphat = cross(xphat,yphat); % z = cross(x,cross(z,x)) % enforce z to be orthogonal to x
+  zphat = zphat./sqrt(sum(zphat.^2));
+else
+  zphat = cross(xphat,yphat);
+  zphat = zphat./sqrt(sum(zphat.^2));
+  yphat = cross(zphat,xphat);
+  yphat = yphat./sqrt(sum(yphat.^2));
+end
 
 % diffs of instrument bins
 % velocity

@@ -17,6 +17,8 @@ for ienergy = 1: 32
     c_eval('restmp? = irf.ts_vec_xyz(tmp.time, squeeze(tmp.data(:, ienergy, :)));', ienergy);
   elseif or(~isempty(strfind(partvar.name, 'temptensor')), ~isempty(strfind(partvar.name, 'prestensor')))
     c_eval('restmp? = irf.ts_tensor_xyz(tmp.time, squeeze(tmp.data(:, :, ienergy, :)));', ienergy);
+  elseif or(~isempty(strfind(partvar.name, 'temppara')), ~isempty(strfind(partvar.name, 'tempperp')))
+    c_eval('restmp? = irf.ts_scalar(tmp.time, squeeze(tmp.data(:, ienergy)));', ienergy);
   else
     error('Not part-moms data. ');
   end

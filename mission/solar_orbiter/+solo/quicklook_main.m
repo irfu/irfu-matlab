@@ -36,7 +36,9 @@
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
 % Uppsala, Sweden. Modified by Erik P G Johansson.
 %
-function quicklook_main(logoPath, vhtDataDir, outputDir, runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+function quicklook_main(...
+        logoPath, vhtDataDir, outputDir, ...
+        runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 %
 % PROPOSAL: Log wall time used.
 %   NOTE: ~Can not time per plot.
@@ -93,7 +95,8 @@ solo.db_cache('on', 'save')
 %===========
 % Constants
 %===========
-% "Disabling B" speeds up solo.quicklooks_24_6_2_h(). Useful for testing.
+% "Disabling B" speeds up solo.quicklooks_24_6_2_h() greatly. Useful for
+% testing.
 ENABLE_B = 1;
 
 % Specify subdirectories for saving the respective types of plots.
@@ -168,7 +171,7 @@ if runNonweeklyPlots
         Tint=irf.tint(times_1d(iTint), times_1d(iTint+1));
         
         Data.Vrpw = S.V_RPW_1h.tlim(Tint);
-        %%
+
         % E-field:
         Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
         

@@ -5,7 +5,7 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %  C_4_GRAD(R,B) R and B can be structures R.C1,R.C2,..,B.C1,..
 %  C_4_GRAD('R?','B?') implies that R1,R2,..,B1,.. are read in from the calling workspace
 %
-%  [grad_b,[b]]=C_4_GRAD
+%  [gradB,[B]]=C_4_GRAD
 %  [grad_b,[b]]=C_4_GRAD(..,'grad')
 %  [curl_b,[b]]=C_4_GRAD(..,'curl')
 %  [div_b,[b]] =C_4_GRAD(..,'div')
@@ -15,29 +15,36 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %  [drift_grad,[b]]=C_4_GRAD(..,'drift_grad')
 %  [drift_curl,[b]]=C_4_GRAD(..,'drift_curl')
 %
-%  r1..r4 are row vectors
-%         column 1     is time ,if given output will have the 1st column time
+% Input:
+%  R1..R4 are row vectors or TSeries
+%         In case R1..R4 are row vectors:
+%         column 1     is time
 %         column 2-4   are satellite position in km
 %         if 3 columns, assume x,y,z positions (b should have the same number of rows)
-%  b1..b4 are row vectors of physical field (usually magnetc field)
+%  B1..B4 are row vectors or TSeries of physical field (usually magnetc field)
 %         column 1     is time, b1 time is used for all interpolation of r1..r4 and b2..b4
 %         column 2-4   vector components (if scalar then only one component)
-%  curl_b is row vector,
-%  div_b  is scalar
-%  curv_b is row vector, curvature is defined as (bhat div)bhat, where bhat=norm(b)
-%  b_div_b is row vector, defined as (b div) b
-%  grad_b structure (answer is tensor if b1..b4 are vectors)
+% 
+%  Output: 
+%         If input is TSeries then output is TSeries
+%         If input are arrays with time column then outputs also has time column
+%  curlB is row vector,
+%  divB  is scalar
+%  curvB is row vector, curvature is defined as (bhat div)bhat, where bhat=norm(b)
+%  BdivB is row vector, defined as (b div) b
+%  gradB structure (answer is tensor if B1..B4 are vectors)
 %         first element - row vector with time
 %         second element - row tensor
-%         grad_b{2}(1,1:3,1:3) - first tensor ..
-%  grad_b is row vector if b1..b4 are scalar fields,
-%  div_T, divergence of stress tensor, T=BiBj - delta_ij B^2/2
-%         T=(div B)B+(curl B)xB
-%         div_T is row vector and defined for b1..b4 being vectors
+%         gradB{2}(1,1:3,1:3) - first tensor ..
+%  gradB is row vector if B1..B4 are scalar fields,
+%  divT  divergence of stress tensor, T=BiBj - delta_ij B^2/2
+%         T=(divB)B+(curlB)xB
+%         divT is row vector and defined for b1..b4 being vectors
+%
 %  drift_grad gradient drift of 1eV positively charged particle in [m/s],
-%  assumes that position is given in [km] and magnetic field in [nT]
+%             assumes that position is given in [km] and magnetic field in [nT]
 %  drift_curv curvature drift of 1eV positively charged particle in [m/s],
-%  assuming that position is given in [km] and magnetic field in [nT]
+%             assumes that position is given in [km] and magnetic field in [nT]
 %
 %   See also C_4_K
 %
@@ -157,11 +164,12 @@ end
 
 %% Estimate first reciprical coordinates
 %
-% because usually r1..r4 is of less time resolution, it is more
-% computer friendly first calculate k1..k4 and only after interpolate
-% and not the other way around
-[K]=c_4_k(R);
-%% Do interpolation to b1 time series
+% usually r1..r4 has lower time resolution, therefore, it is more
+% computer friendly first calculate k1..k4 and after interpolate
+
+K = c_4_k(R);
+
+%% Interpolate K to b1 time series
 
 b=0.25*B.C1+0.25*B.C2+0.25*B.C3+0.25*B.C4; % estimate mean value of vector or scalar
 for iC=1:4
@@ -263,7 +271,7 @@ end
 %% Prepare output
 if isTimeSpecified % add time if given
   if doOutputTSeries
-    torder = 0; repr = {};
+    torder = 0;
     if length(result(1,:))==3
       torder = 1;
       repr = {'x','y','z'};
@@ -284,5 +292,6 @@ if isTimeSpecified % add time if given
     end
   else
     result = [tB result];
+    b = [tB b];
   end
 end
