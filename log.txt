@@ -1,3 +1,4 @@
+2021-06-23 v1.16.0 NASA CDF patch, updated compiled Fortran mex, uppdated SolarOrbiter code base, and a lot more minor fixes.
 2020-04-21 v1.15.1 MMS slow mode gain and offset improvement, MMS L2pre fallback to AFG in no DFG, IGRF-13, added support for SolarOrbiter.
 2019-10-08 v1.15.0 NASA CDF patch, MMS changed slow mode datarate, added support for some Rosetta files, and a few minor fixes.
 2018-10-05 v1.14.2 NASA CDF patch, MMS2 sdp2 failure (2018/09/21), and a few minor fixes.
