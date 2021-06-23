@@ -19,5 +19,11 @@
       <artifactId>IRBEM</artifactId>
       <version>4.4.0</version>
     </dependency>
+    <!-- https://github.com/irfu/whamp -->
+    <dependency>
+      <groupId>com.github.irfu</groupId>
+      <artifactId>whamp</artifactId>
+      <version>1.4.1</version>
+    </dependency>
   </dependencies>
 </project>
