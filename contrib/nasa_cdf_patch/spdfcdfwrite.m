@@ -440,7 +440,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %     datatypes{2*p} = info.Variables{p,4};	% Variable data type
 %   end
 %   rbvars = {info.Variables{:,1}};		% Variable names for recordbound
-%   for p = length(vars):-1:1
+%   for p = length(rbvars):-1:1
 %     if (strncmpi(info.Variables{p,5},'f',1)==1)	% NRV variable
 %       rbvars(:,p)=[]; 	  		% Remove it
 %     end
@@ -455,7 +455,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %
 %   % fill data
 %   for p = 1:length(info.Variables(:,1))
-%     varsdata{2*p-1} = info.Variables(p,1);
+%     varsdata{2*p-1} = info.Variables{p,1};
 %     if (p == 15)				% A sparse record variable 
 %       var15data={single([123 321]);[];[];[];single([-321 -123])};
 %       varsdata{(2*15)} = var15data;		% Sparse record data
@@ -488,6 +488,11 @@ function spdfcdfwrite(filename, varcell, varargin)
 %         single                CDF_FLOAT
 %         double                CDF_DOUBLE or CDF_EPOCH or CDF_EPOCH16
 %         char/string           CDF_UCHAR or CDF_CHAR
+%
+%         DEFAULT_FILLED_EPOCH_VALUE and DEFAULT_FILLED_TT2000_VALUE
+%         are defined in this module so they can be used for the attribute
+%         "FILLVAL" for CDF_EPOCH/CDF_EPOCH16 and CDF_TIME_TT2000 epoch
+%         variables.
 %
 %   See also SPDFCDFREAD, SPDFCDFUPDATE, SPDFCDFINFO, CDFEPOCH, CDFTT2000,
 %            SPDFENCODEEPOCH, SPDFCOMPUTEEPOCH, SPDFPARSEEPOCH,
@@ -594,6 +599,9 @@ CDFversion = -1.0;
 
 exception.msg = '';
 exception.id = '';
+
+DEFAULT_FILLED_EPOCH_VALUE = -1.0E30;
+DEFAULT_FILLED_TT2000_VALUE = int64(-9223372036854775808);
 
 % First check that varcell meets all of our requirements
 args.VarNames = {varcell{1:2:end}};

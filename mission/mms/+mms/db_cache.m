@@ -18,8 +18,8 @@ global MMS_DB; if isempty(MMS_DB), mms.db_init(), end
 
 if nargin>0
   switch lower(flagCacheON)
-    case 'on', val = true; 
-    case 'off', val = false; 
+    case 'on', val = true;
+    case 'off', val = false;
     otherwise
       warning('unrecognized value for flagCache')
       val = [];

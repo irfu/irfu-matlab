@@ -1,4 +1,4 @@
-function s_fq = get_sample_fq_for_period(download_logg,B) 
+function s_fq = get_sample_fq_for_period(download_logg,B)
 %
 %function s_fq = get_sample_fq_for_period(download_logg,B)
 %
@@ -14,7 +14,7 @@ function s_fq = get_sample_fq_for_period(download_logg,B)
 %
 %Using:
 % time2row
-% 
+%
 %Work method:
 % Finds the first point and the last point for a download segment in B.
 % Then the sampling frequncy calulates as:
@@ -22,8 +22,8 @@ function s_fq = get_sample_fq_for_period(download_logg,B)
 %
 %Error:
 % s_fq is -1 if the intervall is missing.
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
@@ -31,27 +31,27 @@ function s_fq = get_sample_fq_for_period(download_logg,B)
 [i_end,c] = size(download_logg);
 
 for i =1:i_end
-if download_logg(i,1) ~=-1
-
-first_time = download_logg(i,1);
-last_time = first_time + download_logg(i,2)
-f = time2row(first_time,B,1);
-e = time2row(last_time,B,f);
-
-s_fq(i,1) = first_time;
-s_fq(i,2) = last_time;
-dt = B(e,1) - B(f,1);
-
-if dt ~= 0
-s_fq(i,3) = (e-f)/dt;
-else
-s_fq(i) = -1;
-end
-
-else
-
-s_fq(i) = -1;
-
-end
+  if download_logg(i,1) ~=-1
+    
+    first_time = download_logg(i,1);
+    last_time = first_time + download_logg(i,2)
+    f = time2row(first_time,B,1);
+    e = time2row(last_time,B,f);
+    
+    s_fq(i,1) = first_time;
+    s_fq(i,2) = last_time;
+    dt = B(e,1) - B(f,1);
+    
+    if dt ~= 0
+      s_fq(i,3) = (e-f)/dt;
+    else
+      s_fq(i) = -1;
+    end
+    
+  else
+    
+    s_fq(i) = -1;
+    
+  end
 end
 

@@ -18,38 +18,38 @@ function caa_proc_bursts(burstfile, plotFlag)
 % :
 % :
 %
-    narginchk(1,2);
-    if nargin < 2
-        plotFlag = 0;
-    end
+narginchk(1,2);
+if nargin < 2
+  plotFlag = 0;
+end
 
-    cd([getenv('HOME') '/matlab']);
-    if ismac
-        bflog=['/Volumes/caa/log/' burstfile '.ibfail.log'];
-    else
-       bflog=['/data/caa/log/' burstfile '.ibfail.log'];
-%       bflog=[getenv('HOME') '/iburstfail.log'];
+cd([getenv('HOME') '/matlab']);
+if ismac
+  bflog=['/Volumes/caa/log/' burstfile '.ibfail.log'];
+else
+  bflog=['/data/caa/log/' burstfile '.ibfail.log'];
+  %       bflog=[getenv('HOME') '/iburstfail.log'];
+end
+fid = fopen(burstfile,'r'); %Open the text file that contain the information about the burst.
+if fid==-1
+  error(['Can not find burst list file ' burstfile]);
+end
+fout = fopen(bflog,'a');
+if fout==-1
+  fclose(fid);
+  error(['Can not open/write file ' bflog]);
+end
+while ~feof(fid)
+  tline = fgetl(fid);
+  if length(tline)>=17
+    fn = tline(1:17)
+    ret = caa_get_bursts(fn,plotFlag);
+    if ret
+      fprintf(fout,'%s ret:%d\n',fn,ret);
+      irf_log('proc',['Burst file ' fn ' failed!']);
     end
-    fid = fopen(burstfile,'r'); %Open the text file that contain the information about the burst.
-    if fid==-1
-        error(['Can not find burst list file ' burstfile]);
-    end 
-    fout = fopen(bflog,'a');
-    if fout==-1
-        fclose(fid);
-        error(['Can not open/write file ' bflog]);
-    end 
-    while ~feof(fid)
-        tline = fgetl(fid);
-        if length(tline)>=17
-            fn = tline(1:17)
-            ret = caa_get_bursts(fn,plotFlag);
-            if ret
-                fprintf(fout,'%s ret:%d\n',fn,ret);
-                irf_log('proc',['Burst file ' fn ' failed!']);
-            end
-        end
-    end
-    fclose(fid);
-    fclose(fout);
+  end
+end
+fclose(fid);
+fclose(fout);
 end

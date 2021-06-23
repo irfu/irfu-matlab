@@ -187,7 +187,7 @@ irf_print_fig([mmsId '_EigFuncs_' comp '_Dec_Feb'],'png')
 
 %%
 tmpM = zeros(size(V(:,end)));
-for i=0:3 
+for i=0:3
   tmpM = tmpM + V(:,end-i)*lamb(end-i);
 end
 plot(tmpM)

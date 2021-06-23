@@ -1,4 +1,4 @@
-function get_event_data(fp) 
+function get_event_data(fp)
 %
 %Input:
 %
@@ -7,12 +7,12 @@ function get_event_data(fp)
 %Descrition of the function:
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

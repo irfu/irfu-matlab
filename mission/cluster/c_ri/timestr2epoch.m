@@ -1,6 +1,6 @@
-function time = timestr2epoch(strline) 
+function time = timestr2epoch(strline)
 %
-%time = timestr2epoch(strline) 
+%time = timestr2epoch(strline)
 %
 %Input:
 % strline -ex 2002-03-25T04:11:00.871Z
@@ -13,12 +13,12 @@ function time = timestr2epoch(strline)
 % in the end of the time string.
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

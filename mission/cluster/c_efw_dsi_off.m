@@ -1,5 +1,5 @@
 function [Ddsi,Damp] = c_efw_dsi_off(t,cl_id,Ps)
-%C_EFW_DSI_OFF  get EFW offsets 
+%C_EFW_DSI_OFF  get EFW offsets
 %
 % [Ddsi,Damp] = c_efw_dsi_off(t,[cl_id,Ps])
 %
@@ -26,7 +26,11 @@ Damp = 1.1*ones(1,4);
 % i is for Ey +i send curve down
 
 % Table of SW/SH offsets
-if t>=toepoch([2017 03 24 12 00 0]), Ddsi = [ -0.14 1.73  00 -0.13 ];
+% t>=toepoch([2018 11 19 21 00 0]), Ddsi = [ x x x x ]; 
+% elseif t>=toepoch([2018 06 23 06 00 0]), Ddsi = [ x x x x ]; % Force MS offset for months when don't enter SW.
+
+if t>=toepoch([2017 09 01 00 00 0]), Ddsi = [ -0.18 1.84  00 -0.09 ];
+elseif t>=toepoch([2017 03 24 12 00 0]), Ddsi = [ -0.14 1.73  00 -0.13 ];
 elseif t>=toepoch([2017 03 23 12 00 0]), Ddsi = [ -1.14 1.73  00 -0.13 ];
 elseif t>=toepoch([2017 01 01 00 00 0]), Ddsi = [ -0.14 1.73  00 -0.13 ];
 elseif t>=toepoch([2016 01 01 00 00 0]), Ddsi = [ -0.36 1.95  00 -1.15 ];
@@ -87,26 +91,26 @@ elseif t>=toepoch([2001 02 02 15 00 0]), Ddsi = [ .55      .77 .44  .1  ];
 elseif t>=toepoch([2001 02 02 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ]; % Special puck/guard ?
 elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .55      .8  .4   .1  ];
 else
-	Ddsi = [ 0 0 0 0];
+  Ddsi = [ 0 0 0 0];
 end
 
-if nargin == 1, return, end 
+if nargin == 1, return, end
 
 DdsiSW = Ddsi;
 Ddsi = Ddsi(cl_id);
 Damp = Damp(cl_id);
 
-if nargin == 2 || isempty(Ps), return, end 
+if nargin == 2 || isempty(Ps), return, end
 
 flagAlwaysMagnetosphere = 0;
 if isnumeric(Ps)
-ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
-ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
-Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
-if isempty(Psr), return, end
-
-ii = find(Psr(:,2) < SC_POT_LIM);
-if isempty(ii), return, end
+  ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
+  ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
+  Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
+  if isempty(Psr), return, end
+  
+  ii = find(Psr(:,2) < SC_POT_LIM);
+  if isempty(ii), return, end
 elseif ischar(Ps)
   if strcmpi(Ps, 'magnetosphere')
     flagAlwaysMagnetosphere = 1;
@@ -116,7 +120,8 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2017 01 01 00 0 0]), Ddsi = [ 0.26 2.44 00 0.25 ];
+if t>=toepoch([2018 01 01 00 0 0]), Ddsi = [ 0.05 2.44 00 0.17 ];
+elseif t>=toepoch([2017 01 01 00 0 0]), Ddsi = [ 0.26 2.44 00 0.25 ];
 elseif t>=toepoch([2016 01 01 00 0 0]), Ddsi = [ -0.17 2.45 00 -0.51 ];
 elseif t>=toepoch([2015 01 01 00 0 0]), Ddsi = [ -0.02 2.89 00 -0.44 ]; % curves fixed
 elseif t>=toepoch([2014 10 16 00 0 0]), Ddsi = [ 0.18  3.7  0.71  0 ]; % Only C3 has a good curve
@@ -148,7 +153,7 @@ elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ 1.33  1.98 1.66  2.00 ];
 elseif t>=toepoch([2001 06 01 00 0 0]), Ddsi = [ 1.26  1.74 1.54  1.06 ];
 elseif t>=toepoch([2001 02 01 00 0 0]), Ddsi = [ 1.21  1.92 1.25  1.02 ];
 else
-	Ddsi = DdsiSW;
+  Ddsi = DdsiSW;
 end
 
 % SC pot is all the time below SC_POT_LIM

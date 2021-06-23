@@ -3,7 +3,7 @@ function [bout,ii,ttGap] = th_clean_eb(bs,mode)
 %
 %  [bCleaned,idxGap,ttGap] = th_clean_eb(bs,mode)
 %
-%  Input: 
+%  Input:
 %         bs - time series
 %       mode - mode for filling the spikes LINEAR(default), ZERO, NaN
 %
@@ -108,7 +108,7 @@ if ~isempty(ii)
   ii(ii<1) = []; ii(ii>nData) = [];
 end
 ii = sort(unique([ii; idxModeCh]));
-if ~isempty(ii)  
+if ~isempty(ii)
   switch lower(mode)
     case 'linear'
       % Fill gaps

@@ -1,15 +1,18 @@
 %
 % Simple class which instances can represent either of two things
-% (1) where a particular BLTS comes from, i.e.
-%     ** an ASR, DC single/DC diff/DC AC
+% (1) SIGNAL SOURCE: where a particular BLTS comes from, i.e.
+%     ** an ASR (DC single/DC diff/AC diff)
 %     ** "2.5 V Ref"
 %     ** "GND"
 %     ** that its origin is unknown (mux mode unknown)
-% or
-% (2) how the BLTS should be stored in the dataset (since output datasets are only designed to store data measured data
-% as ASRs), i.e.
-%     ** an ASR, DC single/DC diff/DC AC
+% OR
+% (2) ~SIGNAL STORAGE: how the BLTS should be stored in the dataset (since
+%     output datasets are only designed to store data measured data as ASRs),
+%     i.e.
+%     ** an ASR (DC single/DC diff/AC diff)
 %     ** nowhere (mux mode unknown).
+% NOTE: One instance of this class represents either one of the two above
+% alternatives. "src_dest" should thus be interpreted as "source OR dest".
 %
 % Immutable.
 %
@@ -19,7 +22,7 @@
 % See bicas.calib.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-19
 %
 classdef BLTS_src_dest %< handle
@@ -34,6 +37,13 @@ classdef BLTS_src_dest %< handle
     %   See bicas.calib BOGIQ.
     %   PRO: Reference to BLTS is confusing.
     %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
+    %
+    % PROPOSAL: Separate classes for (1) BLTS physical signal source, and (2) BLTS signal representation in dataset.
+    %   CON: (2) is subset of (1).
+    %       CON: Practically, but not conceptually.
+    %   CON-PROPOSAL: Method for whether object represents a destination in dataset.
+    %       PRO: Useful for assertions.
+    % PROPOSAL: Flag for whether an instance is a source or a destination.
 
 
 
@@ -41,7 +51,7 @@ classdef BLTS_src_dest %< handle
         % String constant
         category
         
-        % 0x0, 1x1, or 1,2 numeric array with components representing antennas.
+        % 0x0, 1x1, or 1x2 numeric array with components representing antennas.
         % Its exact interpretation depends on "category".
         % Row/column vector important for comparisons. Therefore well defined.
         antennas
@@ -52,27 +62,37 @@ classdef BLTS_src_dest %< handle
     methods(Access=public)
         
         
-        
+        % Constructor
         function obj = BLTS_src_dest(category, antennas)
             
             % ASSERTIONS: antenna
             assert(isnumeric(antennas))
-            assert(all(ismember(antennas, [1,2,3])))    % NOTE: OK for empty "antennas".
+            % NOTE: OK for empty value, [].
+            assert(all(ismember(antennas, [1,2,3])))
             if isequal(size(antennas), [0,0])
+                % CASE: No antennas
+                
                 % Do nothing
                 
             elseif isequal(size(antennas), [1,1])
+                % CASE: single
+                
                 % Do nothing
                 
             elseif isequal(size(antennas), [1,2])
+                % CASE: diff
+                
+                % Implicitly checks that antennas are different.
                 assert(antennas(1) < antennas(2))
                 
             else
-                error('BICAS:BLTS_src_dest:Assertion:IllegalArgument', 'Trying to define illegal BLTS_src_dest.')
+                error(...
+                    'BICAS:BLTS_src_dest:Assertion:IllegalArgument', ...
+                    'Trying to define illegal BLTS_src_dest.')
             end
             
             % ASSERTION: category
-            EJ_library.utils.assert.castring(category)
+            EJ_library.assert.castring(category)
 
             % ASSERTIONS: category, antennas
             nAntennas = numel(antennas);
@@ -89,22 +109,36 @@ classdef BLTS_src_dest %< handle
                     assert(nAntennas == 0)
                 case 'Unknown'
                     assert(nAntennas == 0)
-                    % Represents that the soruce of the BLTS is unknown.
+                    % Represents that the source of the BLTS is unknown.
                 case 'Nowhere'
                     assert(nAntennas == 0)
                     % Represents that the BLTS should be routed to nowhere.
                 otherwise
                     % ASSERTION
-                    error('BICAS:BLTS_src_dest:Assertion:IllegalArgument', 'Illegal argument category="%s".', category)
+                    error(...
+                        'BICAS:BLTS_src_dest:Assertion:IllegalArgument', ...
+                        'Illegal argument category="%s".', category)
             end
             
             % Assign object.
             obj.antennas = antennas;
             obj.category = category;
         end
+
+
+
+        function isAsr = is_ASR(obj)
+            isAsr = ismember(obj.category, {'DC single', 'DC diff', 'AC diff'});
+        end
         
         
         
+        function isAc = is_AC(obj)
+            isAc = strcmp(obj.category, 'AC diff');
+        end
+
+
+
     end    % methods(Access=public)
     
 end

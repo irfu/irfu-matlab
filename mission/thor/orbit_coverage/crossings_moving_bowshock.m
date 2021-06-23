@@ -12,14 +12,14 @@ if orbitKernels
     newTime = rTHOR.time.start:120:rTHOR.time.stop; % 2 min intervals
     tmpR = rTHOR.resample(newTime);
     rTHOR = tmpR;
-  end   
+  end
 else
   get_orbit
-  rTHOR = irf.ts_vec_xyz(irf_time(t,'epoch>epochtt'),[x y x*0])  
+  rTHOR = irf.ts_vec_xyz(irf_time(t,'epoch>epochtt'),[x y x*0])
 end
 
 %% Download OMNI database data
-% 3.3 years (duration of the orbit) of representative solar wind conditions 
+% 3.3 years (duration of the orbit) of representative solar wind conditions
 % should be chosen
 
 if 0
@@ -29,10 +29,10 @@ if 0
   TYear = 60*60*24*365;
   %tint = tStart + [0 rTHOR.time.stop-rTHOR.time.start];
   tint = tStart + [0 TTHOR]*0.3;
-
+  
   % Bowshock nose distance, R0
   omni_bsnx_orig = irf_get_data_omni(tint,'bsnx','omni_min');
-  %omni_bsnx_orig = irf_get_data_omni(tint,'bsnx','omni_min');  
+  %omni_bsnx_orig = irf_get_data_omni(tint,'bsnx','omni_min');
 end
 
 % Can only download one years data at a time
@@ -42,7 +42,7 @@ c_eval('tintUTC{tsub} = ''200?-01-01T00:00:00/200?-12-31T23:59:00''; tsub = tsub
 
 bsnx_orig = [];
 tic;
-for iy = 1:numel(tintUTC)  
+for iy = 1:numel(tintUTC)
   tint = irf.tint(tintUTC{iy});
   tmp_bsnx = irf_get_data_omni(tint,'bsnx','omni_min');
   bsnx_orig = [bsnx_orig; tmp_bsnx];
@@ -74,7 +74,7 @@ fy = @(x,R0) sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstando
 xTHOR = rTHOR.x.data/units.RE*1e3; % km->RE
 yTHOR = rTHOR.y.data/units.RE*1e3;
 
-yBS = fy(xTHOR,xBSN.data/units.RE*1e3); 
+yBS = fy(xTHOR,xBSN.data/units.RE*1e3);
 tsyBS = irf.ts_scalar(xBSN.time,yBS);
 
 allInd = 1:rTHOR.length;
@@ -93,10 +93,10 @@ nCrossingsPerYear = nCrossings/((rTHOR.time.stop-rTHOR.time.start)/60/60/24/365)
 hca=subplot(1,1,1);
 %plot(hca,xTHOR(isOutside),yTHOR(isOutside),'.',...
 plot(hca,xTHOR(:),yTHOR(:),'-',...
-         xTHOR(isInside),yTHOR(isInside),'.',...
-         xTHOR(isCrossing),yTHOR(isCrossing),'.')
+  xTHOR(isInside),yTHOR(isInside),'.',...
+  xTHOR(isCrossing),yTHOR(isCrossing),'.')
 axis(hca,'equal'); hca.XLabel.String = 'x (R_E)'; hca.YLabel.String = 'y (R_E)';
-tStart = irf.tint(tintUTC{iy}); 
+tStart = irf.tint(tintUTC{iy});
 tOMNI = tStart(1)+[0 xBSN.time.stop-xBSN.time.start];
 
 startUTC = tOMNI.start.utc;
@@ -114,14 +114,14 @@ hca.XLim = 45*[-1 1];
 hca=subplot(1,1,1);
 xInside = xTHOR; yInside = yTHOR;
 xInside(isOutside) = NaN; yInside(isOutside) = NaN;
-xOutside = xTHOR; yOutside = yTHOR; 
+xOutside = xTHOR; yOutside = yTHOR;
 xOutside(isInside) = NaN; yOutside(isInside) = NaN;
 
 plot(hca,xOutside,yOutside,'-',...
-         xInside,yInside,'-',...
-         xTHOR(isCrossing),yTHOR(isCrossing),'k.')
+  xInside,yInside,'-',...
+  xTHOR(isCrossing),yTHOR(isCrossing),'k.')
 axis(hca,'equal'); hca.XLabel.String = 'x (R_E)'; hca.YLabel.String = 'y (R_E)';
-tStart = irf.tint(tintUTC{iy}); 
+tStart = irf.tint(tintUTC{iy});
 tOMNI = tStart(1)+[0 xBSN.time.stop-xBSN.time.start];
 
 startUTC = tOMNI.start.utc;
@@ -138,11 +138,11 @@ hca.XLim = 45*[-1 1];
 hca=subplot(1,1,1);
 %plot(hca,xTHOR(isOutside),yTHOR(isOutside),'.',...
 plot(hca,xTHOR(:),yTHOR(:),'-',...
-         xTHOR(isInside),yTHOR(isInside),'.',...
-         xTHOR(isOutboundCrossing),yTHOR(isOutboundCrossing),'.',...
-         xTHOR(isInboundCrossing),yTHOR(isInboundCrossing),'.')
+  xTHOR(isInside),yTHOR(isInside),'.',...
+  xTHOR(isOutboundCrossing),yTHOR(isOutboundCrossing),'.',...
+  xTHOR(isInboundCrossing),yTHOR(isInboundCrossing),'.')
 axis(hca,'equal'); hca.XLabel.String = 'x (R_E)'; hca.YLabel.String = 'y (R_E)';
-tStart = irf.tint(tintUTC{iy}); 
+tStart = irf.tint(tintUTC{iy});
 tOMNI = tStart(1)+[0 xBSN.time.stop-xBSN.time.start];
 
 startUTC = tOMNI.start.utc;
@@ -158,10 +158,10 @@ hca.FontSize = 14;
 hca=subplot(1,1,1);
 %plot(hca,xTHOR(isOutside),yTHOR(isOutside),'.',...
 plot(hca,xTHOR(:),yTHOR(:),'-',...
-         xTHOR(isInside),yTHOR(isInside),'.',...
-         xTHOR(isCrossing),yTHOR(isCrossing),'.')
+  xTHOR(isInside),yTHOR(isInside),'.',...
+  xTHOR(isCrossing),yTHOR(isCrossing),'.')
 axis(hca,'equal'); hca.XLabel.String = 'x (R_E)'; hca.YLabel.String = 'y (R_E)';
-tStart = irf.tint(tintUTC{iy}); 
+tStart = irf.tint(tintUTC{iy});
 tOMNI = tStart(1)+[0 xBSN.time.stop-xBSN.time.start];
 
 startUTC = tOMNI.start.utc;
@@ -174,7 +174,7 @@ legend('Orbit','Inside bowshock','Bowshock crossings')
 hca.FontSize = 14;
 
 %% Debugging plots
-nRows = 2; nCols = 2; 
+nRows = 2; nCols = 2;
 for ip = 1:nRows*nCols; h(ip) = subplot(nRows,nCols,ip); end
 isub = 1;
 
@@ -182,7 +182,7 @@ hca = h(isub); isub = isub+1;
 irf_plot(hca,xBSN/units.RE*1e3); irf_zoom(hca,'x',xBSN.time([1 end]))
 
 hca = h(isub); isub = isub+1;
-irf_plot(hca,{rTHOR.x/units.RE*1e3,rTHOR.y/units.RE*1e3,tsyBS},'comp'); 
+irf_plot(hca,{rTHOR.x/units.RE*1e3,rTHOR.y/units.RE*1e3,tsyBS},'comp');
 irf_legend(hca,{'x_{THOR}','y_{THOR}','y_{BS}(x_{THOR},R_0)'},[0.01 0.99])
 irf_zoom(hca,'x',rTHOR.time([1 end]))
 
@@ -194,8 +194,8 @@ hca.Title.String = 'Outside bowshock';
 
 hca = h(isub); isub = isub+1;
 plot(hca,xTHOR(:),yTHOR(:),'-',...
-         xTHOR(isInside),yTHOR(isInside),'.',...
-         xTHOR(isCrossing),yTHOR(isCrossing),'.')
+  xTHOR(isInside),yTHOR(isInside),'.',...
+  xTHOR(isCrossing),yTHOR(isCrossing),'.')
 axis(hca,'equal'); hca.XLabel.String = 'x'; hca.YLabel.String = 'y';
 hca.Title.String = 'Inside bowshock';
 

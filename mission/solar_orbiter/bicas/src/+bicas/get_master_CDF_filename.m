@@ -9,7 +9,7 @@
 % skeletonVersionStr : Two-character two-digit string specifying version of the master CDF file.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-28
 %
 function masterCdfFilename = get_master_CDF_filename(datasetId, skeletonVersionStr)
@@ -18,7 +18,7 @@ function masterCdfFilename = get_master_CDF_filename(datasetId, skeletonVersionS
 % PROPOSAL: Update BICAS so that both lowercase and uppercase .cdf is accepted.
 %           ==> Has to be done in other code which finds set of matching files.
 
-    bicas.assert_DATASET_ID(datasetId)
+    bicas.assert_BICAS_DATASET_ID(datasetId)
     bicas.assert_skeleton_version(skeletonVersionStr)
     
     masterCdfFilename = [datasetId, '_V', skeletonVersionStr, '.cdf'];

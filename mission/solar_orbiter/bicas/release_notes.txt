@@ -1,0 +1,72 @@
+Release notes
+=============
+
+
+Version 1.0.0
+-------------
+Almost-complete support for LFR & TDS datasets (voltages) with transfer
+functions (partially tested). No parasitic capacitance.
+
+
+Version 2.0.0
+-------------
+Added support for L1 input bias current datasets; supports updated L1R input
+datasets, and updated L2 master CDFs (V08).
+
+
+Version 2.0.1
+-------------
+Bugfix: Reads bias current zVars as nA (not uA)
+
+
+Version 3.0.0
+-------------
+Functionality for ITF high freq. cutoff.
+Uses master CDFs V09 (instead of V08).
+Copies zVar BW from LFR datasets.
+Searches for BIAS RCT using other filenaming scheme: *RPW-BIAS*.
+L2 bias current in nA (not ampere).
+Uses LFR mux mode.
+
+
+Version 3.1.0
+-------------
+Bugfix to handle LFR zVar BW=0.
+Preliminary sweep removal.
+Performance improvement (speed-up).
+Preliminary setting of zVar QUALITY_FLAG (max 2).
+Inofficial preliminary support for producing L2-->L3.
+
+
+Version 3.1.1
+-------------
+Modified default settings:
+(1) inverted transfer function cutoff at 0.8*omega_Nyquist (instead of 0.7)
+(2) duplicate bias current gives error (instead of using mitigation)
+
+
+Version 4.0.0
+-------------
+Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)
+Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX
+Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR
+
+
+Version 4.1.0
+-------------
+Added setting quality variables based on thruster firings in
+Non-Standard Operations (NSO) table. List complete until 2020-12-05.
+Zero order AC detrending (remove mean, not linear fit), no AC re-trending
+(~bugfix; re-trending makes no sense for high-pass filtered data).
+Combined transfer functions (LFR+BIAS) for AC data are modified during
+execution to have constant gain for low freqs (prevents low frequency noise
+from being amplified.)
+Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE
+Bugfix: not crashing when reading CURRENT datasets with one bias setting.
+
+
+Version 5.0.0
+-------------
+Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26.
+Better output CDF standards compliance.
+Using new master CDFs.

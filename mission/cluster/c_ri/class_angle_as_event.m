@@ -1,9 +1,9 @@
-function [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles,ampl, min_angle, min_ampl,mode) 
-%function [time_of_events,angles,ampl] = class_angle_as_event(angles,ampl, min_angle, min_ampl,mode) 
+function [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles,ampl, min_angle, min_ampl,mode)
+%function [time_of_events,angles,ampl] = class_angle_as_event(angles,ampl, min_angle, min_ampl,mode)
 %
-%Input: 
+%Input:
 % angles -[time | ang1 -> ang6] and ampl[ampl1 -> ampl 4]
-% ampl -[ampl1 -> ample 4] 
+% ampl -[ampl1 -> ample 4]
 % min_angle -the minimum angle to be called a event
 % min_ampl -the minimum ampl to be called a event
 %
@@ -15,13 +15,13 @@ function [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles,ampl
 %
 %Using:
 % ind2nr
-% 
+%
 %Work method:
 %
 %Error:
 % if no events are found 0 is returned
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
@@ -58,7 +58,7 @@ if a2t == 1
   a2 = 0;
 end
 
-ainfo = sprintf('max angle : %f, ampl1: %f ampl2: %f at time %s', biggest_angle,a1,a2,datestring(fromepoch(tba))); 
+ainfo = sprintf('max angle : %f, ampl1: %f ampl2: %f at time %s', biggest_angle,a1,a2,datestring(fromepoch(tba)));
 disp(ainfo)
 [nr_angles, col] = size(angles);
 %starting with zero events

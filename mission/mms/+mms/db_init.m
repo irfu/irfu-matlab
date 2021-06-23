@@ -2,7 +2,7 @@ function db_init(key, val)
 %MMS.DB_INIT  initialize MMS file database
 %
 %  MMS.DB_INIT(key,value)
-%  
+%
 %  Example:
 %    mms.db_init('local_file_db','/data/mms')
 %    mms.db_init('local_file_db','/Users/yuri/Data/mms')
@@ -23,7 +23,7 @@ narginchk(0,2)
 if nargin==0
   localFileDbRoot = datastore('mms_db','local_file_db_root');
   if isempty(localFileDbRoot)
-    irf.log('warining','local_file_db_root empty - run mms.db_init()')
+    irf.log('warning','local_file_db_root empty - run mms.db_init()')
   else
     localFileDb = mms_local_file_db(localFileDbRoot);
     MMS_DB.add_db(localFileDb);
@@ -55,7 +55,7 @@ if nargin==0
 end
 
 if nargin ~=2, error('need a pair KEY,VALUE'), end
-  
+
 switch key
   case 'local_file_db'
     localFileDb = mms_local_file_db(val);

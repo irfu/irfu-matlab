@@ -1,4 +1,4 @@
-function [DIST,ID] = distance_to_MP(XN_PD, VEL, XGSM, YGSM, ZGSM) 
+function [DIST,ID] = distance_to_MP(XN_PD, VEL, XGSM, YGSM, ZGSM)
 %
 %Input:
 % XN_PD - EITHER SOLAR WIND PROTON NUMBER DENSITY (PER CC) (IF VEL&gt0)
@@ -18,15 +18,15 @@ function [DIST,ID] = distance_to_MP(XN_PD, VEL, XGSM, YGSM, ZGSM)
 % (XGSM,YGSM,ZGSM),   AND THE DISTANCE BETWEEN THEM (DIST)
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
-% Translated from the fortran cod: 
+% Translated from the fortran cod:
 % THE PRESSURE-DEPENDENT MAGNETOPAUSE IS THAT USED IN THE T95_01 AND T96_01
 %  MODELS  (TSYGANENKO, JGR, V.100, P.5599, 1995; ESA SP-389, P.181, OCT. 1996)
 %
@@ -35,9 +35,9 @@ function [DIST,ID] = distance_to_MP(XN_PD, VEL, XGSM, YGSM, ZGSM)
 %--------------------- the beginning --------------------------
 
 if VEL<0
-    PD=XN_PD;
+  PD=XN_PD;
 else
-    PD=1.94E-6*XN_PD*VEL^2;  % PD IS THE SOLAR WIND DYNAMIC PRESSURE (IN NANOPASCALS)
+  PD=1.94E-6*XN_PD*VEL^2;  % PD IS THE SOLAR WIND DYNAMIC PRESSURE (IN NANOPASCALS)
 end
 
 RAT=PD/2.0;  % RATIO OF PD TO THE AVERAGE PRESSURE, ASSUMED AS 2 nPa
@@ -61,26 +61,26 @@ XM=X0-A;    %  THIS IS THE X-COORDINATE OF THE SEAM BETWEEN THE
 %             ELLIPSOIDAL MAGNETOPAUSE, PLANET.SPACE SCI., V.37, P.1037, 1989).
 %
 if (YGSM ~= 0 || ZGSM ~= 0)
-    PHI=atan2(YGSM,ZGSM); %Controll that fortran atan2 is equal to matlab atan2
+  PHI=atan2(YGSM,ZGSM); %Controll that fortran atan2 is equal to matlab atan2
 else
-    PHI=0;
+  PHI=0;
 end
 
 RHO=sqrt(YGSM^2+ZGSM^2);
 
 if (XGSM<XM)
-    XMGNP=XGSM;
-    RHOMGNP=A*sqrt(S0^2-1);
-    YMGNP=RHOMGNP*sin(PHI);
-    ZMGNP=RHOMGNP*cos(PHI);
-    DIST=sqrt((XGSM-XMGNP)^2+(YGSM-YMGNP)^2+(ZGSM-ZMGNP)^2);
-    if (RHOMGNP>RHO) 
-        ID=+1;
-    end
-    if (RHOMGNP<RHO) 
-        ID=-1;
-    end
-    return
+  XMGNP=XGSM;
+  RHOMGNP=A*sqrt(S0^2-1);
+  YMGNP=RHOMGNP*sin(PHI);
+  ZMGNP=RHOMGNP*cos(PHI);
+  DIST=sqrt((XGSM-XMGNP)^2+(YGSM-YMGNP)^2+(ZGSM-ZMGNP)^2);
+  if (RHOMGNP>RHO)
+    ID=+1;
+  end
+  if (RHOMGNP<RHO)
+    ID=-1;
+  end
+  return
 end
 
 XKSI=(XGSM-X0)/A+1;
@@ -102,9 +102,9 @@ ZMGNP=RHOMGNP*cos(PHI);
 
 DIST=sqrt((XGSM-XMGNP)^2+(YGSM-YMGNP)^2+(ZGSM-ZMGNP)^2);
 
-if (SIGMA > S0) 
-    ID=-1;   %  ID=-1 MEANS THAT THE POINT LIES OUTSIDE
+if (SIGMA > S0)
+  ID=-1;   %  ID=-1 MEANS THAT THE POINT LIES OUTSIDE
 end
-if (SIGMA < S0) 
-    ID=+1;   %  ID=+1 MEANS THAT THE POINT LIES INSIDE
+if (SIGMA < S0)
+  ID=+1;   %  ID=+1 MEANS THAT THE POINT LIES INSIDE
 end                                          %THE MAGNETOSPHERE

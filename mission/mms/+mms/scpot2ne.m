@@ -4,10 +4,10 @@ function [neSC,Iph0,Tph0,Iph1,Tph1] = scpot2ne(varargin)
 % current. A best fit of the photoelectron current to the thermal current is
 % used to determine the photoelectron currents and temperatures. These are
 % then used to construct a new number density from the spacecraft potential.
-% 
+%
 % [neSC,Iph0,Tph0,Iph1,Tph1] = mms.scpot2ne(SCpot,ne,Te[,Iasp]);
-% 
-% Inputs: 
+%
+% Inputs:
 %   SCpot - Spacecraft potential (TSeries format)
 %   ne - electron number density (TSeries format)
 %   Te - electron temperature (TSeries format). Function accepts scalar
@@ -18,16 +18,16 @@ function [neSC,Iph0,Tph0,Iph1,Tph1] = scpot2ne(varargin)
 %   neSC - number density estimated from SCpot, at the same resolution as
 %   SCpot.
 %   Iph0,Tph0,Iph1,Tph1 - Values of the photoelectron currents (muA) and
-%   temperatures (eV). Two photoelectron populations are assumed. 
+%   temperatures (eV). Two photoelectron populations are assumed.
 %
-% Notes: 
+% Notes:
 %   * Usual assumptions are made for thermal and photoelectron current, vis.,
 %   planar geometry for photoelectrons and spherical geometry for thermal
-%   electrons. 
+%   electrons.
 %   * Currently the calculation neglects the ion thermal current, secondary
 %   electrons, and other sources of current.
 %   * ASPOC on does not work very well.
-% 
+%
 % Written by D. B. Graham
 
 % Check input
@@ -38,24 +38,24 @@ Te = varargin{3};
 nargin
 ASPOCon = 0;
 if nargin == 4
-    Iasp = varargin{4};
-    ASPOCon = 1;
-    Iasp = Iasp.resample(ne);
+  Iasp = varargin{4};
+  ASPOCon = 1;
+  Iasp = Iasp.resample(ne);
 end
-    
+
 
 
 % Check format of electron temperature
 dimTe = size(squeeze(Te.data(1,:,:)));
 dimTe = dimTe(1)*dimTe(2);
 if dimTe == 9
-    Te = irf.ts_tensor_xyz(Te.time,Te.data); 
-    Te = Te.trace/3;
+  Te = irf.ts_tensor_xyz(Te.time,Te.data);
+  Te = Te.trace/3;
 else
-    if dimTe ~= 1
-        irf.log('critical','Te format not recognized');
-        return;
-    end
+  if dimTe ~= 1
+    irf.log('critical','Te format not recognized');
+    return;
+  end
 end
 
 % Define constants
@@ -72,9 +72,9 @@ Ie = (1e12*qe*Ssurf/(2*sqrt(pi)))*ne.data.*veth.*(1+SCpotr.data./Te.data); % The
 
 % First a simple fit of Iph to Ie using 1 photoelectron population
 if ASPOCon
-    fsimp = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
+  fsimp = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
 else
-    fsimp = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
+  fsimp = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
 end
 
 options = optimset('MaxFunEvals',5000);
@@ -84,9 +84,9 @@ g2 = Xsimp(2);
 
 % Fit of Iph to Ie for two photoelectron populations
 if ASPOCon
-    f = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');
+  f = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');
 else
-    f = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');
+  f = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');
 end
 [X,~] = fminsearch(@(x) f(x),[g1;g2;10;10],options);
 

@@ -29,16 +29,16 @@ if nargs == 0
   return;
 elseif nargs >= 2 && ischar(varargin{1}) % tint not specified
   tint = [];
-	parameter=varargin{1};
-	database=varargin{2};
-	format=varargin(3:end);
+  parameter=varargin{1};
+  database=varargin{2};
+  format=varargin(3:end);
   irf.log('notice',['Reading ' parameter ' from database: ' database '.']);
   irf.log('notice','tint not defined, reading all data.');
-elseif nargs >= 3 
-	tint = varargin{1};
-	parameter=varargin{2};
-	database=varargin{3};
-	format=varargin(4:end);
+elseif nargs >= 3
+  tint = varargin{1};
+  parameter=varargin{2};
+  database=varargin{3};
+  format=varargin(4:end);
 end
 
 switch lower(database)
@@ -50,7 +50,7 @@ switch lower(database)
   case 'omni_min'
     f=irf_get_data_omni(tint,parameter,database);
   case 'caa'
-		f=c_caa_var_get(parameter,format{:},'tint',tint);
+    f=c_caa_var_get(parameter,format{:},'tint',tint);
   otherwise
-      error(['Unknown database: ' database]);
+    error(['Unknown database: ' database]);
 end

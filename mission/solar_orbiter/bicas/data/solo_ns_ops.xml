@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<!--
+    NOTE: Designed so that the content can be converted to a more easy-to-read HTML file using e.g. a command like
+    > xsltproc solo_ns_ops2html.xsl   solo_ns_ops.xml > solo_ns_ops.xml.html
+    -->
+
+    <!-- NOTE: Can not get HTML element <B> to pass through XSLT yet.-->
+    <description>
+        Manually written Non-Standard Operations (NSO) List used by BICAS (SolO/RPW/BIAS calibration and data processing). Contains "events", i.e. time intervals, each one labelled with a standardized string (<B>NSO ID</B>, or <B>RCS NSO ID</B>) that BICAS can interpret. BICAS uses this list to modify how datasets are processed, e.g. by setting zVariables QUALITY_FLAG and/or L2_QUALITY_BITMASK, replacing data with fill values, and/or omitting data from L3.
+    </description>
+
+
+
+    <notesTable>
+        <note>
+            2020-11-12, EJ: I have not managed to find any thruster firings for time period 2020-02-12 to 2020-03-29.
+        </note>
+        <note>
+            2021-02-01, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-01-26 (inclusive). Only manual identifications.
+        </note>
+        <note>
+            2020-12-08, EJ: Added saturation for 2020-11-05. Its earlier omission hints that there might be more unknown cases of saturation. Data has not been systematically searched for saturation, but should cover most cases.
+        </note>
+    </notesTable>
+
+
+
+    <!--
+    ########
+     EVENTS
+    ########
+    -->
+    <eventsTable>
+
+        <event>
+            <startTimeUtc>2020-03-30T21:59:34</startTimeUtc>
+            <stopTimeUtc> 2020-03-30T22:06:16</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-01T21:59:34</startTimeUtc>
+            <stopTimeUtc> 2020-04-01T22:05:17</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Only one spike so unsure, but seems plausible. Same time as day before.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-03T21:59:34</startTimeUtc>
+            <stopTimeUtc> 2020-04-03T22:05:14</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Only one spike.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-08T21:59:30</startTimeUtc>
+            <stopTimeUtc> 2020-04-08T22:05:20</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-10T21:59:10</startTimeUtc>
+            <stopTimeUtc> 2020-04-10T22:06:05</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-13T21:59:28</startTimeUtc>
+            <stopTimeUtc> 2020-04-13T22:06:23</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-20T21:59:30</startTimeUtc>
+            <stopTimeUtc> 2020-04-20T22:06:03</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-22T21:59:33</startTimeUtc>
+            <stopTimeUtc> 2020-04-22T22:05:59</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-24T21:59:22</startTimeUtc>
+            <stopTimeUtc> 2020-04-24T22:06:19</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-27T21:59:19</startTimeUtc>
+            <stopTimeUtc> 2020-04-27T22:06:30</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-04-29T21:59:20</startTimeUtc>
+            <stopTimeUtc> 2020-04-29T22:05:56</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-01T21:59:27</startTimeUtc>
+            <stopTimeUtc> 2020-05-01T22:06:21</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-04T21:59:27</startTimeUtc>
+            <stopTimeUtc> 2020-05-04T22:06:24</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-06T21:59:27</startTimeUtc>
+            <stopTimeUtc> 2020-05-06T22:06:17</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-08T21:59:26</startTimeUtc>
+            <stopTimeUtc> 2020-05-08T22:06:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-11T15:06:23</startTimeUtc>
+            <stopTimeUtc> 2020-05-11T15:14:18</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-13T14:59:10</startTimeUtc>
+            <stopTimeUtc> 2020-05-13T15:07:01</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-15T15:21:23</startTimeUtc>
+            <stopTimeUtc> 2020-05-15T15:29:32</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-18T14:44:18</startTimeUtc>
+            <stopTimeUtc> 2020-05-18T14:53:28</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-05-20T14:38:40</startTimeUtc>
+            <stopTimeUtc> 2020-05-20T14:46:30</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-01T14:12:32</startTimeUtc>
+            <stopTimeUtc> 2020-06-01T14:21:08</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-03T18:48:07</startTimeUtc>
+            <stopTimeUtc> 2020-06-03T18:56:10</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-05T16:15:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-05T16:22:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-08T16:15:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-08T16:23:30</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-10T16:16:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-10T16:22:30</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-12T16:17:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-12T16:24:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-13T19:00:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-13T19:08:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-14T19:00:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-14T19:08:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-15T00:33:15</startTimeUtc>
+            <stopTimeUtc> 2020-06-15T00:39:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-15T19:00:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-15T19:06:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-16T19:00:03</startTimeUtc>
+            <stopTimeUtc> 2020-06-16T19:06:37</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-17T18:59:53</startTimeUtc>
+            <stopTimeUtc> 2020-06-17T19:05:52</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-18T19:00:00</startTimeUtc>
+            <stopTimeUtc> 2020-06-18T19:06:30</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-19T18:59:59</startTimeUtc>
+            <stopTimeUtc> 2020-06-19T19:06:47</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-21T13:29:56</startTimeUtc>
+            <stopTimeUtc> 2020-06-21T13:35:36</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-22T01:00:51</startTimeUtc>
+            <stopTimeUtc> 2020-06-22T01:19:02</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-22T18:59:58</startTimeUtc>
+            <stopTimeUtc> 2020-06-22T19:07:01</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-23T18:59:57</startTimeUtc>
+            <stopTimeUtc> 2020-06-23T19:06:36</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-24T18:59:43</startTimeUtc>
+            <stopTimeUtc> 2020-06-24T19:07:20</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-25T19:00:10</startTimeUtc>
+            <stopTimeUtc> 2020-06-25T19:07:22</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-26T19:00:05</startTimeUtc>
+            <stopTimeUtc> 2020-06-26T19:06:24</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-27T19:00:10</startTimeUtc>
+            <stopTimeUtc> 2020-06-27T19:07:21</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-28T18:59:50</startTimeUtc>
+            <stopTimeUtc> 2020-06-28T19:07:26</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-06-29T01:04:51</startTimeUtc>
+            <stopTimeUtc> 2020-06-29T01:13:19</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-07-04T13:04:36</startTimeUtc>
+            <stopTimeUtc> 2020-07-04T13:14:54</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-07-05T09:10:00</startTimeUtc>
+            <stopTimeUtc> 2020-07-05T14:16:57</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description>
+                Unsure of beginning of time interval. /EJ
+            </description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-07-06T01:04:37</startTimeUtc>
+            <stopTimeUtc> 2020-07-06T01:12:11</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-07-11T13:04:26</startTimeUtc>
+            <stopTimeUtc> 2020-07-11T13:15:09</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-07-13T01:04:47</startTimeUtc>
+            <stopTimeUtc> 2020-07-13T01:12:47</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-07-14T00:00:00.50</startTimeUtc>
+            <stopTimeUtc> 2020-07-20T07:39:41.54</stopTimeUtc>
+            <rcsNsoId>FULL_SATURATION</rcsNsoId>
+            <description>Due to bad bias current commanding.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-07-24T09:35:20</startTimeUtc>
+            <stopTimeUtc> 2020-07-27T12:00:00</stopTimeUtc>
+            <rcsNsoId>FULL_SATURATION</rcsNsoId>
+            <description>
+                Due to bad bias current commanding.
+            </description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-07-25T13:04:43</startTimeUtc>
+            <stopTimeUtc> 2020-07-25T13:13:51</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-08-01T12:39:46</startTimeUtc>
+            <stopTimeUtc> 2020-08-01T12:49:43</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-08-06T00:00:00</startTimeUtc>
+            <stopTimeUtc> 2020-08-09T02:35:00</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description>
+                Beginning of time period is set quite arbitrarily.
+            </description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-08-08T13:04:18</startTimeUtc>
+            <stopTimeUtc> 2020-08-08T13:13:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-08-09T02:35:00</startTimeUtc>
+            <stopTimeUtc> 2020-08-11T21:30:00</stopTimeUtc>
+            <rcsNsoId>FULL_SATURATION</rcsNsoId>
+            <description>
+            </description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-08-22T13:04:16</startTimeUtc>
+            <stopTimeUtc> 2020-08-22T13:12:35</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-08-23T22:55:13</startTimeUtc>
+            <stopTimeUtc> 2020-08-23T23:00:56</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>One spike. Not sure./EJ</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-08-29T13:04:18</startTimeUtc>
+            <stopTimeUtc> 2020-08-29T13:12:42</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-09-14T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2020-09-14T01:16:36</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-09-19T13:04:17</startTimeUtc>
+            <stopTimeUtc> 2020-09-19T13:16:23</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>14 spikes. Therefore long time interval.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-09-21T01:04:01</startTimeUtc>
+            <stopTimeUtc> 2020-09-21T01:14:37</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>10 spikes.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-09-26T13:04:12</startTimeUtc>
+            <stopTimeUtc> 2020-09-26T13:15:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>13 spikes.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-09-28T01:04:20</startTimeUtc>
+            <stopTimeUtc> 2020-09-28T01:14:25</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>10 spikes.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-10-03T13:04:25</startTimeUtc>
+            <stopTimeUtc> 2020-10-03T13:15:26</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-10-05T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2020-10-05T01:14:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-10-10T13:04:14</startTimeUtc>
+            <stopTimeUtc> 2020-10-10T13:15:26</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-10-12T01:04:12</startTimeUtc>
+            <stopTimeUtc> 2020-10-12T01:14:32</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-10-17T13:04:32</startTimeUtc>
+            <stopTimeUtc> 2020-10-17T13:15:36</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-10-19T01:04:13</startTimeUtc>
+            <stopTimeUtc> 2020-10-19T01:14:33</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-10-24T13:04:21</startTimeUtc>
+            <stopTimeUtc> 2020-10-24T13:15:24</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-02T01:04:10</startTimeUtc>
+            <stopTimeUtc> 2020-11-02T01:12:48</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-02T21:55:42</startTimeUtc>
+            <stopTimeUtc> 2020-11-02T22:04:19</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-04T18:34:30</startTimeUtc>
+            <stopTimeUtc> 2020-11-04T18:43:27</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-11-04T20:26:11</startTimeUtc>
+            <stopTimeUtc> 2020-11-04T21:11:46</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-04T21:11:46</startTimeUtc>
+            <stopTimeUtc> 2020-11-04T22:35:11</stopTimeUtc>
+            <rcsNsoId>FULL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-04T22:35:11</startTimeUtc>
+            <stopTimeUtc> 2020-11-05T00:34:30</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-05T00:34:30</startTimeUtc>
+            <stopTimeUtc> 2020-11-05T01:50:25</stopTimeUtc>
+            <rcsNsoId>FULL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-05T01:50:25</startTimeUtc>
+            <stopTimeUtc> 2020-11-05T02:34:11</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2020-11-05T04:09:33</startTimeUtc>
+            <stopTimeUtc> 2020-11-05T04:18:16</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-09T01:04:25</startTimeUtc>
+            <stopTimeUtc> 2020-11-09T01:17:20</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-13T00:59:39</startTimeUtc>
+            <stopTimeUtc> 2020-11-13T01:08:09</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Not as visually obvious that it is a thruster firing as other firings but it can be found in the SOLO HK.</description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-16T01:04:20</startTimeUtc>
+            <stopTimeUtc> 2020-11-16T01:20:06</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-23T01:04:19</startTimeUtc>
+            <stopTimeUtc> 2020-11-23T01:18:58</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-11-30T01:39:25</startTimeUtc>
+            <stopTimeUtc> 2020-11-30T01:47:44</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-07T08:44:23</startTimeUtc>
+            <stopTimeUtc> 2020-12-07T08:53:27</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-13T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2020-12-13T01:13:09</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-20T01:04:24</startTimeUtc>
+            <stopTimeUtc> 2020-12-20T01:13:35</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-24T06:39:23</startTimeUtc>
+            <stopTimeUtc> 2020-12-24T06:45:45</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-27T09:53:39</startTimeUtc>
+            <stopTimeUtc> 2020-12-27T10:02:11</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2020-12-30T00:04:20</startTimeUtc>
+            <stopTimeUtc> 2020-12-30T00:11:28</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-01T01:04:19</startTimeUtc>
+            <stopTimeUtc> 2021-01-01T01:11:44</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-02T05:58:28</startTimeUtc>
+            <stopTimeUtc> 2021-01-02T06:07:51</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unusually many thruster firings.</description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-07T13:59:27</startTimeUtc>
+            <stopTimeUtc> 2021-01-07T14:09:10</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-08T08:31:20</startTimeUtc>
+            <stopTimeUtc> 2021-01-08T08:38:03</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-11T01:04:25</startTimeUtc>
+            <stopTimeUtc> 2021-01-11T01:17:59</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-01-24T22:15:05</startTimeUtc>
+            <stopTimeUtc> 2021-01-24T22:35:34</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unusually many thruster firings.</description>
+        </event>
+
+
+
+    </eventsTable>
+
+</main>

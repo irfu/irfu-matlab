@@ -20,11 +20,11 @@ if nargin<2, fmt = 0; end
 ndata = size(data,1);
 s = cell(1,ndata);
 for i=1:ndata
-	s{i} = [epoch2iso(data(i,1),fmt) ' -- ' epoch2iso(data(i,2),fmt)];
+  s{i} = [epoch2iso(data(i,1),fmt) ' -- ' epoch2iso(data(i,2),fmt)];
 end
 if nargout==0
-	for i=1:ndata
-		disp(s{i})
-	end
+  for i=1:ndata
+    disp(s{i})
+  end
 end
 if ndata==1, s = s{1}; end

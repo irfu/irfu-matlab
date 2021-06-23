@@ -3,7 +3,7 @@ function indSW = mms_sdp_swwake_enabled_time(tInp, scId)
 % when it should not.
 
 narginchk(2,2)
-if isa(tInp,'GenericTimeArray'), tInp = EpochTT(tInp).ttns; end 
+if isa(tInp,'GenericTimeArray'), tInp = EpochTT(tInp).ttns; end
 global ENVIR
 
 % NEW CODE, READ FILES PROVIDED BY DANIEL's code (DOES NOT YET EXIST in
@@ -11,7 +11,7 @@ global ENVIR
 if isempty(ENVIR), ENVIR = mms_sdc_sdp_init; end
 calStr = 'regions';
 calPath = [ENVIR.CAL_PATH_ROOT, filesep 'mms', num2str(scId), filesep, ...
-    'edp', filesep, 'sdp', filesep, calStr];
+  'edp', filesep, 'sdp', filesep, calStr];
 calFiles = ['mms', num2str(scId), '_edp_sdp_', calStr, '_*v*.txt' ];
 list = dir([calPath, filesep, calFiles]);
 if(~isempty(list))
@@ -28,7 +28,7 @@ if(~isempty(list))
   % Offset start time (based on ROI).
   time1 = offTime.ttns;
   % Let each offset be valid until 5 us before next offset begin
-  % NOTE: While it could be as small as 1ns with int64 representation it 
+  % NOTE: While it could be as small as 1ns with int64 representation it
   % can in reallity not be that small as "interp1" in Matlab R2013b req.
   % double representation.
   % (Highest MMS burst rate used as of 2017/05/05 is 16384Hz => dt=61 us).
@@ -64,7 +64,7 @@ if(~isempty(list))
     sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
     sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
   end
-
+  
 else
   % Did not locate any file, use old hard coded values
   switch scId
@@ -82,7 +82,7 @@ else
       sw.time(end+1) = EpochTT('2017-08-31T19:00:00.000000000Z').ttns; sw.wake(end+1) = 1; % Enable for one hour (S/W interactions seen in data).
       sw.time(end+1) = EpochTT('2017-08-31T19:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
       sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
-
+      
       sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
     otherwise
       error('Invalid scId')

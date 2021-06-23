@@ -1,4 +1,4 @@
-function t_dt = t_and_dt(t,dt) 
+function t_dt = t_and_dt(t,dt)
 %
 %Input:
 % t -containing the time t in [yyyy mm dd hh mm ss.mss]
@@ -14,18 +14,18 @@ function t_dt = t_and_dt(t,dt)
 %
 %Using:
 % toepoch
-% 
+%
 %Work method:
 %
 %Error:
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
 [rows,col] = size(t);
 for n = 1:rows
-t_dt(n,1) = toepoch(t(n,:));
+  t_dt(n,1) = toepoch(t(n,:));
 end
 t_dt(:,2) = dt;

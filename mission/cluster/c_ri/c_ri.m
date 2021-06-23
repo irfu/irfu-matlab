@@ -11,7 +11,7 @@
 %##### Top function #####
 %c_ri_run_all
 %This function 7 of the 9 main functions. Goes all the way from
-%finding MP-crossings to generating plots of the events. 
+%finding MP-crossings to generating plots of the events.
 %
 %using:
 % c_ri_auto_event_search
@@ -33,7 +33,7 @@
 %
 % download_B -(using ISDAT)
 % calc_angles.m -(can calculate the angles for assymetric B)
-% view_and_filter_angles 
+% view_and_filter_angles
 %
 %#### lower level functions #####
 %
@@ -71,7 +71,7 @@
 %isGetContentLite
 %toepoch
 %search_events
-%save /share/robert/mp_crossing_(from date)_to_(to_date) 
+%save /share/robert/mp_crossing_(from date)_to_(to_date)
 %
 %used by: download_B
 %isGetContetLite
@@ -99,7 +99,7 @@
 %toepoch
 %time2row
 %find_max_angles
-%plot_max_angles 
+%plot_max_angles
 %class_angle_as_event
 %
 %function c_riget_B

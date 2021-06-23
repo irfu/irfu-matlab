@@ -1,8 +1,8 @@
-function u = plot_angles(angle) 
+function u = plot_angles(angle)
 %
 %Input:
-% One matrix containing the angle between the satelites magnetic vectors and the
-% time. 
+% One matrix containing the angle between the satellites magnetic vectors and the
+% time.
 % |time|1 to 2| 1 to 3|1 to 4|2 to 3|2 to 4|3 to 4|
 %
 %Output:
@@ -11,12 +11,12 @@ function u = plot_angles(angle)
 %Descrition of the function:
 %
 %Using: irf_timeaxis
-% 
+%
 %Work method:
 %
 %Error:
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

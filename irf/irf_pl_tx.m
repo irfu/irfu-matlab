@@ -35,19 +35,19 @@ function out=irf_pl_tx(varargin)
 
 [ax,args,nargs] = axescheck(varargin{:});
 if isempty(ax) % if empty axes
-    ax=gca;
+  ax=gca;
 end
 %hcf=get(ax,'parent'); % get figure handle
 
 if nargs == 0 % show help if no input parameters
-    help IRF_PL_TX;
-    return
+  help IRF_PL_TX;
+  return
 end
 
 % Defaults
 X = struct('x1',[],'x2',[],'x3',[],'x4',[],'x5',[]);
 sc_list=1:5;	% default plot all s/c data
-column = [];	% column to plot 
+column = [];	% column to plot
 delta_t = [];	% time shift
 line_style = {};% line styles
 flagCluster = false;
@@ -55,10 +55,10 @@ flagMMS = false;
 
 % Check which are input variables
 if ischar(args{1})
-    % Variables defined in form 'B?'
-    getVariablesFromCaller = true;
-    variableNameInCaller   = args{1};
-    args(1) = [];
+  % Variables defined in form 'B?'
+  getVariablesFromCaller = true;
+  variableNameInCaller   = args{1};
+  args(1) = [];
 elseif isstruct(args{1}) % format vector.C1, vector.C2,...
   for cc = '1':'4'
     if ~flagMMS % CLuster
@@ -80,86 +80,86 @@ elseif isstruct(args{1}) % format vector.C1, vector.C2,...
   end
   if ~flagCluster && ~flagMMS % THEMIS
     for cc = '1':'5'
-        f = ['C',char(cc+15)];
-        if ~assignField(), f = lower(f); assignField(), end
+      f = ['C',char(cc+15)];
+      if ~assignField(), f = lower(f); assignField(), end
     end
   end
   args(1) = [];
   getVariablesFromCaller = false;
 else
-    % Variables given as 4 input paramters
-    if length(args)<4, error('use IRF_PL_TX(x1,x2,x3,x4) or IRF_PL_TX(''x?'')'), end
-    X.x1 = args{1}; X.x2 = args{2}; X.x3 = args{3}; X.x4 = args{4}; % assign x1,x2..x4
-    args = args(5:end);
-    getVariablesFromCaller = false;
+  % Variables given as 4 input paramters
+  if length(args)<4, error('use IRF_PL_TX(x1,x2,x3,x4) or IRF_PL_TX(''x?'')'), end
+  X.x1 = args{1}; X.x2 = args{2}; X.x3 = args{3}; X.x4 = args{4}; % assign x1,x2..x4
+  args = args(5:end);
+  getVariablesFromCaller = false;
 end
 
 % Check if column to plot is specified as input
 if ~isempty(args)
-    if isnumeric(args{1})
-        column = args{1};
-        args(1) = [];
-    elseif isempty(args{1}) % empty string means default matrix size
-        args(1) = [];
-    end
+  if isnumeric(args{1})
+    column = args{1};
+    args(1) = [];
+  elseif isempty(args{1}) % empty string means default matrix size
+    args(1) = [];
+  end
 end
 
 % check for other input parameters
 while ~isempty(args)
-    if ischar(args{1})
-        if strcmp(args{1},'sc_list')
-            args(1) = [];
-            sc_list=args{1};
-			if isempty(sc_list)
-				irf_log('fcal','sc_list empty');
-				return;
-			end
-        else
-            % assume that argument defines Linestyle
-            if isempty(line_style), c_eval('line_style(?)={args{1}};')
-            else, irf_log('fcal','L_STYLE is already set')
-            end
-        end
-    elseif iscell(args{1}) && length(args{1})==4
-        % Individual linestyles for each sc
-        if isempty(line_style), line_style = args{1};
-        else, irf_log('fcal','L_STYLE is already set')
-        end
-    elseif iscell(args{1})
-        % Individual linestyles for each sc
-        irf_log('fcal','L_STYLE must be a cell with 4 elements')
-    elseif isnumeric(args{1}) && length(args{1})==4
-        % dt1..dt4
-        if isempty(delta_t), delta_t = args{1};
-        else, irf_log('fcal','DELTA_T is already set')
-        end
+  if ischar(args{1})
+    if strcmp(args{1},'sc_list')
+      args(1) = [];
+      sc_list=args{1};
+      if isempty(sc_list)
+        irf_log('fcal','sc_list empty');
+        return;
+      end
     else
-        irf_log('fcal',['ignoring input argument: ' args{1}])
+      % assume that argument defines Linestyle
+      if isempty(line_style), c_eval('line_style(?)={args{1}};')
+      else, irf_log('fcal','L_STYLE is already set')
+      end
     end
-	args(1) = [];
+  elseif iscell(args{1}) && length(args{1})==4
+    % Individual linestyles for each sc
+    if isempty(line_style), line_style = args{1};
+    else, irf_log('fcal','L_STYLE is already set')
+    end
+  elseif iscell(args{1})
+    % Individual linestyles for each sc
+    irf_log('fcal','L_STYLE must be a cell with 4 elements')
+  elseif isnumeric(args{1}) && length(args{1})==4
+    % dt1..dt4
+    if isempty(delta_t), delta_t = args{1};
+    else, irf_log('fcal','DELTA_T is already set')
+    end
+  else
+    irf_log('fcal',['ignoring input argument: ' args{1}])
+  end
+  args(1) = [];
 end
 if isempty(delta_t), delta_t = [0 0 0 0 0]; end
 
 % Get variable values from caller if needed
 if getVariablesFromCaller
-    for cl_id=sc_list
-        ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]');
-        X.(sprintf('x%d',cl_id)) = ttt; clear ttt
-    end
+  for cl_id=sc_list
+    ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]');
+    X.(sprintf('x%d',cl_id)) = ttt; clear ttt
+  end
 end
 
 % If column empty, check which columns to plot
 if isempty(column)
-	for cl_id=sc_list
+  for cl_id=sc_list
     if isa(X.(fId),'TSeries'), nCol = size(X.(fId).data,2);
     else, nCol = size(X.(fId),2) - 1;
     end
-		if ~isempty(nCol) && nCol > 0, column = 1:nCol; break, end
-	end
+    if ~isempty(nCol) && nCol > 0, column = 1:nCol; break, end
+  end
 end
 if isempty(column)
-    irf_log('fcal','all inputs are empty')
-    return
+  irf_log('fcal','all inputs are empty')
+  return
 end
 
 % check which spacecraft data are available
@@ -168,9 +168,9 @@ for cl_id=1:5
   if ~isempty(X.(fId)), sc_list_with_data=[sc_list_with_data cl_id]; end %#ok<AGROW>
 end
 
-% if more than one column reset figure 
+% if more than one column reset figure
 if length(column) > 1 && numel(ax) ~= numel(column)
-	ax = irf_plot(length(column),'reset'); 
+  ax = irf_plot(length(column),'reset');
 end
 
 % define Cluster colors
@@ -210,8 +210,8 @@ if nargout > 0, out = ax; end
       res = true; return
     end
   end
-  
+
   function res = fId
-   res = sprintf('x%d',cl_id);
+    res = sprintf('x%d',cl_id);
   end
 end

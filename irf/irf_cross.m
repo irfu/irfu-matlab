@@ -54,7 +54,7 @@ end
 
 if size(xx,1) ~= size(yy,1)  % input vectors not of the same length (and none of them is single vector)
   if size(x,2)>3 && size(y,2)>3 % then both vectors should have time axis
-%    if debug ==1, disp('interpolating y to x in irf_cross(x,y)');end
+    %    if debug ==1, disp('interpolating y to x in irf_cross(x,y)');end
     yy=interp1(y(:,1),yy,x(:,1),'linear','extrap');
   else
     error('do not know how to interpret input');

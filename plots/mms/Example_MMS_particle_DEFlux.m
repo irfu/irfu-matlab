@@ -1,5 +1,5 @@
 % Load brst L1b particle distributions and convert to differential energy
-% fluxes. Plots electron and ion fluxes and electron anisotropies. 
+% fluxes. Plots electron and ion fluxes and electron anisotropies.
 %
 % Written by D. B. Graham.
 %
@@ -36,7 +36,7 @@ Vav = Vi.abs.data*1000;
 Vav = 0.5*mp*Vav.^2/qe;
 Vav = irf.ts_scalar(Vi.time,Vav);
 
-ePDistomni = ePDist.omni.deflux; 
+ePDistomni = ePDist.omni.deflux;
 iPDistomni = iPDist.omni.deflux;
 
 ePDistpitch = ePDist.pitchangles(Bxyz,13).deflux;

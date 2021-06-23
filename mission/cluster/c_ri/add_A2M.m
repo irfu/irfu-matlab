@@ -19,16 +19,16 @@ function M = add_A2M(M,A)
 % If M is zero, M becomes A.
 % If A is zerom, M is unchanged
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
 if A ~= 0
-
+  
   if M == 0
     M = A;
-
+    
   else
     [new_lines,col] = size(A);
     [old_lines,col] = size(M);
@@ -36,5 +36,5 @@ if A ~= 0
     to = old_lines + new_lines;
     M(from:to,:) = A;
   end
-
+  
 end

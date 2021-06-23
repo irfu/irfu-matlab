@@ -2,20 +2,20 @@ classdef EpochCdf < GenericTimeArray
   %EpochCdf Class representing CDF epoch
   %   Detailed explanation goes here
   
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
-
+  % ----------------------------------------------------------------------------
+  % "THE BEER-WARE LICENSE" (Revision 42):
+  % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+  % can do whatever you want with this stuff. If we meet some day, and you think
+  % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+  % ----------------------------------------------------------------------------
+  
   methods
     function obj = EpochCdf(inp)
       if nargin==0, return, end
-      if isa(inp,'double') 
+      if isa(inp,'double')
         if min(size(inp))>1
           error('irf:EpochCdf:EpochCdf:badInputs',...
-            'double input (CDF epoch) must be a columt or row vector')
+            'double input (CDF epoch) must be a column or row vector')
         end
         obj.epoch = inp(:); % column vector
       elseif isa(inp,'char')

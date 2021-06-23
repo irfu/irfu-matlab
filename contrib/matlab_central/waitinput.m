@@ -5,7 +5,7 @@ function output = waitinput(prompt,t,s)
 %   R is the result. When user not specified s argument R will be a double,
 %   or if argument s i s eqal to 's', R will be a char. For other s
 %   argument function return an error.
-%   Function works only with alphanumeric characters.   
+%   Function works only with alphanumeric characters.
 %
 %   Example:
 %           waitinput('what is your name? ',10,'s')
@@ -26,17 +26,17 @@ function output = waitinput(prompt,t,s)
 % Copyright (c) 2005-prese, Jos van der Geest
 % Copyright (c) 2009, Jos van der Geest
 % All rights reserved.
-% 
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are
 % met:
-% 
+%
 % * Redistributions of source code must retain the above copyright
 %   notice, this list of conditions and the following disclaimer.
 % * Redistributions in binary form must reproduce the above copyright
 %   notice, this list of conditions and the following disclaimer in
 %   the documentation and/or other materials provided with the distribution
-% 
+%
 %   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 %   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 %   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -54,15 +54,15 @@ function output = waitinput(prompt,t,s)
 narginchk(2,3);
 
 if t<=0
-    error('t must be a positive value.')
+  error('t must be a positive value.')
 end
 
 if nargin == 2
-    s = 'd';
+  s = 'd';
 end
 
 if ~strcmp(s,'s') && ~strcmp(s,'S') && ~strcmp(s,'d') && ~strcmp(s,'D')
-    error('The second argument to WAITINPUT must be ''s'', or ''d''.')
+  error('The second argument to WAITINPUT must be ''s'', or ''d''.')
 end
 
 fprintf('%s',prompt)
@@ -76,18 +76,18 @@ tt.startdelay = t;
 
 
 fh = figure('keypressfcn',@call, ...
-    'windowstyle','modal',...
-    'position',[0 0 1 1],...
-    'Name','GETKEYWAIT', ...
-    'visible','off',...
-    'userdata',-1) ;
+  'windowstyle','modal',...
+  'position',[0 0 1 1],...
+  'Name','GETKEYWAIT', ...
+  'visible','off',...
+  'userdata',-1) ;
 try
-    % Wait for something to happen or the timer to run out
-    start(tt) ;
-    uiwait ;
+  % Wait for something to happen or the timer to run out
+  start(tt) ;
+  uiwait ;
 catch %#ok<CTCH>
-    % Something went wrong, return NaN.
-    output = NaN ;
+  % Something went wrong, return NaN.
+  output = NaN ;
 end
 
 % clean up the timer and figure
@@ -97,25 +97,25 @@ close(fh) ;
 
 % return the output
 if isnan(output)
-    return
+  return
 end
 if strcmp(s,'s') || strcmp(s,'S')
-    output = char(output);
+  output = char(output);
 else
-    output = str2double(char(output));
+  output = str2double(char(output));
 end
 
 % function call
-    function call(src,evnt)
-        fprintf('%s',evnt.Character)
-        
-        set(src,'Userdata',double(evnt.Character));
-        
-        if double(evnt.Character)~=13
-            output(idx) = evnt.Character;
-            idx = idx+1;
-        else
-            uiresume;
-        end
+  function call(src,evnt)
+    fprintf('%s',evnt.Character)
+    
+    set(src,'Userdata',double(evnt.Character));
+    
+    if double(evnt.Character)~=13
+      output(idx) = evnt.Character;
+      idx = idx+1;
+    else
+      uiresume;
     end
+  end
 end

@@ -1,10 +1,10 @@
 classdef EpochTT < GenericTimeArray
-  %EpochTT Class representing TT epoch (CDF TT2000), nanoseconds since 2000.
-  %
-	% EpochTT(t) - initialize class, where t can be:
-  %             - vector of seconds (double)
-	%             - vector of integer number (int64) of nanoseconds as TT2000
-	%             - UTC string array
+%EpochTT Class representing TT epoch (CDF TT2000), nanoseconds since 2000.
+%
+% EpochTT(t) - initialize class, where t can be:
+%             - vector of number (double) of seconds since TT2000 epoch
+%             - vector of integer number (int64) of nanoseconds as TT2000
+%             - UTC string array
 	
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -25,7 +25,7 @@ classdef EpochTT < GenericTimeArray
       elseif isa(inp,'int64')
         if min(size(inp))>1
           error('irf:EpochTT:EpochTT:badInputs',...
-            'int64 input (nanoseconds since 2000) must be a columt or row vector')
+            'int64 input (nanoseconds since 2000) must be a column or row vector')
         end
         obj.epoch = inp(:); % column vector
       elseif isa(inp,'char')
@@ -33,13 +33,13 @@ classdef EpochTT < GenericTimeArray
           error('irf:EpochUnix:EpochUnix:badInputs',...
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end
-				obj.epoch = GenericTimeArray.utc2ttns(inp);
-			elseif isa(inp,'GenericTimeArray')
-				if isa(inp,'EpochTT')
-					obj = inp;
-				else
-					obj = EpochTT(inp.ttns);
-				end
+        obj.epoch = GenericTimeArray.utc2ttns(inp);
+      elseif isa(inp,'GenericTimeArray')
+        if isa(inp,'EpochTT')
+          obj = inp;
+        else
+          obj = EpochTT(inp.ttns);
+        end
       else
         error('irf:EpochUnix:EpochUnix:badInputs',...
           'Expected inputs: int64 (nanoseconds since 2000), double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
@@ -68,22 +68,22 @@ classdef EpochTT < GenericTimeArray
       end
     end
   end
-	
-	methods (Static)
-		function output = from_ttns(input,index) % for consistency with other GenericTimeArray routines
-			if nargin == 1
-				output = input;
-			else
-				output = input(index);
-			end
-		end
-		function output = to_ttns(input,index)
-			if nargin == 1
-				output = input;
-			else
-				output = input(index);
-			end
-		end
-	end
-	
+  
+  methods (Static)
+    function output = from_ttns(input,index) % for consistency with other GenericTimeArray routines
+      if nargin == 1
+        output = input;
+      else
+        output = input(index);
+      end
+    end
+    function output = to_ttns(input,index)
+      if nargin == 1
+        output = input;
+      else
+        output = input(index);
+      end
+    end
+  end
+  
 end

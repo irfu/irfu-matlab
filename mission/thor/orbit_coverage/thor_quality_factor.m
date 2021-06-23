@@ -13,14 +13,14 @@ if orbitKernels
     newTime = rTHOR.time.start:120:rTHOR.time.stop; % 2 min intervals
     tmpR = rTHOR.resample(newTime);
     rTHOR = tmpR;
-  end   
+  end
 else
   get_orbit
-  rTHOR = irf.ts_vec_xyz(irf_time(t,'epoch>epochtt'),[x y x*0])  
+  rTHOR = irf.ts_vec_xyz(irf_time(t,'epoch>epochtt'),[x y x*0])
 end
 
 %% Download/load OMNI database data
-% 3.3 years (duration of the orbit) of representative solar wind conditions 
+% 3.3 years (duration of the orbit) of representative solar wind conditions
 % should be chosen
 loadDataFromFile = 1;
 if loadDataFromFile
@@ -32,39 +32,39 @@ else % download data from omni database, change the years as is appropriate
   clear tintUTC
   tsub = 1;
   c_eval('tintUTC{tsub} = ''?-01-01T00:00:00/?-12-31T23:59:00''; tsub = tsub+1;',2001:2004);
-
+  
   omni_orig = [];
   tic;
-  for iy = 1:numel(tintUTC)  
+  for iy = 1:numel(tintUTC)
     tint = irf.tint(tintUTC{iy});
     tmp_omni = irf_get_data_omni(tint,'bsnx,Bx,By,Bz,Ms','omni_min');
     omni_orig = [omni_orig; tmp_omni];
     toc
   end
-
+  
   % Clean up data
-  omni = omni_orig;  
+  omni = omni_orig;
   t0 = irf_time(omni_orig(:,1),'epoch>epochtt');
   
   if 0 % Removing all the points that dont have R0 data changes the total time
-    omni(isnan(omni(:,2)),:)=[]; % remove all points that dont have R0 data      
+    omni(isnan(omni(:,2)),:)=[]; % remove all points that dont have R0 data
   end
-
+  
   R0 = omni(:,2); % RE
   kmR0 = omni(:,2)*units.RE*1e-3; % km
-
-  tsBSNX = irf.ts_scalar(irf_time(omni(:,1),'epoch>utc'),omni(:,2)); 
-    tsBSNX = tsBSNX.resample(t0);
-    tsBSNX.units = 'RE'; 
-    tsBSNX.name = 'Bowshock nose distance, X'; 
-  tsB = irf.ts_vec_xyz(irf_time(omni(:,1),'epoch>utc'),omni(:,3:5)); 
-    tsB = tsB.resample(t0);
-    tsB.units = 'nT'; 
-    tsB.name = 'Solar wind magnetic field'; 
-  tsM = irf.ts_scalar(irf_time(omni(:,1),'epoch>utc'),omni(:,6)); 
-    tsM = tsM.resample(t0);
-    tsM.units = ''; 
-    tsM.name = 'Solar wind Mach number'; 
+  
+  tsBSNX = irf.ts_scalar(irf_time(omni(:,1),'epoch>utc'),omni(:,2));
+  tsBSNX = tsBSNX.resample(t0);
+  tsBSNX.units = 'RE';
+  tsBSNX.name = 'Bowshock nose distance, X';
+  tsB = irf.ts_vec_xyz(irf_time(omni(:,1),'epoch>utc'),omni(:,3:5));
+  tsB = tsB.resample(t0);
+  tsB.units = 'nT';
+  tsB.name = 'Solar wind magnetic field';
+  tsM = irf.ts_scalar(irf_time(omni(:,1),'epoch>utc'),omni(:,6));
+  tsM = tsM.resample(t0);
+  tsM.units = '';
+  tsM.name = 'Solar wind Mach number';
 end
 
 %% Adjust timelines of BSNX and THOR
@@ -76,8 +76,8 @@ newTime = tsBSNX.time+tShift; % shift the time of bsnx to THOR's time
 %newtR0 = newtR0.tlim(rTHOR.time([1 end]));
 
 tsBSNXkm = irf.ts_scalar(newTime,tsBSNX.data*units.RE*1e-3); tsBSNXkm.units = 'km'; tsBSNXkm.name = 'Bowshock nose distance, X';
-tsM = tsM.clone(newTime,tsM.data); tsM.units = ''; tsM.name = 'Solar wind Mach number'; 
-tsB = irf.ts_vec_xyz(newTime,tsB.data); tsB.units = ''; tsB.name = 'Solar wind magnetic field'; 
+tsM = tsM.clone(newTime,tsM.data); tsM.units = ''; tsM.name = 'Solar wind Mach number';
+tsB = irf.ts_vec_xyz(newTime,tsB.data); tsB.units = ''; tsB.name = 'Solar wind magnetic field';
 tsBSNX = tsM.clone(newTime,tsBSNX.data); tsBSNX.units = 'RE'; tsBSNX.name = 'Bowshock nose distance, X';
 %xBSN = irf.ts_scalar(newTime,tsBSNX); xBSN.units = 'km'; xBSN.name = 'Bowshock nose distance, X';
 
@@ -89,7 +89,7 @@ rTHOR = rTHOR.resample(tsBSNX); % upsample orbit times to bsnx's timeline, 1 min
 
 %% Bowshock model
 fr = @(x,R0) sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstandoff^2=645
-fx = @(r,R0) 0.5*45.3/0.04-sqrt((0.5*45.3/0.04)^2+r.^2/0.04)+R0; 
+fx = @(r,R0) 0.5*45.3/0.04-sqrt((0.5*45.3/0.04)^2+r.^2/0.04)+R0;
 
 %% Check if THOR is inside bowshock or not
 xTHOR = rTHOR.x.data/units.RE*1e3; % km->RE
@@ -135,11 +135,11 @@ tsB_Bz0 = tsB; tsB_Bz0.data(:,3) = 0;
 [QBperp,AngleBperp] = thor_QB(tsBSNX,rTHOR,tsB,'perp');
 
 
-Qpar = QR*QBpar*QV; 
-Qperp = QR*QBperp*QV; 
+Qpar = QR*QBpar*QV;
+Qperp = QR*QBperp*QV;
 
-QparBz0 = QR*QBparBz0*QV; 
-QperpBz0 = QR*QBperpBz0*QV; 
+QparBz0 = QR*QBparBz0*QV;
+QperpBz0 = QR*QBperpBz0*QV;
 
 % Count crossings
 nCrossBPerpBz0 = numel(find(QBperpBz0(isCrossing).data>0.8));
@@ -201,8 +201,8 @@ figure_name = 'thetaB_3D';
 %figure('Position',figure_position)
 
 nRows = 1; nCols = 1;
-for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end  
-isub = 1; 
+for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
+isub = 1;
 
 
 if 1 % B angle
@@ -211,7 +211,7 @@ if 1 % B angle
   hold(hca,'on')
   scatter3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),[],AngleBpar.data(isCrossing,:),'marker',markerStyle)%,'filled')
   hold(hca,'off')
-  hcb = colorbar('peer',hca); hcb.YLabel.String = '\Theta_{B}';  
+  hcb = colorbar('peer',hca); hcb.YLabel.String = '\Theta_{B}';
   colormap(hca,mirrorcmap);
   hca.CLim = [0 180];
   hca.Title.String = 'Magnetic field normal angle';
@@ -222,14 +222,14 @@ if 1 % B angle
     hold(hca,'on')
     quivB = quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),tsB.z.data(isCrossing,1),'k');
     hold(hca,'off')
-    hLegend = [hLegend(:) quivB]; 
-    txtLegend = {txtLegend{:} 'Magnetic field'}; 
+    hLegend = [hLegend(:) quivB];
+    txtLegend = {txtLegend{:} 'Magnetic field'};
   end
   if plotShockNormal
     hold(hca,'on')
     quivN = quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),shockNormal.x.data(isCrossing,1),shockNormal.y.data(isCrossing,1),shockNormal.z.data(isCrossing,1),'color',[1 0 1]);
-    hold(hca,'off')  
-    hLegend = [hLegend(:) quivN]; 
+    hold(hca,'off')
+    hLegend = [hLegend(:) quivN];
     txtLegend = {txtLegend{:} 'Shock normal'};
   end
   if ~isempty(hLegend)
@@ -238,7 +238,7 @@ if 1 % B angle
   hca.FontSize = fontsize;
 end
 
-for ii = 1:nRows*nCols 
+for ii = 1:nRows*nCols
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -260,8 +260,8 @@ figure_position = scrsz; figure_position(3) = figure_position(3)*0.5;
 figure('Position',figure_position)
 
 nRows = 2; nCols = 2;
-for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end  
-isub = 1; 
+for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
+isub = 1;
 
 if 1 % QV
   hca = h(isub); isub = isub + 1;
@@ -286,7 +286,7 @@ if 1 % B angle
   hold(hca,'on')
   scatter3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),[],AngleBpar.data(isCrossing,:),'marker',markerStyle)%,'filled')
   hold(hca,'off')
-  hcb = colorbar('peer',hca); hcb.YLabel.String = '\Theta_{B}';  
+  hcb = colorbar('peer',hca); hcb.YLabel.String = '\Theta_{B}';
   colormap(hca,mirrorcmap);
   hca.CLim = [0 180];
   hca.Title.String = 'Shock normal angle';
@@ -333,7 +333,7 @@ if 1 % QB par
   hold(hca,'off')
   hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
   colormap(hca,cmap);
-  hca.CLim = [0 1];  
+  hca.CLim = [0 1];
   hca.Title.String = sprintf('Q_{B,||}','a');
   if plotB
     hold(hca,'on')
@@ -341,10 +341,10 @@ if 1 % QB par
     hold(hca,'off')
   end
   hca.FontSize = fontsize;
-end  
+end
 
 
-for ii = 1:nRows*nCols 
+for ii = 1:nRows*nCols
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -356,23 +356,23 @@ for ii = 1:nRows*nCols
   h(ii).YLabel.String = 'Y';
   h(ii).FontSize = fontsize;
 end
-linkaxes(h,'xy')   
+linkaxes(h,'xy')
 if doPrint, eval(printString); end
 
-%% Figure: BAngle, QBperp, QBpar, finite Bz    
+%% Figure: BAngle, QBperp, QBpar, finite Bz
 figure_name = 'theta_QBperp_QBpar';
 if 0 % 1x4
   figure_position = scrsz; figure_position(4) = figure_position(4)*0.4;
   figure('Position',figure_position)
   nRows = 1; nCols = 4;
 else % 2x2
-  figure_position = scrsz; 
+  figure_position = scrsz;
   figure_position(3) = figure_position(3)*0.6;
   figure_position(4) = figure_position(4)*0.75;
   figure('Position',figure_position)
   nRows = 2; nCols = 2;
 end
-for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end 
+for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
 isub = 1;
 
 hca = h(isub); isub = isub + 1;
@@ -397,7 +397,7 @@ scatter(hca,xTHOR(isCrossing),yTHOR(isCrossing),[],QBpar.data(isCrossing,:),'mar
 hold(hca,'off')
 hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
 colormap(hca,cmap);
-hca.CLim = [0 1];  
+hca.CLim = [0 1];
 hca.Title.String = sprintf('Q_{B,||}','a');
 if plotB
   hold(hca,'on')
@@ -454,13 +454,13 @@ if 1 % Cumlative distribution of quality factors Q
   axes(hca)
   infotext = {};
   infotext{1} = sprintf('%s',t1utc(1:10));
-  infotext{2} = sprintf('%s',t2utc(1:10));  
+  infotext{2} = sprintf('%s',t2utc(1:10));
   ht=text(0.45,hca.YLim(2)*0.99,infotext);
   %ht.Intepreter = 'latex';
-  ht.VerticalAlignment = 'top';  
-  ht.HorizontalAlignment = 'center';  
+  ht.VerticalAlignment = 'top';
+  ht.HorizontalAlignment = 'center';
   ht.FontSize = fontsize;
-end 
+end
 
 if 0 % Distribution of quality factors Q
   hca = h(isub); isub = isub + 1;
@@ -481,7 +481,7 @@ if 0 % Distribution of quality factors Q
   hca.Title.String = 'Distribution of Q=Q_{R}Q_{V}Q_{B}';
   hca.FontSize = fontsize;
   axis(hca,'square')
-end 
+end
 
 for ih = 4
   h(ih).YGrid = 'on';
@@ -489,7 +489,7 @@ for ih = 4
   axis(h(ii),'square')
 end
 
-for ii = 1:3 
+for ii = 1:3
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -511,8 +511,8 @@ figure_position = scrsz; figure_position(3) = figure_position(3)*0.5;
 figure('Position',figure_position)
 
 nRows = 3; nCols = 2;
-for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end  
-isub = 1; 
+for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
+isub = 1;
 
 if 1 % QV
   hca = h(isub); isub = isub + 1;
@@ -578,7 +578,7 @@ if 1 % QB par
   hold(hca,'off')
   hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
   colormap(hca,cmap);
-  hca.CLim = [0 1];  
+  hca.CLim = [0 1];
   hca.Title.String = sprintf('Q_{B,||}','a');
   if plotB
     hold(hca,'on')
@@ -586,7 +586,7 @@ if 1 % QB par
     hold(hca,'off')
   end
   hca.FontSize = fontsize;
-end  
+end
 if 1 % Qperp
   hca = h(isub); isub = isub + 1;
   plot(hca,xTHOR(:),yTHOR(:),'color',colorOrbit)
@@ -612,7 +612,7 @@ if 1 % Qpar
   hold(hca,'off')
   hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
   colormap(hca,cmap);
-  hca.CLim = [0 1];  
+  hca.CLim = [0 1];
   hca.Title.String = sprintf('Q_{||}','a');
   if plotB
     hold(hca,'on')
@@ -622,7 +622,7 @@ if 1 % Qpar
   hca.FontSize = fontsize;
 end
 
-for ii = 1:6 
+for ii = 1:6
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -634,7 +634,7 @@ for ii = 1:6
   h(ii).YLabel.String = 'Y';
   h(ii).FontSize = fontsize;
 end
-linkaxes(h(1:6),'xy')   
+linkaxes(h(1:6),'xy')
 if doPrint, eval(printString); end
 
 %% Figure: Summarizing figure
@@ -645,7 +645,7 @@ figure('Position',figure_position)
 
 nRows = 2; nCols = 4;
 for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
-isub = 1; 
+isub = 1;
 
 if 1 % Distribution of quality factors Q
   hca = h(isub); isub = isub + 1;
@@ -667,13 +667,13 @@ if 1 % Distribution of quality factors Q
   hca.FontSize = fontsize;
   axes(hca)
   infotext{1} = sprintf('%s',t1utc(1:10));
-  infotext{2} = sprintf('%s',t2utc(1:10));  
+  infotext{2} = sprintf('%s',t2utc(1:10));
   ht=text(0.4,hca.YLim(2)*0.95,infotext);
   %ht.Intepreter = 'latex';
-  ht.VerticalAlignment = 'top';  
-  ht.HorizontalAlignment = 'center';  
+  ht.VerticalAlignment = 'top';
+  ht.HorizontalAlignment = 'center';
   ht.FontSize = fontsize;
-end 
+end
 if 1 % Cumlative distribution of quality factors Q
   hca = h(isub); isub = isub + 1;
   %bars = bar(hca,centerAngle,nAngles,1);
@@ -699,7 +699,7 @@ if 1 % Cumlative distribution of quality factors Q
   ht=text(0.1,hca.YLim(2)*0.95,infotext);
   %ht.Intepreter = 'latex';
   ht.VerticalAlignment = 'top';
-end 
+end
 
 if 1 % QV
   hca = h(isub); isub = isub + 1;
@@ -734,7 +734,7 @@ if 1 % Schock normal angle
     hold(hca,'off')
   end
 end
-if 1 % QB perp  
+if 1 % QB perp
   hca = h(isub); isub = isub + 1;
   plot(hca,xTHOR(:),yTHOR(:),'color',colorOrbit)
   hold(hca,'on')
@@ -759,7 +759,7 @@ if 1 % QB par
   hold(hca,'off')
   hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
   colormap(hca,cmap);
-  hca.CLim = [0 1];  
+  hca.CLim = [0 1];
   hca.Title.String = sprintf('Q_{B,||}','a');
   if plotB
     hold(hca,'on')
@@ -767,7 +767,7 @@ if 1 % QB par
     hold(hca,'off')
   end
   hca.FontSize = fontsize;
-end  
+end
 if 1 % Qperp
   hca = h(isub); isub = isub + 1;
   plot(hca,xTHOR(:),yTHOR(:),'color',colorOrbit)
@@ -793,7 +793,7 @@ if 1
   hold(hca,'off')
   hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
   colormap(hca,cmap);
-  hca.CLim = [0 1];  
+  hca.CLim = [0 1];
   hca.Title.String = sprintf('Q_{||}','a');
   if plotB
     hold(hca,'on')
@@ -808,7 +808,7 @@ for ih = 1:2
   h(ih).XGrid = 'on';
 end
 
-for ii = 3:8 
+for ii = 3:8
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -825,7 +825,7 @@ if doPrint, eval(printString); end
 
 %% Figure: Summarizing figure, distributions of Qx2 and Qpar, Qperp
 figure_name = 'summary_dist_Qpar_Qperp';
-figure_position = scrsz; 
+figure_position = scrsz;
 figure_position(3) = figure_position(3)*0.6;
 figure_position(4) = figure_position(4)*0.75;
 figure('Position',figure_position)
@@ -834,7 +834,7 @@ figure('Position',figure_position)
 nRows = 2; nCols = 2;
 for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
 
-isub = 1; 
+isub = 1;
 
 if 1 % Distribution of quality factors Q
   hca = h(isub); isub = isub + 1;
@@ -856,13 +856,13 @@ if 1 % Distribution of quality factors Q
   hca.FontSize = fontsize;
   axes(hca)
   infotext{1} = sprintf('%s',t1utc(1:10));
-  infotext{2} = sprintf('%s',t2utc(1:10));  
+  infotext{2} = sprintf('%s',t2utc(1:10));
   ht=text(0.4,hca.YLim(2)*0.95,infotext);
   %ht.Intepreter = 'latex';
-  ht.VerticalAlignment = 'top';  
-  ht.HorizontalAlignment = 'center';  
+  ht.VerticalAlignment = 'top';
+  ht.HorizontalAlignment = 'center';
   ht.FontSize = fontsize;
-end 
+end
 if 1 % Cumlative distribution of quality factors Q
   hca = h(isub); isub = isub + 1;
   %bars = bar(hca,centerAngle,nAngles,1);
@@ -888,7 +888,7 @@ if 1 % Cumlative distribution of quality factors Q
   ht=text(0.1,hca.YLim(2)*0.95,infotext);
   %ht.Intepreter = 'latex';
   ht.VerticalAlignment = 'top';
-end 
+end
 
 if 1 % Qperp
   hca = h(isub); isub = isub + 1;
@@ -915,7 +915,7 @@ if 1
   hold(hca,'off')
   hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
   colormap(hca,cmap);
-  hca.CLim = [0 1];  
+  hca.CLim = [0 1];
   hca.Title.String = sprintf('Q_{||} (finite B_Z)','a');
   if plotB
     hold(hca,'on')
@@ -925,7 +925,7 @@ if 1
   hca.FontSize = fontsize;
 end
 
-for ii = 3:4 
+for ii = 3:4
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -945,14 +945,14 @@ end
 
 %% Figure: Distributions of Qx2
 figure_name = 'dist_cdf';
-figure_position = scrsz; 
+figure_position = scrsz;
 figure_position(3) = figure_position(3)*0.6;
 figure_position(4) = figure_position(4)*0.45;
 figure('Position',figure_position)
 
 nRows = 1; nCols = 2;
 for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
-isub = 1; 
+isub = 1;
 
 if 1 % Distribution of quality factors Q
   hca = h(isub); isub = isub + 1;
@@ -974,13 +974,13 @@ if 1 % Distribution of quality factors Q
   hca.FontSize = fontsize;
   axes(hca)
   infotext{1} = sprintf('%s',t1utc(1:10));
-  infotext{2} = sprintf('%s',t2utc(1:10));  
+  infotext{2} = sprintf('%s',t2utc(1:10));
   ht=text(0.4,hca.YLim(2)*0.95,infotext);
   %ht.Intepreter = 'latex';
-  ht.VerticalAlignment = 'top';  
-  ht.HorizontalAlignment = 'center';  
+  ht.VerticalAlignment = 'top';
+  ht.HorizontalAlignment = 'center';
   ht.FontSize = fontsize;
-end 
+end
 if 1 % Cumlative distribution of quality factors Q
   hca = h(isub); isub = isub + 1;
   %bars = bar(hca,centerAngle,nAngles,1);
@@ -1005,8 +1005,8 @@ if 1 % Cumlative distribution of quality factors Q
   infotext{2} = sprintf('Q_{||}>%s: %s',num2str(limQ,'%.1f'),num2str(numel(find(Qpar(isCrossing).data>limQ)),'%.0f'));
   ht=text(0.2,hca.YLim(2)*0.95,infotext);
   %ht.Intepreter = 'latex';
-  ht.VerticalAlignment = 'top';  
-end 
+  ht.VerticalAlignment = 'top';
+end
 
 for ih = 1:2
   h(ih).YGrid = 'on';

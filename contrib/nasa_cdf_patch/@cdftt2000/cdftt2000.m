@@ -13,7 +13,7 @@ function tt2000Obj = cdftt2000(varargin)
 %             SPDFCOMPUTETT2000, SPDFPARSETT2000, SPDFBREAKDOWNTT2000,
 %             SPDFCDFLEAPSECONDSINFO.
 
-%    $Revision: 1.1.1.1 $  $Date: 2018/10/02 17:33:44 $
+%    $Revision: 1.1.1.1 $  $Date: 2019/11/14 16:32:06 $
 
 if (nargin == 0)
     s.date = [];

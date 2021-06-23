@@ -21,14 +21,14 @@ function [hsf,pst] = plot_int_projection(varargin)
 %       dens    - number density, derived from the projected data in m^-3.
 %       vel     - 2D velocity, derived from the projected data in m/s.
 %
-%   To recreate plot elsewhere use: 
+%   To recreate plot elsewhere use:
 %       pcolor(plspec.vx,plspec.vy,log10(plspec.F'))
-% 
+%
 %   Options:
 %   'tint'/'t'  - plots data for closest time given an EpochTT object. Time
 %               interval not implemented
 %   'xyz'       - 3x3 matrix with [x;y;z]. z is normal to the plotted plane and
-%               x and y are made orthogonal to z and each other if they are 
+%               x and y are made orthogonal to z and each other if they are
 %               not already. If you want to plot different planes you have to
 %               rotate this matrix -> [y;z;x] -> [z;x;y]. Make sure the system
 %               is right-handed.
@@ -42,7 +42,7 @@ function [hsf,pst] = plot_int_projection(varargin)
 %               'none' (default), 'lin' or 'log'
 %   'vlabel'    - 1x3 cell array containing strings for axis labels
 %               corresponding to x, y, and z
-%   'flipx'/'flipy' - boolean value where 1 flips the x/y axis 
+%   'flipx'/'flipy' - boolean value where 1 flips the x/y axis
 %   'colorbar'  - boolean value where 1 adds a colorbar to plot
 %   'vg'        - array with center values for the projection velocity
 %               grid in [km/s], determined by instrument if omitted
@@ -59,11 +59,11 @@ function [hsf,pst] = plot_int_projection(varargin)
 %
 %   The function uses a Monte Carlo integration method. To read more about
 %   it:
-% 
+%
 %   See also: IRF_INT_SPH_DIST
 
 %   Written by: Andreas Johlander, andreasj@irfu.se
-% 
+%
 %   TODO:   Add time interval averaging
 %           Recalculate energies given spacecraft potential input
 %           Account for other quantities than psd, e.g. diff energy flux
@@ -86,7 +86,7 @@ args = args(2:end);
 
 % Check if it's electron or ions
 if strfind(dist.name,'des')
-  isDes = 1; 
+  isDes = 1;
 elseif strfind(dist.name,'dis')
   isDes = 0;
 else
@@ -98,8 +98,8 @@ if isempty(dist); irf.log('warning','Empty input.'); return; end
 
 %Check if data is skymap
 if ~strcmp(dist.type,'skymap')
-    irf.log('critical','PDist must be skymap format.');
-    return;
+  irf.log('critical','PDist must be skymap format.');
+  return;
 end
 
 
@@ -121,60 +121,60 @@ base = 'pol';
 
 have_options = nargs > 1;
 while have_options
-    switch(lower(args{1}))
-        case 't' % time
-            t = args{2};
-        case 'xyz' % 3x3 matrix where xphat = coord_sys(1,:),...
-            coord_sys = args{2};
-            xphat = coord_sys(1,:)/norm(coord_sys(1,:)); % new x-axis (x-primed)
-            zphat = coord_sys(3,:)/norm(coord_sys(3,:)); % vector to integrate along (z-primed)
-            % only x and z are relvant
-            yphat = cross(zphat,xphat); yphat = yphat/norm(yphat);
-            if abs(acosd(yphat*(coord_sys(2,:)/norm(coord_sys(2,:)))'))>1
-                irf.log('warning',['y (perp1) changed from [' num2str(coord_sys(2,:)/norm(coord_sys(2,:)),'% .2f') '] to [' num2str(yphat,'% .2f') '].']);
-            end
-        case 'clim' 
-            clim = args{2};
-            have_clim = 1;
-        case 'vlim'
-            vlim = args{2};
-            have_vlim = 1;
-        case 'vlabel'
-            have_vlabels = 1;
-            vlabels = args{2};
-        case 'flipx'
-            doFlipX = args{2};
-        case 'flipy'
-            doFlipY = args{2};
-        case 'nmc' % number of Monte Carlo iterations
-            nMC = args{2};
-        case 'vzint' % limit on out-of-plane velocity
-            vzint = args{2};
-        case 'colorbar' % 1 if show colorbar
-            showColorbar = args{2};
-        case 'vg' % define velocity grid
-            vgInput = 1;
-            vg = args{2}*1e3;
-        case 'phig' % define velocity grid
-            phigInput = 1;
-            phig = args{2};
-        case 'weight' % how data is weighted
-            weight = args{2};
-        case 'base'
-            base = args{2};
-    end
-    args = args(3:end);
-    if isempty(args), break, end
+  switch(lower(args{1}))
+    case 't' % time
+      t = args{2};
+    case 'xyz' % 3x3 matrix where xphat = coord_sys(1,:),...
+      coord_sys = args{2};
+      xphat = coord_sys(1,:)/norm(coord_sys(1,:)); % new x-axis (x-primed)
+      zphat = coord_sys(3,:)/norm(coord_sys(3,:)); % vector to integrate along (z-primed)
+      % only x and z are relvant
+      yphat = cross(zphat,xphat); yphat = yphat/norm(yphat);
+      if abs(acosd(yphat*(coord_sys(2,:)/norm(coord_sys(2,:)))'))>1
+        irf.log('warning',['y (perp1) changed from [' num2str(coord_sys(2,:)/norm(coord_sys(2,:)),'% .2f') '] to [' num2str(yphat,'% .2f') '].']);
+      end
+    case 'clim'
+      clim = args{2};
+      have_clim = 1;
+    case 'vlim'
+      vlim = args{2};
+      have_vlim = 1;
+    case 'vlabel'
+      have_vlabels = 1;
+      vlabels = args{2};
+    case 'flipx'
+      doFlipX = args{2};
+    case 'flipy'
+      doFlipY = args{2};
+    case 'nmc' % number of Monte Carlo iterations
+      nMC = args{2};
+    case 'vzint' % limit on out-of-plane velocity
+      vzint = args{2};
+    case 'colorbar' % 1 if show colorbar
+      showColorbar = args{2};
+    case 'vg' % define velocity grid
+      vgInput = 1;
+      vg = args{2}*1e3;
+    case 'phig' % define velocity grid
+      phigInput = 1;
+      phig = args{2};
+    case 'weight' % how data is weighted
+      weight = args{2};
+    case 'base'
+      base = args{2};
+  end
+  args = args(3:end);
+  if isempty(args), break, end
 end
 
 if have_vlabels
-    vlabelx = vlabels{1};
-    vlabely = vlabels{2};
-    vlabelz = vlabels{3};
+  vlabelx = vlabels{1};
+  vlabely = vlabels{2};
+  vlabelz = vlabels{3};
 else
-    vlabelx = ['v_{x=[' num2str(xphat,'% .2f') ']}'];
-    vlabely = ['v_{y=[' num2str(yphat,'% .2f') ']}'];
-    vlabelz = ['v_{z=[' num2str(zphat,'% .2f') ']}'];
+  vlabelx = ['v_{x=[' num2str(xphat,'% .2f') ']}'];
+  vlabely = ['v_{y=[' num2str(yphat,'% .2f') ']}'];
+  vlabelz = ['v_{z=[' num2str(zphat,'% .2f') ']}'];
 end
 
 
@@ -197,7 +197,7 @@ energy = emat(it,:);
 v = sqrt(2*energy*u.e/M); % m/s
 
 if length(v) ~= 32
-    error('something went wrong')
+  error('something went wrong')
 end
 
 % azimuthal angle
@@ -208,7 +208,7 @@ phi = phi-180;
 phi = phi*pi/180; % in radians
 
 if length(phi) ~= 32
-    error('something went wrong')
+  error('something went wrong')
 end
 
 % elevation angle
@@ -217,7 +217,7 @@ th = th-90; % elevation angle in degrees
 th = th*pi/180; % in radians
 
 if length(th) ~= 16
-    error('something went wrong')
+  error('something went wrong')
 end
 
 
@@ -240,12 +240,12 @@ pst.F(pst.F==0) = NaN;
 %% Plot projection
 
 if isDes % make electron velocities 10^3 km/s
-    vUnitStr= '(10^3 km/s)'; vUnitFactor = 1e-6;
+  vUnitStr= '(10^3 km/s)'; vUnitFactor = 1e-6;
 else % ion velocities km/s
-    vUnitStr= '(km/s)'; vUnitFactor = 1e-3;
+  vUnitStr= '(km/s)'; vUnitFactor = 1e-3;
 end
 
-hsf = pcolor(ax,pst.vx*vUnitFactor,pst.vy*vUnitFactor,log10(pst.F')); 
+hsf = pcolor(ax,pst.vx*vUnitFactor,pst.vy*vUnitFactor,log10(pst.F'));
 shading(ax,'flat')
 
 ax.XLabel.String = [vlabelx ' ' vUnitStr];
@@ -260,13 +260,13 @@ if have_vlim, ax.YLim = vlim*[-1 1]*vUnitFactor*1e3; pause(.01); ax.XLim = ax.YL
 
 % show colorbar with appropriate units
 if showColorbar
-    fVarStr = 'log_1_0 F ';
-    % chose unit string (add more if needed)
-    if strcmp(dist.units,'s^3/cm^6'); fUnitStr = '[s^2/m^5]';
-    else; fUnitStr = '';
-    end
-    hcb = colorbar(ax); 
-    ylabel(hcb,[fVarStr,fUnitStr])
+  fVarStr = 'log_1_0 F ';
+  % chose unit string (add more if needed)
+  if strcmp(dist.units,'s^3/cm^6'); fUnitStr = '[s^2/m^5]';
+  else; fUnitStr = '';
+  end
+  hcb = colorbar(ax);
+  ylabel(hcb,[fVarStr,fUnitStr])
 end
 
 hold(ax,'on')

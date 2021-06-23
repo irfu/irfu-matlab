@@ -3,7 +3,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %
 %   Normal vectors are calculated by methods described in ISSI Scientific
 %   Report SR-001 Ch 10. (Schwartz 1998), and references therein.
-%   
+%
 %   nst = IRF_SHOCK_NORMAL(spec) returns structure nst which contains data
 %   on shock normal vectors given input with plasma parameters spec. The
 %   data can be averaged values or values from the time series in matrix
@@ -12,11 +12,11 @@ function [nd] = irf_shock_normal(spec,leq90)
 %   errorbars on shock angle etc. The time series input must have the same
 %   size (up- and downstream can be different), so generally the user needs
 %   to resample the data first.
-% 
+%
 %   nst = IRF_SHOCK_NORMAL(spec,leq90) for leq90 = 1 angles are forced to
 %   be less than 90 (default). For leq90 = 0, angles can be between 0 and
 %   180 deg. For time series input and quasi-perp shocks,leq90 = 0 is
-%   recommended. 
+%   recommended.
 %
 %   Input spec contains:
 %
@@ -36,7 +36,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %       N   -   Number of Monte Carlo particles used in determining
 %               errorbars (default 100)
 %       n0  -   User defined normal vector from e.g. timing
-%       
+%
 %
 %   Output nd contains:
 %
@@ -67,7 +67,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %               gt  -   Using shock foot thickness (10.32). Gosling, J. T., and M. F. Thomsen (1985)
 %               mf  -   Mass flux conservation (10.29).
 %               sb  -   Using jump conditions (10.33). Smith, E. J., and M. E. Burton (1988)
-%               mo -    Using shock foot thickness 
+%               mo -    Using shock foot thickness
 %
 %       info -  Some more info:
 %           msh     -   Magnetic shear angle
@@ -77,7 +77,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %           Calclated from (10.9-10.13) in (Schwartz 1998).
 %
 %
-%   Examples: 
+%   Examples:
 %   shp = [];
 %   shp.Bu = [.1,-.02,3];
 %   shp.Bd = [1,.05,9];
@@ -87,11 +87,11 @@ function [nd] = irf_shock_normal(spec,leq90)
 %   shp.nd = 15;
 %   nd = irf_shock_normal(shp);
 %   nd.n
-% 
-%   ans = 
-% 
+%
+%   ans =
+%
 %       struct with fields:
-% 
+%
 %       mc: [-0.9767 -0.1552 0.1483]
 %       vc: [1 0 0]
 %       mx1: [0.9889 9.8901e-04 -0.1484]
@@ -109,9 +109,9 @@ function [nd] = irf_shock_normal(spec,leq90)
 %   shp.N = 5;
 %   nd = irf_shock_normal(shp);
 %   nd.n.mx3
-% 
+%
 % ans =
-% 
+%
 %     0.9904    0.0044   -0.1384
 %     0.9917    0.0143   -0.1276
 %     0.9924    0.0169   -0.1216
@@ -120,7 +120,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %
 %
 %   See also: IRF_SHOCK_GUI, IRF_SHOCK_PARAMETERS
-% 
+%
 
 %   Written by: Andreas Johlander, andreasj@irfu.se
 %
@@ -130,100 +130,100 @@ function [nd] = irf_shock_normal(spec,leq90)
 % leq90 = 1 if angles should be less or equal to 90 deg. 0 is good if doing
 % statistics
 if nargin == 1
-    leq90 = 1;
+  leq90 = 1;
 end
 
 % checks only Bu and Bd (one can be a scalar)
-if size(spec.Bu,1)>1 || size(spec.Bu,1)>1 
-    Nu = size(spec.Bu,1); % number of points, must be same for all parameters
-    Nd = size(spec.Bd,1);
+if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
+  Nu = size(spec.Bu,1); % number of points, must be same for all parameters
+  Nd = size(spec.Bd,1);
+  
+  % randomize points upstream and downstream
+  if isfield(spec,'N'); N = spec.N; else; N = 10; end
+  % sort of "indices" from 0 to 1
+  idtu = rand(1,N); idtd = rand(1,N);
+  
+  % copy spec
+  tempSpec = spec;
+  
+  
+  % loop with up/downstream values randomly picked
+  for i = 1:N
+    % get value from given point
+    tempSpec.Bu = interp1(linspace(0,1,Nu),spec.Bu,idtu(i));
+    tempSpec.Vu = interp1(linspace(0,1,Nu),spec.Vu,idtu(i));
+    tempSpec.nu = interp1(linspace(0,1,Nu),spec.nu,idtu(i));
     
-    % randomize points upstream and downstream
-    if isfield(spec,'N'); N = spec.N; else; N = 10; end
-    % sort of "indices" from 0 to 1
-    idtu = rand(1,N); idtd = rand(1,N);
+    tempSpec.Bd = interp1(linspace(0,1,Nd),spec.Bd,idtd(i));
+    tempSpec.Vd = interp1(linspace(0,1,Nd),spec.Vd,idtd(i));
+    tempSpec.nd = interp1(linspace(0,1,Nd),spec.nd,idtd(i));
     
-    % copy spec
-    tempSpec = spec;
-
-    
-    % loop with up/downstream values randomly picked
-    for i = 1:N
-        % get value from given point
-        tempSpec.Bu = interp1(linspace(0,1,Nu),spec.Bu,idtu(i));
-        tempSpec.Vu = interp1(linspace(0,1,Nu),spec.Vu,idtu(i));
-        tempSpec.nu = interp1(linspace(0,1,Nu),spec.nu,idtu(i));
-        
-        tempSpec.Bd = interp1(linspace(0,1,Nd),spec.Bd,idtd(i));
-        tempSpec.Vd = interp1(linspace(0,1,Nd),spec.Vd,idtd(i));
-        tempSpec.nd = interp1(linspace(0,1,Nd),spec.nd,idtd(i));
-        
-        if i == 1
-            % run once to get structure
-            nd = irf_shock_normal(tempSpec);
-            % replace all content in fields with zeros of appropriate size
-            fn1 = fieldnames(nd); % first layer names
-            fn2 = [];
-            % get field names for Vsh (if Vsh is ever changed, this
-            % needs to change as well)
-            fnVsh = fieldnames(nd.Vsh.mf); % only field with 3 layers
-            % get second layer names
-            for k = 1:length(fn1)
-                % get second layer names, Vsh does not have two layers
-                fn2.(fn1{k}) = fieldnames(nd.(fn1{k}));
+    if i == 1
+      % run once to get structure
+      nd = irf_shock_normal(tempSpec);
+      % replace all content in fields with zeros of appropriate size
+      fn1 = fieldnames(nd); % first layer names
+      fn2 = [];
+      % get field names for Vsh (if Vsh is ever changed, this
+      % needs to change as well)
+      fnVsh = fieldnames(nd.Vsh.mf); % only field with 3 layers
+      % get second layer names
+      for k = 1:length(fn1)
+        % get second layer names, Vsh does not have two layers
+        fn2.(fn1{k}) = fieldnames(nd.(fn1{k}));
+      end
+      
+      % do a double loop
+      for k = 1:length(fn1) % fist layer
+        strl1 = fn1{k}; % first layer string
+        if ~strcmp(strl1,'Vsh')
+          for l = 1:length(fn2.(fn1{k})) % second layer
+            strl2 = fn2.(fn1{k}){l}; % second layer string
+            % this really messes up cmat
+            % replace with zero-arrays
+            nd.(strl1).(strl2) = zeros(N,size(nd.(strl1).(strl2),2));
+          end
+        else % special case for Vsh
+          for l = 1:length(fn2.(fn1{k})) % second layer
+            strl2 = fn2.(fn1{k}){l}; % second layer string
+            for m = 1:length(fnVsh) % third layer
+              nd.(strl1).(strl2).(fnVsh{m}) = zeros(N,size(nd.(strl1).(strl2).(fnVsh{m}),2));
             end
-            
-            % do a double loop 
-            for k = 1:length(fn1) % fist layer
-                strl1 = fn1{k}; % first layer string
-                if ~strcmp(strl1,'Vsh')
-                    for l = 1:length(fn2.(fn1{k})) % second layer
-                        strl2 = fn2.(fn1{k}){l}; % second layer string
-                        % this really messes up cmat
-                        % replace with zero-arrays
-                        nd.(strl1).(strl2) = zeros(N,size(nd.(strl1).(strl2),2)); 
-                    end
-                else % special case for Vsh
-                    for l = 1:length(fn2.(fn1{k})) % second layer
-                        strl2 = fn2.(fn1{k}){l}; % second layer string
-                        for m = 1:length(fnVsh) % third layer
-                            nd.(strl1).(strl2).(fnVsh{m}) = zeros(N,size(nd.(strl1).(strl2).(fnVsh{m}),2));
-                        end
-                    end
-                end
-            end
-            
-            
+          end
         end
-        
-        % get shock normal for this point
-        tempNd = irf_shock_normal(tempSpec,leq90);
-        
-        % do another double loop
-        for k = 1:length(fn1) % fist layer
-            strl1 = fn1{k}; % first layer string
-            if ~strcmp(strl1,'Vsh')
-                for l = 1:length(fn2.(fn1{k})) % second layer
-                    strl2 = fn2.(fn1{k}){l}; % second layer string
-                    % add value from temporary structure
-                    % skip difficult ones (cmat and sig)
-                    if ~strcmp(strl2,'cmat') && ~strcmp(strl2,'sig') 
-                        nd.(strl1).(strl2)(i,:) = tempNd.(strl1).(strl2);
-                    end
-                end
-            else % special case for Vsh
-                for l = 1:length(fn2.(fn1{k})) % second layer
-                    strl2 = fn2.(fn1{k}){l}; % second layer string
-                    for m = 1:length(fnVsh) % third layer
-                        nd.(strl1).(strl2).(fnVsh{m})(i,:) = tempNd.(strl1).(strl2).(fnVsh{m});
-                    end
-                end
-            end
-        end
-        
-        
+      end
+      
+      
     end
-    return; % return results with vector
+    
+    % get shock normal for this point
+    tempNd = irf_shock_normal(tempSpec,leq90);
+    
+    % do another double loop
+    for k = 1:length(fn1) % fist layer
+      strl1 = fn1{k}; % first layer string
+      if ~strcmp(strl1,'Vsh')
+        for l = 1:length(fn2.(fn1{k})) % second layer
+          strl2 = fn2.(fn1{k}){l}; % second layer string
+          % add value from temporary structure
+          % skip difficult ones (cmat and sig)
+          if ~strcmp(strl2,'cmat') && ~strcmp(strl2,'sig')
+            nd.(strl1).(strl2)(i,:) = tempNd.(strl1).(strl2);
+          end
+        end
+      else % special case for Vsh
+        for l = 1:length(fn2.(fn1{k})) % second layer
+          strl2 = fn2.(fn1{k}){l}; % second layer string
+          for m = 1:length(fnVsh) % third layer
+            nd.(strl1).(strl2).(fnVsh{m})(i,:) = tempNd.(strl1).(strl2).(fnVsh{m});
+          end
+        end
+      end
+    end
+    
+    
+  end
+  return; % return results with vector
 end
 
 
@@ -256,7 +256,7 @@ n.mx3 = cross(cross(delB,delV),delB)/norm(cross(cross(delB,delV),delB));
 
 % user defined normal vector
 if isfield(spec,'n0')
-    n.n0 = spec.n0;
+  n.n0 = spec.n0;
 end
 
 sig = [];
@@ -266,25 +266,25 @@ y0 = [];
 alpha = [];
 % calculate model normals if R is inputted
 if isfield(spec,'R')
-    % Farris et al.
-    [n.farris,sig.farris,eps.farris,L.farris,alpha.farris,x0.farris,y0.farris] = farris_model(spec);
-    % Slavin and Holzer mean
-    [n.slho,sig.slho,eps.slho,L.slho,alpha.slho,x0.slho,y0.slho] = slavin_holzer_model(spec);
-    % Peredo et al., z = 0
-    [n.per,sig.per,eps.per,L.per,alpha.per,x0.per,y0.per] = peredo_model(spec);
-    % Fairfield Meridian 4o
-    [n.fa4o,sig.fa4o,eps.fa4o,L.fa4o,alpha.fa4o,x0.fa4o,y0.fa4o] = fairfield_meridian_4o_model(spec);
-    % Fairfield Meridian No 4o
-    [n.fan4o,sig.fan4o,eps.fan4o,L.fan4o,alpha.fan4o,x0.fan4o,y0.fan4o] = fairfield_meridian_no_4o_model(spec);
-    % Formisano Unnorm. z = 0
-    [n.foun,sig.foun,eps.foun,L.foun,alpha.foun,x0.foun,y0.foun] = formisano_unnorm_model(spec);
+  % Farris et al.
+  [n.farris,sig.farris,eps.farris,L.farris,alpha.farris,x0.farris,y0.farris] = farris_model(spec);
+  % Slavin and Holzer mean
+  [n.slho,sig.slho,eps.slho,L.slho,alpha.slho,x0.slho,y0.slho] = slavin_holzer_model(spec);
+  % Peredo et al., z = 0
+  [n.per,sig.per,eps.per,L.per,alpha.per,x0.per,y0.per] = peredo_model(spec);
+  % Fairfield Meridian 4o
+  [n.fa4o,sig.fa4o,eps.fa4o,L.fa4o,alpha.fa4o,x0.fa4o,y0.fa4o] = fairfield_meridian_4o_model(spec);
+  % Fairfield Meridian No 4o
+  [n.fan4o,sig.fan4o,eps.fan4o,L.fan4o,alpha.fan4o,x0.fan4o,y0.fan4o] = fairfield_meridian_no_4o_model(spec);
+  % Formisano Unnorm. z = 0
+  [n.foun,sig.foun,eps.foun,L.foun,alpha.foun,x0.foun,y0.foun] = formisano_unnorm_model(spec);
 end
 
 % make sure all normal vectors are pointing upstream
 % based on deltaV, should work for IP shocks also
 fnames = fieldnames(n);
 for ii = 1:length(fnames)
-    if dot(delV,n.(fnames{ii}))<0; n.(fnames{ii}) = -n.(fnames{ii}); end
+  if dot(delV,n.(fnames{ii}))<0; n.(fnames{ii}) = -n.(fnames{ii}); end
 end
 
 % shock angle
@@ -312,11 +312,11 @@ info.vsh = shear_angle(Vu,Vd);
 info.sig = sig;
 % other paramters from the models
 if isfield(spec,'R')
-    info.eps = eps;
-    info.L = L;
-    info.alpha = alpha;
-    info.x0 = x0;
-    info.y0 = y0;
+  info.eps = eps;
+  info.L = L;
+  info.alpha = alpha;
+  info.x0 = x0;
+  info.y0 = y0;
 end
 % constraint matrix
 info.cmat = constraint_values(spec,n);
@@ -329,9 +329,9 @@ nd.thVn = thVn;
 nd.Vsh = Vsh;
 
 if nargout == 0
-    for ii = 1:length(fnames)
-        fprintf(['n_',fnames{ii},'\t = \t',num2str(n.(fnames{ii})),'\n'])
-    end
+  for ii = 1:length(fnames)
+    fprintf(['n_',fnames{ii},'\t = \t',num2str(n.(fnames{ii})),'\n'])
+  end
 end
 
 
@@ -348,17 +348,17 @@ function th = shock_angle(spec,n,field,leq90)
 % field is 'B' or 'V'
 
 switch lower(field)
-    case 'b'
-        a = spec.Bu;
-    case 'v'
-        a = spec.Vu;
+  case 'b'
+    a = spec.Bu;
+  case 'v'
+    a = spec.Vu;
 end
 
 fnames = fieldnames(n);
 num = length(fnames);
 
 for i = 1:num
-    th.(fnames{i}) = thFn(n.(fnames{i}),a,leq90);
+  th.(fnames{i}) = thFn(n.(fnames{i}),a,leq90);
 end
 
 end
@@ -367,7 +367,7 @@ function th = thFn(nvec,a,leq90)
 % Shock normal angle and normal incidence angle
 th = acosd(dot(a,nvec)/(norm(a)));
 if th>90 && leq90
-    th = 180-th;
+  th = 180-th;
 end
 end
 
@@ -399,28 +399,28 @@ N = length(fn);
 
 
 switch lower(method)
-    case 'gt' % Gosling & Thomsen
-        if ~isfield(spec,'Fcp') || ~isfield(spec,'dTf') || ~isfield(spec,'d2u')
-            for k = 1:N
-                Vsp.(fn{k}) = 0;
-            end
-            return;
-        else
-            Vsp = speed_gosling_thomsen(spec,n,thBn,fn);
-        end
-    case 'mf' % Mass flux
-        Vsp = speed_mass_flux(spec,n,fn);
-    case 'sb' % Smith & Burton
-        Vsp = speed_smith_burton(spec,n,fn);
-    case 'mo' % Moses
-        if ~isfield(spec,'Fcp') || ~isfield(spec,'dTf') || ~isfield(spec,'d2u')
-            for k = 1:N
-                Vsp.(fn{k}) = 0;
-            end
-            return;
-        else
-            Vsp = speed_moses(spec,n,thBn,fn);
-        end
+  case 'gt' % Gosling & Thomsen
+    if ~isfield(spec,'Fcp') || ~isfield(spec,'dTf') || ~isfield(spec,'d2u')
+      for k = 1:N
+        Vsp.(fn{k}) = 0;
+      end
+      return;
+    else
+      Vsp = speed_gosling_thomsen(spec,n,thBn,fn);
+    end
+  case 'mf' % Mass flux
+    Vsp = speed_mass_flux(spec,n,fn);
+  case 'sb' % Smith & Burton
+    Vsp = speed_smith_burton(spec,n,fn);
+  case 'mo' % Moses
+    if ~isfield(spec,'Fcp') || ~isfield(spec,'dTf') || ~isfield(spec,'d2u')
+      for k = 1:N
+        Vsp.(fn{k}) = 0;
+      end
+      return;
+    else
+      Vsp = speed_moses(spec,n,thBn,fn);
+    end
 end
 
 
@@ -428,18 +428,18 @@ end
 
 function Vsp = speed_gosling_thomsen(spec,n,thBn,fn)
 for k = 1:length(fn)
-    th = thBn.(fn{k})*pi/180;
-    nvec = n.(fn{k});
-    
-    % Notation as in (Gosling and Thomsen 1985)
-    W = spec.Fcp*2*pi;
-    t1 = acos((1-2*cos(th).^2)./(2*sin(th).^2))/W;
-    
-    f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
-    x0 = f(th)/(W*spec.dTf);
-    
-    % the sign of Vsh in this method is ambiguous, assume n points upstream
-    Vsp.(fn{k}) = spec.d2u*dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
+  th = thBn.(fn{k})*pi/180;
+  nvec = n.(fn{k});
+  
+  % Notation as in (Gosling and Thomsen 1985)
+  W = spec.Fcp*2*pi;
+  t1 = acos((1-2*cos(th).^2)./(2*sin(th).^2))/W;
+  
+  f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
+  x0 = f(th)/(W*spec.dTf);
+  
+  % the sign of Vsh in this method is ambiguous, assume n points upstream
+  Vsp.(fn{k}) = spec.d2u*dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
 end
 end
 
@@ -451,29 +451,29 @@ rho_u = spec.nu*u.mp;
 rho_d = spec.nd*u.mp;
 
 for k = 1:1:length(fn)
-    Vsp.(fn{k}) = (rho_d*dot(spec.Vd,n.(fn{k}))-rho_u*dot(spec.Vu,n.(fn{k})))/(rho_d-rho_u);
+  Vsp.(fn{k}) = (rho_d*dot(spec.Vd,n.(fn{k}))-rho_u*dot(spec.Vu,n.(fn{k})))/(rho_d-rho_u);
 end
 end
 
 function Vsp = speed_smith_burton(spec,n,fn)
 % Assuming n points upstream, there is only one solution to the equation
 for k = 1:1:length(fn)
-    Vsp.(fn{k}) = dot(spec.Vu,n.(fn{k}))+norm(cross((spec.Vd-spec.Vu),spec.Bd))/norm(spec.Bd-spec.Bu);
+  Vsp.(fn{k}) = dot(spec.Vu,n.(fn{k}))+norm(cross((spec.Vd-spec.Vu),spec.Bd))/norm(spec.Bd-spec.Bu);
 end
 
 end
 
 function Vsp = speed_moses(spec,n,thBn,fn)
 for k = 1:length(fn)
-    th = thBn.(fn{k})*pi/180;
-    nvec = n.(fn{k});
-    thVn = acos(dot(nvec,spec.Vu)/norm(spec.Vu));
-    
-    % Notation as in (Moses et al., 1985)
-    W = spec.Fcp*2*pi;
-    x = 0.68*sin(th)^2*cos(thVn)/(W*spec.dTf);
-    
-    Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x/(1+spec.d2u*x));
+  th = thBn.(fn{k})*pi/180;
+  nvec = n.(fn{k});
+  thVn = acos(dot(nvec,spec.Vu)/norm(spec.Vu));
+  
+  % Notation as in (Moses et al., 1985)
+  W = spec.Fcp*2*pi;
+  x = 0.68*sin(th)^2*cos(thVn)/(W*spec.dTf);
+  
+  Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x/(1+spec.d2u*x));
 end
 end
 
@@ -551,21 +551,21 @@ r0 = [x0;y0;0];
 
 % sc position in GSE (or GSM or whatever) in Earth radii
 if isstruct(spec.R) % MMS specific
-    % like mms.get_data returns
+  % like mms.get_data returns
+  rsc_sum = 0;
+  if isfield(spec,'t') % get average position of sc at given time t
+    c_eval('rsc_sum = rsc_sum+interp1(spec.R.time.epochUnix,spec.R.gseR?/(u.RE*1e-3),spec.t.epochUnix);')
+    rsc = rsc_sum'/4;
+  else % get time and spacecraft average
     rsc_sum = 0;
-    if isfield(spec,'t') % get average position of sc at given time t
-        c_eval('rsc_sum = rsc_sum+interp1(spec.R.time.epochUnix,spec.R.gseR?/(u.RE*1e-3),spec.t.epochUnix);')
-        rsc = rsc_sum'/4;
-    else % get time and spacecraft average
-        rsc_sum = 0;
-        c_eval('rsc_sum = rsc_sum+mean(spec.R.gseR?)/(u.RE*1e-3);')
-        rsc = rsc_sum'/4;
-    end
+    c_eval('rsc_sum = rsc_sum+mean(spec.R.gseR?)/(u.RE*1e-3);')
+    rsc = rsc_sum'/4;
+  end
 elseif isa(spec.R,'TSeries') % TSeries
-    
-    rsc = mean(spec.R.data)'/(u.RE*1e-3);
+  
+  rsc = mean(spec.R.data)'/(u.RE*1e-3);
 elseif isnumeric(spec.R) && length(R) == 3 % just a vector
-    rsc = spec.R;
+  rsc = spec.R;
 end
 
 % Calculate sigma
@@ -588,8 +588,8 @@ zp = [0,0,1]*rp(sig0);
 
 % gradient to model surface
 gradS = [(xp*(1-eps^2)+eps*sig0*L)*cosd(alpha)+yp*sind(alpha);...
-    -(xp*(1-eps^2)+eps*sig0*L)*sind(alpha)+yp*cosd(alpha);...
-    zp]/(norm(rp(sig0))*2*sig0*L);
+  -(xp*(1-eps^2)+eps*sig0*L)*sind(alpha)+yp*cosd(alpha);...
+  zp]/(norm(rp(sig0))*2*sig0*L);
 % normal vector (column vector)
 n = gradS'/norm(gradS);
 end

@@ -30,10 +30,10 @@ set(gcf,'Position',[10 10 xSize*50 ySize*50])
 set(gcf,'paperpositionmode','auto') % to get the same printing as on screen
 clear xLeft xSize sLeft ySize yTop
 % additional good options
-        set(gcf,'defaultAxesFontSize',14);
-        set(gcf,'defaultTextFontSize',14);
-        set(gcf,'defaultAxesFontUnits','pixels');
-        set(gcf,'defaultTextFontUnits','pixels');
+set(gcf,'defaultAxesFontSize',14);
+set(gcf,'defaultTextFontSize',14);
+set(gcf,'defaultAxesFontUnits','pixels');
+set(gcf,'defaultTextFontUnits','pixels');
 %% Print the figure as it looks on screen
 set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 % to get bitmap file
@@ -73,8 +73,8 @@ set(ax2,'XColor','r','YColor','r'); % color of axis lines and numbers
 
 
 %___________________________________________
-% Another example 
-% 
+% Another example
+%
 t=irf_time([2008 03 01 10 0 0]):.2:irf_time([2008 03 01 11 0 0]);
 t=t(:); % make it column vector
 % define one time series
@@ -133,18 +133,18 @@ if 1 % initialize figure
   h=irf_plot(8); % number of panels in the plot
   %set(fn,'defaultLineLineWidth',1);  % example of making default changes to all figure
 end
-if 1 % read the data 
+if 1 % read the data
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %  ADD READ DATA COMMANDS BELOW, see next cells for examples
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+  
   
 end
 if 1 % plot figures panels
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %  ADD YOUR PANELS BELOW, see next cells for examples
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+  
   
   
 end
@@ -170,7 +170,7 @@ if 0 % read s/c position and velocity
   c_eval('V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
 end
 if 0 % read FGM data form all sc
- % c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',''mat'');');
+  % c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',''mat'');');
   c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'');');
   c_eval('B?=irf_abs(B?);');
   c_eval('diB?=c_coord_trans(''GSE'',''ISR2'',B?,''cl_id'',?);');
@@ -302,23 +302,23 @@ end
 
 % GENERAL
 if 1   % PANEL:          time series wavelet spectrogram
-	% B is original time series  
-	hca=irf_panel('B wavelet spectrogram'); % example time series magnetic field
-	b=B(:,[1 2]);                           % define time series B
-	specrec=irf_wavelet(b,'f',[0.1 180]);   % specify frequency range if needed
-	specrec.p_label={'log10 S','[nT^2/Hz]'};
-	irf_spectrogram(hca,specrec);
-	set(hca,'yscale','log');
-	irf_zoom(hca,'y',[1 180]);
-	set(hca,'ytick',[0.1 1 10 100])
-	caxis(hca,[-9 -1]);
+  % B is original time series
+  hca=irf_panel('B wavelet spectrogram'); % example time series magnetic field
+  b=B(:,[1 2]);                           % define time series B
+  specrec=irf_wavelet(b,'f',[0.1 180]);   % specify frequency range if needed
+  specrec.p_label={'log10 S','[nT^2/Hz]'};
+  irf_spectrogram(hca,specrec);
+  set(hca,'yscale','log');
+  irf_zoom(hca,'y',[1 180]);
+  set(hca,'ytick',[0.1 1 10 100])
+  caxis(hca,[-9 -1]);
 end
 if 1   %   ADD:          frequency lines to the plot (move into the necessary panel before manual ylim settings)
-	hold(hca,'on');
-	fce=irf_plasma_calc(B,0,0,0,0,'Fce');
-	irf_plot(hca,[fce(:,1) fce(:,2)],'-','linewidth',0.2,'color','k');       % electron cyclotron frequency
-	irf_plot(hca,[fce(:,1) fce(:,2)/42.85],'-','linewidth',0.2,'color','k'); % lower hybrid frequency
-	hold(hca,'off');
+  hold(hca,'on');
+  fce=irf_plasma_calc(B,0,0,0,0,'Fce');
+  irf_plot(hca,[fce(:,1) fce(:,2)],'-','linewidth',0.2,'color','k');       % electron cyclotron frequency
+  irf_plot(hca,[fce(:,1) fce(:,2)/42.85],'-','linewidth',0.2,'color','k'); % lower hybrid frequency
+  hold(hca,'off');
 end
 
 % CLUSTER SPECIFIC
@@ -374,7 +374,7 @@ if 1   % PANEL: C?       CIS Vx,Vy,Vz,V CODIF(HIA) GSM
   hca=irf_panel('C? CIS V GSM');
   if ic ~=2 % on s/c 2 there is no CIS
     c_eval('irf_plot(hca,gsmVCISH?);',ic);
-    % c_eval('irf_plot(hca,gsmVCIS?);',ic); % HIA 
+    % c_eval('irf_plot(hca,gsmVCIS?);',ic); % HIA
     ylabel(hca,'V [km/s] GSM');
     irf_zoom(hca,'y',[-200 1200]);
     irf_legend(hca,{'V_X','V_Y','V_Z'},[0.02 0.49])
@@ -451,11 +451,11 @@ if 1   % PANEL: C?       CIS HIA/CODIF spectrogram
   end
   irf_legend(hca,{['C' num2str(ic)]},[0.98 0.1],'color','k')
 end
-if 1   % PANEL: C?       EFW Ex,Ey ISR2 
+if 1   % PANEL: C?       EFW Ex,Ey ISR2
   hca=irf_panel('EFW E ISR2 c?');
   c_eval('irf_plot(hca,diE?(:,1:3))',ic);
   ylabel(hca,'E [mV/m] ISR2');
-  irf_zoom(hca,'y'); 
+  irf_zoom(hca,'y');
   irf_legend(hca,{'E_X','E_Y'},[0.02 0.98])
   irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
 end
@@ -474,23 +474,23 @@ if 1   % PANEL: C?       EFW satellite potential
   ylabel(hca,'Sat pot [V]');
 end
 if 1   % PANEL: C?       EFW ExB GSE|ISR2
-	% change L3 to L2 to get full resolution instead of spin
-	% see also the next example
-	hca=irf_panel('EFW ExB C?');
-	ExB=irf_ssub('v_drift_GSE__C?_CP_EFW_L3_V3D_GSE',ic);
-	%ExB=irf_ssub('v_drift_ISR2__C?_CP_EFW_L3_V3D_INERT',ic); % ISR2
-	irf_plot(hca,ExB,'nolabels');
-	ylabel(hca,{'ExB','[km/s] GSE'}); % GSE|ISR2
+  % change L3 to L2 to get full resolution instead of spin
+  % see also the next example
+  hca=irf_panel('EFW ExB C?');
+  ExB=irf_ssub('v_drift_GSE__C?_CP_EFW_L3_V3D_GSE',ic);
+  %ExB=irf_ssub('v_drift_ISR2__C?_CP_EFW_L3_V3D_INERT',ic); % ISR2
+  irf_plot(hca,ExB,'nolabels');
+  ylabel(hca,{'ExB','[km/s] GSE'}); % GSE|ISR2
 end
 if 1   % PANEL: C1..C4   EFW (ExB)x ISR2
-	% [di]ExB[s]? products are prepared under 'reading CAA'
-	% ExB?   - GSE  full resolution, ExBs?   - GSE spin resolution
-	% diExB? - ISR2 full resolution, diExBs? - ISR2 spin resolution
-	% Example on diExB? 
-	hca=irf_panel(' C1..C4 EFW (ExB)x ISR2'); 
-	c_pl_tx(hca,'diExB?',2);		
-	ylabel(hca,{'(ExB/B^2)x','[km/s] ISR2'});
-	irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
+  % [di]ExB[s]? products are prepared under 'reading CAA'
+  % ExB?   - GSE  full resolution, ExBs?   - GSE spin resolution
+  % diExB? - ISR2 full resolution, diExBs? - ISR2 spin resolution
+  % Example on diExB?
+  hca=irf_panel(' C1..C4 EFW (ExB)x ISR2');
+  c_pl_tx(hca,'diExB?',2);
+  ylabel(hca,{'(ExB/B^2)x','[km/s] ISR2'});
+  irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
 end
 if 0   % PANEL: C1..C4   EFW satellite potential
   % change L3 to L2 to get full resolution instead of spin
@@ -554,11 +554,11 @@ if 1   % PANEL: C?       WHISPER spectrogram
   % If working with shorter intervals can also remove 'tint' option
   irf_plot(hca,varname,'tint',tint,'colorbarlabel',varunits,'fitcolorbarlabel','fillspectrogramgaps','nolabels');
   if 1 % add plasma frequency lines
-      % density n should be calculated before
-      hold(hca,'on');
-      c_eval('fpe=irf_plasma_calc(irf_resamp(1,n),n,0,0,0,''Fpe'');',ic); % calculate electron gyrofrequency
-      irf_plot(hca,irf_tappl(fpe,'/1e3'),'-','linewidth',0.2,'color','k');
-      hold(hca,'off');
+    % density n should be calculated before
+    hold(hca,'on');
+    c_eval('fpe=irf_plasma_calc(irf_resamp(1,n),n,0,0,0,''Fpe'');',ic); % calculate electron gyrofrequency
+    irf_plot(hca,irf_tappl(fpe,'/1e3'),'-','linewidth',0.2,'color','k');
+    hold(hca,'off');
   end
   % polish the panel
   caxis(hca,[-16 -11]);
@@ -578,38 +578,38 @@ if 1   % PANEL: C?       RAPID electron spectrogram
   irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
 if 1   % PANEL: C?       RAPID ion spectrogram
-    hca=irf_panel('C?_CP_RAP_HSPCT');
-    varname=irf_ssub('Proton_Dif_flux__C?_CP_RAP_HSPCT',ic);
-    %varunits=irf_get_data(varname,'caa','units');
-    varunits={'log_{10} dF','1/cm^2 s sr keV'};
-    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
-    caxis(hca,[0.51 4.49]);
-    set(hca,'yscale','log');
-    ylabel(hca,'E [keV]');
-    irf_zoom(hca,'y',[80 2000]);
-    set(hca,'ytick',[1e2 2e2 5e2 1e3 1e4 1e5])
-    irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
+  hca=irf_panel('C?_CP_RAP_HSPCT');
+  varname=irf_ssub('Proton_Dif_flux__C?_CP_RAP_HSPCT',ic);
+  %varunits=irf_get_data(varname,'caa','units');
+  varunits={'log_{10} dF','1/cm^2 s sr keV'};
+  irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
+  caxis(hca,[0.51 4.49]);
+  set(hca,'yscale','log');
+  ylabel(hca,'E [keV]');
+  irf_zoom(hca,'y',[80 2000]);
+  set(hca,'ytick',[1e2 2e2 5e2 1e3 1e4 1e5])
+  irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
 if 0   % PANEL: C?       RAPID PAD_L3DD spectrogram parallel
-	ic = 3;
-	hca=irf_panel('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD');
-	varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
-	irf_plot(hca,varname,'colorbarlabel',varunits,...
-		'fitcolorbarlabel','comp',1);
-	caxis(hca,[1.1 4.3]);
-	set(hca,'yscale','log');
-	set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5]);
+  ic = 3;
+  hca=irf_panel('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD');
+  varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
+  irf_plot(hca,varname,'colorbarlabel',varunits,...
+    'fitcolorbarlabel','comp',1);
+  caxis(hca,[1.1 4.3]);
+  set(hca,'yscale','log');
+  set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5]);
 end
 if 0   % PANEL: C?       RAPID spectrogram pitch angle
-	hca=irf_panel('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD');
-	varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
-	varunits=irf_get_data(varname,'caa','units');
-	irf_plot(hca,varname,'colorbarlabel',varunits,...
-		'fitcolorbarlabel','comp_dim1','comp',1);
-	caxis(hca,[1.1 4.3]);
-	set(hca,'yscale','lin');
-	set(hca,'ytick',[0 45 90 135 180]);
-	ylabel(hca,'Pitch ang. [deg]');
+  hca=irf_panel('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD');
+  varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
+  varunits=irf_get_data(varname,'caa','units');
+  irf_plot(hca,varname,'colorbarlabel',varunits,...
+    'fitcolorbarlabel','comp_dim1','comp',1);
+  caxis(hca,[1.1 4.3]);
+  set(hca,'yscale','lin');
+  set(hca,'ytick',[0 45 90 135 180]);
+  ylabel(hca,'Pitch ang. [deg]');
 end
 if 0   % PANEL: RAPID spectrogram anisotropy
   hca=h(i_subplot);i_subplot=i_subplot+1;
@@ -668,110 +668,110 @@ end
 if 0   % PANEL: C1..C4   PEACE density MOMENTS
   hca=irf_panel('C1..C4 PEACE T MOMENTS');
   c_eval('T_PEACE?=irf_get_data(''Data_Temperature_ComponentPerpendicularToMagField__C2_CP_PEA_'',''caa'',''mat'');');
-  c_eval('T_PEACE?=irf_tappl(T_PEACE?,''*86.132'');'); % conversion from MK to eV 
+  c_eval('T_PEACE?=irf_tappl(T_PEACE?,''*86.132'');'); % conversion from MK to eV
   c_pl_tx(hca,'T_PEACE?','.-');
   set(hca,'yscale','log','ytick',[1e-2 1e-1 1e0 1e1]);
-%  irf_zoom(hca,'y',[0.005 0.3]);
+  %  irf_zoom(hca,'y',[0.005 0.3]);
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
   ylabel(hca,'T_{e} [eV]');
 end
 if 0   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles
-    hca=irf_panel('C? PEACE DEFlux pitch spectra');
-    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-    varunits=irf_get_data(varname,'caa','units');
-    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',22);
-    caxis(hca,[5.9 8.9]);
-    set(hca,'yscale','lin');
-    set(hca,'ytick',[ 45 90 135 ]);
-    ylabel(hca,'\Theta [deg]');
+  hca=irf_panel('C? PEACE DEFlux pitch spectra');
+  varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
+  varunits=irf_get_data(varname,'caa','units');
+  %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+  irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',22);
+  caxis(hca,[5.9 8.9]);
+  set(hca,'yscale','lin');
+  set(hca,'ytick',[ 45 90 135 ]);
+  ylabel(hca,'\Theta [deg]');
 end
 if 0   % PANEL: C?       PEACE PITCH_SPIN_DEFlux OMNI pitch angle averaged
-    angles=[7.5000 22.5000 37.5000 52.5000 67.5000 82.5000...
-                        97.5000 112.5000 127.5000 142.5000 157.5000 172.5000];
-                    % Summing over pitch angles, with correct weighting due to
-                    % different solid angle.
-                    sp.p=squeeze(irf.pitch_angle_average(pea.data,angles,...
-                        [7.5 172.5],2));
-                    sp.f=pea.dep_x{2}.data(1,:); % energy levels
-                    sp.t=pea.t;
-                    sp.f_label='Energy [eV]';
-                    sp.p_label={'Electron DEF','keV/cm^2-s-str-keV'};
-                    irf_spectrogram(sp);
+  angles=[7.5000 22.5000 37.5000 52.5000 67.5000 82.5000...
+    97.5000 112.5000 127.5000 142.5000 157.5000 172.5000];
+  % Summing over pitch angles, with correct weighting due to
+  % different solid angle.
+  sp.p=squeeze(irf.pitch_angle_average(pea.data,angles,...
+    [7.5 172.5],2));
+  sp.f=pea.dep_x{2}.data(1,:); % energy levels
+  sp.t=pea.t;
+  sp.f_label='Energy [eV]';
+  sp.p_label={'Electron DEF','keV/cm^2-s-str-keV'};
+  irf_spectrogram(sp);
 end
 if 0   % PANEL: C?       PEACE PITCH_SPIN_PSD spectrogram angles
-    hca=irf_panel('C? PEACE PSD pitch spectra');
-    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_PSD',ic);
-    varunits=irf_get_data(varname,'caa','units');
-    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',22);
-    caxis(hca,[1.4 3.1]);
-    set(hca,'yscale','lin');
-    set(hca,'ytick',[ 45 90 135 ]);
-    ylabel(hca,'\Theta [deg]');
+  hca=irf_panel('C? PEACE PSD pitch spectra');
+  varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_PSD',ic);
+  varunits=irf_get_data(varname,'caa','units');
+  %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+  irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',22);
+  caxis(hca,[1.4 3.1]);
+  set(hca,'yscale','lin');
+  set(hca,'ytick',[ 45 90 135 ]);
+  ylabel(hca,'\Theta [deg]');
 end
 if 0   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles in specified energy range
-    hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
-    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-    pea=c_caa_var_get(varname,'mat');
-    Enmin=1e3;Enmax=5e3; % energy interval
-    energy_channels=[]; % if do not want energy interval, specify energy channel
-    energy_channel_values=pea.dep_x{2}.data(1,:);
-    if numel(energy_channels)==0 % specified energy interval
-        energy_channels=find(energy_channel_values>Enmin & energy_channel_values < Enmax); % use only these energy chanels
-        en_values=energy_channel_values(energy_channels);
-        en_label=[num2str(min(en_values),'%5.0f') ' - ' num2str(max(en_values),'%5.0f') ' ' pea.dep_x{2}.units];
-    elseif numel(energy_channels)>1
-        en_values=energy_channel_values(energy_channels);
-        en_label=[num2str(min(en_values),'%5.0f') ' - ' num2str(max(en_values),'%5.0f') ' ' pea.dep_x{2}.units];
-    elseif numel(energy_channels)==1 % only one channel specified
-        en_label=[num2str(energy_channel_values(energy_channels)) ' ' pea.dep_x{2}.units];
-    end
-    specrec={};
-    specrec.p=squeeze(sum(pea.data(:,:,energy_channels),3));
-    specrec.t=pea.t;
-    specrec.f=pea.dep_x{1}.data(1,:);
-    specrec.dt=pea.dt;
-    specrec.df=pea.dep_x{1}.df;
-    varunits=irf_get_data(varname,'caa','units');
-    specrec.p_label=varunits;
-    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-    irf_spectrogram(hca,specrec);
-    irf_legend(hca,en_label,[0.98 0.05]);
-    irf_legend(hca,['C' num2str(ic)],[0.98 0.98]);
-    caxis(hca,[5.9 8.9]);
-    set(hca,'yscale','lin');
-    set(hca,'ytick',[ 45 90 135 ]);
-    ylabel(hca,'\Theta [deg]');
+  hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
+  varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
+  pea=c_caa_var_get(varname,'mat');
+  Enmin=1e3;Enmax=5e3; % energy interval
+  energy_channels=[]; % if do not want energy interval, specify energy channel
+  energy_channel_values=pea.dep_x{2}.data(1,:);
+  if numel(energy_channels)==0 % specified energy interval
+    energy_channels=find(energy_channel_values>Enmin & energy_channel_values < Enmax); % use only these energy chanels
+    en_values=energy_channel_values(energy_channels);
+    en_label=[num2str(min(en_values),'%5.0f') ' - ' num2str(max(en_values),'%5.0f') ' ' pea.dep_x{2}.units];
+  elseif numel(energy_channels)>1
+    en_values=energy_channel_values(energy_channels);
+    en_label=[num2str(min(en_values),'%5.0f') ' - ' num2str(max(en_values),'%5.0f') ' ' pea.dep_x{2}.units];
+  elseif numel(energy_channels)==1 % only one channel specified
+    en_label=[num2str(energy_channel_values(energy_channels)) ' ' pea.dep_x{2}.units];
+  end
+  specrec={};
+  specrec.p=squeeze(sum(pea.data(:,:,energy_channels),3));
+  specrec.t=pea.t;
+  specrec.f=pea.dep_x{1}.data(1,:);
+  specrec.dt=pea.dt;
+  specrec.df=pea.dep_x{1}.df;
+  varunits=irf_get_data(varname,'caa','units');
+  specrec.p_label=varunits;
+  %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+  irf_spectrogram(hca,specrec);
+  irf_legend(hca,en_label,[0.98 0.05]);
+  irf_legend(hca,['C' num2str(ic)],[0.98 0.98]);
+  caxis(hca,[5.9 8.9]);
+  set(hca,'yscale','lin');
+  set(hca,'ytick',[ 45 90 135 ]);
+  ylabel(hca,'\Theta [deg]');
 end
 if 0   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram for given pitch angle
-	hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
-	varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-	pea=c_caa_var_get(varname,'mat');
-	pitchMin=45;pitchMax=135; % pitch angle interval
-	pitchAnglesSelected=[]; % specify pitch angle indixes if you do not want to specify interval
-	pitchAngleValues=pea.dep_x{1}.data(1,:);
-	if numel(pitchAnglesSelected)==0 % pitch angle interval is specified
-		pitchAnglesSelected=find(pitchAngleValues>pitchMin & pitchAngleValues<pitchMax); % use only these energy chanels
-	end
-	pitchLabel=num2str(pitchAngleValues(pitchAnglesSelected),'%5.1f ');
-	specrec={};
-	specrec.p=squeeze(sum(pea.data(:,pitchAnglesSelected,:),2));
-	specrec.t=pea.t;
-	specrec.f=pea.dep_x{2}.data(1,:);
-	specrec.f_unit = 'eV';
-	specrec.dt=pea.dt;
-	specrec.df=pea.dep_x{2}.df;
-	varunits=irf_get_data(varname,'caa','units');
-	specrec.p_label=varunits;
-	%varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-	irf_spectrogram(hca,specrec);
-	caxis(hca,[5.9 8.9]);
-	set(hca,'yscale','log');
-	set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
-	ylabel(hca,'E [eV]');
-	irf_legend(hca,{['C' num2str(ic)]},[0.98 0.02],'color','k')
-	irf_legend(hca,['slected pitch angles: ' pitchLabel],[0.02 0.02],'color','k')
+  hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
+  varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
+  pea=c_caa_var_get(varname,'mat');
+  pitchMin=45;pitchMax=135; % pitch angle interval
+  pitchAnglesSelected=[]; % specify pitch angle indixes if you do not want to specify interval
+  pitchAngleValues=pea.dep_x{1}.data(1,:);
+  if numel(pitchAnglesSelected)==0 % pitch angle interval is specified
+    pitchAnglesSelected=find(pitchAngleValues>pitchMin & pitchAngleValues<pitchMax); % use only these energy chanels
+  end
+  pitchLabel=num2str(pitchAngleValues(pitchAnglesSelected),'%5.1f ');
+  specrec={};
+  specrec.p=squeeze(sum(pea.data(:,pitchAnglesSelected,:),2));
+  specrec.t=pea.t;
+  specrec.f=pea.dep_x{2}.data(1,:);
+  specrec.f_unit = 'eV';
+  specrec.dt=pea.dt;
+  specrec.df=pea.dep_x{2}.df;
+  varunits=irf_get_data(varname,'caa','units');
+  specrec.p_label=varunits;
+  %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+  irf_spectrogram(hca,specrec);
+  caxis(hca,[5.9 8.9]);
+  set(hca,'yscale','log');
+  set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
+  ylabel(hca,'E [eV]');
+  irf_legend(hca,{['C' num2str(ic)]},[0.98 0.02],'color','k')
+  irf_legend(hca,['slected pitch angles: ' pitchLabel],[0.02 0.02],'color','k')
 end
 
 if 0   % PANEL: RAPID/PEACE electron densities
@@ -981,30 +981,30 @@ if 1   % PANEL: PEACE 3DXPH_DEFlux high res angular spectrogra,
   irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
 end
 if 1   % PANEL: C?       RAPID L3DD high resolution
-    hca=irf_panel('RAPID L3DD high res pitch');
-	variableName=irf_ssub('Electron_L_Dif_flux_3D__C?_CP_RAP_L3DD',ic);
-    res=c_caa_construct_subspin_res_data(variableName);
-    specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',res.dataunits);
-    if 0 % energy spectrogram (integrated over pitch angles)
-        specrec.f=res.en;
-        specrec.p=res.omni(ind,:);
-        specrec.f_label=[res.enlabel];
-        yticks=[1 2 3 4 5];
-    elseif 1 % pitch angle spectrogram for given energy
-        specrec.f=res.theta;specrec.f_label='Pitch angle';
-        specrec.p=res.pitch_angle(ind,:);
-        enindex=1;specrec.f_label={specrec.f_label, ['[E=' num2str(res.en(enindex),4) 'keV]']};
-		% if one wants PSD instead of difflux, multiply by constant factor 
-		% for the values of constant factor, see table 4 in CAA-EST-UG-RAP
-		% 5.369e-9 is for the first energy chanel
-        specrec.p=log10(res.data(ind,:,enindex)*5.369e-9); 
-        specrec.p_label='Log PSD [s^3/km^6]';
-		yticks=[30 60 90 120 150];
-    end
-    irf_spectrogram(hca,specrec);
-    caxis(hca,[-4.99 -3.01])
-    irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
-    set(hca,'ytick',yticks);
+  hca=irf_panel('RAPID L3DD high res pitch');
+  variableName=irf_ssub('Electron_L_Dif_flux_3D__C?_CP_RAP_L3DD',ic);
+  res=c_caa_construct_subspin_res_data(variableName);
+  specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',res.dataunits);
+  if 0 % energy spectrogram (integrated over pitch angles)
+    specrec.f=res.en;
+    specrec.p=res.omni(ind,:);
+    specrec.f_label=[res.enlabel];
+    yticks=[1 2 3 4 5];
+  elseif 1 % pitch angle spectrogram for given energy
+    specrec.f=res.theta;specrec.f_label='Pitch angle';
+    specrec.p=res.pitch_angle(ind,:);
+    enindex=1;specrec.f_label={specrec.f_label, ['[E=' num2str(res.en(enindex),4) 'keV]']};
+    % if one wants PSD instead of difflux, multiply by constant factor
+    % for the values of constant factor, see table 4 in CAA-EST-UG-RAP
+    % 5.369e-9 is for the first energy chanel
+    specrec.p=log10(res.data(ind,:,enindex)*5.369e-9);
+    specrec.p_label='Log PSD [s^3/km^6]';
+    yticks=[30 60 90 120 150];
+  end
+  irf_spectrogram(hca,specrec);
+  caxis(hca,[-4.99 -3.01])
+  irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
+  set(hca,'ytick',yticks);
 end
 if 0   % PANEL: CIS CODIF high res energy C4
   h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);hca=h(i_subplot);i_subplot=i_subplot+1;
@@ -1162,38 +1162,38 @@ for j=1:size(tint,1)
   c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
 end
 clear j;
-%% Code snippets 
-	%% FGM/STAFF comparison (works on spis.irfu.se)
-	tst=irf_time([2009 9 16 07 24 0]);dt=8*60;
-	tint=tst+[0 dt];
-	tint1=tst+[0 200];
-	c_eval('B?=local.c_read(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',tint);');
-	c_get_batch(tst,dt,'vars','bsc','noproc')
-	
-	refFrame='SR2';
-	c_eval('diB?=c_coord_trans(''GSE'',refFrame,B?,''cl_id'',?);');
-	load mBSCR.mat
-	fmin=.5;fmax=2;
-	c_eval('[wBSC?,~] = irf_tlim(wBSC?,tint1);');
-	c_eval('diBSC? = c_efw_despin(wBSC?,?,''staff'');');
-	c_eval('diBSC? = irf_resamp(diBSC?,diB?);');
-	c_eval('[diB?_filtered]=irf_filt(diB?,fmin,fmax,[],5);');
-	c_eval('[diBSC?_filtered]=irf_filt(diBSC?,fmin,fmax,[],5);');
-	
-	h=irf_plot(5,'newfigure');
-	ic=1;
-	c_eval('B=diB?;B_filtered=diB?_filtered;BSC=diBSC?;BSC_filtered=diBSC?_filtered;',ic)
-	irf_plot(h(1),B);ylabel(h(1),['B [nT] FGM ' refFrame]);
-	irf_plot(h(2),BSC);ylabel(h(2),['B [nT] STAFF ' refFrame]);
-	for iSubplot=1:3
-		hca=h(2+iSubplot);
-		comp=iSubplot+1; % which component to plot
-		compStr=char('X'+iSubplot-1); % string X,Y,Z
-		irf_plot(hca,B_filtered(:,[1,comp]));
-		hold(hca,'on');
-		irf_plot(hca,BSC_filtered(:,[1,comp]),'b');
-		ylabel(hca,['B_' compStr ' [nT] ' refFrame]);
-		irf_legend(hca,{'FGM','STAFF'},[0.98 0.98])
-	end
-	irf_zoom(h,'x',tint1)
+%% Code snippets
+%% FGM/STAFF comparison (works on spis.irfu.se)
+tst=irf_time([2009 9 16 07 24 0]);dt=8*60;
+tint=tst+[0 dt];
+tint1=tst+[0 200];
+c_eval('B?=local.c_read(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',tint);');
+c_get_batch(tst,dt,'vars','bsc','noproc')
+
+refFrame='SR2';
+c_eval('diB?=c_coord_trans(''GSE'',refFrame,B?,''cl_id'',?);');
+load mBSCR.mat
+fmin=.5;fmax=2;
+c_eval('[wBSC?,~] = irf_tlim(wBSC?,tint1);');
+c_eval('diBSC? = c_efw_despin(wBSC?,?,''staff'');');
+c_eval('diBSC? = irf_resamp(diBSC?,diB?);');
+c_eval('[diB?_filtered]=irf_filt(diB?,fmin,fmax,[],5);');
+c_eval('[diBSC?_filtered]=irf_filt(diBSC?,fmin,fmax,[],5);');
+
+h=irf_plot(5,'newfigure');
+ic=1;
+c_eval('B=diB?;B_filtered=diB?_filtered;BSC=diBSC?;BSC_filtered=diBSC?_filtered;',ic)
+irf_plot(h(1),B);ylabel(h(1),['B [nT] FGM ' refFrame]);
+irf_plot(h(2),BSC);ylabel(h(2),['B [nT] STAFF ' refFrame]);
+for iSubplot=1:3
+  hca=h(2+iSubplot);
+  comp=iSubplot+1; % which component to plot
+  compStr=char('X'+iSubplot-1); % string X,Y,Z
+  irf_plot(hca,B_filtered(:,[1,comp]));
+  hold(hca,'on');
+  irf_plot(hca,BSC_filtered(:,[1,comp]),'b');
+  ylabel(hca,['B_' compStr ' [nT] ' refFrame]);
+  irf_legend(hca,{'FGM','STAFF'},[0.98 0.98])
+end
+irf_zoom(h,'x',tint1)
 

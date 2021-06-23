@@ -31,7 +31,7 @@ flagComm = 0;
 %tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
 %tint = irf.tint('2015-04-20T18:00:00Z/2015-04-20T23:59:59Z');
 %tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
-%tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
+%tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z');
 %tint = irf.tint('2015-06-22T00:00:00Z/2015-06-22T23:59:59Z'); flagComm = false;
 %tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
 %tint = irf.tint('2015-09-11T09:30:00Z/2015-09-11T09:59:59Z'); flagComm = 2;
@@ -52,9 +52,9 @@ flagComm = 0;
 %tint = irf.tint('2016-06-12T05:00:00Z/2016-06-12T06:00:00Z'); flagComm = 2;
 %tint = irf.tint('2016-09-17T00:00:00Z/2016-09-17T23:59:59Z'); flagComm = 2;
 tint = irf.tint('2017-10-21T00:00:00Z/2017-10-21T23:59:59Z'); flagComm = 2;
-mmsId = 'mms1'; 
+mmsId = 'mms1';
 
-prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
+prf = [data_root filesep mmsId]; utc = tint.start.toUtc();
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);%
 li = mms.db_list_files([mmsId '_fields_hk_l1b_101'],tint); if length(li)>1, error('li>1'), end
 HK_101_File = [li.path filesep li.name];
@@ -98,7 +98,7 @@ Dmgr.set_param('hk_10e',HK_10E_File);
 Dmgr.set_param('hk_105',HK_105_File);
 Dmgr.set_param('hk_101',HK_101_File);
 Dmgr.set_param('aspoc',ASPOC_File);
-list = mms.db_list_files([mmsId '_ancillary_defatt'],tint); 
+list = mms.db_list_files([mmsId '_ancillary_defatt'],tint);
 for ii=1:length(list)
   irf.log('notice', [procName ' proc using: ',list(ii).name]);
   [dataTmp, src_fileData] = mms_load_ancillary([list(ii).path, filesep, ...
@@ -145,15 +145,15 @@ h = irf_figure(73,5,'reset');
 
 hca = irf_panel('E');
 irf_plot(hca,DceSL)
-hold(hca,'on') 
+hold(hca,'on')
 irf_plot(hca,{AdcOff12,AdcOff34},'comp')
 ylabel(hca,'E SL [mV/m]')
 title(hca,mmsId), set(hca,'YLim',49*[-1 1])
 
 if 0
-hca = irf_panel('Phase'); %#ok<UNRCH>
-irf_plot(hca,Phase)
-ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
+  hca = irf_panel('Phase'); %#ok<UNRCH>
+  irf_plot(hca,Phase)
+  ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
 end
 
 hca = irf_panel('Ex');
@@ -173,7 +173,7 @@ irf_plot(hca,Dcv)
 ylabel(hca,'PPot [V]'), set(hca,'YLim',[-14 0])
 irf_legend(hca,{'P1','P2','P3','P4'},[0.9,0.02])
 
-%irf_plot_ylabels_align(h), 
+%irf_plot_ylabels_align(h),
 irf_zoom(h,'x',DceDSL.time)
 %add_position(h(end),gseR), xlabel(h(end),'')
 
@@ -185,12 +185,12 @@ epochE = EpochTT(dce.time).epochUnix;
 
 figure(73), clf
 h = irf_plot(3);
-hca = irf_panel('Ex'); 
+hca = irf_panel('Ex');
 irf_plot(hca,[epochS Delta_p12_p34(:,1)])
 ylabel(hca,'\Delta_{p12,p34}_x [mV/m]')
 set(hca,'YLim',[-1.9 0]), title(hca,mmsId)
 
-hca = irf_panel('Ey'); 
+hca = irf_panel('Ey');
 irf_plot(hca,[epochS Delta_p12_p34(:,2)])
 ylabel(hca,'\Delta_{p12,p34}_y [mV/m]')
 set(hca,'YLim',[-.9 .9])
@@ -199,7 +199,7 @@ hca = irf_panel('V');
 irf_plot(hca,[epochE double(probe2sc_pot.data)])
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
-%irf_plot_ylabels_align(h), 
+%irf_plot_ylabels_align(h),
 irf_zoom(h,'x',epochE([1 end])')
 
 

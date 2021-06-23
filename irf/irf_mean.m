@@ -18,30 +18,30 @@ function [out]=irf_mean(inp,r,b,z)
 
 out=inp;flag_dipole=0;
 if nargin > 3
- flag_dipole=1;
- if size(z,1) ~= size(inp,1)
-  zz=irf_resamp(z,inp);
- else
-  zz=z;
- end
+  flag_dipole=1;
+  if size(z,1) ~= size(inp,1)
+    zz=irf_resamp(z,inp);
+  else
+    zz=z;
+  end
 end
 if (size(r,1) ~= size(inp,1))
-    rr=irf_resamp(r,inp);
+  rr=irf_resamp(r,inp);
 else
-    rr=r;
+  rr=r;
 end
 if (size(b,1) ~= size(inp,1))
-    bb=irf_resamp(b,inp);
+  bb=irf_resamp(b,inp);
 else
-    bb=b;
+  bb=b;
 end
 zv=irf_norm(bb);
 if flag_dipole == 0
- yv=irf_norm(irf_cross(zv,rr));
+  yv=irf_norm(irf_cross(zv,rr));
 else
- ss=irf_dot(b,r);ind= ss(:,2) > 0;
- ss(:,2)=-1;ss(ind,2)=1;
- yv=irf_norm(irf_vec_x_scal(irf_cross(zz,bb),ss));
+  ss=irf_dot(b,r);ind= ss(:,2) > 0;
+  ss(:,2)=-1;ss(ind,2)=1;
+  yv=irf_norm(irf_vec_x_scal(irf_cross(zz,bb),ss));
 end
 xv=irf_cross(yv,zv);
 %keyboard

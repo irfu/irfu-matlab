@@ -29,14 +29,14 @@ firstLetter = 'a';
 %% Check input options
 inp_flag=ones(size(varargin));
 for jj=1:numel(varargin)
-    switch(lower(varargin{jj}))
-        case 'num'
-            num = varargin{jj+1};
-            inp_flag(jj:jj+1)=0;
-        case 'firstletter'
-            firstLetter = varargin{jj+1};
-            inp_flag(jj:jj+1)=0;
-    end
+  switch(lower(varargin{jj}))
+    case 'num'
+      num = varargin{jj+1};
+      inp_flag(jj:jj+1)=0;
+    case 'firstletter'
+      firstLetter = varargin{jj+1};
+      inp_flag(jj:jj+1)=0;
+  end
 end
 args=varargin(inp_flag==1);
 
@@ -44,8 +44,8 @@ args=varargin(inp_flag==1);
 h=h(:);ht=h;
 abc=firstLetter:'z';
 for j=1:length(h)
-    hleg=irf_legend(h(j),irf_ssub(num,abc(j)),position,args{:});
-    ht(j)=hleg;
+  hleg=irf_legend(h(j),irf_ssub(num,abc(j)),position,args{:});
+  ht(j)=hleg;
 end
 
 if nargout==0, clear ht;end

@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%
-% go to new/empty directory 
+% go to new/empty directory
 % >cd new_directory
 % here using temporary directory
 tempdir_name=tempname;
 mkdir(tempdir_name);
 cd(tempdir_name);
-disp(['Moving to temporary directory: ' tempdir_name]); 
+disp(['Moving to temporary directory: ' tempdir_name]);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -15,16 +15,16 @@ tint=[irf_time([2006 9 27 17 22 0]) irf_time([2006 9 27 17 24 30])];
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
 if 1 % put to 0 if data already downloaded !!!!
-    caa_download(tint,'C?_CP_STA_PSD')
-    caa_download(tint,'C?_CP_FGM_5VPS')
-    caa_download(tint,'C?_CP_RAP_PAD_L3DD')
-    download_status=caa_download; % repeat until all data are downloaded
-    if download_status==0 % some data are still in queue
-      disp('___________!!!!_____________')
-      disp('Some data where put in queue!')
-      disp('To see when they are ready and to download execute "caa_download".');
-      return
-    end
+  caa_download(tint,'C?_CP_STA_PSD')
+  caa_download(tint,'C?_CP_FGM_5VPS')
+  caa_download(tint,'C?_CP_RAP_PAD_L3DD')
+  download_status=caa_download; % repeat until all data are downloaded
+  if download_status==0 % some data are still in queue
+    disp('___________!!!!_____________')
+    disp('Some data where put in queue!')
+    disp('To see when they are ready and to download execute "caa_download".');
+    return
+  end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

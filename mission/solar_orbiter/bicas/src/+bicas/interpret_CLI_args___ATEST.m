@@ -1,5 +1,7 @@
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+%
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-23
+%
 function interpret_CLI_args___ATEST
 
 %     Ecm = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
@@ -9,21 +11,23 @@ function interpret_CLI_args___ATEST
 
 
     tl{end+1} = new_test( {'--help'}, ...
-        'help',    [], [], [], {{}, {}}, {{}, {}});
+        'help',    [], [], [], [], {{}, {}}, {{}, {}});
     tl{end+1} = new_test( {'--version'}, ...
-        'version', [], [], [], {{}, {}}, {{}, {}});
+        'version', [], [], [], [], {{}, {}}, {{}, {}});
     tl{end+1} = new_test( {'--identification'}, ...
-        'identification', [], [], [], {{}, {}}, {{}, {}});
+        'identification', [], [], [], [], {{}, {}}, {{}, {}});
     tl{end+1} = new_test( {'--swdescriptor'}, ...
-        'S/W descriptor', [], [], [], {{}, {}}, {{}, {}});
+        'S/W descriptor', [], [], [], [], {{}, {}}, {{}, {}});
 
-    tl{end+1} = new_test( {'--help', '--log', 'logfile'}, ...
-        'help', [], [], 'logfile', {{},{}}, {{},{}});
-    tl{end+1} = new_test( {'--log', 'logfile', '--help'}, ...
-        'help', [], [], 'logfile', {{},{}}, {{},{}});
+    tl{end+1} = new_test( {'--help', '--log', 'ICD_log_file'}, ...
+        'help', [], [], 'ICD_log_file', [], {{},{}}, {{},{}});
+    tl{end+1} = new_test( {'--log', 'ICD_log_file', '--help'}, ...
+        'help', [], [], 'ICD_log_file', [], {{},{}}, {{},{}});
+    tl{end+1} = new_test( {'--log-matlab', 'MATLAB_log_file', '--help'}, ...
+        'help', [], [], [], 'MATLAB_log_file', {{},{}}, {{},{}});
     
     tl{end+1} = new_test( {'--version', '--log', 'logfile', '--config', 'configfile'}, ...
-        'version', [], 'configfile', 'logfile', {{},{}}, {{},{}});
+        'version', [], 'configfile', 'logfile', [], {{},{}}, {{},{}});
 
     tl{end+1} = new_test_EXC( {'--version', '--help'}, ...
         'MException');
@@ -35,7 +39,7 @@ function interpret_CLI_args___ATEST
         'MException');
     
     tl{end+1} = new_test( {'swmode', '--in', 'infile', '--out', 'outfile'}, ...
-        'S/W mode', 'swmode', [], [], {{}, {}}, {{'in', 'out'}, {'infile', 'outfile'}});
+        'S/W mode', 'swmode', [], [], [], {{}, {}}, {{'in', 'out'}, {'infile', 'outfile'}});
     
     tl{end+1} = new_test_EXC( {'--in', 'infile', 'swmode', '--out', 'outfile'}, ...
         'MException');    % S/w mode in the wrong place.
@@ -43,7 +47,7 @@ function interpret_CLI_args___ATEST
 
     
     tl{end+1} = new_test( {'swmode', '--in', 'infile', '--config', 'configfile', '--out', 'outfile'}, ...
-        'S/W mode', 'swmode', 'configfile', [], {{}, {}}, {{'in', 'out'}, {'infile', 'outfile'}});
+        'S/W mode', 'swmode', 'configfile', [], [], {{}, {}}, {{'in', 'out'}, {'infile', 'outfile'}});
     
     % S/w mode in the wrong place.
     tl{end+1} = new_test_EXC( {'--in', 'infile', 'swmode', '--config', 'configfile', '--out', 'outfile'}, ...
@@ -54,9 +58,9 @@ function interpret_CLI_args___ATEST
         'MException');
     
     tl{end+1} = new_test( {'--version'}, ...
-                  'version', [], [], [], {{}, {}}, {{}, {}});
+                  'version', [], [], [], [], {{}, {}}, {{}, {}});
     tl{end+1} = new_test( {'--version', '--set', 'A', 'a', '--set', 'B', 'b'}, ...
-                  'version', [], [], [], {{'A', 'B'}, {'a', 'b'}}, {{}, {}});
+                  'version', [], [], [], [], {{'A', 'B'}, {'a', 'b'}}, {{}, {}});
 
 
 
@@ -66,19 +70,23 @@ end
 
 
 % NOTE: Does not work when expecting an exception.
-function Test = new_test(cliArgList, functionalityMode, swModeArg, configFile, logFile, ModifiedSettingsMap, SpecInputParametersMap)
-outputs = {struct(...
-    'functionalityMode', functionalityMode, ...
-    'swModeArg',         swModeArg, ...
-    'configFile',        configFile, ...
-    'logFile',           logFile, ...
-    'ModifiedSettingsMap',    EJ_library.utils.create_containers_Map('char', 'char', ModifiedSettingsMap{1},    ModifiedSettingsMap{2}), ...
-    'SpecInputParametersMap', EJ_library.utils.create_containers_Map('char', 'char', SpecInputParametersMap{1}, SpecInputParametersMap{2})) ...
-    };
-
-assert(numel(outputs) == 1)
-
-Test = EJ_library.atest.CompareFuncResult(@bicas.interpret_CLI_args, {cliArgList}, outputs);
+function Test = new_test(...
+        cliArgList, functionalityMode, swModeArg, configFile, ...
+        icdLogFile, matlabLogFile, ModifiedSettingsMap, SpecInputParametersMap)
+    
+    outputs = {struct(...
+        'functionalityMode',      functionalityMode, ...
+        'swModeArg',              swModeArg, ...
+        'configFile',             configFile, ...
+        'icdLogFile',             icdLogFile, ...
+        'matlabLogFile',          matlabLogFile, ...
+        'ModifiedSettingsMap',    EJ_library.utils.create_containers_Map('char', 'char', ModifiedSettingsMap{1},    ModifiedSettingsMap{2}), ...
+        'SpecInputParametersMap', EJ_library.utils.create_containers_Map('char', 'char', SpecInputParametersMap{1}, SpecInputParametersMap{2})) ...
+        };
+    
+    assert(numel(outputs) == 1)
+    
+    Test = EJ_library.atest.CompareFuncResult(@bicas.interpret_CLI_args, {cliArgList}, outputs);
 end
 
 
@@ -86,8 +94,8 @@ end
 % Test that generates exception.
 % NOTE: Does not need arguments for outputs.
 function Test = new_test_EXC(cliArgList, exceptionType)
-
-Test = EJ_library.atest.CompareFuncResult(@bicas.interpret_CLI_args, {cliArgList}, exceptionType);
+    
+    Test = EJ_library.atest.CompareFuncResult(@bicas.interpret_CLI_args, {cliArgList}, exceptionType);
 end
 
 

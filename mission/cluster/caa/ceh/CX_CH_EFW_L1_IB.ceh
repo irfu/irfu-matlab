@@ -11,6 +11,9 @@ END_META       =   DATASET_ID
 START_META     =   DATASET_TITLE
    ENTRY       =   "Internal burst"
 END_META       =   DATASET_TITLE
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Raw_Data"
+END_META       =   DATASET_TYPE
 START_META     =   DATASET_DESCRIPTION
    ENTRY       =   "This dataset contains measurements of"
    ENTRY       =   "up to 8 parameters (specified in the FILE_CAVEATS)"
@@ -29,6 +32,16 @@ END_META       =   MAX_TIME_RESOLUTION
 START_META     =   PROCESSING_LEVEL
    ENTRY       =   "Uncalibrated"
 END_META       =   PROCESSING_LEVEL
+
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "publication based upon use of these data"
+END_META       =   ACKNOWLEDGEMENT
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                   Variables                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -51,7 +64,7 @@ START_VARIABLE      = Data__CXXX_CP_EFW_L1_IB
   FLUCTUATIONS      = "Waveform"
   CATDESC           = "Internal burst"
   FIELDNAM          = "Internal burst"
-  SI_CONVERSION     = "1>(TM)"
+  SI_CONVERSION     = "1>(TM) unitless"
   UNITS             = "TM"
   FILLVAL           = -1000000000
   QUALITY           = 3

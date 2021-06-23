@@ -3,7 +3,7 @@
 % The function computes 2D reduced distributions from all four MMS. The
 % plotted distribution function is averaged both over time and spacecraft.
 %
-% The Example is fairly slow. 
+% The Example is fairly slow.
 %
 % Written by A. Johlander
 
@@ -13,7 +13,7 @@
 tint = irf.tint('2017-07-26T07:01:46.25/2017-07-26T07:01:46.75');
 
 % define velocity grid
-vg = linspace(-70e3,70e3,100); % km/s  
+vg = linspace(-70e3,70e3,100); % km/s
 
 % Number of Monte Carlo iterations per bin. Decrease to improve
 % performance, increase to improve plot.
@@ -46,7 +46,7 @@ perp2vec = cross(bvec,perp1vec);
 c_eval('ePDist?.data(:,1:11,:,:) = 0;')
 
 
-%% Reduce distributions 
+%% Reduce distributions
 tic
 c_eval('f2Dparperp1? = ePDist?.reduce(''2D'',bvec,perp1vec,''base'',''cart'',''vg'',vg,''nMC'',nMC,''vint'',vzint);')
 c_eval('f2Dparperp2? = ePDist?.reduce(''2D'',bvec,perp2vec,''base'',''cart'',''vg'',vg,''nMC'',nMC,''vint'',vzint);')
@@ -137,13 +137,13 @@ ylabel(hcb,'$\log_{10} F_e$ [s$^2$ m$^{-5}$]','interpreter','latex','fontsize',1
 hcb.LineWidth = 1.3;
 
 for ii = 1:length(h)
-    % plot crosseye at origin in spacecrat frame
-    plot(h(ii),[h(ii).XLim,0,0,0],[0,0,0,h(ii).YLim],'k-','Linewidth',1.2)
-    h(ii).LineWidth = 1.3;
-    h(ii).Layer = 'top';
-    % match clim
-    h(ii).CLim = h(1).CLim;
-    h(ii).Position(2) = 0.06;
+  % plot crosseye at origin in spacecrat frame
+  plot(h(ii),[h(ii).XLim,0,0,0],[0,0,0,h(ii).YLim],'k-','Linewidth',1.2)
+  h(ii).LineWidth = 1.3;
+  h(ii).Layer = 'top';
+  % match clim
+  h(ii).CLim = h(1).CLim;
+  h(ii).Position(2) = 0.06;
 end
 
 % new colormap!
@@ -205,13 +205,13 @@ ylabel(hcb,'$\log_{10} F_e$ [s$^2$ m$^{-5}$]','interpreter','latex','fontsize',1
 hcb.LineWidth = 1.3;
 
 for ii = 1:length(h)
-    % plot crosseye at origin in spacecrat frame
-    plot(h(ii),[h(ii).XLim,0,0,0],[0,0,0,h(ii).YLim],'k-','Linewidth',1.2)
-    h(ii).LineWidth = 1.3;
-    h(ii).Layer = 'top';
-    % match clim
-    h(ii).CLim = h(1).CLim;
-    h(ii).Position(2) = 0.06;
+  % plot crosseye at origin in spacecrat frame
+  plot(h(ii),[h(ii).XLim,0,0,0],[0,0,0,h(ii).YLim],'k-','Linewidth',1.2)
+  h(ii).LineWidth = 1.3;
+  h(ii).Layer = 'top';
+  % match clim
+  h(ii).CLim = h(1).CLim;
+  h(ii).Position(2) = 0.06;
 end
 
 ht = title(h(2),'Four-spacecraft averages');

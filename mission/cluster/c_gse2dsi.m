@@ -29,17 +29,17 @@ narginchk(2,3)
 
 lx=size(x,2);
 if lx > 3
- inp=x(:,[2 3 4]); % assuming first column is time
+  inp=x(:,[2 3 4]); % assuming first column is time
 elseif lx == 3
- inp=x;
+  inp=x;
 else
- disp('too few components of vector')
- exit
+  disp('too few components of vector')
+  exit
 end
 
 if nargin<3, direction = 1; end
 if abs(direction)~=1, direction = 1; warning('irf:gse2dsi','using GSE->DSI'), end
-	
+
 spin_axis=spin_axis/norm(spin_axis);
 if debug_flag, disp('Spin axis orientation');spin_axis, end %#ok<UNRCH>
 
@@ -53,29 +53,29 @@ a = 1/sqrt(Ry^2+Rz^2);
 M = [[a*(Ry^2+Rz^2) -a*Rx*Ry -a*Rx*Rz];[0 a*Rz	-a*Ry];[Rx	Ry	Rz]];
 
 if direction == 1
-	out = M*inp';
-	out = out';
-	if length(out(:,1))==1
-		if debug_flag == 1
-			sprintf('x,y,z = %g, %g, %g [DSC]',out(1), out(2),out(3));
-		end
-	end
+  out = M*inp';
+  out = out';
+  if length(out(:,1))==1
+    if debug_flag == 1
+      sprintf('x,y,z = %g, %g, %g [DSC]',out(1), out(2),out(3));
+    end
+  end
 elseif direction==-1
-	out = M\inp';
-	out = out';
-	if length(out(:,1))==1
-		if debug_flag == 1
-			sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3));
-		end
-	end
+  out = M\inp';
+  out = out';
+  if length(out(:,1))==1
+    if debug_flag == 1
+      sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3));
+    end
+  end
 else
-	disp('No coordinate transformation done!')
+  disp('No coordinate transformation done!')
 end
 
 y=x;
 if lx > 3
- y(:,[2 3 4]) = out; % assuming first column is time
+  y(:,[2 3 4]) = out; % assuming first column is time
 else
- y = out;
+  y = out;
 end
 

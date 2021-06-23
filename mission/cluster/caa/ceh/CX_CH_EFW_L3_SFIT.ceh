@@ -11,6 +11,9 @@ END_META       =   DATASET_ID
 START_META     =   DATASET_TITLE
    ENTRY       =   "Spinfits from the individual probe pairs (4 sec resolution)"
 END_META       =   DATASET_TITLE
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Support_Data"
+END_META       =   DATASET_TYPE
 START_META     =   DATASET_DESCRIPTION
    ENTRY       =   "This dataset contains spinfits of the electric field"
    ENTRY       =   "from the individual probe pairs (4 sec resolution,"
@@ -36,6 +39,16 @@ END_META       =   MAX_TIME_RESOLUTION
 START_META     =   PROCESSING_LEVEL
    ENTRY       =   "Calibrated"
 END_META       =   PROCESSING_LEVEL
+
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "publication based upon use of these data"
+END_META       =   ACKNOWLEDGEMENT
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                   Variables                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -130,4 +143,3 @@ START_VARIABLE      = EP34_sigma__CXXX_CP_EFW_L3_SFIT
   LABLAXIS          = "St dev (p34)"
   DEPEND_0          = time_tags__CXXX_CP_EFW_L3_SFIT
 END_VARIABLE        = EP34_sigma__CXXX_CP_EFW_L3_SFIT
-!

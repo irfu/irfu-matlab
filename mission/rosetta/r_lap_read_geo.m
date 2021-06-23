@@ -6,8 +6,8 @@ function geo = r_lap_read_geo(filename, startRow, endRow)
 %% Initialize variables.
 delimiter = ',';
 if nargin<=2
-    startRow = 2;
-    endRow = inf;
+  startRow = 2;
+  endRow = inf;
 end
 
 [~,NAME,EXT] = fileparts(filename);
@@ -45,14 +45,14 @@ dataArray = textscan(fileID, formatSpec, endRow(1)-startRow(1)+1, ...
   'HeaderLines', startRow(1)-1, 'ReturnOnError', false, ...
   'EndOfLine', '\r\n');
 for block=2:length(startRow)
-    frewind(fileID);
-    dataArrayBlock = textscan(fileID, formatSpec, endRow(block)-startRow(block)+1, ...
-      'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, ...
-      'HeaderLines', startRow(block)-1, 'ReturnOnError', false, ...
-      'EndOfLine', '\r\n');
-    for col=1:length(dataArray)
-        dataArray{col} = [dataArray{col}; dataArrayBlock{col}];
-    end
+  frewind(fileID);
+  dataArrayBlock = textscan(fileID, formatSpec, endRow(block)-startRow(block)+1, ...
+    'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, ...
+    'HeaderLines', startRow(block)-1, 'ReturnOnError', false, ...
+    'EndOfLine', '\r\n');
+  for col=1:length(dataArray)
+    dataArray{col} = [dataArray{col}; dataArrayBlock{col}];
+  end
 end
 
 %% Close the text file.

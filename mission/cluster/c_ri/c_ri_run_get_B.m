@@ -25,7 +25,7 @@ function c_ri_run_get_B(s_t,e_t,path_input,path_output)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
@@ -56,37 +56,37 @@ fp = fopen(ls_out, 'r');
 while feof(fp) == 0
   f_line = fgetl(fp);
   passing_MP = 0;
-
+  
   if f_line ~= -1
     %assigns to value to passing_MP
     load(f_line);
   end
-
+  
   if passing_MP ~= 0
-
+    
     if s_t == 0 && e_t == 0
       tmp = passing_MP;
-
+      
     else
       tmp1 = passing_MP(:,1);
       tmp2 = passing_MP(:,2) - passing_MP(:,1);
       tmp = [tmp1 tmp2];
       [s_row,e_row] = find_row(s_t_e, e_t_e, tmp,1);
-
+      
       if s_row == -1 || e_row == -1
         p_mp = -1;
       else
         p_mp = passing_MP(s_row:e_row,:);
       end
-
+      
     end
-
+    
     if p_mp(1,1) ~= -1
       c_ri_get_many_B(p_mp,path_output);
     end
-
+    
   end
-
+  
 end
 
 fclose(fp);

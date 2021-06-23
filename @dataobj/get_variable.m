@@ -2,7 +2,7 @@ function res = get_variable(dobj,varName,parent)
 %GET_VARIABLE  extract a variable from dataObj with all dependencies
 %
 %  var = get_variable(dobj,varName)
-%    
+%
 %  Exctracts a varibale from dataobj by recurcively pulling in all
 %  dependent variables so that the resulting VAR is self consistent.
 %
@@ -38,7 +38,7 @@ res.name = varName;
 res.GlobalAttributes = dobj.GlobalAttributes;
 
 % Add all revelant variable attributes to the returned variable
-varAtts = dobj.VariableAttributes; varAttNames = fieldnames(varAtts); 
+varAtts = dobj.VariableAttributes; varAttNames = fieldnames(varAtts);
 allVars = dobj.Variables(:,1);
 for iName=1:length(varAttNames)
   iattr = find(strcmpi(dobj.vars{iVar,2},varAtts.(varAttNames{iName})(:,1))==1);
@@ -50,15 +50,15 @@ for iName=1:length(varAttNames)
   
   % Char attr may be a dependence on another variable, so we pull it in
   % Some buggy files may have identical key/value pairs, we ignore those
-  if ~ischar(attr) || strcmp(attr,varName) || ... 
+  if ~ischar(attr) || strcmp(attr,varName) || ...
       isempty(intersect(allVars,attr))
     continue
   end
   attrMatName = variable_mat_name(attr);
   % Detect recursive deps
   if strcmp(parent,attrMatName)
-    irf.log('warning',['databj:get_variable:cyclic_dep',...
-       ['Cyclic dependecy: ' parent ' <-> ' varName]]);
+    irf.log('warning',['dataobj:get_variable:cyclic_dep',...
+      ['Cyclic dependecy: ' parent ' <-> ' varName]]);
     continue
   end
   varTmp = get_variable(dobj,attr,varName);

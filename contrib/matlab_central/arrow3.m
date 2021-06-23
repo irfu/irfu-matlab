@@ -15,29 +15,29 @@ function hn=arrow3(p1,p2,s,w,h,ip,alpha,beta)
 %     y  Yellow           :  dotted            0   no lines
 %     m  Magenta          -. dashdot           /   LineWidthOrder
 %     c  Cyan             -- dashed
-%     r  Red              *  LineStyleOrder            _______ __  
-%     g  Green                                       ^        |    
-%     b  Blue                                       / \       |    
-%     w  White                        Arrowhead    /   \   Height  
-%     a  Asparagus                                /     \     |    
-%     d  Dark gray                               /       \    |    
-%     e  Evergreen                              /___   ___\ __|__  
-%     f  Firebrick                             |    | |    |       
-%     h  Hot pink                              |-- Width --|       
-%     i  Indigo                                |    | |    |       
-%     j  Jade                                       | |            
-%     l  Light gray                                 | |            
-%     n  Nutbrown                                   | |            
-%     p  Pear                                       | |            
+%     r  Red              *  LineStyleOrder            _______ __
+%     g  Green                                       ^        |
+%     b  Blue                                       / \       |
+%     w  White                        Arrowhead    /   \   Height
+%     a  Asparagus                                /     \     |
+%     d  Dark gray                               /       \    |
+%     e  Evergreen                              /___   ___\ __|__
+%     f  Firebrick                             |    | |    |
+%     h  Hot pink                              |-- Width --|
+%     i  Indigo                                |    | |    |
+%     j  Jade                                       | |
+%     l  Light gray                                 | |
+%     n  Nutbrown                                   | |
+%     p  Pear                                       | |
 %     q  kumQuat                      Line       -->| |<--LineWidth
-%     s  Sky blue                                   | |            
-%     t  Tawny                                      | |            
-%     u  bUrgundy                                   | |            
-%     v  Violet                                     | |            
-%     z  aZure                                      | |            
-%     x  random                       Initial      /   \           
-%     o  colorOrder                   Point    -->(     )<--IP     
-%     |  magnitude                    Marker       \_ _/           
+%     s  Sky blue                                   | |
+%     t  Tawny                                      | |
+%     u  bUrgundy                                   | |
+%     v  Violet                                     | |
+%     z  aZure                                      | |
+%     x  random                       Initial      /   \
+%     o  colorOrder                   Point    -->(     )<--IP
+%     |  magnitude                    Marker       \_ _/
 %
 %     -------------------------------------------------------------
 %                          Color Equivalencies
@@ -296,7 +296,7 @@ function hn=arrow3(p1,p2,s,w,h,ip,alpha,beta)
 %     03/10/07 - Improved code metrics (TD)
 %     02/21/07 - Preserve existing axis appearance;
 %                use relative sizes for W, H, and IP;
-%                removed version checking; minor bug fixes (TD) 
+%                removed version checking; minor bug fixes (TD)
 %     01/09/04 - Replaced calls to LINSPACE, INTERP1, and
 %                COLORMAP (TD)
 %     12/17/03 - Semilog examples, CAXIS support, magnitude
@@ -419,8 +419,8 @@ if strcmp(get(ax,'nextplot'),'add') && strcmp(get(fig,'nextplot'),'add')
   if xys, mode='auto';
     if any([p1(:,3);p2(:,3)]), error('3D log plot not supported'), end
     if (xs && ~all([p1(:,1);p2(:,1)]>0)) || ...
-       (ys && ~all([p1(:,2);p2(:,2)]>0))
-       error('Nonpositive log data not supported')
+        (ys && ~all([p1(:,2);p2(:,2)]>0))
+      error('Nonpositive log data not supported')
     end
   else, mode='manual';
     if strcmp(get(ax,'WarpToFill'),'on')
@@ -440,7 +440,7 @@ end
 % Style Control
 [vc,cn]=LocalColorTable(0); prefix=''; OneColor=0;
 if nargin<3, [c,ls,lw]=LocalValidateCLSW;% default color, linestyle/width
-else 
+else
   [c,ls,lw]=LocalValidateCLSW(s);
   if length(c)>1, if sum('_^'==c(1)), prefix=c(1); end, c=c(2); end
   if c=='x'                              % random named color (less white)
@@ -449,7 +449,7 @@ else
     if ~isempty(ColorOrder)
       [c,failed]=LocalColorMap(lower(ColorOrder),vc,cn,beta);
       if failed, ColorOrderWarning=['Invalid ColorOrder ',...
-        'variable, current ColorOrder property will be used'];
+          'variable, current ColorOrder property will be used'];
         warning('Arrow3:ColorOrder',ColorOrderWarning)
       else, C=c;
       end
@@ -459,7 +459,7 @@ else
     if maxM-minM<1, minM=0; end
     set(ax,'clim',[minM,maxM]); c=LocalInterp(minM,maxM,map,M);
   elseif ~sum(vc==c), c='k'; ColorWarning=['Invalid color switch, ',...
-    'default color (black) will be used'];
+      'default color (black) will be used'];
     warning('Arrow3:Color',ColorWarning)
   end
 end
@@ -472,7 +472,7 @@ if lw=='/'                                         % LineWidthOrder
   if ~isempty(LineWidthOrder)
     lw=LocalRepmat(LineWidthOrder(:),[ceil(n/length(LineWidthOrder)),1]);
   else, lw=0.5; LineWidthOrderWarning=['Undefined LineWidthOrder, ',...
-    'default width (0.5) will be used'];
+      'default width (0.5) will be used'];
     warning('Arrow3:LineWidthOrder',LineWidthOrderWarning)
   end
 end
@@ -627,7 +627,7 @@ set(ax,'LineStyleOrder',L,'ColorOrder',C,'DefaultLineTag',LT,...
   'DefaultSurfaceTag',ST,'DefaultSurfaceEdgeColor',EC,...
   'xlim',xr,'ylim',yr,'zlim',zr,'clim',get(ax,'CLim'));
 if c1==3, set(ax,'CameraViewAngle',get(ax,'CameraViewAngle'),...
-   'PlotBoxAspectRatio',get(ax,'PlotBoxAspectRatio'));
+    'PlotBoxAspectRatio',get(ax,'PlotBoxAspectRatio'));
 end
 if nargout, hn=[H1(:);H2(:);H3(:)]; end
 
@@ -664,7 +664,7 @@ end
 set(ax,'ColorOrder',c);                            % update surfaces
 ColorOrder=[];
 if strcmp(get(ax,'tag'),'Arrow3ConePlot')
-     H=arrow3(p1,p2,'o' ,w,h,'cone',a);            % update cones
+  H=arrow3(p1,p2,'o' ,w,h,'cone',a);            % update cones
 else, H=arrow3(p1,p2,'o0',w,h,    ip,a);
 end, H=[H1(:);H(:)];
 set(ax,'nextplot','replace');
@@ -686,16 +686,16 @@ function [vc,cn]=LocalColorTable(n,beta)
 vc='kymcrgbadefhijlnpqstuvzw';                     % valid color codes
 %                k               y               m               c
 cn=[0.00,0.00,0.00; 1.00,1.00,0.00; 1.00,0.00,1.00; 0.00,1.00,1.00;
-%                r               g               b               a
-    1.00,0.00,0.00; 0.00,1.00,0.00; 0.00,0.00,1.00; 0.42,0.59,0.24;
-%                d               e               f               h
-    0.25,0.25,0.25; 0.00,0.50,0.00; 0.70,0.13,0.13; 1.00,0.41,0.71;
-%                i               j               l               n
-    0.29,0.00,0.51; 0.00,0.66,0.42; 0.50,0.50,0.50; 0.50,0.20,0.00;
-%                p               q               s               t
-    0.75,0.75,0.00; 1.00,0.50,0.00; 0.00,0.75,0.75; 0.80,0.34,0.00;
-%                u               v               z               w
-    0.50,0.00,0.13; 0.75,0.00,0.75; 0.38,0.74,0.99; 1.00,1.00,1.00];
+  %                r               g               b               a
+  1.00,0.00,0.00; 0.00,1.00,0.00; 0.00,0.00,1.00; 0.42,0.59,0.24;
+  %                d               e               f               h
+  0.25,0.25,0.25; 0.00,0.50,0.00; 0.70,0.13,0.13; 1.00,0.41,0.71;
+  %                i               j               l               n
+  0.29,0.00,0.51; 0.00,0.66,0.42; 0.50,0.50,0.50; 0.50,0.20,0.00;
+  %                p               q               s               t
+  0.75,0.75,0.00; 1.00,0.50,0.00; 0.00,0.75,0.75; 0.80,0.34,0.00;
+  %                u               v               z               w
+  0.50,0.00,0.13; 0.75,0.00,0.75; 0.38,0.74,0.99; 1.00,1.00,1.00];
 
 % Named Simulink Colors (zaql)
 % LightBlue = 0.38  0.74  0.99 = aZure
@@ -737,7 +737,7 @@ if n, clf reset                                    % plot color table
         'YTick',[0.125,0.375,0.625]);
       if i==19
         text(0,-0.25,['{\bf\itARROW3}  Named Color Table  ',...
-            '( \beta = ',num2str(beta),' )']);
+          '( \beta = ',num2str(beta),' )']);
       end
     end
   end
@@ -817,7 +817,7 @@ else
   elseif strfind(s,'*'), ls='*'; s=strrep(s,'*',''); %#ok<STRIFCND>
   else, ls='-';
   end
-
+  
   % identify linewidth
   tmp=double(s);
   tmp=find(tmp>45 & tmp<58);
@@ -826,7 +826,7 @@ else
     s(tmp)='';
   else, lw=0.5;
   end
-
+  
   % identify color
   if ~isempty(s), s=lower(s);
     if length(s)>1, c=s(1:2);

@@ -30,6 +30,7 @@ MMS_CONST.Spinrate.max_deploy = 7.4; % Rev per Minute.
 % at 240 degrees, probe 3 is sunward
 % at 270 degrees, BSC +Y is sunward
 % at 330 degrees, probe 1 is sunward
+% (Ref: e-mail forwarded from PAL on 2015-03-26T15:53, originally from I.Dors, mentions a "29.85 deg", i.e. -30 for p1)
 %
 % Angles when phase=0 (X BSC direction)
 MMS_CONST.Phaseshift.e12 =  2*pi*150/360; % probe 2 sunward
@@ -51,7 +52,7 @@ MMS_CONST.InnerMSPAmpCorr.e12 = 1.0;
 MMS_CONST.InnerMSPAmpCorr.e34 = 1.0;
 MMS_CONST.InnerMSPAmpCorr.e56 = 1.0;
 
-MMS_CONST.InnerMSPradius = 5*6.3712e+03; % 5 R_E in km. 
+MMS_CONST.InnerMSPradius = 5*6.3712e+03; % 5 R_E in km.
 
 % Telemetry mode
 MMS_CONST.TmModes = {'slow','fast','brst', 'comm'};

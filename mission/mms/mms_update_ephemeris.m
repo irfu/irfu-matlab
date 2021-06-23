@@ -18,7 +18,7 @@ function [R, V, RGSM, VGSM] = mms_update_ephemeris
 % save /data/mms/irfu/mmsRGSM.mat RGSM
 % save /data/mms/irfu/mmsVGSM.mat VGSM
 
-nowUtc = datestr(now,'yyyy-mm-ddTHH:MM:SSZ'); 
+nowUtc = datestr(now,'yyyy-mm-ddTHH:MM:SSZ');
 tint = irf.tint(['2015-03-13T00:00:00Z/' nowUtc]);
 %newTime = EpochTT((tint.start.epoch:int64(60*1e9):tint.stop.epoch)');
 
@@ -36,22 +36,22 @@ for mmsId = 1:4
     gsm_ts = irf.geocentric_coordinate_transformation(Gei_ts,'gei>gsm',false);
     %gsm_ts = gsm_ts.resample(newTime,'spline');
     vC = upper(v);
-   switch v
-     case 'r'
-       R.(['gse' vC mmsIdS]) = gse_ts.data;
-       RGSM.(['gsm' vC mmsIdS]) = gsm_ts.data;
-       if(mmsId==1)
-         R.time = gse_ts.time.ttns;
-         RGSM.time = gsm_ts.time.ttns;
-       end
-     case 'v'
-       V.(['gse' vC mmsIdS]) = gse_ts.data; 
-       VGSM.(['gsm' vC mmsIdS]) = gsm_ts.data;
-       if(mmsId==1)
-         V.time = gse_ts.time.ttns;
-         VGSM.time = gsm_ts.time.ttns;
-       end
-   end
+    switch v
+      case 'r'
+        R.(['gse' vC mmsIdS]) = gse_ts.data;
+        RGSM.(['gsm' vC mmsIdS]) = gsm_ts.data;
+        if(mmsId==1)
+          R.time = gse_ts.time.ttns;
+          RGSM.time = gsm_ts.time.ttns;
+        end
+      case 'v'
+        V.(['gse' vC mmsIdS]) = gse_ts.data;
+        VGSM.(['gsm' vC mmsIdS]) = gsm_ts.data;
+        if(mmsId==1)
+          V.time = gse_ts.time.ttns;
+          VGSM.time = gsm_ts.time.ttns;
+        end
+    end
   end
 end
 end

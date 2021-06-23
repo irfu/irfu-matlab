@@ -1,5 +1,5 @@
 classdef TestTSeries < matlab.unittest.TestCase
-% Test cases for TSeries and derived classes
+  % Test cases for TSeries and derived classes
   properties
     data1;
     data2;
@@ -8,7 +8,7 @@ classdef TestTSeries < matlab.unittest.TestCase
     scalarTS1;
     scalarTS2;
   end
- methods (TestClassSetup)
+  methods (TestClassSetup)
     function createTS(testCase)
       testCase.data1 = (0:1:5)'; % Simple seq. of test data
       % A second seq. of test data (distinguishable from data1), negative values
@@ -20,7 +20,7 @@ classdef TestTSeries < matlab.unittest.TestCase
       testCase.scalarTS1 = irf.ts_scalar(testCase.time1, testCase.data1);
       testCase.scalarTS2 = irf.ts_scalar(testCase.time2, testCase.data2);
     end
- end
+  end
   methods(Test)
     function testCombineScalarTS(testCase)
       % combine the two TSeries and sort based on time
@@ -41,7 +41,7 @@ classdef TestTSeries < matlab.unittest.TestCase
     end
     
     function testAbsoluteTS(testCase)
-      % test absolute value 
+      % test absolute value
       % Positive data, should remain positve and equal.
       expectedData = abs(testCase.data1);
       resultTS = abs(testCase.scalarTS1);
@@ -54,6 +54,6 @@ classdef TestTSeries < matlab.unittest.TestCase
       expectedTime = testCase.time2;
       testCase.verifyEqual(resultTS.time, expectedTime);
     end
-
+    
   end
 end

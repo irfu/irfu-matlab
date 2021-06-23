@@ -1,6 +1,6 @@
 %c_efw_dsi_off_plot
 
-t=toepoch([2001 02 01 00 00 0]):86400:toepoch([2017 01 01 00 00 0]); 
+t=toepoch([2001 02 01 00 00 0]):86400:toepoch([2017 01 01 00 00 0]);
 t = t' + 600;
 
 
@@ -43,5 +43,4 @@ xlabel('Time [year]')
 legend('C1','C2','C3','C4')
 title('SH/SW offsets')
 print -dpdf sh_offsets
-  
-  
+

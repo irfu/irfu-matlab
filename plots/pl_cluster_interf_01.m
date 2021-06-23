@@ -2,9 +2,9 @@
 % Plot with wave length, interferometry and particle flux coefficient
 %%%%%%%%%%%%%%% p23->p41,p42->p13 %%%%%%%%%%%%%%
 %
-% In interferometry correlate the maxima, mininma and steepest gradients of 
-% both signals. This means taking first and second time derivatives 
-% and checking for zero crossings. 
+% In interferometry correlate the maxima, mininma and steepest gradients of
+% both signals. This means taking first and second time derivatives
+% and checking for zero crossings.
 %
 
 mode = irf_ask('Mode p1_34->p_34_2(1) or p23->p41(0)? [%]>','mode',0);
@@ -14,17 +14,17 @@ else, disp('p23->p41, p42->p13 interferometry');
 end
 
 flag_corr_deriv = irf_ask('Use max gradient (0) or zero crossings(1)? [%]>',...
-	'flag_corr_deriv',0);
+  'flag_corr_deriv',0);
 
 if flag_corr_deriv
-    flag_corr_deriv_str = 'zero crossings';
+  flag_corr_deriv_str = 'zero crossings';
 else
-    flag_corr_deriv_str = 'max gradient';
+  flag_corr_deriv_str = 'max gradient';
 end
 
 ic=irf_ask('Which s/c? [%]>','ic',2);
 ic_str=['s/c ' num2str(ic)];
- 
+
 start_time = irf_ask('Start time [y m d h m s] [%]>','start_time',[2004 01 04 12 47 9.4]);
 
 Dt = irf_ask('Time interval in seconds? [%]>','Dt',6);
@@ -32,7 +32,7 @@ tint = toepoch(start_time) + [0 Dt];
 
 ff = irf_ask('Frequency interval to filter? [%]>','ff',[10 25]);
 fstr = ['filter [' num2str(ff(1)) ' ' num2str(ff(2)) '] Hz'];
- 
+
 ff_ref = (ff(1)+ff(2))/2;
 disp(['Using f=' num2str(ff_ref) ' Hz to estimate wavelength']);
 
@@ -45,8 +45,8 @@ Fs = irf_ask('sampling frequnecy? [%]>','Fs',9000);
 
 kHz = irf_ask('Use P4kHz?px or P32kHz?px? 4/32 [%]>','kHz','4');
 if ~strcmp(kHz,'4') && ~strcmp(kHz,'32')
-	kHz = '4';
-	disp('using 4kHz')
+  kHz = '4';
+  disp('using 4kHz')
 end
 
 % two directions
@@ -63,15 +63,15 @@ A = c_load('Atwo?',ic,'var');
 A = c_phase(p1(:,1),A);
 
 if mode
-	p1s=[p1(:,1) (-p1(:,2) +(p3(:,2)+p4(:,2))/2)/.044];
-	ps2=[p2(:,1) (+p2(:,2) -(p3(:,2)+p4(:,2))/2)/.044];
-	ps3=[p3(:,1) (-p3(:,2) +(p1(:,2)+p2(:,2))/2)/.044];
-	p4s=[p4(:,1) ( p4(:,2) -(p1(:,2)+p2(:,2))/2)/.044];
+  p1s=[p1(:,1) (-p1(:,2) +(p3(:,2)+p4(:,2))/2)/.044];
+  ps2=[p2(:,1) (+p2(:,2) -(p3(:,2)+p4(:,2))/2)/.044];
+  ps3=[p3(:,1) (-p3(:,2) +(p1(:,2)+p2(:,2))/2)/.044];
+  p4s=[p4(:,1) ( p4(:,2) -(p1(:,2)+p2(:,2))/2)/.044];
 else
-	p13=[p1(:,1) (p1(:,2)-p3(:,2))/.044/sqrt(2)];
-	p42=[p4(:,1) (p4(:,2)-p2(:,2))/.044/sqrt(2)];
-	p23=[p2(:,1) (p2(:,2)-p3(:,2))/.044/sqrt(2)];
-	p41=[p4(:,1) (p4(:,2)-p1(:,2))/.044/sqrt(2)];
+  p13=[p1(:,1) (p1(:,2)-p3(:,2))/.044/sqrt(2)];
+  p42=[p4(:,1) (p4(:,2)-p2(:,2))/.044/sqrt(2)];
+  p23=[p2(:,1) (p2(:,2)-p3(:,2))/.044/sqrt(2)];
+  p41=[p4(:,1) (p4(:,2)-p1(:,2))/.044/sqrt(2)];
 end
 p1234=[p4(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
 n = c_efw_scp2ne(p1234);
@@ -86,18 +86,18 @@ e = irf_tlim(e,tint);
 
 disp('...data loaded');
 
-nfef=irf_vec_x_scal(ef,nf,1); % dE*dn 
+nfef=irf_vec_x_scal(ef,nf,1); % dE*dn
 nfef_bn=irf_dot(nfef,bn);
 nfef_bp=irf_dot(nfef,bp);
 
 if mode
-	psignal={'p1s','ps2','ps3','p4s'};
-	psignal_f={'p1sf','ps2f','ps3f','p4sf'};
-	%psignal_fh={'p1sfh','ps2fh','ps3fh','p4sfh'};
+  psignal={'p1s','ps2','ps3','p4s'};
+  psignal_f={'p1sf','ps2f','ps3f','p4sf'};
+  %psignal_fh={'p1sfh','ps2fh','ps3fh','p4sfh'};
 else
-	psignal={'p13','p42','p23','p41'};
-	psignal_f={'p13f','p42f','p23f','p41f'};
-	%psignal_fh={'p13fh','p42fh','p23fh','p41fh'};
+  psignal={'p13','p42','p23','p41'};
+  psignal_f={'p13f','p42f','p23f','p41f'};
+  %psignal_fh={'p13fh','p42fh','p23fh','p41fh'};
 end
 legend_corr=[psignal{1} '->' psignal{2} ' ' psignal{3} '->' psignal{4}];
 legend_corr12=[psignal{1} '->' psignal{2}];
@@ -106,55 +106,55 @@ legend_corr34=[psignal{3} '->' psignal{4}];
 % Filter the data and Crop the data
 ff_str=['f_{filter}=[' num2str(ff(1),3) ' ' num2str(ff(2),3) '] Hz'];
 for j=1:4
-	eval([psignal_f{j} '=irf_filt(' psignal{j} ',ff(1),ff(2),[],5);'])
-	eval([psignal_f{j} '=irf_tlim(' psignal_f{j} ',tint);'])
-	eval([psignal{j} '=irf_tlim(' psignal{j} ',tint);'])
+  eval([psignal_f{j} '=irf_filt(' psignal{j} ',ff(1),ff(2),[],5);'])
+  eval([psignal_f{j} '=irf_tlim(' psignal_f{j} ',tint);'])
+  eval([psignal{j} '=irf_tlim(' psignal{j} ',tint);'])
 end
 
 if mode
-	[ts3_d,t4s_d,ts3_dd,t4s_dd] = irf_corr_deriv(ps3f,p4sf,flag_corr_deriv);
-	vi_d_4s_s3 = [ts3_d (ts3_d-t4s_d)/dist];
-	vi_dd_4s_s3 = [ts3_dd (ts3_dd-t4s_dd)/dist];
-	vi_4s_s3 = sortrows([vi_d_4s_s3;vi_dd_4s_s3]);
-	ii = diff(vi_4s_s3(:,1))==0; %Remove repeating points
-	vi_4s_s3(ii,:) = [];
-	
-	[ts2_d,t1s_d,ts2_dd,t1s_dd] = irf_corr_deriv(ps2f,p1sf,flag_corr_deriv);
-	vi_d_s2_1s = [ts2_d (t1s_d-ts2_d)/dist];
-	vi_dd_s2_1s = [ts2_dd (t1s_dd-ts2_dd)/dist];
-	vi_s2_1s = sortrows([vi_d_s2_1s;vi_dd_s2_1s]);
-	ii = find(diff(vi_s2_1s(:,1))==0); %Remove repeating points
-	vi_s2_1s(ii,:) = [];
-	
-	[t1,t2,i1,i2] = irf_find_closest(vi_4s_s3(:,1),vi_s2_1s(:,1));
-	vi23 = [vi_4s_s3(i1,1) vi_s2_1s(i2,2) vi_4s_s3(i1,2)];
-	
-	k = [vi23(:,1) ff_ref*irf_abs([vi23 vi_4s_s3(i1,1)*0],1)];
-	
-	vphiDS = c_efw_despin(vi23,A);
-	vphiDS(:,3) = -vphiDS(:,3); % convert to DSI
+  [ts3_d,t4s_d,ts3_dd,t4s_dd] = irf_corr_deriv(ps3f,p4sf,flag_corr_deriv);
+  vi_d_4s_s3 = [ts3_d (ts3_d-t4s_d)/dist];
+  vi_dd_4s_s3 = [ts3_dd (ts3_dd-t4s_dd)/dist];
+  vi_4s_s3 = sortrows([vi_d_4s_s3;vi_dd_4s_s3]);
+  ii = diff(vi_4s_s3(:,1))==0; %Remove repeating points
+  vi_4s_s3(ii,:) = [];
+  
+  [ts2_d,t1s_d,ts2_dd,t1s_dd] = irf_corr_deriv(ps2f,p1sf,flag_corr_deriv);
+  vi_d_s2_1s = [ts2_d (t1s_d-ts2_d)/dist];
+  vi_dd_s2_1s = [ts2_dd (t1s_dd-ts2_dd)/dist];
+  vi_s2_1s = sortrows([vi_d_s2_1s;vi_dd_s2_1s]);
+  ii = find(diff(vi_s2_1s(:,1))==0); %Remove repeating points
+  vi_s2_1s(ii,:) = [];
+  
+  [t1,t2,i1,i2] = irf_find_closest(vi_4s_s3(:,1),vi_s2_1s(:,1));
+  vi23 = [vi_4s_s3(i1,1) vi_s2_1s(i2,2) vi_4s_s3(i1,2)];
+  
+  k = [vi23(:,1) ff_ref*irf_abs([vi23 vi_4s_s3(i1,1)*0],1)];
+  
+  vphiDS = c_efw_despin(vi23,A);
+  vphiDS(:,3) = -vphiDS(:,3); % convert to DSI
 else
-	[t23_d,t41_d,t23_dd,t41_dd]=irf_corr_deriv(p23f,p41f,flag_corr_deriv);
-	vi_d_23_41=[t23_d (t41_d-t23_d)/dist];
-	vi_dd_23_41=[t23_dd (t41_dd-t23_dd)/dist];
-	vi_23_41=sortrows([vi_d_23_41;vi_dd_23_41]);
-	
-	[t42_d,t13_d,t42_dd,t13_dd]=irf_corr_deriv(p42f,p13f,flag_corr_deriv);
-	vi_d_42_13=[t42_d (t13_d-t42_d)/dist];
-	vi_dd_42_13=[t42_dd (t13_dd-t42_dd)/dist];
-	vi_42_13=sortrows([vi_d_42_13;vi_dd_42_13]);
-	
-	ii = diff(vi_23_41(:,1))==0; %Remove repeating points
-	vi_23_41(ii,:) = [];
-	ii = find(diff(vi_42_13(:,1))==0); %Remove repeating points
-	vi_42_13(ii,:) = [];
-	[t1,t2,i1,i2]=irf_find_closest(vi_23_41(:,1),vi_42_13(:,1));
-	vi23=[vi_23_41(i1,1) vi_42_13(i2,2) -vi_23_41(i1,2)];
-	
-	k=[vi23(:,1) ff_ref*irf_abs([vi23 vi23(:,1)*0],1)];
-	
-    vphiDS=c_efw_despin(vi23,A,'interf');
-	vphiDS(:,3) = -vphiDS(:,3); % convert to DSI
+  [t23_d,t41_d,t23_dd,t41_dd]=irf_corr_deriv(p23f,p41f,flag_corr_deriv);
+  vi_d_23_41=[t23_d (t41_d-t23_d)/dist];
+  vi_dd_23_41=[t23_dd (t41_dd-t23_dd)/dist];
+  vi_23_41=sortrows([vi_d_23_41;vi_dd_23_41]);
+  
+  [t42_d,t13_d,t42_dd,t13_dd]=irf_corr_deriv(p42f,p13f,flag_corr_deriv);
+  vi_d_42_13=[t42_d (t13_d-t42_d)/dist];
+  vi_dd_42_13=[t42_dd (t13_dd-t42_dd)/dist];
+  vi_42_13=sortrows([vi_d_42_13;vi_dd_42_13]);
+  
+  ii = diff(vi_23_41(:,1))==0; %Remove repeating points
+  vi_23_41(ii,:) = [];
+  ii = find(diff(vi_42_13(:,1))==0); %Remove repeating points
+  vi_42_13(ii,:) = [];
+  [t1,t2,i1,i2]=irf_find_closest(vi_23_41(:,1),vi_42_13(:,1));
+  vi23=[vi_23_41(i1,1) vi_42_13(i2,2) -vi_23_41(i1,2)];
+  
+  k=[vi23(:,1) ff_ref*irf_abs([vi23 vi23(:,1)*0],1)];
+  
+  vphiDS=c_efw_despin(vi23,A,'interf');
+  vphiDS(:,3) = -vphiDS(:,3); % convert to DSI
 end
 
 vphi_bn=irf_dot(vphiDS,bn);

@@ -10,7 +10,7 @@ Tintlong = Tint+[-60 60]; % Take longer time interval for loading position data
 ic = 1:4; % Use all MMS spacecraft
 
 % Define constants
-Units = irf_units; 
+Units = irf_units;
 qe = Units.e;
 me = Units.me;
 
@@ -73,7 +73,7 @@ EPe = irf.ts_vec_xyz(EPeXX.time,[EPeX EPeY EPeZ]);
 [j,divB,B,jxB,divTshear,divPb] = c_4_j('Rxyz?','Bxyz?');
 jxB = cross(j,Bxyzav);
 jxB.data = jxB.data*1e-9;
-jxB.data = jxB.data./[neav.data neav.data neav.data]; 
+jxB.data = jxB.data./[neav.data neav.data neav.data];
 jxB.data = jxB.data/qe/1000; %Convert to (mV/m)
 j.data = j.data*1e9;
 

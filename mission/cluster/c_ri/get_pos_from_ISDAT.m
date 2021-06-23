@@ -14,14 +14,14 @@ function P_GSE = get_pos_from_ISDAT(spacecraft,start_time, Dt)
 % Mat_DbOpen()
 % isGetDataLite()
 % Mat_DbClose()
-% database unix:99 !not a function! 
+% database unix:99 !not a function!
 %
 %Work method:
-% Open the databas, does the three readings and then closes the databas 
+% Open the databas, does the three readings and then closes the databas
 %
 %Error: [-1,0, 0, 0] is returned, if it wasnt possible to load the data
-% 
-%Discription of variables:
+%
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
@@ -35,10 +35,10 @@ p_gse=double(p_gse);
 
 %if there is an error in the reading
 if isempty(tp)
-tp = -1;
-p_gse = [0 0 0]';
+  tp = -1;
+  p_gse = [0 0 0]';
 end
- 
+
 P_GSE(:,1) = tp;
 P_GSE(:,2:4) = p_gse';
 

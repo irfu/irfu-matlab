@@ -16,12 +16,12 @@ Tint = irf.tint(El1.time);
 
 h = irf_plot(3,'reset');
 
-irf_plot(h(1),El1,'.-');
+irf_plot(h(1),El1,'.');
 ylabel(h(1),'E')
 %legend(h(1),'V12','V13','V23')
 title(h(1),fName,'Interpreter','none')
 
-irf_plot(h(2),Vl1,'.-');
+irf_plot(h(2),Vl1,'.');
 ylabel(h(2),'V')
 %legend(h(2),'V1','V2','V3')
 

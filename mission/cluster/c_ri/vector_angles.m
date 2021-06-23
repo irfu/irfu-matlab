@@ -1,4 +1,4 @@
-function ang = vector_angles(v1 , v2) 
+function ang = vector_angles(v1 , v2)
 %
 %Input:
 % Two vectors of any size
@@ -12,9 +12,9 @@ function ang = vector_angles(v1 , v2)
 % the return value is in absolute angle, so it doesnt matter
 % which point is which in the inparameter to the function. The return value
 % is in degrees (0-360).
-% 
+%
 %Work method:
-% The first vector, v1 ,is projected onto the second vector, v2, and the scalar 
+% The first vector, v1 ,is projected onto the second vector, v2, and the scalar
 % a is how much the have in common.(the dot product). Then the a*v2 is subtracted
 % from the vector v1 and the this is the vector v3. Vector v3 is perpendicular
 % to vector v2. The scalar b is the length of vector v3. The angle between the
@@ -24,7 +24,7 @@ function ang = vector_angles(v1 , v2)
 %Error:
 % If a  zero-vector is input the result will be zero angle.
 %
-%Discription of variables:
+%Description of variables:
 % a and b are the constants infront of the unit length vectors
 % v1, v2 are the input
 % v3 is vector perpendicular to v2
@@ -36,23 +36,23 @@ function ang = vector_angles(v1 , v2)
 %--------------------- the beginning --------------------------
 % error check
 if norm(v1) == 0 || norm(v2) == 0
-%'Error, zero-vector as input, returning 0-angle'
-ang = 0;
-
-%the angle calculation
+  %'Error, zero-vector as input, returning 0-angle'
+  ang = 0;
+  
+  %the angle calculation
 else
-% normalising, since the length of the vector is not of importance
-v1 = v1 / norm(v1);
-v2 = v2 / norm(v2);
-
-
- a = dot(v1, v2);
- angles = abs(acos(a));
- ang_pi = angles/pi;
- ang = (angles)/pi*180;
- 
- if ang>180  %to avoid angles greater than 180 degrees
- ang = 360 - ang;
- end
- 
- end
+  % normalising, since the length of the vector is not of importance
+  v1 = v1 / norm(v1);
+  v2 = v2 / norm(v2);
+  
+  
+  a = dot(v1, v2);
+  angles = abs(acos(a));
+  ang_pi = angles/pi;
+  ang = (angles)/pi*180;
+  
+  if ang>180  %to avoid angles greater than 180 degrees
+    ang = 360 - ang;
+  end
+  
+end
