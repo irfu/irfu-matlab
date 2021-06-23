@@ -10,13 +10,13 @@
         Manually written Non-Standard Operations (NSO) list used by BICAS (SolO/RPW/BIAS calibration and data processing). Contains "events", i.e. time intervals, each one labelled with a standardized string (<B>NSO ID</B>, or <B>RCS NSO ID</B>) that BICAS can interpret. BICAS uses this list to modify how datasets are processed, e.g. by setting zVariables QUALITY_FLAG and/or L2_QUALITY_BITMASK, replacing data with fill values, and/or omitting data from L3 etc.
     <H2>Notes</H2>
         <P>
-            2020-11-12, EJ: I have not managed to find any thruster firings for time period 2020-02-12 to 2020-03-29.
+            2020-11-12, EJ: I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </P>
         <P>
             2021-05-24, EJ: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </P>
         <P>
-            2021-05-24, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-05-08 (inclusive). Only manually identified thuster firings.
+            2021-06-23, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-06-11 (inclusive). Only manually identified thuster firings.
         </P>
     <H2>Events</H2>
 <TABLE style="width:100%" cellpadding="5" cellspacing="1" border="1">
@@ -787,8 +787,80 @@
 <td>THRUSTER_FIRING</td>
 <td>Different shape than normal (in PSP; bumps more distinctly negative instead of positive), but still unambiguous.</td>
 </tr>
+        <tr>
+<td>2021-05-10T01:03:51</td>
+<td> 2021-05-10T01:18:55</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-05-17T01:04:13</td>
+<td> 2021-05-17T01:18:57</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-05-24T01:04:25</td>
+<td> 2021-05-24T01:18:32</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-05-31T01:04:22</td>
+<td> 2021-05-31T01:15:49</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
 
 
+
+
+        <tr>
+<td>2021-06-01T03:57:17</td>
+<td> 2021-06-01T05:10:13</td>
+<td>PARTIAL_SATURATION</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-06-01T05:10:13</td>
+<td> 2021-06-01T07:41:53</td>
+<td>FULL_SATURATION</td>
+<td></td>
+</tr>
+
+
+
+        <tr>
+<td>2021-06-01T06:27:42</td>
+<td> 2021-06-01T07:03:23</td>
+<td>THRUSTER_FIRING</td>
+<td>Not entirely sure, but likely thruster firing during full saturation.</td>
+</tr>
+
+
+
+        <tr>
+<td>2021-06-01T07:41:53</td>
+<td> 2021-06-01T12:06:27</td>
+<td>PARTIAL_SATURATION</td>
+<td></td>
+</tr>
+
+
+
+
+        <tr>
+<td>2021-06-01T12:44:04</td>
+<td> 2021-06-01T12:52:57</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
+        <tr>
+<td>2021-06-07T01:04:33</td>
+<td> 2021-06-07T01:17:51</td>
+<td>THRUSTER_FIRING</td>
+<td></td>
+</tr>
 
     </TABLE>
 </BODY>

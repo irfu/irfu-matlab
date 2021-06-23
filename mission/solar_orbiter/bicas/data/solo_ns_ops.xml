@@ -2,7 +2,7 @@
 <main xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <!--
     NOTE: Designed so that the content can be converted to a more easy-to-read HTML file using e.g. a command like
-    > xsltproc solo_ns_ops2html.xsl   solo_ns_ops.xml > solo_ns_ops.xml.html
+    > xsltproc solo_ns_ops2html.xsl   solo_ns_ops.xml   >   solo_ns_ops.xml.html
     -->
 
     <!-- NOTE: Can not get HTML element <B> to pass through XSLT yet.-->
@@ -14,13 +14,13 @@
 
     <notesTable>
         <note>
-            2020-11-12, EJ: I have not managed to find any thruster firings for time period 2020-02-12 to 2020-03-29.
+            2020-11-12, EJ: I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </note>
         <note>
             2021-05-24, EJ: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2021-05-24, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-05-08 (inclusive). Only manually identified thuster firings.
+            2021-06-23, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-06-11 (inclusive). Only manually identified thuster firings.
         </note>
     </notesTable>
 
@@ -784,8 +784,80 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description>Different shape than normal (in PSP; bumps more distinctly negative instead of positive), but still unambiguous.</description>
         </event>
+        <event>
+            <startTimeUtc>2021-05-10T01:03:51</startTimeUtc>
+            <stopTimeUtc> 2021-05-10T01:18:55</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-05-17T01:04:13</startTimeUtc>
+            <stopTimeUtc> 2021-05-17T01:18:57</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-05-24T01:04:25</startTimeUtc>
+            <stopTimeUtc> 2021-05-24T01:18:32</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-05-31T01:04:22</startTimeUtc>
+            <stopTimeUtc> 2021-05-31T01:15:49</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
 
 
+
+
+        <event>
+            <startTimeUtc>2021-06-01T03:57:17</startTimeUtc>
+            <stopTimeUtc> 2021-06-01T05:10:13</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-06-01T05:10:13</startTimeUtc>
+            <stopTimeUtc> 2021-06-01T07:41:53</stopTimeUtc>
+            <rcsNsoId>FULL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2021-06-01T06:27:42</startTimeUtc>
+            <stopTimeUtc> 2021-06-01T07:03:23</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Not entirely sure, but likely thruster firing during full saturation.</description>
+        </event>
+
+
+
+        <event>
+            <startTimeUtc>2021-06-01T07:41:53</startTimeUtc>
+            <stopTimeUtc> 2021-06-01T12:06:27</stopTimeUtc>
+            <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
+
+        <event>
+            <startTimeUtc>2021-06-01T12:44:04</startTimeUtc>
+            <stopTimeUtc> 2021-06-01T12:52:57</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-06-07T01:04:33</startTimeUtc>
+            <stopTimeUtc> 2021-06-07T01:17:51</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
 
     </eventsTable>
 
