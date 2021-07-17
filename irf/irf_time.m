@@ -112,11 +112,13 @@ switch lower(flag)
     if nCol > 9
       error('irf_time:vector>tt:badInputs',...
         'input should be column vector [YYYY MM DD hh mm ss ms micros ns], last columns can be omitted.')
+    elseif nCol == 6
+      tOutput = irf_time(tInput,'vector6>ttns');
     elseif nCol < 9
       defValues = [2000 1 1 0 0 0 0 0 0];
       tInput = [tInput repmat(defValues(nCol+1:9),size(tInput,1),1)];
+      tOutput = spdfcomputett2000(tInput);
     end
-    tOutput = spdfcomputett2000(tInput);
   case 'vector6>ttns'
     % Convert a [YYYY MM DD hh mm ss.xxxx] to TT2000 in int64 ns
     nCol = size(tInput,2);

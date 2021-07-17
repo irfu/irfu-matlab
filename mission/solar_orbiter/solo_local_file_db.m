@@ -360,7 +360,9 @@ classdef solo_local_file_db < solo_file_db
             subDir = 'lfr_bp';    % ie combined 2nd "_" 4th (excl last digit, which is unique)
           case {'rpw-lfr-surv-cwf-b', 'rpw-lfr-surv-swf-b'}
             subDir = 'lfr_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
-          case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e','rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-swf-e'}
+          case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-cwf-e-1-second', 'rpw-lfr-surv-swf-e'}
+            % NOTE: 'rpw-lfr-surv-cwf-e-1-second' refers to an inofficial
+            % dataset (DATASET_ID) only used internally at IRF. /2021-05-21
             subDir = 'lfr_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
           case {'rpw-tds-surv-rswf-b', 'rpw-tds-surf-tswf-b'}
             subDir = 'tds_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first two chars of 4th, of which the first one is unqiue)

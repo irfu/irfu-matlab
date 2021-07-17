@@ -8,7 +8,6 @@ sc=3;
 c_eval('Bgse=mms.get_data(''B_gse_fgm_brst_l2'',tint+[-1,1],?);',sc);
 c_eval('Egse=mms.get_data(''E_gse_edp_brst_l2'',tint+[-1,1],?);',sc);
 c_eval('Bscm=mms.get_data(''B_gse_scm_brst_l2'',tint+[-1,1],?);',sc);
-%%
 Efac = irf_convert_fac(Egse,Bgse,[1 0 0]);
 Bscmfac = irf_convert_fac(Bscm,Bgse,[1 0 0]);
 
@@ -125,12 +124,14 @@ vals=-100:20:100;
 [newTS,colors]=irf_plot_linecolor_2TS(Bscmfacf.x.tlim(Tshort),colorTS,vals);
 hold(h(1),'on');
 for ii=1:length(newTS)
-irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',5,'linewidth',1)
-if ii<length(newTS)
-charvec{ii+1,1}=num2str(vals(ii));
-else
-charvec{ii+1}=[];
-end
+    irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',5,'linewidth',1)
+    if ii<length(newTS)
+        % This part is just to fix the colorbar labels which can probably
+        % be done in a better way.
+        charvec{ii+1,1}=num2str(vals(ii));
+    else
+        charvec{ii+1}=[];
+    end
 end
 for itest=3:2:length(charvec)-2
     
@@ -145,7 +146,7 @@ ylabel('B_{scm,x} (nT)','interpreter','tex');
 ylabel(cbar,'E_{||} (mV/m)','fontsize',22);
 
 %Set background to grey to make it easier to see the data
-h(1).Color=[0.75,0.75,0.75]; 
+h(1).Color=[0.75,0.75,0.75];
 
 
 %% #4 Example 2: Color Vix by |B|
@@ -168,12 +169,12 @@ vals=10:1:25;
 [newTS,colors]=irf_plot_linecolor_2TS(Vi,colorTS,vals);
 hold(h(1),'on');
 for ii=1:length(newTS)
-irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',6,'linewidth',1)
-if ii<length(newTS)
-charvec{ii+1,1}=num2str(vals(ii));
-else
-charvec{ii+1}=[];
-end
+    irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',6,'linewidth',1)
+    if ii<length(newTS)
+        charvec{ii+1,1}=num2str(vals(ii));
+    else
+        charvec{ii+1}=[];
+    end
 end
 for itest=3:2:length(charvec)-2
     
@@ -188,4 +189,4 @@ ylabel('Vi{x} (km/s)','interpreter','tex');
 ylabel(cbar,'|B| (nT)','fontsize',22);
 
 %Set background to grey to make it easier to see the data
-h(1).Color=[0.75,0.75,0.75]; 
+h(1).Color=[0.75,0.75,0.75];

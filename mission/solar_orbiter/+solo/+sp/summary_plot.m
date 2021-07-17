@@ -10,6 +10,9 @@
 % ==================
 % LSF  = LFR Sampling Frequency
 % PCFC = Panel Creation Function Call
+% SPS  = Samples Per Snapshot
+% SS   = SnapShot
+% SSS  = SnapShot Spectrogram/Spectrum
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -27,8 +30,8 @@ classdef summary_plot < handle
     %       Ex: Enlarge separate snapshots.
     %
     % PROPOSAL: Merge add_panel_spectrogram_SWF_LSF &
-    %                 panel_spectrogram_snapshots.
-    %   CON: panel_spectrogram_snapshots designed to also be used for TDS
+    %                 panel_spectrogram_SWF.
+    %   CON: panel_spectrogram_SWF designed to also be used for TDS
     %        snapshots (in the future).
     %
     % PROPOSAL: Build add_panel_* functions more using interpret_settings_args() for last arguments).
@@ -66,11 +69,14 @@ classdef summary_plot < handle
     %   NOTE: f_max not so important since log y scale (and frequencies are
     %         linear).
     %
-    % ~BUG: Use of EJ_library.graph.escape_str() is likely inconsistent, given
+    % ~BUG: The use/non-use of EJ_library.graph.escape_str() is likely inconsistent, given
     % how calls are made from plot_LFR_CWF/SWF.
     %
     % PROPOSAL: Speed up by disabling drawing until all modifications have been
     %           made.
+    %
+    % PROPOSAL: Reorg. methods (fewer?) and have them use
+    %       EJ_library.utils.interpret_settings_args() for any customization.
 
 
 
@@ -82,35 +88,52 @@ classdef summary_plot < handle
         N_SAMPLES_PER_SPECTRUM_LFR_SWF = ...
             EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
         
-        % Cover F0-F2.
-        % NOTE: Does not need to hard-code limits for SWF spectrograms since
-        % each SWF spectrogram only contains data for one sampling frequency.
-        % ==> Autoscaling is OK.
+        
 
-
-
-        % Select/derive samples/FFT from sampling frequency to produce the same
-        % minimum frequency. F3=>128 samples/spectrum. /YK 2021-03-02
+        % Select #samples/FFT from sampling frequency to produce the same minimum
+        % frequency. F3=>128 samples/spectrum. /YK 2021-03-02
         %
         % FH = Function Handle
         N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
         N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
-            cwfSamplFreqHz / ...
-            (EJ_library.so.constants.LFR_F3_HZ/solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3));
+            cwfSamplFreqHz / EJ_library.so.constants.LFR_F3_HZ ...
+            * solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
         
-        % Cover F0, F1.
-        % NOTE: Does not cover F1, F2 in SBM1, SBM2.
+        % Min & max frequencies in LFR __CWF__ plots.
+        % Should at least cover F2-F3 (SURV-CWF), maybe not SBM1, SBM2 (F1, F2).
+        %
+        % NOTE: Does not need to hard-code limits for __SWF__ spectrograms
+        % (F0-F2) since each SWF spectrogram only contains data for one sampling
+        % frequency. ==> CWF Autoscaling is OK.
+        %
 %         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-%             EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+%             EJ_library.so.constants.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
 %             EJ_library.so.constants.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-            EJ_library.so.constants.LFR_F3_HZ / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+            EJ_library.so.constants.LFR_F3_HZ ...
+            / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
+        % Maximum width (in time) used for displaying a snapshot
+        % spectogram/spectrum. 
+        % IMPLEMENTATION NOTE: Intended to prevent spectograms for free-standing
+        % snapshot from becoming too wide when the code tries to use the
+        % distance to the nearest snapshot to determine display width.
+        % NOTE: A freestanding snapshot at beginning/end of day leads to half
+        % the spectrum going outside the plot.
+        % Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20210102_V04.cdf has a
+        % freestanding snapshot at beginning of day.
+        % 
+        % S = Seconds (unit)
+        MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S = 60*10;   % Arbitrary
 
+        % Maximum width (in time) used for displaying a CWF spectogram/spectrum.
+        MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S = 128/16;    % ~Arbitrary, almost.
+        
+        
         
         % Fraction of the (minimum) time distance between snapshots (centers)
-        % that will be used for displaying the spectra. E.g. 1.0 means that
+        % that will be used for displaying the spectra. 1.0 means that
         % spectras are adjacent between snapshots (for minimum snapshot
         % distance). Less than 1.0 means that there will be some empty space
         % between snapshot spectras.
@@ -121,7 +144,7 @@ classdef summary_plot < handle
         % Disabled since presumably slow. Triggers bug in MTEST(CWF).
         %SPECTRUM_OVERLAP_PERCENT_CWF = 0;
         SPECTRUM_OVERLAP_PERCENT_CWF = 50;   % /YK 2020?
-            
+
         % Colormap used for spectras.
         COLORMAP = load('cmap').cmap;
         
@@ -183,9 +206,10 @@ classdef summary_plot < handle
             
             
             
+            % NOTE: NESTED FUNCTION
             function hAxes = panel_plot_bit_series()
                 
-                CHANNEL_NAME_POS = solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION;
+                CHANNEL_NAME_POS = solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION;
                 
                 % ASSERTIONS
                 assert(all(ismember(zvB, [0,1])))
@@ -225,7 +249,7 @@ classdef summary_plot < handle
                 hLines(1).Color = [0,0,1];
                 hLines(2).Color = [1,0,0];
                 
-                solo.ql.summary_plot.fade_color(hLines)
+                solo.sp.summary_plot.fade_color(hLines)
                 
                 
                 
@@ -251,22 +275,45 @@ classdef summary_plot < handle
         % to be very general and to be called from wrapper methods. It can hence
         % be allowed to have many settings & arguments.
         %
+        % NOTE: Ultimately (indirectly) used for both CWF and SWF data.
+        %
         % ARGUMENTS
         % =========
         % panelTag      :
-        % zvData        : Array. (iRecord). ~CWF data.
-        % yLabelNonUnit : y label with unit.
+        % zvData        : Array. (iRecord, iChannel). ~CWF data.
+        % varargin
+        %       Arguments as interpreted by
+        %       EJ_library.utils.interpret_settings_args().
+        %           yLabel
+        %           linesPropCa
+        %               Key-value properties arguments to set for the line
+        %               object.
+        %           axesPropCa
+        %               Key-value properties arguments to set for the axes
+        %               object.
         % --
         % tlLegend : Top-left  (TL) legend. Empty if not used.
         % trLegend : Top-right (TR) legend. Empty if not used.
         %            Cell array of strings, one per
         %            scalar time series.
         %
-        function add_panel_time_series_CWF_general(obj, panelTag, ...
-            zvEpoch, zvData, linesPropCa, axesPropCa, yLabel, tlLegend, trLegend)
+        function add_panel_time_series_general(obj, panelTag, ...
+            zvEpoch, zvData, varargin)
+        
+            SETTINGS.fadeLines   = 0;
+            SETTINGS.linesPropCa = {};
+            SETTINGS.axesPropCa  = {};
+            SETTINGS.yLabel      = '';
+            SETTINGS.tlLegend    = {};
+            SETTINGS.trLegend    = {};
+            Settings = EJ_library.utils.interpret_settings_args(SETTINGS, varargin);
+            EJ_library.assert.struct(Settings, fieldnames(SETTINGS), {})
+            
+            
             
             assert(~obj.figureComplete)
-            assert(nargin == 1+8)
+            
+            
             
             % NOTE: Implicitly an assertion on argument sizes.
             Ts = irf.ts_scalar(zvEpoch, zvData);
@@ -276,28 +323,28 @@ classdef summary_plot < handle
             
             
             
+            % NOTE: NESTED FUNCTION
             function hAxes = panel_time_series()
                 
                 hAxes = irf_panel(panelTag);
                 hLines = irf_plot(hAxes, Ts);
                 
-                % TEMPORARY HACK for argument "fade"?
-                if ~isempty(linesPropCa) && strcmp(linesPropCa{1}, 'fade')
-                    solo.ql.summary_plot.fade_color(hLines)
-                    linesPropCa = linesPropCa(2:end);
+                if Settings.fadeLines
+                    solo.sp.summary_plot.fade_color(hLines)
                 end
                 
-                if ~isempty(linesPropCa)   set(hLines, linesPropCa{:});   end
-                if ~isempty(axesPropCa)    set(hAxes,  axesPropCa {:});   end
+                if ~isempty(Settings.linesPropCa)   set(hLines, Settings.linesPropCa{:});   end
+                if ~isempty(Settings.axesPropCa)    set(hAxes,  Settings.axesPropCa {:});   end
                 
-                ylabel(hAxes, yLabel)
-                if ~isempty(tlLegend)
-                    irf_legend(hAxes, tlLegend, ...
-                        solo.ql.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
+                ylabel(hAxes, Settings.yLabel)
+                
+                if ~isempty(Settings.tlLegend)
+                    irf_legend(hAxes, Settings.tlLegend, ...
+                        solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
                 end
-                if ~isempty(trLegend)
-                    irf_legend(hAxes, trLegend, ...
-                        solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
+                if ~isempty(Settings.trLegend)
+                    irf_legend(hAxes, Settings.trLegend, ...
+                        solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
                 end
             end    % function
             
@@ -305,20 +352,21 @@ classdef summary_plot < handle
         
         
         
+        % ARGUMENTS
+        % =========
+        % zvData    : (iTime, iChannel)
+        %       zVar-like variable.
+        %
         function add_panel_time_series_CWF(obj, panelTag, ...
-            zvEpoch, zvData, yLabel, removeMean)
+            zvEpoch, zvData, yLabel, varargin)
         
-            assert(isscalar(removeMean))
+            % ASSERTIONS
             EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
-                zvData,  [-1])
+                zvData,  [-1, -2])
         
-            if removeMean
-                zvData = zvData - mean(zvData, 'omitnan');
-            end
-        
-            obj.add_panel_time_series_CWF_general(panelTag, ...
-                zvEpoch, zvData, {}, {}, yLabel, {}, {})
+            obj.add_panel_time_series_general(panelTag, ...
+                zvEpoch, zvData, 'yLabel', yLabel, varargin{:})
         end
         
         
@@ -331,15 +379,20 @@ classdef summary_plot < handle
         %
         function add_panel_time_series1_HK(obj, D, zvName, linesPropCa, axesPropCa)
             % NOTE: Automatically derives panel tag.
+            
             panelTag = zvName;
             
             zvEpoch = D.data.Epoch.data;
             zvData  = D.data.(zvName).data;            
             
-            % CALL INSTANCE METHOD            
-            obj.add_panel_time_series_CWF_general(...
-                panelTag, zvEpoch, zvData, [{'fade'}, linesPropCa], axesPropCa, ...
-                '', {}, {EJ_library.graph.escape_str(zvName)})
+            % CALL INSTANCE METHOD
+            obj.add_panel_time_series_general(...
+                panelTag, zvEpoch, zvData, ...
+                'fadeLines',   1, ...
+                'linesPropCa', linesPropCa, ...
+                'axesPropCa',  axesPropCa, ...
+                'tlLegend',    {}, ...
+                'trLegend',    {EJ_library.graph.escape_str(zvName)})
         end
         
         
@@ -348,7 +401,7 @@ classdef summary_plot < handle
         %
         % ARGUMENTS
         % =========
-        % D           : dataobj
+        % D           : dataobj (sic!)
         % zVarNamesCa : Length 3 cell array of zVar names.
         %
         function add_panel_time_series3_HK(obj, D, zvNamesCa)
@@ -363,21 +416,25 @@ classdef summary_plot < handle
                 D.data.(zvNamesCa{2}).data, ...
                 D.data.(zvNamesCa{3}).data];
             
-            
-            
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series_CWF_general(panelTag, zvEpoch, zvData, ...
-                {'fade'}, {}, '', {}, {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
+            obj.add_panel_time_series_general(panelTag, zvEpoch, zvData, ...
+                'fadeLines', 1, ...
+                'trLegend',  {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
         end
         
 
 
         % Add panel for time series for SWF data (one snapshot per row) for one
-        % specified LFR sampling frequency (LSF). Uses only the samples of the
-        % specified sampling frequency.
+        % specified LFR sampling frequency (LSF). One call filters out the
+        % samples of the specified LFR sampling frequency.
         %
         % NOTE: Removes mean from each snapshot separately (both DC & AC)
         % NOTE: Can also handle TDS snapshots some day?
+        %
+        % ARGUMENTS
+        % ========
+        % zvDataCa
+        %       Cell array of signals, each of which is a ~zVar.
         %
         function add_panel_time_series_SWF_LSF(obj, panelTagSignalsStr, ...
                 zvEpoch, zvDataCa, zvSamplFreqHz, iLsf, trLegend, removeMean)
@@ -402,7 +459,9 @@ classdef summary_plot < handle
             nSps        = size(zvDataCa{1}, 2);    % SPS = Samples Per Snapshot
             assert(nSps >= 2)
             
-            zvEpoch  = EJ_library.so.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
+            zvEpoch = EJ_library.so.convert_N_to_1_SPR_Epoch(...
+                zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
+            
             for i = 1:nChannels
                 zvData = zvDataCa{i}(bRecords, :);
                 
@@ -422,9 +481,12 @@ classdef summary_plot < handle
             
             
             % CALL INSTANCE METHOD
-            obj.add_panel_time_series_CWF_general(...
+            obj.add_panel_time_series_general(...
                 sprintf('%s %s time series', panelTagSignalsStr, lsfName), ...
-                zvEpoch, [zvDataCa{:}], {}, {}, '[V]', lsfName, trLegend)
+                zvEpoch, [zvDataCa{:}], ...
+                'yLabel',   '[V]', ...
+                'tlLegend', lsfName, ...
+                'trLegend', trLegend)
         end
         
         
@@ -441,16 +503,17 @@ classdef summary_plot < handle
                 panelTag, zvEpoch, zvData, ...
                 zvSamplingFreqHz, yLabelNonUnit, colLimits)
             
-            % TEST
+            % DEBUG: Limit time range.
             if 0
-                tt1 = spdfparsett2000('2020-08-19T19:00:00');
-                tt2 = spdfparsett2000('2020-08-19T20:00:00');
+%                 tt1 = spdfparsett2000('2020-08-19T19:00:00');
+%                 tt2 = spdfparsett2000('2020-08-19T20:00:00');
+                tt1 = spdfparsett2000('2020-08-19T00:00:00');
+                tt2 = spdfparsett2000('2020-08-19T24:00:00');
                 b = (tt1 <= zvEpoch) & (zvEpoch <= tt2);
                 zvEpoch          = zvEpoch(b);
                 zvData           = zvData(b);
                 zvSamplingFreqHz = zvSamplingFreqHz(b);
             end
-            
             
             % ASSERTIONS
             assert(~obj.figureComplete)
@@ -464,7 +527,7 @@ classdef summary_plot < handle
             
             
             
-            
+            % NOTE: NESTED FUNCTION
             function hAxes = panel_spectrogram()
                 
                 hAxes = irf_panel(panelTag);
@@ -481,16 +544,22 @@ classdef summary_plot < handle
                     
                     samplFreqHz       = zvSamplingFreqHz(iSs1Array(jSs));
                     nSamplPerSpectrum = ...
-                        solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
+                        solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_FH(samplFreqHz);
                     
-                    SpecrecCa{jSs} = irf_powerfft(...
+                    S = irf_powerfft(...
                         Ts(iSsArray), ...
                         nSamplPerSpectrum, ...
                         samplFreqHz, ...
-                        solo.ql.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
+                        solo.sp.summary_plot.SPECTRUM_OVERLAP_PERCENT_CWF);
+                    
+                    S = solo.sp.summary_plot.add_Specrec_dt(...
+                        S, ...
+                        solo.sp.summary_plot.MAX_CWF_SPECTRUM_DISPLAY_WIDTH_S);
+                    
+                    SpecrecCa{jSs} = S;
                 end
-                
-                Specrec   = EJ_library.utils.merge_Specrec(SpecrecCa);
+                                
+                Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
 
                 Specrec.p_label = {'log_{10} [V^2/Hz]'};   % Replaces colorbarlabel
                 % irf_spectrogram() replaces irf_plot
@@ -502,14 +571,14 @@ classdef summary_plot < handle
                 % NOTE: Adding string to pre-existing ylabel.
                 hAxes.YLabel.String = {yLabelNonUnit; hAxes.YLabel.String};
                 
-                colormap(solo.ql.summary_plot.COLORMAP)
+                colormap(solo.sp.summary_plot.COLORMAP)
                 caxis(hAxes, colLimits)
                 set(hAxes, 'YTick', 10.^[-3:5])
                 
                 % IMPLEMENTATION NOTE: USING "HACK". See
                 % find_child_irfspectrogram_y_unit().
-                axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
-                ylim(hAxes, solo.ql.summary_plot.LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ / axesFreqUnitHz)
+                axesFreqUnitHz = solo.sp.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+                ylim(hAxes, solo.sp.summary_plot.LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ / axesFreqUnitHz)
                 
             end
         end
@@ -524,6 +593,16 @@ classdef summary_plot < handle
             panelTagSignalsStr, zvEpoch, zvData, ...
             zvSamplFreqHz, iLsf, trLegend, colLimits)
         
+            % DEBUG: Limit time range.
+            if 0
+                tt1 = spdfparsett2000('2021-01-01T00:00:00');
+                tt2 = spdfparsett2000('2021-01-02T13:00:00');
+                b = (tt1 <= zvEpoch) & (zvEpoch <= tt2);
+                zvEpoch       = zvEpoch(b);
+                zvData        = zvData(b, :);
+                zvSamplFreqHz = zvSamplFreqHz(b);
+            end
+            
             assert(~obj.figureComplete)
             
             samplFreqHz = EJ_library.so.constants.LSF_HZ(iLsf);
@@ -534,7 +613,7 @@ classdef summary_plot < handle
             zvEpoch = zvEpoch(bRecords, :);
             zvData  = zvData( bRecords, :);
 
-            pcfc = @() (solo.ql.summary_plot.panel_spectrogram_snapshots(...
+            pcfc = @() (solo.sp.summary_plot.panel_spectrogram_SWF(...
                 sprintf('%s %s spectrogram', panelTagSignalsStr, lsfName), ...
                 zvEpoch, ...
                 zvData, ...
@@ -591,7 +670,14 @@ classdef summary_plot < handle
             %=============================
             % 'Position' : [left bottom width height]. Size and location,
             % excluding a margin for the labels.
-            positionCa        = get(hAxesArray, 'Position');
+            % IMPLEMENTATION NOTE: get() returns numeric array or cell array
+            % depending on the number of axes. Must normalize for other code to
+            % work. In practice, this is only necessary when disabling all
+            % axes/plots except one while debugging.
+            positionTemp        = get(hAxesArray, 'Position');
+            if iscell(positionTemp)   positionCa = positionTemp;
+            else                      positionCa = {positionTemp};
+            end
             yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
             % Panel height before distributing height segments. Assumes that
             % panels are adjacent to each other.
@@ -612,7 +698,7 @@ classdef summary_plot < handle
             
             
 
-            solo.ql.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
+            solo.sp.summary_plot.set_std_title(plotTypeStr, filePath, hAxesArray(1))
             
             obj.figureComplete = true;
         end
@@ -696,15 +782,9 @@ classdef summary_plot < handle
         % tlLegend : Top-left  (TL) legend string.
         % trLegend : Top-right (TR) legend string.
         %
-        %
-        % SHORTENINGS
-        % ===========
-        % SS  : SnapShot
-        % SSS : SnapShot Spectrogram
-        %
-        function hAxes = panel_spectrogram_snapshots(...
-                panelTag, zvEpoch, zvData, ...
-                samplingFreqHz, tlLegend, trLegend, colLimits)
+        function hAxes = panel_spectrogram_SWF(...
+                panelTag, zvEpoch, zvData, samplingFreqHz, ...
+                tlLegend, trLegend, colLimits)
             
             % NOTE: Multiple-row labels causes trouble for the time series'
             % ylabels.
@@ -716,7 +796,7 @@ classdef summary_plot < handle
             
             
             
-            TsCa = solo.ql.summary_plot.snapshot_per_record_2_TSeries(...
+            TsCa = solo.sp.summary_plot.snapshot_per_record_2_TSeries(...
                 zvEpoch, zvData, samplingFreqHz);
             nTs  = numel(TsCa);
             
@@ -737,7 +817,7 @@ classdef summary_plot < handle
                 Ts = TsCa{i};
                 
                 SpecrecCa{i} = irf_powerfft(Ts, ...
-                    solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
+                    solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF, ...
                     samplingFreqHz);
                 
                 % IMPLEMENTATION NOTE: Later needs the snapshot centers in the
@@ -746,7 +826,9 @@ classdef summary_plot < handle
                     (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
             end
             sssMaxWidthSecArray = ...
-                solo.ql.summary_plot.derive_max_spectrum_width(ssCenterEpochUnixArray);
+                solo.sp.summary_plot.get_distance_to_nearest(...
+                    ssCenterEpochUnixArray, ...
+                    solo.sp.summary_plot.MAX_SS_SPECTROGRAM_DISPLAY_WIDTH_S);
             
             %===================================================================
             % Set the display locations of individual spectras (override
@@ -755,12 +837,13 @@ classdef summary_plot < handle
             % IMPLEMENTATION NOTE: This can not be done in the first loop in
             % order to derive the (minimum) snapshot time distance.
             %===================================================================
-            for i = 1:numel(TsCa)
-                bKeep(i) = ~isempty(SpecrecCa{i});
+            bKeep = false(nTs, 1);
+            for i = 1:nTs
+                
                 if ~isempty(SpecrecCa{i})
-                    %ssLengthSec = TsCa{i}.time.stop.epochUnix - TsCa{i}.time.start.epochUnix;
+                    bKeep(i) = true;
                     
-                    sssWidthSec = sssMaxWidthSecArray(i) * solo.ql.summary_plot.SNAPSHOT_WIDTH_FRACTION;
+                    sssWidthSec = sssMaxWidthSecArray(i) * solo.sp.summary_plot.SNAPSHOT_WIDTH_FRACTION;
                     
                     %===========================================================
                     % Stretch out spectra (for given snapshot) in time to be
@@ -773,15 +856,18 @@ classdef summary_plot < handle
                     % Number of timestamps, but also spectras (within snapshot).
                     nTime = numel(SpecrecCa{i}.t);
                     % Distance from SS center to center of first/last FFT.
-                    distToSssEdgeT = sssWidthSec/2 - sssWidthSec/(2*nTime);
+                    distToSssEdgeT  = sssWidthSec/2 - sssWidthSec/(2*nTime);
                     SpecrecCa{i}.t  = ssCenterEpochUnixArray(i) ...
                         + linspace(-distToSssEdgeT, distToSssEdgeT, nTime);
                     SpecrecCa{i}.dt = ones(nTime, 1) * sssWidthSec/(2*nTime);
+                else
+                    bKeep(i) = false;
                 end
             end
             
             SpecrecCa(~bKeep) = [];
-            Specrec = solo.ql.summary_plot.merge_specrec(SpecrecCa);
+            %Specrec = solo.sp.summary_plot.merge_Specrec(SpecrecCa);
+            Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
             % irf_spectrogram() replaces irf_plot
@@ -790,10 +876,10 @@ classdef summary_plot < handle
             
             set(hAxes, 'yscale','log')
             
-            irf_legend(hAxes, tlLegend, solo.ql.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
-            irf_legend(hAxes, trLegend, solo.ql.summary_plot.LEGEND_TOP_RIGHT_POSITION)
+            irf_legend(hAxes, tlLegend, solo.sp.summary_plot.LEGEND_TOP_LEFT_POSITION, 'color', 'k')
+            irf_legend(hAxes, trLegend, solo.sp.summary_plot.LEGEND_TOP_RIGHT_POSITION)
             
-            colormap(solo.ql.summary_plot.COLORMAP)            
+            colormap(solo.sp.summary_plot.COLORMAP)
             caxis(hAxes, colLimits)            
             % NOTE: Chosen ticks should cover both Hz and kHz, for all sampling
             % frequencies.
@@ -801,8 +887,8 @@ classdef summary_plot < handle
             
             % IMPLEMENTATION NOTE: USING "HACK". See
             % find_child_irfspectrogram_y_unit().
-            axesFreqUnitHz = solo.ql.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
-            minFreqHz      = samplingFreqHz / solo.ql.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF;
+            axesFreqUnitHz = solo.sp.summary_plot.find_child_irfspectrogram_y_unit(hAxes, Specrec);
+            minFreqHz      = samplingFreqHz / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_LFR_SWF;
             ylim(hAxes, [minFreqHz, inf] / axesFreqUnitHz)
         end
         
@@ -831,11 +917,8 @@ classdef summary_plot < handle
             [nRecords, nSps] = EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2]);
-            %assert(size(zvEpoch, 1) == size(zvData, 1))   % Same number of records
             bicas.proc_utils.assert_zv_Epoch(zvEpoch)
             
-            %nRecords = size(zvData, 1);
-            %nSps     = size(zvData, 2);
             assert(nSps >= 2)
             
             % Relative timestamps inside CDF record/snapshot.
@@ -852,81 +935,56 @@ classdef summary_plot < handle
         
         
         
-        % For every snapshot, return the available width (in time; centered on
-        % snapshot center) for displaying the snapshot spectrogram. Time offset
-        % and unit unimportant. Argument and return values have same unit.
-        %
-        function sssMaxWidthArray = derive_max_spectrum_width(ssCenterArray)
-            % Use distance to nearest snapshot for each snapshot separately.
-            % NOTE: Should NOT be multiplied by two, since using entire
-            % distance.
-            sssMaxWidthArray = min([Inf; diff(ssCenterArray(:))], [diff(ssCenterArray(:)); Inf]);
+        % Add .dt values to Specrec struct based on nearest spectra (.t
+        % timestamps). This is useful before merging multiple Specrec.
+        function S = add_Specrec_dt(S, max2Dt)
+            EJ_library.assert.struct(S, {'t', 'p', 'f'}, {})
             
-            % Use smallest distance between any two consecutive snapshots (one
-            % global value for all snapshots). Sometimes yields too narrow
-            % spectrograms.
-            % Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20200228_V01.cdf
-            %sssMaxWidthArray = min(diff(ssCenterArray)) * ones(size(ssCenterArray));
+            specMaxWidthArray = solo.sp.summary_plot.get_distance_to_nearest(...
+                S.t, max2Dt);
             
-            % NOTE: Can not assume that both input and output have same size, only same
-            % length.
-            assert(numel(ssCenterArray) == numel(sssMaxWidthArray))
+            S.dt = specMaxWidthArray/2;
         end
         
         
         
-        % Merge multiple instances of "specrec" structs as returned by
-        % irf_powerfft(), with identical frequencies.
-        % NOTE: Optionally added fields must be added after merging.
-        % NOTE: Cf EJ_library.utils.merge_Specrec which is more powerful but
-        % which is unnecessary here since only merging spectras with the same
-        % frequencies (underlying data uses the same sampling frequency).
+        % Get distance to nearest neighbour for an array of sorted numeric
+        % values.
+        %
+        % INTENDED USE
+        % ============
+        % Determine maximum display width of spectrogram for individual
+        % snapshots based on the center timestamps in sequence of snapshots.
+        % Determine maximum display width of spectrograms for sequences of
+        % constant sampling frequency. Based on the center timestamps in
+        % sequence of spectras.
+        % SHORTCOMING: Algorithm "fails" for length=1 array (e.g. freestanding
+        % snapshots, which are not part of a sequence of snapshots). The
+        % argument for upper limit is intended for this case.
         %
         % ARGUMENTS
         % =========
-        % SpecrecCa
-        %       Cell array of "Specrec" structs as returned by irf_powerfft(),
-        %       but with .dt (column array) added to it.
-        %       NOTE: Requires dt (column array of scalars).
-        %       NOTE: Assumes that all specrec use the same frequencies.
-        %       IMPLEMENTATION NOTE: Uses cell array instead of struct array to
-        %       be able to handle (and ignore) the case specrec = [] which can
-        %       be returned by irf_powerfft().
-        %
-        % RETURN VALUE
-        % ============
-        % Specrec   : Struct array that can be used by irf_spectrogram.
-        %
-        function Specrec = merge_specrec(SpecrecCa)
-            % PROPOSAL: Assertion for frequencies.
+        % x         : 1D numeric array. Sorted.
+        % maxResult : Artificial upper limit on individua return result values.
+        % 
+        function distToNearestArray = get_distance_to_nearest(xArray, maxResult)
+            xArray = xArray(:);
             
-            Specrec.f  = [];
-            % NOTE: Must be 1x1 cell array. The array INSIDE the cell array is
-            % added to.
-            Specrec.p  = {[]};
-            Specrec.t  = [];
-            Specrec.dt = [];
+            % Derive distance to nearest snapshot for each snapshot separately.
+            % NOTE: Should NOT be multiplied by two, since using entire
+            % distance.
+%             distToNearestArray = min(...
+%                 [Inf; diff(xArray)     ], ...
+%                 [     diff(xArray); Inf]);
+            distToNearestArray = min(...
+                diff([-Inf; xArray     ]), ...
+                diff([      xArray; Inf]));
             
-            for i = 1:numel(SpecrecCa)
-                
-                S = SpecrecCa{i};
-                if ~isempty(S)
-                    EJ_library.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
-                    assert(iscolumn(S.dt), 'S.dt is not a column.')
-                    assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
-                    
-                    % NOTE: Not adding to array, but setting it in its entirety.
-                    Specrec.f    = S.f;
-                    % NOTE: Add to array inside cell array.
-                    Specrec.p{1} = [Specrec.p{1}; S.p{1}];
-                    % NOTE: Has to be column vector.
-                    Specrec.t    = [Specrec.t;    S.t(:)];
-                    % NOTE: Has to be column vector.
-                    Specrec.dt   = [Specrec.dt;   S.dt(:)];
-                end
-            end
+            % NOTE: Can not assume that both input and output have same size,
+            % only same length.
+            assert(numel(xArray) == numel(distToNearestArray))
             
-            assert(issorted(Specrec.t))   % Not sure if good assertion.
+            distToNearestArray = min(distToNearestArray, maxResult);
         end
         
         
@@ -936,7 +994,7 @@ classdef summary_plot < handle
             
             for i = 1:numel(hArray)
                 legendColor = get(hArray(i), 'Color');
-                legendColor = 1 - solo.ql.summary_plot.C_FADE*(1-legendColor);
+                legendColor = 1 - solo.sp.summary_plot.C_FADE*(1-legendColor);
                 
                 set(hArray(i), 'Color', legendColor);
             end
@@ -967,10 +1025,11 @@ classdef summary_plot < handle
             % does not want to assume that since children might be added by
             % other code calls to e.g. irf_legend() adds other children.
             childClassesCa = arrayfun(@class, hAxes.Children, 'UniformOutput', false);
-            i            = find(ismember(childClassesCa, CLASS_NAME));
+            i              = find(ismember(childClassesCa, CLASS_NAME));
             
             assert(isscalar(i), ...
-                'Did not find exactly one axes child objects of MATLAB class %s.', CLASS_NAME)
+                'Did not find exactly one axes child objects of MATLAB class %s.', ...
+                CLASS_NAME)
             
             objYMax     = max(hAxes.Children(i).YData);
             specFreqMax = max(Specrec.f);
@@ -979,6 +1038,65 @@ classdef summary_plot < handle
             % YData is a bit rounded (empirically true).
             yUnit = 10^round(log10(specFreqMax/objYMax));
         end
+        
+        
+        
+        % Merge multiple instances of "specrec" structs as returned by
+        % irf_powerfft(), with identical frequencies.
+        %
+        % NOTE: Optionally added fields must be added after merging.
+        % NOTE: Cf EJ_library.utils.merge_Specrec() which is more powerful but
+        % which is unnecessary here since only merging spectras with the same
+        % frequencies (underlying data uses the same sampling frequency).
+        %
+        % ARGUMENTS
+        % =========
+        % SpecrecCa
+        %       Cell array of "Specrec" structs as returned by irf_powerfft(),
+        %       but with .dt (column array) added to it.
+        %       NOTE: Requires dt (column array of scalars).
+        %       NOTE: Assumes that all specrec use the same frequencies.
+        %       IMPLEMENTATION NOTE: Uses cell array instead of struct array to
+        %       be able to handle (and ignore) the case specrec = [] which can
+        %       be returned by irf_powerfft().
+        %
+        % RETURN VALUE
+        % ============
+        % Specrec   : Struct array that can be used by irf_spectrogram.
+        %
+%         function Specrec = merge_Specrec(SpecrecCa)
+%             % PROPOSAL: Assertion for frequencies.
+%             
+%             Specrec.f  = [];
+%             % NOTE: Must be 1x1 cell array. The array INSIDE the cell array is
+%             % added to.
+%             Specrec.p  = {[]};
+%             Specrec.t  = [];
+%             Specrec.dt = [];
+%             
+%             for i = 1:numel(SpecrecCa)
+%                 
+%                 S = SpecrecCa{i};
+%                 if ~isempty(S)
+%                     
+%                     % ASSERTIONS
+%                     EJ_library.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
+%                     assert(iscolumn(S.dt), 'S.dt is not a column.')
+%                     assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
+%                     
+%                     % NOTE: Not adding to array, but setting it in its entirety.
+%                     Specrec.f    = S.f;
+%                     % NOTE: Add to array inside cell array.
+%                     Specrec.p{1} = [Specrec.p{1}; S.p{1}];
+%                     % NOTE: Has to be column vector.
+%                     Specrec.t    = [Specrec.t;    S.t(:)];
+%                     % NOTE: Has to be column vector.
+%                     Specrec.dt   = [Specrec.dt;   S.dt(:)];
+%                 end
+%             end
+%             
+%             assert(issorted(Specrec.t))   % Not sure if good assertion.
+%         end
 
 
 

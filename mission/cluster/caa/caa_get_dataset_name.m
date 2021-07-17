@@ -67,5 +67,8 @@ return;
     if doSubstituteUnderscoreToMinus
       dName(strfind(dName,'-'))='_'; % substitute '-' with '_'
     end
+    % Dataset name should be uppercase. It is not true for some PEACE data
+    % variables, e.g. Data__C4_CP_PEA_PADMARH_DEFlux
+    dName = upper(dName); 
   end
 end

@@ -55,7 +55,7 @@ fi
 
 
 
-declare -r MATLAB_FUNCTION="solo.ql.bia_ql3"
+declare -r MATLAB_FUNCTION="solo.sp.bia_ql3"
 
 #=====================
 # Interpret arguments
@@ -68,7 +68,7 @@ declare -r log_dir="$6"
 
 
 
-declare -r log_file="${log_dir}/bia_ql_${YYYYMMDD}.log"    # Filename format as requested.
+declare -r log_file="${log_dir}/bia_ql_${YYYYMMDD}.log"    # Filename format as requested from ROC.
 declare -r temp=$(dirname "$0")
 declare -r bin_dir=$(readlink -f "$temp")
 declare -r irfumatlab_so_dir=$(   readlink -f "$bin_dir/../..")

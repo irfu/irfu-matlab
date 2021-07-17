@@ -14,7 +14,8 @@
 % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/42
 % for the OS SHELL interface requested by ROC.
 % > shellExecutable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
-% This code is therefore not very versatile.
+% This function's interface mirrors the bash/OS script interface to simplify the
+% bash wrapper script. The code is therefore not very versatile.
 %
 %
 % NOTES
@@ -32,9 +33,10 @@
 % ARGUMENTS
 % =========
 % hkBiaDir
-%       Path to (day) directory with HK.
+%       Path to (day) directory with BIAS HK datasets directly underneath it.
 % lfrWfDirPath
-%       Path to (day) directory with L2 LFR CWF + SWF.
+%       Path to (day) directory with L2 LFR CWF + SWF datasets directly
+%       underneath it.
 % --
 % NOTE: Code fails gracefully and continues if the HK or CWF/SWF datasets or
 % directories do not exist. This is useful since datasets as well as directories
@@ -129,31 +131,31 @@ function plot_save_SP_file(outputDir, datasetPath, datasetId, dateVec3, dataVers
     switch(datasetId)
         
         case 'SOLO_HK_RPW-BIA'
-            plotFunc = @solo.ql.plot_HK;
+            plotFunc = @solo.sp.plot_HK;
             
         case {'SOLO_L2_RPW-LFR-SBM1-CWF-E', ...
               'SOLO_L2_RPW-LFR-SBM2-CWF-E', ...
               'SOLO_L2_RPW-LFR-SURV-CWF-E'}
-            plotFunc = @solo.ql.plot_LFR_CWF;
+            plotFunc = @solo.sp.plot_LFR_CWF;
             
         case 'SOLO_L2_RPW-LFR-SURV-SWF-E'
-            plotFunc = @solo.ql.plot_LFR_SWF;
+            plotFunc = @solo.sp.plot_LFR_SWF;
             
         otherwise
             error('Can not plot dataset "%s" using DATASET_ID="%s".', ...
                 datasetPath, datasetId)
     end
     
-    spFilename = solo.ql.create_SP_filename(...
+    spFilename = solo.sp.create_SP_filename(...
         datasetId, dateVec3, dataVersionNbr);
     spFilePath = fullfile(outputDir, spFilename);
     
-    % IMPLEMENTATION NOTE: The solo.ql.plot_* functions create their own
+    % IMPLEMENTATION NOTE: The solo.sp.plot_* functions create their own
     % figures. Can therefore not create the figure beforehand and set
     % visibility=off.
     plotFunc(datasetPath);
     
     hFig = gcf();
-    solo.ql.save_SP_figure(spFilePath, hFig)
+    solo.sp.save_SP_figure(spFilePath, hFig)
     close(hFig)
 end

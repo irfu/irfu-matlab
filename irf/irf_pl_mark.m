@@ -126,7 +126,20 @@ for j=1:length(h)
   set(h(j),'layer','top');
 end
 
-set(get(get(hp,'Annotation'),'LegendInformation'),'IconDisplayStyle','off') % do not display the mark as a legend entry
+% do not display the mark as a legend entry
+% hp might not have been set if used on a spectrogram
+if isgraphics(hp)
+  hMarks = get(hp,'Annotation');
+  if numel(hMarks) > 1
+    for iMark = 1:numel(h)
+      set(get(hMarks{iMark},'LegendInformation'),'IconDisplayStyle','off')
+    end
+  else
+    set(get(hMarks,'LegendInformation'),'IconDisplayStyle','off')
+  end
+end
+    
+
 
 if nargout > 0
   outhandle = hp;

@@ -62,7 +62,7 @@ if flag_get_all_Cluster_positions_from_isdat==1 % using command line
   for tst=tstart:step_request:tend
     disp(irf_time(tst,'isoshort'));
     for ic=1:4
-      cml=['iscmd d isdat://db:0/Cluster/' icstr(ic) '/ephemeris/position ' irf_time(tst,'epoch>yyyy-mm-dd hh:mm:ss') ' ' num2str(step_request)];
+      cml=['iscmd d isdat://db:0/Cluster/' icstr(ic) '/ephemeris/position ' irf_time(tst,'epoch>utc_yyyy-mm-dd HH:MM:SS') ' ' num2str(step_request)];
       [status,result]=system(cml);
       r=textscan(result,'%f%f%f%f','CommentStyle','#','collectoutput',1);
       c_eval('r?=r{1};',ic);
