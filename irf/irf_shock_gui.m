@@ -55,8 +55,6 @@ function [out] = irf_shock_gui(scd,varName)
 %         norms
 %        01-07-2021
 %       - Use nanmean instead of mean for omnidata averaging
-%       - fixed a bug in Ma method calculation line 643 it was == 2 the
-%       corrected is == 3
 %       - removed correction for Vy abberation in omni data since its
 %       already done from SDC
 %       - use tlim instead of resample to cut the time interval for omni
@@ -645,7 +643,7 @@ if ud.uih.mt.mpu.Value == 1 % spacecraft frame
 else% nif
   ud.params.ref_sys = 'nif';
   ud.params.nvec = ud.shp.nvec.n.(ud.normal_method);
-  if ud.uih.mt.mpu.Value == 3% Vsh is determined from velocity method
+  if ud.uih.mt.mpu.Value == 2% Vsh is determined from velocity method
     ud.params.Vsh = ud.shp.nvec.Vsh.(ud.vel_method).(ud.normal_method);
   else % Vsh = 0
     ud.params.Vsh = 0;
@@ -849,7 +847,7 @@ if ~isfield(ud,'omnidata') && (ud.use_omni.B || ud.use_omni.n || ud.use_omni.V |
   tint = ud.scd.B.time([1,end])+[-60,60]*5; % set time interval +- 5 mins
   ud.omnidata = irf_get_data(tint,'bx,by,bz,n,vx,vy,vz,t','omni_min');
   % Re-correct Vy for abberation
-%   ud.omnidata(:,6) = ud.omnidata(:,6)+29.8;
+%   ud.omnidata(:,6) = ud.omnidata(:,7)+29.8;
   % change temperature units from K to eV
   u = irf_units;
   ud.omnidata(:,9) = ud.omnidata(:,9)*u.kB/u.e;
