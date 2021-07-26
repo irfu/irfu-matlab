@@ -27,6 +27,12 @@ jobs:
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
 
+      # Install required runtime lib for Fortan (whamp mex file)
+      - name: Install libgfortran4
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgfortran4
+
       # setup irfu-matlab and run tests_before_release
       - name: Run commands
         uses: matlab-actions/run-command@v1
