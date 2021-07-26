@@ -53,6 +53,12 @@ function [out] = irf_shock_gui(scd,varName)
 %         upstream and downstream parameters.
 %       - Display the magnetic field and velocity as vectors and not as
 %         norms
+%        01-07-2021
+%       - Use nanmean instead of mean for omnidata averaging
+%       - removed correction for Vy abberation in omni data since its
+%       already done from SDC
+%       - use tlim instead of resample to cut the time interval for omni
+%       data averaging 
 
 
 
@@ -841,7 +847,7 @@ if ~isfield(ud,'omnidata') && (ud.use_omni.B || ud.use_omni.n || ud.use_omni.V |
   tint = ud.scd.B.time([1,end])+[-60,60]*5; % set time interval +- 5 mins
   ud.omnidata = irf_get_data(tint,'bx,by,bz,n,vx,vy,vz,t','omni_min');
   % Re-correct Vy for abberation
-  ud.omnidata(:,6) = ud.omnidata(:,6)+29.8;
+%   ud.omnidata(:,6) = ud.omnidata(:,7)+29.8;
   % change temperature units from K to eV
   u = irf_units;
   ud.omnidata(:,9) = ud.omnidata(:,9)*u.kB/u.e;
@@ -849,23 +855,35 @@ if ~isfield(ud,'omnidata') && (ud.use_omni.B || ud.use_omni.n || ud.use_omni.V |
 end
 
 if ud.use_omni.B
-  Bomni = mean(irf_resamp(ud.omnidata(:,1:4),ud.tu),1);
-  ud.params.Bu = Bomni(2:4);
+%   Bomni = nanmean(irf_resamp(ud.omnidata(:,1:4),ud.tu),1);
+%   ud.params.Bu = Bomni(2:4);
+  
+  Bomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,2:4)).tlim(EpochUnix(ud.tu)).data,1);
+  ud.params.Bu = Bomni;
 else; ud.params.Bu = ud.sc_up.Bu;
 end
 if ud.use_omni.n
-  nomni = mean(irf_resamp(ud.omnidata(:,[1,5]),ud.tu),1);
-  ud.params.nu = nomni(2);
+%   nomni = nanmean(irf_resamp(ud.omnidata(:,[1,5]),ud.tu),1);
+%   ud.params.nu = nomni(2);
+  
+  nomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,5)).tlim(EpochUnix(ud.tu)).data,1);
+  ud.params.nu = nomni;
 else; ud.params.nu = ud.sc_up.nu;
 end
 if ud.use_omni.V
-  Vomni = mean(irf_resamp(ud.omnidata(:,[1,6:8]),ud.tu),1);
-  ud.params.Vu = Vomni(2:4);
+%   Vomni = nanmean(irf_resamp(ud.omnidata(:,[1,6:8]),ud.tu),1);
+%   ud.params.Vu = Vomni(2:4);
+  
+  Vomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,6:8)).tlim(EpochUnix(ud.tu)).data,1);
+  ud.params.Vu = Vomni;
 else; ud.params.Vu = ud.sc_up.Vu;
 end
 if ud.use_omni.Ti
-  Tomni = mean(irf_resamp(ud.omnidata(:,[1,9]),ud.tu),1);
-  ud.params.Tiu = Tomni(2);
+%   Tomni = nanmean(irf_resamp(ud.omnidata(:,[1,9]),ud.tu),1);
+%   ud.params.Tiu = Tomni(2);
+  
+  Tomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,9)).tlim(EpochUnix(ud.tu)).data,1);
+  ud.params.Tiu = Tomni;
 else; ud.params.Tiu = ud.sc_up.Tiu;
 end
 end
@@ -903,7 +921,7 @@ irf_plot(hca,[ud.tu,[ud.params.Tiu;ud.params.Tiu]])
 for i = 1:4
   irf_pl_mark(h(i),ud.tu',[0.7,0.7,0])
 end
-
+irf_zoom(h(1:end),'x',EpochUnix(ud.omnidata(:,1)));
 end
 
 function [ud] = manual_input(ud)
