@@ -1,2 +1,0 @@
-language: matlab
-script: matlab -batch 'tests_before_release'

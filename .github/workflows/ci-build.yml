@@ -1,0 +1,48 @@
+# This is a basic CI build workflow using GitHub Actions
+
+name: ci-build
+
+# Controls when the action will run. 
+on:
+  # Triggers this workflow on push to master, devel, MMSdevel or SOdevel. Or pull requests to devel.
+  push:
+    branches: [ master, devel, MMSdevel, SOdevel ]
+  pull_request:
+    branches: [ devel ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a job called "matlab"
+  matlab:
+    # Runs Matlab
+    runs-on: ubuntu-latest
+    steps:
+      # Check-out repository
+      - uses: actions/checkout@v2
+
+      # Install MATLAB (GitHub action provided by MathWorks)
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+
+      # Install required runtime lib for Fortan (whamp mex file)
+      - name: Install libgfortran4
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgfortran4
+
+      # setup irfu-matlab and run tests_before_release
+      - name: Run commands
+        uses: matlab-actions/run-command@v1
+        with:
+          command: tests_before_release;
+
+      # upload artifact (pdf report with plots, etc.)
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test_report.pdf
+          path: ciPath/report.pdf
+          retention-days: 1
+

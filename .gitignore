@@ -3,7 +3,8 @@
 *.asv
 fort.6
 .caa.log
-
+# Path for report (created by tests_before_release.m)
+ciPath/
 
 # IRF logo needed by mission/solar_orbiter/+solo/quicklook_main.m etc.
 # Not included in irfu-matlab to prevent non-IRFU people from (automatically)
