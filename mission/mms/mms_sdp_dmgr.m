@@ -410,7 +410,7 @@ classdef mms_sdp_dmgr < handle
           if(isempty(DATAC.(param)))
             % First defatt file
             DATAC.(param) = dataObj;
-            check_monoton_timeincrease(DATAC.(param).time);
+            check_monoton_timeincrease(DATAC.(param).time, param);
           else
             % Second defatt file
             % Combine each field of the structs and run sort & unique on
@@ -424,7 +424,7 @@ classdef mms_sdp_dmgr < handle
                 DATAC.(param).(fs{idxFs}) = combined(srt(usrt));
               end
             end
-            check_monoton_timeincrease(DATAC.(param).time); % Verify combined defatt
+            check_monoton_timeincrease(DATAC.(param).time, param); % Verify combined defatt
           end
           
         case('defeph')
@@ -440,7 +440,7 @@ classdef mms_sdp_dmgr < handle
           if isempty(DATAC.(param))
             % First DefEph file
             DATAC.(param) = dataObj;
-            check_monoton_timeincrease(DATAC.(param).time);
+            check_monoton_timeincrease(DATAC.(param).time, param);
           else
             % Second defeph file
             % Combine each field of the structs and run sort & unique on
@@ -454,7 +454,7 @@ classdef mms_sdp_dmgr < handle
                 DATAC.(param).(fs{idxFs}) = combined(srt(usrt), :);
               end
             end
-            check_monoton_timeincrease(DATAC.(param).time); % Verify combined defeph
+            check_monoton_timeincrease(DATAC.(param).time, param); % Verify combined defeph
           end
           
         case('l2a')
