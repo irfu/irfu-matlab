@@ -39,3 +39,10 @@ jobs:
         with:
           command: tests_before_release;
 
+      # upload artifact (pdf report with plots, etc.)
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test_report.pdf
+          path: ciPath/report.pdf
+          retention-days: 1
+

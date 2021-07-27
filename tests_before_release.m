@@ -35,7 +35,9 @@ testsToRun = {...
 
 import matlab.unittest.plugins.TestReportPlugin;
 runner = matlab.unittest.TestRunner.withTextOutput;
-runner.addPlugin(TestReportPlugin.producingHTML('Verbosity',3));
+ciPath = [irf('path'), filesep, 'ciPath'];
+if ~exist(ciPath, 'dir'), mkdir(ciPath); end
+runner.addPlugin(TestReportPlugin.producingPDF([ciPath, filesep, 'report.pdf'], 'Verbosity', 3));
 runner.run(testsuite(testsToRun));
 
 % CHECK output, if any problems do not release new version of irfu-matlab!
