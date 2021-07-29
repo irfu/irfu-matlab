@@ -123,8 +123,8 @@ end
 % appended with further search parameters based on used input).
 Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
 Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
-Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
-Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';  %% FIXME: Streaming data requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
+Default.Csa.urlQueryAsync       = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=deferred&'];  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
+Default.Csa.urlStream           = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=streaming&'];
 Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
 Default.Csa.urlFileInventory    = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+logical_file_id,file_start_date,file_end_date,caa_ingestion_date+FROM+csa.v_file'};
 Default.Csa.urlListDataset      = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title+FROM+csa.v_dataset'};
@@ -590,30 +590,30 @@ end
       if(isempty(tmpGetRequest))
         [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave introduced in R2014b
       else
-        %         if verLessThan('matlab', '8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
-        % websave was introduced in 2014b, but websave failed for
-        % Cluster data with Username/Password on 2019b so this is a fallback.
-        [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
-          'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
-        %         else
-        %           indUser = strcmp(tmpGetRequest, 'USERNAME');
-        %           indPass = strcmp(tmpGetRequest, 'PASSWORD');
-        %           webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
-        %             'Username', tmpGetRequest{find(indUser)+1}, ...
-        %             'Password', tmpGetRequest{find(indPass)+1});
-        %           tmpGetRequest(indUser) = []; % Clear USERNAME
-        %           tmpGetRequest(indUser(1:end-1)) = [];
-        %           indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
-        %           tmpGetRequest(indPass) = [];
-        %           tmpGetRequest(indPass(1:end-1)) = [];
-        %           try
-        %             downloadedFile = websave(tempFilePathGz, urlLink, ...
-        %               tmpGetRequest{:}, webOpt);
-        %             isReady = true;
-        %           catch
-        %             isReady = false;
-        %           end
-        %         end
+        if verLessThan('matlab', '8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
+          % websave was introduced in 2014b, but websave failed for
+          % Cluster data with Username/Password on 2019b so this is a fallback.
+          [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
+            'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
+        else
+          indUser = strcmp(tmpGetRequest, 'USERNAME');
+          indPass = strcmp(tmpGetRequest, 'PASSWORD');
+          webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+            'Username', tmpGetRequest{find(indUser)+1}, ...
+            'Password', tmpGetRequest{find(indPass)+1});
+          tmpGetRequest(indUser) = []; % Clear USERNAME
+          tmpGetRequest(indUser(1:end-1)) = [];
+          indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+          tmpGetRequest(indPass) = [];
+          tmpGetRequest(indPass(1:end-1)) = [];
+          try
+            downloadedFile = websave(tempFilePathGz, urlLink, ...
+              tmpGetRequest{:}, webOpt);
+            isReady = true;
+          catch
+            isReady = false;
+          end
+        end
       end
       if isReady
         gunzip(tempFilePathGz);
@@ -652,30 +652,30 @@ end
     if(isempty(tmpGetRequest))
       [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave introduced in R2014b
     else
-            if verLessThan('matlab','8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
-              % websave was introduced in 2014b, but websave failed for
-              % Cluster data with Username/Password on 2019b so this is a fallback.
-              [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
-                'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
-            else
-              indUser = strcmp(tmpGetRequest, 'USERNAME');
-              indPass = strcmp(tmpGetRequest, 'PASSWORD');
-              webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
-                'Username', tmpGetRequest{find(indUser)+1}, ...
-                'Password', tmpGetRequest{find(indPass)+1});
-              tmpGetRequest(indUser) = []; % Clear USERNAME
-              tmpGetRequest(indUser(1:end-1)) = [];
-              indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
-              tmpGetRequest(indPass) = [];
-              tmpGetRequest(indPass(1:end-1)) = [];
-              try
-                downloadedFile = websave(downloadedFile, urlLink, ...
-                  tmpGetRequest{:}, webOpt);
-                isZipFileReady = true;
-              catch
-                isZipFileReady = false;
-              end
-            end
+      if verLessThan('matlab','8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
+        % websave was introduced in 2014b, but websave failed for
+        % Cluster data with Username/Password on 2019b so this is a fallback.
+        [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
+          'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
+      else
+        indUser = strcmp(tmpGetRequest, 'USERNAME');
+        indPass = strcmp(tmpGetRequest, 'PASSWORD');
+        webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+          'Username', tmpGetRequest{find(indUser)+1}, ...
+          'Password', tmpGetRequest{find(indPass)+1});
+        tmpGetRequest(indUser) = []; % Clear USERNAME
+        tmpGetRequest(indUser(1:end-1)) = [];
+        indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+        tmpGetRequest(indPass) = [];
+        tmpGetRequest(indPass(1:end-1)) = [];
+        try
+          downloadedFile = websave(downloadedFile, urlLink, ...
+            tmpGetRequest{:}, webOpt);
+          isZipFileReady = true;
+        catch
+          isZipFileReady = false;
+        end
+      end
     end
     
     if isZipFileReady %
