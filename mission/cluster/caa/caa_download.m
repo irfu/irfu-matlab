@@ -123,7 +123,7 @@ end
 % appended with further search parameters based on used input).
 Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
 Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
-Default.Csa.urlQueryAsync       = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=deferred&'];  %% FIXME: Asynchronous product requests of data IS NOT currently (2021-06-02) supported according to https://www.cosmos.esa.int/web/csa/caiototap
+Default.Csa.urlQueryAsync       = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=deferred&'];
 Default.Csa.urlStream           = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=streaming&'];
 Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
 Default.Csa.urlFileInventory    = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+logical_file_id,file_start_date,file_end_date,caa_ingestion_date+FROM+csa.v_file'};
