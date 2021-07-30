@@ -122,7 +122,7 @@ end
 % format or other parameters before the ADQL (sql-style) query (which gets
 % appended with further search parameters based on used input).
 Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
-Default.Csa.urlQuery            = 'data?retrieval_type=PRODUCT&';
+Default.Csa.urlQuery            = 'data?RETRIEVAL_TYPE=product&';
 Default.Csa.urlQueryAsync       = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=deferred&'];
 Default.Csa.urlStream           = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=streaming&'];
 Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
