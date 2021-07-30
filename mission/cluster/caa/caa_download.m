@@ -435,7 +435,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
       downloadStatus = ttTemp;
       return;
     end
-    tint = [min(ttTemp.TimeInterval{:}) max(ttTemp.TimeInterval{:})];
+    tint = [min(ttTemp.TimeInterval(:)) max(ttTemp.TimeInterval(:))];
     if any(strfind(dataset,'fileinventory'))
       ttTemp = caa_download(tint,['fileinventory:' filter]);
     else
@@ -910,12 +910,12 @@ end
         indNewlineInQuote = bitand(ismember(caalog, char([10 13 44])), quoteInd);
         caalog(indNewlineInQuote) = [];
         % we have now have plain a CSV result
-        textLine=textscan(sprintf(caalog), ...
+        textLine = textscan(sprintf(caalog), ...
           '%s %q %q %s', ... % start_time and end_time is always quoted if present
           'Delimiter', ',', ...
           'HeaderLines', 1);
         TT.UserData(numel(textLine{1})).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
+        [TT.UserData(:).dataset] = deal(textLine{1}{1:end});
       case 'listdesc'
         % dataset_id,"start_date","end_date",title,"description"
         % Note: Some are quoted, some others are not it is not consistent.
@@ -934,25 +934,25 @@ end
         indNewlineInQuote = bitand(ismember(caalog, char([10 13 44])), quoteInd);
         caalog(indNewlineInQuote) = [];
         % we have now have plain a CSV result
-        textLine=textscan(sprintf(caalog), ...
+        textLine = textscan(sprintf(caalog), ...
           '%s %q %q %s %s', ... % start_time and end_time is always quoted if present
           'Delimiter', ',', ...
           'HeaderLines', 1);
         TT.UserData(numel(textLine{1})).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{1:end});
+        [TT.UserData(:).dataset] = deal(textLine{1}{1:end});
         [TT.UserData(:).description] = deal(textLine{5}{1:end});
       otherwise
         return;
     end
-    tStart = arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{2}(1:end), ...
-      'UniformOutput', false);
-    tEnd   = arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{3}(1:end), ...
-      'UniformOutput', false);
+    tStart = cell2mat(arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{2}(1:end), ...
+      'UniformOutput', false));
+    tEnd   = cell2mat(arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{3}(1:end), ...
+      'UniformOutput', false));
     tint = [tStart tEnd];
-    TT.TimeInterval=tint;
+    TT.TimeInterval = tint;
     TT.Header = {};
-    TT.Comment=cell(numel(TT),1);
-    TT.Description=cell(numel(TT),1);
+    TT.Comment = cell(numel(TT),1);
+    TT.Description = cell(numel(TT),1);
   end
 end
 %% Functions (not nested)
