@@ -20,7 +20,7 @@
             2021-05-24, EJ: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2021-06-23, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-06-11 (inclusive). Only manually identified thuster firings.
+            2021-08-04, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-08-02 (inclusive). Only manually identified thuster firings.
         </note>
     </notesTable>
 
@@ -845,7 +845,6 @@
 
 
 
-
         <event>
             <startTimeUtc>2021-06-01T12:44:04</startTimeUtc>
             <stopTimeUtc> 2021-06-01T12:52:57</stopTimeUtc>
@@ -857,6 +856,48 @@
             <stopTimeUtc> 2021-06-07T01:17:51</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-06-14T00:10:34</startTimeUtc>
+            <stopTimeUtc> 2021-06-14T00:25:23</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-06-21T01:04:31</startTimeUtc>
+            <stopTimeUtc> 2021-06-21T01:19:07</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-06-28T01:04:24</startTimeUtc>
+            <stopTimeUtc> 2021-06-28T01:20:03</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-07-05T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2021-07-05T01:14:36</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-07-12T09:49:24</startTimeUtc>
+            <stopTimeUtc> 2021-07-12T09:58:17</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Appears to be a single thruster firing. Therefore somewhat unclear if correct labelling.</description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-01T20:04:30</startTimeUtc>
+            <stopTimeUtc> 2021-08-01T20:14:38</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-02T06:59:13</startTimeUtc>
+            <stopTimeUtc> 2021-08-02T07:08:07</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Only five s/c potential peaks. Looks irregular but still looks much like a thruster firing.</description>
         </event>
 
     </eventsTable>
