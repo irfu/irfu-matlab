@@ -14,11 +14,27 @@
 classdef utils
 %
 % PROPOSAL: POLICY: No functions which set "policy"/configure the output of
-% datasets.
+%           datasets.
 %
 % PROPOSAL: Split up in separate files?!
-% PROPOSAL: Move some functions to "bicas.utils".
-%   Ex: log_array, log_struct_array
+%   PROPOSAL: Move all functions that are used outside bicas.proc to
+%             "bicas.utils" (class). -- DONE
+%   PROPOSAL: Move functions that are entirely used within a group/package of processing modes
+%           (L1L2, L2L2, L2L3) to their respective group.
+%       Ex: L1L2
+%           Ex: lfr.m, dts.m: derive_DELTA_PLUS_MINUS
+%           Ex: lfr.m:        bicas.proc.utils.filter_rows
+%           Ex: tds.m:        set_NaN_after_snapshots_end
+%           Ex: dc.m:
+%                   select_row_range_from_cell_comps
+%                   assert_cell_array_comps_have_same_N_rows (used by select_row_range_from_cell_comps)
+%                   convert_matrix_to_cell_array_of_vectors
+%           Ex: L1L2.m:       ACQUISITION_TIME_to_TT2000
+%                             (not used in processing function directly, only indirectly)
+%       CON: Useful to have all SMALL functions collected.
+%       CON: Can forget that a function exists if it is needed somewhere else.
+%       TODO-DEC: Move to subfile if only used there instead?
+%           Ex: Move function to lfr.m instead of L1L2.m?
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_TT2000 and its inversion.
 %
@@ -29,12 +45,6 @@ classdef utils
 %    PROPOSAL: First convert column data to 2D data (with separate functions),
 %              then reshape to 1D with one common function.
 %       CON: Does not work for ACQUISITION_TIME since two columns.
-%
-% PROPOSAL: Split up SPR functions.
-%   convert_N_to_1_SPR_redistribute     -- Keep
-%   convert_N_to_1_SPR_Epoch            -- increment_in_record + convert_N_to_1_SPR_redistribute
-%   convert_1_to_1_SPR_by_repeating     -- convert_1_to_N_SPR_by_repeating + convert_N_to_1_SPR_redistribute
-%   TODO-NI: Already done? Partially?
 
 
 

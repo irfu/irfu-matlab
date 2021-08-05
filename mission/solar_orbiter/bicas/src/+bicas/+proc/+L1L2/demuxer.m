@@ -1,7 +1,7 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
-%   bicas.proc.L1L2.demuxer.main.
+%   bicas.proc.L1L2.demuxer.main
 %   bicas.proc.L1L2.BLTS_src_dest
 %
 %

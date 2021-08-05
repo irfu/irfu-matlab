@@ -17,6 +17,9 @@ classdef dwns   % < handle
     %           Ex: Quality zVars when science data=fill values.
     %       PRO: Can verify bugfix for integer quality zVar=fill value when
     %            there is no science data.
+    %
+    % PROPOSAL: Include bicas.utils.get_bin_indices ?!
+    %   CON: Potentially generic outside of BICAS.
 
     
     %#######################

@@ -380,12 +380,14 @@ classdef cal < handle
             % ----------------------------------
             % Create RCT data map entry for BIAS
             % ----------------------------------
-            filenameRegexp = SETTINGS.get_fv(bicas.proc.L1L2.cal.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
+            filenameRegexp = SETTINGS.get_fv(...
+                bicas.proc.L1L2.cal.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
             filePath       = bicas.RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
             % IMPLEMENTATION NOTE: It has been observed that value sometimes
             % survives from previous runs, despite being an instance variable.
             % Unknown why. Therefore explicitly overwrites it.
-            obj.RctDataMap('BIAS') = bicas.proc.L1L2.cal.read_RCT_modify_log('BIAS', filePath, L);
+            obj.RctDataMap('BIAS') = bicas.proc.L1L2.cal.read_RCT_modify_log(...
+                'BIAS', filePath, L);
             % -------------------------------------
              % Add RCT data map entry for non-BIAS
              % -------------------------------------
@@ -428,7 +430,8 @@ classdef cal < handle
                 otherwise
                     error(...
                         'BICAS:Assertion:ConfigurationBug', ...
-                        'Illegal value for setting PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".', ...
+                        ['Illegal value for setting',...
+                        ' PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".'], ...
                         settingBiasTf)
             end
             

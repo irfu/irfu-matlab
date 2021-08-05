@@ -1,8 +1,9 @@
 %
-% Set of almost "production functions" (PF), functions for producing one
-% specific output dataset PDV from the necessary input dataset PDVs. The
-% functions here can easily be used to create anonymous functions which adhere
-% to the interface required to be a "production function" (below).
+% Set of functions which are almost "production functions" (PF), i.e. almost
+% functions for producing one specific output dataset PDV from the necessary
+% input dataset PDVs. The functions here can easily be used to create anonymous
+% functions which adhere to the interface required to be a "production function"
+% (below).
 %
 %
 % DEFINITION: PRODUCTION FUNCTION
