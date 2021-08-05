@@ -173,9 +173,9 @@ function Do = validate_file(filePath)
 %
 % PROPOSAL: Some means of checking that large subsets of different CDF files are identical.
 %    NOTE: Breaks present model of comparing CDF files independently.
-%    TODO-DECISION: Of a set of CDF files, compare which datasets with which?
+%    TODO-DEC: Of a set of CDF files, compare which datasets with which?
 %        PROPOSAL: Let one be special that serves as "master" for the other master files?
-%    TODO-DECISION: How define subsets that are be expected to be equal?
+%    TODO-DEC: How define subsets that are be expected to be equal?
 %        PROPOSAL: All attributes for a given zVariable.
 %        PROPOSAL: Specific subset of global attributes.
 %
@@ -452,7 +452,7 @@ end
 
 
 function validate_zv_attribute_value(ZvsMetadata, zvName, zvAttrName, comparisonValue, varargin)
-    % TODO-DECISION: How handle comparing different data types (MATLAB classes)?
+    % TODO-DEC: How handle comparing different data types (MATLAB classes)?
     %   PROPOSAL: Act differently depending zVar data type (TT2000 or not).
     
     if ~isfield(ZvsMetadata, zvName)

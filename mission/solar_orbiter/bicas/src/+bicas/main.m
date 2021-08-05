@@ -65,7 +65,7 @@ function errorCode = main( varargin )
     %
     % PROPOSAL: Set option for MATLAB warnings. Disable?
     %   NOTE: TN claims warnings are sent to stdout.
-    % TODO-NEED-INFO: Is the application allowed to overwrite output files?
+    % TODO-NI: Is the application allowed to overwrite output files?
     %
     % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
     %   PRO: Useful when S/W descriptor becomes big and complex.

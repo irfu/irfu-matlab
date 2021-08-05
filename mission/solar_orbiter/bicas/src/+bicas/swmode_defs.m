@@ -156,7 +156,7 @@ classdef swmode_defs
             %       science or HK, LFR or TDS, latest versions or
             %       backward-compatibility versions.
             %   --
-            %   TODO-DECISION: Above describes input & output (?) data sets.
+            %   TODO-DEC: Above describes input & output (?) data sets.
             %       How relates to s/w modes?
             %   
             % PROPOSAL: Merge LFR and TDS loops.

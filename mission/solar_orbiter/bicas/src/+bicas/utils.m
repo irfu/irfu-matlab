@@ -48,7 +48,7 @@ classdef utils   % < handle
             %
             % PROPOSAL: For min-max values, also print difference.
             %   Ex: Time difference for Epoch.
-            %       TODO-DECISION: How print time difference?
+            %       TODO-DEC: How print time difference?
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13:02:34
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13h02m34s
             

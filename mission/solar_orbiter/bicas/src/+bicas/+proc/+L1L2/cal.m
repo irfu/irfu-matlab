@@ -141,8 +141,8 @@ classdef cal < handle
 
 % BOGIQ:
 % ------
-% TODO-NEED-INFO: Where does the parasitic capacitance TF fit into the calibration formulas?
-% TODO-NEED-INFO: Parasitic capacitance values?
+% TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
+% TODO-NI: Parasitic capacitance values?
 % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
 %
 % ~DOCUMENTATION BUG?!!:
@@ -174,7 +174,7 @@ classdef cal < handle
 %
 %
 %
-% TODO-DECISION: How distribute the calibration formulas/algorithms between
+% TODO-DEC: How distribute the calibration formulas/algorithms between
 %   (1) calibrate_* functions, 
 %   (2) functions that select relevant calibration data (get_BIAS_calib_data)
 %   (2) RCT reading functions,
@@ -211,7 +211,7 @@ classdef cal < handle
 %               (2) Scalar calibration (a) with/(b) without offsets
 %               (3) Full calibration
 %               (4) Full calibration except without parasitic capacitance.
-%       TODO-DECISION: Where is it natural to modify calibration data then?!
+%       TODO-DEC: Where is it natural to modify calibration data then?!
 %   PROPOSAL: General philosophy should be that calibrate_* chooses as much as
 %             possible, and thus chooses different functions to call.
 %

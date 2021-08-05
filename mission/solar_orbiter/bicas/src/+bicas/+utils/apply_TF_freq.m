@@ -117,7 +117,7 @@
 % First created 2017-02-13
 %
 function [y2] = apply_TF_freq(dt, y1, tf)
-% TODO-NEED-INFO: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
+% TODO-NI: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
 %
 % PROPOSAL: Option for error on NaN/Inf.
 %
@@ -132,7 +132,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 %   PROPOSAL: Return the Z values actually used, so that caller can call back using them.
 %   PROPOSAL: Separate function for generating such vector.
 %
-% TODO-NEED-INFO: How does algorithm handle X_(N/2+1) (which has no frequency twin)? Seems like implemention should
+% TODO-NI: How does algorithm handle X_(N/2+1) (which has no frequency twin)? Seems like implemention should
 %   multiply it by a complex Z (generic situation) ==> Complex y2. Still, no such example has been found yet.
 %   Should be multiplied by abs(Z)?! Z-imag(z)?! Keep as is?!
 %

@@ -66,7 +66,7 @@ classdef settings < handle
 %   NOTE: This information should only be given once in the code, and be hard-coded.
 %
 % PROPOSAL: Convention for "empty"/"not set"?!
-%   TODO-DECISION/CON: Not really needed? Depends too much on the variable/setting.
+%   TODO-DEC/CON: Not really needed? Depends too much on the variable/setting.
 %
 % PROPOSAL: Initialize by submitting map.
 %   PRO: Can remove methods define_setting, disable_define.
@@ -90,7 +90,7 @@ classdef settings < handle
 %           NOTE: KVPL only permits string values(?).
 %
 % PROPOSAL: Make it possible to load multiple config files. Subsequent log files override each other.
-%   TODO-DECISION: Should the internal order of --set and --config arguments matter? Should a --config override a previous
+%   TODO-DEC: Should the internal order of --set and --config arguments matter? Should a --config override a previous
 %                  --set?
 
 

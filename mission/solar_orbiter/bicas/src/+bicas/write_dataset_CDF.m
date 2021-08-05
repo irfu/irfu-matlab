@@ -305,7 +305,7 @@ function DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L)
     %   NOTE: For floats: Use zvValuePd (not cvValueCdf).
     %   NOTE: Must handle zVars with ONLY fill values.
     %
-    % TODO-DECISION: How handle zVars with only fill value/NaN?
+    % TODO-DEC: How handle zVars with only fill value/NaN?
     %       Ex: EAC when no AC diff data
     %       Ex: BW=0
     %           Ex: SBM1, SBM2 test data

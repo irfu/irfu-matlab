@@ -120,7 +120,7 @@ classdef RCT
 
 
         function [RctData] = read_BIAS_RCT(filePath)
-            % TODO-DECISION: How handle time?
+            % TODO-DEC: How handle time?
             %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
             %             indices in a data struct.
             %       PROPOSAL: (private method) [omegaRps, zVpc] = get_transfer_func(epoch, signalType)

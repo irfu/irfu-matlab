@@ -16,13 +16,13 @@ function apply_TF_freq___ATEST
     % ------
     % PROPOSAL: Utility Z(omega) for generating single frequency change.
     % PROPOSAL: Automatic test: tf+inversion, compare ~spectras? Same result for multiple resolutions (even/odd). Pure delay/advance.
-    % TODO-NEED-INFO: How robust is automatic test code in the event of better algorithms? (Hann windows, de-trending and stuff...)
+    % TODO-NI: How robust is automatic test code in the event of better algorithms? (Hann windows, de-trending and stuff...)
     % PROPOSAL: Use specially-written "equals"-like function that permits (greater) discrepancies at the edge(s).
     %   PROPOSAL: Use weighting function.
     % PROPOSAL: Not only use delay TFs. It is possible that this makes the test insensitive to the function's association of
     %           frequencies with DFT components.
     %
-    % TODO-NEED-INFO: Should it not be possible to get more accurate agreement between expectation and result (without de-trending)?
+    % TODO-NI: Should it not be possible to get more accurate agreement between expectation and result (without de-trending)?
     %       Gets up to y2diffMax = 0.0889.
     %       Compare nDelay=3; y1 = rand(1,100); N=numel(y1); yDft1 = fft(y1); yDft2 = yDft1 .* exp(1i*2*pi*(0:N-1)* -nDelay/N); y2 = ifft(yDft2); y2Pred = circshift(y1, [1,nDelay]); transpose([y2; y2Pred]), max(abs(y2-y2Pred))
     %       which produces maxDiff < 1e-15.
