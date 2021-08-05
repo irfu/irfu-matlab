@@ -49,7 +49,7 @@
 %
 classdef assert
 %
-% TODO-DECISION: Use assertions on (assertion function) arguments internally?
+% TODO-DEC: Use assertions on (assertion function) arguments internally?
 %   NOTE: Potentially slower.
 %
 % TODO-NI: Slower to use assert() than if ... error ?
@@ -162,7 +162,7 @@ classdef assert
 %
 %
 % PROPOSAL: Functions for asserting line breaks.
-%   TODO-DECISION: Which set of functions.
+%   TODO-DEC: Which set of functions.
 %       PROPOSAL: Assert ending LF (assert not ending CR+LF).
 %       PROPOSAL: Assert all linebreaks are LF (no CR+LF).
 %       PROPOSAL: Assert all linebreaks are LF (no CR+LF). Require ending linebreak.
@@ -397,7 +397,7 @@ classdef assert
             %            field is a struct with the specified (required and optional) subfields.
             %
             % PROPOSAL: Recursive structs field names.
-            %   TODO-DECISION: How specify fieldnames? Can not use cell arrays recursively.
+            %   TODO-DEC: How specify fieldnames? Can not use cell arrays recursively.
             %   PROPOSAL: Define other, separate assertion method.
             %   PROPOSAL: Tolerate/ignore that structs are array structs.
             %   PROPOSAL: struct(S, {'PointA.x', 'PointA.y'}, {'PointA.z'})
@@ -409,7 +409,7 @@ classdef assert
             %       Groups together required and optional with every parent struct.
             %       PRO: Optional fields can be structs with both required and optional fields, recursively.
             %       PRO: Can be implemented recursively(?).
-            %   TODO-NEED-INFO: Required & optional is well-defined?
+            %   TODO-NI: Required & optional is well-defined?
             %   CON: Rarely needed.
             %       CON: Maybe not
             %           Ex: Settings structs
@@ -598,7 +598,7 @@ classdef assert
         %     NOTE: Empty or scalar matrices are accepted.
         %
         function all_equal(v)
-            % TODO-DECISION: How handle NaN?
+            % TODO-DEC: How handle NaN?
             %   PROPOSAL: Count NaN as equal to itself.
             
             nUniques = numel(unique(v(:)));    % NOTE: Make 1D vector.

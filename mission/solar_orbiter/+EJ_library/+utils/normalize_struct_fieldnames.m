@@ -60,7 +60,7 @@ function [S2, fnChangeList] = normalize_struct_fieldnames(S1, normList, duplicat
     %   Ex: irfu-matlab code uses zVarnames in other places than DataObj.data fieldnames.
     %       Ex: getfillval, findva (used by getfillval).
     %
-    % TODO-DECISION: How handle fieldnames which are not found?
+    % TODO-DEC: How handle fieldnames which are not found?
     %   PROPOSAL: Better to "translate" (change concept) when fieldnames are found, and ignore otherwise.
     %       PRO/NOTE: Can already "translate" fieldnames (change names arbitrarily) since normList{i}{2} does not have
     %                 to be a member of normList{i}{1}.

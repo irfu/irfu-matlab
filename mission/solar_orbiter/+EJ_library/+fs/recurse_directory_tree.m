@@ -413,7 +413,7 @@ end
 % Should only be needed exactly once (for the root directory).
 %
 function DirCmdResult = get_dir_cmd_result_for_single_directory(dirPath)
-    % TODO-DECISION: How handle "/"?
+    % TODO-DEC: How handle "/"?
     
     % IMPLEMENTATION NOTE: Need correct path to later determine the name of the
     % directory (e.g. for relative paths, "/", "..").

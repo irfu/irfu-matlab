@@ -5,7 +5,6 @@
 %
 % NOTE: Only capable (default) of only showing either DC diffs or AC diffs.
 % There are hard-coded settings for permitting or forcing both.
-% NOTE: Uses bicas.proc.utils.* code.
 % NOTE: Does not yet support spectrogram overlap.
 % NOTE: Time series panels interpolate between snapshots.
 % NOTE: Color scale is log. Therefore colors represent negative values (probably).
@@ -36,10 +35,10 @@ function hAxesArray = plot_LFR_SWF(filePath)
     % =====
     % POLICY: Combined BOGIQ for ~all quicklook plot code: See solo.sp.summary_plot.
     %
-    % TODO-DECISION: How submit data to spectrum_panel?
+    % TODO-DEC: How submit data to spectrum_panel?
     %   NEED: Should also work for TDS's varying-length snapshots?
     %   NOTE: Might be necessary to also split up CWF to speed up spectrograms eventually.
-    %   TODO-DECISION: Should caller split up data into snapshots?
+    %   TODO-DEC: Should caller split up data into snapshots?
     %   PROPOSAL: Submit one big TSeries and have the function split up the data based on gaps.
     %   PROPOSAL: Submit one TSeries per snapshot.
     %       PRO: Works for TDS snapshots.

@@ -53,12 +53,12 @@
 function A = add_struct_to_struct(A, B, varargin)
 %
 % PROPOSAL: Function pointer for what to do for duplicate fields?!
-% TODO-DECISION: Over-engineered?
+% TODO-DEC: Over-engineered?
 %   PRO: Too many duplicate field behaviours.
 %   PRO?: Distinction aIsStruct/bIsStruct is unnecessary.
 % PROPOSAL: Option for what to do if two fields are present but have different (non-struct) values.
 
-% TODO-DECISION: How determine recursion depth?
+% TODO-DEC: How determine recursion depth?
 %   PROPOSAL: Function pointer argument?!!
 %   PROPOSAL: (Flag) always/never recurse structs (if present in both "A" and "B").
 %
@@ -80,10 +80,10 @@ function A = add_struct_to_struct(A, B, varargin)
 % ==> Ambiguous whether to copy/overwrite or not. ==> Operation can not be automatically selected by algorithm.
 %
 % PROPOSAL: Want to be able to think of structs (recursive) as sets, with or without overlap (intersection).
-%   TODO-DECISION: How handle "unequal" intersections (same-named fields).
+%   TODO-DEC: How handle "unequal" intersections (same-named fields).
 %       Ex: Different field value types (struct, double, string, cell, object, ...).
 %       Ex: Different field values (of same type).
-%   TODO-DECISION: How determine recursion depth?
+%   TODO-DEC: How determine recursion depth?
 %   PROPOSAL: Comparison with diffdn somehow?
 %       CON: Recursion depth is well defined for diffdn.
 %

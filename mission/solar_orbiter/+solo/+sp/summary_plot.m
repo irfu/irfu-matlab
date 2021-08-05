@@ -42,7 +42,7 @@ classdef summary_plot < handle
     % like to wrap the function handle, not the add_panel_* method.
     %   Ex: Can not fade line color in wrapper.
     %
-    % TODO-DECISION: Content of figure title
+    % TODO-DEC: Content of figure title
     %   PROPOSAL: Time range
     %   PROPOSAL: DOY.
     %       ~PROBLEM/NOTE: Could span multiple days, or part of day.

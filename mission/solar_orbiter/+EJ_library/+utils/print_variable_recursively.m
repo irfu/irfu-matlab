@@ -40,23 +40,28 @@ function print_variable_recursively(varName, v, varargin)
 %   PROPOSAL: print_vr
 %
 % PROPOSAL: Settings.maxRecursionDepth
-%   TODO-DECISION: Vad skriva ut när når gränsen och alltså valt att inte skriva ut delkomponenter?
-%       Ex: Når rekursionsgränsen när når komponent i struct array, dvs. t.ex. "s.Groups(2).Datasets(2)"? Vill inte
-%       upprepa en massa identiska utskrifter (varje struct array-komponent har samma lista fält). Inte befogat med
-%       någon sorts sammanfattning som är identisk för varje komponent. För cell arrays kan komponenterna vara olika så
-%       där kan någon sammanfattning vara befogad.
+%   TODO-DEC: What should it print out when it reaches the recursion limit and
+%             thus has chosen not to print out the subcomponents?
+%       Ex: Reaches the recursion limit when reaches component in struct array,
+%       e.g. "s.Groups(2).Datasets(2)"? Does not want to repeat a lot of
+%       identical printouts (every struct array component has the same set of
+%       fields). A summary which is identical for every component is not
+%       justified for every component. The components can be different for cell
+%       arrays, so the some summary can be justified there.
 %
 % PROPOSAL: Line up equal signs among children of same parent.
 %   PRO: More easily readable.
 %   PRO: More elegant. ==> Can use function for more "formal" printouts.
 %
-% BUG: maxRecursionDepth<Inf + prinParentsSeparately=false will not print children with children (non-leafs).
+% BUG: maxRecursionDepth<Inf + prinParentsSeparately=false will not print
+%      children with children (non-leafs).
 % BUG? Settings.printParentSeparately does not work?
 %
 %
 % Overview of cases
 % -----------------
-% NOT: All variables have an array size, even though one may to treat 1x1 as a special case.
+% NOTE: All variables have an array size, even though one may to treat 1x1 as a
+%       special case.
 % Cells
 % Char: row vector counts as string
 % Struct, object (class object)
@@ -68,8 +73,8 @@ function print_variable_recursively(varName, v, varargin)
 %   PROPOSAL: Min number of non-line break chars
 %   PROPOSAL: Multiple criteria. Use MLD when at least one of them is satisfied.
 %
-% TODO-DECISION: How handle strings (1xN char arrays) and general char arrays (2-D, N-D)?
-%   TODO-DECISION: How handle strings (1xN char arrays)
+% TODO-DEC: How handle strings (1xN char arrays) and general char arrays (2-D, N-D)?
+%   TODO-DEC: How handle strings (1xN char arrays)
 %                  How handle long strings ~without line breaks?
 %                  How handle long strings with many line breaks?
 %       PROPOSAL: Separate printing mode which divides string into separate substrings. Return cell array of substrings.
@@ -84,7 +89,7 @@ function print_variable_recursively(varName, v, varargin)
 %               --
 %               PROPOSAL: Split on line break.
 %               PROPOSAL: Max substring length.
-%                   TODO-DECISION: Before/after escape codes? How handle after escape codes?
+%                   TODO-DEC: Before/after escape codes? How handle after escape codes?
 %               PROPOSAL: Print comment with reason for splitting.
 %                   CON: Must be returned, and printed by caller.
 %

@@ -69,7 +69,7 @@ function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(str, regexp
     % PROPOSAL: Somehow improve to prevent failing for regexps matching ~arbitrary strings before other regexp(s).
     %   Ex: Matching SO dataset filename. Can not match "-CDAG" or ".cdf".
     %   PROPOSAL: Option to search backwards (only).
-    %       TODO-DECISION: How represent partial match (only some substrings)?
+    %       TODO-DEC: How represent partial match (only some substrings)?
     %   PROPOSAL: Simultaneously searching from both beginning and end.
     %   PROPOSAL: Associate order of matching with each regexp. Must go from edges toward the middle (a regexp must be
     %       applied to a string that is adjacent to at least one already matched substring.

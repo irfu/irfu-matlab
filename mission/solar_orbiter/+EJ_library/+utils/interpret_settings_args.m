@@ -84,7 +84,7 @@ function Settings = interpret_settings_args(DefaultSettings, argsCa)
     % PROPOSAL: Add ability to recognize "string keywords" (one argument, instead of keyword+value) which indicate that
     % a flag (false/true) shall be set.
     %   NOTE: The default value is always false.
-    %   TODO-DECISION: How represent in a struct that a field represents an optional string keyword?
+    %   TODO-DEC: How represent in a struct that a field represents an optional string keyword?
     %       PROPOSAL: Special value, e.g. "string keyword", "argument keyword".
     %       PROPOSAL: Field name naming convention.
     %       NOTE: Might want it to be possible to both specify either a string keyword or a setting+value for the same

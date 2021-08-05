@@ -14,7 +14,7 @@
 % First created 2016-10-05
 %
 function x = replace_value(x, oldValue, newValue)
-    % TODO-DECISION: Is it appropriate to use assert that x must be able to have
+    % TODO-DEC: Is it appropriate to use assert that x must be able to have
     %                the value of oldValue (not newValue)? replace(x, NaN,
     %                newValue) could be OK for integer x since it does not do
     %                anything.
