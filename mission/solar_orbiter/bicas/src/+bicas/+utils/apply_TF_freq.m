@@ -218,7 +218,8 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % for real signals.
     %============================================================================
     %tfOmegaLookups     = 2*pi * ((1:N) - 1) / (N*dt);
-    %i = (tfOmegaLookups >= pi/dt);    % Indicies for which omega_k should be replaced by omega_(k-N).
+    % Indicies for which omega_k should be replaced by omega_(k-N).
+    %i = (tfOmegaLookups >= pi/dt);
     %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
     
     % Modified k values (~indices) used to calculate omega_k for every X_k.
@@ -279,7 +280,6 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     %     symmetry."
     y2 = ifft(yDft2, 'symmetric');
     %y2p = ifft(yDft2);    % TEST
-    
     
     
     % ASSERTION: Real (numbers) output.

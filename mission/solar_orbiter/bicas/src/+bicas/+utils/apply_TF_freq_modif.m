@@ -1,32 +1,35 @@
 %
-% Wrapper around bicas.utils.apply_TF_freq that (potentially) modifies data and
-% TF.
+% Wrapper around bicas.utils.apply_TF_freq() that (potentially) modifies data
+% and TF.
 %
 %
 % NOTES
 % =====
 % NOTE: Detrending makes it impossible to modify the amplitude & phase for the
-% frequency components in the trend (the fit), e.g. to delay the signal. If the
-% input signal is interpreted as N-periodic, then de-trending affects the jump
-% between the beginning and end of the signal (reduces it in the case of linear
-% de-trending), which affects the low-frequency content(?) but probably in a
-% good way. The implementation scales the "trend" (polynomial fit) by
-% tfZ(omega==0).
+% frequency components in the trend itself (the fit), e.g. to delay the signal
+% in the trend. If the input signal is interpreted as N-periodic, then
+% de-trending affects the jump between the beginning and end of the signal
+% (reduces it in the case of linear or higher order de-trending), which reduces
+% the high-frequency content, but probably in a good way. The implementation
+% scales the "trend" (polynomial fit) by tfZ(omega==0).
 % --
 % NOTE: Retrending is bad for non-lowpass filters since the retrending requires
 % scaling the fit by tfZ(omega=0) which is only meaningful for lowpass filters.
-% -- Has the ability to enable/disable de-trending to make testing easier.
-% -- Has the ability to make TF zero above cutoff. This cut-off is naturally
-%    sampling frequency-dependent and therefore not a natural part of the TF
-%    itself.
+% --
+% ** Code has the ability to enable/disable de-trending:
+%       -- Handle both DC and AC signals.
+%       -- Make testing easier.
+% ** Code has the ability to make TF zero above cutoff. This cut-off is
+%    naturally sampling frequency-dependent and is therefore not a natural part
+%    of the TF itself.
 %
 %
 % TERMINOLOGY
 % ===========
-% De-trending : REMOVING fit on data before applying the TF. It does NOT
+% De-trending : REMOVING fit on data BEFORE applying the TF. It does NOT
 %               automatically imply RE-trending.
 % Re-trending : ADDING BACK a scaled version of the previously removed fit when
-%               de-trending.
+%               de-trending, AFTER applying the TF.
 %
 %
 % ARGUMENTS
@@ -36,14 +39,14 @@
 %       function before actually being submitted.
 % varargin
 %       Optional settings arguments as interpreted by
-%       EJ_library.utils.interpret_settings_args.
-%       Possible settings:
-%         * detrendingDegreeOf
+%       EJ_library.utils.interpret_settings_args().
+%       Available settings:
+%         * 'detrendingDegreeOf'
 %               >=0 : Degree of the polynomical fit used for de-trending.
 %               <0  : No de-trending.
 %               Default = -1.
-%         * retrendingEnabled
-%         * tfHighFreqLimitFraction
+%         * 'retrendingEnabled'
+%         * 'tfHighFreqLimitFraction'
 %               Fraction of Nyquist frequency (1/dt). TF is regarded as zero
 %               above this frequency. Can be Inf.
 %
@@ -69,12 +72,14 @@
 function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     % PROPOSAL: Automatic test code.
     % PROPOSAL: Better name.
-    % NOTE: Could switch out the internal apply_TF_freq for other function, e.g. apply_TF_time.
+    % NOTE: Could switch out the internal apply_TF_freq() for other function,
+    %       e.g. apply_TF_time().
     %
     % PROPOSAL: Return modified TF actually used.
     % PROPOSAL: Return modified y1 actually used.
     % PROPOSAL: Return struct.
     %   PRO: Avoid confusing return arguments.
+    %
     % PROPOSAL: Separate function for modifying TF.
     %   NOTE: tfHighFreqLimitFraction depends on sampling frequency and can not
     %         be done in advance.
@@ -82,18 +87,50 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %
     % PROPOSAL: Check that data is finite. Only call bicas.utils.apply_TF_freq
     %           if all data is non-finite.
-    %   PRO: bicas.utils.apply_TF_freq can assume (needs to be updated) that always Z<>NaN and thereby detect if
-    %   TF can not be evaluated via NaN.
+    %   PRO: bicas.utils.apply_TF_freq() can assume (needs to be updated) that
+    %        always Z<>NaN and thereby detect if TF can not be evaluated via NaN.
     %       PRO: Can construct TFs in steps/parts where each part does not have
-    %       to be evaluated for all omega (return NaN if can not be evaluated).
+    %            to be evaluated for all omega (return NaN if can not be
+    %            evaluated).
     %           CON: Not necessarily best solution. TFs could give error when
-    %           not being able to return value.
+    %                not being able to return value.
+    %
+    % PROPOSAL: Simplification: yTrend2 = yTrend1 * tfB(0)  ?!!
+    %
+    % PROPOSAL: Separate package for TF-related code.
+    %   PRO: Useful if splitting up code and adding test code.
+    %
+    % PROPOSAL: Somehow make function/code reusable for case of applying TF
+    %           using arbitrary method.
+    %   Ex: Time-domain convolution+kernel.
+    %   Ex: Time & freq.:  De- & re-trending
+    %   Ex: Freq. only(?): Cutting freq. TF at Nyqvist frequency
+    %   Ex: Time only:     Hann windows on kernel, time-domain edge handling.
+    %   --
+    %   PROPOSAL: Integrate all different applications of TF into same function
+    %             together with all algorithm modifications.
+    %   PROPOSAL: Refactor functionality into separate reusable code.
+    %   PROPOSAL: Accept function handle to equivalent of
+    %             bicas.utils.apply_TF_freq().
+    %       PRO: Forces application of both de- & re-trending.
+    %       CON: Less clear code.
+    %           PRO: Kludgy if having to do logic between retrending & retrending.
+    %               Ex: Select how to apply TF (frequency domain, time domain).
+    %               CON: Can still put that logic into one function that is always being called.
+    %           PRO: Kludgy if using same principle (function accepting function
+    %                handle) for multiple functionalities consisting of before &
+    %                after operations.
+    %               Ex: ?!!
+    %   PROPOSAL: Replace with pair of functions: before and after call to bicas.utils.apply_TF_freq().
+    %   PROPOSAL: Replace with class with two non-constructor methods
+    %             y=c.method(y) before & after.
     
     DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
-    DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
     DEFAULT_SETTINGS.retrendingEnabled       = 0;
+    DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
     
-    Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+    Settings = EJ_library.utils.interpret_settings_args(...
+        DEFAULT_SETTINGS, varargin);
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
     clear DEFAULT_SETTINGS
     
@@ -106,7 +143,8 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     % Assert no RE-trending if no DE-trending.
     assert(detrendingEnabled || ~Settings.retrendingEnabled, ...
         'apply_TF_freq_modif:Assertion:IllegalArgument', ...
-        'Illegal combination of settings "detrendingDegreeOf" and "retrendingEnabled".')
+        ['Illegal combination of settings', ...
+        ' "detrendingDegreeOf" and "retrendingEnabled".'])
     
     
     
@@ -132,7 +170,7 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     % Optionally DE-trend
     %#####################
     if detrendingEnabled
-        nSamples = length(y1);
+        nSamples         = length(y1);
         trendFitsCoeffs1 = polyfit((1:nSamples)', y1, Settings.detrendingDegreeOf);
         yTrend1          = polyval(trendFitsCoeffs1, (1:nSamples)');
         y1B              = y1 - yTrend1;
@@ -168,6 +206,7 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
         
         trendFitsCoeffs2 = trendFitsCoeffs1 * tfB(0);
         
+        % PROPOSAL: yTrend2 = yTrend1 * tfB(0)  ?!!
         yTrend2 = polyval(trendFitsCoeffs2, (1:nSamples)');
         y2      = y2B + yTrend2;
     else
