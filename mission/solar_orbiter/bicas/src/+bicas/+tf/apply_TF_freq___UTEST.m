@@ -1,7 +1,7 @@
 %
-% matlab.unittest code for function "bicas.utils.apply_TF_freq()".
+% matlab.unittest code for function "bicas.tf.apply_TF_freq()".
 %
-% NOTE: bicas.utils.apply_TF_freq() does not alter the function before/after the
+% NOTE: bicas.tf.apply_TF_freq() does not alter the function before/after the
 % application of the TF, e.g. de-/re-trending.
 %
 %
@@ -70,17 +70,17 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             dt    = 0.1;
             delay = nDelaySmpls*dt;
 
-            tf = @(omega) bicas.utils.apply_TF_freq___UTEST.tf_delay(...
+            tf = @(omega) bicas.tf.apply_TF_freq___UTEST.tf_delay(...
                 omega, delay);
 
-            t      = bicas.utils.apply_TF_freq___UTEST.time_vector_N_dt(...
+            t      = bicas.tf.apply_TF_freq___UTEST.time_vector_N_dt(...
                 N, dt);
             f      = @(t) (0.5*(t-3).^2 + 5);
             y1     = f(t);
-            y2_exp = bicas.utils.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+            y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
                 y1, nDelaySmpls);
 
-            bicas.utils.apply_TF_freq___UTEST.complete_test(...
+            bicas.tf.apply_TF_freq___UTEST.complete_test(...
                 testCase, {dt, y1, tf}, y2_exp)
         end
 
@@ -91,17 +91,17 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         function test2(testCase, N)
             dt = 0.1;
 
-            tf = @(omega) bicas.utils.apply_TF_freq___UTEST.tf_constants(...
+            tf = @(omega) bicas.tf.apply_TF_freq___UTEST.tf_constants(...
                 omega, 2, 2);
 
-            t      = bicas.utils.apply_TF_freq___UTEST.time_vector_N_dt(...
+            t      = bicas.tf.apply_TF_freq___UTEST.time_vector_N_dt(...
                 N, dt);
             f1     = @(t) (1 * ones(size(t)) );
             f2     = @(t) (2 * ones(size(t)) );
             y1     = f1(t);
             y2_exp = f2(t);
 
-            bicas.utils.apply_TF_freq___UTEST.complete_test(...
+            bicas.tf.apply_TF_freq___UTEST.complete_test(...
                 testCase, {dt, y1, tf}, y2_exp)
         end
         
@@ -120,18 +120,18 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             delay = nDelaySmpls * dt;
             omega0 = 1;    % Fits time interval perfectly. Perfectly periodic.
 
-            tf = @(omega) bicas.utils.apply_TF_freq___UTEST.tf_constants(...
+            tf = @(omega) bicas.tf.apply_TF_freq___UTEST.tf_constants(...
                 omega, 1, exp(1i*omega0*(-delay)));
-            t  = bicas.utils.apply_TF_freq___UTEST.time_vector_N_dt(...
+            t  = bicas.tf.apply_TF_freq___UTEST.time_vector_N_dt(...
                 N, dt);
 
             f  = @(t) (3+cos(omega0 * (t-pi/5)));
 
             y1     = f(t);
-            y2_exp = bicas.utils.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+            y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
                 y1, nDelaySmpls);
 
-            bicas.utils.apply_TF_freq___UTEST.complete_test(...
+            bicas.tf.apply_TF_freq___UTEST.complete_test(...
                 testCase, {dt, y1, tf}, y2_exp)
         end
         
@@ -143,7 +143,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             dt    = 0.1;
             delay = nDelaySmpls*dt;
 
-            tf = @(omega) bicas.utils.apply_TF_freq___UTEST.tf_delay(...
+            tf = @(omega) bicas.tf.apply_TF_freq___UTEST.tf_delay(...
                 omega, delay);
 
             % Exact DFT frequency.  ==> Good match
@@ -154,15 +154,15 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             % radians).
             assert((N*dt) / (1/omega0) >= 10, 'Bad test config.?')
 
-            t  = bicas.utils.apply_TF_freq___UTEST.time_vector_N_dt(...
+            t  = bicas.tf.apply_TF_freq___UTEST.time_vector_N_dt(...
                 N, dt);
             f = @(t) cos(omega0 * (t-pi/5));
 
             y1     = f(t);
-            y2_exp = bicas.utils.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+            y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
                 y1, nDelaySmpls);
 
-            bicas.utils.apply_TF_freq___UTEST.complete_test(...
+            bicas.tf.apply_TF_freq___UTEST.complete_test(...
                 testCase, {dt, y1, tf}, y2_exp)
         end
         
@@ -174,18 +174,18 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             dt    = 0.01;
             delay = nDelaySmpls*dt;
 
-            tf = @(omega) bicas.utils.apply_TF_freq___UTEST.tf_delay(...
+            tf = @(omega) bicas.tf.apply_TF_freq___UTEST.tf_delay(...
                 omega, delay);
 
-            t  = bicas.utils.apply_TF_freq___UTEST.time_vector_N_dt(...
+            t  = bicas.tf.apply_TF_freq___UTEST.time_vector_N_dt(...
                 N, dt);
 
             f      = @(t) exp(t);
             y1     = f(t);
-            y2_exp = bicas.utils.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+            y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
                 y1, nDelaySmpls);
 
-            bicas.utils.apply_TF_freq___UTEST.complete_test(...
+            bicas.tf.apply_TF_freq___UTEST.complete_test(...
                 testCase, {dt, y1, tf}, y2_exp)
         end
 
@@ -197,18 +197,18 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             dt    = 1 / (N-1);
             delay = nDelaySmpls*dt;
 
-            tf = @(omega) bicas.utils.apply_TF_freq___UTEST.tf_delay(...
+            tf = @(omega) bicas.tf.apply_TF_freq___UTEST.tf_delay(...
                 omega, delay);
 
-            t  = bicas.utils.apply_TF_freq___UTEST.time_vector_N_dt(...
+            t  = bicas.tf.apply_TF_freq___UTEST.time_vector_N_dt(...
                 N, dt);
 
             f = @(t) ((t-5).^3 - 20*t + 25);
             y1 = f(t);
-            y2_exp = bicas.utils.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+            y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
                 y1, nDelaySmpls);
 
-            bicas.utils.apply_TF_freq___UTEST.complete_test(...
+            bicas.tf.apply_TF_freq___UTEST.complete_test(...
                 testCase, {dt, y1, tf}, y2_exp)
         end
         
@@ -220,17 +220,17 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             dt = 1 / (N-1);
             z0 = -2;
 
-            tf = @(omega) bicas.utils.apply_TF_freq___UTEST.tf_constants(...
+            tf = @(omega) bicas.tf.apply_TF_freq___UTEST.tf_constants(...
                 omega, z0, 0);
 
-            t  = bicas.utils.apply_TF_freq___UTEST.time_vector_N_dt(...
+            t  = bicas.tf.apply_TF_freq___UTEST.time_vector_N_dt(...
                 N, dt);
 
             y1 = 10 * ones(size(t)) + 5 * sin(10*t.^3);            
             % Only keep mean (and multiply by factor).
             y2_exp = z0 * ones(size(y1)) * mean(y1);
             
-            bicas.utils.apply_TF_freq___UTEST.complete_test(...
+            bicas.tf.apply_TF_freq___UTEST.complete_test(...
                 testCase, {dt, y1, tf}, y2_exp)
         end
         
@@ -252,13 +252,13 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             y1 = argsCa{2};
             
             %================================
-            % CALL bicas.utils.apply_TF_freq
+            % CALL bicas.tf.apply_TF_freq
             %================================
-            y2_act = bicas.utils.apply_TF_freq( argsCa{:} );
+            y2_act = bicas.tf.apply_TF_freq( argsCa{:} );
             
             testCase.verifyEqual(size(y1), size(y2_act))
 
-            if bicas.utils.apply_TF_freq___UTEST.PLOTTING_ENABLED
+            if bicas.tf.apply_TF_freq___UTEST.PLOTTING_ENABLED
                 n = (1:length(y2_exp))';
                 
                 %==============================================
@@ -279,7 +279,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
             testCase.verifyEqual(...
                 y2_act, y2_exp, ...
-                'AbsTol', bicas.utils.apply_TF_freq___UTEST.EPSILON)
+                'AbsTol', bicas.tf.apply_TF_freq___UTEST.EPSILON)
         end
         
         

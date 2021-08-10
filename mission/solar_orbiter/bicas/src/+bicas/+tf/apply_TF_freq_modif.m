@@ -1,5 +1,5 @@
 %
-% Wrapper around bicas.utils.apply_TF_freq() that (potentially) modifies data
+% Wrapper around bicas.tf.apply_TF_freq() that (potentially) modifies data
 % and TF.
 %
 %
@@ -35,7 +35,7 @@
 % ARGUMENTS
 % =========
 % dt, y1, tf
-%       Same as for bicas.utils.apply_TF_freq(). May be modified by this
+%       Same as for bicas.tf.apply_TF_freq(). May be modified by this
 %       function before actually being submitted.
 % varargin
 %       Optional settings arguments as interpreted by
@@ -85,9 +85,9 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %         be done in advance.
     % PROPOSAL: One setting enableDetrendingRetrending = [enableDetrending, enableDetrending].
     %
-    % PROPOSAL: Check that data is finite. Only call bicas.utils.apply_TF_freq
+    % PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq
     %           if all data is non-finite.
-    %   PRO: bicas.utils.apply_TF_freq() can assume (needs to be updated) that
+    %   PRO: bicas.tf.apply_TF_freq() can assume (needs to be updated) that
     %        always Z<>NaN and thereby detect if TF can not be evaluated via NaN.
     %       PRO: Can construct TFs in steps/parts where each part does not have
     %            to be evaluated for all omega (return NaN if can not be
@@ -111,7 +111,7 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %             together with all algorithm modifications.
     %   PROPOSAL: Refactor functionality into separate reusable code.
     %   PROPOSAL: Accept function handle to equivalent of
-    %             bicas.utils.apply_TF_freq().
+    %             bicas.tf.apply_TF_freq().
     %       PRO: Forces application of both de- & re-trending.
     %       CON: Less clear code.
     %           PRO: Kludgy if having to do logic between retrending & retrending.
@@ -121,7 +121,7 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %                handle) for multiple functionalities consisting of before &
     %                after operations.
     %               Ex: ?!!
-    %   PROPOSAL: Replace with pair of functions: before and after call to bicas.utils.apply_TF_freq().
+    %   PROPOSAL: Replace with pair of functions: before and after call to bicas.tf.apply_TF_freq().
     %   PROPOSAL: Replace with class with two non-constructor methods
     %             y=c.method(y) before & after.
     
@@ -183,12 +183,12 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %#########################
     % APPLY TRANSFER FUNCTION
     %#########################
-    [y2B] = bicas.utils.apply_TF_freq(dt, y1B, tfB);
-    %[y2B, tfOmegaLookups, tfZLookups] = bicas.utils.apply_TF_freq(dt, y1B, tfB);
+    [y2B] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
+    %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
     
 %     % ASSERTIONS
 %     if all(isfinite(y1B)) && ~all(isfinite(tfZLookups))
-%         % IMPLEMENTATION NOTE: bicas.utils.apply_TF_freq (deliberately) does not
+%         % IMPLEMENTATION NOTE: bicas.tf.apply_TF_freq (deliberately) does not
 %         % throw error if TF returns non-finite values. This assertion should
 %         % catch that case instead.
 %         error('BICAS:Assertion', ...
