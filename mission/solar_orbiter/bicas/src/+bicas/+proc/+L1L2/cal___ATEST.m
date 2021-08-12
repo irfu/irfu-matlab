@@ -1,4 +1,4 @@
-function calib___ATEST
+function cal___ATEST
     
     get_calibration_time___ATEST
 end

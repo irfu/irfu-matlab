@@ -61,9 +61,9 @@ classdef pf
             InputCurCdf = InputDatasetsMap('CUR_cdf');
             InputSciCdf = InputDatasetsMap('SCI_cdf');
 
-            %==============================
+            %======================================
             % Configure bicas.proc.L1L2.cal object
-            %==============================
+            %======================================
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
             useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1r;
             useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1r;
@@ -107,9 +107,9 @@ classdef pf
             InputCurCdf = InputDatasetsMap('CUR_cdf');
             InputSciCdf = InputDatasetsMap('SCI_cdf');
             
-            %==============================
+            %======================================
             % Configure bicas.proc.L1L2.cal object
-            %==============================
+            %======================================
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
             if C.isTdsCwf

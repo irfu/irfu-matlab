@@ -59,7 +59,7 @@ classdef dc   % < handle
             currentTm      = bicas.proc.L1L2.cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
-            iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);
+            iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
             [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
                 ['Calibrating currents -', ...
@@ -179,8 +179,8 @@ classdef dc   % < handle
                 'acV23', tempVoltageArray);
 
             dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
-            iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
-            iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
+            iCalibLZv    = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
+            iCalibHZv    = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
 
 
 

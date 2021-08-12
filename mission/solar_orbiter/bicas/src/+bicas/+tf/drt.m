@@ -1,6 +1,4 @@
 %
-% UNFINISHED / EXPERIMENTAL
-%
 % Class for detrending and retrending a signal before & after the application of
 % a TF to it.
 %
@@ -53,7 +51,7 @@ classdef drt < handle
     properties(Access=private)
         
         detDegreeOf
-        detEnabled
+        detEnabled   % In principle unnecessary, but clarifies code.
         retEnabled
         yTrend1
         
@@ -74,14 +72,13 @@ classdef drt < handle
         
         function obj = drt(detDegreeOf, retEnabled)
             % ASSERTIONS
+            assert(obj.state == 0)
             assert(isscalar(detDegreeOf) & isnumeric(detDegreeOf))
             assert(isscalar(retEnabled ) & islogical(retEnabled ), ...
                 'retEnabled is not scalar & logical.')
             
-            % Internally useful variable.
-            obj.detEnabled = (detDegreeOf >= 0);
-            
             obj.detDegreeOf = detDegreeOf;
+            obj.detEnabled = (detDegreeOf >= 0);
             obj.retEnabled  = retEnabled;
             obj.yTrend1     = [];    % Set later.
             
@@ -106,7 +103,7 @@ classdef drt < handle
                 
                 trendFitsCoeffs1 = polyfit((1:nSamples)', y1a, obj.detDegreeOf);
                 % NOTE: Set instance variable.
-                % NOTE: Naturally hardcodes vector "type" (row/column).
+                % NOTE: By necessity hardcodes the vector "type" (row/column).
                 obj.yTrend1      = polyval(trendFitsCoeffs1, (1:nSamples)');
                 
                 y1b              = y1a - obj.yTrend1;

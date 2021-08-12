@@ -37,7 +37,7 @@ function SETTINGS = create_default_SETTINGS()
 %
 % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
 %
-% PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
+% PROPOSAL: Setting keys should use cased version of zVars and glob.attrs..
 %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
 %
 % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
@@ -53,6 +53,9 @@ function SETTINGS = create_default_SETTINGS()
 %   NOTE: Must be done AFTER all settings have been set.
 %   PROPOSAL: Do every time settings are set, i.e. for default values,
 %       config file values, CLI argument values.
+%
+% PROPOSAL: Abolish PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM functionality. Obsolete.
+%
 %
 % =========================
 % BOGIQ: SETTING KEY NAMING
@@ -615,8 +618,8 @@ function SETTINGS = create_default_SETTINGS()
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
     % corresponds to interface volt.
-    % NOTE: This useful for separately using bicas.proc.L1L2.cal for analyzing BIAS
-    % standalone calibration tables (BSACT).
+    % NOTE: This useful for separately using bicas.proc.L1L2.cal for analyzing
+    % BIAS standalone calibration tables (BSACT).
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
 
 

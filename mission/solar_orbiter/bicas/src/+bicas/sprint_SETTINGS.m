@@ -23,8 +23,7 @@ function str = sprint_SETTINGS(SETTINGS)
     %           Config file  = ...   % Second value in config file.
     %           CLI argument = ...
     %       CON: Slightly less clear when not having a separat column for overriding.
-    %       PRO: Han handle any situation of overriding.
-    %
+    %       PRO: Can handle any situation of overriding.
     
     % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants")
     % to indicate/hint that it is only the content of the "SETTINGS" variables,
@@ -51,7 +50,7 @@ function str = sprint_SETTINGS(SETTINGS)
         % ones
         %======================================================================
         strValueList = {};   % Must be reset for every key.
-        for iVs = 1:nValues
+        for iVs = 1:nValues    % Iterate over versions of the same setting.
             value = valueStructArray(iVs).value;
             try
                 displayStr = bicas.settings_value_to_display_str(value);
@@ -66,12 +65,12 @@ function str = sprint_SETTINGS(SETTINGS)
             strValueList{iVs} = displayStr;
         end
         
-        valueStatusStr   = EJ_library.utils.translate({...
+        valueStatusStr = EJ_library.utils.translate({...
             {'default'},            '  --';
             {'configuration file'}, '(conf)';
             {'CLI arguments'},      '(CLI)'}, ...
             valueStructArray(end).valueSource, ...
-            'BICAS:sprintf_settings:Assertion', ...
+            'BICAS:Assertion', ...
             'Illegal setting value source');
         
         str = [str, sprintf(...

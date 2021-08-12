@@ -1,5 +1,6 @@
 %
-% Class that collects functions related to finding/selecting and reading RCTs.
+% Class that collects generic functions related to finding/selecting and reading
+% RCTs.
 %
 %
 % DESIGN INTENT
@@ -7,10 +8,10 @@
 % Implemented so that no calibration data is modified/added to/removed from. The
 % returned data structures reflect the content of the RCTs, not necessarily the
 % data used. Modification of data (in particular modifications of transfer
-% functions, e.g. extrapolation or cut-offs) should be done elsewhere.
+% functions, e.g. extrapolation, cut-offs, inversions) should be done elsewhere.
 % --
-% NOTE: BIAS & LFR RCTs contain FTFs which are not inverted in this code.
-%       TDS RCTs contain ITFs.
+% NOTE: BIAS & LFR RCTs: contain FTFs which are not inverted in this code.
+%       TDS RCTs:        contain ITFs.
 % NOTE: Code still converts RCT TFs slightly:
 %   frequency      : Hz    --> rad/s
 %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
@@ -40,10 +41,20 @@ classdef RCT
 %   PRO: BIAS data has many fields.
 %   PRO: More well-defined data structs.
 %   PRO: Automatic assertions.
-%   CON: Structs are modified RCT.m-->calib.m ==> Too many classes.
+%   CON: Structs are modified when cal.m uses them, i.e. one could just as well
+%        have classes for the format cal.m uses. ==> Too many classes.
 %
 % PROPOSAL: Move out find_RCT_regexp.
-
+%   PRO: Does not fit in.
+%   PROPOSAL: Move to bicas.proc.L1L2.cal_RCT.
+%
+% PROPOSAL: Move bicas.RCT
+%   CON: Contains generic RCT functionality. Not directly processing related.
+%     --> bicas.proc.L1L2.RCT ?
+%     --> bicas.proc.L1L2.cal.RCT ?
+%     --> bicas.proc.L1L2*.RCT_read ?
+%         NOTE: Also contains function find_RCT_regexp(). Not just
+%               functions for reading RCTs.
 
 
     properties(Access=private, Constant)
@@ -528,6 +539,6 @@ classdef RCT
 
         
 
-    end    %methods(Static, Access=public)
+    end    %methods(Static, Access=private)
 
 end

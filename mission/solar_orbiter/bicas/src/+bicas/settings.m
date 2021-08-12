@@ -39,7 +39,9 @@
 %
 % ~BUG POTENTIAL: Support for 1D cell arrays may not be completely implemented.
 %   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1).
-%         Inconvenient.
+%         Inconvenient when working with values from CLI arguments and log files
+%         since less convenient to write a 0x1 or 1x0 literal?!
+%       Ex: Have to write zeros(0,1) instead of []?
 % 
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -92,6 +94,9 @@ classdef settings < handle
 % PROPOSAL: Make it possible to load multiple config files. Subsequent log files override each other.
 %   TODO-DEC: Should the internal order of --set and --config arguments matter? Should a --config override a previous
 %                  --set?
+%
+% PROPOSAL: Automatic tests, in particular for different settings values data types.
+
 
 
     properties(Access=private)

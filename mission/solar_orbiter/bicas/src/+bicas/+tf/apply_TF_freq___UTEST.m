@@ -304,49 +304,24 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
 
 
-        % Create TF that delays function, i.e. it is moved in the t+ direction
-        % (time domain), i.e. the same time delay (in time units) for all
-        % frequencies.
+        % TF that delays function, i.e. it is moved in the t+ direction (time
+        % domain), i.e. the same time delay (in time units) for all frequencies.
         function Z = tf_delay(omega, delay)
             Z = exp(1i*omega*(-delay));
         end
 
         
         
+        % Delay function (circular shift) by integer numebr of samples.
+        %
+        % IMPLEMENTATION NOTE: One can in principle use a function that
+        % circular-shifts an analytical signal (function handle). However, if
+        % one delays the signal by integer*dt, then rounding error can lead to
+        % that a y value that is shifted to be on the boundary ends up on the
+        % wrong boundary due to rounding error.
         function y2 = ts_delay_func_discrete(y1, delaySmpls)
             y2 = circshift(y1, delaySmpls);
         end
-
-
-
-        % Function for creating TIME SERIES which is a delayed version of a
-        % specified function handle (not time series) AND treats the time
-        % interval as cyclic.
-        %
-        % NOTE: If delaying by integer*dt, then rounding error can lead to that
-        %       a y value that is shifted to be on the boundary ends up on the
-        %       wrong boundary due to rounding error. Function should therefore
-        %       not be used for delay=integer*dt.
-        %
-        % ARGUMENTS
-        % =========
-        % f     : Function pointer
-        % t     : Array of timestamps.
-        % delay : delay>0 pushes function/data/shapes in the t+ direction.
-        % N     : Number of samples in time series.
-        % dt    :
-        %
-%         function y2 = ts_delay_func_analytical(funcHandle,t, delay,N,dt)
-%             % PROBLEM: If delaying by integer*dt, then rounding error can lead
-%             %          to that a y value that is shifted to be on the boundary
-%             %          ends up on the wrong boundary due to rounding error.
-%             % 
-%             % PROPOSAL: Replace by function that has argument for y data instead.
-%             %   ~PROBLEM: Must determine delay in units of dt. => Rounding.
-%             %       ==> Can not be used for approximate results (more manual
-%             %           atests).
-%             y2 = funcHandle(mod(t-delay, N*dt));
-%         end
 
 
 

@@ -12,7 +12,7 @@ classdef drt___UTEST < matlab.unittest.TestCase
     properties(TestParameter)
         % "All" legal combinations of detDegreeOf, retEnabled which returns the
         % original signal if unity TF.
-        ALL_UNITY_DET_RET_SETTINGS = {{-2, false}, {0, true}, {1, true}, {2, true}, {5, true}}
+        UNITY_DET_RET_SETTINGS = {{-2, false}, {0, true}, {1, true}, {2, true}, {5, true}}
     end
     
     
@@ -42,8 +42,7 @@ classdef drt___UTEST < matlab.unittest.TestCase
         
         
         % Restore arbitrary signal completely.
-        function test_unity(testCase, ALL_UNITY_DET_RET_SETTINGS)
-            drtSettingsCa = ALL_UNITY_DET_RET_SETTINGS;
+        function test_unity(testCase, UNITY_DET_RET_SETTINGS)
             
             t = [0:0.01:1]';
             
@@ -51,11 +50,11 @@ classdef drt___UTEST < matlab.unittest.TestCase
             y1a = exp(t) .* cos(t) + t.^3;
             
             % NOTE: Must use scale=1 to obtain original function.
-            [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, drtSettingsCa, 1);
+            [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, UNITY_DET_RET_SETTINGS, 1);
             
             % ASSERTIONS
             testCase.verifyEqual(y1a, y2a)
-            if drtSettingsCa{1} >= 0    % DRT not disabled entirely.
+            if UNITY_DET_RET_SETTINGS{1} >= 0    % DRT not disabled entirely.
                 testCase.assertTrue(max(abs(y1a-y12b)) > 0.1)
                 testCase.assertTrue(max(abs(y2a-y12b)) > 0.1)
             end
