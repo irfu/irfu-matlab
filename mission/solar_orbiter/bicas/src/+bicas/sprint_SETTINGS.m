@@ -68,6 +68,15 @@ function str = sprint_SETTINGS(SETTINGS)
                     strValue = sprintf('[%s]', strjoin(strArray, ', '));
                 end
 
+            elseif islogical(value)
+                
+                assert(isscalar(value))
+                if value
+                    strValue = 'true';
+                else
+                    strValue = 'false';
+                end                    
+                
             elseif iscell(value)
 
                 EJ_library.assert.vector(value)

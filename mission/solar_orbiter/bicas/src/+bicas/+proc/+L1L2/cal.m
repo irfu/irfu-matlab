@@ -1075,7 +1075,7 @@ classdef cal < handle
                 % being removed, TF applied, and then added back. That same
                 % algorithm is inappropriate for non-lowpass filters.
                 CalData.detrendingDegreeOf = obj.acDetrendingDegreeOf;
-                CalData.retrendingEnabled  = 0;
+                CalData.retrendingEnabled  = false;
             else
                 CalData.detrendingDegreeOf = obj.dcDetrendingDegreeOf;
                 CalData.retrendingEnabled  = obj.dcRetrendingEnabled;

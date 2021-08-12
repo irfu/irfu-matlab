@@ -589,7 +589,7 @@ function SETTINGS = create_default_SETTINGS()
     % YK 2020-11-02: Detrend AC data, but do not add linear fit back.
     %===========================================================================
     S.define_setting('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', 1)
-    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    1)
+    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    true)
     S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
 
 

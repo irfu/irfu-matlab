@@ -156,7 +156,8 @@ classdef settings < handle
             % ASSERTIONS
             if ischar(defaultValue)
                 % Do nothing
-            elseif isnumeric(defaultValue) || iscell(defaultValue)
+            elseif isnumeric(defaultValue) || iscell(defaultValue) ...
+                    || islogical(defaultValue)
                 EJ_library.assert.vector(defaultValue)
             else
                 error('BICAS:Assertion:IllegalArgument', ...

@@ -126,7 +126,7 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %             y=c.method(y) before & after.
     
     DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
-    DEFAULT_SETTINGS.retrendingEnabled       = 0;
+    DEFAULT_SETTINGS.retrendingEnabled       = false;
     DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
     
     Settings = EJ_library.utils.interpret_settings_args(...
@@ -134,17 +134,21 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
     clear DEFAULT_SETTINGS
     
+
     
+    % ASSERTIONS: Settings
+%     assert(isscalar(Settings.detrendingDegreeOf))
+%     detrendingEnabled = (Settings.detrendingDegreeOf >= 0);
+%     
+%     assert(isscalar(Settings.retrendingEnabled))
+%     % Assert no RE-trending if no DE-trending.
+%     assert(detrendingEnabled || ~Settings.retrendingEnabled, ...
+%         'apply_TF_freq_modif:Assertion:IllegalArgument', ...
+%         ['Illegal combination of settings', ...
+%         ' "detrendingDegreeOf" and "retrendingEnabled".'])
     
-    assert(isscalar(Settings.detrendingDegreeOf))
-    detrendingEnabled = (Settings.detrendingDegreeOf >= 0);
-    
-    assert(isscalar(Settings.retrendingEnabled))
-    % Assert no RE-trending if no DE-trending.
-    assert(detrendingEnabled || ~Settings.retrendingEnabled, ...
-        'apply_TF_freq_modif:Assertion:IllegalArgument', ...
-        ['Illegal combination of settings', ...
-        ' "detrendingDegreeOf" and "retrendingEnabled".'])
+    % ASSERTION: Arguments
+    assert(iscolumn(y1), 'Argument y1 is not a column vector.')
     
     
     
@@ -169,16 +173,20 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %#####################
     % Optionally DE-trend
     %#####################
-    if detrendingEnabled
-        nSamples         = length(y1);
-        trendFitsCoeffs1 = polyfit((1:nSamples)', y1, Settings.detrendingDegreeOf);
-        yTrend1          = polyval(trendFitsCoeffs1, (1:nSamples)');
-        y1B              = y1 - yTrend1;
-    else
-        y1B = y1;
-    end
-    
-    
+%     if detrendingEnabled
+%         nSamples         = length(y1);
+%         trendFitsCoeffs1 = polyfit((1:nSamples)', y1, Settings.detrendingDegreeOf);
+%         yTrend1          = polyval(trendFitsCoeffs1, (1:nSamples)');
+%         y1B              = y1 - yTrend1;
+%     else
+%         y1B = y1;
+%     end
+    Drt = bicas.tf.drt(...
+        Settings.detrendingDegreeOf, ...
+        Settings.retrendingEnabled);
+    y1B = Drt.detrend(y1);
+
+
     
     %#########################
     % APPLY TRANSFER FUNCTION
@@ -200,17 +208,16 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %#####################
     % Optionally RE-trend
     %#####################
-    if Settings.retrendingEnabled
-        % Use Z(omega=0) to scale trend, including higher order polynomial
-        % components.
-        
-        trendFitsCoeffs2 = trendFitsCoeffs1 * tfB(0);
-        
-        % PROPOSAL: yTrend2 = yTrend1 * tfB(0)  ?!!
-        yTrend2 = polyval(trendFitsCoeffs2, (1:nSamples)');
-        y2      = y2B + yTrend2;
-    else
-        y2 = y2B;
-    end
+%     if Settings.retrendingEnabled
+%         % Use Z(omega=0) to scale trend, including higher order polynomial
+%         % components.
+%         
+%         yTrend2 = yTrend1 * tfB(0);
+%         y2      = y2B + yTrend2;
+%     else
+%         y2 = y2B;
+%     end
+    y2 = Drt.retrend(y2B, tfB(0));
+    
     
 end
