@@ -53,61 +53,17 @@ function str = sprint_SETTINGS(SETTINGS)
         strValueList = {};   % Must be reset for every key.
         for iVs = 1:nValues
             value = valueStructArray(iVs).value;
-            
-            if ischar(value)
-                
-                strValue = ['"', value, '"'];
-                
-            elseif isnumeric(value)
-                
-                EJ_library.assert.vector(value)
-                if isscalar(value)
-                    strValue = sprintf('%d', value);
-                else
-                    strArray = EJ_library.str.sprintf_many('%d', value);
-                    strValue = sprintf('[%s]', strjoin(strArray, ', '));
-                end
-
-            elseif islogical(value)
-                
-                assert(isscalar(value))
-                if value
-                    strValue = 'true';
-                else
-                    strValue = 'false';
-                end                    
-                
-            elseif iscell(value)
-
-                EJ_library.assert.vector(value)
-                strValueCa = {};
-                for i = 1:numel(value)
-                    cellValue = value{i};
-                    if isnumeric(cellValue) && isscalar(cellValue)
-                        strValueCa{i} = sprintf('%g', cellValue);
-                    elseif ischar(cellValue)
-                        strValueCa{i} = sprintf('"%s"', cellValue);
-                    else
-                        error(...
-                            'BICAS:sprintf_settings:IllegalCodeConfiguration', ...
-                            ['Can not print setting for log since cell', ...
-                            ' array component is neither scalar numeric', ...
-                            ' nor string.'])
-                    end
-                end
-                strValue = sprintf('{%s}', strjoin(strValueCa, ', '));
-
-            else
-
+            try
+                displayStr = bicas.settings_value_to_display_str(value);
+            catch Exc
                 error(...
-                    'BICAS:sprintf_settings:Assertion', ...
-                    ['SETTINGS value (overriden or not) for key="%s" has', ...
-                    ' illegal MATLAB class.', ...
-                    ' It is neither char, numeric, nor 1D cell array.'], key)
-
+                    'BICAS:Assertion', ...
+                    ['SETTINGS value (overriden or not) for key="%s"', ...
+                    ' can not be converted to a display string.', ...
+                    ' This is likely a bug.'], ...
+                    key)
             end
-            strValueList{iVs} = strValue;
-            clear strValue value
+            strValueList{iVs} = displayStr;
         end
         
         valueStatusStr   = EJ_library.utils.translate({...
