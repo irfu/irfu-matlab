@@ -11,14 +11,15 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-23.
 %
-function Map = create_containers_Map(keyType, valueType, keyList, valueList)
+function Map = create_containers_Map(keyType, valueType, keyCa, valueCa)
     Map = containers.Map('KeyType', keyType, 'ValueType', valueType);
     
-    assert(iscell(keyList))
-    assert(iscell(valueList))
-    assert(numel(keyList) == numel(valueList))
+    assert(iscell(keyCa))
+    assert(iscell(valueCa))
+    assert(numel(keyCa) == numel(valueCa), ...
+        'Arguments keyCa and valueCa do not have same length.')
     
-    for i = 1:numel(keyList)
-        Map(keyList{i}) = valueList{i};
+    for i = 1:numel(keyCa)
+        Map(keyCa{i}) = valueCa{i};
     end
 end
