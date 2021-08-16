@@ -1,6 +1,5 @@
 %
-% Class that collects generic functions related to finding/selecting and reading
-% RCTs.
+% Class that collects generic functions related to reading RCTs.
 %
 %
 % DESIGN INTENT
@@ -34,8 +33,6 @@ classdef RCT
 % PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that the RCT zVariables have the wrong units.
 % PROPOSAL: Use utility function for reading every zVariable.
 %   PROPOSAL: Assert units from zVar attributes.
-%
-% PROPOSAL: Log read RCTs in the same way as input datasets; generic zVar logging.
 %
 % PROPOSAL: Classes for RCT data.
 %   PRO: BIAS data has many fields.
@@ -385,7 +382,7 @@ classdef RCT
 
 
 
-    end    %methods(Static, Access=public)
+    end    % methods(Static, Access=public)
     
     
     
@@ -479,6 +476,8 @@ classdef RCT
 
         
 
-    end    %methods(Static, Access=private)
+    end    % methods(Static, Access=private)
 
+    
+    
 end

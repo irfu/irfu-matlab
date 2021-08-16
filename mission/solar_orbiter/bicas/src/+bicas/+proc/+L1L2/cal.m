@@ -176,9 +176,6 @@ classdef cal < handle
 %             (2) dataset representation
 %             ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
 %
-% PROPOSAL: Move static functions, at least public static functions, to class with only static members.
-%   PROPOSAL: Move to cal_utils (preexists)? cal_stat?
-%
 % PROPOSAL: Assertion function for CalSettings.
 %   TODO-NI: Same struct, with same fields in all cases?
 %   NOTE: Function does not know which fields are actually used.
@@ -280,7 +277,7 @@ classdef cal < handle
     properties(Access=private, Constant)
         
         % Local constant TF for convenience.
-        NAN_TF              = @(omegaRps) (omegaRps * NaN);
+        NAN_TF = @(omegaRps) (omegaRps * NaN);
         
     end
 
@@ -813,8 +810,6 @@ classdef cal < handle
                     tdsItfIvpt = @(omegaRps) (ones(omegaRps));
                 else
                     RctList = obj.RctDataMap('TDS-RSWF');
-                    %tdsItfIvpt = @(omegaRps) (bicas.proc.L1L2.cal_utils.eval_tabulated_TF(...
-                    %    RctList{cti1+1}.ItfModifIvptList{iBlts}, omegaRps));
                     tdsItfIvpt = RctList{cti1+1}.itfModifIvptCa{iBlts};
                 end
 
@@ -1004,8 +999,6 @@ classdef cal < handle
                     ' that BICAS did not try to load the corresponding RCT', ...
                     ' in glob. attr. CALIBRATION_TABLE.'], cti1)
                 
-%                 lfrItfIvpt = @(omegaRps) (bicas.proc.L1L2.cal_utils.eval_tabulated_TF(...
-%                     RctDataList{cti1+1}.ItfModifIvptTable{iLsf}{iBlts}, omegaRps));
                 lfrItfIvpt = RctDataList{cti1+1}.ItfModifIvptCaCa{iLsf}{iBlts};
             end
         end

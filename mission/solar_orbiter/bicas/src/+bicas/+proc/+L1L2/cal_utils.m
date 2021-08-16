@@ -27,17 +27,14 @@ classdef cal_utils
         % should be used to determine calibration time (e.g. first Epoch value
         % for a snapshot determines entire snapshot).
         %
-        % NOTE: Method is public so that automatic test code can call
-        % get_calibration_time().
-        %
         %
         % ARGUMENTS AND RETURN VALUES
         % ===========================
         % Epoch
         %       Column vector with Epoch values.
         % CalibEpochList
-        %       List of monotonically increasing timestamps ("Epoch format"). In
-        %       practice intended to be Bias.epochL or Bias.epochH.
+        %       Column vector of monotonically increasing timestamps ("Epoch
+        %       format"). In practice intended to be Bias.epochL or Bias.epochH.
         % iCalib
         %       Array. iCalibList(i) = calibration time index for Epoch(i).
         %
@@ -342,7 +339,8 @@ classdef cal_utils
         
         
         
-        function itf = create_LFR_BIAS_ITF(itfLfr, itfBias, isAc, acConstGainLowFreqRps)
+        function itf = create_LFR_BIAS_ITF(...
+                itfLfr, itfBias, isAc, acConstGainLowFreqRps)
             % PROPOSAL: Re-purpose into function only for combining BIAS and
             % non-BIAS TFs.
             
@@ -397,7 +395,8 @@ classdef cal_utils
         % TfFunchandle : Z(omegaRps).
         %                NOTE: rad/s (omegaRps) as opposed to Hz (freqHzArray).
         %
-        function log_TF_function_handle(logLevel, tfName, tfUnit, freqHzArray, tfFuncHandle, L)
+        function log_TF_function_handle(...
+                logLevel, tfName, tfUnit, freqHzArray, tfFuncHandle, L)
             assert(isa(tfFuncHandle, 'function_handle'))
             
             zArray = tfFuncHandle(freqHzArray * 2*pi);
@@ -441,7 +440,8 @@ classdef cal_utils
                 % Check that string is not too long for neat printouts (all
                 % calls from BICAS).
                 assert(numel(tfName) <= 46, ...
-                    'String argument "tfName" is too long. numel(tfName)=%i.', numel(tfName))
+                    'String argument "tfName" is too long. numel(tfName)=%i.', ...
+                    numel(tfName))
                 % NOTE: Does not print unwrapped phase. Print ~"not unwrapped",
                 % ~"wrapped"?
                 L.logf(logLevel, ...
@@ -458,7 +458,9 @@ classdef cal_utils
         function s = vector_string(pattern, v)
             assert(~isempty(v))
             EJ_library.assert.vector(v)
-            s = sprintf('(%s)', strjoin(EJ_library.str.sprintf_many(pattern, v), ', '));
+            s = sprintf(...
+                '(%s)', ...
+                strjoin(EJ_library.str.sprintf_many(pattern, v), ', '));
         end
         
         
