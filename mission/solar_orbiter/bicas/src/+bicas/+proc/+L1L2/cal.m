@@ -398,7 +398,7 @@ classdef cal < handle
             % ------------------------------------
             filenameRegexp = SETTINGS.get_fv(...
                 bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
-            filePath       = bicas.RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
+            filePath       = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
             % IMPLEMENTATION NOTE: It has been observed that value sometimes
             % survives from previous runs, despite being an instance variable.
             % Unknown why. Therefore explicitly overwrites it.

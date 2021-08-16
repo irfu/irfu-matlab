@@ -44,17 +44,14 @@ classdef RCT
 %   CON: Structs are modified when cal.m uses them, i.e. one could just as well
 %        have classes for the format cal.m uses. ==> Too many classes.
 %
-% PROPOSAL: Move out find_RCT_regexp.
-%   PRO: Does not fit in.
-%   PROPOSAL: Move to bicas.proc.L1L2.cal_RCT.
-%
 % PROPOSAL: Move bicas.RCT
 %   CON: Contains generic RCT functionality. Not directly processing related.
 %     --> bicas.proc.L1L2.RCT ?
 %     --> bicas.proc.L1L2.cal.RCT ?
 %     --> bicas.proc.L1L2*.RCT_read ?
-%         NOTE: Also contains function find_RCT_regexp(). Not just
-%               functions for reading RCTs.
+%     --> bicas.RCT_read ?
+%     --> bicas.read_RCT ?
+
 
 
     properties(Access=private, Constant)
@@ -73,63 +70,6 @@ classdef RCT
         
         
         
-        % Determine the path to the RCT that should be used according to
-        % algorithm specified in the documentation(?). If there are multiple
-        % matching candidates, choose the latest one as indicated by the
-        % filename.
-        %
-        %
-        % IMPLEMENTATION NOTES
-        % ====================
-        % Useful to have this as separate functionality so that the chosen RCT
-        % to use can be explicitly overridden via e.g. settings.
-        %
-        function path = find_RCT_regexp(rctDir, filenameRegexp, L)
-
-            %=================================================
-            % Find candidate files and select the correct one
-            %=================================================
-            dirObjectList = dir(rctDir);
-            dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
-            filenameList = {dirObjectList.name};
-            % Eliminate non-matching filenames.
-            filenameList(~EJ_library.str.regexpf(filenameList, filenameRegexp)) = [];
-            
-            % ASSERTION / WARNING
-            if numel(filenameList) == 0
-                % ERROR
-                error('BICAS:CannotFindRegexMatchingRCT', ...
-                    ['Can not find any calibration file that matches regular', ...
-                    ' expression "%s" in directory "%s".'], ...
-                    filenameRegexp, rctDir);
-            end
-            % CASE: There is at least one candidate file.
-            
-            filenameList = sort(filenameList);
-            filename     = filenameList{end};
-            path         = fullfile(rctDir, filename);
-            
-            if numel(filenameList) > 1
-                % WARNING/INFO/NOTICE
-                msg = sprintf(...
-                    ['Found multiple calibration files matching regular', ...
-                    ' expression "%s"\n in directory "%s".\n', ...
-                     'Selecting the latest one as indicated by', ...
-                     ' the filename: "%s".\n'], ...
-                    filenameRegexp, rctDir, filename);
-                for i = 1:numel(filenameList)
-                    msg = [msg, sprintf('    %s\n', filenameList{i})];
-                end
-                L.log('debug', msg)
-            end
-            
-            % IMPLEMENTATION NOTE: Not logging which calibration file is
-            % selected, since this function is not supposed to actually load the
-            % content.
-        end
-
-
-
         function [RctData] = read_BIAS_RCT(filePath)
             % TODO-DEC: How handle time?
             %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
