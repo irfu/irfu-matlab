@@ -852,14 +852,14 @@ classdef cal < handle
 
 
         function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
-            iCalib = bicas.proc.L1L2.cal.get_calibration_time(...
+            iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
                 Epoch, obj.RctDataMap('BIAS').epochL);
         end
 
 
 
         function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
-            iCalib = bicas.proc.L1L2.cal.get_calibration_time(...
+            iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
                 Epoch, obj.RctDataMap('BIAS').epochH);
         end
 
@@ -1133,52 +1133,6 @@ classdef cal < handle
 
 
 
-        % Given a sequence of Epoch values, determine for each value which
-        % calibration time index should be used. The caller will have to decide
-        % which sequence of data that should be calibrated together (e.g. if
-        % calibration time changes in the middle of CWF), and which Epoch values
-        % should be used to determine calibration time (e.g. first Epoch value
-        % for a snapshot determines entire snapshot).
-        %
-        % NOTE: Method is public so that automatic test code can call
-        % get_calibration_time().
-        %
-        %
-        % ARGUMENTS AND RETURN VALUES
-        % ===========================
-        % Epoch
-        %       Column vector with Epoch values.
-        % CalibEpochList
-        %       List of monotonically increasing timestamps ("Epoch format"). In
-        %       practice intended to be Bias.epochL or Bias.epochH.
-        % iCalib
-        %       Array. iCalibList(i) = calibration time index for Epoch(i).
-        %
-        function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
-            
-            % ASSERTIONS
-            bicas.utils.assert_zv_Epoch(Epoch)
-            bicas.utils.assert_zv_Epoch(CalibEpochList)
-            % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty,
-            % since discretize behaves differently for scalar second argument.
-            assert(~isempty(CalibEpochList))
-            
-            % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for Epoch
-            % values outside the outermost edges. Therefore (1) must add upper
-            % edge "Inf", (2) asserts non-Nan afterwards.
-            % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar
-            % second argument. Adding edges at infinity hides this problem. If
-            % one does not add infinities and uses a scalar edge list, then one
-            % has to treat those cases manually.
-            iCalib = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
-            assert(all(~isnan(iCalib(:))), ...
-                'BICAS:SWModeProcessing', ...
-                ['Can not derive which calibration data to', ...
-                ' use for all specified timestamps.'])
-        end
-
-
-            
 %         function tfZ = parasitic_capacitance_TF(tfOmega)
 %             % Calculate Z(omega) values for TF representing parasitic
 %             % capacitances (based on analytic function).
