@@ -157,17 +157,7 @@ classdef settings < handle
                 error('BICAS:Assertion:ConfigurationBug', ...
                     'Trying to define pre-existing settings key.')
             end
-            
-            % ASSERTIONS
-            if ischar(defaultValue)
-                % Do nothing
-            elseif isnumeric(defaultValue) || iscell(defaultValue) ...
-                    || islogical(defaultValue)
-                EJ_library.assert.vector(defaultValue)
-            else
-                error('BICAS:Assertion:IllegalArgument', ...
-                    'Argument defaultValue is illegal.')
-            end
+            bicas.settings.assert_legal_value(defaultValue)
             
             
             
@@ -252,31 +242,11 @@ classdef settings < handle
                 key              = keysList{iModifSetting};
                 newValueAsString = ModifiedSettingsMap(key);
 
-                % ASSERTION
-                if ~isa(newValueAsString, 'char')
-                    error('BICAS:Assertion:IllegalArgument', ...
-                        'Map value is not a string.')
-                end
-
                 %==================================================
                 % Convert string value to appropriate MATLAB class.
                 %==================================================
-                switch(obj.get_setting_value_type(key))
-                    
-                    case 'numeric'
-                        newValue = textscan(newValueAsString, '%f', ...
-                            'Delimiter', ',');
-                        newValue = newValue{1}';    % Row vector.
-                        
-                    case 'string'
-                        newValue = newValueAsString;
-                        
-                    otherwise
-                        error('BICAS:Assertion:ConfigurationBug', ...
-                            ['Can not handle the MATLAB class=%s of', ...
-                            ' internal setting "%s".'], ...
-                            class(oldValue), key)
-                end
+                newValue = bicas.settings.convert_str_to_value(...
+                    obj.get_setting_value_type(key), newValueAsString);
 
                 % Overwrite old setting.
                 obj.override_value(key, newValue, valueSource);
@@ -398,9 +368,72 @@ classdef settings < handle
         
         
         
+        % Defines what is a legal value.
+        function assert_legal_value(value)
+            if ischar(value)
+                
+                % Do nothing
+                EJ_library.assert.castring(value)
+                
+            elseif isnumeric(value) ...
+                    || iscell(value) ...
+                    || islogical(value)
+                
+                EJ_library.assert.vector(value)
+                
+            else
+                
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'Argument "value" is illegal.')
+            end
+        end
+        
+        
+        
+        function value = convert_str_to_value(settingValueType, valueAsString)
+            % ASSERTION
+            if ~isa(valueAsString, 'char')
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'Map value is not a string.')
+            end
+
+            switch(settingValueType)
+
+                case 'numeric'
+                    value = textscan(valueAsString, '%f', ...
+                        'Delimiter', ',');
+                    value = value{1}';    % Row vector.
+
+                case 'logical'
+                    if strcmpi(valueAsString, 'true')
+                        value = true;
+                    elseif strcmpi(valueAsString, 'false')
+                        value = false;
+                    else
+                        error('BICAS:Assertion:IllegalArgument', ...
+                            'Can not parse supposed logical settings value "%s".', ...
+                            valueAsString)
+                    end
+
+                case 'string'
+                    value = valueAsString;
+
+                otherwise
+                    error('BICAS:Assertion:IllegalArgument', ...
+                        ['Can not interpret argument settingValueType="%s"'], ...
+                        valueAsString)
+            end
+            
+            bicas.settings.assert_legal_value(value)
+        end
+        
+        
+        
         function valueType = get_value_type(value)
             if isnumeric(value)
                 valueType = 'numeric';
+            elseif islogical(value)
+                valueType = 'logical';
             elseif ischar(value)
                 valueType = 'string';
             else
