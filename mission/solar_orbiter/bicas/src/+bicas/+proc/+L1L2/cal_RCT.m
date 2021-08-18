@@ -248,7 +248,8 @@ classdef cal_RCT   % < handle
             % ASSERTION
             assert(iscell(ga_CALIBRATION_TABLE))
             
-            if isempty(zv_BW)
+            if all(size(zv_BW) == [0, 0])    % Check for special value.
+
                 % ASSERTION
                 nCt = EJ_library.assert.sizes(...
                     ga_CALIBRATION_TABLE,       [-1, 1], ...
