@@ -1,4 +1,4 @@
-function get_bin_indices___ATEST()
+function get_bin_indices___ATEST_()
     % NOTE: Implementation might use internal hardcoded constant. Automatic
     % tests must include large enough input data to trigger alternate
     % implementation.

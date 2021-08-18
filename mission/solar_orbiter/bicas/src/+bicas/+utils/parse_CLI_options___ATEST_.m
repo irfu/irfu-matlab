@@ -1,7 +1,7 @@
 %
 % Automatic test code for bicas.utils.parse_CLI_options.
 %
-function parse_CLI_options___ATEST
+function parse_CLI_options___ATEST_
     
     
     Ocm1 = containers.Map(...

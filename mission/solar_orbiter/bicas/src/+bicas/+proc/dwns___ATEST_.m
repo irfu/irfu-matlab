@@ -1,14 +1,14 @@
 %
 % Automatic test code.
 %
-function dwns___ATEST
-    downsample_sci_zVar___ATEST()
-    get_downsampling_bins___ATEST()
+function dwns___ATEST_
+    downsample_sci_zVar___ATEST_()
+    get_downsampling_bins___ATEST_()
 end
 
 
 
-function downsample_sci_zVar___ATEST
+function downsample_sci_zVar___ATEST_
     
     tl = {};
 
@@ -113,7 +113,7 @@ end
 
 
 
-function get_downsampling_bins___ATEST
+function get_downsampling_bins___ATEST_
     
     function add_test(...
             zvAllUtcCa, ...

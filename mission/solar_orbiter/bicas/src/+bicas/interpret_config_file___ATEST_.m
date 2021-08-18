@@ -4,7 +4,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-25
 %
-function interpret_config_file___ATEST()
+function interpret_config_file___ATEST_()
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
         @bicas.interpret_config_file, [inputs, {bicas.logger('none', false)}], outputs));
     

@@ -1,7 +1,7 @@
 %
 % Automatic test code
 %
-function modif_std_deviation___ATEST
+function modif_std_deviation___ATEST_
     
     tl = {};
     

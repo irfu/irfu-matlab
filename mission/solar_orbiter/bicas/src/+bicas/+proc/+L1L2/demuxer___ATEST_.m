@@ -4,14 +4,14 @@
 % Very basic tests at this stage. Could be improved but unsure how much is
 % meaningful.
 %
-function demuxer___ATEST
-    main___ATEST
-    complement_ASR___ATEST
+function demuxer___ATEST_
+    main___ATEST_
+    complement_ASR___ATEST_
 end
 
 
 
-function complement_ASR___ATEST
+function complement_ASR___ATEST_
     newTest    = @(inputFieldsCa, outputFieldsCa) (EJ_library.atest.CompareFuncResult(...
         @new_test, ...
         {inputFieldsCa}, {}));
@@ -55,7 +55,7 @@ end
 
 
 
-function main___ATEST()
+function main___ATEST_()
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc.L1L2.demuxer.main, inputs, outputs));
     tl = {};
     

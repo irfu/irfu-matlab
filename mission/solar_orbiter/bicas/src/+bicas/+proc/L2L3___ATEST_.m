@@ -3,8 +3,8 @@
 %
 % NOTE: Very low code coverage.
 %
-function L2L3___ATEST()
-    process_L2_to_L3___ATEST
+function L2L3___ATEST_()
+    process_L2_to_L3___ATEST_
 end
 
 
@@ -12,7 +12,7 @@ end
 % NOTE: Only tests some output values due to the complexity and multitude of
 % variables.
 %
-function process_L2_to_L3___ATEST
+function process_L2_to_L3___ATEST_
 
     % Conceivable special cases for bins to test, including combinations thereof
     % --------------------------------------------------------------------------

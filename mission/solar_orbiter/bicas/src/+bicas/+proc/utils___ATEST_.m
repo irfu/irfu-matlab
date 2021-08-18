@@ -6,24 +6,24 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-17
 %
-function utils___ATEST
+function utils___ATEST_
 % PROPOSAL: Generic function for testing a function without side effects. User submits function pointer, list of
 % argument lists, list of expected return results.
 %   NOTE: Has to handle approximate numeric results.
     
-    set_struct_field_rows___ATEST
-    convert_matrix_to_cell_array_of_vectors___ATEST
-    convert_cell_array_of_vectors_to_matrix___ATEST
+    set_struct_field_rows___ATEST_
+    convert_matrix_to_cell_array_of_vectors___ATEST_
+    convert_cell_array_of_vectors_to_matrix___ATEST_
 
     % Function that is tested is commented out.
-    %convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
-    set_NaN_after_snapshots_end___ATEST
+    %convert_N_to_1_SPR_ACQUISITION_TIME___ATEST_
+    set_NaN_after_snapshots_end___ATEST_
     
 end
 
 
 
-function set_struct_field_rows___ATEST
+function set_struct_field_rows___ATEST_
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
         @bicas.proc.utils.set_struct_field_rows, inputs, outputs));
     tl = {};
@@ -51,7 +51,7 @@ end
 
 
 
-function convert_matrix_to_cell_array_of_vectors___ATEST
+function convert_matrix_to_cell_array_of_vectors___ATEST_
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
         @bicas.proc.utils.convert_matrix_to_cell_array_of_vectors, inputs, outputs));
     tl = {};
@@ -65,7 +65,7 @@ end
 
 
 
-function convert_cell_array_of_vectors_to_matrix___ATEST
+function convert_cell_array_of_vectors_to_matrix___ATEST_
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
         @bicas.proc.utils.convert_cell_array_of_vectors_to_matrix, inputs, outputs));
     tl = {};
@@ -79,7 +79,7 @@ end
 
 
 
-% function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
+% function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST_
 % % NOTE: Indirectly tests convert_N_to_1_SPR_Epoch too.
 % 
 %     % NOTE: Tests should actually be independent of the exact value(!)
@@ -98,7 +98,7 @@ end
 
 
 
-function set_NaN_after_snapshots_end___ATEST
+function set_NaN_after_snapshots_end___ATEST_
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc.utils.set_NaN_after_snapshots_end, inputs, outputs));
     tl = {};
     
