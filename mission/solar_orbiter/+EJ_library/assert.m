@@ -194,6 +194,8 @@ classdef assert
     
     methods(Static)
         
+        
+        
         % NOTE: Empty string literal '' is 0x0.
         % NOTE: Accepts all empty char arrays, e.g. size 2x0 (2 rows).
         function castring(s)
@@ -201,6 +203,7 @@ classdef assert
             if ~ischar(s)
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     'Expected castring (0x0, 1xN char array) is not char.')
+                
             elseif ~(isempty(s) || size(s, 1) == 1)
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     'Expected castring (0x0, 1xN char array) has illegal dimensions.')
@@ -222,6 +225,7 @@ classdef assert
         %              NOTE: Must be non-empty array.
         %
         function castring_regexp(s, regexp)
+            assert(ischar(s))
             if ~any(EJ_library.str.regexpf(s, regexp))
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     ['String "%s" (in its entirety) does not match any of', ...
@@ -516,7 +520,7 @@ classdef assert
         
 
         % Assert v has a non-one size in at most one dimension.
-        % NOTE: Excludes 0x0, e.g. [] and ''.
+        % NOTE: Excludes 0x0, e.g. [], {}, and ''.
         %
         % NOTE: MATLAB's "isvector" function uses different criterion which
         % excludes length in third or higher dimension.
@@ -533,7 +537,7 @@ classdef assert
             %   PROPOSAL: Name that implies 1D vector: vector_1D, vec_1D
             %   PROPOSAL: Name that implies exactly one non-zero size dimension.
             %       PROPOSAL: true_vector, strict_vector, strict_vec_1D, vec_strict_1D
-            % PROPOSAL: Permit []={}=0x0 specifically
+            % PROPOSAL: Configurable to permit []={}=0x0 specifically
             %   PROPOSAL: Separate policy constant to permit. '0x0', 'permit 0x0'.
             %   PROPOSAL: Separate method to permit.
             %       PROPOSAL: common_vec_1D, nonstrict_vec_1D.

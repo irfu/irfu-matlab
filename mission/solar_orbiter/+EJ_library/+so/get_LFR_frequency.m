@@ -2,7 +2,7 @@
 % Convert LFR sampling frequency index value to LSF in Hz, for entire array.
 % Useful for converting e.g. LFR zVariable FREQ to LSF.
 %
-% LSF = LFR Sampling Frequency
+% LSF = LFR Sampling Frequency (an explicit frequency value; not e.g. F0)
 %
 %
 % ARGUMENTS

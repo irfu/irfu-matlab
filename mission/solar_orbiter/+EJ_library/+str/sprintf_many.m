@@ -16,11 +16,12 @@
 %
 % ARGUMENTS
 % =========
-% sprintfFormat : sprintf format string for one variable value (numeric,
-%                 string), i.e. containing ONE %i, or ONE %s etc.
-% array         : Numeric array or cell array, of scalar values to be sent to
-%                 sprintf.
-%                 RATIONALE: Cell array is useful for submitting string values.
+% sprintfFormat
+%       sprintf format string for one variable value (numeric, string), i.e.
+%       containing ONE %i, or ONE %s etc.
+% array
+%       Numeric array or cell array, of scalar values to be sent to sprintf.
+%       RATIONALE: Cell array is useful for submitting string values.
 %
 %
 % RETURN VALUE
