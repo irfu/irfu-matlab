@@ -2,7 +2,7 @@
 % Find out whether numeric matrices are approximately equal.
 % Dissimilar dimensions count as being unequal.
 %
-% NOTE: There might be a function for this in newer version of MATLAB. Not sure
+% NOTE: There might be a function for this in newer versions of MATLAB. Not sure
 % which.
 % NOTE: Inf is always dissimilar from Inf, reagrdless of tolerance.
 %

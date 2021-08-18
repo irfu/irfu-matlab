@@ -52,7 +52,8 @@ function run_tests(testList)
 
     assert(iscell(testList), 'Argument testList is not a cell array.')
     
-    nTests = numel(testList);
+    nTests     = numel(testList);
+    nTestsFail = 0;
     for iTest = 1:nTests
         Test = testList{iTest};
         assert(isobject(Test) & isscalar(Test), ...
@@ -64,6 +65,7 @@ function run_tests(testList)
         
         %fprintf('TEST %2i: ', iTest)
         if ~TestData.success
+            nTestsFail = nTestsFail + 1;
             fprintf('TEST %2i: ', iTest)
             fprintf('FAILED: %s\n', TestData.resultDescrText)
             EJ_library.utils.print_variable_recursively(...
@@ -75,5 +77,20 @@ function run_tests(testList)
             break
         end
     end
-    fprintf('ALL %2i TESTS OK\n', nTests)
+    
+    if (iTest == nTests)        
+        if (nTestsFail == 0)
+            fprintf('ALL %2i TESTS OK\n', nTests)
+        else
+            fprintf('%i/%i TESTS FAILED\n', nTestsFail, nTests)
+        end
+    elseif (iTest < nTests)
+        if (nTestsFail >= 1)
+            fprintf('INTERRUPTED RUN OF TESTS. AT LEAST ONE TEST FAILED.\n')
+        else
+            fprintf(...
+                ['INTERRUPTED RUN OF TESTS. NO TEST FAILED.', ...
+                ' (Should never happen. Bug in test code?)\n'])
+        end
+    end
 end

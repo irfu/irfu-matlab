@@ -1,11 +1,11 @@
 %
 % Convert time series zVariable (column) equivalent to converting
-% N-->1_samples/record, assuming constant time increments with frequency within
-% each snapshot.
+% N-->1_samples/record, assuming constant time increments with sampling
+% frequency within each snapshot.
 %
 % NOTE: Function is in particular meant for converting a zVar Epoch with one
-% record per snapshot, to a zVar-like Epoch with one "record" per snapshot
-% sample.
+% snapshot per record, to a zVar-like Epoch with one (snapshot) sample per
+% record.
 %
 % NOTE: Function can be meaningful also for scalar TT2000 values when applied to
 % one single snapshot.
