@@ -146,6 +146,10 @@ classdef settings < handle
 
 
         % Define a NEW key and set the corresponding value.
+        %
+        % NOTE: Key values in the form of MATLAB values, i.e. NOT string that
+        % need to be parsed. cf .override_values_from_strings().
+        %
         function define_setting(obj, key, defaultValue)
             % ASSERTIONS
             if obj.defineDisabledForever
@@ -172,9 +176,13 @@ classdef settings < handle
 
 
         % Set a PRE-EXISTING key value (i.e. override the default at the very
-        % least).
+        % least) using MATLAB values.
+        %
         % NOTE: Does not check if numeric vectors have the same size as old
         % value.
+        % IMPLEMENTATION NOTE: BICAS does not need this method to be public, but
+        % it is useful for other code (manual test code) to be able to override
+        % settings using MATLAB values.
         function override_value(obj, key, newValue, valueSource)
             
             % ASSERTIONS
@@ -190,6 +198,7 @@ classdef settings < handle
             if ~strcmp(...
                     bicas.settings.get_value_type(newValue), ...
                     obj.get_setting_value_type(key))
+                
                 error('BICAS:Assertion:IllegalArgument', ...
                     ['New settings value does not match the type of the', ...
                     ' old settings value for key "%s".'], ...
@@ -211,7 +220,7 @@ classdef settings < handle
         % settings with values from CLI arguments and/or config file (which by
         % their nature have string values).
         %
-        % Essentially a wrapper around .override_value().
+        % NOTE: Method is essentially a for loop around .override_value().
         %
         % NOTE: Indirectly specifies the syntax for string values which
         % represent non-string-valued settings.
@@ -307,7 +316,7 @@ classdef settings < handle
             % ASSERTIONS
             if ~obj.readOnlyForever
                 error('BICAS:Assertion', ...
-                    ['Not allowed to call this method for non-read-only', ...
+                    ['Not allowed to call this method for a non-read-only', ...
                     ' settings object.'])
             end
             if ~obj.DataMap.isKey(key)
@@ -444,6 +453,6 @@ classdef settings < handle
         
         
         
-    end
+    end    % methods(Access=private, Static)
     
 end

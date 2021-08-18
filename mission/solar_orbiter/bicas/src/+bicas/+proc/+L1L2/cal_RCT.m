@@ -7,22 +7,22 @@
 %
 classdef cal_RCT   % < handle
     % PROPOSAL: Automatic test code.
-    
-    
-    
+
+
+
     %###################
     %###################
     % PUBLIC PROPERTIES
     %###################
     %###################
     properties(GetAccess=public, Constant)
-        
+
         % Constants relating to each different type of RCT
         % ------------------------------------------------
         % containers.Map: RCT Type ID --> Info about RCT type.
         % Its keys defines the set of RCT Type ID strings.
         RCT_TYPES_MAP = bicas.proc.L1L2.cal_RCT.init_RCT_TYPES_MAP();
-        
+
     end
 
 
@@ -448,7 +448,8 @@ classdef cal_RCT   % < handle
                     bicas.proc.L1L2.cal_utils.vector_string(...
                         '% 10e', RctData.Current.gainsAapt(     iEpochL, :)))
                 
-                % Log transfer functions (frequency domain), selected frequencies.
+                % Log transfer functions (frequency domain) at selected
+                % frequencies.
                 L.logf(LL, ...
                     ['    Note: Not logging the exact RCT BIAS TFs', ...
                     ' (FTFs; RctData.FtfRctSet) since the inversion is trivial.'])

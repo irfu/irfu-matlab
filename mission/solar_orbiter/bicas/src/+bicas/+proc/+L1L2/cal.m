@@ -339,7 +339,9 @@ classdef cal < handle
     
     
     
-    %###################################################################################################################
+    %###########################################################################
+
+
 
     methods(Access=public)
 
@@ -374,7 +376,8 @@ classdef cal < handle
         %
         function obj = cal(...
                 NonBiasRctDataMap, rctDir, ...
-                use_CALIBRATION_TABLE_rcts, use_CALIBRATION_TABLE_INDEX2, ...
+                use_CALIBRATION_TABLE_rcts, ...
+                use_CALIBRATION_TABLE_INDEX2, ...
                 SETTINGS, L)
 
             % ASSERTIONS: Arguments
@@ -587,7 +590,9 @@ classdef cal < handle
                     end
                     if voltageNaN
                         % CASE: Set voltages to NaN.
-                        % (Potentially overwrite TM value.)
+                        
+                        % IMPLEMENTATION NOTE: Potentially overwrites TM value
+                        % set in above "if" statement.
                         samplesCaAVolt{i} = nan(size(samplesCaTm{i}));
                     end
                 end
@@ -1071,16 +1076,18 @@ classdef cal < handle
             % (Inofficial) Experimental LFR calibration offsets.
             CalData.lsfOffsetTm = obj.lfrLsfOffsetsTm(CalSettings.iLsf);
 
-            %=======================================================
+            %====================================================
             % Obtain settings for bicas.tf.apply_TF_freq_modif()
-            %=======================================================
+            %====================================================
             if CalSettings.BltsSrc.is_AC()
                 % IMPLEMENTATION NOTE: DC is (optionally) detrended via
                 % bicas.tf.apply_TF_freq_modif() in the sense of a linear fit
                 % being removed, TF applied, and then added back. That same
-                % algorithm is inappropriate for non-lowpass filters.
+                % algorithm, or at least adding back the fit, is by its nature
+                % inappropriate for non-lowpass filters, i.e. for AC. (The fit
+                % can not be scaled with the 0 Hz signal amplitude)
                 CalData.detrendingDegreeOf = obj.acDetrendingDegreeOf;
-                CalData.retrendingEnabled  = false;
+                CalData.retrendingEnabled  = false;   % NOTE: HARDCODED SETTING.
             else
                 CalData.detrendingDegreeOf = obj.dcDetrendingDegreeOf;
                 CalData.retrendingEnabled  = obj.dcRetrendingEnabled;
