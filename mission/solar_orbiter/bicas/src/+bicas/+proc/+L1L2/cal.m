@@ -566,11 +566,13 @@ classdef cal < handle
             
             
 
-            % Set cti1, cti2.
+            % Set iNonBiasRct, cti2 by extracting values from
+            % zv_CALIBRATION_TABLE_INDEX or emulating it.
             if obj.use_CALIBRATION_TABLE_rcts
-                cti1 = zv_CALIBRATION_TABLE_INDEX(1,1);
+                % NOTE: Incrementing by one (index into MATLAB array).
+                iNonBiasRct = 1 + zv_CALIBRATION_TABLE_INDEX(1,1);
             else
-                cti1 = 0;
+                iNonBiasRct = 1;
             end
             % NOTE: NOT incrementing value by one, since the variable's meaning
             % can vary between LFR, TDS-CWF, TDS-RSWF.
@@ -603,7 +605,7 @@ classdef cal < handle
                     % CASE: LFR
                     %===========
                     samplesCaAVolt = obj.calibrate_LFR_full(...
-                        dtSec, samplesCaTm, CalSettings, cti1, cti2);
+                        dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
                 else
                     %===========
                     % CASE: TDS
@@ -611,11 +613,11 @@ classdef cal < handle
                     if isTdsCwf
                         % CASE: TDS CWF
                         samplesCaAVolt = obj.calibrate_TDS_CWF_full(...
-                            dtSec, samplesCaTm, CalSettings, cti1, cti2);
+                            dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
                     else
                         % CASE: TDS RSWF
                         samplesCaAVolt = obj.calibrate_TDS_RSWF_full(...
-                            dtSec, samplesCaTm, CalSettings, cti1, cti2);
+                            dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
                     end
                 end
                 
@@ -635,7 +637,7 @@ classdef cal < handle
         %   ...
         %
         function samplesCaAVolt = calibrate_LFR_full(obj, ...
-                dtSec, samplesCaTm, CalSettings, cti1, cti2)
+                dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
 
             % ASSERTIONS
             EJ_library.assert.vector(samplesCaTm)
@@ -649,7 +651,7 @@ classdef cal < handle
             % Obtain all calibration data
             %=============================
             CalibData = obj.get_BIAS_LFR_calib_data(...
-                CalSettings, cti1, cti2);
+                CalSettings, iNonBiasRct, cti2);
 
             %=======================================
             % CALIBRATE: LFR TM --> TM --> avolt
@@ -681,7 +683,7 @@ classdef cal < handle
         % See calibrate_LFR_full.
         %
         function samplesCaAVolt = calibrate_TDS_CWF_full(obj, ...
-                dtSec, samplesCaTm, CalSettings, cti1, cti2)
+                dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
 
 %             EJ_library.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
@@ -698,7 +700,7 @@ classdef cal < handle
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
-            assert(cti1 >= 0)
+            assert(iNonBiasRct >= 1)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % TODO? ASSERTION: cti2 = 0???
@@ -725,7 +727,7 @@ classdef cal < handle
                     tdsFactorIvpt = 1;
                 else
                     RctList       = obj.RctDataMap('TDS-CWF');
-                    tdsFactorIvpt = RctList{cti1+1}.factorsIvpt(iBlts);
+                    tdsFactorIvpt = RctList{iNonBiasRct}.factorsIvpt(iBlts);
                 end
                 
                 for i = 1:numel(samplesCaTm)
@@ -770,7 +772,7 @@ classdef cal < handle
         % See calibrate_LFR_full.
         %
         function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, ...
-                dtSec, samplesCaTm, CalSettings, cti1, cti2)
+                dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
             
 %             EJ_library.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
@@ -787,7 +789,7 @@ classdef cal < handle
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
-            assert(cti1 >= 0)
+            assert(iNonBiasRct >= 1)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % TODO? ASSERTION: cti2 = 0???
@@ -815,7 +817,7 @@ classdef cal < handle
                     tdsItfIvpt = @(omegaRps) (ones(omegaRps));
                 else
                     RctList    = obj.RctDataMap('TDS-RSWF');
-                    tdsItfIvpt = RctList{cti1+1}.itfModifIvptCa{iBlts};
+                    tdsItfIvpt = RctList{iNonBiasRct}.itfModifIvptCa{iBlts};
                 end
 
                 itfAvpt = @(omegaRps) (...
@@ -977,9 +979,9 @@ classdef cal < handle
         % returns NaN instead. BICAS may still iterate over that combination
         % though when calibrating.
         % 
-        function lfrItfIvpt = get_LFR_ITF(obj, cti1, iBlts, iLsf)
+        function lfrItfIvpt = get_LFR_ITF(obj, iNonBiasRct, iBlts, iLsf)
             % ASSERTIONS
-            assert(cti1 >= 0)
+            assert(iNonBiasRct >= 1)
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             bicas.proc.L1L2.cal_utils.assert_iLsf(iLsf)
             
@@ -997,20 +999,22 @@ classdef cal < handle
                 % later stage if these assertions are false. Checking for these
                 % criteria here makes it easier to understand these particular
                 % types of error.
-                assert(numel(RctDataList) >= (cti1+1), ...
+                assert(numel(RctDataList) <= iNonBiasRct, ...
                     'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-                    ['LFR RctDataList is too small for argument cti1=%g.', ...
+                    ['LFR RctDataList is too small for argument iNonBiasRct=%g.', ...
                     ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
-                    ' value is larger than glob. attr. CALIBRATION TABLE allows.'], cti1)
-                assert(~isempty(RctDataList{cti1+1}), ...
+                    ' value is larger than glob. attr. CALIBRATION TABLE allows.'], ...
+                    iNonBiasRct)
+                assert(~isempty(RctDataList{iNonBiasRct}), ...
                     'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
                     ['LFR RctDataList contains no RCT data corresponding', ...
-                    ' to argument cti1=%g. This may indicate that', ...
+                    ' to argument iNonBiasRct=%g. This may indicate that', ...
                     ' a zVar CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
                     ' that BICAS did not try to load the corresponding RCT', ...
-                    ' in glob. attr. CALIBRATION_TABLE.'], cti1)
+                    ' in glob. attr. CALIBRATION_TABLE.'], ...
+                    iNonBiasRct)
                 
-                lfrItfIvpt = RctDataList{cti1+1}.ItfModifIvptCaCa{iLsf}{iBlts};
+                lfrItfIvpt = RctDataList{iNonBiasRct}.ItfModifIvptCaCa{iLsf}{iBlts};
             end
         end
         
@@ -1030,7 +1034,7 @@ classdef cal < handle
         % IMPLEMENTATION NOTE: Return one struct instead of multiple return
         % values to make sure that the caller does not confuse the return values
         % with each other.
-        function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, cti1, cti2)
+        function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, cti2)
             
             % ASSERTIONS
 %             EJ_library.assert.struct(CalSettings, {...
@@ -1047,8 +1051,8 @@ classdef cal < handle
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
             bicas.proc.L1L2.cal_utils.assert_iLsf(iLsf)
-            assert(isscalar(cti1))
-            assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
+            assert(isscalar(iNonBiasRct))
+            assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
             % No assertion on cti2 unless used (determined later).
 
 
@@ -1112,7 +1116,7 @@ classdef cal < handle
             if obj.lfrTdsTfDisabled
                 CalData.lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
             else
-                CalData.lfrItfIvpt = obj.get_LFR_ITF(cti1, iBlts, iLsf);
+                CalData.lfrItfIvpt = obj.get_LFR_ITF(iNonBiasRct, iBlts, iLsf);
             end
             
             %======================================
