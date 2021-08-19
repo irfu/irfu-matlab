@@ -12,7 +12,11 @@ classdef drt___UTEST < matlab.unittest.TestCase
     properties(TestParameter)
         % "All" legal combinations of detDegreeOf, retEnabled which returns the
         % original signal if unity TF.
-        UNITY_DET_RET_SETTINGS = {{-2, false}, {0, true}, {1, true}, {2, true}, {5, true}}
+        %
+        % NOTE: Can get "Warning: Polynomial is badly conditioned" if using too
+        % high detDegreeOf.
+        UNITY_DET_RET_SETTINGS = {{-2, false}, {0, true}, {1, true}, {2, true}, {4, true}}
+        %UNITY_DET_RET_SETTINGS = {{5, true}}
     end
     
     
@@ -47,13 +51,13 @@ classdef drt___UTEST < matlab.unittest.TestCase
             t = [0:0.01:1]';
             
             % Complex, arbitrary function.
-            y1a = exp(t) .* cos(t) + t.^3;
+            y1a = exp(t) .* cos(5*t) + t.^3;
             
             % NOTE: Must use scale=1 to obtain original function.
             [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, UNITY_DET_RET_SETTINGS, 1);
             
             % ASSERTIONS
-            testCase.verifyEqual(y1a, y2a)
+            testCase.verifyEqual(y1a, y2a, 'AbsTol', 1e-15)
             if UNITY_DET_RET_SETTINGS{1} >= 0    % DRT not disabled entirely.
                 testCase.assertTrue(max(abs(y1a-y12b)) > 0.1)
                 testCase.assertTrue(max(abs(y2a-y12b)) > 0.1)
