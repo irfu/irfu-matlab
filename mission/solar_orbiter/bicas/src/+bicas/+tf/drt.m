@@ -33,7 +33,6 @@
 % First created 2021-08-12
 %
 classdef drt < handle
-    % PROPOSAL: Automatic test code.
     %
     % PROPOSAL: Better name.
     %   deretrending

@@ -32,7 +32,9 @@ function settingsVsMap = interpret_config_file(configFileRowList, L)
     SETTINGS_KEY_REGEXP          = '[a-zA-Z0-9._-]+';
     SETTINGS_VALUE_STRING_REGEXP = '[^"]*';
     
-    ASSIGNMENT_RE_LIST = {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'};
+    ASSIGNMENT_RE_LIST = {...
+        SETTINGS_KEY_REGEXP, ' *= *', '"', ...
+        SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'};
     
 
     

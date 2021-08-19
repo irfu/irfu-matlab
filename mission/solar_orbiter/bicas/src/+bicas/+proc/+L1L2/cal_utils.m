@@ -9,7 +9,7 @@
 % First created 2020-11-05.
 %
 classdef cal_utils
-    % PROPOSAL: Automatic test code.
+    % PROPOSAL: More automatic test code.
     %
     % PROPOSAL: Make functions that are only used internally private.
     %   Ex: TF_LF_constant_abs_Z()  (the only one?)

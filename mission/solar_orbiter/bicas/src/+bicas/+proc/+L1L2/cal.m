@@ -1,8 +1,5 @@
 %
-% Class for
-% (1) library/utility functions that calibrate data.
-% (2) helper functions to find and load calibration data from file, as needed by
-%     BICAS.
+% Class for functions that calibrate data.
 % An instance of this class contains
 %   (1) relevant settings (loaded from SETTINGS) on how to calibrate data, and
 %   (2) calibration data.
@@ -14,8 +11,8 @@
 % and ROC-SGSE pipeline.
 %
 %
-% SHORTCOMINGS
-% ============
+% SHORTCOMINGS(?)
+% ===============
 % Does not implement parasitic capacitance yet due to lack of calibration values
 % (at least).
 %
@@ -35,13 +32,6 @@
 % NOTE: All calibration functions of measured data are assumed to accept data
 % from all BLTS (1-5), i.e. including TDS, in order to reduce the number
 % assumptions that the calling code needs to make.
-%
-%
-% DESIGN INTENT
-% =============
-% If needed, then this class modifies the calibration data read from RCTs, e.g.
-% inverts FTFs, so that RCT-reading code (bicas.RCT) does not need to (it should
-% not).
 %
 %
 % DEFINITIONS, NAMING CONVENTIONS
@@ -120,8 +110,8 @@
 % Mostly replaced by BLTS+specified unit in the code.
 %
 %
-% REMINDER: HOW CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX WORK
-% ==============================================================
+% HOW CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX (L1R) WORK
+% ==========================================================
 % CALIBRATION_TABLE       : CDF L1R global attribute
 %   """"Filename of the calibration table(s).""""
 %   """"There must as many as entries than the number of calibration table files
@@ -133,6 +123,7 @@
 %   the index of the associated CALIBRATION_TABLE entry (i.e., 0 for the first
 %   entry, 1 for the second, etc.). The second element must refer to the index
 %   of the value to be used inside the calibration table file.""""
+% NOTE: Neither exist in L1 datasets.
 %
 % Source: ROC-PRO-DAT-NTT-00006-LES_Iss01_Rev02(ROC_Data_Products).Draft2020-04-06.pdf
 %
@@ -153,7 +144,7 @@ classdef cal < handle
 % BOGIQ:
 % ------
 % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
-% TODO-NI: Parasitic capacitance values?
+% TODO-NI: What parasitic capacitance value(s) should one use?
 % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
 %
 % ~DOCUMENTATION BUG?!!:
@@ -180,7 +171,6 @@ classdef cal < handle
 %   TODO-NI: Same struct, with same fields in all cases?
 %   NOTE: Function does not know which fields are actually used.
 % PROPOSAL: Class for CalSettings. Mere container for fields.
-% PROPOSAL: Class for init_RCT_TYPES_MAP:"Entry" structs.
 %
 % TODO-DEC: How distribute the calibration formulas/algorithms between
 %   (1) calibrate_* functions, 
@@ -271,12 +261,23 @@ classdef cal < handle
 %       CAL_ENTITY_AFFILIATION,
 %       CAL_EQUIPMENT
 %       since on per RCT (CALIBRATION_TABLE entries).
+%
+% PROPOSAL: Refactor to facilitate automatic testing.
+%   PROBLEM: Calls complicated function that should (mostly) be tested separately: bicas.tf.apply_TF_freq()
+%   NOTE: Uses SETTINGS object, and many of its values.
+%
+% PROPOSAL: Replace obj.RctDataMap with separate fields for different RCT types.
+%   ~PRO: There is no need to iterate over RCT types in class.
+%   PRO: Shorten code.
+%       Ex: obj.RctDataMap('BIAS') which always returns a 1x1 cell which first
+%           has to be "opened" via temporary variable.
+%   CON: Can only assign those fields for which RCT data are available.
 
 
 
     properties(Access=private, Constant)
         
-        % Local constant TF for convenience.
+        % Local TF constant for convenience.
         NAN_TF = @(omegaRps) (omegaRps * NaN);
         
     end
@@ -358,7 +359,7 @@ classdef cal < handle
         %   (1a) static helper method "find_read_non_BIAS_RCTs_by_regexp", 
         %   (1b) static helper method "find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE",
         % or
-        %   (1c) manually (for debugging/analysis/testing).
+        %   (1c) manually (for manual debugging/analysis/testing).
         % Uses that containers.Map object to call the constructor.
         %
         %
@@ -814,7 +815,7 @@ classdef cal < handle
                 if obj.lfrTdsTfDisabled
                     tdsItfIvpt = @(omegaRps) (ones(omegaRps));
                 else
-                    RctList = obj.RctDataMap('TDS-RSWF');
+                    RctList    = obj.RctDataMap('TDS-RSWF');
                     tdsItfIvpt = RctList{cti1+1}.itfModifIvptCa{iBlts};
                 end
 

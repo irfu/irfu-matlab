@@ -60,6 +60,16 @@ classdef settings < handle
 %       PROPOSAL: MATLAB_COMMAND
 %           CON: Is not really needed by BICAS.
 %   PROPOSAL: Legal alternatives.
+%       PRO: Rapid feedback when using bad value. Does not require triggering
+%            code.
+%       PRO: Clear in code (bicas.create_default_SETTINGS()).
+%       CON: Might not be consistent with how the settings values are actually used in the code.
+%            Duplicates that decision.
+%       PROPOSAL: Submit function (value-->boolean) that specifies what is legal
+%                 and not. Can have set of pre-defined functions.
+%           TODO-NI: How relates to how values are converted to display strings?
+%           TODO-NI: How relates to how values are converted from strings (config file, CLI argument)?
+%           
 %       PROPOSAL: String constants.
 %       PROPOSAL: Value type (MATLAB class)
 %           Ex: Logical
@@ -84,8 +94,10 @@ classdef settings < handle
 % PROPOSAL: Enable BICAS to log where a key is set, and how many times. To follow how default value is overridden, and
 %           how it is overriden twice in the same interface (in the config file or CLI arguments)
 %   Ex: Config file specifies a new "default" value which is then overridden further below.
-%   PROBLEM: interpret_config_file and interpret_CLI_args must then be aware of setting a key multiple times, and return
-%   that information.
+%   PROBLEM: bicas.interpret_config_file() and bicas.interpret_CLI_args() must
+%            then be able to return info on a setting being set multiple times,
+%            and return that information. As of now (2021-08-19) they only
+%            return the final setting.
 %       PROPOSAL: Submit SETTINGS to those functions.
 %           CON: Automatic testing becomes harder. Harder to test returned value. Harder to submit varied SETTINGS.
 %       PROPOSAL: Return KVPL.
@@ -96,6 +108,7 @@ classdef settings < handle
 %                  --set?
 %
 % PROPOSAL: Automatic tests, in particular for different settings values data types.
+%
 
 
 

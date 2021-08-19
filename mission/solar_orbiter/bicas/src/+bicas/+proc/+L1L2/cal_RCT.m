@@ -2,11 +2,28 @@
 % Functions (static methods) associated with bicas.proc.L1L2.cal using RCTs.
 %
 %
+% DESIGN INTENT
+% =============
+% If needed, then this class modifies the calibration data read from RCTs, e.g.
+% inverts FTFs, so that RCT-reading code (bicas.RCT) does not need to (it should
+% not).
+%
+%
 % Author: Erik P G Johansson, IRF Uppsala, Sweden
 % First created 2021-08-16, by moving out functions from bicas.proc.L1L2.cal.
 %
 classdef cal_RCT   % < handle
-    % PROPOSAL: Automatic test code.
+    % PROPOSAL: Class for init_RCT_TYPES_MAP:"Entry" structs.
+    %
+    % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,
+    %           zv_CALIBRATION_TABLE_INDEX for L1.
+    %   PRO: Can eliminate internal special cases in bicas.proc.L1L2.cal.
+    %
+    % PROPOSAL: Normalize TDS & LFR by creating a fake zv_BW for TDS.
+    
+
+    % read_RCTs_non_BIAS_by_CALIBRATION_TABLE
+    % read_RCTs_by_regexp
 
 
 
@@ -56,9 +73,6 @@ classdef cal_RCT   % < handle
         function RctTypesMap = init_RCT_TYPES_MAP()
             RctTypesMap = containers.Map();
             
-            % NOTE: Not TF.
-            MODIFY_TDS_CWF_DATA_FUNC = @(S) (S);
-            
             RctTypesMap('BIAS') = entry(...
                 @bicas.RCT.read_BIAS_RCT, ...
                 @bicas.proc.L1L2.cal_RCT.modify_BIAS_RCT_data, ...
@@ -73,7 +87,7 @@ classdef cal_RCT   % < handle
             
             RctTypesMap('TDS-CWF') = entry(...
                 @bicas.RCT.read_TDS_CWF_RCT, ...
-                MODIFY_TDS_CWF_DATA_FUNC, ...
+                @bicas.proc.L1L2.cal_RCT.modify_TDS_CWF_RCT_data, ...
                 @bicas.proc.L1L2.cal_RCT.log_TDS_CWF_RCTs, ...
                 'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
             
@@ -84,11 +98,17 @@ classdef cal_RCT   % < handle
                 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
             
             %###################################################################
-            function Entry = entry(readRctFunc, modifyRctFunc, logRctFunc, filenameRegexpSettingKey)
+            function Entry = entry(...
+                    readRctFunc, modifyRctFunc, logRctFunc, ...
+                    filenameRegexpSettingKey)
+                
                 Entry = struct(...
-                    'readRctFunc',              readRctFunc, ...      % Pointer to function that reads one RCT.
-                    'modifyRctFunc',            modifyRctFunc, ...    % Pointer to function that modifies data for one RCT.
-                    'logRctFunc',               logRctFunc, ...       % Pointer to function that logs data for one RCT.
+                    ... % Pointer to function that reads one RCT.
+                    'readRctFunc',              readRctFunc, ...      
+                    ... % Pointer to function that modifies data for one RCT.
+                    'modifyRctFunc',            modifyRctFunc, ...    
+                    ... % Pointer to function that logs data for one RCT.
+                    'logRctFunc',               logRctFunc, ... 
                     'filenameRegexpSettingKey', filenameRegexpSettingKey);
             end
             %###################################################################
@@ -157,7 +177,8 @@ classdef cal_RCT   % < handle
         %
         % NOTES
         % =====
-        % NOTE: Can be useful for manual experimentation with calibration.
+        % NOTE: Can be useful for manual experimentation with calibration of L1R
+        %       (and L1) data.
         % NOTE: Necessary when processing L1-->L2 (inofficially) since L1 does
         %       not have CALIBRATION_TABLE+CALIBRATION_TABLE_INDEX.
         % NOTE: Will only load ONE of each RCT type (no potential RCT time
@@ -179,23 +200,25 @@ classdef cal_RCT   % < handle
         %       interface to bicas.proc.L1L2.cal constructor as
         %       bicas.proc.L1L2.cal_RCT.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE.
         % 
-        function RctDataMap = find_read_non_BIAS_RCTs_by_regexp(rctDir, SETTINGS, L)
+        function RctDataMap = find_read_non_BIAS_RCTs_by_regexp(...
+                rctDir, SETTINGS, L)
             
             RctDataMap = containers.Map();
             
-            for rctTypeId = {'LFR', 'TDS-CWF', 'TDS-RSWF'}
+            for rctTypeIdCa = {'LFR', 'TDS-CWF', 'TDS-RSWF'}
                 
                 settingKey     = bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP(...
-                    rctTypeId{1}).filenameRegexpSettingKey;
+                    rctTypeIdCa{1}).filenameRegexpSettingKey;
                 filenameRegexp = SETTINGS.get_fv(settingKey);
-                filePath       = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
+                filePath       = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
+                    rctDir, filenameRegexp, L);
                 RctDataList    = {bicas.proc.L1L2.cal_RCT.read_RCT_modify_log(...
-                    rctTypeId{1}, filePath, L)};
+                    rctTypeIdCa{1}, filePath, L)};
                 
                 % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so
                 % that they are stored analogously with when using ga.
                 % CALIBRATION_TABLE.
-                RctDataMap(rctTypeId{1}) = RctDataList;
+                RctDataMap(rctTypeIdCa{1}) = RctDataList;
             end
         end
 
@@ -206,12 +229,12 @@ classdef cal_RCT   % < handle
         %
         % IMPLEMENTATION NOTE
         % ===================
-        % May load MULTIPLE RCTs (of the same RCT type) but will only load those
+        % May load MULTIPLE RCTs of the same RCT type, but will only load those
         % RCTs which are actually needed, as indicated by
         % zVariables CALIBRATION_TABLE_INDEX and BW. This is necessary since
         % CALIBRATION_TABLE may reference unnecessary RCTs of types not
         % recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf
-        % /2019-12-16), and which are therefore unreadable by BICAS (BICAS would
+        % /2019-12-16), and which are therefore unreadable by BICAS (BICAS will
         % crash).
         %
         %
@@ -243,12 +266,14 @@ classdef cal_RCT   % < handle
         %
         function RctDataMap = find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
                 rctDir, rctTypeId, ...
-                ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, zv_BW, L)
+                ga_CALIBRATION_TABLE, ...
+                zv_CALIBRATION_TABLE_INDEX, ...
+                zv_BW, L)
             
             % ASSERTION
             assert(iscell(ga_CALIBRATION_TABLE))
             
-            if all(size(zv_BW) == [0, 0])    % Check for special value.
+            if all(size(zv_BW) == size([]))    % Check for special value.
 
                 % ASSERTION
                 nCt = EJ_library.assert.sizes(...
@@ -382,6 +407,14 @@ classdef cal_RCT   % < handle
             % NOTE: RctData.FtfRctTpivCaCa is still kept (for debugging).
             RctData2.FtfRctTpivCaCa   = FtfRctTpivCaCa;    % Just copied.
             RctData2.ItfModifIvptCaCa = itfModifIvptCaCa;
+        end
+        
+        
+        
+        % NOTE: Contains no TFs. Data is therefore trivial to use as it is in
+        % the RCT.
+        function RctData2 = modify_TDS_CWF_RCT_data(RctData1)
+            RctData2 = RctData1;
         end
         
         
@@ -572,9 +605,10 @@ classdef cal_RCT   % < handle
         
         % For a given RCT file, do the following operations, customized for the
         % type of RCT:
-        % (1) read RCT file,
-        % (2) modify the content as required (in practice extrapolate TFs), and
-        % (3) log it.
+        %   (1) read RCT file,
+        %   (2) modify the content as required (in practice extrapolate TFs),
+        %       and
+        %   (3) log the modified RCT content.
         % Effectively wraps the different RCT-reading functions.
         % 
         %
@@ -600,8 +634,8 @@ classdef cal_RCT   % < handle
             modifyRctFunc = bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP(rctTypeId).modifyRctFunc;
             logRctFunc    = bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP(rctTypeId).logRctFunc;
             
-            RctData = readRctFunc(filePath);
-            RctData = modifyRctFunc(RctData);
+            RctDataTemp = readRctFunc(filePath);
+            RctData     = modifyRctFunc(RctDataTemp);
             logRctFunc(RctData, L);
         end
         

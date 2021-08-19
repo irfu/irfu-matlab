@@ -25,16 +25,6 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
 
 
 
-    properties(Constant)
-    end
-    
-    
-    
-    properties(TestParameter)
-    end
-    
-    
-    
     %##############
     %##############
     % TEST METHODS
