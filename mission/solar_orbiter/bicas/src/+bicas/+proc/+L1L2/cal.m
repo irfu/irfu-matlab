@@ -399,7 +399,7 @@ classdef cal < handle
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
             EJ_library.assert.subset(...
                 RctDataMap.keys, ...
-                bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP.keys)
+                bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP.keys)
             
             
             
