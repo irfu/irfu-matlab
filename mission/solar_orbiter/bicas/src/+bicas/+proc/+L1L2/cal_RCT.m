@@ -20,10 +20,6 @@ classdef cal_RCT   % < handle
     %   PRO: Can eliminate internal special cases in bicas.proc.L1L2.cal.
     %
     % PROPOSAL: Normalize TDS & LFR by creating a fake zv_BW for TDS.
-    
-
-    % read_RCTs_non_BIAS_by_CALIBRATION_TABLE
-    % read_RCTs_by_regexp
 
 
 
@@ -193,32 +189,34 @@ classdef cal_RCT   % < handle
         %
         % RETURN VALUE
         % ============
-        % RctDataMap : containers.Map.
-        %       One key per non-BIAS RCT type ID. Value = 1x1 cell array with
-        %       RCT data.
-        %       IMPLEMENTATION NOTE: Returns containers.Map to provide the same
-        %       interface to bicas.proc.L1L2.cal constructor as
-        %       bicas.proc.L1L2.cal_RCT.find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE.
+        % RctDataMap
+        %       containers.Map. Can be used for bicas.proc.L1L2.cal
+        %       constructor even if there is no zVar CALIBRATION_TABLE.
+        %       One key per specified RCT type ID in argument rctTypeIdCa.
+        %       Exactly one RCT per RCT type.
         % 
-        function RctDataMap = find_read_non_BIAS_RCTs_by_regexp(...
-                rctDir, SETTINGS, L)
+        function RctDataMap = find_read_RCTs_by_regexp(...
+                rctTypeIdCa, rctDir, SETTINGS, L)
+            
+            assert(iscell(rctTypeIdCa))
             
             RctDataMap = containers.Map();
             
-            for rctTypeIdCa = {'LFR', 'TDS-CWF', 'TDS-RSWF'}
+            for i = 1:numel(rctTypeIdCa)
+                rctTypeId = rctTypeIdCa{i};
                 
                 settingKey     = bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP(...
-                    rctTypeIdCa{1}).filenameRegexpSettingKey;
+                    rctTypeId).filenameRegexpSettingKey;
                 filenameRegexp = SETTINGS.get_fv(settingKey);
                 filePath       = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
                     rctDir, filenameRegexp, L);
                 RctDataList    = {bicas.proc.L1L2.cal_RCT.read_RCT_modify_log(...
-                    rctTypeIdCa{1}, filePath, L)};
+                    rctTypeId, filePath, L)};
                 
                 % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so
                 % that they are stored analogously with when using ga.
                 % CALIBRATION_TABLE.
-                RctDataMap(rctTypeIdCa{1}) = RctDataList;
+                RctDataMap(rctTypeId) = RctDataList;
             end
         end
 
@@ -240,6 +238,8 @@ classdef cal_RCT   % < handle
         %
         % ARGUMENTS
         % =========
+        % nonBiasRctTypeId
+        %       RCT type string constant for a non-BIAS RCT.
         % ga_CALIBRATION_TABLE
         %       1D cell array of strings. LFR/TDS RCT global attribute
         %       CALIBRATION_TABLE.
@@ -254,21 +254,39 @@ classdef cal_RCT   % < handle
         % RETURN VALUE
         % ============
         % RctDataMap
-        %       containers.Map with
-        %           keys   = non-BIAS RCT type ID.
-        %           values = 1D cell.
-        %       Non-empty indices {iRct} come from
-        %       zv_CALIBRATION_TABLE_INDEX(i,1). Each element is the content of
-        %       the corresponding RCT mentioned in ga_CALIBRATION_TABLE.
-        %       IMPLEMENTATION NOTE: Returns containers.Map to provide the same
-        %       interface to bicas.proc.L1L2.cal constructor as
-        %       bicas.proc.L1L2.cal_RCT.find_read_non_BIAS_RCTs_by_regexp().
+        %       Returns containers.Map that can be used for bicas.proc.L1L2.cal
+        %       constructor.
         %
-        function RctDataMap = find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE(...
-                rctDir, rctTypeId, ...
+        function RctDataMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
+                nonBiasRctTypeId, rctDir, ...
+                ga_CALIBRATION_TABLE, ...
+                zv_CALIBRATION_TABLE_INDEX, ...
+                zv_BW, SETTINGS, L)            
+            
+            BiasRctDataMap = bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp(...
+                {'BIAS'}, rctDir, SETTINGS, L);
+            
+            RctDataList = bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_CALIBRATION_TABLE(...
+                nonBiasRctTypeId, rctDir, ...
+                ga_CALIBRATION_TABLE, ...
+                zv_CALIBRATION_TABLE_INDEX, ...
+                zv_BW, L);
+            
+            RctDataMap                   = containers.Map();
+            RctDataMap('BIAS')           = BiasRctDataMap('BIAS');
+            RctDataMap(nonBiasRctTypeId) = RctDataList;            
+        end
+        
+        
+        
+        % Method only meant for internal use.
+        function RctDataList = find_read_RCTs_by_CALIBRATION_TABLE(...
+                nonBiasRctTypeId, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, L)
+            % PROPOSAL: Make method private.
+            % PROPOSAL: Put method in other location in list of methods.
             
             % ASSERTION
             assert(iscell(ga_CALIBRATION_TABLE))
@@ -299,19 +317,17 @@ classdef cal_RCT   % < handle
             % Cell array of paths to RCTs of the same RCT type.
             RctDataList = cell(nCt, 1);
             
-            % NOTE: Iterate over those entries in CALIBRATION_TABLE that should
-            % be considered, NOT all indices. May therefore legitimately leave
-            % some cells in cell array empty.
+            % IMPLEMENTATION NOTE: Iterate over those entries in
+            % CALIBRATION_TABLE that should be considered, i.e. NOT all indices.
+            % May therefore legitimately leave some cells in cell array empty.
             for i = 1:numel(iCtArray)
                 % NOTE: Cell array index is one greater than the stored value.
                 j              = iCtArray(i) + 1;
                 filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
                 RctDataList{j} = bicas.proc.L1L2.cal_RCT.read_RCT_modify_log(...
-                    rctTypeId, filePath, L);
-            end
+                    nonBiasRctTypeId, filePath, L);
+            end            
             
-            RctDataMap = containers.Map();
-            RctDataMap(rctTypeId) = RctDataList;
         end
 
 

@@ -351,41 +351,54 @@ classdef cal < handle
         % Constructor.
         %
         %
+        % ARGUMENTS
+        % =========
+        % RctDataMap
+        %       containers.Map with
+        %           keys   = BIAS RCT type ID.
+        %           values = 1D cell array.
+        %       The content in non-empty indices {iRct} come from the RCT which
+        %       is determined by the combination zVar BW, zVar
+        %       CALIBRATION_TABLE_INDEX(i,1), glob.attr. CALIBRATION_TABLE  (or
+        %       emulations of all or some).
+        %
+        %
         % NOTES ON INTENDED USAGE
         % =======================
-        % The nominal use is that 
-        % (1) the user first selects non-BIAS RCTs by initializing a
-        % containers.Map using either
-        %   (1a) static helper method "find_read_non_BIAS_RCTs_by_regexp", 
-        %   (1b) static helper method "find_read_non_BIAS_RCTs_by_CALIBRATION_TABLE",
+        % The nominal use is that the caller first initializes (argument)
+        % RctDataMap
+        % (1) by loading all RCTs using
+        %     bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp(),
+        % (2) by loading all RCTs using
+        %     bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE()
         % or
-        %   (1c) manually (for manual debugging/analysis/testing).
-        % Uses that containers.Map object to call the constructor.
+        % (3) manually (for manual debugging/analysis/testing).
         %
         %
         % IMPLEMENTATION NOTE
         % ===================
         % The class (instance methods, including constructor) deliberately does
-        % not itself determine which non-BIAS RCTs to read and therefore does
-        % not READ the non-BIAS RCTs. This is useful since
+        % not itself read the RCTs, nor figure out which ones should be read.
+        % This is useful since
+        % ** it completely separates
+        %       (a) algorithms for determining RCTs to load, and
+        %       (b) reading RCT,
+        %    from the class (better modularization, better for automatic test
+        %    code).
         % ** it makes it possible to inspect & modify the RCT content before
         %    submitting it to bicas.proc.L1L2.cal
-        % ** it completely separates the RCT-reading from the class
-        %    (modularization)
-        % ** it simplifies the constructor somewhat since it does not need to
-        %    translate paths into RCT data for non-empty cells.
+        % ** it simplifies the constructor.
         %
         function obj = cal(...
-                NonBiasRctDataMap, rctDir, ...
+                RctDataMap, ...
                 use_CALIBRATION_TABLE_rcts, ...
                 use_CALIBRATION_TABLE_INDEX2, ...
-                SETTINGS, L)
+                SETTINGS)
 
             % ASSERTIONS: Arguments
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
-            assert(~ismember('BIAS', NonBiasRctDataMap.keys))
             EJ_library.assert.subset(...
-                NonBiasRctDataMap.keys, ...
+                RctDataMap.keys, ...
                 bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP.keys)
             
             
@@ -393,26 +406,7 @@ classdef cal < handle
             %====================
             % Set obj.RctDataMap
             %====================
-            obj.RctDataMap = containers.Map();
-            % ------------------------------------
-            % Add RCT data map entry for BIAS RCT
-            % ------------------------------------
-            filenameRegexp = SETTINGS.get_fv(...
-                bicas.proc.L1L2.cal_RCT.RCT_TYPES_MAP('BIAS').filenameRegexpSettingKey);
-            filePath       = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(rctDir, filenameRegexp, L);
-            % IMPLEMENTATION NOTE: It has been observed that value sometimes
-            % survives from previous runs, despite being an instance variable.
-            % Unknown why. Therefore explicitly overwrites it.
-            obj.RctDataMap('BIAS') = bicas.proc.L1L2.cal_RCT.read_RCT_modify_log(...
-                'BIAS', filePath, L);
-            % -------------------------------------------
-            % Add RCT data map entries for non-BIAS RCTs
-            % -------------------------------------------
-            for rctTypeId = NonBiasRctDataMap.keys
-                obj.RctDataMap(rctTypeId{1}) = NonBiasRctDataMap(rctTypeId{1});
-            end
-            
-            
+            obj.RctDataMap = RctDataMap;
             
             %=========================================================
             % Store miscellaneous SETTINGS key values for convenience
@@ -477,8 +471,9 @@ classdef cal < handle
             %==============================
             % Obtain calibration constants
             %==============================
-            offsetAAmpere = obj.RctDataMap('BIAS').Current.offsetsAAmpere(iCalibTimeL, iAntenna);
-            gainAapt      = obj.RctDataMap('BIAS').Current.gainsAapt(     iCalibTimeL, iAntenna);
+            BiasRctDataCa = obj.RctDataMap('BIAS');
+            offsetAAmpere = BiasRctDataCa{1}.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
+            gainAapt      = BiasRctDataCa{1}.Current.gainsAapt(     iCalibTimeL, iAntenna);
 
             % CALIBRATE
             %
@@ -853,15 +848,19 @@ classdef cal < handle
 
 
         function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
+            BiasRctDataCa = obj.RctDataMap('BIAS');
+            
             iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
-                Epoch, obj.RctDataMap('BIAS').epochL);
+                Epoch, BiasRctDataCa{1}.epochL);
         end
 
 
 
         function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
+            BiasRctDataCa = obj.RctDataMap('BIAS');
+            
             iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
-                Epoch, obj.RctDataMap('BIAS').epochH);
+                Epoch, BiasRctDataCa{1}.epochH);
         end
 
 
@@ -895,7 +894,8 @@ classdef cal < handle
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
             
-            BiasRct = obj.RctDataMap('BIAS');
+            BiasRctCa = obj.RctDataMap('BIAS');
+            BiasRct   = BiasRctCa{1};
 
             %###################################################################
             % kIvpav = Multiplication factor "k" that represents/replaces the
