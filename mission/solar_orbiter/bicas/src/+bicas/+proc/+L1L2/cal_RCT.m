@@ -221,6 +221,13 @@ classdef cal_RCT   % < handle
         
         
         
+        % ARGUMENTS
+        % =========
+        % zv_BW
+        %       LFR L1/L1R zVar BW. If it does not exist (if processing TDS
+        %       L1/L1R), then the caller should (!) create a fake one and submit
+        %       it (normalize input).
+        %
         function RctDataList = find_read_RCTs_by_CALIBRATION_TABLE(...
                 nonBiasRctTypeId, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
@@ -229,30 +236,21 @@ classdef cal_RCT   % < handle
             % PROPOSAL: Make method private.
             % PROPOSAL: Put method in other location in list of methods.
             
-            % ASSERTION
+            % CT = glob.attr. CALIBRATION_TABLE
+            
+            % ASSERTION            
             assert(iscell(ga_CALIBRATION_TABLE))
-            
-            if all(size(zv_BW) == size([]))    % Check for special value.
+            nCt = EJ_library.assert.sizes(...
+                ga_CALIBRATION_TABLE,       [-1, 1], ...
+                zv_CALIBRATION_TABLE_INDEX, [-2, 2], ...
+                zv_BW,                      [-2, 1]);
+            assert(all(ismember(zv_BW, [0,1])))
 
-                % ASSERTION
-                nCt = EJ_library.assert.sizes(...
-                    ga_CALIBRATION_TABLE,       [-1, 1], ...
-                    zv_CALIBRATION_TABLE_INDEX, [-2, 2]);
-                
-                % CT = CALIBRATION_TABLE
-                iCtArray = unique(zv_CALIBRATION_TABLE_INDEX(:, 1));
-                
-            else
-                % ASSERTIONS
-                nCt = EJ_library.assert.sizes(...
-                    ga_CALIBRATION_TABLE,       [-1, 1], ...
-                    zv_CALIBRATION_TABLE_INDEX, [-2, 2], ...
-                    zv_BW,                      [-2, 1]);
-                assert(all(ismember(zv_BW, [0,1])))
-                
-                iCtArray = unique(zv_CALIBRATION_TABLE_INDEX(logical(zv_BW), 1));
-            end
-            
+            % Obtain indices into glob.attr. CALIBRATION_TABLE
+            % ------------------------------------------------
+            % NOTE: May exclude some in zv_CALIBRATION_TABLE_INDEX due to zv_BW.
+            iCtArray = unique(zv_CALIBRATION_TABLE_INDEX(logical(zv_BW), 1));
+
             
             
             % Cell array of paths to RCTs of the same RCT type.
