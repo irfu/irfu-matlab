@@ -445,7 +445,8 @@ classdef L1L2
         % Utility function to shorten code.
         %
         % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX exists
-        % for L1R, but not L1.
+        % for L1R, but not L1, and the corresponding field may thus be or not be
+        % present.
         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
                 ZvStruct, nRecords, inputDsi)
 

@@ -11,6 +11,27 @@ classdef cal_RCT   % < handle
     % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,
     %           zv_CALIBRATION_TABLE_INDEX for L1.
     %   PRO: Can eliminate internal special cases in bicas.proc.L1L2.cal.
+    %   NOTE: There is a function
+    %         bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX() used by
+    %         bicas.proc.L1L2.lfr.process_normalize_CDF() to produce NaN-valued
+    %         zVar.
+    %
+    %   PROPOSAL: Have LFR&TDS:process_normalize_CDF() normalize
+    %            CALIBRATION_TABLE_INDEX and CALIBRATION_TABLE by creating fake
+    %            values (not NaN) corresponding to the actual values used wrt.
+    %            RCTs (:,1) and maybe also index (:,2).
+    %            produce_L1R_to_L2_LFR/TDS() then reads the values AFTER those
+    %            functions and use them to initialize bicas.proc.L1L2.cal
+    %            object.
+    %       CON: Does not enable that much simplification.
+    %            bicas.proc.L1L2.cal.calibrate_voltage_all() is the only(?) code
+    %            that can be simplified. It selects between the
+    %       CALIBRATION_TABLE_INDEX(:,1) and 0 depending on setting.
+    %           NOTE: There is also some code associated with the settings:
+    %               PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
+    %               PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
+    %               PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS
+    %               PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS
     %
     % PROPOSAL: Normalize TDS & LFR by creating a fake zv_BW for TDS.
 
@@ -146,9 +167,9 @@ classdef cal_RCT   % < handle
             RctDataMap('BIAS')           = BiasRctDataMap('BIAS');
             RctDataMap(nonBiasRctTypeId) = RctDataList;            
         end
+                
         
-        
-        
+
         % Determine the path to the RCT that should be used according to
         % algorithm specified in the documentation(?). If there are multiple
         % matching candidates, choose the latest one as indicated by the
@@ -233,8 +254,6 @@ classdef cal_RCT   % < handle
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, L)
-            % PROPOSAL: Make method private.
-            % PROPOSAL: Put method in other location in list of methods.
             
             % CT = glob.attr. CALIBRATION_TABLE
             
@@ -257,7 +276,7 @@ classdef cal_RCT   % < handle
             RctDataList = cell(nCt, 1);
             
             % IMPLEMENTATION NOTE: Iterate over those entries in
-            % CALIBRATION_TABLE that should be considered, i.e. NOT all indices.
+            % CALIBRATION_TABLE that should be CONSIDERED, i.e. NOT all indices.
             % May therefore legitimately leave some cells in cell array empty.
             for i = 1:numel(iCtArray)
                 % NOTE: Cell array index is one greater than the stored value.
@@ -265,7 +284,7 @@ classdef cal_RCT   % < handle
                 filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
                 RctDataList{j} = bicas.proc.L1L2.cal_RCT.read_RCT_modify_log(...
                     nonBiasRctTypeId, filePath, L);
-            end            
+            end
             
         end
         
@@ -291,16 +310,19 @@ classdef cal_RCT   % < handle
         %
         % ARGUMENTS
         % =========
-        % rctTypeId : String constants representing pipeline and RCT to be read.
+        % rctTypeId
+        %       String constants representing pipeline and RCT to be read.
         %
         function RctData = read_RCT_modify_log(rctTypeId, filePath, L)
             
             L.logf(bicas.proc.L1L2.cal_RCT.READING_RCT_PATH_LL, ...
                 'Reading RCT (rctTypeId=%s): "%s"', rctTypeId, filePath)
             
-            readRctFunc   = bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP(rctTypeId).readRctFunc;
-            modifyRctFunc = bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP(rctTypeId).modifyRctFunc;
-            logRctFunc    = bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP(rctTypeId).logRctFunc;
+            RCT_TYPES_MAP = bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP;
+            
+            readRctFunc   = RCT_TYPES_MAP(rctTypeId).readRctFunc;
+            modifyRctFunc = RCT_TYPES_MAP(rctTypeId).modifyRctFunc;
+            logRctFunc    = RCT_TYPES_MAP(rctTypeId).logRctFunc;
             
             RctDataTemp = readRctFunc(filePath);
             RctData     = modifyRctFunc(RctDataTemp);

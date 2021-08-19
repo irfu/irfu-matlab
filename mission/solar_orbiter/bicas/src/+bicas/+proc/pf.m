@@ -36,6 +36,9 @@
 %
 classdef pf
 
+    % PROPOSAL: Function for constructing RctDataMap.
+    % PROPOSAL: Merge functions produce_L1R_to_L2_LFR/TDS().
+    
     
     
     methods(Static, Access=public)
@@ -61,12 +64,14 @@ classdef pf
             InputCurCdf = InputDatasetsMap('CUR_cdf');
             InputSciCdf = InputDatasetsMap('SCI_cdf');
 
+            
+            
             %======================================
             % Configure bicas.proc.L1L2.cal object
             %======================================
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
-            useCtRcts = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1r;
-            useCti2   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1r;
+            useCtRcts = C.isL1r && SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
+            useCti2   = C.isL1r && SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
             
             if useCtRcts
                 RctDataMap = bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
@@ -81,6 +86,8 @@ classdef pf
             end
             
             Cal = bicas.proc.L1L2.cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
+            
+            
             
             %==============
             % Process data
@@ -108,6 +115,8 @@ classdef pf
             InputCurCdf = InputDatasetsMap('CUR_cdf');
             InputSciCdf = InputDatasetsMap('SCI_cdf');
             
+            
+            
             %======================================
             % Configure bicas.proc.L1L2.cal object
             %======================================
@@ -120,7 +129,7 @@ classdef pf
                 settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 tdsRctTypeId = 'TDS-RSWF';
             end
-            useCtRcts = SETTINGS.get_fv(settingUseCt) && C.isL1r;
+            useCtRcts = C.isL1r && SETTINGS.get_fv(settingUseCt);
             useCti2   = false;    % Always false for TDS.
             
             if useCtRcts
@@ -143,6 +152,8 @@ classdef pf
             end
             
             Cal = bicas.proc.L1L2.cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
+            
+            
             
             %==============
             % Process data

@@ -54,7 +54,7 @@ classdef lfr   % < handle
                 % CASE: Everything nominal.
                 InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.SYNCHRO_FLAG;
 
-            elseif ~has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
+            elseif ~has_SYNCHRO_FLAG && has_TIME_SYNCHRO_FLAG
 
                 % CASE: Input CDF uses wrong zVar name.
                 [settingValue, settingKey] = ...
@@ -66,7 +66,7 @@ classdef lfr   % < handle
                     'Using illegally named zVar TIME_SYNCHRO_FLAG as SYNCHRO_FLAG.')
                 InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
 
-            elseif has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
+            elseif has_SYNCHRO_FLAG && has_TIME_SYNCHRO_FLAG
 
                 % CASE: Input CDF has two zVars: one with correct name, one with
                 % incorrect name
@@ -283,7 +283,8 @@ classdef lfr   % < handle
 
 
         function [OutSci] = process_PostDC_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
-            OutSci    = bicas.proc.L1L2.tds.process_PostDC_to_CDF(...
+            % NOTE: Using __TDS__ function.
+            OutSci = bicas.proc.L1L2.tds.process_PostDC_to_CDF(...
                 SciPreDc, SciPostDc, outputDsi, L);
 
             OutSci.Zv.BW = SciPreDc.Zv.BW;

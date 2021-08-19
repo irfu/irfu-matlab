@@ -190,8 +190,10 @@ classdef cal < handle
 %   NEED: Plot all TFs used for a particular calibration case
 %         (when calibrating using bicas.caib only, without BICAS).
 %   PROPOSAL: Separate modifications/choices/code that
-%       (1) only need to be done/run once during the execution: modification of calibration data,
-%       (2) are done every calibration (call to calibrate_*):   exact algorithms/formulas through which data is fed
+%       (1) only need to be done/run once during the execution:
+%               modification of calibration data,
+%       (2) are done every calibration (call to calibrate_*):
+%               exact algorithms/formulas through which data is fed
 %   PROPOSAL: read_*_RCT should not modify any calibration data, just store it:
 %             Not invert TFs, not extrapolate TFs to 0 Hz.
 %       CON: Must separate unmodified and modified calibration data.
@@ -231,12 +233,6 @@ classdef cal < handle
 %            version.
 %       NOTE/CON: All structs/TFs must have the same fields if true struct array.
 %
-% PROPOSAL: Separate function for interpolation (no extrapolation) of tabulated TF.
-%
-% PROPOSAL: Do not expose internal calibration data structs and let the caller
-%           specify indices. Access via methods that ask for indices.
-%   PRO: Methods document the proper use of indices.
-%
 %
 %
 % PROPOSAL: Have calibrate_LFR(), calibrate_TDS_CWF(), calibrate_TDS_RSWF() return
@@ -263,7 +259,8 @@ classdef cal < handle
 %       since on per RCT (CALIBRATION_TABLE entries).
 %
 % PROPOSAL: Refactor to facilitate automatic testing.
-%   PROBLEM: Calls complicated function that should (mostly) be tested separately: bicas.tf.apply_TF_freq()
+%   PROBLEM: Calls complex function that should (mostly) be tested separately:
+%               bicas.tf.apply_TF_freq()
 %   NOTE: Uses SETTINGS object, and many of its values.
 %
 % PROPOSAL: Replace obj.RctDataMap with separate fields for different RCT types.
@@ -272,6 +269,9 @@ classdef cal < handle
 %       Ex: obj.RctDataMap('BIAS') which always returns a 1x1 cell which first
 %           has to be "opened" via temporary variable.
 %   CON: Can only assign those fields for which RCT data are available.
+%
+% PROPOSAL: Rename/redefine cti2 (as did with cti1).
+%   PROPOSAL: iNonBiasRctCalib
 
 
 
@@ -534,6 +534,9 @@ classdef cal < handle
         %
         % ARGUMENTS
         % =========
+        % zv_CALIBRATION_TABLE_INDEX
+        %       NOTE: Only one record of zVar CALIBRATION_TABLE_INDEX! Not
+        %             entire zVar.
         % voltageNaN
         %       Scalar logical.
         %       Whether to set output voltages to NaN and not execute any (real)
@@ -569,8 +572,8 @@ classdef cal < handle
             else
                 cti1 = 0;
             end
-            % NOTE: NOT incrementing by one, since the variable's meaning can
-            % vary between LFR, TDS-CWF, TDS-RSWF.
+            % NOTE: NOT incrementing value by one, since the variable's meaning
+            % can vary between LFR, TDS-CWF, TDS-RSWF.
             cti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
 
             
@@ -699,7 +702,8 @@ classdef cal < handle
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % TODO? ASSERTION: cti2 = 0???
-                error('BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
+                error(...
+                    'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
                     'TDS-CWF calibration never uses CALIBRATION_TABLE_INDEX2.')
             end
             
@@ -895,6 +899,7 @@ classdef cal < handle
             assert(isscalar(iCalibTimeH))
             
             BiasRctCa = obj.RctDataMap('BIAS');
+            assert(isscalar(BiasRctCa))
             BiasRct   = BiasRctCa{1};
 
             %###################################################################

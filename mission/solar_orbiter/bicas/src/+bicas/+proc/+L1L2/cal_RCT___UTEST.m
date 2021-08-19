@@ -35,18 +35,6 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         
         
         function test_find_RCT_regexp_empty(testCase)
-%             function test(inputsCa, expOutputsCa)
-%                 actOutputs = cell(size(expOutputsCa));
-%                 [actOutputs{:}] = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(inputsCa{:});
-%                 testCase.verifyEqual(actOutputs, expOutputsCa)
-%             end
-%             function test_exc(varargin)
-%                 testCase.verifyError(...
-%                     @() bicas.proc.L1L2.cal_RCT.find_RCT_regexp(varargin{:}), ...
-%                     ?MException)
-%             end
-            %===================================================================
-            
             [tempDir, L] = bicas.proc.L1L2.cal_RCT___UTEST.setup_files(testCase, {});
             
             testCase.verifyError(...
@@ -128,16 +116,6 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         
         
         
-%         function test(filenamesCa, inputsCa, expOutputsCa)
-%             L = bicas.proc.L1L2.cal_RCT___UTEST.setup_files(testCase, filenamesCa);
-% 
-%             actOutputs = cell(size(expOutputsCa));
-%             [actOutputs{:}] = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(inputsCa{:}, L);
-%             testCase.verifyEqual(actOutputs, expOutputsCa)
-%         end
-        
-        
-            
         function [tempDir, L] = setup_files(testCase, filenamesCa)
             L = bicas.logger('none', false);
             
