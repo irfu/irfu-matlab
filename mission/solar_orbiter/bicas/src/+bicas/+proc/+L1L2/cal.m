@@ -235,8 +235,11 @@ classdef cal < handle
 %
 %
 %
-% PROPOSAL: Have calibrate_LFR(), calibrate_TDS_CWF(), calibrate_TDS_RSWF() return
-%           function handle to a transfer function that does everything,
+% PROPOSAL: Have
+%               calibrate_voltage_BIAS_LFR(),
+%               calibrate_voltage_BIAS_TDS_CWF(),
+%               calibrate_voltage_BIAS_TDS_RSWF()
+%           return function handle to a transfer function that does everything,
 %           including offsets.
 %   CON: Useful for debugging.
 %       CON: Aren't the calibration methods available already that, if turned
@@ -608,7 +611,7 @@ classdef cal < handle
                     %===========
                     % CASE: LFR
                     %===========
-                    samplesCaAVolt = obj.calibrate_LFR_full(...
+                    samplesCaAVolt = obj.calibrate_voltage_BIAS_LFR(...
                         dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
                 else
                     %===========
@@ -616,11 +619,11 @@ classdef cal < handle
                     %===========
                     if isTdsCwf
                         % CASE: TDS CWF
-                        samplesCaAVolt = obj.calibrate_TDS_CWF_full(...
+                        samplesCaAVolt = obj.calibrate_voltage_BIAS_TDS_CWF(...
                             dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
                     else
                         % CASE: TDS RSWF
-                        samplesCaAVolt = obj.calibrate_TDS_RSWF_full(...
+                        samplesCaAVolt = obj.calibrate_voltage_BIAS_TDS_RSWF(...
                             dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
                     end
                 end
@@ -640,7 +643,7 @@ classdef cal < handle
         %                signal comes from.
         %   ...
         %
-        function samplesCaAVolt = calibrate_LFR_full(obj, ...
+        function samplesCaAVolt = calibrate_voltage_BIAS_LFR(obj, ...
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
 
             % ASSERTIONS
@@ -681,9 +684,9 @@ classdef cal < handle
 
         % ARGUMENTS
         % =========
-        % See calibrate_LFR_full.
+        % See calibrate_voltage_BIAS_LFR.
         %
-        function samplesCaAVolt = calibrate_TDS_CWF_full(obj, ...
+        function samplesCaAVolt = calibrate_voltage_BIAS_TDS_CWF(obj, ...
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
 
 %             EJ_library.assert.struct(CalSettings, {...
@@ -770,9 +773,9 @@ classdef cal < handle
 
         % ARGUMENTS
         % =========
-        % See calibrate_LFR_full.
+        % See calibrate_voltage_BIAS_LFR.
         %
-        function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, ...
+        function samplesCaAVolt = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
             
 %             EJ_library.assert.struct(CalSettings, {...
@@ -1025,7 +1028,7 @@ classdef cal < handle
         % RATIONALE
         % =========
         % Method exists to
-        % (1) simplify & clarify calibrate_LFR_full(),
+        % (1) simplify & clarify calibrate_voltage_BIAS_LFR(),
         % (2) be useful for non-BICAS code to inspect the calibration data used
         %     for a particular calibration case, in particular the combined
         %     (LFR+BIAS) transfer functions.
