@@ -307,9 +307,6 @@ classdef cal < handle
         % debugging/testing purposes.
         BiasScalarGain
         HkBiasCurrent
-        % EXPERIMENTAL. Remove functionality?!
-        % NOTE: Technically, the name contains a tautology (LFR+LSF).
-        lfrLsfOffsetsTm = [];
         
         
         
@@ -419,8 +416,6 @@ classdef cal < handle
             obj.HkBiasCurrent.offsetTm             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
             obj.HkBiasCurrent.gainAapt             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
             
-            obj.lfrLsfOffsetsTm                    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
-
             obj.dcDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
             obj.dcRetrendingEnabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
             obj.acDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
@@ -659,13 +654,10 @@ classdef cal < handle
             samplesCaAVolt = cell(size(samplesCaTm));
             for i = 1:numel(samplesCaTm)
                 
-                % ADD LSF OFFSET
-                samplesTm = samplesCaTm{i}(:) + CalibData.lsfOffsetTm;
-                
                 % APPLY TRANSFER FUNCTION (BIAS + LFR)
                 tempSamplesAVolt = bicas.tf.apply_TF_freq_modif(...
                     dtSec(i), ...
-                    samplesTm, ...
+                    samplesCaTm{i}(:), ...
                     CalibData.itfAvpt, ...
                     'detrendingDegreeOf',      CalibData.detrendingDegreeOf, ...
                     'retrendingEnabled',       CalibData.retrendingEnabled, ...
@@ -1083,9 +1075,6 @@ classdef cal < handle
 
             CalData = struct();
             
-            % (Inofficial) Experimental LFR calibration offsets.
-            CalData.lsfOffsetTm = obj.lfrLsfOffsetsTm(CalSettings.iLsf);
-
             %====================================================
             % Obtain settings for bicas.tf.apply_TF_freq_modif()
             %====================================================

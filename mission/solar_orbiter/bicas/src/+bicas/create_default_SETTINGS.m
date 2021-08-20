@@ -54,7 +54,6 @@ function SETTINGS = create_default_SETTINGS()
 %   PROPOSAL: Do every time settings are set, i.e. for default values,
 %       config file values, CLI argument values.
 %
-% PROPOSAL: Abolish PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM functionality. Obsolete.
 %
 %
 % =========================
@@ -512,18 +511,6 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
 
 
-
-    %======================================================================
-    % EXPERIMENTAL: LFR sampling frequency-dependent offsets.
-    %
-    % Values obtained from manually fitting F0,F1,F2 (not F3) snapshots in
-    % ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E_59e82ff_CNE_V02.cdf.
-    % NOTE: Values are relative as the absolute level is not known.
-    % NOTE: Might be that LFR offsets also depend on BLTS.
-    % NOTE: Has not set any value for F3.
-    %======================================================================
-    %S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
-    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
 
     %============================================================================
     % Calibration constants for the "scalar" calibration mode
