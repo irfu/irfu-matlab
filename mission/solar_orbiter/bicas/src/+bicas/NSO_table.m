@@ -14,7 +14,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-09-22
 %
-classdef NSO_table   % < handle
+classdef NSO_table    
     % PROPOSAL: New name
     %   PROPOSAL: ~events
     %   PROPOSAL: ~list

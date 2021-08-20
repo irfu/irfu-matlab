@@ -171,6 +171,8 @@ classdef cal < handle
 %   TODO-NI: Same struct, with same fields in all cases?
 %   NOTE: Function does not know which fields are actually used.
 % PROPOSAL: Class for CalSettings. Mere container for fields.
+% PROPOSAL: Shorten CalSettings-->Cs inside functions and do not extract fields.
+%   CON: Extracting variables makes it clear which fields are expected and used.
 %
 % TODO-DEC: How distribute the calibration formulas/algorithms between
 %   (1) calibrate_* functions, 
@@ -259,22 +261,82 @@ classdef cal < handle
 %       CAL_ENTITY_NAME,
 %       CAL_ENTITY_AFFILIATION,
 %       CAL_EQUIPMENT
-%       since on per RCT (CALIBRATION_TABLE entries).
+%       since there is one value per RCT (CALIBRATION_TABLE entries).
 %
-% PROPOSAL: Refactor to facilitate automatic testing.
-%   PROBLEM: Calls complex function that should (mostly) be tested separately:
-%               bicas.tf.apply_TF_freq()
+%
+%
+% PROPOSAL: Refactor to facilitate automated testing.
+%   PROBLEM: Though it does not read RCTs, the corresponding data
+%            structures are complex and would be hard to create test data for(?)
 %   NOTE: Uses SETTINGS object, and many of its values.
+%   PROBLEM: Calls complex function that should (primarily) be tested separately:
+%            bicas.tf.apply_TF_freq()
+%       PROPOSAL: Replace with function handle, set in constructor from
+%                 argument ("dependency injection"). Unit tests can then mock
+%                 bicas.tf.apply_TF_freq().
+%           CON?: Introduces more interface (arguments) only due to testing.
+%       PROPOSAL: Do automatic testing by having the tests call
+%                 bicas.tf.apply_TF_freq() to generate results to compare with.
+%           CON: Relies on the implementation of what is being tested.
+%           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
+%               CON: Relies on the implementation of what is being tested.
+%       NOTE: (1) As a function/code module,
+%                   bicas.proc.L1L2.cal encloses/contains/"secretly uses"
+%                   bicas.tf.apply_TF_freq().
+%             (2) For testing, one wants to verify the path (both ways) between
+%                   bicas.proc.L1L2.cal and
+%                   bicas.tf.apply_TF_freq().
+%             ==> One wants to test one unit of code at a time, but what a
+%                "unit" is ambiguous:
+%                 one wants small units of code
+%                 unit is ambiguous when a unit uses/call other unit(s).
+%
+%
 %
 % PROPOSAL: Replace obj.RctDataMap with separate fields for different RCT types.
 %   ~PRO: There is no need to iterate over RCT types in class.
 %   PRO: Shorten code.
-%       Ex: obj.RctDataMap('BIAS') which always returns a 1x1 cell which first
-%           has to be "opened" via temporary variable.
-%   CON: Can only assign those fields for which RCT data are available.
+%       Ex: obj.RctDataMap('BIAS') which now always returns a 1x1 cell which first
+%           has to be "opened" via temporary variable. No cell array needed. Can
+%           be asserted to be 1x1 immediately.
+%       CON: Can only assign those class fields for which RCT data are available.
+%           ==> if statements ==> longer code.
+%       CON: Not that much code can actually be removed:
+%               1+7 rows + some shortened rows.
+% PROPOSAL: Specifically replace obj.RctDataMap('BIAS'){1} --> obj. BiasRctData.
+%   CON: Does not shorten code.
+%       PRO: RctDataMap should not contain BIAS RCT data.
+%           PRO: Code to remove.
+%           PRO: Modifies the argument since containers.Map is an argument
+%                class, unless copies it (==> more code).
+%       PRO: RctDataMap should be renamed RctDataMap-->NonBiasRctDataMap.
+%       CON: Might still move/collect code to better place.
 %
 % PROPOSAL: Rename/redefine cti2 (as did with cti1).
 %   PROPOSAL: iNonBiasRctCalib
+%
+% PROPOSAL: Move current calibration to separate class.
+%   NOTE: Functions
+%       calibrate_current_TM_to_aampere()
+%           Uses BiasRctDataCa == Uses RCT.
+%       calibrate_current_HK_TM_to_aampere()
+%           Uses
+%               obj.HkBiasCurrent.gainAapt
+%               obj.HkBiasCurrent.offsetTm
+%       calibrate_current_sampere_to_TM()
+%           Static
+%           Uses EJ_library.so.constants.TM_PER_SAMPERE
+%   PRO: Class is large, ~1250 rows.
+%   PRO: Remaining class becomes entirely about voltage calibration.
+%   CON: Use needs to instantiate two calibration objects.
+%   TODO-DEC: Name of new class?
+%       ~cal_curr
+%   PROPOSAL: Rename remaining class: Only about voltage calibration.
+%       ~cal_volt
+%
+% PROPOSAL: bicas.proc.L1L2.cal_* --> Package bicas.proc.L1L2.cal.*
+
+
 
 
 
@@ -369,7 +431,7 @@ classdef cal < handle
         % RctDataMap
         % (1) by loading all RCTs using
         %     bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp(),
-        % (2) by loading all RCTs using
+        % (2) by loading relevant RCT(s) using
         %     bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE()
         % or
         % (3) manually (for manual debugging/analysis/testing).
@@ -431,6 +493,7 @@ classdef cal < handle
             obj.dcDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
             obj.dcRetrendingEnabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
             obj.acDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
+            
             obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
             % NOTE: Converts Hz-->rad/s
             obj.itfAcConstGainLowFreqRps           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
@@ -1078,7 +1141,8 @@ classdef cal < handle
                     'cti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
                     cti2+1, iLsf)
                 
-                % NOTE: Only place cti2 is used.
+                % NOTE: Override earlier iLsf.
+                % NOTE: This is the only place cti2 is used in this class.
                 iLsf = cti2 + 1;
             end
             

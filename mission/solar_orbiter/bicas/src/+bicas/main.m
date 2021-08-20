@@ -693,13 +693,13 @@ end
 %
 function s = sprint_constants()
     %
-    % NOTE: Does not print error codes (bicas.constants), but print_help does.
+    % NOTE: Does not print error codes (bicas.constants), but print_help() does.
     % PROPOSAL: PERMITTED_MATLAB_VERSIONS
     
     s = sprintf([...
         '\n', ...
-        'SELECTED BICAS CONSTANTS\n', ...
-        '========================\n']);
+        'SELECTED (HARD-CODED) INTERNAL BICAS CONSTANTS\n', ...
+        '==============================================\n']);
     
     keysCa = bicas.constants.SWD_METADATA.keys;   % Always row vector.
     keysCa = sort(keysCa)';   % Column vector.

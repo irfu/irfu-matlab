@@ -134,8 +134,8 @@ classdef pf
             
             if useCtRcts
                 % Create fake zv_BW since it does not exist for TDS (only LFR).
-                % NOTE: This should not be regarded as a hack but  as
-                % ~normalization.
+                % NOTE: This should not be regarded as a hack but as
+                % ~normalization to avoid later special cases.
                 zv_BW = uint8(ones(...
                     size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
                     1));

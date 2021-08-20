@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-25
 %
-classdef tds   % < handle
+classdef tds    
     % PROPOSAL: Automatic test code.
 
 

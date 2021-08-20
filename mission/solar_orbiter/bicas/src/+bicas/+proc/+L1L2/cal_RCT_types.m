@@ -16,7 +16,7 @@
 % First created 2021-08-19, by moving out functions from
 % bicas.proc.L1L2.cal_RCT.
 %
-classdef cal_RCT_types   % < handle
+classdef cal_RCT_types    
     % PROPOSAL: Class for init_RCT_TYPES_MAP:"Entry" structs.
 
 

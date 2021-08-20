@@ -96,19 +96,21 @@ classdef utils
         %
         % ARGUMENTS
         % =========
-        % S          : Struct. Only numeric fields.
-        %              All fields have same number of rows.
-        % SNew       : Struct. Only numeric fields. 
-        %              All fields have same number of rows. Same fields as S.
-        % iRowsArray : 1D array. Same length as number of rows in SNew fields.
+        % S
+        %       Struct. Only numeric fields.
+        %       All fields have same number of rows.
+        % SNew
+        %       Struct. Only numeric fields. 
+        %       All fields have same number of rows. Same fields as S.
+        % iRowsArray
+        %       1D array. Same length as number of rows in SNew fields.
+        %       Specifies the rows (in fields in S) that shall be assigned.
 
             % ASSERTIONS
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S);
             nRowsSa = bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(SNew);
             assert(numel(iRowsArray) == nRowsSa)
             EJ_library.assert.castring_sets_equal(fieldnames(S), fieldnames(SNew))
-            
-            
             
             fieldNamesList = fieldnames(SNew);
             for i=1:length(fieldNamesList)

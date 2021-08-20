@@ -1,7 +1,7 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
-%   bicas.proc.L1L2.demuxer.main
+%   bicas.proc.L1L2.demuxer.main(), and
 %   bicas.proc.L1L2.BLTS_src_dest
 %
 %
@@ -354,8 +354,8 @@ classdef demuxer
             assert(isstruct(RoutingArray))
             
             % Assign return values.
-            AsrSamplesAVolt = As;
             BltsSrcArray    = [RoutingArray.src];
+            AsrSamplesAVolt = As;
         end
         
         

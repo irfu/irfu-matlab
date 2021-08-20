@@ -2,11 +2,13 @@
 % Collection of processing function for demultiplexing and calibrating (DC), and
 % related code (except bicas.proc.L1L2.demuxer).
 %
+% DC = Demux (demultiplex) & Calibrate
+%
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-25
 %
-classdef dc   % < handle
+classdef dc
     % PROPOSAL: Automatic test code.
     % PROPOSAL: Include bicas.proc.L1L2.demuxer.
     %   CON: Too much code.
@@ -374,6 +376,7 @@ classdef dc   % < handle
 
         function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
                 sciEpoch, InCur, SETTINGS, L)
+            
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS

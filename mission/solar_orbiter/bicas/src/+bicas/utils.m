@@ -6,7 +6,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-27, with moved from bicas.proc.utils.
 %
-classdef utils   % < handle
+classdef utils    
     % PROPOSAL: Automatic test code.
 
 

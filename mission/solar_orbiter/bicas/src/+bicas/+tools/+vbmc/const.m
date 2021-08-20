@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-11-12
 %
-classdef const   % < handle
+classdef const    
     % PROPOSAL: Collect functions too.
     
 

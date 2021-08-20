@@ -6,7 +6,7 @@
 % Author: Erik P G Johansson, IRF Uppsala, Sweden
 % First created 2021-08-16, by moving out functions from bicas.proc.L1L2.cal.
 %
-classdef cal_RCT   % < handle
+classdef cal_RCT    
     %
     % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,
     %           zv_CALIBRATION_TABLE_INDEX for L1.
@@ -23,10 +23,12 @@ classdef cal_RCT   % < handle
     %            produce_L1R_to_L2_LFR/TDS() then reads the values AFTER those
     %            functions and use them to initialize bicas.proc.L1L2.cal
     %            object.
-    %       CON: Does not enable that much simplification.
-    %            bicas.proc.L1L2.cal.calibrate_voltage_all() is the only(?) code
-    %            that can be simplified. It selects between the
-    %       CALIBRATION_TABLE_INDEX(:,1) and 0 depending on setting.
+    %       CON: Does not enable that much simplification. The only code that
+    %            can be simplified is:
+    %                (1) bicas.proc.L1L2.cal.calibrate_voltage_all()
+    %                       selects between the CALIBRATION_TABLE_INDEX(:,1) and 0 depending on setting.
+    %                (2) bicas.proc.pf.produce_L1R_to_L2_LFR/DS()
+    %                       constructs bicas.proc.L1L2.cal object.
     %           NOTE: There is also some code associated with the settings:
     %               PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
     %               PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2

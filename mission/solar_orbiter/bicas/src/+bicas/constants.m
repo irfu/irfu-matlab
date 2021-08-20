@@ -22,13 +22,16 @@
 % First created 2020-07-09, as a replacement for the FUNCTION
 % error_safe_constant created 2016-06-02.
 %
-classdef constants   % < handle
+classdef constants    
     % PROPOSAL: Error category for bad input datasets (both science and HK).
     %   PRO: Has similar for RCTs.
     %
     % PROPOSAL: Move N_MIN_SAMPLES_PER_DWNS_BIN to settings?
     %
     % PROPOSAL: Log all constants.
+    % PROPOSAL: Change name to "const".
+    %   PRO: Shorter
+    %   PRO: More ~standard.
     
     
     

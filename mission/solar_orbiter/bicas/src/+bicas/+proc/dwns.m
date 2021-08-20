@@ -5,9 +5,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-18
 %
-classdef dwns   % < handle
-    %
-    % PROPOSAL: Automatic test code.
+classdef dwns    
     %
     % PROPOSAL: Test code for code that downsamples.
     %   Ex: bicas.proc.dwns.downsample_bin_L12_QUALITY_BITMASK() -- Too trivial?
@@ -21,7 +19,8 @@ classdef dwns   % < handle
     % PROPOSAL: Include bicas.utils.get_bin_indices ?!
     %   CON: Potentially generic outside of BICAS.
 
-    
+
+
     %#######################
     %#######################
     % PUBLIC STATIC METHODS

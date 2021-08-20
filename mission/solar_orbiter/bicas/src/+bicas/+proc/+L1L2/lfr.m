@@ -3,9 +3,9 @@
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
-% First created 2021-05-25
+% First created 2021-05-25, from reorganized older code.
 %
-classdef lfr   % < handle
+classdef lfr    
     % PROPOSAL: Automatic test code.
 
     

@@ -116,6 +116,8 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         
         
         
+        % Create (temporary) directory with specified empty files.
+        %
         function [tempDir, L] = setup_files(testCase, filenamesCa)
             L = bicas.logger('none', false);
             
@@ -127,10 +129,15 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
             %fprintf('tempDir = %s\n', tempDir)
 
             for fileCa = filenamesCa(:)'
-                EJ_library.fs.write_file(fullfile(tempDir, fileCa{1}), zeros(1,0,'uint8'))
+                % Create empty file.
+                EJ_library.fs.write_file(...
+                    fullfile(tempDir, fileCa{1}), ...
+                    zeros(1,0,'uint8'))
             end
 
         end
+   
+        
         
     end    % methods(Static, Access=private)
 
