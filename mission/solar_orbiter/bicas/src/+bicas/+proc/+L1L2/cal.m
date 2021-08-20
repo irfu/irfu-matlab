@@ -397,6 +397,7 @@ classdef cal < handle
             EJ_library.assert.subset(...
                 RctDataMap.keys, ...
                 bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP.keys)
+            assert(isscalar(RctDataMap('BIAS')))
             
             
             
@@ -405,16 +406,24 @@ classdef cal < handle
             %====================
             obj.RctDataMap = RctDataMap;
             
-            %=========================================================
-            % Store miscellaneous SETTINGS key values for convenience
-            %=========================================================
+            
+            
+            %==================================================================
+            % Store miscellaneous SETTINGS key values
+            % ---------------------------------------
+            % IMPLEMENTATION NOTE: This useful since it is:
+            %   ** More convenient to access values via shorter field names
+            %       (more readable code).
+            %   ** Potentially gives faster access to values (better
+            %      performance).
+            %==================================================================
+            obj.HkBiasCurrent.offsetTm             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
+            obj.HkBiasCurrent.gainAapt             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
+            
             obj.BiasScalarGain.alphaIvpav          = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
             obj.BiasScalarGain.betaIvpav           = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
             obj.BiasScalarGain.gammaIvpav.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
             obj.BiasScalarGain.gammaIvpav.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
-            
-            obj.HkBiasCurrent.offsetTm             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
-            obj.HkBiasCurrent.gainAapt             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
             
             obj.dcDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
             obj.dcRetrendingEnabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
@@ -500,7 +509,7 @@ classdef cal < handle
         % confused with the corresponding telecommands.). The conversion
         % functions are identical for all three probes.
         %
-        function biasCurrentAAmpere = calibrate_HK_bias_TM_to_bias_current(obj, ...
+        function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
                 biasCurrentTm, iAntenna)
             
             % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK.
@@ -893,7 +902,6 @@ classdef cal < handle
             assert(isscalar(iCalibTimeH))
             
             BiasRctCa = obj.RctDataMap('BIAS');
-            assert(isscalar(BiasRctCa))
             BiasRct   = BiasRctCa{1};
 
             %###################################################################
