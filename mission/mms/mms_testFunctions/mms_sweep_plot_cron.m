@@ -67,6 +67,7 @@ for iSc = 1:4
   end % for ii=1:length(listDefatt)
   if isempty(listDefatt)
     irf.log('warning', 'Did not find any corresponding defatt, fall back to HK101.');
+    tint = tint + [int64(-5*60*10^9) int64(5*60*10^9)]; % Add 5 minutes margin (to have some hk101 before start of day and some after end of day)
     defatt = mms.sunpulse_from_hk101(iSc, tint); % Save as "defatt" (meaning it can be used directly below instead of what was defatt..)
     if isempty(defatt)
       error('Unknown zphase');
