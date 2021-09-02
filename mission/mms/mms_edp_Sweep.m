@@ -672,39 +672,67 @@ classdef mms_edp_Sweep < handle
         = getSweep(obj,iSweep)
       % get probe, voltage and current values for one sweep
       sweepTime = EpochTT([...
-        obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128 ...
-        obj.sweep.data.([obj.scId '_sweep_stop']).data(iSweep)+0e9/128]);
-      [idx, Epoch] = tlim(EpochTT(obj.sweep.data.Epoch.data), sweepTime);
-      prb1 = obj.sweep.data.([obj.scId '_sweep_swept']).data(iSweep);
+        obj.sweep.data.([obj.scId, '_sweep_start']).data(iSweep), ...
+        obj.sweep.data.([obj.scId, '_sweep_stop']).data(iSweep)]);
+      % Internally use "sweepTimeSeg" for extracting the data, this has a
+      % margin of 42200 ns applied to the "sweep_start" time.
+      % This margin is dervied from mms1 sweep file v0.6.0 for 20150427
+      % which had a time jitter of <= 42198 ns between the official
+      % "sweep_start" time and the "Epoch" and "epoch_sweepsamp".
+      % Other files with time jitter include mms4 file v0.7.2 for 20160512
+      % (with <= 100 ns) and mms3 file v0.7.2 for 20170102 (with <= 286 ns).
+      % No other files have had jitter was observed in any sweep file as
+      % per 2021-09-01.
+      sweepTimeSeg = EpochTT(sweepTime.ttns - int64([42200; 0]));
+      % Extract corresponding voltage response
+      [idx, Epoch] = tlim(EpochTT(obj.sweep.data.Epoch.data), sweepTimeSeg);
+      % Sanity check
+      if isempty(idx)
+        irf.log('warning', ['Problem extracting voltage response for sweep number ', num2str(iSweep)]);
+      end
+      prb1 = obj.sweep.data.([obj.scId, '_sweep_swept']).data(iSweep);
       % The "other probe" is the other probe in the pair 1-2, 3-4, 5-6
       if fix(prb1/2)*2==prb1, prb2 = prb1 - 1; else, prb2 = prb1 + 1; end
-      voltage1 =  obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx,prb1);
-      voltage2 =  obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx,prb2);
+      voltage1 = obj.sweep.data.([obj.scId, '_edp_sweeps']).data(idx, prb1);
+      voltage2 = obj.sweep.data.([obj.scId, '_edp_sweeps']).data(idx, prb2);
       if ~isempty(voltage1)
-        v01 = obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx(1)-1,prb1);
-        v02 = obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx(1)-1,prb2);
+        v01 = obj.sweep.data.([obj.scId, '_edp_sweeps']).data(idx(1)-1, prb1);
+        v02 = obj.sweep.data.([obj.scId, '_edp_sweeps']).data(idx(1)-1, prb2);
       else
         v01 = NaN; v02 = NaN;
       end
-      % for debugging 2015-06-02
-      %      sweepTime = EpochTT([...
-      %        obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128-1e5 ...
-      %        obj.sweep.data.([obj.scId '_sweep_stop']).data(iSweep)+0e9/128]);
-      [idxBias,eBias] = ...
-        tlim(EpochTT(obj.sweep.data.epoch_sweepsamp.data+0e9/128), sweepTime);
-      %[idxBias,eBias] = ...
-      %  tlim(EpochTT(obj.sweep.data.epoch_sweepsamp.data+0e9/128), sweepTime);
-      % for debugging 2015-06-02
-      %      sweepTime = EpochTT([...
-      %        obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128-0e5 ...
-      %        obj.sweep.data.([obj.scId '_sweep_stop']).data(iSweep)+0e9/128]);
-      bias1 =  obj.sweep.data.([obj.scId '_sweep_bias1']).data(idxBias);
-      bias2 =  obj.sweep.data.([obj.scId '_sweep_bias2']).data(idxBias);
+      % Extract corresponding bias currents
+      % (could potentially use cummulative "sweep_steps" instead of time)
+      [idxBias, eBias] = ...
+        tlim(EpochTT(obj.sweep.data.epoch_sweepsamp.data), sweepTimeSeg);
+      % Sanity check
+      if isempty(idxBias)
+        irf.log('critical', ['Problem extracting bias currents for sweep number ', num2str(iSweep)]);
+      else
+        if idxBias(1) ~= sum(obj.sweep.data.([obj.scId, '_sweep_steps']).data(1:iSweep-1))+1
+          % Unexpected start point compared with cummulative "sweep_steps"
+          % Print warning (to notify user that perhaps the margins must be
+          % updated).
+          logStr = ['Sweep ', num2str(iSweep), ' start appears to be off by ', ...
+            num2str(obj.sweep.data.([obj.scId, '_sweep_start']).data(iSweep) - obj.sweep.data.epoch_sweepsamp.data(idxBias(1)-1)), ...
+            ' ns.'];
+          irf.log('warning', logStr);
+        elseif length(idxBias) ~= obj.sweep.data.([obj.scId, '_sweep_steps']).data(iSweep)
+          % Unexpected length
+          logStr = ['Sweep ', num2str(iSweep), ...
+            ' extracted bias currents (len: ', num2str(length(idxBias)), ...
+            ') does not align with expected number of steps ', ...
+            num2str(obj.sweep.data.([obj.scId, '_sweep_steps']).data(iSweep))];
+          irf.log('warning', logStr);
+        end
+      end
+      bias1 = obj.sweep.data.([obj.scId, '_sweep_bias1']).data(idxBias);
+      bias2 = obj.sweep.data.([obj.scId, '_sweep_bias2']).data(idxBias);
       % Find current values (biasRes) corresponding to voltages
       biasRes1 = NaN(size(voltage1)); biasRes2 = biasRes1;
       for i=1:length(idxBias)
         if i == length(idxBias)
-          ii = tlim(Epoch, irf.tint([eBias.stop.toUtc,'/',sweepTime.stop.toUtc]));
+          ii = tlim(Epoch, irf.tint([eBias.stop.toUtc, '/', sweepTime.stop.toUtc]));
         else, ii = tlim(Epoch, eBias(i+[0 1]));
         end
         biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i);
