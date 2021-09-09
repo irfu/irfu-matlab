@@ -30,31 +30,37 @@
 %
 % ARGUMENTS
 % =========
-% str            : String
-% regexpCa       : Cell array of strings, each one containing a regexp. "^" at
-%                  the beginning of a regexp will be ignored.
-%                  NOTE: The sequence of regexes must match every single
-%                  character in str.
-% nonMatchPolicy : String constant determining what happens in the event of a
-%                   non-perfect match (including no match).
-%                  'assert match'
-%                  'permit non-match'
-%                  This refers to both kinds of failure (above).
+% str
+%       String
+% regexpCa
+%       Cell array of strings, each one containing a regexp. "^" at the
+%       beginning of a regexp will be ignored.
+%       NOTE: The sequence of regexes must match every single character in str.
+% nonMatchPolicy
+%       String constant determining what happens in the event of a non-perfect
+%       match (including no match).
+%           'assert match'
+%           'permit non-match'
+%       This refers to both kinds of failure (above).
 %
 %
 % RETURN VALUE
 % ============
-% subStrCa       : Cell array of strings, each being a match for the
-%                  corresponding string in regexpCa.
-% remainingStr   : The remainder of argument str that was not matched.
-% isPerfectMatch : Logical. Whether matched all regular expressions to entire
-%                  string.
+% subStrCa
+%       Cell array of strings, each being a match for the corresponding string
+%       in regexpCa.
+% remainingStr
+%       The remainder of argument str that was not matched.
+% isPerfectMatch
+%       Logical. Whether matched all regular expressions to entire string.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-25.
 %
-function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(str, regexpCa, nonMatchPolicy)
+function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(...
+        str, regexpCa, nonMatchPolicy)
+    
     % PROPOSAL: Better function name.
     %   PROPOSAL: ~token
     %   PROPOSAL: read_tokens (plural)

@@ -20,7 +20,8 @@ function [name, parentPath] = get_name(path)
     %   CON: Easy to use cellfun.
     %       Ex: cellfun(@EJ_library.fs.get_name, {DsmdArray1.path}', 'UniformOutput', false)
     %   CON: Provides no extra value, e.g. speed (except convenience).
-    %   CON: Output would have to change to cell arrays.
+    %   CON: Output would have to change to cell arrays for cell array input
+    %        (special/separate case).
     %
     % PROPOSAL: Remove trailing slash.
     
