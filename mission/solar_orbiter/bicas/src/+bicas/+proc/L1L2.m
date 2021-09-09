@@ -83,8 +83,8 @@ classdef L1L2
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
 
             % ASSERTIONS
-            EJ_library.assert.struct(InSci, {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
-            EJ_library.assert.struct(InHk,  {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            assert(isa(InSci, 'bicas.InputDataset'))
+            assert(isa(InHk,  'bicas.InputDataset'))
 
             HkSciTime = [];
 

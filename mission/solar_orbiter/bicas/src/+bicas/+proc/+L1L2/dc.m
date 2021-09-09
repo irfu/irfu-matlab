@@ -377,7 +377,7 @@ classdef dc   % < handle
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS
-            EJ_library.assert.struct(InCur, {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            assert(isa(InCur, 'bicas.InputDataset'))
 
 
 

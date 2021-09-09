@@ -80,7 +80,6 @@ function execute_sw_mode(...
         % Read dataset CDF file
         %=======================
         InputDataset = bicas.read_dataset_CDF(inputFilePath, SETTINGS, L);
-        InputDataset.filePath = inputFilePath;
         
         InputDatasetsMap(prodFuncInputKey) = InputDataset;
 

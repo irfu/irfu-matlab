@@ -178,7 +178,7 @@ classdef tds   % < handle
         % snapshots. Need to use NaN/fill value.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            assert(isa(InSci, 'bicas.InputDataset'))
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
