@@ -133,15 +133,6 @@ classdef L1L2
 
 
 
-            if SETTINGS.get_fv('INPUT_CDF.HK.MOVE_TIME_TO_SCI')
-                L.log('warning', '===================================================================')
-                L.log('warning', 'Moving/adjusting HK time to begin at the same timestamp as voltage.')
-                L.log('warning', '===================================================================')
-                hkEpoch = hkEpoch - hkEpoch(1) + InSci.Zv.Epoch(1);
-            end
-
-
-
             %===================
             % WARNINGS / ERRORS
             %===================

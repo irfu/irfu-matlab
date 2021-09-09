@@ -35,8 +35,6 @@ function SETTINGS = create_default_SETTINGS()
 %                                                            Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
 %
-% PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-%
 % PROPOSAL: Setting keys should use cased version of zVars and glob.attrs..
 %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
 %
@@ -216,12 +214,6 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
-
-    % For testing, when HK and SCI time are completely different and do not
-    % overlap (though HK time still has to cover a larger interval than SCI).
-    % Adds/subtracts HK time so that the first HK timestamp equals the first SCI
-    % timestamp.
-    S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',          0)
 
 
 
