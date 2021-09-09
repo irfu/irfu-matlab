@@ -77,7 +77,7 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %       	(2a) Checks on a specific level
     %
     % PROPOSAL: Check that no duplicate global attributes, if ignoring case.
-    %   Ex: CALIBRATION_VERSION + Calibration_version
+    %   Ex: CALIBRATION_VERSION (still used 2021-09-09) + Calibration_version (obsoleted/removed)
     %
     %
     %

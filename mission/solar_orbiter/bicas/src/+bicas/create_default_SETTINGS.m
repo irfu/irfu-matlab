@@ -243,12 +243,6 @@ function SETTINGS = create_default_SETTINGS()
     % content is unimportant since it speeds up BICAS.
     S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
 
-    % There should not be any glob.attr. "Calibration_version"?
-    % NOTE: Not to be confused with CALIBRATION_VERSION (capital letters) =
-    % "Version of the calibration table" (not yet set. /2021-02-16)
-%     S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
-%         '1.1; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Calibrates currents.');
-
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.TDS',         'TDS team')
