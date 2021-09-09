@@ -46,7 +46,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-10-21
 %
-classdef mixed_radix   % < handle
+classdef mixed_radix    
     % PROPOSAL: Shorter class name.
     % PROPOSAL: Move outside of utils package.
 

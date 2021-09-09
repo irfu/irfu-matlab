@@ -1,40 +1,49 @@
 %
-% Select files and directories in a globbing-like way. Uses regex patterns instead of globbing syntax.
+% Select files and directories in a globbing-like way. Uses regex patterns
+% instead of globbing syntax.
 %
 %
 % ARGUMENTS AND RETURN VALUE
 % ==========================
-% rootDirPath      : Directory path. Selected files/directories will be located under this directory (recursively).
-% regexPatternList : 1D cell array of regex patterns (strings). One component for every part of the relative paths
-%                    (i.e. excluding the root directory name itself).
-%                    A regex matching ANY SUBSTRING counts as a match. To match only the entire object name, use regex
-%                    commands ^ and $.
-% varargin         : Settings struct and/or list of pairs of arguments representing settings (string key + value) to
-%                    override the defaults.
-%                    Values are passed on to EJ_library.fs.recurse_directory_tree. See implementation for
-%                    meaning and default values.
+% rootDirPath
+%       Directory path. Selected files/directories will be located under this
+%       directory (recursively).
+% regexPatternList
+%       1D cell array of regex patterns (strings). One component for every part
+%       of the relative paths (i.e. excluding the root directory name itself). A
+%       regex matching ANY SUBSTRING counts as a match. To match only the entire
+%       object name, use regex commands ^ and $.
+% varargin
+%       Settings struct and/or list of pairs of arguments representing settings
+%       (string key + value) to override the defaults. Values are passed on to
+%       EJ_library.fs.recurse_directory_tree(). See implementation for
+%       meaning and default values.
+%
 %
 % RETURN VALUE
 % ============
-% objectInfoList   : Struct array. Can be zero-length.
-%                       .name
-%                       .date
-%                       .bytes
-%                       .isdir
-%                       .datenum
-%                       .relativePath
-%                       .recursionDepth
-%                       .fullPath
-%                    NOTE: If one submits an empty cell array of regex patterns, then it is a one-component struct array
-%                    for the root directory (i.e. it generalizes nicely).
-%                    NOTE: Some fields have field names inherited from the dir() command.
+% objectInfoList
+%       Struct array. Can be zero-length.
+%         .name
+%         .date
+%         .bytes
+%         .isdir
+%         .datenum
+%         .relativePath
+%         .recursionDepth
+%         .fullPath
+%       NOTE: If one submits an empty cell array of regex patterns, then it is a
+%       one-component struct array for the root directory (i.e. it generalizes
+%       nicely).
+%       NOTE: Some fields have field names inherited from the dir() command.
 %
 %
 % NOTES
 % =====
-% MATLAB does not appear to have any similar functionality.
-% "glob" in the function name is misleading since it really uses regular expressions.
-% Compare EJ_library.fs.get_all_files_dirs. Note that it does not return the same struct fields.
+% MATLAB does not appear to have any similar functionality. "glob" in the
+% function name is misleading since it really uses regular expressions. Compare
+% EJ_library.fs.get_all_files_dirs(). Note that it does not return the same
+% struct fields.
 %
 %
 % Author: Erik P G Johansson
@@ -75,7 +84,8 @@ function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargi
     
     if isempty(objectInfoList)
         objectInfoList = EJ_library.utils.empty_struct([0,1], ...
-            'name', 'date', 'bytes', 'isdir', 'datenum', 'relativePath', 'recursionDepth');
+            'name', 'date', 'bytes', 'isdir', 'datenum', ...
+            'relativePath', 'recursionDepth');
     end
     
 end
@@ -84,7 +94,9 @@ end
 
 function result = FileFunc(args, regexPatternList)
     
-    if (args.recursionDepth == length(regexPatternList)) && matchesRegex(args.dirCmdResult.name, regexPatternList{end})
+    if (args.recursionDepth == length(regexPatternList)) ...
+            && matchesRegex(args.dirCmdResult.name, regexPatternList{end})
+        
         result = args.dirCmdResult;
         result.recursionDepth = args.recursionDepth;
         result.relativePath   = args.relativePath;
@@ -102,7 +114,8 @@ function result = DirFunc(args, regexPatternList)
     result = [];
     
     %fprintf('args.relativePath = %s   ; args.hasRecursedOverChildren = %i\n', args.relativePath, args.hasRecursedOverChildren);
-    if args.hasRecursedOverChildren && (args.recursionDepth == length(regexPatternList))
+    if args.hasRecursedOverChildren ...
+            && (args.recursionDepth == length(regexPatternList))
         % Add current directory to the directory results.
         result = args.dirCmdResult;
         result.recursionDepth = args.recursionDepth;
