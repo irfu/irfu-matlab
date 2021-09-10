@@ -14,13 +14,13 @@
 
     <notesTable>
         <note>
-            2020-11-12, EJ: I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
+            2020-11-12, Erik P G Johansson: I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </note>
         <note>
-            2021-05-24, EJ: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
+            2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2021-08-04, EJ: Should contain all thruster firings for time period 2020-02-12 to 2021-08-02 (inclusive). Only manually identified thuster firings.
+            2021-09-10, Erik P G Johansson: Should contain all thruster firings for time period 2020-02-12 to 2021-08-31 (inclusive). Only manually identified thuster firings.
         </note>
     </notesTable>
 
@@ -899,7 +899,49 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description>Only five s/c potential peaks. Looks irregular but still looks much like a thruster firing.</description>
         </event>
-
+        <event>
+            <startTimeUtc>2021-08-09T02:00:30</startTimeUtc>
+            <stopTimeUtc> 2021-08-09T02:12:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Different looking. Only two s/c potential peaks, 0.8 V, and longer-than-usual return to normal.</description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-09T06:50:27</startTimeUtc>
+            <stopTimeUtc> 2021-08-09T06:57:53</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unsure if thruster firing. Just one peak, 0.7 V. Also unusual to have second thruster firing on the same day.</description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-12T19:24:15</startTimeUtc>
+            <stopTimeUtc> 2021-08-12T19:31:24</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Just three s/c potential peaks.</description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-13T07:04:29</startTimeUtc>
+            <stopTimeUtc> 2021-08-13T07:12:25</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-23T01:04:33</startTimeUtc>
+            <stopTimeUtc> 2021-08-23T01:12:38</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Oddly shaped return to normal.</description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-26T22:04:19</startTimeUtc>
+            <stopTimeUtc> 2021-08-26T22:11:43</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-08-30T01:04:36</startTimeUtc>
+            <stopTimeUtc> 2021-08-30T01:11:59</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        
     </eventsTable>
 
 </main>
