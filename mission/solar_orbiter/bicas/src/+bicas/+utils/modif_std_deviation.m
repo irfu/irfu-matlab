@@ -6,27 +6,31 @@
 %
 % ARGUMENTS
 % =========
-% v    : Aray with arbitrary size and number of dimensions. May be NaN.
-% ref  : Scalar value that replaces the mean in standard deviation. May be NaN.
-% iDim : Scalar value. Dimension along which to calculate MSTD.
+% v
+%       Array with arbitrary size and number of dimensions. May be NaN.
+% ref
+%       Scalar value that replaces the mean in standard deviation. May be NaN.
+% iDim
+%       Scalar value. Dimension along which to calculate MSTD.
 %        
 %
 % RETURN VALUES
 % =============
-% mstd : Modified STandard Deviation (MSTD).
-%        Same size as "v", except for that size(mstd, iDim) == 1.
-%        --
-%        NaN, if size(v, iDim) == 0 or 1, or
-%             if "v" contains at least on NaN for the particular 1D-sub-vector
-%             for which one scalar MSTD values is calculated.
-%        Modified standard deviation otherwise.
+% mstd
+%       Modified STandard Deviation (MSTD).
+%       Same size as "v", except for that size(mstd, iDim) == 1.
+%       --
+%       NaN, if size(v, iDim) == 0 or 1, or
+%            if "v" contains at least one NaN for the particular 1D-sub-vector
+%            for which one scalar MSTD values is calculated.
+%       Modified standard deviation otherwise.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-10-22.
 %
 function mstd = modif_std_deviation(v, ref, iDim)
-    % PROPOSAL: Ignore NaN in the calcaulation of MSTD.
+    % PROPOSAL: Ignore NaN in the calculation of MSTD.
     %           ==> Be able to return non-NaN if there are sufficiently many non-NaN values.
     % PROPOSAL: Argument for smallest number of non-NaN values separately per
     %           1D-subvector.

@@ -229,6 +229,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
     
 
+
     enableMods = SETTINGS.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
     
     MODS = bicas.constants.GA_MODS(outputDatasetId);

@@ -115,6 +115,8 @@ classdef utils
             fieldNamesList = fieldnames(SNew);
             for i=1:length(fieldNamesList)
                 fn = fieldNamesList{i};
+                
+                % ASSERTIONS
                 assert(isnumeric(S.(fn)))
                 assert(isnumeric(SNew.(fn)))
                 
@@ -273,7 +275,7 @@ classdef utils
         % tt2000 : NOTE: int64
         %
         
-            bicas.proc.utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
+            bicas.utils.assert_zv_ACQUISITION_TIME(ACQUISITION_TIME)
             
             % at = ACQUISITION_TIME
             ACQUISITION_TIME = double(ACQUISITION_TIME);
@@ -387,24 +389,6 @@ classdef utils
         
         
         
-        function assert_ACQUISITION_TIME(ACQUISITION_TIME)
-        % Assert that variable is an "zVar ACQUISITION_TIME-like" variable.
-        
-            EMID = 'BICAS:Assertion:IllegalArgument';
-        
-            assert(isa(  ACQUISITION_TIME, 'uint32'), ...
-                EMID, 'ACQUISITION_TIME is not uint32.')
-            EJ_library.assert.sizes(ACQUISITION_TIME, [NaN, 2])
-            assert(all(  ACQUISITION_TIME(:, 1) >= 0), ...
-                EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
-            % IMPLEMENTATION NOTE: Does not need to check for negative values
-            % due to uint32.
-            assert(all(  ACQUISITION_TIME(:, 2) < 65536), ...
-                EMID, 'ACQUISITION_TIME subseconds out of range.')
-        end
-        
-        
-        
         function nRows = assert_struct_num_fields_have_same_N_rows(S)
         % Assert that data structure have the same number of rows in its
         % constituent parts.
@@ -425,10 +409,17 @@ classdef utils
         %                                     the cell array itself!).
         %       (3) struct field (in struct): The inner struct's fields (not
         %                                     recursive).
+        %
+        %
+        % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
+        % ===========================================================
+        % PreDc.Zv.samplesCaTm    : Cell array of cell arrays.
+        % PostDc.Zv.DemuxerOutput : Struct of arrays.
+        %
 
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
-        % PROPOSAL: Implement using new features in EJ_library.assert.sizes.
+        % PROPOSAL: Implement using new features in EJ_library.assert.sizes().
         
             fieldNamesList1 = fieldnames(S);
             nRowsArray = [];

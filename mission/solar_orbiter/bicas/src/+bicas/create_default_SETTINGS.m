@@ -301,6 +301,10 @@ function SETTINGS = create_default_SETTINGS()
     % effort.
     S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
 
+    % How to react to HK not overlapping with SCI.
+    % NOTE: Switch is shared for LFR & TDS, but WARNING only(?) makes sense for
+    % LFR, since some data can be salvaged in the event of non-overlap for LFR
+    % (using LFR mux mode), but not for TDS.
     S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'WARNING')    % WARNING, ERROR
     % NOTE: "WARNING": Will lead to using nearest interpolation.
     S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
@@ -326,18 +330,20 @@ function SETTINGS = create_default_SETTINGS()
     %============================================================================
     % Where to obtain the mux mode
     % ----------------------------
+    %
     % BIAS HK data
     % ------------
     % Contains mux mode using its own Epoch (typically ~30 s time resolution?),
     % which means that ~interpolation to SCI data is necessary, which means that
-    % the effective mux mode value can briefly be wrong. BIAS HK may also
-    % potentially not cover the same time range as SCI data at all, and then the
-    % mux mode can be really wrong (e.g. when using different versions).
+    % the effective mux mode value can briefly be wrong.
+    % NOTE: BIAS HK may potentially NOT cover the same time range as SCI data at
+    % all, and then the mux mode can be really wrong (e.g. when using different
+    % versions).
     %
     % LFR SCI data (L1/L1R)
     % ---------------------
     % Contains a zVar for mux mode using the same Epoch as the data.
-    %
+    % NOTE: This mux mode may be available when the BIAS HK mux mode is not.
     % NOTE: The relevant TDS datasets do not contain mux mode.
     %============================================================================
     S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI, BIAS_HK_LFR_SCI

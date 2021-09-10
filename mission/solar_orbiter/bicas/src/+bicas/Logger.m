@@ -187,7 +187,7 @@ classdef Logger < handle
                 % there should/could be one).
                 
                 obj.logFileEnabled = false;
-                obj.logFileBuffer = {};
+                obj.logFileBuffer  = {};
             end
         end
 

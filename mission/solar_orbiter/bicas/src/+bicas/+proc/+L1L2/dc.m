@@ -190,11 +190,15 @@ classdef dc
             % (1) Find continuous subsequences of records with identical
             %     settings.
             % (2) Process data separately for each such sequence.
+            % ----------------------------------------------------------
             % NOTE: Just finding continuous subsequences can take a significant
             % amount of time.
             % NOTE: Empirically, this is not useful for real LFR SWF datasets
             % where the LFR sampling frequency changes in every record, meaning
             % that the subsequences are all 1 record long.
+            % NOTE: Rx (the relevant value from R0, R1, R2) is not included
+            %       since it is not needed, since data has already been
+            %       separated into separate DC/AC variables.
             %===================================================================
             [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(...
                 PreDc.Zv.MUX_SET, ...
@@ -265,7 +269,7 @@ classdef dc
 
 
                 % Extract subsequence of DATA records to "demux".
-                ssSamplesTm                = bicas.proc.utils.select_row_range_from_cell_comps(...
+                ssSamplesTm = bicas.proc.utils.select_row_range_from_cell_comps(...
                     PreDc.Zv.samplesCaTm, iFirst, iLast);
                 % NOTE: "zVariable" (i.e. first index=record) for only the
                 % current subsequence.

@@ -156,7 +156,6 @@ classdef lfr
             assert(isa(InSci, 'bicas.InputDataset'))
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
             
-
             % ASSERTIONS: CDF
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
                 'BICAS:DatasetFormat', ...

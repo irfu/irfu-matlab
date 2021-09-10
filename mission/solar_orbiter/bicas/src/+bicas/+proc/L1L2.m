@@ -80,7 +80,14 @@ classdef L1L2
 
 
         % Processing function
+        %
+        % NOTE: Only converts relevant HK zVars to be on SCI Epoch. Later
+        % (other) code decides whether to use it (mux mode).
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
+            % PROPOSAL: Separate function for the actual interpolation of data
+            %           (changing time array HK-->SCI).
+            
+            
 
             % ASSERTIONS
             assert(isa(InSci, 'bicas.InputDataset'))
@@ -92,12 +99,12 @@ classdef L1L2
 
             %===================================================================
             % Select whether HK should use
-            %   (1) Epoch, or
-            %   (2) ACQUISITION_TIME (not always available).
-            % ----------------------------------------------
+            %   (1) (HK) Epoch, or
+            %   (2) (HK) ACQUISITION_TIME (not always available).
+            % ---------------------------------------------------
             % IMPLEMENTATION NOTE: Historically, there have been datasets where
-            % Epoch is contains errors, but ACQUISITION_TIME seems OK. This
-            % should be phased out eventually.
+            % Epoch contains errors, but ACQUISITION_TIME seems OK. This should
+            % be phased out eventually.
             %===================================================================
             ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
             USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
@@ -116,7 +123,7 @@ classdef L1L2
             %==================================================================
             % Log time intervals to enable comparing available SCI and HK data
             %==================================================================
-            TimeVars = [];
+            TimeVars = [];    % Temporary struct only used for logging.
             TimeVars.HK_Epoch  = InHk.Zv.Epoch;
             TimeVars.SCI_Epoch = InSci.Zv.Epoch;
             if isfield(InHk.Zv, 'ACQUISITION_TIME')
@@ -137,8 +144,9 @@ classdef L1L2
             % WARNINGS / ERRORS
             %===================
             if ~issorted(hkEpoch, 'strictascend')
-                % NOTE: zVar ACQUISITION_TIME in test file
-                % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+                % Ex: zVar ACQUISITION_TIME in test file
+                % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/
+                % solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
                 % is not monotonically increasing (in fact, it is completely
                 % strange).
                 error(...
@@ -147,6 +155,9 @@ classdef L1L2
                     USE_ZV_ACQUISITION_TIME_HK)
             end
             if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
+                %-------------------------------------------------
+                % CASE: SCI does not cover a subset of HK in time
+                %-------------------------------------------------
                 hk1RelativeSec = 1e-9 * (min(hkEpoch) - min(InSci.Zv.Epoch));
                 hk2RelativeSec = 1e-9 * (max(hkEpoch) - max(InSci.Zv.Epoch));
 
@@ -164,6 +175,9 @@ classdef L1L2
                     anomalyDescrMsg, 'BICAS:DatasetFormat:SWModeProcessing')
             end
             if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
+                %---------------------------------------
+                % CASE: SCI does not overlap HK in time
+                %---------------------------------------
 
                 % NOTE: "WARNING" (rather than error) only makes sense if it is
                 % possible to later meaningfully permit non-intersection.
@@ -177,8 +191,11 @@ classdef L1L2
 
 
 
+            % Derive time margin within which the nearest HK value will be used.
             % NOTE: Requires >=2 records.
             hkEpochExtrapMargin = mode(diff(hkEpoch)) / 2;
+            
+            
 
             %=============================================================
             % Derive MUX_SET

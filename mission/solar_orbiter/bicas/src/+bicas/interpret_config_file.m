@@ -2,6 +2,10 @@
 % Interpret the contents of an (already read) config file as settings key-value
 % pairs.
 %
+% NOTE: This codes defines a syntax for the configuration file. This must be
+% compatible with what the bash wrapper script can handle to read what it needs
+% itself (a subset).
+%
 %
 % ARGUMENTS
 % =========
@@ -14,20 +18,18 @@
 %       VS = values as strings.
 %
 %
-% IMPLEMENTATION NOTE: Does not read the config file itself in order to make the
-% code more easily testable. Does not modify a settings object in order to be
-% able to use one common code for interpreting numeric string values (reading
-% settings from CLI arguments also requires converting string arguments to
-% numeric values.
-%
-% NOTE: This codes defines a syntax for the configuration file. This must be
-% compatible with what the bash wrapper script can handle to read what it needs.
+% IMPLEMENTATION NOTE
+% ===================
+% Does not read the config file itself in order to make the code more easily
+% testable. Does not modify a settings object in order to be able to use one
+% common code for interpreting numeric string values (reading settings from CLI
+% arguments also requires converting string arguments to numeric values.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-24
 %
-function settingsVsMap = interpret_config_file(configFileRowList, L)
+function settingsVsMap = interpret_config_file(configFileRowsCa, L)
     
     SETTINGS_KEY_REGEXP          = '[a-zA-Z0-9._-]+';
     SETTINGS_VALUE_STRING_REGEXP = '[^"]*';
@@ -42,8 +44,8 @@ function settingsVsMap = interpret_config_file(configFileRowList, L)
     % comparisons in automated tests, and (2) for restricting values.
     settingsVsMap = containers.Map('KeyType', 'char', 'ValueType', 'char');
     
-    for iRow = 1:numel(configFileRowList)
-        row = configFileRowList{iRow};
+    for iRow = 1:numel(configFileRowsCa)
+        row = configFileRowsCa{iRow};
         
         if ~isempty(regexp(row, '^#.*$', 'once'))
             % CASE: Row with only comments, beginning at first character of row!
