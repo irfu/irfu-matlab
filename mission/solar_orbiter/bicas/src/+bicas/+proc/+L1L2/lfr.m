@@ -247,23 +247,40 @@ classdef lfr
 
 
 
-            %==================================================================
+            %==========================================
             % Set MUX_SET
             % -----------
-            % Select which source of mux mode is used: LFR datasets or BIAS HK
-            %==================================================================
+            % Select which source of mux mode is used.
+            %==========================================
             [value, key] = SETTINGS.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
             switch(value)
                 case 'BIAS_HK'
                     L.log('debug', 'Using BIAS HK mux mode.')
-                    PreDc.Zv.MUX_SET = HkSciTime.MUX_SET;
+                    MUX_SET = HkSciTime.MUX_SET;
+
                 case 'LFR_SCI'
                     L.log('debug', 'Using LFR SCI mux mode.')
-                    PreDc.Zv.MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
+                    MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
+
+                case 'BIAS_HK_LFR_SCI'
+                    L.log('debug', ...
+                        ['Using mux mode from BIAS HK when available, and', ...
+                        ' from LFR SCI when the former is not available.'])
+
+                    % ASSERTION
+                    % Added since the logic/algorithm is inherently relying on
+                    % the implementation using NaN.
+                    assert(isfloat(HkSciTime.MUX_SET))
+
+                    MUX_SET              = HkSciTime.MUX_SET;
+                    bUseBiasMux          = isnan(MUX_SET);
+                    MUX_SET(bUseBiasMux) = InSci.Zv.BIAS_MODE_MUX_SET(bUseBiasMux);
+
                 otherwise
                     error('BICAS:ConfigurationBug', ...
                         'Illegal settings value %s="%s"', key, value)
             end
+            PreDc.Zv.MUX_SET = MUX_SET;
 
 
 

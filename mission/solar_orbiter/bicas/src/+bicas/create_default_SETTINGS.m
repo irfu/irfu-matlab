@@ -340,7 +340,7 @@ function SETTINGS = create_default_SETTINGS()
     %
     % NOTE: The relevant TDS datasets do not contain mux mode.
     %============================================================================
-    S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
+    S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI, BIAS_HK_LFR_SCI
 
 
 
