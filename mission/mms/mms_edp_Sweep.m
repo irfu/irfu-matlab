@@ -121,6 +121,7 @@ classdef mms_edp_Sweep < handle
         tmp.impedance = NaN;
         tmp.phase = NaN;
         tmp.type = type;
+        tmp.impedance_src = ''; % keep track source used for ".impedance" (is it from "plot_time()" or "analyse()")
         switch prb1
           case 1, p_1='p1'; p_2='p2';
           case 2, p_1='p2'; p_2='p1';
@@ -222,6 +223,13 @@ classdef mms_edp_Sweep < handle
       end
       obj.(p_1)(obj.pTable(2,iSweep)).iPh = tmp1.iPh;
       obj.(p_2)(obj.pTable(2,iSweep)).iPh = tmp2.iPh;
+      if strcmp(obj.(p_1)(obj.pTable(2,iSweep)).impedance_src, 'time')
+        % we have impedance computed from "plot_time", give warning before
+        % replacing it.
+        irf.log('warning', 'Replacing "impedance" computed in plot_time() with computed value from analyse().');
+      end
+      obj.(p_1)(obj.pTable(2,iSweep)).impedance_src = 'analyse';
+      obj.(p_2)(obj.pTable(2,iSweep)).impedance_src = 'analyse';
       obj.(p_1)(obj.pTable(2,iSweep)).impedance = tmp1.impedance;
       obj.(p_2)(obj.pTable(2,iSweep)).impedance = tmp2.impedance;
       obj.(p_1)(obj.pTable(2,iSweep)).phase = mod(ph_tmp1+angle1+90,360)-90;
@@ -612,6 +620,13 @@ classdef mms_edp_Sweep < handle
       legend(h1(2), p_1, p_2);
       imp1 = impedance1(ind_impedance); medi1 = median(imp1(isfinite(imp1)));
       imp2 = impedance2(ind_impedance); medi2 = median(imp2(isfinite(imp2)));
+      if strcmp(obj.(p_1)(obj.pTable(2,iSweep)).impedance_src, 'analyse')
+        % We have impedance computed from "analyse", give warning before
+        % replacing it.
+        irf.log('warning', 'Replacing "impedance" computed in analyse() with computed value from plot_time().');
+      end
+      obj.(p_1)(obj.pTable(2,iSweep)).impedance_src = 'time';
+      obj.(p_2)(obj.pTable(2,iSweep)).impedance_src = 'time';
       obj.(p_1)(obj.pTable(2, iSweep)).impedance = medi1;
       obj.(p_2)(obj.pTable(2, iSweep)).impedance = medi2;
       if doPhase
