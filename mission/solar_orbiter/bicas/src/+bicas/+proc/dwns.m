@@ -285,7 +285,7 @@ classdef dwns
                 
                 zvBinsTt2000    = int64(ones(0,1));
                 iRecordsInBinCa = cell(0,1);
-                binSizeArrayNs  = zeros(0,1);
+                binSizeArrayNs  = int64(zeros(0,1));
                 return
             end
             % CASE: zvAllTt2000 is not empty.
