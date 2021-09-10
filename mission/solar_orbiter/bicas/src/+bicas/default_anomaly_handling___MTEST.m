@@ -1,5 +1,5 @@
 function default_anomaly_handling___MTEST
-    L = bicas.logger('human-readable', 0);
+    L = bicas.Logger('human-readable', 0);
     
     settingValueList = {'ERROR', 'WARNING', 'illegal value'};
     

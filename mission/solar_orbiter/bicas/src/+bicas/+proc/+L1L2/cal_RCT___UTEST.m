@@ -119,7 +119,7 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         % Create (temporary) directory with specified empty files.
         %
         function [tempDir, L] = setup_files(testCase, filenamesCa)
-            L = bicas.logger('none', false);
+            L = bicas.Logger('none', false);
             
             DirFixture = testCase.applyFixture(...
                 matlab.unittest.fixtures.TemporaryFolderFixture(...

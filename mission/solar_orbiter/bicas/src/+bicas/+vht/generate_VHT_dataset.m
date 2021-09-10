@@ -89,7 +89,7 @@ function generate_VHT_dataset(...
     
     BICAS_SETTINGS = bicas.create_default_SETTINGS();
     BICAS_SETTINGS.make_read_only();
-    BICAS_L        = bicas.logger('human-readable', false);
+    BICAS_L        = bicas.Logger('human-readable', false);
     
     
     

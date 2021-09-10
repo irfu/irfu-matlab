@@ -100,7 +100,7 @@ function errorCode = main( varargin )
         
         % NOTE: Permitting logging to file from MATLAB instead of bash wrapper
         % in case of using inofficial option.
-        L = bicas.logger('bash wrapper', true);
+        L = bicas.Logger('bash wrapper', true);
         
         
         
@@ -115,10 +115,10 @@ function errorCode = main( varargin )
         %       irfu-matlab (can not distinguish between updates to BICAS or the
         %       rest of irfu-matlab).
         %
-        % IMPLEMENTATION NOTE: bicas.logger.ICD_log_msg uses
+        % IMPLEMENTATION NOTE: bicas.Logger.ICD_log_msg uses
         % EJ_library.str.add_prefix_on_every_row.
         % ==> Must initialize paths for EJ_library BEFORE using
-        %     bicas.logger.log/logf.
+        %     bicas.Logger.log/logf.
         %========================================================================
         irf('check_path');
         irf('check_os');              % Maybe not strictly needed.
@@ -154,7 +154,7 @@ function errorCode = main( varargin )
             % CASE: Caught an error in the regular error handling(!)
             %========================================================
             % NOTE: Only use very, very error-safe code here.
-            %       Does not use bicas.logger or similar.
+            %       Does not use bicas.Logger or similar.
             % NOTE: Prints to stderr (not stdout).
             
             fprintf(2, 'Error in the MATLAB code''s error handling.\n');
@@ -187,8 +187,8 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     CAUSES_RECURSIVE_INDENTATION_LENGTH = 8;
 
     % IMPLEMENTATION NOTE: The error handling collects one long string with
-    % log/error messages for one bicas.logger.log call, instead of making
-    % multiple bicas.logger.log calls. This avoids having stdout and stderr
+    % log/error messages for one bicas.Logger.log call, instead of making
+    % multiple bicas.Logger.log calls. This avoids having stdout and stderr
     % messages mixed (alternating rows with stdout and stderr) in the MATLAB
     % GUI, making it easier to read.
     msg = '';
@@ -374,7 +374,7 @@ function main_without_error_handling(cliArgumentsList, L)
     % Configure inofficial log file, written to from within MATLAB
     %==============================================================
     if ~isempty(CliData.matlabLogFile)
-        % NOTE: Requires that bicas.logger has been initialized to permit
+        % NOTE: Requires that bicas.Logger has been initialized to permit
         % writing to log file.
         L.set_log_file(CliData.matlabLogFile);
     else

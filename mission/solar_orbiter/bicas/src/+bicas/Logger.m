@@ -31,7 +31,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-23
 %
-classdef logger < handle
+classdef Logger < handle
 %
 % PROBLEM: If logging to file from MATLAB, then can not log errors from not
 %          being able to parse the CLI arguments, since log file is one of them.
@@ -97,7 +97,7 @@ classdef logger < handle
         %       NOTE: Log messages are stored in a buffer until the log file is
         %       specified later, using the designated method.
         %
-        function obj = logger(stdoutOption, logFileEnabled)
+        function obj = Logger(stdoutOption, logFileEnabled)
             % PROPOSAL: Separate arguments for stdout and log file behaviour
             %   CON: Want short call for no logging.
             
@@ -287,7 +287,7 @@ classdef logger < handle
 
 
 
-        % Wrapper around bicas.logger.log. Prints with pattern + parameters.
+        % Wrapper around bicas.Logger.log. Prints with pattern + parameters.
         %
         %
         % ARGUMENTS

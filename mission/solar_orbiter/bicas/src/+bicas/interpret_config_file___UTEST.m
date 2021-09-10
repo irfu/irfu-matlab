@@ -11,7 +11,7 @@ classdef interpret_config_file___UTEST < matlab.unittest.TestCase
 
 
     properties(Constant)
-        L = bicas.logger('none', false);
+        L = bicas.Logger('none', false);
     end
 
 

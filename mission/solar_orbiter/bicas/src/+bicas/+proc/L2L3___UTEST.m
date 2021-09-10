@@ -41,7 +41,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
 
 
             N = NaN;
-            L        = bicas.logger('none', 0);
+            L        = bicas.Logger('none', 0);
             SETTINGS = bicas.create_default_SETTINGS();
             SETTINGS.make_read_only();
 
