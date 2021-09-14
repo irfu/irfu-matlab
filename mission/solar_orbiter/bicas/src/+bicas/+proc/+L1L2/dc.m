@@ -12,6 +12,12 @@ classdef dc
     % PROPOSAL: Automatic test code.
     % PROPOSAL: Include bicas.proc.L1L2.demuxer.
     %   CON: Too much code.
+    %
+    % PROPOSAL:   process_calibrate_demux()
+    %           & calibrate_demux_voltages()
+    %           should only accept the needed zVars and variables.
+    %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
+    %         from struct.
     
     %#######################
     %#######################
