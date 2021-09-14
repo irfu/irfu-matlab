@@ -173,12 +173,15 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
   end
   clear c
   
-  %%% Make data to grid format - filtered data
-  xv    = linspace(min(data(:,1)), max(data(:,1)), 2000);     % t values
-  yv    = linspace(min(data(:,2)), max(data(:,2)), 2000);     % Vn values
-  [X,Y] = meshgrid(xv, yv);                                   % grid of t-Vn
-  Z     = griddata(data(:,1),data(:,2),data(:,3),X,Y);        % find M-grid
+  %%% Make data to grid format - filtered data (inefficient)
+  %   xv    = linspace(min(data(:,1)), max(data(:,1)), 2000);     % t values
+  %   yv    = linspace(min(data(:,2)), max(data(:,2)), 2000);     % Vn values
+  %   [X,Y] = meshgrid(xv, yv);                                   % grid of t-Vn
+  %   Z     = griddata(data(:,1),data(:,2),data(:,3),X,Y);        % find M-grid
   
+  % Optimized
+  [X,Y] = meshgrid(t, Vn);
+  Z = F;
   
   %%% Map the contours of the filtered distribution
   [~, cm] = contourf(X, Y, Z,cl,'edgecolor','k');         % make a contour plot
