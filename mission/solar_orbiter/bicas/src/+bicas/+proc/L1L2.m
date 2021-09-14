@@ -154,10 +154,26 @@ classdef L1L2
                     ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
                     USE_ZV_ACQUISITION_TIME_HK)
             end
-            if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
+            if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
+                %---------------------------------------
+                % CASE: SCI does not overlap HK in time
+                %---------------------------------------
+
+                % NOTE: "WARNING" (rather than error) only makes sense if it is
+                % possible to later meaningfully permit non-intersection.
+                [settingValue, settingKey] = SETTINGS.get_fv(...
+                    'PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
+                bicas.default_anomaly_handling(L, ...
+                    settingValue, settingKey, 'E+W+illegal', ...
+                    'SCI and HK time ranges do not overlap in time.', ...
+                    'BICAS:SWModeProcessing')
+            elseif ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 %-------------------------------------------------
                 % CASE: SCI does not cover a subset of HK in time
                 %-------------------------------------------------
+                % NOTE: This anomaly is obviously implied by the anomaly above
+                % (SCI, HK do not overlap). It is therefore only meaningful to
+                % detect it if the above anomaly is not detected.
                 hk1RelativeSec = 1e-9 * (min(hkEpoch) - min(InSci.Zv.Epoch));
                 hk2RelativeSec = 1e-9 * (max(hkEpoch) - max(InSci.Zv.Epoch));
 
@@ -173,20 +189,6 @@ classdef L1L2
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:DatasetFormat:SWModeProcessing')
-            end
-            if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
-                %---------------------------------------
-                % CASE: SCI does not overlap HK in time
-                %---------------------------------------
-
-                % NOTE: "WARNING" (rather than error) only makes sense if it is
-                % possible to later meaningfully permit non-intersection.
-                [settingValue, settingKey] = SETTINGS.get_fv(...
-                    'PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
-                bicas.default_anomaly_handling(L, ...
-                    settingValue, settingKey, 'E+W+illegal', ...
-                    'SCI and HK time ranges do not overlap in time.', ...
-                    'BICAS:SWModeProcessing')
             end
 
 
