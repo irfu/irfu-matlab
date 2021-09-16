@@ -104,10 +104,10 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Thplus_gsm_hpca_srvy_l2', 'Theplus_gsm_hpca_srvy_l2', 'Theplusplus_gsm_hpca_srvy_l2', 'Toplus_gsm_hpca_srvy_l2',...
 %     'Nhplus_hpca_sitl',
 %     'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2'
-%  EPD [FEEPS+EIS]: 
+%  EPD [FEEPS+EIS]:
 %     'Omnifluxion_epd_feeps_brst_l2', 'Omnifluxelectron_epd_feeps_brst_l2', ...
 %     'Omnifluxion_epd_feeps_srvy_l2', 'Omnifluxelectron_epd_feeps_srvy_l2', ...
-%     'Omnifluxion_epd_eis_brst_l2', 'Omnifluxion_epd_eis_srvy_l2' 
+%     'Omnifluxion_epd_eis_brst_l2', 'Omnifluxion_epd_eis_srvy_l2'
 %  EDI:
 %     'Flux-amb-pm2_edi_brst_l2'
 %  ASPOC:
@@ -202,7 +202,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Tperpe_fpi_brst_l2', 'Tparae_fpi_brst_l2', ...
   'Tperpe_fpi_fast_l2', 'Tparae_fpi_fast_l2', ...
   'partTperpe_fpi_brst_l2', 'partTparae_fpi_brst_l2', ...
-  'partTperpe_fpi_fast_l2', 'partTparae_fpi_fast_l2', ...  
+  'partTperpe_fpi_fast_l2', 'partTparae_fpi_fast_l2', ...
   'Tse_fpi_sitl','Tse_fpi_ql',...
   'Tse_fpi_brst_l1b','Tse_fpi_fast_l1b',...
   'Ti_dbcs_fpi_brst_l2', 'partTi_dbcs_fpi_brst_l2', ...
@@ -435,7 +435,7 @@ switch Vr.inst
         if strcmp(Vr.param,'Flux-err-amb-pm2')
           err_pref = '_delta';
           Vr.param = 'Flux-amb-pm2';
-        end        
+        end
         % for amb-pm2, node 1 is closest to 0/180
         edi_tk = tokenize(Vr.param,'-');
         dsetName = [dsetName '_' edi_tk{2} '-' edi_tk{3}];
@@ -447,7 +447,7 @@ switch Vr.inst
             pitchangle = pitchangles(ipitchangle);
             node = nodes(inode);
             pref = ['mms' mmsIdS '_' Vr.inst '_flux' num2str(inode)  '_' num2str(pitchangle) err_pref '_' Vr.tmmode '_' Vr.lev];
-            flux{ipitchangle,inode} = get_ts('scalar');            
+            flux{ipitchangle,inode} = get_ts('scalar');
           end
         end
         if isempty(flux{1,1})
@@ -682,8 +682,8 @@ switch Vr.inst
     % This could also be done in splitVs.
     all_ions = {'hplus','heplus','heplusplus','oplus'};
     ion_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_ions);
-    ion = all_ions{find(ion_index)};    
-    param = extractBefore(Vr.param,ion); 
+    ion = all_ions{find(ion_index)};
+    param = extractBefore(Vr.param,ion);
     
     switch param
       case {'N','V','Ts','P','T'}
@@ -691,7 +691,7 @@ switch Vr.inst
       case {'Omniflux'}
         dsetName = ['mms' mmsIdS '_hpca_' Vr.tmmode '_' Vr.lev '_ion'];
     end
-    %param = Vr.param(1); ion = Vr.param(2:end); 
+    %param = Vr.param(1); ion = Vr.param(2:end);
     %if ion(1)=='s', param = [param ion(1)]; ion = ion(2:end); end % Ts
     switch ion
       case {'hplus','heplus','heplusplus','oplus'}
@@ -717,7 +717,7 @@ switch Vr.inst
     end
     
     if doPDist
-      res = get_ts('hpca_omni');      
+      res = get_ts('hpca_omni');
     else
       res = mms.db_get_ts(dsetName,pref,Tint);
     end
@@ -728,13 +728,13 @@ switch Vr.inst
       res.data(res.data==0) = NaN;
       if (Vr.to>1)
         new_res = TSeries(res.time,res.data,'TensorOrder',Vr.to,'TensorBasis','xyz',...
-           'repres',{'x','y','z'});
-        new_res.coordinateSystem =  Vr.cs;    
+          'repres',{'x','y','z'});
+        new_res.coordinateSystem =  Vr.cs;
         new_res.name = res.name;
         new_res.siConversion = res.siConversion;
         new_res.userData = res.userData;
         new_res.units = res.units;
-        res = new_res;        
+        res = new_res;
       end
     end
   case 'scm'
@@ -797,8 +797,8 @@ switch Vr.inst
   case 'epd_feeps'
     all_species = {'ion','electron'};
     species_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_species);
-    species = all_species{find(species_index)};    
-    param = extractBefore(Vr.param,species); 
+    species = all_species{find(species_index)};
+    param = extractBefore(Vr.param,species);
     
     % the files only has feeps, e.g.: mms1_feeps_brst_l2_ion_20170804093413_v6.1.2.cdf
     % but the variables have epd_feeps, e.g.: mms1_epd_feeps_brst_l2_ion_top_intensity_sensorid_6
@@ -807,10 +807,10 @@ switch Vr.inst
   case 'epd_eis'
     all_species = {'ion','electron'};
     species_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_species);
-    species = all_species{find(species_index)};    
+    species = all_species{find(species_index)};
     param = extractBefore(Vr.param,species);
     dsetName = ['mms' mmsIdS '_' strrep(Vr.inst,'_','-') '_' Vr.tmmode '_' Vr.lev '_phxtof'];
-   % mms?_epd-eis_srvy_l2_phxtof
+    % mms?_epd-eis_srvy_l2_phxtof
     res = get_ts('eis_omni');
   otherwise
     error('not implemented yet')
@@ -923,7 +923,7 @@ end
       case 'skymap'
         switch [Vr.inst Vr.tmmode]
           case 'fpibrst'
-            if (length(Vr.param) == 3)  
+            if (length(Vr.param) == 3)
               dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
               dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
@@ -931,31 +931,31 @@ end
             theta = dist.DEPEND_2.data;
             dist = mms.variable2ts(dist);
             dist = dist.tlim(Tint);
-            energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);   
-            energy_delta_data = mms.db_get_variable(dsetName,[pref '_energy_delta_' Vr.tmmode],Tint); 
-               
-            % energy delta_minus/plus 
+            energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);
+            energy_delta_data = mms.db_get_variable(dsetName,[pref '_energy_delta_' Vr.tmmode],Tint);
+            
+            % energy delta_minus/plus
             % no 'DELTA_MINUS_VAR' or 'DELTA_PLUS_VAR' when loading
             % 'PDi_fpi_brst_l2' from mms.get_data; please let wenya know if
             % you change the following if ... else ... end section.
             % 2018-04-19.
-            % CN: Problem with loading the delta +- from energy_data arises 
-            % if Tint spans more than one burst file. mms.db_get_variable 
+            % CN: Problem with loading the delta +- from energy_data arises
+            % if Tint spans more than one burst file. mms.db_get_variable
             % only loads one of them. See
             % size(energy_data.DELTA_MINUS_VAR.data)
             % size(energy_data.data)
-            % Workaround is done by defaulating to variable 
-            % 'energy_delta_data' for both plus and minus (energy is 
-            % centered). If 'energy_delta_data' is empty, go back to 
-            % previous DELTA_MINUS_VAR and DELTA_PLUS_VAR as before, still 
+            % Workaround is done by defaulating to variable
+            % 'energy_delta_data' for both plus and minus (energy is
+            % centered). If 'energy_delta_data' is empty, go back to
+            % previous DELTA_MINUS_VAR and DELTA_PLUS_VAR as before, still
             % not good though. Problem should probably be addressed at a
             % lower level inside mms.db_get_variable.
             if not(isempty(energy_delta_data))
               denergy = mms.variable2ts(energy_delta_data); % delta_energy_plus == delta_energy_minus
-              denergy = denergy.tlim(Tint); 
+              denergy = denergy.tlim(Tint);
               energy_minus = denergy.data;
               energy_plus = denergy.data;
-            elseif (isfield(energy_data, 'DELTA_MINUS_VAR') && isfield(energy_data, 'DELTA_PLUS_VAR'))              
+            elseif (isfield(energy_data, 'DELTA_MINUS_VAR') && isfield(energy_data, 'DELTA_PLUS_VAR'))
               energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
               energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
             else
@@ -1006,21 +1006,21 @@ end
             res = dist;
             res.siConversion = dist_ts.siConversion;
             res.units = dist_ts.units;
-            res.species = ion;          
+            res.species = ion;
         end
         switch [Vr.inst Vr.tmmode]
           case {'fpibrst','fpifast'}
             res.units = 's^3/cm^6';
-            if strcmp(sensor(2),'e')          
+            if strcmp(sensor(2),'e')
               res.species = 'electrons';
             elseif strcmp(sensor(2),'i')
               res.species = 'ions';
-            end            
+            end
             res.siConversion = '1e12';
           case {'hpcabrst'}
         end
-          res.name = dsetName;
-          res.userData = dist.userData;
+        res.name = dsetName;
+        res.userData = dist.userData;
       case 'hpca_omni' % move hpca omni here
         dist = mms.db_get_variable(dsetName,[pref],Tint);
         dist_ts = mms.variable2ts(dist);
@@ -1029,7 +1029,7 @@ end
         res = dist;
         res.siConversion = dist_ts.siConversion;
         res.units = dist_ts.units;
-        res.species = ion;   
+        res.species = ion;
       case 'eis_omni'
         file_list = mms.db_list_files(dsetName,Tint);
         if isempty(file_list);
@@ -1038,27 +1038,27 @@ end
         end
         dobj = dataobj([file_list(1).path '/' file_list(1).name]);
         for iSen = 0:5
-            switch Vr.tmmode
-                case 'brst'
-                    pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_P4_flux_t' num2str(iSen)];
-                case 'srvy'
-                    pref = ['mms' mmsIdS '_epd_eis_phxtof_proton_P4_flux_t' num2str(iSen)];
-                otherwise, error('invalid mode')
-            end
+          switch Vr.tmmode
+            case 'brst'
+              pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_P4_flux_t' num2str(iSen)];
+            case 'srvy'
+              pref = ['mms' mmsIdS '_epd_eis_phxtof_proton_P4_flux_t' num2str(iSen)];
+            otherwise, error('invalid mode')
+          end
           tmpvar = mms.db_get_ts(dsetName,pref,Tint);
           if not(isempty(tmpvar))
-            EISdpf{iSen+1} = comb_ts(tmpvar); 
+            EISdpf{iSen+1} = comb_ts(tmpvar);
             switch Vr.tmmode
-                case 'brst'
-                    energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy']);
-                    energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
-                    energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
-                case 'srvy'
-                    energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy']);
-                    energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
-                    energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
-                otherwise, error('invalid mode')            
-            end                  
+              case 'brst'
+                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy']);
+                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+              case 'srvy'
+                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy']);
+                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+              otherwise, error('invalid mode')
+            end
           end
         end
         % check if energies are equal or not.
@@ -1094,7 +1094,7 @@ end
           case 'electron'
             Ecorr = eEcorr;
             Gfact = eGfact;
-%            switch mode        % comment on 2021-01-26; 
+            %            switch mode        % comment on 2021-01-26;
             switch Vr.tmmode
               case 'brst', sensors = [1:5, 9:12];
               case 'srvy', sensors = [3:5, 11:12];          % 'fast' --> 'srvy' 2021-01-26;
@@ -1108,7 +1108,7 @@ end
         eLow = mms.db_get_variable(dsetName, [species '_energy_lower_bound'],Tint);
         eUp = mms.db_get_variable(dsetName, [species '_energy_upper_bound'],Tint);
         energies = (eLow.data + eUp.data)/2. + eval([species(1) 'Ecorr(mmsId)']); % eV
-
+        
         nSensors = length(sensors);
         for iSen = 1:nSensors
           sen = sensors(iSen); suf = sprintf('intensity_sensorid_%d',sen);
@@ -1145,7 +1145,7 @@ end
           Tit{iSen} = top;
           Bit{iSen} = bot;
         end
-
+        
         % omni
         %eval(['dTmp=' specie(1) 'Tit' num2str(sensors(1)) ';'])
         dataTmp = Tit{1};
@@ -1160,12 +1160,12 @@ end
         omnidata.data = mean(double(omniD),3,'omitnan')*Gfact(mmsId);
         %eval([specie(1) 'Omni = dTmp; ' specie(1) 'Omni.data =' ...
         %  'mean(double(omniD),3,''omitnan'')*' specie(1) 'Gfact(ic);'])
-                
+        
         dist = PDist(omnidata.time,omnidata.data,'omni',energies*1e3); % energies keV -> eV
         res = dist;
         res.siConversion = Tit{1}.siConversion;
         res.units = Tit{1}.units;
-        res.species = species;                    
+        res.species = species;
       otherwise
         error('data type not implemented')
     end
@@ -1188,7 +1188,7 @@ if nTk <3 || nTk > 5, error('invalig STRING format'), end
 
 
 hpcaParamsScal = {'Nhplus','Nheplus','Nheplusplus','Noplus',...
-  'Tshplus','Tsheplus','Tsheplusplus','Tsoplus','Phase','Adcoff'}; 
+  'Tshplus','Tsheplus','Tsheplusplus','Tsoplus','Phase','Adcoff'};
 hpcaParamSpec = {'Omnifluxoplus','Omnifluxhplus','Omnifluxheplus','Omnifluxheplusplus'};
 hpcaParamsTens1 = {'Vhplus','Vheplus','Vheplusplus','Voplus'};
 hpcaParamsTens2 = {'Phplus','Pheplus','Pheplusplus','Poplus',...
@@ -1206,14 +1206,14 @@ switch param
   case {'Vi', 'partVi', 'Ve', 'partVe', 'B', 'E','E2d','Es12','Es34'}
     tensorOrder = 1;
   case {'Pi', 'partPi', 'Pe', 'partPe', 'Ti', 'partTi', 'Te', 'partTe'}
-    tensorOrder = 2;  
+    tensorOrder = 2;
   case {hpcaParamsScal{:},hpcaParamSpec{:},feepsParamsScal{:}}
     tensorOrder = 0;
   case hpcaParamsTens1
     tensorOrder = 1;
   case hpcaParamsTens2
     tensorOrder = 2;
-  otherwise 
+  otherwise
     error(sprintf('invalid PARAM: %s',param))
 end
 
@@ -1231,7 +1231,7 @@ instrument = tk{idx+1}; idx = idx + 1;
 switch instrument
   case {'fpi','edp','edi','hpca','fgm','dfg','afg','scm','fsm'}
   case {'epd'}
-    instrument = [instrument '_' tk{idx+1}]; idx = idx + 1;    
+    instrument = [instrument '_' tk{idx+1}]; idx = idx + 1;
   otherwise
     switch param
       case 'B', instrument = 'fgm'; idx = idx - 1;

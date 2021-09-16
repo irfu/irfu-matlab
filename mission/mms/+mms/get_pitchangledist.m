@@ -65,8 +65,8 @@ pitcha = anglevec-dangle/2;
 % Input check
 findnearest = 0;
 if isa(varargin{1},'PDist') && strcmp('skymap',varargin{1}.type)
-	pdist = varargin{1};
-	B = varargin{2};
+  pdist = varargin{1};
+  B = varargin{2};
   if (tmpnargin == 3)
     tint = varargin{3};
     if(length(tint) > 2)
@@ -79,17 +79,17 @@ if isa(varargin{1},'PDist') && strcmp('skymap',varargin{1}.type)
       pdist = pdist.tlim(tint);
       B = B.tlim(tint);
     end
-	end
-	tmpPhi = pdist.depend{1,2};
-	if size(tmpPhi,1) == 1 % only one value for one time or for all times
+  end
+  tmpPhi = pdist.depend{1,2};
+  if size(tmpPhi,1) == 1 % only one value for one time or for all times
     phi = TSeries(pdist.time,repmat(pdist.depend{1,2},pdist.length,1));
   else
     phi = TSeries(pdist.time,pdist.depend{1,2});
   end
-	theta = pdist.depend{1,3};
+  theta = pdist.depend{1,3};
 else
-	irf.log('critical','PDist must be skymap.');
-	return; 
+  irf.log('critical','PDist must be skymap.');
+  return;
 end
 
 energy = pdist.depend{1,1};
@@ -118,11 +118,11 @@ end
 x = zeros(length(pdist.time),lengthphi,lengththeta);
 y = zeros(length(pdist.time),lengthphi,lengththeta);
 z = zeros(length(pdist.time),lengthphi,lengththeta);
-  
+
 for ii = 1:length(pdist.time)
-	x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta);
-	y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta);
-	z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
+  x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta);
+  y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta);
+  z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
 end
 
 xt = repmat(x,1,1,1,numechannels);

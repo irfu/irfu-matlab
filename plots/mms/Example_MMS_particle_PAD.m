@@ -1,6 +1,6 @@
-% Calculate and plot electron and ion pitch angle distributions in burst mode. 
+% Calculate and plot electron and ion pitch angle distributions in burst mode.
 % Replace brst variables with fast (for FPI and EDP) and srvy (FGM) to plot
-% fast mode particle data. 
+% fast mode particle data.
 
 % Written by D. B. Graham.
 

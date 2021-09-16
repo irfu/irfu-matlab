@@ -107,18 +107,18 @@ classdef mms_db < handle
         end
         
         % append data
-        res.data = [res.data; v.data]; 
+        res.data = [res.data; v.data];
         % append depend variables
         n_dep = sum(contains(fields(res),'DEPEND_'))-1;
         for idep = 0:n_dep
-          DEP_str = ['DEPEND_' num2str(idep)];         
+          DEP_str = ['DEPEND_' num2str(idep)];
           if v.(DEP_str).nrec == v.nrec % check if depend is a timeseries, if yes, then append
             res.(DEP_str).data = [res.(DEP_str).data; v.(DEP_str).data];
           end
         end
-       
+        
         % check for overlapping time records
-        [~,idxUnique] = unique(res.DEPEND_0.data); 
+        [~,idxUnique] = unique(res.DEPEND_0.data);
         idxDuplicate = setdiff(1:length(res.DEPEND_0.data), idxUnique);
         res.data(idxDuplicate, :, :, :, :, :, :, :, :, :, :, :) = [];
         for idep = 0:n_dep
@@ -126,14 +126,14 @@ classdef mms_db < handle
           if v.(DEP_str).nrec == v.nrec
             res.(DEP_str).data(idxDuplicate, :, :, :, :, :, :, :, :, :, :, :) = [];
           end
-        end   
+        end
         nDuplicate = length(idxDuplicate);
         if nDuplicate
           irf.log('warning',sprintf('Discarded %d data points',nDuplicate))
-        end    
-
+        end
+        
         % update number of records, nrec
-        res.nrec = length(res.DEPEND_0.data); 
+        res.nrec = length(res.DEPEND_0.data);
         res.DEPEND_0.nrec = res.nrec;
         for idep = 1:n_dep
           DEP_str = ['DEPEND_' num2str(idep)];
@@ -141,7 +141,7 @@ classdef mms_db < handle
             res.(DEP_str).nrec = res.nrec;
           end
         end
-
+        
         % sort data
         [res.DEPEND_0.data,idxSort] = sort(res.DEPEND_0.data);
         res.data = res.data(idxSort, :, :, :, :, :, :, :, :, :, :, :);
