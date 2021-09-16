@@ -1,7 +1,7 @@
 % IRF_INDENTATIONS ensures uniform 2 space indentations is used in all
 % applicable irfu-matlab .m files as per our CONTRIBUTING.md guidelines
 %
-% 	IRF_TEMPLATE opens and in applicable cases re-writes all files using
+% 	IRF_INDENTATIONS opens and in applicable cases re-writes all files using
 % 	Matlab's own smartIndentContents(). For this to work one should first
 %   set appropriate "Tab size = 2" & "Indent size = 2" in the Matlab editor
 % 	found under "Matlab" -> "Preferences" -> "Editor/Debugger" -> "Tab".
@@ -11,6 +11,16 @@
 %       recommendation.
 %
 % 	See also smartIndentContents, <a href="matlab:web('https://github.com/irfu/irfu-matlab/blob/master/.github/CONTRIBUTING.md')">.github/CONTRIBUTING.md</a>
+
+% Verify settings is two spaces and only two spaces (no tabs or more/less spaces)
+s = settings;
+if (s.matlab.editor.tab.IndentSize.ActiveValue ~= 2 || ...
+    s.matlab.editor.tab.TabSize.ActiveValue ~= 2 || ...
+    ~s.matlab.editor.tab.InsertSpaces.ActiveValue)
+  logStr = 'Before running "irf_indentations", make sure your indentations are set to two (2) spaces and only spaces, no tabs.';
+  irf.log('critical', logStr);
+  error(logStr);
+end
 
 irfPath = irf('path'); % irf root path
 
@@ -43,8 +53,7 @@ irfDirectories = {...
   };
 
 for iPath = 1:numel(irfDirectories)
-  pathToCheck = [irfPath, filesep, irfDirectories{iPath}];
-  mFiles = dir([pathToCheck, filesep, '*.m']);
+  mFiles = dir([irfPath, filesep, irfDirectories{iPath}, filesep, '*.m']);
   for iFile = 1:length(mFiles)
     theDocument = matlab.desktop.editor.openDocument(fullfile(mFiles(iFile).folder, mFiles(iFile).name));
     smartIndentContents(theDocument);
