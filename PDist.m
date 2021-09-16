@@ -85,7 +85,7 @@ classdef PDist < TSeries
       end
       
       % Enforce energy to be a timeseries (not much difference in data size anyways)
-      obj = obj.enforce_depend_timeseries('energy');      
+      obj = obj.enforce_depend_timeseries('energy');
       
       % Should check dimension of depends, and switch if they are wrong,
       % time should always be first index, and it can be 1 or obj.nt
@@ -93,7 +93,7 @@ classdef PDist < TSeries
       % Should be moved to a private method to make code more easily readable.
       size_data = size(obj.data);
       for idep = 1:numel(obj.depend)
-        size_dep = size(obj.depend{idep}); 
+        size_dep = size(obj.depend{idep});
         if not(size_dep(1) == 1)
           if size_dep(2) == 1
             obj.depend{idep} = obj.depend{idep}';
@@ -2225,10 +2225,10 @@ classdef PDist < TSeries
         else PD.ancillary.energy0 = energy(1,elevels); end
         if isfield(PD.ancillary, 'energy1'), PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
         else PD.ancillary.energy1 = energy(2,elevels); end
-%         if ~isfield(PD.ancillary, 'esteptable')
-%           [esteptable,~] = ismember(energy,PD.ancillary.energy1,'rows');
-%           PD.ancillary.esteptable = esteptable;
-%         end
+        %         if ~isfield(PD.ancillary, 'esteptable')
+        %           [esteptable,~] = ismember(energy,PD.ancillary.energy1,'rows');
+        %           PD.ancillary.esteptable = esteptable;
+        %         end
         if isfield(PD.ancillary,'energy'), PD.ancillary.energy = PD.ancillary.energy(:,elevels); end
         if isfield(PD.ancillary,'delta_energy_minus'), PD.ancillary.delta_energy_minus = PD.ancillary.delta_energy_minus(:,elevels); end
         if isfield(PD.ancillary,'delta_energy_plus'), PD.ancillary.delta_energy_plus = PD.ancillary.delta_energy_plus(:,elevels); end
@@ -2825,16 +2825,16 @@ classdef PDist < TSeries
           error('Species not supported.')
       end
     end
-%     function e = energy(obj)
-%       % Get energy of object when not knowing its index  
-%       isEnergy = cellfun(@(s) strcmp(s,'energy'),obj.representation);
-%       iEnergy = find(isEnergy);
-%       if isempty(iEnergy) % no energy dependence, return
-%         e = [];
-%       else
-%         e = obj.depend{iEnergy};
-%       end
-%     end       
+    %     function e = energy(obj)
+    %       % Get energy of object when not knowing its index
+    %       isEnergy = cellfun(@(s) strcmp(s,'energy'),obj.representation);
+    %       iEnergy = find(isEnergy);
+    %       if isempty(iEnergy) % no energy dependence, return
+    %         e = [];
+    %       else
+    %         e = obj.depend{iEnergy};
+    %       end
+    %     end
     function moms = moments(obj,varargin)
       % PRELIMINARY VERSION
       % Currently does not include spacecraft potential and has no
@@ -3041,7 +3041,7 @@ classdef PDist < TSeries
       end
       current_depend = obj.depend{iDep};
       dimDependData = size(obj.data,iDep+1); % +1 because dim 1 is time
-      if size(current_depend) == [obj.length,dimDependData] % depend{iEnergy} is timeseries      
+      if size(current_depend) == [obj.length,dimDependData] % depend{iEnergy} is timeseries
         return
       elseif size(current_depend) == [1,dimDependData] % depend{iEnergy} is 1 x nt
         PD.depend{iDep} = repmat(current_depend,[obj.length,1]);

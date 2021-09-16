@@ -34,23 +34,23 @@ else
   % all new data except internal burst
   datatypes={ 'P' 'P' 'P' 'E' 'E' 'E' 'HK' 'DER' 'SFIT' };
   levels =  [  1   2   3   1   2   3   2     3     3 ];
-
+  
   % debug
   %datatypes={ 'DER' 'SFIT' };
   %levels =  [   3     3 ];
-
+  
   % preliminary data only
   %datatypes={ 'P' 'P' 'HK'};
   %levels= [2 3 2];
-
+  
   % internal burst only
   %levels=[1 2 2 2];
   %datatypes={'IB' 'PB' 'EB' 'BB'};
-
+  
   % all new + old
   %datatypes={ 'P' 'E' 'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT' };
   %levels =  [  1   1   1    1    1    1    1     1      1    2   3    3    2   3   2    3 ];
-
+  
   % all old
   %datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT'};
   %levels=    [1    1    1    1    1     1      1    2   3    3    2   3   2    3];

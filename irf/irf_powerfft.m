@@ -1,5 +1,5 @@
 function [outSpecrecOrT,outPxx,outF] = irf_powerfft(...
-        data, nFft, samplFreqHz, overlapPercent, smoothWidth)
+  data, nFft, samplFreqHz, overlapPercent, smoothWidth)
 %IRF_POWERFFT  compute power spectrum
 %
 % [Specrec]       = irf_powerfft(data, nFft, samplFreqHz, [overlapPercent, smoothWidth])
@@ -65,7 +65,7 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(...
 %   values are reconstructed by using the mean value. If the percentage of
 %   missing samples for a given spectrum is over a set (hardcoded)
 %   treeshold, then only NaN is used. ==> That entire spectrum is set to NaN.
-% 
+%
 %   WARNING: When the actual sampling rate is sufficiently much lower than
 %   samplFreqHz, then there will be so many data gaps that all NaN is used for
 %   all samples, rendering the affected spectras NaN, despite the presence of
@@ -115,7 +115,7 @@ assert(isscalar(samplFreqHz), 'Argument samplFreqHz is not scalar.')
 % IMPLEMENTATION NOTE: If samplFreqHz is single-precision (or integer,
 % probably), rather than double-precision, then this can lead to numerical
 % problems. Historically, this had lead to spectrumTimeSec1 not incrementing.
-samplFreqHz = double(samplFreqHz); 
+samplFreqHz = double(samplFreqHz);
 
 % IMPLEMENTATION NOTE: If nFft is single-precision (or integer, probably),
 % rather than double-precision, then this can lead to numerical problems.
@@ -140,7 +140,7 @@ elseif ismatrix(data) && isnumeric(data) && (size(data, 2)>=1)
   usingTSeries   = false;
 else
   error(['Argument "data" is neither (1) TSeries, nor', ...
-      ' (2) numeric 2D array with at least one column.'])
+    ' (2) numeric 2D array with at least one column.'])
 end
 % NOTE: samplesAllData(iTime, i)
 % NOTE: Assertion only relevant when argument "data" is TSeries.
@@ -245,7 +245,7 @@ Specrec.t = zeros(nSpec,1);    % Pre-allocate
 % IMPLEMENTATION NOTE: Changing "for"-->"parfor" speeds up the LOOP:
 % 32.596355 s --> 13.654587 s; irony, SolO CWF test. (Numbers assumes that the
 % "parallel pool" has already started. /Erik P G Johansson 2020-09-04
-% 
+%
 % IMPLEMENTATION NOTE: Changing "for"-->"parfor" makes code SLOWER for SolO SWF
 % quicklook plotting with one IRF_powerfft call for every snapshot.
 % 30.592659 s --> 89.429904 s (solo.ql.plot_SWF; not just irf_powerfft).
@@ -263,7 +263,7 @@ iSpecArray = 1:nSpec;
 t1SpecSec = linspace(t1FirstSpecSec, t2LastSpecSec-lenSpecSec, nSpec);
 t2SpecSec = t1SpecSec + lenSpecSec;
 for iSpec = iSpecArray     % NOT USING "parfor"
-    
+  
   %=============================================================================
   % Find index interval i1:i2 for the samples of the current spectrum
   % -----------------------------------------------------------------
@@ -288,7 +288,7 @@ for iSpec = iSpecArray     % NOT USING "parfor"
   % be satisfied.
   %assert(  find(tAllDataSec >= t1SpecSec, 1, 'first') == i1 )
   %assert( (find(tAllDataSec <= t2SpecSec, 1, 'last')  == i2) || (i2 == nTimeAllData))
-
+  
   %==============================================
   % Extract samples to use for deriving spectrum
   %==============================================
@@ -402,91 +402,91 @@ end    % irf_powerfft
 %       constant time increments, according to samplFreqHz.
 %
 function samplesOut = select_preprocess_data(tSec, samples, intervalSec1, samplFreqHz, nSamplesOut)
-  % Only keep samples within specified time interval
-  % ------------------------------------------------
-  % IMPLEMENTATION NOTE: Only keeping samples based on timestamps before doing
-  % anything else speeds up the code substantially since rounding actually seems
-  % to take a considerable amount of time (it would otherwise be done repeatedly
-  % for the same samples, when extracting data for different spectrums).
-  %
-  % IMPLEMENTATION NOTE: Indexing using iKeep = find(bKeep) ("non-logical"
-  % indexing), instead of bKeep (logical indexing), might speed up code
-  % somewhat, maybe.
-  
-  % Using "find" to find indices (instead of bKeep).
-  % 40-46 s --> 35-42 s (irony; SolO RPW CWF test file)
-  
-  intervalSec2 = intervalSec1 + nSamplesOut/samplFreqHz;
-  
-  %=============================================================================
-  % Implementation 1
-  %     bKeep   = (intervalSec1 <= tSec) & (tSec <= intervalSec2);
-  %     tSec    = tSec(bKeep);
-  %     samples = samples(     bKeep, :);
-  %=============================================================================
-  bKeep        = (intervalSec1 <= tSec) & (tSec <= intervalSec2);
-  tSec = tSec(bKeep);
-  %samples      = samples(     bKeep, :);
-  
-  %assert(numel(samples) == numel(tSec))
-  nTimeSel = size(tSec, 1);
-  nComp    = size(samples,      2);
-  
-  %=============================================================================
-  % Find mapping between (~original) sample indices and out sample indices.
-  % NOTE: This is NOT a 1-to-1 mapping. Zero, one, or multiple input indices
-  %       may be mapped to the same output index. Mapping multiple samples to
-  %       one output sample and then arbitrarily picking only one of those input
-  %       samples is in principle suboptimal (averaging is better?) but is
-  %       probably OK for most applications. Improve?!
-  %=============================================================================
-  
-  %iIn  = [1:nTimestamps]';
-  % EXPERIMENTAL. ==> Makes samples=samples(bKeep) unnecessary.
-  % ASSUMPTION: Argument tSec is sorted (incrementing).
-  i1   = find(bKeep, 1, 'first'); % Separate for profiling purposes.
-  iIn  = i1 + [0:nTimeSel-1];
-  
-  iOut = round((tSec-intervalSec1)*samplFreqHz + 0.5);
+% Only keep samples within specified time interval
+% ------------------------------------------------
+% IMPLEMENTATION NOTE: Only keeping samples based on timestamps before doing
+% anything else speeds up the code substantially since rounding actually seems
+% to take a considerable amount of time (it would otherwise be done repeatedly
+% for the same samples, when extracting data for different spectrums).
+%
+% IMPLEMENTATION NOTE: Indexing using iKeep = find(bKeep) ("non-logical"
+% indexing), instead of bKeep (logical indexing), might speed up code
+% somewhat, maybe.
 
-  % Ensure that code only extracts the desired data, and only assigns
-  % the desired (and legal) indices.
-  % NOTE: Historically, many bugs have been associated with getting this wrong.
-  b = (1 <= iOut) & (iOut <= nSamplesOut);
-  iIn( ~b) = [];
-  iOut(~b) = [];
-  
-  % Pre-allocate as NaN, to be on the safe side.
-  samplesOut          = NaN(nSamplesOut, nComp);
-  samplesOut(iOut, :) = samples(iIn, :);
-    
-  samplesOut          = replace_NaN(samplesOut);
+% Using "find" to find indices (instead of bKeep).
+% 40-46 s --> 35-42 s (irony; SolO RPW CWF test file)
+
+intervalSec2 = intervalSec1 + nSamplesOut/samplFreqHz;
+
+%=============================================================================
+% Implementation 1
+%     bKeep   = (intervalSec1 <= tSec) & (tSec <= intervalSec2);
+%     tSec    = tSec(bKeep);
+%     samples = samples(     bKeep, :);
+%=============================================================================
+bKeep        = (intervalSec1 <= tSec) & (tSec <= intervalSec2);
+tSec = tSec(bKeep);
+%samples      = samples(     bKeep, :);
+
+%assert(numel(samples) == numel(tSec))
+nTimeSel = size(tSec, 1);
+nComp    = size(samples,      2);
+
+%=============================================================================
+% Find mapping between (~original) sample indices and out sample indices.
+% NOTE: This is NOT a 1-to-1 mapping. Zero, one, or multiple input indices
+%       may be mapped to the same output index. Mapping multiple samples to
+%       one output sample and then arbitrarily picking only one of those input
+%       samples is in principle suboptimal (averaging is better?) but is
+%       probably OK for most applications. Improve?!
+%=============================================================================
+
+%iIn  = [1:nTimestamps]';
+% EXPERIMENTAL. ==> Makes samples=samples(bKeep) unnecessary.
+% ASSUMPTION: Argument tSec is sorted (incrementing).
+i1   = find(bKeep, 1, 'first'); % Separate for profiling purposes.
+iIn  = i1 + [0:nTimeSel-1];
+
+iOut = round((tSec-intervalSec1)*samplFreqHz + 0.5);
+
+% Ensure that code only extracts the desired data, and only assigns
+% the desired (and legal) indices.
+% NOTE: Historically, many bugs have been associated with getting this wrong.
+b = (1 <= iOut) & (iOut <= nSamplesOut);
+iIn( ~b) = [];
+iOut(~b) = [];
+
+% Pre-allocate as NaN, to be on the safe side.
+samplesOut          = NaN(nSamplesOut, nComp);
+samplesOut(iOut, :) = samples(iIn, :);
+
+samplesOut          = replace_NaN(samplesOut);
 end
 
 
 
 % EXPERIMENTAL: For speeding up.
-% 
+%
 % ARGUMENTS
 % =========
 % i1, i2: Indices into "tSec, samples" representing first and last
 %         sample in a time interval.
 %
 function samplesOut = select_preprocess_data3(...
-        tSec, samples, intervalSec1, samplFreqHz, nSamplesOut, i1, i2)
-  nComp = size(samples, 2);
-  iIn   = i1:i2;  
-  iOut  = round((tSec(i1:i2)-intervalSec1)*samplFreqHz + 0.5);
+  tSec, samples, intervalSec1, samplFreqHz, nSamplesOut, i1, i2)
+nComp = size(samples, 2);
+iIn   = i1:i2;
+iOut  = round((tSec(i1:i2)-intervalSec1)*samplFreqHz + 0.5);
 
-  b = (1 <= iOut) & (iOut <= nSamplesOut);
-  iIn( ~b) = [];
-  iOut(~b) = [];
-  
-  % Pre-allocate as NaN, to be on the safe side.
-  samplesOut          = NaN(nSamplesOut, nComp);
-  samplesOut(iOut, :) = samples(iIn, :);
-    
-  samplesOut          = replace_NaN(samplesOut);
+b = (1 <= iOut) & (iOut <= nSamplesOut);
+iIn( ~b) = [];
+iOut(~b) = [];
+
+% Pre-allocate as NaN, to be on the safe side.
+samplesOut          = NaN(nSamplesOut, nComp);
+samplesOut(iOut, :) = samples(iIn, :);
+
+samplesOut          = replace_NaN(samplesOut);
 end
 
 
@@ -499,15 +499,15 @@ end
 % also slower if used globally). /Erik P G Johansson 2020-09-04
 % function specSamples = select_preprocess_data2(tSec, samples, intervalSec1, samplFreqHz, nSamplesOut)
 %   intervalSec2 = intervalSec1 + nSamplesOut/samplFreqHz;
-%   
+%
 %   tAllDataSec = linspace(...
 %       intervalSec1 + 0.5/samplFreqHz, ...
 %       intervalSec2 - 0.5/samplFreqHz, ...
 %       nSamplesOut);
-%   
+%
 %   % NOTE: interp1(X,V,Xq, ...) works for length(X) == size(V,1)
 %   [specSamples] = interp1(tSec, samples, tAllDataSec, 'nearest');
-%   
+%
 %   %specSamples  = replace_NaN(specSamples);
 % end
 
@@ -517,19 +517,19 @@ end
 % which case NaN will be used anyway for all values (all timestamps for the same
 % component).
 function samples = replace_NaN(samples)
-  MAX_FRACTION_NAN = 0.1;
-    
-  bNan = isnan(samples);
-  if any(bNan)
-    % NOTE: One mean per component/channel.
-    meanArray = irf.nanmean(samples, 1, 1-MAX_FRACTION_NAN);
-    
-    for iComp = 1:size(samples, 2)
-      if(any(bNan(:,iComp)))
-        samples(bNan(:,iComp), iComp) = meanArray(iComp);
-      end
+MAX_FRACTION_NAN = 0.1;
+
+bNan = isnan(samples);
+if any(bNan)
+  % NOTE: One mean per component/channel.
+  meanArray = irf.nanmean(samples, 1, 1-MAX_FRACTION_NAN);
+  
+  for iComp = 1:size(samples, 2)
+    if(any(bNan(:,iComp)))
+      samples(bNan(:,iComp), iComp) = meanArray(iComp);
     end
   end
+end
 end
 
 
@@ -537,29 +537,29 @@ end
 % Basic smoothing procedure, borrowed from mms_fft().
 % Smoothes the spectras, not the input data.
 function Specrec = smoothSpectrum(...
-        Specrec, smoothWidth, samplFreqHz, nf, nSpectras, nComp)
-  
-  nc = floor(smoothWidth*samplFreqHz);
-  % Make sure nc is even.
-  if (mod(nc,2) == 1)
-    nc = nc-1;
-  end
-  
-  idx   = nc/2 : nc : nf-nc/2;
-  nFreq = length(idx);
-  freqArray = zeros(nFreq,1);
+  Specrec, smoothWidth, samplFreqHz, nf, nSpectras, nComp)
+
+nc = floor(smoothWidth*samplFreqHz);
+% Make sure nc is even.
+if (mod(nc,2) == 1)
+  nc = nc-1;
+end
+
+idx   = nc/2 : nc : nf-nc/2;
+nFreq = length(idx);
+freqArray = zeros(nFreq,1);
+for ij = 1:nFreq
+  freqArray(ij) = mean(Specrec.f(idx(ij)-nc/2+1 : idx(ij)+nc/2-1));
+end
+Specrec.f = freqArray;
+
+powers = zeros(nSpectras,nFreq);
+for iComp2=1:nComp
   for ij = 1:nFreq
-    freqArray(ij) = mean(Specrec.f(idx(ij)-nc/2+1 : idx(ij)+nc/2-1));
+    powers(:,ij) = mean(Specrec.p{iComp2}(:, idx(ij)-nc/2+1 : idx(ij)+nc/2-1), 2);
   end
-  Specrec.f = freqArray;
-    
-  powers = zeros(nSpectras,nFreq);
-  for iComp2=1:nComp
-    for ij = 1:nFreq
-      powers(:,ij) = mean(Specrec.p{iComp2}(:, idx(ij)-nc/2+1 : idx(ij)+nc/2-1), 2);
-    end
-    Specrec.p{iComp2} = powers;
-  end
+  Specrec.p{iComp2} = powers;
+end
 end
 
 
@@ -577,57 +577,57 @@ end
 %            to constant time increments.
 %
 % function outData = preprocess_data(inData, nSamplesOut, samplFreqHz, tIntervalStart)
-%     
+%
 %   MAX_FRACTION_NAN = 0.1;
-% 
+%
 %   if isa(inData,'TSeries')
-%       
+%
 %     if isempty(inData.data)
 %       outData = [];
 %       return
 %     end
 %     nComp = size(inData.data, 2);
-% 
+%
 %     % Construct "outData" vector/matrix with NaN, except where there is actual data.
 %     % iOut = Indices into final vector that can be filled with actual samples.
 %     % NOTE: Using .tts instead of .epochUnix, since it is considerably faster.
-%     
+%
 %     iIn  = [1:length(inData.time)]';
 %     iOut = round((inData.time.tts - tIntervalStart.tts) * samplFreqHz + 0.5);
-%     
+%
 %     % SPECULATIVE BUGFIX: Remove indices representing timestamps outside designated time interval.
 %     b = (1<=iOut) & (iOut <= nSamplesOut);
 %     iIn( ~b) = [];
 %     iOut(~b) = [];
-%     
+%
 %     outData          = NaN(nSamplesOut, nComp);
 %     outData(iOut, :) = inData.data(iIn, :);
-%     
+%
 %   else
-%       
+%
 %     if isempty(inData)
 %       outData = [];
 %       return
 %     end
-%       
+%
 %     nComp         = size(inData,2) - 1;       % Exclude time column
 %     iIn           = 1:size(inData, 1);
 %     iOut          = round((inData(:,1)-tIntervalStart)*samplFreqHz + 0.5);
-%     
+%
 %     % SPECULATIVE BUGFIX: Remove indices representing timestamps outside designated time interval.
 %     % Should not be necessary depending on boundary handling in select_data().
 % %     b = (1<=iOut) & (iOut <= nSamplesOut);
 % %     iIn( ~b) = [];
 % %     iOut(~b) = [];
-%     
+%
 %     outData          = NaN(nSamplesOut, nComp);
 %     outData(iOut, :) = inData(iIn, 2:end);         % Exclude time column
-%     
+%
 %   end
 %   assert(size(outData, 1) == nSamplesOut)
-%     
-%   
-%   
+%
+%
+%
 %   % Replace NaN with the mean of non-NaN values, unless there are too many NaN
 %   % In which case NaN will be used anyway.
 %   bNan = isnan(outData);
@@ -639,7 +639,7 @@ end
 %       end
 %     end
 %   end
-%   
+%
 % end    % preprocess_data
 
 

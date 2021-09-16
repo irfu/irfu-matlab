@@ -1,30 +1,30 @@
 classdef (Abstract) GenericTimeArray
-%GenericTimeArray  Generic (Abstract) class describing a time array
-%
-%  Methods:
-%     disp()
-%     end()
-%     isempty()
-%     length()
-%     size()
-%     start()     First point of the time array
-%     stop()      Last point of the time array
-%     tlim()      Returns index and records within specified time interval
-%     epochUnix()
-%     tts()       Number of seconds
-%     ttns()      Number of nanoseconds
-% 
-%     Static:
-%     pad_utc()
-%     validate_utc()
-%     LeapSeconds()
+  %GenericTimeArray  Generic (Abstract) class describing a time array
+  %
+  %  Methods:
+  %     disp()
+  %     end()
+  %     isempty()
+  %     length()
+  %     size()
+  %     start()     First point of the time array
+  %     stop()      Last point of the time array
+  %     tlim()      Returns index and records within specified time interval
+  %     epochUnix()
+  %     tts()       Number of seconds
+  %     ttns()      Number of nanoseconds
+  %
+  %     Static:
+  %     pad_utc()
+  %     validate_utc()
+  %     LeapSeconds()
   
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
+  % ----------------------------------------------------------------------------
+  % "THE BEER-WARE LICENSE" (Revision 42):
+  % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+  % can do whatever you want with this stuff. If we meet some day, and you think
+  % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+  % ----------------------------------------------------------------------------
   
   properties
     epoch

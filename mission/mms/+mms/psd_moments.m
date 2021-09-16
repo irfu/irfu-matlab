@@ -78,7 +78,7 @@ if isbrstdata
   energy1 = pdist.ancillary.energy1;
   etmp = energy1 - energy0;
   if all(etmp) == 0
-    flag_same_e = 1; 
+    flag_same_e = 1;
   end
 else
   energy = pdist.depend{1,1};
