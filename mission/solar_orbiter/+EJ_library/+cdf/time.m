@@ -17,7 +17,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-10-21
 %
-classdef time   % < handle
+classdef time    
     % PROPOSAL: Should be package.
     %
     % PROPOSAL: Add more CDF time functions.

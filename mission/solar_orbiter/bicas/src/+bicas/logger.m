@@ -19,7 +19,7 @@
 % Ex: Switch between any combination of logging to
 %   (1a) file and/or (1b) stdout, or (2) don't log at all.
 % Ex: Switch between log prefixes or not.
-% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.calib) can have other
+% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.proc.L1L2.cal) can have other
 % logging, or none.
 % Ex: Can implement accepting log messages before specifying the log file, by
 % temporarily storing the messages.
@@ -51,7 +51,7 @@ classdef logger < handle
 %   Log to stdout.
 %
 % TODO-DEC: Should special, extra logging functionality be in this class or outside of it?
-%   Ex: bicas.calib_utils.log_TF_function_handle
+%   Ex: bicas.proc.L1L2.cal_utils.log_TF_function_handle
 %   Ex: Logging for speed tests.
 %   PRO: Shorter call. Can use L.method(...) instead of bicas.logfunc(L, ...)
 %
@@ -107,7 +107,8 @@ classdef logger < handle
             % ASSERTIONS
             % IMPLEMENTATION NOTE: Assertion for number of arguments, since this
             % used to be variable.
-            assert(nargin == 2)
+            assert(nargin == 2, 'Not two arguments.')
+            assert(isscalar(logFileEnabled))
             assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), ...
                 'Illegal argument logFileEnabled.')
             logFileEnabled = logical(logFileEnabled);
@@ -123,7 +124,7 @@ classdef logger < handle
                     obj.stdoutOption = 'bash wrapper';
                     
                 otherwise
-                    error('Illegal argument "%s".', stdoutOption)
+                    error('BICAS:Assertion', 'Illegal argument "%s".', stdoutOption)
             end
             
             obj.logFileEnabled = logFileEnabled;
@@ -167,8 +168,8 @@ classdef logger < handle
                 [fileId, fopenErrorMsg] = fopen(logFile, 'w');
                 if fileId == -1
                     error(...
-                        'BICAS:logger:Assertion', ...
-                        'Can not open log file "%s". fopen error message: "%s"', ...
+                        'BICAS:CanNotOpenFile', ...
+                        'Can not open log file "%s" for writing. fopen error message: "%s"', ...
                         logFile, fopenErrorMsg)
                     % NOTE: Does not alter the object properties.
                 end
@@ -199,13 +200,16 @@ classdef logger < handle
         %
         % ARGUMENTS
         % =========
-        % logLevel : String constant.
-        %            NOTE: Value 'error' WILL NOT THROW ERROR. This is so that
-        %            error handling code can log using this alternative. To
-        %            actually THROW an error, use function error(...) or throw
-        %            an exception directly.
-        % msgStr   : Potentially multi-row string to be printed.
-        %            NOTE: Multi-row strings must end with line feed (after last row).
+        % logLevel
+        %       String constant.
+        %       NOTE: Value 'error' WILL NOT THROW ERROR. This is so that error
+        %       handling code can log using this alternative. To actually THROW
+        %       an error, use function error(...) or throw an exception
+        %       directly.
+        % msgStr
+        %       Potentially multi-row string to be printed.
+        %       NOTE: Multi-row strings must end with line feed (after last
+        %       row).
         %
         %
         % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -238,7 +242,7 @@ classdef logger < handle
                     obj.write_to_stdout(bashWrapperRecipientStr)
                     
                 otherwise
-                    error('BICAS:logger:Assertion', ...
+                    error('BICAS:Assertion', ...
                         'Illegal property value obj.stdoutOption="%s".', ...
                         obj.stdoutOption)
             end
@@ -354,7 +358,7 @@ classdef logger < handle
                 case 'warning' ; logLevelStr = 'WARNING';
                 case 'error'   ; logLevelStr = 'ERROR';
                 otherwise
-                    error('BICAS:logger:ICD_log_msg:Assertion:IllegalArgument', ...
+                    error('BICAS:Assertion:IllegalArgument', ...
                         'Illegal logLevel="%s"', logLevel)
             end
             

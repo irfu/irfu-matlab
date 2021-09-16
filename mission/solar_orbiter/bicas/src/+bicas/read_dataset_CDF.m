@@ -5,13 +5,19 @@
 %
 % RETURN VALUES
 % =============
-% Zvs              : ZVS = zVariables Struct. One field per zVariable (using
-%                    the same name). The content of every such field equals the
-%                    content of the corresponding zVar.
-% GlobalAttributes : Struct returned from "dataobj".
+% Data
+%       Struct with fields
+%       .Zv
+%           One field per zVariable (using the same name).
+%           The content of every such field equals the content of the corresponding
+%           zVar.
+%       .ZvFv
+%           zVar fill values. One field per zVariable (using the same name).
+%       .Ga
+%           Global attributes. Struct returned from "dataobj".
 %
 %
-% NOTE: Fill & pad values are replaced with NaN for numeric data types.
+% NOTE: Fill & pad values are replaced with NaN for float zVars.
 %       Other CDF data (attributes) are ignored.
 % NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
 %
@@ -20,7 +26,7 @@
 % First created 2020-09-17 as a separate file, by moving out the function from
 % bicas.executed_sw_mode.
 %
-function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
+function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     tTicToc = tic();
     
@@ -40,8 +46,9 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     % Copy zVariables (only the data) into analogous fields in smaller struct
     %=========================================================================
     L.log('info', 'Converting dataobj (CDF data structure) to PDV.')
-    Zvs               = struct();
-    ZvsLog            = struct();   % zVariables for logging.
+    Zvs    = struct();
+    ZvFvs  = struct();
+    ZvsLog = struct();   % zVariables for logging.
     zVariableNameList = fieldnames(DataObj.data);
     for iZv = 1:length(zVariableNameList)
         zvName  = zVariableNameList{iZv};
@@ -49,17 +56,17 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         
         ZvsLog.(zvName) = zvValue;
         
+        [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
+        ZvFvs.(zvName) = fillValue;
+            
         %=================================================
         % Replace fill/pad values with NaN for FLOAT data
         %=================================================
         % TODO-NI: How does/should this work with integer fields that MUST
         %          also be stored as integers internally?!!!
         %    Ex: Epoch, ACQUISITION_TIME.
-        % TODO-NI: How distinguish integer zVariables that could be converted to
-        %          floats (and therefore use NaN)?
         if isfloat(zvValue)
             
-            [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
             if ~isempty(fillValue)
                 % CASE: There is a fill value.
                 
@@ -76,21 +83,15 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
             if ~disableReplacePadValue
                 zvValue = EJ_library.utils.replace_value(zvValue, padValue,  NaN);
             end
-        else
-            % Disable?! Only print warning if actually finds fill value which is
-            % not replaced?
-            %L.logf('warning', ...
-            %   ['Can not handle replace fill/pad values for zVariable', ...
-            %   ' "%s" when reading "%s".'], zVariableName, filePath))
         end
         
         Zvs.(zvName) = zvValue;
     end
-    
+
     
     
     % Log data read from CDF file
-    bicas.proc_utils.log_zVars(ZvsLog, SETTINGS, L)
+    bicas.utils.log_zVars(ZvsLog, SETTINGS, L)
     
     
     
@@ -119,15 +120,15 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     
-    %=================
-    % Checks on Epoch
-    %=================
+    %===================
+    % ASSERTIONS: Epoch
+    %===================
     if ~isfield(Zvs, 'Epoch')
-        error('BICAS:read_dataset_CDF:DatasetFormat', ...
+        error('BICAS:DatasetFormat', ...
             'Input dataset "%s" has no zVariable Epoch.', filePath)
     end
     if isempty(Zvs.Epoch)
-        error('BICAS:read_dataset_CDF:DatasetFormat', ...
+        error('BICAS:DatasetFormat', ...
             'Input dataset "%s" contains an empty zVariable Epoch.', filePath)
     end
     
@@ -157,6 +158,7 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         [settingValue, settingKey] = SETTINGS.get_fv(...
             'INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
         switch(settingValue)
+            
             case 'SORT'
                 bicas.default_anomaly_handling(...
                     L, settingValue, settingKey, 'other', ...
@@ -168,7 +170,7 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
                 
                 % % NOTE: Sorting Epoch does not remove identical values. Must therefore check again.
                 % if ~issorted(Zvs.Epoch, 'strictascend')
-                %     error('BICAS:read_dataset_CDF:DatasetFormat', ...
+                %     error('BICAS:DatasetFormat', ...
                 %         ['zVariable Epoch in input dataset "%s"\n does not increase non-monotonically even after sorting.', ...
                 %         ' It must contain multiple identical values (or the sorting algorithm does not work).'], ...
                 %         filePath)
@@ -178,7 +180,7 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
                 bicas.default_anomaly_handling(...
                     L, settingValue, settingKey, ...
                     'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:read_dataset_CDF:DatasetFormat')
+                    anomalyDescrMsg, 'BICAS:DatasetFormat')
         end
     end
     
@@ -188,6 +190,15 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
         GlobalAttributes.Dataset_ID{1})
     L.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', ...
         GlobalAttributes.Skeleton_version{1})
+
+
+
+    Dataset = struct(...
+        'Zv',   Zvs, ...
+        'ZvFv', ZvFvs, ...
+        'Ga',   GlobalAttributes);
+    
+    
     
     % Just printing filename to avoid that actual time information is too far
     % right.
@@ -212,7 +223,7 @@ end
 %
 function Zvs = select_ZVS_indices(Zvs, iArray)
     % NOTE: Can not use
-    % bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S); since want
+    % bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S); since want
     % to ignore but permit fields/zVars with other number of records.
     
     fnList = fieldnames(Zvs);

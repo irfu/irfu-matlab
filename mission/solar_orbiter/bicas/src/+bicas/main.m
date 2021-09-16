@@ -65,7 +65,7 @@ function errorCode = main( varargin )
     %
     % PROPOSAL: Set option for MATLAB warnings. Disable?
     %   NOTE: TN claims warnings are sent to stdout.
-    % TODO-NEED-INFO: Is the application allowed to overwrite output files?
+    % TODO-NI: Is the application allowed to overwrite output files?
     %
     % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
     %   PRO: Useful when S/W descriptor becomes big and complex.
@@ -270,7 +270,7 @@ function main_without_error_handling(cliArgumentsList, L)
     %==================================
     matlabVersionString = version('-release');
     if ~ismember(matlabVersionString, bicas.constants.PERMITTED_MATLAB_VERSIONS)
-        error('BICAS:main:BadMatlabVersion', ...
+        error('BICAS:BadMatlabVersion', ...
             ['Using bad MATLAB version. Found version "%s".', ...
             ' BICAS requires any of the following MATLAB versions: %s.\n'], ...
             matlabVersionString, ...
@@ -336,7 +336,7 @@ function main_without_error_handling(cliArgumentsList, L)
         % IMPLEMENTATION NOTE: This check useful when calling BICAS from MATLAB
         % (not bash).
         if ~ischar(cliArgumentsList{i})
-            error('BICAS:main', 'Argument %i is not a string.', i)
+            error('BICAS:CLISyntax', 'Argument %i is not a string.', i)
         end
         
         L.logf('info', '%2i: "%s"', i, cliArgumentsList{i})
@@ -395,15 +395,10 @@ function main_without_error_handling(cliArgumentsList, L)
             bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
     end
     L.logf('info', 'configFile = "%s"', configFile)
-    rowList                 = EJ_library.fs.read_text_file(configFile, '(\r\n|\r|\n)');
-    ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
     L.log('info', 'Overriding subset of in-memory settings using config file.')
-    SETTINGS = overwrite_settings_from_strings(SETTINGS, ...
-        ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS
+    bicas.override_settings_from_config_file(configFile, SETTINGS, L)
     
     
-
-
     
     %=========================================================
     % Modify settings according to (inofficial) CLI arguments
@@ -411,8 +406,8 @@ function main_without_error_handling(cliArgumentsList, L)
     L.log('info', ...
         ['Overriding subset of in-memory settings using', ...
         ' (optional, inofficial) CLI arguments, if any.'])
-    SETTINGS = overwrite_settings_from_strings(...
-        SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');
+    SETTINGS.override_values_from_strings(...
+        CliData.ModifiedSettingsMap, 'CLI arguments');
     
     
     
@@ -456,7 +451,7 @@ function main_without_error_handling(cliArgumentsList, L)
             catch Exception1
                 % NOTE: Misspelled "--version" etc. would be interpreted as S/W
                 % mode and produce error here too.
-                error('BICAS:main:CLISyntax', ...
+                error('BICAS:CLISyntax', ...
                     ['Can not interpret first argument "%s" as a S/W mode', ...
                     ' (or any other legal first argument).'], ...
                     CliData.swModeArg);
@@ -486,7 +481,7 @@ function main_without_error_handling(cliArgumentsList, L)
             nSipExpected = numel(SwModeInfo.inputsList) + numel(SwModeInfo.outputsList);
             nSipActual   = numel(CliData.SpecInputParametersMap.keys);
             if nSipExpected ~= nSipActual
-                error('BICAS:main:CLISyntax', ...
+                error('BICAS:CLISyntax', ...
                     ['Illegal number of "specific input parameters"', ...
                     ' (input & output datasets). Expected %i, but got %i.'], ...
                     nSipExpected, nSipActual)
@@ -536,7 +531,7 @@ function main_without_error_handling(cliArgumentsList, L)
                 masterCdfDir, rctDir, NsoTable, SETTINGS, L )
             
         otherwise
-            error('BICAS:main:Assertion', ...
+            error('BICAS:Assertion', ...
                 'Illegal value functionalityMode="%s"', functionalityMode)
     end    % if ... else ... / switch
     
@@ -555,7 +550,7 @@ function NewMap = extract_rename_Map_keys(SrcMap, srcKeysList, newKeysList)
         srcKey = srcKeysList{i};
         
         if ~SrcMap.isKey(srcKey)
-            error('BICAS:main:Assertion', 'Can not find source key "%s"', srcKey)
+            error('BICAS:Assertion', 'Can not find source key "%s"', srcKey)
         end
         NewMap(newKeysList{i}) = SrcMap(srcKey);
     end
@@ -680,70 +675,12 @@ function v = read_env_variable(SETTINGS, L, envVarName, overrideSettingKey)
     
     % UI ASSERTION
     if isempty(v)
-        error('BICAS:main:Assertion', ...
+        error('BICAS:Assertion', ...
             ['Can not set internal variable corresponding to', ...
             ' environment variable "%s" from either', ...
             ' (1) the environment variable, or (2) settings key value %s="%s".'], ...
             envVarName, overrideSettingKey, settingsOverrideValue)
     end
-end
-
-
-
-% Modify multiple settings, where the values are strings but converted to
-% numerics as needed. Primarily intended for updating settings with values from
-% CLI arguments (which by their nature are initially strings).
-%
-%
-% ARGUMENTS
-% =========
-% ModifiedSettingsAsStrings : containers.Map
-%   <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS key.
-%   <values> = Settings values AS STRINGS.
-%              Preserves the type of settings value for strings and numerics. If
-%              the pre-existing value is numeric, then the argument value will
-%              be converted to a number.
-%              Numeric row vectors are represented as a comma separated-list (no
-%              brackets), e.g. "1,2,3".
-%              Empty numeric vectors can not be represented.
-%
-%
-% NOTE/BUG: No good checking (assertion) of whether the string format of a
-% vector makes sense.
-%
-function SETTINGS = overwrite_settings_from_strings(...
-        SETTINGS, ModifiedSettingsMap, valueSource)
-    
-    keysList = ModifiedSettingsMap.keys;
-    for iModifSetting = 1:numel(keysList)
-        key              = keysList{iModifSetting};
-        newValueAsString = ModifiedSettingsMap(key);
-        
-        % ASSERTION
-        if ~isa(newValueAsString, 'char')
-            error('BICAS:settings:Assertion:IllegalArgument', ...
-                'Map value is not a string.')
-        end
-        
-        %==================================================
-        % Convert string value to appropriate MATLAB class.
-        %==================================================
-        switch(SETTINGS.get_setting_value_type(key))
-            case 'numeric'
-                newValue = textscan(newValueAsString, '%f', 'Delimiter', ',');
-                newValue = newValue{1}';    % Row vector.
-            case 'string'
-                newValue = newValueAsString;
-            otherwise
-                error('BICAS:settings:Assertion:ConfigurationBug', ...
-                    'Can not handle the MATLAB class=%s of internal setting "%s".', ...
-                    class(oldValue), key)
-        end
-        
-        % Overwrite old setting.
-        SETTINGS.override_value(key, newValue, valueSource);
-    end
-    
 end
 
 

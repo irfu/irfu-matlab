@@ -38,7 +38,8 @@
 %
 %
 % ~BUG POTENTIAL: Support for 1D cell arrays may not be completely implemented.
-%   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1). Inconvenient.
+%   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1).
+%         Inconvenient.
 % 
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -65,7 +66,7 @@ classdef settings < handle
 %   NOTE: This information should only be given once in the code, and be hard-coded.
 %
 % PROPOSAL: Convention for "empty"/"not set"?!
-%   TODO-DECISION/CON: Not really needed? Depends too much on the variable/setting.
+%   TODO-DEC/CON: Not really needed? Depends too much on the variable/setting.
 %
 % PROPOSAL: Initialize by submitting map.
 %   PRO: Can remove methods define_setting, disable_define.
@@ -89,19 +90,25 @@ classdef settings < handle
 %           NOTE: KVPL only permits string values(?).
 %
 % PROPOSAL: Make it possible to load multiple config files. Subsequent log files override each other.
-%   TODO-DECISION: Should the internal order of --set and --config arguments matter? Should a --config override a previous
+%   TODO-DEC: Should the internal order of --set and --config arguments matter? Should a --config override a previous
 %                  --set?
 
 
     properties(Access=private)
-        defineDisabledForever = false;   % Whether defining new keys is disallowed or not. Always true if readOnlyForever==true.
-        readOnlyForever       = false;   % Whether modifying the object is allowed or not.
-        DataMap;                         % Map containing the actual settings data.
+        % Whether defining new keys is disallowed or not. Always true if
+        % readOnlyForever==true.
+        defineDisabledForever = false;   
+        
+        % Whether modifying the object is allowed or not.
+        readOnlyForever       = false;
+        
+        % Map containing the actual settings data.
+        DataMap;
     end
 
 
 
-    %###################################################################################################################
+    %###########################################################################
 
         
     
@@ -137,10 +144,13 @@ classdef settings < handle
         function define_setting(obj, key, defaultValue)
             % ASSERTIONS
             if obj.defineDisabledForever
-                error('BICAS:settings:Assertion', 'Trying to define new keys in settings object which disallows defining new keys.')
+                error('BICAS:Assertion', ...
+                    ['Trying to define new keys in settings object which', ...
+                    ' disallows defining new keys.'])
             end
             if obj.DataMap.isKey(key)
-                error('BICAS:settings:Assertion:ConfigurationBug', 'Trying to define pre-existing settings key.')
+                error('BICAS:Assertion:ConfigurationBug', ...
+                    'Trying to define pre-existing settings key.')
             end
             
             % ASSERTIONS
@@ -149,7 +159,8 @@ classdef settings < handle
             elseif isnumeric(defaultValue) || iscell(defaultValue)
                 EJ_library.assert.vector(defaultValue)
             else
-                error('BICAS:settings:Assertion:IllegalArgument', 'Argument defaultValue is illegal.')
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'Argument defaultValue is illegal.')
             end
             
             
@@ -173,18 +184,25 @@ classdef settings < handle
             % ASSERTIONS
             EJ_library.assert.castring(valueSource)
             if obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
+                error('BICAS:Assertion', ...
+                    'Trying to modify read-only settings object.')
             end
             
             valueArrayStruct = obj.get_value_array_struct(key);
             
             % ASSERTION
-            if ~strcmp(bicas.settings.get_value_type(newValue), obj.get_setting_value_type(key))
-                error('BICAS:settings:Assertion:IllegalArgument', ...
-                    'New settings value does not match the type of the old settings value.')
+            if ~strcmp(...
+                    bicas.settings.get_value_type(newValue), ...
+                    obj.get_setting_value_type(key))
+                error('BICAS:Assertion:IllegalArgument', ...
+                    ['New settings value does not match the type of the', ...
+                    ' old settings value for key "%s".'], ...
+                    key)
             end
 
-            % IMPLEMENTATION NOTE: obj.DataMap(key).value = newValue;   % Not permitted by MATLAB.
+            % IMPLEMENTATION NOTE: The syntax
+            %   obj.DataMap(key).value = newValue
+            % is not permitted by MATLAB.
             valueArrayStruct(end+1).value       = newValue;
             valueArrayStruct(end  ).valueSource = valueSource;
             obj.DataMap(key) = valueArrayStruct;
@@ -192,30 +210,110 @@ classdef settings < handle
 
         
         
+        % Override multiple settings, where the values are strings but converted
+        % to numerical values as needed. Primarily intended for updating
+        % settings with values from CLI arguments and/or config file (which by
+        % their nature have string values).
+        %
+        % Essentially a wrapper around .override_value().
+        %
+        % NOTE: Indirectly specifies the syntax for string values which
+        % represent non-string-valued settings.
+        %
+        % NOTE/BUG: No good checking (assertion) of whether the string format of
+        % a vector makes sense.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % ModifiedSettingsAsStrings
+        %       containers.Map
+        %       <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS
+        %                  key.
+        %       <values> = Settings values AS STRINGS.
+        %                  Preserves the type of settings value for strings and
+        %                  numerics. If the pre-existing value is numeric, then
+        %                  the argument value will be converted to a number.
+        %                  Numeric row vectors are represented as a comma
+        %                  separated-list (no brackets), e.g. "1,2,3". Empty
+        %                  numeric vectors can not be represented.
+        %
+        function obj = override_values_from_strings(...
+                obj, ModifiedSettingsMap, valueSource)
+
+            keysList = ModifiedSettingsMap.keys;
+            for iModifSetting = 1:numel(keysList)
+                key              = keysList{iModifSetting};
+                newValueAsString = ModifiedSettingsMap(key);
+
+                % ASSERTION
+                if ~isa(newValueAsString, 'char')
+                    error('BICAS:Assertion:IllegalArgument', ...
+                        'Map value is not a string.')
+                end
+
+                %==================================================
+                % Convert string value to appropriate MATLAB class.
+                %==================================================
+                switch(obj.get_setting_value_type(key))
+                    
+                    case 'numeric'
+                        newValue = textscan(newValueAsString, '%f', ...
+                            'Delimiter', ',');
+                        newValue = newValue{1}';    % Row vector.
+                        
+                    case 'string'
+                        newValue = newValueAsString;
+                        
+                    otherwise
+                        error('BICAS:Assertion:ConfigurationBug', ...
+                            ['Can not handle the MATLAB class=%s of', ...
+                            ' internal setting "%s".'], ...
+                            class(oldValue), key)
+                end
+
+                % Overwrite old setting.
+                obj.override_value(key, newValue, valueSource);
+            end
+
+        end
+
+
+
         function keyList = get_keys(obj)
             keyList = obj.DataMap.keys;
         end
         
         
         
-        % Return the settings value (that is actually going to be used) for a given, existing key.
-        % Only works when object is read-only, and the settings have their final values.
+        % Return the settings value (that is actually going to be used) for a
+        % given, existing key. Only works when object is read-only, and the
+        % settings have their final values.
         %
-        % IMPLEMENTATION NOTE: Short function name since function is called many times, often repeatedly.
+        % IMPLEMENTATION NOTE: Short function name since function is called many
+        % times, often repeatedly.
         % FV = Final value
         %
         % RETURN VALUES
         % ==============
-        % value : The value of the setting.
-        % key   : The name of the settings key, i.e. identical to the argument "key".
-        %         IMPLEMENTATION NOTE: This is useful in code that tries to avoid hardcoding the key string too many
-        %         times. That way, the key is hard-coded once (in the call to this method), and then simultaneously
-        %         assigned to a variable that is then used in the vicinity for error/warning/log messages etc. It is the
-        %         second return value so that it can be ignored when the caller does not need it.
+        % value
+        %       The value of the setting.
+        % key
+        %       The name of the settings key, i.e. identical to the argument
+        %       "key".
+        %       IMPLEMENTATION NOTE: This is useful in code that tries to avoid
+        %       hardcoding the key string too many times. That way, the key is
+        %       hard-coded once (in the call to this method), and then
+        %       simultaneously assigned to a variable that is then used in the
+        %       vicinity for error/warning/log messages etc. It is the second
+        %       return value so that it can be ignored when the caller does not
+        %       need it.
         function [value, key] = get_fv(obj, key)
             % ASSERTIONS
             if ~obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Not allowed to call this method for non-read-only settings object.')
+                error('BICAS:Assertion', ...
+                    ['Not allowed to call this method for non-read-only', ...
+                    ' settings object.'])
             end
             valueStructArray = obj.get_value_array_struct(key);
 
@@ -224,31 +322,40 @@ classdef settings < handle
         
         
         
-        % Return settings value for a given, existing key.
-        % Only works when object is read-only, and the settings have their final values.
+        % Return settings value for a given, existing key. Only works when
+        % object is read-only, and the settings have their final values.
         %
-        % IMPLEMENTATION NOTE: Short function name since function is called many times, often repeatedly.
-        % FV = Final value
+        % IMPLEMENTATION NOTE: Short function name since function is called many
+        % times, often repeatedly. FV = Final value
         function valueArrayStruct = get_final_value_array(obj, key)
             % ASSERTIONS
             if ~obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Not allowed to call this method for non-read-only settings object.')
+                error('BICAS:Assertion', ...
+                    ['Not allowed to call this method for non-read-only', ...
+                    ' settings object.'])
             end
             if ~obj.DataMap.isKey(key)
-                error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'There is no setting "%s".', key)
             end
             
             
             valueArrayStruct = obj.DataMap(key);
-            EJ_library.assert.struct(valueArrayStruct, {'value', 'valueSource'}, {})
+            EJ_library.assert.struct(...
+                valueArrayStruct, ...
+                {'value', 'valueSource'}, {})
         end
         
 
 
-        % Needs to be public so that caller can determine how to parse string, e.g. parse to number.
+        % Needs to be public so that caller can determine how to parse string,
+        % e.g. parse to number.
         function valueType = get_setting_value_type(obj, key)
             valueArrayStruct = obj.get_value_array_struct(key);            
-            valueType        = bicas.settings.get_value_type(valueArrayStruct(1).value);    % NOTE: Always use default/first value.
+            
+            % NOTE: Always use default/first value.
+            valueType        = bicas.settings.get_value_type(...
+                valueArrayStruct(1).value);
         end
 
 
@@ -263,12 +370,13 @@ classdef settings < handle
         
         % Return settings array struct for a given, existing key.
         %
-        % RATIONALE: Exists to give better error message when using an illegal key, than just calling obj.DataMap
-        % directly.
+        % RATIONALE: Exists to give better error message when using an illegal
+        % key, than just calling obj.DataMap directly.
         function S = get_value_array_struct(obj, key)
             % ASSERTIONS
             if ~obj.DataMap.isKey(key)
-                error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'There is no setting "%s".', key)
             end
             
             S = obj.DataMap(key);
@@ -290,7 +398,8 @@ classdef settings < handle
             elseif ischar(value)
                 valueType = 'string';
             else
-                error('BICAS:settings:ConfigurationBug', 'Settings value (old or new) has an illegal MATLAB class.')
+                error('BICAS:ConfigurationBug', ...
+                    'Settings value (old or new) has an illegal MATLAB class.')
             end
         end
         

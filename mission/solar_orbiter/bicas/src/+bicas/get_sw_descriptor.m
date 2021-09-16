@@ -1,5 +1,6 @@
-% Return MATLAB structure that "exactly" corresponds to the S/W descriptor specified by the RCS ICD.
-% Return result can be used for generating a string that can be printed.
+% Return MATLAB structure that "exactly" corresponds to the S/W descriptor
+% specified by the RCS ICD. Return result can be used for generating a string
+% that can be printed.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -13,20 +14,26 @@
 %
 % IMPLEMENTATION NOTE
 % ===================
-% The values are derived entirely from BICAS constants. The structure is NOT directly incorporated in the BICAS
-% constants/settings for extra flexibility. Reasons for NOT putting the S/W descriptor structure inside the settings
+% The values are derived entirely from BICAS constants. The structure is NOT
+% directly incorporated in the BICAS constants/settings for extra flexibility.
+% Reasons for NOT putting the S/W descriptor structure inside the settings
 % class:
-% (1) Some of the S/W descriptor variables have vague or misleading names ("name", "dataset versions", "dataset IDs")
-%     which would (reasoably) have to be represented by MATLAB variables with the same names.
-% (2) Some of the S/W descriptor variables are grouped in a way which
-%     does not fit the rest of the code (e.g. modes[i].outputs.(output_XX).release in the S/W descriptor structure).
-% (3) Some of the S/W descriptor values are really structure field NAMES, but would be better as
-%     structure field VALUES (e.g. input CLI parameter, output JSON identifier string).
-% (4) The constants structure would become dependent on the format of the S/W descriptor structure.
-%     The latter might change in the future, or be misunderstood in the present (i.e. be changed).
-% (5) Some S/W descriptor values repeat or can be derived from other constants (e.g. author, contact,
-%     institute, output_XX.release.file).
-% (6) It is easier to add automatic checks on the S/W descriptor in the code that derives it.
+% (1) Some of the S/W descriptor variables have vague or misleading names
+%     ("name", "dataset versions", "dataset IDs") which would (reasonably) have
+%     to be represented by MATLAB variables with the same names.
+% (2) Some of the S/W descriptor variables are grouped in a way which does not
+%     fit the rest of the code (e.g. modes[i].outputs.(output_XX).release in the
+%     S/W descriptor structure).
+% (3) Some of the S/W descriptor values are really structure field NAMES, but
+%     would be better as structure field VALUES (e.g. input CLI parameter,
+%     output JSON identifier string).
+% (4) The constants structure would become dependent on the format of the S/W
+%     descriptor structure. The latter might change in the future, or be
+%     misunderstood in the present (i.e. be changed).
+% (5) Some S/W descriptor values repeat or can be derived from other constants
+%     (e.g. author, contact, institute, output_XX.release.file).
+% (6) It is easier to add automatic checks on the S/W descriptor in the code
+%     that derives it.
 %
 function JsonSwd = get_sw_descriptor(SwModeDefsList)
     %
@@ -53,9 +60,11 @@ function JsonSwd = get_sw_descriptor(SwModeDefsList)
     
     % Variable naming convention:
     % ---------------------------
-    % Swd = S/W descriptor = The MATLAB structure which is used for producing the S/W descriptor (SWD) JSON object string.
-    % Its fields (field names) should NOT follow variable naming conventions since they determine the JSON object string
-    % which must follow the RCS ICD.
+    % Swd = S/W descriptor
+    %   The MATLAB structure which is used for producing the S/W descriptor
+    %   (SWD) JSON object string. Its fields (field names) should NOT follow
+    %   variable naming conventions since they determine the JSON object string
+    %   which must follow the RCS ICD.
     SwdMetadataMap = bicas.constants.SWD_METADATA;
     
     JsonSwd = [];
@@ -71,11 +80,12 @@ function JsonSwd = get_sw_descriptor(SwModeDefsList)
     JsonSwd.release.contact            = SwdMetadataMap('SWD.release.contact');
     JsonSwd.release.institute          = SwdMetadataMap('SWD.release.institute');
     JsonSwd.release.modification       = SwdMetadataMap('SWD.release.modification');
-    JsonSwd.release.source             = SwdMetadataMap('SWD.release.source');    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    JsonSwd.release.source             = SwdMetadataMap('SWD.release.source');
     
     JsonSwd.environment.executable     = SwdMetadataMap('SWD.environment.executable');
-    %JsonSwd.environment.configuration  = C.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
-    JsonSwd.environment.configuration  = bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    JsonSwd.environment.configuration  = bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;
     
     JsonSwd.modes = {};
     for i = 1:length(SwModeDefsList)

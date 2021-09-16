@@ -18,6 +18,7 @@ classdef const   % < handle
     properties(Constant)
         % Docs specifies spelling "Acknowledgment", but ISTP specifies spelling
         % "Acknowledgement" ("ledg" vs "ledge").
+        %
         % NOTE: Incomplete list of mandatory global attributes (too long).
         % NOTE: Most of global attributes names have just been copied from
         % defacto datasets. There is still value in that it checks that the same

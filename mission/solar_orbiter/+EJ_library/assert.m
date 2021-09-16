@@ -49,7 +49,7 @@
 %
 classdef assert
 %
-% TODO-DECISION: Use assertions on (assertion function) arguments internally?
+% TODO-DEC: Use assertions on (assertion function) arguments internally?
 %   NOTE: Potentially slower.
 %
 % TODO-NI: Slower to use assert() than if ... error ?
@@ -162,7 +162,7 @@ classdef assert
 %
 %
 % PROPOSAL: Functions for asserting line breaks.
-%   TODO-DECISION: Which set of functions.
+%   TODO-DEC: Which set of functions.
 %       PROPOSAL: Assert ending LF (assert not ending CR+LF).
 %       PROPOSAL: Assert all linebreaks are LF (no CR+LF).
 %       PROPOSAL: Assert all linebreaks are LF (no CR+LF). Require ending linebreak.
@@ -194,6 +194,8 @@ classdef assert
     
     methods(Static)
         
+        
+        
         % NOTE: Empty string literal '' is 0x0.
         % NOTE: Accepts all empty char arrays, e.g. size 2x0 (2 rows).
         function castring(s)
@@ -201,6 +203,7 @@ classdef assert
             if ~ischar(s)
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     'Expected castring (0x0, 1xN char array) is not char.')
+                
             elseif ~(isempty(s) || size(s, 1) == 1)
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     'Expected castring (0x0, 1xN char array) has illegal dimensions.')
@@ -222,6 +225,7 @@ classdef assert
         %              NOTE: Must be non-empty array.
         %
         function castring_regexp(s, regexp)
+            assert(ischar(s))
             if ~any(EJ_library.str.regexpf(s, regexp))
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     ['String "%s" (in its entirety) does not match any of', ...
@@ -397,7 +401,7 @@ classdef assert
             %            field is a struct with the specified (required and optional) subfields.
             %
             % PROPOSAL: Recursive structs field names.
-            %   TODO-DECISION: How specify fieldnames? Can not use cell arrays recursively.
+            %   TODO-DEC: How specify fieldnames? Can not use cell arrays recursively.
             %   PROPOSAL: Define other, separate assertion method.
             %   PROPOSAL: Tolerate/ignore that structs are array structs.
             %   PROPOSAL: struct(S, {'PointA.x', 'PointA.y'}, {'PointA.z'})
@@ -409,7 +413,7 @@ classdef assert
             %       Groups together required and optional with every parent struct.
             %       PRO: Optional fields can be structs with both required and optional fields, recursively.
             %       PRO: Can be implemented recursively(?).
-            %   TODO-NEED-INFO: Required & optional is well-defined?
+            %   TODO-NI: Required & optional is well-defined?
             %   CON: Rarely needed.
             %       CON: Maybe not
             %           Ex: Settings structs
@@ -424,6 +428,7 @@ classdef assert
             %   formats".
             %       Ex: EJ_library.so.adm.create_dataset_filename().
             
+            assert(isstruct(S))
             structFnSet          = fieldnames(S);
             
             missingRequiredFnSet = setdiff(requiredFnSet, structFnSet);
@@ -515,7 +520,7 @@ classdef assert
         
 
         % Assert v has a non-one size in at most one dimension.
-        % NOTE: Excludes 0x0, e.g. [] and ''.
+        % NOTE: Excludes 0x0, e.g. [], {}, and ''.
         %
         % NOTE: MATLAB's "isvector" function uses different criterion which
         % excludes length in third or higher dimension.
@@ -532,7 +537,7 @@ classdef assert
             %   PROPOSAL: Name that implies 1D vector: vector_1D, vec_1D
             %   PROPOSAL: Name that implies exactly one non-zero size dimension.
             %       PROPOSAL: true_vector, strict_vector, strict_vec_1D, vec_strict_1D
-            % PROPOSAL: Permit []={}=0x0 specifically
+            % PROPOSAL: Configurable to permit []={}=0x0 specifically
             %   PROPOSAL: Separate policy constant to permit. '0x0', 'permit 0x0'.
             %   PROPOSAL: Separate method to permit.
             %       PROPOSAL: common_vec_1D, nonstrict_vec_1D.
@@ -597,7 +602,7 @@ classdef assert
         %     NOTE: Empty or scalar matrices are accepted.
         %
         function all_equal(v)
-            % TODO-DECISION: How handle NaN?
+            % TODO-DEC: How handle NaN?
             %   PROPOSAL: Count NaN as equal to itself.
             
             nUniques = numel(unique(v(:)));    % NOTE: Make 1D vector.

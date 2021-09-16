@@ -1,6 +1,7 @@
 %
-% Function for doing the first interpretation of BICAS' CLI arguments and returns the data as a more easy-to-understand
-% struct. This function covers both official and inofficial arguments.
+% Function for doing the first interpretation of BICAS' CLI arguments and
+% returns the data as a more easy-to-understand struct. This function covers
+% both official and inofficial arguments.
 %
 %
 % RETURN VALUE
@@ -21,38 +22,48 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% It is difficult to interpret BICAS arguments all in one go since some arguments do, or might, influence which other
-% arguments (at least what the RCS ICD calls "specific inut parameters") are legal:
+% It is difficult to interpret BICAS arguments all in one go since some
+% arguments do, or might, influence which other arguments (at least what the RCS
+% ICD calls "specific inut parameters") are legal:
 % -- functionality mode
 % -- s/w mode
-% -- config file        (might implement enabling/disabling s/w modes for debugging)
-% -- settings arguments (might implement enabling/disabling s/w modes for debugging)
-% To keep the function agnostic about s/w modes and input and output datasets, and settings, this function does not
-% determine whether specific input parameters or settings keys/values) are legal. The caller has to do those checks.
+% -- config file        (can enable/disable s/w modes)
+% -- settings arguments (can enable/disable s/w modes)
+% To keep the function agnostic about s/w modes and input and output datasets,
+% and settings, this function does not determine whether specific input
+% parameters or settings keys/values) are legal. The caller has to do those
+% checks.
 %
 %
 % RATIONALE
 % =========
 % Reasons for having as separate function:
 % -- Enable separate manual & automatic testing.
-% -- Separate BICAS' "functionality" from "CLI syntax". ==> Easier to change CLI syntax.
+% -- Separate BICAS' "functionality" from "CLI syntax".
+%    ==> Easier to change CLI syntax.
 % -- Reduce size of BICAS main function.
 %
 %
 % TERMINOLOGY
 % ===========
-% FM = Functionality mode : Whether BICAS is launched with --version, --help, --identification, --descriptor, or a s/w
-%                           mode. (These alternatives are mutually exclusive.)
-% S/W mode                : Which dataset processing is to be performed.
-% SIP                     : Specific Input Parameters. The phrase is an RCS ICD term.
+% FM = Functionality mode
+%       Whether BICAS is launched with --version, --help, --identification,
+%       --descriptor, or a s/w mode. (These alternatives are mutually
+%       exclusive.)
+% S/W mode
+%       Which dataset processing is to be performed.
+% SIP   
+%       Specific Input Parameters. The phrase is an RCS ICD term.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-22.
 %
 function CliData = interpret_CLI_args(cliArgumentList)
-    % PROPOSAL: Generic utility function for converting list of mutually exclusive (assertion) booleans into one unique value.
-    %   Ex: Convert list of booleans for various argument flags (any application) into one variable value.
+    % PROPOSAL: Generic utility function for converting list of mutually
+    %       exclusive (assertion) booleans into one unique value.
+    %   Ex: Convert list of booleans for various argument flags (any
+    %       application) into one variable value.
     %       Ex: Flags for BICAS functionality modes.
     %
     % PROPOSAL: Include assertion for unique input and output dataset paths.
@@ -90,27 +101,33 @@ function CliData = interpret_CLI_args(cliArgumentList)
     
     
     
-    %===================================================================================================================
-    % Extract the modified settings from the inofficial CLI arguments.
-    %
-    % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE option (in the meaning of
-    % parse_CLI_options) and is filled with the corresponding option values in the order of the CLI arguments.
-    %       ==> A later occurrence of an option with the same first option value, overwrites previous occurrences of the
-    %       option with the same first option value. This is the intended behaviour (not a side effect).
-    %       E.g. --set SETTING_NAME 0 --setting SETTING_NAME 1
-    %===================================================================================================================
-    OptionValuesMap = bicas.utils.parse_CLI_options(cliArgumentList, OPTIONS_CONFIG_MAP);
-    CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(OptionValuesMap('modified_settings'));
+    %============================================================================
+    % Extract the modified settings from the inofficial CLI arguments
+    % ---------------------------------------------------------------
+    % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE
+    % option (in the meaning of parse_CLI_options) and is filled with the
+    % corresponding option values in the order of the CLI arguments.
+    %   ==> A later occurrence of an option with the same first option
+    %       value, overwrites previous occurrences of the option with the same
+    %       first option value. This is the intended behaviour (not a side
+    %       effect).
+    %       Ex: --set SETTING_NAME 0 --setting SETTING_NAME 1
+    %============================================================================
+    OptionValuesMap = bicas.utils.parse_CLI_options(...
+        cliArgumentList, OPTIONS_CONFIG_MAP);
+    CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
+        OptionValuesMap('modified_settings'));
     
     
     
-    %=====================================================================================================
+    %=====================================================================
     % Parse RCS ICD arguments
     % -----------------------
-    % NOTE: Interprets RCS ICD as permitting (official) arguments next to non-s/w mode functionality mode
-    % arguments.
-    %=====================================================================================================
-    CliData.SpecInputParametersMap = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
+    % NOTE: Interprets RCS ICD as permitting (official) arguments next to
+    % non-s/w mode functionality mode arguments.
+    %=====================================================================
+    CliData.SpecInputParametersMap = EJ_library.utils.create_containers_Map(...
+        'char', 'char', {}, {});
     
     
     
@@ -118,14 +135,18 @@ function CliData = interpret_CLI_args(cliArgumentList)
     
     
     
-    % Convert presence of functionality mode flag (mutually exclusive) into the correct constant.
+    % Convert presence of functionality mode flag (mutually exclusive) into the
+    % correct constant.
     tempTable = {
         ~isempty(OptionValuesMap('version_FM')),        'version'; ...
         ~isempty(OptionValuesMap('identification_FM')), 'identification'; ...
         ~isempty(OptionValuesMap('swdescriptor_FM')),   'S/W descriptor'; ...
         ~isempty(OptionValuesMap('help_FM')),           'help'; ...
         ~isempty(OptionValuesMap('SW_mode')),           'S/W mode'};
-    assert(sum([tempTable{:,1}]) == 1, 'BICAS:interpret_CLI_syntax:CLISyntax', 'Illegal combination of arguments.')
+    assert(...
+        sum([tempTable{:,1}]) == 1, ...
+        'BICAS:interpret_CLI_syntax:CLISyntax', ...
+        'Illegal combination of arguments.')
     CliData.functionalityMode = tempTable{[tempTable{:,1}], 2};
     
     switch CliData.functionalityMode
@@ -133,30 +154,36 @@ function CliData = interpret_CLI_args(cliArgumentList)
         case {'version', 'identification', 'S/W descriptor', 'help'}
             
             CliData.swModeArg = [];
-            assert(isempty(sipOptionValues), 'Specified illegal specific input parameters.')
+            assert(...
+                isempty(sipOptionValues), ...
+                'Specified illegal specific input parameters.')
             
         case 'S/W mode'
             
             OptionValues = OptionValuesMap('SW_mode');
             
             % ASSERTION
-            % NOTE: Somewhat of a hack, since can not read out from using bicas.utils.parse_CLI_options where
-            % the SW_mode option is located among the arguments. The code knows it should be somewhere.
-            %if ~EJ_library.str.regexpf(swModeArg, bicas.constants.SW_MODE_CLI_OPTION_REGEX)
+            % NOTE: Somewhat of a hack, since can not read out from using
+            % bicas.utils.parse_CLI_options where the SW_mode option is located
+            % among the arguments. The code knows it should be somewhere.
             if numel(OptionValues) ~= 1
-                % Somewhat misleading error message. Hard to be accurate without too much effort or by explaining the
-                % argument-parsing algorithm to the user.
+                % Somewhat misleading error message. Hard to be accurate without
+                % too much effort or by explaining the argument-parsing
+                % algorithm to the user.
                 error('BICAS:CLISyntax', 'Can not interpret argument(s).')
             elseif OptionValues.iOptionHeaderCliArgument ~= 1
-                error('BICAS:CLISyntax', 'First argument can not be interpreted as a S/W mode as expected.')
+                error('BICAS:CLISyntax', ...
+                    ['First argument can not be interpreted as', ...
+                    ' a S/W mode as expected.'])
             end
             
             CliData.swModeArg              = OptionValues.optionHeader;
             
-            CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(sipOptionValues);
+            CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(...
+                sipOptionValues);
             
         otherwise
-            error('BICAS:interpret_CLI_args:Assertion', 'Illegal CliData.functionalityMode value.')
+            error('BICAS:Assertion', 'Illegal CliData.functionalityMode value.')
     end
     
     
@@ -177,7 +204,8 @@ function CliData = interpret_CLI_args(cliArgumentList)
     end
     
     EJ_library.assert.struct(CliData, ...
-        {'functionalityMode', 'swModeArg', 'icdLogFile', 'matlabLogFile', 'configFile', 'SpecInputParametersMap', ...
+        {'functionalityMode', 'swModeArg', 'icdLogFile', 'matlabLogFile', ...
+        'configFile', 'SpecInputParametersMap', ...
         'ModifiedSettingsMap'}, {})
     
 end
@@ -193,7 +221,9 @@ function Map = convert_SIP_OptionValues_2_Map(optionValues)
         key = optionValues(iSip).optionHeader(3:end);
         %key = temp(3:end);
         if Map.isKey(key)
-            error('BICAS:interpret_CLI_args:CLISyntax', 'Specifying same specific input parameter (argument) more than once.')
+            error('BICAS:CLISyntax', ...
+                ['Specifying same specific input parameter (argument)', ...
+                ' more than once.'])
         end
         Map(key) = optionValues(iSip).optionValues{1};
     end

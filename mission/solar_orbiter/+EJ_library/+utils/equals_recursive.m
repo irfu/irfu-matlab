@@ -93,7 +93,7 @@ function [result, diffLoc, diffMsg] = equals_recursive(a, b, varargin)
 % PROPOSAL: Option for special treatment of string comparison. 0x0 and 1x0 could optionally count as equal.
 %   NOTE: rowColVecEqual = true seems to have this effect for some reason. Bug?!
 %
-% TODO-NEED-INFO: Can objects be in array?!
+% TODO-NI: Can objects be in array?!
 % NOTE: There is something weird about objects.
 % numel(containers.Map) == 1
 % size(containers.Map) == [0, 1]

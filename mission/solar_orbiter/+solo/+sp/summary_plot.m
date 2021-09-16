@@ -42,7 +42,7 @@ classdef summary_plot < handle
     % like to wrap the function handle, not the add_panel_* method.
     %   Ex: Can not fade line color in wrapper.
     %
-    % TODO-DECISION: Content of figure title
+    % TODO-DEC: Content of figure title
     %   PROPOSAL: Time range
     %   PROPOSAL: DOY.
     %       ~PROBLEM/NOTE: Could span multiple days, or part of day.
@@ -917,7 +917,7 @@ classdef summary_plot < handle
             [nRecords, nSps] = EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2]);
-            bicas.proc_utils.assert_zv_Epoch(zvEpoch)
+            bicas.utils.assert_zv_Epoch(zvEpoch)
             
             assert(nSps >= 2)
             

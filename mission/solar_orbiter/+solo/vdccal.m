@@ -10,8 +10,8 @@ function [DCE_SRF_out,PSP_out,ScPot_out,codeVerStr,matVerStr] = vdccal(VDC_inp,E
 %
 % Outputs:
 %   DCE_SRF    - DC electric field in SRF (Ex=0)
-%   PSP        - probe-to-spacecraft potential
-%   ScPot      - spacecraft potential (PRELIMINARY PROXY)
+%   PSP        - Probe-to-spacecraft potential
+%   ScPot      - Spacecraft potential (PRELIMINARY PROXY)
 %   codeVerStr - Date format version string for function itself. Used by BICAS.
 %   matVerStr  - Version string representing .mat file. Currently filename.
 %                Used by BICAS.

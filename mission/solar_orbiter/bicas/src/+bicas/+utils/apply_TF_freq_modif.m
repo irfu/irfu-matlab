@@ -153,7 +153,7 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
 %         % IMPLEMENTATION NOTE: bicas.utils.apply_TF_freq (deliberately) does not
 %         % throw error if TF returns non-finite values. This assertion should
 %         % catch that case instead.
-%         error('BICAS:apply_TF_freq_modif:Assertion', ...
+%         error('BICAS:Assertion', ...
 %             'Failed to evaluate transfer function for all necessary frequencies.')
 %     end
     

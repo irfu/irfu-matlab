@@ -2,13 +2,15 @@
 % Find out whether numeric matrices are approximately equal.
 % Dissimilar dimensions count as being unequal.
 %
-% NOTE: There might be a function for this in newer version of MATLAB. Not sure which.
-% NOTE: Inf is always dissimilar fron Inf, reagrdless of tolerance.
+% NOTE: There might be a function for this in newer versions of MATLAB. Not sure
+% which.
+% NOTE: Inf is always dissimilar from Inf, reagrdless of tolerance.
 %
 %
 % ARGUMENTS
 % =========
-% a,b : Numeric arbitrary dimension matrices.
+% a,b
+%       Numeric arbitrary dimension matrices.
 % 
 %
 % Initially created 2018-07-18 by Erik P G Johansson.
@@ -17,7 +19,8 @@ function result = approx_equals(a, b, epsilon, nanPolicy)
 % PROPOSAL: Assertions for equal dimensions instead of result=false?!!
 %   PRO: Assertion useful automatic tests.
 %   CON: equals_recursive uses approx_equals. result=false is appropriate there.
-%   CON: equals_recursive is probably the function that one should use for those case. It is ~made for automatic tests.
+%   CON: equals_recursive is probably the function that one should use for those
+%        case. It is ~made for automatic tests.
 %   --
 %   PROPOSAL: Separate function for testing same-size, same class.
 %   PROPOSAL: Setting for same-size assertion.
@@ -44,7 +47,8 @@ function result = approx_equals(a, b, epsilon, nanPolicy)
         return
     end
     
-    % Convert to 1D ROW arrays. 1D arrays make it easier to construct code which works with all dimensionalities.
+    % Convert to 1D ROW arrays. 1D arrays make it easier to construct code which
+    % works with all dimensionalities.
     a = a(:);
     b = b(:);
     
@@ -63,12 +67,12 @@ function result = approx_equals(a, b, epsilon, nanPolicy)
             end                
                         
         case 'NaN unequal to itself'
-            ;   % Do nothing
+            % Do nothing
             
         otherwise
             error('Illegal nanPolicy')
     end
     
-    
-    result = all(abs(a-b) <= epsilon);   % Comparing with Nan with any value (incuding NaN) ==> false.
+    % Comparing with Nan with any value (incuding NaN) ==> false.
+    result = all(abs(a-b) <= epsilon);
 end

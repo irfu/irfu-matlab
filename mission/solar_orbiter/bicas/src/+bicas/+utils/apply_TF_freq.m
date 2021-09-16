@@ -117,7 +117,7 @@
 % First created 2017-02-13
 %
 function [y2] = apply_TF_freq(dt, y1, tf)
-% TODO-NEED-INFO: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
+% TODO-NI: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
 %
 % PROPOSAL: Option for error on NaN/Inf.
 %
@@ -132,7 +132,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 %   PROPOSAL: Return the Z values actually used, so that caller can call back using them.
 %   PROPOSAL: Separate function for generating such vector.
 %
-% TODO-NEED-INFO: How does algorithm handle X_(N/2+1) (which has no frequency twin)? Seems like implemention should
+% TODO-NI: How does algorithm handle X_(N/2+1) (which has no frequency twin)? Seems like implemention should
 %   multiply it by a complex Z (generic situation) ==> Complex y2. Still, no such example has been found yet.
 %   Should be multiplied by abs(Z)?! Z-imag(z)?! Keep as is?!
 %
@@ -146,7 +146,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 
 
     % EMID = Error Message ID
-    EMID_ARG = 'BICAS:apply_TF_freq:Assertion:IllegalArgument';
+    EMID_ARG = 'BICAS:Assertion:IllegalArgument';
     
     %============
     % ASSERTIONS
@@ -241,12 +241,14 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % ASSERTION
     %if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
     if ~all(~isinf(tfZLookups))
-        % NOTE: Deliberately permits Z=NaN (but not infinity) since bicas.calib
-        % is designed to create TFs that return Z=NaN for impossible
-        % combinations where it does not matter anyway. /EJ 2020-11-05
+        % NOTE: Deliberately permits Z=NaN (but not infinity) since
+        % bicas.proc.L1L2.cal is designed to create TFs that return Z=NaN for
+        % impossible combinations where it does not matter anyway.
+        % /EJ 2020-11-05
         error(...
-            'BICAS:apply_TF_freq:Assertion', ...
-            'Transfer function "tf" returned non-finite value (not NaN) for at least one frequency.')
+            'BICAS:Assertion', ...
+            ['Transfer function "tf" returned non-finite value (not NaN)', ...
+            ' for at least one frequency.'])
     end
     
     
@@ -271,21 +273,22 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     %
     % ifft options:
     %     "ifft(..., 'symmetric') causes ifft to treat X as conjugate symmetric
-    %     along the active dimension.  This option is useful when X is not exactly
-    %     conjugate symmetric merely because of round-off error.  See the
-    %     reference page for the specific mathematical definition of this
+    %     along the active dimension.  This option is useful when X is not
+    %     exactly conjugate symmetric merely because of round-off error.  See
+    %     the reference page for the specific mathematical definition of this
     %     symmetry."
     y2 = ifft(yDft2, 'symmetric');
     %y2p = ifft(yDft2);    % TEST
     
     
     
-    % ASSERTION: Real output.
+    % ASSERTION: Real (numbers) output.
     % IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is
     % not used.
     if ~isreal(y2)
-        maxAbsImag = max(abs(imag(y2)))    % Print
-        error('BICAS:apply_TF_freq:Assertion', 'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
+        maxAbsImag = max(abs(imag(y2)));
+        error('BICAS:Assertion', ...
+            'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
     end
 
 end

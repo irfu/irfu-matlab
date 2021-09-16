@@ -1,21 +1,24 @@
 %
-% Convert LFR frequency index value to LSF in Hz, for entire array.
-%
+% Convert LFR sampling frequency index value to LSF in Hz, for entire array.
 % Useful for converting e.g. LFR zVariable FREQ to LSF.
 %
-% LSF = LFR Sampling Frequency
+% LSF = LFR Sampling Frequency (an explicit frequency value; not e.g. F0)
 %
 %
 % ARGUMENTS
 % =========
-% iLsf   : Numeric array. Arbitrary size. The LSF index, i.e. 1=LFR freq. F0, and so on.
-%          NOTE: Allowes values 1,2,3,4 (not 0).
-% freqHz : Frequency in Hz.
+% iLsf
+%       Numeric array. Arbitrary size. The LSF index, i.e. 1=LFR freq. F0, and
+%       so on.
+%       NOTE: Allows values 1,2,3,4 (not 0).
+% freqHz
+%       Sampling frequency in Hz.
 %
 %
 % RETURN VALUES
 % =============
-% freqHz : Same size as iLsf.
+% freqHz
+%       Same size as iLsf.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -28,11 +31,16 @@ function freqHz = get_LFR_frequency(iLsf)
     % ASSERTION
     uniqueValues = unique(iLsf);
     if ~all(ismember(uniqueValues, [1,2,3,4]))
-        %uniqueValuesStr = sprintf('%d ', uniqueValues);   % NOTE: Has to print without \n to keep all values on a single-line string.        
-        uniqueValuesStr = strjoin(EJ_library.str.sprintf_many('%d', uniqueValues), ', ');
+        % NOTE: Has to print without \n to keep all values on a single-line
+        % string.
+        %uniqueValuesStr = sprintf('%d ', uniqueValues);
+        uniqueValuesStr = strjoin(...
+            EJ_library.str.sprintf_many('%d', uniqueValues), ', ');
         
-        error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
-            'Found unexpected values in LSF index (corresponding to LFR FREQ+1). Unique values: %s.', uniqueValuesStr)
+        error(...
+            ['Found unexpected values in LSF index (corresponding to', ...
+            ' LFR FREQ+1). Unique values: %s.'], ...
+            uniqueValuesStr)
     end
     
     % NOTE: Implementation that works for arrays of any size.

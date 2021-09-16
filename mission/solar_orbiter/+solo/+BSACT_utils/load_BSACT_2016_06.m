@@ -10,7 +10,7 @@
 %
 function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_06(bsactRootPath)
     %
-    % TODO-NEED-INFO: What does TC (in variable names) stand for?
+    % TODO-NI: What does TC (in variable names) stand for?
     %
     
     % NOTE 2017-12-12: The MEB temperature used for this calibration test is not

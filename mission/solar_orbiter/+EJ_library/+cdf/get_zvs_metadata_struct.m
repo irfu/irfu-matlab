@@ -161,7 +161,7 @@ function S = get_zvs_metadata_struct(Variables, VariableAttributes)
     %       (1) raw content: exact CDF type/MATLAB class disregarding/ignoring pad & fill value
     %       (2) converted content: replace NaN for fill value (pad value?), convert double-->CDf type
     %           Check feasability: min-max, Inf, NaN.
-    %   TODO-DECISION: How reference zvars? (since not struct of structs)
+    %   TODO-DEC: How reference zvars? (since not struct of structs)
     %       PROPOSAL: zVarName as method argument
     %           CON: Less convenient than structs.
     %               PROPOSAL: Method for returning simples struct of fields with zVar values.
