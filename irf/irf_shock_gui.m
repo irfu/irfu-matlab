@@ -46,9 +46,9 @@ function [out] = irf_shock_gui(scd,varName)
 %   TODO: Fix all velocity methods
 %       Replace uicontrols with text objects
 
-%   Update 1: 
-%       By Ahmad Lalti,  on 5-2-2021. 
-%       Update descrition: 
+%   Update 1:
+%       By Ahmad Lalti,  on 5-2-2021.
+%       Update descrition:
 %       - Give the option for manually inputing the
 %         upstream and downstream parameters.
 %       - Display the magnetic field and velocity as vectors and not as
@@ -58,7 +58,7 @@ function [out] = irf_shock_gui(scd,varName)
 %       - removed correction for Vy abberation in omni data since its
 %       already done from SDC
 %       - use tlim instead of resample to cut the time interval for omni
-%       data averaging 
+%       data averaging
 
 
 
@@ -493,7 +493,7 @@ post(ceil(nt/2)+1:end,2) = fliplr(linspace(0.05,0.8,nt-ceil(nt/2)));
 
 % make the text boxes
 for k = 1:nt
-
+  
   ud.uih.cl.(par_name{k}) = uicontrol('style','text',...
     'Units', 'normalized',...
     'position',post(k,:),...
@@ -502,11 +502,11 @@ for k = 1:nt
     'HorizontalAlignment','left',...
     'string',[par_str{k},' = ']);
   ud.uih.cl.([par_name{k} 'c'])=uicontrol('Style','togglebutton',...
-      'Units','normalized',...
-      'Position',[post(k,1)-0.1 post(k,2)+0.05 0.07 0.07],...
-      'Parent',ud.uih.par.panel,...
-      'Callback','irf_shock_gui(''manual_input'')');
-
+    'Units','normalized',...
+    'Position',[post(k,1)-0.1 post(k,2)+0.05 0.07 0.07],...
+    'Parent',ud.uih.par.panel,...
+    'Callback','irf_shock_gui(''manual_input'')');
+  
 end
 
 %% Calculate panel
@@ -657,46 +657,46 @@ function [ud] = display_vals(ud) % print up/downstream values
 
 % norm of magnetic field vector
 if ~isfield(ud.uih.cl,'Bum')
-temp=round((ud.params.Bu),2);
-ud.uih.cl.Bu.String = ['Bu = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') nT'];
-clear temp
+  temp=round((ud.params.Bu),2);
+  ud.uih.cl.Bu.String = ['Bu = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') nT'];
+  clear temp
 end
 if ~isfield(ud.uih.cl,'Bud')
-temp=round((ud.params.Bd),2);
-ud.uih.cl.Bd.String = ['Bd = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') nT'];
-clear temp
+  temp=round((ud.params.Bd),2);
+  ud.uih.cl.Bd.String = ['Bd = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') nT'];
+  clear temp
 end
 % destiny
 if ~isfield(ud.uih.cl,'num')
-ud.uih.cl.nu.String = ['nu = ',num2str(round(ud.params.nu,2)),' /cc'];
+  ud.uih.cl.nu.String = ['nu = ',num2str(round(ud.params.nu,2)),' /cc'];
 end
 if ~isfield(ud.uih.cl,'ndm')
-ud.uih.cl.nd.String = ['nd = ',num2str(round(ud.params.nd,2)),' /cc'];
+  ud.uih.cl.nd.String = ['nd = ',num2str(round(ud.params.nd,2)),' /cc'];
 end
 % velocity
 if ~isfield(ud.uih.cl,'Vum')
-temp=round((ud.params.Vu));
-ud.uih.cl.Vu.String = ['Vu = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') km/s'];
-clear temp
+  temp=round((ud.params.Vu));
+  ud.uih.cl.Vu.String = ['Vu = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') km/s'];
+  clear temp
 end
 if ~isfield(ud.uih.cl,'Vdm')
-temp=round((ud.params.Vd));    
-ud.uih.cl.Vd.String = ['Vd = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') km/s'];
-clear temp
+  temp=round((ud.params.Vd));
+  ud.uih.cl.Vd.String = ['Vd = (',[num2str(temp(1)) ',' num2str(temp(2)) ',' num2str(temp(3))],') km/s'];
+  clear temp
 end
 % electron temperature
 if ~isfield(ud.uih.cl,'Teum')
-ud.uih.cl.Teu.String = ['Teu = ',num2str(round(ud.params.Teu,2)),' eV'];
+  ud.uih.cl.Teu.String = ['Teu = ',num2str(round(ud.params.Teu,2)),' eV'];
 end
 if ~isfield(ud.uih.cl,'Tedm')
-ud.uih.cl.Ted.String = ['Ted = ',num2str(round(ud.params.Ted,2)),' eV'];
+  ud.uih.cl.Ted.String = ['Ted = ',num2str(round(ud.params.Ted,2)),' eV'];
 end
 % ion temperature
 if ~isfield(ud.uih.cl,'Tium')
-ud.uih.cl.Tiu.String = ['Tiu = ',num2str(round(ud.params.Tiu,2)),' eV'];
+  ud.uih.cl.Tiu.String = ['Tiu = ',num2str(round(ud.params.Tiu,2)),' eV'];
 end
 if ~isfield(ud.uih.cl,'Tidm')
-ud.uih.cl.Tid.String = ['Tid = ',num2str(round(ud.params.Tid,2)),' eV'];
+  ud.uih.cl.Tid.String = ['Tid = ',num2str(round(ud.params.Tid,2)),' eV'];
 end
 end
 
@@ -847,7 +847,7 @@ if ~isfield(ud,'omnidata') && (ud.use_omni.B || ud.use_omni.n || ud.use_omni.V |
   tint = ud.scd.B.time([1,end])+[-60,60]*5; % set time interval +- 5 mins
   ud.omnidata = irf_get_data(tint,'bx,by,bz,n,vx,vy,vz,t','omni_min');
   % Re-correct Vy for abberation
-%   ud.omnidata(:,6) = ud.omnidata(:,7)+29.8;
+  %   ud.omnidata(:,6) = ud.omnidata(:,7)+29.8;
   % change temperature units from K to eV
   u = irf_units;
   ud.omnidata(:,9) = ud.omnidata(:,9)*u.kB/u.e;
@@ -855,32 +855,32 @@ if ~isfield(ud,'omnidata') && (ud.use_omni.B || ud.use_omni.n || ud.use_omni.V |
 end
 
 if ud.use_omni.B
-%   Bomni = nanmean(irf_resamp(ud.omnidata(:,1:4),ud.tu),1);
-%   ud.params.Bu = Bomni(2:4);
+  %   Bomni = nanmean(irf_resamp(ud.omnidata(:,1:4),ud.tu),1);
+  %   ud.params.Bu = Bomni(2:4);
   
   Bomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,2:4)).tlim(EpochUnix(ud.tu)).data,1);
   ud.params.Bu = Bomni;
 else; ud.params.Bu = ud.sc_up.Bu;
 end
 if ud.use_omni.n
-%   nomni = nanmean(irf_resamp(ud.omnidata(:,[1,5]),ud.tu),1);
-%   ud.params.nu = nomni(2);
+  %   nomni = nanmean(irf_resamp(ud.omnidata(:,[1,5]),ud.tu),1);
+  %   ud.params.nu = nomni(2);
   
   nomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,5)).tlim(EpochUnix(ud.tu)).data,1);
   ud.params.nu = nomni;
 else; ud.params.nu = ud.sc_up.nu;
 end
 if ud.use_omni.V
-%   Vomni = nanmean(irf_resamp(ud.omnidata(:,[1,6:8]),ud.tu),1);
-%   ud.params.Vu = Vomni(2:4);
+  %   Vomni = nanmean(irf_resamp(ud.omnidata(:,[1,6:8]),ud.tu),1);
+  %   ud.params.Vu = Vomni(2:4);
   
   Vomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,6:8)).tlim(EpochUnix(ud.tu)).data,1);
   ud.params.Vu = Vomni;
 else; ud.params.Vu = ud.sc_up.Vu;
 end
 if ud.use_omni.Ti
-%   Tomni = nanmean(irf_resamp(ud.omnidata(:,[1,9]),ud.tu),1);
-%   ud.params.Tiu = Tomni(2);
+  %   Tomni = nanmean(irf_resamp(ud.omnidata(:,[1,9]),ud.tu),1);
+  %   ud.params.Tiu = Tomni(2);
   
   Tomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,9)).tlim(EpochUnix(ud.tu)).data,1);
   ud.params.Tiu = Tomni;
@@ -948,36 +948,36 @@ post(ceil(nt/2)+1:end,2) = fliplr(linspace(0.05,0.8,nt-ceil(nt/2)));
 
 % make the text boxes
 for k = 1:nt
-
-   if ud.uih.cl.([par_name{k} 'c']).Value && ~isfield(ud.uih.cl,[par_name{k} 'm'])
-       ud.uih.cl.(par_name{k}).String=[par_str{k},' = '];
-       
-
-       ud.uih.cl.([par_name{k} 'm'])=uicontrol('Style','edit',...
+  
+  if ud.uih.cl.([par_name{k} 'c']).Value && ~isfield(ud.uih.cl,[par_name{k} 'm'])
+    ud.uih.cl.(par_name{k}).String=[par_str{k},' = '];
+    
+    
+    ud.uih.cl.([par_name{k} 'm'])=uicontrol('Style','edit',...
       'Units','normalized',...
       'Position',[post(k,1)+0.09 post(k,2)+0.01 0.15 0.15],...
       'Parent',ud.uih.par.panel,...
       'String',num2str(round(100*ud.params.(par_name{k}))/100),'Callback','irf_shock_gui(''calc'')');
-  
-       ud.uih.cl.([par_name{k} 't2'])=uicontrol('Style','text',...
+    
+    ud.uih.cl.([par_name{k} 't2'])=uicontrol('Style','text',...
       'Units','normalized',...
       'Position',[post(k,1)+0.24 post(k,2)+0.02 0.15 0.1],...
       'Parent',ud.uih.par.panel,...
       'String',Uns{k},'FontSize',12,'HorizontalAlignment','left');
+    
+  elseif ud.uih.cl.([par_name{k} 'c']).Value && isfield(ud.uih.cl,[par_name{k} 'm'])
+    ud.params.(par_name{k}) = cell2mat(textscan(ud.uih.cl.([par_name{k} 'm']).String,'%f'))';
+    
+  elseif isfield(ud.uih.cl,[par_name{k} 'm'])
+    delete(ud.uih.cl.([par_name{k} 'm']));
+    ud.uih.cl = rmfield(ud.uih.cl, [par_name{k} 'm']);
+    delete(ud.uih.cl.([par_name{k} 't2']));
+    ud.uih.cl = rmfield(ud.uih.cl, [par_name{k} 't2']);
+    ud = get_avg_field(ud,ud.scd,{'u'});
+    ud = set_omni(ud);
+    ud = display_vals(ud);
+  end
   
-   elseif ud.uih.cl.([par_name{k} 'c']).Value && isfield(ud.uih.cl,[par_name{k} 'm'])
-       ud.params.(par_name{k}) = cell2mat(textscan(ud.uih.cl.([par_name{k} 'm']).String,'%f'))';  
-      
-   elseif isfield(ud.uih.cl,[par_name{k} 'm'])
-       delete(ud.uih.cl.([par_name{k} 'm']));
-       ud.uih.cl = rmfield(ud.uih.cl, [par_name{k} 'm']);
-       delete(ud.uih.cl.([par_name{k} 't2']));
-       ud.uih.cl = rmfield(ud.uih.cl, [par_name{k} 't2']);
-       ud = get_avg_field(ud,ud.scd,{'u'});
-       ud = set_omni(ud);
-       ud = display_vals(ud);
-   end
-
 end
 
 

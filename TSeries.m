@@ -1462,7 +1462,7 @@ classdef TSeries
       %
       % Where MODE can be:
       %        'and', 0 (default)
-      %        'xor', 1 
+      %        'xor', 1
       %
       % Ts1 is part of the Ts that is within interval
       % LIM.START <= X(:,1) < LIM.STOP for "AND" mode

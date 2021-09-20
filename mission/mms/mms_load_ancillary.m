@@ -70,20 +70,20 @@ end
 % Get number of last header line using unix commands grep, tail and cut.
 if ispc
 else
-    if ismac, cutArgs = '-d'':'' -f2'; else, cutArgs = '-d: -f1'; end
-    nTries = 1;
+  if ismac, cutArgs = '-d'':'' -f2'; else, cutArgs = '-d: -f1'; end
+  nTries = 1;
+  [status, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
+    '" | tail -n1 | cut ' cutArgs]);
+  nHeaders = str2double(nHeaders);
+  while (status || ~isa(nHeaders, 'double') || nHeaders<=0) && nTries<=5
+    % For some reason it failed, log it and try again.
+    irf.log('warning', ['Failed with "grep" on ', fullFilename,'. Trying again.']);
+    nTries = nTries+1;
     [status, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
-        '" | tail -n1 | cut ' cutArgs]);
+      '" | tail -n1 | cut ' cutArgs]);
+    irf.log('warning', ['This time around "grep" got nHeaders:', nHeaders,'.']);
     nHeaders = str2double(nHeaders);
-    while (status || ~isa(nHeaders, 'double') || nHeaders<=0) && nTries<=5
-        % For some reason it failed, log it and try again.
-        irf.log('warning', ['Failed with "grep" on ', fullFilename,'. Trying again.']);
-        nTries = nTries+1;
-        [status, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
-            '" | tail -n1 | cut ' cutArgs]);
-        irf.log('warning', ['This time around "grep" got nHeaders:', nHeaders,'.']);
-        nHeaders = str2double(nHeaders);
-    end
+  end
 end
 
 fileID = fopen(fullFilename, 'r');

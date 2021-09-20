@@ -138,7 +138,7 @@ if isgraphics(hp)
     set(get(hMarks,'LegendInformation'),'IconDisplayStyle','off')
   end
 end
-    
+
 
 
 if nargout > 0

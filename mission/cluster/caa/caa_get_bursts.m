@@ -390,7 +390,7 @@ for i=1:varsbsize
       end
   end
   %%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
-
+  
   data=data8ordfc(:,[1 i+1]);
   if length(probe)>1
     % Invert the sign to match the HX data

@@ -124,18 +124,18 @@ vals=-100:20:100;
 [newTS,colors]=irf_plot_linecolor_2TS(Bscmfacf.x.tlim(Tshort),colorTS,vals);
 hold(h(1),'on');
 for ii=1:length(newTS)
-    irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',5,'linewidth',1)
-    if ii<length(newTS)
-        % This part is just to fix the colorbar labels which can probably
-        % be done in a better way.
-        charvec{ii+1,1}=num2str(vals(ii));
-    else
-        charvec{ii+1}=[];
-    end
+  irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',5,'linewidth',1)
+  if ii<length(newTS)
+    % This part is just to fix the colorbar labels which can probably
+    % be done in a better way.
+    charvec{ii+1,1}=num2str(vals(ii));
+  else
+    charvec{ii+1}=[];
+  end
 end
 for itest=3:2:length(charvec)-2
-    
-    charvec{itest}='';
+  
+  charvec{itest}='';
 end
 ax=h(1);
 colormap(ax,colors)
@@ -169,16 +169,16 @@ vals=10:1:25;
 [newTS,colors]=irf_plot_linecolor_2TS(Vi,colorTS,vals);
 hold(h(1),'on');
 for ii=1:length(newTS)
-    irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',6,'linewidth',1)
-    if ii<length(newTS)
-        charvec{ii+1,1}=num2str(vals(ii));
-    else
-        charvec{ii+1}=[];
-    end
+  irf_plot(h(1),newTS{ii},'o','color',colors(ii,:),'MarkerFaceColor',colors(ii,:),'MarkerSize',6,'linewidth',1)
+  if ii<length(newTS)
+    charvec{ii+1,1}=num2str(vals(ii));
+  else
+    charvec{ii+1}=[];
+  end
 end
 for itest=3:2:length(charvec)-2
-    
-    charvec{itest}='';
+  
+  charvec{itest}='';
 end
 ax=h(1);
 colormap(ax,colors)

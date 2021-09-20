@@ -85,7 +85,7 @@ while pos-PL >= 1
       idx_add = spike + ((-OFF_M+1):1:(OFF_P-1));
     end
     if size(idx_add,1)>1
-        idx_add = idx_add(:)';
+      idx_add = idx_add(:)';
     end
     idx = [idx idx_add]; %#ok<AGROW>
     nSpike = nSpike + 1;
