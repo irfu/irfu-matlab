@@ -289,6 +289,12 @@ classdef PDist < TSeries
         eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
         if sizeField(1) == TsTmp.length
           old_ancillary = eval(['obj.ancillary.' nameFields{iField}]);
+          
+          % temporary fix for upsampling any non single or double data (esteptable!)
+          if not(any([isa(old_ancillary,'double'),isa(old_ancillary,'single')])) 
+            old_ancillary = single(old_ancillary); 
+          end
+          
           new_ancillary = irf_resamp([tData old_ancillary], newTimeTmp, varargin{:});
           eval(['obj.ancillary.' nameFields{iField} ' = new_ancillary(:,2:end);'])
         end
