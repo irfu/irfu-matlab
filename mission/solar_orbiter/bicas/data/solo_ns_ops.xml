@@ -20,7 +20,7 @@
             2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2021-09-10, Erik P G Johansson: Should contain all thruster firings for time period 2020-02-12 to 2021-08-31 (inclusive). Only manually identified thuster firings.
+            2021-09-21, Erik P G Johansson: Should contain all thruster firings for time period 2020-02-12 to 2021-09-11 (inclusive). Only manually identified thuster firings.
         </note>
     </notesTable>
 
@@ -941,7 +941,25 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
-        
+        <event>
+            <startTimeUtc>2021-09-02T22:04:17</startTimeUtc>
+            <stopTimeUtc> 2021-09-02T22:14:35</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-09-06T01:04:33</startTimeUtc>
+            <stopTimeUtc> 2021-09-06T01:14:44</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2021-09-09T21:59:35</startTimeUtc>
+            <stopTimeUtc> 2021-09-09T22:10:43</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+
     </eventsTable>
 
 </main>
