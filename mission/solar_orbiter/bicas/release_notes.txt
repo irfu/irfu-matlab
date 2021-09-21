@@ -70,4 +70,13 @@ Version 5.0.0
 -------------
 Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26.
 Better output CDF standards compliance.
-Using new master CDFs.
+Using new L2 master CDFs.
+
+
+Version 6.0.0
+-------------
+Non-Standard Operations (NSO) table thruster firings updated for until 2021-09-11.
+Using new L2 master CDFs.
+Sets CDF zVariable attributes SCALEMIN & SCALEMAX using zVar min & max values.
+Disabled excessive log messages for processing L1/L1R-->L2 LFR SWF representing sequences of CDF records.
+Permits HK and science input datasets to not overlap at all in order to salvage some LFR DC data. Previously only allowed for partial datasets (otherwise error).

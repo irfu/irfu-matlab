@@ -6,7 +6,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-27, with moved from bicas.proc.utils.
 %
-classdef utils   % < handle
+classdef utils    
     % PROPOSAL: Automatic test code.
 
 
@@ -123,7 +123,7 @@ classdef utils   % < handle
         
         
         
-        % Assert that variable is an "zVar Epoch-like" variable.
+        % Assert that variable is a "zVar Epoch-like" variable.
         function assert_zv_Epoch(zvEpoch)
             % NOTE: No check for monotonically increasing timestamps. Done in
             % other locations. Universally? Slow?
@@ -141,6 +141,24 @@ classdef utils   % < handle
             % Use?!!! Too processing heavy?!
             %validateattributes(Epoch, {'numeric'}, {'increasing'})
         end
+        
+        
+        
+        % Assert that variable is a "zVar ACQUISITION_TIME-like" variable.
+        function assert_zv_ACQUISITION_TIME(ACQUISITION_TIME)
+        
+            EMID = 'BICAS:Assertion:IllegalArgument';
+        
+            assert(isa(  ACQUISITION_TIME, 'uint32'), ...
+                EMID, 'ACQUISITION_TIME is not uint32.')
+            EJ_library.assert.sizes(ACQUISITION_TIME, [NaN, 2])
+            assert(all(  ACQUISITION_TIME(:, 1) >= 0), ...
+                EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
+            % IMPLEMENTATION NOTE: Does not need to check for negative values
+            % due to uint32.
+            assert(all(  ACQUISITION_TIME(:, 2) < 65536), ...
+                EMID, 'ACQUISITION_TIME subseconds out of range.')
+        end
 
         
         
@@ -155,7 +173,9 @@ classdef utils   % < handle
         
         
         
-        function ColumnStrs = get_array_statistics_strings(varName, varValue, varType, SETTINGS)
+        function ColumnStrs = get_array_statistics_strings(...
+                varName, varValue, varType, SETTINGS)
+        %
         % Derive statistics on the contents of a numeric variable (any
         % dimensionality) and return it so that it can easily be logged, e.g. in
         % a table:
@@ -278,5 +298,7 @@ classdef utils   % < handle
 
 
     end    % methods(Static, Access=private)
+
+
 
 end

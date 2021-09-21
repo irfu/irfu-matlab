@@ -184,6 +184,7 @@ end
 %
 % IMPLEMENTATION NOTE: Implemented as separate function to insulate the use of
 % variables.
+%
 function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
         cliArgumentsList, iCliArg, OptionsConfigArray, OptionValuesMap)
     

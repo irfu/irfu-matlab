@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-25
 %
-classdef tds   % < handle
+classdef tds    
     % PROPOSAL: Automatic test code.
 
 
@@ -76,6 +76,7 @@ classdef tds   % < handle
 
                 if C.isTdsRswf
                     switch(settingValue)
+                        
                         case 'CORRECT'
                             %===================================================
                             % IMPLEMENTATION NOTE: Has observed test file
@@ -139,6 +140,7 @@ classdef tds   % < handle
                     [settingValue, settingKey] = SETTINGS.get_fv(...
                         'PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
                     switch(settingValue)
+                        
                         case 'ROUND'
                             bicas.default_anomaly_handling(...
                                 L, settingValue, settingKey, 'other', ...
@@ -176,7 +178,7 @@ classdef tds   % < handle
         % snapshots. Need to use NaN/fill value.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            assert(isa(InSci, 'bicas.InputDataset'))
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
@@ -416,7 +418,6 @@ classdef tds   % < handle
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
             % NOTE: Not really necessary since the list of zVars will be checked
             % against the master CDF?
-            % NOTE: Includes zVar "BW" (LFR L2 only).
             EJ_library.assert.struct(OutSci.Zv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...

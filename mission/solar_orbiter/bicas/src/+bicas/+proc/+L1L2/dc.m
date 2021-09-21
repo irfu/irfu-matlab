@@ -2,14 +2,22 @@
 % Collection of processing function for demultiplexing and calibrating (DC), and
 % related code (except bicas.proc.L1L2.demuxer).
 %
+% DC = Demux (demultiplex) & Calibrate
+%
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-25
 %
-classdef dc   % < handle
+classdef dc
     % PROPOSAL: Automatic test code.
     % PROPOSAL: Include bicas.proc.L1L2.demuxer.
     %   CON: Too much code.
+    %
+    % PROPOSAL:   process_calibrate_demux()
+    %           & calibrate_demux_voltages()
+    %           should only accept the needed zVars and variables.
+    %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
+    %         from struct.
     
     %#######################
     %#######################
@@ -59,7 +67,7 @@ classdef dc   % < handle
             currentTm      = bicas.proc.L1L2.cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
-            iCalibLZv      = Cal.get_calibration_time_L(PreDc.Zv.Epoch);
+            iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
             [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
                 ['Calibrating currents -', ...
@@ -179,8 +187,8 @@ classdef dc   % < handle
                 'acV23', tempVoltageArray);
 
             dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
-            iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
-            iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
+            iCalibLZv    = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
+            iCalibHZv    = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
 
 
 
@@ -188,11 +196,15 @@ classdef dc   % < handle
             % (1) Find continuous subsequences of records with identical
             %     settings.
             % (2) Process data separately for each such sequence.
+            % ----------------------------------------------------------
             % NOTE: Just finding continuous subsequences can take a significant
             % amount of time.
             % NOTE: Empirically, this is not useful for real LFR SWF datasets
             % where the LFR sampling frequency changes in every record, meaning
             % that the subsequences are all 1 record long.
+            % NOTE: Rx (the relevant value from R0, R1, R2) is not included
+            %       since it is not needed, since data has already been
+            %       separated into separate DC/AC variables.
             %===================================================================
             [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(...
                 PreDc.Zv.MUX_SET, ...
@@ -205,7 +217,7 @@ classdef dc   % < handle
                 PreDc.Zv.useFillValues, ...
                 PreDc.Zv.CALIBRATION_TABLE_INDEX);
             L.logf('info', ...
-                ['Calibrating voltages - ', ...
+                ['Calibrating voltages -', ...
                 ' One sequence of records with identical settings at a time.'])
 
             for iSubseq = 1:nSubseq
@@ -263,7 +275,7 @@ classdef dc   % < handle
 
 
                 % Extract subsequence of DATA records to "demux".
-                ssSamplesTm                = bicas.proc.utils.select_row_range_from_cell_comps(...
+                ssSamplesTm = bicas.proc.utils.select_row_range_from_cell_comps(...
                     PreDc.Zv.samplesCaTm, iFirst, iLast);
                 % NOTE: "zVariable" (i.e. first index=record) for only the
                 % current subsequence.
@@ -374,10 +386,11 @@ classdef dc   % < handle
 
         function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
                 sciEpoch, InCur, SETTINGS, L)
+            
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS
-            EJ_library.assert.struct(InCur, {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            assert(isa(InCur, 'bicas.InputDataset'))
 
 
 

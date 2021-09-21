@@ -5,9 +5,12 @@
 % Print log message to MATLAB's stdout in standardized way.
 %
 % NOTE: This class provides some functionality that is meant to be useful when
-% calling BICAS code from outside BICAS in order to control the logging.
+%       calling BICAS code from outside BICAS in order to control the logging.
 % Ex: Disable logging.
 % Ex: Log to file from within MATLAB.
+%
+% NOTE: If logging to file from MATLAB, then one can not (in principle) log
+%          MATLAB's own startup messages.
 %
 %
 % RATIONALE: INSTANTIATED CLASS INSTEAD OF LOGGING FUNCTIONS
@@ -28,10 +31,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-23
 %
-classdef logger < handle
+classdef Logger < handle
 %
-% PROBLEM: If logging to file from MATLAB, then can not (in principle) log
-%          MATLAB's own startup messages.
 % PROBLEM: If logging to file from MATLAB, then can not log errors from not
 %          being able to parse the CLI arguments, since log file is one of them.
 %   CON: Can use "hack" to catch log file before doing the actual parsing.
@@ -44,11 +45,6 @@ classdef logger < handle
 %
 % PROPOSAL: EJ_library.assert.trailing_LF
 %   PROPOSAL: Simultaneously assert not trailing CR+LF.
-%
-% PROPOSAL: Initialization options
-%   No logging.
-%   Log to file, but specify it after instantiation.
-%   Log to stdout.
 %
 % TODO-DEC: Should special, extra logging functionality be in this class or outside of it?
 %   Ex: bicas.proc.L1L2.cal_utils.log_TF_function_handle
@@ -89,8 +85,9 @@ classdef logger < handle
         % ARGUMENTS
         % =========
         % stdoutOption
-        %       String constant.
+        %       String constant. Whether and how to log to stdout.
         %           'none'
+        %               Do not log to stdout.
         %           'human-readable'
         %               Log to stdout as is most convenient for a human reader.
         %           'bash wrapper'
@@ -100,7 +97,7 @@ classdef logger < handle
         %       NOTE: Log messages are stored in a buffer until the log file is
         %       specified later, using the designated method.
         %
-        function obj = logger(stdoutOption, logFileEnabled)
+        function obj = Logger(stdoutOption, logFileEnabled)
             % PROPOSAL: Separate arguments for stdout and log file behaviour
             %   CON: Want short call for no logging.
             
@@ -108,9 +105,8 @@ classdef logger < handle
             % IMPLEMENTATION NOTE: Assertion for number of arguments, since this
             % used to be variable.
             assert(nargin == 2, 'Not two arguments.')
-            assert(isscalar(logFileEnabled))
-            assert(islogical(logFileEnabled) || isnumeric(logFileEnabled), ...
-                'Illegal argument logFileEnabled.')
+            assert(isscalar(logFileEnabled) && islogical(logFileEnabled), ...
+                'Argument logFileEnabled is not a scalar logical.')
             logFileEnabled = logical(logFileEnabled);
             
             switch(stdoutOption)
@@ -156,7 +152,8 @@ classdef logger < handle
                 ['Trying to specify log file without having enabled', ...
                 ' log file in constructor.'])
             assert(isempty(obj.logFileId), ...
-                'Trying to specify log file twice.')
+                ['Trying to specify log file a second time by calling', ...
+                ' this function a second time.'])
 
             if ~isempty(logFile)
                 % CASE: Set log file.
@@ -169,7 +166,8 @@ classdef logger < handle
                 if fileId == -1
                     error(...
                         'BICAS:CanNotOpenFile', ...
-                        'Can not open log file "%s" for writing. fopen error message: "%s"', ...
+                        ['Can not open log file "%s" for writing.', ...
+                        ' fopen error message: "%s"'], ...
                         logFile, fopenErrorMsg)
                     % NOTE: Does not alter the object properties.
                 end
@@ -188,7 +186,7 @@ classdef logger < handle
                 % there should/could be one).
                 
                 obj.logFileEnabled = false;
-                obj.logFileBuffer = {};
+                obj.logFileBuffer  = {};
             end
         end
 
@@ -288,7 +286,7 @@ classdef logger < handle
 
 
 
-        % Wrapper around bicas.logger.log. Prints with pattern + parameters.
+        % Wrapper around bicas.Logger.log. Prints with pattern + parameters.
         %
         %
         % ARGUMENTS

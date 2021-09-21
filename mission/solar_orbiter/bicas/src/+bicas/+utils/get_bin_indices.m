@@ -10,12 +10,12 @@
 % be used to collect zVar data for the respective bins.
 %
 %
-% RATIONALE, SPEED CONSIDERATIONS
-% ===============================
-% The original version of this code (before it was a separate function; roughly
-% equivalent to internal implementation_RAW()) constituted the bulk of
-% processing time when constructing downsampled datasets. Optimizing this
-% function for speed is therefore important.
+% SPEED CONSIDERATIONS, IMPLEMENTATION NOTES
+% ==========================================
+% The original version of this code constituted the bulk of processing time when
+% constructing downsampled datasets (before it was a separate function; roughly
+% equivalent to internal implementation_RAW()). Optimizing this function for
+% speed is therefore important.
 % --
 % NOTE: Since optimizing this function for speed is important, it is also
 % important to be able conveniently investigate/experiment/debug it and design
@@ -29,8 +29,8 @@
 %       1D numeric array. Sorted increasing (non-monotonically).
 % bb
 %       1D numeric array. Sorted increasing (non-monotonically).
-%       Bin boundaries. There are no bins below or above the highest boundaries
-%       (to infities).
+%       Bin boundaries (BB). There are no bins below or above the highest
+%       boundaries (to infinities).
 %       NOTE: Smaller boundary of a bin is inclusive, higher boundary is
 %       exclusive.
 %       NOTE: Can have zero-size bins, but no data will be assigned to those
@@ -101,7 +101,7 @@ function iInBinCa = get_bin_indices(t, bb, nBbThreshold)
     % when merging results from recursive calls.
     assert(issorted(t,  'ascend'), 'Argument t is not sorted and increasing.')
     % Going below threshold leads to infinite recursion.
-    assert(nBbThreshold >= 3)
+    assert(isscalar(nBbThreshold) && (nBbThreshold >= 3))
     
     
     
@@ -118,7 +118,7 @@ end
 % Faster recursive implementation.
 %
 % The basic implementation (implementation_RAW()) suffers (theoretically) from
-% scaling time~nData*nBins. This implementation divides the task into two
+% scaling time ~ nData*nBins. This implementation divides the task into two
 % simpler tasks by dividing the bins and data into two groups, thereby
 % disproportionally reducing the processing. Exact number of recursions is
 % arbitrary.

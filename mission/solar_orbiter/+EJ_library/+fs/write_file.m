@@ -1,11 +1,12 @@
 %
-% Write (create/overwrite; open & close) an entire file from a 1D array of bytes.
-% Cf read_file.
+% Write (create/overwrite; open & close) an entire file from a 1D array of
+% bytes. Cf read_file.
 %
 %
 % ARGUMENTS
 % =========
-% byteArray : uint8 1D array.
+% byteArray
+%       uint8 1D array.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden

@@ -29,7 +29,8 @@ function y2 = interpolate_nearest(xMargin, x1, y1, x2)
     % NOTE: In principle a weakness that y2 is always a double. Should ideally
     % be same MATLAB class as y1.
     
-    assert(xMargin >= 0)
+    assert(isscalar(xMargin) && (xMargin >= 0))
+    
     
     
     nX1 = numel(x1);

@@ -1,20 +1,12 @@
 %
 % Function that reads one dataset CDF file. Read elementary input process data
-% from a CDF file. Copies all zVariables into fields of a regular structure.
+% from a CDF file.
 %
 %
 % RETURN VALUES
 % =============
-% Data
-%       Struct with fields
-%       .Zv
-%           One field per zVariable (using the same name).
-%           The content of every such field equals the content of the corresponding
-%           zVar.
-%       .ZvFv
-%           zVar fill values. One field per zVariable (using the same name).
-%       .Ga
-%           Global attributes. Struct returned from "dataobj".
+% Dataset
+%       Instance of bicas.InputDataset
 %
 %
 % NOTE: Fill & pad values are replaced with NaN for float zVars.
@@ -193,10 +185,8 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
 
 
 
-    Dataset = struct(...
-        'Zv',   Zvs, ...
-        'ZvFv', ZvFvs, ...
-        'Ga',   GlobalAttributes);
+    % Create return value.
+    Dataset = bicas.InputDataset(Zvs, ZvFvs, GlobalAttributes, filePath);
     
     
     

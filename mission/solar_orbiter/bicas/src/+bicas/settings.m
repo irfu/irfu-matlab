@@ -39,7 +39,9 @@
 %
 % ~BUG POTENTIAL: Support for 1D cell arrays may not be completely implemented.
 %   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1).
-%         Inconvenient.
+%         Inconvenient when working with values from CLI arguments and log files
+%         since less convenient to write a 0x1 or 1x0 literal?!
+%       Ex: Have to write zeros(0,1) instead of []?
 % 
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -58,6 +60,16 @@ classdef settings < handle
 %       PROPOSAL: MATLAB_COMMAND
 %           CON: Is not really needed by BICAS.
 %   PROPOSAL: Legal alternatives.
+%       PRO: Rapid feedback when using bad value. Does not require triggering
+%            code.
+%       PRO: Clear in code (bicas.create_default_SETTINGS()).
+%       CON: Might not be consistent with how the settings values are actually used in the code.
+%            Duplicates that decision.
+%       PROPOSAL: Submit function (value-->boolean) that specifies what is legal
+%                 and not. Can have set of pre-defined functions.
+%           TODO-NI: How relates to how values are converted to display strings?
+%           TODO-NI: How relates to how values are converted from strings (config file, CLI argument)?
+%           
 %       PROPOSAL: String constants.
 %       PROPOSAL: Value type (MATLAB class)
 %           Ex: Logical
@@ -82,8 +94,10 @@ classdef settings < handle
 % PROPOSAL: Enable BICAS to log where a key is set, and how many times. To follow how default value is overridden, and
 %           how it is overriden twice in the same interface (in the config file or CLI arguments)
 %   Ex: Config file specifies a new "default" value which is then overridden further below.
-%   PROBLEM: interpret_config_file and interpret_CLI_args must then be aware of setting a key multiple times, and return
-%   that information.
+%   PROBLEM: bicas.interpret_config_file() and bicas.interpret_CLI_args() must
+%            then be able to return info on a setting being set multiple times,
+%            and return that information. As of now (2021-08-19) they only
+%            return the final setting.
 %       PROPOSAL: Submit SETTINGS to those functions.
 %           CON: Automatic testing becomes harder. Harder to test returned value. Harder to submit varied SETTINGS.
 %       PROPOSAL: Return KVPL.
@@ -92,6 +106,10 @@ classdef settings < handle
 % PROPOSAL: Make it possible to load multiple config files. Subsequent log files override each other.
 %   TODO-DEC: Should the internal order of --set and --config arguments matter? Should a --config override a previous
 %                  --set?
+%
+% PROPOSAL: Automatic tests, in particular for different settings values data types.
+%
+
 
 
     properties(Access=private)
@@ -141,6 +159,10 @@ classdef settings < handle
 
 
         % Define a NEW key and set the corresponding value.
+        %
+        % NOTE: Key values in the form of MATLAB values, i.e. NOT string that
+        % need to be parsed. cf .override_values_from_strings().
+        %
         function define_setting(obj, key, defaultValue)
             % ASSERTIONS
             if obj.defineDisabledForever
@@ -152,16 +174,7 @@ classdef settings < handle
                 error('BICAS:Assertion:ConfigurationBug', ...
                     'Trying to define pre-existing settings key.')
             end
-            
-            % ASSERTIONS
-            if ischar(defaultValue)
-                % Do nothing
-            elseif isnumeric(defaultValue) || iscell(defaultValue)
-                EJ_library.assert.vector(defaultValue)
-            else
-                error('BICAS:Assertion:IllegalArgument', ...
-                    'Argument defaultValue is illegal.')
-            end
+            bicas.settings.assert_legal_value(defaultValue)
             
             
             
@@ -176,9 +189,13 @@ classdef settings < handle
 
 
         % Set a PRE-EXISTING key value (i.e. override the default at the very
-        % least).
+        % least) using MATLAB values.
+        %
         % NOTE: Does not check if numeric vectors have the same size as old
         % value.
+        % IMPLEMENTATION NOTE: BICAS does not need this method to be public, but
+        % it is useful for other code (manual test code) to be able to override
+        % settings using MATLAB values.
         function override_value(obj, key, newValue, valueSource)
             
             % ASSERTIONS
@@ -194,6 +211,7 @@ classdef settings < handle
             if ~strcmp(...
                     bicas.settings.get_value_type(newValue), ...
                     obj.get_setting_value_type(key))
+                
                 error('BICAS:Assertion:IllegalArgument', ...
                     ['New settings value does not match the type of the', ...
                     ' old settings value for key "%s".'], ...
@@ -215,7 +233,7 @@ classdef settings < handle
         % settings with values from CLI arguments and/or config file (which by
         % their nature have string values).
         %
-        % Essentially a wrapper around .override_value().
+        % NOTE: Method is essentially a for loop around .override_value().
         %
         % NOTE: Indirectly specifies the syntax for string values which
         % represent non-string-valued settings.
@@ -246,31 +264,11 @@ classdef settings < handle
                 key              = keysList{iModifSetting};
                 newValueAsString = ModifiedSettingsMap(key);
 
-                % ASSERTION
-                if ~isa(newValueAsString, 'char')
-                    error('BICAS:Assertion:IllegalArgument', ...
-                        'Map value is not a string.')
-                end
-
                 %==================================================
                 % Convert string value to appropriate MATLAB class.
                 %==================================================
-                switch(obj.get_setting_value_type(key))
-                    
-                    case 'numeric'
-                        newValue = textscan(newValueAsString, '%f', ...
-                            'Delimiter', ',');
-                        newValue = newValue{1}';    % Row vector.
-                        
-                    case 'string'
-                        newValue = newValueAsString;
-                        
-                    otherwise
-                        error('BICAS:Assertion:ConfigurationBug', ...
-                            ['Can not handle the MATLAB class=%s of', ...
-                            ' internal setting "%s".'], ...
-                            class(oldValue), key)
-                end
+                newValue = bicas.settings.convert_str_to_value(...
+                    obj.get_setting_value_type(key), newValueAsString);
 
                 % Overwrite old setting.
                 obj.override_value(key, newValue, valueSource);
@@ -331,7 +329,7 @@ classdef settings < handle
             % ASSERTIONS
             if ~obj.readOnlyForever
                 error('BICAS:Assertion', ...
-                    ['Not allowed to call this method for non-read-only', ...
+                    ['Not allowed to call this method for a non-read-only', ...
                     ' settings object.'])
             end
             if ~obj.DataMap.isKey(key)
@@ -392,9 +390,72 @@ classdef settings < handle
         
         
         
+        % Defines what is a legal value.
+        function assert_legal_value(value)
+            if ischar(value)
+                
+                % Do nothing
+                EJ_library.assert.castring(value)
+                
+            elseif isnumeric(value) ...
+                    || iscell(value) ...
+                    || islogical(value)
+                
+                EJ_library.assert.vector(value)
+                
+            else
+                
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'Argument "value" is illegal.')
+            end
+        end
+        
+        
+        
+        function value = convert_str_to_value(settingValueType, valueAsString)
+            % ASSERTION
+            if ~isa(valueAsString, 'char')
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'Map value is not a string.')
+            end
+
+            switch(settingValueType)
+
+                case 'numeric'
+                    value = textscan(valueAsString, '%f', ...
+                        'Delimiter', ',');
+                    value = value{1}';    % Row vector.
+
+                case 'logical'
+                    if strcmpi(valueAsString, 'true')
+                        value = true;
+                    elseif strcmpi(valueAsString, 'false')
+                        value = false;
+                    else
+                        error('BICAS:Assertion:IllegalArgument', ...
+                            'Can not parse supposed logical settings value "%s".', ...
+                            valueAsString)
+                    end
+
+                case 'string'
+                    value = valueAsString;
+
+                otherwise
+                    error('BICAS:Assertion:IllegalArgument', ...
+                        ['Can not interpret argument settingValueType="%s"'], ...
+                        valueAsString)
+            end
+            
+            bicas.settings.assert_legal_value(value)
+        end
+        
+        
+        
         function valueType = get_value_type(value)
             if isnumeric(value)
                 valueType = 'numeric';
+            elseif islogical(value)
+                valueType = 'logical';
             elseif ischar(value)
                 valueType = 'string';
             else
@@ -405,6 +466,6 @@ classdef settings < handle
         
         
         
-    end
+    end    % methods(Access=private, Static)
     
 end

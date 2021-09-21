@@ -35,9 +35,7 @@ function SETTINGS = create_default_SETTINGS()
 %                                                            Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
 %
-% PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-%
-% PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
+% PROPOSAL: Setting keys should use cased version of zVars and glob.attrs..
 %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
 %
 % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
@@ -53,6 +51,8 @@ function SETTINGS = create_default_SETTINGS()
 %   NOTE: Must be done AFTER all settings have been set.
 %   PROPOSAL: Do every time settings are set, i.e. for default values,
 %       config file values, CLI argument values.
+%
+%
 %
 % =========================
 % BOGIQ: SETTING KEY NAMING
@@ -215,12 +215,6 @@ function SETTINGS = create_default_SETTINGS()
 
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
 
-    % For testing, when HK and SCI time are completely different and do not
-    % overlap (though HK time still has to cover a larger interval than SCI).
-    % Adds/subtracts HK time so that the first HK timestamp equals the first SCI
-    % timestamp.
-    S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',          0)
-
 
 
     %############################################
@@ -240,12 +234,6 @@ function SETTINGS = create_default_SETTINGS()
     % code that calls BICAS many times (batch processing) and when dataset
     % content is unimportant since it speeds up BICAS.
     S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
-
-    % There should not be any glob.attr. "Calibration_version"?
-    % NOTE: Not to be confused with CALIBRATION_VERSION (capital letters) =
-    % "Version of the calibration table" (not yet set. /2021-02-16)
-%     S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
-%         '1.1; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Calibrates currents.');
 
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
@@ -313,7 +301,11 @@ function SETTINGS = create_default_SETTINGS()
     % effort.
     S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
 
-    S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'ERROR')      % WARNING, ERROR
+    % How to react to HK not overlapping with SCI.
+    % NOTE: Switch is shared for LFR & TDS, but WARNING only(?) makes sense for
+    % LFR, since some data can be salvaged in the event of non-overlap for LFR
+    % (using LFR mux mode), but not for TDS.
+    S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'WARNING')    % WARNING, ERROR
     % NOTE: "WARNING": Will lead to using nearest interpolation.
     S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
     S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'WARNING')    % WARNING, ERROR
@@ -338,21 +330,23 @@ function SETTINGS = create_default_SETTINGS()
     %============================================================================
     % Where to obtain the mux mode
     % ----------------------------
+    %
     % BIAS HK data
     % ------------
     % Contains mux mode using its own Epoch (typically ~30 s time resolution?),
     % which means that ~interpolation to SCI data is necessary, which means that
-    % the effective mux mode value can briefly be wrong. BIAS HK may also
-    % potentially not cover the same time range as SCI data at all, and then the
-    % mux mode can be really wrong (e.g. when using different versions).
+    % the effective mux mode value can briefly be wrong.
+    % NOTE: BIAS HK may potentially NOT cover the same time range as SCI data at
+    % all, and then the mux mode can be really wrong (e.g. when using different
+    % versions).
     %
     % LFR SCI data (L1/L1R)
     % ---------------------
     % Contains a zVar for mux mode using the same Epoch as the data.
-    %
+    % NOTE: This mux mode may be available when the BIAS HK mux mode is not.
     % NOTE: The relevant TDS datasets do not contain mux mode.
     %============================================================================
-    S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
+    S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI, BIAS_HK_LFR_SCI
 
 
 
@@ -510,18 +504,6 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    %======================================================================
-    % EXPERIMENTAL: LFR sampling frequency-dependent offsets.
-    %
-    % Values obtained from manually fitting F0,F1,F2 (not F3) snapshots in
-    % ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E_59e82ff_CNE_V02.cdf.
-    % NOTE: Values are relative as the absolute level is not known.
-    % NOTE: Might be that LFR offsets also depend on BLTS.
-    % NOTE: Has not set any value for F3.
-    %======================================================================
-    %S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
-    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
-
     %============================================================================
     % Calibration constants for the "scalar" calibration mode
     % -------------------------------------------------------
@@ -589,7 +571,7 @@ function SETTINGS = create_default_SETTINGS()
     % YK 2020-11-02: Detrend AC data, but do not add linear fit back.
     %===========================================================================
     S.define_setting('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', 1)
-    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    1)
+    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    true)
     S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
 
 
@@ -615,8 +597,8 @@ function SETTINGS = create_default_SETTINGS()
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
     % corresponds to interface volt.
-    % NOTE: This useful for separately using bicas.proc.L1L2.cal for analyzing BIAS
-    % standalone calibration tables (BSACT).
+    % NOTE: This useful for separately using bicas.proc.L1L2.cal for analyzing
+    % BIAS standalone calibration tables (BSACT).
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
 
 

@@ -20,10 +20,10 @@
 % The function/algorithm uses the following:
 %   y1(t)     ~ e^(i*omega*t)                # Exponent sign convention used by
 %                                            # MATLAB's fft & ifft.
-%   tf(omega) ~ e^(i*omega*(-tau))           # Transfer function supplied to
+%   tf(omega) ~ e^(i*omega*(-tau(omega)))    # Transfer function supplied to
 %                                            # this function.
 %   y2(t)     ~ e^(i*omega*t) * tf(omega)
-%             = e^(i*omega*(t-tau))
+%             = e^(i*omega*(t-tau(omega)))
 % (Weighted summing/integration over exponentials is implicit.) Therefore, a TF
 % component with a positive tau represents a positive phase delay of tau for
 % that frequency, i.e.
@@ -128,7 +128,8 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 %   CON/NOTE: Might not be compatible with future functionality (Hann Windows etc).
 %       CON: Why? Any such functionality should be easier with a mathematically "pure" function.
 %
-% PROPOSAL: If it is slow to call the function handle for transfer function tf, permit caller to submit table with implicit frequencies.
+% PROPOSAL: If it is slow to call the function handle for transfer function tf,
+%           permit caller to submit table with implicit frequencies.
 %   PROPOSAL: Return the Z values actually used, so that caller can call back using them.
 %   PROPOSAL: Separate function for generating such vector.
 %
@@ -159,12 +160,15 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     elseif ~isreal(y1)
         error(EMID_ARG, 'y1 is not real.')
         % NOTE: The algorithm itself does not make sense for non-real functions.
+    elseif ~isnumeric(dt)
+        error(EMID_ARG, 'dt is not numeric..')
     elseif ~isscalar(dt)
         error(EMID_ARG, 'dt is not scalar.')
     elseif ~(dt>0)
         error(EMID_ARG, 'dt is not positive.')
     elseif ~isa(tf, 'function_handle')
-        % EJ_library.assert.func does not seem to handle return values correctly.
+        % EJ_library.assert.func does not seem to handle return values
+        % correctly.
         error(EMID_ARG, 'tf is not a function.')
     elseif ~isreal(tf(0))
         error(EMID_ARG, 'tf(0) is not real.')
@@ -218,7 +222,8 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % for real signals.
     %============================================================================
     %tfOmegaLookups     = 2*pi * ((1:N) - 1) / (N*dt);
-    %i = (tfOmegaLookups >= pi/dt);    % Indicies for which omega_k should be replaced by omega_(k-N).
+    % Indicies for which omega_k should be replaced by omega_(k-N).
+    %i = (tfOmegaLookups >= pi/dt);
     %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
     
     % Modified k values (~indices) used to calculate omega_k for every X_k.
@@ -279,7 +284,6 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     %     symmetry."
     y2 = ifft(yDft2, 'symmetric');
     %y2p = ifft(yDft2);    % TEST
-    
     
     
     % ASSERTION: Real (numbers) output.
