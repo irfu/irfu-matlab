@@ -631,19 +631,24 @@ classdef constants
         % Assert that a string is on the format required by ROC for a single
         % MODS entry.
         function assert_MODS_entry_str(s)
+            % PROPOSAL: Automatic test code.
 
             EJ_library.assert.castring_regexp(s, ...
                 ['20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]', ...
                 ' -- V[0-9]+.[0-9]+.[0-9]+ -- ', ...
-                '[-=_|.() a-zA-Z0-9]+'])
+                '[-<=_|.()& a-zA-Z0-9]+'])
             
             % No more than one whitespace per occurrence.
             assert(~contains(s, '  '))
 
-            % All pipes surrounded by whitespace.
+            % All pipes surrounded by whitespace and all but last sentence end
+            % with period.
             iPipes1 = strfind(s, '. | ') + 2;
             iPipes2 = strfind(s,  '|');
             assert(isequal(iPipes1, iPipes2))
+            
+            % Last sentence ends with period.
+            assert(s(end) == '.')
         end
         
         
