@@ -1,3 +1,6 @@
+%Example to plot SolO-PAS ion differential energy flux
+%Contributed by Sergio Toledo-Redondo on 2021-09-21
+
 %% Set time
 Tint = irf.tint('2020-08-02T07:00:00.00Z/2020-08-02T08:59:59.00Z');
 
@@ -14,19 +17,16 @@ h=irf_plot(2,'newfigure');
 hca=irf_panel('BXYZ');
 irf_plot(hca,B_SRF);
 ylabel(hca,'B [nT] SRF');
-irf_legend(hca,{'B_X';'B_Y';'B_Z'},[1.02 0.98])
+irf_legend(hca,{'B_X';'B_Y';'B_Z'},[1.02 0.98]);
 %
-hca = irf_panel('ieflux'); %nombre del panel (debe ser único)
+hca = irf_panel('ieflux'); 
 specrec   = struct('t', ieflux.time.epochUnix);
 specrec.p = ieflux.data;
 specrec.p_label='dEF';
-specrec.f_label='i^+ (eV)';
 specrec.f = repmat(iEnergy,1,numel(specrec.t))';
 irf_spectrogram(hca,specrec,'log');
+set(hca, 'YScale', 'log');
 ylabel(hca,'[eV]');
-set(hca, 'YScale', 'log')
-ylim(hca,[300 3e3]); 
 
 axis(h,'tight')
-%set(hca,'YLim',19*[-1 1])
 irf_plot_axis_align(h)
