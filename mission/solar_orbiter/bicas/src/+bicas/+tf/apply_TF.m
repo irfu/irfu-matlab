@@ -1,28 +1,28 @@
 %
-% Wrapper around bicas.tf.apply_TF_freq() that (potentially) modifies data
-% and TF.
+% Apply transfer function to signal. Potentially modifies TF and data before and
+% after application of TF.
 %
 %
 % NOTES
 % =====
 % NOTE: Detrending makes it impossible to modify the amplitude & phase for the
 % frequency components in the trend itself (the fit), e.g. to delay the signal
-% in the trend. If the input signal is interpreted as N-periodic, then
-% de-trending affects the jump between the beginning and end of the signal
-% (reduces it in the case of linear or higher order de-trending), which should
-% reduce erroneous high-frequency content (counterexample: sine wave, one
-% cycle). The implementation scales the "trend" (polynomial fit) by
-% tfZ(omega==0).
+% in the trend. If the input signal is interpreted as N-periodic (e.g. when
+% applying TF using FFT), then de-trending affects the jump between the
+% beginning and end of the signal (reduces it in the case of linear or higher
+% order de-trending), which should reduce erroneous high-frequency content
+% (counterexample: sine wave, one cycle). The implementation scales the "trend"
+% (polynomial fit) by tfZ(omega==0).
 % --
 % NOTE: Retrending is bad for non-lowpass filters since the retrending requires
 % scaling the fit by tfZ(omega=0) which is only meaningful for lowpass filters.
 % --
 % ** Code has the ability to enable/disable de-trending:
-%       -- Handle both DC and AC signals.
+%       -- To handle both DC and AC signals.
 %       -- Make testing easier.
-% ** Code has the ability to make TF zero above cutoff. This cut-off is
-%    naturally sampling frequency-dependent and is therefore not a natural part
-%    of the TF itself.
+% ** Code has the ability to make TF zero above frequency cutoff. This cut-off
+%    is naturally sampling frequency-dependent and is therefore NOT a natural
+%    part of the TF itself.
 %
 %
 % TERMINOLOGY
@@ -70,11 +70,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-11-04.
 %
-function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
-    % PROPOSAL: Better name.
-    %   ~apply_TF_freq2
-    %       CON: Sounds like version 2.
-    %
+function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     % NOTE: Could switch out the internal apply_TF_freq() for other function,
     %       e.g. apply_TF_time().
     %
@@ -126,6 +122,9 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
     DEFAULT_SETTINGS.retrendingEnabled       = false;
     DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
+    DEFAULT_SETTINGS.method                  = 'FFT';
+    DEFAULT_SETTINGS.kernelEdgePolicy        = 'mirror';
+    DEFAULT_SETTINGS.kernelHannWindow        = false;
     
     Settings = EJ_library.utils.interpret_settings_args(...
         DEFAULT_SETTINGS, varargin);
@@ -170,20 +169,35 @@ function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)
     %#########################
     % APPLY TRANSFER FUNCTION
     %#########################
-    [y2B] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
-    %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
-    
-%     % ASSERTIONS
-%     if all(isfinite(y1B)) && ~all(isfinite(tfZLookups))
-%         % IMPLEMENTATION NOTE: bicas.tf.apply_TF_freq (deliberately) does not
-%         % throw error if TF returns non-finite values. This assertion should
-%         % catch that case instead.
-%         error('BICAS:Assertion', ...
-%             'Failed to evaluate transfer function for all necessary frequencies.')
-%     end
-    
-    
-    
+    switch(Settings.method)
+        
+        case 'FFT'
+            y2B = bicas.tf.apply_TF_freq(dt, y1B, tfB);
+            %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
+            
+        case 'kernel'
+            % TODO-NI: Kernel length == Signal length
+            %          ==> Bad for very long time series? E.g. CWF?
+            % NOTE: Length also affects amount of allocated memory (kernel,
+            % padding).
+            lenKernel = length(y1);
+            %lenKernelMax = ceil(10 / dt);
+            %lenKernel = min(lenKernel, lenKernelMax);
+            
+            % NOTE: The called function applies the Hann window instead of
+            % current function since it only applies to kernel method (as
+            % opposed to de-trending & re-trending).
+            y2B = bicas.tf.apply_TF_time(...
+                dt, y1B, tfB, lenKernel, Settings.kernelEdgePolicy, ...
+                'hannWindow', Settings.kernelHannWindow);
+            
+        otherwise
+            error('BICAS:Assertion:IllegalArgument', ...
+                'Illegal setting "method" value.')
+    end
+
+
+
     %#####################
     % Optionally RE-trend
     %#####################

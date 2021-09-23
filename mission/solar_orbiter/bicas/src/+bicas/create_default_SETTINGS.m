@@ -551,6 +551,14 @@ function SETTINGS = create_default_SETTINGS()
     % the LFR/TDS transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 
+    
+    S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, kernel
+    %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'kernel')   % FFT, kernel
+    %S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'zeros')   % zeros, cyclic, mirror
+    S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'mirror')   % zeros, cyclic, mirror
+    S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)   % false, true
+
+
     %===========================================================================
     % De-/re-trending
     % ---------------
