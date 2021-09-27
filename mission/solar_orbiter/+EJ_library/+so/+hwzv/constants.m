@@ -22,10 +22,10 @@ classdef constants
         % LSF = LFR Sampling Frequencies: F0, F1, F2, F3
         % The string names (F[0-3]) follow LFR's naming scheme.
         LSF_HZ = [...
-            EJ_library.so.constants.LFR_F0_HZ, ...
-            EJ_library.so.constants.LFR_F1_HZ, ...
-            EJ_library.so.constants.LFR_F2_HZ, ...
-            EJ_library.so.constants.LFR_F3_HZ];
+            EJ_library.so.hwzv.constants.LFR_F0_HZ, ...
+            EJ_library.so.hwzv.constants.LFR_F1_HZ, ...
+            EJ_library.so.hwzv.constants.LFR_F2_HZ, ...
+            EJ_library.so.hwzv.constants.LFR_F3_HZ];
         LSF_NAME_ARRAY = {'F0', 'F1', 'F2', 'F3'};
         
         % Should at least refer to the "normal" LFR snapshot length that BICAS
@@ -51,7 +51,7 @@ classdef constants
         % max=(2^15-1)/2^15 * 60e-9 sampere.
         MAX_ABS_SAMPERE = 60e-6;
         
-        TM_PER_SAMPERE = 32768 / EJ_library.so.constants.MAX_ABS_SAMPERE;
+        TM_PER_SAMPERE = 32768 / EJ_library.so.hwzv.constants.MAX_ABS_SAMPERE;
     end
 
 end

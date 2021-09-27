@@ -43,7 +43,7 @@ function [zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current_interpolate(t1, 
     % NOTE: interp1 requires double.
     %t2 = double(t2);
     
-    [t1b, zvIBIASx1b, duplicatesAnomaly] = EJ_library.so.CURRENT_zv_to_current(t1, zvIBIASx1);
+    [t1b, zvIBIASx1b, duplicatesAnomaly] = EJ_library.so.hwzv.CURRENT_zv_to_current(t1, zvIBIASx1);
     
     % IMPLEMENTATION NOTE: Bias currents are set VERY RARELY. Must therefore use
     % interpolation method 'previous'.

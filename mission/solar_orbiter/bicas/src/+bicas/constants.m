@@ -382,7 +382,7 @@ classdef constants
             %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
             %
             % PROPOSAL: DSI lists as public constants.
-            %   PROPOSAL: EJ_library.so.constants.
+            %   PROPOSAL: EJ_library.so.hwzv.constants.
             %   PRO: Could be used by functions for classifying DSIs.
             %       Ex: bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID().
             %       CON: Not if want to be really general, e.g. accounting for
