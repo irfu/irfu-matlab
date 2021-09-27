@@ -26,7 +26,7 @@
 %
 function freqHz = get_LFR_frequency(iLsf)
     
-    LSF_HZ = EJ_library.so.constants.LSF_HZ;
+    LSF_HZ = EJ_library.so.hwzv.constants.LSF_HZ;
     
     % ASSERTION
     uniqueValues = unique(iLsf);

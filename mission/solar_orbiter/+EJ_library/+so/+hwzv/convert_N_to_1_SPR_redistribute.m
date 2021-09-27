@@ -2,7 +2,7 @@
 % Convert zVariable-like variable from N samples/record to 1 sample/record (from
 % a matrix to a column vector). Increases number of records.
 %
-% NOTE: This function is primarily intended to be used on zVar 
+% NOTE: This function is primarily intended to be used on zVariables.
 %
 %
 % ARGUMENT

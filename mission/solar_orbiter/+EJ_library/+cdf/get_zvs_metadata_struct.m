@@ -159,7 +159,7 @@ function S = get_zvs_metadata_struct(Variables, VariableAttributes)
     %   PROPOSAL: Methods for adding/removing zVars
     %   PROPOSAL: Methods for reading/writing zVar value
     %       (1) raw content: exact CDF type/MATLAB class disregarding/ignoring pad & fill value
-    %       (2) converted content: replace NaN for fill value (pad value?), convert double-->CDf type
+    %       (2) converted content: replace NaN for fill value (pad value?), convert double-->CDF type
     %           Check feasability: min-max, Inf, NaN.
     %   TODO-DEC: How reference zvars? (since not struct of structs)
     %       PROPOSAL: zVarName as method argument

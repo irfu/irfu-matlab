@@ -257,6 +257,7 @@ classdef assert
         function castring_sets_equal(set1, set2)
             % NOTE/BUG: Does not require sets to have internally unique strings.
             
+            % NOTE: setxor() requires cell arrays of strings(?).
             if ~isempty(setxor(set1, set2))
                 error(EJ_library.assert.ASSERTION_EMID, ...
                     'The two string sets are not equivalent.')

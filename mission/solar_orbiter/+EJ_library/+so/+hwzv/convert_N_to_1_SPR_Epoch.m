@@ -95,5 +95,5 @@ function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, freqHzWithinReco
     
     % Convert to 2D matrix --> 1D column vector.
     %newTt2000 = reshape(tt2000Matrix', [nRecords*nSpr, 1]);
-    newTt2000 = EJ_library.so.convert_N_to_1_SPR_redistribute(tt2000Matrix);
+    newTt2000 = EJ_library.so.hwzv.convert_N_to_1_SPR_redistribute(tt2000Matrix);
 end
