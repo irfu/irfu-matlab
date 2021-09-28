@@ -17,7 +17,7 @@
 %
 %
 % NOTE: Can be used to effectively add a field to an existing struct array.
-% NOTE: EJ_library.utils.add_struct_to_struct is similar but not the same.
+% NOTE: EJ_library.ds.add_struct_to_struct is similar but not the same.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
@@ -25,7 +25,7 @@
 %
 function S12 = merge_structs(S1, S2)
 %
-% PROPOSAL: Replace (reimplement?) with EJ_library.utils.add_struct_to_struct.
+% PROPOSAL: Replace (reimplement?) with EJ_library.ds.add_struct_to_struct.
 % PROPOSAL: ATEST code.
 % PROPOSAL: Make work with any array size.
 %

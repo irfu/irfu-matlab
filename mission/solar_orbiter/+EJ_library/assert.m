@@ -418,7 +418,6 @@ classdef assert
             %   CON: Rarely needed.
             %       CON: Maybe not
             %           Ex: Settings structs
-            %           Ex: EJ_library.so.abp.find_DSGs_by_filename_fields
             %   CON-PROPOSAL: Can manually call EJ_library.assert.struct multiple times, once for each substruct,
             %                 instead (if only required field names).
             %
@@ -556,7 +555,7 @@ classdef assert
 
         
         % Assert the sizes of one or multiple variables.
-        % See EJ_library.utils.sizes for arguments and return values.
+        % See EJ_library.ds.sizes for arguments and return values.
         %
         % NOTE: One (sometimes) needs to add semicolon to end of row, since has
         %       return values.
@@ -574,10 +573,10 @@ classdef assert
         %             comparing size(A) and size(B).
         %
         function [varargout] = sizes(varargin)
-            % See EJ_library.utils.sizes for BOGIQ.
+            % See EJ_library.ds.sizes() for BOGIQ.
 
             varargout = cell(1, nargout);
-            [condSatisfied, varargout{:}] = EJ_library.utils.sizes(varargin{:});
+            [condSatisfied, varargout{:}] = EJ_library.ds.sizes(varargin{:});
             
             assert(condSatisfied, EJ_library.assert.ASSERTION_EMID, ...
                 'Variable sizes do not satisfy specified constraints.')

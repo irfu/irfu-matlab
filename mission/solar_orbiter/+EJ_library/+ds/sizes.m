@@ -14,32 +14,41 @@
 %
 % RATIONALE
 % =========
-% This function is intended for assertions. It is not an assertion function
-% by itself since there are rare situations where one wants to customize the
-% error behaviour.
+% This function is intended for implementing assertions. It is not an assertion
+% function by itself since there are rare situations where one wants to
+% customize the error behaviour. See EJ_library.assert, method sizes().
 %
 %
 % ARGUMENTS
 % =========
-% varargin: Arbitrary number of argument pairs below:
-%   var            : variable value which size will be tested.
-%   sizeConstraint : 1D vector with integers specifying the size of the
-%                    corresponding argument "var".
-%       Nonnegative integer : Explicit required size.
-%       Negative integer    : Arbitrary dimension size which must match between
-%                             all arguments "var".
-%                             Must be numbered -1, -2, ... , -N
-%       NaN                 : Arbitrary dimension size independent of other
-%                             dimensions. No corresponding return value.
+% varargin
+%       Arbitrary number of argument pairs below:
+%       varargin{2*n+1}
+%           Variable value which size will be tested.
+%       varargin{2*n+1} == sizeConstraint
+%           1D vector with integers specifying the size of the corresponding
+%           argument variable. Values for each dimensino have different meanings
+%           as below:
+%               Nonnegative integer
+%                   Explicit required size.
+%               Negative integer
+%                   Arbitrary dimension size which must match between all
+%                   variable arguments.
+%                   Must be numbered -1, -2, ... , -N
+%               NaN
+%                   Arbitrary dimension size is independent of other dimensions.
+%                   No corresponding return value.
 %
 %
 % RETURN VALUES
 % =============
-% condSatisfied : Logical. Whether variable sizes satisfy criteria.
-% varargout     : Size of dimensions labelled with negative integers, in order
-%                 -1, -2, ... .
-%                 NOTE: Values are only guaranteed to be correct if
-%                 condSatisfied==true.
+% condSatisfied
+%       Logical. Whether variable sizes satisfy criteria.
+% varargout
+%       Size of dimensions labelled with negative integers, in order
+%       -1, -2, ... .
+%       NOTE: Values are only guaranteed to be valid if condSatisfied==true
+%       since not all values can be unambiguous in that case.
 %
 %
 % NOTES

@@ -1,7 +1,7 @@
 %
-% Take multiple Specrec structs as returned from irf_powerfft() and merge them
-% into one Specrec struct. The input structs may have different sets of
-% frequencies, but should not overlap in time.
+% Take multiple Specrec structs as returned from irf_powerfft() (irfu-matlab git
+% repo) and merge them into one Specrec struct. The input structs may have
+% different sets of frequencies, but should not overlap in time.
 %
 % NOTE: THIS FUNCTION IS A BIT OF A HACK to make it possible to apply
 % irf_powerfft() to data with (wildly) changing sampling frequencies, yet call
@@ -111,7 +111,7 @@ function Specrec = merge_Specrec(SpecrecCa)
             % been padded.
             STot = S;
         else
-            [tf, pArray] = EJ_library.utils.merge_coordinated_arrays(...
+            [tf, pArray] = EJ_library.ds.merge_coordinated_arrays(...
                 NaN, ...
                 {STot.t,  STot.f},  STot.p{1}, ...
                 {S.t, S.f}, S.p{1});
