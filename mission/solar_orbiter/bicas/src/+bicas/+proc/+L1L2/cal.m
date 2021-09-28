@@ -325,7 +325,7 @@ classdef cal < handle
 %               obj.HkBiasCurrent.offsetTm
 %       calibrate_current_sampere_to_TM()
 %           Static
-%           Uses EJ_library.so.hwzv.constants.TM_PER_SAMPERE
+%           Uses EJ_library.so.hwzv.const.TM_PER_SAMPERE
 %   PRO: Class is large, ~1250 rows.
 %   PRO: Remaining class becomes entirely about voltage calibration.
 %   CON: Use needs to instantiate two calibration objects.
@@ -1233,7 +1233,7 @@ classdef cal < handle
             % NOTE: max(...) ignores NaN, unless that is the only value, which
             % then becomes the max value.
             [maxAbsSAmpere, iMax] = max(abs(currentSAmpere(:)));
-            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= EJ_library.so.hwzv.constants.MAX_ABS_SAMPERE))
+            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= EJ_library.so.hwzv.const.MAX_ABS_SAMPERE))
                 
                 error('BICAS:Assertion:IllegalArgument', ...
                     ['Argument currentSAmpere (unit: set current/ampere)', ...
@@ -1242,7 +1242,7 @@ classdef cal < handle
                     currentSAmpere(iMax))
             end
             
-            biasCurrentTm = currentSAmpere * EJ_library.so.hwzv.constants.TM_PER_SAMPERE;
+            biasCurrentTm = currentSAmpere * EJ_library.so.hwzv.const.TM_PER_SAMPERE;
         end
         
         

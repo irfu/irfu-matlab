@@ -86,7 +86,7 @@ classdef summary_plot < handle
         
         % Same samples/spectrum independent of sampling frequency.
         N_SAMPLES_PER_SPECTRUM_LFR_SWF = ...
-            EJ_library.so.hwzv.constants.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
+            EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
         
         
 
@@ -96,7 +96,7 @@ classdef summary_plot < handle
         % FH = Function Handle
         N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
         N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
-            cwfSamplFreqHz / EJ_library.so.hwzv.constants.LFR_F3_HZ ...
+            cwfSamplFreqHz / EJ_library.so.hwzv.const.LFR_F3_HZ ...
             * solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
         
         % Min & max frequencies in LFR __CWF__ plots.
@@ -107,10 +107,10 @@ classdef summary_plot < handle
         % frequency. ==> CWF Autoscaling is OK.
         %
 %         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-%             EJ_library.so.hwzv.constants.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
-%             EJ_library.so.hwzv.constants.LFR_F2_HZ / 2];
+%             EJ_library.so.hwzv.const.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+%             EJ_library.so.hwzv.const.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-            EJ_library.so.hwzv.constants.LFR_F3_HZ ...
+            EJ_library.so.hwzv.const.LFR_F3_HZ ...
             / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
@@ -442,9 +442,9 @@ classdef summary_plot < handle
             nChannels = numel(zvDataCa);
             assert(numel(removeMean) == nChannels)
             
-            bRecords = (zvSamplFreqHz == EJ_library.so.hwzv.constants.LSF_HZ(iLsf));
-            samplFreqHz = EJ_library.so.hwzv.constants.LSF_HZ(iLsf);
-            lsfName     = EJ_library.so.hwzv.constants.LSF_NAME_ARRAY{iLsf};
+            bRecords = (zvSamplFreqHz == EJ_library.so.hwzv.const.LSF_HZ(iLsf));
+            samplFreqHz = EJ_library.so.hwzv.const.LSF_HZ(iLsf);
+            lsfName     = EJ_library.so.hwzv.const.LSF_NAME_ARRAY{iLsf};
             
             
             
@@ -559,7 +559,7 @@ classdef summary_plot < handle
                     SpecrecCa{jSs} = S;
                 end
                                 
-                Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
+                Specrec = EJ_library.graph.merge_Specrec(SpecrecCa);
 
                 Specrec.p_label = {'log_{10} [V^2/Hz]'};   % Replaces colorbarlabel
                 % irf_spectrogram() replaces irf_plot
@@ -605,8 +605,8 @@ classdef summary_plot < handle
             
             assert(~obj.figureComplete)
             
-            samplFreqHz = EJ_library.so.hwzv.constants.LSF_HZ(iLsf);
-            lsfName     = EJ_library.so.hwzv.constants.LSF_NAME_ARRAY{iLsf};
+            samplFreqHz = EJ_library.so.hwzv.const.LSF_HZ(iLsf);
+            lsfName     = EJ_library.so.hwzv.const.LSF_NAME_ARRAY{iLsf};
             
             bRecords = (zvSamplFreqHz == samplFreqHz);
             
@@ -867,7 +867,7 @@ classdef summary_plot < handle
             
             SpecrecCa(~bKeep) = [];
             %Specrec = solo.sp.summary_plot.merge_Specrec(SpecrecCa);
-            Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
+            Specrec = EJ_library.graph.merge_Specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
             % irf_spectrogram() replaces irf_plot
@@ -1045,7 +1045,7 @@ classdef summary_plot < handle
         % irf_powerfft(), with identical frequencies.
         %
         % NOTE: Optionally added fields must be added after merging.
-        % NOTE: Cf EJ_library.utils.merge_Specrec() which is more powerful but
+        % NOTE: Cf EJ_library.graph.merge_Specrec() which is more powerful but
         % which is unnecessary here since only merging spectras with the same
         % frequencies (underlying data uses the same sampling frequency).
         %

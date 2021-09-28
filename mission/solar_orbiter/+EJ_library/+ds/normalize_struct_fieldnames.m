@@ -5,7 +5,7 @@
 %
 %
 % NOTE: Could probably ~easily be generalized to struct arrays. The only(?) crux
-% is that EJ_library.utils.add_struct_to_struct() does not permit struct
+% is that EJ_library.ds.add_struct_to_struct() does not permit struct
 % arrays.
 % NOTE: Function can be used for always changing fieldname, since normList{i}{2}
 % does not have to be a member of normList{i}{1}.
@@ -123,13 +123,13 @@ function [S2, fnChangeList] = normalize_struct_fieldnames(...
 
     fnList       = fieldnames(S1);
     iChange      = 0;
-    fnChangeList = EJ_library.utils.empty_struct(...
+    fnChangeList = EJ_library.ds.empty_struct(...
         [0,1], 'oldFieldname', 'newFieldname', 'ignoredCandidateFieldnames');
     % IMPLEMENTATION NOTE: Initializing with empty struct mean that calling code
     % does not need a special case for e.g. {fnChangeList.oldFieldname}.
 
     % NR = Normalization Rule
-    S2 = EJ_library.utils.empty_struct(size(S1));
+    S2 = EJ_library.ds.empty_struct(size(S1));
     % Iterate over items in NORMALIZATION LIST (not over fieldnames in S).
     for iNr = 1:numel(normList)
         normRule = normList{iNr};
@@ -227,7 +227,7 @@ function [S2, fnChangeList] = normalize_struct_fieldnames(...
     % Move fields which were not affected by normalization rules.
     % NOTE: add_struct_to_struct() does work with arrays, but only if it does
     % not need to inspect the field values.
-    S2 = EJ_library.utils.add_struct_to_struct(S2, S1);
+    S2 = EJ_library.ds.add_struct_to_struct(S2, S1);
 end
 
 

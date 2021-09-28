@@ -405,7 +405,7 @@ end
 % string.
 %
 % NOTE: Adds on to existing struct to avoid having to use
-% EJ_library.utils.add_struct_to_struct() (slow?).
+% EJ_library.ds.add_struct_to_struct() (slow?).
 %
 function R = parse_time_interval_str(R, s)
     % yyyymmdd (8 digits).

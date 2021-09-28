@@ -212,7 +212,7 @@ classdef lfr
             nCdfSamplesPerRecord = EJ_library.assert.sizes(...
                 InSci.Zv.V, [nRecords, -1], ...
                 E,          [nRecords, -1, 2]);
-            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == EJ_library.so.hwzv.constants.LFR_SWF_SNAPSHOT_LENGTH)
+            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
             else                assert(nCdfSamplesPerRecord == 1)
             end
 

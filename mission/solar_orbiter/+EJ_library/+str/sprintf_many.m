@@ -7,7 +7,7 @@
 %
 % RATIONALE
 % =========
-% sprintf does not appear to be able to do this. sprintf applied to an array
+% sprintf() does not appear to be able to do this. sprintf() applied to an array
 % will produce one combined, ~repeating (except for value) formatted string.
 % With this function, one can choose to join the separate strings with any
 % arbitrary seperator, e.g. comma (without adding after the last formatted

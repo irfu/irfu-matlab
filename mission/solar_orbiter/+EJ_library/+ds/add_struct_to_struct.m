@@ -16,7 +16,7 @@
 %   A user could iterate over struct array components and call the function for
 %   each component separately.
 % --
-% NOTE: EJ_library.utils.merge_structs is similar.
+% NOTE: EJ_library.ds.merge_structs is similar.
 %
 %
 % ARGUMENTS
@@ -88,7 +88,7 @@ function A = add_struct_to_struct(A, B, varargin)
 %       CON: Recursion depth is well defined for diffdn.
 %
 % PROPOSAL: Permit struct arrays, but restrict policies (for struct arrays only) to 'Error' and 'Overwrite'.
-% PROPOSAL: Should not support struct arrays. Should use EJ_library.utils.merge_structs instead.
+% PROPOSAL: Should not support struct arrays. Should use EJ_library.ds.merge_structs instead.
 
 
 
@@ -151,7 +151,7 @@ function A = add_struct_to_struct(A, B, varargin)
                 %====================================================
                 % NOTE: RECURSIVE CALL. Needs the original Settings.
                 %====================================================
-                A.(fieldName) = EJ_library.utils.add_struct_to_struct(...
+                A.(fieldName) = EJ_library.ds.add_struct_to_struct(...
                     A.(fieldName), B.(fieldName), Settings);
             else
                 error(['Can not interpret string value behaviour="%s" for', ...
