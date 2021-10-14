@@ -456,7 +456,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
     urlListDatasets = [caaListDataset queryDatasetInventory];
     returnTimeTable='list';
   elseif any(strfind(dataset,'fileinventory'))
-    urlListDatasets = [caaFileInventory queryDatasetInventory '+AND+active=1'];
+    urlListDatasets = [caaFileInventory queryDatasetInventory];
     returnTimeTable='fileinventory';
   elseif any(strfind(dataset,'inventory'))
     urlListDatasets = [caaInventory queryDatasetInventory ];
