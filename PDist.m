@@ -2251,13 +2251,13 @@ classdef PDist < TSeries
       phi = obj.depend{2};
       theta = obj.depend{3};
       lengthphi = size(phi,2);
-      if isfield(obj.ancillary,'delta_theta_plus') && isfield(obj.ancillary,'delta_theta_plus')
+      if isfield(obj.ancillary,'delta_theta_plus') && isfield(obj.ancillary,'delta_theta_minus')
         dangletheta = obj.ancillary.delta_theta_plus + obj.ancillary.delta_theta_minus;
       else
         dangletheta = median(diff(obj.depend{3}));
       end
       
-      if isfield(obj.ancillary,'delta_phi_plus') && isfield(obj.ancillary,'delta_phi_plus')
+      if isfield(obj.ancillary,'delta_phi_plus') && isfield(obj.ancillary,'delta_phi_minus')
         danglephi = obj.ancillary.delta_phi_plus + obj.ancillary.delta_phi_minus;
       else
         danglephi = median(diff(obj.depend{2}(1,:)));
