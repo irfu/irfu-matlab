@@ -51,7 +51,7 @@ if ~isempty(regexp(fname,'swa-pas-vdf','once'))
   time = vdf.DEPEND_0.data;
   time = EpochTT(time);
   dt = median(diff(time.epochUnix));
-  energymat = Energyarr.data*ones(size(time))';
+  energymat = ones(size(time))*Energyarr.data';
   
   PDout = PDist(time,vdfp,'skymap',energymat,Azimuthangle.data,90-Polarangle.data);
   PDout.species = 'ions';
