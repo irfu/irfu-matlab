@@ -4,11 +4,14 @@
 %
 %% Times for probe potentials discontinuities
 discontTimes=EpochTT(solo.ProbePotDiscontinuities);
+
+%% Specify output calibration file name
+strname = 'd23K123_20211021';
 %% Load data
 % One month, but we take +/- 3 days as a margin to better match with the
 % nearby month.
 margin = 3*24*60*60; %seconds.
-Tint = irf.tint('2021-02-01T00:00:00Z/2021-02-28T23:59:59.99Z')+[-1,1]*margin;
+Tint = irf.tint('2020-03-01T00:00:00Z/2021-09-30T23:59:59.99Z')+[-1,1]*margin;
 
 % If there is a discontinuity in the data, e.g. potential jumps due to the
 % solar panels, as in late 2020, early 2021, generate subintervals and
@@ -24,9 +27,9 @@ PSP_10s=irf.ts_scalar(EpochTT([]),[]);
 % Generate calibration file for each subinterval separately
 for isub=1:length(sub_int_times)-1
     subTint=sub_int_times(isub:isub+1);
-    VDC = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e', 'VDC', subTint);
-    EDC = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e', 'EDC', subTint);
-    QUAL = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e', 'QUALITY_FLAG', subTint);
+    VDC = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e-1-second', 'VDC', subTint);
+    EDC = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e-1-second', 'EDC', subTint);
+    QUAL = solo.db_get_ts('solo_L2_rpw-lfr-surv-cwf-e-1-second', 'QUALITY_FLAG', subTint);
     
     % Remover thrusters, etc
     iiBad = QUAL.data <2;
@@ -44,25 +47,16 @@ for isub=1:length(sub_int_times)-1
     irf_plot(h,OutTS_step1.d123,'.-');
     irf_plot(h,OutTS_step1.k123,'.-');
     irf_plot(h,OutTS_step1.del123,'.-');
-    irf_plot(h,OutTS_step1.PotOffset,'.-');
-    irf_plot(h,OutTS_step1.PotSlope,'.-');
-    irf_plot(h(1),OutTS_step1.PotCorrcoeff,'.-','color',[0.6,0.6,0.6]);
     
     irf_zoom(h,'y');
     
-    legend(h,'d23 (Volts)', 'k23', 'd123 (Volts)','k123, V1=k123*V23+del123','del123','\Gamma_0','\Gamma_1','cc')
+    legend(h,'d23 (Volts)', 'k23', 'd123 (Volts)','k123, V1=k123*V23+del123','del123')
     title(h,'Step 1')
     %%
-    d23 = irf.ts_scalar(OutTS_step1.d23.time,movmedian(OutTS_step1.d23.data,11,'omitnan','Endpoints','fill'));
-    k23 = irf.ts_scalar(OutTS_step1.k23.time,movmedian(OutTS_step1.k23.data,11,'omitnan','Endpoints','fill'));
-    Gamma0 = irf.ts_scalar(OutTS_step1.PotOffset.time,movmedian(OutTS_step1.PotOffset.data,11,'omitnan','Endpoints','fill'));
-    Gamma1 = irf.ts_scalar(OutTS_step1.PotSlope.time,movmedian(OutTS_step1.PotSlope.data,11,'omitnan','Endpoints','fill'));
-    CC = irf.ts_scalar(OutTS_step1.PotCorrcoeff.time,movmedian(OutTS_step1.PotCorrcoeff.data,11,'omitnan','Endpoints','fill'));
-    gammastruct.Gamma0=Gamma0;
-    gammastruct.Gamma1=Gamma1;
-    gammastruct.cc=CC;
+    d23 = irf.ts_scalar(OutTS_step1.d23.time,movmedian(OutTS_step1.d23.data,5,'omitnan','Endpoints','fill'));
+    k23 = irf.ts_scalar(OutTS_step1.k23.time,movmedian(OutTS_step1.k23.data,5,'omitnan','Endpoints','fill'));
     %% Step 2 - get k123
-    OutTS_step2 = solo.correlate_probes(VDC,EDC,d23,k23,gammastruct);
+    OutTS_step2 = solo.correlate_probes(VDC,EDC,d23,k23);
     
     
     h=irf_plot(1,'newfigure');
@@ -72,17 +66,15 @@ for isub=1:length(sub_int_times)-1
     irf_plot(h(1),OutTS_step2.d123,'.-');
     irf_plot(h(1),OutTS_step2.k123,'.-');
     irf_plot(h(1),OutTS_step2.del123,'.-');
-    irf_plot(h(1),OutTS_step2.PotOffset,'.-');
-    irf_plot(h(1),OutTS_step2.PotSlope,'.-');
     
     irf_zoom(h(1),'y');
-    legend(h(1),'d23 (Volts)','k23', 'd123 (Volts)','k123, V1=k123*V23+del123','del123','\Gamma_0','\Gamma_1')
+    legend(h(1),'d23 (Volts)','k23', 'd123 (Volts)','k123, V1=k123*V23+del123','del123')
     title(h(1),'Step 2')
     
-    k123 = irf.ts_scalar(OutTS_step1.k123.time,movmedian(OutTS_step2.k123.data,15,'omitnan','Endpoints','fill'));
+    k123 = irf.ts_scalar(OutTS_step1.k123.time,movmedian(OutTS_step2.k123.data,5,'omitnan','Endpoints','fill'));
     
     %% Step 3 - get d123
-    OutTS_step3 = solo.correlate_probes(VDC,EDC,d23,k23,gammastruct,k123);
+    OutTS_step3 = solo.correlate_probes(VDC,EDC,d23,k23,k123);
     
     h=irf_plot(1,'newfigure');
     irf_plot(h(1),OutTS_step3.d23,'.-')
@@ -91,21 +83,19 @@ for isub=1:length(sub_int_times)-1
     irf_plot(h(1),OutTS_step3.d123,'.-');
     irf_plot(h(1),OutTS_step3.k123,'.-');
     irf_plot(h(1),OutTS_step3.del123,'.-');
-    irf_plot(h(1),OutTS_step3.PotOffset,'.-');
-    irf_plot(h(1),OutTS_step3.PotSlope,'.-');
-    irf_plot(h(1),OutTS_step3.PotCorrcoeff,'.-');
     
     irf_zoom(h(1),'y');
-    legend(h(1),'d23 (Volts)','k23', 'd123 (Volts)','k123, V1=k123*V23+del123','del123','\Gamma_0','\Gamma_1','cc')
+    legend(h(1),'d23 (Volts)','k23', 'd123 (Volts)','k123, V1=k123*V23+del123','del123')
     title(h(1),'Step 3')
     
-    d123 = irf.ts_scalar(OutTS_step1.d123.time,movmedian(OutTS_step3.del123.data,7,'omitnan','Endpoints','fill'));
+    d123 = irf.ts_scalar(OutTS_step1.d123.time,movmedian(OutTS_step3.del123.data,5,'omitnan','Endpoints','fill'));
     
     %% Save result into a monthly file
     K123 = irf.ts_scalar(OutTS_step1.d12.time,[k123.data, d123.data]);
-    filenamestr = ['d23K123_20210519_february_subint',num2str(isub),'_of_',num2str(length(sub_int_times)-1)];
-    save(filenamestr, 'K123', 'd23', 'Gamma0', 'Gamma1', 'CC');
-    
+    filenamestr = [strname,'_subint',num2str(isub),'_of_',num2str(length(sub_int_times)-1)];
+    save(filenamestr, 'K123','k23', 'd23');
+  if 1
+    continue, %skip validation...
     %% Validation plot 1
     % downsample to 10 sec resolution to make plotting easier
     Tstart = VDC.time.start+3600;
@@ -133,9 +123,48 @@ for isub=1:length(sub_int_times)-1
     
     h = irf_figure(948273,4,'reset');
     irf_plot({DCE_SRF_10s,k123,d123,PSP_10s})
-   
+  end
     
 end
+
+
+%% Combine the calibration files of the subintervals (this can be done in a better way.)
+if 1
+  
+tmpstr1 = [strname,'_subint1_of_5'];
+tmpstr2 = [strname,'_subint2_of_5'];
+tmpstr3 = [strname,'_subint3_of_5'];
+tmpstr4 = [strname,'_subint4_of_5'];
+tmpstr5 = [strname,'_subint5_of_5'];
+
+load(tmpstr1);
+a=load(tmpstr2);
+
+
+K123_new = K123.combine(a.K123);
+d23_new = d23.combine(a.d23);
+k23_new = k23.combine(a.k23);
+
+a=load(tmpstr3);
+K123 = K123_new.combine(a.K123);
+d23 = d23_new.combine(a.d23);
+k23 = k23_new.combine(a.k23);
+
+a=load(tmpstr4);
+K123 = K123.combine(a.K123);
+d23 = d23.combine(a.d23);
+k23 = k23.combine(a.k23);
+
+a=load(tmpstr5);
+K123 = K123.combine(a.K123);
+d23 = d23.combine(a.d23);
+k23 = k23.combine(a.k23);
+
+save(strname, 'K123', 'k23','d23');
+
+end
+
+
 %% The code below can be used to compare the "piece-wise" calibration using
 % the subinterval calibration files done above, with the calibration
 % obtained using the combined calibration files. The two should be exactly
@@ -190,28 +219,6 @@ ylabel(hca,'PSP [V]')
 
 irf_zoom(h,'x',Tint)
 
-%% Combine the calibration files of the subintervals (if needed)
-
-if 0
-load('d23K123_20210430_january_subint1_of_3');
-a=load('d23K123_20210430_january_subint2_of_3');
-
-CC_new = CC.combine(a.CC);
-Gamma0_new = Gamma0.combine(a.Gamma0);
-Gamma1_new = Gamma1.combine(a.Gamma1);
-K123_new = K123.combine(a.K123);
-d23_new = d23.combine(a.d23);
-
-a=load('d23K123_20210430_january_subint3_of_3');
-CC = CC_new.combine(a.CC);
-Gamma0 = Gamma0_new.combine(a.Gamma0);
-Gamma1 = Gamma1_new.combine(a.Gamma1);
-K123 = K123_new.combine(a.K123);
-d23 = d23_new.combine(a.d23);
-
-save('d23K123_20210430_january', 'K123', 'd23', 'Gamma0', 'Gamma1', 'CC');
-
-end
 
 %% Load all months and combine together
 % (This is only needed if a the calibration procedure has changed,
