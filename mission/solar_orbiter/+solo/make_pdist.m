@@ -24,6 +24,7 @@ if (nargin > 1)
 end
 
 file = varargin{1};
+flipenergy = 0;
 
 if isa(file,'dataobj')
   tmpDataObj = file;
@@ -40,27 +41,36 @@ fname = tmpDataObj.GlobalAttributes.Logical_file_id{1};
 if ~isempty(regexp(fname,'swa-pas-vdf','once'))
   % Load ion data
   Energyarr = get_variable(tmpDataObj,'Energy');
-  dEnergyplus = get_variable(tmpDataObj,'delta_p_Energy');
-  dEnergyminus = get_variable(tmpDataObj,'delta_m_Energy');
+  Energyarr = Energyarr.data;
+  if Energyarr(1) > Energyarr(end)
+    flipenergy = 1;
+    Energyarr = flip(Energyarr);
+  end
+  %dEnergyplus = get_variable(tmpDataObj,'delta_p_Energy');
+  %dEnergyminus = get_variable(tmpDataObj,'delta_m_Energy');
   Azimuthangle = get_variable(tmpDataObj,'Azimuth');
   deltaAzimuth = get_variable(tmpDataObj,'delta_Azimuth');
   vdf = get_variable(tmpDataObj,'vdf');
   vdfp  = permute(vdf.data,[1 4 2 3]);
+  if flipenergy
+    vdfp = flip(vdfp,2);
+  end
   Polarangle = get_variable(tmpDataObj,'Elevation');
   deltaPolar = get_variable(tmpDataObj,'delta_Elevation');
   time = vdf.DEPEND_0.data;
   time = EpochTT(time);
   dt = median(diff(time.epochUnix));
-  energymat = ones(size(time))*Energyarr.data';
   
-  PDout = PDist(time,vdfp,'skymap',energymat,Azimuthangle.data,90-Polarangle.data);
+  energymat = ones(size(time))*Energyarr';
+  
+  PDout = PDist(time,vdfp,'skymap',energymat,-Azimuthangle.data,90-Polarangle.data); % Negative of azimuthal angle is used so Velocity moments agree
   PDout.species = 'ions';
   PDout.units = 's^3/m^6';
   PDout.siConversion = '1e12';
-  PDout.ancillary.energy0 = Energyarr.data;
-  PDout.ancillary.energy1 = Energyarr.data;
-  PDout.ancillary.delta_energy_plus = Energyarr.data-dEnergyplus.data; % Need to check this
-  PDout.ancillary.delta_energy_minus = Energyarr.data-dEnergyminus.data;
+  PDout.ancillary.energy0 = Energyarr;
+  PDout.ancillary.energy1 = Energyarr;
+  %PDout.ancillary.delta_energy_plus = Energyarr.data-dEnergyplus.data; % Need to check this
+  %PDout.ancillary.delta_energy_minus = Energyarr.data-dEnergyminus.data;
   PDout.ancillary.esteptable = zeros(size(time));
   PDout.ancillary.delta_theta_plus = deltaPolar.data;
   PDout.ancillary.delta_theta_minus = deltaPolar.data;
