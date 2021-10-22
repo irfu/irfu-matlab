@@ -54,7 +54,9 @@ function [y2, yKernelB] = apply_TF_time(dt, y1, tf, lenKernel, edgePolicy, varar
         DEFAULT_SETTINGS, varargin);
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
     clear DEFAULT_SETTINGS
-    
+
+
+
     %=============
     % ~ASSERTIONS
     %=============

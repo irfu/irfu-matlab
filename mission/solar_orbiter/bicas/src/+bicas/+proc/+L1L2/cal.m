@@ -315,7 +315,7 @@ classdef cal < handle
 % PROPOSAL: Rename/redefine cti2 (as did with cti1).
 %   PROPOSAL: iNonBiasRctCalib
 %
-% PROPOSAL: Move current calibration to separate class.
+% PROPOSAL: Move (charge) current calibration to separate class.
 %   NOTE: Functions
 %       calibrate_current_TM_to_aampere()
 %           Uses BiasRctDataCa == Uses RCT.
@@ -335,8 +335,10 @@ classdef cal < handle
 %       ~cal_volt
 %
 % PROPOSAL: bicas.proc.L1L2.cal_* --> Package bicas.proc.L1L2.cal.*
-
-
+%
+% PROPOSAL: Move shared definitions and naming conventions to a
+%           ~MISC_NAMING_CONVENTIONS.md file analogous with for
+%           JUICE/RPWI_pipeline git repo.
 
 
 

@@ -36,10 +36,10 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 %
 % PROPOSAL: Do same tests on both 
 %       (1) bicas.tf.apply_TF_freq(), and
-%       (2) bicas.tf.apply_TF_freq_modif().
-%   PROPOSAL: Move these tests to bicas.tf.apply_TF_freq_modif___UTEST.
+%       (2) bicas.tf.apply_TF().
+%   PROPOSAL: Move these tests to bicas.tf.apply_TF___UTEST.
 %       CON: No separate test file for bicas.tf.apply_TF_freq().
-%   PROPOSAL: For every test here, apply same test to bicas.tf.apply_TF_freq_modif() in this file.
+%   PROPOSAL: For every test here, apply same test to bicas.tf.apply_TF() in this file.
 %       CON: Tests two separate files in this file.
 %   PROPOSAL: Do not (deliberately) use the preexistent tests here on those two
 %           functions. Use tests that simply compare whether the return results

@@ -171,9 +171,12 @@ function SETTINGS = create_default_SETTINGS()
     % INPUT_CDF.*
     %#############
 
-    % The epoch for ACQUISITION_TIME.
+    % The epoch for zVar ACQUISITION_TIME.
     % The time in UTC at which ACQUISITION_TIME is [0,0].
-    % Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
+    % Format: Year-month-day
+    %         -hour-minute-second
+    %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
+    %
     % PROPOSAL: Store the value returned by
     %           spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
     S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);

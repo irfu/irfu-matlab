@@ -198,10 +198,10 @@ classdef dc
             % (2) Process data separately for each such sequence.
             % ----------------------------------------------------------
             % NOTE: Just finding continuous subsequences can take a significant
-            % amount of time.
+            %       amount of time.
             % NOTE: Empirically, this is not useful for real LFR SWF datasets
-            % where the LFR sampling frequency changes in every record, meaning
-            % that the subsequences are all 1 record long.
+            %       where the LFR sampling frequency changes in every record,
+            %       meaning that the subsequences are all 1 record long.
             % NOTE: Rx (the relevant value from R0, R1, R2) is not included
             %       since it is not needed, since data has already been
             %       separated into separate DC/AC variables.
@@ -354,8 +354,7 @@ classdef dc
                             [ssSamplesAVolt{iBlts}, ~] = ...
                                 bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
                                     ssSamplesCaAVolt, ...
-                                    size(ssSamplesTm{iBlts}, ...
-                                    2));
+                                    size(ssSamplesTm{iBlts}, 2));
                         else
                             % NOTE: Must be column array.
                             ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};
