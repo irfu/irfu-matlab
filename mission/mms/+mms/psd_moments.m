@@ -1,25 +1,19 @@
 function particlemoments = psd_moments(varargin)
-% PSD_MOMENTS compute moments from the FPI particle phase-space densities
-%
-% For brst mode data
-% particlemoments = mms.psd_moments(pdist,SCpot,option,option_value)
+% PSD_MOMENTS compute particle moments from a 3D distribution function
 %
 % Input:
 %   pdist - TSeries of the full particle distribution of electrons or ions
 %   in PDist data format (burst and fast)
 %   SCpot - TSeries of spacecraft potential.
 %
-%   See Example_MMS_EDRsignatures for example of loading the necessary data
-%   and running the function.
-%
 % Optional Inputs:
 %   'energyrange' - set energy range in eV to integrate over [E_min E_max].
-%   energy range is applied to energy0 and the same elements are used for energy1 to
+%   energy range is applied to energy0 (if applicable) and the same elements are used for energy1 to
 %   ensure that the same number of points are integrated over.
 %   'noscpot' - set to 1 to set spacecraft potential to zero. Calculates moments without
 %   correcting for spacecraft potential.
 %   'enchannels' - set energy channels to integrate over [min max]; min and max
-%   between must be between 1 and 32.
+%   between must be between 1 and total number of energy channels.
 %   'partialmoms' - use a binary array (or TSeries) (pmomsarr) to select which psd points are used
 %   in the moments calculation. pmomsarr must be a binary array (1s and 0s, 1s correspond to points used).
 %   Array (or data of TSeries) must be the same size as pdist.data. For
