@@ -9,9 +9,9 @@ function modelPDist = make_model_dist(PDist,Bxyz,SCpot,n,V,T)
 %       PDist - particle distribution (skymap). Must be in PDist format.
 %       Bxyz - Background magnetic field (TSeries)
 %       SCpot - Spacecraft potential (TSeries)
-%       ne - number density (TSeries)
-%       Ve - bulk velocity (TSeries)
-%       Te - temperature (TSeries, must be full tensor)
+%       n - number density (TSeries)
+%       V - bulk velocity (TSeries)
+%       T - temperature (TSeries, must be full tensor)
 %
 %   Output:
 %       modelPDist - Distribution function in the same format as PDist.
@@ -73,9 +73,15 @@ Vpar.data = Vpar.data*1e3;
 n.data = n.data*1e6;
 
 % Defines dimensions of array below
-lengthphi = length(PDist.depend{1,2}(1,:));
-lengththeta = length(PDist.depend{1,3});
+lengthphi = length(PDist.depend{2}(1,:));
+lengththeta = length(PDist.depend{3});
 lengthenergy = length(PDist.ancillary.energy0);
+
+% Get phi
+phi = PDist.depend{2};
+if size(phi,1) < 2
+  phi = ones(size(PDist.time))*phi;
+end
 
 % Get energy array
 energyarr = PDist.depend{1,1};
@@ -87,9 +93,9 @@ z = zeros(length(PDist.time),lengthphi,lengththeta);
 r = zeros(length(PDist.time),lengthenergy);
 
 for ii = 1:length(PDist.time)
-  x(ii,:,:) = -cosd(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
-  y(ii,:,:) = -sind(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
-  z(ii,:,:) = -ones(lengthphi,1)*cosd(PDist.depend{1,3});
+  x(ii,:,:) = -cosd(phi(ii,:)')*sind(PDist.depend{3});
+  y(ii,:,:) = -sind(phi(ii,:)')*sind(PDist.depend{3});
+  z(ii,:,:) = -ones(lengthphi,1)*cosd(PDist.depend{3});
   r(ii,:) = real(sqrt(2*(energyarr(ii,:)-SCpot.data(ii))*qe/pmass));
 end
 r(r == 0) = 0.0;
