@@ -1,4 +1,4 @@
-function modelPDist = make_model_dist(PDist,Bxyz,SCpot,n,V,T)
+function modelPDist = make_model_dist(varargin)
 %MAKE_MODEL_DIST Make a general bi-Maxwellian distribution function based
 %on particle moment data in the same format as PDist.
 %
@@ -13,6 +13,10 @@ function modelPDist = make_model_dist(PDist,Bxyz,SCpot,n,V,T)
 %       V - bulk velocity (TSeries)
 %       T - temperature (TSeries, must be full tensor)
 %
+%   Options: 
+%       'isotropic' - set to 1 to make an isotropic model distribution
+%       funciton. 
+%
 %   Output:
 %       modelPDist - Distribution function in the same format as PDist.
 %       Ouput in units of s^3 km^{-6}
@@ -21,6 +25,29 @@ function modelPDist = make_model_dist(PDist,Bxyz,SCpot,n,V,T)
 %
 % See also mms.calculate epsilon
 
+% First input check
+if (nargin < 6)
+  modelPDist = NaN;
+  help mms.calculate_epsilon;
+  return;
+end
+
+PDist = varargin{1};
+Bxyz = varargin{2};
+SCpot = varargin{3};
+n = varargin{4};
+V = varargin{5};
+T = varargin{6};
+
+isisotropic = 0;
+
+args=varargin(7:end);
+if numel(args)>0
+  options=1;
+else
+  options=0;
+end
+
 tic;
 % Check that PDist and moments have the same times
 if abs(median(diff(PDist.time-n.time))) > 0
@@ -28,6 +55,26 @@ if abs(median(diff(PDist.time-n.time))) > 0
   irf.log('critical','PDist and moments have different times.')
   return;
 end
+
+while options
+  l = 2;
+  switch(lower(args{1}))
+    case 'isotropic'
+      if numel(args)>1 && isnumeric(args{2})
+        if args{2} == 1
+          isisotropic = 1;
+          irf.log('notice','Using isotropic Maxwellian distribution.');
+        end
+      end
+    otherwise
+      irf.log('critical',['Unknown flag: ' args{1}]);
+      l=1;
+      break
+  end
+  args = args(l+1:end);
+  if isempty(args), options=0; end
+end
+
 
 % Convert to SI units
 PDist = PDist.convertto('s^3/m^6');
@@ -39,8 +86,13 @@ SCpot = SCpot.resample(n);
 
 % Define directions based on Bxyz and V, calculate relevant temperatures
 Tfac = mms.rotate_tensor(T,'fac',Bxyz,'pp'); % N.B makes final distribution gyrotropic
-Tpar = irf.ts_scalar(Tfac.time,Tfac.data(:,1,1));
-Trat = irf.ts_scalar(Tfac.time,Tfac.data(:,1,1)./Tfac.data(:,2,2));
+if isisotropic
+  Tpar = irf.ts_scalar(Tfac.time,Tfac.trace.data/3);
+  Trat = irf.ts_scalar(Tfac.time,ones(size(Tfac.time)));
+else
+  Tpar = irf.ts_scalar(Tfac.time,Tfac.data(:,1,1));
+  Trat = irf.ts_scalar(Tfac.time,Tfac.data(:,1,1)./Tfac.data(:,2,2));
+end
 
 [Vpar,Vperp]=irf_dec_parperp(Bxyz,V);
 Vpmag = Vperp.abs;
