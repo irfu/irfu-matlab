@@ -202,13 +202,13 @@ if isfield(pdist.ancillary,'delta_energy_minus') && isfield(pdist.ancillary,'del
 end
 
 % Calculate speed widths associated with each energy channel.
-energycorr = energy - ones(size(pdist.time))'*SCpot.data;
+energycorr = energy - SCpot.data*ones(size(energy(1,:)));
 v = real(sqrt(2*qe*(energycorr)/pmass));
 if flag_same_e && flag_dE
   energyupper = energy + ones(size(pdist.time))*energy_plus';
   energylower = energy - ones(size(pdist.time))*energy_minus';
-  vupper = sqrt(2*qe*(energyupper- ones(size(pdist.time))'*SCpot.data)/pmass);
-  vlower = sqrt(2*qe*(energylower- ones(size(pdist.time))'*SCpot.data)/pmass);
+  vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
+  vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 elseif flag_same_e && ~flag_dE
   temp0 = 2*energy(:,1)-energy(:,2);
   tempend = 2*energy(:,end)-energy(:,end-1);
@@ -216,13 +216,13 @@ elseif flag_same_e && ~flag_dE
   diffenall = diff(energyall,1,2);
   energyupper = 10.^(log10(energy+diffenall(:,2:end)/2));
   energylower = 10.^(log10(energy-diffenall(:,1:end-1)/2));
-  vupper = sqrt(2*qe*(energyupper- ones(size(pdist.time))'*SCpot.data)/pmass);
-  vlower = sqrt(2*qe*(energylower- ones(size(pdist.time))'*SCpot.data)/pmass);
+  vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
+  vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 elseif ~flag_same_e && flag_dE
 	energyupper = energy + energy_plus;
   energylower = energy - energy_minus;
-  vupper = sqrt(2*qe*(energyupper - ones(size(pdist.time))'*SCpot.data)/pmass);
-  vlower = sqrt(2*qe*(energylower - ones(size(pdist.time))'*SCpot.data)/pmass);
+  vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
+  vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 elseif ~flag_same_e && ~flag_dE
   energy0 = pdist.ancillary.energy0;
   energy1 = pdist.ancillary.energy1;
@@ -248,12 +248,15 @@ elseif ~flag_same_e && ~flag_dE
   esteptablemat = single(esteptable)*ones(size(energy0));
   energyupper = esteptablemat.*(ones(size(pdist.time))*energyupper1)+abs(esteptablemat-1).*(ones(size(pdist.time))*energyupper0);
   energylower = esteptablemat.*(ones(size(pdist.time))*energylower1)+abs(esteptablemat-1).*(ones(size(pdist.time))*energylower0);
-  vupper = sqrt(2*qe*(energyupper - ones(size(pdist.time))'*SCpot.data)/pmass);
-  vlower = sqrt(2*qe*(energylower - ones(size(pdist.time))'*SCpot.data)/pmass);
+  vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
+  vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 end
 
 vupper(vupper < 0) = 0;
 vlower(vlower < 0) = 0;
+vupper = real(vupper);
+vlower = real(vlower);
+
 deltav = (vupper-vlower);
 vmat = repmat(v,1,1,length(phitr(1,:)),length(theta));
 deltavmat = repmat(deltav,1,1,length(phitr(1,:)),length(theta));
