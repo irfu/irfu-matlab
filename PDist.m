@@ -1181,7 +1181,22 @@ classdef PDist < TSeries
         % elevation angle
         th = double(dist.depend{3}); % polar angle in degrees
         th = th-90; % elevation angle in degrees
-        th = th*pi/180; % in radi ans
+        th = th*pi/180; % in radians
+        
+        if isfield(dist.ancillary,'delta_phi_minus') && isfield(dist.ancillary,'delta_phi_plus') 
+          deltaphi = (dist.ancillary.delta_phi_plus+dist.ancillary.delta_phi_minus)*pi/180;
+          if size(deltaphi,1) > size(deltaphi,2)
+            deltaphi = deltaphi';
+          end
+          flag_dphi = 1;
+        end
+        if isfield(dist.ancillary,'delta_theta_minus') && isfield(dist.ancillary,'delta_theta_plus') 
+          deltatheta = (dist.ancillary.delta_theta_plus+dist.ancillary.delta_theta_minus)*pi/180;
+          if size(deltatheta,1) > size(deltatheta,2)
+            deltatheta = deltatheta';
+          end
+          flag_dtheta = 1;
+        end
         
         % Set projection grid after the first distribution function
         % bin centers
@@ -1228,7 +1243,11 @@ classdef PDist < TSeries
         elseif dim == 2
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
           % is 'vg_edges' implemented for 2d?
-          tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
+          if flag_dphi && flag_dtheta
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'dphi',deltaphi,'dth',deltatheta);
+          else
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
+          end
           all_vx(i,:,:) = tmpst.vx;
           all_vy(i,:,:) = tmpst.vy;
           all_vx_edges(i,:,:) = tmpst.vx_edges;
