@@ -142,11 +142,11 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
           
           if strcmp(C{3},'Tani') % requires MAG data and also density
             PSRF = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','P_SRF',Tint);
-            if ~isempty(PSRF); error('Pressure tensor not loaded'); end
+            if isempty(PSRF); error('Pressure tensor not loaded'); end
             NPAS = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','N',Tint);
-            if ~isempty(PSRF); error('Density not loaded'); end
+            if isempty(PSRF); error('Density not loaded'); end
             BSRF = solo.db_get_ts('solo_L2_mag-srf-normal','B_SRF',Tint);
-            if ~isempty(BSRF); error('MAG data not loaded'); end
+            if isempty(BSRF); error('MAG data not loaded'); end
             PXX = PSRF.data(:,1);
             PYY = PSRF.data(:,2);
             PZZ = PSRF.data(:,3);
