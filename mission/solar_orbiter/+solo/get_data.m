@@ -106,8 +106,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
         if strcmp(C2{3},'eflux') % omni energy flux
           ieflux = solo.db_get_ts(['solo_',varStr],'eflux',Tint);
           efulx_file=solo.db_list_files(['solo_',varStr],Tint);
-          iEnergy = cdfread([efulx_file(1).path '/' efulx_file(1).name],'variables','Energy');
-          iEnergy = iEnergy{1};
+          iEnergy = spdfcdfread([efulx_file(1).path '/' efulx_file(1).name],'variables','Energy');
           res   = struct('t', ieflux.time.epochUnix);
           res.p = ieflux.data;
           res.p_label='dEF';
