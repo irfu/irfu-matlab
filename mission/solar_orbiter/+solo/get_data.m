@@ -30,6 +30,15 @@ function res = get_data(varStr,Tint)
 %   Tint = irf.tint('2020-07-29T10:20:00.000Z/2020-07-29T11:20:00.000Z');
 %   V = solo.get_data('L2_swa-pas-grnd-mom_V_RTN',Tint) % Solar wind speed in RTN
 %
+
+
+if ~isa(Tint,'GenericTimeArray')
+  error('TINT must be of GenericTimeArray type');
+  elseif Tint.stop-Tint.start<=0
+  error('TINT duration is zero or negative');
+end
+
+
 vars = {'L2_mag-srf-normal','L2_mag-rtn-normal','L2_mag-srf-burst','L2_mag-rtn-burst','L3_rpw-bia-scpot',...
   'L3_rpw-bia-efield_srf','L3_rpw-bia-efield_rtn','L3_rpw-bia-scpot','L3_rpw-bia-density','L2_rpw-lfr-surv-cwf-b-cdag_srf','L2_rpw-lfr-surv-cwf-b-cdag_rtn','L2_swa-pas-eflux','L2_swa-pas-grnd-mom_V_RTN',...
   'L2_swa-pas-grnd-mom_V_SRF','L2_swa-pas-grnd-mom_N','L2_swa-pas-grnd-mom_T','L2_swa-pas-grnd-mom_TxTyTz_SRF','L2_swa-pas-grnd-mom_TxTyTz_RTN','L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF',...
