@@ -158,7 +158,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
             PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten),'pp');
             Pfac = TSeries(PfacT.time,[PfacT.data(:,1,1), PfacT.data(:,2,2)]);
             res = TSeries(PfacT.time,(Pfac.data./(NPAS.resample(Pfac).data.*(1.38064852*10^(-23))))./1.160451812e4);
-            res.userData = {'par','perp1','perp2'};
+            res.userData = {'par','perp'};
           end
           
           if strcmp(C{3},'TxTyTz')
