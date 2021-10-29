@@ -32,6 +32,8 @@ function res = get_data(varStr,Tint)
 %
 
 
+Units = irf_units;
+
 if ~isa(Tint,'GenericTimeArray')
   error('TINT must be of GenericTimeArray type');
   elseif Tint.stop-Tint.start<=0
@@ -157,7 +159,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
             B0 = irf_filt(BSRF,0,0.1,[],3);
             PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten),'pp');
             Pfac = TSeries(PfacT.time,[PfacT.data(:,1,1), PfacT.data(:,2,2)]);
-            res = TSeries(PfacT.time,(Pfac.data./(NPAS.resample(Pfac).data.*(1.38064852*10^(-23))))./1.160451812e4);
+            res = TSeries(PfacT.time,(Pfac.data./(NPAS.resample(Pfac).data.*Units.kB))./(Units.eV/Units.kB));
             res.userData = {'par','perp'};
           end
           
