@@ -1002,6 +1002,8 @@ classdef PDist < TSeries
       % Default options and values
       doTint = 0;
       doLowerElim = 0;
+      flag_dphi = 0;
+      flag_dtheta = 0;
       nMC = 100; % number of Monte Carlo iterations
       vint = [-Inf,Inf];
       aint = [-180,180]; % azimuthal intherval
