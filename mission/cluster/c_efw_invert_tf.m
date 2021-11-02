@@ -45,7 +45,7 @@ if nargin == 3
     % tm correct but no method, Default method to 'old'.
     method='frequency';
   else
-    % Optional tm is manditory and must be 'HX' or 'IB' if selecting method.
+    % Optional tm is mandatory and must be 'HX' or 'IB' if selecting method.
     error('If you want to define method, you must also define the TM parameter correct first.');
   end
 end
@@ -149,7 +149,7 @@ elseif strcmpi(method,'time')
   pi = sum(imag(ks).*imag(ks));
   
   if(pi/pr>1e-5)
-    sprintf('*** cluster_efw_deconvo: Imag/Real for impulse reponse is = %d.',pi/pr);
+    sprintf('*** cluster_efw_deconvo: Imag/Real for impulse response is = %d.',pi/pr);
   end
   
   kernel = real(ks);
@@ -164,7 +164,7 @@ elseif strcmpi(method,'time')
   % note: application of window introduces a slight offset, which must be
   % removed from the signal afterwards.
   % Correcting for the offset in the kernel itself
-  % would nullify the benefit the of window.
+  % would nullify the benefit of the window.
   kernel = kernel .* hann(nk,'periodic')';
   
   % normalize the kernel
@@ -182,7 +182,7 @@ elseif strcmpi(method,'time')
   % notes on edge behavior:
   % default: zero output when kernel overlaps edge
   % /edge_zero: usually good, but can emphasize low frequency trends, i.e.
-  %                           artifiacts of despin
+  %                           artifacts of despin
   % /edge_wrap; similar to edge zero (based on analysis of cal signal).
   % /edge_truncate: usually bad
   
@@ -193,7 +193,7 @@ elseif strcmpi(method,'time')
   % Remove any offset caused by Hann window and the kernel.
   eout(:,2) = eout(:,2) - mean(eout(:,2));
   
-  % We should now have completly removed any DC levels, inferred from the
+  % We should now have completely removed any DC levels, inferred from the
   % filter process. Then add the DC levels back again (the DC level were in
   % effect untouched by the filter process).
   eout(:,2) = eout(:,2) + einp_mean;
@@ -253,7 +253,7 @@ switch(upper(edge))
   case 'EDGE_WRAP'
     % Default treatment
     ao = [wrev(a(1:nk/2)), a, wrev(a(nbp-nk/2+1:nbp))];
-    % A possiblilty would be using fliplr but wrev is slightly quicker.
+    % A possibility would be using fliplr but wrev is slightly quicker.
   case 'EDGE_TRUNC'
     % Not recommended treatment.
     ao = [zeros(1,nk/2) + a(1), a, zeros(1,nk/2)+ a(nbp)];

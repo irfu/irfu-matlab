@@ -184,6 +184,7 @@ end
 %
 % IMPLEMENTATION NOTE: Implemented as separate function to insulate the use of
 % variables.
+%
 function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
         cliArgumentsList, iCliArg, OptionsConfigArray, OptionValuesMap)
     
@@ -295,7 +296,7 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(...
         % (optionId values).
         % NOTE: Applies to both options with and without values!
         %EmptyOptionValuesMap(optionId) = {};
-        EmptyOptionValuesMap(optionId) = EJ_library.utils.empty_struct(...
+        EmptyOptionValuesMap(optionId) = EJ_library.ds.empty_struct(...
             [0,1], 'iOptionHeaderCliArgument', 'optionHeader', 'optionValues');
     end
     

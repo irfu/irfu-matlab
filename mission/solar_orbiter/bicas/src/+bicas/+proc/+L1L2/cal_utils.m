@@ -9,7 +9,10 @@
 % First created 2020-11-05.
 %
 classdef cal_utils
-    % PROPOSAL: Automatic test code.
+    % PROPOSAL: More automatic test code.
+    %
+    % PROPOSAL: Make functions that are only used internally private.
+    %   Ex: TF_LF_constant_abs_Z()  (the only one?)
 
 
 
@@ -17,6 +20,49 @@ classdef cal_utils
         
         
         
+        % Given a sequence of Epoch values, determine for each value which
+        % calibration time index should be used. The caller will have to decide
+        % which sequence of data that should be calibrated together (e.g. if
+        % calibration time changes in the middle of CWF), and which Epoch values
+        % should be used to determine calibration time (e.g. first Epoch value
+        % for a snapshot determines entire snapshot).
+        %
+        %
+        % ARGUMENTS AND RETURN VALUES
+        % ===========================
+        % Epoch
+        %       Column vector with Epoch values.
+        % CalibEpochList
+        %       Column vector of monotonically increasing timestamps ("Epoch
+        %       format"). In practice intended to be Bias.epochL or Bias.epochH.
+        % iCalib
+        %       Array. iCalibList(i) = calibration time index for Epoch(i).
+        %
+        function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
+            
+            % ASSERTIONS
+            bicas.utils.assert_zv_Epoch(Epoch)
+            bicas.utils.assert_zv_Epoch(CalibEpochList)
+            % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty,
+            % since discretize behaves differently for scalar second argument.
+            assert(~isempty(CalibEpochList))
+            
+            % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for Epoch
+            % values outside the outermost edges. Therefore (1) must add upper
+            % edge "Inf", (2) asserts non-Nan afterwards.
+            % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar
+            % second argument. Adding edges at infinity hides this problem. If
+            % one does not add infinities and uses a scalar edge list, then one
+            % has to treat those cases manually.
+            iCalib = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
+            assert(all(~isnan(iCalib(:))), ...
+                'BICAS:SWModeProcessing', ...
+                ['Can not derive which calibration data to', ...
+                ' use for all specified timestamps.'])
+        end
+
+
+
         % Modify TABULATED transfer functions, if needed.
         % NOTE: Converts tabulated TF --> Tabulated TF
         %
@@ -120,104 +166,104 @@ classdef cal_utils
         %       One per component per omegaPRps. NaN when omegaPRps is outside
         %       the range of the tabulated TF.
         %
-        function Zp = interpolate_TF(omegaRps, Z, omegaEvalRps)
-            % NOTE: spline() extrapolates by default. interp1() does not
-            % (returns NaN).
-            %
-            % PROPOSAL: Interpolate over log(omega)
-            %   CON: Can not do for omega=0.
-            
-            absZ = abs(Z);
-            argZ = unwrap(angle(Z));
-            
-            assert(all(absZ >= 0))
-%             assert(all((min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps))), ...
-%                 'Trying to extrapolate outside frequency range of tabulated transfer function.')
-            
-            switch(2)
-                case 1
-                    Zp = interp1(omegaRps, Z, omegaEvalRps, 'linear');
-                case 2
-                    bInRange = (min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps));
-                    
-                    %absZ = smooth(absZ, 2);
-                    %argZ = smooth(argZ, 2);
-                    
-                    % NOTE:
-                    % ** interp1() returns NaN outside of tabulated range (by
-                    %    default).
-                    % ** spline() extrapolates outside of tabulated range (at
-                    %    least by default).
-                    
-                    absZp = interp1(omegaRps, absZ, omegaEvalRps, 'linear');
-                    %absZp = spline(omegaRps, absZ, omegaPRps);
-                    
-                    argZp = interp1(omegaRps, argZ, omegaEvalRps, 'linear');                   
-                    %argZp = spline(omegaRps, argZ, omegaPRps);
-                    
-                    Zp = absZp .* exp(1i*argZp);
-                    
-                    % Remove extrapolation (from e.g. spline()).
-                    Zp(~bInRange) = NaN;
-            end
-        end
+%         function Zp = interpolate_TF(omegaRps, Z, omegaEvalRps)
+%             % NOTE: spline() extrapolates by default. interp1() does not
+%             % (returns NaN).
+%             %
+%             % PROPOSAL: Interpolate over log(omega)
+%             %   CON: Can not do for omega=0.
+%             
+%             absZ = abs(Z);
+%             argZ = unwrap(angle(Z));
+%             
+%             assert(all(absZ >= 0))
+% %             assert(all((min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps))), ...
+% %                 'Trying to extrapolate outside frequency range of tabulated transfer function.')
+%             
+%             switch(2)
+%                 case 1
+%                     Zp = interp1(omegaRps, Z, omegaEvalRps, 'linear');
+%                 case 2
+%                     bInRange = (min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps));
+%                     
+%                     %absZ = smooth(absZ, 2);
+%                     %argZ = smooth(argZ, 2);
+%                     
+%                     % NOTE:
+%                     % ** interp1() returns NaN outside of tabulated range (by
+%                     %    default).
+%                     % ** spline() extrapolates outside of tabulated range (at
+%                     %    least by default).
+%                     
+%                     absZp = interp1(omegaRps, absZ, omegaEvalRps, 'linear');
+%                     %absZp = spline(omegaRps, absZ, omegaPRps);
+%                     
+%                     argZp = interp1(omegaRps, argZ, omegaEvalRps, 'linear');                   
+%                     %argZp = spline(omegaRps, argZ, omegaPRps);
+%                     
+%                     Zp = absZp .* exp(1i*argZp);
+%                     
+%                     % Remove extrapolation (from e.g. spline()).
+%                     Zp(~bInRange) = NaN;
+%             end
+%         end
         
         
         
         % Manual test code for bicas.proc.L1L2.cal_utils.interpolate_TF().
         %
-        function interpolate_TF___MTEST()
-            % IMPORTANT NOTE: Tranposing with apostrophe in MATLAB also complex
-            % conjugates the values. Use transpose() to NOT change the complex
-            % values.
-                        
-            close all
-            
-            %Z      = [1,1+1i, 2i, -2+2i, -3i];
-            %omega  = 1:numel(Z);
-            
-            omega  = 1:10;
-            Z = exp((1i+0.2)*omega);
-            
-            %omegaP = [-1:0.1:5];
-            omegaP = [min(omega):0.1:max(omega)];
-            %omegaP = [-2+min(omega):0.1:max(omega)+2];
-            
-            
-            
-            Zp = bicas.proc.L1L2.cal_utils.interpolate_TF(omega, Z, omegaP);
-            
-            %=====================
-            % Plot input & output
-            %=====================
-            subplot(1,3, 1)
-            plot(Z, 'o')
-            hold on
-            plot(Zp, 'linewidth', 3)
-            plot(1i*eps(0), '*')    % Can't (?) plot origin without trick.
-            title('Zp (complex plane)')
-            grid on
-            axis square
-            
-            subplot(1,3, 2)
-            plot(omega, abs(Z), 'o')
-            hold on
-            plot(omegaP, abs(Zp))
-            grid on
-            xlabel('omega')
-            ylabel('|Zp|')
-            
-            subplot(1,3, 3)
-            plot(omega, unwrap(angle(Z)), 'o')
-            hold on
-            plot(omegaP, unwrap(angle(Zp)))
-            grid on
-            xlabel('omega')
-            ylabel('unwrapped arg(Zp)')
-            
-            % Print result
-            %transpose(Zp)
-        end
+%         function interpolate_TF___MTEST()
+%             % IMPORTANT NOTE: Tranposing with apostrophe in MATLAB also complex
+%             % conjugates the values. Use transpose() to NOT change the complex
+%             % values.
+%                         
+%             close all
+%             
+%             %Z      = [1,1+1i, 2i, -2+2i, -3i];
+%             %omega  = 1:numel(Z);
+%             
+%             omega  = 1:10;
+%             Z = exp((1i+0.2)*omega);
+%             
+%             %omegaP = [-1:0.1:5];
+%             omegaP = [min(omega):0.1:max(omega)];
+%             %omegaP = [-2+min(omega):0.1:max(omega)+2];
+%             
+%             
+%             
+%             Zp = bicas.proc.L1L2.cal_utils.interpolate_TF(omega, Z, omegaP);
+%             
+%             %=====================
+%             % Plot input & output
+%             %=====================
+%             subplot(1,3, 1)
+%             plot(Z, 'o')
+%             hold on
+%             plot(Zp, 'linewidth', 3)
+%             plot(1i*eps(0), '*')    % Can't (?) plot origin without trick.
+%             title('Zp (complex plane)')
+%             grid on
+%             axis square
+%             
+%             subplot(1,3, 2)
+%             plot(omega, abs(Z), 'o')
+%             hold on
+%             plot(omegaP, abs(Zp))
+%             grid on
+%             xlabel('omega')
+%             ylabel('|Zp|')
+%             
+%             subplot(1,3, 3)
+%             plot(omega, unwrap(angle(Z)), 'o')
+%             hold on
+%             plot(omegaP, unwrap(angle(Zp)))
+%             grid on
+%             xlabel('omega')
+%             ylabel('unwrapped arg(Zp)')
+%             
+%             % Print result
+%             %transpose(Zp)
+%         end
 
         
         
@@ -254,13 +300,8 @@ classdef cal_utils
             assert(isa(TabTf, 'EJ_library.utils.tabulated_transform'))
             assert(isfinite(valueOutsideTable))
             
-            if 1
-                % NOTE: interp1 returns NaN for values outside range.
-                Z = interp1(TabTf.omegaRps, TabTf.Z, omegaRps, 'linear');
-            else
-                % EXPERIMENTAL
-                Z = bicas.proc.L1L2.cal_utils.interpolate_TF(TabTf.omegaRps, TabTf.Z, omegaRps);
-            end
+            % NOTE: interp1 returns NaN for values outside range.
+            Z = interp1(TabTf.omegaRps, TabTf.Z, omegaRps, 'linear');
             % CASE: Z == NaN for omegaRps not covered by tabulated TF.
             
             % Set to zero (overwrite) for values above highest tabulated
@@ -298,7 +339,8 @@ classdef cal_utils
         
         
         
-        function itf = create_LFR_BIAS_ITF(itfLfr, itfBias, isAc, acConstGainLowFreqRps)
+        function itf = create_LFR_BIAS_ITF(...
+                itfLfr, itfBias, isAc, acConstGainLowFreqRps)
             % PROPOSAL: Re-purpose into function only for combining BIAS and
             % non-BIAS TFs.
             
@@ -353,7 +395,8 @@ classdef cal_utils
         % TfFunchandle : Z(omegaRps).
         %                NOTE: rad/s (omegaRps) as opposed to Hz (freqHzArray).
         %
-        function log_TF_function_handle(logLevel, tfName, tfUnit, freqHzArray, tfFuncHandle, L)
+        function log_TF_function_handle(...
+                logLevel, tfName, tfUnit, freqHzArray, tfFuncHandle, L)
             assert(isa(tfFuncHandle, 'function_handle'))
             
             zArray = tfFuncHandle(freqHzArray * 2*pi);
@@ -397,7 +440,8 @@ classdef cal_utils
                 % Check that string is not too long for neat printouts (all
                 % calls from BICAS).
                 assert(numel(tfName) <= 46, ...
-                    'String argument "tfName" is too long. numel(tfName)=%i.', numel(tfName))
+                    'String argument "tfName" is too long. numel(tfName)=%i.', ...
+                    numel(tfName))
                 % NOTE: Does not print unwrapped phase. Print ~"not unwrapped",
                 % ~"wrapped"?
                 L.logf(logLevel, ...
@@ -414,7 +458,9 @@ classdef cal_utils
         function s = vector_string(pattern, v)
             assert(~isempty(v))
             EJ_library.assert.vector(v)
-            s = sprintf('(%s)', strjoin(EJ_library.str.sprintf_many(pattern, v), ', '));
+            s = sprintf(...
+                '(%s)', ...
+                strjoin(EJ_library.str.sprintf_many(pattern, v), ', '));
         end
         
         
@@ -439,38 +485,4 @@ classdef cal_utils
     
     
     
-end    % classdef calib_utils
-
-
-
-            % TEST
-%             if 0
-%                 
-%                 OMEGA_LIMIT_RPS = 100 * 2*pi;
-%                 zLimit = itfIvpt(OMEGA_LIMIT_RPS);
-%                 
-%                 if isfinite(zLimit)
-%                     omegaHz = logspace(log10(0.1), log10(1e3), 1e3);
-%                     omegaRps = omegaHz * 2*pi;
-%                     
-%                     Z = itfIvpt(omegaRps);
-%                     
-%                     close all
-%                     subplot(4,1, 1)
-%                     loglog(omegaHz, abs(Z))
-%                     subplot(4,1, 2)
-%                     semilogx(omegaHz, angle(Z))
-% 
-%                     itfIvpt = @(omegaRps) (bicas.proc.L1L2.cal.TF_w_constant_abs_Z_LF(itfIvpt, omegaRps, OMEGA_LIMIT_RPS, zLimit));
-%                     Z = itfIvpt(omegaRps);
-%                     
-%                     subplot(4,1, 3)
-%                     loglog(omegaHz, abs(Z))
-%                     subplot(4,1, 4)
-%                     semilogx(omegaHz, angle(Z))
-%                     
-%                     false;
-%                 end
-%                 
-%             end
-            
+end    % classdef cal_utils

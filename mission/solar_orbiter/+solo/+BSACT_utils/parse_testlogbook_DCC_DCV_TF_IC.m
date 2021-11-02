@@ -128,6 +128,13 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
     % PROPOSAL: Additional assertion functions for various return struct fields.
     %           Could be used in this code but also outside code which compares values
     %           with values returned from here.
+    %
+    % NOTE: Uses try-catch to find whether parsing has failed or not can lead
+    %       to misreading due to unrelated errors (e.g. not finding functions).
+    %       Only safe due to using error message IDs.
+    %   PROPOSAL: Eliminate internal use of try-catch.
+    % PROPOSAL: Reimplement string parsing parts using EJ_library.str, probably
+    %           EJ_library.str.regexp_str_parts.
     %==============================================================================================
     
     
@@ -177,8 +184,8 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
     %                Stimuli = 1Mohm"
     % Test         : E.g. "ID68 = Mode 0 (std operation), LFR_3 = V23_DC"
     %=====================================================================
-    metadataList = [];
-    iRow = 1;
+    metadataList    = [];
+    iRow            = 1;
     expectedRowType = 'NoDataPrefix_or_Header2';
     while iRow <= numel(rowStrList)    % Check if reached end of file.
         % CASE: Row iRow exists.
@@ -194,7 +201,10 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                 expectedRowType = 'Test';
                 try
                     HeaderRowSettings = parseHeader2RowFuncPtr(rowStr);
-                catch
+                catch Exc
+                    if ~strcmp(Exc.identifier, 'RowParsing:CanNotParse')
+                        rethrow(Exc)
+                    end
                     expectedRowType = 'NoDataPrefix_or_Header2';
                 end
                 
@@ -202,7 +212,10 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                 expectedRowType = 'Test';
                 try
                     HeaderRowSettings = parse_header2_row_DCC_DCV_TF(rowStr);
-                catch
+                catch Exc
+                    if ~strcmp(Exc.identifier, 'RowParsing:CanNotParse')
+                        rethrow(Exc)
+                    end
                     expectedRowType = 'NoDataSuffix';
                 end
                 
@@ -213,10 +226,13 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                     % NOTE: Works with metadataList==[];
                     metadataList = [...
                         metadataList, ...
-                        EJ_library.utils.merge_structs(...
-                        HeaderRowSettings, RowCTableMetadata)];
+                        EJ_library.ds.merge_structs(...
+                            HeaderRowSettings, RowCTableMetadata)];
                     expectedRowType = 'Test';
-                catch
+                catch Exc
+                    if ~strcmp(Exc.identifier, 'RowParsing:CanNotParse')
+                        rethrow(Exc)
+                    end
                     expectedRowType = 'NoDataSuffix_or_Header2';
                     % Do nothing - Simply skip row since it should be a Header1
                     % row from which no information should be extracted.
@@ -311,8 +327,9 @@ function CTableMetadata = parse_test_row_DCV_TF_IC(rowStr)
     CTableMetadata.testIdNbr = find_parse_nbr(rowStr, 'ID[0-9]*','ID%d', 1);
     if isnan(CTableMetadata.testIdNbr)
         % CASE: (Assumption) This row is not a test settings row.
-        CTableMetadata = [];
-        return
+        %CTableMetadata = [];
+        %return
+        error('RowParsing:CanNotParse', 'Can not interpret row as test settings.')
     end
     
     CTableMetadata.muxMode     = find_parse_nbr(rowStr, ...
@@ -351,7 +368,8 @@ function x = map_regex_to_values(str, varargin)
     %
     % ARGUMENTS
     % =========
-    % varargin : pairs of arguments: (regex pattern) + (value).
+    % varargin
+    %       Pairs of arguments: (regex pattern) + (value).
     %
     % NOTE: Error if not exactly one match.
     
@@ -369,7 +387,7 @@ function x = map_regex_to_values(str, varargin)
     end
     
     if nbrOfMatchesFound ~= 1
-        error(...
+        error('RowParsing:CanNotParse', ...
             'Did not find exactly one match as expected. nbrOfMatchesFound=%g', ...
             nbrOfMatchesFound)
     end
@@ -413,6 +431,7 @@ function x = find_parse_nbr(...
             x = NaN;
         else
             error(...
+                'RowParsing:CanNotParse', ...
                 'Can not find regexPattern="%s" in str="%s".', ...
                 regexPattern, str)
         end
@@ -421,6 +440,7 @@ function x = find_parse_nbr(...
         if isempty(x)
             if canBeNonExistent
                 error(...
+                    'RowParsing:CanNotParse', ...
                     ['sscanf() can not interpret regexStrMatch{1}="%s"', ...
                     ' as regexMatchSscanfFormat="%s".'], ...
                     regexStrMatch{1}, regexMatchSscanfFormat)

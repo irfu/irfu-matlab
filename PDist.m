@@ -289,6 +289,12 @@ classdef PDist < TSeries
         eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
         if sizeField(1) == TsTmp.length
           old_ancillary = eval(['obj.ancillary.' nameFields{iField}]);
+          
+          % temporary fix for upsampling any non single or double data (esteptable!)
+          if not(any([isa(old_ancillary,'double'),isa(old_ancillary,'single')])) 
+            old_ancillary = single(old_ancillary); 
+          end
+          
           new_ancillary = irf_resamp([tData old_ancillary], newTimeTmp, varargin{:});
           eval(['obj.ancillary.' nameFields{iField} ' = new_ancillary(:,2:end);'])
         end
@@ -996,6 +1002,8 @@ classdef PDist < TSeries
       % Default options and values
       doTint = 0;
       doLowerElim = 0;
+      flag_dphi = 0;
+      flag_dtheta = 0;
       nMC = 100; % number of Monte Carlo iterations
       vint = [-Inf,Inf];
       aint = [-180,180]; % azimuthal intherval
@@ -1175,7 +1183,22 @@ classdef PDist < TSeries
         % elevation angle
         th = double(dist.depend{3}); % polar angle in degrees
         th = th-90; % elevation angle in degrees
-        th = th*pi/180; % in radi ans
+        th = th*pi/180; % in radians
+        
+        if isfield(dist.ancillary,'delta_phi_minus') && isfield(dist.ancillary,'delta_phi_plus') 
+          deltaphi = (dist.ancillary.delta_phi_plus+dist.ancillary.delta_phi_minus)*pi/180;
+          if size(deltaphi,1) > size(deltaphi,2)
+            deltaphi = deltaphi';
+          end
+          flag_dphi = 1;
+        end
+        if isfield(dist.ancillary,'delta_theta_minus') && isfield(dist.ancillary,'delta_theta_plus') 
+          deltatheta = (dist.ancillary.delta_theta_plus+dist.ancillary.delta_theta_minus)*pi/180;
+          if size(deltatheta,1) > size(deltatheta,2)
+            deltatheta = deltatheta';
+          end
+          flag_dtheta = 1;
+        end
         
         % Set projection grid after the first distribution function
         % bin centers
@@ -1222,7 +1245,11 @@ classdef PDist < TSeries
         elseif dim == 2
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
           % is 'vg_edges' implemented for 2d?
-          tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
+          if flag_dphi && flag_dtheta
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'dphi',deltaphi,'dth',deltatheta);
+          else
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
+          end
           all_vx(i,:,:) = tmpst.vx;
           all_vy(i,:,:) = tmpst.vy;
           all_vx_edges(i,:,:) = tmpst.vx_edges;
@@ -2242,12 +2269,26 @@ classdef PDist < TSeries
       dist = obj;
       % define angles
       energysize = size(obj.depend{1});
+      phi = obj.depend{2};
       theta = obj.depend{3};
-      dangle = pi/16;
-      lengthphi = 32;
+      lengthphi = size(phi,2);
+      if isfield(obj.ancillary,'delta_theta_plus') && isfield(obj.ancillary,'delta_theta_minus')
+        dangletheta = obj.ancillary.delta_theta_plus + obj.ancillary.delta_theta_minus;
+      else
+        dangletheta = median(diff(obj.depend{3}));
+      end
+      
+      if isfield(obj.ancillary,'delta_phi_plus') && isfield(obj.ancillary,'delta_phi_minus')
+        danglephi = obj.ancillary.delta_phi_plus + obj.ancillary.delta_phi_minus;
+      else
+        danglephi = median(diff(obj.depend{2}(1,:)));
+      end
+      
+      dangletheta = dangletheta*pi/180;
+      danglephi = danglephi*pi/180;
       
       z2 = ones(lengthphi,1)*sind(theta);
-      solida = dangle*dangle*z2;
+      solida = (danglephi*dangletheta').*z2;
       allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
       allsolida = squeeze(permute(allsolida,[3 4 1 2]));
       dists = dist.data.*allsolida;

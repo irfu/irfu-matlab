@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-25
 %
-classdef tds   % < handle
+classdef tds    
     % PROPOSAL: Automatic test code.
 
 
@@ -53,7 +53,7 @@ classdef tds   % < handle
             % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
             % to be the correct one. /2020-01-21
             %===========================================================
-            [InSci.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(...
+            [InSci.Zv, fnChangeList] = EJ_library.ds.normalize_struct_fieldnames(...
                 InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
                 'Assert one matching candidate');
@@ -76,6 +76,7 @@ classdef tds   % < handle
 
                 if C.isTdsRswf
                     switch(settingValue)
+                        
                         case 'CORRECT'
                             %===================================================
                             % IMPLEMENTATION NOTE: Has observed test file
@@ -117,8 +118,8 @@ classdef tds   % < handle
                 %============================================================
                 zv_SAMPS_PER_CH_corrected = round(2.^round(log2(double(InSci.Zv.SAMPS_PER_CH))));
                 zv_SAMPS_PER_CH_corrected = cast(zv_SAMPS_PER_CH_corrected, class(InSci.Zv.SAMPS_PER_CH));
-                zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MIN);
-                zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MAX);
+                zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MIN);
+                zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MAX);
 
                 if any(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH)
                     % CASE: SAMPS_PER_CH has at least one illegal value
@@ -132,13 +133,14 @@ classdef tds   % < handle
                         ['TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected', ...
                         ' value(s) which are not on the form 2^n and in the', ...
                         ' interval %.0f to %.0f: %s'], ...
-                        EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MIN, ...
-                        EJ_library.so.constants.TDS_RSWF_SNAPSHOT_LENGTH_MAX, ...
+                        EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MIN, ...
+                        EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MAX, ...
                         badValuesDisplayStr);
 
                     [settingValue, settingKey] = SETTINGS.get_fv(...
                         'PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
                     switch(settingValue)
+                        
                         case 'ROUND'
                             bicas.default_anomaly_handling(...
                                 L, settingValue, settingKey, 'other', ...
@@ -176,7 +178,7 @@ classdef tds   % < handle
         % snapshots. Need to use NaN/fill value.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            assert(isa(InSci, 'bicas.InputDataset'))
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
@@ -197,7 +199,7 @@ classdef tds   % < handle
                 WAVEFORM_DATA_nChannels == WAVEFORM_DATA_nChannels_expected, ...
                 'BICAS:Assertion:DatasetFormat', ...
                 'TDS zVar WAVEFORM_DATA has an unexpected size.')
-            if C.isTdsRswf   assert(nCdfSamplesPerRecord == EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD)
+            if C.isTdsRswf   assert(nCdfSamplesPerRecord == EJ_library.so.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD)
             else             assert(nCdfSamplesPerRecord == 1)
             end
 
@@ -369,10 +371,10 @@ classdef tds   % < handle
 
                 if     C.isLfr
                     SAMPLES_PER_RECORD_CHANNEL = ...
-                        EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;
+                        EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;
                 elseif C.isTds
                     SAMPLES_PER_RECORD_CHANNEL = ...
-                        EJ_library.so.constants.TDS_RSWF_SAMPLES_PER_RECORD;
+                        EJ_library.so.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD;
                 else
                     error(...
                         'BICAS:Assertion', ...
@@ -416,7 +418,6 @@ classdef tds   % < handle
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
             % NOTE: Not really necessary since the list of zVars will be checked
             % against the master CDF?
-            % NOTE: Includes zVar "BW" (LFR L2 only).
             EJ_library.assert.struct(OutSci.Zv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...

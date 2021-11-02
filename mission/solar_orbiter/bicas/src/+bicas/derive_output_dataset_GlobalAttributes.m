@@ -166,11 +166,6 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     OutGaSubset.Software_name       = bicas.constants.SWD_METADATA('SWD.identification.name');
     OutGaSubset.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
     
-    % There should not be any glob.attr. "Calibration_version"?
-    % NOTE: Not to be confused with CALIBRATION_VERSION (capital letters) =
-    % "Version of the calibration table" (not yet set. /2021-02-16)
-    %OutGaSubset.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');
-    
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
     OutGaSubset.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
     
@@ -233,6 +228,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     OutGaSubset.TIME_MIN = sprintf(TIME_MINMAX_FORMAT, gaTimeMinNbr);
     OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
     
+
 
     enableMods = SETTINGS.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
     

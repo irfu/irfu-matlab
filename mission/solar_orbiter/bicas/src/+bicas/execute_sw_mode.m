@@ -40,7 +40,8 @@ function execute_sw_mode(...
     %       Read master CDF file.
     %       Compare PDV variables with master CDF variables (only write a subset).
     %       Check variable types, sizes against master CDF.
-    %       Write GlobalAttributes: Calibration_version, Parents, Parent_version,
+    %       Write GlobalAttributes:
+    %           Parents, Parent_version,
     %           Generation_date, Logical_file_id,
     %           Software_version, SPECTRAL_RANGE_MIN/-MAX (optional?), TIME_MIN/-MAX
     %       Write VariableAttributes: pad value? (if master CDF does not contain
@@ -79,7 +80,6 @@ function execute_sw_mode(...
         % Read dataset CDF file
         %=======================
         InputDataset = bicas.read_dataset_CDF(inputFilePath, SETTINGS, L);
-        InputDataset.filePath = inputFilePath;
         
         InputDatasetsMap(prodFuncInputKey) = InputDataset;
 

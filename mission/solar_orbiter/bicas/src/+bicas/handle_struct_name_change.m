@@ -1,15 +1,15 @@
 %
 % To be used to analyze the result of use of
-% EJ_library.utils.normalize_struct_fieldnames(). React depending on SETTINGS.
+% EJ_library.ds.normalize_struct_fieldnames(). React depending on SETTINGS.
 %
 %
 % ARGUMENTS
 % =========
 % fnChangeList
-%       Returned from EJ_library.utils.normalize_struct_fieldnames
+%       Returned from EJ_library.ds.normalize_struct_fieldnames
 % msgFunc
 %       Function handle: msgStr = func(oldFieldname, newFieldname)
-%       NOTE: Return value is passed to bicas.logger.log (not logf), i.e.
+%       NOTE: Return value is passed to bicas.Logger.log (not logf), i.e.
 %       multi-row messages must end with line feed.
 % varargin
 %       List of pairs of arguments.
@@ -31,7 +31,7 @@ function handle_struct_name_change(...
     %
     % PROPOSAL: Argument for error ID to pass to bicas.default_anomaly_handling
     %
-    % PROPOSAL: New name more analogous to EJ_library.utils.normalize_struct_fieldnames (which function is to be used
+    % PROPOSAL: New name more analogous to EJ_library.ds.normalize_struct_fieldnames (which function is to be used
     %           with).
     %   PROPOSAL: handle_struct_normalization_anomaly
     %

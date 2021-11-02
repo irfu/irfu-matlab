@@ -8,7 +8,7 @@
 % ARGUMENTS
 % =========
 % L
-%       bicas.logger object.
+%       bicas.Logger object.
 % codeName
 %       Name of code being speed tested, e.g. function name, informal name of a
 %       segment of code.

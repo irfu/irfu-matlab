@@ -6,7 +6,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-05-18
 %
-classdef L2L2   % < handle
+classdef L2L2    
     % PROPOSAL: Automatic test code.
     
     

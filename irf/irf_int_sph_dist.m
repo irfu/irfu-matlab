@@ -28,6 +28,9 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %               does not matter in 1D case
 %   've'    -   velocity edges of instrument (from delta_energy) with same
 %               units as v and one element longer than v
+%   'dphi'  -   array of dphi in cases where phi are not evenly separated
+%   'dth'  -   array of dth in cases where phi are not evenly separated
+%
 %
 %   Output is a structure that contains the fields:
 %   'F'     -   integrated flux. For 2D, F(end,:) contains no information
@@ -77,6 +80,9 @@ veInputEdges = 0; %
 args = varargin;
 nargs = length(varargin);
 
+dPhi = abs(median(diff(phi)))*ones(size(phi)); % constant
+dTh = abs(median(diff(th)))*ones(size(th)); % constant
+
 % loop to check for flags
 have_options = nargs > 1;
 while have_options
@@ -105,11 +111,14 @@ while have_options
     case 'vg_edges'
       vg_edges = args{2};
       veInputEdges = 1;
+    case 'dphi'
+      dPhi = args{2};
+    case 'dth'
+      dTh = args{2};
   end
   args = args(3:end);
   if isempty(args), break, end
 end
-
 
 %% Initiate initiate various things
 
@@ -136,8 +145,6 @@ else
   dV = diff(v); dV = [dV(1),dV]; % quick and dirty
   dVm = diff(v)/2; % dVp = diff(v)/2; % minus and plus velocity from center
 end
-dPhi = abs(median(diff(phi))); % constant
-dTh = abs(median(diff(th))); % constant
 
 % primed (grid) diffs
 % dVg = diff(vg); dVg = [dVg(1),dVg]; % quick and dirty
@@ -213,6 +220,9 @@ VEL = repmat(v,nAz,1,nEle);     % [phi,v,th]
 VEL = permute(VEL,[2,1,3]);     % [v,phi,th]
 DV = repmat(dV,nAz,1,nEle);     % [phi,v,th]
 DV = permute(DV,[2,1,3]);       % [v,phi,th]
+DTH = repmat(dTh,nV,1,nAz);       % [phi,th,v]
+DTH = permute(DTH,[1,3,2]);       % [v,phi,th]
+DPHI = repmat(dPhi,nV,1,nEle);   % [v,phi,th]
 
 % Weighting of number of Monte Carlo particles
 Nsum = nMC*numel(find(F)); % total number of Monte Carlo particles
@@ -230,7 +240,7 @@ end
 
 
 % "Volume" element in velocity space of an instrument bin
-dtau = ( VEL.^2.*cos(TH).*DV*dPhi*dTh );
+dtau = ( VEL.^2.*cos(TH).*DV.*DPHI.*DTH );
 % set grid data matrix and grid "area" element
 switch lower(base)
   case 'pol'
@@ -260,8 +270,8 @@ for i = 1:nV % velocity (energy)
       % Construct Monte Carlo particles within particle bins
       % first is not random
       dV_MC = [0;-rand(nMCt-1,1)*dV(i)-dVm(1)]; % velocity within [-dVm,+dVp]
-      dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi];
-      dTH_MC = [0;(rand(nMCt-1,1)-.5)*dTh];
+      dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi(j)];
+      dTH_MC = [0;(rand(nMCt-1,1)-.5)*dTh(k)];
       
       % convert instrument bin to cartesian velocity
       [vx,vy,vz] = sph2cart(PHI(i,j,k)+dPHI_MC,TH(i,j,k)+dTH_MC,VEL(i,j,k)+dV_MC);

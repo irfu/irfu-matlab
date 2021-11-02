@@ -206,7 +206,7 @@ classdef reader_DCC_DCV_TF_IC < handle
                 testLogbookRowList, dataType);
             
             % TODO-NI: Necessary to use special function here? Can replace call with one-liner?
-            metadataList = EJ_library.utils.merge_structs(...
+            metadataList = EJ_library.ds.merge_structs(...
                 metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
 
 

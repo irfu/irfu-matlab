@@ -3,9 +3,9 @@
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
-% First created 2021-05-25
+% First created 2021-05-25, from reorganized older code.
 %
-classdef lfr   % < handle
+classdef lfr    
     % PROPOSAL: Automatic test code.
 
     
@@ -54,7 +54,7 @@ classdef lfr   % < handle
                 % CASE: Everything nominal.
                 InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.SYNCHRO_FLAG;
 
-            elseif ~has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
+            elseif ~has_SYNCHRO_FLAG && has_TIME_SYNCHRO_FLAG
 
                 % CASE: Input CDF uses wrong zVar name.
                 [settingValue, settingKey] = ...
@@ -66,7 +66,7 @@ classdef lfr   % < handle
                     'Using illegally named zVar TIME_SYNCHRO_FLAG as SYNCHRO_FLAG.')
                 InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
 
-            elseif has_SYNCHRO_FLAG &&  has_TIME_SYNCHRO_FLAG
+            elseif has_SYNCHRO_FLAG && has_TIME_SYNCHRO_FLAG
 
                 % CASE: Input CDF has two zVars: one with correct name, one with
                 % incorrect name
@@ -153,9 +153,9 @@ classdef lfr   % < handle
             % V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
 
             % ASSERTIONS: VARIABLES
-            EJ_library.assert.struct(InSci,     {'Zv', 'ZvFv', 'Ga', 'filePath'}, {})
+            assert(isa(InSci, 'bicas.InputDataset'))
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
-
+            
             % ASSERTIONS: CDF
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
                 'BICAS:DatasetFormat', ...
@@ -183,11 +183,11 @@ classdef lfr   % < handle
 
 
             % NOTE: Needed also for 1 SPR.
-            zvFreqHz = EJ_library.so.get_LFR_frequency( iLsfZv );
+            zvFreqHz = EJ_library.so.hwzv.get_LFR_frequency( iLsfZv );
 
             % Obtain the relevant values (one per record) from zVariables R0,
             % R1, R2, and the virtual "R3".
-            zv_Rx = EJ_library.so.get_LFR_Rx(...
+            zv_Rx = EJ_library.so.hwzv.get_LFR_Rx(...
                 InSci.Zv.R0, ...
                 InSci.Zv.R1, ...
                 InSci.Zv.R2, ...
@@ -212,7 +212,7 @@ classdef lfr   % < handle
             nCdfSamplesPerRecord = EJ_library.assert.sizes(...
                 InSci.Zv.V, [nRecords, -1], ...
                 E,          [nRecords, -1, 2]);
-            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH)
+            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
             else                assert(nCdfSamplesPerRecord == 1)
             end
 
@@ -246,23 +246,40 @@ classdef lfr   % < handle
 
 
 
-            %==================================================================
+            %==========================================
             % Set MUX_SET
             % -----------
-            % Select which source of mux mode is used: LFR datasets or BIAS HK
-            %==================================================================
+            % Select which source of mux mode is used.
+            %==========================================
             [value, key] = SETTINGS.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
             switch(value)
                 case 'BIAS_HK'
                     L.log('debug', 'Using BIAS HK mux mode.')
-                    PreDc.Zv.MUX_SET = HkSciTime.MUX_SET;
+                    MUX_SET = HkSciTime.MUX_SET;
+
                 case 'LFR_SCI'
                     L.log('debug', 'Using LFR SCI mux mode.')
-                    PreDc.Zv.MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
+                    MUX_SET = InSci.Zv.BIAS_MODE_MUX_SET;
+
+                case 'BIAS_HK_LFR_SCI'
+                    L.log('debug', ...
+                        ['Using mux mode from BIAS HK when available, and', ...
+                        ' from LFR SCI when the former is not available.'])
+
+                    % ASSERTION
+                    % Added since the logic/algorithm is inherently relying on
+                    % the implementation using NaN.
+                    assert(isfloat(HkSciTime.MUX_SET))
+
+                    MUX_SET              = HkSciTime.MUX_SET;
+                    bUseBiasMux          = isnan(MUX_SET);
+                    MUX_SET(bUseBiasMux) = InSci.Zv.BIAS_MODE_MUX_SET(bUseBiasMux);
+
                 otherwise
                     error('BICAS:ConfigurationBug', ...
                         'Illegal settings value %s="%s"', key, value)
             end
+            PreDc.Zv.MUX_SET = MUX_SET;
 
 
 
@@ -283,7 +300,8 @@ classdef lfr   % < handle
 
 
         function [OutSci] = process_PostDC_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
-            OutSci    = bicas.proc.L1L2.tds.process_PostDC_to_CDF(...
+            % NOTE: Using __TDS__ function.
+            OutSci = bicas.proc.L1L2.tds.process_PostDC_to_CDF(...
                 SciPreDc, SciPostDc, outputDsi, L);
 
             OutSci.Zv.BW = SciPreDc.Zv.BW;

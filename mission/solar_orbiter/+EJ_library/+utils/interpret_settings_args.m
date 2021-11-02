@@ -195,7 +195,7 @@ end
 
 %===============================================================================
 % Lightly modified hard-coded copy of
-% EJ_library.utils.add_struct_to_struct()
+% EJ_library.ds.add_struct_to_struct()
 % -------------------------------------------------------------------------
 % Modifications: Not use EJ_library.utils.interpret_settings_args
 % (including recursive call).
@@ -203,7 +203,7 @@ end
 % IMPORTANT IMPLEMENTATION NOTE
 % =============================
 % This function (EJ_library.utils.interpret_settings_args) DELIBERATELY
-% DOES NOT USE EJ_library.utils.add_struct_to_struct() so that it (that
+% DOES NOT USE EJ_library.ds.add_struct_to_struct() so that it (that
 % function) can use EJ_library.utils.interpret_settings_args() INSTEAD.
 % Both using each other would lead to infinite recursion.
 %===============================================================================

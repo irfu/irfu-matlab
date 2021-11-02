@@ -104,7 +104,9 @@ classdef TSeries
   
   methods
     function obj = TSeries(t,data,varargin)
-      if  nargin == 0, obj.data_ = []; obj.t_ = []; return, end
+      if nargin == 0, obj.data_ = []; obj.t_ = []; return, end
+      if nargin == 1 && isempty(t), obj.data_ = []; obj.t_ = []; return, end
+      if nargin == 2 && or(isempty(t),isempty(data)), obj.data_ = []; obj.t_ = []; return, end
       
       if nargin<2, error('2 inputs required'), end
       if ~isa(t,'GenericTimeArray')
@@ -1368,7 +1370,13 @@ classdef TSeries
       % Resample Ts to timeline of Ts2
       %
       % See also: IRF_RESAMP
-      if isempty(obj), error('Cannot resample empty TSeries'), end
+      
+      %if isempty(obj), error('Cannot resample empty TSeries'), end
+      if isempty(obj) 
+        irf.log('warning','Cannot resample empty TSeries.'); 
+        Ts = TSeries([]);
+        return; 
+      end
       if ~isa(NewTime,'TSeries') && ~isa(NewTime,'GenericTimeArray')
         error('NewTime must be of TSeries or GenericTimeArray type or derived from it')
       end
