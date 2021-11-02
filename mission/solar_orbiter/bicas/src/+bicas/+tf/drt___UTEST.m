@@ -81,7 +81,8 @@ classdef drt___UTEST < matlab.unittest.TestCase
             % NOTE: Test retrending scaling.
             [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, {1, true}, 2);
             
-            testCase.verifyEqual(y12b,   0*x, 'AbsTol', 1e-15)
+            % 1e-15 works on irony but fails in GitHub CI.
+            testCase.verifyEqual(y12b,   0*x, 'AbsTol', 1e-14)
             testCase.verifyEqual(y2a,  4+6*x, 'AbsTol', 1e-14)
             
             
