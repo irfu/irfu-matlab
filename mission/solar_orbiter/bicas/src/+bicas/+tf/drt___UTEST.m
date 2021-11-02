@@ -111,12 +111,12 @@ classdef drt___UTEST < matlab.unittest.TestCase
         
         % NOTE: Does not modify signal between detrending and retrending
         % (y1b-->y2b).
-        function [y12b, y2a] = run_drt(y1a, drtInitArgsCa, detScaleFactor)
+        function [y12b, y2a] = run_drt(y1a, drtInitArgsCa, retScaleFactor)
 
             Drt = bicas.tf.drt(drtInitArgsCa{:});
             y12b = Drt.detrend(y1a);
             
-            y2a = Drt.retrend(y12b, detScaleFactor);
+            y2a = Drt.retrend(y12b, retScaleFactor);
         end
         
         
