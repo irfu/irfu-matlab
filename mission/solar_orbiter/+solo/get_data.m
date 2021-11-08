@@ -81,7 +81,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
           else
             res=EDC_SRF;
           end
-        case 'rpw-lfr-surv-cwf-b-cdag'
+          case 'surv' % we might need to change this case when we add more RPW products!!!
           % search-coil
           BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
           if strcmp(C{3},'srf')
