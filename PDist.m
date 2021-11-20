@@ -1,9 +1,5 @@
 classdef PDist < TSeries
-  % Particle distributions, subclass of TSeries
-  % TODO:
-  % e65: collect data into 64 energy levels instead of alternating 32
-  %
-  %
+
   properties (Access = protected)
     type_
     species_
@@ -44,6 +40,79 @@ classdef PDist < TSeries
   
   methods
     function obj = PDist(t,data,varargin) % constructor
+      % PDIST Create PDIST object.
+      %   Constructor method (PDIST.PDIST) for class PDist.
+      %   Load and work with particle distributions from satellite missions
+      %   such as MMS. For a complete set of methods type >> methods PDIST.
+      %
+      %   PD = PDIST(time,data,type,depend_var1,...,depend_varN);
+      %     N is the dimension of the input data
+      %     nt is the number of time steps
+      %     time - time in EpochTT format
+      %     data - matrix of data in format [nt, sz1, ..., szN]
+      %     type - type of distribution: 'moms-tens0', 'moms-tens1',
+      %            'moms-tens2', 'skymap', 'pitchangle', 'omni', 
+      %            'line (reduced)' (same as '1Dcart'), 'plane (reduced)',
+      %            'plane (slice)', 'box' (same as '3Dcart')
+      %     depend_var - dependent variables (should be as many depend_var
+      %                  as dimensions of the data set excluding time), e.g.: 
+      %                  velocity (km/s), 
+      %                  energy (eV), 
+      %                  instrument azimuthal angle (deg), 
+      %                  instrument polar angle (deg), 
+      %                  pitchangle (deg)
+      %
+      %   Note: PDist objects are typically constructed using some
+      %   construction function like mms.make_pdist, mms.get_data for 
+      %   skymaps, or different methods of PDIST, like PDIST.reduce or 
+      %   PDIST.omni      
+      %
+      % Example:
+      %   % Note: mms.db_list_files and mms.get_data requires you have 
+      %   % database initiated: 
+      %   % If MMS data are located in directory: 
+      %   % /path/to/your/data/mms1/...
+      %   % /path/to/your/data/mms2/...
+      %   % etc..
+      %   % >> mms.db_init('local_file_db','/path/to/your/data');   
+      %
+      %   % Create skymap distributions from MMS data using mms.get_data
+      %   tint = irf.tint('2017-07-06T13:53:03.00Z/2017-07-06T13:55:33.00Z');
+      %   mms_id = 1;
+      %   iPDist1 = mms.get_data('PDi_fpi_brst_l2',tint,mms_id);
+      %
+      %   % Create skymap distributions from MMS data using mms.make_pdist
+      %   tint = irf.tint('2017-07-06T13:53:03.00Z/2017-07-06T13:55:33.00Z');
+      %   list_files = mms.db_list_files('mms1_fpi_brst_l2_dis-dist',tint);
+      %   ifile = 1; % in case there are several files, chose one
+      %   filepath = [list_files(ifile).path '/' list_files(ifile).name];
+      %   % It is of course possible to also directly type the path to your file.
+      %   [iPDist1,iPDistErr1] = mms.make_pdist(filepath); 
+      %            
+      %   % Create phony 3D distribution on cartesian grid
+      %   m = 9.1094e-31; % electron mass
+      %   n = 1*1e6; % 1/m3
+      %   vd = 1000; % m/s
+      %   T = 1000; % eV
+      %   vt = @(T) sqrt(2*units.kB*T/m); % m/s, thermal speed from temperature
+      %   % Maxwellian distribution
+      %   f = @(vx,vy,vz,T,n,vd) n./((pi)^(3/2).*vt(T).^3).*exp(-(vx-vd).^2./vt(T).^2-(vy).^2./vt(T).^2-(vz).^2./vt(T).^2);
+      %   % Set up velocity grid
+      %   nvx = 50; nvy = 50; nvz = 50;
+      %   vx = linspace(-50,50,nvx); % km/s, depend_var1
+      %   vy = linspace(-50,50,nvy); % km/s, depend_var2
+      %   vz = linspace(-50,50,nvz); % km/s, depend_var3
+      %   t = 0:1; % s, depend_var0
+      %   [~,VX,VY,VZ] = ndgrid(t,vx*1e-3,vy*1e-3,vz*1e-3);
+      %   F = f(VX,VY,VZ,T,n,vd);
+      %   time = EpochTT(t);
+      %   % Create PDist object
+      %   PD = PDIST(time,F,'3Dcart',vx,vy,vz);
+      %
+      % See also: TSeries, EpochTT, irf.ts_skymap, mms.get_data,
+      % mms.make_pdist, PDIST.reduce, PDIST.omni, PDIST.pitchangles, 
+      % mms.db_init
+      
       if nargin<2, error('2 inputs required'), end
       
       obj@TSeries(t,data,'to',0);
@@ -1319,9 +1388,16 @@ classdef PDist < TSeries
       % PDIST.REBIN Rebins energies of distribution function.
       %   Usage:
       %     PD = REBIN(dist,base,grid,orient);
-      %       base - only 'sph' implemented
-      %       orient -
-      %       grid - only {energy,[],[]} implemented
+      %       base - 'sph', 'cart' (cart quite slow, only typically use 
+      %                             single time step, say for example you
+      %                             want to create a grid of test particles
+      %                             based on observed distribution)
+      %       orient - cartesian unit vectors [x,y,z] in DSL coordinates
+      %       grid - 'sph', 'cart'
+      %           if base is 'sph', grid should contain {energy,azimuthal_angle,polar_angle}
+      %           if any is empty, it is kept as it is,for example, one
+      %           can, only {energy,[],[]} implemented      
+      %           if base is 'cart' or 'cart_v', grid should be {vx,vy,vz}
       %
       %     Rebin to correspond to EDI energy interval.
       %     ePDist1_rebin_500 = ePDist1.rebin(''sph'',{[475 525],[],[]});',1);
@@ -1338,7 +1414,7 @@ classdef PDist < TSeries
       
       % Default values
       units = irf_units;
-      nMC = 200;
+      nMC = 100;
       nt = obj.length;
       its = 1:nt;
       PD = [];
@@ -1431,50 +1507,116 @@ classdef PDist < TSeries
           %new_dn = PD.d3v('mat');
           PD.data_ = new_data;%./new_dn;
         case 'cart'
+          units = irf_units;
+          
           % Get input
           new_vx_unit = orient(1,:);
           new_vy_unit = orient(2,:);
           new_vz_unit = orient(3,:);
           new_vbins_edges = grid;
+          new_vx_edges = new_vbins_edges{1};
+          new_vy_edges = new_vbins_edges{2};
+          new_vz_edges = new_vbins_edges{3};
+          nvx_new = numel(new_vx_edges);
+          nvy_new = numel(new_vy_edges);
+          nvz_new = numel(new_vz_edges);          
+          new_dvx = diff(new_vx_edges);
+          new_dvy = diff(new_vy_edges);
+          new_dvz = diff(new_vz_edges);
+          [NDVX,NDVY,NDVZ] = ndgrid(new_dvx,new_dvy,new_dvz);
+          new_vol = NDVX.*NDVY.*NDVZ;
           
-          % Get v_xyz_DSL of original grid
-          [old_vx,old_vy,old_vz] = obj.v;
-          old_f = obj.data;
-          old_vol = obj.d3v;
+          % Initialize new matrix for f
+          f_new = zeros(obj.length, nvx_new-1, nvy_new-1, nvz_new-1);
+          sizedata = [nvx_new-1, nvy_new-1, nvz_new-1];
+          
+          % Data from PDist in spherical coordinate system
+          [old_vx,old_vy,old_vz] = obj.v; % v_xyz_DSL of original grid
+          old_f = obj.data; % phase space density of each cell
+          old_vol = obj.d3v.data; % Phase space volume of each cell
+          old_dn = old_f.*old_vol;
+          
+          % Edges of energy bins, same for each time step
+          energy_minus = obj.depend{1}(1,:) - obj.ancillary.delta_energy_minus;
+          energy_plus = obj.depend{1}(1,:) + obj.ancillary.delta_energy_plus;
+          denergy = energy_plus - energy_minus;
+          energy_edges = [energy_minus energy_plus(end)];
           
           
-          % Rotate old coordinates into new coordinates
-          old_vx_in_new_vxyz = old_vx*new_vx_unit(1) + old_vy*new_vx_unit(2) + old_vz*new_vx_unit(3);
-          old_vy_in_new_vxyz = old_vx*new_vy_unit(1) + old_vy*new_vy_unit(2) + old_vz*new_vy_unit(3);
-          old_vz_in_new_vxyz = old_vx*new_vz_unit(1) + old_vy*new_vz_unit(2) + old_vz*new_vz_unit(3);
+          % Edges of polar angle bins, same for each time step
+          polar_center = obj.depend{3};
+          dpolar = polar_center(2) - polar_center(1);
+          polar_edges = [polar_center(1:end-1)-0.5*dpolar polar_center(end)+0.5*dpolar];
           
+          for it = 1:obj.length
+            % Edges of azimuthal angle bins, changes for each time step
+            azim_center = obj.depend{2};
+            dazim = azim_center(2) - azim_center(1);
+            azim_edges = [azim_center(1:end-1)-0.5*dazim azim_center(end)+0.5*dazim];
           
-          % Set up new grid
-          % Add one outer bin
-          [new_vx,new_vy,new_vz] = meshgrid(new_vbins_edges{1},new_vbins_edges{2},new_vbins_edges{3});
-          new_f = nan(size(old_f));
-          
-          
-          iVxg = discretize(vxp,vg_edges);
-          iVyg = discretize(vyp,vg_edges);
-          % fixes bug that exists on some systems, may influence
-          % performance
-          iVxg(iVxg==0) = nan;
-          iVyg(iVyg==0) = nan;
-          
-          % Loop through MC points and add value of instrument bin to the
-          % appropriate projection bin
-          for l = 1:nMCt
-            if usePoint(l) && vxp(l)>min(vg_edges) && vxp(l)<max(vg_edges) && vyp(l)>min(vg_edges) && vyp(l)<max(vg_edges)
-              Fg(iVxg(l),iVyg(l)) = Fg(iVxg(l),iVyg(l))+F(i,j,k)*dtau(i,j,k)/dAg/nMCt;
+            % Create N particles within each bin that each recieve 1/N of
+            % the phase space density. These are then rotated into the new
+            % coordinate system and binned in the new grid.            
+            N = nMC;
+            for iEnergy    = 1:size(old_f,2)
+              for iAzim    = 1:size(old_f,3)
+                for iPolar = 1:size(old_f,4)
+                  % Skip bin if space spade density is zero
+                  if old_dn(it,iEnergy,iAzim,iPolar) == 0
+                    continue;
+                  end
+                  tmp_energy = energy_edges(iEnergy) + denergy(iEnergy)*rand(N,1); % eV
+                  tmp_azim   = azim_edges(iAzim)     + dazim*rand(N,1);   % deg
+                  tmp_polar  = polar_edges(iPolar)   + dpolar*rand(N,1);  % deg
+                  tmp_v = sqrt(tmp_energy*units.eV*2/units.me)/1000; % km/s
+
+                  old_vx = -tmp_v.*sind(tmp_polar).*cosd(tmp_azim); % '-' because the data shows which direction the particles were coming from
+                  old_vy = -tmp_v.*sind(tmp_polar).*sind(tmp_azim);
+                  old_vz = -tmp_v.*cosd(tmp_polar);
+
+                  % Rotate into new coordinate system
+                  new_vx = old_vx*new_vx_unit(1) + old_vy*new_vx_unit(2) + old_vz*new_vx_unit(3);
+                  new_vy = old_vx*new_vy_unit(1) + old_vy*new_vy_unit(2) + old_vz*new_vy_unit(3);
+                  new_vz = old_vx*new_vz_unit(1) + old_vy*new_vz_unit(2) + old_vz*new_vz_unit(3);
+
+                  % Assign particle density to each particle
+                  tmp_dn = old_dn(it,iEnergy,iAzim,iPolar)/N;
+                  
+                  % Bin into new grid
+                  iVxg = discretize(new_vx,new_vx_edges);
+                  iVyg = discretize(new_vy,new_vy_edges);
+                  iVzg = discretize(new_vz,new_vz_edges);
+                  
+                  % sizedata is like size(g_new) but excludes first index (time)
+                  loc = sub2ind(sizedata,iVxg,iVyg,iVzg);
+                  loc(isnan(loc)) = []; % values that fall outside of box becomes nan, remove these
+                  hasdata = all(loc>0, 2);
+
+                  sum_dn_over_vol = accumarray(loc(hasdata,:), tmp_dn./new_vol(loc),[numel(f_new) 1]);
+                  f_new(it,:,:,:) = f_new(it,:,:,:) + reshape(sum_dn_over_vol,[1 sizedata]);
+                end
+              end
             end
+            
+            if 0 % plot results.
+              %%
+            hca = subplot(3,1,1);
+            surf(hca,new_vx_edges,new_vy_edges,zeros(nvx_new,nvy_new),log10(squeeze(sum(f_new,3))));
+            view([0,0,1])
+            hca = subplot(3,1,2);
+            surf(hca,new_vx_edges,new_vz_edges,zeros(nvx_new,nvz_new),log10(squeeze(sum(f_new,2))));
+            view([0,0,1])
+            hca = subplot(3,1,3);          
+            surf(hca,new_vy_edges,new_vz_edges,zeros(nvy_new,nvz_new),log10(squeeze(sum(f_new,1))));
+            view([0,0,1])
+            1;
+            end         
           end
           
-          
-          
-          PD = PDist(dist.time(it),Fg,'box',new_vx,new_vy,new_vz);
-          PD.ancillary.vx_edges = all_vx_edges*1e-3;
-          PD.ancillary.vy_edges = all_vx_edges*1e-3;
+          PD = PDist(obj.time,f_new,'3Dcart',new_vx,new_vy,new_vz);
+          PD.ancillary.vx_edges = new_vx_edges*1e-3; % km/s
+          PD.ancillary.vy_edges = new_vy_edges*1e-3; % km/s
+          PD.ancillary.vy_edges = new_vz_edges*1e-3; % km/s
           PD.ancillary.base = 'cart';
       end
     end
