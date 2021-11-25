@@ -499,6 +499,7 @@ classdef PDist < TSeries
       %     'plot' - plots grid, color coded to polar angle
       %     'squeeze' - squeezes output data [1 32 32 16] -> [32 32 16]
       %                 if PDist only has one time index for example
+      %     'scpot' - correct velocity for spacecraft potential
       %
       %   Example:
       %     f = ePDist(100).convertto('s^3/km^6'); % single time PDist
@@ -510,6 +511,7 @@ classdef PDist < TSeries
       %     vlim = [-5 5]; clim = [3 5];
       %     set(gca,'clim',clim,'xlim',vlim,'ylim',vlim,'zlim',vlim)
       
+      doScpot = 0;
       doReturnTSeries = 0;
       doSqueeze = 0;
       doRotation = 0;
@@ -543,6 +545,11 @@ classdef PDist < TSeries
           case 'squeeze'
             doSqueeze = 1;
             args = args(l+1:end);
+          case 'scpot'
+            l = 2;
+            doScpot = 1;
+            scpot = args{2};
+            args = args(l+1:end);
           otherwise
             irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
             args = args(l+1:end);
@@ -558,13 +565,23 @@ classdef PDist < TSeries
       
       energy = obj.depend{1};
       units = irf_units;
-      velocity = sqrt(energy*units.eV*2/units.me)/1000; % km/s
+      
+      if doScpot 
+        scpot = scpot.resample(obj).data;
+      else        
+        scpot = zeros(obj.length,1);
+      end
       
       vx = NaN*obj.data;
       vy = NaN*obj.data;
       vz = NaN*obj.data;
       
-      for ii = 1:length(obj.time)
+      for ii = 1:length(obj.time)            
+        energy_tmp = energy - scpot(ii);
+        energy_tmp(energy_tmp<0) = 0; % if scpot is not used, energy_tmp = energy and nothing is changed
+        velocity = sqrt((energy_tmp)*units.eV*2/units.me)/1000; % km/s
+        
+        
         [VEL,AZ,POL] = meshgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
         %[AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
         
@@ -623,18 +640,18 @@ classdef PDist < TSeries
     end
     function PD = d3v(obj,varargin)
       % Calculate phase space volume of FPI bins.
-      % Default return is f_fpi*d3v, i.e. PDist multiplied with volume
-      % corresponding to each bin, giving the units of density.
       %
-      % Summing up all the bins should give the density: int(f*d3v)
-      % (For better accordance with FPI, multiply scpot with 1.2, see
-      % mms.psd_moments)
-      % nansum(nansum(nansum(ePDist1.d3v('scpot',scPot1.resample(ePDist1)).data,2),3),4)
+      % Get partial density by doing: dn = pdist*pdist.d3v;
       %
       %   Options:
-      %     'scpot',scpot - corrects for spacecraft potential
+      %     'scpot',scpot - Corrects for spacecraft potential. For better 
+      %                     accordance with FPI, multiply scpot with 1.2, 
+      %                     see mms.psd_moments.
       %     'mat' - returns matrix (nt x nE x nAz x nPol) with phase space
       %             volume
+      
+      % Default return is f_fpi*d3v, i.e. PDist multiplied with volume
+      % corresponding to each bin, giving the units of density.
       
       units = irf_units;
       doScpot = 0;
@@ -665,13 +682,13 @@ classdef PDist < TSeries
       switch obj.units % check units and if they are supported
         case 's^3/cm^6' % m^3/s^3 = m^3/s^3 * cm^3/cm^3 = cm^3/s^3 * m^3/cm^3 = cm^3/s^3 * (10^-2)^3
           d3v_scale = 1/10^(-2*3);
-          new_units = '1/cm^3';
+          new_units = 'cm^3/s^3';
         case 's^3/m^6' % m^3/s^3 = m^3/s^3 * m^3/m^3 = m^3/s^3 * m^3/m^3 = m^3/s^3 * (10^0)^3
           d3v_scale = 1/10^0;
-          new_units = '1/m^3';
+          new_units = 'm^3/s^3';
         case 's^3/km^6' % m^3/s^3 = m^3/s^3 * km^3/km^3 = km^3/s^3 * m^3/km^3 = km^3/s^3 * (10^3)^3
           d3v_scale = 1/10^(3*3);
-          new_units = '1/km^3';
+          new_units = 'km^3/s^3';
         otherwise
           error(sprintf('PDist.d3v not supported for %s',obj.units))
       end
@@ -698,19 +715,19 @@ classdef PDist < TSeries
         E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus);
       end
       v_minus = sqrt(2*units.e*E_minus/units.me); % m/s
-      v_plus = sqrt(2*units.e*E_plus/units.me); % m/s
+      v_plus = sqrt(2*units.e*E_plus/units.me); % m/s      
       d_vel = (v_plus.^3 - v_minus.^3)/3; % (m/s)^3
       d_vel_mat = repmat(d_vel,1,1,32,16);
       
-      d3v = d_vel_mat.*d_azim.*d_polar_mat;
+      d3v = d_vel_mat.*d_azim.*d_polar_mat; % (m/s)^3
       
       if doReturnMat
         PD = d3v*d3v_scale;
       else
         PD = obj;
-        PD.data = PD.data.*d3v*d3v_scale;
+        PD.data = d3v*d3v_scale;
         PD.units = new_units;
-        PD.name = sprintf('(%s)*d3v',PD.name);
+        PD.name = 'd3v';
         PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
       end
     end
@@ -1414,7 +1431,8 @@ classdef PDist < TSeries
       
       % Default values
       units = irf_units;
-      nMC = 100;
+      doScpot = 0;
+      nMC = 200;
       nt = obj.length;
       its = 1:nt;
       PD = [];
@@ -1426,12 +1444,30 @@ classdef PDist < TSeries
       while have_options
         l = 0;
         switch(lower(args{1}))
+          case 'scpot'
+            l = 2;
+            scpot = args{2};
+            doScpot = 1;
           otherwise
             l = 1;
-            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
-            args = args(l+1:end);
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))            
         end
+        args = args(l+1:end);
         if isempty(args), break, end
+      end
+      
+      % Return output in same units as input
+      % Input velocities are in km/s, use this v_scaling to transform all
+      % velocities to the length scale units of the input f
+      switch obj.units % check units and if they are supported
+        case 's^3/cm^6' 
+          v_scale = 1e3/1e-2; % km/cm          
+        case 's^3/m^6' 
+          v_scale = 1e0/1e-2; % m/cm  
+        case 's^3/km^6'
+          v_scale = 1e-2/1e-2; % cm/cm  
+        otherwise
+          error(sprintf('PDist.d3v not supported for %s',obj.units))
       end
       
       % Start binning
@@ -1449,8 +1485,8 @@ classdef PDist < TSeries
           old_v2dv = (old_v_plus.^3 - old_v_minus.^3)/3;
           
           old_data = obj.data;
-          old_dn = obj.d3v.data; % how much density belongs to each phase space bin
-          old_d3v = obj.d3v('mat');
+          %old_dn = obj.d3v.data; 
+          old_d3v = obj.d3v.data; % volume of bin
           
           if not(isempty(grid{1}))
             new_energy_minus = grid{1}(1:end-1);
@@ -1516,17 +1552,21 @@ classdef PDist < TSeries
           new_vbins_edges = grid;
           new_vx_edges = new_vbins_edges{1};
           new_vy_edges = new_vbins_edges{2};
-          new_vz_edges = new_vbins_edges{3};
+          new_vz_edges = new_vbins_edges{3};          
           nvx_new = numel(new_vx_edges);
           nvy_new = numel(new_vy_edges);
           nvz_new = numel(new_vz_edges);          
           new_dvx = diff(new_vx_edges);
           new_dvy = diff(new_vy_edges);
           new_dvz = diff(new_vz_edges);
+          new_vx_centers = new_vx_edges(1:end-1) + 0.5*new_dvx;
+          new_vy_centers = new_vy_edges(1:end-1) + 0.5*new_dvy;
+          new_vz_centers = new_vz_edges(1:end-1) + 0.5*new_dvz;
           [NDVX,NDVY,NDVZ] = ndgrid(new_dvx,new_dvy,new_dvz);
-          new_vol = NDVX.*NDVY.*NDVZ;
+          new_vol = NDVX.*NDVY.*NDVZ*v_scale.^3; % phase space volume should be in same length units as inout f
           
           % Initialize new matrix for f
+          dn_new = zeros(obj.length, nvx_new-1, nvy_new-1, nvz_new-1);
           f_new = zeros(obj.length, nvx_new-1, nvy_new-1, nvz_new-1);
           sizedata = [nvx_new-1, nvy_new-1, nvz_new-1];
           
@@ -1541,7 +1581,6 @@ classdef PDist < TSeries
           energy_plus = obj.depend{1}(1,:) + obj.ancillary.delta_energy_plus;
           denergy = energy_plus - energy_minus;
           energy_edges = [energy_minus energy_plus(end)];
-          
           
           % Edges of polar angle bins, same for each time step
           polar_center = obj.depend{3};
@@ -1565,11 +1604,29 @@ classdef PDist < TSeries
                   if old_dn(it,iEnergy,iAzim,iPolar) == 0
                     continue;
                   end
+                  
+%                   if doScpot 
+%                     energy_minus = energy_minus ;
+%                     energy_plus = energy_plus - scpot.data(it);            
+%                     energy_edges = energy_edges - scpot.data(it);
+%                   end          
+          
                   tmp_energy = energy_edges(iEnergy) + denergy(iEnergy)*rand(N,1); % eV
+                  if doScpot, tmp_energy = tmp_energy - scpot.data(it); end
                   tmp_azim   = azim_edges(iAzim)     + dazim*rand(N,1);   % deg
                   tmp_polar  = polar_edges(iPolar)   + dpolar*rand(N,1);  % deg
                   tmp_v = sqrt(tmp_energy*units.eV*2/units.me)/1000; % km/s
 
+                  if doScpot % check if energy is negative, then skip    
+                    if iEnergy>6; 
+                      1; 
+                    end                
+                    tmp_azim(tmp_energy<0) = [];
+                    tmp_polar(tmp_energy<0) = [];
+                    tmp_v(tmp_energy<0) = [];
+                    if isempty(tmp_v) continue; end
+                  end
+                  
                   old_vx = -tmp_v.*sind(tmp_polar).*cosd(tmp_azim); % '-' because the data shows which direction the particles were coming from
                   old_vy = -tmp_v.*sind(tmp_polar).*sind(tmp_azim);
                   old_vz = -tmp_v.*cosd(tmp_polar);
@@ -1579,7 +1636,7 @@ classdef PDist < TSeries
                   new_vy = old_vx*new_vy_unit(1) + old_vy*new_vy_unit(2) + old_vz*new_vy_unit(3);
                   new_vz = old_vx*new_vz_unit(1) + old_vy*new_vz_unit(2) + old_vz*new_vz_unit(3);
 
-                  % Assign particle density to each particle
+                  % Assign particle density to each macro particle
                   tmp_dn = old_dn(it,iEnergy,iAzim,iPolar)/N;
                   
                   % Bin into new grid
@@ -1592,8 +1649,9 @@ classdef PDist < TSeries
                   loc(isnan(loc)) = []; % values that fall outside of box becomes nan, remove these
                   hasdata = all(loc>0, 2);
 
-                  sum_dn_over_vol = accumarray(loc(hasdata,:), tmp_dn./new_vol(loc),[numel(f_new) 1]);
-                  f_new(it,:,:,:) = f_new(it,:,:,:) + reshape(sum_dn_over_vol,[1 sizedata]);
+                  %sum_dn_over_vol = accumarray(loc(hasdata,:), tmp_dn./new_vol(loc),[numel(f_new) 1]);
+                  sum_dn = accumarray(loc(hasdata,:), tmp_dn,[numel(f_new) 1]);
+                  dn_new(it,:,:,:) = dn_new(it,:,:,:) + reshape(sum_dn,[1 sizedata]);
                 end
               end
             end
@@ -1612,12 +1670,16 @@ classdef PDist < TSeries
             1;
             end         
           end
+          % divide accumulated density (e.g. cm^{-3}) for each bin by the
+          % velocity space volume of that bin (e.g. cm^{3}/s^{3})
+          f_new = dn_new./reshape(repmat(new_vol,obj.length,1,1,1),[obj.length,nvx_new-1,nvz_new-1,nvz_new-1]);
           
-          PD = PDist(obj.time,f_new,'3Dcart',new_vx,new_vy,new_vz);
+          PD = PDist(obj.time,f_new,'3Dcart',new_vx_centers,new_vy_centers,new_vz_centers);
           PD.ancillary.vx_edges = new_vx_edges*1e-3; % km/s
           PD.ancillary.vy_edges = new_vy_edges*1e-3; % km/s
-          PD.ancillary.vy_edges = new_vz_edges*1e-3; % km/s
+          PD.ancillary.vz_edges = new_vz_edges*1e-3; % km/s
           PD.ancillary.base = 'cart';
+          PD.units = obj.units;
       end
     end
     function PD = smooth(obj,step)
@@ -3007,6 +3069,187 @@ classdef PDist < TSeries
         otherwise
           error('Species not supported.')
       end
+    end
+    function particles = macroparticles(obj,varargin)
+      % PDIST.MACROPARTICLES Creates array of macro particles based on
+      %   PDIST.
+      %
+      %   particles = PD.macroparticles(inp1,arg1,...)
+      %
+      %   Only returns one particle per bin with velocity at the center of 
+      %   the bin. Any number of macro_particles is to be implemented.
+      %    
+      %   Input:
+      %      PD - PDist object. Currently only 'skymap' is implemented.
+      %
+      %   Options:      
+      %     skipzero - skip bins that have zero phase space density
+      %     scpot - spacecraft potential in TSeries format, adjust energy
+      %
+      %   Output:   1×obj.length struct array with fields: 
+      %             iDep1, iDep2, ..., iDepN, dn, vx, vy, vz 
+      %             where N is the numer of dependent variables of PD. 
+      %             N = 3 for skymap (energy, azimuthal angle, polar angle)
+      %             iDep give the index of the corresponding bin of the
+      %             macro particle
+      %             dn - particle density of macro particle, 
+      %                  dn = f(iDep1,iDep2,iDep3)*vol(iDep1,iDep2,iDep3)/Nmacro(iDep1,iDep2,iDep3)
+      %                  sum(particle(1).dn) should give the density for
+      %                  this time step, however, the absence of proper
+      %                  calibration often makes them differ
+      %
+      %   Example:
+      %     particles = PD.macroparticles('skipzero','scpot',scpot);
+      %     scatter3(particles(1).vx,particles(1).vy,particles(1).vz,5,particles(1).dn)
+      %
+      
+      %        can only use one of ntot, nbin, last one applies
+      %     ntot - Total number of macro particles. If less than number of
+      %            bins, it is possible that some bins do not get any 
+      %            particles assigned. NOT IMPLEMENTED
+      %     nbin - Number of macro particles per bin.
+      
+      % Default values
+      Ntot = 16*32*32; % one per cell if input is skymap
+      doNtot = 0;
+      Nbin = 1; % one per cell
+      doNbin = 1;
+      doSkipZero = 0;
+      doScpot = 0;
+      
+      % Check input
+      nargs = numel(varargin);
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end
+      while have_options
+        l = 0;
+        switch(lower(args{1}))
+          case 'ntot'
+            Ntot = varargin{2};
+            doNtot = 1;
+            doNbin = 0;          
+            l = 2;
+            args = args(l+1:end);
+          case 'nbin'
+            Nbin = varargin{2};
+            doNbin = 1;
+            doNtot = 0;    
+            l = 2;
+            args = args(l+1:end);
+          case 'skipzero'            
+            doSkipZero = 1;
+            l = 1;
+            args = args(l+1:end);
+          case 'scpot'            
+            doScpot = 1;
+            l = 2;
+            scpot = args{2};
+            scpot = scpot.resample(obj); % make sure they have the same timeline
+            args = args(l+1:end);
+          otherwise
+            l = 1;
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
+        end
+        if isempty(args), break, end
+      end
+      
+      % Data from PDist in spherical coordinate system
+      sizedata = obj.datasize;
+      % v_xyz_DSL of original grid
+      if doScpot        
+        [vx,vy,vz] = obj.v('scpot',scpot);
+      else
+        [vx,vy,vz] = obj.v; 
+      end
+      
+      % Phase space density of each cell, can be different units depending
+      % on original PDist
+      f = obj.data; 
+      % Phase space volume of each cell, same base length and time units as f
+      if doScpot
+        vol = obj.d3v('scpot',scpot).data; 
+      else
+        vol = obj.d3v.data; 
+      end
+      % Partial density of each cell, same length unit as f
+      dn = f.*vol;
+      % Total density of each timestep, something wrong here, or just badly
+      % messed up by background noise and particle contamination?
+      n_tot = sum(dn(:,:),2);
+      % Fraction of density in each separate bin
+      n_frac = dn./repmat(n_tot,[1 sizedata(2:end)]);
+      
+      % Assign how many particles should be in each bin
+      if doNtot
+        if doSkipZero
+          disp('''Ntot'' not implemented, doing 1 macroparticle per bin, excluding bins with zero phase space density.');
+        else
+          disp('''Ntot'' not implemented, doing 1 macroparticle per bin, including bins with zero phase space density.');
+        end
+        doNtot = 0;
+        doNbin = 1;
+      end
+      if doNbin % && doSkipZero
+        % Target number of particles per bin
+        Ntmp = n_frac*Ntot; % sum(Ntmp(:)) = Ntot
+        % Round up
+        Ntmp_roundup = ceil(Ntmp);
+        if not(doSkipZero)
+          Ntmp_roundup(Ntmp_roundup==0) = 1;
+        end                        
+        
+        % Partial density for each macroparticle
+        dn_part = repmat(n_tot,[1 sizedata(2:end)]).*n_frac./Ntmp_roundup;  
+        
+        % Repeat values the number of times Ntmp_roundup specifies
+        for it = 1:obj.length
+          dn_all = repelem(dn_part(it,:),Ntmp_roundup(it,:));
+          vx_all = repelem(vx(it,:),Ntmp_roundup(it,:));
+          vy_all = repelem(vy(it,:),Ntmp_roundup(it,:));
+          vz_all = repelem(vz(it,:),Ntmp_roundup(it,:));
+          f_all = repelem(f(it,:),Ntmp_roundup(it,:));        
+
+          [iDep1,iDep2,iDep3] = ndgrid(1:sizedata(2),1:sizedata(3),1:sizedata(4));
+          iDep1_all = repelem(iDep1(:),Ntmp_roundup(it,:));
+          iDep2_all = repelem(iDep2(:),Ntmp_roundup(it,:));
+          iDep3_all = repelem(iDep3(:),Ntmp_roundup(it,:));
+
+
+          % Collect results into structure
+          p(it).iDep1 = iDep1_all;
+          p(it).iDep2 = iDep2_all;
+          p(it).iDep3 = iDep3_all;
+          p(it).dn = dn_all;
+          p(it).vx = vx_all;
+          p(it).vy = vy_all;
+          p(it).vz = vz_all;
+        end
+        %iselect = isort(1:Ntot);
+        % Remove 
+        %if doSkipZero
+        %  Ntmp2 = Ntmp(iselect);
+        %  [iNonZero,~] = find(Ntmp2>0);
+        %  iselect = iselect(iNonZero);
+        %end
+%         [iEn,iAz,iPol] = ind2sub(sizedata(2:end),iselect);
+%         vx_select = vx(iselect);
+%         vy_select = vy(iselect);
+%         vz_select = vz(iselect);
+%         f_select = f(iselect);
+%         dn_select = dn(iselect);        
+      end
+      
+      
+%       [p(1:Ntot).iEn] = deal(iEn);
+%       [p.iAz] = deal(iAz);
+%       [p.iPol] = deal(iPol);
+%       [p.f] = deal(f_select);
+%       [p.dn] = deal(dn_select);
+%       [p.vx] = deal(vx_select);
+%       [p.vy] = deal(vy_select);      
+%       [p.vz] = deal(vz_select);
+      particles = p;
     end
     %     function e = energy(obj)
     %       % Get energy of object when not knowing its index
