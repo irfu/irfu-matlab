@@ -190,7 +190,7 @@ if isempty(ax) % if empty axis use current axis GCA
   end
   ax=gca;
 end
-
+set(0, 'CurrentFigure', ax.Parent)
 %% One subplot only
 if flag_subplot==0  % One subplot
   if isstruct(x)
