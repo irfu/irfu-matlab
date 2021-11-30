@@ -22,19 +22,21 @@
 % SYNTAX: translate(... , nonMatchValue)
 %   No match will be accepted.
 % --
-% table : Cell array of (a) cell arrays of strings, and (b) arbitrary values.
-%         {iRule, 1} = Cell array of unique strings, "keys". Is allowed to be
-%                      empty but will then never match.
-%         {iRule, 2} = Arbitrary value to be returned.
-%         NOTE: Asserts there are only unique keys across all rules.
-%         RATIONALE: Argument has this structure to make keys+values clear when
-%         hardcoding it using literals.
-% key   : String.
+% table
+%       Cell array of (a) cell arrays of strings, and (b) arbitrary values.
+%       {iRule, 1} = Cell array of unique strings, "keys". Is allowed to be
+%                    empty but will then never match.
+%       {iRule, 2} = Arbitrary value to be returned.
+%       NOTE: Asserts there are only unique keys across all rules.
+%       RATIONALE: Argument has this structure to make keys+values clear when
+%       hardcoding it using literals.
+% key   
+%       String
 % Alt 1:
-%   varargin{1} = nonMatchValue
+%       varargin{1} = nonMatchValue
 % Alt 2:
-%   varargin{1} = errorMsgId
-%   varargin{2} = errorMsg
+%       varargin{1} = errorMsgId
+%       varargin{2} = errorMsg
 % --
 % NOTE: Empty string matches empty string.
 % NOTE: Counts '' and char(zeros(1,0)) as identical, both for matching and

@@ -17,6 +17,7 @@ function [phiEB,vbest,dirbest,thetas,corrs] = lhwaveanalysis(varargin)
 %       'blpass' - set maximum frequency for low-pass filter of background
 %       magnetic field (FGM)
 %       'plot' - set to 1 to plot figure.
+%       'vmax' - maximum speed (km/s), if vbest = vmax, increase interval
 %
 % Example:
 %   Tintl = irf.tint('2015-12-14T01:17:39.00Z/2015-12-14T01:17:43.00Z');
@@ -57,6 +58,7 @@ maxfreq = 0; % No low-pass filter
 lowpassBxyz = 2;
 plotfigure = 0;
 frange = 0;
+vmax = 2e3; % 2000 km/s
 
 while options
   l = 2;
@@ -84,6 +86,8 @@ while options
           plotfigure = 1;
         end
       end
+    case 'vmax'
+      vmax = args{2};
     otherwise
       irf_log('fcal',['Unknown flag: ' args{1}])
       l=1;
@@ -154,7 +158,7 @@ dirbest = R1*cosd(thetabest)+R2*sind(thetabest);
 dirbestround = round(dirbest,2);
 
 %Find best speed
-vphvec = 1e1:1e0:5e2; % Maximum velocity may need to be increased in rare cases
+vphvec = 1e1:1e0:vmax; % Maximum velocity may need to be increased in rare cases
 corrv = zeros(1,length(vphvec));
 
 for ii=1:length(vphvec)
@@ -163,6 +167,9 @@ for ii=1:length(vphvec)
 end
 
 [~,corrvpos] = min(corrv);
+if corrvpos == length(vphvec)
+  irf.log('warning',sprintf('Wave speed > vmax = %g km/s. Increase search interval using input option ''vmax''.',vmax));
+end
 phiEbest = phibest.data*vphvec(corrvpos);
 phiEbest = TSeries(phiBs.time,phiEbest);
 vbest = vphvec(corrvpos);

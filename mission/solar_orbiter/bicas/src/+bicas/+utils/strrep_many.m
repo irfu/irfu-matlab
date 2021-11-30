@@ -4,9 +4,11 @@
 %
 % ARGUMENTS
 % =========
-% varargin : Pairs of strings: old substring to search for and its replacement substring.
-%            NOTE: The replacement substring may in turn be replaced by another substring. Therefore, the order of
-%            specified replacements matters.
+% varargin
+%       Pairs of strings: old substring to search for and its replacement
+%       substring.
+%       NOTE: The replacement substring may in turn be replaced by another
+%       substring. Therefore, the order of specified replacements matters.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -33,7 +35,9 @@ function s = strrep_many(s, varargin)
         elseif numel(varargin) == 0
             return
         else
-            error('Not same number of arguments for old substrings and new substrings.')
+            error('BICAS:Assertion', ...
+                ['Not same number of arguments for old substrings and', ...
+                ' new substrings.'])
         end
         
         s = strrep(s, oldSs, newSs);

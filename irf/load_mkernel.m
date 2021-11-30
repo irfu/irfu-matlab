@@ -12,7 +12,7 @@ function load_mkernel(mission, varargin)
 %               'solarorbiter'
 %   ['flown_or_predicted'] - optional indicator of the metakernel to load:
 %          'flown'     = only the reconstructed actual flown orbit kernels.
-%          'predicted' = predicted orbit kernels files, (for past dates 
+%          'predicted' = predicted orbit kernels files, (for past dates
 %                        reconstructed files are loaded as well).
 %           If omitted will default to 'predicted'.
 %
@@ -95,7 +95,7 @@ end
 if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission)
   % New loading (entirly new, or new mission)
   rootKernelPath = get_spice_root(p.Results.mission);
-
+  
   mkPath = [rootKernelPath, filesep, 'kernels', filesep, 'mk'];
   if ~exist(mkPath, 'dir')
     errStr = ['Did not find the expected metakernel path: ', mkPath];
@@ -103,7 +103,7 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
     datastore('spice_paths', p.Results.mission, []); % Clear out stored path
     error(errStr);
   end
-
+  
   % Default names for "flown" and "predicted" kernels, (each mission have
   % their own naming standard).
   flown.rosetta          = 'ROS_OPS_*.TM'; % Rosetta flown mk name standard
@@ -111,13 +111,13 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
   flown.bepicolombo      = 'bc_ops_*.tm'; % BepiColombo flown
   flown.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   flown.solarorbiter     = 'solo_ANC_soc-flown-mk_v*.tm'; % SolO flown
-
+  
   pred.rosetta           = flown.rosetta; % Rosetta EOL, no more predicted
   pred.juice             = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
   pred.bepicolombo       = 'bc_plan_*.tm'; % BepiColombo predicted
   pred.parkersolarprobe  = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   pred.solarorbiter      = 'solo_ANC_soc-pred-mk_v*.tm'; % SolO predicted
-
+  
   switch p.Results.flown_or_predicted
     case 'predicted'
       srcMKfile = dir([mkPath, filesep, pred.(p.Results.mission)]);
@@ -133,7 +133,7 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
     return
   end
   metakernel = adoptMetakernel(srcMKfile.folder, srcMKfile.name);
-
+  
   cspice_furnsh(metakernel);
   % Keep its named stored (along with fields of what we have stored)
   LoadedSpiceKernels.(p.Results.mission).(p.Results.flown_or_predicted) = metakernel;
@@ -172,7 +172,7 @@ end
     localMKfile = tempname;
     % Full local absolute path (metakernel are in subfolder "mk", so up one level)
     localSpicePath = what([srcPath, filesep, '..']);
-
+    
     % Replace relative or remote paths with absolute path on locally mounted
     % system
     expression = 'PATH_VALUES\s{0,}=\s{0,}(\s{0,}''[a-zA-Z_0-9\.\/]*''\s{0,}';
@@ -183,7 +183,7 @@ end
       % FIXME:
       % Windows system use "\" as filesep, Unix use "/", check OS and if PC then
       % change all of the lines like:
-      % KERNELS_TO_LOAD   = (   
+      % KERNELS_TO_LOAD   = (
       %           '$KERNELS/ck/solo_ANC_soc-sc-iboom-ck_20180930-21000101_V01.bc'
       % to use "\" instead.
       % FIXME (second point):

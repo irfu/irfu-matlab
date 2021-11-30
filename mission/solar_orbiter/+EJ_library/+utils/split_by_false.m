@@ -4,14 +4,16 @@
 %
 % ARGUMENTS
 % =========
-% boolArray : 1D array. Boolean or numeric.
+% boolArray
+%       1D array. Boolean or numeric.
 %
 %
 % RETURN VALUES
 % =============
-% i1Array, i2Array : Nx1 arrays, numeric, same size. Indices such that
-%                    boolArray(i1Array(i) : i2Array(i)) == true,
-%                    and covers all true values in boolArray exactly once.
+% i1Array, i2Array
+%       Nx1 arrays, numeric, same size. Indices such that
+%       boolArray(i1Array(i) : i2Array(i)) == true,
+%       and covers all true values in boolArray exactly once.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden

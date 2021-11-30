@@ -55,9 +55,11 @@ classdef tabulated_transform
 % PROPOSAL: Redefine as class for only the data, not the evaluation.
 % PROPOSAL: Redefine as class for general-purpose table.
 % PROPOSAL: Implement subclasses with more strict requirements on permitted transfer functions.
+%
 % PROPOSAL: New class name(s), without "transform".
 %   PROPOSAL: tabulated_TF, rational_func_TF
 %   CON: "transform" refers to Fourier/Laplace transform.
+% PROPOSAL: Capitalize initial in class name.
 
 
 

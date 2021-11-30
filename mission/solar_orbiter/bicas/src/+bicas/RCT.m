@@ -1,5 +1,5 @@
 %
-% Class that collects functions related to finding/selecting and reading RCTs.
+% Class that collects generic functions related to reading RCTs.
 %
 %
 % DESIGN INTENT
@@ -7,10 +7,10 @@
 % Implemented so that no calibration data is modified/added to/removed from. The
 % returned data structures reflect the content of the RCTs, not necessarily the
 % data used. Modification of data (in particular modifications of transfer
-% functions, e.g. extrapolation or cut-offs) should be done elsewhere.
+% functions, e.g. extrapolation, cut-offs, inversions) should be done elsewhere.
 % --
-% NOTE: BIAS & LFR RCTs contain FTFs which are not inverted in this code.
-%       TDS RCTs contain ITFs.
+% NOTE: BIAS & LFR RCTs: contain FTFs which are not inverted in this code.
+%       TDS RCTs:        contain ITFs.
 % NOTE: Code still converts RCT TFs slightly:
 %   frequency      : Hz    --> rad/s
 %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
@@ -34,15 +34,20 @@ classdef RCT
 % PROPOSAL: Use utility function for reading every zVariable.
 %   PROPOSAL: Assert units from zVar attributes.
 %
-% PROPOSAL: Log read RCTs in the same way as input datasets; generic zVar logging.
-%
 % PROPOSAL: Classes for RCT data.
 %   PRO: BIAS data has many fields.
 %   PRO: More well-defined data structs.
 %   PRO: Automatic assertions.
-%   CON: Structs are modified RCT.m-->calib.m ==> Too many classes.
+%   CON: Structs are modified when cal.m uses them, i.e. one could just as well
+%        have classes for the format cal.m uses. ==> Too many classes.
 %
-% PROPOSAL: Move out find_RCT_regexp.
+% PROPOSAL: Move bicas.RCT
+%   CON: Contains generic RCT functionality. Not directly processing related.
+%     --> bicas.proc.L1L2.RCT ?
+%     --> bicas.proc.L1L2.cal.RCT ?
+%     --> bicas.proc.L1L2*.RCT_read ?
+%     --> bicas.RCT_read ?
+%     --> bicas.read_RCT ?
 
 
 
@@ -62,63 +67,8 @@ classdef RCT
         
         
         
-        % Determine the path to the RCT that should be used according to
-        % algorithm specified in the documentation(?). If there are multiple
-        % matching candidates, choose the latest one as indicated by the
-        % filename.
-        %
-        %
-        % IMPLEMENTATION NOTES
-        % ====================
-        % Useful to have this as separate functionality so that the chosen RCT
-        % to use can be explicitly overridden via e.g. settings.
-        %
-        function path = find_RCT_regexp(rctDir, filenameRegexp, L)
-
-            %=================================================
-            % Find candidate files and select the correct one
-            %=================================================
-            dirObjectList = dir(rctDir);
-            dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
-            filenameList = {dirObjectList.name};
-            % Eliminate non-matching filenames.
-            filenameList(~EJ_library.str.regexpf(filenameList, filenameRegexp)) = [];
-            
-            % ASSERTION / WARNING
-            if numel(filenameList) == 0
-                % ERROR
-                error('BICAS:calib:CannotFindRegexMatchingRCT', ...
-                    'Can not find any calibration file that matches regular expression "%s" in directory "%s".', ...
-                    filenameRegexp, rctDir);
-            end
-            % CASE: There is at least one candidate file.
-            
-            filenameList = sort(filenameList);
-            filename     = filenameList{end};
-            path         = fullfile(rctDir, filename);
-            
-            if numel(filenameList) > 1
-                % WARNING/INFO/NOTICE
-                msg = sprintf(...
-                    ['Found multiple calibration files matching regular expression "%s"\n', ...
-                     'in directory "%s".\n', ...
-                     'Selecting the latest one as indicated by the filename: "%s".\n'], ...
-                    filenameRegexp, rctDir, filename);
-                for i = 1:numel(filenameList)
-                    msg = [msg, sprintf('    %s\n', filenameList{i})];
-                end
-                L.log('debug', msg)
-            end
-            
-            % IMPLEMENTATION NOTE: Not logging which calibration file is
-            % selected, since this function is not supposed to actually load the
-            % content.
-        end
-
-
-
         function [RctData] = read_BIAS_RCT(filePath)
-            % TODO-DECISION: How handle time?
+            % TODO-DEC: How handle time?
             %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
             %             indices in a data struct.
             %       PROPOSAL: (private method) [omegaRps, zVpc] = get_transfer_func(epoch, signalType)
@@ -212,8 +162,8 @@ classdef RCT
                     RctData.FtfSet.AcLowGainAvpiv,  [nEpochL, 1], ...
                     RctData.FtfSet.AcHighGainAvpiv, [nEpochL, 1]);
                 for iEpochL = 1:nEpochL
-                    %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:calib:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
-                    %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:calib:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
+                    %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
+                    %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
                     % Unsure if assertion makes sense for AC, or possibly even
                     % for DC.
                     % 2020-03-10: This criterion is not true for AC high-gain
@@ -225,8 +175,8 @@ classdef RCT
                 % ASSERTIONS:
                 % All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %==============================================================
-                bicas.proc_utils.assert_zv_Epoch(RctData.epochL)
-                bicas.proc_utils.assert_zv_Epoch(RctData.epochH)
+                bicas.utils.assert_zv_Epoch(RctData.epochL)
+                bicas.utils.assert_zv_Epoch(RctData.epochH)
                 validateattributes(RctData.epochL, {'numeric'}, {'increasing'})
                 validateattributes(RctData.epochH, {'numeric'}, {'increasing'})
 
@@ -241,7 +191,7 @@ classdef RCT
                 
             catch Exc1
                 Exc2 = MException(...
-                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'BICAS:FailedToReadInterpretRCT', ...
                     'Error when interpreting calibration file (BIAS RCT) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2)
@@ -325,12 +275,13 @@ classdef RCT
                 % the content to the caller.
                 RctData = [];
                 RctData.FtfTpivTable = FtfTpivTable;
-                % close ; x=freqTableHz{3}; y=phaseTableDeg{3}(:,1); semilogx(x(1:end-1), diff(y)./diff(x), '.-')
                 
             catch Exc1
                 Exc2 = MException(...
-                    'BICAS:calib:FailedToReadInterpretRCT', ...
-                    'Error when interpreting calibration file (LFR team''s RCT for BIAS/BICAS) "%s"', filePath);
+                    'BICAS:FailedToReadInterpretRCT', ...
+                    ['Error when interpreting calibration file', ...
+                    ' (LFR team''s RCT for BIAS/BICAS) "%s"'], ...
+                    filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -364,7 +315,7 @@ classdef RCT
                 
             catch Exc1
                 Exc2 = MException(...
-                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'BICAS:FailedToReadInterpretRCT', ...
                     ['Error when interpreting calibration file (TDS team''s', ...
                     ' LFM CWF RCT for BIAS/BICAS) "%s"'], ...
                     filePath);
@@ -420,7 +371,7 @@ classdef RCT
                 
             catch Exc1
                 Exc2 = MException(...
-                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'BICAS:FailedToReadInterpretRCT', ...
                     'Error when interpreting calibration file (TDS team''s', ...
                         ' LFM RSWF RCT for BIAS/BICAS) "%s"', ...
                     filePath);
@@ -431,7 +382,7 @@ classdef RCT
 
 
 
-    end    %methods(Static, Access=public)
+    end    % methods(Static, Access=public)
     
     
     
@@ -496,9 +447,11 @@ classdef RCT
             % value is non-zero) must be =1.
             assert(...
                 ftfDenomCoeffs(find(ftfDenomCoeffs, 1, 'last')) == 1, ...
-                'BICAS:calib:FailedToReadInterpretRCT', ...
-                ['RCT should contain forward transfer function (FTF) denominator coefficients,', ...
-                ' where the highest-order (non-zero) coefficient is the number one (1).', ...
+                'BICAS:FailedToReadInterpretRCT', ...
+                ['RCT should contain forward transfer function (FTF)', ...
+                ' denominator coefficients,', ...
+                ' where the highest-order (non-zero) coefficient', ...
+                ' is the number one (1).', ...
                 ' The data does not satisfy this criterion.'])
 
             FtfArray = {};
@@ -512,7 +465,7 @@ classdef RCT
                 assert(Ftf.has_real_impulse_response())
                 % Assert FTF. Can not set proper error message.
                 assert(Ftf.zero_in_high_freq_limit(), ...
-                    'BICAS:calib:FailedToReadInterpretRCT', ...
+                    'BICAS:FailedToReadInterpretRCT', ...
                     ['Transfer function is expected to be "forward",', ...
                     ' i.e. in the direction of the physical signal.', ...
                     ' It seems not to be.'])
@@ -523,6 +476,8 @@ classdef RCT
 
         
 
-    end    %methods(Static, Access=public)
+    end    % methods(Static, Access=private)
 
+    
+    
 end

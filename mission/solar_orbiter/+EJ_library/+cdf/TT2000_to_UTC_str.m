@@ -18,7 +18,7 @@
 % First created 2020-04-03.
 %
 function utcStr = TT2000_to_UTC_str(tt2000)    
-    % TODO-DECISION: How handle various needs for formats? Rounding, truncation?
+    % TODO-DEC: How handle various needs for formats? Rounding, truncation?
     % PROPOSAL: Assertions on argument being int64 as they are in CDF?
     % NOTE: Should be analogous to any inverted conversion function.
     

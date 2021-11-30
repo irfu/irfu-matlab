@@ -24,8 +24,8 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %  B1..B4 are row vectors or TSeries of physical field (usually magnetc field)
 %         column 1     is time, b1 time is used for all interpolation of r1..r4 and b2..b4
 %         column 2-4   vector components (if scalar then only one component)
-% 
-%  Output: 
+%
+%  Output:
 %         If input is TSeries then output is TSeries
 %         If input are arrays with time column then outputs also has time column
 %  curlB is row vector,

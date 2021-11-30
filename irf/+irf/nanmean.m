@@ -12,7 +12,7 @@ function m = nanmean(x,dim,minDataFrac)
 %   1D sequence) that is allowed to be NaN. If the fraction is smaller, then
 %   the resulting value is NaN.
 %	  MINDATAFRAC=0 : Any number of NaNs is allowed.
-%     MINDATAFRAC=1 : No NaNs are allowed. 
+%     MINDATAFRAC=1 : No NaNs are allowed.
 %
 %   See also MEAN
 %

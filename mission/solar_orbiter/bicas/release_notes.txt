@@ -31,7 +31,7 @@ Uses LFR mux mode.
 
 Version 3.1.0
 -------------
-Bugfix to handle LFR zVar BW=0.
+Bugfix to handle LFR L1 zVar BW=0.
 Preliminary sweep removal.
 Performance improvement (speed-up).
 Preliminary setting of zVar QUALITY_FLAG (max 2).
@@ -56,17 +56,27 @@ Version 4.1.0
 -------------
 Added setting quality variables based on thruster firings in
 Non-Standard Operations (NSO) table. List complete until 2020-12-05.
-Zero order AC detrending (remove mean, not linear fit), no AC re-trending
+Zero order AC de-trending (remove mean, not linear fit), no AC re-trending
 (~bugfix; re-trending makes no sense for high-pass filtered data).
 Combined transfer functions (LFR+BIAS) for AC data are modified during
 execution to have constant gain for low freqs (prevents low frequency noise
 from being amplified.)
 Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE
 Bugfix: not crashing when reading CURRENT datasets with one bias setting.
+Note: Requires new RCT to not crash.
 
 
 Version 5.0.0
 -------------
 Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26.
 Better output CDF standards compliance.
-Using new master CDFs.
+Using new L2 master CDFs.
+
+
+Version 6.0.0
+-------------
+Non-Standard Operations (NSO) table thruster firings updated for until 2021-09-11.
+Using new L2 master CDFs.
+Sets CDF zVariable attributes SCALEMIN & SCALEMAX using zVar min & max values.
+Disabled excessive log messages for processing L1/L1R-->L2 LFR SWF representing sequences of CDF records.
+Permits HK and science input datasets to not overlap at all in order to salvage some LFR DC data. Previously only allowed for partial datasets (otherwise error).

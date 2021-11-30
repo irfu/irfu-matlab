@@ -267,13 +267,8 @@ switch lower(yscale)
       else
         dy=dy1stcipher*dy10power;
       end
-      if ylims(1)<dy && ylims(2)>-dy
-        ymin=dy*floor(ylims(1)/dy);
-        ymax=dy*ceil(ylims(2)/dy);
-      else % needs to be explanded
-        ymin=dy*floor(ylims(1)/dy);
-        ymax=dy*ceil(ylims(2)/dy);
-      end
+      ymin=dy*floor(ylims(1)/dy);
+      ymax=dy*ceil(ylims(2)/dy);
     end
     set(h,'ylim',[ymin ymax]);
   case 'log'

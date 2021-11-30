@@ -18,7 +18,7 @@
 % First created 2020-04-03.
 %
 function utcStrCa = TT2000_to_UTC_str_many(tt2000Array)
-    % TODO-DECISION: How handle various needs for formats? Rounding, truncation?
+    % TODO-DEC: How handle various needs for formats? Rounding, truncation?
     % PROPOSAL: Assertions on argument being int64 as they are in CDF?
     % PROPOSAL: Handle array.
     %   NOTE: Return value must be cell array.

@@ -21,7 +21,7 @@ m_i=1836; % Ion mass in terms of electron mass
 wp_e=0.32; % Electron plasma frequency
 surfchoice=ones(1,5); % All 5 surfaces will be plotted by default
 colorchoice=6; % The color is set by the group velocity
-axisnorm = 1; % k and omega are normalized to particle species constants, 
+axisnorm = 1; % k and omega are normalized to particle species constants,
 % (1 is electrons, 2 is ions)
 
 

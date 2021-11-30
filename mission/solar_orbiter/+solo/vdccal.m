@@ -10,8 +10,8 @@ function [DCE_SRF_out,PSP_out,ScPot_out,codeVerStr,matVerStr] = vdccal(VDC_inp,E
 %
 % Outputs:
 %   DCE_SRF    - DC electric field in SRF (Ex=0)
-%   PSP        - probe-to-spacecraft potential
-%   ScPot      - spacecraft potential (PRELIMINARY PROXY)
+%   PSP        - Probe-to-spacecraft potential
+%   ScPot      - Spacecraft potential (PRELIMINARY PROXY)
 %   codeVerStr - Date format version string for function itself. Used by BICAS.
 %   matVerStr  - Version string representing .mat file. Currently filename.
 %                Used by BICAS.
@@ -29,7 +29,7 @@ if isempty(calfile_name)
     % Caller did not specify calibration file.
     % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
     % OFFICIAL DATASETS.
-    calfile_name = 'd23K123_20210521.mat';
+    calfile_name = 'd23K123_20211021.mat';
 else
     % Caller specified calibration file. Useful for debugging/testing new
     % calibrations.
@@ -49,7 +49,7 @@ a = load(calfile_name);
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same function.
 %===========================================================================
-codeVerStr = '2021-05-27T09:00:00';
+codeVerStr = '2021-10-21T12:00:00';
 % Version of the .mat file. Using filename, or at least for now.
 [~, basename, suffix] = fileparts(calfile_name);
 matVerStr  = [basename, suffix];   % Only use filename, not entire path.
@@ -111,22 +111,19 @@ for isub=1:length(sub_int_times)-1
     
     % Resample calibration parameters
     d23R  = a.d23.tlim(subTint).resample(VDC);
+    k23R = a.k23.tlim(subTint).resample(VDC);
     K123R = a.K123.tlim(subTint).resample(VDC);
-    Gamma0R = a.Gamma0.tlim(subTint).resample(VDC);
-    Gamma1R = a.Gamma1.tlim(subTint).resample(VDC);
-    ccR = a.CC.tlim(subTint).resample(VDC);
     
     % Start calibration
-    V2corr = double(VDC.y.data) -double(d23R.data); %Remove potential offset between 2,3
-    V23_corr = (V2corr+double(VDC.z.data))/2; %(V2corr+V3)/2
-    V2cmr = double(V2corr)-(Gamma0R.data+V23_corr.*Gamma1R.data)/2; %Remove common mode from V2.
-    V3cmr = double(VDC.z.data)+(Gamma0R.data+V23_corr.*Gamma1R.data)/2;
     
-    V23 = (V2cmr + V3cmr)/2; % (V2cmr + V3) /2
+    V1 = double(VDC.x.data);
+    V2_scaled = double(VDC.y.data).*k23R.data +double(d23R.data); %Remove potential offset between 2,3
+    V3 = double(VDC.z.data);
+    V23 = (V2_scaled+V3)/2; % Corresponding to a measurement point between the two antennas.
+
+    V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); %Correcting V23 to V1
     
-    V23corr = (V23.*K123R.data(:,1) + K123R.data(:,2)); %Correcting V23 to V1
-    
-    PSP = irf.ts_scalar(VDC.time,(V23corr + double(VDC.x.data))/2); %Compute PSP from corrected quantities.
+    PSP = irf.ts_scalar(VDC.time,(V23_scaled + V1)/2); %Compute PSP from corrected quantities.
     
     % Use alternate, simpler "calculation" for single-probe data.
     PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
@@ -141,14 +138,15 @@ for isub=1:length(sub_int_times)-1
     ScPot_out=ScPot_out.combine(ScPot);
     
     % Ey_SRF = V3 - V2, 6.99 - 1/2 of distance between the antennas
-    V_delta23_corr = V2cmr-V3cmr; %Fixed V2-V3.
-    Ey_SRF = -V_delta23_corr*1e3/6.99;
+    V_d23 = V2_scaled-V3; %Fixed V2-V3.
+    Ey_SRF = -V_d23*1e3/6.99;
     
-    % Ez_SRF = V23corr - V1
+    % Ez_SRF = V23 - V1
     % Here we use the antenna length of 11.2 m, which correponds to
     % the distance between the center of ANT1 and a symmetric antenna on the
     % other side having voltage V23 corr.
-    Ez_SRF = V23corr - double(VDC.x.data);
+    Ez_SRF = V23 - V1;  %Note that V23 is not scaled with K123, d123.
+%     Ez_SRF = V23.*K123R.data(:,1)+K123R.data(:,2) - V1; % Scale V23.
     Ez_SRF = Ez_SRF*1e3/11.2;
     
     DCE_SRF = irf.ts_vec_xyz(VDC.time,[Ey_SRF*0 Ey_SRF Ez_SRF]);
