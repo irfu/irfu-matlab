@@ -49,7 +49,7 @@ function out = fk_powerspec_E80(varargin)
     
 
 if numel(varargin)<2
-    help fk_powerspec_E80
+    help mms.fk_powerspec_E80
     return
 end
 
@@ -69,7 +69,7 @@ if numel(varargin)>2
     flag = ~isempty(in);
     if mod(length(in),2) ~= 0
         disp('Check that each flag has a corresponding value')
-        help fk_powerspec_E80
+        help mms.fk_powerspec_E80
         out=[];
         return
     end
@@ -198,7 +198,7 @@ p80y=w80.p{1};p80y_2=w80_2.p{1};
 
 out{1} = struct('pow_x',pow_80_x,'k_x',k_80_x,'f',f);
 out{2} = struct('pow_y',pow_80_y,'k_y',k_80_y,'f',f);
-nargout
+
 if nargout == 0
     
 figure;
