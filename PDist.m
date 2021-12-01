@@ -3072,19 +3072,27 @@ classdef PDist < TSeries
     end
     function particles = macroparticles(obj,varargin)
       % PDIST.MACROPARTICLES Creates array of macro particles based on
-      %   PDIST.
+      %   PDIST skymap.
       %
-      %   particles = PD.macroparticles(inp1,arg1,...)
-      %
-      %   Only returns one particle per bin with velocity at the center of 
-      %   the bin. Any number of macro_particles is to be implemented.
+      %   particles = PD.macroparticles(inp1,arg1,...);     
+      %   particles = macroparticles(PD,inp1,arg1,...); 
       %    
       %   Input:
       %      PD - PDist object. Currently only 'skymap' is implemented.
       %
       %   Options:      
-      %     skipzero - skip bins that have zero phase space density
-      %     scpot - spacecraft potential in TSeries format, adjust energy
+      %     'skipzero',0 or 1 - skip bins that have zero phase space
+      %             density, default is 1.
+      %     'scpot',scpot - spacecraft potential in TSeries format, adjust energy      
+      %     'ntot',ntot - Total number of macro particles, scalar integer. 
+      %             If less than number of bins with non-zero phase space 
+      %             density, it is adjusted so that each cell with non-zero
+      %             phase space density gets one particle.
+      %     'nbin,nbin - Number of macro particles per bin.      
+      %         Of ntot and nbin, default is nbin with one particles per
+      %         cell. If both are given as input, last one applies.
+      %     'positioning' - 'random' or 'center', position of particles
+      %             within each cell, default is 'randomize'
       %
       %   Output:   1×obj.length struct array with fields: 
       %             iDep1, iDep2, ..., iDepN, dn, vx, vy, vz 
@@ -3096,26 +3104,24 @@ classdef PDist < TSeries
       %                  dn = f(iDep1,iDep2,iDep3)*vol(iDep1,iDep2,iDep3)/Nmacro(iDep1,iDep2,iDep3)
       %                  sum(particle(1).dn) should give the density for
       %                  this time step, however, the absence of proper
-      %                  calibration often makes them differ
+      %                  calibration often makes them differ from FPI 
+      %                  moments.
       %
       %   Example:
-      %     particles = PD.macroparticles('skipzero','scpot',scpot);
-      %     scatter3(particles(1).vx,particles(1).vy,particles(1).vz,5,particles(1).dn)
+      %     particles = PD(1).macroparticles('ntot',5e3,'skipzero',1,'scpot',scpot);
+      %     scatter3(particles.vx,particles.vy,particles.vz,5,particles.dn)
       %
-      
-      %        can only use one of ntot, nbin, last one applies
-      %     ntot - Total number of macro particles. If less than number of
-      %            bins, it is possible that some bins do not get any 
-      %            particles assigned. NOT IMPLEMENTED
-      %     nbin - Number of macro particles per bin.
+     
+      units = irf_units;
       
       % Default values
       Ntot = 16*32*32; % one per cell if input is skymap
       doNtot = 0;
       Nbin = 1; % one per cell
       doNbin = 1;
-      doSkipZero = 0;
-      doScpot = 0;
+      doSkipZero = 1;
+      doScpot = 0;      
+      method = 'random'; % other option is center (of the bin)
       
       % Check input
       nargs = numel(varargin);
@@ -3125,20 +3131,20 @@ classdef PDist < TSeries
         l = 0;
         switch(lower(args{1}))
           case 'ntot'
-            Ntot = varargin{2};
+            Ntot = args{2};
             doNtot = 1;
             doNbin = 0;          
             l = 2;
             args = args(l+1:end);
           case 'nbin'
-            Nbin = varargin{2};
+            Nbin = args{2};
             doNbin = 1;
             doNtot = 0;    
             l = 2;
             args = args(l+1:end);
           case 'skipzero'            
-            doSkipZero = 1;
-            l = 1;
+            doSkipZero = args{2};
+            l = 2;
             args = args(l+1:end);
           case 'scpot'            
             doScpot = 1;
@@ -3146,6 +3152,10 @@ classdef PDist < TSeries
             scpot = args{2};
             scpot = scpot.resample(obj); % make sure they have the same timeline
             args = args(l+1:end);
+          case 'positioning'
+            method = args{2};            
+            l = 2;
+            args = args(l+1:end);            
           otherwise
             l = 1;
             irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
@@ -3156,99 +3166,214 @@ classdef PDist < TSeries
       
       % Data from PDist in spherical coordinate system
       sizedata = obj.datasize;
-      % v_xyz_DSL of original grid
-      if doScpot        
-        [vx,vy,vz] = obj.v('scpot',scpot);
-      else
-        [vx,vy,vz] = obj.v; 
-      end
       
-      % Phase space density of each cell, can be different units depending
-      % on original PDist
-      f = obj.data; 
-      % Phase space volume of each cell, same base length and time units as f
-      if doScpot
-        vol = obj.d3v('scpot',scpot).data; 
-      else
-        vol = obj.d3v.data; 
-      end
-      % Partial density of each cell, same length unit as f
-      dn = f.*vol;
-      % Total density of each timestep, something wrong here, or just badly
-      % messed up by background noise and particle contamination?
-      n_tot = sum(dn(:,:),2);
-      % Fraction of density in each separate bin
-      n_frac = dn./repmat(n_tot,[1 sizedata(2:end)]);
-      
-      % Assign how many particles should be in each bin
-      if doNtot
-        if doSkipZero
-          disp('''Ntot'' not implemented, doing 1 macroparticle per bin, excluding bins with zero phase space density.');
-        else
-          disp('''Ntot'' not implemented, doing 1 macroparticle per bin, including bins with zero phase space density.');
-        end
-        doNtot = 0;
-        doNbin = 1;
-      end
-      if doNbin % && doSkipZero
-        % Target number of particles per bin
-        Ntmp = n_frac*Ntot; % sum(Ntmp(:)) = Ntot
-        % Round up
-        Ntmp_roundup = ceil(Ntmp);
-        if not(doSkipZero)
-          Ntmp_roundup(Ntmp_roundup==0) = 1;
-        end                        
-        
-        % Partial density for each macroparticle
-        dn_part = repmat(n_tot,[1 sizedata(2:end)]).*n_frac./Ntmp_roundup;  
-        
-        % Repeat values the number of times Ntmp_roundup specifies
-        for it = 1:obj.length
-          dn_all = repelem(dn_part(it,:),Ntmp_roundup(it,:));
-          vx_all = repelem(vx(it,:),Ntmp_roundup(it,:));
-          vy_all = repelem(vy(it,:),Ntmp_roundup(it,:));
-          vz_all = repelem(vz(it,:),Ntmp_roundup(it,:));
-          f_all = repelem(f(it,:),Ntmp_roundup(it,:));        
+      switch method
+        case 'center' % add particles to the center of the bin
+          % v_xyz_DSL of original grid
+          if doScpot        
+            [vx,vy,vz] = obj.v('scpot',scpot);
+          else
+            [vx,vy,vz] = obj.v; 
+          end
 
-          [iDep1,iDep2,iDep3] = ndgrid(1:sizedata(2),1:sizedata(3),1:sizedata(4));
-          iDep1_all = repelem(iDep1(:),Ntmp_roundup(it,:));
-          iDep2_all = repelem(iDep2(:),Ntmp_roundup(it,:));
-          iDep3_all = repelem(iDep3(:),Ntmp_roundup(it,:));
+          % Phase space density of each cell, can be different units depending
+          % on original PDist
+          f = obj.data; 
+          % Phase space volume of each cell, same base length and time units as f
+          if doScpot
+            vol = obj.d3v('scpot',scpot).data; 
+          else
+            vol = obj.d3v.data; 
+          end
+          % Partial density of each cell, same length unit as f
+          dn = f.*vol;
 
+          % Partial density for each macroparticle
+          dn_part = dn/Nbin;
 
-          % Collect results into structure
-          p(it).iDep1 = iDep1_all;
-          p(it).iDep2 = iDep2_all;
-          p(it).iDep3 = iDep3_all;
-          p(it).dn = dn_all;
-          p(it).vx = vx_all;
-          p(it).vy = vy_all;
-          p(it).vz = vz_all;
-        end
-        %iselect = isort(1:Ntot);
-        % Remove 
-        %if doSkipZero
-        %  Ntmp2 = Ntmp(iselect);
-        %  [iNonZero,~] = find(Ntmp2>0);
-        %  iselect = iselect(iNonZero);
-        %end
-%         [iEn,iAz,iPol] = ind2sub(sizedata(2:end),iselect);
-%         vx_select = vx(iselect);
-%         vy_select = vy(iselect);
-%         vz_select = vz(iselect);
-%         f_select = f(iselect);
-%         dn_select = dn(iselect);        
-      end
-      
-      
-%       [p(1:Ntot).iEn] = deal(iEn);
-%       [p.iAz] = deal(iAz);
-%       [p.iPol] = deal(iPol);
-%       [p.f] = deal(f_select);
-%       [p.dn] = deal(dn_select);
-%       [p.vx] = deal(vx_select);
-%       [p.vy] = deal(vy_select);      
-%       [p.vz] = deal(vz_select);
+          Nbin_mat = Nbin*ones(sizedata);
+          
+          % Do not make any particles if the phase space density is zero                    
+          if doSkipZero
+            Nbin_mat(dn_part==0) = 0;
+          end  
+
+          % Repeat values the number of times Nbin_mat specifies
+          for it = 1:obj.length
+            dn_all = repelem(dn_part(it,:),Nbin_mat(it,:));
+            vx_all = repelem(vx(it,:),Nbin_mat(it,:));
+            vy_all = repelem(vy(it,:),Nbin_mat(it,:));
+            vz_all = repelem(vz(it,:),Nbin_mat(it,:));
+            f_all = repelem(f(it,:),Nbin_mat(it,:));        
+
+            [iDep1,iDep2,iDep3] = ndgrid(1:sizedata(2),1:sizedata(3),1:sizedata(4));
+            iDep1_all = repelem(iDep1(:),Nbin_mat(it,:));
+            iDep2_all = repelem(iDep2(:),Nbin_mat(it,:));
+            iDep3_all = repelem(iDep3(:),Nbin_mat(it,:));
+
+            % Collect results into structure
+            p(it).iDep1 = iDep1_all;
+            p(it).iDep2 = iDep2_all;
+            p(it).iDep3 = iDep3_all;
+            p(it).dn = tocolumn(dn_all);
+            p(it).vx = tocolumn(vx_all);
+            p(it).vy = tocolumn(vy_all);
+            p(it).vz = tocolumn(vz_all);
+          end
+        case 'random' % initialize random positions within each bin 
+          % First calculate how many particles should g in each bin
+          % Phase space density of each cell, can be different units depending
+          % on original PDist
+          f = obj.data; 
+          % Phase space volume of each cell, same base length and time units as f
+          if doScpot
+            vol = obj.d3v('scpot',scpot).data; 
+          else
+            vol = obj.d3v.data; 
+          end
+          
+          % Partial density of each cell, same length unit as f
+          dn = f.*vol;
+          
+          if doNtot
+            % Total density of each timestep, something wrong here, or just badly
+            % messed up by background noise and particle contamination?
+            n_tot = sum(dn(:,:),2);
+
+            % Fraction of density in each separate bin
+            n_frac = dn./repmat(n_tot,[1 sizedata(2:end)]);
+
+            % Target number of particles per bin
+            Ntmp = n_frac*Ntot; % sum(Ntmp(:)) = Ntot
+            % Round up
+            Ntmp_roundup = ceil(Ntmp);
+            if not(doSkipZero)
+              Ntmp_roundup(Ntmp_roundup==0) = 1;
+            end                
+          elseif doNbin
+            Ntmp_roundup = Nbin*ones(sizedata);  
+          end
+                                           
+          % Partial density for each macroparticle
+          dn_part = dn./Ntmp_roundup; 
+          
+          % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
+          dn_part(isnan(dn_part)) = 0;
+            
+          % Edges of energy bins, same for each time step
+          energy_minus = obj.depend{1}(1,:) - obj.ancillary.delta_energy_minus;
+          energy_plus = obj.depend{1}(1,:) + obj.ancillary.delta_energy_plus;          
+          if doScpot
+            scpotmat = repmat(scpot.data,[1 sizedata(2:end)]);
+            energy_minus = energy_minus - scpotmat;
+            energy_plus = energy_plus - scpotmat;
+          end
+          denergy = energy_plus - energy_minus;
+          energy_edges = [energy_minus(:,:) energy_plus(:,end)];
+          
+          % Edges of polar angle bins, same for each time step
+          polar_center = obj.depend{3};
+          dpolar = polar_center(2) - polar_center(1);
+          polar_minus = polar_center - 0.5*dpolar;
+                              
+          for it = 1:obj.length
+            % Initialize arrays for particles
+            iDep1_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            iDep2_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            iDep3_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            vx_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            vy_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            vz_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            dn_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            
+            i_part_count = 1;
+            
+            % Edges of azimuthal angle bins, changes for each time step
+            azim_center = obj.depend{2}(it,:);
+            dazim = azim_center(2) - azim_center(1);            
+            azim_minus = azim_center-0.5*dazim;
+          
+            % Create N particles within each bin that each recieve 1/N of
+            % the phase space density. These are then rotated into the new
+            % coordinate system and binned in the new grid.                        
+            for iEnergy    = 1:sizedata(2)   
+              % If scpot is inside bin, skip entire bin
+              %if energy_minus(it,iEnergy) < 0, continue, end
+              for iAzim    = 1:sizedata(3)
+                for iPolar = 1:sizedata(4)
+                  N_bin = Ntmp_roundup(it,iEnergy,iAzim,iPolar);
+                  % Possiblity (defined by doSkipZero) to skip bin if space space density is zero
+                  if doSkipZero && dn_part(it,iEnergy,iAzim,iPolar) == 0, continue; end
+                            
+                  % Assign N_bin randomized positions within energy and
+                  % angle ranges
+                  if iAzim == 32 % debug
+                    1;
+                  end
+                  tmp_energy = energy_minus(it,iEnergy) + denergy(it,iEnergy)*rand(N_bin,1); % eV
+                  tmp_azim   = azim_minus(iAzim)        + dazim*rand(N_bin,1);   % deg
+                  tmp_polar  = polar_minus(iPolar)      + dpolar*rand(N_bin,1);  % deg
+                  tmp_v = sqrt(tmp_energy*units.eV*2/units.me)/1000; % km/s
+
+                  if doScpot % check if energy is negative, then skip    
+                    if iEnergy>8;  % debug
+                      1; 
+                    end                
+                    tmp_azim(tmp_energy<0) = [];
+                    tmp_polar(tmp_energy<0) = [];
+                    tmp_v(tmp_energy<0) = [];                    
+                    if isempty(tmp_v) continue; end
+                    N_bin = numel(tmp_v);
+                  end
+                  
+                  % Transform into cartesian velocity components
+                  
+                  tmp_vx = -tmp_v.*sind(tmp_polar).*cosd(tmp_azim); % '-' because the data shows which direction the particles were coming from
+                  tmp_vy = -tmp_v.*sind(tmp_polar).*sind(tmp_azim);
+                  tmp_vz = -tmp_v.*cosd(tmp_polar);
+                  if any(tmp_vy>0) % debug
+                    1;
+                  end
+                  if iPolar == 16 % debug
+                    1;
+                  end
+                  
+                  %if tmp_polar
+
+                  % Rotate into new coordinate system
+                  %new_vx = old_vx*new_vx_unit(1) + old_vy*new_vx_unit(2) + old_vz*new_vx_unit(3);
+                  %new_vy = old_vx*new_vy_unit(1) + old_vy*new_vy_unit(2) + old_vz*new_vy_unit(3);
+                  %new_vz = old_vx*new_vz_unit(1) + old_vy*new_vz_unit(2) + old_vz*new_vz_unit(3);
+
+                  % Assign particle density to each macro particle
+                  tmp_dn = repelem(dn_part(it,iEnergy,iAzim,iPolar),N_bin);
+                  tmp_iDep1 = repelem(iEnergy,N_bin);
+                  tmp_iDep2 = repelem(iAzim,N_bin);
+                  tmp_iDep3 = repelem(iPolar,N_bin);
+                  
+                  % Collect particles in array
+                  iDep1_all(i_part_count + (0:N_bin-1),:) = tmp_iDep1;
+                  iDep2_all(i_part_count + (0:N_bin-1),:) = tmp_iDep2;
+                  iDep3_all(i_part_count + (0:N_bin-1),:) = tmp_iDep3;
+                  vx_all(i_part_count + (0:N_bin-1),:) = tmp_vx;
+                  vy_all(i_part_count + (0:N_bin-1),:) = tmp_vy;
+                  vz_all(i_part_count + (0:N_bin-1),:) = tmp_vz;
+                  dn_all(i_part_count + (0:N_bin-1),:) = tmp_dn;
+                  
+                  % Increase counter 
+                  i_part_count = i_part_count + N_bin;
+                end % end polar angle loop
+              end % end azimuthal angle loop
+            end % end energy loop
+            p(it).iDep1 = iDep1_all(1:i_part_count-1);
+            p(it).iDep2 = iDep2_all(1:i_part_count-1);
+            p(it).iDep3 = iDep3_all(1:i_part_count-1);
+            p(it).vx = vx_all(1:i_part_count-1);
+            p(it).vy = vy_all(1:i_part_count-1);
+            p(it).vz = vz_all(1:i_part_count-1);
+            p(it).dn = dn_all(1:i_part_count-1);
+          end % end time loop    
+      end % end switch method
       particles = p;
     end
     %     function e = energy(obj)
