@@ -616,25 +616,30 @@ end
         end
       end
       if isReady
+        % Cluster TAP interface provide gzip'ed tar file (with subfolders),
+        % exctract this and move resulting file to the expected path (as it
+        % was for the old CAIO interface).
         gunzip(tempFilePathGz);
-        % find the file name
-        fid   = fopen(tempFilePath); % remove .gz at the end
-        tline = fgetl(fid);
-        while ischar(tline)
-          if strfind(tline,'FILE_NAME') %#ok<STRIFCND>
-            i = strfind(tline,'"');
-            fileNameCefGz = [tline(i(1)+1:i(2)-1) '.gz'];
-            irf.log('debug',['CEF.gz file name: ' fileNameCefGz]);
-            break;
+        cefFile = untar(tempFilePath, datasetDirName);
+        fileNameCefGz = gzip(cefFile); % Re-gzip file only (without subdirs)
+        [pathCef, fileNameCef, fileNameCefExt] = fileparts(fileNameCefGz);
+        movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef, fileNameCefExt]);
+        delete(tempFilePath); % remove gunzipped tar file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
+        delete(tempFilePathGz); % remove gzipped tar file which was first downloaded
+        try
+          delete(cefFile{1}); % remove untar'ed file, then try to remove untar'ed subdirs (Cluster TAP use two folder levels as per 2021-12)
+          if contains(['.', filesep, pathCef], [datasetDirName, 'CSA_Download_'])
+            rmdir(pathCef); % lowest level folder
+            pathCefParts = fileparts(pathCef);
+            if contains(['.', filesep, pathCefParts], [datasetDirName, 'CSA_Download_'])
+              rmdir(pathCefParts); % penultimate level folder
+            end
           end
-          tline = fgetl(fid);
+        catch
+          irf.log('warning', ['Failed to cleanup downloaded temporary files and dirs, please have a manual look at ', datasetDirName]);
         end
-        fclose(fid);
-        movefile(tempFilePathGz,[datasetDirName fileNameCefGz]);
-        delete(tempFilePath); % remove gunzipped file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
-        
         irf.log('notice',['Downloaded: ' urlLink]);
-        irf.log('notice',['into ->' datasetDirName fileNameCefGz]);
+        irf.log('notice',['into ->' datasetDirName, fileNameCef, fileNameCefExt]);
         status = 1;
       else
         if(isempty(tmpGetRequest))
