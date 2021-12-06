@@ -43,7 +43,7 @@ vars = {'L2_mag-srf-normal', 'L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rt
   'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
   'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
   'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
-  'L2_swa-pas-grnd-mom_Tani', 'L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
+  'L2_swa-pas-grnd-mom_Tani', 'L2_swa-pas-grnd-mom_Tani_pp', 'L2_swa-pas-grnd-mom_Tani_qq','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
   'pos_rtn'};
 
 % Check if the varStr matches the list of acceptable variables
@@ -81,7 +81,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
           else
             res=EDC_SRF;
           end
-        case 'rpw-lfr-surv-cwf-b-cdag'
+          case 'surv' % we might need to change this case when we add more RPW products!!!
           % search-coil
           BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
           if strcmp(C{3},'srf')
@@ -145,10 +145,14 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
                   PYZ = PSRF.data(:,6);
                   Pten = TSeries(PSRF.time,[PXX,PXY,PXZ,PYY,PYZ,PZZ]); % to be consistent with mms.rotate_tensor
                   B0 = irf_filt(BSRF,0,0.1,[],3);
-                  PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten),'pp');
-                  Pfac = TSeries(PfacT.time,[PfacT.data(:,1,1), PfacT.data(:,2,2)]);
+                  if length(C)==3
+                      PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten));
+                  else
+                      PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten),C{4});
+                  end
+                  Pfac = TSeries(PfacT.time,[PfacT.data(:,1,1), PfacT.data(:,2,2),PfacT.data(:,3,3)]);
                   res = TSeries(PfacT.time,(Pfac.data./(NPAS.resample(Pfac).data.*Units.kB))./(Units.eV/Units.kB));
-                  res.userData = {'par','perp'};
+                  res.userData = {'par','perp1','perp2'};
                 case 'TxTyTz'
                   res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], ['TxTyTz_', C{4}], Tint);
                 otherwise
