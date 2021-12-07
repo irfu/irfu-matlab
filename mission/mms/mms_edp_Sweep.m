@@ -208,110 +208,43 @@ classdef mms_edp_Sweep < handle
           case '00'
             disp(['*** Warning, phase not computed for type ', type, ...
               ' sweep ', num2str(iSweep), ' of ', num2str(obj.nSweeps)]);
+            phaseTimesIn = [];
           case {'+-', '-+'}
             % sweep has been split
-            if isfield(sps, 'zphase')
-              % phase from defatt, knee times
-              if ~isnan(tmp1.iPh_knee_time{1})
-                phase = mms_defatt_phase(sps, tmp1.iPh_knee_time{1});
-                ph_knee_tmp1{1} = phase.data;
-              end
-              if ~isnan(tmp1.iPh_knee_time{2})
-                phase = mms_defatt_phase(sps, tmp1.iPh_knee_time{2});
-                ph_knee_tmp1{2} = phase.data;
-              end
-              if ~isnan(tmp2.iPh_knee_time{1})
-                phase = mms_defatt_phase(sps, tmp2.iPh_knee_time{1});
-                ph_knee_tmp2{1} = phase.data;
-              end
-              if ~isnan(tmp2.iPh_knee_time{2})
-                phase = mms_defatt_phase(sps, tmp2.iPh_knee_time{2});
-                ph_knee_tmp2{2} = phase.data;
-              end
-              % phase from defatt, iPh times
-              if ~isnan(tmp1.iPh_time{1})
-                phase = mms_defatt_phase(sps, tmp1.iPh_time{1});
-                ph_tmp1{1} = phase.data;
-              end
-              if ~isnan(tmp1.iPh_time{2})
-                phase = mms_defatt_phase(sps, tmp1.iPh_time{2});
-                ph_tmp1{2} = phase.data;
-              end
-              if ~isnan(tmp2.iPh_time{1})
-                phase = mms_defatt_phase(sps, tmp2.iPh_time{1});
-                ph_tmp2{1} = phase.data;
-              end
-              if ~isnan(tmp2.iPh_time{2})
-                phase = mms_defatt_phase(sps, tmp2.iPh_time{2});
-                ph_tmp2{2} = phase.data;
-              end
-            else
-              % phase from sunpulse, knee times
-              if ~isnan(tmp1.iPh_knee_time{1})
-                [ph_knee_tmp1{1}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time{1});
-              end
-              if ~isnan(tmp1.iPh_knee_time{2})
-                [ph_knee_tmp1{2}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time{2});
-              end
-              if ~isnan(tmp2.iPh_knee_time{1})
-                [ph_knee_tmp2{1}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time{1});
-              end
-              if ~isnan(tmp2.iPh_knee_time{2})
-                [ph_knee_tmp2{2}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time{2});
-              end
-              % phase from sunpulse, iPh times
-              if ~isnan(tmp1.iPh_time{1})
-                [ph_tmp1{1}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_time{1});
-              end
-              if ~isnan(tmp1.iPh_time{2})
-                [ph_tmp1{2}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_time{2});
-              end
-              if ~isnan(tmp2.iPh_time{1})
-                [ph_tmp2{1}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_time{1});
-              end
-              if ~isnan(tmp2.iPh_time{2})
-                [ph_tmp2{2}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_time{2});
-              end
-            end
+            phaseTimesIn = {tmp1.iPh_knee_time{1}, tmp1.iPh_knee_time{2}, ...
+              tmp2.iPh_knee_time{1}, tmp2.iPh_knee_time{2}, ...
+              tmp1.iPh_time{1}, tmp1.iPh_time{2}, ...
+              tmp2.iPh_time{1}, tmp2.iPh_time{2}};
+            phasesOut = {'ph_knee_tmp1{1}', 'ph_knee_tmp1{2}', ...
+              'ph_knee_tmp2{1}', 'ph_knee_tmp2{2}', ...
+              'ph_tmp1{1}', 'ph_tmp1{2}', ...
+              'ph_tmp2{1}', 'ph_tmp2{2}'};
           case {'++', '--'}
             % Plain "++" or "--" sweeps
-            if isfield(sps, 'zphase')
-              % phase from Defatt, knee times
-              if ~isnan(tmp1.iPh_knee_time)
-                phase = mms_defatt_phase(sps, tmp1.iPh_knee_time);
-                ph_knee_tmp1 = phase.data;
-              end
-              if ~isnan(tmp2.iPh_knee_time)
-                phase = mms_defatt_phase(sps, tmp2.iPh_knee_time);
-                ph_knee_tmp2 = phase.data;
-              end
-              % phase from Defatt, iPh times
-              if ~isnan(tmp1.iPh_time)
-                phase = mms_defatt_phase(sps, tmp1.iPh_time);
-                ph_tmp1 = phase.data;
-              end
-              if ~isnan(tmp2.iPh_time)
-                phase = mms_defatt_phase(sps, tmp2.iPh_time);
-                ph_tmp2 = phase.data;
-              end
-            else
-              % phase from sunpulse, knee times
-              if ~isnan(tmp1.iPh_knee_time)
-                [ph_knee_tmp1, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time);
-              end
-              if ~isnan(tmp2.iPh_knee_time)
-                [ph_knee_tmp2, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time);
-              end
-              % phase from sunpulse, iPh times
-              if ~isnan(tmp1.iPh_time)
-                [ph_tmp1, ~] = mms_sdp_phase_2(sps, tmp1.iPh_time);
-              end
-              if ~isnan(tmp2.iPh_time)
-                [ph_tmp2, ~] = mms_sdp_phase_2(sps, tmp2.iPh_time);
-              end
-            end
+            phaseTimesIn = {tmp1.iPh_knee_time, tmp2.iPh_knee_time, ...
+              tmp1.iPh_time, tmp2.iPh_time};
+            phasesOut = {'ph_knee_tmp1', 'ph_knee_tmp2', ...
+              'ph_tmp1', 'ph_tmp2'};
           otherwise
             irf.log('warning', ['Unexpected type', type,' to compute z-phase for...']);
+            phaseTimesIn = [];
+        end
+        if isfield(sps, 'zphase')
+          % phase from defatt
+          for iPhase = 1:length(phaseTimesIn)
+            if ~isnan(phaseTimesIn{iPhase})
+              phase = mms_defatt_phase(sps, phaseTimesIn{iPhase}); %#ok<NASGU>
+              eval([phasesOut{iPhase}, '=phase.data;']);
+            end
+          end
+        else
+          % phase from sunpulses
+          for iPhase = 1:length(phaseTimesIn)
+            if ~isnan(phaseTimesIn{iPhase})
+              [phase, ~] = mms_sdp_phase_2(sps, phaseTimesIn{iPhase}); %#ok<ASGLU>
+              eval([phasesOut{iPhase}, '=phase;']);
+            end
+          end
         end
       end % doPhase
       switch obj.pTable(1,iSweep)
