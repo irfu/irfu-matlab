@@ -121,6 +121,7 @@ classdef mms_edp_Sweep < handle
         tmp.iPh_knee = NaN; % New knee current value, new "2021 iPh"
         tmp.impedance = NaN;
         tmp.phase = NaN;
+        tmp.phase_knee = NaN;
         tmp.type = type;
         tmp.impedance_src = ''; % keep track source used for ".impedance" (is it from "plot_time()" or "analyse()")
         switch prb1
@@ -192,9 +193,13 @@ classdef mms_edp_Sweep < handle
       tmp2 = compute_IPh_Impedance(voltage2, v02, biasRes2, type, sweepTime);
       % Default NaN-filled phase
       if ismember(type, {'+-', '-+'})
+        ph_knee_tmp1 = {NaN, NaN};
+        ph_knee_tmp2 = {NaN, NaN};
         ph_tmp1 = {NaN, NaN};
         ph_tmp2 = {NaN, NaN};
       else
+        ph_knee_tmp1 = NaN;
+        ph_knee_tmp2 = NaN;
         ph_tmp1 = NaN;
         ph_tmp2 = NaN;
       end
@@ -206,57 +211,103 @@ classdef mms_edp_Sweep < handle
           case {'+-', '-+'}
             % sweep has been split
             if isfield(sps, 'zphase')
-              % phase from defatt
+              % phase from defatt, knee times
               if ~isnan(tmp1.iPh_knee_time{1})
                 phase = mms_defatt_phase(sps, tmp1.iPh_knee_time{1});
-                ph_tmp1{1} = phase.data;
+                ph_knee_tmp1{1} = phase.data;
               end
               if ~isnan(tmp1.iPh_knee_time{2})
                 phase = mms_defatt_phase(sps, tmp1.iPh_knee_time{2});
-                ph_tmp1{2} = phase.data;
+                ph_knee_tmp1{2} = phase.data;
               end
               if ~isnan(tmp2.iPh_knee_time{1})
                 phase = mms_defatt_phase(sps, tmp2.iPh_knee_time{1});
-                ph_tmp2{1} = phase.data;
+                ph_knee_tmp2{1} = phase.data;
               end
               if ~isnan(tmp2.iPh_knee_time{2})
                 phase = mms_defatt_phase(sps, tmp2.iPh_knee_time{2});
+                ph_knee_tmp2{2} = phase.data;
+              end
+              % phase from defatt, iPh times
+              if ~isnan(tmp1.iPh_time{1})
+                phase = mms_defatt_phase(sps, tmp1.iPh_time{1});
+                ph_tmp1{1} = phase.data;
+              end
+              if ~isnan(tmp1.iPh_time{2})
+                phase = mms_defatt_phase(sps, tmp1.iPh_time{2});
+                ph_tmp1{2} = phase.data;
+              end
+              if ~isnan(tmp2.iPh_time{1})
+                phase = mms_defatt_phase(sps, tmp2.iPh_time{1});
+                ph_tmp2{1} = phase.data;
+              end
+              if ~isnan(tmp2.iPh_time{2})
+                phase = mms_defatt_phase(sps, tmp2.iPh_time{2});
                 ph_tmp2{2} = phase.data;
               end
             else
-              % phase from sunpulse
+              % phase from sunpulse, knee times
               if ~isnan(tmp1.iPh_knee_time{1})
-                [ph_tmp1{1}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time{1});
+                [ph_knee_tmp1{1}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time{1});
               end
               if ~isnan(tmp1.iPh_knee_time{2})
-                [ph_tmp1{2}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time{2});
+                [ph_knee_tmp1{2}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time{2});
               end
               if ~isnan(tmp2.iPh_knee_time{1})
-                [ph_tmp2{1}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time{1});
+                [ph_knee_tmp2{1}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time{1});
               end
               if ~isnan(tmp2.iPh_knee_time{2})
-                [ph_tmp2{2}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time{2});
+                [ph_knee_tmp2{2}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time{2});
+              end
+              % phase from sunpulse, iPh times
+              if ~isnan(tmp1.iPh_time{1})
+                [ph_tmp1{1}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_time{1});
+              end
+              if ~isnan(tmp1.iPh_time{2})
+                [ph_tmp1{2}, ~] = mms_sdp_phase_2(sps, tmp1.iPh_time{2});
+              end
+              if ~isnan(tmp2.iPh_time{1})
+                [ph_tmp2{1}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_time{1});
+              end
+              if ~isnan(tmp2.iPh_time{2})
+                [ph_tmp2{2}, ~] = mms_sdp_phase_2(sps, tmp2.iPh_time{2});
               end
             end
           case {'++', '--'}
             % Plain "++" or "--" sweeps
             if isfield(sps, 'zphase')
-              % phase from Defatt
+              % phase from Defatt, knee times
               if ~isnan(tmp1.iPh_knee_time)
                 phase = mms_defatt_phase(sps, tmp1.iPh_knee_time);
-                ph_tmp1 = phase.data;
+                ph_knee_tmp1 = phase.data;
               end
               if ~isnan(tmp2.iPh_knee_time)
                 phase = mms_defatt_phase(sps, tmp2.iPh_knee_time);
+                ph_knee_tmp2 = phase.data;
+              end
+              % phase from Defatt, iPh times
+              if ~isnan(tmp1.iPh_time)
+                phase = mms_defatt_phase(sps, tmp1.iPh_time);
+                ph_tmp1 = phase.data;
+              end
+              if ~isnan(tmp2.iPh_time)
+                phase = mms_defatt_phase(sps, tmp2.iPh_time);
                 ph_tmp2 = phase.data;
               end
             else
-              % phase from sunpulse
+              % phase from sunpulse, knee times
               if ~isnan(tmp1.iPh_knee_time)
-                [ph_tmp1, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time);
+                [ph_knee_tmp1, ~] = mms_sdp_phase_2(sps, tmp1.iPh_knee_time);
               end
               if ~isnan(tmp2.iPh_knee_time)
-                [ph_tmp2, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time);
+                [ph_knee_tmp2, ~] = mms_sdp_phase_2(sps, tmp2.iPh_knee_time);
+              end
+              % phase from sunpulse, iPh times
+              if ~isnan(tmp1.iPh_time)
+                [ph_tmp1, ~] = mms_sdp_phase_2(sps, tmp1.iPh_time);
+              end
+              if ~isnan(tmp2.iPh_time)
+                [ph_tmp2, ~] = mms_sdp_phase_2(sps, tmp2.iPh_time);
               end
             end
           otherwise
@@ -284,9 +335,13 @@ classdef mms_edp_Sweep < handle
       obj.(p_1)(obj.pTable(2,iSweep)).impedance = tmp1.impedance;
       obj.(p_2)(obj.pTable(2,iSweep)).impedance = tmp2.impedance;
       if ismember(type, {'+-', '-+'})
+        obj.(p_1)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp1{1}+angle1+90,360)-90, mod(ph_knee_tmp1{2}+angle1+90,360)-90};
+        obj.(p_2)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp2{1}+angle2+90,360)-90, mod(ph_knee_tmp2{2}+angle2+90,360)-90};
         obj.(p_1)(obj.pTable(2,iSweep)).phase = {mod(ph_tmp1{1}+angle1+90,360)-90, mod(ph_tmp1{2}+angle1+90,360)-90};
         obj.(p_2)(obj.pTable(2,iSweep)).phase = {mod(ph_tmp2{1}+angle2+90,360)-90, mod(ph_tmp2{2}+angle2+90,360)-90};
       else
+        obj.(p_1)(obj.pTable(2,iSweep)).phase_knee = mod(ph_knee_tmp1+angle1+90,360)-90;
+        obj.(p_2)(obj.pTable(2,iSweep)).phase_knee = mod(ph_knee_tmp2+angle2+90,360)-90;
         obj.(p_1)(obj.pTable(2,iSweep)).phase = mod(ph_tmp1+angle1+90,360)-90;
         obj.(p_2)(obj.pTable(2,iSweep)).phase = mod(ph_tmp2+angle2+90,360)-90;
       end
@@ -307,10 +362,12 @@ classdef mms_edp_Sweep < handle
           tmp.impedance = {NaN, NaN};
           tmp.iPh_knee_time = {NaN, NaN}; % Time of derived iPh_knee (first and second part)
           tmp.iPh = {NaN, NaN};
+          tmp.iPh_time = {NaN, NaN};  % Time of derived iPh (first & second part)
         else
           tmp.iPh_knee = NaN;
           tmp.impedance = NaN;
           tmp.iPh_knee_time = NaN;
+          tmp.iPh_time = NaN;
         end
         
         %% Find settling time (with fallback max 10% of sweep) based on
@@ -400,17 +457,24 @@ classdef mms_edp_Sweep < handle
           vmin = min(voltFirst);
           [~, old_indIph] = min(abs(voltFirst-(2*v0+vmin)/3));
           tmp.iPh{1} = -biasFirst(old_indIph);
+          % Compute time of iPh
+          timeArray = int64(linspace(0, double(sweepTime.stop.ttns-sweepTime.start.ttns), length(biasRes))) + sweepTime.start.ttns;
+          tmp.iPh_time{1} = timeArray(8+old_indIph);
           % second half
           biasSecond = biasResSegm(splitInd+1:end);
           voltSecond = voltageSegm(splitInd+1:end);
           [~, old_indIph] = min(abs(voltSecond-(2*v0+vmin)/3));         
           tmp.iPh{2} = -biasSecond(old_indIph);
+          tmp.iPh_time{2} = timeArray(splitInd + old_indIph);
         else
           % basic one way no need to split
           % Find maximum negative voltage
           vmin = min(voltage(9:end));
           [~, old_indIph] = min(abs(voltage(9:end)-(2*v0+vmin)/3));
           tmp.iPh = -biasRes(8+old_indIph);
+          % Compute time of iPh
+          timeArray = int64(linspace(0, double(sweepTime.stop.ttns-sweepTime.start.ttns), length(biasRes))) + sweepTime.start.ttns;
+          tmp.iPh_time = timeArray(8+old_indIph);
         end
         if oldFallback
           if ismember(type, {'+-', '-+'})
@@ -722,11 +786,14 @@ classdef mms_edp_Sweep < handle
         pha2 = obj.(p_2)(obj.pTable(2,iSweep)).phase;
         Iph1_knee = obj.(p_1)(obj.pTable(2,iSweep)).iPh_knee;
         Iph2_knee = obj.(p_2)(obj.pTable(2,iSweep)).iPh_knee;
+        pha1_knee = obj.(p_1)(obj.pTable(2,iSweep)).phase_knee;
+        pha2_knee = obj.(p_2)(obj.pTable(2,iSweep)).phase_knee;
       else
         Iph1 = NaN; Iph2 = NaN;
         dVdI1 = NaN; dVdI2 = NaN;
         pha1 = NaN; pha2 = NaN;
         Iph1_knee = NaN; Iph2_knee = NaN;
+        pha1_knee = NaN; pha2_knee = NaN;
       end
       % Output for debugging
       % [double(prb1) double(prb2) Iph1 Iph2 dVdI1 dVdI2]
@@ -734,14 +801,14 @@ classdef mms_edp_Sweep < handle
         legend(h, ...
           sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb1, Iph1{1}, Iph1{2}, Iph1_knee{1}, Iph1_knee{2}, dVdI1{1}, dVdI1{2}, 0.75*Iph1{1}, 0.75*Iph1{2}),...
           sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb2, Iph2{1}, Iph2{2}, Iph2_knee{1}, Iph2_knee{2}, dVdI2{1}, dVdI2{2}, 0.75*Iph2{1}, 0.75*Iph2{2}),...
-          sprintf('Phase%d  %0.1f & %0.1f,  Phase%d  %0.1f & %0.1f degrees Type %s', prb1, pha1{1}, pha1{2}, prb2, pha2{1}, pha2{2}, type),...
+          sprintf('Phase%d  %0.1f & %0.1f (knee: %0.1f & %0.1f),  Phase%d  %0.1f & %0.1f (knee: %0.1f & %0.1f) degrees Type %s', prb1, pha1{1}, pha1{2}, pha1_knee{1}, pha1_knee{2}, prb2, pha2{1}, pha2{2}, pha2_knee{1}, pha2_knee{2}, type),...
           'Location', 'NorthWest', ...
           'AutoUpdate', 'off');
       else
         legend(h, ...
           sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA', prb1, Iph1, Iph1_knee, dVdI1, 0.75*Iph1),...
           sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA', prb2, Iph2, Iph2_knee, dVdI2, 0.75*Iph2),...
-          sprintf('Phase%d  %0.1f,  Phase%d  %0.1f degrees Type %s', prb1, pha1, prb2, pha2, type),...
+          sprintf('Phase%d  %0.1f (knee: %0.1f),  Phase%d  %0.1f (knee: %0.1f) degrees Type %s', prb1, pha1, pha1_knee, prb2, pha2, pha2_knee, type),...
           'Location', 'NorthWest', ...
           'AutoUpdate', 'off');
       end
