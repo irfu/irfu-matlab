@@ -844,13 +844,13 @@ classdef mms_edp_Sweep < handle
           switch prb1
             case 1
               v12 = irf.ts_scalar(efield.time(ind), efield.data(ind, 1));
-              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 1), vfield.data(ind, 1)-efield.data(ind, 1)*0.12]);
+              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 1), vfield.data(ind, 1)-efield.data(ind, 1)*0.12]); % SDP distance 120 m (*10^-3 since mV->V)
             case 3
               v12 = irf.ts_scalar(efield.time(ind), efield.data(ind, 2));
               v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 2), vfield.data(ind, 2)-efield.data(ind, 2)*0.12]);
             case 5
               v12 = irf.ts_scalar(efield.time(ind), efield.data(ind, 3));
-              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 3), vfield.data(ind, 3)-efield.data(ind, 3)*0.12]);
+              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 3), vfield.data(ind, 3)-efield.data(ind, 3)*0.0292]); % ADP distance 29.2 m
             otherwise, error('Bad probe number')
           end
           h1=irf_plot({...
