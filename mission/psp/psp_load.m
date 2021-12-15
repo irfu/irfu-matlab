@@ -46,6 +46,7 @@
 %           'pl_spi'                 - Loads only density data to be used in the plasma line code
 %           'pl_rfs_lfr'             - Loads V1V2 data in both auto and high-resolution for the plasma line code
 %           'dbm_dvac'               - times series of electric field snapshots
+%           'dbm_vac'                - times series of electric field snapshots
 %           'dbm_dvdc'               - times series of electric field snapshots
 %           'dbm_scm'                - times series of SCM snapshots
 %           'XXX'                    - where XXX is long or short name of variables in the list "PSP_VAR *"
@@ -384,6 +385,11 @@ switch datatype
     output       = get_data_dbm_dvac(listCDFFiles);
     return;
     
+  case 'dbm_vac'
+    listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_vac');
+    output       = get_data_dbm_vac(listCDFFiles);
+    return;
+    
   case 'dbm_dvdc'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvdc');
     output       = get_data_dbm_dvdc(listCDFFiles);
@@ -648,6 +654,49 @@ end
     dbm_dvac    = TSeries(EpochTT(tFinal),dbm_dvac);
     dbm_dvac_sc = psp_coordinate_transform(dbm_dvac,'e>sc');
     out = struct('ts',dbm_dvac,'ts_sc',dbm_dvac_sc,...
+      'startStopTT',tStartStopTT);
+  end
+
+  function out = get_data_dbm_vac(listCDFFiles)
+    % output is structure witf fields
+    % .ts: time series with two columns dvac12 and dvac13
+    % .ts_sc: time series in sc coordinate system
+    % .startStopMatriTT: start and stop times of snapshots in TT
+    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
+    %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
+    dbm_vac = double([]);
+    tFinal = [];
+    for iCdfFile = 1:numel(listCDFFiles)
+      fileCDF = listCDFFiles{iCdfFile};
+      disp(['Reading: ' fileCDF]);
+      res = spdfcdfread(fileCDF,'VARIABLES', {...
+        'psp_fld_l2_dfb_dbm_vac_time_series_TT2000',...
+        'psp_fld_l2_dfb_dbm_vac1',...
+        'psp_fld_l2_dfb_dbm_vac2',...
+        'psp_fld_l2_dfb_dbm_vac3',...
+        'psp_fld_l2_dfb_dbm_vac4',...
+        'psp_fld_l2_dfb_dbm_vac5'},...
+        'KeepEpochAsIs',true,'dataonly',true);
+      tt=res{1}; temp1 = res{2};
+      temp2 = res{3}; temp3 = res{4};
+      temp4 = res{5}; temp5 = res{6};
+      t=[tt(1,:);tt;tt(end,:)];t=t(:);
+      tFinal = [tFinal; t];
+      vecNaN = nan(size(tt,2),1,'single');
+      dbm_vac_temp1 = [vecNaN temp1 vecNaN]';
+      dbm_vac_temp2 = [vecNaN temp2 vecNaN]';
+      dbm_vac_temp3 = [vecNaN temp3 vecNaN]';
+      dbm_vac_temp4 = [vecNaN temp4 vecNaN]';
+      dbm_vac_temp5 = [vecNaN temp5 vecNaN]';
+      dbm_vac = [dbm_vac; [dbm_vac_temp1(:),...
+        dbm_vac_temp2(:), dbm_vac_temp3(:),...
+        dbm_vac_temp4(:), dbm_vac_temp5(:)]];
+    end
+    tStartStopTT = reshape(tFinal(diff(tFinal)==0),2,[])';
+    dbm_vac(dbm_vac < -1e30) = NaN;
+    dbm_vac    = TSeries(EpochTT(tFinal),dbm_vac);
+    dbm_vac_sc = psp_coordinate_transform(dbm_vac,'e>sc');
+    out = struct('ts',dbm_vac,'ts_sc',dbm_vac_sc,...
       'startStopTT',tStartStopTT);
   end
 
