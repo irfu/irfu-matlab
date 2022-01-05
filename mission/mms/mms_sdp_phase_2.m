@@ -322,7 +322,7 @@ end
 % ;          between pulses to determine number of spins between pulses.
 for i = 1:ngap+1
   nseg = segs(i+1)-segs(i)-1;  % number of periods in this segment
-  if (nseg == 0), continue; end
+  if (nseg <= 0), continue; end
   
   segind = 1+segs(i)+1:nseg+segs(i)+1; % Index, period data of segment.
   segperiod = period(segind);
@@ -439,7 +439,7 @@ for i = 1:ngap
   
   % ; 1b) find period at end of gap:  median of IIFSUNPER (from pseudopulse)
   % ;     of first pulse after gap, plus next 4 spin periods.
-  if gapidx + 1 ~= segs(i+2)
+  if gapidx + 1 ~= segs(i+2) && gapidx < length(period)
     period2 = median(period(gapidx+1 : min(gapidx+1+5, segs(i+2)-1) ));
     % ; if pulse time at end of gap is out of family, then fix it
     if abs(period(gapidx+1) - period2) > 0.05*1e9
