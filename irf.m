@@ -145,31 +145,29 @@ switch lower(action)
     help irfu-matlab
     
   case 'mice'
-    if ~ispc
-      if exist('cspice_j2000','file') % mice is installed
-        try
-          if(cspice_j2000 == 2451545)
-            disp('SPICE/MICE is OK');
-            if nargout, out = true; end
-            return
-          else
-            disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
-            if nargout, out = false; end
-            return
-          end
-        catch
+    if exist('cspice_j2000','file') % mice is installed
+      try
+        if(cspice_j2000 == 2451545)
+          disp('SPICE/MICE is OK');
+          if nargout, out = true; end
+          return
+        else
           disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
           if nargout, out = false; end
           return
         end
-      else
-        micePath = [irf('path') filesep 'contrib' filesep  'mice'];
-        disp(['adding MICE path to matlab: ' micePath]);
-        addpath(micePath);
-        ok = irf('mice');
-        if ~ok
-          disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your inteded use of irfu-matlab!');
-        end
+      catch
+        disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
+        if nargout, out = false; end
+        return
+      end
+    else
+      micePath = [irf('path') filesep 'contrib' filesep  'mice'];
+      disp(['adding MICE path to matlab: ' micePath]);
+      addpath(micePath);
+      ok = irf('mice');
+      if ~ok
+        disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your inteded use of irfu-matlab!');
       end
     end
     
