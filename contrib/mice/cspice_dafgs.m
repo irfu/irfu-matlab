@@ -34,20 +34,21 @@
 %
 %   Given:
 %
-%      nd   a scalar integer defining the size of the return
-%           double precision array.
+%      nd       a scalar integer defining the size of the return
+%               double precision array.
 %
-%           [1,1] = size(nd); int32 = class(nd)
+%               [1,1] = size(nd); int32 = class(nd)
 %
-%      ni   a scalar integer defining the size of the return
-%           integer array.
+%      ni       a scalar integer defining the size of the return
+%               integer array.
 %
-%           [1,1] = size(ni); int32 = class(ni)
+%               [1,1] = size(ni); int32 = class(ni)
 %
-%      For an SPK file, 'nd' always equals 2, 'ni' always equals 6. The precise
-%      contents of the vectors depend on the type of DAF but the
-%      final two elements of the 'ic' (integer) vector always contains the
-%      initial and final addresses respectively of the array.
+%               For an SPK file, `nd' always equals 2, `ni' always equals 6.
+%               The precise contents of the vectors depend on the type of DAF
+%               but the final two elements of the `ic' (integer) vector always
+%               contains the initial and final addresses respectively of the
+%               array.
 %
 %   the call:
 %
@@ -55,13 +56,17 @@
 %
 %   returns:
 %
-%      dc   the array of double precision components of the summary.
+%      dc       the array of double precision components of the summary.
 %
-%           [1,nd] = size(dc); double = class(dc)
+%               [1,nd] = size(dc); double = class(dc)
 %
-%      ic   the array of integer components of the summary.
+%      ic       the array of integer components of the summary.
 %
-%           [1,ni] = size(ic); int32 = class(ic)
+%               [1,ni] = size(ic); int32 = class(ic)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -69,66 +74,82 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Use a simple function to output the double precision and integer
-%   values stored in an SPK's segments descriptors. This function opens
-%   a DAF for read, performs a forwards search for the DAF arrays,
-%   prints segments description for each array found, then closes the DAF.
+%   1) Create a simple program to output the double precision and integer
+%      values stored in an SPK's segments' descriptors. This program opens
+%      a DAF for read, performs a forward search for the DAF arrays,
+%      prints the segment descriptor for each array found, then closes
+%      the DAF.
 %
-%   function daf_t( kernel)
+%      Use the SPK kernel below as input DAF file for the program.
 %
-%      %
-%      % Open a DAF for read. Return a 'handle' referring to the file.
-%      %
-%      handle = cspice_dafopr( kernel );
+%         de421.bsp
 %
-%      %
-%      % Define the summary parameters appropriate
-%      % for an SPK file.
-%      %
-%      ND = 2;
-%      NI = 6;
 %
-%      %
-%      % Begin a forward search on the file.
-%      %
-%      cspice_dafbfs( handle );
+%      Example code begins here.
 %
-%      %
-%      % Search until a DAF array is found.
-%      %
-%      found = cspice_daffna;
 %
-%      %
-%      % Loop while the search finds subsequent DAF arrays.
-%      %
-%      while found
-%
-%         [dc, ic ] = cspice_dafgs( ND, NI );
-%
-%         fprintf( 'Doubles:  ' )
-%         fprintf( '%f   ', dc )
-%         fprintf( '\n' )
-%
-%         fprintf( 'Integers: ' )
-%         fprintf( '%d   ', ic )
-%         fprintf( '\n\n' )
-%
+%      function dafgs_ex1()
 %
 %         %
-%         % Check for another segment.
+%         % Local constants.
+%         %
+%         kernel = 'de421.bsp';
+%
+%         %
+%         % Open a DAF for read. Return a 'handle' referring
+%         % to the file.
+%         %
+%         handle = cspice_dafopr( kernel );
+%
+%         %
+%         % Define the summary parameters appropriate
+%         % for an SPK file.
+%         %
+%         ND = 2;
+%         NI = 6;
+%
+%         %
+%         % Begin a forward search on the file.
+%         %
+%         cspice_dafbfs( handle );
+%
+%         %
+%         % Search until a DAF array is found.
 %         %
 %         found = cspice_daffna;
 %
-%      end
+%         %
+%         % Loop while the search finds subsequent DAF arrays.
+%         %
+%         while found
 %
-%      %
-%      % Safely close the DAF.
-%      %
-%      cspice_dafcls( handle )
+%            [dc, ic ] = cspice_dafgs( ND, NI );
 %
-%   Matlab outputs:
+%            fprintf( 'Doubles:  ' )
+%            fprintf( '%f   ', dc )
+%            fprintf( '\n' )
 %
-%      >> daf_t( 'de421.bsp' )
+%            fprintf( 'Integers: ' )
+%            fprintf( '%d   ', ic )
+%            fprintf( '\n\n' )
+%
+%
+%            %
+%            % Check for another segment.
+%            %
+%            found = cspice_daffna;
+%
+%         end
+%
+%         %
+%         % Safely close the DAF.
+%         %
+%         cspice_dafcls( handle )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
 %
 %      Doubles:  -3169195200.000000   1696852800.000000
 %      Integers: 1   0   1   2   641   310404
@@ -175,34 +196,91 @@
 %      Doubles:  -3169195200.000000   1696852800.000000
 %      Integers: 499   4   1   2   2098633   2098644
 %
-%   Note, the specific contents of 'ic' and 'dc' depend on the
-%   type of DAF.
 %
-%   Note, the final entries in the integer array contains the segment
-%   start/end indexes. The output indicates the search proceeded
-%   from the start of the file (low value index) towards the end
-%   (high value index).
+%      Note, the specific contents of `ic' and `dc' depend on the
+%      type of DAF.
+%
+%      Note, the final entries in the integer array contain the segment
+%      start/end indexes. The output indicates the search proceeded
+%      from the start of the file (low value index) towards the end
+%      (high value index).
 %
 %-Particulars
 %
-%   A single call to cspice_dafgs equates to the C calls:
+%   A single call to cspice_dafgs equates to the CSPICE calls:
 %
 %      dafgs_c( sum );
 %      dafus_c( sum, nd, ni, dc, ic );
 %
-%   without use of the 'sum' variable.
+%   without use of the `sum' variable.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dafgs_c and dafus_c.
+%   1)  If this routine is called when no search is in progress in the
+%       the current DAF, the error SPICE(DAFNOSEARCH) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   2)  If the DAF for which the "current" array's summary is to be
+%       returned has actually been closed, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   3)  If no array is current in the current DAF, the error
+%       SPICE(NOCURRENTARRAY) is signaled by a routine in the call tree
+%       of this routine. There is no current array when a search is
+%       started by cspice_dafbfs or cspice_dafbbs, but no calls to
+%       cspice_daffna or cspice_daffpa have been made yet, or whenever
+%       cspice_daffna or cspice_daffpa return the value False.
+%
+%   4)  If `nd' is zero or negative, no double precision components
+%       are returned.
+%
+%   5)  If `ni' is zero or negative, no integer components are returned.
+%
+%   6)  If any of the input arguments, `nd' or `ni', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   7)  If any of the input arguments, `nd' or `ni', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAF.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 21-MAR-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 09-JUL-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%       Modified code example to hardcode the input DAF file.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 21-MAR-2014 (EDW)
 %
 %-Index_Entries
 %
@@ -229,7 +307,7 @@ function [dc, ic] = cspice_dafgs( nd, ni)
    %
    try
       [dc, ic] = mice( 'dafgs_c', nd, ni );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

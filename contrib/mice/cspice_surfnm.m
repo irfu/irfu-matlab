@@ -1,8 +1,7 @@
 %-Abstract
 %
-%   CSPICE_SURFNM computes the double precision, outward-pointing
-%   normal unit 3-vector at a point defined on the surface of an
-%   ellipsoid.
+%   CSPICE_SURFNM computes the outward-pointing, unit normal vector at a
+%   point on the surface of an ellipsoid.
 %
 %-Disclaimer
 %
@@ -34,48 +33,48 @@
 %
 %   Given:
 %
-%      a,
-%      b,      
-%      c       the values of the ellipsoid's triaxial radii ellipsoid, where:
+%      a        the length of the semi-axis of the ellipsoid that is parallel
+%               to the X-axis of the body-fixed reference frame.
 %
-%                 'a' is length in kilometers of the semi-axis of the ellipsoid
-%                 parallel to the x-axis of the body-fixed reference frame
+%               [1,1] = size(a); double = class(a)
 %
-%                 'b' is length in kilometers of the semi-axis of the ellipsoid
-%                 parallel to the y-axis of the body-fixed reference frame
+%      b        the length of the semi-axis of the ellipsoid that is parallel
+%               to the Y-axis of the body-fixed reference frame.
 %
-%                 'c' is length in kilometers of the semi-axis of the ellipsoid
-%                 parallel to the z-axis of the body-fixed reference frame
+%               [1,1] = size(b); double = class(b)
 %
-%              [1,1] = size(a); double = class(a)
-%              [1,1] = size(b); double = class(b)
-%              [1,1] = size(c); double = class(c)
+%      c        the length of the semi-axis of the ellipsoid that is parallel
+%               to the Z-axis of the body-fixed reference frame.
 %
-%      point   location(s) on the ellipsoid.
+%               [1,1] = size(c); double = class(c)
 %
-%              [3,3]   = size(point); double = class(point)
-%              
-%              or     
+%      point    3-vector(s) giving the bodyfixed coordinates of a point on the
+%               ellipsoid.
 %
-%              [3,3,n] = size(point); double = class(point)
+%               [3,n] = size(point); double = class(point)
+%
+%               In bodyfixed coordinates, the semi-axes of the ellipsoid
+%               are aligned with the X, Y, and Z-axes of the reference frame.
 %
 %   the call:
 %
-%      normal = cspice_surfnm( a, b, c, point)
+%      [normal] = cspice_surfnm( a, b, c, point )
 %
 %   returns:
 %
-%      normal   the unit normal(s) to the ellipsoid at 'point' in the direction
-%               away from the ellipsoid
+%      normal   the unit vector(s) pointing away from the ellipsoid and normal
+%               to the ellipsoid at `point'.
 %
-%               If    [3,3]   = size(point)
-%               then  [3,3]   = size(normal); double = class(normal)
+%               If [3,1] = size(point) then [3,3]   = size(normal)
+%               If [3,n] = size(point) then [3,3,n] = size(normal)
+%                                            double = class(normal)
 %
-%               If    [3,3,n] = size(point)
-%               then  [3,3,n] = size(normal); double = class(normal)
+%               `normal' returns with the same vectorization measure, N,
+%               as `point'.
 %
-%               'normal' returns with the same vectorization measure, N,
-%               as 'point'.
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -83,54 +82,113 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define the radii of an ellipsoid.
-%      %
-%      a  =  1.;
-%      b  =  2.;
-%      c  =  3.;
+%   1) Compute the surface normal to an ellipsoid defined by its three
+%      radii at a set of locations.
 %
-%      %
-%      % Select a set of locations, three 3-vectors.
-%      %
-%      point = [ [ 0.; 0.; 3.], [ 0.; 2.; 0.], [-1; 0; 0] ];
+%      Example code begins here.
 %
-%      %
-%      % Calculate the surface normal to the ellipsoid at 'point'.
-%      %
-%      out_norm = cspice_surfnm( a, b, c, point)
 %
-%   MATLAB outputs:
+%      function surfnm_ex1()
 %
-%      out_norm =
+%         %
+%         % Define the radii of an ellipsoid.
+%         %
+%         a  =  1.;
+%         b  =  2.;
+%         c  =  3.;
 %
-%           0     0    -1
-%           0     1     0
-%           1     0     0
+%         %
+%         % Select a set of locations, three 3-vectors.
+%         %
+%         point = [ [ 0.; 0.; 3.], [ 0.; 2.; 0.], [-1; 0; 0] ];
 %
-%      Three 3-vectors:
-%         the normal at (0,0,3) equals (0,0,1)
-%         the normal at (0,2,0) equals (0,0,1)
-%         the normal at (-1,0,0) equals (-1,0,0)
+%         %
+%         % Calculate the surface normal to the ellipsoid at 'point'.
+%         %
+%         out_norm = cspice_surfnm( a, b, c, point);
+%
+%         n_elements = size(out_norm,2);
+%         for i=1:n_elements
+%            fprintf( ['The normal at (%4.1f,%4.1f,%4.1f)'                 ...
+%                      ' equals (%4.1f,%4.1f,%4.1f)\n'],                   ...
+%                     point(:,i), out_norm(:,i) );
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      The normal at ( 0.0, 0.0, 3.0) equals ( 0.0, 0.0, 1.0)
+%      The normal at ( 0.0, 2.0, 0.0) equals ( 0.0, 1.0, 0.0)
+%      The normal at (-1.0, 0.0, 0.0) equals (-1.0, 0.0, 0.0)
+%
 %
 %-Particulars
 %
+%   This routine computes the outward pointing unit normal vector to
+%   the ellipsoid having semi-axes of length `a', `b', and `c' from the
+%   point `point'.
+%
+%-Exceptions
+%
+%   1)  If any of the axes are non-positive, the error
+%       SPICE(BADAXISLENGTH) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   2)  If any of the input arguments, `a', `b', `c' or `point', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `a', `b', `c' or `point', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine surfnm_c.
+%   1)  It is assumed that the input `point' is indeed on the ellipsoid.
+%       No checking for this is done.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 17-MAR-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 01-NOV-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Reformatted example's
+%       output and added problem statement.
 %
-%   -Mice Version 1.0.0, 15-JUN-2006, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 17-MAR-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 15-JUN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -160,8 +218,8 @@ function [normal] = cspice_surfnm(a, b, c, point)
    %
    try
       [normal] = mice( 'surfnm_c',  a, b, c, point);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

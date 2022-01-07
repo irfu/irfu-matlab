@@ -38,12 +38,20 @@
 %              supplied in the array 'cvals'. 'name' is restricted to a length
 %              of 32 characters or less.
 %
-%              [1,m] = size(name); char = class(name)
+%              [1,c1] = size(name); char = class(name)
+%
+%                 or
+%
+%              [1,1] = size(name); cell = class(name)
 %
 %      cvals   values to load into the kernel pool subsystem with the assigned
 %              variable name 'name'.
 %
-%              [n,m] = size(cvals); char = class(cvals)
+%              [n,c2] = size(cvals); char = class(cvals)
+%
+%                 or
+%
+%              [1,n] = size(cvals); cell = class(cvals)
 %
 %   the call:
 %
@@ -54,122 +62,223 @@
 %      Inserts the variable 'name' into the kernel pool with values as
 %      defined in 'cvals'.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define the parameters for the string array.
-%      %
-%      PCPOOL_DIM    = 10;
-%      PCPOOL_VAR    = 'pcpool_array';
-%      PCPOOL_VAL_TMP= 'pcpool_val';
-%      START         = 1;
+%   1) The following example code shows how a topocentric frame for a
+%      point on the surface of the earth may be defined at run time using
+%      cspice_pcpool, cspice_pdpool, and cspice_pipool. In this example,
+%      the surface point is associated with the body code 300000. To
+%      facilitate testing, the location of the surface point coincides
+%      with that of the DSN station DSS-12; the reference frame MYTOPO
+%      defined here coincides with the reference frame DSS-12_TOPO.
 %
-%      %
-%      % Populate the 'pcpool_arr' array with values. Initialize
-%      % a string array with a string of the correct length.
-%      % Note: MATLAB requires the property all strings within
-%      % that array have the same length.
-%      %
-%      pcpool_arr = strvcat( 'n_pcpool_val' );
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Fill 'pcpool_arr' with PCPOOL_DIM entries of the
-%      % form "n_pcpool_val".
-%      %
-%      for n=0:PCPOOL_DIM-1
 %
-%         pcpool_arr(n+1,:) = [ num2str(n) '_' PCPOOL_VAL_TMP ];
+%         KPL/MK
 %
-%      end
+%         File name: pcpool_ex1.tm
 %
-%      %
-%      % Insert the array data into the kernel pool
-%      % with variable name 'pcpool_array'.
-%      %
-%      cspice_pcpool( PCPOOL_VAR, pcpool_arr)
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      %
-%      % Retrieve the variable's associated values in
-%      % array 'cvals'.
-%      %
-%      cvals = cspice_gcpool( PCPOOL_VAR, START, PCPOOL_DIM );
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%      %
-%      % Check we found the expected variable, and ensure
-%      % the expected values.
-%      %
-%      if ( ~isempty(cvals) )
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%         txt = sprintf( 'Found array variable %s with entries:', PCPOOL_VAR );
-%         disp(txt)
+%            File name                        Contents
+%            ---------                        --------
+%            earth_720101_070426.bpc          Earth historical
+%                                             binary PCK
+%            earth_topo_050714.tf             DSN station FK
 %
-%         n_elements = size( cvals, 1);
+%         \begindata
 %
-%         for n=1:n_elements
-%            txt = sprintf( '   %s', cvals(n,:) );
-%            disp(txt)
-%         end
+%         KERNELS_TO_LOAD = ( 'earth_720101_070426.bpc',
+%                             'earth_topo_050714.tf'    )
 %
-%      else
+%         \begintext
 %
-%         txt = sprintf( 'Failed to find %s in the kernel pool', PCPOOL_VAR );
-%         disp(txt)
+%         End of meta-kernel.
 %
-%      end
 %
-%      %
-%      % Clear the kernel pool.
-%      %
-%      cspice_kclear
+%      Example code begins here.
 %
-%   MATLAB outputs:
 %
-%      Found array variable pcpool_array with entries:
-%         0_pcpool_val
-%         1_pcpool_val
-%         2_pcpool_val
-%         3_pcpool_val
-%         4_pcpool_val
-%         5_pcpool_val
-%         6_pcpool_val
-%         7_pcpool_val
-%         8_pcpool_val
-%         9_pcpool_val
+%      function pcpool_ex1()
+%
+%         angles  = [-243.1945102442646, -54.7000629043147, 180.0]';
+%
+%         et      = 0.0;
+%
+%         axes    = [3, 2, 3]';
+%         center  = 300000;
+%         frclass = 4;
+%         frclsid = 1500000;
+%         frcode  = 1500000;
+%
+%         %
+%         % Define the MYTOPO reference frame.
+%         %
+%         %
+%         cspice_pipool( 'FRAME_MYTOPO',             frcode   );
+%         cspice_pcpool( 'FRAME_1500000_NAME',      'MYTOPO'  );
+%         cspice_pipool( 'FRAME_1500000_CLASS',      frclass  );
+%         cspice_pipool( 'FRAME_1500000_CLASS_ID',   frclsid  );
+%         cspice_pipool( 'FRAME_1500000_CENTER',     center   );
+%
+%         cspice_pcpool( 'OBJECT_300000_FRAME',     'MYTOPO'  );
+%
+%         cspice_pcpool( 'TKFRAME_MYTOPO_RELATIVE', 'ITRF93'  );
+%         cspice_pcpool( 'TKFRAME_MYTOPO_SPEC',     'ANGLES'  );
+%         cspice_pcpool( 'TKFRAME_MYTOPO_UNITS',    'DEGREES' );
+%         cspice_pipool( 'TKFRAME_MYTOPO_AXES',      axes     );
+%         cspice_pdpool( 'TKFRAME_MYTOPO_ANGLES',    angles   );
+%
+%         %
+%         % Load a high precision binary earth PCK. Also load a
+%         % topocentric frame kernel for DSN stations. Use a meta-kernel
+%         % for convenience.
+%         %
+%         cspice_furnsh( 'pcpool_ex1.tm' );
+%
+%         %
+%         % Look up transformation from DSS-12_TOPO frame to MYTOPO frame.
+%         % This transformation should differ by round-off error from
+%         % the identity matrix.
+%         %
+%         [rmat] = cspice_pxform( 'DSS-12_TOPO', 'MYTOPO', et );
+%
+%         fprintf( '\n' )
+%         fprintf(['DSS-12_TOPO to MYTOPO transformation at et', ...
+%                  '  %14.5f :\n'], et )
+%         fprintf( '\n' )
+%         fprintf( '    %18.15f  %18.15f  %18.15f\n', ...
+%                  rmat(1,1), rmat(2,1), rmat(3,1) )
+%         fprintf( '    %18.15f  %18.15f  %18.15f\n', ...
+%                  rmat(1,2), rmat(2,2), rmat(3,2) )
+%         fprintf( '    %18.15f  %18.15f  %18.15f\n', ...
+%                  rmat(1,3), rmat(2,3), rmat(3,3) )
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      DSS-12_TOPO to MYTOPO transformation at et         0.00000 :
+%
+%           1.000000000000000   0.000000000000000   0.000000000000000
+%           0.000000000000000   1.000000000000000  -0.000000000000000
+%           0.000000000000000  -0.000000000000000   1.000000000000000
+%
 %
 %-Particulars
 %
 %   Kernel pool variable names are restricted to a length of 32
 %   characters or less.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine pcpool_c.
+%   1)  If `name' is already present in the kernel pool and there
+%       is sufficient room to hold all values supplied in `cvals',
+%       the old values associated with `name' will be overwritten.
+%
+%   2)  If there is not sufficient room to insert a new variable into
+%       the kernel pool and `name' is not already present in the kernel
+%       pool, an error is signaled by a routine in the call tree of
+%       this routine.
+%
+%   3)  If there is not sufficient room to insert the values
+%       associated with `name', the error SPICE(NOMOREROOM) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   4)  If the kernel pool variable name length exceeds its maximum
+%       allowed length (see Kernel Required Reading, kernel.req), the
+%       error SPICE(BADVARNAME) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   5)  If any of the input arguments, `name' or `cvals', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   6)  If any of the input arguments, `name' or `cvals', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   KERNEL.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.1.1, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.2.0, 26-NOV-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the -Examples section to comply with NAIF standard.
+%       Updated example code to provide parallel version of the one in
+%       the CSPICE pcpool_c header.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.1.1, 12-MAR-2012 (EDW) (SCK)
+%
+%      Edited -I/O section to conform to NAIF standard for Mice documentation.
 %
 %      Added mention of the length restriction on the kernel pool variable
 %      name 'name'.
 %
-%   -Mice Version 1.1.0, 23-FEB-2009, EDW (JPL)
+%   -Mice Version 1.1.0, 23-FEB-2009 (EDW)
 %
 %      Added zzmice_str call on inputs 'name' and 'cvals' to convert
 %      string cells to character arrays if 'name' or 'cvals' have
 %      type string cells. Added proper markers for usage string
 %      variable types.
 %
-%   -Mice Version 1.0.0, 24-JAN-2006, EDW (JPL)
+%   -Mice Version 1.0.0, 24-JAN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -187,7 +296,7 @@ function cspice_pcpool( name, cvals )
 
       otherwise
 
-         error ( 'Usage: cspice_pcpool( `name`, `cvals`)' )
+         error ( 'Usage: cspice_pcpool( `name`, `cvals(n)` )' )
 
    end
 
@@ -196,8 +305,8 @@ function cspice_pcpool( name, cvals )
    %
    try
       mice('pcpool_c', name, cvals );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

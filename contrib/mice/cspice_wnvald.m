@@ -40,16 +40,20 @@
 %
 %   the call:
 %
-%      window_f = cspice_wnvald(window_i)
+%      [window_f] = cspice_wnvald( window_i )
 %
 %   returns:
 %
-%      window_f   SPICE window containing the ordered union of the intervals in
-%                 the input array 'window_i'.
+%      window_f   SPICE window containing the ordered union of the intervals
+%                 in the input array `window_i'.
 %
 %                 [2n,1] = size(window_f); double = class(window_f)
 %
-%                 The 'window_f' output may overwrite the input 'window_i'.
+%                 The `window_f' may overwrite the input `window_i'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -57,35 +61,60 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      Define an array containing a set of unordered intervals:
+%   1) Define an array containing a set of unordered and possibly
+%      overlapping intervals, and validate the array as a SPICE
+%      window.
 %
-%      >> windata = [ [0;   0]; ...
-%                     [10; 12]; ...
-%                     [2;   7]; ...
-%                     [13; 15]; ...
-%                     [1;   5]; ...
-%                     [23; 29] ];
 %
-%      Validate the array as a SPICE window:
+%      Example code begins here.
 %
-%      >> w1 = cspice_wnvald(windata)
 %
-%      w1 =
+%      function wnvald_ex1()
 %
-%           0
-%           0
-%           1
-%           7
-%          10
-%          12
-%          13
-%          15
-%          23
-%          29
+%         %
+%         % Local variables
+%         %
+%         windat = [ [0;   0]; ...
+%                    [10; 12]; ...
+%                    [2;   7]; ...
+%                    [13; 15]; ...
+%                    [1;   5]; ...
+%                    [23; 29] ];
 %
-%   Representing the intervals:
+%         %
+%         % Validate the input `windat' array as a SPICE window.
+%         %
+%         window = cspice_wnvald(windat);
 %
-%     [0, 0] [1, 7] [10, 12] [13, 15] [23, 29]
+%         fprintf( 'Current intervals: %d\n', cspice_wncard(window) )
+%         fprintf( 'Maximum intervals: %d\n', numel(window)/2       )
+%         fprintf( '\nIntervals\n\n' );
+%
+%         for i=1:cspice_wncard(window)
+%            [left, right] = cspice_wnfetd( window, i );
+%            fprintf( '%10.6f   %10.6f\n', left, right )
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Current intervals: 5
+%      Maximum intervals: 5
+%
+%      Intervals
+%
+%        0.000000     0.000000
+%        1.000000     7.000000
+%       10.000000    12.000000
+%       13.000000    15.000000
+%       23.000000    29.000000
+%
+%
+%      Note that SPICE windows lack a constant size as the windows
+%      interfaces dynamically adjust window size before return, therefore
+%      the current number of intervals equals the maximum number.
 %
 %-Particulars
 %
@@ -94,25 +123,72 @@
 %   window equals the number of endpoints remaining, and window is ready for
 %   use with any of the window routines.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wnvald_c.
+%   1)  If the original number of endpoints `n' is odd, the error
+%       SPICE(UNMATCHENDPTS) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   2)  If the left endpoint is greater than the right endpoint, the
+%       error SPICE(BADENDPOINTS) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If the input argument `window_i' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   4)  If the input argument `window_i' is not of the expected type,
+%       or it does not have the expected dimensions and size, an error
+%       is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.1.1, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.2.0, 24-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement and modified code example to produce
+%       formatted output.
 %
-%   -Mice Version 1.1.0, 27-JUL-2009, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%      'zzmice_cell' modified to include the cell type identifier 'double'.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 17-DEC-2008, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.1.1, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.1.0, 27-JUL-2009 (EDW)
+%
+%       'zzmice_cell' modified to include the cell type identifier 'double'.
+%
+%   -Mice Version 1.0.0, 17-DEC-2008 (EDW)
 %
 %-Index_Entries
 %
@@ -120,7 +196,7 @@
 %
 %-&
 
-function [window_f] = cspice_wnvald(window_i)
+function [window_f] = cspice_wnvald( window_i )
 
    switch nargin
 
@@ -128,27 +204,27 @@ function [window_f] = cspice_wnvald(window_i)
 
          %
          % In this case, the interface requires only a numeric
-         % 'window_i' with 2Nx1 dimension.
+         % `window_i' with 2Nx1 dimension.
          %
 
          window_i = zzmice_cell( window_i, 'double');
 
       otherwise
 
-         error ( 'Usage: [window_f] = cspice_wnvald(window_i)' )
+         error ( 'Usage: [window_f] = cspice_wnvald( window_i )' )
 
    end
 
    %
    % Please note, this call does not require addition of space for the window
    % control segment as needed by other windows interfaces. The interface
-   % copies the data in 'window_i' to a work variable rather than directly
-   % pass 'window_i' into a CSPICE call.
+   % copies the data in `window_i' to a work variable rather than directly
+   % pass `window_i' into a CSPICE call.
    %
    try
       [window_f] = mice('wnvald_c', window_i );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

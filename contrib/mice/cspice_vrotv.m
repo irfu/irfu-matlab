@@ -34,18 +34,18 @@
 %
 %   Given:
 %
-%      v       a vector to rotate.
+%      v        a vector to rotate.
 %
-%              [3,1] = size(v1); double = class(v1)
+%               [3,1] = size(v1); double = class(v1)
 %
-%      axis    a vector defining the axis about which to rotate 'v'.
+%      axis     a vector defining the axis about which to rotate `v'.
 %
-%              [3,1] = size(axis); double = class(axis)
+%               [3,1] = size(axis); double = class(axis)
 %
-%      theta   the value of the angle measured in radians through which
-%              which rotate 'v' about 'axis'.
+%      theta    the value of the angle measured in radians through which
+%               which rotate `v' about `axis'.
 %
-%              [1,1] = size(theta); double = class(theta)
+%               [1,1] = size(theta); double = class(theta)
 %
 %   the call:
 %
@@ -53,10 +53,16 @@
 %
 %   returns:
 %
-%      r   the vector result of rotating 'v' about 'axis' through an angle
-%          of 'theta'.
+%      r        the vector result of rotating `v' about `axis' through an
+%               angle of `theta'.
 %
-%          [3,1] = size(r); double = class(r)
+%               [3,1] = size(r); double = class(r)
+%
+%               If axis is the zero vector, r = v.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -64,81 +70,127 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Given an axis of rotation and angle of rotation.
-%      %
-%      axis  = [ 0.; 0.; 1.];
-%      theta = cspice_halfpi;
+%   1) Given an axis and an angle of rotation, perform rotations on
+%      various vectors.
 %
-%      %
-%      % Perform rotations on various vectors...
-%      %
+%      Example code begins here.
 %
-%   Example(1):
 %
-%      v1 = [ 1.; 2.; 3. ];
+%      function vrotv_ex1()
 %
-%      r1 = cspice_vrotv( v1, axis, theta )
+%         %
+%         % Given an axis of rotation and angle of rotation.
+%         %
+%         axis  = [ 0.; 0.; 1.];
+%         theta = cspice_halfpi;
 %
-%   MATLAB outputs:
+%         %
+%         % Perform rotations on various vectors...
+%         %
+%         v1 = [ 1.; 2.; 3. ];
+%         r1 = cspice_vrotv( v1, axis, theta );
+%         fprintf( 'Input vector  : %12.6f %12.6f %12.6f\n',   v1 );
+%         fprintf( 'Rotated vector: %12.6f %12.6f %12.6f\n\n', r1 );
 %
-%      r1 =
+%         v2 = [ 1.; 0.; 0. ];
+%         r2 = cspice_vrotv( v2, axis, theta );
+%         fprintf( 'Input vector  : %12.6f %12.6f %12.6f\n',   v2 );
+%         fprintf( 'Rotated vector: %12.6f %12.6f %12.6f\n\n', r2 );
 %
-%         -2.0000
-%          1.0000
-%          3.0000
+%         v3 = [ 0.; 1.; 0. ];
+%         r3 = cspice_vrotv( v3, axis, theta );
+%         fprintf( 'Input vector  : %12.6f %12.6f %12.6f\n', v3 );
+%         fprintf( 'Rotated vector: %12.6f %12.6f %12.6f\n', r3 );
 %
-%   Example(2):
 %
-%      v2 = [ 1.; 0.; 0. ];
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      r2 = cspice_vrotv( v2, axis, theta )
 %
-%   MATLAB outputs:
+%      Input vector  :     1.000000     2.000000     3.000000
+%      Rotated vector:    -2.000000     1.000000     3.000000
 %
-%      r2 =
+%      Input vector  :     1.000000     0.000000     0.000000
+%      Rotated vector:     0.000000     1.000000     0.000000
 %
-%          0.0000
-%          1.0000
-%               0
+%      Input vector  :     0.000000     1.000000     0.000000
+%      Rotated vector:    -1.000000     0.000000     0.000000
 %
-%   Example(3):
-%
-%      v3 = [ 0.; 1.; 0. ];
-%
-%      r3 = cspice_vrotv( v3, axis, theta )
-%
-%   MATLAB outputs:
-%
-%      r3 =
-%
-%         -1.0000
-%          0.0000
-%               0
 %
 %-Particulars
 %
+%   This routine computes the result of rotating (in a right handed
+%   sense) the vector `v' about the axis represented by `axis' through
+%   an angle of `theta' radians.
+%
+%   If `w' is a unit vector parallel to axis, then `r' is given by:
+%
+%       r = v + ( 1 - cos(theta) ) (w X(w X v)) + sin(theta) (w X v)
+%
+%   where "X" above denotes the vector cross product.
+%
+%-Exceptions
+%
+%   1)  If the input axis is the zero vector, `r' will be returned
+%       as `v'.
+%
+%   2)  If any of the input arguments, `v', `axis' or `theta', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `v', `axis' or `theta', is not
+%       of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine vrotv_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ROTATION.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 18-DEC-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and reformatted example's output.
 %
-%   -Mice Version 1.0.1, 14-JUL-2010, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
 %
-%      Corrected minor typo in header.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 17-APR-2008, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 18-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.1, 14-JUL-2010 (EDW)
+%
+%       Corrected minor typo in header.
+%
+%   -Mice Version 1.0.0, 17-APR-2008 (EDW)
 %
 %-Index_Entries
 %
@@ -166,8 +218,8 @@ function [r] = cspice_vrotv( v, axis, theta)
    %
    try
       [r] = mice('vrotv_c', v, axis, theta);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

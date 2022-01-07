@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   Deprecated: This routine has been superseded by the CSPICE routine
+%   Deprecated: This routine has been superseded by the Mice routine
 %   cspice_termpt. This routine is supported for purposes of backward
 %   compatibility only.
 %
@@ -39,316 +39,330 @@
 %
 %   Given:
 %
-%      handle      the DAS file handle of a DSK file open for read
-%                  access. This kernel must contain a type 2 segment
-%                  that provides a plate model representing the entire
-%                  surface of the target body.
+%      handle   the DAS file handle of a DSK file open for read
+%               access.
 %
-%                  [1,1] = size(handle); int32 = class(handle)
+%               [1,1] = size(handle); int32 = class(handle)
 %
-%      dladsc      the DLA descriptor of a DSK segment representing
-%                  the surface of a target body.
+%               This kernel must contain a type 2 segment
+%               that provides a plate model representing the entire
+%               surface of the target body.
 %
-%                 [SPICE_DLA_DSCSIZ,1]  = size(dladsc)
-%                                 int32 = class(dladsc)
+%      dladsc   the DLA descriptor of a DSK segment representing
+%               the surface of a target body.
 %
-%      trmtyp      a string indicating the type of terminator to
-%                  compute:  umbral or penumbral. The umbral terminator is
-%                  the boundary of the portion of the target surface in
-%                  total shadow. The penumbral terminator is the boundary
-%                  of the portion of the surface that is completely
-%                  illuminated. Note that in astronomy references, the
-%                  unqualified word "terminator" refers to the umbral
-%                  terminator. Here, the unqualified word refers to either
-%                  type of terminator.
+%               [SPICE_DLA_DSCSIZ,1] = size(dladsc); int32 = class(dladsc)
 %
-%                  [1,c1] = size(trmtyp); char = class(trmtyp)
+%      trmtyp   a string indicating the type of terminator to
+%               compute: umbral or penumbral.
 %
-%                     or
+%               [1,c1] = size(trmtyp); char = class(trmtyp)
 %
-%                  [1,1] = size(trmtyp); cell = class(trmtyp)
+%                  or
 %
-%                  To compute the terminator points, this routine first
-%                  computes a set of points on the terminator of the
-%                  indicated type on the surface of a reference ellipsoid
-%                  for the target body. Each such point defines the
-%                  direction of a ray emanating from the target center and
-%                  associated with a terminator point on the actual surface
-%                  defined by the plate model. The outermost surface
-%                  intercept of each such ray is a considered to be a
-%                  terminator point of the surface defined by the plate
-%                  model.
+%               [1,1] = size(trmtyp); cell = class(trmtyp)
 %
-%                  Possible values of `trmtyp' are
+%               The umbral terminator is the boundary of the portion of the
+%               target surface in total shadow. The penumbral terminator is
+%               the boundary of the portion of the surface that is completely
+%               illuminated. Note that in astronomy references, the
+%               unqualified word "terminator" refers to the umbral
+%               terminator. Here, the unqualified word refers to either
+%               type of terminator.
 %
-%                     'UMBRAL'
-%                     'PENUMBRAL'
+%               To compute the terminator points, this routine first
+%               computes a set of points on the terminator of the
+%               indicated type on the surface of a reference ellipsoid
+%               for the target body. Each such point defines the
+%               direction of a ray emanating from the target center and
+%               associated with a terminator point on the actual surface
+%               defined by the plate model. The outermost surface
+%               intercept of each such ray is a considered to be a
+%               terminator point of the surface defined by the plate
+%               model.
 %
-%                  Case and leading or trailing blanks in `trmtyp' are
-%                  not significant.
+%               Possible values of `trmtyp' are
 %
-%      source      the name of the body acting as a light source.
-%                  `source' is case-insensitive, and leading and trailing
-%                  blanks in `target' are not significant. Optionally, you
-%                  may supply a string containing the integer ID code
-%                  for the object. For example both 'SUN' and '10' are
-%                  legitimate strings that indicate the Sun is the light
-%                  source.
+%                  'UMBRAL'
+%                  'PENUMBRAL'
 %
-%                  [1,c2] = size(source); char = class(source)
+%               Case and leading or trailing blanks in `trmtyp' are
+%               not significant.
 %
-%                     or
+%      source   the name of the body acting as a light source.
+%               `source' is case-insensitive, and leading and trailing
+%               blanks in `target' are not significant. Optionally, you
+%               may supply a string containing the integer ID code
+%               for the object.
 %
-%                  [1,1] = size(source); cell = class(source)
+%               [1,c2] = size(source); char = class(source)
 %
-%                  This routine assumes that a kernel variable
-%                  representing the light source's radii is present in
-%                  the kernel pool. Normally the kernel variable would
-%                  be defined by loading a PCK file.
+%                  or
 %
-%                  The shape of the light source is always modeled as a
-%                  sphere, regardless of whether radii defining a
-%                  triaxial ellipsoidal shape model are available in the
-%                  kernel pool. The maximum radius of the body is used
-%                  as the radius of the sphere.
+%               [1,1] = size(source); cell = class(source)
 %
-%      target      the name of the target body. `target' is
-%                  case-insensitive, and leading and trailing blanks in
-%                  `target' are not significant. Optionally, you may supply
-%                  a string containing the integer ID code for the object.
-%                  For example both 'MOON' and '301' are legitimate strings
-%                  that indicate the moon is the target body.
+%               For example both 'SUN' and '10' are legitimate strings that
+%               indicate the Sun is the light source.
 %
-%                  [1,c3] = size(target); char = class(target)
+%               This routine assumes that a kernel variable
+%               representing the light source's radii is present in
+%               the kernel pool. Normally the kernel variable would
+%               be defined by loading a PCK file.
 %
-%                     or
+%               The shape of the light source is always modeled as a
+%               sphere, regardless of whether radii defining a
+%               triaxial ellipsoidal shape model are available in the
+%               kernel pool. The maximum radius of the body is used
+%               as the radius of the sphere.
 %
-%                  [1,1] = size(target); cell = class(target)
+%      target   the name of the target body.
 %
-%                  This routine assumes that a kernel variable representing
-%                  the target's radii is present in the kernel pool.
-%                  Normally the kernel variable would be defined by loading
-%                  a PCK file.
+%               [1,c3] = size(target); char = class(target)
 %
-%      et          the epoch of participation of the observer,
-%                  expressed as ephemeris seconds past J2000 TDB: `et' is
-%                  the epoch at which the observer's position is
-%                  computed.
+%                  or
 %
-%                  [1,1] = size(et); double = class(et)
+%               [1,1] = size(target); cell = class(target)
 %
-%                  When aberration corrections are not used, `et' is also
-%                  the epoch at which the position and orientation of the
-%                  target body and position of the light source are
-%                  computed.
+%               `target' is case-insensitive, and leading and trailing blanks
+%               in `target' are not significant. Optionally, you may supply
+%               a string containing the integer ID code for the object.
+%               For example both 'MOON' and '301' are legitimate strings
+%               that indicate the moon is the target body.
 %
-%                  When aberration corrections are used, `et' is the epoch
-%                  at which the observer's position relative to the solar
-%                  system barycenter is computed; in this case the
-%                  position and orientation of the target body are
-%                  computed at et-lt or et+lt, where `lt' is the one-way
-%                  light time between the target body's center and the
-%                  observer, and the sign applied to `lt' depends on the
-%                  selected correction. See the description of `abcorr'
-%                  below for details.
+%               This routine assumes that a kernel variable representing
+%               the target's radii is present in the kernel pool.
+%               Normally the kernel variable would be defined by loading
+%               a PCK file.
 %
-%      fixfrm      the name of the reference frame relative to which
-%                  the output terminator points are expressed. This must
-%                  a body-centered, body-fixed frame associated with the
-%                  target. The frame's axes must be compatible with the
-%                  triaxial ellipsoidal shape model associated with the
-%                  target body (normally provide via a PCK): this
-%                  routine assumes that the first, second, and third
-%                  axis lengths correspond, respectively, to the x, y,
-%                  and z-axes of the frame designated by `fixfrm'.
+%      et       the epoch of participation of the observer,
+%               expressed as ephemeris seconds past J2000 TDB: `et' is
+%               the epoch at which the observer's position is
+%               computed.
 %
-%                  [1,c4] = size(fixfrm); char = class(fixfrm)
+%               [1,1] = size(et); double = class(et)
 %
-%                     or
+%               When aberration corrections are not used, `et' is also
+%               the epoch at which the position and orientation of the
+%               target body and position of the light source are
+%               computed.
 %
-%                  [1,1] = size(fixfrm); cell = class(fixfrm)
+%               When aberration corrections are used, `et' is the epoch
+%               at which the observer's position relative to the solar
+%               system barycenter is computed; in this case the
+%               position and orientation of the target body are
+%               computed at et-lt or et+lt, where `lt' is the one-way
+%               light time between the target body's center and the
+%               observer, and the sign applied to `lt' depends on the
+%               selected correction. See the description of `abcorr'
+%               below for details.
 %
-%                  `fixfrm' may refer to a built-in frame (documented in
-%                  the Frames Required Reading) or a frame defined by a
-%                  loaded frame kernel (FK).
+%      fixfrm   the name of the reference frame relative to which
+%               the output terminator points are expressed.
 %
-%                  The orientation of the frame designated by `fixfrm' is
-%                  evaluated at epoch of participation of the target
-%                  body. See the descriptions of `et' and `abcorr' for
-%                  details.
+%               [1,c4] = size(fixfrm); char = class(fixfrm)
 %
+%                  or
 %
-%      abcorr      indicates the aberration correction to be applied
-%                  when computing the observer-target position, the
-%                  orientation of the target body, and the target-
-%                  source position vector.
+%               [1,1] = size(fixfrm); cell = class(fixfrm)
 %
-%                  [1,c5] = size(abcorr); char = class(abcorr)
+%               This must a body-centered, body-fixed frame associated with
+%               the target. The frame's axes must be compatible with the
+%               triaxial ellipsoidal shape model associated with the
+%               target body (normally provide via a PCK): this
+%               routine assumes that the first, second, and third
+%               axis lengths correspond, respectively, to the x, y,
+%               and z-axes of the frame designated by `fixfrm'.
 %
-%                     or
+%               `fixfrm' may refer to a built-in frame (documented in
+%               the Frames Required Reading) or a frame defined by a
+%               loaded frame kernel (FK).
 %
-%                  [1,1] = size(abcorr); cell = class(abcorr)
+%               The orientation of the frame designated by `fixfrm' is
+%               evaluated at epoch of participation of the target
+%               body. See the descriptions of `et' and `abcorr' for
+%               details.
 %
+%      abcorr   indicates the aberration correction to be applied
+%               when computing the observer-target position, the
+%               orientation of the target body, and the target-
+%               source position vector.
 %
-%                  `abcorr' may be any of the following.
+%               [1,c5] = size(abcorr); char = class(abcorr)
 %
-%                     'NONE'     Apply no correction. Compute the
-%                                terminator points using the position
-%                                of the light source and target, and
-%                                the orientation of the target, at `et'.
+%                  or
 %
-%                  Let `lt' represent the one-way light time between the
-%                  observer and the target body's center. The following
-%                  values of `abcorr' apply to the "reception" case in
-%                  which photons depart from the target body's center at
-%                  the light-time corrected epoch et-lt and *arrive* at
-%                  the observer's location at `et':
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %
-%                     'LT'       Correct for one-way light time (also
-%                                called "planetary aberration") using a
-%                                Newtonian formulation. This correction
-%                                yields the location of the terminator
-%                                points at the approximate time they
-%                                emitted photons arriving at the
-%                                observer at `et' (the difference between
-%                                light time to the target center and
-%                                light time to the terminator points
-%                                is ignored).
+%               `abcorr' may be any of the following.
 %
-%                                The light time correction uses an
-%                                iterative solution of the light time
-%                                equation. The solution invoked by the
-%                                'LT' option uses one iteration.
+%                  'NONE'     Apply no correction. Compute the
+%                             terminator points using the position
+%                             of the light source and target, and
+%                             the orientation of the target, at `et'.
 %
-%                                The target position as seen by the
-%                                observer, the position of the light
-%                                source as seen from the target at
-%                                et-lt, and the rotation of the target
-%                                body, are corrected for light time.
-%
-%                     'LT+S'     Correct for one-way light time and
-%                                stellar aberration using a Newtonian
-%                                formulation. This option modifies the
-%                                positions obtained with the 'LT' option
-%                                to account for the observer's velocity
-%                                relative to the solar system
-%                                barycenter. This correction also
-%                                applies to the position of the light
-%                                source relative to the target. The
-%                                result is the apparent terminator as
-%                                seen by the observer.
-%
-%                     'CN'       Converged Newtonian light time
-%                                correction. In solving the light time
-%                                equation, the 'CN' correction iterates
-%                                until the solution converges. The
-%                                position and rotation of the target
-%                                body and the position of the light
-%                                source relative to the target are
-%                                corrected for light time.
-%
-%                     'CN+S'     Converged Newtonian light time
-%                                and stellar aberration corrections.
+%               Let `lt' represent the one-way light time between the
+%               observer and the target body's center. The following
+%               values of `abcorr' apply to the "reception" case in
+%               which photons depart from the target body's center at
+%               the light-time corrected epoch et-lt and *arrive* at
+%               the observer's location at `et':
 %
 %
-%      obsrvr      the name of the observing body. This is typically
-%                  a spacecraft, the Earth, or a surface point on the
-%                  Earth. `obsrvr' is case-insensitive, and leading and
-%                  trailing blanks in `obsrvr' are not significant.
-%                  Optionally, you may supply a string containing the
-%                  integer ID code for the object. For example both
-%                  'EARTH' and '399' are legitimate strings that indicate
-%                  the Earth is the observer.
+%                  'LT'       Correct for one-way light time (also
+%                             called "planetary aberration") using a
+%                             Newtonian formulation. This correction
+%                             yields the location of the terminator
+%                             points at the approximate time they
+%                             emitted photons arriving at the
+%                             observer at `et' (the difference between
+%                             light time to the target center and
+%                             light time to the terminator points
+%                             is ignored).
 %
-%                  [1,c6] = size(obsrvr); char = class(obsrvr)
+%                             The light time correction uses an
+%                             iterative solution of the light time
+%                             equation. The solution invoked by the
+%                             'LT' option uses one iteration.
 %
-%                     or
+%                             The target position as seen by the
+%                             observer, the position of the light
+%                             source as seen from the target at
+%                             et-lt, and the rotation of the target
+%                             body, are corrected for light time.
 %
-%                  [1,1] = size(obsrvr); cell = class(obsrvr)
+%                  'LT+S'     Correct for one-way light time and
+%                             stellar aberration using a Newtonian
+%                             formulation. This option modifies the
+%                             positions obtained with the 'LT' option
+%                             to account for the observer's velocity
+%                             relative to the solar system
+%                             barycenter. This correction also
+%                             applies to the position of the light
+%                             source relative to the target. The
+%                             result is the apparent terminator as
+%                             seen by the observer.
 %
-%      npoints     the number of terminator points to compute.
+%                  'CN'       Converged Newtonian light time
+%                             correction. In solving the light time
+%                             equation, the 'CN' correction iterates
+%                             until the solution converges. The
+%                             position and rotation of the target
+%                             body and the position of the light
+%                             source relative to the target are
+%                             corrected for light time.
+%
+%                  'CN+S'     Converged Newtonian light time
+%                             and stellar aberration corrections.
+%
+%      obsrvr   the name of the observing body.
+%
+%               [1,c6] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%               This is typically a spacecraft, the Earth, or a surface point
+%               on the Earth. `obsrvr' is case-insensitive, and leading and
+%               trailing blanks in `obsrvr' are not significant.
+%               Optionally, you may supply a string containing the
+%               integer ID code for the object. For example both
+%               'EARTH' and '399' are legitimate strings that indicate
+%               the Earth is the observer.
+%
+%      npts     the number of terminator points to compute.
+%
+%               [1,1] = size(npts); int32 = class(npts)
 %
 %   the call:
 %
-%      [trgepc, obspos, termpts, plateids] =                 ...
-%                  cspice_term_pl02( handle, dladsc,         ...
-%                                    trmtyp, source, target, ...
-%                                    et,     fixref, abcorr, ...
-%                                    obsrvr, npoints )
+%      [trgepc, obspos, trmpts, pltids] =                                  ...
+%                                cspice_term_pl02( handle, dladsc,         ...
+%                                                  trmtyp, source, target, ...
+%                                                  et,     fixref, abcorr, ...
+%                                                  obsrvr, npts          )
 %
 %   returns:
 %
-%      trgepc      the "target epoch."  `trgepc' is defined as follows:
-%                  letting `lt' be the one-way light time between the
-%                  target center and observer, `trgepc' is either the
-%                  epoch et-lt or `et' depending on whether the requested
-%                  aberration correction is, respectively, for received
-%                  radiation or omitted. `lt' is computed using the
-%                  method indicated by `abcorr'.
+%      trgepc   the "target epoch."
 %
-%                  [1,1] = size(trgepc); double = class(trgepc)
+%               [1,1] = size(trgepc); double = class(trgepc)
 %
-%                  `trgepc' is expressed as seconds past J2000 TDB.
+%               `trgepc' is defined as follows: letting `lt' be the one-way
+%               light time between the target center and observer, `trgepc'
+%               is either the epoch et-lt or `et' depending on whether the
+%               requested aberration correction is, respectively, for received
+%               radiation or omitted. `lt' is computed using the
+%               method indicated by `abcorr'.
 %
-%      obspos      the vector from the center of the target body at
-%                  epoch `trgepc' to the observer at epoch `et'.  `obspos' is
-%                  expressed in the target body-fixed reference frame
-%                  `fixfrm', which is evaluated at `trgepc'.
+%               `trgepc' is expressed as seconds past J2000 TDB.
 %
-%                  [3,1] = size(obspos); double = class(obspos)
+%      obspos   the vector from the center of the target body at
+%               epoch `trgepc' to the observer at epoch `et'.
 %
-%                  `obspos' is returned to simplify various related
-%                  computations that would otherwise be cumbersome.  For
-%                  example, the vector `xvec' from the observer to the
-%                  Ith terminator point can be calculated via the
-%                  expression
+%               [3,1] = size(obspos); double = class(obspos)
 %
-%                     xvec = termpts(:,i) - obspos
+%               `obspos' is expressed in the target body-fixed reference frame
+%               `fixfrm', which is evaluated at `trgepc'.
 %
-%                  The components of `obspos' are given in units of km.
+%               `obspos' is returned to simplify various related
+%               computations that would otherwise be cumbersome. For
+%               example, the vector `xvec' from the observer to the
+%               Ith terminator point can be calculated via the
+%               expression
 %
-%      termpts     an array of points on the umbral or penumbral
-%                  terminator of the target, as specified by the input
-%                  argument `trmtyp'.
+%                  xvec = trmpts(:,i) - obspos
 %
-%                  [3,npoints] = size(termpts); double = class(termpts)
+%               The components of `obspos' are given in units of km.
 %
-%                  The ith point is contained in the array elements
+%      trmpts   an array of points on the umbral or penumbral
+%               terminator of the target, as specified by the input
+%               argument `trmtyp'.
 %
-%                      termpts(:,i)
+%               [3,npts] = size(trmpts); double = class(trmpts)
 %
-%                  As described above, each terminator point lies on a ray
-%                  emanating from the center of the target and passing
-%                  through a terminator point on the target's reference
-%                  ellipsoid. Each terminator point *on the reference
-%                  ellipsoid* is the point of tangency of a plane that is
-%                  also tangent to the light source. These associated
-%                  points of tangency on the light source have uniform
-%                  distribution in longitude when expressed in a
-%                  cylindrical coordinate system whose Z-axis is `obspos'.
-%                  The magnitude of the separation in longitude between the
-%                  tangency points on the light source is
+%               The ith point is contained in the array elements
 %
-%                     2*Pi / npoints
+%                  trmpts(:,i)
 %
-%                  If the reference ellipsoid for the target is spherical,
-%                  the terminator points also are uniformly distributed in
-%                  longitude in the cylindrical system described above.  If
-%                  the reference ellipsoid of the target is non-spherical,
-%                  the longitude distribution of the points generally is
-%                  not uniform.
+%               As described above, each terminator point lies on a ray
+%               emanating from the center of the target and passing
+%               through a terminator point on the target's reference
+%               ellipsoid. Each terminator point *on the reference
+%               ellipsoid* is the point of tangency of a plane that is
+%               also tangent to the light source. These associated
+%               points of tangency on the light source have uniform
+%               distribution in longitude when expressed in a
+%               cylindrical coordinate system whose Z-axis is `obspos'.
+%               The magnitude of the separation in longitude between the
+%               tangency points on the light source is
 %
-%                  The terminator points are expressed in the body-fixed
-%                  reference frame designated by `fixfrm'. Units are km.
+%                  2*Pi / npts
 %
-%      plateids    an array of integer ID codes of the plates on which
-%                  the terminator points are located.  The ith plate ID
-%                  corresponds to the ith terminator point. These ID codes can
-%                  be use to look up data associated with the plate, such
-%                  as the plate's vertices or outward normal vector.
+%               If the reference ellipsoid for the target is spherical,
+%               the terminator points also are uniformly distributed in
+%               longitude in the cylindrical system described above. If
+%               the reference ellipsoid of the target is non-spherical,
+%               the longitude distribution of the points generally is
+%               not uniform.
 %
-%                  [1,npoints] = size(plateIDs); int32 = class(plateIDs)
+%               The terminator points are expressed in the body-fixed
+%               reference frame designated by `fixfrm'. Units are km.
+%
+%      pltids   an array of integer ID codes of the plates on which
+%               the terminator points are located.
+%
+%               [1,npts] = size(pltids); int32 = class(pltids)
+%
+%               The ith plate ID corresponds to the ith terminator point.
+%               These ID codes can be use to look up data associated with
+%               the plate, such as the plate's vertices or outward normal
+%               vector.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -356,50 +370,69 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Compute sets of umbral and penumbral terminator points on Phobos
-%   as seen from Mars. Perform a consistency check using the solar
-%   incidence angle at each point, where the solar incidence angle
-%   is computed using both a reference ellipsoid and the actual
-%   plate model surface and surface normal. We expect to see a
-%   solar incidence angle of approximately 90 degrees. Since the
-%   solar incidence angle is measured between the local outward
-%   normal and the direction to the Sun, the solar incidence angle
-%   at an umbral or penumbral terminator point should be,
-%   respectively, greater than or less than 90 degrees by
-%   approximately the angular radius of the Sun as seen from each
-%   terminator point.
+%   1) Compute sets of umbral and penumbral terminator points on Phobos
+%      as seen from Mars. Perform a consistency check using the solar
+%      incidence angle at each point, where the solar incidence angle
+%      is computed using both a reference ellipsoid and the actual
+%      plate model surface and surface normal. We expect to see a
+%      solar incidence angle of approximately 90 degrees. Since the
+%      solar incidence angle is measured between the local outward
+%      normal and the direction to the Sun, the solar incidence angle
+%      at an umbral or penumbral terminator point should be,
+%      respectively, greater than or less than 90 degrees by
+%      approximately the angular radius of the Sun as seen from each
+%      terminator point.
 %
-%   In the following example program, the file
 %
-%      phobos_3_3.dsk
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%   is a DSK file containing a type 2 segment that provides a plate model
-%   representation of the surface of Phobos. The file
-%
-%      mar097.bsp
-%
-%   is a binary SPK file containing data for Phobos, the Earth, and the
-%   Sun for a time interval bracketing the date
-%
-%      2006 NOV 3 00:00:00 UTC.
-%
-%   pck00010.tpc is a planetary constants kernel file containing radii
-%   and rotation model constants. naif0010.tls is a leapseconds kernel.
-%
-%   All of the kernels other than the DSK file should be loaded via
-%   a meta-kernel. An example of the contents of such a kernel is:
 %
 %         KPL/MK
 %
+%         File: term_pl02_ex1.tm
+%
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
+%
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                        Contents
+%            ---------                        --------
+%            mar097.bsp                       Mars satellite ephemeris
+%            pck00010.tpc                     Planet orientation and
+%                                             radii
+%            naif0010.tls                     Leapseconds
+%
+%
 %         \begindata
 %
-%            KERNELS_TO_LOAD = ( 'naif0010.tls'
-%                                'pck00010.tpc'
-%                                'mar097.bsp' )
+%            KERNELS_TO_LOAD = ( 'mar097.bsp',
+%                                'pck00010.tpc',
+%                                'naif0010.tls' )
 %         \begintext
 %
+%         End of meta-kernel
 %
-%      function term_pl02_t
+%
+%      Use the DSK kernel below to provide the plate model representation
+%      of the surface of Phobos.
+%
+%         phobos_3_3.bds
+%
+%
+%
+%      Example code begins here.
+%
+%
+%      function term_pl02_ex1()
 %
 %         %
 %         % Constants
@@ -473,7 +506,7 @@
 %
 %         et = cspice_str2et( UTCSTR );
 %
-%         timstr = cspice_timout( et,                         ...
+%         timstr = cspice_timout( et,                                      ...
 %                        'YYYY-MON-DD HR:MN:SC.### ::TDB(TDB)' );
 %
 %
@@ -509,10 +542,10 @@
 %            %
 %            % Compute the terminator point set.
 %            %
-%            [trgepc, obpos, termpts, plateids] = ...
-%                     cspice_term_pl02( handle,  dladsc,         ...
-%                                       trmtyp,  'Sun',  target, ...
-%                                       et,      fixfrm, abcorr, ...
+%            [trgepc, obpos, trmpts, pltids] =                             ...
+%                     cspice_term_pl02( handle,  dladsc,                   ...
+%                                       trmtyp,  'Sun',  target,           ...
+%                                       et,      fixfrm, abcorr,           ...
 %                                       obsrvr,  NPOINTS           );
 %
 %            %
@@ -520,20 +553,20 @@
 %            %
 %            for  i = 1:NPOINTS
 %
-%               [radius, lon, lat] = cspice_reclat( termpts(:,i) );
+%               [radius, lon, lat] = cspice_reclat( trmpts(:,i) );
 %
-%               fprintf( '\n      Terminator point: %d\n', i )
-%               fprintf( '         Radius                     (km): %f\n', ...
+%               fprintf( '\n     Terminator point: %d\n', i )
+%               fprintf( '        Radius                      (km): %f\n', ...
 %                                                                 radius )
 %
-%               fprintf( '         Planetocentric longitude   (deg): %f\n', ...
+%               fprintf( '        Planetocentric longitude   (deg): %f\n', ...
 %                                                     lon * cspice_dpr() )
 %
-%               fprintf( '         Planetocentric latitude    (deg): %f\n', ...
+%               fprintf( '        Planetocentric latitude    (deg): %f\n', ...
 %                                                     lat * cspice_dpr() )
 %
-%               fprintf( '         Plate ID:                         %d\n', ...
-%                                                            plateids(i) )
+%               fprintf( '        Plate ID:                         %d\n', ...
+%                                                            pltids(i) )
 %
 %               %
 %               % Compute the angular radius of the Sun as seen from
@@ -547,10 +580,10 @@
 %               % target's center at the light time corrected epoch
 %               % trgepc.
 %               %
-%               [sunPos, ltime] = cspice_spkpos( 'Sun',  trgepc, fixfrm, ...
+%               [sunPos, ltime] = cspice_spkpos( 'Sun',  trgepc, fixfrm,   ...
 %                                                abcorr, target );
 %
-%               sunVec    = sunPos - termpts(:,i);
+%               sunVec    = sunPos - trmpts(:,i);
 %
 %               sunAngRad = asin( sunRadii(1) / cspice_vnorm(sunVec) );
 %
@@ -581,32 +614,32 @@
 %               % this representation is to provide an outward surface
 %               % normal.
 %               %
-%               [trgepc, srfvec, phase,  solar,  emissn] =        ...
-%                         cspice_ilumin( ILUM_METHOD, target, et, ...
-%                                        fixfrm, abcorr, obsrvr,  ...
-%                                        termpts(:,i) );
+%               [trgepc, srfvec, phase,  solar,  emissn] =                 ...
+%                         cspice_ilumin( ILUM_METHOD, target, et,          ...
+%                                        fixfrm, abcorr, obsrvr,           ...
+%                                        trmpts(:,i) );
 %
-%               fprintf( '            Solar incidence angle derived using\n' )
-%               fprintf( '            '                           )
-%               fprintf( '   - an ellipsoidal reference surface'  )
-%               fprintf( '        (deg): %f\n', solar * cspice_dpr() )
+%               fprintf( '           Solar incidence angle derived using\n' )
+%               fprintf( '            '                          )
+%               fprintf( '  - an ellipsoidal reference surface'  )
+%               fprintf( '        (deg): %7.5f\n', solar * cspice_dpr() )
 %
 %               fprintf( '            '                           )
-%               fprintf( '        > adjusted for Solar angular '  )
-%               fprintf( 'radius  (deg): %f\n', (solar+delta) * cspice_dpr() )
+%               fprintf( '       > adjusted for Solar angular radius '   )
+%               fprintf( ' (deg): %7.5f\n', (solar+delta) * cspice_dpr() )
 %
 %               %
 %               % Compute the illumination angles at the terminator point
 %               % using the actual plate model surface normal.
 %               %
-%               [phase, solar, emissn] = cspice_illum_pl02(      ...
-%                                        handle, dladsc, target, ...
-%                                        et,     abcorr, obsrvr, ...
-%                                        termpts(:,i)  );
+%               [phase, solar, emissn] = cspice_illum_pl02(                ...
+%                                        handle, dladsc, target,           ...
+%                                        et,     abcorr, obsrvr,           ...
+%                                        trmpts(:,i)  );
 %
-%               fprintf( '            '                            )
-%               fprintf( '   - plate model''s surface and normal ' )
-%               fprintf( 'vector (deg): %f\n', solar * cspice_dpr() )
+%               fprintf( '            '                           )
+%               fprintf( '  - plate model''s surface and normal ' )
+%               fprintf( 'vector (deg): %7.5f\n', solar * cspice_dpr() )
 %
 %            end
 %
@@ -619,7 +652,15 @@
 %
 %         cspice_kclear
 %
-%   MATLAB outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, using the meta-kernel file named term_pl02_ex1.tm and
+%      the DSK file named phobos_3_3.bds, the output was:
+%
+%
+%      Enter meta-kernel name > term_pl02_ex1.tm
+%      Enter DSK name         > phobos_3_3.bds
+%
 %
 %         Observer:                Mars
 %         Target:                  Phobos
@@ -629,79 +670,80 @@
 %
 %         Terminator type: Umbral
 %
-%            Terminator point: 1
-%               Radius                     (km): 12.111257
-%               Planetocentric longitude   (deg): 34.584501
-%               Planetocentric latitude    (deg): -0.001298
-%               Plate ID:                         200400
-%                  Solar incidence angle derived using
-%                    - an ellipsoidal reference surface        (deg): 90.182028
-%                         > adjusted for Solar angular radius  (deg): 89.999999
-%                    - plate model's surface and normal vector (deg): 90.240660
+%           Terminator point: 1
+%              Radius                      (km): 12.111257
+%              Planetocentric longitude   (deg): 34.584501
+%              Planetocentric latitude    (deg): -0.001298
+%              Plate ID:                         200400
+%                 Solar incidence angle derived using
+%                    - an ellipsoidal reference surface        (deg): 90.18203
+%                         > adjusted for Solar angular radius  (deg): 90.00000
+%                    - plate model's surface and normal vector (deg): 90.24066
 %
-%            Terminator point: 2
-%               Radius                     (km): 9.774665
-%               Planetocentric longitude   (deg): -143.659941
-%               Planetocentric latitude    (deg): 43.397190
-%               Plate ID:                         156958
-%                  Solar incidence angle derived using
-%                    - an ellipsoidal reference surface        (deg): 90.182028
-%                         > adjusted for Solar angular radius  (deg): 90.000000
-%                    - plate model's surface and normal vector (deg): 87.138686
+%           Terminator point: 2
+%              Radius                      (km): 9.774665
+%              Planetocentric longitude   (deg): -143.659941
+%              Planetocentric latitude    (deg): 43.397190
+%              Plate ID:                         156958
+%                 Solar incidence angle derived using
+%                    - an ellipsoidal reference surface        (deg): 90.18203
+%                         > adjusted for Solar angular radius  (deg): 90.00000
+%                    - plate model's surface and normal vector (deg): 87.13869
 %
-%            Terminator point: 3
-%               Radius                     (km): 11.500619
-%               Planetocentric longitude   (deg): -146.128151
-%               Planetocentric latitude    (deg): -43.082379
-%               Plate ID:                         25552
-%                  Solar incidence angle derived using
-%                    - an ellipsoidal reference surface        (deg): 90.182028
-%                         > adjusted for Solar angular radius  (deg): 90.000000
-%                    - plate model's surface and normal vector (deg): 91.404206
+%           Terminator point: 3
+%              Radius                      (km): 11.500619
+%              Planetocentric longitude   (deg): -146.128151
+%              Planetocentric latitude    (deg): -43.082379
+%              Plate ID:                         25552
+%                 Solar incidence angle derived using
+%                    - an ellipsoidal reference surface        (deg): 90.18203
+%                         > adjusted for Solar angular radius  (deg): 90.00000
+%                    - plate model's surface and normal vector (deg): 91.40421
 %
 %         Terminator type: Penumbral
 %
-%            Terminator point: 1
-%               Radius                     (km): 12.859785
-%               Planetocentric longitude   (deg): -145.415505
-%               Planetocentric latitude    (deg): 0.001299
-%               Plate ID:                         86763
-%                  Solar incidence angle derived using
-%                    - an ellipsoidal reference surface        (deg): 89.817971
-%                         > adjusted for Solar angular radius  (deg): 90.000000
-%                    - plate model's surface and normal vector (deg): 89.055489
+%           Terminator point: 1
+%              Radius                      (km): 12.859785
+%              Planetocentric longitude   (deg): -145.415505
+%              Planetocentric latitude    (deg): 0.001299
+%              Plate ID:                         86763
+%                 Solar incidence angle derived using
+%                    - an ellipsoidal reference surface        (deg): 89.81797
+%                         > adjusted for Solar angular radius  (deg): 90.00000
+%                    - plate model's surface and normal vector (deg): 89.05549
 %
-%            Terminator point: 2
-%               Radius                     (km): 10.327413
-%               Planetocentric longitude   (deg): 36.340069
-%               Planetocentric latitude    (deg): -43.397192
-%               Plate ID:                         76977
-%                  Solar incidence angle derived using
-%                    - an ellipsoidal reference surface        (deg): 89.817971
-%                         > adjusted for Solar angular radius  (deg): 90.000000
-%                    - plate model's surface and normal vector (deg): 77.351956
+%           Terminator point: 2
+%              Radius                      (km): 10.327413
+%              Planetocentric longitude   (deg): 36.340069
+%              Planetocentric latitude    (deg): -43.397192
+%              Plate ID:                         76977
+%                 Solar incidence angle derived using
+%                    - an ellipsoidal reference surface        (deg): 89.81797
+%                         > adjusted for Solar angular radius  (deg): 90.00000
+%                    - plate model's surface and normal vector (deg): 77.35196
 %
-%            Terminator point: 3
-%               Radius                     (km): 10.086025
-%               Planetocentric longitude   (deg): 33.871859
-%               Planetocentric latitude    (deg): 43.082380
-%               Plate ID:                         282136
-%                  Solar incidence angle derived using
-%                    - an ellipsoidal reference surface        (deg): 89.817971
-%                         > adjusted for Solar angular radius  (deg): 90.000000
-%                    - plate model's surface and normal vector (deg): 88.997322
+%           Terminator point: 3
+%              Radius                      (km): 10.086025
+%              Planetocentric longitude   (deg): 33.871859
+%              Planetocentric latitude    (deg): 43.082380
+%              Plate ID:                         282136
+%                 Solar incidence angle derived using
+%                    - an ellipsoidal reference surface        (deg): 89.81797
+%                         > adjusted for Solar angular radius  (deg): 90.00000
+%                    - plate model's surface and normal vector (deg): 88.99732
+%
 %
 %-Particulars
 %
 %   In this routine, we use the term "umbral terminator" to denote
-%   the curve usually called the "terminator":  this curve is the
+%   the curve usually called the "terminator": this curve is the
 %   boundary of the portion of the target body's surface that lies in
 %   total shadow. We use the term "penumbral terminator" to denote
 %   the boundary of the completely illuminated portion of the
 %   surface.
 %
 %   Boundaries of illuminated regions on an arbitrary surface are often
-%   complicated point sets:  boundaries of shadows of mountains and
+%   complicated point sets: boundaries of shadows of mountains and
 %   craters, if present, all contribute to the overall set. To make the
 %   terminator computation tractable, we simplify the problem by using a
 %   reference ellipsoid for guidance. We compute a set of terminator
@@ -734,10 +776,124 @@
 %   the center of the light source, then X lies on the umbral
 %   terminator; otherwise X lies on the penumbral terminator.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please
-%   refer to the CSPICE routine term_pl02.
+%   1)  If the input frame name `fixref' cannot be mapped
+%       to a frame ID code, the error SPICE(NOTRANSLATION) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   2)  If the target name `target' cannot be mapped to a body ID code,
+%       the error SPICE(IDCODENOTFOUND) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   3)  If the source name `source' cannot be mapped to a body ID
+%       code, an error is signaled by a routine in the call tree of
+%       this routine.
+%
+%   4)  If the frame designated by `fixref' is not centered
+%       on the target, the error SPICE(INVALIDFIXREF) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   5)  If the terminator type is not recognized, an error
+%       is signaled by a routine in the call tree of
+%       this routine.
+%
+%   6)  If the set size `npts' is not at least 1, an error
+%       is signaled by a routine in the call tree of
+%       this routine.
+%
+%   7)  If any of the reference ellipsoid's semi-axis lengths is
+%       non-positive, an error is signaled by a routine in the
+%       call tree of this routine.
+%
+%   8)  If the light source has non-positive radius, an error
+%       is signaled by a routine in the call tree of
+%       this routine.
+%
+%   9)  If the light source intersects the smallest sphere centered at
+%       the origin and containing the ellipsoid, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%   10) If radii for the target body or light source are not
+%       available in the kernel pool, an error is signaled by
+%       a routine in the call tree of this routine.
+%
+%   11) If radii are available but either body does not have three
+%       radii, the error SPICE(INVALIDCOUNT) is signaled by a routine
+%       in the call tree of this routine.
+%
+%   12) If any SPK look-up fails, an error is signaled by
+%       a routine in the call tree of this routine.
+%
+%   13) If a DSK providing a DSK type 2 plate model has not been
+%       loaded prior to calling term_pl02, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   14) If the segment associated with the input DLA descriptor is not
+%       of data type 2, the error SPICE(WRONGDATATYPE) is signaled by
+%       a routine in the call tree of this routine.
+%
+%   15) If a surface point cannot be computed because the ray
+%       corresponding to a longitude/latitude pair fails to intersect
+%       the target surface as defined by the plate model, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   16) If the DSK segment identified by `dladsc' is not for the
+%       body identified by `target', the error SPICE(DSKTARGETMISMATCH)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   17) If any of the input arguments, `handle', `dladsc', `trmtyp', `source',
+%       `target', `et', `fixfrm', `abcorr', `obsrvr', or `npts', is
+%       undefined, an error is signaled by the Matlab error handling system.
+%
+%   18) If any of the input arguments, `handle', `dladsc', `trmtyp', `source',
+%       `target', `et', `fixfrm', `abcorr', `obsrvr', or `npts', is not of
+%       the expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   Appropriate DSK, SPK, PCK, and frame kernels must be loaded by the
+%   calling program before this routine is called.
+%
+%   The following data are required:
+%
+%   -  DSK data:  a DSK file containing a plate model representing the
+%      target body's surface must be loaded. This kernel must contain
+%      a type 2 segment that contains data for the entire surface of
+%      the target body.
+%
+%   -  SPK data: ephemeris data for target, observer, and light
+%      source must be loaded. If aberration corrections are used,
+%      the states of all three objects relative to the solar system
+%      barycenter must be calculable from the available ephemeris
+%      data. Typically ephemeris data are made available by loading
+%      one or more SPK files via cspice_furnsh.
+%
+%   -  PCK data: triaxial radii for the target body and
+%      the light source must be loaded into the kernel pool.
+%      Typically this is done by loading a text PCK file via
+%      cspice_furnsh.
+%
+%   -  Further PCK data: rotation data for the target body must
+%      be loaded. These may be provided in a text or binary PCK
+%      file.
+%
+%   -  Frame data: if a frame definition is required to convert
+%      the observer and target states to the target body-fixed
+%      frame designated by `fixref', that definition must be
+%      available in the kernel pool. Typically the definitions of
+%      frames not already built-in to SPICE are supplied by loading
+%      a frame kernel.
+%
+%   In all cases, kernel data are normally loaded once per program
+%   run, NOT every time this routine is called.
+%
+%-Restrictions
+%
+%   1)  This routine models light paths as straight lines.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ABCORR.REQ
@@ -746,29 +902,55 @@
 %   SPK.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 25-JUL-2016, NJB, EDW (JPL)
+%   -Mice Version 1.1.0, 26-OCT-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Changed argument names
+%       "npoints", "termpts" and "plateIDs" to "npts", "trmpts" and "pltids"
+%       for consistency with other functions.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%       Index lines now state that this routine is deprecated.
+%
+%   -Mice Version 1.0.0, 25-JUL-2016 (NJB) (EDW)
 %
 %-Index_Entries
 %
-%   find terminator on plate model
-%   find terminator on triangular shape model
-%   find terminator on dsk type_2 shape model
-%   find umbral terminator on plate model
-%   find umbral terminator on triangular shape model
-%   find umbral terminator on dsk type_2 shape model
-%   find penumbral terminator on plate model
-%   find penumbral terminator on triangular shape model
-%   find penumbral terminator on dsk type_2 shape model
+%   DEPRECATED find terminator on plate model
+%   DEPRECATED find terminator on triangular shape model
+%   DEPRECATED find terminator on DSK type_2 shape model
+%   DEPRECATED find umbral terminator on plate model
+%   DEPRECATED find umbral terminator on shape model
+%   DEPRECATED find umbral terminator on DSK type_2
+%   DEPRECATED find penumbral terminator on plate model
+%   DEPRECATED find penumbral terminator on shape model
+%   DEPRECATED find penumbral terminator on DSK type_2 
 %
 %-&
 
-function [trgepc, obspos, termpts, plateIDs] = ...
-                     cspice_term_pl02( handle, dladsc, ...
-                                       trmtyp, source, target, ...
-                                       et,     fixref, abcorr, ...
-                                       obsrvr, npoints           )
+function [trgepc, obspos, trmpts, pltids] =                                ...
+                                         cspice_term_pl02( handle, dladsc, ...
+                                                   trmtyp, source, target, ...
+                                                   et,     fixref, abcorr, ...
+                                                   obsrvr, npts           )
 
    switch nargin
       case 10
@@ -782,15 +964,15 @@ function [trgepc, obspos, termpts, plateIDs] = ...
          fixref  = zzmice_str( fixref );
          abcorr  = zzmice_str( abcorr );
          obsrvr  = zzmice_str( obsrvr );
-         npoints = zzmice_int( npoints );
+         npts    = zzmice_int( npts );
 
       otherwise
 
-         error ( [ 'Usage: [trgepc, obspos(3), '                         ...
-                  'termpts(3,npoints), plateIDs(npoints)] = '            ...
-                  'cspice_term_pl02( handle, dladsc(SPICE_DLA_DSCSIZ), ' ...
-                  '`trmtyp`, `source`, `target`, '                       ...
-                  'et, `fixref`, `abcorr`, `obsrvr`, npoints )' ] )
+         error ( [ 'Usage: [trgepc, obspos(3), '                           ...
+                  'trmpts(3,npts), pltids(npts)] = '                       ...
+                  'cspice_term_pl02( handle, dladsc(SPICE_DLA_DSCSIZ), '   ...
+                  '`trmtyp`, `source`, `target`, '                         ...
+                  'et, `fixref`, `abcorr`, `obsrvr`, npts )' ] )
 
    end
 
@@ -799,11 +981,11 @@ function [trgepc, obspos, termpts, plateIDs] = ...
    %
    try
 
-      [trgepc, obspos, termpts, plateIDs] = mice( 'term_pl02', ...
+      [trgepc, obspos, trmpts, pltids] = mice( 'term_pl02',                ...
                                    handle, dladsc, trmtyp, source, target, ...
-                                   et,     fixref, abcorr, obsrvr, npoints );
-   catch
-      rethrow(lasterror)
+                                   et,     fixref, abcorr, obsrvr, npts );
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

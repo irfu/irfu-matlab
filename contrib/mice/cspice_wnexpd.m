@@ -61,84 +61,168 @@
 %
 %                 'window_f' can overwrite 'window'.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Let 'window' expand the intervals
-%      %
-%      window = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ]; [ 29; 29 ]; ];
+%   1) Given a double precision window, containing the following four
+%      intervals:
 %
-%      %
-%      % Apply the following series of calls
-%      %
-%      window = cspice_wnexpd(  2,  1, window )
-%      window = cspice_wnexpd( -2,  2, window )
-%      window = cspice_wnexpd( -2, -1, window )
+%         [ 1.0, 3.0 ], [ 7.0, 11.0 ], [ 23.0, 27.0 ], [ 29.0, 29.0 ]
 %
-%   MATLAB outputs:
+%      expand each interval by 2.0 units on the left and 1.0 on the
+%      right endpoints, then by -2.0 units on the left and 2.0 units on
+%      the right, and finally -2.0 units on the left and -1.0 units on
+%      the right.
 %
-%      window =
+%      Example code begins here.
 %
-%          -1
-%           4
-%           5
-%          12
-%          21
-%          30
 %
-%      Representing the intervals:
+%      function wnexpd_ex1()
 %
-%         [ -1, 4 ]  [ 5, 12 ]  [ 21, 30 ]
+%         %
+%         % Let 'window' contain the intervals
+%         %
+%         window = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ]; [ 29; 29 ]; ];
 %
-%      window =
+%         %
+%         % Apply the following series of calls
+%         %
+%         window = cspice_wnexpd(  2,  1, window );
+%         fprintf( '1: Expanded window by  2 (left) and  1 (right)\n' );
+%         for i=1:cspice_wncard(window)
 %
-%           1
-%           6
-%           7
-%          14
-%          23
-%          32
+%            [left, right] = cspice_wnfetd( window, i );
+%            fprintf( '%16.6f %16.6f\n', left, right  );
 %
-%      Representing the intervals:
+%         end
 %
-%         [  1, 6 ]  [ 7, 14 ]  [ 23, 32 ]
+%         window = cspice_wnexpd( -2,  2, window );
+%         fprintf( '2: Expanded window by -2 (left) and  2 (right)\n' );
+%         for i=1:cspice_wncard(window)
 %
-%      window =
+%            [left, right] = cspice_wnfetd( window, i );
+%            fprintf( '%16.6f %16.6f\n', left, right  );
 %
-%           3
-%           5
-%           9
-%          13
-%          25
-%          31
+%         end
 %
-%      Representing the intervals:
+%         window = cspice_wnexpd( -2, -1, window );
+%         fprintf( '3: Expanded window by -2 (left) and -1 (right)\n' );
+%         for i=1:cspice_wncard(window)
 %
-%         [  3, 5 ]  [ 9, 13 ]  [ 25, 31 ]
+%            [left, right] = cspice_wnfetd( window, i );
+%            fprintf( '%16.6f %16.6f\n', left, right  );
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      1: Expanded window by  2 (left) and  1 (right)
+%             -1.000000         4.000000
+%              5.000000        12.000000
+%             21.000000        30.000000
+%      2: Expanded window by -2 (left) and  2 (right)
+%              1.000000         6.000000
+%              7.000000        14.000000
+%             23.000000        32.000000
+%      3: Expanded window by -2 (left) and -1 (right)
+%              3.000000         5.000000
+%              9.000000        13.000000
+%             25.000000        31.000000
+%
+%
+%      Note that intervals may be "expanded" by negative amounts.
+%      In the example above, the second call shifts each interval to
+%      the right, while the third call undoes the effect of the first
+%      call (without restoring the merged intervals).
+%
+%      Note also that the third call is exactly equivalent to the
+%      call:
+%
+%         cspice_wncond( 2, 1, window )
 %
 %-Particulars
 %
+%   This function expands (lengthens) each of the intervals in
+%   the input window. The adjustments are not necessarily symmetric.
+%   That is, left units are subtracted from the left endpoint of
+%   each interval, and right units are added to the right endpoint
+%   of each interval, where left and right may be different.
+%
+%   Intervals are merged when expansion causes them to overlap.
+%
+%-Exceptions
+%
+%   1)  The cardinality of the input `window' must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   2)  If any of the input arguments, `left', `right' or `window', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `left', `right' or `window', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wnexpd_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and reformatted example's output.
 %
-%   -Mice Version 1.0.0, 24-JUL-2007, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 24-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -170,8 +254,8 @@ function [window_f] = cspice_wnexpd( left, right, window)
    %
    try
       [window_f] = mice('wnexpd_c', left, right, window );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

@@ -35,7 +35,7 @@
 %
 %      left,
 %      right    values defining the endpoints of an interval, which may or may
-%               not exist in one of the intervals in 'window'
+%               not exist in one of the intervals in `window'
 %
 %               [1,1] = size(right); double = class(right)
 %
@@ -45,18 +45,22 @@
 %
 %   the call:
 %
-%      retval = cspice_wnincd( left, right, window )
+%      [wnincd] = cspice_wnincd( left, right, window )
 %
 %   returns:
 %
 %      A a boolean with value true if the input interval exists in
-%     'window'
+%     `window'
 %
 %         a(i)  <  left  <  right  <  b(i)
 %               -        -         -
 %
-%      for some interval [ a(i), b(i) ] in 'window', false
+%      for some interval [ a(i), b(i) ] in `window', false
 %      otherwise.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -64,47 +68,58 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Let 'window' contain the intervals
-%      %
-%      window = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ]; ];
+%   1) Identify the intervals, from a set, that are contained within
+%      a given window.
 %
-%      %
-%      % Define a set of test intervals.
-%      %
-%      t_arr = [ [  1, 3 ]; ...
-%                [  9, 10]; ...
-%                [  0, 20]; ...
-%                [ 13, 15]; ...
-%                [ 29, 30] ];
+%      Example code begins here.
 %
-%      %
-%      % Loop over the test intervals.
-%      %
-%      % The number of test intervals equals half the
-%      % number of elements for the Nx2 array 't_arr'.
-%      %
-%      for i=1:numel(t_arr)/2
 %
-%        chk = cspice_wnincd( t_arr(i,1), t_arr(i,2), window);
+%      function wnincd_ex1()
 %
-%        if( chk )
+%         %
+%         % Let `window' contain the intervals
+%         %
+%         window = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ]; ];
 %
-%            fprintf(                                        ...
-%               '%12.5f %12.5f - an element of the window\n', ...
-%                                     t_arr(i,1), t_arr(i,2))
+%         %
+%         % Define a set of test intervals.
+%         %
+%         t_arr = [ [  1, 3 ]; ...
+%                   [  9, 10]; ...
+%                   [  0, 20]; ...
+%                   [ 13, 15]; ...
+%                   [ 29, 30] ];
 %
-%         else
+%         %
+%         % Loop over the test intervals.
+%         %
+%         % The number of test intervals equals half the
+%         % number of elements for the Nx2 array `t_arr'.
+%         %
+%         for i=1:numel(t_arr)/2
 %
-%            fprintf(                                             ...
-%               '%12.5f %12.5f - not an element of the window\n', ...
-%                                         t_arr(i,1), t_arr(i,2))
+%           chk = cspice_wnincd( t_arr(i,1), t_arr(i,2), window);
+%
+%           if( chk )
+%
+%               fprintf(                                        ...
+%                  '%12.5f %12.5f - an element of the window\n', ...
+%                                        t_arr(i,1), t_arr(i,2))
+%
+%            else
+%
+%               fprintf(                                             ...
+%                  '%12.5f %12.5f - not an element of the window\n', ...
+%                                            t_arr(i,1), t_arr(i,2))
+%
+%            end
 %
 %         end
 %
-%      end
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %           1.00000      3.00000 - an element of the window
 %           9.00000     10.00000 - an element of the window
@@ -112,34 +127,90 @@
 %          13.00000     15.00000 - not an element of the window
 %          29.00000     30.00000 - not an element of the window
 %
+%
 %-Particulars
 %
 %   None.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wnincd_c.
+%   1)  The cardinality of the input `window' must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   2)  The order of the input interval's endpoints, `left' and `right',
+%       is not checked, and that this does not affect the result.
+%
+%   3)  If any of the input arguments, `left', `right' or `window', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `left', `right' or `window', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement.
 %
-%      "logical" call replaced with "zzmice_logical."
+%       Added square brackets to output argument in function declaration,
+%       and renamed it to "wnincd".
 %
-%      Corrected version ID in 23-JUL-2009 entry, "1.0.0" to "1.0.1."
+%       Corrected error message format.
 %
-%   -Mice Version 1.0.1, 23-JUL-2009, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%      Replaced 'boolean' calls with 'logical' as 'boolean' functionally
-%      aliases 'logical'.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 17-JUL-2007, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%       "logical" call replaced with "zzmice_logical."
+%
+%       Corrected version ID in 23-JUL-2009 entry, "1.0.0" to "1.0.1."
+%
+%   -Mice Version 1.0.1, 23-JUL-2009 (EDW)
+%
+%       Replaced "boolean" calls with "logical" as "boolean" functionally
+%       aliases "logical."
+%
+%   -Mice Version 1.0.0, 17-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -147,7 +218,7 @@
 %
 %-&
 
-function retval = cspice_wnincd( left, right, window )
+function [wnincd] = cspice_wnincd( left, right, window )
 
    switch nargin
 
@@ -159,14 +230,14 @@ function retval = cspice_wnincd( left, right, window )
 
       otherwise
 
-         error( 'boolean = cspice_wnincd( left, right, window )' )
+         error( 'Usage: [wnincd] = cspice_wnincd( left, right, window )' )
 
       end
 
    try
-      [retval] = mice( 'wnincd_c', left, right, [zeros(6,1); window] );
-      [retval] = zzmice_logical(retval);
-   catch
-      rethrow(lasterror)
+      [wnincd] = mice( 'wnincd_c', left, right, [zeros(6,1); window] );
+      [wnincd] = zzmice_logical(wnincd);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

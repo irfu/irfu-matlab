@@ -39,13 +39,17 @@
 %
 %   the call:
 %
-%      card = cspice_wncard( window )
+%      [wncard] = cspice_wncard( window )
 %
 %   returns:
 %
-%      card   the cardinality (number of intervals) of the input 'window'.
+%      wncard   the cardinality (number of intervals) of the input `window'.
 %
-%             [1,1] = size(card); int32 = class(card)
+%               [1,1] = size(wncard); int32 = class(wncard)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -53,55 +57,101 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define a window with three intervals (six values).
-%      %
-%      darray = [ [ 1., 3.]; [ 7., 11.]; [23., 27.] ];
+%   1) Given a double precision window, determine its cardinality
+%      (number of intervals).
 %
-%      %
-%      % Create a window, insert data into the window.
-%      %
-%      win1 = eye(0,1);
+%      Example code begins here.
 %
-%      for i=1:3
 %
-%         win1 = cspice_wninsd( darray(i,1), darray(i,2) , win1 );
+%      function wncard_ex1()
 %
-%      end
+%         %
+%         % Define a window with three intervals (six values).
+%         %
+%         window = [ [ 1.; 3.]; [ 7.; 11.]; [23.; 27.] ];
 %
-%      %
-%      % What's the window cardinality of 'win1'?
-%      %
-%      cardinality = cspice_wncard(win1);
+%         %
+%         % What's the window cardinality of `window'?
+%         %
+%         card = cspice_wncard(window);
 %
-%      %
-%      % Print the window cardinality (this ought to show "3" ).
-%      %
-%      fprintf('Number of intervals in the window: %d\n', cardinality )
+%         %
+%         % Print the window cardinality (this ought to show "3" ).
+%         %
+%         fprintf('Number of intervals in the window: %d\n', card )
 %
-%   Matlab outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Number of intervals in the window: 3
+%
 %
 %-Particulars
 %
 %   This function returns the value numel(window)/2.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wncard_c.
+%   1)  If the number of elements in `window' is not even, the error
+%       SPICE(INVALIDSIZE) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   2)  If the input argument `window' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `window' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement.
 %
-%   -Mice Version 1.0.0, 30-DEC-2008, EDW (JPL)
+%       Changed output argument name "card" to "wncard" to comply with
+%       NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 30-DEC-2008 (EDW)
 %
 %-Index_Entries
 %
@@ -109,7 +159,7 @@
 %
 %-&
 
-function [card] = cspice_wncard(window)
+function [wncard] = cspice_wncard(window)
 
    switch nargin
 
@@ -119,18 +169,18 @@ function [card] = cspice_wncard(window)
 
       otherwise
 
-         error ( 'Usage: [card] = cspice_wncard(window)' )
+         error ( 'Usage: [wncard] = cspice_wncard( window )' )
 
    end
 
    %
-   % Call the windows routine, add to 'window' the space needed for
+   % Call the windows routine, add to `window' the space needed for
    % the control segments.
    %
    try
-      [card] = mice('wncard_c', [zeros(6,1); window] );
-   catch
-      rethrow(lasterror)
+      [wncard] = mice('wncard_c', [zeros(6,1); window] );
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

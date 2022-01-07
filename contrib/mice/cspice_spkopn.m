@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_SPKOPN opens a new SPK file, returning the handle
-%   of the opened file.
+%   CSPICE_SPKOPN creates a new SPK file, returning the handle of the opened
+%   file.
 %
 %-Disclaimer
 %
@@ -33,7 +33,7 @@
 %
 %   Given:
 %
-%      fname    the name of the SPK file to open.
+%      fname    the name of the new SPK file to be created.
 %
 %               [1,c1] = size(fname); char = class(fname)
 %
@@ -41,7 +41,7 @@
 %
 %               [1,1] = size(fname); cell = class(fname)
 %
-%      ifname   the descriptive internal filename for the SPK.
+%      ifname   the internal filename for the SPK file that is being created.
 %
 %               [1,c2] = size(ifname); char = class(ifname)
 %
@@ -49,20 +49,43 @@
 %
 %               [1,1] = size(ifname); cell = class(ifname)
 %
-%      ncomch   the scalar integer number of characters to
-%               reserve for comments.
+%               The internal filename may be up to 60 characters long. If
+%               you do not have any conventions for tagging your files, an
+%               internal filename of 'SPK_file' is perfectly acceptable. You
+%               may also leave it blank if you like.
+%
+%      ncomch   the space, measured in characters, to be initially set aside
+%               for the comment area when a new SPK file is opened.
 %
 %               [1,1] = size(ncomch); int32 = class(ncomch)
 %
+%               The amount of space actually set aside may be greater than
+%               the amount requested, due to the manner in which comment
+%               records are allocated in an SPK file. However, the amount of
+%               space set aside for comments will always be at least the
+%               amount that was requested.
+%
+%               The value of ncomch should be greater than or equal to
+%               zero, i.e., 0 <= ncomch. A negative value, should one
+%               occur, will be assumed to be zero.
+%
 %   the call:
 %
-%      handle = cspice_spkopn( name, ifname, ncomch )
+%      [handle] = cspice_spkopn( fname, ifname, ncomch )
 %
 %   returns:
 %
-%      handle   the file handle assigned to 'fname'.
+%      handle   the handle of the opened SPK file.
 %
 %               [1,1] = size(handle); int32 = class(handle)
+%
+%               If an error occurs when opening the file, the value of this
+%               variable should not be used, as it will not represent a valid
+%               handle.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -70,27 +93,144 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   1) This example demonstrates how to create an SPK type 8 kernel
+%      containing only one segment, given a time-ordered set of
+%      discrete states and epochs.
+%
+%
+%      Example code begins here.
+%
+%
+%      function spkopn_ex1()
+%
+%         %
+%         % Define the segment identifier parameters.
+%         %
+%         BODY       = 3;
+%         CENTER     = 10;
+%         REF        = 'J2000';
+%         POLY_DEG   = 3;
+%         SPK8       = 'spkopn_ex1.bsp';
+%         N_DISCRETE = 9;
+%
+%         %
+%         % A set of epochs.
+%         %
+%         DISCRETEEPOCHS = (1:9)*100;
+%
+%         %
+%         % An array of discrete states to write to the SPK segment.
+%         %
+%         base = [ (1:6)*100 ]';
+%
+%         %
+%         % Create the 6xN array of states.
+%         %
+%         DISCRETESTATES = [(base+1), (base+2), (base+3), ...
+%                           (base+4), (base+5), (base+6), ...
+%                           (base+7), (base+8), (base+9) ];
+%
+%         %
+%         % Create a segment identifier.
+%         %
+%         segid = 'SPK type 8 test segment';
+%
+%         %
+%         % Open a new SPK file.
+%         %
+%         handle = cspice_spkopn( SPK8, segid, 4 );
+%
+%         step   = DISCRETEEPOCHS(2) - DISCRETEEPOCHS(1);
+%
+%         %
+%         % Create a type 8 segment.
+%         %
+%         cspice_spkw08( handle,                       ...
+%                        BODY,                         ...
+%                        CENTER,                       ...
+%                        REF,                          ...
+%                        DISCRETEEPOCHS(1),            ...
+%                        DISCRETEEPOCHS(N_DISCRETE),   ...
+%                        segid,                        ...
+%                        POLY_DEG,                     ...
+%                        DISCRETESTATES,               ...
+%                        DISCRETEEPOCHS(1),            ...
+%                        step )
+%
+%         %
+%         % Close the SPK file.
+%         %
+%         cspice_spkcls( handle )
+%
+%
+%      When this program is executed, no output is presented on
+%      screen. After run completion, a new SPK type 8 exists in
+%      the output directory.
 %
 %-Particulars
 %
-%   A cspice_spkcls call should balance every cspice_spkopn
-%   call.
+%   Open a new SPK file, reserving room for comments if requested.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine spkopn_c.
+%   1)  If the value of `ncomch' is negative, a value of zero (0) will
+%       be used for the number of comment characters to be set aside
+%       for comments.
+%
+%   2)  If an error occurs while attempting to open the SPK file, the
+%       value of `handle' will not represent a valid file handle.
+%
+%   3)  If any of the input arguments, `fname', `ifname' or `ncomch',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   4)  If any of the input arguments, `fname', `ifname' or `ncomch',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   See `fname' and `handle'.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   SPK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 23-MAY-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 05-AUG-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Added
+%       complete code example, based on the cspice_spkw08 example.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 23-MAY-2012 (EDW)
 %
 %-Index_Entries
 %
-%   open a new spk file
+%   open a new SPK file
 %
 %-&
 
@@ -114,8 +254,8 @@ function [handle] = cspice_spkopn( fname, ifname, ncomch )
    %
    try
       [handle] = mice( 'spkopn_c', fname, ifname, ncomch );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

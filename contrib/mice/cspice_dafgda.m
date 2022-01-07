@@ -61,80 +61,102 @@
 %
 %             [1,length] = size(data); double = class(data)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Open the type 8 SPK "gda.bsp" for read access then read the
-%      % data from the first segment. The segment contains 100
-%      % 6 element records plus four additional elements.
-%      %
-%      handle = cspice_dafopr( 'gda.bsp');
+%   1) Open a type 8 SPK for read access, retrieve the data for
+%      the first segment and identify the beginning and end addresses,
+%      the number of data elements within, the size of the data array,
+%      and print the first two records.
 %
-%      %
-%      % Begin a forward search; find the first segment; read the
-%      % segment summary.
-%      %
-%      cspice_dafbfs( handle )
-%      found    = cspice_daffna;
-%      [dc, ic] = cspice_dafgs( 2, 6 );
+%      Use the SPK kernel below as input type 8 SPK file for the example.
 %
-%      %
-%      % Retrieve the data begin and end addresses.
-%      %
-%      baddr = ic(5);
-%      eaddr = ic(6);
+%         mer1_ls_040128_iau2000_v1.bsp
 %
-%      fprintf( 'Beginning address       : %d\n', baddr )
-%      fprintf( 'Ending address          : %d\n', eaddr )
-%      fprintf( 'Number of data elements : %d\n', eaddr - baddr + 1 )
+%      Each segment contains only two records which provide the start
+%      and end position for the MER-1 rover landing site in the IAU_MARS
+%      frame. Since the landing site does not change over time, it is
+%      expected that both records are equal.
 %
-%      %
-%      % Extract all data bounded by the begin and end addresses.
-%      %
-%      data = cspice_dafgda( handle, baddr, eaddr );
 %
-%      %
-%      % Check 'data'. It should show an array of 604 doubles (4 + 6 * 100).
-%      %
-%      fprintf( 'Size of data array      : ' )
-%      fprintf( '%d ', size(data) )
-%      fprintf('\n\n')
+%      Example code begins here.
 %
-%      %
-%      % Check the data. Each set of 6 element records should possess the
-%      % property:
-%      %
-%      %   record(6) = record(6)  + 1000.
-%      %        i            i-1
-%      %
-%      fprintf( ' %7.2f ', data(1:6) )
-%      fprintf('\n')
 %
-%      fprintf( ' %6.2f ', data(7:12) )
-%      fprintf('\n')
+%      function dafgda_ex1()
 %
-%      %
-%      % SAFELY close the file
-%      %
-%      cspice_dafcls(handle)
+%         %
+%         % Open the type 8 SPK for read access then read the
+%         % data from the first segment.
+%         %
+%         handle = cspice_dafopr( 'mer1_ls_040128_iau2000_v1.bsp');
 %
-%   Matlab outputs:
+%         %
+%         % Begin a forward search; find the first segment; read the
+%         % segment summary.
+%         %
+%         cspice_dafbfs( handle )
+%         found    = cspice_daffna;
+%         [dc, ic] = cspice_dafgs( 2, 6 );
 %
-%      Beginning address       : 385
-%      Ending address          : 988
-%      Number of data elements : 604
-%      Size of data array      : 1 604
+%         %
+%         % Retrieve the data begin and end addresses.
+%         %
+%         baddr = ic(5);
+%         eaddr = ic(6);
 %
-%          0.00     1.00     2.00     3.00     4.00     5.00
-%       1000.00  1001.00  1002.00  1003.00  1004.00  1005.00
+%         fprintf( 'Beginning address       : %d\n', baddr )
+%         fprintf( 'Ending address          : %d\n', eaddr )
+%         fprintf( 'Number of data elements : %d\n', eaddr - baddr + 1 )
 %
-%   cspice_dafgda returned 604 double precision data values between DAF
-%   addresses 385 and 988. The second 6-vector shows the property of 1000
-%   more than the previous set, as expected.
+%         %
+%         % Extract all data bounded by the begin and end addresses.
+%         %
+%         data = cspice_dafgda( handle, baddr, eaddr );
+%
+%         %
+%         % Check `data'. It should contain 2 * 6 + 4 elements.
+%         %
+%         fprintf( 'Size of data array      :(%d,%d)\n', size(data) )
+%
+%         %
+%         % Check the data. Each set of 6 element records should possess the
+%         % property:
+%         %
+%         %   record(6) = record(6)
+%         %        i            i-1
+%         %
+%         fprintf( 'The first and second states stored in the segment:\n' );
+%         fprintf( ' %9.3f ', data(1:6) )
+%         fprintf('\n')
+%
+%         fprintf( ' %9.3f ', data(7:12) )
+%         fprintf('\n')
+%
+%         %
+%         % SAFELY close the file
+%         %
+%         cspice_dafcls(handle)
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Beginning address       : 897
+%      Ending address          : 912
+%      Number of data elements : 16
+%      Size of data array      :(1,16)
+%      The first and second states stored in the segment:
+%        3376.422   -326.649   -115.392      0.000      0.000      0.000
+%        3376.422   -326.649   -115.392      0.000      0.000      0.000
+%
 %
 %-Particulars
 %
@@ -144,17 +166,72 @@
 %   within a DAF without knowing (or caring) about the physical
 %   records in which they are stored.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dafgda_c.
+%   1)  If `baddr' is zero or negative, the error SPICE(DAFNEGADDR)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   2)  If baddr > eaddr, the error SPICE(DAFBEGGTEND) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   3)  If `handle' is invalid, an error is signaled by a routine in the
+%       call tree of this routine.
+%
+%   4)  If the range of addresses covered between `baddr' and `eaddr'
+%       includes records that do not contain strictly double
+%       precision data, then the values returned in `data' are
+%       undefined. See the -Restrictions section below for details.
+%
+%   5)  If any of the input arguments, `handle', `baddr' or `eaddr',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   6)  If any of the input arguments, `handle', `baddr' or `eaddr',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   1)  There are several types of records in a DAF. This routine
+%       is only to be used to read double precision data bounded
+%       between two DAF addresses. The range of addresses input
+%       may not cross data and summary record boundaries.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAF.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 17-JUL-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 13-AUG-2021 (EDW) (JDR)
+%
+%       Edited -Examples section to comply with NAIF standard. Added
+%       example's problem statement and a reference to required SPK file.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 17-JUL-2012 (EDW)
 %
 %-Index_Entries
 %
@@ -182,7 +259,6 @@ function [data] = cspice_dafgda( handle, baddr, eaddr)
    %
    try
       [data] = mice( 'dafgda_c', handle, baddr, eaddr );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-

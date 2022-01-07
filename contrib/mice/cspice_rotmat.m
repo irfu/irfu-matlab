@@ -35,48 +35,54 @@
 %
 %   Given:
 %
-%      m1      the matrix to apply the rotation. In matrix algebra, the
-%              components of the matrix are relative to one particular
-%              coordinate system. Applying cspice_rotmat changes the
-%              components of 'm1' so that they are relative to a rotated
-%              coordinate system.
+%      m1       a 3x3 matrix to which a rotation is to be applied.
 %
-%              [3,3]   = size(m1); double = class(m1)
+%               [3,3] = size(m1); double = class(m1)
 %
-%      angle   the angle in radians through which to rotate the original
-%              coordinate system.
+%               In matrix algebra, the components of the matrix are
+%               relevant in one particular coordinate system. Applying
+%               cspice_rotmat changes the components of `m1' so that they are
+%               relevant to a rotated coordinate system.
 %
-%              [1,1]   = size(angle); double = class(angle)
+%      angle    the angle in radians through which the original coordinate
+%               system is to be rotated.
 %
-%      iaxis   the index for the axis of the original coordinate system
-%              about which to perform the rotation by 'angle'.
-%              'iaxis' = 1,2 or 3 respectively designates the x-, y-,
-%              or z-axis.
+%               [1,1] = size(angle); double = class(angle)
 %
-%              [1,1]   = size(iaxis); int32 = class(iaxis)
+%      iaxis    the index for the axis of the original coordinate system
+%               about which the rotation by `angle' is to be performed.
+%
+%               [1,1] = size(iaxis); int32 = class(iaxis)
+%
+%               iaxis = 1,2 or 3 designates the X-, Y- or Z-axis,
+%               respectively.
 %
 %   the call:
 %
-%      mout = cspice_rotmat( m1, angle, iaxis)
+%      [mout] = cspice_rotmat( m1, angle, iaxis )
 %
 %   returns:
 %
-%      mout    matrix resulting from the application of 'angle' to the
-%              input matrix 'm1'.
+%      mout     the matrix resulting from the application of the specified
+%               rotation to the input matrix `m1'.
 %
-%              [3,3]   = size(mout); double = class(mout)
+%               [3,3] = size(mout); double = class(mout)
 %
-%              If
+%               If
 %
-%                 [angle]
-%                       iaxis
+%                  [angle]
+%                         iaxis
 %
-%              denotes the rotation matrix by 'angle' radians about 'iaxis',
-%              (see the Rotations Required Reading document) then 'mout' is
-%              given by the following matrix equation:
+%               denotes the rotation matrix by `angle' radians about `iaxis',
+%               (refer to the routine cspice_rotate) then `mout' is given by
+%               the following matrix equation:
 %
-%                 mout = [angle]      * m1
-%                               iaxis
+%                  mout = [angle]      * m1
+%                                iaxis
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -84,53 +90,108 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Rotate the 3x3 identity matrix by 90 degrees about
-%      % the y axis.
-%      %
+%   1) Rotate the 3x3 identity matrix by 90 degrees about
+%      the y axis.
 %
-%      %
-%      % Create the 3x3 identity matrix.
-%      %
-%      ident = eye(3);
+%      Example code begins here.
 %
-%      %
-%      % Rotate 'ident' by Pi/2 about the Y axis.
-%      %
-%      r = cspice_rotmat( ident, cspice_halfpi, 2 )
 %
-%   MATLAB outputs:
+%      function rotmat_ex1()
 %
-%      r =
+%         %
+%         % Create the 3x3 identity matrix.
+%         %
+%         ident = eye(3);
 %
-%          0.0000         0   -1.0000
-%               0    1.0000         0
-%          1.0000         0    0.0000
+%         %
+%         % Rotate 'ident' by Pi/2 about the Y axis.
+%         %
+%         r = cspice_rotmat( ident, cspice_halfpi, 2 );
+%
+%         %
+%         %  Output the resulting matrix.
+%         %
+%         fprintf('%18.12f %18.12f %18.12f\n', r(1,:));
+%         fprintf('%18.12f %18.12f %18.12f\n', r(2,:));
+%         fprintf('%18.12f %18.12f %18.12f\n', r(3,:));
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%          0.000000000000     0.000000000000    -1.000000000000
+%          0.000000000000     1.000000000000     0.000000000000
+%          1.000000000000     0.000000000000     0.000000000000
+%
 %
 %-Particulars
 %
 %   None.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine rotmat_c.
+%   1)  If the axis index is not in the range 1 to 3, it will be
+%       treated the same as that integer 1, 2, or 3 that is congruent
+%       to it mod 3.
+%
+%   2)  If any of the input arguments, `m1', `angle' or `iaxis', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `m1', `angle' or `iaxis', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ROTATION.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.1.1, 10-MAR-2015, EDW (JPL)
+%   -Mice Version 1.2.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard.
+%       Reformatted example's output and added problem statement.
 %
-%   -Mice Version 1.1.0, 24-JAN-2009, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%      Corrected the function definition name. This wrapper had a
-%      the function name "cspice_rotate" instead of "cspice_rotmat."
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 17-JAN-2006, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.1.1, 10-MAR-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.1.0, 24-JAN-2009 (EDW)
+%
+%       Corrected the function definition name. This wrapper had a
+%       the function name "cspice_rotate" instead of "cspice_rotmat."
+%
+%   -Mice Version 1.0.0, 17-JAN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -159,8 +220,8 @@ function [mout] = cspice_rotmat( m1, angle, iaxis )
    %
    try
       [mout] = mice('rotmat_c', m1, angle, iaxis );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_SPD returns the value of the number of seconds in a  
+%   CSPICE_SPD returns the value of the number of seconds in a
 %   standard calendar day: 86400.
 %
 %-Disclaimer
@@ -45,35 +45,88 @@
 %
 %            [1,1] = size(spd); double = class(spd)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> cspice_spd
+%   1) Print the double precision value of the number of seconds in a
+%      standard calendar day.
 %
-%   MATLAB outputs:   86400.000
+%      Example code begins here.
+%
+%
+%      function spd_ex1()
+%
+%         %
+%         % Output the number of seconds per day
+%         %
+%         fprintf( 'Seconds per day: %9.1f\n', cspice_spd );
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Seconds per day:   86400.0
+%
 %
 %-Particulars
 %
+%   The function always returns the constant value shown above.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine spd_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the -Examples section to comply with NAIF standard.
+%       Reformatted example's output and added problem statement.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -95,7 +148,7 @@ function [spd] = cspice_spd
    %
    try
       [spd] =  mice('spd_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

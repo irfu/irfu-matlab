@@ -33,52 +33,54 @@
 %
 %   Given:
 %
-%      item    is the Time subsystem parameter value to set.
+%      item     the Time subsystem parameter value to set.
 %
-%              [1,c1] = size(item); char = class(item)
+%               [1,c1] = size(item); char = class(item)
 %
-%                 or
+%                  or
 %
-%              [1,1] = size(item); cell = class(item)
+%               [1,1] = size(item); cell = class(item)
 %
-%              The parameters and corresponding values:
+%               The parameters and corresponding values:
 %
-%              item          Allowed Values
-%              ---------     --------------
-%              'CALENDAR'    'GREGORIAN'
-%                            'JULIAN'
-%                            'MIXED'
+%                  item        Allowed Values
+%                  ---------   --------------
+%                  CALENDAR    GREGORIAN
+%                              JULIAN
+%                              MIXED
 %
-%              'SYSTEM'      'TDB'
-%                            'TDT'
-%                            'UTC'
+%                  SYSTEM      TDB
+%                              TDT
+%                              TT
+%                              UTC
 %
-%              'ZONE'        'EST', 'EDT', 'CST', 'CDT',
-%                            'MST', 'MDT', 'PST', 'PDT'
-%                            'UTC+HR'
-%                            'UTC-HR'       ( 0 <= HR < 13 )
-%                            'UTC+HR:MN'    ( 0 <= MN < 60 )
-%                            'UTC-HR:MN'
+%                  ZONE        EST, EDT, CST, CDT, MST, MDT, PST, PDT
+%                              UTC+HR
+%                              UTC-HR       ( 0 <= HR < 13 )
+%                              UTC+HR:MN    ( 0 <= MN < 60 )
+%                              UTC-HR:MN
 %
-%              The case of item is not significant.
+%               The case of `item' is not significant.
 %
-%      value   the value to associate to 'item'. Note that
-%              value is checked to ensure it is within the range
-%              of allowed values for item. If it is not within
-%              the expected range and appropriate error message
-%              signals.
+%      value    the value to associate to `item'.
 %
-%              [1,1] = size(value); double = class(value)
+%               [1,1] = size(value); double = class(value)
 %
-%      The case of 'value' is not significant.
+%               Note that value is checked to ensure it is within the range
+%               of allowed values for item. If it is not within the expected
+%               range and appropriate error message signals.
+%
+%               The case of `value' is not significant.
 %
 %   the call:
 %
 %      cspice_timdef_set( item, value )
 %
-%   returns:
+%   associates `item' to `value'.
 %
-%      No return value. The routine associates 'item' to 'value'.
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -86,51 +88,42 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
+%   1) Set the calendar parameter of the time system calendar string
+%      processing to 'MIXED' mode.
 %
-%      ITEMS = { 'CALENDAR', 'SYSTEM' };
+%      Example code begins here.
 %
-%      %
-%      % Retrieve the time definition settings.
-%      %
-%      for i=1:numel(ITEMS)
 %
-%         value = cspice_timdef_get( ITEMS(i) );
-%         fprintf( '%s -> %s\n',  char(ITEMS(i)), value )
+%      function timdef_set_ex1()
 %
-%      end
+%         ITEMS = { 'CALENDAR', 'SYSTEM' };
 %
-%   MATLAB outputs:
+%         %
+%         % Set the calendar to 'MIXED'
+%         %
+%         ITEM  = 'CALENDAR';
+%         VALUE = 'MIXED';
 %
-%      CALENDAR -> GREGORIAN
-%      SYSTEM -> UTC
+%         cspice_timdef_set( ITEM, VALUE )
 %
-%   Example(2):
+%         %
+%         % Retrieve the time definition settings.
+%         %
+%         for i=1:numel(ITEMS)
 %
-%      ITEMS = { 'CALENDAR', 'SYSTEM' };
+%            value = cspice_timdef_get( ITEMS(i) );
+%            fprintf( '%s -> %s\n',  char(ITEMS(i)), value )
 %
-%      %
-%      % Set the calendar to 'MIXED'
-%      %
-%      ITEM  = 'CALENDAR';
-%      VALUE = 'MIXED';
+%         end
 %
-%      cspice_timdef_set( ITEM, VALUE )
 %
-%      %
-%      % Retrieve the time definition settings.
-%      %
-%      for i=1:numel(ITEMS)
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%         value = cspice_timdef_get( ITEMS(i) );
-%         fprintf( '%s -> %s\n',  char(ITEMS(i)), value )
-%
-%      end
-%
-%   MATLAB outputs:
 %
 %      CALENDAR -> MIXED
 %      SYSTEM -> UTC
+%
 %
 %-Particulars
 %
@@ -155,7 +148,7 @@
 %   Julian      --- This is the calendar that was in use prior
 %                   to October 15, 1582. Leap years occur every
 %                   4 years on the Julian Calendar (including all
-%                   centuries.)  October 5, 1582 on the Julian
+%                   centuries.) October 5, 1582 on the Julian
 %                   calendar corresponds to October 15, 1582 of the
 %                   Gregorian Calendar.
 %
@@ -174,18 +167,19 @@
 %   -------
 %
 %   You may set the system used for keeping time to be UTC (default)
-%   TDB (barycentric dynamical time) or TDT (terrestrial dynamical
-%   time). Both TDB and TDT have no leapseconds. As such the time
-%   elapsed between any two epochs on these calendars does not depend
-%   upon when leapseconds occur.
+%   TDB (barycentric Dynamical Time), TDT (Terrestrial Dynamical
+%   Time), or TT (Terrestrial Time). TDT and TT represent the same
+%   time system. Both TDB and TT (TDT) have no leapseconds. As such
+%   the time elapsed between any two epochs on these calendars does
+%   not depend upon when leapseconds occur.
 %
-%   To set the default time system, select TDT, TDB or UTC for value
-%   and make the following call.
+%   To set the default time system, select TDT, TT, TDB or UTC for
+%   `value' and make the following call.
 %
 %      cspice_timdef_set( 'SYSTEM', value )
 %
 %   Note that such a call has the side effect of setting the value
-%   associated with ZONE to a blank.
+%   associated with 'ZONE' to a blank.
 %
 %   Zone
 %   -----
@@ -206,14 +200,14 @@
 %
 %   In addition you may specify any commercial time zone by using
 %   "offset" notation. This notation starts with the letters "UTC"
-%   followed by a + for time zones east of Greenwich and - for
-%   time zones west of Greenwich. This is followed by the number
-%   of hours to add or subtract from UTC. This is optionally followed
-%   by a colon ':' and the number of minutes to add or subtract (based
-%   on the sign that follows "UTC") to get the
-%   local time zone. Thus to specify the time zone of Calcutta you
-%   would specify the time zone to be UTC+5:30. To specify the
-%   time zone of Newfoundland use the time zone UTC-3:30.
+%   followed by a + for time zones east of Greenwich and - for time
+%   zones west of Greenwich. This is followed by the number of hours
+%   to add or subtract from UTC. This is optionally followed by a
+%   colon ":" and the number of minutes to add or subtract (based on
+%   the sign that follows "UTC") to get the local time zone. Thus to
+%   specify the time zone of Calcutta you would specify the time zone
+%   to be UTC+5:30. To specify the time zone of Newfoundland use the
+%   time zone UTC-3:30.
 %
 %   To set a default time zone, select one of the "built-in" U.S.
 %   zones or construct an offset as discussed above. Then make the
@@ -227,21 +221,71 @@
 %   Note that such a call has the side effect of setting the value
 %   associated with SYSTEM to a blank.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine timdef_c.
+%   1)  If the `item' specified is not one the recognized items, the
+%       error SPICE(BADTIMEITEM) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If the value associated with the item input is not one of
+%       the recognized items, the error SPICE(BADDEFAULTVALUE) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   3)  If any of the input arguments, `item' or `value', is undefined,
+%       an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `item' or `value', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Added time system name 'TT' (Terrestrial Time) as alternate
+%       assignment of 'TDT' (Terrestrial Dynamical Time).
 %
-%   -Mice Version 1.0.0, 14-NOV-2013, EDW (JPL)
+%       Updated the header to comply with NAIF standard. Added complete
+%       code example based on existing fragment and removed non applicable
+%       example.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 13-FEB-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 14-NOV-2013 (EDW)
 %
 %-Index_Entries
 %
@@ -270,8 +314,8 @@ function cspice_timdef_set( item, value )
    %
    try
       mice( 'timdef_set_c', item, value );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

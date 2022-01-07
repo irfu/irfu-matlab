@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_VPROJ calculates the projection of a set of 3-vectors onto
-%   another set of 3-vectors.
+%   CSPICE_VPROJ computes the projection of one 3-dimensional vector onto
+%   another 3-dimensional vector.
 %
 %-Disclaimer
 %
@@ -33,32 +33,42 @@
 %
 %   Given:
 %
-%      a   the vector(s) to project onto the vector(s) 'b'.
+%      a        double precision, 3-dimensional vector(s).
 %
-%          [3,n] = size(a); double = class(a)
+%               [3,n] = size(a); double = class(a)
 %
-%      b   the vector(s) to receive the projection(s).
+%               This vector is to be projected onto the vector `b'.
 %
-%          [3,n] = size(b); double = class(b)
+%      b        double precision, 3-dimensional vector(s).
 %
-%      An implicit assumption exists that 'a' and 'b' are specified
-%      in the same reference frame. If this is not the case, the numerical
-%      result has no meaning.
+%               [3,n] = size(b); double = class(b)
+%
+%               This vector is the vector which receives the projection.
+%
+%               An implicit assumption exists that `a' and `b' are specified
+%               in the same reference frame. If this is not the case, the
+%               numerical result has no meaning.
 %
 %   the call:
 %
-%      vproj = cspice_vproj( a, b )
+%      [p] = cspice_vproj( a, b )
 %
 %   returns:
 %
-%      vproj   vector containing the projection(s) of 'a' onto 'b' ('vproj' is
-%              necessarily parallel to 'b'.)  If 'b' equals the zero vector
-%              then the zero vector will return as 'vproj'.
+%      p        the double precision, 3-dimensional vector(s) containing the
+%               projection of `a' onto `b'.
 %
-%              [3,n] = size(vproj); double = class(vproj)
+%               [3,n] = size(p); double = class(p)
 %
-%             'vproj' returns with the same vectorization measure, N, as
-%             'a' and 'b'
+%               (`p' is necessarily parallel to `b'.) If `b' is the zero
+%               vector then `p' will be returned as the zero vector.
+%
+%               `p' returns with the same vectorization measure, N, as
+%               `a' and `b'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -66,60 +76,133 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define two vector sets.
-%      %
-%      a = [ [ 6, 6, 6]', ...
-%            [ 6, 6, 6]', ...
-%            [ 6, 6, 0]', ...
-%            [ 6, 0, 0]' ]
+%   1) Define two sets of vectors and compute the projection of
+%      each vector of the first set on the corresponding vector of
+%      the second set.
 %
-%      b = [ [ 2, 0, 0]', ...
-%            [-3, 0, 0]', ...
-%            [ 0, 7, 0]', ...
-%            [ 0, 0, 9]' ]
-%
-%      %
-%      % Calculate the projection.
-%      %
-%      p = cspice_vproj( a, b )
-%
-%   MATLAB outputs:
-%
-%      a =
-%
-%           6     6     6     6
-%           6     6     6     0
-%           6     6     0     0
+%      Example code begins here.
 %
 %
-%      b =
+%      function vproj_ex1()
 %
-%           2    -3     0     0
-%           0     0     7     0
-%           0     0     0     9
+%         %
+%         % Define two vector sets.
+%         %
+%         a = [ [ 6, 6, 6]', ...
+%               [ 6, 6, 6]', ...
+%               [ 6, 6, 0]', ...
+%               [ 6, 0, 0]' ];
+%
+%         b = [ [ 2, 0, 0]', ...
+%               [-3, 0, 0]', ...
+%               [ 0, 7, 0]', ...
+%               [ 0, 0, 9]' ];
+%
+%         %
+%         % Calculate the projection.
+%         %
+%         p = cspice_vproj( a, b );
+%
+%         for i=1:4
+%            fprintf( 'Vector A  : %5.1f %5.1f %5.1f\n', ...
+%                             a(1,i), a(2,i), a(3,i) )
+%            fprintf( 'Vector B  : %5.1f %5.1f %5.1f\n', ...
+%                             b(1,i), b(2,i), b(3,i) )
+%            fprintf( 'Projection: %5.1f %5.1f %5.1f\n\n', ...
+%                             p(1,i), p(2,i), p(3,i) )
+%         end
 %
 %
-%      p =
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%           6     6     0     0
-%           0     0     6     0
-%           0     0     0     0
+%
+%      Vector A  :   6.0   6.0   6.0
+%      Vector B  :   2.0   0.0   0.0
+%      Projection:   6.0   0.0   0.0
+%
+%      Vector A  :   6.0   6.0   6.0
+%      Vector B  :  -3.0   0.0   0.0
+%      Projection:   6.0  -0.0  -0.0
+%
+%      Vector A  :   6.0   6.0   0.0
+%      Vector B  :   0.0   7.0   0.0
+%      Projection:   0.0   6.0   0.0
+%
+%      Vector A  :   6.0   0.0   0.0
+%      Vector B  :   0.0   0.0   9.0
+%      Projection:   0.0   0.0   0.0
+%
 %
 %-Particulars
 %
+%   Given any vectors `a' and `b', there is a unique decomposition of `a' as
+%   a sum v + p such that `v', the dot product of `v' and `b', is zero, and
+%   the dot product of `p' with `b' is equal the product of the lengths of
+%   `p' and `b'. `p' is called the projection of `a' onto `b'. It can be
+%   expressed mathematically as
+%
+%      dot(a,b)
+%      -------- * b
+%      dot(b,b)
+%
+%   (This is not necessarily the prescription used to compute the
+%   projection. It is intended only for descriptive purposes.)
+%
+%-Exceptions
+%
+%   1)  If any of the input arguments, `a' or `b', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   2)  If any of the input arguments, `a' or `b', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%   3)  If the input vectorizable arguments `a' and `b' do not have
+%       the same measure of vectorization (N), an error is signaled by
+%       the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine vproj_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   [1]  G. Thomas and R. Finney, "Calculus and Analytic Geometry,"
+%        7th Edition, Addison Wesley, 1988.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 01-NOV-2021 (EDW) (JDR)
+%
+%       Changed output argument name "vproj" to "p".
+%
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and reformatted example's output.
+%
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 12-MAR-2012 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -127,7 +210,7 @@
 %
 %-&
 
-function [vproj] = cspice_vproj( a, b)
+function [p] = cspice_vproj( a, b)
 
    switch nargin
       case 2
@@ -137,7 +220,7 @@ function [vproj] = cspice_vproj( a, b)
 
       otherwise
 
-         error ( 'Usage: [_vproj(3)_] = cspice_vproj(_a(3)_, _b(3)_)' )
+         error ( 'Usage: [_p(3)_] = cspice_vproj(_a(3)_, _b(3)_)' )
 
    end
 
@@ -146,8 +229,8 @@ function [vproj] = cspice_vproj( a, b)
    % this script.
    %
    try
-      [vproj] = mice('vproj_c', a, b);
-   catch
-      rethrow(lasterror)
+      [p] = mice('vproj_c', a, b);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

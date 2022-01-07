@@ -32,7 +32,6 @@
    INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
    FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 
-
 -Required_Reading
 
    None.
@@ -83,38 +82,51 @@
 
 -Author_and_Institution
 
-   E. D. Wright    (JPL)
+   J. Diaz del Rio     (ODC Space)
+   E.D. Wright         (JPL)
 
 -Version
 
-   -Mice Version 1.3.0 23-FEB-2016 (EDW)
-   
-      Eliminated an error check that ensured multiple input matrices 
-      with an undefined second dimension had a common value for the 
-      second dimension, e.g. AxN, BxN, CxN. An error signaled
-      for input matricies with different second dimension.
+   -Mice Version 1.4.0, 29-JUN-2021 (JDR) (EDW)
 
-      Checks on matrix dimension now occur in the interface call, 
-      e.g. cspice_ckw03.
+       Added checks for "MiceByte" data type to "mice_checkargs" routine.
 
-      Edits return argument structure MiceIlum, replacing the field
-      name "solar" with "incdnc" (incident).
+       Changed variables "j", "m", "n", "vec_measure", "Dims" and "sizearray"
+       type from "const int" and "int" to "const mwSize" and "mwSize" where
+       applicable. This edit eliminated compiler warnings and execution errors
+       when built against Matlab 2017a+ and Octave 5+.
 
-   -Mice Version 1.2.0 30-OCT-2012 (EDW)
+       Edited return argument structure MiceWnsumd, replacing the fields
+       "shortest" and "longest" with "idxsml" and "idxlon".
 
-      Added definitions and conditions for MiceFrinfo, MiceSFS,
-      MicePVN structures.
+   -Mice Version 1.3.0, 23-FEB-2016 (EDW)
 
-      Structure MiceBodID renamed MiceNameID.
+       Eliminated an error check that ensured multiple input matrices
+       with an undefined second dimension had a common value for the
+       second dimension, e.g. AxN, BxN, CxN. An error signaled
+       for input matricies with different second dimension.
 
-      Structure MiceSurf renamed MiceNear.
+       Checks on matrix dimension now occur in the interface call,
+       e.g. cspice_ckw03.
 
-   -Mice Version 1.1.0 15-DEC-2008 (EDW)
+       Edits return argument structure MiceIlum, replacing the field
+       name "solar" with "incdnc" (incident).
 
-      Added definitions and conditions for MicePlane, MiceEllipse,
-      and MiceWnsumd structures.
+   -Mice Version 1.2.0, 30-OCT-2012 (EDW)
 
-   -Mice Version 1.0.0 12-FEB-2008 (EDW)
+       Added definitions and conditions for MiceFrinfo, MiceSFS,
+       MicePVN structures.
+
+       Structure MiceBodID renamed MiceNameID.
+
+       Structure MiceSurf renamed MiceNear.
+
+   -Mice Version 1.1.0, 15-DEC-2008 (EDW)
+
+       Added definitions and conditions for MicePlane, MiceEllipse,
+       and MiceWnsumd structures.
+
+   -Mice Version 1.0.0, 12-FEB-2008 (EDW)
 
 -Index_Entries
 
@@ -331,9 +343,9 @@ static struct structdata
            MiceWnsumd,
            "MiceWnsumd",
            5,
-           {"meas",     "avg",      "stddev",   "shortest", "longest"},
-           {MiceDouble, MiceDouble, MiceDouble, MiceInt,    MiceInt  },
-           {1,          1,          1,          1,          1        }
+           {"meas",     "avg",      "stddev",   "idxsml", "idxlon"},
+           {MiceDouble, MiceDouble, MiceDouble, MiceInt,  MiceInt },
+           {1,          1,          1,          1,        1       }
          },
 
          {
@@ -428,11 +440,17 @@ static int nStructdata = sizeof(structdata)/sizeof(structdata[0]);
 
 -Author_and_Institution
 
-   None.
+   J. Diaz del Rio     (ODC Space)
+   E.D. Wright         (JPL)
 
 -Version
 
-   None.
+   -Mice Version 1.4.0, 30-SEP-2020 (JDR) (EDW)
+
+       Changed variables "j", "m", "n", "vec_measure", "Dims" and "sizearray"
+       type from "const int" and "int" to "const mwSize" and "mwSize" where
+       applicable. This edit eliminated compiler warnings and execution errors
+       when built against Matlab 2017a+ and Octave 5+.
 
 -Index_Entries
 
@@ -607,7 +625,29 @@ void struct_fields( enum   MiceType          type,
 
 -Disclaimer
 
-   None.
+   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
+   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
+   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
+   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
+   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
+   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
+   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
+   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
+   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
+   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
+
+   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
+   KNOW OF THE POSSIBILITY.
+
+   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
+   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 
 -Required_Reading
 
@@ -659,15 +699,19 @@ void struct_fields( enum   MiceType          type,
 
 -Author_and_Institution
 
-   None.
+   J. Diaz del Rio     (ODC Space)
+   E.D. Wright         (JPL)
 
 -Version
 
-   None.
+   -Mice Version 1.1.0, 29-JUN-2021 (JDR)
+
+       Added checks for "MiceByte" data type.
 
 -Index_Entries
 
-   None.
+   check Mice arguments size, type and vectorization
+   check size, type and vectorization of Mice arguments
 
 -&
 */
@@ -679,18 +723,18 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
    {
    SpiceInt                    ii;
    SpiceInt                i;
-   SpiceInt                j;
+   mwIndex                 j;
    SpiceInt                k;
-   SpiceInt                m          = 0;
-   SpiceInt                n          = 0;
+   mwSize                  m          = 0;
+   mwSize                  n          = 0;
    SpiceInt                arg_dimension;
    SpiceInt                num_elem;
    SpiceInt                nfields;
    SpiceInt                vec_flag    = 0;
-   SpiceInt                vec_measure = 0;
+   mwSize                  vec_measure = 0;
    SpiceInt                is_a_struct;
-   int                     sizearray[3];
-   const int             * Dims;
+   mwSize                  sizearray[3];
+   const mwSize          * Dims;
    const int             * fsizes;
 
    char                    msg[1024];
@@ -744,6 +788,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
       */
       if (mxGetClassID(prhs[i]) != mxDOUBLE_CLASS  &&
           mxGetClassID(prhs[i]) != mxINT32_CLASS   &&
+          mxGetClassID(prhs[i]) != mxUINT8_CLASS   &&
           mxGetClassID(prhs[i]) != mxCHAR_CLASS    &&
           mxGetClassID(prhs[i]) != mxSTRUCT_CLASS
          )
@@ -818,6 +863,20 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                   "must be an integer representation of a boolean value."
                   "Check the interface wrapper file for a logical to "
                   "int conversion.",
+                  argcheck[ii].name);
+
+               mexErrMsgTxt(msg);
+               }
+
+            break;
+
+         case MiceByte:
+
+            if (  mxGetClassID(prhs[i]) != mxUINT8_CLASS )
+               {
+               sprintf(msg,
+                  "MICE(BADARG): Input argument (`%s') must be an 8-bit "
+                  "unsigned integer (range: 0 through 255 decimal).",
                   argcheck[ii].name);
 
                mexErrMsgTxt(msg);
@@ -937,7 +996,8 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
       Does this variable argument consist of double precision or integer value?
       */
       if ( mxGetClassID(prhs[i]) == mxDOUBLE_CLASS ||
-           mxGetClassID(prhs[i]) == mxINT32_CLASS )
+           mxGetClassID(prhs[i]) == mxINT32_CLASS  ||
+           mxGetClassID(prhs[i]) == mxUINT8_CLASS )
          {
 
          extra.vectorized[ii] = 0;
@@ -1147,7 +1207,17 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                   m = argcheck[ii].dims[0];
                   n = argcheck[ii].dims[1];
 
-                  if (m !=0 && n !=0 )
+                  if ( m == 0 && n ==0 )
+                  {
+                     /*
+                     The ArCheck block indicates that the array is a
+                     2-dimensional array of any size. This block executes only
+                     for input non-vectorized matrices with undefined row and
+                     column length, e.g. DASADC, DASRDC, DASUDC.
+                     */
+                     break;
+                  }
+                  else if (m !=0 && n !=0 )
                      {
 
                      /*

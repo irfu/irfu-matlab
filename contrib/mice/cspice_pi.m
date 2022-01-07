@@ -30,62 +30,145 @@
 %
 %-I/O
 %
-%   Given:
+%   The call:
 %
-%      No input required.
-%
-%   the call:
-%
-%      onepi = cspice_pi
+%      [onepi] = cspice_pi
 %
 %   returns:
 %
-%      onepi   the value of PI to machine precision.
+%      onepi    the value of pi (the ratio of a circle's circumference to its
+%               diameter), determined by the acos function.
 %
-%              [1,1] = size(onepi); double = class(onepi)
+%               [1,1] = size(onepi); double = class(onepi)
 %
-%-Examples
+%               That is,
 %
-%   Any numerical results shown for this example may differ between
-%   platforms as the results depend on the SPICE kernels used as input
-%   and the machine specific arithmetic implementation.
+%                     onepi = acos ( -1.0 );
 %
-%      >> pi_double = cspice_pi
-%
-%      pi_double =
-%
-%          3.1416
-%
-%      >> sprintf( 'PI epoch: %2.11f', cspice_pi )
-%
-%      ans =
-%
-%      PI: 3.14159265359
-%
-%   The MATLAB system variable "pi" returns a double precision value
-%   for PI that equates the value returned by cspice_pi, to machine
-%   roundoff.
-%
-%-Particulars
+%-Parameters
 %
 %   None.
 %
-%-Required Reading
+%-Examples
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine pi_c.
+%   Any numerical results shown for these examples may differ between
+%   platforms as the results depend on the SPICE kernels used as input
+%   and the machine specific arithmetic implementation.
+%
+%   1) The following code example returns the double precision value of
+%      the constant pi and prints it out.
+%
+%      Example code begins here.
+%
+%
+%      function pi_ex1()
+%
+%         %
+%         % Print the double precision value of Pi
+%         %
+%         fprintf( 'Pi: %25.22f\n', cspice_pi )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Pi:  3.1415926535897931159980
+%
+%
+%      Note that the MATLAB system variable "pi" returns a double
+%      precision value for PI that equates the value returned by
+%      cspice_pi, to machine roundoff.
+%
+%   2) Suppose that you need to compute the vector that results from
+%      off-pointing an instrument boresight vector by pi/10 radians
+%      about the Y-axis of the instrument's reference frame.
+%
+%      Example code begins here.
+%
+%
+%      function pi_ex2()
+%
+%         %
+%         % Let's assume that the instrument boresight is not aligned
+%         % to the Z-axis of the instrument's reference frame.
+%         %
+%         bsight = [ 0.2; 0.04; 1.0 ];
+%
+%         %
+%         % A Pi/10 rotation about the Y axis.
+%         %
+%         rotmat = cspice_rotate( 0.1*cspice_pi, 2 );
+%
+%         %
+%         % Apply the coordinate rotation to the boresight.
+%         %
+%         vec = rotmat * bsight;
+%         fprintf( 'Pointing vector:\n' )
+%         fprintf( '  %16.12f  %16.12f  %16.12f\n', vec );
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Pointing vector:
+%         -0.118805691116    0.040000000000    1.012859915170
+%
+%
+%-Particulars
+%
+%   The first time the function is referenced, the value is computed
+%   as shown above. The value is saved, and returned directly upon
+%   subsequent reference.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header to comply with NAIF standard. Added second
+%       example.
+%
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
 %
 %       Corrected minor typo in header.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -109,8 +192,6 @@ function [onepi] = cspice_pi
    %
    try
       [onepi] =  mice('pi_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-

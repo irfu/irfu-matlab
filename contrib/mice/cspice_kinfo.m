@@ -33,37 +33,37 @@
 %
 %   Given:
 %
-%      file   the name of a kernel file for which descriptive
-%             information is desired.
+%      file     the name of a kernel file for which descriptive
+%               information is desired.
 %
-%             [1,c1] = size(file); char = class(file)
+%               [1,c1] = size(file); char = class(file)
 %
-%                or
+%                  or
 %
-%             [1,1] = size(file); cell = class(file)
+%               [1,1] = size(file); cell = class(file)
 %
 %   the call:
 %
-%      [ filtyp, source, handle, found] = cspice_kinfo( file)
+%      [filtyp, srcfil, handle, found] = cspice_kinfo( file )
 %
 %   returns:
 %
-%      filtyp   the type name of the kernel specified by 'file'.
-%               'filtyp' will be empty if file is not on the list of kernels
+%      filtyp   the type name of the kernel specified by `file'.
+%               `filtyp' will be empty if file is not on the list of kernels
 %               loaded via cspice_furnsh.
 %
 %               [1,c2] = size(file); char = class(file)
 %
-%      source   the name of the source file used to
-%               specify 'file' as one to load.  If 'file' was loaded
-%               directly via a call to cspice_furnsh, 'source' will be empty.
+%      srcfil   the name of the source file used to
+%               specify `file' as one to load. If `file' was loaded
+%               directly via a call to cspice_furnsh, `srcfil' will be empty.
 %               If file is not on the list of kernels loaded via
-%               cspice_furnsh, 'source' will be empty.
+%               cspice_furnsh, `srcfil' will be empty.
 %
-%               [1,c3] = size(file); char = class(file)
+%               [1,c3] = size(srcfil); char = class(srcfil)
 %
 %      handle   the integer handle attached to 'file' if it is a binary
-%               kernel.  If file is a text kernel or meta-text kernel
+%               kernel. If file is a text kernel or meta-text kernel
 %               handle will be zero. If file is not on the list of
 %               kernels loaded via cspice_furnsh, 'handle' has value zero.
 %
@@ -75,16 +75,26 @@
 %
 %               [1,1] = size(found); logical = class(found)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   1) Load a meta-kernel listing a path to an SPK file, and verify
+%      that the kernel system loaded the SPK file of interest.
+%
 %      Use the meta-kernel shown below to load the required SPICE
 %      kernels.
 %
+%
 %         KPL/MK
+%
+%         File name: kinfo_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The kernels shown here should not be
@@ -101,84 +111,137 @@
 %            File name                     Contents
 %            ---------                     --------
 %            de421.bsp                     Planetary ephemeris
-%            pck00009.tpc                  Planet orientation and
-%                                          radii
-%            naif0009.tls                  Leapseconds
 %
 %
 %         \begindata
 %
-%            KERNELS_TO_LOAD = ( '/kernels/gen/lsk/naif0009.tls'
-%                                '/kernels/gen/spk/de421.bsp'
-%                                '/kernels/gen/pck/pck00009.tpc'
-%                      )
+%            KERNELS_TO_LOAD = ( 'de421.bsp' )
 %
 %         \begintext
 %
-%      %
-%      % Load a meta kernel listing a path to an SPK file.
-%      %
-%      cspice_kclear
-%      cspice_furnsh( 'standard.tm' )
+%         End of meta-kernel
 %
-%      %
-%      % Use cspice_kinfo to ensure the kernel system loaded
-%      % the SPK file of interest.
-%      %
-%      file = '/kernels/gen/spk/de421.bsp';
 %
-%      [ filtyp, source, handle, found ] = cspice_kinfo( file );
+%      Example code begins here.
 %
-%      %
-%      % Take appropriate action depending on the returned
-%      % state of found. If found has value false, then
-%      % 'file' is not loaded.
-%      %
-%      if ( found )
-%         disp( [ 'File type: ' filtyp ] )
-%         disp( [ 'Source   : ' source ] )
-%      else
-%         disp( [ 'Kernel not loaded: ' file ] )
-%      end
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Mice due to data persistence.
-%      %
-%      cspice_kclear
+%      function kinfo_ex1()
 %
-%   MATLAB outputs:
+%         %
+%         % Load a meta kernel listing a path to an SPK file.
+%         %
+%         cspice_kclear
+%         cspice_furnsh( 'kinfo_ex1.tm' )
+%
+%         %
+%         % Use cspice_kinfo to ensure the kernel system loaded
+%         % the SPK file of interest.
+%         %
+%         file = 'de421.bsp';
+%
+%         [filtyp, srcfil, handle, found ] = cspice_kinfo( file );
+%
+%         %
+%         % Take appropriate action depending on the returned
+%         % state of found. If found has value false, then
+%         % `file' is not loaded.
+%         %
+%         if ( found )
+%            disp( [ 'File type: ' filtyp ] )
+%            disp( [ 'Source   : ' srcfil ] )
+%         else
+%            disp( [ 'Kernel not loaded: ' file ] )
+%         end
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Mice due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      File type: SPK
-%      Source   : standard.tm
+%      Source   : kinfo_ex1.tm
+%
 %
 %-Particulars
 %
+%   This routine allows you to request information directly
+%   for a specific SPICE kernel.
+%
+%-Exceptions
+%
+%   1)  If the specified file is not on the list of files that
+%       are currently loaded via the interface cspice_furnsh, `found'
+%       will be false, `handle' will be set to zero and `filtyp'
+%       and `srcfil' will be set to blanks.
+%
+%   2)  If the input argument `file' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `file' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine kinfo_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DSK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.2.1, 01-DEC-2014, EDW (JPL)
+%   -Mice Version 1.3.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed the output argument name "source" to "srcfil" for
+%       consistency with other routines.
 %
-%   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
+%       Edited -Examples section to comply with NAIF standard. Added
+%       example's problem statement.
 %
-%      "logical" call replaced with "zzmice_logical."
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
 %
-%   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
+%       Eliminated use of "lasterror" in rethrow.
 %
-%      Added MICE.REQ reference to the Required Reading section.
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
 %
-%   -Mice Version 1.0.0, 01-DEC-2006, EDW (JPL)
+%   -Mice Version 1.2.1, 01-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.2.0, 10-MAY-2011 (EDW)
+%
+%       "logical" call replaced with "zzmice_logical."
+%
+%   -Mice Version 1.0.1, 06-MAY-2009 (EDW)
+%
+%       Added mice.req reference to the Required Reading section.
+%
+%   -Mice Version 1.0.0, 01-DEC-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -186,7 +249,7 @@
 %
 %-&
 
-function [ filtyp, source, handle, found] = cspice_kinfo(file)
+function [filtyp, srcfil, handle, found] = cspice_kinfo( file )
 
    switch nargin
       case 1
@@ -195,7 +258,7 @@ function [ filtyp, source, handle, found] = cspice_kinfo(file)
 
       otherwise
 
-         error( [ 'Usage: [ `filtyp`, `source`, handle, found ] = ' ...
+         error( [ 'Usage: [ `filtyp`, `srcfil`, handle, found ] = ' ...
                                              'cspice_kinfo( `file` )']  )
 
    end
@@ -204,14 +267,14 @@ function [ filtyp, source, handle, found] = cspice_kinfo(file)
    % Call the MEX library.
    %
    try
-      [ filtyp, source, handle, found]  = mice('kinfo_c', file);
+      [filtyp, srcfil, handle, found]  = mice('kinfo_c', file);
 
       %
       % Convert the integer flags to MATLAB logicals for return to
       % the caller.
       %
       found = zzmice_logical(found);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

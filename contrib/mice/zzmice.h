@@ -34,9 +34,11 @@
 
 -Required_Reading
 
-   MICE.REQ
+   MICE
 
 -Keywords
+
+   None.
 
 -Brief_I/O
 
@@ -49,7 +51,7 @@
 -Detailed_Output
 
    None.
-   
+
 -Parameters
 */
 
@@ -84,35 +86,48 @@
 
 -Author_and_Institution
 
-   E.D. Wright        (JPL)
-   G. Chinn           (JPL)
+   G. Chinn            (JPL)
+   J. Diaz del Rio     (ODC Space)
+   E.D. Wright         (JPL)
 
 -Version
 
-   -Mice Version 1.0.2 31-OCT-2012 (EDW)
-   
-      Added MiceFrinfo, MiceSFS, MicePVN enums.
+   -Mice Version 1.1.0, 23-JUL-2021 (JDR)
 
-   -Mice Version 1.0.1 17-DEC-2008 (EDW)
+       Added "MiceByte" data type to "MiceType" enum.
 
-      Addition of MiceWnsumd enum.
+       Changed "argcheck" structure's member "dims" type from "SpiceInt" and
+       to "mwSize", and "extra_dims" structure's members "count" and
+       "first_vector_arg_index" types from "SpiceInt" to "mwSize" and
+       "mwIndex". This edit eliminated compiler warnings and execution
+       errors when built against Matlab 2017a+ and Octave 5+.
 
-   -Mice Version 1.0.0 14-FEB-2008 (EDW)
+   -Mice Version 1.0.2, 31-OCT-2012 (EDW)
+
+       Added MiceFrinfo, MiceSFS, MicePVN enums.
+
+   -Mice Version 1.0.1, 17-DEC-2008 (EDW)
+
+       Addition of MiceWnsumd enum.
+
+   -Mice Version 1.0.0, 14-FEB-2008 (EDW) (GC)
 
 -Index_Entries
+
+   private structure and protype definitions for Mice
 
 */
 
 
-/* 
+/*
 
 The structure defining the argument check information, ArgCheck.
 
 -Examples
 
    Declaration of ArgCheck for the subsol_c interface.
-   
-   struct argcheck ArgCheck[] = 
+
+   struct argcheck ArgCheck[] =
       {
       { "method", MiceChar  , 0, {0}, 0},
       { "target", MiceChar  , 0, {0}, 0},
@@ -125,8 +140,8 @@ The structure defining the argument check information, ArgCheck.
 */
 
 /*
-Enums used to tag argument data types in the ArgCheck arrays. Use 
-"MiceIgnore"  to prevent allocation to an output pointer (plhs), when 
+Enums used to tag argument data types in the ArgCheck arrays. Use
+"MiceIgnore"  to prevent allocation to an output pointer (plhs), when
 used, the interface needs to peform memory allocation to the pointer.
 */
 enum MiceType
@@ -145,6 +160,7 @@ enum MiceType
    MiceDouble,
    MiceInt,
    MiceBoolean,
+   MiceByte,
    MiceWin,
    MiceSub_PS,
    MiceSurf_PS,
@@ -158,43 +174,43 @@ enum MiceType
 
 struct argcheck {
                 char             * name;      /* Variable name. */
-                          
-                enum MiceType      type;      /* 
+
+                enum MiceType      type;      /*
                                                  Variable type identifier,
-                                                 an enum. 
+                                                 an enum.
                                               */
-                                              
-                int            min_dims;      /* 
-                                                 The dimensinality of the 
-                                                 variable. 
-   
+
+                int            min_dims;      /*
+                                                 The dimensionality of the
+                                                 variable.
+
                                                     0 for a scalar
-                                                    1 for a Nx1 array, 
+                                                    1 for a Nx1 array,
                                                     2 for a NxM array.
                                               */
-                                                        
-                SpiceInt           dims[4];   /* The expected dimension and 
+
+                mwSize             dims[4];   /* The expected dimension and
                                                  corresponding size of each
-                                                 dimension. 
+                                                 dimension.
                                               */
-                                                        
+
                 SpiceInt   is_vectorizable;   /* Flag to mark if the variable
                                                  may pass in a vectorized state.
-                                    
+
                                                     1 to indicate yes
                                                     0 to indicate no
                                               */
                 };
 
 
-/* 
+/*
 
 The structure defining the vectorization state. Returned by 'mice_checkargs'.
- 
+
 */
 struct           extra_dims {
-                            SpiceInt  count;
-                            SpiceInt  first_vector_arg_index;
+                            mwSize    count;
+                            mwIndex   first_vector_arg_index;
                             SpiceInt  vectorized [32];
                             SpiceInt  offset     [32];
                             };
@@ -204,8 +220,8 @@ void           check_arg_num( int x_nrhs, int x_nlhs, int nrhs, int nlhs );
 
 void           mice_fail( long cnt );
 
-void           struct_fields( enum   MiceType        type , 
-                             SpiceInt              * n    , 
+void           struct_fields( enum   MiceType        type ,
+                             SpiceInt              * n    ,
                              const  char         *** names,
                              const  enum MiceType ** types,
                              const       int      ** sizes );
@@ -218,4 +234,3 @@ struct         extra_dims  * mice_checkargs(int                 nlhs,
 
 
 #endif
-

@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_calculates the transformation matrix to the
+%   CSPICE_TWOVEC calculates the transformation matrix to the
 %   right-handed reference frame having an input vector as a
 %   specified axis and a second input vector lying in a
 %   define coordinate plane.
@@ -53,7 +53,7 @@
 %                  If 'indexa' is 3 then axdef defines the Z axis of the
 %                  coordinate frame.
 %
-%      plndef   a vector in the same plane as 'axdef'. 'axdef' and 
+%      plndef   a vector in the same plane as 'axdef'. 'axdef' and
 %               'plndef' must be linearly independent.
 %
 %               [3,1] = size(plndef); double = class(plndef)
@@ -78,8 +78,12 @@
 %
 %   returns:
 %
-%      mout   a double precision 3x3 array defining a rotation matrix from
-%             the frame of the original vectors to the new frame
+%      mout     a double precision 3x3 array defining a rotation matrix from
+%               the frame of the original vectors to the new frame
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -87,74 +91,138 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example:
+%   1) Calculate the transformation matrix to the right-handed
+%      reference frame having the +i unit vector as primary axis,
+%      aligned to the frame's +X axis, and the -j unit vector as
+%      secondary axis, aligned to the +Y axis.
 %
-%      %
-%      % A trivial example. Define the reference vectors...
-%      %
-%      %  The i unit vector
-%      %
-%      axdef  = [ 1.; 0; 0.];
-%      indexa = 1 ;
+%      Example code begins here.
 %
-%      %
-%      %  The -j unit vector. For this example, any vector
-%      %  in the x-y plane linearly independent of 'axdef'
-%      %  will suffice.
-%      %
-%      plndef = [ 0.; -1.; 0.];
-%      indexp = 2;
 %
-%      %
-%      % Calculate the transformation matrix. The new frame
-%      % has 'axdef' as axis 'indexa', with 'plndef' in the same
-%      % plane, the direction axis 'indexp' in that plane
-%      % and orthogonal to 'axdef'. A third direction vector
-%      % completes the right handed frame.
-%      %
-%      mout = cspice_twovec( axdef, indexa, plndef, indexp )
+%      function twovec_ex1()
 %
-%   MATLAB outputs:
+%         %
+%         % A trivial example. Define the reference vectors...
+%         %
+%         %  The i unit vector
+%         %
+%         axdef  = [ 1.; 0; 0.];
+%         indexa = 1 ;
 %
-%      mout =
+%         %
+%         %  The -j unit vector. For this example, any vector
+%         %  in the x-y plane linearly independent of 'axdef'
+%         %  will suffice.
+%         %
+%         plndef = [ 0.; -1.; 0.];
+%         indexp = 2;
 %
-%           1     0     0
-%           0    -1     0
-%           0     0    -1
+%         %
+%         % Calculate the transformation matrix. The new frame
+%         % has 'axdef' as axis 'indexa', with 'plndef' in the same
+%         % plane, the direction axis 'indexp' in that plane
+%         % and orthogonal to 'axdef'. A third direction vector
+%         % completes the right handed frame.
+%         %
+%         mout = cspice_twovec( axdef, indexa, plndef, indexp );
+%         fprintf( '%15.7f %15.7f %15.7f\n', mout(1,:));
+%         fprintf( '%15.7f %15.7f %15.7f\n', mout(2,:));
+%         fprintf( '%15.7f %15.7f %15.7f\n', mout(3,:));
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%            1.0000000       0.0000000       0.0000000
+%            0.0000000      -1.0000000       0.0000000
+%            0.0000000       0.0000000      -1.0000000
+%
 %
 %-Particulars
 %
-%     Given two linearly independent vectors there is a unique
-%     right-handed coordinate frame having:
+%   Given two linearly independent vectors there is a unique
+%   right-handed coordinate frame having:
 %
-%        axdef lying along the indexa axis.
+%      1) `axdef' lying along the `indexa' axis.
 %
-%        plndef lying in the axdef-indexp coordinate plane.
+%      2) `plndef' lying in the indexa-indexp coordinate plane.
 %
-%     This routine determines the transformation matrix that transforms
-%     from coordinates used to represent the input vectors to the
-%     the system determined by axdef and plndef.  Thus a vector
-%     (x,y,z) in the input coordinate system will have coordinates
+%   This routine determines the transformation matrix that transforms
+%   from coordinates used to represent the input vectors to the
+%   the system determined by `axdef' and `plndef'. Thus a vector
+%   (x,y,z) in the input coordinate system will have coordinates
 %
-%                     t
-%        mout* (x,y,z)
+%                            t
+%              mout * (x,y,z)
 %
-%     in the frame determined by axdef and plndef.
+%   in the frame determined by `axdef' and `plndef'.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine twovec_c.
+%   1)  If `indexa' or `indexp' is not in the set {1,2,3}, the error
+%       SPICE(BADINDEX) is signaled by a routine in the call tree of
+%       this routine.
+%
+%   2)  If `indexa' and `indexp' are the same, the error
+%       SPICE(UNDEFINEDFRAME) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If the cross product of the vectors `axdef' and `plndef' is zero,
+%       the error SPICE(DEPENDENTVECTORS) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   4)  If any of the input arguments, `axdef', `indexa', `plndef' or
+%       `indexp', is undefined, an error is signaled by the Matlab
+%       error handling system.
+%
+%   5)  If any of the input arguments, `axdef', `indexa', `plndef' or
+%       `indexp', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 12-MAR-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's meta-kernel and reformatted example's output.
 %
-%   -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 12-MAR-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 10-JAN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -184,8 +252,8 @@ function [mout] = cspice_twovec(axdef, indexa, plndef, indexp)
    %
    try
       [mout] = mice('twovec_c', axdef, indexa, plndef, indexp);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

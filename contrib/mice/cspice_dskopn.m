@@ -64,28 +64,36 @@
 %
 %               [1,1] = size(handle); int32 = class(handle)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Create a three-segment DSK file using plate model data for
-%   Phobos. Use latitudinal, rectangular, and planetodetic
-%   coordinates in the respective segments. This is not a
-%   realistic example, but it serves to demonstrate use of
-%   the supported coordinate systems.
+%   1) Create a three-segment DSK file using plate model data for
+%      Phobos. Use latitudinal, rectangular, and planetodetic
+%      coordinates in the respective segments. This is not a
+%      realistic example, but it serves to demonstrate use of
+%      the supported coordinate systems.
 %
-%   For simplicity, use an existing DSK file to provide the
-%   input plate and vertex data. The selected input file has one
-%   segment.
+%      Use the DSK kernel below to provide, for simplicity, the input
+%      plate and vertex data. This file has one segment only.
 %
-%      function dskw02_t
+%         phobos_3_3.bds
+%
+%
+%      Example code begins here.
+%
+%
+%      function dskopn_ex1()
 %
 %         %
 %         % MiceUser globally defines DSK parameters.
-%         % For more information, please see DSKMiceUser.m and
-%         % DSKMice02.m.
+%         % For more information, please see MiceDSK.m.
 %         %
 %         MiceUser
 %
@@ -96,7 +104,7 @@
 %         %
 %         % Assign names of input and output DSK files.
 %         %
-%         indsk = '/kernels/gen/dsk/phobos_3_3.bds';
+%         indsk = 'phobos_3_3.bds';
 %         dsk   = 'phobos_3_3_3seg.bds';
 %
 %         if ( exist( dsk, 'file' ) == 2 )
@@ -256,7 +264,8 @@
 %            fprintf( 'Computing %s bounds of plate set...\n', ...
 %                                            char(cornam(corsys)) )
 %
-%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, corsys, corpar );
+%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, ...
+%                                              corsys, corpar );
 %
 %            fprintf ( 'Done.\n' )
 %
@@ -265,25 +274,10 @@
 %            %
 %            fprintf( 'Writing segment...\n' )
 %
-%            cspice_dskw02( handle, ...
-%                              center, ...
-%                              surfid, ...
-%                              dclass, ...
-%                              frame,  ...
-%                              corsys, ...
-%                              corpar, ...
-%                              mncor1, ...
-%                              mxcor1, ...
-%                              mncor2, ...
-%                              mxcor2, ...
-%                              mncor3, ...
-%                              mxcor3, ...
-%                              first,  ...
-%                              last,   ...
-%                              vrtces, ...
-%                              plates, ...
-%                              spaixd,  ...
-%                              spaixi )
+%            cspice_dskw02( handle, center, surfid, dclass, frame,   ...
+%                           corsys, corpar, mncor1, mxcor1, mncor2,  ...
+%                           mxcor2, mncor3, mxcor3, first,  last,    ...
+%                           vrtces, plates, spaixd, spaixi        )
 %
 %         end
 %
@@ -293,7 +287,10 @@
 %         cspice_dascls( inhan )
 %         cspice_dskcls( handle, true )
 %
-%   MATLAB outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Reading input data...
 %      Done.
@@ -316,29 +313,99 @@
 %      Done.
 %      Writing segment...
 %
-%      After run completion, A DSK exists in the output directory.
+%
+%      Note that after run completion, a new DSK exists in the output
+%      directory.
 %
 %-Particulars
 %
 %   A cspice_dskcls call should balance every cspice_dskopn
 %   call.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dskopn_c.
+%   1)  If the input filename is blank, an error is signaled by a
+%       routine in the call tree of this routine. No file will be
+%       created.
+%
+%   2)  If the specified file cannot be opened without exceeding the
+%       maximum allowed number of open DAS files, an error is signaled
+%       by a routine in the call tree of this routine. No file will be
+%       created.
+%
+%   3)  If the file cannot be opened properly, an error is signaled by
+%       a routine in the call tree of this routine. No file will be
+%       created.
+%
+%   4)  If the initial records in the file cannot be written, an error
+%       is signaled by a routine in the call tree of this routine. No
+%       file will be created.
+%
+%   5)  If no logical units are available, an error is signaled by a
+%       routine in the call tree of this routine. No file will be
+%       created.
+%
+%   6)  If the internal file name contains nonprinting characters
+%       (ASCII codes decimal 0-31 and 127-255), an error is signaled
+%       by a routine in the call tree of this routine. No file will be
+%       created.
+%
+%   7)  If the number of comment characters allocated `ncomch' is
+%       negative, an error is signaled by a routine in the call
+%       tree of this routine. No file will be created.
+%
+%   8)  If any of the input arguments, `fname', `ifname' or `ncomch',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   9)  If any of the input arguments, `fname', `ifname' or `ncomch',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   See argument `fname'.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAS.REQ
 %   DSK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 02-FEB-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited the -Examples section to comply with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 02-FEB-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
-%   open a new dsk file
+%   open a new DSK file
 %
 %-&
 
@@ -353,7 +420,8 @@ function [handle] = cspice_dskopn( fname, ifname, ncomch )
 
       otherwise
 
-         error ( 'Usage: [handle] = cspice_dskopn(`fname`, `ifname`, ncomch)' )
+         error ( ['Usage: [handle] = cspice_dskopn( `fname`, ',
+                                          '`ifname`, ncomch )'] )
 
    end
 
@@ -362,8 +430,8 @@ function [handle] = cspice_dskopn( fname, ifname, ncomch )
    %
    try
       [handle] = mice( 'dskopn_c', fname, ifname, ncomch );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

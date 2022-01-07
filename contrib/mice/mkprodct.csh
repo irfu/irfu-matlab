@@ -33,6 +33,16 @@
 #   Change History:
 #   ===============
 #
+#   Version 1.2.0,  Jan. 13, 2020, Boris Semenov
+#
+#      Added the -Wno-unused-but-set-variable option to suppress
+#      warnings for set-but-unused "extra" returned by mice_checkargs
+#      in non-vectorized wrappers.
+#
+#   Version 1.1.0,  Sep. 23, 2016, Ed Wright
+#
+#      Modified mex call to compensate for changes in MEX functionality.
+#
 #   Version 1.0.0,  Feb. 14, 2008, Ed Wright & Boris Semenov
 #
 
@@ -63,16 +73,19 @@ set LIBRARY  = "../../lib/$LOCALLIB"
 #
 # Set compile options.
 #
-set MEXOPTIONS = "-Dunix "
+set MEXOPTIONS = '-Dunix -compatibleArrayDims'
 
 #
 # Compile all .c modules in the current directory into the local
 # library.
 #
-mex $MEXOPTIONS *.c -o $LOCALLIB
+mex $MEXOPTIONS *.c -output $LOCALLIB -I../../include       \
+    CLIBS='$CLIBS ../../lib/cspice.a'                       \
+    CFLAGS='$CFLAGS -ansi -Wall -Wundef -Wpointer-arith -Wcast-align -Wsign-compare -Wno-unused-but-set-variable'
+
 
 #
-# Move local library to it final location.
+# Move local library to its final location.
 #
 \mv $LOCALLIB $LIBRARY
 
