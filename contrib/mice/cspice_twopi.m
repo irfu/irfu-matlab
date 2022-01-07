@@ -30,19 +30,24 @@
 %
 %-I/O
 %
-%   Given:
+%   The call:
 %
-%      No input required.
-%
-%   the call:
-%
-%      twopi = cspice_twopi
+%      [twopi] = cspice_twopi
 %
 %   returns:
 %
-%      twopi  twice the value of pi.
+%      twopi    twice the value of pi (the ratio of a circle's circumference
+%               to its diameter), determined by the acos function.
 %
-%             [1,1] = size(twopi); double = class(twopi)
+%               [1,1] = size(twopi); double = class(twopi)
+%
+%               That is,
+%
+%                     twopi = acos ( -1.0 ) * 2.0;
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -50,30 +55,78 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> sprintf( 'Two PI %16.12f', cspice_twopi )
+%   1) The following code example returns the double precision value of
+%      the constant 2*PI and prints it out.
 %
-%      ans =
+%      Example code begins here.
 %
-%      Two PI =   6.283185307180
+%
+%      function twopi_ex1()
+%
+%         %
+%         % Print the double precision value of 2*Pi
+%         %
+%         fprintf( '2*Pi: %25.22f\n', cspice_twopi )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      2*Pi:  6.2831853071795862319959
+%
 %
 %-Particulars
 %
+%   The first time the function is referenced, the value is computed
+%   as shown above. The value is saved, and returned directly upon
+%   subsequent reference.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine twopi_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header to comply with NAIF standard. Added
+%       example's meta-kernel and reformatted example's output.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -95,7 +148,7 @@ function [twopi] = cspice_twopi
    %
    try
       [twopi] =  mice('twopi_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

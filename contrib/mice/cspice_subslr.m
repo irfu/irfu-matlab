@@ -1,14 +1,13 @@
 %-Abstract
 %
-%   CSPICE_SUBSLR compute the rectangular coordinates of the sub-solar
-%   point on a target body at a specified epoch, optionally corrected for
-%   light time and stellar aberration.
+%   CSPICE_SUBSLR computes the rectangular coordinates of the sub-solar point
+%   on a target body at a specified epoch, optionally corrected for light
+%   time and stellar aberration.
 %
 %   The surface of the target body may be represented by a triaxial
 %   ellipsoid or by topographic data provided by DSK files.
 %
-%   This routine supersedes cspice_subsol, which does not have an input
-%   argument for the target body-fixed frame name.
+%   This routine supersedes cspice_subsol.
 %
 %-Disclaimer
 %
@@ -41,15 +40,16 @@
 %   Given:
 %
 %      method   a short string providing parameters defining
-%               the computation method to be used. In the syntax
-%               descriptions below, items delimited by brackets
-%               are optional.
+%               the computation method to be used.
 %
 %               [1,c1] = size(method); char = class(method)
 %
 %                  or
 %
 %               [1,1] = size(method); cell = class(method)
+%
+%               In the syntax descriptions below, items delimited by brackets
+%               are optional.
 %
 %               `method' may be assigned the following values:
 %
@@ -124,7 +124,7 @@
 %                     If multiple surfaces are specified, their names
 %                     or IDs must be separated by commas.
 %
-%                     See the Particulars section below for details
+%                     See the -Particulars section below for details
 %                     concerning use of DSK data.
 %
 %
@@ -144,28 +144,26 @@
 %                     NADIR option described above.
 %
 %
-%                  Neither case nor white space are significant in
-%                  `method', except within double-quoted strings. For
-%                  example, the string ' eLLipsoid/nearpoint ' is valid.
+%               Neither case nor white space are significant in
+%               `method', except within double-quoted strings. For
+%               example, the string ' eLLipsoid/nearpoint ' is valid.
 %
-%                  Within double-quoted strings, blank characters are
-%                  significant, but multiple consecutive blanks are
-%                  considered equivalent to a single blank. Case is
-%                  not significant. So
+%               Within double-quoted strings, blank characters are
+%               significant, but multiple consecutive blanks are
+%               considered equivalent to a single blank. Case is
+%               not significant. So
 %
-%                     "Mars MEGDR 128 PIXEL/DEG"
+%                  "Mars MEGDR 128 PIXEL/DEG"
 %
-%                  is equivalent to
+%               is equivalent to
 %
-%                     " mars megdr  128  pixel/deg "
+%                  " mars megdr  128  pixel/deg "
 %
-%                  but not to
+%               but not to
 %
-%                     "MARS MEGDR128PIXEL/DEG"
+%                  "MARS MEGDR128PIXEL/DEG"
 %
-%      target   the name of the target body. The target
-%               body is an ephemeris object (its trajectory is given by
-%               SPK data), and is an extended object.
+%      target   the name of the target body.
 %
 %               [1,c2] = size(target); char = class(target)
 %
@@ -173,8 +171,12 @@
 %
 %               [1,1] = size(target); cell = class(target)
 %
-%               The string 'target' is case-insensitive, and leading
-%               and trailing blanks in 'target' are not significant.
+%
+%               The target body is an ephemeris object (its trajectory is
+%               given by SPK data), and is an extended object.
+%
+%               The string `target' is case-insensitive, and leading
+%               and trailing blanks in `target' are not significant.
 %               Optionally, you may supply a string containing the
 %               integer ID code for the object. For example both
 %               'MOON' and '301' are legitimate strings that indicate
@@ -187,38 +189,39 @@
 %               variable would be defined by loading a PCK file.
 %
 %      et       the epoch(s), expressed as seconds past
-%               J2000 TDB, of the observer: 'et' is
+%               J2000 TDB, of the observer: `et' is
 %               the epoch at which the observer's state is computed.
 %
 %               [1,n] = size(et); double = class(et)
 %
-%               When aberration corrections are not used, 'et' is also
+%               When aberration corrections are not used, `et' is also
 %               the epoch at which the position and orientation of
 %               the target body are computed.
 %
-%               When aberration corrections are used, 'et' is the epoch
+%               When aberration corrections are used, `et' is the epoch
 %               at which the observer's state relative to the solar
 %               system barycenter is computed; in this case the
 %               position and orientation of the target body are
-%               computed at et-lt or et+lt, where 'lt' is the one-way
+%               computed at et-lt or et+lt, where `lt' is the one-way
 %               light time between the sub-solar point and the
-%               observer, and the sign applied to 'lt' depends on the
-%               selected correction. See the description of 'abcorr'
+%               observer, and the sign applied to `lt' depends on the
+%               selected correction. See the description of `abcorr'
 %               below for details.
 %
 %      fixref   the name of a body-fixed reference frame centered
-%               on the target body. `fixref' may be any such frame
-%               supported by the SPICE system, including built-in
-%               frames (documented in the Frames Required Reading)
-%               and frames defined by a loaded frame kernel (FK). The
-%               string `fixref' is case-insensitive, and leading and
-%               trailing blanks in `fixref' are not significant.
+%               on the target body.
 %
 %               [1,c3] = size(fixref); char = class(fixref)
 %
 %                  or
 %
 %               [1,1] = size(fixref); cell = class(fixref)
+%
+%               `fixref' may be any such frame supported by the SPICE system,
+%               including built-in frames (documented in the Frames Required
+%               Reading) and frames defined by a loaded frame kernel (FK). The
+%               string `fixref' is case-insensitive, and leading and
+%               trailing blanks in `fixref' are not significant.
 %
 %               The output sub-observer point `spoint' and the
 %               observer-to-sub-observer point vector `srfvec' will be
@@ -242,17 +245,17 @@
 %                     'CN+S'
 %
 %               should be used. These and the other supported options
-%               are described below. 'abcorr' may be any of the
+%               are described below. `abcorr' may be any of the
 %               following:
 %
 %                     'NONE'     Apply no correction. Return the
 %                                geometric sub-solar point on the
 %                                target body.
 %
-%               Let 'lt' represent the one-way light time between the
+%               Let `lt' represent the one-way light time between the
 %               observer and the sub-solar point (note: NOT
 %               between the observer and the target body's center).
-%               The following values of 'abcorr' apply to the
+%               The following values of `abcorr' apply to the
 %               "reception" case in which photons depart from the
 %               sub-solar point's location at the light-time
 %               corrected epoch et-lt and *arrive* at the observer's
@@ -263,7 +266,7 @@
 %                                Newtonian formulation. This correction
 %                                yields the location of sub-solar
 %                                point at the moment it emitted photons
-%                                arriving at the observer at 'et'.
+%                                arriving at the observer at `et'.
 %
 %                                The light time correction uses an
 %                                iterative solution of the light time
@@ -304,15 +307,7 @@
 %                                slowly when a converged solution is
 %                                computed.
 %
-%      obsrvr   the scalar string name of the observing body. The
-%               observing body is an ephemeris object: it typically
-%               is a spacecraft, the earth, or a surface point on the
-%               earth. 'obsrvr' is case-insensitive, and leading and
-%               'obsrvr' are not significant. Optionally, you may
-%               trailing blanks in supply a string containing the integer
-%               ID code for the object. For example both 'MOON' and '301'
-%               are legitimate strings that indicate the Moon is the
-%               observer.
+%      obsrvr   the scalar string name of the observing body.
 %
 %               [1,c5] = size(obsrvr); char = class(obsrvr)
 %
@@ -320,9 +315,18 @@
 %
 %               [1,1] = size(obsrvr); cell = class(obsrvr)
 %
+%               The observing body is an ephemeris object: it typically
+%               is a spacecraft, the earth, or a surface point on the
+%               earth. `obsrvr' is case-insensitive, and leading and
+%               `obsrvr' are not significant. Optionally, you may
+%               trailing blanks in supply a string containing the integer
+%               ID code for the object. For example both 'MOON' and '301'
+%               are legitimate strings that indicate the Moon is the
+%               observer.
+%
 %   the call:
 %
-%      [spoint, trgepc, srfvec] = cspice_subslr( method, target, et, ...
+%      [spoint, trgepc, srfvec] = cspice_subslr( method, target, et,       ...
 %                                                fixref, abcorr, obsrvr )
 %
 %   returns:
@@ -333,8 +337,8 @@
 %
 %               For target shapes modeled by ellipsoids, the
 %               sub-solar point is defined either as the point on the
-%               target body that is closest to the sun, or the target
-%               surface intercept of the line from the sun to the
+%               target body that is closest to the Sun, or the target
+%               surface intercept of the line from the Sun to the
 %               target's center.
 %
 %               For target shapes modeled by topographic data
@@ -342,7 +346,7 @@
 %               as the target surface intercept of the line from the
 %               sun to either the nearest point on the reference
 %               ellipsoid, or to the target's center. If multiple
-%               such intercepts exist, the one closest to the sun is
+%               such intercepts exist, the one closest to the Sun is
 %               selected.
 %
 %               The input argument `method' selects the target shape
@@ -354,66 +358,76 @@
 %               the sub-solar point epoch `trgepc' (see description
 %               below).
 %
+%               When light time correction is used, the duration of
+%               light travel between `spoint' to the observer is
+%               considered to be the one way light time.
+%
 %               When aberration corrections are used, `spoint' is
 %               computed using target body position and orientation
 %               that have been adjusted for the corrections
 %               applicable to `spoint' itself rather than to the target
 %               body's center. In particular, if the stellar
 %               aberration correction applicable to `spoint' is
-%               represented by a shift vector S, then the light-time
-%               corrected position of the target is shifted by S
+%               represented by a shift vector `s', then the light-time
+%               corrected position of the target is shifted by `s'
 %               before the sub-solar point is computed.
 %
 %               The components of `spoint' have units of km.
 %
-%      trgepc   the "sub-solar point epoch." 'trgepc' is
-%              'defined as follows: letting 'lt' be the one-way
-%               light time between the observer and the sub-solar point,
-%               'trgepc' is the epoch et-lt, et+lt, or 'et' depending on
-%               whether the requested aberration correction is,
-%               respectively, for received radiation, transmitted
-%               radiation, or omitted. 'lt' is computed using the
-%               method indicated by 'abcorr'.
+%      trgepc   the "sub-solar point epoch."
 %
 %               [1,n] = size(trgepc); double = class(trgepc)
 %
-%               'trgepc' is expressed as seconds past J2000 TDB.
+%               `trgepc' is defined as follows: letting `lt' be the one-way
+%               light time between the observer and the sub-solar point,
+%               `trgepc' is the epoch et-lt, et+lt, or `et' depending on
+%               whether the requested aberration correction is,
+%               respectively, for received radiation, transmitted
+%               radiation, or omitted. `lt' is computed using the
+%               method indicated by `abcorr'.
+%
+%               `trgepc' is expressed as seconds past J2000 TDB.
 %
 %      srfvec   the array(s) defining the position vector from
-%               the observer at 'et' to 'spoint'. 'srfvec'
-%               is expressed in the target body-fixed reference frame
-%               designated by 'fixref', evaluated at 'trgepc'.
+%               the observer at `et' to `spoint'.
 %
 %               [3,n] = size(spoint); double = class(spoint)
 %
-%               The components of 'srfvec' are given in units of km.
+%               `srfvec' is expressed in the target body-fixed reference frame
+%               designated by `fixref', evaluated at `trgepc'.
 %
-%               One can use the CSPICE function vnorm_c to obtain the
-%               distance between the observer and 'spoint':
+%               The components of `srfvec' are given in units of km.
 %
-%                     dist = norm( srfvec )
+%               One can use the Matlab function norm to obtain the
+%               distance between the observer and `spoint':
 %
-%               The observer's position 'obspos', relative to the
+%                  dist = norm( srfvec )
+%
+%               The observer's position `obspos', relative to the
 %               target body's center, where the center's position is
 %               corrected for aberration effects as indicated by
-%               'abcorr', can be computed with:
+%               `abcorr', can be computed with:
 %
-%                     obspos = spoint - srfvec
+%                  obspos = spoint - srfvec
 %
-%               To transform the vector 'srfvec' from a reference frame
-%               'fixref' at time 'trgepc' to a time-dependent reference
-%               frame 'ref' at time 'et', the routine 'cspice_pxfrm2' should be
-%               called. Let 'xform' be the 3x3 matrix representing the
-%               rotation from the reference frame 'fixref' at time
-%               'trgepc' to the reference frame 'ref' at time 'et'. Then
-%               'srfvec' can be transformed to the result 'refvec' as
+%               To transform the vector `srfvec' from a reference frame
+%               `fixref' at time `trgepc' to a time-dependent reference
+%               frame `ref' at time `et', the function cspice_pxfrm2 should be
+%               called. Let `xform' be the 3x3 matrix representing the
+%               rotation from the reference frame `fixref' at time
+%               `trgepc' to the reference frame `ref' at time `et'. Then
+%               `srfvec' can be transformed to the result `refvec' as
 %               follows:
 %
-%                     xform  = cspice_pxfrm2 ( fixref, ref, trgepc, et )
-%                     refvec = xform * srfvec
+%                  xform  = cspice_pxfrm2 ( fixref, ref, trgepc, et );
+%                  refvec = xform * srfvec;
 %
-%               'spoint', 'trgepc', and 'srfvec' return with the same
-%               vectorization measure, N, as 'et'.
+%               `spoint', `trgepc', and `srfvec' return with the same
+%               vectorization measure, N, as `et'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -421,167 +435,222 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      Find the sub-solar point on Mars as seen from the Earth for a
-%      specified time. Perform the computation twice, using both the
-%      "intercept" and "near point" options. Display the locations of
-%      the Sun and the sub-solar point using both planetocentric
-%      and planetographic coordinates.
+%   1) Find the sub-solar point on Mars as seen from the Earth for a
+%      specified time.
 %
-%      %
-%      % Load kernel files via the meta-kernel.
-%      %
-%      cspice_furnsh( '/kernels/standard.tm' );
+%      Compute the sub-solar point using both triaxial ellipsoid
+%      and topographic surface models. Topography data are provided by
+%      a DSK file. For the ellipsoid model, use both the "intercept"
+%      and "near point" sub-observer point definitions; for the DSK
+%      case, use both the "intercept" and "nadir" definitions.
 %
-%      %
-%      % Convert the UTC request time to ET (seconds past
-%      % J2000, TDB).
-%      %
-%      et0 = cspice_str2et( '2008 aug 11 00:00:00' );
+%      Display the locations of both the sun and the sub-solar
+%      point relative to the center of Mars, in the IAU_MARS
+%      body-fixed reference frame, using both planetocentric and
+%      planetographic coordinates.
 %
-%      %
-%      % Create a vector of times. The code will also run for 'et'
-%      % a scalar.
-%      %
-%      et = [0:10]*cspice_spd + et0;
+%      The topographic model is based on data from the MGS MOLA DEM
+%      megr90n000cb, which has a resolution of 4 pixels/degree. A
+%      triangular plate model was produced by computing a 720 x 1440
+%      grid of interpolated heights from this DEM, then tessellating
+%      the height grid. The plate model is stored in a type 2 segment
+%      in the referenced DSK file.
 %
-%      %
-%      % Look up the target body's radii. We'll use these to
-%      % convert Cartesian to planetodetic coordinates. Use
-%      % the radii to compute the flattening coefficient of
-%      % the reference ellipsoid.
-%      %
-%      radii  = cspice_bodvrd( 'MARS', 'RADII', 3 );
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Let RE and RP be, respectively, the equatorial and
-%      % polar radii of the target.
-%      %
-%      re = radii(1);
-%      rp = radii(3);
-%      f = ( re-rp)/re;
 %
-%      %
-%      % Compute the sub-solar point using light time and stellar
-%      % aberration corrections. Use the "target surface intercept"
-%      % definition of the sub-solar point on the first loop
-%      % iteration, and use the "near point" definition on the
-%      % second.
-%      %
+%         KPL/MK
 %
-%      method = { 'Intercept:  ellipsoid', 'Near point: ellipsoid' };
+%         File: subslr_ex1.tm
 %
-%      for i=1:2
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%         [spoint, trgepc, srfvec] = cspice_subslr( method(i), ...
-%                         'MARS', et, 'IAU_MARS', 'LT+S', 'EARTH' );
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%         N = size(spoint, 2);
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%         %
-%         % Convert the sub-solar point's rectangular coordinates
-%         % to planetographic longitude, latitude and altitude.
-%         % Convert radians to degrees.
-%         %
-%         [spglon, spglat, spgalt ] = cspice_recpgr( 'mars', spoint, re, f);
+%            File name                        Contents
+%            ---------                        --------
+%            de430.bsp                        Planetary ephemeris
+%            mar097.bsp                       Mars satellite ephemeris
+%            pck00010.tpc                     Planet orientation and
+%                                             radii
+%            naif0011.tls                     Leapseconds
+%            megr90n000cb_plate.bds           Plate model based on
+%                                             MEGDR DEM, resolution
+%                                             4 pixels/degree.
 %
-%         spglon = spglon * cspice_dpr;
-%         spglat = spglat * cspice_dpr;
+%         \begindata
 %
-%         %
-%         % Convert sub-solar point's rectangular coordinates to
-%         % planetodetic longitude, latitude and altitude. Convert radians
-%         % to degrees.
-%         %
-%         [ spcrad, spclon, spclat ] =cspice_reclat( spoint ) ;
+%            KERNELS_TO_LOAD = ( 'de430.bsp',
+%                                'mar097.bsp',
+%                                'pck00010.tpc',
+%                                'naif0011.tls',
+%                                'megr90n000cb_plate.bds' )
+%         \begintext
 %
-%         spclon = spclon * cspice_dpr;
-%         spclat = spclat * cspice_dpr;
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function subslr_ex1()
 %
 %         %
-%         % Compute the Sun's apparent position relative to the
-%         % center of the target at `trgepc'. Express the Sun's
-%         % location in planetographic coordinates.
+%         % Load kernel files via the meta-kernel.
 %         %
-%         [sunpos,  sunlt] = cspice_spkpos( 'sun', trgepc, 'iau_mars', ...
-%                                                   'lt+s', 'mars');
-%
-%         [ supgln, supglt, supgal] = cspice_recpgr( 'mars', sunpos, re, f );
-%
-%         supgln = supgln * cspice_dpr;
-%         supglt = supglt * cspice_dpr;
+%         cspice_furnsh( 'subslr_ex1.tm' );
 %
 %         %
-%         % Convert the Sun's rectangular coordinates to
-%         % planetocentric radius, longitude, and latitude.
-%         % Convert radians to degrees.
+%         % Convert the UTC request time to ET (seconds past
+%         % J2000, TDB).
 %         %
-%         [ supcrd, supcln, supclt ] = cspice_reclat( sunpos);
+%         et = cspice_str2et( '2008 aug 11 00:00:00' );
 %
-%         supcln = supcln * cspice_dpr;
-%         supclt = supclt * cspice_dpr;
+%         %
+%         % Look up the target body's radii. We'll use these to
+%         % convert Cartesian to planetodetic coordinates. Use
+%         % the radii to compute the flattening coefficient of
+%         % the reference ellipsoid.
+%         %
+%         radii  = cspice_bodvrd( 'MARS', 'RADII', 3 );
 %
-%         utcstr = cspice_et2utc( et, 'C', 6);
+%         %
+%         % Let RE and RP be, respectively, the equatorial and
+%         % polar radii of the target.
+%         %
+%         re = radii(1);
+%         rp = radii(3);
+%         f = ( re-rp)/re;
 %
-%         for j=1:N
+%         %
+%         % Compute sub-observer point using light time and stellar
+%         % aberration corrections. Use both ellipsoid and DSK
+%         % shape models, and use all of the "near point,"
+%         % "intercept," and "nadir" sub-observer point definitions.
+%         %
+%         method = { 'Intercept/ellipsoid',                                ...
+%                    'Near point/ ellipsoid',                              ...
+%                    'Intercept/DSK/Unprioritized',                        ...
+%                    'Nadir/DSK/Unprioritized'      };
 %
-%           fprintf( 'Computational Method %s\n\n', char(method(i)) )
+%         for i=1:4
 %
-%           fprintf( '  Time (UTC):                          %s\n',  ...
-%                                                           utcstr(j,:) )
+%            [spoint, trgepc, srfvec] = cspice_subslr( method(i),          ...
+%                                                     'MARS',     et,      ...
+%                                                     'IAU_MARS', 'LT+S',  ...
+%                                                     'EARTH'           );
 %
-%           fprintf(                                                  ...
-%           '  Sub-solar point altitude            (km) = %21.9f\n',  ...
-%                                                             spgalt(j) )
+%            %
+%            % Convert the sub-solar point's rectangular coordinates
+%            % to planetographic longitude, latitude and altitude.
+%            % Convert radians to degrees.
+%            %
+%            [spglon, spglat, spgalt] = cspice_recpgr( 'mars', spoint, re, f);
 %
-%           fprintf(                                                  ...
-%           '  Sub-solar planetographic longitude (deg) = %21.9f\n',  ...
-%                                                             spglon(j) )
+%            spglon = spglon * cspice_dpr;
+%            spglat = spglat * cspice_dpr;
 %
-%           fprintf(                                                  ...
-%           '  Sun  planetographic longitude      (deg) = %21.9f\n',  ...
-%                                                             supgln(j) )
+%            %
+%            % Convert sub-solar point's rectangular coordinates to
+%            % planetodetic longitude, latitude and altitude. Convert radians
+%            % to degrees.
+%            %
+%            [ spcrad, spclon, spclat ] =cspice_reclat( spoint ) ;
 %
-%           fprintf(                                                  ...
-%           '  Sub-solar planetographic latitude  (deg) = %21.9f\n',  ...
-%                                                             spglat(j) )
+%            spclon = spclon * cspice_dpr;
+%            spclat = spclat * cspice_dpr;
 %
-%           fprintf(                                                  ...
-%           '  Sun  planetographic latitude       (deg) = %21.9f\n',  ...
-%                                                             supglt(j) )
+%            %
+%            % Compute the Sun's apparent position relative to the
+%            % center of the target at `trgepc'. Express the Sun's
+%            % location in planetographic coordinates.
+%            %
+%            [sunpos, sunlt] = cspice_spkpos( 'sun',  trgepc, 'iau_mars',  ...
+%                                             'lt+s', 'mars'            );
 %
-%           fprintf(                                                  ...
-%           '  Sub-solar planetocentric longitude (deg) = %21.9f\n',  ...
-%                                                             spclon(j) )
+%            [supgln, supglt, supgal] = cspice_recpgr( 'mars', sunpos,     ...
+%                                                      re,     f     );
 %
-%           fprintf(                                                  ...
-%           '  Sun  planetocentric longitude      (deg) = %21.9f\n',  ...
-%                                                             supcln(j) )
+%            supgln = supgln * cspice_dpr;
+%            supglt = supglt * cspice_dpr;
 %
-%           fprintf(                                                  ...
-%           '  Sub-solar planetocentric latitude  (deg) = %21.9f\n',  ...
-%                                                             spclat(j) )
+%            %
+%            % Convert the Sun's rectangular coordinates to
+%            % planetocentric radius, longitude, and latitude.
+%            % Convert radians to degrees.
+%            %
+%            [ supcrd, supcln, supclt ] = cspice_reclat( sunpos);
 %
-%           fprintf(                                                  ...
-%           '  Sun  planetocentric latitude       (deg) = %21.9f\n',  ...
-%                                                             supclt(j) )
-%           fprintf( '\n')
+%            supcln = supcln * cspice_dpr;
+%            supclt = supclt * cspice_dpr;
+%
+%            %
+%            % Write the results.
+%            %
+%            fprintf( '  Computational Method = %s\n\n', char(method(i)) )
+%
+%            fprintf(                                                      ...
+%               '  Sub-solar point altitude            (km) = %21.9f\n',   ...
+%                                                               spgalt )
+%
+%            fprintf(                                                      ...
+%               '  Sub-solar planetographic longitude (deg) = %21.9f\n',   ...
+%                                                               spglon )
+%
+%            fprintf(                                                      ...
+%               '  Sun  planetographic longitude      (deg) = %21.9f\n',   ...
+%                                                               supgln )
+%
+%            fprintf(                                                      ...
+%               '  Sub-solar planetographic latitude  (deg) = %21.9f\n',   ...
+%                                                               spglat )
+%
+%            fprintf(                                                      ...
+%               '  Sun  planetographic latitude       (deg) = %21.9f\n',   ...
+%                                                               supglt )
+%
+%            fprintf(                                                      ...
+%               '  Sub-solar planetocentric longitude (deg) = %21.9f\n',   ...
+%                                                               spclon )
+%
+%            fprintf(                                                      ...
+%               '  Sun  planetocentric longitude      (deg) = %21.9f\n',   ...
+%                                                               supcln )
+%
+%            fprintf(                                                      ...
+%               '  Sub-solar planetocentric latitude  (deg) = %21.9f\n',   ...
+%                                                               spclat )
+%
+%            fprintf(                                                      ...
+%               '  Sun  planetocentric latitude       (deg) = %21.9f\n',   ...
+%                                                               supclt )
+%            fprintf( '\n')
 %
 %         end
 %
-%      end
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      Computational Method Intercept:  ellipsoid
 %
-%        Time (UTC):                          2008 AUG 11 00:00:00.000000
-%        Sub-solar point altitude            (km) =          -0.000000000
+%        Computational Method = Intercept/ellipsoid
+%
+%        Sub-solar point altitude            (km) =           0.000000000
 %        Sub-solar planetographic longitude (deg) =         175.810675510
 %        Sun  planetographic longitude      (deg) =         175.810721536
 %        Sub-solar planetographic latitude  (deg) =          23.668550281
@@ -591,25 +660,9 @@
 %        Sub-solar planetocentric latitude  (deg) =          23.420819936
 %        Sun  planetocentric latitude       (deg) =          23.420819946
 %
-%         ...
+%        Computational Method = Near point/ ellipsoid
 %
-%      Computational Method Intercept:  ellipsoid
-%
-%        Time (UTC):                          2008 AUG 21 00:00:00.000212
-%        Sub-solar point altitude            (km) =          -0.000000000
-%        Sub-solar planetographic longitude (deg) =          79.735277875
-%        Sun  planetographic longitude      (deg) =          79.735323904
-%        Sub-solar planetographic latitude  (deg) =          22.821527569
-%        Sun  planetographic latitude       (deg) =          22.580688291
-%        Sub-solar planetocentric longitude (deg) =         -79.735277875
-%        Sun  planetocentric longitude      (deg) =         -79.735323904
-%        Sub-solar planetocentric latitude  (deg) =          22.580684931
-%        Sun  planetocentric latitude       (deg) =          22.580684943
-%
-%      Computational Method Near point: ellipsoid
-%
-%        Time (UTC):                          2008 AUG 11 00:00:00.000000
-%        Sub-solar point altitude            (km) =          -0.000000000
+%        Sub-solar point altitude            (km) =           0.000000000
 %        Sub-solar planetographic longitude (deg) =         175.810675410
 %        Sun  planetographic longitude      (deg) =         175.810721522
 %        Sub-solar planetographic latitude  (deg) =          23.420823362
@@ -619,20 +672,30 @@
 %        Sub-solar planetocentric latitude  (deg) =          23.175085578
 %        Sun  planetocentric latitude       (deg) =          23.420819946
 %
-%         ...
+%        Computational Method = Intercept/DSK/Unprioritized
 %
-%      Computational Method Near point: ellipsoid
+%        Sub-solar point altitude            (km) =          -4.052254285
+%        Sub-solar planetographic longitude (deg) =         175.810675514
+%        Sun  planetographic longitude      (deg) =         175.810721485
+%        Sub-solar planetographic latitude  (deg) =          23.668848891
+%        Sun  planetographic latitude       (deg) =          23.420823372
+%        Sub-solar planetocentric longitude (deg) =        -175.810675514
+%        Sun  planetocentric longitude      (deg) =        -175.810721485
+%        Sub-solar planetocentric latitude  (deg) =          23.420819936
+%        Sun  planetocentric latitude       (deg) =          23.420819946
 %
-%        Time (UTC):                          2008 AUG 21 00:00:00.000212
-%        Sub-solar point altitude            (km) =           0.000000000
-%        Sub-solar planetographic longitude (deg) =          79.735277779
-%        Sun  planetographic longitude      (deg) =          79.735323889
-%        Sub-solar planetographic latitude  (deg) =          22.580688279
-%        Sun  planetographic latitude       (deg) =          22.580688291
-%        Sub-solar planetocentric longitude (deg) =         -79.735277779
-%        Sun  planetocentric longitude      (deg) =         -79.735323889
-%        Sub-solar planetocentric latitude  (deg) =          22.341842299
-%        Sun  planetocentric latitude       (deg) =          22.580684943
+%        Computational Method = Nadir/DSK/Unprioritized
+%
+%        Sub-solar point altitude            (km) =          -4.022302439
+%        Sub-solar planetographic longitude (deg) =         175.810675414
+%        Sun  planetographic longitude      (deg) =         175.810721472
+%        Sub-solar planetographic latitude  (deg) =          23.420823361
+%        Sun  planetographic latitude       (deg) =          23.420823372
+%        Sub-solar planetocentric longitude (deg) =        -175.810675414
+%        Sun  planetocentric longitude      (deg) =        -175.810721472
+%        Sub-solar planetocentric latitude  (deg) =          23.174793924
+%        Sun  planetocentric latitude       (deg) =          23.420819946
+%
 %
 %-Particulars
 %
@@ -795,10 +858,175 @@
 %      In all cases, the light time computation will terminate, but
 %      the result may be less accurate than expected.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine subslr_c.
+%   1)  If the specified aberration correction is unrecognized, an
+%       error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   2)  If transmission aberration corrections are specified, the
+%       error SPICE(NOTSUPPORTED) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If either the target or observer input strings cannot be
+%       converted to an integer ID code, the error
+%       SPICE(IDCODENOTFOUND) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If the input target body-fixed frame `fixref' is not recognized,
+%       the error SPICE(NOFRAME) is signaled by a routine in the call
+%       tree of this routine. A frame name may fail to be recognized
+%       because a required frame specification kernel has not been
+%       loaded; another cause is a misspelling of the frame name.
+%
+%   5)  If the input frame `fixref' is not centered at the target body,
+%       the error SPICE(INVALIDFRAME) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   6)  If the input argument `method' is not recognized, the error
+%       SPICE(INVALIDMETHOD) is signaled by this routine, or, the
+%       error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   7)  If the sub-solar point type is not specified or is not
+%       recognized, the error SPICE(INVALIDSUBTYPE) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   8)  If insufficient ephemeris data have been loaded prior to
+%       calling cspice_subslr, an error is signaled by a
+%       routine in the call tree of this routine. Note that when
+%       light time correction is used, sufficient ephemeris data must
+%       be available to propagate the states of observer, target, and
+%       the Sun to the solar system barycenter.
+%
+%   9)  If the computation method specifies an ellipsoidal target
+%       shape and triaxial radii of the target body have not been
+%       loaded into the kernel pool prior to calling cspice_subslr, an error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   10) The target must be an extended body, and must have a shape
+%       for which a sub-solar point can be defined.
+%
+%       If the target body's shape is modeled by DSK data, the shape
+%       must be such that the specified sub-solar point definition is
+%       applicable. For example, if the target shape is a torus, both
+%       the NADIR and INTERCEPT definitions might be inapplicable,
+%       depending on the relative locations of the sun and target.
+%
+%   11) If PCK data specifying the target body-fixed frame orientation
+%       have not been loaded prior to calling cspice_subslr, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   12) If `method' specifies that the target surface is represented by
+%       DSK data, and no DSK files are loaded for the specified
+%       target, an error is signaled by a routine in the call tree
+%       of this routine.
+%
+%   13) If `method' specifies that the target surface is represented by
+%       DSK data, and the ray from the observer to the sub-observer
+%       point doesn't intersect the target body's surface, the error
+%       SPICE(SUBPOINTNOTFOUND) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   14) If the surface intercept on the target body's reference
+%       ellipsoid of the observer to target center vector cannot not
+%       be computed, the error SPICE(DEGENERATECASE) is signaled by a
+%       routine in the call tree of this routine. Note that this is a
+%       very rare case.
+%
+%   15) If the target body is the sun, the error SPICE(INVALIDTARGET)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   16) If radii for `target' are not found in the kernel pool, an error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   17) If the size of the `target' body radii kernel variable is not
+%       three, an error is signaled by a routine in the call tree of
+%       this routine.
+%
+%   18) If any of the three `target' body radii is less-than or equal to
+%       zero, an error is signaled by a routine in the call tree of
+%       this routine.
+%
+%   19) If any of the input arguments, `method', `target', `et',
+%       `fixref', `abcorr' or `obsrvr', is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   20) If any of the input arguments, `method', `target', `et',
+%       `fixref', `abcorr' or `obsrvr', is not of the expected type,
+%       or it does not have the expected dimensions and size, an error
+%       is signaled by the Mice interface.
+%
+%-Files
+%
+%   Appropriate kernels must be loaded by the calling program before
+%   this routine is called.
+%
+%   The following data are required:
+%
+%   -  SPK data: ephemeris data for target, observer, and Sun must
+%      be loaded. If aberration corrections are used, the states of
+%      target, observer, and the Sun relative to the solar system
+%      barycenter must be calculable from the available ephemeris
+%      data. Typically ephemeris data are made available by loading
+%      one or more SPK files via cspice_furnsh.
+%
+%   -  PCK data: rotation data for the target body must be
+%      loaded. These may be provided in a text or binary PCK file.
+%
+%   -  Shape data for the target body:
+%
+%         PCK data:
+%
+%            If the target body shape is modeled as an ellipsoid,
+%            triaxial radii for the target body must be loaded into
+%            the kernel pool. Typically this is done by loading a
+%            text PCK file via cspice_furnsh.
+%
+%            Triaxial radii are also needed if the target shape is
+%            modeled by DSK data, but the DSK NADIR method is
+%            selected.
+%
+%         DSK data:
+%
+%            If the target shape is modeled by DSK data, DSK files
+%            containing topographic data for the target body must be
+%            loaded. If a surface list is specified, data for at
+%            least one of the listed surfaces must be loaded.
+%
+%   The following data may be required:
+%
+%   -  Frame data: if a frame definition is required to convert the
+%      observer and target states to the body-fixed frame of the
+%      target, that definition must be available in the kernel
+%      pool. Typically the definition is supplied by loading a
+%      frame kernel via cspice_furnsh.
+%
+%   -  Surface name-ID associations: if surface names are specified
+%      in `method', the association of these names with their
+%      corresponding surface ID codes must be established by
+%      assignments of the kernel variables
+%
+%         NAIF_SURFACE_NAME
+%         NAIF_SURFACE_CODE
+%         NAIF_SURFACE_BODY
+%
+%      Normally these associations are made by loading a text
+%      kernel containing the necessary assignments. An example
+%      of such an assignment is
+%
+%         NAIF_SURFACE_NAME += 'Mars MEGDR 128 PIXEL/DEG'
+%         NAIF_SURFACE_CODE += 1
+%         NAIF_SURFACE_BODY += 499
+%
+%   In all cases, kernel data are normally loaded once per program
+%   run, NOT every time this routine is called.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DSK.REQ
@@ -807,29 +1035,54 @@
 %   SPK.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 2.0.0, 04-APR-2017, EDW (JPL), NJB (JPL)
+%   -Mice Version 2.1.0, 01-NOV-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Added
+%       example's meta-kernel. Updated example to use DSK data.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 2.0.0, 04-APR-2017 (EDW) (NJB)
 %
 %       Header update to reflect support for use of DSKs.
 %
 %       Vectorized interface on input 'et'.
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
 %
 %       Update to Example section.
 %
-%   -Mice Version 1.0.2, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.0.2, 11-JUN-2013 (EDW)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       -I/O descriptions edits to conform to Mice documentation format.
 %
-%   -Mice Version 1.0.1, 25-OCT-2011, SCK (JPL)
+%   -Mice Version 1.0.1, 25-OCT-2011 (SCK)
 %
 %       References to the new 'cspice_pxfrm2' routine were
 %       added to the 'I/O returns' section. A problem description
 %       was added to the 'Examples' section.
 %
-%   -Mice Version 1.0.0, 30-JAN-2008, EDW (JPL)
+%   -Mice Version 1.0.0, 30-JAN-2008 (EDW)
 %
 %-Index_Entries
 %
@@ -838,7 +1091,7 @@
 %
 %-&
 
-function [spoint, trgepc, srfvec] = cspice_subslr( method, target, et, ...
+function [spoint, trgepc, srfvec] = cspice_subslr( method, target, et,     ...
                                                    fixref, abcorr, obsrvr )
 
    switch nargin
@@ -853,9 +1106,9 @@ function [spoint, trgepc, srfvec] = cspice_subslr( method, target, et, ...
 
       otherwise
 
-         error ( ['Usage: [_spoint_, _trgepc_, _srfvec_] = ' ...
-                  'cspice_subslr( `method`, `target`,'       ...
-                  ' _et_, `fixref`, `abcorr`, `obsrvr`)']  )
+         error ( ['Usage: [_spoint_, _trgepc_, _srfvec_] = '               ...
+                  'cspice_subslr( `method`, `target`,'                     ...
+                  ' _et_, `fixref`, `abcorr`, `obsrvr` )']  )
 
    end
 
@@ -868,8 +1121,8 @@ function [spoint, trgepc, srfvec] = cspice_subslr( method, target, et, ...
       spoint   = reshape( [subslr.spoint], 3, [] );
       trgepc   = reshape( [subslr.trgepc], 1, [] );
       srfvec   = reshape( [subslr.srfvec], 3, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

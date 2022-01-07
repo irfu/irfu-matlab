@@ -34,21 +34,22 @@
 %
 %   Given:
 %
-%      code     is an integer ID code for a surface associated with a
+%      code     an integer ID code for a surface associated with a
 %               specified body.
 %
 %               [1,1] = size(code); int32 = class(code)
 %
-%      bodstr   is a string designating the body associated with the
-%               input surface ID code. `bodstr' may contain a body name
-%               or a string representation of the body's integer ID
-%               code.
+%      bodstr   a string designating the body associated with the
+%               input surface ID code.
 %
 %               [1,c1] = size(bodstr), char = class(bodstr)
 %
 %                  or
 %
 %               [1,1] = size(bodstr), cell = class(bodstr)
+%
+%               `bodstr' may contain a body name or a string representation
+%               of the body's integer ID code.
 %
 %               For example, `bodstr' may contain
 %
@@ -74,13 +75,15 @@
 %
 %   the call:
 %
-%      [srfstr, isname] = cspice_srfcss(code, bodstr)
+%      [srfstr, isname] = cspice_srfcss( code, bodstr )
 %
 %   returns:
 %
 %      srfstr   the name of the surface identified by `code', for the body
 %               designated by `bodstr', if for this body an association
 %               exists between the input surface ID and a surface name.
+%
+%               [1,c1] = size(srfstr); char = class(srfstr)
 %
 %               If `code' has more than one translation, then the most
 %               recently defined surface name corresponding to `code' is
@@ -92,15 +95,18 @@
 %               to a surface name, `srfstr' is set to the string
 %               representation of `code'.
 %
-%               [n,c1] = size(name); char = class(name)
+%     isname    a logical flag that is true if a surface name
+%               corresponding to the input ID codes was found and
+%               false otherwise.
 %
-%     isname    is a logical flag that is true if a surface name
-%                corresponding to the input ID codes was found and
-%                false otherwise. When `isname' is false, the
-%                output string `srfstr' contains a string representing the
-%                integer `code'.
+%               [1,1] = size(isname); logical = class(isname)
 %
-%                [1,1] = size(isname); logical = class(isname)
+%               When `isname' is false, the output string `srfstr' contains
+%               a string representing the integer `code'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -108,10 +114,7 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   The formatting of the results shown for this example may differ
-%   across platforms.
-%
-%      Supposed a text kernel has been loaded that contains
+%   1) Supposed a text kernel has been loaded that contains
 %      the following assignments:
 %
 %         NAIF_SURFACE_NAME += ( 'MGS MOLA  64 pixel/deg',
@@ -130,7 +133,7 @@
 %
 %         KPL/MK
 %
-%         File: srfc2s_t1.tm
+%         File: srfcss_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The file contents shown here should not be
@@ -148,14 +151,18 @@
 %
 %         \begintext
 %
-%   Example(1):
+%         End of meta-kernel
 %
-%      function srfcss_t
+%
+%      Example code begins here.
+%
+%
+%      function srfcss_ex1()
 %
 %         bodstr = { 'MARS', 'PHOBOS', '499', 'MARS', 'ZZZ' };
 %         surfid = [  1,   1,   2,   3,  1 ];
 %         tf     = { 'false', 'true' };
-%         meta   = 'srfc2s_t1.tm';
+%         meta   = 'srfcss_ex1.tm';
 %
 %         cspice_furnsh( meta );
 %
@@ -163,17 +170,26 @@
 %
 %            [srfnam, isname] = cspice_srfcss( surfid(i), bodstr(i) );
 %
-%            fprintf(['surface ID       = %d\n'     ...
-%                        'body string      = %s\n'     ...
-%                        'name found       = %s\n'     ...
-%                        'surface string   = %s\n\n'], ...
-%                         surfid(i),                   ...
-%                         char( bodstr(i) ),           ...
-%                         char( tf(int32(isname)+1) ), ...
-%                         srfnam )
+%            fprintf(['surface ID       = %d\n'                            ...
+%                     'body string      = %s\n'                            ...
+%                     'name found       = %s\n'                            ...
+%                     'surface string   = %s\n\n'],                        ...
+%                      surfid(i),                                          ...
+%                      char( bodstr(i) ),                                  ...
+%                      char( tf(int32(isname)+1) ),                        ...
+%                      srfnam )
 %         end
 %
-%   MATLAB outputs:
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
 %
 %      surface ID       = 1
 %      body string      = MARS
@@ -200,6 +216,7 @@
 %      name found       = false
 %      surface string   = 1
 %
+%
 %-Particulars
 %
 %   Surfaces are always associated with bodies (which usually are
@@ -222,25 +239,104 @@
 %      cspice_srfc2s    Surface ID code and body ID code to surface string
 %      cspice_srfcss    Surface ID code and body string to surface string
 %
-%   cspice_srfs2c, cspice_srfc2s, cspice_srfscc, and cspice_srfcss perform 
-%   translations between surface strings and their corresponding integer 
+%   cspice_srfs2c, cspice_srfc2s, cspice_srfscc, and cspice_srfcss perform
+%   translations between surface strings and their corresponding integer
 %   ID codes.
 %
 %   Refer to naif_ids.req for details concerning adding new surface
 %   name/code associations at run time by loading text kernels.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine srfcss_c.
+%   1)  If the input body string cannot be mapped to a body name, the
+%       output `srfstr' is set to a string representation of the
+%       surface ID code. The output `isname' is set to false.
 %
-%   MICE.REQ
+%       This case is not treated as an error.
+%
+%   2)  If the input surface code cannot be mapped to a surface name,
+%       the output `srfstr' is set to a string representation of the
+%       surface ID code. The input body string is ignored. The output
+%       `isname' is set to false.
+%
+%       This case is not treated as an error.
+%
+%   3)  If any of the input arguments, `code' or `bodstr', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `code' or `bodstr', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   Surface name-to-ID mappings may be defined at run time by loading
+%   text kernels containing kernel variable assignments of the form
+%
+%      NAIF_SURFACE_NAME += ( <surface name 1>, ... )
+%      NAIF_SURFACE_CODE += ( <surface code 1>, ... )
+%      NAIF_SURFACE_BODY += ( <body code 1>,    ... )
+%
+%   Above, the ith elements of the lists on the assignments' right
+%   hand sides together define the ith surface name/ID mapping.
+%
+%   The same effect can be achieved using assignments formatted as
+%   follows:
+%
+%      NAIF_SURFACE_NAME += <surface name 1>
+%      NAIF_SURFACE_CODE += <surface code 1>
+%      NAIF_SURFACE_BODY += <body code 1>
+%
+%      NAIF_SURFACE_NAME += <surface name 2>
+%      NAIF_SURFACE_CODE += <surface code 2>
+%      NAIF_SURFACE_BODY += <body code 2>
+%
+%         ...
+%
+%   Note the use of the
+%
+%      +=
+%
+%   operator; this operator appends to rather than overwrites the
+%   kernel variable named on the left hand side of the assignment.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
 %   DSK.REQ
+%   MICE.REQ
 %   NAIF_IDS.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 28-FEB-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 07-AUG-2020 (EDW) (JDR)
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections. Edited
+%       the header to comply with NAIF standard.
+%
+%       Added call to cspice_kclear in code example.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 28-FEB-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
@@ -270,8 +366,7 @@ function [srfstr, isname] = cspice_srfcss(code, bodstr)
       [srfcss] = mice('srfcss_s', code, bodstr);
       srfstr   = char( srfcss.name );
       isname   = reshape( [srfcss.found], 1, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
 

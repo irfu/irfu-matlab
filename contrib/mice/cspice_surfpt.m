@@ -1,7 +1,7 @@
 %-Abstract
 %
-%     CSPICE_SURFPT determines the intersection of a line-of-sight vector with
-%     the surface of an ellipsoid.
+%   CSPICE_SURFPT determines the intersection of a line-of-sight vector with
+%   the surface of an ellipsoid.
 %
 %-Disclaimer
 %
@@ -36,7 +36,7 @@
 %      positn   the position of an observer with respect to the center
 %               of an ellipsoid expressed in the body fixed coordinates of
 %               the ellipsoid
-% 
+%
 %               [3,1] = size(positn); double = class(positn)
 %
 %      u        the direction vector emanating from 'positn'.
@@ -44,7 +44,7 @@
 %               [3,1] = size(u); double = class(u)
 %
 %      a,       the ellipsoid's triaxial radii, where:
-%      b,       
+%      b,
 %      c
 %                  'a' is length in kilometers of the semi-axis of the
 %                   ellipsoid parallel to the x-axis of the body-fixed
@@ -76,10 +76,14 @@
 %
 %              [3,1] = size(point); double = class(point)
 %
-%      found   a flag indicating whether the intersection between the 
+%      found   a flag indicating whether the intersection between the
 %              ellipse and 'u' exists (TRUE) or not (FALSE).
 %
 %              [1,1] = size(found); logical = class(found)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -87,16 +91,16 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      Suppose that MGS has taken a picture of Mars at time 'etrec' with
+%   1) Suppose that MGS has taken a picture of Mars at time 'etrec' with
 %      the MOC narrow angle camera. We want to know the latitude and
 %      longitude associated with two pixels projected to Mars'
-%      surface:  the boresight and one along the boundary of the
+%      surface: the boresight and one along the boundary of the
 %      field of view (FOV). Due to light time, the photons taken in
 %      the picture left Mars at time 'etemit', when Mars was at a
 %      different state than at time 'etrec'.
 %
 %      In order to solve this problem, we could use the 'cspice_sincpt'
-%      routine for both pixels, but this would be slow.  Instead, we
+%      routine for both pixels, but this would be slow. Instead, we
 %      will assume that the light time for each pixel is the same. We
 %      will call 'cspice_sincpt' once to get the light time and surface point
 %      associated with the boresight. Then, we will rotate the first
@@ -108,7 +112,7 @@
 %      This example problem could be extended to find the latitude
 %      and longitude associated with every pixel in an instrument's
 %      field of view, but this example is simplified to only solve
-%      for two pixels:  the boresight and one along the boundary of
+%      for two pixels: the boresight and one along the boundary of
 %      the field of view.
 %
 %      Assumptions:
@@ -131,7 +135,62 @@
 %             calculated from the geometric camera model.
 %
 %
-%         metakr = 'mgs_ex.tm';
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
+%
+%
+%         KPL/MK
+%
+%         File: surfpt_ex1.tm
+%
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
+%
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                        Contents
+%            ---------                        --------
+%            de430.bsp                        Planetary ephemeris
+%            mar097.bsp                       Mars satellite ephemeris
+%            pck00010.tpc                     Planet orientation and
+%                                             radii
+%            naif0011.tls                     Leapseconds
+%            mgs_moc_v20.ti                   MGS MOC instrument
+%                                             parameters
+%            mgs_sclkscet_00061.tsc           MGS SCLK coefficients
+%            mgs_sc_ext12.bc                  MGS s/c bus attitude
+%            mgs_ext12_ipng_mgs95j.bsp        MGS ephemeris
+%
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'de430.bsp',
+%                                'mar097.bsp',
+%                                'pck00010.tpc',
+%                                'naif0011.tls',
+%                                'mgs_moc_v20.ti',
+%                                'mgs_sclkscet_00061.tsc',
+%                                'mgs_sc_ext12.bc',
+%                                'mgs_ext12_ipng_mgs95j.bsp' )
+%
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function surfpt_ex1()
+%
+%         metakr = 'surfpt_ex1.tm';
 %         camera = 'MGS_MOC_NA';
 %         NCORNR = 4;
 %         ABCORR = 'CN+S';
@@ -167,9 +226,8 @@
 %         [camid, found] = cspice_bodn2c( camera );
 %
 %         if ( ~found )
-%             txt = sprintf( ['SPICE(NOTRANSLATION)' ...
-%                             'Could not find ID code for instrument %s.' ], ...
-%                             camera );
+%             txt = sprintf( ['SPICE(NOTRANSLATION) Could not find ', ...
+%                             'ID code for instrument %s.'], camera );
 %             error( txt )
 %         end
 %
@@ -347,61 +405,117 @@
 %         cspice_kclear
 %
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%             Observation Reference Frame:  MGS_MOC_NA
 %
-%             Boresight surface intercept coordinates:
-%                 Radius    (km) :  3384.940410
-%                 Latitude  (deg):  -48.479580
-%                 Longitude (deg):  -123.436454
+%      Observation Reference Frame:  MGS_MOC_NA
 %
-%             Boundary vector surface intercept
-%             coordinates using cspice_surfpt:
-%                 Radius    (km) :  3384.941136
-%                 Latitude  (deg):  -48.477482
-%                 Longitude (deg):  -123.474080
-%                 Emit time using boresight LT (s):  119296864.181059480
+%      Boresight surface intercept coordinates:
+%          Radius    (km) :  3384.940410
+%          Latitude  (deg):  -48.479580
+%          Longitude (deg):  -123.436450
 %
-%             Boundary vector surface intercept
-%             coordinates using cspice_sincpt:
-%                 Radius    (km) :  3384.941136
-%                 Latitude  (deg):  -48.477482
-%                 Longitude (deg):  -123.474079
-%                 Emit time using boresight LT (s):  119296864.181059465
+%      Boundary vector surface intercept
+%      coordinates using cspice_surfpt:
+%          Radius    (km) :  3384.941136
+%          Latitude  (deg):  -48.477482
+%          Longitude (deg):  -123.474076
+%          Emit time using boresight LT (s):  119296864.181059480
 %
-%             Distance between surface points of the first
-%             boundary vector using cspice_surfpt and
-%             cspice_sincpt:
-%                 Distance (mm):   32.139880
+%      Boundary vector surface intercept
+%      coordinates using cspice_sincpt:
+%          Radius    (km) :  3384.941136
+%          Latitude  (deg):  -48.477482
+%          Longitude (deg):  -123.474075
+%          Emit time using boresight LT (s):  119296864.181059465
+%
+%      Distance between surface points of the first
+%      boundary vector using cspice_surfpt and
+%      cspice_sincpt:
+%          Distance (mm):   32.154698
+%
 %
 %-Particulars
 %
+%   This routine assumes that an ellipsoid having semi-axes of length `a',
+%   `b' and `c' is given. Moreover, it is assumed that these axes are
+%   parallel to the x-, y-, and z-axes of a coordinate system whose
+%   origin is the geometric center of the ellipsoid---this is called the
+%   body-fixed coordinate frame.
+%
+%-Exceptions
+%
+%   1)  If the input vector is the zero vector, the error
+%       SPICE(ZEROVECTOR) is signaled by a routine in the call tree of
+%       this routine.
+%
+%   2)  If any of the body's axes is zero, the error
+%       SPICE(BADAXISLENGTH) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   3)  If any of the input arguments, `positn', `u', `a', `b' or `c',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   4)  If any of the input arguments, `positn', `u', `a', `b' or `c',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine surfpt_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ELLIPSES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 05-NOV-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Corrected Index_Entries and Usage string.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's meta-kernel.
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
 %
-%   -Mice Version 1.0.0, 24-OCT-2011, SCK (JPL)
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 05-NOV-2015 (EDW)
+%
+%       Corrected -Index_Entries and Usage string.
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 24-OCT-2011 (SCK)
 %
 %-Index_Entries
 %
-%   line of sight intercept with body 
-%   point of intersection between ray and ellipsoid 
-%   surface point of intersection of ray and ellipsoid 
+%   line of sight intercept with body
+%   point of intersection between ray and ellipsoid
+%   surface point of intersection of ray and ellipsoid
 %
 %-&
 
@@ -432,6 +546,6 @@ function [point, found] = cspice_surfpt ( positn, u, a, b, c )
 
       point  = reshape( [surfpt.spoint], 3, [] );
       found  = reshape( [surfpt.found ], 1, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end

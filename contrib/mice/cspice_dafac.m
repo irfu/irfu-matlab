@@ -39,9 +39,7 @@
 %               [1,1] = size(handle); int32 = class(handle)
 %
 %      buffer   vector containing comments which to write into
-%               the comment area of the binary DAF attached to 'handle'.
-%
-%               Each element of 'buffer' should contain one comment line.
+%               the comment area of the binary DAF attached to `handle'.
 %
 %               [n,c1] = size(buffer); char = class(buffer)
 %
@@ -49,18 +47,17 @@
 %
 %               [1,n] = size(buffer); cell = class(buffer)
 %
+%               Each element of `buffer' should contain one comment line.
+%
 %   the call:
 %
 %      cspice_dafac( handle, buffer )
 %
-%   returns:
+%   adds the contents of `buffer' to the DAF referred to by `handle'.
 %
-%      The call adds the contents of 'buffer' to the DAF referred
-%      to by 'handle'.
+%-Parameters
 %
-%   returns:
-%
-%      None.
+%   None.
 %
 %-Examples
 %
@@ -68,113 +65,160 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Create a comment text block. Use the list
-%      % of bodies in an SPK for this example.
-%      %
-%      comments = {                                                       ...
-%      '-9',                     'DEIMOS (402)',   'TITANIA (703)',       ...
-%      'MERCURY BARYCENTER (1)', 'MARS (499)',     'OBERON (704)',        ...
-%      'VENUS BARYCENTER (2)',   'IO (501)',       'MIRANDA (705)',       ...
-%      'EARTH BARYCENTER (3)',   'EUROPA (502)',   'URANUS (799)',        ...
-%      'MARS BARYCENTER (4)',    'GANYMEDE (503)', 'TRITON (801)',        ...
-%      'JUPITER BARYCENTER (5)', 'CALLISTO (504)', 'NEREID (802)',        ...
-%      'SATURN BARYCENTER (6)',  'JUPITER (599)',  'NEPTUNE (899)',       ...
-%      'URANUS BARYCENTER (7)',  'TETHYS (603)',   'CHARON (901)',        ...
-%      'NEPTUNE BARYCENTER (8)', 'DIONE (604)',    'PLUTO (999)',         ...
-%      'PLUTO BARYCENTER (9)',   'RHEA (605)',     '301001*',             ...
-%      'SUN (10)',               'TITAN (606)',    'GOLDSTONE (399001)*', ...
-%      'MERCURY (199)',          'HYPERION (607)', 'CANBERRA (399002)*',  ...
-%      'VENUS (299)',            'IAPETUS (608)',  'MADRID (399003)*',    ...
-%      'MOON (301)',             'SATURN (699)',   '401001*',             ...
-%      'EARTH (399)',            'ARIEL (701)',                           ...
-%      'PHOBOS (401)',           'UMBRIEL (702)' };
+%   1) This example demonstrates how to append new comments to the
+%      comment area of a DAF file.
 %
-%      %
-%      % Define the SPK file to which to add the 'comments' text.
-%      %
-%      SPK = 'test.spk';
+%      Use the SPK kernel below as input DAF file for the program.
 %
-%      %
-%      % Open the 'SPK' for writing; return the corresponding
-%      % file handle to 'handle'.
-%      %
-%      handle = cspice_dafopw( SPK );
+%         earthstns_itrf93_201023.bsp
 %
-%      %
-%      % Add the comments to the 'SPK', use a default line length
-%      % of 80 characters.
-%      %
-%      cspice_dafac( handle, comments )
 %
-%      %
-%      % SAFELY close the file.
-%      %
-%      cspice_dafcls( handle )
+%      Example code begins here.
 %
-%   Matlab outputs:
 %
-%      None.
+%      function dafac_ex1()
 %
-%   Assuming 'SPK' originally lacked comments, the file now
-%   contains the comments:
+%         %
+%         % Local parameters
+%         %
+%         KERNEL = 'earthstns_itrf93_201023.bsp';
+%         BUFFSZ = 25;
+%         CMTSIZ = 7;
+%         LINLEN = 1000;
 %
-%      -9
-%      DEIMOS (402)
-%      TITANIA (703)
-%      MERCURY BARYCENTER (1)
-%      MARS (499)
-%      OBERON (704)
-%      VENUS BARYCENTER (2)
-%      IO (501)
-%      MIRANDA (705)
-%      EARTH BARYCENTER (3)
-%      EUROPA (502)
-%      URANUS (799)
-%      MARS BARYCENTER (4)
-%      GANYMEDE (503)
-%      TRITON (801)
-%      JUPITER BARYCENTER (5)
-%      CALLISTO (504)
-%      NEREID (802)
-%      SATURN BARYCENTER (6)
-%      JUPITER (599)
-%      NEPTUNE (899)
-%      URANUS BARYCENTER (7)
-%      TETHYS (603)
-%      CHARON (901)
-%      NEPTUNE BARYCENTER (8)
-%      DIONE (604)
-%      PLUTO (999)
-%      PLUTO BARYCENTER (9)
-%      RHEA (605)
-%      301001*
-%      SUN (10)
-%      TITAN (606)
-%      GOLDSTONE (399001)*
-%      MERCURY (199)
-%      HYPERION (607)
-%      CANBERRA (399002)*
-%      VENUS (299)
-%      IAPETUS (608)
-%      MADRID (399003)*
-%      MOON (301)
-%      SATURN (699)
-%      401001*
-%      EARTH (399)
-%      ARIEL (701)
-%      PHOBOS (401)
-%      UMBRIEL (702)
+%         %
+%         % Set the new comments to be added to the DAF file.
+%         %
+%         newcmt = {                                                       ...
+%                  '================== NEW COMMENTS ==================',   ...
+%                  '',                                                     ...
+%                  '   New comments can be appended to the end of the',    ...
+%                  '   comment area of a DAF file, with a single',         ...
+%                  '   operation.',                                        ...
+%                  '',                                                     ...
+%                  '================ END NEW COMMENTS ================' };
 %
-%   If 'SPK' contained comments before running the program, the comments
-%   defined in 'comments' are appended to the existing comments.
+%
+%         %
+%         % Open a DAF for write. Return a `handle' referring to the
+%         % file.
+%         %
+%         [handle] = cspice_dafopw( KERNEL );
+%
+%         %
+%         % Print the end of comment area from the DAF file.
+%         % (Maximum 15 lines.)
+%         %
+%         done = false;
+%
+%         while ( ~ done )
+%
+%            [buffer, done] = cspice_dafec( handle, 15, LINLEN );
+%
+%            if ( done )
+%
+%               fprintf( [ 'End of comment area of input DAF file (max.',  ...
+%                          ' 15 lines):\n' ]                              )
+%               fprintf( ['--------------------------------',              ...
+%                         '--------------------------------\n'] )
+%
+%               for i=1:size(buffer,1)
+%                  fprintf( '%s\n', buffer(i,:) )
+%               end
+%
+%               fprintf( ['--------------------------------',              ...
+%                         '--------------------------------\n'] )
+%
+%            end
+%         end
+%
+%         %
+%         % Append the new comments to the DAF file.
+%         %
+%         cspice_dafac( handle, newcmt );
+%
+%         %
+%         % Safely close the DAF.
+%         %
+%         cspice_dafcls( handle );
+%
+%         %
+%         % Check if the comments have indeed appended.
+%         %
+%         % Open a DAF for read.
+%         %
+%         [handle] = cspice_dafopr( KERNEL );
+%         done     = false;
+%
+%         while ( ~ done )
+%
+%            [buffer, done] = cspice_dafec( handle, BUFFSZ, LINLEN );
+%
+%            if ( done )
+%
+%               fprintf( [ 'End of comment area of input DAF file (max.',  ...
+%                          ' 25 lines):\n' ]                              )
+%               fprintf( ['--------------------------------',              ...
+%                         '--------------------------------\n'] )
+%
+%               for i=1:size(buffer,1)
+%                  fprintf( '%s\n', buffer(i,:) )
+%               end
+%
+%               fprintf( ['--------------------------------',              ...
+%                         '--------------------------------\n'] )
+%
+%            end
+%         end
+%
+%         %
+%         % Safely close the DAF.
+%         %
+%         cspice_dafcls( handle );
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      End of comment area of input DAF file (max. 15 lines):
+%      ----------------------------------------------------------------
+%         DSS-65_DXYZ       =    (    -0.0100          0.0242          0.015***
+%         DSS-65_TOPO_EPOCH =       @2020-OCT-23/00:00
+%         DSS-65_UP         =       'Z'
+%         DSS-65_NORTH      =       'X'
+%
+%      \begintext
+%      ----------------------------------------------------------------
+%      End of comment area of input DAF file (max. 25 lines):
+%      ----------------------------------------------------------------
+%         DSS-65_DXYZ       =    (    -0.0100          0.0242          0.015***
+%         DSS-65_TOPO_EPOCH =       @2020-OCT-23/00:00
+%         DSS-65_UP         =       'Z'
+%         DSS-65_NORTH      =       'X'
+%
+%      \begintext
+%      ================== NEW COMMENTS ==================
+%
+%         New comments can be appended to the end of the
+%         comment area of a DAF file, with a single
+%         operation.
+%
+%      ================ END NEW COMMENTS ================
+%      ----------------------------------------------------------------
+%
+%
+%      Warning: incomplete output. 2 lines extended past the right
+%      margin of the header and have been truncated. These lines are
+%      marked by "***" at the end of each line.
+%
 %
 %-Particulars
 %
 %   A binary DAF contains a data area which is reserved for storing
 %   annotations or descriptive textual information about the data
-%   contained in a file. This area is referred to as the ``comment
-%   area'' of the file. The comment area of a DAF is a line oriented
+%   contained in a file. This area is referred to as the "comment
+%   area" of the file. The comment area of a DAF is a line oriented
 %   medium for storing textual information. The comment area preserves
 %   leading or embedded white space in the line(s) of text which are
 %   stored so that the appearance of the information will be unchanged
@@ -194,20 +238,81 @@
 %   maximum length of a line stored in the comment area should be
 %   reasonable, however, so that they may be easily extracted. A good
 %   maximum value for this would be 255 characters, as this can easily
-%   accommodate ``screen width'' lines as well as long lines which may
+%   accommodate "screen width" lines as well as long lines which may
 %   contain some other form of information.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dafac_c.
+%   1)  If the number of comments to be added is not positive, the
+%       error SPICE(INVALIDARGUMENT) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   2)  If a non printing ASCII character is encountered in the
+%       comments, the error SPICE(ILLEGALCHARACTER) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   3)  If the binary DAF file attached to `handle' is not open with
+%       write access, an error is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If the end of the comments cannot be found, i.e., the end of
+%       comments marker is missing on the last comment record, the
+%       error SPICE(BADCOMMENTAREA) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   5)  If any of the input arguments, `handle' or `buffer', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   6)  If any of the input arguments, `handle' or `buffer', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   See argument `handle' in -I/O.
+%
+%-Restrictions
+%
+%   1)  This routine uses constants that are specific to the ASCII
+%       character sequence. The results of using this routine with
+%       a different character sequence are unpredictable.
+%
+%   2)  This routine is only used to extract records on environments
+%       whose characters are a single byte in size. Updates to this
+%       routine and routines in its call tree may be required to
+%       properly handle other cases.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAF.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 20-JUL-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 25-NOV-2020 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Added complete
+%       code example.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 20-JUL-2012 (EDW)
 %
 %-Index_Entries
 %
@@ -235,8 +340,8 @@ function cspice_dafac( handle, buffer )
    %
    try
       mice( 'dafac_c', handle, buffer );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

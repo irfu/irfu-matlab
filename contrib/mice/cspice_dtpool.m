@@ -32,40 +32,44 @@
 %
 %   Given:
 %
-%     name   name(s) of variables whose values are to be returned.
+%      name     name(s) of variables whose values are to be returned.
 %
-%            [n,c1] = size(name); char = class(name)
+%               [n,c1] = size(name); char = class(name)
 %
 %                  or
 %
-%            [1,n] = size(name); cell = class(name)
+%               [1,n] = size(name); cell = class(name)
 %
 %   the call:
 %
-%      [found, n, type] = cspice_dtpool(name)
+%      [found, n, type] = cspice_dtpool( name )
 %
 %   returns:
 %
-%      found   flag(s) returning as true if the variable 'name' exists in the
-%              pool; false if not.
+%      found    flag(s) returning as true if the variable `name' exists in the
+%               pool; false if not.
 %
-%              [1,n] = size(found); logical = class(found)
+%               [1,n] = size(found); logical = class(found)
 %
-%      n       the number of values associated with 'name'. If 'name' does not 
-%              exist in the pool, 'n' returns with the value 0.
+%      n        the number of values associated with `name'. If `name' does
+%               not exist in the pool, `n' returns with the value 0.
 %
-%              [1,n] = size(n); int32 = class(n)
+%               [1,n] = size(n); int32 = class(n)
 %
-%      type    indicating the variable type associated with 'name'.
+%      type     indicating the variable type associated with `name'.
 %
-%              [n,1] = size(type); char = class(type)
+%               [n,1] = size(type); char = class(type)
 %
-%                  C if the data is character data
-%                  N if the data is numeric
-%                  X if there is no variable name in the pool
+%                   C if the data is character data
+%                   N if the data is numeric
+%                   X if there is no variable name in the pool
 %
-%              'found', 'n', and 'type' return with the same vectorization
-%               measure, N, as 'name'.
+%               `found', `n', and `type' return with the same vectorization
+%               measure, N, as `name'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -73,83 +77,63 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      Use the meta-kernel shown below to load the required SPICE
-%      kernels.
+%   1) Check for the variables defined in the leapseconds kernel and
+%      a name probably (hopefully) not in the kernel pool.
 %
-%         KPL/MK
+%      Use the LSK kernel below as test file to generate the results.
 %
-%         File name: standard.tm
+%         naif0009.tls
 %
-%         This meta-kernel is intended to support operation of SPICE
-%         example programs. The kernels shown here should not be
-%         assumed to contain adequate or correct versions of data
-%         required by SPICE-based user applications.
 %
-%         In order for an application to use this meta-kernel, the
-%         kernels referenced here must be present in the user's
-%         current working directory.
+%      Example code begins here.
 %
-%         The names and contents of the kernels referenced
-%         by this meta-kernel are as follows:
 %
-%            File name                     Contents
-%            ---------                     --------
-%            de421.bsp                     Planetary ephemeris
-%            pck00009.tpc                  Planet orientation and
-%                                          radii
-%            naif0009.tls                  Leapseconds
+%      function dtpool_ex1()
 %
-%         \begindata
+%         %
+%         % Load a leapsecond kernel.
+%         %
+%         cspice_furnsh('naif0009.tls' )
 %
-%            KERNELS_TO_LOAD = ( 'de421.bsp',
-%                                'pck00009.tpc',
-%                                'naif0009.tls'  )
+%         %
+%         % Check for the variables defined in the leapseconds kernel
+%         % and a name probably (hopefully) not in the kernel pool.
+%         %
+%         lmpoolNames  = strvcat(              ...
+%                       'DELTET/DELTA_T_A',    ...
+%                       'DELTET/K',            ...
+%                       'DELTET/EB',           ...
+%                       'DELTET/M',            ...
+%                       'ECHO419',             ...
+%                       'DELTET/DELTA_AT',     ...
+%                       'EVERLASTING_GOBSTOPPER' );
 %
-%         \begintext
+%         [found, n, dtype] = cspice_dtpool( lmpoolNames );
 %
-%   Example:
+%         for i = 1:size(lmpoolNames,1)
 %
-%      %
-%      % Load a leapsecond kernel.
-%      %
-%      cspice_furnsh('standard.tm' )
+%            name = lmpoolNames(i,:);
 %
-%      %
-%      % Check for the variables defined in the leapseconds kernel
-%      % and a name probably (hopefully) not in the kernel pool.
-%      %
-%      lmpoolNames  = strvcat(              ...
-%                    'DELTET/DELTA_T_A',    ...
-%                    'DELTET/K',            ...
-%                    'DELTET/EB',           ...
-%                    'DELTET/M',            ...
-%                    'ECHO419',             ...
-%                    'DELTET/DELTA_AT',     ...
-%                    'EVERLASTING_GOBSTOPPER' );
+%            if (found(i))
+%               fprintf( 'Variable name : %s\n', name       )
+%               fprintf( 'Variable size : %d\n', n(i)       )
+%               fprintf( 'Variable type : %s\n\n', dtype(i) )
+%            else
+%               fprintf( 'Unable to find variable name : %s\n\n', name )
+%            end
 %
-%      [found, n, dtype] = cspice_dtpool( lmpoolNames );
-%
-%      for i = 1:size(lmpoolNames,1)
-%
-%         name = lmpoolNames(i,:);
-%
-%         if (found(i))
-%            fprintf( 'Variable name : %s\n', name       )
-%            fprintf( 'Variable size : %d\n', n(i)       )
-%            fprintf( 'Variable type : %s\n\n', dtype(i) )
-%         else
-%            fprintf( 'Unable to find variable name : %s\n\n', name )
 %         end
 %
-%      end
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Variable name : DELTET/DELTA_T_A
 %      Variable size : 1
@@ -157,7 +141,7 @@
 %
 %      Variable name : DELTET/K
 %      Variable size : 1
-%      variable type : N
+%      Variable type : N
 %
 %      Variable name : DELTET/EB
 %      Variable size : 1
@@ -170,41 +154,86 @@
 %      Unable to find variable name : ECHO419
 %
 %      Variable name : DELTET/DELTA_AT
-%      Variable size : 48
+%      Variable size : 50
 %      Variable type : N
 %
 %      Unable to find variable name : EVERLASTING_GOBSTOPPER
+%
 %
 %-Particulars
 %
 %   A sister version of this routine exists named mice_dtpool that returns
 %   the output arguments as fields in a single structure.
 %
-%-Required Reading
+%   This routine allows you to determine whether or not a kernel
+%   pool variable is present and to determine its size and type
+%   if it is.
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dtpool_c.
+%-Exceptions
+%
+%   1)  If the name requested is not in the kernel pool `found'
+%       will be set to false, `n' to zero and `type' to 'X'.
+%
+%   2)  If the input argument `name' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `name' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.3, 03-DEC-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added -Parameters,
+%       -Exceptions, -Files, -Restrictions, -Literature_References and
+%       -Author_and_Institution sections. Updated -Particulars section.
 %
-%   -Mice Version 1.0.2, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%       Eliminated use of "lasterror" in rethrow.
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
 %
-%      Edits to Example section, proper description of "standard.tm"
-%      meta kernel.
+%   -Mice Version 1.0.3, 03-DEC-2014 (EDW)
 %
-%   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
 %
-%      Added MICE.REQ reference to the Required Reading section.
+%   -Mice Version 1.0.2, 12-MAR-2012 (EDW) (SCK)
 %
-%   -Mice Version 1.0.0, 07-MAR-2007, EDW (JPL)
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%       Edits to Example section, proper description of "standard.tm"
+%       meta kernel.
+%
+%   -Mice Version 1.0.1, 06-MAY-2009 (EDW)
+%
+%       Added mice.req reference to the Required Reading section.
+%
+%   -Mice Version 1.0.0, 07-MAR-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -237,9 +266,6 @@ function [found, n, type] = cspice_dtpool(name)
       found    = reshape( [dtpool.found], 1, [] );
       n        = reshape( [dtpool.n],     1, [] );
       type     = char( dtpool.type );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-

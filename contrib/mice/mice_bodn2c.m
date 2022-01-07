@@ -33,61 +33,72 @@
 %
 %   Given:
 %
-%      name   name(s) of a body or object,  such as a planet, satellite, comet,
-%             asteroid, barycenter, DSN station, spacecraft, or instrument,
-%             "known" to the SPICE system, whether through hard-coded
-%             registration or run-time registration in the SPICE kernel pool
+%      name     name(s) of a body or object, such as a planet, satellite,
+%               comet, asteroid, barycenter, DSN station, spacecraft, or
+%               instrument, "known" to the SPICE system, whether through
+%               hard-coded registration or run-time registration in the
+%               SPICE kernel pool.
 %
-%             [n,c1] = size(name); char = class(name)
+%               [n,c1] = size(name); char = class(name)
 %
 %                  or
 %
-%             [1,1] = size(name); cell = class(name)
+%               [1,1] = size(name); cell = class(name)
 %
-%             Case and leading and trailing blanks in a name are not
-%             significant. However when a name is made up of more than one
-%             word, they must be separated by at least one blank. That is,
-%             all of the following strings are equivalent names:
+%               Case and leading and trailing blanks in a name are not
+%               significant. However when a name is made up of more than one
+%               word, they must be separated by at least one blank. That is,
+%               all of the following strings are equivalent names:
 %
-%                      'JUPITER BARYCENTER'
-%                      'Jupiter Barycenter'
-%                      'JUPITER BARYCENTER   '
-%                      'JUPITER    BARYCENTER'
-%                      '   JUPITER BARYCENTER'
+%                  'JUPITER BARYCENTER'
+%                  'Jupiter Barycenter'
+%                  'JUPITER BARYCENTER   '
+%                  'JUPITER    BARYCENTER'
+%                  '   JUPITER BARYCENTER'
 %
-%              However, 'JUPITERBARYCENTER' is not equivalent to the names
-%              above.
+%               However, 'JUPITERBARYCENTER' is not equivalent to the names
+%               above.
 %
 %   the call:
 %
-%      ID = mice_bodn2c( name )
+%      [ID] = mice_bodn2c( name )
 %
 %   returns:
 %
-%      ID   the structure(s) associating a body name with a corresponding 
-%           SPICE ID. 
+%      ID       the structure(s) associating a body name with a corresponding
+%               SPICE ID.
 %
-%           [1,n] = size(ID); struct = class(ID)
+%               [1,n] = size(ID); struct = class(ID)
 %
-%           Each structure consists of the fields:
+%               Each structure consists of the fields:
 %
-%              name   the "name" of a particular body. If a mapping
-%                     does not exist, the 'name' field returns as NULL.
+%                  name     the "name" of a particular body.
 %
-%                     [1,c1] = size(ID(i).name); char = class(ID(i).name)
+%                           [1,c1] = size(ID.name); char = class(ID.name)
 %
-%              code   the SPICE code assigned either
-%                     by SPICE or the user to 'name'. If a mapping
-%                     does not exist, the 'code' field returns as 0.
+%                           If a mapping does not exist, the `name' field
+%                           returns as NULL.
 %
-%                     [1,1] = size(ID(i).code); int32 = class(ID(i).code)
+%                  code     the SPICE code assigned either by SPICE or the
+%                           user to `name'.
 %
-%              found  flag indicating if the kernel subsystem translated
-%                     'code' to a corresponding 'name'.
+%                           [1,1] = size(ID.code); int32 = class(ID.code)
 %
-%                     [1,n] = size(ID(i).found); logical = class(ID(i).found)
+%                           If a mapping does not exist, the `code' field
+%                           returns as 0.
 %
-%      'ID' returns with the same vectorization measure, N, as 'name'.
+%                  found    flag indicating if the kernel subsystem translated
+%                           `code' to a corresponding `name'.
+%
+%                           [1,1] = size(ID.found); logical = class(ID.found)
+%
+%               `ID' returns with the same vectorization measure, N, as
+%               `name'.
+%
+%-Parameters
+%
+%   MAXL        is the maximum allowable length of a body name. The
+%               current value of this parameter is 36.
 %
 %-Examples
 %
@@ -95,53 +106,64 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Retrieve the NAIF ID associated to a body name.
-%      %
-%      disp( 'Scalar:' )
-%      name = 'Hyperion';
-%      ID   = mice_bodn2c( name );
+%   1) Apply the mice_bodn2c call to several body names to retrieve
+%      their associated NAIF IDs included in the default SPICE ID-name
+%      lists and a name not included in that list.
 %
-%      %
-%      % Output the mapping if it exists.
-%      %
-%      if ( ID.found )
-%         txt = sprintf( 'Body ID %i maps to name %s', ...
-%                         ID.code, ID.name );
-%         disp(txt)
-%      end
+%      Example code begins here.
 %
-%      disp(' ')
 %
-%      %
-%      % Create an array of body names. Include one unknown name.
-%      %
-%      disp( 'Vector:' )
-%      name = strvcat( 'Triton', 'Mimas', 'Oberon', 'Callisto', 'Halo' );
-%      ID   = mice_bodn2c( name );
-%
-%      n_elements = size(ID);
-%
-%      %
-%      % Loop over the output array.
-%      %
-%      for i=1:n_elements(1)
+%      function bodn2c_ex1()
+%         %
+%         % Retrieve the NAIF ID associated to a body name.
+%         %
+%         disp( 'Scalar:' )
+%         name = 'Hyperion';
+%         ID   = mice_bodn2c( name );
 %
 %         %
-%         % Check for a valid name/ID mapping.
+%         % Output the mapping if it exists.
 %         %
-%         if(  ID(i).name ) )
-%            txt = sprintf( 'Body ID %i maps to name %s', ...
-%                            ID(i).code, ID(i).name );
-%            disp(txt)
-%         else
-%            txt = sprintf( 'Unknown body name %s', name(i,:) );
+%         if ( ID.found )
+%            txt = sprintf( 'Body ID %i maps to name %s',                  ...
+%                            ID.code, ID.name );
 %            disp(txt)
 %         end
 %
-%      end
+%         disp(' ')
 %
-%   MATLAB outputs:
+%         %
+%         % Create an array of body names. Include one unknown name.
+%         %
+%         disp( 'Vector:' )
+%         name = strvcat( 'Triton', 'Mimas', 'Oberon', 'Callisto', 'Halo' );
+%         ID   = mice_bodn2c( name );
+%
+%         n_elements = size(ID,2);
+%
+%         %
+%         % Loop over the output array.
+%         %
+%         for i=1:n_elements(1)
+%
+%            %
+%            % Check for a valid name/ID mapping.
+%            %
+%            if ( ID(i).found )
+%               txt = sprintf( 'Body ID %i maps to name %s',               ...
+%                               ID(i).code, ID(i).name );
+%               disp(txt)
+%            else
+%               txt = sprintf( 'Unknown body name %s', name(i,:) );
+%               disp(txt)
+%            end
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Scalar:
 %      Body ID 607 maps to name Hyperion
@@ -153,26 +175,99 @@
 %      Body ID 504 maps to name Callisto
 %      Unknown body name Halo
 %
+%
 %-Particulars
 %
 %   A sister version of this routine exists named cspice_bodn2c that returns
 %   the structure field data as separate arguments.
 %
-%-Required Reading
+%   mice_bodn2c is one of three related subroutines,
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine bodn2c_c.
+%      mice_bods2c      Body string to code
+%      mice_bodc2s      Body code to string
+%      mice_bodn2c      Body name to code
+%
+%   mice_bods2c, mice_bodc2s, and mice_bodn2c perform translations between
+%   body names and their corresponding integer ID codes which are used in
+%   SPICE files and routines.
+%
+%   mice_bods2c is a slightly more general version of mice_bodn2c:
+%   support for strings containing ID codes in string format enables a caller
+%   to identify a body using a string, even when no name is associated with
+%   that body.
+%
+%   Refer to naif_ids.req for the list of name/code associations built
+%   into SPICE, and for details concerning adding new name/code
+%   associations at run time by loading text kernels.
+%
+%-Exceptions
+%
+%   1)  If there is any problem with the body name-ID mapping kernel
+%       variables present in the kernel pool, an error is signaled by
+%       a routine in the call tree of this routine.
+%
+%   2)  Body name strings are upper-cased, their leading and trailing
+%       blanks removed, and embedded blanks are compressed out, after
+%       which they get truncated to the maximum body name length MAXL.
+%       Therefore, two body names that differ only after that maximum
+%       length are considered equal.
+%
+%   3)  If the input argument `name' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   4)  If the input argument `name' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   Body-name mappings may be defined at run time by loading text
+%   kernels containing kernel variable assignments of the form
+%
+%      NAIF_BODY_NAME += ( <name 1>, ... )
+%      NAIF_BODY_CODE += ( <code 1>, ... )
+%
+%   See naif_ids.req for details.
+%
+%-Restrictions
+%
+%   1)  See exception <2>.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   NAIF_IDS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Extended the
+%       -Particulars section. Fixed bug on example code.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 01-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -199,8 +294,8 @@ function [code] = mice_bodn2c(name)
    %
    try
       [code] = mice('bodn2c_s',name);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

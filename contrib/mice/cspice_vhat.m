@@ -33,34 +33,29 @@
 %
 %   Given:
 %
-%      v1   is an arbitrary vector(s).
+%      v1       an arbitrary vector(s).
 %
-%           [3,n] = size(v1); double = class(v1)
+%               [3,n] = size(v1); double = class(v1)
 %
 %   the call:
 %
-%      vout = cspice_vhat(v1)
+%      [vout] = cspice_vhat( v1 )
 %
 %   returns:
 %
-%      vout   contains the unit vector(s) in the direction of 'v1'.
+%      vout     the unit vector(s) in the direction of `v1'.
 %
-%             [3,n] = size(vout); double = class(vout)
+%               [3,n] = size(vout); double = class(vout)
 %
-%                   ^       --
-%                 vhat =    v1
-%                        --------
-%                           --
-%                        || v1 ||
+%               If `v1' represents the zero vector, then `vout' will
+%               also be the zero vector.
 %
-%                      _                                               _
-%             where || x || indicates the Euclidean norm of the vector x.
+%               `vout' returns with the same vectorization measure, N,
+%               as `v1'.
 %
-%             If 'v1' represents the zero vector, then 'vout' will
-%             also be the zero vector.
+%-Parameters
 %
-%             'vout' returns with the same vectorization measure, N,
-%             as 'v1'.
+%   None.
 %
 %-Examples
 %
@@ -68,84 +63,146 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> v1 = [ 5; 12; 0]
+%   1) Define a set of vectors and compute their corresponding unit
+%      vector.
 %
-%      v1 =
 %
-%           5
-%          12
-%           0
+%      Example code begins here.
 %
-%      >> cspice_vhat(v1)
 %
-%   MATLAB outputs:
+%      function vhat_ex1()
 %
-%      ans =
+%         %
+%         % Local parameters.
+%         %
+%         SETSIZ = 2;
 %
-%          0.3846
-%          0.9231
-%               0
+%         %
+%         % Define the vector set.
+%         %
+%         seta = [ [5.0,  12.0,  0.0]', [1.e-7,  2.e-7, 2.e-7]' ];
 %
-%      >> v2 = [ 1D-7; 2D-7; 2D-7]
+%         %
+%         % Calculate the unit vectors.
+%         %
+%         fprintf('Scalar case:\n')
 %
-%      v2 =
+%         for i=1:SETSIZ
 %
-%         1.0e-06 *
+%            [vout] = cspice_vhat( seta(:,i) );
 %
-%          0.1000
-%          0.2000
-%          0.2000
+%            fprintf( 'Vector     :  %12.8f %12.8f %12.8f\n',              ...
+%                             seta(1,i), seta(2,i), seta(3,i) )
+%            fprintf( 'Unit vector:  %12.8f %12.8f %12.8f\n',              ...
+%                                   vout(1), vout(2), vout(3) )
+%            fprintf( ' \n' )
 %
-%      >> cspice_vhat(v2)
+%         end
 %
-%   MATLAB outputs:
+%         %
+%         % Repeat the operation with one single call to cspice_vhat.
+%         %
+%         [vout] = cspice_vhat( seta );
 %
-%      ans =
+%         fprintf('Vectorized case:\n')
 %
-%          0.3333
-%          0.6667
-%          0.6667
+%         for i=1:SETSIZ
 %
-%      >> v = [v1, v2 ]
+%            fprintf( 'Vector     :  %12.8f %12.8f %12.8f\n',              ...
+%                             seta(1,i), seta(2,i), seta(3,i) )
+%            fprintf( 'Unit vector:  %12.8f %12.8f %12.8f\n',              ...
+%                             vout(1,i), vout(2,i), vout(3,i) )
+%            fprintf( ' \n' )
 %
-%      v =
+%         end
 %
-%          5.0000    0.0000
-%         12.0000    0.0000
-%               0    0.0000
 %
-%      >> cspice_vhat(v)
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%   MATLAB outputs:
 %
-%      ans =
+%      Scalar case:
+%      Vector     :    5.00000000  12.00000000   0.00000000
+%      Unit vector:    0.38461538   0.92307692   0.00000000
 %
-%          0.3846    0.3333
-%          0.9231    0.6667
-%               0    0.6667
+%      Vector     :    0.00000010   0.00000020   0.00000020
+%      Unit vector:    0.33333333   0.66666667   0.66666667
+%
+%      Vectorized case:
+%      Vector     :    5.00000000  12.00000000   0.00000000
+%      Unit vector:    0.38461538   0.92307692   0.00000000
+%
+%      Vector     :    0.00000010   0.00000020   0.00000020
+%      Unit vector:    0.33333333   0.66666667   0.66666667
+%
 %
 %-Particulars
 %
+%   cspice_vhat determines the magnitude of `v1' and then divides each
+%   component of `v1' by the magnitude. This process is highly stable
+%   over the whole range of 3-dimensional vectors.
+%
+%-Exceptions
+%
+%   1)  If `v1' represents the zero vector, then `vout' will also be the
+%       zero vector.
+%
+%   2)  If the input argument `v1' is undefined, an error is signaled
+%       by the Matlab error handling system.
+%
+%   3)  If the input argument `v1' is not of the expected type, or it
+%       does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine vhat_c.
+%   1)  There is no known case whereby floating point overflow may
+%       occur. Thus, no error recovery or reporting scheme is
+%       incorporated into this routine.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 18-DEC-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Updated the header to comply with NAIF standard. Added
+%       complete code example to -Examples section.
 %
-%   -Mice Version 1.0.1, 30-DEC-2008, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
 %
-%      Corrected misspellings.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 25-APR-2006, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 18-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.1, 30-DEC-2008 (EDW)
+%
+%       Corrected misspellings.
+%
+%   -Mice Version 1.0.0, 25-APR-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -171,8 +228,8 @@ function [vout] = cspice_vhat(v1)
    %
    try
       [vout] = mice('vhat_c',v1);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

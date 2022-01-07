@@ -56,63 +56,148 @@
 %
 %          'c' can overwrite 'a' or 'b'.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Let 'a' contain the intervals
-%      %
-%      a = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ]; ];
+%   1) Let `a' contain the intervals
 %
-%      %
-%      % and b contain the intervals
-%      %
-%      b = [ [ 2; 4 ]; [ 8; 10 ]; [ 16; 18 ]; ];
+%         [ 1, 3 ]  [ 7, 11 ]  [ 23, 27 ]
 %
-%      %
-%      % Then the difference of 'a' and 'b', 'c':
-%      %
-%      c = cspice_wndifd(a, b)
+%      and `b' contain the intervals
 %
-%   MATLAB outputs:
+%         [ 2, 4 ]  [ 8, 10 ]  [ 16, 18 ]
 %
-%      c =
-%
-%           1
-%           2
-%           7
-%           8
-%          10
-%          11
-%          23
-%          27
-%
-%      Representing the intervals:
+%      Then the difference of `a' and `b' contains the intervals
 %
 %         [ 1, 2 ]  [ 7, 8 ]  [ 10, 11 ]  [ 23, 27 ]
 %
+%      The following code example demonstrates how to compute this
+%      difference of `a' and `b' using SPICE.
+%
+%
+%      Example code begins here.
+%
+%
+%      function wndifd_ex1()
+%
+%         %
+%         % Let 'a' contain the intervals
+%         %
+%         a = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ]; ];
+%
+%         %
+%         % and b contain the intervals
+%         %
+%         b = [ [ 2; 4 ]; [ 8; 10 ]; [ 16; 18 ]; ];
+%
+%         %
+%         % Then the difference of`'a' and `b', `c':
+%         %
+%         c = cspice_wndifd(a, b);
+%
+%         %
+%         % Output the difference `c'
+%         %
+%         for i=1:cspice_wncard(c)
+%
+%            [left, right] = cspice_wnfetd( c, i );
+%            fprintf( '%16.6f %16.6f\n', left, right  );
+%
+%      end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%              1.000000         2.000000
+%              7.000000         8.000000
+%             10.000000        11.000000
+%             23.000000        27.000000
+%
+%
 %-Particulars
+%
+%   Mathematically, the difference of two windows contains every
+%   point contained in the first window but not contained in the
+%   second window.
+%
+%   Matlab offers no satisfactory floating point representation
+%   of open intervals. Thus, for floating point windows we must
+%   return the closure of the set theoretical difference: that is,
+%   the difference plus the endpoints of the first window that are
+%   contained in the second window.
+%
+%-Exceptions
+%
+%   1)  The cardinality of the input windows must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   2)  If any of the input arguments, `a' or `b', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   3)  If any of the input arguments, `a' or `b', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
 %
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wndifd_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and reformatted example's output.
 %
-%   -Mice Version 1.0.0, 23-JUL-2007, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%       Improved -Particulars section.
+%
+%   -Mice Version 1.0.1, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 23-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -141,8 +226,8 @@ function [c] = cspice_wndifd( a, b )
 %
    try
       [c] = mice('wndifd_c', [zeros(6,1); a], [zeros(6,1); b] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

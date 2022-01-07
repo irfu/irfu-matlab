@@ -1,9 +1,9 @@
 %-Abstract
 %
-%   CSPICE_LTIME computes the transmit (or receive) time of
-%   a signal at a specified target, given the receive (or transmit)
-%   time at a specified observer. The elapsed time between transmit
-%   and receive is also returned.
+%   CSPICE_LTIME computes the transmission (or reception) time of a signal at
+%   a specified target, given the reception (or transmission) time at a
+%   specified observer. This routine also returns the elapsed time between
+%   transmission and reception.
 %
 %-Disclaimer
 %
@@ -35,53 +35,77 @@
 %
 %   Given:
 %
-%      etobs   the epoch(s) in ephemeris seconds (TDB) of a signal at some
-%              observer.
-%
-%              [1,n] = size(etobs); double = class(etobs)
-%
-%      obs     the NAIF ID code of the observer.
-%
-%              [1,1] = size(obs); int32 = class(obs)
-%
-%      dir     a pictograph defining the direction the signal travels.
-%
-%                 '->'  to target from observer
-%                 '<-'  from the target to the observer
-%
-%              [1,2] = size(dir); char = class(dir)
-%
-%                 or
-%
-%              [1,1] = size(dir); cell = class(dir)
-%
-%      targ    the NAIF ID code of the target.
-%
-%              [1,1] = size(targ); int32 = class(targ)
-%
-%   the call:
-%
-%      [ettarg, elapsd] = cspice_ltime(etobs, obs, dir, targ)
-%
-%   returns:
-%
-%      ettarg   the epoch(s) at which the electromagnetic signal is "at"
-%               the target body, expressed in ephemeris seconds (TDB).
+%      etobs    the epoch(s) expressed as ephemeris seconds past J2000 TDB.
 %
 %               [1,n] = size(etobs); double = class(etobs)
 %
-%                  Note 'ettarg' is computed using only Newtonian
-%                  assumptions about the propagation of light.
+%               This is the time at which an electromagnetic signal is "at"
+%               the observer.
 %
-%      elapsd   the measure of ephemeris seconds (TDB) between transmission
-%               and receipt of the signal
+%      obs      the NAIF ID of some observer.
+%
+%               [1,1] = size(obs); int32 = class(obs)
+%
+%      dir      the direction the signal travels.
+%
+%               [1,2] = size(dir); char = class(dir)
+%
+%                  or
+%
+%               [1,1] = size(dir); cell = class(dir)
+%
+%               The acceptable values are '->' and '<-'. When you read the
+%               calling sequence from left to right, the "arrow" given by
+%               `dir' indicates which way the electromagnetic signal is
+%               traveling.
+%
+%               If the argument list reads as below,
+%
+%                  ..., `obs', '->', `targ', ...
+%
+%               the signal is traveling from the observer to the
+%               target.
+%
+%               If the argument reads as
+%
+%                  ..., `obs', '<-', `targ'
+%
+%               the signal is traveling from the target to
+%               the observer.
+%
+%      targ     the NAIF ID of the target.
+%
+%               [1,1] = size(targ); int32 = class(targ)
+%
+%   the call:
+%
+%      [ettarg, elapsd] = cspice_ltime( etobs, obs, dir, targ )
+%
+%   returns:
+%
+%      ettarg   the epoch(s) expressed as ephemeris seconds past J2000 TDB
+%               at which the electromagnetic signal is "at" the target body.
+%
+%               [1,n] = size(ettarg); double = class(ettarg)
+%
+%               Note `ettarg' is computed using only Newtonian
+%               assumptions about the propagation of light.
+%
+%      elapsd   the number of ephemeris seconds (TDB) between transmission
+%               and receipt of the signal.
 %
 %               [1,n] = size(elapsd); double = class(elapsd)
 %
+%               `elapsd' is computed as:
+%
 %                  elapsd = abs( etobs - ettarg )
 %
-%               'ettarg' and 'elapsd' return with the same
-%               vectorization measure, N, as 'etobs'.
+%               `ettarg' and `elapsd' return with the same vectorization
+%               measure, N, as `etobs'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -89,102 +113,233 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      %  Load an SPK, PCK, and leapseconds kernel
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%   1) Suppose a signal is transmitted from Earth towards the Jupiter
+%      system barycenter on July 4, 2004.
 %
-%      %
-%      % Suppose a signal originates from Earth towards the
-%      % the Jupiter system barycenter. Define the NAIF IDs
-%      % for the observer, Earth (399), the target, Jupiter
-%      % barycenter (5), and time of interest.
-%      %
-%      OBS      = 399;
-%      TARGET   = 5;
-%      TIME_STR = 'July 4, 2004';
+%         signal traveling to Jupiter system barycenter
+%         *  -._.-._.-._.-._.-._.-._.-._.-._.->  *
 %
-%      %
-%      %  Convert the transmission time to ET.
-%      %
-%      et = cspice_str2et( TIME_STR);
+%         Earth (399)            Jupiter system barycenter (5)
 %
-%      %
-%      %  Determine the arrival time and the time for propagation.
-%      %
-%      [arrive, ltime] = cspice_ltime( et, OBS, '->', TARGET);
+%      Compute the time at which the signal arrives at Jupiter
+%      and the time it took the signal to arrive there (propagation
+%      time).
 %
-%      %
-%      %  Convert the arrival time (ET) to UTC.
-%      %
-%      arrive_utc = cspice_et2utc( arrive, 'C', 3 );
+%      Suppose also that another signal is received at the Earth from
+%      Jupiter system barycenter at the same time.
 %
-%      %
-%      %  Output the results.
-%      %
-%      txt = sprintf( 'Transmission at (UTC)       : %s', TIME_STR );
-%      disp(txt)
+%         signal sent from Jupiter system barycenter
+%         *  <-._.-._.-._.-._.-._.-._.-._.-._.-  *
 %
-%      txt = sprintf( 'The signal arrived at (UTC) : %s', arrive_utc );
-%      disp(txt)
+%         Earth (399)            Jupiter system barycenter (5)
 %
-%      txt = sprintf( 'Time for propagation (secs) : %16.4f', ltime );
-%      disp(txt)
-%      disp( ' ' )
+%      Compute the time at which the signal was transmitted from Jupiter,
+%      and its propagation time.
 %
-%      %
-%      % Now assume the signal originated at Jupiter barycenter,
-%      % received by Earth at TIME_STR. Determine the transmission
-%      % time and the time for propagation.
-%      %
-%      [receive, ltime] = cspice_ltime( et, OBS, '<-', TARGET);
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Convert the reception time (ET) to UTC.
-%      %
-%      receive_utc = cspice_et2utc( receive, 'C', 3 );
 %
-%      %
-%      %  Output the results.
-%      %
-%      txt = sprintf( 'Reception at (UTC)          : %s', TIME_STR );
-%      disp(txt)
+%         KPL/MK
 %
-%      txt = sprintf( 'The signal sent at (UTC)    : %s', receive_utc );
-%      disp(txt)
+%         File name: ltime_ex1.tm
 %
-%      txt = sprintf( 'Time for propagation (secs) : %16.4f', ltime );
-%      disp(txt)
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%   MATLAB outputs:
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            naif0012.tls                  Leapseconds
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'naif0012.tls'  )
+%
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function ltime_ex1()
+%
+%         %
+%         %  Load an SPK and leapseconds kernel.
+%         %
+%         cspice_furnsh( 'ltime_ex1.tm' )
+%
+%         %
+%         % Suppose a signal originates from Earth towards the
+%         % Jupiter system barycenter. Define the NAIF IDs
+%         % for the observer, Earth (399), the target, Jupiter
+%         % barycenter (5), and time of interest.
+%         %
+%         OBS      = 399;
+%         TARGET   = 5;
+%         TIME_STR = 'July 4, 2004';
+%
+%         %
+%         %  Convert the transmission time to ET.
+%         %
+%         et = cspice_str2et( TIME_STR);
+%
+%         %
+%         %  Determine the arrival time and the time for propagation.
+%         %
+%         [arrive, lt] = cspice_ltime( et, OBS, '->', TARGET);
+%
+%         %
+%         %  Convert the arrival time (ET) to UTC.
+%         %
+%         arrive_utc = cspice_et2utc( arrive, 'C', 3 );
+%
+%         %
+%         %  Output the results.
+%         %
+%         txt = sprintf( 'Transmission at (UTC)       : %s', TIME_STR );
+%         disp(txt)
+%
+%         txt = sprintf( 'The signal arrived at (UTC) : %s', arrive_utc );
+%         disp(txt)
+%
+%         txt = sprintf( 'Time for propagation (secs) : %16.4f', lt );
+%         disp(txt)
+%         disp( ' ' )
+%
+%         %
+%         % Now assume the signal originated at Jupiter barycenter,
+%         % received by Earth at TIME_STR. Determine the transmission
+%         % time and the time for propagation.
+%         %
+%         [receive, lt] = cspice_ltime( et, OBS, '<-', TARGET);
+%
+%         %
+%         % Convert the reception time (ET) to UTC.
+%         %
+%         receive_utc = cspice_et2utc( receive, 'C', 3 );
+%
+%         %
+%         %  Output the results.
+%         %
+%         txt = sprintf( 'Reception at (UTC)          : %s', TIME_STR );
+%         disp(txt)
+%
+%         txt = sprintf( 'The signal sent at (UTC)    : %s', receive_utc );
+%         disp(txt)
+%
+%         txt = sprintf( 'Time for propagation (secs) : %16.4f', lt );
+%         disp(txt)
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Transmission at (UTC)       : July 4, 2004
 %      The signal arrived at (UTC) : 2004 JUL 04 00:48:38.717
-%      Time for propagation (secs) :        2918.7170
+%      Time for propagation (secs) :        2918.7171
 %
 %      Reception at (UTC)          : July 4, 2004
 %      The signal sent at (UTC)    : 2004 JUL 03 23:11:21.248
-%      Time for propagation (secs) :        2918.7524
+%      Time for propagation (secs) :        2918.7525
+%
 %
 %-Particulars
 %
-%     None.
+%   Suppose a radio signal travels between two solar system
+%   objects. Given an ephemeris for the two objects, which way
+%   the signal is traveling, and the time when the signal is
+%   "at" at one of the objects (the observer `obs'), this routine
+%   determines when the signal is "at" the other object (the
+%   target `targ'). It also returns the elapsed time between
+%   transmission and receipt of the signal.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine ltime_c.
+%   1)  If `dir' is not one of '->' or '<-', the error
+%       SPICE(BADDIRECTION) is signaled by a routine in the call tree
+%       of this routine. In this case `ettarg' and `elapsd' will not be
+%       altered from their input values.
+%
+%   2)  If insufficient ephemeris information is available to
+%       compute the outputs `ettarg' and `elapsd', or if observer
+%       or target is not recognized, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%       In this case, the value of `ettarg' will be set to `etobs'
+%       and `elapsd' will be set to zero.
+%
+%   3)  If any of the input arguments, `etobs', `obs', `dir' or
+%       `targ', is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   4)  If any of the input arguments, `etobs', `obs', `dir' or
+%       `targ', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 10-MAR-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 01-NOV-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and meta-kernel.
 %
-%   -Mice Version 1.0.0, 22-JAN-2006, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 10-MAR-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-JAN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -214,7 +369,6 @@ function [ettarg, elapsd] = cspice_ltime(etobs, obs, dir, targ)
    %
    try
       [ettarg, elapsd] = mice('ltime_c',etobs, obs, dir, targ);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-

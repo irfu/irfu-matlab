@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   MiceUser.m declares global variable definitions. 
+%   MiceUser.m declares global parameter definitions. 
 %   
 %-Disclaimer
 %
@@ -27,45 +27,100 @@
 %   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
 %   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
-% 
 %
 %-I/O
-% 
-%   the call:
-% 
-%       MiceUser
+%
+%   None.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   None.
+%   In order to include all Mice parameter definitions, use the call:
+%
+%      MiceUser;
+%
+%   from the user's application code.
 %
 %-Particulars
 %
-%   This file is an umbrella file that includes all of the required
-%   variables required to support the Mice application programming interface
+%   This file is an umbrella file that includes all of the parameters
+%   required to support the Mice application programming interface
 %   (API). Users' application code that calls Mice only needs to include
 %   this single file. 
 %
-%-Required Reading
+%   The Mice definition files included in this file are not part of 
+%   the Mice API. The set of files included may change without notice.
+%   Users should not include these files directly in their own
+%   application code.
+%
+%-Exceptions
 %
 %   None.
 %
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
+%   None.
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 11-MAR-2016, EDW (JPL)
+%   -Mice Version 1.3.0, 11-JUN-2020 (JDR)
 %
-%      Added DSKMiceUser for include.
+%       Added MiceDAS, MiceDtl, MiceFrm, MiceGF, and MiceOsc for
+%       include.
 %
-%   -Mice Version 1.0.0, 14-FEB-2012, SCK (JPL)
+%       Renamed DLAMice and DSKMiceUser to MiceDLA and MiceDSK.
+%
+%       Updated the header for compliance with NAIF standard. Added
+%       -Parameters, -Exceptions, -Files, -Restrictions, -Literature_References
+%       and -Author_and_Institution sections.
+%
+%   -Mice Version 1.2.0, 30-MAR-2017 (EDW)
+%
+%       Added DLAMice for include.
+%
+%   -Mice Version 1.1.0, 11-MAR-2016 (EDW)
+%
+%       Added DSKMiceUser for include.
+%
+%   -Mice Version 1.0.0, 14-FEB-2012 (SCK)
 %
 %-Index_Entries
 %
-%   Include global variables
+%   include global parameters
+%   global parameter definitions 
 %
 %-&
 
+
 %
-%   Include occultation specific definitions.
+% Include needed definitions.
 %
-MiceOccult;
-DSKMiceUser;
+   MiceDAS;
+   MiceDLA;
+   MiceDSK;
+   MiceDtl;
+   MiceFrm;
+   MiceGF;
+   MiceOccult;
+   MiceOsc;

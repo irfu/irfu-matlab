@@ -33,7 +33,7 @@
 %
 %   Given:
 %
-%      vrtces   is an array containing the plate model's vertices.
+%      vrtces   an array containing the plate model's vertices.
 %
 %               [3,nv] = size(vrtces); double = class(vrtces)
 %
@@ -49,7 +49,7 @@
 %               This routine doesn't associate units with the
 %               vertices.
 %
-%      plates   is an array containing 3-tuples of integers
+%      plates   an array containing 3-tuples of integers
 %               representing the model's plates. The elements of
 %               `plates' are vertex indices. The vertex indices are
 %               1-based: vertices have indices ranging from 1 to
@@ -80,11 +80,11 @@
 %
 %   the call:
 %
-%      pltvol = cspice_pltvol( vrtces, plates )
+%      [pltvol] = cspice_pltvol( vrtces, plates )
 %
 %   returns:
 %
-%      pltvol   The function returns the volume of the spatial region bounded
+%      pltvol   the volume of the spatial region bounded
 %               by the plates.
 %
 %               [1,1] = size(pltvol); double = class(pltvol)
@@ -92,8 +92,12 @@
 %               If the components of the vertex array have distance unit L,
 %               then the output volume has units
 %
-%                3
-%               L
+%                   3
+%                  L
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -101,9 +105,7 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
-%
-%      Compute the volume of the pyramid defined by the four
+%   1) Compute the volume of the pyramid defined by the four
 %      triangular plates whose vertices are the 3-element
 %      subsets of the set of vectors:
 %
@@ -112,7 +114,11 @@
 %         ( 0, 1, 0 )
 %         ( 0, 0, 1 )
 %
-%      function pltvol_t
+%
+%      Example code begins here.
+%
+%
+%      function pltvol_ex1()
 %
 %         %
 %         % Let the notation
@@ -141,13 +147,17 @@
 %
 %           vol = cspice_pltvol( vrtces, plates );
 %
-%           fprintf ( 'Expected volume =      1/6\n'        )
+%           fprintf ( 'Expected volume  =      1/6\n'       )
 %           fprintf ( 'Computed volume  =   %24.17e\n', vol )
 %
-%   Matlab outputs:
 %
-%      Expected volume =      1/6
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
+%
+%      Expected volume  =      1/6
 %      Computed volume  =    1.66666666666666657e-01
+%
 %
 %-Particulars
 %
@@ -171,17 +181,77 @@
 %      Tiled ellipsoid with one plate removed
 %      Two boxes with intersection having positive volume
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine pltvol_c.
+%   1)  The input plate model must define a spatial region with
+%       a boundary. This routine does not check the inputs to
+%       verify this condition. See the -Restrictions section below.
 %
-%   MICE.REQ
+%   2)  If the number of vertices is less than 4, the error
+%       SPICE(TOOFEWVERTICES) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If the number of plates is less than 4, the error
+%       SPICE(TOOFEWPLATES) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   4)  If any plate contains a vertex index outside of the range
+%
+%          [1, nv]
+%
+%       where `nv' is the number of vertices, the error
+%       SPICE(INDEXOUTOFRANGE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   5)  If any of the input arguments, `vrtces' or `plates', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   6)  If any of the input arguments, `vrtces' or `plates', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   1)  The plate collection must describe a surface and enclose a
+%       volume such that the divergence theorem (see [1]) is
+%       applicable.
+%
+%-Required_Reading
+%
 %   DSK.REQ
+%   MICE.REQ
+%
+%-Literature_References
+%
+%   [1]  T. Apostol, "Calculus, Vol. II," John Wiley & Sons, 1969.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 16-MAR-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 07-AUG-2020 (EDW) (JDR)
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections. Fixed
+%       minor typos in header.
+%
+%       Edited the header to comply with NAIF standard.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 16-MAR-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
@@ -208,6 +278,6 @@ function [pltvol] = cspice_pltvol( vrtces, plates )
    %
    try
       [pltvol] = mice('pltvol_c', vrtces, plates);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end

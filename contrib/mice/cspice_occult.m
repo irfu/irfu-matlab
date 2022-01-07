@@ -1,11 +1,11 @@
 %-Abstract
 %
 %   CSPICE_OCCULT determines the occultation condition (not occulted,
-%   partially, etc.) of one target relative to another target as seen
-%   by an observer at a given time.
+%   partially occulted, etc.) of one target relative to another target as
+%   seen by an observer at a given time.
 %
 %   The surfaces of the target bodies may be represented by triaxial
-%   ellipsoids or by topographic data provided by DSK files.
+%   ellipsoids, points, or by topographic data provided by DSK files.
 %
 %-Disclaimer
 %
@@ -36,216 +36,258 @@
 %
 %   Given:
 %
-%       target1   is the name of the first target body. Both object
-%                 names and NAIF IDs are accepted. For example, both
-%                 'Moon' and '301' are accepted.
+%      targ1    the name of the first target body.
 %
-%                 [1,a] = size(target1), char = class(target1)
+%               [1,c1] = size(targ1); char = class(targ1)
 %
-%       shape1    is a string indicating the geometric model used to
-%                 represent the shape of the first target body.
+%                  or
 %
-%                 [1,b] = size(shape1), char = class(shape1)
+%               [1,1] = size(targ1); cell = class(targ1)
 %
-%                 The supported options are:
+%               Both object names and NAIF IDs are accepted. For example,
+%               both 'Moon' and '301' are accepted.
 %
-%                    'ELLIPSOID'     
-%   
-%                       Use a triaxial ellipsoid model with radius values
-%                       provided via the kernel pool. A kernel variable
-%                       having a name of the form
-%      
-%                          'BODYnnn_RADII'
-%      
-%                       where nnn represents the NAIF integer code
-%                       associated with the body, must be present in the
-%                       kernel pool. This variable must be associated with
-%                       three numeric values giving the lengths of the
-%                       ellipsoid's X, Y, and Z semi-axes.
-%      
-%                    'POINT'     
-%   
-%                       Treat the body as a single point. When a point
-%                       target is specified, the occultation conditions
-%                       can only be total, annular, or none.   
-%                 
-%                    'DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
-%   
-%                        Use topographic data provided by DSK files to
-%                        model the body's shape. These data must be
-%                        provided by loaded DSK files.
-%   
-%                        The surface list specification is optional. The
-%                        syntax of the list is
-%   
-%                           <surface 1> [, <surface 2>...]
-%   
-%                        If present, it indicates that data only for the
-%                        listed surfaces are to be used; however, data
-%                        need not be available for all surfaces in the
-%                        list. If absent, loaded DSK data for any surface
-%                        associated with the target body are used.
-%   
-%                        The surface list may contain surface names or
-%                        surface ID codes. Names containing blanks must
-%                        be delimited by double quotes, for example
-%   
-%                           SURFACES = "Mars MEGDR 128 PIXEL/DEG"
-%   
-%                        If multiple surfaces are specified, their names
-%                        or IDs must be separated by commas.
-%   
-%                        See the Particulars section below for details
-%                        concerning use of DSK data.
-%   
-%                 The combinations of the shapes of the target bodies
-%                 `targ1' and `targ2' must be one of:
-%   
-%                    One ELLIPSOID, one POINT
-%                    Two ELLIPSOIDs
-%                    One DSK, one POINT 
+%      shape1   a string indicating the geometric model used to represent the
+%               shape of the first target body.
 %
-%                 Case and leading or trailing blanks are not
-%                 significant in the string.
+%               [1,c2] = size(shape1); char = class(shape1)
 %
-%       frame1    is the name of the body-fixed, body-centered reference
-%                 frame associated with the first target body. Examples
-%                 of such names are 'IAU_SATURN' (for Saturn) and
-%                 'ITRF93' (for the Earth).
+%                  or
 %
-%                 [1,c] = size(frame1), char = class(frame1)
+%               [1,1] = size(shape1); cell = class(shape1)
 %
-%                 If the first target body is modeled as a point, 'frame1'
-%                 should be left blank (Ex: ' ').
+%               The supported options are:
 %
-%                 Case and leading or trailing blanks bracketing a
-%                 non-blank frame name are not significant in the string.
+%                  'ELLIPSOID'
 %
-%       target2   is the name of the second target body. See the description
-%                 of 'target1' above for more details.
+%                      Use a triaxial ellipsoid model with radius
+%                      values provided via the kernel pool. A kernel
+%                      variable having a name of the form
 %
-%                 [1,d] = size(target2), char = class(target2)
+%                         'BODYnnn_RADII'
 %
-%       shape2    is the shape specification for the body designated
-%                 by 'target2'. See the description of 'shape1' above for
-%                 details.
+%                      where nnn represents the NAIF integer code
+%                      associated with the body, must be present in
+%                      the kernel pool. This variable must be
+%                      associated with three numeric values giving the
+%                      lengths of the ellipsoid's X, Y, and Z
+%                      semi-axes.
 %
-%                 [1,e] = size(shape2), char = class(shape2)
+%                  'POINT'
 %
-%       frame2    is the name of the body-fixed, body-centered reference
-%                 frame associated with the second target body. See the
-%                 description of 'frame1' above for more details.
+%                      Treat the body as a single point. When a point
+%                      target is specified, the occultation conditions
+%                      can only be total, annular, or none.
 %
-%                 [1,f] = size(frame2), char = class(frame2)
+%                  'DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
 %
-%       abcorr    indicates the aberration corrections to be applied to
-%                 the state of each target body to account for one-way
-%                 light time. Stellar aberration corrections are
-%                 ignored if specified, since these corrections don't
-%                 improve the accuracy of the occultation determination.
+%                      Use topographic data provided by DSK files to
+%                      model the body's shape. These data must be
+%                      provided by loaded DSK files.
 %
-%                 [1,g] = size(abcorr), char = class(abcorr)
+%                      The surface list specification is optional. The
+%                      syntax of the list is
 %
-%                 See the header of the SPICE routine spkezr_c for a
-%                 detailed description of the aberration correction
-%                 options. For convenience, the options supported by
-%                 this routine are listed below:
+%                         <surface 1> [, <surface 2>...]
 %
-%                    'NONE'     Apply no correction.
+%                      If present, it indicates that data only for the
+%                      listed surfaces are to be used; however, data
+%                      need not be available for all surfaces in the
+%                      list. If absent, loaded DSK data for any surface
+%                      associated with the target body are used.
 %
-%                    'LT'       "Reception" case: correct for
-%                               one-way light time using a Newtonian
-%                               formulation.
+%                      The surface list may contain surface names or
+%                      surface ID codes. Names containing blanks must
+%                      be delimited by double quotes, for example
 %
-%                    'CN'       "Reception" case: converged
-%                               Newtonian light time correction.
+%                         SURFACES = "Mars MEGDR 128 PIXEL/DEG"
 %
-%                    'XLT'      "Transmission" case: correct for
-%                               one-way light time using a Newtonian
-%                               formulation.
+%                      If multiple surfaces are specified, their names
+%                      or IDs must be separated by commas.
 %
-%                    'XCN'      "Transmission" case: converged
-%                               Newtonian light time correction.
+%                      See the -Particulars section below for details
+%                      concerning use of DSK data.
 %
-%                 Case and blanks are not significant in the string
-%                 'abcorr'.
+%               The combinations of the shapes of the target bodies
+%               `targ1' and `targ2' must be one of:
 %
-%       observer  is the name of the body from which the occultation
-%                 is observed. See the description of 'target1' for more
-%                 details.
+%                  One ELLIPSOID, one POINT
+%                  Two ELLIPSOIDs
+%                  One DSK, one POINT
 %
-%                 [1,h] = size(observer), char = class(observer)
+%               Case and leading or trailing blanks are not
+%               significant in the string `shape1'.
 %
-%       time      is the observation time in seconds past the J2000
-%                 epoch.
+%      frame1   the name of the body-fixed, body-centered reference frame
+%               associated with the first target body.
 %
-%                 [1,n] = size(time), double = class(time)
+%               [1,c3] = size(frame1); char = class(frame1)
+%
+%                  or
+%
+%               [1,1] = size(frame1); cell = class(frame1)
+%
+%               Examples of such names are 'IAU_SATURN' (for Saturn) and
+%               'ITRF93' (for the Earth).
+%
+%               If the first target body is modeled as a point, `frame1'
+%               should be left blank (Ex: ' ').
+%
+%               Case and leading or trailing blanks bracketing a
+%               non-blank frame name are not significant in the string.
+%
+%      targ2    the name of the second target body.
+%
+%               [1,c4] = size(targ2); char = class(targ2)
+%
+%                  or
+%
+%               [1,1] = size(targ2); cell = class(targ2)
+%
+%               See the description of `targ1' above for more details.
+%
+%      shape2   the shape specification for the body designated by `targ2'.
+%
+%               [1,c5] = size(shape2); char = class(shape2)
+%
+%                  or
+%
+%               [1,1] = size(shape2); cell = class(shape2)
+%
+%               See the description of `shape1' above for details.
+%
+%      frame2   the name of the body-fixed, body-centered reference frame
+%               associated with the second target body.
+%
+%               [1,c6] = size(frame2); char = class(frame2)
+%
+%                  or
+%
+%               [1,1] = size(frame2); cell = class(frame2)
+%
+%               See the description of `frame1' above for more details.
+%
+%      abcorr   indicates the aberration corrections to be applied to the
+%               state of each target body to account for one-way light time.
+%
+%               [1,c7] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
+%
+%               Stellar aberration corrections are ignored if specified,
+%               since these corrections don't improve the accuracy of the
+%               occultation determination.
+%
+%               See the header of the Mice routine cspice_spkezr for a
+%               detailed description of the aberration correction
+%               options. For convenience, the options supported by
+%               this routine are listed below:
+%
+%                  'NONE'     Apply no correction.
+%
+%                  'LT'       "Reception" case: correct for
+%                             one-way light time using a Newtonian
+%                             formulation.
+%
+%                  'CN'       "Reception" case: converged
+%                             Newtonian light time correction.
+%
+%                  'XLT'      "Transmission" case: correct for
+%                             one-way light time using a Newtonian
+%                             formulation.
+%
+%                  'XCN'      "Transmission" case: converged
+%                             Newtonian light time correction.
+%
+%               Case and blanks are not significant in the string
+%               `abcorr'.
+%
+%      obsrvr   the name of the body from which the occultation is observed.
+%
+%               [1,c8] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%               See the description of `targ1' above for more details.
+%
+%      et       the observation time(s) in seconds past the J2000 epoch.
+%
+%               [1,n] = size(et); double = class(et)
 %
 %   the call:
 %
-%       occult_code = cspice_occult ( target1, shape1,   frame1, ...
-%                                     target2, shape2,   frame2, ...
-%                                     abcorr,  observer, time )
+%      [ocltid] = cspice_occult( targ1,  shape1, frame1,                   ...
+%                                targ2,  shape2, frame2,                   ...
+%                                abcorr, obsrvr, et      )
 %
 %   returns:
 %
-%       occult_code   is an integer occultation code indicating the geometric
-%                     relationship of the three bodies.
+%      ocltid   an integer occultation code(s) indicating the geometric
+%               relationship of the three bodies.
 %
-%                     [1,n] = size(occult_code), double = class(occult_code)
+%               [1,n] = size(ocltid); int32 = class(ocltid)
 %
-%                     The meaning of the sign of 'occult_code' is given below.
+%               The meaning of the sign of `ocltid' is given below.
 %
-%                        Code sign          Meaning
-%                        ---------          ------------------------------
-%                           > 0             The second ellipsoid is
-%                                           partially or fully occulted
-%                                           by the first.
+%                   Code sign          Meaning
+%                   ---------          ------------------------------
+%                      > 0             The second target is
+%                                      partially or fully occulted
+%                                      by the first.
 %
-%                           < 0             The first ellipsoid is
-%                                           partially of fully
-%                                           occulted by the second.
+%                      < 0             The first target is
+%                                      partially of fully
+%                                      occulted by the second.
 %
-%                           = 0             No occultation.
+%                      = 0             No occultation.
 %
-%                     Possible 'occult_code' values and meanings are given
-%                     below. The variable names indicate the type of
-%                     occultation and which target is in the back. For example,
-%                     MICE_OCCULT_TOTAL1_BACK represents a total occultation in
-%                     which the first target is in the back (or occulted by)
-%                     the second target. The variable names can be used in a
-%                     program by calling 'MiceUser' as shown in the
-%                     example program below.
+%               Possible `ocltid' values and meanings are given below. The
+%               variable names indicate the type of occultation and which
+%               target is in the back. For example, SPICE_OCCULT_TOTAL1
+%               represents a total occultation in which the first target is in
+%               the back of (or is occulted by) the second target.
 %
-%                        Name                    Code   Meaning
-%                        ------                  -----  -----------------------
-%                        MICE_OCCULT_TOTAL1_BACK  -3    Total occultation of
-%                                                       first target by second.
+%               When the target shapes are DSK and POINT, the only
+%               possible occultation conditions are total, annular,
+%               or none.
 %
-%                        MICE_OCCULT_ANNLR1_BACK  -2    Annular occultation of
-%                                                       first target by second.
-%                                                       The second target does
-%                                                       not block the limb of
-%                                                       the first.
+%                  Name                 Code   Meaning
+%                  -------------------  -----  -----------------------
+%                  SPICE_OCCULT_TOTAL1   -3    Total occultation of
+%                                              first target by second.
 %
-%                        MICE_OCCULT_PARTL1_BACK  -1    Partial occultation of
-%                                                       first target by second
-%                                                       target.
+%                  SPICE_OCCULT_ANNLR1   -2    Annular occultation of
+%                                              first target by second.
+%                                              The second target does
+%                                              not block the limb of
+%                                              the first.
 %
-%                        MICE_OCCULT_NOOCC         0    No occultation or
-%                                                       transit: both objects
-%                                                       are completely visible
-%                                                       to the observer.
+%                  SPICE_OCCULT_PARTL1   -1    Partial occultation of
+%                                              first target by second
+%                                              target.
 %
-%                        MICE_OCCULT_PARTL2_BACK   1    Partial occultation of
-%                                                       second target by first
-%                                                       target.
+%                  SPICE_OCCULT_NOOCC     0    No occultation or
+%                                              transit: both objects
+%                                              are completely visible
+%                                              to the observer.
 %
-%                        MICE_OCCULT_ANNLR2_BACK   2    Annular occultation of
-%                                                       second target by first.
+%                  SPICE_OCCULT_PARTL2    1    Partial occultation of
+%                                              second target by first
+%                                              target.
 %
-%                        MICE_OCCULT_TOTAL2_BACK   3    Total occultation of
-%                                                       second target by first.
+%                  SPICE_OCCULT_ANNLR2    2    Annular occultation of
+%                                              second target by first.
+%
+%                  SPICE_OCCULT_TOTAL2    3    Total occultation of
+%                                              second target by first.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -253,19 +295,22 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
-%
-%      Find whether MRO is occulted by Mars as seen by
+%   1) Find whether MRO is occulted by Mars as seen by
 %      the DSS-13 ground station at a few specific
 %      times.
 %
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
+%
+%
 %         KPL/MK
 %
-%         File: mro_ex_occult.tm
+%         File: occult_ex1.tm
 %
-%         This is the meta-kernel file for the example problem for
-%         the subroutine occult_c. These kernel files can be found in
-%         the NAIF archives.
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
 %         In order for an application to use this meta-kernel, the
 %         kernels referenced here must be present in the user's
@@ -274,34 +319,37 @@
 %         The names and contents of the kernels referenced
 %         by this meta-kernel are as follows:
 %
-%               File name                       Contents
-%               ---------                       --------
-%               de421.bsp                       Planetary ephemeris
-%               earthstns_itrf93_050714.bsp     DSN station ephemeris
-%               pck00010.tpc                    Planet orientation and
-%                                               radii
-%               earth_000101_120409_120117.bpc  High precision Earth
-%                                               orientation
-%               mro_psp_rec.bsp                 MRO ephemeris
-%               naif0010.tls                    Leapseconds
-%               earth_topo_050714.tf            Topocentric reference
-%                                               frames for
-%                                               DSN stations
+%            File name                       Contents
+%            ---------                       --------
+%            de421.bsp                       Planetary ephemeris
+%            pck00010.tpc                    Planet orientation and
+%                                            radii
+%            naif0010.tls                    Leapseconds
+%            earth_latest_high_prec.bpc      Earth latest binary PCK
+%            earthstns_itrf93_050714.bsp     DSN station SPK
+%            mro_psp22.bsp                   MRO ephemeris
+%            earth_topo_050714.tf            Topocentric reference
+%                                            frames for DSN
+%                                            stations
 %
 %         \begindata
 %
-%         KERNELS_TO_LOAD = ( 'de421.bsp',
-%                             'earthstns_itrf93_050714.bsp',
-%                             'pck00010.tpc',
-%                             'earth_000101_120409_120117.bpc',
-%                             'mro_psp_rec.bsp',
-%                             'naif0010.tls',
-%                             'earth_topo_050714.tf' )
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'mro_psp22.bsp',
+%                                'earthstns_itrf93_050714.bsp',
+%                                'earth_latest_high_prec.bpc',
+%                                'pck00010.tpc',
+%                                'naif0010.tls',
+%                                'earth_topo_050714.tf' )
 %         \begintext
 %
-%         End of meta-kernel
+%         End of meta-kernel.
 %
-%      Example program starts here.
+%
+%      Example code begins here.
+%
+%
+%      function occult_ex1()
 %
 %         %
 %         %   MiceUser is a file that makes occultation-specific
@@ -313,9 +361,9 @@
 %         %
 %         MiceUser;
 %
-%         target1  = 'MRO';
+%         targ1    = 'MRO';
 %         shape1   = 'point';
-%         target2  = 'Mars';
+%         targ2    = 'Mars';
 %         shape2   = 'ellipsoid';
 %         observer = 'DSS-13';
 %         dt = 1000;
@@ -328,7 +376,7 @@
 %         %
 %         %   Load the meta kernel.
 %         %
-%         cspice_furnsh ( 'mro_ex_occult.tm' );
+%         cspice_furnsh ( 'occult_ex1.tm' );
 %
 %         et_start = cspice_str2et ( '2012-jan-5 1:15:00 UTC' );
 %         et_stop  = cspice_str2et ( '2012-jan-5 2:50:00 UTC' );
@@ -339,9 +387,9 @@
 %             %   Calculate the type of occultation that
 %             %   corresponds to time ET.
 %             %
-%             occult_code = cspice_occult ( target1, shape1, ' ', ...
-%                                           target2, shape2, 'iau_mars', ...
-%                                           'cn', observer, et );
+%             ocltid = cspice_occult ( targ1, shape1, ' ',               ...
+%                                      targ2, shape2, 'iau_mars',        ...
+%                                      'cn', observer, et );
 %             %
 %             %   Output the results.
 %             %
@@ -349,33 +397,33 @@
 %
 %             %
 %             %   Remember: You must call 'MiceUser' before
-%             %   using the parameters like 'MICE_OCCULT_TOTAL1_BACK' in
+%             %   using the parameters like 'SPICE_OCCULT_TOTAL1' in
 %             %   the case statements below.
 %             %
-%             switch occult_code
-%                 case MICE_OCCULT_TOTAL1_BACK
-%                     fprintf (out_form, time, target1, out_char(1,:), ...
-%                              target2,  observer )
-%                 case MICE_OCCULT_ANNLR1_BACK
-%                     fprintf (out_form, time, target1, out_char(2,:), ...
-%                              target2,  observer )
-%                 case MICE_OCCULT_PARTL1_BACK
-%                     fprintf (out_form, time, target1, out_char(3,:), ...
-%                              target2,  observer )
-%                 case MICE_OCCULT_NOOCC
-%                     fprintf (out_form, time, target1, out_char(4,:), ...
-%                              target2,  observer )
-%                 case MICE_OCCULT_PARTL2_BACK
-%                     fprintf (out_form, time, target2, out_char(3,:), ...
-%                              target1,  observer )
-%                 case MICE_OCCULT_ANNLR2_BACK
-%                     fprintf (out_form, time, target2, out_char(2,:), ...
-%                              target1,  observer )
-%                 case MICE_OCCULT_TOTAL2_BACK
-%                     fprintf (out_form, time, target2, out_char(1,:), ...
-%                              target1,  observer )
+%             switch ocltid
+%                 case SPICE_OCCULT_TOTAL1
+%                     fprintf (out_form, time, targ1, out_char(1,:),     ...
+%                              targ2,  observer )
+%                 case SPICE_OCCULT_ANNLR1
+%                     fprintf (out_form, time, targ1, out_char(2,:),     ...
+%                              targ2,  observer )
+%                 case SPICE_OCCULT_PARTL1
+%                     fprintf (out_form, time, targ1, out_char(3,:),     ...
+%                              targ2,  observer )
+%                 case SPICE_OCCULT_NOOCC
+%                     fprintf (out_form, time, targ1, out_char(4,:),     ...
+%                              targ2,  observer )
+%                 case SPICE_OCCULT_PARTL2
+%                     fprintf (out_form, time, targ2, out_char(3,:),     ...
+%                              targ1,  observer )
+%                 case SPICE_OCCULT_ANNLR2
+%                     fprintf (out_form, time, targ2, out_char(2,:),     ...
+%                              targ1,  observer )
+%                 case SPICE_OCCULT_TOTAL2
+%                     fprintf (out_form, time, targ2, out_char(1,:),     ...
+%                              targ1,  observer )
 %                 otherwise
-%                     fprintf ( 'Bad occultation code: %d\n', occult_code )
+%                     fprintf ( 'Bad occultation code: %d\n', ocltid )
 %             end
 %
 %         end
@@ -385,14 +433,18 @@
 %         %
 %         cspice_kclear
 %
-%   MATLAB outputs:
 %
-%         2012-01-04 17:15 Mars transited by          MRO wrt DSS-13
-%         2012-01-04 17:31 MRO not occulted by       Mars wrt DSS-13
-%         2012-01-04 17:48 MRO totally occulted by   Mars wrt DSS-13
-%         2012-01-04 18:04 MRO totally occulted by   Mars wrt DSS-13
-%         2012-01-04 18:21 MRO not occulted by       Mars wrt DSS-13
-%         2012-01-04 18:38 Mars transited by          MRO wrt DSS-13
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      2012-01-04 17:15 Mars transited by          MRO wrt DSS-13
+%      2012-01-04 17:31 MRO not occulted by       Mars wrt DSS-13
+%      2012-01-04 17:48 MRO totally occulted by   Mars wrt DSS-13
+%      2012-01-04 18:04 MRO totally occulted by   Mars wrt DSS-13
+%      2012-01-04 18:21 MRO not occulted by       Mars wrt DSS-13
+%      2012-01-04 18:38 Mars transited by          MRO wrt DSS-13
+%
 %
 %-Particulars
 %
@@ -519,21 +571,173 @@
 %
 %         'DSK/UNPRIORITIZED/SURFACES = "Mars MEGDR 64 PIXEL/DEG", 3'
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine occult_c.
+%   1)  If the target or observer body names input by the user are
+%       not recognized, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   2)  If the input shapes are not accepted, an error is signaled by
+%       a routine in the call tree of this routine.
+%
+%   3)  If both input shapes are points, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   4)  If the radii of a target body modeled as an ellipsoid cannot
+%       be determined by searching the kernel pool for a kernel
+%       variable having a name of the form
+%
+%          'BODYnnn_RADII'
+%
+%       where nnn represents the NAIF integer code associated with
+%       the body, an error is signaled by a routine in the
+%       call tree of this routine.
+%
+%   5)  If any of the target or observer bodies (targ1, targ2, or
+%       obsrvr) are the same, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%   6)  If the loaded kernels provide insufficient data to compute any
+%       required state vector, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   7)  If an error occurs while reading an SPK or other kernel,
+%       the error is signaled by a routine in the call tree
+%       of this routine.
+%
+%   8)  If the aberration correction specification `abcorr' is invalid,
+%       an error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   9)  If either `shape1' or `shape2' specifies that the target surface
+%       is represented by DSK data, and no DSK files are loaded for
+%       the specified target, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   10) If either `shape1' or `shape2' specifies that the target surface
+%       is represented by DSK data, but the shape specification is
+%       invalid, an error is signaled by a routine in the call tree
+%       of this routine.
+%
+%   11) If any of the input arguments, `targ1', `shape1', `frame1',
+%       `targ2', `shape2', `frame2', `abcorr', `obsrvr' or `et', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   12) If any of the input arguments, `targ1', `shape1', `frame1',
+%       `targ2', `shape2', `frame2', `abcorr', `obsrvr' or `et', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   Appropriate SPICE kernels must be loaded by the calling program
+%   before this routine is called.
+%
+%   The following data are required:
+%
+%   -  SPK data: the calling application must load ephemeris data
+%      for the target, source and observer that cover the time
+%      instant specified by the argument `et'. If aberration
+%      corrections are used, the states of the target bodies and of
+%      the observer relative to the solar system barycenter must be
+%      calculable from the available ephemeris data. Typically
+%      ephemeris data
+%      are made available by loading one or more SPK files via
+%      cspice_furnsh.
+%
+%   -  PCK data: bodies modeled as triaxial ellipsoids must have
+%      semi-axis lengths provided by variables in the kernel pool.
+%      Typically these data are made available by loading a text
+%      PCK file via cspice_furnsh.
+%
+%   -  FK data: if either of the reference frames designated by
+%      `frame1' or `frame2' are not built in to the SPICE system,
+%      one or more FKs specifying these frames must be loaded.
+%
+%   The following data may be required:
+%
+%   -  DSK data: if either `shape1' or `shape2' indicates that DSK
+%      data are to be used, DSK files containing topographic data
+%      for the target body must be loaded. If a surface list is
+%      specified, data for at least one of the listed surfaces must
+%      be loaded.
+%
+%   -  Surface name-ID associations: if surface names are specified
+%      in `shape1' or `shape2', the association of these names with
+%      their corresponding surface ID codes must be established by
+%      assignments of the kernel variables
+%
+%         NAIF_SURFACE_NAME
+%         NAIF_SURFACE_CODE
+%         NAIF_SURFACE_BODY
+%
+%      Normally these associations are made by loading a text
+%      kernel containing the necessary assignments. An example
+%      of such a set of assignments is
+%
+%         NAIF_SURFACE_NAME += 'Mars MEGDR 128 PIXEL/DEG'
+%         NAIF_SURFACE_CODE += 1
+%         NAIF_SURFACE_BODY += 499
+%
+%   -  CK data: either of the body-fixed frames to which `frame1' or
+%      `frame2' refer might be a CK frame. If so, at least one CK
+%      file will be needed to permit transformation of vectors
+%      between that frame and the J2000 frame.
+%
+%   -  SCLK data: if a CK file is needed, an associated SCLK
+%      kernel is required to enable conversion between encoded SCLK
+%      (used to time-tag CK data) and barycentric dynamical time
+%      (TDB).
+%
+%   Kernel data are normally loaded once per program run, NOT every
+%   time this routine is called.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DSK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 2.0.0, 04-APR-2017, EDW (JPL), NJB (JPL)
+%   -Mice Version 2.1.0, 03-NOV-2021 (EDW) (JDR)
 %
-%       Header update to reflect support for use of DSKs. 
+%       Changed argument names "target1", "target2", "observer", "time" and
+%       "occult_code" to "targ1", "targ2", "obsrvr", "et" and "ocltid" for
+%       consistency with other functions.
 %
-%   -Mice Version 1.0.0, 14-NOV-2013, SCK (JPL)
+%       Edited the header to comply with NAIF standard. Added square brackets
+%       to output argument in function declaration.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 2.0.0, 04-APR-2017 (EDW) (NJB)
+%
+%       Header update to reflect support for use of DSKs.
+%
+%   -Mice Version 1.0.0, 14-NOV-2013 (SCK)
 %
 %-Index_Entries
 %
@@ -541,29 +745,29 @@
 %
 %-&
 
-function occult_code = cspice_occult ( target1, shape1,   frame1, ...
-                                       target2, shape2,   frame2, ...
-                                       abcorr,  observer, time )
+function [ocltid] = cspice_occult ( targ1, shape1,   frame1, ...
+                                    targ2, shape2,   frame2, ...
+                                    abcorr,  obsrvr, et )
 
    switch nargin
       case 9
 
-         target1  = zzmice_str(target1);
-         shape1   = zzmice_str(shape1);
-         frame1   = zzmice_str(frame1);
-         target2  = zzmice_str(target2);
-         shape2   = zzmice_str(shape2);
-         frame2   = zzmice_str(frame2);
-         abcorr   = zzmice_str(abcorr);
-         observer = zzmice_str(observer);
-         time     = zzmice_dp(time);
+         targ1  = zzmice_str(targ1);
+         shape1 = zzmice_str(shape1);
+         frame1 = zzmice_str(frame1);
+         targ2  = zzmice_str(targ2);
+         shape2 = zzmice_str(shape2);
+         frame2 = zzmice_str(frame2);
+         abcorr = zzmice_str(abcorr);
+         obsrvr = zzmice_str(obsrvr);
+         et     = zzmice_dp(et);
 
       otherwise
 
          error ( ['Usage: [_output_state_] = ' ...
-                  'cspice_occult( `target1`, `shape1`, `frame1`,' ...
-                  '`target2`, `shape2`, `frame2`, `abcorr`, '...
-                  '`observer`, _time_)'] )
+                  'cspice_occult( `targ1`, `shape1`, `frame1`,' ...
+                  '`targ2`, `shape2`, `frame2`, `abcorr`, '...
+                  '`obsrvr`, _et_)'] )
 
    end
 
@@ -572,17 +776,10 @@ function occult_code = cspice_occult ( target1, shape1,   frame1, ...
    % return argument (not present in this case).
    %
    try
-      [occult_code] = mice('occult_c', target1, shape1,   frame1, ...
-                                       target2, shape2,   frame2, ...
-                                       abcorr,  observer, time );
+      [ocltid] = mice('occult_c', targ1, shape1,   frame1, ...
+                                  targ2, shape2,   frame2, ...
+                                  abcorr,  obsrvr, et );
 
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
-
-
-
-

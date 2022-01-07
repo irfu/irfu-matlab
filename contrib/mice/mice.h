@@ -3,7 +3,7 @@
 -Abstract
 
    Define and assign the Mice particular variable types.
-   
+
    Do not edit, touch, or in any way alter the code within this file.
 
 -Disclaimer
@@ -37,6 +37,8 @@
 
 -Keywords
 
+   None.
+
 -Brief_I/O
 
    None.
@@ -48,7 +50,7 @@
 -Detailed_Output
 
    None.
-   
+
 -Parameters
 */
 
@@ -61,15 +63,15 @@
    1) Size for temporary strings in interface calls.
 
    2) SCALAR has value -2 to compensate for the difference between array index
-      bases in MATLAB (base 1) and C (base 0). The zzerror routine determines 
-      whether to return a vector based error string or a scalar base string 
-      based on the value of 'cnt' as less than zero. The expression 
+      bases in MATLAB (base 1) and C (base 0). The zzerror routine determines
+      whether to return a vector based error string or a scalar base string
+      based on the value of 'cnt' as less than zero. The expression
       'cnt + INDEX_BASE' passes to zzerror, INDEX_BASE having value either
-      0 or 1. If 1, SCALAR requires a value less than -1 to satisfy zzerror 
+      0 or 1. If 1, SCALAR requires a value less than -1 to satisfy zzerror
       logic.
 
 */
-   
+
 #define DEFAULT_STR_LENGTH   1024
 #define SCALAR               -2
 
@@ -77,7 +79,7 @@
    Note, MATLAB uses base 1 indexing (as is proper), while C uses base 0
    (corresponding to an offset). Add 1 to 'cnt'.
 */
-   
+
 #define INDEX_BASE          1L
 
 /*
@@ -103,28 +105,33 @@
 
 -Literature_References
 
-   MICE.REQ
+   None.
 
 -Author_and_Institution
 
-   E.D. Wright        (JPL)
-   G. Chinn           (JPL)
+   G. Chinn            (JPL)
+   J. Diaz del Rio     (ODC Space)
+   E.D. Wright         (JPL)
 
 -Version
 
-   -Mice Version 1.0.2 27-APR-2016 (EDW)
+   -Mice Version 1.1.0, 29-JUN-2021 (JDR)
 
-      Extended number of *_OUT aliases.
+       Added A_LEN_ARGV, A_CHAR_ARGV and A_CHAR_RET_ARGV macros.
 
-   -Mice Version 1.0.2 18-JUN-2012 (EDW)
+   -Mice Version 1.0.2, 27-APR-2016 (EDW)
 
-      Removed unused macro S_DBL_RET_ARGV.
+       Extended number of *_OUT aliases.
 
-   -Mice Version 1.0.1 23-FEB-2009 (EDW)
+   -Mice Version 1.0.2, 18-JUN-2012 (EDW)
 
-      Added the *_OFF, *_IN, *_OUT, index aliases.
+       Removed unused macro S_DBL_RET_ARGV.
 
-   -Mice Version 1.0.0 31-JAN-2008 (EDW)
+   -Mice Version 1.0.1, 23-FEB-2009 (EDW)
+
+       Added the *_OFF, *_IN, *_OUT, index aliases.
+
+   -Mice Version 1.0.0, 31-JAN-2008 (EDW) (GC)
 
 -Index_Entries
 
@@ -151,6 +158,12 @@ Variable's macros.
 #define       S_DBL_ARGV(x)         *(SpiceDouble*)mxGetData(prhs[x])
 
 #define       A_DBL_ARGV(x)          (SpiceDouble*)mxGetData(prhs[x])
+
+#define       A_CHAR_ARGV(x)         (SpiceChar*)mxGetData(prhs[x])
+
+#define       A_LEN_ARGV(x)          (SpiceInt)mxGetNumberOfElements(prhs[x])
+
+#define       A_CHAR_RET_ARGV(x)     (SpiceChar*)mxGetData(plhs[x])
 
 #define       A_DBL_RET_ARGV(x)      (SpiceDouble*)mxGetData(plhs[x])
 
@@ -253,4 +266,3 @@ alloc_SpiceString_C_array/alloc_SpiceString_Pointer_array routines.
 
 
 #endif
-

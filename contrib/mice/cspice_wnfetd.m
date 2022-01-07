@@ -37,10 +37,12 @@
 %
 %               [2n,1] = size(window); double = class(window)
 %
-%      n        index of a particular interval within the window. Indices range
-%               from 1 to n, where n is the number of intervals in the window:
+%      n        index of a particular interval within the window.
 %
 %               [1,1] = size(n); int32 = class(n)
+%
+%               Indices range from 1 to `n', where `n' is the number of
+%               intervals in the window:
 %
 %                  n = size(window,1)/2
 %
@@ -51,11 +53,15 @@
 %   returns:
 %
 %      left,
-%      right   values defining the left and right endpoints of the nth interval
-%              in the input 'window';
+%      right    values defining the left and right endpoints of the nth
+%               interval in the input `window'.
 %
-%              [1,1] = size(left);  int32 = class(left)
-%              [1,1] = size(right); int32 = class(right)
+%               [1,1] = size(left);  int32 = class(left)
+%               [1,1] = size(right); int32 = class(right)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -63,49 +69,111 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%     %
-%     % Let 'window' contain the intervals
-%     %
-%     window = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ];  ];
+%   1) Given a SPICE window of cardinality 6, fetch the left and right
+%      endpoints of each of its 3 interval intervals.
 %
-%     %
-%     % Output the intervals.  Number of intervals equals
-%     % half the number of elements for the Nx1 'window'.
-%     %
-%     disp( 'Window contents:')
-%     for i=1:numel(window)/2
+%      Example code begins here.
 %
-%        [left, right] = cspice_wnfetd( window, i );
-%        fprintf( '%12.5f  %12.5f\n', left, right)
 %
-%     end
+%      function wnfetd_ex1()
 %
-%   MATLAB outputs:
+%         %
+%         % Let `window' contain the intervals
+%         %
+%         window = [ [ 1; 3 ]; [ 7; 11 ]; [ 23; 27 ];  ];
+%
+%         %
+%         % Output the intervals.  Number of intervals equals
+%         % half the number of elements for the Nx1 `window'.
+%         %
+%         disp( 'Window contents:')
+%         for i=1:cspice_wncard( window )
+%
+%            [left, right] = cspice_wnfetd( window, i );
+%            fprintf( '%12.5f  %12.5f\n', left, right)
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Window contents:
 %           1.00000       3.00000
 %           7.00000      11.00000
 %          23.00000      27.00000
 %
+%
 %-Particulars
 %
 %   None.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wnfetd_c.
+%   1)  If `n' is less than one, the error SPICE(NOINTERVAL) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   2)  If the interval does not exist, i.e. n > cspice_card(window)/2, the
+%       error SPICE(NOINTERVAL) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  The cardinality of the input `window' must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   4)  If any of the input arguments, `window' or `n', is undefined,
+%       an error is signaled by the Matlab error handling system.
+%
+%   5)  If any of the input arguments, `window' or `n', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 13-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header and corrected error message format
+%       to comply with NAIF standard. Added example's problem statement.
 %
-%   -Mice Version 1.0.0, 24-JUL-2007, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 24-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -113,7 +181,7 @@
 %
 %-&
 
-function [left, right] = cspice_wnfetd(window, n)
+function [left, right] = cspice_wnfetd( window, n )
 
    switch nargin
 
@@ -124,16 +192,12 @@ function [left, right] = cspice_wnfetd(window, n)
 
       otherwise
 
-         error( '[left, right] = cspice_wnfetd(window, n)' )
+         error( 'Usage: [left, right] = cspice_wnfetd( window, n )' )
 
       end
 
    try
       [left, right] = mice( 'wnfetd_c', [zeros(6,1); window], n );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
-

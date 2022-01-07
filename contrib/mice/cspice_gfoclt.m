@@ -36,39 +36,19 @@
 %
 %   Given:
 %
-%      Parameters-
-%
-%      All parameters described here are declared in the header file
-%      SpiceGF.h. See that file for parameter values.
-%
-%      SPICE_GF_CNVTOL
-%
-%               is the convergence tolerance used for finding endpoints of
-%               the intervals comprising the result window.
-%               SPICE_GF_CNVTOL is used to determine when binary searches
-%               for roots should terminate: when a root is bracketed
-%               within an interval of length SPICE_GF_CNVTOL, the root is
-%               considered to have been found.
-%
-%               The accuracy, as opposed to precision, of roots found
-%               by this routine depends on the accuracy of the input
-%               data. In most cases, the accuracy of solutions will be
-%               inferior to their precision.
-%
-%      Arguments-
-%
 %      occtyp   the string naming the type of occultation to find.
-%               Note that transits are considered to be a type of
-%               occultation.
 %
 %               [1,c1] = size(occtyp); char = class(occtyp)
+%
+%               Note that transits are considered to be a type of
+%               occultation.
 %
 %               Supported values and corresponding definitions are:
 %
 %                  'FULL'               denotes the full occultation
 %                                       of the body designated by
-%                                       'back' by the body designated
-%                                       by 'front', as seen from
+%                                       `back' by the body designated
+%                                       by `front', as seen from
 %                                       the location of the observer.
 %                                       In other words, the occulted
 %                                       body is completely invisible
@@ -77,18 +57,18 @@
 %
 %                  'ANNULAR'            denotes an annular
 %                                       occultation: the body
-%                                       designated by 'front' blocks
+%                                       designated by `front' blocks
 %                                       part of, but not the limb of,
-%                                       the body designated by 'back',
+%                                       the body designated by `back',
 %                                       as seen from the location of
 %                                       the observer.
 %
 %                  'PARTIAL'            denotes a partial,
 %                                       non-annular occultation: the
-%                                       body designated by 'front'
+%                                       body designated by `front'
 %                                       blocks part, but not all, of
 %                                       the limb of the body
-%                                       designated by 'back', as seen
+%                                       designated by `back', as seen
 %                                       from the location of the
 %                                       observer.
 %
@@ -99,9 +79,9 @@
 %
 %                                       'ANY' should be used to search
 %                                       for times when the body
-%                                       designated by 'front' blocks
+%                                       designated by `front' blocks
 %                                       any part of the body designated
-%                                       by 'back'.
+%                                       by `back'.
 %
 %                                       The option 'ANY' must be used
 %                                       if either the front or back
@@ -109,23 +89,26 @@
 %                                       a point.
 %
 %               Case and leading or trailing blanks are not significant in
-%               the string 'occtyp'.
+%               the string `occtyp'.
 %
 %      front    the string naming the target body that occults---that
-%               is, passes in front of---the other. Optionally, you may
-%               supply the integer NAIF ID code for the body as a
-%               string. For example both 'MOON' and '301' are
-%               legitimate strings that designate the Moon.
+%               is, passes in front of---the other.
 %
 %               [1,c2] = size(front); char = class(front)
 %
-%               The 'front' string lacks sensitivity to case, leading
+%               Optionally, you may supply the integer NAIF ID code for the
+%               body as a string. For example both 'MOON' and '301' are
+%               legitimate strings that designate the Moon.
+%
+%               The `front' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
 %      fshape   the string naming the geometric model used
 %               to represent the shape of the front target body.
 %
 %               [1,c3] = size(fshape); char = class(fshape)
+%
+%               The supported options are:
 %
 %                 'ELLIPSOID'     Use a triaxial ellipsoid model
 %                                 with radius values provided via the
@@ -173,7 +156,7 @@
 %                     If multiple surfaces are specified, their names
 %                     or IDs must be separated by commas.
 %
-%                     See the Particulars section below for details
+%                     See the -Particulars section below for details
 %                     concerning use of DSK data.
 %
 %               The combinations of the shapes of the target bodies
@@ -187,174 +170,204 @@
 %               significant in the string `fshape'.
 %
 %      fframe   the string naming the body-fixed, body-centered reference
-%               frame associated with the front target body. Examples
-%               of such names are 'IAU_SATURN' (for Saturn) and
-%               'ITRF93' (for the Earth).
+%               frame associated with the front target body.
 %
 %               [1,c4] = size(fframe); char = class(fframe)
 %
-%               If the front target body is modeled as a point, 'fframe'
+%               Examples of such names are 'IAU_SATURN' (for Saturn) and
+%               'ITRF93' (for the Earth).
+%
+%               If the front target body is modeled as a point, `fframe'
 %               should be left empty or blank.
 %
-%               The 'fframe' string lacks sensitivity to case, leading
+%               The `fframe' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
 %      back     the string naming the target body that is occulted
 %               by---that is, passes in back of---the other.
+%
+%               [1,c5] = size(back); char = class(back)
+%
 %               Optionally, you may supply the integer NAIF ID code
 %               for the body as a string. For example both 'MOON' and
 %               '301' are legitimate strings that designate the Moon.
 %
-%               [1,c5] = size(back); char = class(back)
-%
-%               The 'back' string lacks sensitivity to case, leading
+%               The `back' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
 %      bshape   the string naming the shape specification for the body
-%               designated by 'back'. The supported options are those for
-%                'fshape'. See the description of 'fshape' above for
-%                details.
+%               designated by `back'.
 %
 %               [1,c6] = size(bshape); char = class(bshape)
 %
+%               The supported options are those for `fshape'. See the
+%               description of `fshape' above for details.
+%
 %      bframe   the string naming the body-fixed, body-centered
-%               reference frame associated with the ''back'' target body.
-%               Examples of such names are 'IAU_SATURN' (for Saturn)
-%               and 'ITRF93' (for the Earth).
+%               reference frame associated with the '`back'' target body.
 %
 %               [1,c7] = size(bframe); char = class(bframe)
 %
-%               If the back target body is modeled as a point, 'bframe'
+%               Examples of such names are 'IAU_SATURN' (for Saturn)
+%               and 'ITRF93' (for the Earth).
+%
+%               If the back target body is modeled as a point, `bframe'
 %               should be left empty or blank.
 %
-%               The 'bframe' string lacks sensitivity to case, leading
+%               The `bframe' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
 %      abcorr   the string indicating the aberration corrections to to apply
 %               to the state of the target body to account for one-way
-%               light time.  Stellar aberration corrections are
-%               ignored if specified, since these corrections don't
-%               improve the accuracy of the occultation determination.
+%               light time.
 %
 %               [1,c8] = size(abcorr); char = class(abcorr)
 %
+%               Stellar aberration corrections are ignored if specified,
+%               since these corrections don't improve the accuracy of the
+%               occultation determination.
+%
 %               This routine accepts the same aberration corrections as does
-%               the CSPICE routine cspice_spkezr. See the abcorr.req
+%               the Mice routine cspice_spkezr. See the abcorr.req
 %               for a detailed description of the aberration correction
-%               options.  For convenience, the options are listed below:
+%               options. For convenience, the options are listed below:
 %
 %                  'NONE'     Apply no correction.
 %
-%                  'LT'       "Reception" case:  correct for
+%                  'LT'       "Reception" case: correct for
 %                             one-way light time using a Newtonian
 %                             formulation.
 %
-%                  'LT+S'     "Reception" case:  correct for
+%                  'LT+S'     "Reception" case: correct for
 %                             one-way light time and stellar
 %                             aberration using a Newtonian
 %                             formulation.
 %
-%                  'CN'       "Reception" case:  converged
+%                  'CN'       "Reception" case: converged
 %                             Newtonian light time correction.
 %
-%                  'CN+S'     "Reception" case:  converged
+%                  'CN+S'     "Reception" case: converged
 %                             Newtonian light time and stellar
 %                             aberration corrections.
 %
-%                  'XLT'      "Transmission" case:  correct for
+%                  'XLT'      "Transmission" case: correct for
 %                             one-way light time using a Newtonian
 %                             formulation.
 %
-%                  'XLT+S'    "Transmission" case:  correct for
+%                  'XLT+S'    "Transmission" case: correct for
 %                             one-way light time and stellar
 %                             aberration using a Newtonian
 %                             formulation.
 %
-%                  'XCN'      "Transmission" case:  converged
+%                  'XCN'      "Transmission" case: converged
 %                             Newtonian light time correction.
 %
-%                  'XCN+S'    "Transmission" case:  converged
+%                  'XCN+S'    "Transmission" case: converged
 %                             Newtonian light time and stellar
 %                             aberration corrections.
 %
-%               The 'abcorr' string lacks sensitivity to case, and to embedded,
-%               leading and trailing blanks.
+%               The `abcorr' string lacks sensitivity to case, and to
+%               embedded, leading and trailing blanks.
 %
-%      obsrvr   the name of the observing body. Optionally, you
-%               may supply the ID code of the object as an integer string.
-%               For example, both 'EARTH' and '399' are legitimate
-%               strings to supply to indicate the observer is Earth.
+%      obsrvr   the name of the observing body.
 %
 %               [1,c9] = size(obsrvr); char = class(obsrvr)
 %
-%               Case and leading or trailing blanks are not significant in
-%               the string 'obsrvr'.
+%               Optionally, you may supply the ID code of the object as an
+%               integer string. For example, both 'EARTH' and '399' are
+%               legitimate strings to supply to indicate the observer is
+%               Earth.
 %
-%      step     the step size to use in the search. 'step' must be shorter
-%               than any interval, within the confinement window, over which
-%               the specified occultation condition is met. In other words,
-%               'step' must be shorter than the shortest occultation event
-%               the user wishes to detect; 'step' must also be shorter than
-%               the shortest time interval between two occultation events that
-%               occur within the confinement window (see below). However,
-%               'step' must not be *too* short, or the search will take
-%               an unreasonable amount of time.
+%               Case and leading or trailing blanks are not significant in
+%               the string `obsrvr'.
+%
+%      step     the step size to use in the search.
 %
 %               [1,1] = size(step); double = class(step)
 %
-%               The choice of 'step' affects the completeness but not
+%               `step' must be shorter than any interval, within the
+%               confinement window, over which the specified occultation
+%               condition is met. In other words, `step' must be shorter
+%               than the shortest occultation event the user wishes to
+%               detect; `step' must also be shorter than the shortest time
+%               interval between two occultation events that occur within
+%               the confinement window (see below). However, `step' must not
+%               be *too* short, or the search will take an unreasonable
+%               amount of time.
+%
+%               The choice of `step' affects the completeness but not
 %               the precision of solutions found by this routine; the
 %               precision is controlled by the convergence tolerance.
 %               See the discussion of the parameter SPICE_GF_CNVTOL for
 %               details.
 %
-%               'step' has units of TDB seconds.
+%               `step' has units of TDB seconds.
 %
-%      cnfine   the SPICE window that confines the time
-%               period over which the specified search is conducted.
-%               'cnfine' may consist of a single interval or a collection
-%               of intervals.
+%      cnfine   the SPICE window that confines the time period over which
+%               the specified search is conducted.
 %
 %               [2m,1] = size(cnfine); double = class(cnfine)
 %
+%               `cnfine' may consist of a single interval or a collection
+%               of intervals.
+%
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
-%               for the desired solution. See the Particulars section
+%               for the desired solution. See the -Particulars section
 %               below for further discussion.
 %
-%      room     the maximum number of intervals to return in 'result'.
+%      nintvls  the maximum number of intervals to return in `result'.
+%
+%               [1,1] = size(nintvls); int32 = class(nintvls)
+%
 %               Note: this value should equal at least the number of expected
 %               intervals. Recall two double precision values define
 %               an interval.
 %
-%               [1,1] = size(room); int32 = class(room)
-%
 %   the call:
 %
-%      result = cspice_gfoclt( occtyp, front,  fshape, fframe, ...
-%                              back,   bshape, bframe, abcorr, ...
-%                              obsrvr, step,   cnfine, room)
+%      result = cspice_gfoclt( occtyp, front,  fshape, fframe,             ...
+%                              back,   bshape, bframe, abcorr,             ...
+%                              obsrvr, step,   cnfine, nintvls)
 %
 %   returns:
 %
 %      result   the SPICE window of intervals, contained within the
-%               confinement window 'cnfine', on which the specified
+%               confinement window `cnfine', on which the specified
 %               constraint is satisfied.
 %
 %               [2n,1] = size(result); double = class(result)
 %
 %               If no times within the confinement window satisfy the
-%               constraint, 'result' will return with cardinality zero.
+%               constraint, `result' will return with cardinality zero.
+%
+%-Parameters
+%
+%   All parameters described here are declared in the Mice include file
+%   MiceGF.m. See that file for parameter values.
+%
+%   SPICE_GF_CNVTOL
+%
+%               is the convergence tolerance used for finding
+%               endpoints of the intervals comprising the result
+%               window. SPICE_GF_CNVTOL is used to determine when
+%               binary searches for roots should terminate: when a
+%               root is bracketed within an interval of length
+%               SPICE_GF_CNVTOL, the root is considered to have been
+%               found.
+%
+%               The accuracy, as opposed to precision, of roots found
+%               by this routine depends on the accuracy of the input
+%               data. In most cases, the accuracy of solutions will
+%               be inferior to their precision.
 %
 %-Examples
 %
-%   Any numerical results shown for this example may differ between
+%   Any numerical results shown for these examples may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
-%
-%      Find occultations of the Sun by the Moon (that is, solar
+%   1) Find occultations of the Sun by the Moon (that is, solar
 %      eclipses)as seen from the center of the Earth over the month
 %      December, 2001.
 %
@@ -366,84 +379,127 @@
 %      ignore occultation events lasting less than 3 minutes,
 %      if any exist.
 %
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      MAXWIN  =  1000;
-%      TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###### (TDB) ::TDB ::RND';
 %
-%      %
-%      % Load kernels.
-%      %
-%      cspice_furnsh( 'standard.tm' );
+%         KPL/MK
 %
-%      %
-%      % Store the time bounds of our search interval in
-%      % the cnfine confinement window.
-%      %
-%      et = cspice_str2et( { '2001 DEC 01 00:00:00 TDB', ...
-%                            '2002 JAN 01 00:00:00 TDB'} );
+%         File name: gfoclt_ex1.tm
 %
-%      cnfine = cspice_wninsd( et(1), et(2) );
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      %
-%      % Select a 3-minute step. We'll ignore any occultations
-%      % lasting less than 3 minutes.
-%      %
-%      step    = 180.;
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%      occtyp  = 'any';
-%      front   = 'moon';
-%      fshape  = 'ellipsoid';
-%      fframe  = 'iau_moon';
-%      back    = 'sun';
-%      bshape  = 'ellipsoid';
-%      bframe  = 'iau_sun';
-%      obsrvr  = 'earth';
-%      abcorr  = 'lt';
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%      result = cspice_gfoclt( occtyp, front, fshape, fframe, ...
-%                              back, bshape, bframe,          ...
-%                              abcorr, obsrvr, step, cnfine,  ...
-%                              MAXWIN);
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            pck00008.tpc                  Planet orientation and
+%                                          radii
+%            naif0009.tls                  Leapseconds
 %
-%      %
-%      % List the beginning and ending times in each interval
-%      % if result contains data.
-%      %
-%      for i=1:numel(result)/2
 %
-%         [left, right] = cspice_wnfetd( result, i );
+%         \begindata
 %
-%         output = cspice_timout( [left,right], TIMFMT );
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'pck00008.tpc',
+%                                'naif0009.tls'  )
 %
-%         if( isequal( left, right) )
+%         \begintext
 %
-%            disp( ['Event time: ' output(1,:)] )
+%         End of meta-kernel
 %
-%         else
 %
-%            disp( ['From : ' output(1,:)] )
-%            disp( ['To   : ' output(2,:)] )
-%            disp( ' ')
+%      Example code begins here.
+%
+%
+%      function gfoclt_ex1()
+%
+%         MAXWIN  =  1000;
+%         TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###### (TDB) ::TDB ::RND';
+%
+%         %
+%         % Load kernels.
+%         %
+%         cspice_furnsh( 'gfoclt_ex1.tm' );
+%
+%         %
+%         % Store the time bounds of our search interval in
+%         % the cnfine confinement window.
+%         %
+%         et = cspice_str2et( { '2001 DEC 01 00:00:00 TDB',                ...
+%                               '2002 JAN 01 00:00:00 TDB'} );
+%
+%         cnfine = cspice_wninsd( et(1), et(2) );
+%
+%         %
+%         % Select a 3-minute step. We'll ignore any occultations
+%         % lasting less than 3 minutes.
+%         %
+%         step    = 180.;
+%
+%         occtyp  = 'any';
+%         front   = 'moon';
+%         fshape  = 'ellipsoid';
+%         fframe  = 'iau_moon';
+%         back    = 'sun';
+%         bshape  = 'ellipsoid';
+%         bframe  = 'iau_sun';
+%         obsrvr  = 'earth';
+%         abcorr  = 'lt';
+%
+%         result = cspice_gfoclt( occtyp, front,  fshape, fframe,          ...
+%                                 back,   bshape, bframe, abcorr,          ...
+%                                 obsrvr, step,   cnfine, MAXWIN );
+%
+%         %
+%         % List the beginning and ending times in each interval
+%         % if result contains data.
+%         %
+%         for i=1:numel(result)/2
+%
+%            [left, right] = cspice_wnfetd( result, i );
+%
+%            output = cspice_timout( [left,right], TIMFMT );
+%
+%            if( isequal( left, right) )
+%
+%               disp( ['Event time: ' output(1,:)] )
+%
+%            else
+%
+%               disp( ['From : ' output(1,:)] )
+%               disp( ['To   : ' output(2,:)] )
+%               disp( ' ')
+%
+%            end
 %
 %         end
 %
-%      end
-%
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
-%
-%   MATLAB outputs:
-%
-%      From : 2001-DEC-14 20:10:14.196213 (TDB)
-%      To   : 2001-DEC-14 21:35:50.318416 (TDB)
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
 %
-%   Example(2):
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      Find occultations of Titan by Saturn or of Saturn by
+%
+%      From : 2001-DEC-14 20:10:14.195952 (TDB)
+%      To   : 2001-DEC-14 21:35:50.317994 (TDB)
+%
+%
+%   2) Find occultations of Titan by Saturn or of Saturn by
 %      Titan as seen from the center of the Earth over the
 %      last three months of 2008. Search for every type
 %      of occultation.
@@ -456,134 +512,146 @@
 %      ignore occultation events lasting less than 15 minutes,
 %      if any exist.
 %
-%      MAXWIN  =  1000;
-%      TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###### (TDB) ::TDB ::RND';
-%      OCCTYP  = {'FULL', 'ANNULAR', 'PARTIAL', 'ANY' };
+%      Use the SPK kernel below for providing the Titan ephemerides
+%      and the meta-kernel from example 1 above.
+%
+%         sat427.bsp
 %
 %
-%      %
-%      % Load kernels.
-%      %
-%      cspice_furnsh( 'standard.tm' );
-%      cspice_furnsh( 'sat288.bsp' );
+%      Example code begins here.
 %
 %
-%      %
-%      % Store the time bounds of our search interval in
-%      % the cnfine confinement window.
-%      %
-%      et = cspice_str2et( { '2008 SEP 01 00:00:00 TDB', ...
-%                            '2009 JAN 01 00:00:00 TDB'} );
+%      function gfoclt_ex2()
 %
-%      cnfine = cspice_wninsd( et(1), et(2) );
+%         MAXWIN  =  1000;
+%         TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###### (TDB) ::TDB ::RND';
+%         OCCTYP  = {'FULL', 'ANNULAR', 'PARTIAL', 'ANY' };
 %
-%      %
-%      % Select a 15-minute step. We'll ignore any occultations
-%      % lasting less than 15 minutes.
-%      %
-%      step    = 900.;
-%
-%      %
-%      % The observation location is the Earth.
-%      %
-%      obsrvr  = 'earth';
-%      shape   = 'ellipsoid';
-%      abcorr = 'lt';
-%
-%      for i=1:numel(OCCTYP)
 %
 %         %
-%         % For each type, do a search for both transits of
-%         % Titan across Saturn and occultations of Titan by
-%         % Saturn.
+%         % Load kernels.
 %         %
-%         for j=1:2
-%
-%            if isequal(j,1)
-%
-%               front  = 'TITAN';
-%               fframe = 'IAU_TITAN';
-%               back   = 'SATURN';
-%               bframe = 'IAU_SATURN';
-%
-%            else
-%
-%               front  = 'SATURN';
-%               fframe = 'IAU_SATURN';
-%               back   = 'TITAN';
-%               bframe = 'IAU_TITAN';
-%
-%            end
-%
-%            result = cspice_gfoclt( OCCTYP(i),                    ...
-%                                    front, shape, fframe,         ...
-%                                    back, shape, bframe,          ...
-%                                    abcorr, obsrvr, step, cnfine, ...
-%                                    MAXWIN);
+%         cspice_furnsh( 'gfoclt_ex1.tm' );
+%         cspice_furnsh( 'sat427.bsp'   );
 %
 %
-%            fprintf( 'Condition      : %s\n',   char(OCCTYP(i)) )
-%            fprintf( 'Occultation of : %s\n',   back  )
-%            fprintf( 'by             : %s\n\n', front )
+%         %
+%         % Store the time bounds of our search interval in
+%         % the cnfine confinement window.
+%         %
+%         et = cspice_str2et( { '2008 SEP 01 00:00:00 TDB',                ...
+%                               '2009 JAN 01 00:00:00 TDB'} );
 %
+%         cnfine = cspice_wninsd( et(1), et(2) );
+%
+%         %
+%         % Select a 15-minute step. We'll ignore any occultations
+%         % lasting less than 15 minutes.
+%         %
+%         step    = 900.;
+%
+%         %
+%         % The observation location is the Earth.
+%         %
+%         obsrvr  = 'earth';
+%         shape   = 'ellipsoid';
+%         abcorr = 'lt';
+%
+%         for i=1:numel(OCCTYP)
 %
 %            %
-%            % List the beginning and ending times in each interval
-%            % if result contains data.
+%            % For each type, do a search for both transits of
+%            % Titan across Saturn and occultations of Titan by
+%            % Saturn.
 %            %
+%            for j=1:2
 %
-%            count = numel(result)/2;
+%               if isequal(j,1)
 %
-%            if isequal(count,0)
+%                  front  = 'TITAN';
+%                  fframe = 'IAU_TITAN';
+%                  back   = 'SATURN';
+%                  bframe = 'IAU_SATURN';
 %
-%               fprintf( 'Result window is empty.\n\n' )
+%               else
 %
-%            else
+%                  front  = 'SATURN';
+%                  fframe = 'IAU_SATURN';
+%                  back   = 'TITAN';
+%                  bframe = 'IAU_TITAN';
 %
-%               for k=1:count
+%               end
 %
-%                  [left, right] = cspice_wnfetd( result, k );
+%               result = cspice_gfoclt( OCCTYP(i), front, shape,  fframe,  ...
+%                                       back,      shape, bframe, abcorr,  ...
+%                                       obsrvr,    step,  cnfine, MAXWIN );
 %
-%                  output = cspice_timout( [left,right], TIMFMT );
 %
-%                  if( isequal( left, right) )
+%               fprintf( 'Condition      : %s\n',   char(OCCTYP(i)) )
+%               fprintf( 'Occultation of : %s\n',   back  )
+%               fprintf( 'by             : %s\n\n', front )
 %
-%                     disp( ['Event time: ' output(1,:)] )
 %
-%                  else
+%               %
+%               % List the beginning and ending times in each interval
+%               % if result contains data.
+%               %
 %
-%                     disp( ['From : ' output(1,:)] )
-%                     disp( ['To   : ' output(2,:)] )
-%                     disp( ' ')
+%               count = numel(result)/2;
+%
+%               if isequal(count,0)
+%
+%                  fprintf( 'Result window is empty.\n\n' )
+%
+%               else
+%
+%                  for k=1:count
+%
+%                     [left, right] = cspice_wnfetd( result, k );
+%
+%                     output = cspice_timout( [left,right], TIMFMT );
+%
+%                     if( isequal( left, right) )
+%
+%                        disp( ['Event time: ' output(1,:)] )
+%
+%                     else
+%
+%                        disp( ['From : ' output(1,:)] )
+%                        disp( ['To   : ' output(2,:)] )
+%                        disp( ' ')
+%
+%                     end
 %
 %                  end
 %
 %               end
 %
+%               %
+%               % We've finished displaying the results of the
+%               % current search.
+%               %
+%
 %            end
 %
 %            %
 %            % We've finished displaying the results of the
-%            % current search.
+%            % searches using the current occultation type.
 %            %
 %
 %         end
 %
+%
 %         %
-%         % We've finished displaying the results of the
-%         % searches using the current occultation type.
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
 %         %
+%         cspice_kclear
 %
-%      end
 %
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
-%
-%   MATLAB outputs:
 %
 %      Condition      : FULL
 %      Occultation of : SATURN
@@ -595,39 +663,39 @@
 %      Occultation of : TITAN
 %      by             : SATURN
 %
-%      From : 2008-OCT-27 22:08:01.627053 (TDB)
-%      To   : 2008-OCT-28 01:05:03.375237 (TDB)
+%      From : 2008-OCT-27 22:08:01.672540 (TDB)
+%      To   : 2008-OCT-28 01:05:03.332576 (TDB)
 %
-%      From : 2008-NOV-12 21:21:59.252263 (TDB)
-%      To   : 2008-NOV-13 02:06:05.053051 (TDB)
+%      From : 2008-NOV-12 21:21:59.270692 (TDB)
+%      To   : 2008-NOV-13 02:06:05.034713 (TDB)
 %
-%      From : 2008-NOV-28 20:49:02.402832 (TDB)
-%      To   : 2008-NOV-29 02:13:58.986344 (TDB)
+%      From : 2008-NOV-28 20:49:02.415745 (TDB)
+%      To   : 2008-NOV-29 02:13:58.978005 (TDB)
 %
-%      From : 2008-DEC-14 20:05:09.246177 (TDB)
-%      To   : 2008-DEC-15 01:44:53.523002 (TDB)
+%      From : 2008-DEC-14 20:05:09.258916 (TDB)
+%      To   : 2008-DEC-15 01:44:53.517960 (TDB)
 %
-%      From : 2008-DEC-30 19:00:56.577073 (TDB)
-%      To   : 2008-DEC-31 00:42:43.222909 (TDB)
+%      From : 2008-DEC-30 19:00:56.586894 (TDB)
+%      To   : 2008-DEC-31 00:42:43.219312 (TDB)
 %
 %      Condition      : ANNULAR
 %      Occultation of : SATURN
 %      by             : TITAN
 %
-%      From : 2008-OCT-19 21:29:20.599088 (TDB)
-%      To   : 2008-OCT-19 22:53:34.518737 (TDB)
+%      From : 2008-OCT-19 21:29:20.694709 (TDB)
+%      To   : 2008-OCT-19 22:53:34.442728 (TDB)
 %
-%      From : 2008-NOV-04 20:15:38.620369 (TDB)
-%      To   : 2008-NOV-05 00:18:59.139979 (TDB)
+%      From : 2008-NOV-04 20:15:38.652651 (TDB)
+%      To   : 2008-NOV-05 00:18:59.130645 (TDB)
 %
-%      From : 2008-NOV-20 19:38:59.647712 (TDB)
-%      To   : 2008-NOV-21 00:35:26.725909 (TDB)
+%      From : 2008-NOV-20 19:38:59.674044 (TDB)
+%      To   : 2008-NOV-21 00:35:26.726756 (TDB)
 %
-%      From : 2008-DEC-06 18:58:34.073269 (TDB)
-%      To   : 2008-DEC-07 00:16:17.647040 (TDB)
+%      From : 2008-DEC-06 18:58:34.093679 (TDB)
+%      To   : 2008-DEC-07 00:16:17.653067 (TDB)
 %
-%      From : 2008-DEC-22 18:02:46.288290 (TDB)
-%      To   : 2008-DEC-22 23:26:52.712459 (TDB)
+%      From : 2008-DEC-22 18:02:46.308376 (TDB)
+%      To   : 2008-DEC-22 23:26:52.721881 (TDB)
 %
 %      Condition      : ANNULAR
 %      Occultation of : TITAN
@@ -639,107 +707,59 @@
 %      Occultation of : SATURN
 %      by             : TITAN
 %
-%      From : 2008-OCT-19 20:44:30.326772 (TDB)
-%      To   : 2008-OCT-19 21:29:20.599088 (TDB)
+%      From : 2008-OCT-19 20:44:30.377190 (TDB)
+%      To   : 2008-OCT-19 21:29:20.694709 (TDB)
 %
-%      From : 2008-OCT-19 22:53:34.518737 (TDB)
-%      To   : 2008-OCT-19 23:38:26.250580 (TDB)
+%      From : 2008-OCT-19 22:53:34.442728 (TDB)
+%      To   : 2008-OCT-19 23:38:26.219866 (TDB)
 %
-%      From : 2008-NOV-04 19:54:40.339331 (TDB)
-%      To   : 2008-NOV-04 20:15:38.620369 (TDB)
+%      From : 2008-NOV-04 19:54:40.368045 (TDB)
+%      To   : 2008-NOV-04 20:15:38.652651 (TDB)
 %
-%      From : 2008-NOV-05 00:18:59.139979 (TDB)
-%      To   : 2008-NOV-05 00:39:58.612936 (TDB)
+%      From : 2008-NOV-05 00:18:59.130645 (TDB)
+%      To   : 2008-NOV-05 00:39:58.607160 (TDB)
 %
-%      From : 2008-NOV-20 19:21:46.689523 (TDB)
-%      To   : 2008-NOV-20 19:38:59.647712 (TDB)
+%      From : 2008-NOV-20 19:21:46.714397 (TDB)
+%      To   : 2008-NOV-20 19:38:59.674044 (TDB)
 %
-%      From : 2008-NOV-21 00:35:26.725909 (TDB)
-%      To   : 2008-NOV-21 00:52:40.604704 (TDB)
+%      From : 2008-NOV-21 00:35:26.726756 (TDB)
+%      To   : 2008-NOV-21 00:52:40.606954 (TDB)
 %
-%      From : 2008-DEC-06 18:42:36.100544 (TDB)
-%      To   : 2008-DEC-06 18:58:34.073269 (TDB)
+%      From : 2008-DEC-06 18:42:36.120123 (TDB)
+%      To   : 2008-DEC-06 18:58:34.093679 (TDB)
 %
-%      From : 2008-DEC-07 00:16:17.647040 (TDB)
-%      To   : 2008-DEC-07 00:32:16.324244 (TDB)
+%      From : 2008-DEC-07 00:16:17.653067 (TDB)
+%      To   : 2008-DEC-07 00:32:16.331200 (TDB)
 %
-%      From : 2008-DEC-22 17:47:10.776723 (TDB)
-%      To   : 2008-DEC-22 18:02:46.288290 (TDB)
+%      From : 2008-DEC-22 17:47:10.796148 (TDB)
+%      To   : 2008-DEC-22 18:02:46.308376 (TDB)
 %
-%      From : 2008-DEC-22 23:26:52.712459 (TDB)
-%      To   : 2008-DEC-22 23:42:28.850543 (TDB)
+%      From : 2008-DEC-22 23:26:52.721881 (TDB)
+%      To   : 2008-DEC-22 23:42:28.860689 (TDB)
 %
 %      Condition      : PARTIAL
 %      Occultation of : TITAN
 %      by             : SATURN
 %
-%      From : 2008-OCT-27 21:37:16.970175 (TDB)
-%      To   : 2008-OCT-27 22:08:01.627053 (TDB)
+%      From : 2008-OCT-27 21:37:17.003994 (TDB)
+%      To   : 2008-OCT-27 22:08:01.672540 (TDB)
 %
-%      From : 2008-OCT-28 01:05:03.375237 (TDB)
-%      To   : 2008-OCT-28 01:35:49.266507 (TDB)
+%      From : 2008-OCT-28 01:05:03.332576 (TDB)
+%      To   : 2008-OCT-28 01:35:49.235671 (TDB)
 %
-%      From : 2008-NOV-12 21:01:47.105499 (TDB)
-%      To   : 2008-NOV-12 21:21:59.252263 (TDB)
+%      From : 2008-NOV-12 21:01:47.121213 (TDB)
+%      To   : 2008-NOV-12 21:21:59.270692 (TDB)
 %
-%      From : 2008-NOV-13 02:06:05.053051 (TDB)
-%      To   : 2008-NOV-13 02:26:18.227358 (TDB)
+%      From : 2008-NOV-13 02:06:05.034713 (TDB)
+%      To   : 2008-NOV-13 02:26:18.211754 (TDB)
 %
-%      From : 2008-NOV-28 20:31:28.522707 (TDB)
-%      To   : 2008-NOV-28 20:49:02.402832 (TDB)
 %
-%      From : 2008-NOV-29 02:13:58.986344 (TDB)
-%      To   : 2008-NOV-29 02:31:33.691598 (TDB)
+%      [...]
 %
-%      From : 2008-DEC-14 19:48:27.094229 (TDB)
-%      To   : 2008-DEC-14 20:05:09.246177 (TDB)
 %
-%      From : 2008-DEC-15 01:44:53.523002 (TDB)
-%      To   : 2008-DEC-15 02:01:36.360243 (TDB)
+%      Warning: incomplete output. Only 100 out of 156 lines have been
+%      provided.
 %
-%      From : 2008-DEC-30 18:44:23.485899 (TDB)
-%      To   : 2008-DEC-30 19:00:56.577073 (TDB)
-%
-%      From : 2008-DEC-31 00:42:43.222909 (TDB)
-%      To   : 2008-DEC-31 00:59:17.030569 (TDB)
-%
-%      Condition      : ANY
-%      Occultation of : SATURN
-%      by             : TITAN
-%
-%      From : 2008-OCT-19 20:44:30.326772 (TDB)
-%      To   : 2008-OCT-19 23:38:26.250580 (TDB)
-%
-%      From : 2008-NOV-04 19:54:40.339331 (TDB)
-%      To   : 2008-NOV-05 00:39:58.612936 (TDB)
-%
-%      From : 2008-NOV-20 19:21:46.689523 (TDB)
-%      To   : 2008-NOV-21 00:52:40.604704 (TDB)
-%
-%      From : 2008-DEC-06 18:42:36.100544 (TDB)
-%      To   : 2008-DEC-07 00:32:16.324244 (TDB)
-%
-%      From : 2008-DEC-22 17:47:10.776723 (TDB)
-%      To   : 2008-DEC-22 23:42:28.850543 (TDB)
-%
-%      Condition      : ANY
-%      Occultation of : TITAN
-%      by             : SATURN
-%
-%      From : 2008-OCT-27 21:37:16.970175 (TDB)
-%      To   : 2008-OCT-28 01:35:49.266507 (TDB)
-%
-%      From : 2008-NOV-12 21:01:47.105499 (TDB)
-%      To   : 2008-NOV-13 02:26:18.227358 (TDB)
-%
-%      From : 2008-NOV-28 20:31:28.522707 (TDB)
-%      To   : 2008-NOV-29 02:31:33.691598 (TDB)
-%
-%      From : 2008-DEC-14 19:48:27.094229 (TDB)
-%      To   : 2008-DEC-15 02:01:36.360243 (TDB)
-%
-%      From : 2008-DEC-30 18:44:23.485899 (TDB)
-%      To   : 2008-DEC-31 00:59:17.030569 (TDB)
 %
 %-Particulars
 %
@@ -953,10 +973,190 @@
 %
 %         'DSK/UNPRIORITIZED/SURFACES = "Mars MEGDR 64 PIXEL/DEG", 3'
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine gfoclt_c.
+%   1)  In order for this routine to produce correct results,
+%       the step size must be appropriate for the problem at hand.
+%       Step sizes that are too large may cause this routine to miss
+%       roots; step sizes that are too small may cause this routine
+%       to run unacceptably slowly and in some cases, find spurious
+%       roots.
+%
+%       This routine does not diagnose invalid step sizes, except that
+%       if the step size is non-positive, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   2)  Due to numerical errors, in particular,
+%
+%          - Truncation error in time values
+%          - Finite tolerance value
+%          - Errors in computed geometric quantities
+%
+%       it is *normal* for the condition of interest to not always be
+%       satisfied near the endpoints of the intervals comprising the
+%       result window.
+%
+%       The result window may need to be contracted slightly by the
+%       caller to achieve desired results. The SPICE window routine
+%       cspice_wncond can be used to contract the result window.
+%
+%   3)  If name of either target or the observer cannot be translated
+%       to a NAIF ID code, an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   4)  If the radii of a target body modeled as an ellipsoid cannot
+%       be determined by searching the kernel pool for a kernel
+%       variable having a name of the form
+%
+%          'BODYnnn_RADII'
+%
+%       where nnn represents the NAIF integer code associated with
+%       the body, an error is signaled by a routine in the
+%       call tree of this routine.
+%
+%   5)  If either of the target bodies `front' or `back' coincides with
+%       the observer body `obsrvr', an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   6)  If the body designated by `front' coincides with that
+%       designated by `back', an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   7)  If either of the body model specifiers `fshape' or `bshape'
+%       is not recognized, an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   8)  If both of the body model specifiers `fshape' and `bshape'
+%       specify point targets, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   9)  If one of the body model specifiers `fshape' and `bshape'
+%       specifies a DSK model, and the other argument does not
+%       specify a point target, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   10) If a target body-fixed reference frame associated with a
+%       non-point target is not recognized, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   11) If a target body-fixed reference frame is not centered at the
+%       corresponding target body, an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   12) If the loaded kernels provide insufficient data to compute any
+%       required state vector, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   13) If an error occurs while reading an SPK or other kernel file,
+%       the error is signaled by a routine in the call tree
+%       of this routine.
+%
+%   14) If a point target is specified and the occultation type is set
+%       to a valid value other than 'ANY', an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   15) If the output SPICE window `result' has insufficient capacity
+%       to contain the number of intervals on which the specified
+%       occultation condition is met, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%   16) If the occultation type `occtyp' is invalid, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   17) If the aberration correction specification `abcorr' is invalid,
+%       an error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   18) If either `fshape' or `bshape' specifies that the target surface
+%       is represented by DSK data, and no DSK files are loaded for
+%       the specified target, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   19) If either `fshape' or `bshape' specifies that the target surface
+%       is represented by DSK data, but the shape specification is
+%       invalid, an error is signaled by a routine in the call tree
+%       of this routine.
+%
+%   20) If any of the input arguments, `occtyp', `front', `fshape',
+%       `fframe', `back', `bshape', `bframe', `abcorr', `obsrvr',
+%       `step', `cnfine' or `nintvls', is undefined, an error is signaled
+%       by the Matlab error handling system.
+%
+%   21) If any of the input arguments, `occtyp', `front', `fshape',
+%       `fframe', `back', `bshape', `bframe', `abcorr', `obsrvr',
+%       `step', `cnfine' or `nintvls', is not of the expected type, or it
+%       does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   Appropriate SPICE kernels must be loaded by the calling program
+%   before this routine is called.
+%
+%   The following data are required:
+%
+%   -  SPK data: the calling application must load ephemeris data
+%      for the targets, source and observer that cover the time
+%      period specified by the window `cnfine'. If aberration
+%      corrections are used, the states of the target bodies and of
+%      the observer relative to the solar system barycenter must be
+%      calculable from the available ephemeris data. Typically
+%      ephemeris data are made available by loading one or more SPK
+%      files via cspice_furnsh.
+%
+%   -  PCK data: bodies modeled as triaxial ellipsoids must have
+%      semi-axis lengths provided by variables in the kernel pool.
+%      Typically these data are made available by loading a text
+%      PCK file via cspice_furnsh.
+%
+%   -  FK data: if either of the reference frames designated by
+%      `bframe' or `fframe' are not built in to the SPICE system,
+%      one or more FKs specifying these frames must be loaded.
+%
+%   The following data may be required:
+%
+%   -  DSK data: if either `fshape' or `bshape' indicates that DSK
+%      data are to be used, DSK files containing topographic data
+%      for the target body must be loaded. If a surface list is
+%      specified, data for at least one of the listed surfaces must
+%      be loaded.
+%
+%   -  Surface name-ID associations: if surface names are specified
+%      in `fshape' or `bshape', the association of these names with
+%      their corresponding surface ID codes must be established by
+%      assignments of the kernel variables
+%
+%         NAIF_SURFACE_NAME
+%         NAIF_SURFACE_CODE
+%         NAIF_SURFACE_BODY
+%
+%      Normally these associations are made by loading a text
+%      kernel containing the necessary assignments. An example
+%      of such a set of assignments is
+%
+%         NAIF_SURFACE_NAME += 'Mars MEGDR 128 PIXEL/DEG'
+%         NAIF_SURFACE_CODE += 1
+%         NAIF_SURFACE_BODY += 499
+%
+%   -  CK data: either of the body-fixed frames to which `fframe' or
+%      `bframe' refer might be a CK frame. If so, at least one CK
+%      file will be needed to permit transformation of vectors
+%      between that frame and the J2000 frame.
+%
+%   -  SCLK data: if a CK file is needed, an associated SCLK
+%      kernel is required to enable conversion between encoded SCLK
+%      (used to time-tag CK data) and barycentric dynamical time
+%      (TDB).
+%
+%   Kernel data are normally loaded once per program run, NOT every
+%   time this routine is called.
+%
+%-Restrictions
+%
+%   1)  The kernel files to be used by cspice_gfoclt must be loaded (normally
+%       via the Mice routine cspice_furnsh) before cspice_gfoclt is called.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DSK.REQ
@@ -966,25 +1166,52 @@
 %   TIME.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 2.0.0, 04-APR-2017, EDW (JPL), NJB (JPL)
+%   -Mice Version 2.1.0, 25-NOV-2021 (EDW) (JDR) (NJB)
 %
-%       Header update to reflect support for use of DSKs. 
+%       Changed input argument name "room" to "nintvls" for consistency
+%       with other routines.
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%   -Mice Version 1.1.0, 12-MAY-2012, EDW (JPL)
+%       Edited the header to comply with NAIF standard.
 %
-%       Renamed the argument 'size' to 'room'. "size" is a Matlab function
-%       name and it's seriously dumb to use a function name word as an argument
-%       name.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 2.0.0, 04-APR-2017 (EDW) (NJB)
+%
+%       Header update to reflect support for use of DSKs.
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.1.0, 12-MAY-2012 (EDW)
+%
+%       Renamed the argument "size" to "room". "size" is a Matlab function
+%       name and it's seriously dumb to use a function name word as an
+%       argument name.
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
 %
 %       Header updated to describe use of cspice_gfstol.
 %
-%   -Mice Version 1.0.0, 15-APR-2009, EDW (JPL)
+%   -Mice Version 1.0.0, 15-APR-2009 (EDW)
 %
 %-Index_Entries
 %
@@ -992,9 +1219,9 @@
 %
 %-&
 
-function [result] = cspice_gfoclt( occtyp, front,  fshape, fframe, ...
-                                   back,   bshape, bframe, abcorr, ...
-                                   obsrvr, step,   cnfine, room)
+function [result] = cspice_gfoclt( occtyp, front,  fshape, fframe,         ...
+                                   back,   bshape, bframe, abcorr,         ...
+                                   obsrvr, step,   cnfine, nintvls )
 
    switch nargin
 
@@ -1011,20 +1238,20 @@ function [result] = cspice_gfoclt( occtyp, front,  fshape, fframe, ...
          obsrvr  = zzmice_str(obsrvr);
          step    = zzmice_dp(step);
          cnfine  = zzmice_win(cnfine);
-         room    = zzmice_int(room,    [1, int32(inf)/2] );
+         nintvls = zzmice_int(nintvls, [1, int32(inf)/2] );
 
       otherwise
 
-         error ( [ 'Usage: [result] = cspice_gfoclt( `occtyp`, '          ...
-                                           '`front`, `fshape`, `fframe`, '...
-                                           '`back`, `bshape`, `bframe`, ' ...
-                                           '`abcorr`, `obsrvr`, step, '   ...
-                                           'cnfine, room)' ] )
+         error ( [ 'Usage: [result] = cspice_gfoclt( `occtyp`, '           ...
+                                           '`front`, `fshape`, `fframe`, ' ...
+                                           '`back`, `bshape`, `bframe`, '  ...
+                                           '`abcorr`, `obsrvr`, step, '    ...
+                                           'cnfine, nintvls )' ] )
 
    end
 
    %
-   % Call the GF routine.  Add to 'cnfine' the 6x1 space needed for
+   % Call the GF routine.  Add to `cnfine' the 6x1 space needed for
    % the control segment.
    %
    try
@@ -1032,11 +1259,7 @@ function [result] = cspice_gfoclt( occtyp, front,  fshape, fframe, ...
       [result] = mice('gfoclt_c',  occtyp, front,  fshape, fframe, ...
                                    back,   bshape, bframe,         ...
                                    abcorr, obsrvr,  step,          ...
-                                   [zeros(6,1); cnfine], room);
-   catch
-      rethrow(lasterror)
+                                   [zeros(6,1); cnfine], nintvls);
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
-

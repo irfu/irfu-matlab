@@ -1,7 +1,6 @@
 %-Abstract
 %
-%   DSKMiceUser.m declares global variables for use with
-%   DSKMice APIs.
+%   MiceOsc.m performs Mice definitions for osculating element routines.
 %
 %-Disclaimer
 %
@@ -32,55 +31,68 @@
 %
 %   None.
 %
-%-Examples
-%
-%   The call:
-%
-%       DSKMiceUser
-%
-%   makes DSKMice parameter definitions available to the calling program.
-%
-%   Please see the example program in cspice_dski02.
-%
-%-Particulars
-%
-%   This file is an umbrella file that includes all of the required
-%   variables required to support the DSKMice application programming interface
-%   (API). Users' application code that calls DSKMice only needs to include
-%   this single file.
-%
-%-Required Reading
+%-Parameters
 %
 %   None.
 %
+%-Examples
+%
+%   Include these definitions by using the call:
+%
+%      MiceUser;
+%
+%-Particulars
+%
+%   This header defines constants that may be referenced in application
+%   code that calls Mice osculating element functions.
+%
+%
+%      Constants
+%      ==========
+%   
+%         Name                  Description
+%         ----                  ----------
+%   
+%         SPICE_OSCLTX_NELTS    Length of output element array
+%                               returned by cspice_oscltx.
+%
+%-Exceptions
+%
+%   None.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
+%   None.
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 10-MAR-2016, NJB (JPL), SCK (JPL), EDW (JPL)
+%   -Mice Version 1.0.0, 11-JUN-2020 (JDR) (NJB)
 %
 %-Index_Entries
 %
-%   Include DSKMice parameters
+%   Include osculating element definitions
 %
 %-&
 
 
 %
-% Include:
-%    dsk type 2 specific definitions.
-%    dsk tolerence parameters
-%
-   DSKMice02
-   DSKtol
-
-   %
-   %API-specific definitions
-   %========================
-   %
-   %Parameters for dskxsi_c:
-   %
-   SPICE_DSKXSI_DCSIZE  =          1;
-   SPICE_DSKXSI_ICSIZE  =          1;
-
-%
-% End of parameter declaration file DSKMiceUser.pro
-%
+%  Constants
+%   
+SPICE_OSCLTX_NELTS  =  20;

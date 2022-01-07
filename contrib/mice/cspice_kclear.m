@@ -37,47 +37,99 @@
 %
 %      Re-initialize the KEEPER system.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
-%   platforms as the results depend on the SPICE kernels used as input
-%   and the machine specific arithmetic implementation.
+%    platforms as the results depend on the SPICE kernels used as input
+%    and the machine specific arithmetic implementation.
 %
-%     %
-%     % Load the standard meta kernel, retrieve the number of
-%     % loaded kernels.
-%     %
-%     cspice_furnsh( 'standard.tm' )
+%    1) Load a meta-kernel containing three kernels, and count the
+%       number of files in the kernel pool before and after calling
+%       cspice_kclear.
 %
-%     n   = cspice_ktotal( 'ALL' );
-%     txt = sprintf('Count of loaded kernels before cspice_kclear call: %d', n);
-%     disp( txt )
+%       Use the meta-kernel shown below to load the required SPICE
+%       kernels.
 %
-%   MATLAB outputs:
 %
-%     Count of loaded kernels before cspice_kclear call: 4
+%          KPL/MK
 %
-%   The expected result counting standard.tm and the three kernels
-%   named in the meta kernel.
+%          File name: kclear_ex1.tm
 %
-%     %
-%     % Clear the KEEPER system, retrieve the number of loaded
-%     % after the clear.
-%     %
-%     cspice_kclear
+%          This meta-kernel is intended to support operation of SPICE
+%          example programs. The kernels shown here should not be
+%          assumed to contain adequate or correct versions of data
+%          required by SPICE-based user applications.
 %
-%     n   = cspice_ktotal( 'ALL' );
-%     txt = sprintf('Count of loaded kernels after cspice_kclear call: %d', n);
-%     disp( txt )
+%          In order for an application to use this meta-kernel, the
+%          kernels referenced here must be present in the user's
+%          current working directory.
 %
-%   MATLAB outputs:
+%          The names and contents of the kernels referenced
+%          by this meta-kernel are as follows:
 %
-%     Count of loaded kernels after cspice_kclear call: 0
+%             File name                     Contents
+%             ---------                     --------
+%             de421.bsp                     Planetary ephemeris
+%             pck00008.tpc                  Planet orientation and
+%                                           radii
+%             naif0009.tls                  Leapseconds
+%
+%
+%          \begindata
+%
+%             KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                 'pck00008.tpc',
+%                                 'naif0009.tls'  )
+%
+%          \begintext
+%
+%          End of meta-kernel
+%
+%
+%       Example code begins here.
+%
+%
+%       function kclear_ex1()
+%
+%          %
+%          % Load the standard meta kernel, retrieve the number of
+%          % loaded kernels.
+%          %
+%          cspice_furnsh( 'kclear_ex1.tm' )
+%
+%          n   = cspice_ktotal( 'ALL' );
+%          txt = sprintf(['Count of loaded kernels before ', ...
+%                         'cspice_kclear call: %d'], n     );
+%          disp( txt )
+%
+%          %
+%          % Clear the KEEPER system, retrieve the number of loaded
+%          % after the clear.
+%          %
+%          cspice_kclear
+%
+%          n   = cspice_ktotal( 'ALL' );
+%          txt = sprintf(['Count of loaded kernels after ', ...
+%                          'cspice_kclear call:  %d'], n   );
+%          disp( txt )
+%
+%
+%       When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%       platform, the output was:
+%
+%
+%       Count of loaded kernels before cspice_kclear call: 4
+%       Count of loaded kernels after cspice_kclear call:  0
+%
 %
 %-Particulars
 %
 %   This routine allows you re-initialize the KEEPER system with
-%   a single call.  The KEEPER system is the kernel management system
+%   a single call. The KEEPER system is the kernel management system
 %   underlying the set of Mice APIs
 %
 %      cspice_furnsh
@@ -101,21 +153,57 @@
 %   previous scripts.
 %
 %   Cleaning up after such programs using explicit unload_c commands is
-%   tedious and error-prone.  One call to this routine sets the
+%   tedious and error-prone. One call to this routine sets the
 %   KEEPER system to its initial state, preventing unintentional
 %   interaction between scripts via KEEPER's state.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine kclear_c.
+%   1)  If an error occurs when setting a kernel pool watch or
+%       checking watched variables, the error is signaled by a routine
+%       in the call tree of this routine.
+%
+%-Files
+%
+%   See -Particulars.
+%
+%-Restrictions
+%
+%   1)  Calling this routine will wipe out any kernel pool data
+%       inserted via the Mice API routines to put data into the
+%       kernel pool (cspice_pcpool, cspice_pdpool and cspice_pipool).
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   KERNEL.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 01-DEC-2006, EDW (JPL)
+%   -Mice Version 1.1.0, 13-AUG-2021 (EDW) (JDR)
+%
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement and meta-kernel. Merged the existing
+%       code fragments into a complete example.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 01-DEC-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -141,9 +229,6 @@ function cspice_kclear
    %
    try
       mice('kclear_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-

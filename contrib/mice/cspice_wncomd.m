@@ -45,14 +45,18 @@
 %
 %   the call:
 %
-%      result = cspice_wncomd( left, right, window)
+%      [result] = cspice_wncomd( left, right, window )
 %
 %   returns:
 %
-%      result   SPICE window containing the complement of 'window' with respect
-%               to the interval 'left' to 'right'
+%      result   SPICE window containing the complement of `window' with
+%               respect to the interval `left' to `right'
 %
 %               [2n,1] = size(result); double = class(result)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -60,71 +64,171 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Let 'window' contain the intervals
-%      %
-%      window = [ [ 1; 3 ];  [ 7; 11 ];  [ 23; 27 ];  ];
+%   1) Given a double precision window, containing the following three
+%      intervals:
 %
-%      %
-%      % The floating point complement of window with respect
-%      % to [2,20]
-%      %
-%      cspice_wncomd( 2, 20, window )
+%         [ 1.0, 3.0 ], [ 7.0, 11.0 ], [ 23.0, 27.0 ]
 %
-%   MATLAB outputs:
+%      compute its complement with respect to the intervals [2.0, 20.0]
+%      and [0.0, 100.0]
 %
-%      a =
+%      Example code begins here.
 %
-%           3
-%           7
-%          11
-%          20
 %
-%      Representing the intervals:
+%      function wncomd_ex1()
 %
-%      [ 3, 7 ]  [ 11, 20 ]
+%         %
+%         % Let `window' contain the intervals
+%         %
+%         window = [ [ 1; 3 ];  [ 7; 11 ];  [ 23; 27 ];  ];
 %
-%      %
-%      % The complement with respect to [ 0, 100 ]
-%      %
-%      cspice_wncomd( 0, 100, window )
+%         %
+%         % The floating point complement of window with respect
+%         % to [2,20]
+%         %
+%         [win1] = cspice_wncomd( 2, 20, window );
 %
-%   MATLAB outputs:
+%         fprintf( 'Complement window with respect to [2.0, 20.0]\n' );
+%         for i=1:cspice_wncard(win1)
 %
-%      b =
+%            [left, right] = cspice_wnfetd( win1, i );
+%            fprintf( '%16.6f %16.6f\n', left, right  );
 %
-%           0
-%           1
-%           3
-%           7
-%          11
-%          23
-%          27
-%         100
+%         end
 %
-%      Representing the intervals:
+%         %
+%         % The complement with respect to [ 0, 100 ]
+%         %
+%         [win2] = cspice_wncomd( 0, 100, window );
 %
-%      [ 0, 1 ]  [ 3, 7 ]  [ 11, 23 ]  [ 27, 100 ]
+%         fprintf( '\nComplement window with respect to [0.0, 100.0]\n' );
+%         for i=1:cspice_wncard(win2)
+%
+%            [left, right] = cspice_wnfetd( win2, i );
+%            fprintf( '%16.6f %16.6f\n', left, right  );
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Complement window with respect to [2.0, 20.0]
+%              3.000000         7.000000
+%             11.000000        20.000000
+%
+%      Complement window with respect to [0.0, 100.0]
+%              0.000000         1.000000
+%              3.000000         7.000000
+%             11.000000        23.000000
+%             27.000000       100.000000
+%
 %
 %-Particulars
 %
+%   Mathematically, the complement of a window contains those
+%   points that are not contained in the window. That is, the
+%   complement of the set of closed intervals
+%
+%      [ a(0), b(0) ], [ a(1), b(1) ], ..., [ a(n), b(n) ]
+%
+%   is the set of open intervals
+%
+%      ( -inf, a(0) ), ( b(0), a(1) ), ..., ( b(n), +inf )
+%
+%   Because Matlab offers no satisfactory representation of
+%   infinity, we must take the complement with respect to a
+%   finite interval.
+%
+%   In addition, Matlab offers no satisfactory floating point
+%   representation of open intervals. Therefore, the complement
+%   of a floating point window is closure of the set theoretical
+%   complement. In short, the floating point complement of the
+%   window
+%
+%      [ a(0), b(0) ], [ a(1), b(1) ], ..., [ a(n), b(n) ]
+%
+%   with respect to the interval from left to right is the
+%   intersection of the windows
+%
+%      ( -inf, a(0) ), ( b(0), a(1) ), ..., ( b(n), +inf )
+%
+%   and
+%
+%      [ left, right ]
+%
+%   Note that floating point intervals of measure zero (singleton
+%   intervals) in the original window are replaced by gaps of
+%   measure zero, which are filled. Thus, complementing a floating
+%   point window twice does not necessarily yield the original window.
+%
+%-Exceptions
+%
+%   1)  If `left' is greater than `right', the error SPICE(BADENDPOINTS)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   2)  The cardinality of the input `window' must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   3)  If any of the input arguments, `left', `right' or `window', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `left', `right' or `window', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wncomd_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and reformatted example's output.
 %
-%   -Mice Version 1.0.0, 24-JUL-2007, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 24-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -154,8 +258,8 @@ function [result] = cspice_wncomd( left, right, window)
    %
    try
       [result] = mice('wncomd_c', left, right, [zeros(6,1); window] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

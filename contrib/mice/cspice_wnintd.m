@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_wnintd returns the window array intersection of two double precision
-%   window arrays.
+%   CSPICE_WNINTD returns the window array intersection of two double
+%   precision window arrays.
 %
 %-Disclaimer
 %
@@ -33,24 +33,30 @@
 %
 %   Given:
 %
-%      a   SPICE window containing zero or more intervals.
+%      a        SPICE window containing zero or more intervals.
 %
-%          [2l,1] = size(a); double = class(a)
+%               [2l,1] = size(a); double = class(a)
 %
-%      b   SPICE window containing zero or more intervals.
+%      b        SPICE window containing zero or more intervals.
 %
-%          [2m,1] = size(b); double = class(b)
+%               [2m,1] = size(b); double = class(b)
 %
 %   the call:
 %
-%      c = cspice_wnintd( a, b )
+%      [c] = cspice_wnintd( a, b )
 %
 %   returns:
 %
-%      c   the double precision window intersection (in the SPICE sense)
-%          of 'a' and 'b'
+%      c        the double precision window intersection (in the SPICE sense)
+%               of `a' and `b'
 %
-%          'c' can overwrite 'a' or 'b'.
+%               [2n,1] = size(c); double = class(c)
+%
+%               `c' can overwrite `a' or `b'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -58,78 +64,141 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      SPK1 = 'de405_2000-2050.bsp';
-%      SPK2 = 'jup100.bsp';
+%   1) Given a set of SPK files, identify the periods where
+%      ephemeris data for the Earth system barycenter is available in
+%      both files.
 %
-%      %
-%      % Retrieve the coverage for body 3 from SPK1
-%      %
-%      cov1 = cspice_spkcov( SPK1, 3, 10 );
-%      fprintf( 'cov1 =\n' )
-%      fprintf( '   %16.8f\n', cov1)
+%      Use the SPK kernel below as input for Earth system barycenter's
+%      ephemeris data covering from 01 Jan 1996 to 02 Jan 2111.
 %
-%   MATLAB outputs:
+%         de403.bsp
 %
-%      cov1 =
-%          -43135.81608719
-%         1577880064.18391323
+%      Use the SPK kernel below as input for Earth system barycenter's
+%      ephemeris data covering from 01 Jan 1050 to 01 Jan 2050.
 %
-%      %
-%      % Retrieve the coverage for body 3 from SPK2
-%      %
-%      cov2 = cspice_spkcov( SPK2, 3, 10 );
-%      fprintf( 'cov2 =\n' )
-%      fprintf( '   %16.8f\n', cov2)
+%         de405.bsp
 %
-%   MATLAB outputs:
 %
-%      cov2 =
-%         -825768000.00000000
-%         752241600.00000000
+%      Example code begins here.
 %
-%      Perform a windows array intersection on 'cov1' and 'cov2'
 %
-%      cov3 = cspice_wnintd( cov1, cov2 );
-%      fprintf( 'cov3 =\n' )
-%      fprintf( '   %16.8f\n', cov3)
+%      function wnintd_ex1()
 %
-%   MATLAB outputs:
+%         SPK1 = 'de403.bsp';
+%         SPK2 = 'de405.bsp';
 %
-%     cov3 =
-%         -43135.81608719
-%        752241600.00000000
+%         %
+%         % Retrieve the coverage for body 3 from SPK1
+%         %
+%         cov1 = cspice_spkcov( SPK1, 3, 10 );
+%         fprintf( '%s coverage:\n', SPK1 )
+%         fprintf( '   %25.12f   %25.12f\n', cov1)
 %
-%      The output can overwrite the input.
+%         %
+%         % Retrieve the coverage for body 3 from SPK2
+%         %
+%         cov2 = cspice_spkcov( SPK2, 3, 10 );
+%         fprintf( '%s coverage:\n', SPK2 )
+%         fprintf( '   %25.12f   %25.12f\n', cov2)
 %
-%      cov1 = cspice_wnintd( cov1, cov2 );
-%      fprintf( 'cov1 =\n' )
-%      fprintf( '   %16.8f\n', cov1)
+%         %
+%         % Perform a windows array intersection on 'cov1' and 'cov2'
+%         %
+%         cov3 = cspice_wnintd( cov1, cov2 );
+%         fprintf( '\nOverlapping coverage:\n' )
+%         fprintf( '   %25.12f   %25.12f\n', cov3)
 %
-%   MATLAB outputs:
+%         %
+%         % The output can overwrite the input.
+%         %
+%         cov1 = cspice_wnintd( cov1, cov2 );
+%         fprintf( '\nOverlapping coverage (overwriting input):\n' )
+%         fprintf( '   %25.12f   %25.12f\n', cov1)
 %
-%     cov1 =
-%         -43135.81608719
-%        752241600.00000000
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      de403.bsp coverage:
+%           -126273537.816086068749     3502872062.183888912201
+%      de405.bsp coverage:
+%          -1577879958.816058635712     1577880064.183913230896
+%
+%      Overlapping coverage:
+%           -126273537.816086068749     1577880064.183913230896
+%
+%      Overlapping coverage (overwriting input):
+%           -126273537.816086068749     1577880064.183913230896
+%
 %
 %-Particulars
 %
+%   The intersection of two windows contains every point contained
+%   both in the first window and in the second window.
+%
+%-Exceptions
+%
+%   1)  The cardinality of the input windows must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   2)  If any of the input arguments, `a' or `b', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   3)  If any of the input arguments, `a' or `b', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wnintd_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement and modified code example to produce
+%       formatted output.
 %
-%   -Mice Version 1.0.0, 09-JUL-2007, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 09-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -152,14 +221,14 @@ function [c] = cspice_wnintd( a, b )
 
    end
 
-%
-% Call the windows routine, add to 'a' and 'b' the space needed for
-% the control segments.
-%
+   %
+   % Call the windows routine, add to `a' and `b' the space needed for
+   % the control segments.
+   %
    try
       [c] = mice('wnintd_c', [zeros(6,1); a], [zeros(6,1); b] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

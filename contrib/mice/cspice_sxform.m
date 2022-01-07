@@ -33,35 +33,64 @@
 %
 %   Given:
 %
-%      from   the name of a reference frame in which a state is known.
+%      from     the name of a reference frame in which a state is known.
 %
-%             [1,c1] = size(from); char = class(from)
+%               [1,c1] = size(from); char = class(from)
 %
-%      to     the name of a reference frame in which it is desired to represent
-%             the state.
+%                  or
 %
-%             [1,c2] = size(to); char = class(to)
+%               [1,1] = size(from); cell = class(from)
 %
-%      et     epoch(s) in ephemeris seconds past the epoch of J2000 (TDB)
-%             at which to evaluate the state transformation operator(s).
+%      to       the name of a reference frame in which it is desired to
+%               represent the state.
 %
-%             [1,n] = size(et); double = class(et)
+%               [1,c2] = size(to); char = class(to)
+%
+%                  or
+%
+%               [1,1] = size(to); cell = class(to)
+%
+%      et       the epoch(s) in ephemeris seconds past the epoch of J2000
+%               (TDB) at which the state transformation matrix should be
+%               evaluated.
+%
+%               [1,n] = size(et); double = class(et)
 %
 %   the call:
 %
-%      xform = cspice_sxform( from, to, et )
+%      [xform] = cspice_sxform( from, to, et )
 %
 %   returns:
 %
-%      xform   operator(s) that transform state vector(s) from the
-%              reference frame 'from' to frame 'to' at epoch 'et'
+%      xform    the state transformation matri(x|ces) that transforms states
+%               from the reference frame `from' to the frame `to' at epoch
+%               `et'.
 %
-%              If [1,1] = size(et) then [6,6]   = size(xform)
-%              If [1,n] = size(et) then [6,6,n] = size(xform)
+%               If [1,1] = size(et) then [6,6]   = size(xform)
+%               If [1,n] = size(et) then [6,6,n] = size(xform)
 %                                        double = class(xform)
 %
-%              'xform' returns with the same vectorization measure, N,
-%               as 'et'.
+%               If (x, y, z, dx, dy, dz) is a state relative to the frame
+%               `from' then the vector ( x', y', z', dx', dy', dz' ) is the
+%               same state relative to the frame `to' at epoch `et'. Here the
+%               vector ( x', y', z', dx', dy', dz' ) is defined by the
+%               equation:
+%
+%                  .-   -.     .-          -.   .-  -.
+%                  | x'  |     |            |   | x  |
+%                  | y'  |     |            |   | y  |
+%                  | z'  |  =  |   xform    |   | z  |
+%                  | dx' |     |            |   | dx |
+%                  | dy' |     |            |   | dy |
+%                  | dz' |     |            |   | dz |
+%                  `-   -'     `-          -'   `-  -'
+%
+%               `xform' returns with the same vectorization measure, N,
+%               as `et'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -69,201 +98,269 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Suppose you have geodetic coordinates of a station on the
-%      % surface of Earth and that you need the inertial (J2000)
-%      % state of this station.  The following code fragment
-%      % illustrates how to transform the geodetic state of the
-%      % station to a J2000 state.
-%      %
+%   1) Suppose you have geodetic coordinates of a station on the
+%      surface of Earth and that you need the inertial (J2000)
+%      state of this station. The following code example
+%      illustrates how to transform the geodetic state of the
+%      station to a J2000 state.
 %
-%      %
-%      % Load the SPK, PCK and LSK kernels.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Define a geodetic longitude, latitude, altitude
-%      % coordinate set. These coordinates are defined in the
-%      % non-inertial, earth fixed frame "IAU_EARTH".
-%      %
-%      lon = 118.25 * cspice_rpd;
-%      lat = 34.05  * cspice_rpd;
-%      alt = 0.;
 %
-%      %
-%      % Define a UTC time of interest. Convert the 'utc' string
-%      % to ephemeris time J2000.
-%      %
-%      utc = 'January 1, 1990';
-%      et = cspice_str2et( utc );
+%         KPL/MK
 %
-%      %
-%      % Retrieve the equatorial and polar axis of the earth (body 399).
-%      %
-%      abc = cspice_bodvrd( 'EARTH', 'RADII', 3 );
-%      equatr =  abc(1);
-%      polar  =  abc(3);
+%         File name: sxform_ex1.tm
 %
-%      %
-%      % Calculate the flattening factor for earth.
-%      %
-%      f =  ( equatr - polar  ) / equatr;
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      %
-%      % Calculate the Cartesian coordinates on earth for the
-%      % location at 'lon', 'lat', 'alt'.
-%      %
-%      estate = cspice_georec( lon, lat, alt, equatr, f);
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%      %
-%      % cspice_georec returned the position vector of the geodetic
-%      % coordinates, but we want the state vector. Since it is a fixed
-%      % location referenced in the "IAU_EARTH" frame, the location has
-%      % no velocity. We need to extend estate to a 6-vector, the final
-%      % three elements with value 0.d.
-%      %
-%      estate = [ estate; [0.; 0.; 0.] ];
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%      %
-%      % Retrieve the transformation matrix from "IAU_EARTH"
-%      % to "J2000" at epoch 'et'.
-%      %
-%      xform = cspice_sxform( 'IAU_EARTH', 'J2000', et );
+%            File name                     Contents
+%            ---------                     --------
+%            pck00008.tpc                  Planet orientation and
+%                                          radii
+%            naif0009.tls                  Leapseconds
 %
-%      jstate = xform * estate;
 %
-%      disp( 'Scalar' )
-%      txt = sprintf( 'Cartesian position in J2000 frame at epoch: %f ', et );
-%      disp( txt )
-%      txt = sprintf( '%16.8f %16.8f %16.8f ', jstate(1:3) );
-%      disp( txt )
+%         \begindata
 %
-%      disp( 'Cartesian velocity in J2000 frame' )
-%      txt = sprintf( '%16.8f %16.8f %16.8f ', jstate(4:6) );
-%      disp( txt )
+%            KERNELS_TO_LOAD = ( 'pck00008.tpc',
+%                                'naif0009.tls'  )
 %
-%      %
-%      % Return the state transformation matrices from "IAU_EARTH"
-%      % to "J2000" approximately every month for the time
-%      % interval January 1, 1990 to January 1, 2010 (UTC).
-%      %
-%      %
-%      % Define the time bounds for the time interval,
-%      % 20 years,  convert to ephemeris time J2000.
-%      %
-%      utc_bounds = strvcat( '1 Jan 1990', '1 Jan 2010' );
-%      et_bounds = cspice_str2et( utc_bounds );
+%         \begintext
 %
-%      %
-%      % Step in units of a month. 20 years ~ 240 months.
-%      %
-%      step = (et_bounds(2) - et_bounds(1) ) / 240.;
+%         End of meta-kernel
 %
-%      %
-%      % Create an array of 240 ephemeris times starting at
-%      % et_bound(1) in intervals of 'step'.
-%      %
-%      et = [0:239]*step + et_bounds(1);
 %
-%      %
-%      % Convert the 240-vector of 'et' to an array of corresponding
-%      % transformation matrices (dimensions (6,6,240) ).
-%      %
-%      xform = cspice_sxform( 'IAU_EARTH', 'J2000', et );
+%      Example code begins here.
 %
-%      %
-%      % Show the dimensions of the 'xform'.
-%      %
-%      disp (' ' )
-%      disp( 'Vector' )
-%      disp( 'Dimension of xform:' )
-%      disp( size(xform) )
 %
-%      %
-%      % Apply the first and last of the transform matrices to the
-%      % 'estate' vector.
-%      %
-%      % Transform the Cartesian state vector from "IAU_EARTH"
-%      % to "J2000" at et(1) (initial epoch).
-%      %
-%      jstate = xform(:,:,1) * estate;
+%      function sxform_ex1()
 %
-%      txt = sprintf( 'Cartesian position in J2000 frame at epoch: %f', et(1) );
-%      disp( txt )
-%      txt =  sprintf( '%24.8f %24.8f %24.8f', jstate(1:3) );
-%      disp( txt )
+%         %
+%         % Load the PCK and LSK kernels.
+%         %
+%         cspice_furnsh( 'sxform_ex1.tm' )
 %
-%      disp( 'Cartesian velocity in J2000 frame ')
-%      txt =  sprintf( '%24.12f %24.12f %24.12f', jstate(4:6) );
-%      disp( txt )
+%         %
+%         % Define a geodetic longitude, latitude, altitude
+%         % coordinate set. These coordinates are defined in the
+%         % non-inertial, earth fixed frame "IAU_EARTH".
+%         %
+%         lon = 118.25 * cspice_rpd;
+%         lat = 34.05  * cspice_rpd;
+%         alt = 0.;
 %
-%      disp (' ' )
+%         %
+%         % Define a UTC time of interest. Convert the 'utc' string
+%         % to ephemeris time J2000.
+%         %
+%         utc = 'January 1, 1990';
+%         et = cspice_str2et( utc );
 %
-%      %
-%      % Same transformation, but at et(240) (final epoch).
-%      %
-%      jstate = xform(:,:,240) * estate;
+%         %
+%         % Retrieve the equatorial and polar axis of the earth (body 399).
+%         %
+%         abc = cspice_bodvrd( 'EARTH', 'RADII', 3 );
+%         equatr =  abc(1);
+%         polar  =  abc(3);
 %
-%      txt = ...
-%         sprintf( 'Cartesian position in J2000 frame at epoch: %f', et(240) );
-%      disp( txt )
+%         %
+%         % Calculate the flattening factor for earth.
+%         %
+%         f =  ( equatr - polar  ) / equatr;
 %
-%      txt =  sprintf( '%24.8f %24.8f %24.8f', jstate(1:3) );
-%      disp( txt )
+%         %
+%         % Calculate the Cartesian coordinates on earth for the
+%         % location at 'lon', 'lat', 'alt'.
+%         %
+%         estate = cspice_georec( lon, lat, alt, equatr, f);
 %
-%      disp( 'Cartesian velocity in J2000 frame ')
-%      txt =  sprintf( '%24.12f %24.12f %24.12f', jstate(4:6) );
-%      disp( txt )
+%         %
+%         % cspice_georec returned the position vector of the geodetic
+%         % coordinates, but we want the state vector. Since it is a fixed
+%         % location referenced in the "IAU_EARTH" frame, the location has
+%         % no velocity. We need to extend estate to a 6-vector, the final
+%         % three elements with value 0.d.
+%         %
+%         estate = [ estate; [0.; 0.; 0.] ];
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
+%         %
+%         % Retrieve the transformation matrix from "IAU_EARTH"
+%         % to "J2000" at epoch 'et'.
+%         %
+%         xform = cspice_sxform( 'IAU_EARTH', 'J2000', et );
 %
-%   MATLAB outputs:
+%         jstate = xform * estate;
 %
-%      Scalar
-%      Cartesian position in J2000 frame at epoch: -315575942.816070
-%        -4131.46296088   -3308.37067191    3547.02152550
-%      Cartesian velocity in J2000 frame
-%            0.24124981      -0.30101944       0.00023422
+%         utcstr = cspice_et2utc( et, 'C', 3 );
+%         fprintf( 'Epoch                         : %s\n', utcstr)
+%         fprintf(['Position in J2000 frame   (km):',      ...
+%                  ' %10.4f  %10.4f  %10.4f\n'], jstate(1:3) );
+%         fprintf(['Velocity in J2000 frame (km/s):',      ...
+%                  ' %10.4f  %10.4f  %10.4f\n'], jstate(4:6) );
 %
-%      Vector
-%      Dimension of xform:
-%           6     6   240
+%         %
+%         % Return the state transformation matrices from "IAU_EARTH"
+%         % to "J2000" approximately every three months for the time
+%         % interval February 1, 1990 to February 1, 1991 (UTC).
+%         %
+%         %
+%         % Define the time bounds for the time interval,
+%         % 1 year,  convert to ephemeris time J2000.
+%         %
+%         utc_bounds = strvcat( '1 Feb 1990', '1 Feb 1991' );
+%         et_bounds = cspice_str2et( utc_bounds );
 %
-%      Cartesian position in J2000 frame at epoch: -315575942.816070
-%                -4131.46296088        -3308.37067191       3547.02152550
-%      Cartesian velocity in J2000 frame
-%                0.241249810257       -0.301019439927       0.000234215852
+%         %
+%         % Step in units of 3 months. 1 year -> 4 steps.
+%         %
+%         step = (et_bounds(2) - et_bounds(1) ) / 4.;
 %
-%      Cartesian position in J2000 frame at epoch: 312946264.154758
-%                 4533.62043540        2731.85929290        3546.67378733
-%      Cartesian velocity in J2000 frame
-%               -0.199210494903        0.330347334014       0.000192387677
+%         %
+%         % Create an array of 4 ephemeris times starting at
+%         % et_bound(1) in intervals of 'step'.
+%         %
+%         et = [0:3]*step + et_bounds(1);
+%
+%         %
+%         % Convert the 4-vector of 'et' to an array of corresponding
+%         % transformation matrices (dimensions (6,6,4) ).
+%         %
+%         xform = cspice_sxform( 'IAU_EARTH', 'J2000', et );
+%
+%         %
+%         % Transform the Cartesian state vector from "IAU_EARTH"
+%         % to "J2000".
+%         %
+%         utcstr = cspice_et2utc( et, 'C', 3 );
+%         for i=1:4
+%            jstate = xform(:,:,i) * estate;
+%            disp (' ' )
+%            fprintf( 'Epoch                         : %s\n', utcstr(i,:))
+%            fprintf(['Position in J2000 frame   (km):',      ...
+%                     ' %10.4f  %10.4f  %10.4f\n'], jstate(1:3) );
+%            fprintf(['Velocity in J2000 frame (km/s):',      ...
+%                     ' %10.4f  %10.4f  %10.4f\n'], jstate(4:6) );
+%         end
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Epoch                         : 1990 JAN 01 00:00:00.000
+%      Position in J2000 frame   (km): -4131.4630  -3308.3707   3547.0215
+%      Velocity in J2000 frame (km/s):     0.2412     -0.3010      0.0002
+%
+%      Epoch                         : 1990 FEB 01 00:00:00.000
+%      Position in J2000 frame   (km): -1876.4713  -4947.4745   3549.2275
+%      Velocity in J2000 frame (km/s):     0.3608     -0.1366      0.0003
+%
+%      Epoch                         : 1990 MAY 03 06:00:00.249
+%      Position in J2000 frame   (km):  1875.1001   4945.4239   3552.8083
+%      Velocity in J2000 frame (km/s):    -0.3606      0.1370     -0.0003
+%
+%      Epoch                         : 1990 AUG 02 12:00:00.502
+%      Position in J2000 frame   (km): -1887.0731  -4943.3818   3549.3093
+%      Velocity in J2000 frame (km/s):     0.3605     -0.1374      0.0003
+%
+%      Epoch                         : 1990 NOV 01 18:00:00.752
+%      Position in J2000 frame   (km):  1886.0424   4941.3201   3552.7263
+%      Velocity in J2000 frame (km/s):    -0.3603      0.1378     -0.0003
+%
 %
 %-Particulars
 %
+%   This routine provides the user level interface for computing
+%   state transformations from one reference frame to another.
+%
+%   Note that the reference frames may be inertial or non-inertial.
+%   However, the user must take care that sufficient SPICE kernel
+%   information is loaded to provide a complete state transformation
+%   path from the `from' frame to the `to' frame.
+%
+%-Exceptions
+%
+%   1)  If sufficient information has not been supplied via loaded
+%       SPICE kernels to compute the transformation between the two
+%       frames, an error is signaled by a routine in the call tree of
+%       this routine.
+%
+%   2)  If either frame `from' or `to' is not recognized, the error
+%       SPICE(UNKNOWNFRAME) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   3)  If any of the input arguments, `from', `to' or `et', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `from', `to' or `et', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine sxform_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ROTATION.REQ
 %   FRAMES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 05-FEB-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Extended -I/O section.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added example's meta-kernel. Reduced the size of the array of times
+%       used to generate the example's output and reformatted the output.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 05-FEB-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -282,7 +379,8 @@ function [xform] = cspice_sxform(from, to, et)
 
       otherwise
 
-         error( 'Usage: [_xform(6,6)_] = cspice_sxform( `from`, `to`, _et_ )' )
+         error( ['Usage: [_xform(6,6)_] = cspice_sxform( ',           ...
+                                              '`from`, `to`, _et_ )'] )
 
    end
 
@@ -291,8 +389,8 @@ function [xform] = cspice_sxform(from, to, et)
    %
    try
       [xform] = mice('sxform_c', from, to, et);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

@@ -46,43 +46,91 @@
 %
 %              [1,1] = size(jyear); double = class(jyear)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> jyear = cspice_jyear
+%   1) Display the number of seconds in a Julian year.
 %
-%      jyear =
+%      Example code begins here.
 %
-%          31557600
 %
-%      >> sprintf( 'JYEAR value: %11.3f', cspice_jyear )
+%      function jyear_ex1()
+%         %
+%         % Display the number of seconds in a Julian Year, in
+%         % 16.3 floating point format
+%         %
+%         fprintf( 'Seconds per Julian year: %16.3f\n', cspice_jyear)
 %
-%      ans =
 %
-%      JYEAR value: 31557600.000
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Seconds per Julian year:     31557600.000
+%
 %
 %-Particulars
 %
+%   The julian year is often used as a fundamental unit of time when
+%   dealing with ephemeris data. For this reason its value in terms of
+%   ephemeris seconds is recorded in this function.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine jyear_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   [1]  P. Kenneth Seidelmann (Ed.), "Explanatory Supplement to the
+%        Astronomical Almanac," Page 8, University Science Books,
+%        1992.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement and reformatted example's output.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -106,7 +154,7 @@ function [jyear] = cspice_jyear
    %
    try
       [jyear] =  mice('jyear_c' );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

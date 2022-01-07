@@ -33,11 +33,12 @@
 %
 %   Given:
 %
-%      value   value to use as the GF subsystem convergence tolerance. This
-%              value will override the default tolerance, SPICE_GF_CNVTOL,
-%              defined in SpiceGF.h. Units are TDB seconds.
+%      value    value to use as the GF subsystem convergence tolerance.
 %
-%              [1,1] = size(value); double = class(value)
+%               [1,1] = size(value); double = class(value)
+%
+%               This value will override the default tolerance,
+%               SPICE_GF_CNVTOL, defined in MiceGF.m. Units are TDB seconds.
 %
 %   the call:
 %
@@ -47,18 +48,31 @@
 %
 %      None.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   1) In 14 A.D., the Roman princeps Tiberius sent his son Drusus to subdue
+%      a revolt of a Roman Legion stationed in Pannonia. A Lunar eclipse
+%      occurred during this mission.
+%
+%      Perform a search for occultation events of the sun by earth as
+%      observed from the Moon center. Search during the interval from
+%      14 A.D. SEP 1 to 14 A.D. SEP 30 (Julian).
+%
 %      Use the meta-kernel shown below to load the required SPICE
 %      kernels.
 %
+%
 %         KPL/MK
 %
-%         File name: standard.tm
+%         File name: gfstol_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The kernels shown here should not be
@@ -74,140 +88,176 @@
 %
 %            File name                     Contents
 %            ---------                     --------
-%            de421.bsp                     Planetary ephemeris
+%            de408.bsp                     Planetary ephemeris covering
+%                                          year 14 AD
 %            pck00009.tpc                  Planet orientation and
 %                                          radii
 %            naif0009.tls                  Leapseconds
 %
 %         \begindata
 %
-%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%            KERNELS_TO_LOAD = ( 'de408.bsp',
 %                                'pck00009.tpc',
 %                                'naif0009.tls'  )
 %
 %         \begintext
 %
-%   Example:
+%         End meta-kernel
 %
-%      In 14 A.D., the Roman princeps Tiberius sent his son Drusus to subdue
-%      a revolt of a Roman Legion stationed in Pannonia. A Lunar eclipse
-%      occurred during this mission.
 %
-%      Perform a search for occultation events of the sun by earth as
-%      observed from the Moon center. Search during the interval from
-%      14 A.D. SEP 1 to 14 A.D. SEP 30 (Julian).
+%      Example code begins here.
 %
-%      TIMFMT  = 'YYYY ERA MON DD HR:MN:SC.#### ::JCAL';
-%      MAXWIN  = 100;
 %
-%      %
-%      % Load kernels.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%      function gfstol_ex1()
 %
-%      %
-%      % Use an SPK covering year 14 AD.
-%      %
-%      cspice_furnsh( 'de408.bsp' )
+%         TIMFMT  = 'YYYY ERA MON DD HR:MN:SC.#### ::JCAL';
+%         MAXWIN  = 100;
 %
-%      %
-%      % Store the time bounds of our search interval in
-%      % the cnfine confinement window.
-%      %
-%      et = cspice_str2et( { '14 A.D. SEP 1  00:00:00', ...
-%                            '14 A.D. SEP 30 00:00:00'} );
+%         %
+%         % Load kernels.
+%         %
+%         cspice_furnsh( 'gfstol_ex1.tm' )
 %
-%      cnfine = cspice_wninsd( et(1), et(2) );
+%         %
+%         % Store the time bounds of our search interval in
+%         % the cnfine confinement window.
+%         %
+%         et = cspice_str2et( { '14 A.D. SEP 1  00:00:00',                 ...
+%                               '14 A.D. SEP 30 00:00:00'} );
 %
-%      %
-%      % Select a 3-minute step. We'll ignore any occultations
-%      % lasting less than 3 minutes.
-%      %
-%      step    = 180.;
+%         cnfine = cspice_wninsd( et(1), et(2) );
 %
-%      occtyp  = 'any';
-%      front   = 'earth';
-%      fshape  = 'ellipsoid';
-%      fframe  = 'iau_earth';
-%      back    = 'sun';
-%      bshape  = 'ellipsoid';
-%      bframe  = 'iau_sun';
-%      obsrvr  = 'moon';
-%      abcorr  = 'lt';
+%         %
+%         % Select a 3-minute step. We'll ignore any occultations
+%         % lasting less than 3 minutes.
+%         %
+%         step    = 180.;
 %
-%      %
-%      % Perform the search. 'et(1)' and 'et(2)' have values ~-6*10^10,
-%      % SPICE_GF_CNVTOL has value 10^-6, so double precision addition or
-%      % subtraction of 'et(1)' and 'et(2)' with SPICE_GF_CNVTOL returns
-%      % a result indistinguishable from 'et(1)' and 'et(2)'.
-%      %
-%      % Reduce the GF convergence tolerance by an order of magnitude
-%      % to resolve this condition.
-%      %
+%         occtyp  = 'any';
+%         front   = 'earth';
+%         fshape  = 'ellipsoid';
+%         fframe  = 'iau_earth';
+%         back    = 'sun';
+%         bshape  = 'ellipsoid';
+%         bframe  = 'iau_sun';
+%         obsrvr  = 'moon';
+%         abcorr  = 'lt';
 %
-%      cspice_gfstol( 1e-5 )
+%         %
+%         % Perform the search. 'et(1)' and 'et(2)' have values ~-6*10^10,
+%         % SPICE_GF_CNVTOL has value 10^-6, so double precision addition or
+%         % subtraction of 'et(1)' and 'et(2)' with SPICE_GF_CNVTOL returns
+%         % a result indistinguishable from 'et(1)' and 'et(2)'.
+%         %
+%         % Reduce the GF convergence tolerance by an order of magnitude
+%         % to resolve this condition.
+%         %
 %
-%      result = cspice_gfoclt( occtyp, front,  fshape, fframe, ...
-%                              back,   bshape, bframe,         ...
-%                              abcorr, obsrvr, step,   cnfine, ...
-%                              MAXWIN);
+%         cspice_gfstol( 1e-5 )
 %
-%      %
-%      % List the beginning and ending times in each interval
-%      % if result contains data.
-%      %
-%      count = cspice_wncard(result);
+%         result = cspice_gfoclt( occtyp, front,  fshape, fframe,          ...
+%                                 back,   bshape, bframe, abcorr,          ...
+%                                 obsrvr, step,   cnfine, MAXWIN);
 %
-%      for i=1:count
+%         %
+%         % List the beginning and ending times in each interval
+%         % if result contains data.
+%         %
+%         count = cspice_wncard(result);
 %
-%         [left, right] = cspice_wnfetd( result, i );
+%         for i=1:count
 %
-%         output = cspice_timout( [left,right], TIMFMT );
+%            [left, right] = cspice_wnfetd( result, i );
 %
-%         if( isequal( left, right) )
+%            output = cspice_timout( [left,right], TIMFMT );
 %
-%            disp( ['Event time: ' output(1,:)] )
+%            if( isequal( left, right) )
 %
-%         else
+%               disp( ['Event time: ' output(1,:)] )
 %
-%            disp( ['Start time :' output(1,:)] )
-%            disp( ['Stop time  :' output(2,:)] )
-%            disp( ' ')
+%            else
+%
+%               disp( ['Start time :' output(1,:)] )
+%               disp( ['Stop time  :' output(2,:)] )
+%               disp( ' ')
+%
+%            end
 %
 %         end
 %
-%      end
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
 %
 %      Start time :  14 A.D. SEP 27 05:02:02.8250
 %      Stop time  :  14 A.D. SEP 27 09:33:31.6995
 %
+%
 %-Particulars
 %
-%   The high level GF routines (see GF.REQ for a listing) use a default
+%   The high level GF routines (see gf.req for a listing) use a default
 %   value for the convergence tolerance, SPICE_GF_CNVTOL, defined in
-%   SpiceGF.h. It may occur that a GF search run needs a different
+%   MiceGF.m. It may occur that a GF search run needs a different
 %   convergence tolerance. cspice_gfstol programmatically changes the
 %   tolerance used by those routines.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine gfstol_c.
+%   1)  If `value' is not strictly greater-than-zero, the error
+%       SPICE(INVALIDTOLERANCE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If the input argument `value' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `value' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   GF.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 21-JUL-2020 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Added -Parameters,
+%       -Exceptions, -Files, -Restrictions, -Literature_References and
+%       -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 12-MAR-2012 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -234,8 +284,8 @@ function cspice_gfstol( value )
    %
    try
       mice('gfstol_c', value);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

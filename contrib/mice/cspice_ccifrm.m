@@ -36,37 +36,37 @@
 %     frclss   is the class or type of the frame. This identifies which
 %              subsystem will be used to perform frame transformations.
 %
-%              [1,n] = size(frclss); int32 = class(frclss)
+%              [1,1] = size(frclss); int32 = class(frclss)
 %
 %     clssid   is the ID code used for the frame within its class. This
 %              may be different from the frame ID code.
 %
-%              [1,n] = size(clssid); int32 = class(clssid)
+%              [1,1] = size(clssid); int32 = class(clssid)
 %
 %   the call:
 %
-%      [frcode, frname, center, found] = cspice_ccifrm( frclss, clssid )
+%      [frcode, frname, cent, found] = cspice_ccifrm( frclss, clssid )
 %
 %   returns:
 %
 %      frcode  is the frame ID code for the reference frame
 %              identified by `frclss' and `clssid'.
 %
-%              [1,n] = size(frcode); int32 = class(frcode)
+%              [1,1] = size(frcode); int32 = class(frcode)
 %
 %      frname  is the name of the frame identified by
 %              `frclss' and `clssid'.
 %
-%              [1,n] = size(frname); char = class(frname)
+%              [1,c1] = size(frname); char = class(frname)
 %
 %              If `frname' does not have enough room to hold
 %              the full name of the frame, the name will be truncated
 %              on the right.
 %
-%      center  is the body ID code for the center of the reference
+%      cent    is the body ID code for the center of the reference
 %              frame identified  by `frclss' and `clssid'.
 %
-%              [1,n] = size(center); int32 = class(center)
+%              [1,1] = size(cent); int32 = class(cent)
 %
 %      found   is true if a valid frame specification
 %              corresponding to the input frame class and frame class
@@ -76,39 +76,64 @@
 %
 %              [1,1] = size(found); logical = class(found)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      function ccifrm_t
+%   1) The following code example demonstrates how to find the frame
+%      information about a frame by its ID using cspice_frinfo and
+%      by its class and class ID using cspice_ccifrm.
+%
+%      Example code begins here.
+%
+%
+%      function ccifrm_ex1()
 %
 %         frcode1 = cspice_namfrm( 'ITRF93');
-%         [center1, clss, clss_ID, found]    = cspice_frinfo( frcode1 );
-%         [frcode2,  frname, center2, found] = cspice_ccifrm( clss, clss_ID );
+%         [center1, clss, clss_ID, found] = cspice_frinfo( frcode1 );
 %
 %         if ( ~found )
-%
-%               error('No joy' )
-%
+%               error('No info found for ITRF93' )
 %         end
 %
-%         fprintf( 'Class     : %d\n', clss    )
-%         fprintf( 'Class ID  : %d\n', clss_ID )
-%         fprintf( 'Fame name : %s\n', frname  )
-%         fprintf( 'Frame Code: %d\n', frcode2 )
-%         fprintf( 'Center ID : %d\n', center2 )
+%         fprintf( 'Frame ITRF93 info:\n'          )
+%         fprintf( '   Frame Code: %d\n', frcode1 )
+%         fprintf( '   Center ID : %d\n', center1 )
+%         fprintf( '   Class     : %d\n', clss    )
+%         fprintf( '   Class ID  : %d\n', clss_ID )
 %
-%      end
+%         [frcode2, frname, center2, found] = cspice_ccifrm( clss, clss_ID );
 %
-%   Matlab outputs:
+%         if ( ~found )
+%               error('No info found for type 2 frame 3000.' )
+%         end
 %
-%      Class     : 2
-%      Class ID  : 3000
-%      Fame name : ITRF93
-%      Frame Code: 13000
-%      Center ID : 399
+%         fprintf( 'Type 2 frame 3000 info:\n'    )
+%         fprintf( '   Frame name: %s\n', frname  )
+%         fprintf( '   Frame Code: %d\n', frcode2 )
+%         fprintf( '   Center ID : %d\n', center2 )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Frame ITRF93 info:
+%         Frame Code: 13000
+%         Center ID : 399
+%         Class     : 2
+%         Class ID  : 3000
+%      Type 2 frame 3000 info:
+%         Frame name: ITRF93
+%         Frame Code: 13000
+%         Center ID : 399
+%
 %
 %-Particulars
 %
@@ -121,17 +146,87 @@
 %   keys, searching for matching frames is a linear (and therefore
 %   typically slow) process.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine ccifrm_c.
+%   1)  This routine assumes that the first frame found with matching
+%       class and class ID is the correct one. SPICE's frame system
+%       does not diagnose the situation where there are multiple,
+%       distinct frames with matching classes and class ID codes, but
+%       this situation could occur if such conflicting frame
+%       specifications are loaded via one or more frame kernels. The
+%       user is responsible for avoiding such frame specification
+%       conflicts.
+%
+%   2)  If a frame class assignment is found that associates a string
+%       (as opposed to numeric) value with a frame class keyword, the
+%       error SPICE(INVALIDFRAMEDEF) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   3)  If a frame class assignment is found that matches the input
+%       class, but a corresponding class ID assignment is not
+%       found in the kernel pool, the error SPICE(INVALIDFRAMEDEF)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   4)  If a frame specification is found in the kernel pool with
+%       matching frame class and class ID, but either the frame name
+%       or frame ID code are not found, the error
+%       SPICE(INVALIDFRAMEDEF) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   5)  If a frame specification is found in the kernel pool with
+%       matching frame class and class ID, but the frame center
+%       is not found, an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   6)  If any of the input arguments, `frclss' or `clssid', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   7)  If any of the input arguments, `frclss' or `clssid', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   1)  See item (1) in the -Exceptions section above.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   FRAMES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   M. Liukis           (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 01-03-2017, ML (JPL), EDW (JPL)
+%   -Mice Version 1.1.0, 26-NOV-2021 (EDW) (JDR)
+%
+%       Changed the output argument name "center" to "cent" for
+%       consistency with other routines.
+%
+%       Edited the -Examples section to comply with NAIF standard. Updated
+%       code example and added problem's statement. Added -Parameters,
+%       -Exceptions, -Files, -Restrictions, -Literature_References and
+%       -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 01-MAR-2017 (ML) (EDW)
 %
 %-Index_Entries
 %
@@ -141,7 +236,7 @@
 %
 %-&
 
-function [frcode, frname, center, found] = cspice_ccifrm( frclss, clssid )
+function [frcode, frname, cent, found] = cspice_ccifrm( frclss, clssid )
 
    switch nargin
       case 2
@@ -151,7 +246,7 @@ function [frcode, frname, center, found] = cspice_ccifrm( frclss, clssid )
 
       otherwise
 
-         error( ['Usage: [ frcode, `frname`, center, found] = ' ...
+         error( ['Usage: [ frcode, `frname`, cent, found] = ' ...
                 'cspice_ccifrm( frclss, clssid)'] )
 
    end
@@ -161,11 +256,10 @@ function [frcode, frname, center, found] = cspice_ccifrm( frclss, clssid )
    % return argument.
    %
    try
-      [ccifrm, center] = mice( 'ccifrm_s', frclss, clssid );
+      [ccifrm, cent] = mice( 'ccifrm_s', frclss, clssid );
       frcode   = reshape( [ccifrm.code],  1, [] );
       frname   = char( ccifrm.name );
       found    = reshape( [ccifrm.found], 1, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-

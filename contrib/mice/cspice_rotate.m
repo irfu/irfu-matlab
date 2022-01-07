@@ -35,26 +35,37 @@
 %
 %   Given:
 %
-%      angle  the rotation angle(s) measured in radians.
+%      angle    the angle(s), given in radians, through which the rotation is
+%               performed.
 %
-%             [1,1]   = size(angle); double = class(angle)
+%               [1,n] = size(angle); double = class(angle)
 %
-%      iaxis  the ID of the axis of rotation. 'iaxis' = 1, 2 or 3 
-%             respectively designates the x-, y-, or z-axis.
+%      iaxis    the index of the axis of rotation.
 %
-%             [1,1]   = size(iaxis); int32 = class(iaxis)
+%               [1,1] = size(iaxis); int32 = class(iaxis)
+%
+%               The X, Y, and Z axes have indices 1, 2 and 3 respectively.
 %
 %   the call:
 %
-%      mout = cspice_rotate( angle, iaxis)
+%      [mout] = cspice_rotate( angle, iaxis )
 %
 %   returns:
 %
-%      mout   rotation matrix/matrices that describe a rotation of 'angle'
-%             radians about 'iaxis'
+%      mout     the rotation matri(x|ces) which describes the rotation of a
+%               reference frame through `angle' radians about the axis whose
+%               index is `iaxis'.
 %
-%             'mout' return with the same vectorization 
-%             measure, N, as 'angle'.
+%               If [1,1] = size(angle) then [3,3]   = size(mout)
+%               If [1,n] = size(angle) then [3,3,n] = size(mout)
+%                                            double = class(mout)
+%
+%               `mout' returns with the same vectorization measure, N,
+%               as `angle'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -62,51 +73,125 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % A Pi/10 rotation about the Z axis.
-%      %
-%      rot_mat = cspice_rotate( 0.1*cspice_pi, 3 )
+%   1) Compute the 3x3 matrix that rotates vectors from one
+%      frame to another frame rotated by pi/10 radians about
+%      +Y with respect to the first frame, and use it to transform
+%      an arbitrary vector from the first frame to the second frame.
 %
-%      %
-%      % Apply the coordinate rotation to a vector.
-%      %
-%      vec = [ 1.2; 3.4; 4.5 ];
+%      Example code begins here.
 %
-%      vec1 = rot_mat * vec
 %
-%   MATLAB outputs:
+%      function rotate_ex1()
 %
-%      rot_mat =
+%         %
+%         % Let's pick an arbitrary vector.
+%         %
+%         vec1 = [ 0.2; 0.04; 1.0 ];
+%         fprintf( 'Vector in base frame:\n' )
+%         fprintf( '  %16.12f  %16.12f  %16.12f\n', vec1 );
 %
-%          0.9511    0.3090         0
-%         -0.3090    0.9511         0
-%               0         0    1.0000
+%         %
+%         % Compute Pi/10 frame rotation about the Y axis.
+%         %
+%         rotmat = cspice_rotate( 0.1*cspice_pi, 2 );
 %
-%      vec1 =
+%         %
+%         % Apply the coordinate rotation to the vector.
+%         %
+%         vec2 = rotmat * vec1;
+%         fprintf( 'Vector in rotated frame:\n' )
+%         fprintf( '  %16.12f  %16.12f  %16.12f\n', vec2 );
 %
-%          2.1919
-%          2.8628
-%          4.5000
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Vector in base frame:
+%          0.200000000000    0.040000000000    1.000000000000
+%      Vector in rotated frame:
+%         -0.118805691116    0.040000000000    1.012859915170
+%
 %
 %-Particulars
 %
+%   A rotation about the first, i.e. x-axis, is described by
+%
+%      |  1        0          0      |
+%      |  0   cos(theta) sin(theta)  |
+%      |  0  -sin(theta) cos(theta)  |
+%
+%   A rotation about the second, i.e. y-axis, is described by
+%
+%      |  cos(theta)  0  -sin(theta)  |
+%      |      0       1        0      |
+%      |  sin(theta)  0   cos(theta)  |
+%
+%   A rotation about the third, i.e. z-axis, is described by
+%
+%      |  cos(theta) sin(theta)   0   |
+%      | -sin(theta) cos(theta)   0   |
+%      |       0          0       1   |
+%
+%   cspice_rotate decides which form is appropriate according to the value
+%   of `iaxis'.
+%
+%-Exceptions
+%
+%   1)  If the axis index is not in the range 1 to 3, it will be
+%       treated the same as that integer 1, 2, or 3 that is congruent
+%       to it mod 3.
+%
+%   2)  If any of the input arguments, `angle' or `iaxis', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `angle' or `iaxis', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine rotate_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ROTATION.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 10-MAR-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and modified example code accordingly.
 %
-%   -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 10-MAR-2015 (EDW)
+%
+%      Edited -I/O section to conform to NAIF standard for Mice documentation.
+%
+%   -Mice Version 1.0.0, 10-JAN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -133,8 +218,8 @@ function [mout] = cspice_rotate( angle, iaxis )
    %
    try
       [mout] = mice('rotate_c', angle, iaxis );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 
