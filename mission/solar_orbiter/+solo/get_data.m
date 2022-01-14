@@ -19,8 +19,10 @@ function res = get_data(varStr,Tint)
 %   'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N'
 %   'L2_swa-pas-grnd-mom_T' (total T), 'L2_swa-pas-grnd-mom_TxTyTz_SRF'
 %   'L2_swa-pas-grnd-mom_TxTyTz_RTN', 'L2_swa-pas-grnd-mom_Tani' ([Tpar, Tperp])
+%   'L2_swa-pas-grnd-mom_Tani_pp' 'L2_swa-pas-grnd-mom_Tani_qq'
+%    Note: _pp means P_perp1 = P_perp2, and _qq  P_perp1 and P_perp2 are most unequal
 %   'L2_swa-pas-grnd-mom_P_SRF' (pressure tensor), 'L2_swa-pas-grnd-mom_P_RTN'
-%   'L2_swa-pas-vdf'
+%   'L2_swa-pas-vdf' 'L2_swa-pas-quality_factor'
 %
 % EPHEMERIS
 %   'pos_rtn' - from solo.get_position
@@ -44,7 +46,7 @@ vars = {'L2_mag-srf-normal', 'L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rt
   'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
   'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
   'L2_swa-pas-grnd-mom_Tani', 'L2_swa-pas-grnd-mom_Tani_pp', 'L2_swa-pas-grnd-mom_Tani_qq','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
-  'pos_rtn'};
+  'pos_rtn','L2_swa-pas-quality_factor'};
 
 % Check if the varStr matches the list of acceptable variables
 if ~ismember(varStr, vars)
@@ -160,6 +162,8 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
                   irf.log('critical', errStr);
                   error(errStr);
               end
+              case 'quality'
+                  res = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','quality_factor',Tint);
             case 'vdf'
               % PAS ion VDFs: Daniel G. will add later
               error('VDFs not added yet')
