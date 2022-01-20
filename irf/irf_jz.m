@@ -7,10 +7,13 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av)
 % [j]=irf_jz(v,B);                                         % method B
 % [jz,jp]=irf_jz(v,B);                                     % method B
 %
-% estimates the current given velocity and magnetic field
-% can use two methods
-% A) assume that spacecraft are crossing plane current sheets that can
-%     be at angle with respect to the velocity. Useful for example for auroral crossings.
+% Estimates the current given velocity and magnetic field.
+% Two methods are implemented:
+% A) assume that spacecraft are crossing plane current sheets (tangential
+%    discontinuities) that can have normals at an angle with respect to the
+%    velocity. The normal is found from cross-product of magnetic field
+%    changes and the background magnetic field direction.
+%    This method is useful for example for auroral current sheet crossings.
 % B) neglect changes in B along the velocity vector
 %    (thus all current is perpendicular to velocity). Useful for example for MP crossings.
 %     j=(1/mu0/v^2/dt)   v x dtB
@@ -35,8 +38,6 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av)
 %         system is defined such that B is Z and V_perp is X
 %
 % See also C_PL_J, C_4_J
-%
-% $Id$
 
 if size(v,2)==3, v=[v(:,1)*0+B(1,1) v];end
 
