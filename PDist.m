@@ -2248,12 +2248,26 @@ classdef PDist < TSeries
       dist = obj;
       % define angles
       energysize = size(obj.depend{1});
+      phi = obj.depend{2};
       theta = obj.depend{3};
-      dangle = pi/16;
-      lengthphi = 32;
+      lengthphi = size(phi,2);
+      if isfield(obj.ancillary,'delta_theta_plus') && isfield(obj.ancillary,'delta_theta_minus')
+        dangletheta = obj.ancillary.delta_theta_plus + obj.ancillary.delta_theta_minus;
+      else
+        dangletheta = median(diff(obj.depend{3}));
+      end
+      
+      if isfield(obj.ancillary,'delta_phi_plus') && isfield(obj.ancillary,'delta_phi_minus')
+        danglephi = obj.ancillary.delta_phi_plus + obj.ancillary.delta_phi_minus;
+      else
+        danglephi = median(diff(obj.depend{2}(1,:)));
+      end
+      
+      dangletheta = dangletheta*pi/180;
+      danglephi = danglephi*pi/180;
       
       z2 = ones(lengthphi,1)*sind(theta);
-      solida = dangle*dangle*z2;
+      solida = (danglephi*dangletheta').*z2;
       allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
       allsolida = squeeze(permute(allsolida,[3 4 1 2]));
       dists = dist.data.*allsolida;
