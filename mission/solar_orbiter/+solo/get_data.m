@@ -83,7 +83,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
           else
             res=EDC_SRF;
           end
-          case 'surv' % we might need to change this case when we add more RPW products!!!
+        case 'surv' % we might need to change this case when we add more RPW products!!!
           % search-coil
           BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
           if strcmp(C{3},'srf')
@@ -148,9 +148,9 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
                   Pten = TSeries(PSRF.time,[PXX,PXY,PXZ,PYY,PYZ,PZZ]); % to be consistent with mms.rotate_tensor
                   B0 = irf_filt(BSRF,0,0.1,[],3);
                   if length(C)==3
-                      PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten));
+                    PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten));
                   else
-                      PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten),C{4});
+                    PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten),C{4});
                   end
                   Pfac = TSeries(PfacT.time,[PfacT.data(:,1,1), PfacT.data(:,2,2),PfacT.data(:,3,3)]);
                   res = TSeries(PfacT.time,(Pfac.data./(NPAS.resample(Pfac).data.*Units.kB))./(Units.eV/Units.kB));
@@ -162,11 +162,33 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
                   irf.log('critical', errStr);
                   error(errStr);
               end
-              case 'quality'
-                  res = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','quality_factor',Tint);
+            case 'quality'
+              res = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','quality_factor',Tint);
             case 'vdf'
-              % PAS ion VDFs: Daniel G. will add later
-              error('VDFs not added yet')
+              % PAS ion VDFs: Daniel G. please check!
+              t1 = irf_time(Tint(1),'epochtt>vector');
+              t2 = irf_time(Tint(2),'epochtt>vector');
+              dl = datenum(t1(1:3)):1:datenum(t2(1:3));
+              for k=1:length(dl)
+                vdf_fname = ['/Volumes/solo/soar/swa/L2/swa-pas-vdf/' datestr(dl(k),'yyyy') '/' datestr(dl(k),'mm') '/solo_L2_swa-pas-vdf_' datestr(dl(k),'yyyy') datestr(dl(k),'mm') datestr(dl(k),'dd') '_V02.cdf'];
+                if exist(vdf_fname,'file')==2
+                  tmpDataObj = dataobj(vdf_fname);
+                  PDout = solo.make_pdist(tmpDataObj);
+                  clear tmpDataObj
+                  if k==1
+                    tlim1 = irf.tint([irf_time(Tint(1),'epochtt>utc') '/' irf_time(PDout.time(end),'epochtt>utc')]);
+                    PDout = PDout.tlim(tlim1);
+                  end
+                  if k==length(dl)
+                    tlim2 = irf.tint([irf_time(PDout.time(1),'epochtt>utc') '/' irf_time(Tint(2),'epochtt>utc')]);
+                    PDout = PDout.tlim(tlim2);
+                  end
+                else
+                  PDout = [];
+                end
+                res.(datestr(dl(k),'Tyyyymmdd')) = PDout;
+                clear PDout
+              end
             otherwise
               errStr = 'Not yet defined';
               irf.log('critical', errStr);
