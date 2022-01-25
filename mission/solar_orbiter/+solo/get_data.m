@@ -54,43 +54,42 @@ vars = {'L2_mag-srf-normal','L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rtn
   'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
   'pos_rtn','L2_swa-pas-quality_factor'};
 
-%%% check if alias is used and change to full variable name
-if isempty(intersect(varStr,vars))
-  var_old = varStr;
-
-  % replace alias with the full variable name
-  if strcmpi(varStr,'B_rtn_brst');   varStr = 'L2_mag-rtn-burst'; end
-  if strcmpi(varStr,'B_rtn_norm');   varStr = 'L2_mag-rtn-normal'; end
-  if strcmpi(varStr,'B_srf_brst');   varStr = 'L2_mag-srf-burst'; end
-  if strcmpi(varStr,'B_srf_norm');   varStr = 'L2_mag-srf-normal'; end
-  if strcmpi(varStr,'Vi_rtn');       varStr = 'L2_swa-pas-grnd-mom_V_RTN'; end
-  if strcmpi(varStr,'Vi_srf');       varStr = 'L2_swa-pas-grnd-mom_V_SRF'; end
-  if strcmpi(varStr,'Ni');           varStr = 'L2_swa-pas-grnd-mom_N'; end
-  if strcmpi(varStr,'Ti');           varStr = 'L2_swa-pas-grnd-mom_T'; end
-  if strcmpi(varStr,'pas_vdf');      varStr = 'L2_swa-pas-vdf'; end
-  if strcmpi(varStr,'pas_qf');       varStr = 'L2_swa-pas-quality_factor'; end
-  if strcmpi(varStr,'pas_eflux');    varStr = 'L2_swa-pas-eflux'; end
-  if strcmpi(varStr,'Ti_xyz_srf');   varStr = 'L2_swa-pas-grnd-mom_TxTyTz_SRF'; end
-  if strcmpi(varStr,'Ti_xyz_rtn');   varStr = 'L2_swa-pas-grnd-mom_TxTyTz_RTN'; end
-  if strcmpi(varStr,'Ti_fac');       varStr = 'L2_swa-pas-grnd-mom_Tani'; end
-  if strcmpi(varStr,'Pi_srf');       varStr = 'L2_swa-pas-grnd-mom_P_SRF'; end
-  if strcmpi(varStr,'Pi_rtn');       varStr = 'L2_swa-pas-grnd-mom_P_RTN'; end
-  if strcmpi(varStr,'scpot');        varStr = 'L3_rpw-bia-scpot'; end
-  if strcmpi(varStr,'E_srf');        varStr = 'L3_rpw-bia-efield_srf'; end
-  if strcmpi(varStr,'E_rtn');        varStr = 'L3_rpw-bia-efield_rtn'; end
-  if strcmpi(varStr,'Nescpot');      varStr = 'L3_rpw-bia-density'; end
-  if strcmpi(varStr,'B_scm_srf');    varStr = 'L2_rpw-lfr-surv-cwf-b-cdag_srf'; end
-  if strcmpi(varStr,'B_scm_rtn');    varStr = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn'; end
-
-  % Sanity check that we have actually changed the variable
-  if strcmp(var_old,varStr)
-    errStr = ['"varStr":', varStr, ' incorrect alias used.'];
-    irf.log('critical', errStr);
-    error(errStr);
-  else
-    % Print what alias has been changed to
-    fprintf(['Alias used: ' var_old ' changed to ' varStr '\n'])
+%% check if alias is used and change to full variable name
+if ~ismember(varStr, vars)
+  switch lower(varStr) % effectivly ignore letter case
+    % short alias and full variable names
+    case 'b_rtn_brst', varStrNew = 'L2_mag-rtn-burst';
+    case 'b_rtn_norm', varStrNew = 'L2_mag-rtn-normal';
+    case 'b_srf_brst', varStrNew = 'L2_mag-srf-burst';
+    case 'b_srf_norm', varStrNew = 'L2_mag-srf-normal';
+    case 'vi_rtn',     varStrNew = 'L2_swa-pas-grnd-mom_V_RTN';
+    case 'vi_srf',     varStrNew = 'L2_swa-pas-grnd-mom_V_SRF';
+    case 'ni',         varStrNew = 'L2_swa-pas-grnd-mom_N';
+    case 'ti',         varStrNew = 'L2_swa-pas-grnd-mom_T';
+    case 'pas_vdf',    varStrNew = 'L2_swa-pas-vdf';
+    case 'pas_qf',     varStrNew = 'L2_swa-pas-quality_factor';
+    case 'pas_eflux',  varStrNew = 'L2_swa-pas-eflux';
+    case 'ti_xyz_srf', varStrNew = 'L2_swa-pas-grnd-mom_TxTyTz_SRF';
+    case 'ti_xyz_rtn', varStrNew = 'L2_swa-pas-grnd-mom_TxTyTz_RTN';
+    case 'ti_fac',     varStrNew = 'L2_swa-pas-grnd-mom_Tani';
+    case 'pi_srf',     varStrNew = 'L2_swa-pas-grnd-mom_P_SRF';
+    case 'pi_rtn',     varStrNew = 'L2_swa-pas-grnd-mom_P_RTN';
+    case 'scpot',      varStrNew = 'L3_rpw-bia-scpot';
+    case 'e_srf',      varStrNew = 'L3_rpw-bia-efield_srf';
+    case 'e_rtn',      varStrNew = 'L3_rpw-bia-efield_rtn';
+    case 'nescpot',    varStrNew = 'L3_rpw-bia-density';
+    case 'b_scm_srf',  varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_srf';
+    case 'b_scm_rtn',  varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn';
+    otherwise
+      % fallback, it was not a full variable name nor short alias
+      errStr = ['"varStr":', varStr, ' incorrect alias used.'];
+      irf.log('critical', errStr);
+      error(errStr);
   end
+  % Print what alias has been changed to
+  irf.log('debug', ['Alias used: ', varStr, ' changed to ', varStrNew]);
+  % replace alias with the full variable name
+  varStr = varStrNew;
 end
 
 % Check if the varStr matches the list of acceptable variables
@@ -206,6 +205,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
             case 'quality'
               res = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','quality_factor',Tint);
             case 'vdf'
+              %% FIXME: This section must be cleaned up a lot, and made far less hard coded!!
               % PAS ion VDFs: Daniel G. please check!
               t1 = irf_time(Tint(1),'epochtt>vector');
               t2 = irf_time(Tint(2),'epochtt>vector');
