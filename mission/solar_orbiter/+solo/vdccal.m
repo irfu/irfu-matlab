@@ -12,9 +12,14 @@ function [DCE_SRF_out,PSP_out,ScPot_out,codeVerStr,matVerStr] = vdccal(VDC_inp,E
 %   DCE_SRF    - DC electric field in SRF (Ex=0)
 %   PSP        - Probe-to-spacecraft potential
 %   ScPot      - Spacecraft potential (PRELIMINARY PROXY)
-%   codeVerStr - Date format version string for function itself. Used by BICAS.
+%   codeVerStr - Date format version string for function itself.
+%                This is used by BICAS for setting the relevant CDF global
+%                attribute to indicate the version of the algorithm used to
+%                produce a particular dataset (CDF file).
 %   matVerStr  - Version string representing .mat file. Currently filename.
-%                Used by BICAS.
+%                This is used by BICAS for setting the relevant CDF global
+%                attribute to indicate the calibration data file used to produce
+%                a particular dataset (CDF file).
 %
 % Loads .mat file produced by solo.correlate_probes_batch (script) if
 % calfile_name is empty.
@@ -40,17 +45,16 @@ a = load(calfile_name);
 
 
 
-%===========================================================================
-% Date strings that represent the version of calibration. These strings are
-% used by BICAS to set a CDF global attribute in official datasets for
-% traceability.
-% --
+%=============================================================
+% Set return values that represent the version of calibration
+%=============================================================
 % Version of the function (not .mat file).
-% NOTE: This value is meant to be be updated by hand, not by an automatic
-% timestamp, so that a constant value represents the same function.
-%===========================================================================
+% NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
+% timestamp, so that a constant value represents the same function/algorithm.
 codeVerStr = '2021-10-21T12:00:00';
 % Version of the .mat file. Using filename, or at least for now.
+% This string is used by BICAS to set a CDF global attribute in official
+% datasets for traceability.
 [~, basename, suffix] = fileparts(calfile_name);
 matVerStr  = [basename, suffix];   % Only use filename, not entire path.
 
