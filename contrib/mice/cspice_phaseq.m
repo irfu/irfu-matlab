@@ -33,50 +33,52 @@
 %
 %   Given:
 %
-%      et       the epochs, specified in ephemeris seconds past J2000, at which
-%               to compute the phase angle.
+%      et       the epoch(s), specified in ephemeris seconds past J2000, at
+%               which to compute the phase angle.
 %
 %               [1,n] = size(et), double = class(et)
 %
 %      target   the string naming of the target body.
 %
+%               [1,c1] = size(target), char = class(target)
+%
 %               Optionally, you may supply the integer NAIF ID code
 %               for the body as a string. For example both 'MOON' and
 %               '301' are legitimate strings that designate the Moon.
 %
 %               Case and leading or trailing blanks are not significant
-%               in the string 'target'.
-%
-%               [1,c1] = size(target), char = class(target)
+%               in the string `target'.
 %
 %      illmn    the string naming the illuminating body.
 %
+%               [1,c2] = size(target), char = class(target)
+%
 %               Optionally, you may supply the integer NAIF ID code
 %               for the body as a string. For example both 'MOON' and
 %               '301' are legitimate strings that designate the Moon.
 %
 %               Case and leading or trailing blanks are not significant
-%               in the string 'illmn'.
+%               in the string `illmn'.
 %
-%               In most cases, 'illmn' is the sun.
-%
-%               [1,c2] = size(target), char = class(target)
+%               In most cases, `illmn' is the sun.
 %
 %      obsrvr   the string naming the observing body, typically a
 %               spacecraft, the earth, or a surface point on the earth.
 %
+%               [1,c3] = size(obsrvr), char = class(obsrvr)
+%
 %               Optionally, you may supply the integer NAIF ID code
 %               for the body as a string. For example both 'MOON' and
 %               '301' are legitimate strings that designate the Moon.
 %
 %               Case and leading or trailing blanks are not significant
-%               in the string 'obsrvr'.
-%
-%               [1,c3] = size(obsrvr), char = class(obsrvr)
+%               in the string `obsrvr'.
 %
 %      abcorr   the string naming the aberration corrections to apply
 %               to the state evaluations to account for one-way light time and
 %               stellar aberration.
+%
+%               [1,c4] = size(abcorr), char = class(abcorr)
 %
 %               This routine accepts only reception mode aberration
 %               corrections. See the header of cspice_spkezr for a detailed
@@ -87,40 +89,44 @@
 %                  'NONE'     Apply no correction. Returns the "true"
 %                             geometric state.
 %
-%                  'LT'       "Reception" case:  correct for
+%                  'LT'       "Reception" case: correct for
 %                             one-way light time using a Newtonian
 %                             formulation.
 %
-%                  'LT+S'     "Reception" case:  correct for
+%                  'LT+S'     "Reception" case: correct for
 %                             one-way light time and stellar
 %                             aberration using a Newtonian
 %                             formulation.
 %
-%                  'CN'       "Reception" case:  converged
+%                  'CN'       "Reception" case: converged
 %                             Newtonian light time correction.
 %
-%                  'CN+S'     "Reception" case:  converged
+%                  'CN+S'     "Reception" case: converged
 %                             Newtonian light time and stellar
 %                             aberration corrections.
 %
 %               Case and leading or trailing blanks are not significant
-%               in the string 'abcorr'.
-%
-%               [1,c4] = size(abcorr), char = class(abcorr)
+%               in the string `abcorr'.
 %
 %   the call:
 %
-%      phase = cspice_phaseq( et, target, illum, obsrvr, abcorr )
+%      [phaseq] = cspice_phaseq( et, target, illmn, obsrvr, abcorr )
 %
 %   returns:
 %
-%      phase   the optionally light-time corrected phase angle between
-%              'target' and 'illmn' as observed  from 'obsrvr'.
-%              Units are radians.  The range of 'phase' is [0, pi].
+%      phaseq   the optionally light-time corrected phase angle(s) between
+%               `target' and `illmn' as observed  from `obsrvr'.
 %
-%              'phase' return with the same vectorization measure (N) as 'et'.
+%               [1,n] = size(phaseq), double = class(phaseq)
 %
-%              [1,n] = size(phase), double = class(phase)
+%               Units are radians. The range of `phaseq' is [0, pi].
+%
+%               `phaseq' return with the same vectorization measure (N) as
+%               `et'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -128,12 +134,24 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   1) Determine the time intervals from December 1, 2006 UTC to
+%      January 31, 2007 UTC for which the sun-moon-earth configuration
+%      phase angle satisfies the relation conditions with respect to a
+%      reference value of .57598845 radians (the phase angle at
+%      January 1, 2007 00:00:00.000 UTC, 33.001707 degrees). Also
+%      determine the time intervals corresponding to the local maximum and
+%      minimum phase angles, and the absolute maximum and minimum phase
+%      angles during the search interval. The configuration defines the
+%      sun as the illuminator, the moon as the target, and the earth as
+%      the observer.
+%
 %      Use the meta-kernel shown below to load the required SPICE
 %      kernels.
 %
+%
 %         KPL/MK
 %
-%         File name: standard.tm
+%         File name: phaseq_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The kernels shown here should not be
@@ -162,111 +180,109 @@
 %
 %         \begintext
 %
-%   Example:
+%         End of meta-kernel
 %
-%      Determine the time intervals from December 1, 2006 UTC to
-%      January 31, 2007 UTC for which the sun-moon-earth configuration
-%      phase angle satisfies the relation conditions with respect to a
-%      reference value of .57598845 radians (the phase angle at
-%      January 1, 2007 00:00:00.000 UTC, 33.001707 degrees). Also
-%      determine the time intervals corresponding to the local maximum and
-%      minimum phase angles, and the absolute maximum and minimum phase
-%      angles during the search interval. The configuration defines the
-%      sun as the illuminator, the moon as the target, and the earth as
-%      the observer.
 %
-%      MAXWIN  =  5000;
-%      TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###';
+%      Example code begins here.
 %
-%      relate = { '=', '<', '>', ...
-%                 'LOCMIN', 'ABSMIN', 'LOCMAX', 'ABSMAX' };
 %
-%      %
-%      % Define the location for the phase angle calculation as the
-%      % geometric center of the target.
-%      %
-%      pos = [ 0, 0, 0 ]';
+%      function phaseq_ex1()
 %
-%      %
-%      % Load kernels.
-%      %
-%      cspice_furnsh( 'standard.tm' );
+%         MAXWIN  =  5000;
+%         TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###';
 %
-%      %
-%      % Store the time bounds of our search interval in
-%      % the cnfine confinement window.
-%      %
-%      et = cspice_str2et( { '2006 DEC 01', '2007 JAN 31'} );
-%
-%      %
-%      % Search using a step size of 1 day (in units of seconds).
-%      % The reference value is 0.57598845 radians. We're not using the
-%      % adjustment feature, so we set 'adjust' to zero.
-%      %
-%      target  = 'MOON';
-%      illum   = 'SUN';
-%      abcorr  = 'LT+S';
-%      obsrvr  = 'EARTH';
-%      refval  = 0.57598845;
-%      adjust  = 0.;
-%      step    = cspice_spd;
-%      nintvls = MAXWIN;
-%      cnfine  = cspice_wninsd( et(1), et(2) );
-%
-%      for j=1:numel( relate )
-%
-%         fprintf( 'Relation condition: %s\n',  char( relate(j) ) )
+%         relate = { '=', '<', '>', ...
+%                    'LOCMIN', 'ABSMIN', 'LOCMAX', 'ABSMAX' };
 %
 %         %
-%         % Perform the search. The SPICE window 'result' contains
-%         % the set of times when the condition is met.
+%         % Define the location for the phase angle calculation as the
+%         % geometric center of the target.
 %         %
-%         result = cspice_gfpa( target,    illum,  abcorr, obsrvr, ...
-%                               relate(j), refval, adjust, step,  ...
-%                               nintvls,   cnfine );
+%         pos = [ 0, 0, 0 ]';
 %
 %         %
-%         % Display the results.
+%         % Load kernels.
 %         %
-%         count = cspice_wncard(result);
+%         cspice_furnsh( 'phaseq_ex1.tm' );
 %
-%         if ( isequal( count, 0 ) )
+%         %
+%         % Store the time bounds of our search interval in
+%         % the cnfine confinement window.
+%         %
+%         et = cspice_str2et( { '2006 DEC 01', '2007 JAN 31'} );
 %
-%               fprintf( 'Result window is empty.\n\n' );
+%         %
+%         % Search using a step size of 1 day (in units of seconds).
+%         % The reference value is 0.57598845 radians. We're not using the
+%         % adjustment feature, so we set `adjust' to zero.
+%         %
+%         target  = 'MOON';
+%         illum   = 'SUN';
+%         abcorr  = 'LT+S';
+%         obsrvr  = 'EARTH';
+%         refval  = 0.57598845;
+%         adjust  = 0.;
+%         step    = cspice_spd;
+%         nintvls = MAXWIN;
+%         cnfine  = cspice_wninsd( et(1), et(2) );
 %
-%         else
+%         for j=1:numel( relate )
 %
-%            for i=1:count
+%            fprintf( 'Relation condition: %s\n',  char( relate(j) ) )
 %
-%               %
-%               % Fetch the endpoints of the Ith interval
-%               % of the result window.
-%               %
-%               [left, right] = cspice_wnfetd( result, i );
+%            %
+%            % Perform the search. The SPICE window `result' contains
+%            % the set of times when the condition is met.
+%            %
+%            result = cspice_gfpa( target,    illum,  abcorr, obsrvr, ...
+%                                  relate(j), refval, adjust, step,  ...
+%                                  nintvls,   cnfine );
 %
-%               phase = cspice_phaseq( [left, right], target, illum, ...
-%                                      obsrvr, abcorr );
+%            %
+%            % Display the results.
+%            %
+%            count = cspice_wncard(result);
 %
-%               output = cspice_timout( [left,right], TIMFMT );
+%            if ( isequal( count, 0 ) )
 %
-%               fprintf( 'Start time = %s %16.9f\n', output(1,:), phase(1) )
-%               fprintf( 'Stop time  = %s %16.9f\n', output(2,:), phase(2) )
+%                  fprintf( 'Result window is empty.\n\n' );
+%
+%            else
+%
+%               for i=1:count
+%
+%                  %
+%                  % Fetch the endpoints of the Ith interval
+%                  % of the result window.
+%                  %
+%                  [left, right] = cspice_wnfetd( result, i );
+%
+%                  phase = cspice_phaseq( [left, right], target, illum, ...
+%                                         obsrvr, abcorr );
+%
+%                  output = cspice_timout( [left,right], TIMFMT );
+%
+%                  fprintf( 'Start time = %s %16.9f\n', output(1,:), phase(1) )
+%                  fprintf( 'Stop time  = %s %16.9f\n', output(2,:), phase(2) )
+%
+%               end
+%
+%               disp( ' ')
 %
 %            end
 %
-%            disp( ' ')
-%
 %         end
 %
-%      end
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
 %
 %      Relation condition: =
 %      Start time = 2006-DEC-02 13:31:34.414      0.575988450
@@ -316,6 +332,7 @@
 %      Start time = 2007-JAN-19 04:27:54.600      3.074603891
 %      Stop time  = 2007-JAN-19 04:27:54.600      3.074603891
 %
+%
 %-Particulars
 %
 %   This routine returns the phase angle using the location of the
@@ -323,40 +340,96 @@
 %   bodies).
 %
 %
-%                       ILLUM      OBS
-%       ILLUM as seen      ^       /
-%       from TARG at       |      /
-%       ET - LT.           |     /
-%                         >|..../< phase angle
-%                          |   /
-%                        . |  /
-%                      .   | /
-%                     .    |v     TARG as seen from OBS
-%               SEP   .   TARG    at ET
-%                      .  /
-%                        /
-%                       v
 %
-%        PI = SEP + PHASE
+%                     illmn     obsrvr
+%     illmn as seen      ^       /
+%     from target at     |      /
+%     et - LT.           |     /
+%                       >|..../< phase angle
+%                        |   /
+%                      . |  /
+%                    .   | /
+%                   .    |v        target as seen from obsrvr
+%             sep   . target      at et
+%                    .  /
+%                      /
+%                     v
 %
-%        so
 %
-%        PHASE = PI - SEP
 %
-%-Required Reading
+%      pi = sep + phase;
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine phaseq_c.
+%      so
+%
+%      phase = pi - sep;
+%
+%-Exceptions
+%
+%   1)  If the body name to SPICE ID look-up fails for any of the
+%       `target', `illmn', or `obsrvr' names, the error
+%       SPICE(IDCODENOTFOUND) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If the aberration correct, `abcorr', indicates a transmission
+%       based correction, the error SPICE(INVALIDOPTION) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   3)  If the `target', `illmn', and `obsrvr' are not unique, the error
+%       SPICE(BODIESNOTDISTINCT) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If any of the input arguments, `et', `target', `illmn',
+%       `obsrvr' or `abcorr', is undefined, an error is signaled by
+%       the Matlab error handling system.
+%
+%   5)  If any of the input arguments, `et', `target', `illmn',
+%       `obsrvr' or `abcorr', is not of the expected type, or it does
+%       not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   B.V. Semenov        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 02-FEB-2017, BVS (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%     Shortened permutted index entry.
+%       Changed output argument name "phase" to "phaseq" to comply with NAIF
+%       standard. Fixed typos in header. Added -Parameters, -Exceptions,
+%       -Files, -Restrictions, -Literature_References and
+%       -Author_and_Institution sections.
 %
-%   -Mice Version 1.0.0, 13-MAR-2012, EDW (JPL)
+%       Edited the header to comply with NAIF standard.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 02-FEB-2017 (BVS)
+%
+%       Shortened permutted index entry.
+%
+%   -Mice Version 1.0.0, 13-MAR-2012 (EDW)
 %
 %-Index_Entries
 %
@@ -364,7 +437,7 @@
 %
 %-&
 
-function [phase] = cspice_phaseq( et, target, illmn, obsrvr, abcorr )
+function [phaseq] = cspice_phaseq( et, target, illmn, obsrvr, abcorr )
 
    switch nargin
       case 5
@@ -377,7 +450,7 @@ function [phase] = cspice_phaseq( et, target, illmn, obsrvr, abcorr )
 
       otherwise
 
-         error ( ['Usage: [_phase_] = cspice_phaseq( _et_, '       ...
+         error ( ['Usage: [_phaseq_] = cspice_phaseq( _et_, '       ...
                                   '`target`, `illmn`, `obsrvr`, `abcorr` )'] )
 
    end
@@ -386,11 +459,7 @@ function [phase] = cspice_phaseq( et, target, illmn, obsrvr, abcorr )
    % Call the MEX library.
    %
    try
-      [phase] = mice('phaseq_c', et, target, illmn, obsrvr, abcorr );
-   catch
-      rethrow(lasterror)
+      [phaseq] = mice('phaseq_c', et, target, illmn, obsrvr, abcorr );
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
-

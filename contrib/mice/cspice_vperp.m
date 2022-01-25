@@ -33,35 +33,39 @@
 %
 %   Given:
 %
-%      a   the vector(s) whose component orthogonal to 'b' is sought.
+%      a        double precision, 3-dimensional vector(s).
 %
-%          [3,n] = size(a); double = class(a)
+%               [3,n] = size(a); double = class(a)
 %
-%          (There is a unique decomposition of a into a sum v + p, where v is
-%          parallel to b and p is orthogonal to b.  We want the component p.)
+%               It the vector whose component orthogonal to `b' is sought.
+%               (There is a unique decomposition of `a' into a sum v + p,
+%               where `v' is parallel to `b' and `p' is orthogonal to `b'. We
+%               want the component `p'.)
 %
-%      b   the second vector(s) used as a reference for the decomposition
-%          of 'a'.
+%      b        double precision, 3-dimensional vector(s).
 %
-%          [3,n] = size(b); double = class(b)
+%               [3,n] = size(b); double = class(b)
 %
-%      An implicit assumption exists that 'a' and 'b' are specified
-%      in the same reference frame. If this is not the case, the numerical
-%      result has no meaning.
+%               This vector is the vector used as a reference for the
+%               decomposition of `a'.
 %
 %   the call:
 %
-%      vperp = cspice_vperp( a, b )
+%      [p] = cspice_vperp( a, b )
 %
 %   returns:
 %
-%      vperp   the 3-vector(s) containing the component of 'a' orthogonal
-%              to 'b'.
+%      p        the double precision, 3-dimensional vector(s) containing the
+%               component of `a' that is orthogonal to `b'.
 %
-%              [3,n] = size(vperp); double = class(vperp)
+%               [3,n] = size(p); double = class(p)
 %
-%             'vperp' returns with the same vectorization measure, N, as
-%             'a' and 'b'
+%               `p' returns with the same vectorization measure, N, as
+%               `a' and `b'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -69,64 +73,130 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define two vector sets.
-%      %
-%      a = [ [ 6, 6, 6]', ...
-%            [ 6, 6, 6]', ...
-%            [ 6, 6, 0]', ...
-%            [ 6, 0, 0]' ]
+%   1) Define two vector sets and compute the component of the vector
+%      in the first set perpendicular to the vector in the second set.
 %
-%      b = [ [ 2, 0, 0]', ...
-%            [-3, 0, 0]', ...
-%            [ 0, 7, 0]', ...
-%            [ 0, 0, 9]' ]
-%
-%      %
-%      % Calculate the decomposition.
-%      %
-%      p = cspice_vperp( a, b )
-%
-%   MATLAB outputs:
-%
-%      a =
-%
-%           6     6     6     6
-%           6     6     6     0
-%           6     6     0     0
+%      Example code begins here.
 %
 %
-%      b =
+%      function vperp_ex1()
 %
-%           2    -3     0     0
-%           0     0     7     0
-%           0     0     0     9
+%         %
+%         % Define two vector sets.
+%         %
+%         a = [ [ 6, 6, 6]', ...
+%               [ 6, 6, 6]', ...
+%               [ 6, 6, 0]', ...
+%               [ 6, 0, 0]' ];
+%
+%         b = [ [ 2, 0, 0]', ...
+%               [-3, 0, 0]', ...
+%               [ 0, 7, 0]', ...
+%               [ 0, 0, 9]' ];
+%
+%         %
+%         % Calculate the decomposition.
+%         %
+%         p = cspice_vperp( a, b );
+%
+%         for i=1:4
+%            fprintf( 'Vector A     : %5.1f %5.1f %5.1f\n', ...
+%                                a(1,i), a(2,i), a(3,i) )
+%            fprintf( 'Vector B     : %5.1f %5.1f %5.1f\n', ...
+%                                b(1,i), b(2,i), b(3,i) )
+%            fprintf( 'Perpendicular: %5.1f %5.1f %5.1f\n\n', ...
+%                                p(1,i), p(2,i), p(3,i) )
+%         end
 %
 %
-%      p =
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%           0     0     6     6
-%           6     6     0     0
-%           6     6     0     0
+%
+%      Vector A     :   6.0   6.0   6.0
+%      Vector B     :   2.0   0.0   0.0
+%      Perpendicular:   0.0   6.0   6.0
+%
+%      Vector A     :   6.0   6.0   6.0
+%      Vector B     :  -3.0   0.0   0.0
+%      Perpendicular:   0.0   6.0   6.0
+%
+%      Vector A     :   6.0   6.0   0.0
+%      Vector B     :   0.0   7.0   0.0
+%      Perpendicular:   6.0   0.0   0.0
+%
+%      Vector A     :   6.0   0.0   0.0
+%      Vector B     :   0.0   0.0   9.0
+%      Perpendicular:   6.0   0.0   0.0
+%
 %
 %-Particulars
 %
+%   Given and non-zero vector `b' and a vector `a', there is a unique
+%   decomposition of `a' as a sum v + p such that `p' is orthogonal
+%   to `b' and `v' is parallel to `b'. This routine finds the vector `p'.
+%
+%   If `b' is a zero vector, `p' will be identical to `a'.
+%
+%-Exceptions
+%
+%   1)  If any of the input arguments, `a' or `b', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   2)  If any of the input arguments, `a' or `b', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%   3)  If the input vectorizable arguments `a' and `b' do not have
+%       the same measure of vectorization (N), an error is signaled by
+%       the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine vperp_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   [1]  G. Thomas and R. Finney, "Calculus and Analytic Geometry,"
+%        7th Edition, Addison Wesley, 1988.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 09-NOV-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed output argument name "vperp" to "p".
 %
-%   -Mice Version 1.0.0, 22-APR-2010, EDW (JPL)
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and reformatted code example's output.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 09-NOV-2012 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-APR-2010 (EDW)
 %
 %-Index_Entries
 %
@@ -134,7 +204,7 @@
 %
 %-&
 
-function [vperp] = cspice_vperp( a, b)
+function [p] = cspice_vperp( a, b)
 
    switch nargin
       case 2
@@ -144,7 +214,7 @@ function [vperp] = cspice_vperp( a, b)
 
       otherwise
 
-         error ( 'Usage: [_vperp(3)_] = cspice_vperp(_a(3)_, _b(3)_)' )
+         error ( 'Usage: [_p(3)_] = cspice_vperp(_a(3)_, _b(3)_)' )
 
    end
 
@@ -153,9 +223,9 @@ function [vperp] = cspice_vperp( a, b)
    % this script.
    %
    try
-      [vperp] = mice('vperp_c', a, b);
-   catch
-      rethrow(lasterror)
+      [p] = mice('vperp_c', a, b);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

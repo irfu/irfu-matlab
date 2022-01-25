@@ -43,7 +43,7 @@
 %
 %      ifname   a descriptive internal filename for the CK.
 %
-%               [1,m2] = size(ifname); char = class(ifname)
+%               [1,c2] = size(ifname); char = class(ifname)
 %
 %                  or
 %
@@ -55,13 +55,17 @@
 %
 %   the call:
 %
-%      handle = cspice_ckopn( name, ifname, ncomch )
+%      [handle] = cspice_ckopn( name, ifname, ncomch )
 %
 %   returns:
 %
-%      handle   the file handle assigned to 'fname'
+%      handle   the file handle assigned to `fname'
 %
 %               [1,1] = size(handle); int32 = class(handle)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -69,51 +73,166 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define needed parameters, a name for the CK, the
-%      % file internal name, and the number of characters
-%      % to reserve for a comment block.
-%      %
-%      CK1        = 'type1.bc';
-%      IFNAME     = 'CK';
-%      NCOMCH     = 10;
+%   1) Create a CK type 3 segment; fill with data for a simple time
+%      dependent rotation and angular velocity, and reserve room in
+%      the CK comments area for 5000 characters.
 %
-%      %
-%      % Open a new kernel.
-%      %
-%       handle = cspice_ckopn( CK1, IFNAME, NCOMCH);
+%      Example code begins here.
 %
-%         ... do some writes to the open CK file ...
 %
-%      %
-%      % SAFELY close the file
-%      %
-%      cspice_ckcls( handle )
+%      function ckopn_ex1()
+%
+%         INST3      = -77703;
+%         NCOMCH     = 5000;
+%         REF        = 'J2000';
+%         CK3        = 'ckopn_ex1.bc';
+%         IFNAME     = 'Test CK type 3 created by cspice_ckw03';
+%         SEGID3     = 'Test type 3 segment test CK';
+%         SECPERTICK = 0.001;
+%         SPACING    = 10.0;
+%         MAXREC     = 50;
+%
+%         %
+%         % Note, sclkdp is a vector input, not a vectorized scalar.
+%         %
+%         sclkdp    = [1:MAXREC]';
+%         sclkdp    = (sclkdp - 1)*SPACING;
+%
+%         spinrate  = [1:MAXREC]*1.e-6;
+%
+%         theta     = [0:MAXREC-1]*SPACING;
+%         theta     = theta .* spinrate;
+%
+%         %
+%         % Create a zero-filled array for the angular velocity
+%         % vectors. This allocates the needed memory and
+%         % defines a variable of the correct shape.
+%         %
+%         expavvs = zeros( [3 MAXREC] );
+%
+%         a1 = zeros( [1 MAXREC] );
+%         a2 = a1;
+%
+%         size(theta)
+%         size(a2)
+%         size(a1)
+%         r  = cspice_eul2m( theta, a2, a1, 3, 1 ,3 );
+%         q  = cspice_m2q( r );
+%
+%         %
+%         % Fill the z component of the expavvs vectors with the
+%         % corresponding spinrate element scaled to SECPERTICK.
+%         %
+%         expavvs(3,:) = spinrate/SECPERTICK;
+%
+%         begtim = sclkdp(1);
+%         endtim = sclkdp(MAXREC);
+%         avflag = 1;
+%
+%         starts = [1:(MAXREC/2)]';
+%         starts = (starts-1)*2*SPACING;
+%
+%         %
+%         % Open a new CK, write the data, catch any errors.
+%         %
+%         try
+%            handle = cspice_ckopn( CK3, IFNAME, NCOMCH )
+%            cspice_ckw03( handle,  ...
+%                          begtim,  ...
+%                          endtim,  ...
+%                          INST3,   ...
+%                          REF,     ...
+%                          avflag,  ...
+%                          SEGID3,  ...
+%                          sclkdp,  ...
+%                          q,       ...
+%                          expavvs, ...
+%                          starts )
+%         catch
+%
+%            error( [ 'Failure: ' lasterr] )
+%         end
+%
+%         cspice_ckcls(handle)
+%
+%
+%      When this program is executed, no output is presented on
+%      screen. After run completion, a new CK file exists in the
+%      output directory.
 %
 %-Particulars
+%
+%   Open a new CK file, reserving room for comments if requested.
 %
 %   A cspice_ckcls call should balance every cspice_ckopn
 %   call.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine ckopn_c.
+%   1)  If the value of `ncomch' is negative, a value of zero (0) will
+%       be used for the number of comment characters to be set aside
+%       for comments.
+%
+%   2)  If an error occurs while attempting to open a CK file the
+%       value of `handle' will not represent a valid file handle.
+%
+%   3)  If any of the input arguments, `fname', `ifname' or `ncomch',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   4)  If any of the input arguments, `fname', `ifname' or `ncomch',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   See `fname' and `handle'.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   CK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 29-OCT-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 26-NOV-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Updated the header to comply with NAIF standard. Added
+%       complete code example based on existing fragment.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       extended -Particulars.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 29-OCT-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
-%   open a new ck file
+%   open a new CK file
 %
 %-&
 
@@ -137,7 +256,7 @@ function [handle] = cspice_ckopn( fname, ifname, ncomch )
    %
    try
       [handle] = mice( 'ckopn_c', fname, ifname, ncomch );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

@@ -34,29 +34,33 @@
 %
 %   Given:
 %
-%      sc   the NAIF ID of the spacecraft clock whose encoded SCLK value 
-%           at the epoch 'et' is desired.
+%      sc       the NAIF ID of the spacecraft clock whose encoded SCLK value
+%               at the epoch `et' is desired.
 %
-%           [1,1] = size(sc); int32 = class(sc)
+%               [1,1] = size(sc); int32 = class(sc)
 %
-%      et   the ephemeris time(s) expressed as ephemeris seconds
-%           past J2000.
+%      et       the ephemeris time(s) expressed as ephemeris seconds
+%               past J2000.
 %
-%           [1,n] = size(et); double = class(et)
+%               [1,n] = size(et); double = class(et)
 %
 %   the call:
 %
-%      sclkch = cspice_sce2s( sc, et )
+%      [sclkch] = cspice_sce2s( sc, et )
 %
 %   returns:
 %
-%      sclkch   the representation(s) of spacecraft 'sc' clock count that 
-%               corresponds to 'et'.
+%      sclkch   the representation(s) of spacecraft `sc' clock count that
+%               corresponds to `et'.
 %
 %               [n,c1] = size(sclkch); char = class(sclkch)
 %
 %               'sclkch' returns with the same vectorization measure (N)
 %               as 'et'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -64,116 +68,215 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Load the leapseconds kernel for time conversion.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%   1) Convert a series of UTC times to the character string
+%      representation of the CASSINI spacecraft clock values.
 %
-%      %
-%      % Assign values for the spacecraft ID (Voyager2),
-%      % SCLK kernel.
-%      %
-%      SC         = -32;
-%      SCLK       = '/kernels/voyager2/sclk/vg200004.tsc';
-%      event_time = '1979 JUL 05 21:50:21.23379';
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Load the SCLK kernel.
-%      %
-%      cspice_furnsh( SCLK )
 %
-%      %
-%      % Convert the time string to ephemeris time.
-%      %
-%      et = cspice_str2et( event_time );
+%         KPL/MK
 %
-%      %
-%      % Convert the ephemeris time to the corresponding
-%      % SCLK string appropriate for this spacecraft
-%      %
-%      sclkch = cspice_sce2s( SC, et );
+%         File name: sce2s_ex1.tm
 %
-%      disp( 'Scalar' )
-%      txt = sprintf( 'Ephemeris time : %20.8f',  et );
-%      disp( txt )
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      txt = sprintf( 'SCLK string    : %s', sclkch );
-%      disp( txt )
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%      disp(' ')
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%      %
-%      % Vectorized use, a vector of UTC times.
-%      %
-%      event_time =  strvcat( '1979 JUL 05 22:50:21.23379', ...
-%                             '1979 JUL 05 23:50:21.23379', ...
-%                             '1979 JUL 06 00:50:21.23379' );
+%            File name                     Contents
+%            ---------                     ------------
+%            naif0012.tls                  Leapseconds
+%            cas00071.tsc                  CASSINI SCLK
 %
-%      %
-%      % Convert the time strings to ET.
-%      %
-%      et = cspice_str2et( event_time );
 %
-%      %
-%      % Convert the ephemeris time to the corresponding
-%      % SCLK string appropriate for this spacecraft
-%      %
-%      sclkch = cspice_sce2s( SC, et );
+%         \begindata
 %
-%      disp( 'Vector:' )
-%      for i=1:3
+%            KERNELS_TO_LOAD = ( 'naif0012.tls',
+%                                'cas00071.tsc' )
 %
-%         txt = sprintf( 'Ephemeris time : %20.8f',  et(i) );
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function sce2s_ex1()
+%
+%         %
+%         % Load kernels.
+%         %
+%         cspice_furnsh( 'sce2s_ex1.tm' )
+%
+%         %
+%         % Assign values for the spacecraft ID (CASSINI).
+%         %
+%         SC         = -82;
+%         event_time = '2004 JUN 11 11:00:37.57200';
+%
+%         %
+%         % Convert the time string to ephemeris time.
+%         %
+%         et = cspice_str2et( event_time );
+%
+%         %
+%         % Convert the ephemeris time to the corresponding
+%         % SCLK string appropriate for this spacecraft
+%         %
+%         sclkch = cspice_sce2s( SC, et );
+%
+%         disp( '         UTC Time               SCLK string'   )
+%         disp( '--------------------------   ----------------' )
+%         disp( 'Scalar:' )
+%         txt    = sprintf( '%s   %s', event_time, sclkch );
 %         disp( txt )
 %
-%         txt = sprintf( 'SCLK string    : %s', sclkch(i,:) );
-%         disp( txt )
-%         disp (' ')
+%         %
+%         % Vectorized use, a vector of UTC times.
+%         %
+%         event_time =  strvcat( '2004 JUN 11 12:00:37.57200', ...
+%                                '2004 JUN 11 13:00:37.57200', ...
+%                                '2004 JUN 11 14:00:37.57200' );
 %
-%      end
+%         %
+%         % Convert the time strings to ET.
+%         %
+%         et = cspice_str2et( event_time );
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
+%         %
+%         % Convert the ephemeris time to the corresponding
+%         % SCLK string appropriate for this spacecraft
+%         %
+%         sclkch = cspice_sce2s( SC, et );
 %
-%   MATLAB outputs:
+%         disp( 'Vector:' )
+%         for i=1:3
+%            txt = sprintf( '%s   %s', event_time(i,:), sclkch(i,:));
+%            disp( txt )
+%         end
 %
-%      Scalar
-%      Ephemeris time :  -646668528.58223021
-%      SCLK string    : 2/20538:39:768
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
 %
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%               UTC Time               SCLK string
+%      --------------------------   ----------------
+%      Scalar:
+%      2004 JUN 11 11:00:37.57200   1/1465644305.079
 %      Vector:
-%      Ephemeris time :  -646664928.58223140
-%      SCLK string    : 2/20539:54:768
+%      2004 JUN 11 12:00:37.57200   1/1465647905.085
+%      2004 JUN 11 13:00:37.57200   1/1465651505.092
+%      2004 JUN 11 14:00:37.57200   1/1465655105.098
 %
-%      Ephemeris time :  -646661328.58223248
-%      SCLK string    : 2/20541:09:768
-%
-%      Ephemeris time :  -646657728.58223367
-%      SCLK string    : 2/20542:24:768
 %
 %-Particulars
 %
+%   This routine is provided as a convenience; it is simply shorthand
+%   for the code fragment
+%
+%      [sclkdp] = cspice_sce2t(  sc, et     );
+%      [sclkch] = cspice_scdecd( sc, sclkdp );
+%
+%-Exceptions
+%
+%   1)  If an SCLK kernel has not been loaded, does not contain all of
+%       the required data, or contains invalid data, an error is
+%       signaled by a routine in the call tree of this routine. The
+%       output argument `sclkch' will not be modified. This routine
+%       assumes that an SCLK kernel appropriate to the spacecraft
+%       clock identified by the input argument `sc' has been loaded.
+%
+%   2)  If a leapseconds kernel is required for conversion between
+%       SCLK and `et' but is not loaded, an error is signaled by a
+%       routine in the call tree of this routine. The output argument
+%       `sclkch' will not be modified. When using an SCLK kernel that
+%       maps SCLK to a time system other than `et' (also called
+%       barycentric dynamical time---`TDB'), it is necessary to have a
+%       leapseconds kernel loaded at the time this routine is called.
+%
+%       The time system to which an SCLK kernel maps SCLK epochs is
+%       indicated by the variable SCLK_TIME_SYSTEM_nn in the kernel,
+%       where nn is the negative of the NAIF integer code for the
+%       spacecraft. The time system used in a kernel is TDB if and
+%       only if the variable is assigned the value 1.
+%
+%   3)  If the input `et' value is not representable in the spacecraft
+%       clock string format for the spacecraft clock identified by `sc',
+%       an error is signaled by a routine in the call tree of this
+%       routine. The output argument `sclkch' will not be modified.
+%
+%   4)  If any of the input arguments, `sc' or `et', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   5)  If any of the input arguments, `sc' or `et', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   An SCLK kernel, appropriate to the spacecraft clock identified
+%   by `sc', must be loaded at the time this routine is called.
+%
+%   If the SCLK kernel used with this routine does not map SCLK
+%   directly to barycentric dynamical time, a leapseconds kernel
+%   must be loaded at the time this routine is called.
+%
+%-Restrictions
+%
 %   None.
 %
-%-Required Reading
-%
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine sce2s_c.
+%-Required_Reading
 %
 %   MICE.REQ
 %   SCLK.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 06-JAN-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement and meta-kernel with CASSINI PDS
+%       archived data. Reformatted code example output.
 %
-%   -Mice Version 1.0.0, 18-APR-2006, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 06-JAN-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 18-APR-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -198,8 +301,8 @@ function [sclkch] = cspice_sce2s(sc, et)
    %
    try
       [sclkch] = mice('sce2s_c',sc, et);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

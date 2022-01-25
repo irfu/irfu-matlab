@@ -35,27 +35,31 @@
 %
 %      v1,
 %      v2,
-%      v3         are 3-vectors constituting the vertices of
-%                 a triangular plate.
+%      v3       3-vectors constituting the vertices of
+%               a triangular plate.
 %
-%                 [3,1] = size(v1); double = class(v1)
-%                 [3,1] = size(v2); double = class(v2)
-%                 [3,1] = size(v3); double = class(v3)
+%               [3,1] = size(v1); double = class(v1)
+%               [3,1] = size(v2); double = class(v2)
+%               [3,1] = size(v3); double = class(v3)
 %
 %   the call:
 %
-%      [normal] = cspice_pltnrm(v1, v2, v3,)
+%      [normal] = cspice_pltnrm( v1, v2, v3 )
 %
 %   returns:
 %
-%      normal     is an outward normal vector of the plate defined by
-%                 the input vertices. The order of the vertices is
-%                 used to determine the choice of normal direction:
-%                 the normal vector is
+%      normal   an outward normal vector of the plate defined by
+%               the input vertices. The order of the vertices is
+%               used to determine the choice of normal direction:
+%               the normal vector is
 %
-%                    ( V2 - V1 ) x ( V3 - V2 )
+%                  ( v2 - v1 ) x ( v3 - v2 )
 %
-%                 [3,1] = size(normal); double = class(normal)
+%               [3,1] = size(normal); double = class(normal)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -63,12 +67,13 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
-%
-%      Compute an outward normal of an equilateral triangle lying
+%   1) Compute an outward normal of an equilateral triangle lying
 %      in the X-Y plane and centered at the origin.
 %
-%      function pltnrm_t
+%      Example code begins here.
+%
+%
+%      function pltnrm_ex1()
 %
 %         s = sqrt(3.0)/2;
 %
@@ -82,9 +87,13 @@
 %         fprintf ( 'NORMAL = %18.11e %18.11e %18.11e\n', ...
 %                   normal(1), normal(2), normal(3)      );
 %
-%   Matlab outputs:
 %
-%         NORMAL =  0.00000000000e+00  0.00000000000e+00  2.59807621135e+00
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      NORMAL =  0.00000000000e+00  0.00000000000e+00  2.59807621135e+00
+%
 %
 %-Particulars
 %
@@ -92,17 +101,58 @@
 %   vector to unit length. The caller can scale the vector using
 %   the routine cspice_vhat.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine pltnrm_c.
+%   1)  The input plate may be degenerate: it may be a line segment
+%       or a point. These are not considered to be erroneous inputs.
 %
-%   MICE.REQ
+%   2)  If any of the input arguments, `v1', `v2' or `v3', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `v1', `v2' or `v3', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
 %   DSK.REQ
+%   MICE.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 17-MAR-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections. Fixed
+%       minor typos in header.
+%
+%       Minor edits to the -Examples section to comply with NAIF standard.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 17-MAR-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
@@ -131,9 +181,6 @@ function [normal] = cspice_pltnrm( v1, v2, v3)
    %
    try
       [normal] = mice( 'pltnrm_c', v1, v2, v3);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-

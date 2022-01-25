@@ -29,7 +29,7 @@ if isempty(calfile_name)
     % Caller did not specify calibration file.
     % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
     % OFFICIAL DATASETS.
-    calfile_name = 'd23K123_20211021.mat';
+    calfile_name = 'd23K123_20220124.mat';
 else
     % Caller specified calibration file. Useful for debugging/testing new
     % calibrations.
@@ -146,6 +146,7 @@ for isub=1:length(sub_int_times)-1
     % the distance between the center of ANT1 and a symmetric antenna on the
     % other side having voltage V23 corr.
     Ez_SRF = V23 - V1;  %Note that V23 is not scaled with K123, d123.
+%     Ez_SRF = V23.*K123R.data(:,1)+K123R.data(:,2) - V1; % Scale V23.
     Ez_SRF = Ez_SRF*1e3/11.2;
     
     DCE_SRF = irf.ts_vec_xyz(VDC.time,[Ey_SRF*0 Ey_SRF Ez_SRF]);

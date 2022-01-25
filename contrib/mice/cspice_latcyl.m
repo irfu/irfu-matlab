@@ -50,7 +50,7 @@
 %
 %   the call:
 %
-%      [ r, lonc, z] = cspice_latcyl( radius, lon, lat)
+%      [ r, clon, z] = cspice_latcyl( radius, lon, lat)
 %
 %   returns:
 %
@@ -59,10 +59,10 @@
 %
 %             [1,n] = size(r); double = class(r)
 %
-%      lonc   the value(s) describing the cylindrical angle of the point of
+%      clon   the value(s) describing the cylindrical angle of the point of
 %             interest from the XZ plane measured in radians.
 %
-%             [1,n] = size(lonc); double = class(lonc)
+%             [1,n] = size(clon); double = class(clon)
 %
 %      z      the value(s) describing the height of the point above
 %             the XY plane.
@@ -72,140 +72,330 @@
 %             The arguments 'r' and 'z' return in the same units associated
 %             with 'radius'.
 %
-%             'r', 'lonc', and 'z' return with the same vectorization
+%             'r', 'clon', and 'z' return with the same vectorization
 %             measure, N, as the 'radius', 'lon', and 'lat'.
 %
-%-Examples
-%
-%   Any numerical results shown for this example may differ between
-%   platforms as the results depend on the SPICE kernels used as input
-%   and the machine specific arithmetic implementation.
-%
-%   Example (1):
-%
-%      %
-%      % Load an SPK, leapseconds, and PCK kernel set.
-%      %
-%      cspice_furnsh( 'standard.tm' )
-%
-%      %
-%      % Create a vector of scalar times.
-%      %
-%      et = [0:2]*2.*cspice_spd;
-%
-%      %
-%      % Retrieve the position of the moon seen from earth at 'et'
-%      % in the J2000 frame without aberration correction.
-%      %
-%      [pos, et] = cspice_spkpos( 'MOON', et, 'J2000', 'NONE', 'EARTH' );
-%
-%      %
-%      % Convert the array of position vectors 'pos' to latitudinal
-%      % coordinates.
-%      %
-%      [radius, longitude, latitude] = cspice_reclat(pos);
-%
-%      %
-%      % Convert the latitudinal coords to cylindrical.
-%      %
-%      [r, lonc, z ] = cspice_latcyl( radius, longitude, latitude);
-%
-%      %
-%      % Convert the cylindrical to rectangular.
-%      %
-%      [rectan] = cspice_cylrec( r, lonc, z);
-%
-%      %
-%      % Calculate the relative error against the original position
-%      % vectors.
-%      %
-%      (rectan-pos) ./ pos
-%
-%   MATLAB outputs:
-%
-%      1.0e-14 *
-%
-%                     0  -0.03701547067225   0.63783453323816
-%      0.02182376758148   0.01641520435413  -0.01531271963894
-%      0.01912147275010   0.01213804257114   0.02039513446643
-%
-%      The relative error between the original array of position vectors
-%      and those that resulted from the various coordinate conversion
-%      has magnitude on the order of 10^(-14).  A numerical
-%      demonstration of equality.
-%
-%   Example (2):
-%
-%      %
-%      % Define six sets of latitudinal coordinates, 'lon' and 'lat'
-%      % expressed in degrees - converted to radians by use
-%      % of cspice_rpd.
-%      %
-%      rad = [ 1.,  1., sqrt(2.), sqrt(2.),   1.,  0. ];
-%      lon = [ 0., 90.,     180.,     180., 180., 33. ] * cspice_rpd;
-%      lat = [ 0.,  0.,      45.,     -45.,  90.,  0. ] * cspice_rpd;
-%
-%      %
-%      % ...convert the latitudinal coordinates to cylindrical coordinates
-%      %
-%      [r, lonc, z] = cspice_latcyl(rad, lon, lat);
-%
-%      %
-%      % ...convert angular measure to degrees.
-%      %
-%      lonc = lonc * cspice_dpr;
-%      lon  = lon  * cspice_dpr;
-%      lat  = lat  * cspice_dpr;
-%
-%      %
-%      % Output banner.
-%      %
-%      disp('     r         lonc        z        radius      lon        lat   ')
-%      disp('  --------   --------   --------   --------   --------   --------')
-%
-%      %
-%      % Create an array of values for output.
-%      %
-%      output = [  r; lonc; z; rad; lon; lat ];
-%
-%      txt = sprintf( '%10.4f %10.4f %10.4f %10.4f %10.4f %10.4f\n', output );
-%      disp( txt )
-%
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
-%
-%   MATLAB outputs:
-%
-%        r         lonc        z        radius      lon        lat
-%     --------   --------   --------   --------   --------   --------
-%       1.0000     0.0000     0.0000     1.0000     0.0000     0.0000
-%       1.0000    90.0000     0.0000     1.0000    90.0000     0.0000
-%       1.0000   180.0000     1.0000     1.4142   180.0000    45.0000
-%       1.0000   180.0000    -1.0000     1.4142   180.0000   -45.0000
-%       0.0000   180.0000     1.0000     1.0000   180.0000    90.0000
-%       0.0000    33.0000     0.0000     0.0000    33.0000     0.0000
-%
-%-Particulars
+%-Parameters
 %
 %   None.
 %
-%-Required Reading
+%-Examples
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine latcyl_c.
+%   Any numerical results shown for these examples may differ between
+%   platforms as the results depend on the SPICE kernels used as input
+%   and the machine specific arithmetic implementation.
+%
+%   1) Compute the latitudinal coordinates of the position of the Moon
+%      as seen from the Earth, and convert them to cylindrical and
+%      rectangular coordinates.
+%
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
+%
+%
+%         KPL/MK
+%
+%         File name: latcyl_ex1.tm
+%
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
+%
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            naif0012.tls                  Leapseconds
+%
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'naif0012.tls'  )
+%
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function latcyl_ex1()
+%
+%         %
+%         % Load an SPK and leapseconds kernels.
+%         %
+%         cspice_furnsh( 'latcyl_ex1.tm' )
+%
+%         %
+%         % Convert the time to ET.
+%         %
+%         et = cspice_str2et( '2017 Mar 20' );
+%
+%         %
+%         % Retrieve the position of the moon seen from earth at 'et'
+%         % in the J2000 frame without aberration correction.
+%         %
+%         [pos, et] = cspice_spkpos( 'MOON', et, 'J2000', 'NONE', 'EARTH' );
+%
+%         fprintf( 'Original rectangular coordinates:\n' )
+%         fprintf( '   X          (km): %20.8f\n', pos(1) )
+%         fprintf( '   Y          (km): %20.8f\n', pos(2) )
+%         fprintf( '   Z          (km): %20.8f\n', pos(3) )
+%
+%         %
+%         % Convert the position vector 'pos' to latitudinal
+%         % coordinates.
+%         %
+%         [radius, lon, lat] = cspice_reclat(pos);
+%         fprintf( '\n' )
+%         fprintf( 'Latitudinal coordinates:\n' )
+%         fprintf( '   Radius     (km): %20.8f\n', radius )
+%         fprintf( '   Longitude (deg): %20.8f\n', lon * cspice_dpr )
+%         fprintf( '   Latitude  (deg): %20.8f\n', lat * cspice_dpr )
+%
+%         %
+%         % Convert the latitudinal coords to cylindrical.
+%         %
+%         [r, clon, z ] = cspice_latcyl( radius, lon, lat);
+%         fprintf( '\n' )
+%         fprintf( 'Cylindrical coordinates:\n' )
+%         fprintf( '   Radius     (km): %20.8f\n', r )
+%         fprintf( '   Longitude (deg): %20.8f\n', clon * cspice_dpr )
+%         fprintf( '   Z          (km): %20.8f\n', z )
+%
+%         %
+%         % Convert the cylindrical to rectangular.
+%         %
+%         [rectan] = cspice_cylrec( r, clon, z);
+%         fprintf( '\n' )
+%         fprintf( 'Rectangular coordinates from cspice_cylrec:\n' )
+%         fprintf( '   X          (km): %20.8f\n', rectan(1) )
+%         fprintf( '   Y          (km): %20.8f\n', rectan(2) )
+%         fprintf( '   Z          (km): %20.8f\n', rectan(3) )
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Original rectangular coordinates:
+%         X          (km):      -55658.44323296
+%         Y          (km):     -379226.32931475
+%         Z          (km):     -126505.93063865
+%
+%      Latitudinal coordinates:
+%         Radius     (km):      403626.33912495
+%         Longitude (deg):         -98.34959789
+%         Latitude  (deg):         -18.26566077
+%
+%      Cylindrical coordinates:
+%         Radius     (km):      383289.01777726
+%         Longitude (deg):         -98.34959789
+%         Z          (km):     -126505.93063865
+%
+%      Rectangular coordinates from cspice_cylrec:
+%         X          (km):      -55658.44323296
+%         Y          (km):     -379226.32931475
+%         Z          (km):     -126505.93063865
+%
+%
+%   2) Create a table showing a variety of latitudinal coordinates
+%      and the corresponding cylindrical coordinates.
+%
+%      Corresponding latitudinal and cylindrical coordinates are
+%      listed to three decimal places. Input and output angles are
+%      in degrees.
+%
+%
+%      Example code begins here.
+%
+%
+%      function latcyl_ex2()
+%
+%         %
+%         % Define six sets of latitudinal coordinates, `lon' and `lat'
+%         % expressed in degrees - converted to radians by use
+%         % of cspice_rpd.
+%         %
+%         rad = [ 1.,  1., sqrt(2.), sqrt(2.),   1.,  0. ];
+%         lon = [ 0., 90.,     180.,     180., 180., 33. ] * cspice_rpd;
+%         lat = [ 0.,  0.,      45.,     -45.,  90.,  0. ] * cspice_rpd;
+%
+%         %
+%         % ...convert the latitudinal coordinates to cylindrical coordinates
+%         %
+%         [r, clon, z] = cspice_latcyl(rad, lon, lat);
+%
+%         %
+%         % ...convert angular measure to degrees.
+%         %
+%         clon = clon * cspice_dpr;
+%         lon  = lon  * cspice_dpr;
+%         lat  = lat  * cspice_dpr;
+%
+%         %
+%         % Output banner.
+%         %
+%         disp('     r       clon       z        radius     lon       lat  ')
+%         disp('  -------  --------  --------   -------  --------  --------')
+%
+%         %
+%         % Create an array of values for output.
+%         %
+%         output = [ r; clon; z; rad; lon; lat ];
+%
+%         txt = sprintf( '%9.3f %9.3f %9.3f %9.3f %9.3f %9.3f\n', output );
+%         disp( txt )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%           r       clon       z        radius     lon       lat
+%        -------  --------  --------   -------  --------  --------
+%          1.000     0.000     0.000     1.000     0.000     0.000
+%          1.000    90.000     0.000     1.000    90.000     0.000
+%          1.000   180.000     1.000     1.414   180.000    45.000
+%          1.000   180.000    -1.000     1.414   180.000   -45.000
+%          0.000   180.000     1.000     1.000   180.000    90.000
+%          0.000    33.000     0.000     0.000    33.000     0.000
+%
+%
+%   3) Other than the obvious conversion between coordinate systems
+%      this routine could be used to obtain the axial projection
+%      from a sphere to a cylinder about the z-axis that contains
+%      the equator of the sphere.
+%
+%      Such a projection is valuable because it preserves the
+%      areas between regions on the sphere and their projections to
+%      the cylinder.
+%
+%
+%      Example code begins here.
+%
+%
+%      function latcyl_ex3()
+%
+%         %
+%         % Define the point whose projection is to be
+%         % computed.
+%         %
+%         radius =  100.0;
+%         lon    =   45.0  * cspice_rpd;
+%         lat    =  -12.5 * cspice_rpd;
+%
+%         %
+%         % Convert the latitudinal coordinates to cylindrical.
+%         %
+%         [r, clon, z] = cspice_latcyl( radius, lon, lat );
+%
+%         fprintf( 'Coordinates of the projected point on cylinder:\n' )
+%         fprintf( ' \n' )
+%         fprintf( ' Radius     (km):  %22.11f\n', r )
+%         fprintf( ' Longitude (deg):  %22.11f\n', clon*cspice_dpr )
+%         fprintf( ' Z          (km):  %22.11f\n', z )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Coordinates of the projected point on cylinder:
+%
+%       Radius     (km):          97.62960071199
+%       Longitude (deg):          45.00000000000
+%       Z          (km):         -21.64396139381
+%
+%
+%-Particulars
+%
+%   This routine returns the cylindrical coordinates of a point
+%   whose position is input in latitudinal coordinates.
+%
+%   Latitudinal coordinates are defined by a distance from a central
+%   reference point, an angle from a reference meridian, and an angle
+%   above the equator of a sphere centered at the central reference
+%   point.
+%
+%-Exceptions
+%
+%   1)  If any of the input arguments, `radius', `lon' or `lat', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   2)  If any of the input arguments, `radius', `lon' or `lat', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%   3)  If the input vectorizable arguments `radius', `lon' and `lat'
+%       do not have the same measure of vectorization (N), an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed input argument name "lonc" to "clon" for consistency
+%       with other routines.
 %
-%   -Mice Version 1.0.0, 09-DEC-2005, EDW (JPL)
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       meta-kernel to example #1. Updated code example #1 to produce
+%       formatted output and added a call to cspice_kclear. Added the
+%       problem statement to both examples.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 01-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 09-DEC-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -213,7 +403,7 @@
 %
 %-&
 
-function [r, lonc, z ] = cspice_latcyl( radius, lon, lat)
+function [r, clon, z ] = cspice_latcyl( radius, lon, lat)
 
    switch nargin
       case 3
@@ -224,7 +414,7 @@ function [r, lonc, z ] = cspice_latcyl( radius, lon, lat)
 
       otherwise
 
-         error ( [ 'Usage: [ _r_, _lonc_, _z_] = '...
+         error ( [ 'Usage: [ _r_, _clon_, _z_] = '...
                    'cspice_latcyl( _radius_, _lon_, _lat_)' ] )
 
    end
@@ -233,8 +423,8 @@ function [r, lonc, z ] = cspice_latcyl( radius, lon, lat)
    % Call the MEX library.
    %
    try
-      [r, lonc, z] = mice('latcyl_c', radius, lon, lat);
-   catch
-      rethrow(lasterror)
+      [r, clon, z] = mice('latcyl_c', radius, lon, lat);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

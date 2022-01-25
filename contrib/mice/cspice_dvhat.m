@@ -33,33 +33,36 @@
 %
 %   Given:
 %
-%      s1   the array(s) defining a state or states;
+%      s1       the array(s) defining a state or states;
 %
-%              s1 = (r1, dr1 ).
-%                         --
-%                         dt
+%                            dr1
+%                  s1 = (r1, --- ).
+%                             dt
 %
-%           [6,n] = size(s1); double = class(s1)
+%               [6,n] = size(s1); double = class(s1)
 %
 %   the call:
 %
-%      dvhat = cspice_dvhat(s1)
+%      [sout] = cspice_dvhat( s1 )
 %
 %   returns:
 %
-%      dvhat   the array(s) containing the unit
-%              vector(s) pointing in the direction of the position component(s)
-%              of 's1' and the derivative of the unit vector with respect
-%              to time;
+%      sout     the array(s) containing the unit vector(s) pointing in the
+%               direction of the position component(s) of `s1' and the
+%               derivative of the unit vector with respect to time;
 %
-%              dvhat = [u, du ] where u =   r1
-%                          --             -----
-%                          dt             ||r1||
+%                             du               r1
+%                  sout = [u, -- ] where u = ------
+%                             dt             ||r1||
 %
-%              [6,n] = size(dvhat); double = class(dvhat)
+%               [6,n] = size(sout); double = class(sout)
 %
-%              'dvhat' returns with the same vectorization measure (N)
-%              as 's1'.
+%               `sout' returns with the same vectorization measure (N)
+%               as `s1'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -67,84 +70,184 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Suppose that 'state' gives the apparent state of a body with
-%   respect to an observer.  This routine can be used to compute the
-%   instantaneous angular rate of the object across the sky as seen
-%   from the observers vantage.
+%   1) Suppose that `state' gives the apparent state of a body with
+%      respect to an observer. This routine can be used to compute the
+%      instantaneous angular rate of the object across the sky as seen
+%      from the observers vantage.
 %
-%      %
-%      % Load SPK, PCK, and LSK kernels, use a meta kernel for convenience.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Define an arbitrary epoch, convert the epoch to ephemeris time.
-%      %
-%      EPOCH = 'Jan 1 2009';
-%      et    = cspice_str2et( EPOCH );
 %
-%      %
-%      % Calculate the state of the moon with respect to the earth-moon
-%      % barycenter in J2000, corrected for light time and stellar aberration
-%      % at 'et'.
-%      %
-%      target   = 'MOON';
-%      frame    = 'J2000';
-%      abcorr   = 'LT+S';
-%      observer = 'EARTH BARYCENTER';
+%         KPL/MK
 %
-%      [ state, ltime ] = cspice_spkezr( target, et, frame, abcorr, observer );
+%         File name: dvhat_ex1.tm
 %
-%      %
-%      % Calculate the unit vector of 'state' and the derivative of the
-%      % unit vector.
-%      %
-%      ustate = cspice_dvhat( state )
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      %
-%      % Calculate the instantaneous angular velocity from the magnitude of the
-%      % derivative of the unit vector.
-%      %
-%      %   v = r x omega
-%      %
-%      %   ||omega|| = ||v||  for  r . v = 0
-%      %               -----
-%      %               ||r||
-%      %
-%      %   ||omega|| = ||v||  for  ||r|| = 1
-%      %
-%      omega = cspice_vnorm( ustate(4:6) );
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%      fprintf( 'Instantaneous angular velocity %2.10e rad/sec.\n', omega )
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            pck00008.tpc                  Planet orientation and
+%                                          radii
+%            naif0009.tls                  Leapseconds
 %
-%   MATLAB outputs:
 %
-%      Instantaneous angular velocity 2.4810665797e-06  rad/sec.
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'pck00008.tpc',
+%                                'naif0009.tls'  )
+%
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function dvhat_ex1()
+%
+%         target   = 'MOON';
+%         frame    = 'J2000';
+%         abcorr   = 'LT+S';
+%         observer = 'EARTH BARYCENTER';
+%
+%         %
+%         % Load SPK, PCK, and LSK kernels, use a meta kernel for
+%         % convenience.
+%         %
+%         cspice_furnsh( 'dvhat_ex1.tm' );
+%
+%         %
+%         % Define an arbitrary epoch, convert the epoch to ephemeris time.
+%         %
+%         EPOCH = 'Jan 1 2009';
+%         et    = cspice_str2et( EPOCH );
+%
+%         %
+%         % Calculate the state of the moon with respect to the earth-moon
+%         % barycenter in J2000, corrected for light time and stellar
+%         % aberration at `et'.
+%         %
+%         [ state, lt ] = cspice_spkezr( target, et, frame, ...
+%                                           abcorr, observer       );
+%
+%         %
+%         % Calculate the unit vector of `state' and the derivative of the
+%         % unit vector.
+%         %
+%         ustate = cspice_dvhat( state );
+%
+%         %
+%         % Calculate the instantaneous angular velocity from the magnitude
+%         % of the derivative of the unit vector.
+%         %
+%         %   v = r x omega
+%         %
+%         %   ||omega|| = ||v||  for  r . v = 0
+%         %               -----
+%         %               ||r||
+%         %
+%         %   ||omega|| = ||v||  for  ||r|| = 1
+%         %
+%         omega = cspice_vnorm( ustate(4:6) );
+%
+%         fprintf( 'Instantaneous angular velocity (rad/sec): %18.12e\n', ...
+%                                                                      omega )
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Instantaneous angular velocity (rad/sec): 2.481066592694e-06
+%
 %
 %-Particulars
 %
+%   Let `s1' be a state vector with position and velocity components P
+%   and V respectively. From these components one can compute the
+%   unit vector parallel to P, call it U and the derivative of U
+%   with respect to time, DU. This pair (U,DU) is the state returned
+%   by this routine in `sout'.
+%
+%-Exceptions
+%
+%   1)  If `s1' represents the zero vector, then the position
+%       component of `sout' will also be the zero vector. The
+%       velocity component will be the velocity component
+%       of `s1'.
+%
+%   2)  If the input argument `s1' is undefined, an error is signaled
+%       by the Matlab error handling system.
+%
+%   3)  If the input argument `s1' is not of the expected type, or it
+%       does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dvhat_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 03-NOV-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed output argument name "dvhat" to "sout".
 %
-%   -Mice Version 1.0.0, 04-MAY-2010, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section. Corrected minor typos in header.
+%
+%       Edited the header to comply with NAIF standard. Added
+%       meta-kernel to the example.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 03-NOV-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 04-MAY-2010 (EDW)
 %
 %-Index_Entries
 %
@@ -152,7 +255,7 @@
 %
 %-&
 
-function [dvhat] = cspice_dvhat(s1)
+function [sout] = cspice_dvhat( s1 )
 
    switch nargin
       case 1
@@ -161,7 +264,7 @@ function [dvhat] = cspice_dvhat(s1)
 
       otherwise
 
-         error ( 'Usage: [_dvhat(6)_] = cspice_dvhat(_s1(6)_)' )
+         error ( 'Usage: [_sout(6)_] = cspice_dvhat( _s1(6)_ )' )
 
    end
 
@@ -170,7 +273,7 @@ function [dvhat] = cspice_dvhat(s1)
    % this script.
    %
    try
-      [dvhat] = mice('dvhat_c',s1);
-   catch
-      rethrow(lasterror)
+      [sout] = mice('dvhat_c',s1);
+   catch spiceerr
+      rethrow(spiceerr)
    end

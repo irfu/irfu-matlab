@@ -42,7 +42,7 @@
 
 -Brief_I/O
 
-   Variable  I/O  Description 
+   VARIABLE  I/O  DESCRIPTION 
    --------  ---  -------------------------------------------------- 
    n          I   Integer value for copy to a MATLAB scalar
    mx_n       O   Pointer to an mxArray containing 'n'
@@ -103,9 +103,16 @@
 
 -Author_and_Institution
 
-   E. D. Wright    (JPL)
+   J. Diaz del Rio     (ODC Space)
+   E.D. Wright         (JPL)
 
 -Version
+
+   -Mice Version 1.1.0, 18-DEC-2019 (JDR) (EDW)
+   
+       Changed variable "sizearray" type from int to mwSize. This edit
+       eliminated compiler warnings and execution errors when built against
+       Matlab 2017a.
 
    -Mice Version 1.0.0, 30-MAR-2007 (EDW)
 
@@ -123,7 +130,7 @@
 mxArray * zzmice_CreateIntScalar( SpiceInt n)
    {
 
-   int                     sizearray[] = {1,1};
+   mwSize                  sizearray[] = {1,1};
    mxArray               * mx_n;
 
    /*

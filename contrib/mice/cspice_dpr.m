@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_DPR returns the value of the constant 180/pi which represents 
+%   CSPICE_DPR returns the value of the constant 180/pi which represents
 %   the number of degrees of arc per radian.
 %
 %-Disclaimer
@@ -31,19 +31,24 @@
 %
 %-I/O
 %
-%   Given:
+%   The call:
 %
-%      No input required.
-%
-%   the call:
-%
-%      dpr = cspice_dpr
+%      [dpr] = cspice_dpr
 %
 %   returns:
 %
-%      dpr   the number of degrees per radian: 180/pi.
+%      dpr      the number of degrees per radian: 180/pi.
 %
-%            [1,1] = size(dpr); double = class(dpr)
+%               [1,1] = size(dpr); double = class(dpr)
+%
+%               The value of pi is determined by the acos function. That
+%               is,
+%
+%                     dpr = 180.0 / acos ( -1.0 );
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -51,36 +56,74 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> degrees_per_radians = cspice_dpr
+%   1) Compute the number of degrees of arc per radian.
 %
-%      degrees_per_radians =
+%      Example code begins here.
 %
-%         57.2958
 %
-%      >> sprintf( 'Degrees per Radian: %10.7f', cspice_dpr )
+%      function dpr_ex1()
 %
-%      ans =
+%         fprintf( 'Degrees per Radian: %10.7f', cspice_dpr )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Degrees per Radian: 57.2957795
 %
+%
 %-Particulars
+%
+%   The first time the function is referenced, the value is computed
+%   as shown above. The value is saved, and returned directly upon
+%   subsequent reference.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
 %
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dpr_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header to comply with NAIF standard.
+%       Added example's problem statement.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -104,7 +147,7 @@ function [dpr] = cspice_dpr
    %
    try
       [dpr] =  mice('dpr_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

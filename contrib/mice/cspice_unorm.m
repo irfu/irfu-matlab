@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_UNORM normalizes a double precision 3-vector and
-%   returns its magnitude.
+%   CSPICE_UNORM normalizes a double precision 3-vector and returns its
+%   magnitude.
 %
 %-Disclaimer
 %
@@ -33,33 +33,33 @@
 %
 %   Given:
 %
-%      v1   any arbitrary 3-vector(s).
+%      v1       arbitrary 3-vector(s), including the zero vector.
 %
-%           [3,n] = size(v1); double = class(v1)
+%               [3,n] = size(v1); double = class(v1)
 %
 %   the call:
 %
-%      [vout, vmag] = cspice_unorm(v1)
+%      [vout, vmag] = cspice_unorm( v1 )
 %
 %   returns:
 %
-%      vout   unit vector(s) in the direction of 'v1'. If 'v1'
-%             represents the zero vector, then 'vout' will also be
-%             the zero vector.
+%      vout     the unit vector(s) in the direction of `v1'.
 %
-%             vout =   v1
-%                    ------
-%                    ||v1||
+%               [3,n] = size(vout); double = class(vout)
 %
-%             [3,n] = size(vout); double = class(vout)
+%               If `v1' is the zero vector, then `vout' will also be the
+%               zero vector.
 %
-%      vmag   the positive definite magnitude(s) of 'v1', ||v1||, calculated
-%              in a numerically stable way.
+%      vmag     the magnitude(s) of `v1'.
 %
-%             [1,n] = size(vmag); double = class(vmag)
+%               [1,n] = size(vmag); double = class(vmag)
 %
-%             'vout' and 'vmag' return with the same vectorization measure
-%              (N) as 'v1'.
+%               `vout' and `vmag' return with the same vectorization measure,
+%               N, as `v1'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -67,121 +67,156 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
+%   1) Define a set of vectors and compute their corresponding
+%      unit vectors and magnitudes.
 %
-%      >> v1 = [ 5; 12; 0]
 %
-%      v1 =
+%      Example code begins here.
 %
-%           5
-%          12
-%           0
 %
-%      >> [vout, vmag] = cspice_unorm(v1 )
+%      function unorm_ex1()
 %
-%   MATLAB outputs:
+%         %
+%         % Local parameters.
+%         %
+%         SETSIZ = 2;
 %
-%      vout =
+%         %
+%         % Define the vector set.
+%         %
+%         seta = [ [5.0,  12.0,  0.0]', [1.e-7,  2.e-7, 2.e-7]' ];
 %
-%          0.3846
-%          0.9231
-%               0
+%         %
+%         % Calculate the unit vectors and magnitudes.
+%         %
+%         fprintf('Scalar case:\n')
 %
-%      vmag =
+%         for i=1:SETSIZ
 %
-%          13
+%            [vout, vmag] = cspice_unorm( seta(:,i) );
 %
-%   Example(2):
+%            fprintf( 'Vector     :  %12.8f %12.8f %12.8f\n',              ...
+%                             seta(1,i), seta(2,i), seta(3,i) )
+%            fprintf( 'Unit vector:  %12.8f %12.8f %12.8f\n',              ...
+%                                   vout(1), vout(2), vout(3) )
+%            fprintf( 'Magnitude  :  %12.8f\n', vmag )
+%            fprintf( ' \n' )
 %
-%      >> v2 = [ 1D-7; 2D-7; 2D-7]
+%         end
 %
-%      v2 =
+%         %
+%         % Repeat the operation with one single call to cspice_vhat.
+%         %
+%         [vout, vmag] = cspice_unorm( seta );
 %
-%         1.0e-06 *
+%         fprintf('Vectorized case:\n')
 %
-%          0.1000
-%          0.2000
-%          0.2000
+%         for i=1:SETSIZ
 %
-%      >> [vout, vmag] = cspice_unorm(v2)
+%            fprintf( 'Vector     :  %12.8f %12.8f %12.8f\n',              ...
+%                             seta(1,i), seta(2,i), seta(3,i) )
+%            fprintf( 'Unit vector:  %12.8f %12.8f %12.8f\n',              ...
+%                             vout(1,i), vout(2,i), vout(3,i) )
+%            fprintf( 'Magnitude  :  %12.8f\n', vmag(i) )
+%            fprintf( ' \n' )
 %
-%   MATLAB outputs:
+%         end
 %
-%      vout =
 %
-%          0.3333
-%          0.6667
-%          0.6667
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      vmag =
 %
-%         3.0000e-07
+%      Scalar case:
+%      Vector     :    5.00000000  12.00000000   0.00000000
+%      Unit vector:    0.38461538   0.92307692   0.00000000
+%      Magnitude  :   13.00000000
 %
-%   Example(3):
+%      Vector     :    0.00000010   0.00000020   0.00000020
+%      Unit vector:    0.33333333   0.66666667   0.66666667
+%      Magnitude  :    0.00000030
 %
-%      >> v = [v1, v2 ]
+%      Vectorized case:
+%      Vector     :    5.00000000  12.00000000   0.00000000
+%      Unit vector:    0.38461538   0.92307692   0.00000000
+%      Magnitude  :   13.00000000
 %
-%      v =
+%      Vector     :    0.00000010   0.00000020   0.00000020
+%      Unit vector:    0.33333333   0.66666667   0.66666667
+%      Magnitude  :    0.00000030
 %
-%          5.0000    0.0000
-%         12.0000    0.0000
-%               0    0.0000
-%
-%      >> [vout, vmag] = cspice_unorm(v )
-%
-%   MATLAB outputs:
-%
-%      vout =
-%
-%          0.3846    0.3333
-%          0.9231    0.6667
-%               0    0.6667
-%
-%      vmag =
-%
-%         13.0000    0.0000
-%
-%   The second element of 'vmag' displays as 0.0 due to the eight
-%   orders of magnitude difference between that element and the first.
-%   Confirm the expected value:
-%
-%      >> vmag(2)
-%
-%   MATLAB outputs:
-%
-%      ans =
-%
-%         3.0000e-07
 %
 %-Particulars
 %
+%   cspice_unorm references a function called cspice_vnorm (which itself is
+%   numerically stable) to calculate the norm of the input vector `v1'.
+%   If the norm is equal to zero, then each component of the output
+%   vector `vout' is set to zero. Otherwise, `vout' is calculated by
+%   dividing `v1' by the norm.
+%
+%-Exceptions
+%
+%   1)  If the input argument `v1' is undefined, an error is signaled
+%       by the Matlab error handling system.
+%
+%   2)  If the input argument `v1' is not of the expected type, or it
+%       does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine unorm_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 09-NOV-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 27-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       complete code example to -Examples section.
 %
-%   -Mice Version 1.0.1, 21-APR-2010, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
 %
-%      Corrected description of call example to list all output arguments,
-%      from:
+%       Eliminated use of "lasterror" in rethrow.
 %
-%         vout = cspice_unorm(v1)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
 %
-%      to
+%   -Mice Version 1.0.2, 09-NOV-2012 (EDW)
 %
-%         [vout, vmag] = cspice_unorm(v1)
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
 %
-%   -Mice Version 1.0.0, 25-APR-2006, EDW (JPL)
+%   -Mice Version 1.0.1, 21-APR-2010 (EDW)
+%
+%       Corrected description of call example to list all output arguments,
+%       from:
+%
+%          vout = cspice_unorm(v1)
+%
+%       to
+%
+%          [vout, vmag] = cspice_unorm(v1)
+%
+%   -Mice Version 1.0.0, 25-APR-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -189,7 +224,7 @@
 %
 %-&
 
-function [vout, vmag] = cspice_unorm(v1)
+function [vout, vmag] = cspice_unorm( v1 )
 
    switch nargin
       case 1
@@ -207,8 +242,8 @@ function [vout, vmag] = cspice_unorm(v1)
    %
    try
       [vout, vmag] = mice('unorm_c',v1);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

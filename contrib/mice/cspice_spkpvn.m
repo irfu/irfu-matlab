@@ -62,7 +62,7 @@
 %
 %      state    the array containing the position and velocity, at epoch
 %               'et', for the body covered by the specified segment. 'state'
-%               has six elements:  the first three contain the body's
+%               has six elements: the first three contain the body's
 %               position; the last three contain the body's velocity. These
 %               vectors are expressed into the specified reference frame.
 %               Units are always km and km/sec.
@@ -73,28 +73,33 @@
 %
 %               [1,1] = size(center); int32 = class(center)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   In the following code fragment, an SPK file is searched for
-%   a segment containing ephemeris data for the Jupiter system
-%   barycenter at a particular epoch. Using this segment,
-%   states of the Jupiter system barycenter relative to the
-%   solar system barycenter are evaluated at a sequence of times.
+%   1) In the following example, an SPK file is searched for
+%      a segment containing ephemeris data for the Jupiter system
+%      barycenter at a particular epoch. Using this segment,
+%      states of the Jupiter system barycenter relative to the
+%      solar system barycenter are evaluated at a sequence of times.
 %
-%   This method of state computation minimizes the number of
-%   segment searches required to obtain requested data, but
-%   it bypasses the SPK subsystem's state chaining mechanism.
+%      This method of state computation minimizes the number of
+%      segment searches required to obtain requested data, but
+%      it bypasses the SPK subsystem's state chaining mechanism.
 %
 %      Use the meta-kernel shown below to load the required SPICE
 %      kernels.
 %
+%
 %         KPL/MK
 %
-%         File name: standard.tm
+%         File name: spkpvn_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The kernels shown here should not be
@@ -111,128 +116,134 @@
 %            File name                     Contents
 %            ---------                     --------
 %            de421.bsp                     Planetary ephemeris
-%            pck00010.tpc                  Planet orientation and
-%                                          radii
 %            naif0010.tls                  Leapseconds
 %
 %         \begindata
 %
 %            KERNELS_TO_LOAD = ( 'de421.bsp',
-%                                'pck00010.tpc',
 %                                'naif0010.tls'  )
 %
 %         \begintext
 %
-%   Example:
-%
-%      %
-%      % Local constants
-%      %
-%      META   =  'standard.tm';
-%      ND     =  2;
-%      NI     =  6;
-%      TIMFMT =  'YYYY MON DD HR:MN:SC.######::TDB TDB';
-%
-%      %
-%      % Load meta-kernel.
-%      %
-%      cspice_furnsh( META )
-%
-%      %
-%      % Convert starting time to seconds past J2000 TDB.
-%      %
-%      timstr = '2012 APR 27 00:00:00.000 TDB';
-%
-%      et0 = cspice_str2et(timstr);
-%
-%      %
-%      % Find a loaded segment for the Jupiter barycenter
-%      % that covers `et0'.
-%      %
-%      body = 5;
-%
-%      [handle, descr, segid, found] = cspice_spksfs( body, et0);
+%         End of meta-kernel
 %
 %
-%      if ~found
-%         cspice_kclear
-%         txt = sprintf( 'No SPK segment found for body %d at time %s', ...
-%                         body, timstr );
-%         error( txt )
-%      end
-%
-%      %
-%      % Unpack the descriptor of the current segment.
-%      %
-%      [dc, ic] = cspice_dafus( descr, ND, NI );
-%
-%      frname = cspice_frmnam( ic(3) );
-%
-%      fprintf( 'Body        = %d\n', ic(1) )
-%      fprintf( 'Center      = %d\n', ic(2) )
-%      fprintf( 'Frame       = %s\n', frname)
-%      fprintf( 'Data type   = %d\n', ic(4) )
-%      fprintf( 'Start ET    = %f\n', dc(1) )
-%      fprintf( 'Stop ET     = %f\n', dc(2) )
-%      fprintf( 'Segment ID  = %s\n\n', segid )
+%      Example code begins here.
 %
 %
-%      %
-%      % Evaluate states at 10-second steps, starting at `et0'
-%      % and continuing for 20 seconds.
-%      %
-%
-%      for i=1:3
-%
-%         et = et0 + ( 10. * (i-1) );
+%      function spkpvn_ex1()
 %
 %         %
-%         % Convert `et' to a string for display.
+%         % Local constants
 %         %
-%         outstr = cspice_timout( et, TIMFMT );
+%         META   =  'spkpvn_ex1.tm';
+%         ND     =  2;
+%         NI     =  6;
+%         TIMFMT =  'YYYY MON DD HR:MN:SC.######::TDB TDB';
 %
 %         %
-%         % Attempt to compute a state only if the segment's
-%         % coverage interval contains `et'.
+%         % Load meta-kernel.
 %         %
-%         if ( et <= dc(2) )
+%         cspice_furnsh( META )
 %
-%            %
-%            % This segment has data at `et'. Evaluate the
-%            % state of the target relative to its center
-%            % of motion.
-%            %
-%            [ref_id, state, center] = cspice_spkpvn( handle, descr, et );
+%         %
+%         % Convert starting time to seconds past J2000 TDB.
+%         %
+%         timstr = '2012 APR 27 00:00:00.000 TDB';
 %
-%            %
-%            %  Display the time and state.
-%            %
-%            fprintf( '\n%s\n', outstr )
-%            fprintf( 'Position X (km):   %24.17f\n', state(1) )
-%            fprintf( 'Position Y (km):   %24.17f\n', state(2) )
-%            fprintf( 'Position Z (km):   %24.17f\n', state(3) )
-%            fprintf( 'Velocity X (km):   %24.17f\n', state(4) )
-%            fprintf( 'Velocity X (km):   %24.17f\n', state(5) )
-%            fprintf( 'Velocity X (km):   %24.17f\n', state(6) )
+%         et0 = cspice_str2et(timstr);
 %
-%         else
+%         %
+%         % Find a loaded segment for the Jupiter barycenter
+%         % that covers `et0'.
+%         %
+%         body = 5;
 %
+%         [handle, descr, segid, found] = cspice_spksfs( body, et0);
+%
+%
+%         if ~found
 %            cspice_kclear
-%            txt = sprintf( 'No data found for body %d at time %s', ...
-%                         body, outstr );
+%            txt = sprintf( 'No SPK segment found for body %d at time %s', ...
+%                            body, timstr );
 %            error( txt )
+%         end
+%
+%         %
+%         % Unpack the descriptor of the current segment.
+%         %
+%         [dc, ic] = cspice_dafus( descr, ND, NI );
+%
+%         frname = cspice_frmnam( ic(3) );
+%
+%         fprintf( 'Body        = %d\n', ic(1) )
+%         fprintf( 'Center      = %d\n', ic(2) )
+%         fprintf( 'Frame       = %s\n', frname)
+%         fprintf( 'Data type   = %d\n', ic(4) )
+%         fprintf( 'Start ET    = %f\n', dc(1) )
+%         fprintf( 'Stop ET     = %f\n', dc(2) )
+%         fprintf( 'Segment ID  = %s\n\n', segid )
+%
+%
+%         %
+%         % Evaluate states at 10-second steps, starting at `et0'
+%         % and continuing for 20 seconds.
+%         %
+%
+%         for i=1:3
+%
+%            et = et0 + ( 10. * (i-1) );
+%
+%            %
+%            % Convert `et' to a string for display.
+%            %
+%            outstr = cspice_timout( et, TIMFMT );
+%
+%            %
+%            % Attempt to compute a state only if the segment's
+%            % coverage interval contains `et'.
+%            %
+%            if ( et <= dc(2) )
+%
+%               %
+%               % This segment has data at `et'. Evaluate the
+%               % state of the target relative to its center
+%               % of motion.
+%               %
+%               [ref_id, state, center] = cspice_spkpvn( handle, descr, et );
+%
+%               %
+%               %  Display the time and state.
+%               %
+%               fprintf( '\n%s\n', outstr )
+%               fprintf( 'Position X (km):   %24.17f\n', state(1) )
+%               fprintf( 'Position Y (km):   %24.17f\n', state(2) )
+%               fprintf( 'Position Z (km):   %24.17f\n', state(3) )
+%               fprintf( 'Velocity X (km):   %24.17f\n', state(4) )
+%               fprintf( 'Velocity X (km):   %24.17f\n', state(5) )
+%               fprintf( 'Velocity X (km):   %24.17f\n', state(6) )
+%
+%            else
+%
+%               cspice_kclear
+%               txt = sprintf( 'No data found for body %d at time %s', ...
+%                            body, outstr );
+%               error( txt )
+%
+%            end
 %
 %         end
 %
-%      end
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in IDL due to data persistence.
-%      %
-%      cspice_kclear
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Body        = 5
 %      Center      = 0
@@ -267,27 +278,69 @@
 %      Velocity X (km):        7.95324356146845002
 %      Velocity X (km):        3.66185694939899253
 %
+%
 %-Particulars
 %
 %   This routine finds the highest-priority segment, in any loaded
 %   SPK file, such that the segment provides data for the specified
 %   body and epoch.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine spkpvn_c.
+%   1)  If the segment type is not supported by the current
+%       version of cspice_spkpvn, the error SPICE(SPKTYPENOTSUPP)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   2)  If any of the input arguments, `handle', `descr' or `et', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `handle', `descr' or `et', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   See argument `handle'.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   SPK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 30-OCT-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited -Examples section to comply with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 30-OCT-2012 (EDW)
 %
 %-Index_Entries
 %
-%   select spk file and segment
+%   select SPK file and segment
 %
 %-&
 
@@ -318,6 +371,6 @@ function [ref, state, center] = cspice_spkpvn( handle, descr, et)
       state  = reshape( [spkpvn.state ], 6, [] );
       center = reshape( [spkpvn.center], 1, [] );
 
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end

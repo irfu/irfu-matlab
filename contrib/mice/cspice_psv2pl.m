@@ -33,38 +33,44 @@
 %
 %   Given:
 %
-%      point    [3,1] = size(point); double = class(point)
-%
-%      span1    [3,1] = size(span1); double = class(span1)
-%
-%      span2    [3,1] = size(span2); double = class(span2)
-%
-%               are, respectively, a point and two spanning vectors
+%      point,
+%      span1,
+%      span2    respectively, a point and two spanning vectors
 %               that define a geometric plane in three-dimensional
-%               space. The plane is the set of vectors
+%               space.
+%
+%               [3,1] = size(point); double = class(point)
+%               [3,1] = size(span1); double = class(span1)
+%               [3,1] = size(span2); double = class(span2)
+%
+%               The plane is the set of vectors
 %
 %                  point   +   s * span1   +   t * span2
 %
-%               where 's' and 't' are real numbers.  The spanning
-%               vectors 'span1' and 'span2' must be linearly
+%               where `s' and `t' are real numbers. The spanning
+%               vectors `span1' and `span2' must be linearly
 %               independent, but they need not be orthogonal or
 %               unitized.
 %
 %   the call:
 %
-%      [plane] = cspice_psv2pl(point, span1, span2 )
+%      [plane] = cspice_psv2pl( point, span1, span2 )
 %
 %   returns:
 %
-%      plane   a structure describing a SPICE plane defined
-%              by 'point', 'span1', and 'span2'.
+%      plane    a structure describing a SPICE plane defined
+%               by `point', `span1', and `span2'.
 %
-%              [1,1] = size(plane); struct = class(plane)
+%               [1,1] = size(plane); struct = class(plane)
 %
-%              The structure has the fields:
+%               The structure has the fields:
 %
-%                 normal:     [3,1] = size(normal); double = class(normal)
-%                 constant:   [1,1] = size(constant); double = class(constant)
+%                  normal:   [3,1] = size(normal);   double = class(normal)
+%                  constant: [1,1] = size(constant); double = class(constant)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -72,74 +78,128 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Calculate the inclination of the Moon's orbit plane about
-%      % the Earth to the orbit plane of the Earth around the sun.
-%      %
-%      % We want a geometric analysis, so the calculation requires
-%      % no aberration correction.
-%      %
-%      epoch = 'Jan 1 2005';
-%      frame = 'ECLIPJ2000';
-%      corr  = 'NONE';
+%   1) Calculate the inclination of the Moon's orbit plane about
+%      the Earth to the orbit plane of the Earth around the sun.
 %
-%      %
-%      % Load the kernels we need to retrieve state data.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%      Perform geometric analysis, so use no aberration correction
+%      for the calculation. Use the Ecliptic J2000 frame
+%      as a conceptual convenience, however the result is invariant
+%      with respect to an inertial frame.
 %
-%      %
-%      % Convert the time string to  ephemeris time
-%      %
-%      et = cspice_str2et( epoch );
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Calculate the orbit plane of the Earth about
-%      % the solar system barycenter at epoch.
-%      %
-%      [state, ltime] = cspice_spkezr( 'EARTH', et, frame, corr, ...
+%
+%         KPL/MK
+%
+%         File name: psv2pl_ex1.tm
+%
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
+%
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            naif0012.tls                  Leapseconds
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'naif0012.tls'  )
+%
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function psv2pl_ex1()
+%
+%         %
+%         % Local variables.
+%         %
+%         epoch = 'Jan 1 2005';
+%         frame = 'ECLIPJ2000';
+%         corr  = 'NONE';
+%
+%         %
+%         % Load the kernels we need to retrieve state data.
+%         %
+%         cspice_furnsh( 'psv2pl_ex1.tm' )
+%
+%         %
+%         % Convert the time string to  ephemeris time
+%         %
+%         et = cspice_str2et( epoch );
+%
+%         %
+%         % Calculate the orbit plane of the Earth about
+%         % the solar system barycenter at epoch.
+%         %
+%         [state, lt] = cspice_spkezr( 'EARTH', et, frame, corr, ...
 %                                      'Solar System Barycenter' );
 %
-%      es_plane            = cspice_psv2pl( state(1:3), ...
-%                                           state(1:3), ...
-%                                           state(4:6) );
-%      [es_norm, es_const] = cspice_pl2nvc( es_plane );
+%         es_plane            = cspice_psv2pl( state(1:3), ...
+%                                              state(1:3), ...
+%                                              state(4:6) );
+%         [es_norm, es_const] = cspice_pl2nvc( es_plane );
 %
-%      %
-%      % Calculate the orbit plane of the Moon with respect to
-%      % the Earth-Moon barycenter at epoch.
-%      %
-%      [state, ltime] = cspice_spkezr( 'MOON', et, frame, corr, ...
-%                                      'EARTH BARYCENTER' );
+%         %
+%         % Calculate the orbit plane of the Moon with respect to
+%         % the Earth-Moon barycenter at epoch.
+%         %
+%         [state, lt] = cspice_spkezr( 'MOON', et, frame, corr, ...
+%                                       'EARTH BARYCENTER' );
 %
-%      em_plane            = cspice_psv2pl( state(1:3), ...
-%                                           state(1:3), ...
-%                                           state(4:6) );
-%      [em_norm, em_const] = cspice_pl2nvc( em_plane );
+%         em_plane            = cspice_psv2pl( state(1:3), ...
+%                                              state(1:3), ...
+%                                              state(4:6) );
+%         [em_norm, em_const] = cspice_pl2nvc( em_plane );
 %
-%      %
-%      % Calculate the inclination equals (output in degrees).
-%      % Depending on the orientation of the plane normals, the
-%      % cspice_vsep result may exceed 90 degrees. If, so subtract
-%      % the value off 180 degrees.
-%      %
-%      loc_inc = cspice_vsep( es_norm, em_norm );
+%         %
+%         % Calculate the inclination equals (output in degrees).
+%         % Depending on the orientation of the plane normals, the
+%         % cspice_vsep result may exceed 90 degrees. If, so subtract
+%         % the value off 180 degrees.
+%         %
+%         loc_inc = cspice_vsep( es_norm, em_norm );
 %
-%      if ( loc_inc > cspice_halfpi )
-%         loc_inc = cspice_pi - loc_inc;
-%      end
+%         if ( loc_inc > cspice_halfpi )
+%            loc_inc = cspice_pi - loc_inc;
+%         end
 %
-%      fprintf( 'Moon-Earth orbit plane inclination (degrees): %f\n', ...
-%             loc_inc * cspice_dpr )
+%         fprintf( 'Moon-Earth orbit plane inclination (deg): %f\n', ...
+%                  loc_inc * cspice_dpr )
 %
-%   Matlab outputs:
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
-%      Moon-Earth orbit plane inclination (degrees): 5.042496
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Moon-Earth orbit plane inclination (deg): 5.042494
+%
 %
 %-Particulars
 %
 %   Mice geometry routines that deal with planes use the `plane'
-%   data type to represent input and output planes.  This data type
+%   data type to represent input and output planes. This data type
 %   makes the subroutine interfaces simpler and more uniform.
 %
 %   The Mice routines that produce SPICE planes from data that
@@ -160,17 +220,62 @@
 %   routine's output, 'plane', to another representation of a
 %   geometric plane.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine psv2pl_c.
+%   1)  If `span1' and `span2' are linearly dependent, i.e. the vectors
+%       `point', `span1', and `span2' do not define a plane, the error
+%       SPICE(DEGENERATECASE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If any of the input arguments, `point', `span1' or `span2', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `point', `span1' or `span2', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   PLANES.REQ
 %
+%-Literature_References
+%
+%   [1]  G. Thomas and R. Finney, "Calculus and Analytic Geometry,"
+%        7th Edition, Addison Wesley, 1988.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 27-AUG-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement and meta-kernel. Added a call to
+%       cspice_kclear to code example.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 27-AUG-2012 (EDW)
 %
 %-Index_Entries
 %
@@ -203,7 +308,7 @@ function [plane] = cspice_psv2pl( point, span1, span2 )
    %
    try
       [plane] = mice('psv2pl_c', point, span1, span2 );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

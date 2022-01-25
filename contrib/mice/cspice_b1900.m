@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_B1900 returns the of the Julian Date corresponding to 
+%   CSPICE_B1900 returns the of the Julian Date corresponding to
 %   Besselian Date 1900.0: 2415020.31352.
 %
 %-Disclaimer
@@ -31,20 +31,20 @@
 %
 %-I/O
 %
-%   Given:
+%   The call:
 %
-%      No input required.
-%
-%   the call:
-%
-%      b1900 = cspice_b1900
+%      [b1900] = cspice_b1900
 %
 %   returns:
 %
-%     b1900   the value 2415020.31352, the Julian Date corresponding 
-%             to Besselian Date 1900.0.
+%      b1900    the value 2415020.31352, the Julian Date corresponding
+%               to Besselian Date 1900.0.
 %
-%             [1,1] = size(b1900); double = class(b1900)
+%               [1,1] = size(b1900); double = class(b1900)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -52,34 +52,77 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Display the B1900 date in 16.8 format
-%      %
-%      disp( sprintf( '%16.8f', cspice_b1900) )
+%   1) Display the double precision value for the Julian Date
+%      corresponding to the Besselian date 1900.0.
 %
-%   MATLAB outputs:
+%      Example code begins here.
 %
-%      2415020.31352000
+%
+%      function b1900_ex1()
+%         %
+%         % Display the B1900 date in 16.8 format
+%         %
+%         fprintf( 'B1900 date: %16.8f\n', cspice_b1900)
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      B1900 date: 2415020.31352000
+%
 %
 %-Particulars
 %
+%   The function always returns the constant value shown above.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine b1900_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   [1]  J. Lieske, "Precession Matrix Based on IAU (1976) System of
+%        Astronomical Constants," Astron. Astrophys. 73, 282-284,
+%        1979.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header to comply with NAIF standard.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -100,8 +143,8 @@ function [b1900] = cspice_b1900
 
    try
       b1900 =  mice('b1900_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

@@ -1,10 +1,7 @@
 %-Abstract
 %
-%   DSKtol.m declares DSK tolerance variables for use with
+%   MiceDtl.m declares DSK tolerance variables for use with
 %   Mice DSK APIs.
-%
-%    KEEP THE ASSIGNMENTS DEFINED IN THIS FILE SYNCHED WITH 
-%    THE CORRESPONDING ASSIGNMENTS IN DSKTOL.INC.
 %
 %-Disclaimer
 %
@@ -35,13 +32,17 @@
 %
 %   None.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
-%   The call:
+%   Include these definitions by using the call:
 %
-%       DSKtol
+%      MiceUser;
 %
-%   makes DSKtol parameter definitions available to the calling program.
+%   from the user's application code.
 %
 %-Particulars
 %
@@ -57,17 +58,51 @@
 %        cspice_dskgtl  {DSK, get tolerance value}
 %        cspice_dskstl  {DSK, set tolerance value}
 %
-%-Required Reading
+%-Exceptions
 %
 %   None.
 %
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
+%   None.
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
+%
+%   -Mice Version 1.1.0, 11-JUN-2020 (JDR)
+%
+%       Updated the header to comply with NAIF standard. Renamed the include
+%       file from DSKtol.m to MiceDtl.m for consistency with other
+%       include files.
+%
+%       Removed warning note for developers from the abstract section.
+%
+%       Updated the header for compliance with NAIF standard. Added
+%       -Parameters, -Exceptions, -Files, -Restrictions, -Literature_References
+%       and -Author_and_Institution sections.
 %
 %   -Mice Version 1.0.0, 10-MAR-2016 (NJB) (EDW)
 %
 %-Index_Entries
 %
-%   Include DSKMice parameters
+%   Include DSK Mice parameters
 %
 %-&
 
@@ -250,5 +285,5 @@
       SPICE_DSK_KEYLAL = SPICE_DSK_KEYAMG + 1;
 
 %
-%     End of include file dsktol.m
+%     End of include file MiceDtl.m
 %

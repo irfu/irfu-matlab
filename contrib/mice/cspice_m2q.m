@@ -33,60 +33,62 @@
 %
 %   Given:
 %
-%      r   the rotation matrix/matrices.
+%      r        a rotation matri(x|ces).
 %
-%          [3,3]   = size(r); double = class(r)
+%               [3,3]   = size(r); double = class(r)
 %
-%          or
+%                  or
 %
-%          [3,3,n] = size(r); double = class(r)
+%               [3,3,n] = size(r); double = class(r)
 %
 %   the call:
 %
-%      q = cspice_m2q(r)
+%      [q] = cspice_m2q( r )
 %
 %   returns:
 %
-%      q   an array of unit-length SPICE-style quaternion(s) 
-%          representing 'r'.
+%      q        an array of unit-length SPICE-style quaternion(s)
+%               representing `r'.
 %
-%          If [3,3]   = size(r) then [4,1] = size(q)
-%          If [3,3,n] = size(r) then [4,n] = size(q)
-%                                   double = class(q)
+%               If [3,3]   = size(r) then [4,1] = size(q)
+%               If [3,3,n] = size(r) then [4,n] = size(q)
+%                                        double = class(q)
 %
-%          Note that multiple styles of quaternions are in use.
-%          This routine returns a quaternion that conforms to
-%          the SPICE convention. See the Particulars section
-%          for details.
+%               See the discussion of quaternion styles in -Particulars
+%               below.
 %
-%          If 'r' rotates vectors in the counterclockwise sense by 
-%          an angle of 'theta' radians about a unit vector 'a', where
+%               `q' is a 4-dimensional vector. If `r' rotates vectors
+%               in the counterclockwise sense by an angle of theta
+%               radians about a unit vector `a', where
 %
-%             0 < theta < pi
-%               -       -
+%                  0 < theta < pi
+%                    -       -
 %
-%          then letting h = theta/2,
+%               then letting h = theta/2,
 %
-%             q = ( cos(h), sin(h)a ,  sin(h)a ,  sin(h)a ).
-%                                  1          2          3
+%                  q = ( cos(h), sin(h)a ,  sin(h)a ,  sin(h)a ).
+%                                       1          2          3
 %
-%          The restriction that 'theta' must be in the range [0, pi]
-%          determines the output quaternion 'q' uniquely
-%          except when theta = pi; in this special case, both of
-%          the quaternions
+%               The restriction that theta must be in the range
+%               [0, pi] determines the output quaternion `q'
+%               uniquely except when theta = pi; in this special
+%               case, both of the quaternions
 %
-%             q = ( 0,  a ,  a ,  a  )
-%                        1    2    3
+%                  q = ( 0,  a ,  a ,  a  )
+%                             1    2    3
+%               and
 %
-%          and
+%                  q = ( 0, -a , -a , -a  )
+%                             1    2    3
 %
-%             q = ( 0, -a , -a , -a  )
-%                        1    2    3
+%               are possible outputs.
 %
-%          are possible outputs.
+%               `q' returns with the same vectorization measure, N,
+%               as `r' .
 %
-%          'q' returns with the same vectorization measure, N,
-%          as 'r' .
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -94,40 +96,63 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Create a rotation matrix of 90 degrees about the Z axis.
-%      %
-%      r = cspice_rotate( cspice_halfpi, 3)
+%   1) Create a 3-dimensional rotation matrix of 90 degrees about the
+%      Z axis and convert it to a unit quaternion. Verify that the
+%      norm of the quaternion is equal to 1.
 %
-%   MATLAB outputs:
+%      Example code begins here.
 %
-%      r =
 %
-%         0.00000000000000   1.00000000000000                  0
-%        -1.00000000000000   0.00000000000000                  0
-%                        0                  0   1.00000000000000
+%      function m2q_ex1()
 %
-%      q = cspice_m2q( r )
+%         %
+%         % Create a rotation matrix of 90 degrees about the Z axis.
+%         %
+%         r = cspice_rotate( cspice_halfpi, 3);
 %
-%   MATLAB outputs:
+%         fprintf('Rotation matrix:\n');
+%         fprintf('%15.7f %15.7f %15.7f\n', r(1,:));
+%         fprintf('%15.7f %15.7f %15.7f\n', r(2,:));
+%         fprintf('%15.7f %15.7f %15.7f\n', r(3,:));
 %
-%      q =
+%         %
+%         % Convert the matrix to a quaternion.
+%         %
+%         q = cspice_m2q( r );
+%         fprintf('Unit quaternion:\n');
+%         fprintf('%15.7f %15.7f %15.7f %15.7f\n', q);
 %
-%         0.70710678118655
-%                        0
-%                        0
-%        -0.70710678118655
+%         %            _
+%         % Confirm || q || = 1.
+%         %
+%         fprintf( '\n|| q || = %15.7f\n', q'  * q );
 %
-%      %            _
-%      % Confirm || q || = 1.
-%      %
-%      q'  * q
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      ans =
 %
-%           1
+%      Rotation matrix:
+%            0.0000000       1.0000000       0.0000000
+%           -1.0000000       0.0000000       0.0000000
+%            0.0000000       0.0000000       1.0000000
+%      Unit quaternion:
+%            0.7071068       0.0000000       0.0000000      -0.7071068
+%
+%      || q || =       1.0000000
+%
+%
+%      Note, the call sequence:
+%
+%         q = cspice_m2q( r );
+%         r = cspice_q2m( q );
+%
+%      preserves `r' except for round-off error. Yet, the call sequence:
+%
+%         r = cspice_q2m( q );
+%         q = cspice_m2q( r );
+%
+%      may preserve `q' or return `-q'.
 %
 %-Particulars
 %
@@ -146,23 +171,63 @@
 %   inventor of quaternions.
 %
 %   Another common quaternion style places the scalar component
-%   last.  This style is often used in engineering applications.
+%   last. This style is often used in engineering applications.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine m2q_c.
+%   1)  If `r' is not a rotation matrix, the error SPICE(NOTAROTATION)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   2)  If the input argument `r' is undefined, an error is signaled
+%       by the Matlab error handling system.
+%
+%   3)  If the input argument `r' is not of the expected type, or it
+%       does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ROTATION.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 09-MAR-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement.
 %
-%   -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 09-MAR-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 10-JAN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -188,8 +253,8 @@ function [q] = cspice_m2q(r)
    %
    try
       [q] = mice('m2q_c', r);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

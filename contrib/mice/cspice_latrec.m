@@ -50,7 +50,7 @@
 %
 %   the call:
 %
-%      rectan = cspice_latrec( radius, lon, lat)
+%      [rectan] = cspice_latrec( radius, lon, lat )
 %
 %   returns:
 %
@@ -59,141 +59,279 @@
 %
 %               [3,n] = size(rectan); double = class(rectan)
 %
-%               'rectan' returns with the same units associated with 'radius'.
+%               `rectan' returns with the same units associated with `radius'.
 %
-%               'rectan' returns with the vectorization measure, N, as
-%               'radius', 'lon', and 'lat'.
+%               `rectan' returns with the vectorization measure, N, as
+%               `radius', `lon', and `lat'.
 %
-%-Examples
-%
-%   Any numerical results shown for this example may differ between
-%   platforms as the results depend on the SPICE kernels used as input
-%   and the machine specific arithmetic implementation.
-%
-%   Example (1):
-%
-%      %
-%      % Load an SPK, leapseconds, and PCK kernel set.
-%      %
-%      cspice_furnsh( 'standard.tm' )
-%
-%      %
-%      % Create a vector of scalar times.
-%      %
-%      et = [0:2]*2.*cspice_spd;
-%
-%      %
-%      % Retrieve the position of the moon seen from earth at 'et'
-%      % in the J2000 frame without aberration correction.
-%      %
-%      [pos, et] = cspice_spkpos( 'MOON', et, 'J2000', 'NONE', 'EARTH' );
-%
-%      %
-%      % Convert the array of position vectors 'pos' to latitudinal
-%      % coordinates.
-%      %
-%      [radius, longitude, latitude] = cspice_reclat(pos);
-%
-%      %
-%      % Convert the latitudinal to rectangular.
-%      %
-%      [rectan] = cspice_latrec(radius, longitude, latitude);
-%
-%      %
-%      % Calculate the relative error against the original position
-%      % vectors.
-%      %
-%      (rectan-pos) ./ pos
-%
-%   MATLAB outputs:
-%
-%      1.0e-14 *
-%
-%     -0.01996090072080  -0.05552320600838   0.63783453323816
-%      0.02182376758148                  0  -0.01531271963894
-%      0.01912147275010   0.01213804257114   0.02039513446643
-%
-%   Example (2):
-%
-%      %
-%      % Define eleven sets of latitudinal coordinates.
-%      %
-%      r         = [ 0., 1., 1., 1., 1., 1., 1., ...
-%                                     sqrt(2), sqrt(2), sqrt(2), sqrt(3) ];
-%      longitude = [ 0., 0., 90., 0. 180., -90., ...
-%                                     0., 45., 0., 90., 45. ];
-%      latitude  = [ 0., 0., 0., 90., 0., 0.,    ...
-%                                     -90., 0., 45., 45., 35.2643 ];
-%
-%      %
-%      % ...convert the latitudinal coordinates to rectangular coordinates
-%      %
-%      longitude = longitude * cspice_rpd;
-%      latitude  = latitude  * cspice_rpd;
-%
-%      rectan = cspice_latrec(r, longitude, latitude);
-%
-%      %
-%      % Loop over each set of coordinates for output, convert 'longitude'
-%      % and 'latitude' to degrees...
-%      %
-%      longitude = longitude * cspice_dpr;
-%      latitude  = latitude  * cspice_dpr;
-%
-%      %
-%      % Create an array of values for output.
-%      %
-%      output = [ r; longitude; latitude; rectan ];
-%
-%      %
-%      % Output banner.
-%      %
-%      disp('     r       longitude  latitude       x         y           z   ')
-%      disp('  --------   --------   --------   --------   --------   --------')
-%
-%      txt = sprintf( '%10.4f %10.4f %10.4f %10.4f %10.4f %10.4f\n', output );
-%      disp( txt )
-%
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
-%
-%   MATLAB outputs:
-%
-%        r       longitude  latitude       x         y           z
-%     --------   --------   --------   --------   --------   --------
-%       0.0000     0.0000     0.0000     0.0000     0.0000     0.0000
-%       1.0000     0.0000     0.0000     1.0000     0.0000     0.0000
-%       1.0000    90.0000     0.0000     0.0000     1.0000     0.0000
-%       1.0000     0.0000    90.0000     0.0000     0.0000     1.0000
-%       1.0000   180.0000     0.0000    -1.0000     0.0000     0.0000
-%       1.0000   -90.0000     0.0000     0.0000    -1.0000     0.0000
-%       1.0000     0.0000   -90.0000     0.0000     0.0000    -1.0000
-%       1.4142    45.0000     0.0000     1.0000     1.0000     0.0000
-%       1.4142     0.0000    45.0000     1.0000     0.0000     1.0000
-%       1.4142    90.0000    45.0000     0.0000     1.0000     1.0000
-%       1.7321    45.0000    35.2643     1.0000     1.0000     1.0000
-%
-%-Particulars
+%-Parameters
 %
 %   None.
 %
-%-Required Reading
+%-Examples
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine latrec_c.
+%   Any numerical results shown for these examples may differ between
+%   platforms as the results depend on the SPICE kernels used as input
+%   and the machine specific arithmetic implementation.
+%
+%   1) Compute the latitudinal coordinates of the position of the Moon
+%      as seen from the Earth, and convert them to rectangular
+%      coordinates.
+%
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
+%
+%
+%         KPL/MK
+%
+%         File name: latrec_ex1.tm
+%
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
+%
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            naif0012.tls                  Leapseconds
+%
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'naif0012.tls'  )
+%
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function latrec_ex1()
+%
+%         %
+%         % Load an SPK and leapseconds kernels.
+%         %
+%         cspice_furnsh( 'latrec_ex1.tm' )
+%
+%         %
+%         % Convert the time to ET.
+%         %
+%         et = cspice_str2et( '2017 Mar 20' );
+%
+%         %
+%         % Retrieve the position of the moon seen from earth at 'et'
+%         % in the J2000 frame without aberration correction.
+%         %
+%         [pos, et] = cspice_spkpos( 'MOON', et, 'J2000', 'NONE', 'EARTH' );
+%
+%         fprintf( 'Original rectangular coordinates:\n' )
+%         fprintf( '   X          (km): %20.8f\n', pos(1) )
+%         fprintf( '   Y          (km): %20.8f\n', pos(2) )
+%         fprintf( '   Z          (km): %20.8f\n', pos(3) )
+%
+%         %
+%         % Convert the position vector 'pos' to latitudinal
+%         % coordinates.
+%         %
+%         [radius, lon, lat] = cspice_reclat(pos);
+%         fprintf( '\n' )
+%         fprintf( 'Latitudinal coordinates:\n' )
+%         fprintf( '   Radius     (km): %20.8f\n', radius )
+%         fprintf( '   Longitude (deg): %20.8f\n', lon * cspice_dpr )
+%         fprintf( '   Latitude  (deg): %20.8f\n', lat * cspice_dpr )
+%
+%         %
+%         % Convert the latitudinal to rectangular.
+%         %
+%         [rectan] = cspice_latrec( radius, lon, lat);
+%         fprintf( '\n' )
+%         fprintf( 'Rectangular coordinates from cspice_latrec:\n' )
+%         fprintf( '   X          (km): %20.8f\n', rectan(1) )
+%         fprintf( '   Y          (km): %20.8f\n', rectan(2) )
+%         fprintf( '   Z          (km): %20.8f\n', rectan(3) )
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Original rectangular coordinates:
+%         X          (km):      -55658.44323296
+%         Y          (km):     -379226.32931475
+%         Z          (km):     -126505.93063865
+%
+%      Latitudinal coordinates:
+%         Radius     (km):      403626.33912495
+%         Longitude (deg):         -98.34959789
+%         Latitude  (deg):         -18.26566077
+%
+%      Rectangular coordinates from cspice_latrec:
+%         X          (km):      -55658.44323296
+%         Y          (km):     -379226.32931475
+%         Z          (km):     -126505.93063865
+%
+%
+%   2) Create a table showing a variety of latitudinal coordinates
+%      and the corresponding rectangular coordinates.
+%
+%      Corresponding latitudinal and rectangular coordinates are
+%      listed to four decimal places. Input angles are in degrees.
+%
+%
+%      Example code begins here.
+%
+%
+%      function latrec_ex2()
+%
+%         %
+%         % Define eleven sets of latitudinal coordinates.
+%         %
+%         r         = [ 0., 1., 1., 1., 1., 1., 1., ...
+%                       sqrt(2), sqrt(2), sqrt(2), sqrt(3) ];
+%         longitude = [ 0., 0., 90., 0. 180., -90., ...
+%                       0., 45., 0., 90., 45. ];
+%         latitude  = [ 0., 0., 0., 90., 0., 0.,    ...
+%                       -90., 0., 45., 45., 35.2643 ];
+%
+%         %
+%         % ...convert the latitudinal coordinates to rectangular coordinates
+%         %
+%         longitude = longitude * cspice_rpd;
+%         latitude  = latitude  * cspice_rpd;
+%
+%         rectan = cspice_latrec(r, longitude, latitude);
+%
+%         %
+%         % Loop over each set of coordinates for output, convert `longitude'
+%         % and `latitude' to degrees...
+%         %
+%         longitude = longitude * cspice_dpr;
+%         latitude  = latitude  * cspice_dpr;
+%
+%         %
+%         % Create an array of values for output.
+%         %
+%         output = [ r; longitude; latitude; rectan ];
+%
+%         %
+%         % Output banner.
+%         %
+%         disp('     r        lon       lat     rect(1)   rect(2)   rect(3)')
+%         disp('  -------  --------  --------   -------   -------   -------')
+%
+%         txt = sprintf( '%9.3f %9.3f %9.3f %9.3f %9.3f %9.3f\n', output );
+%         disp( txt )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%           r        lon       lat     rect(1)   rect(2)   rect(3)
+%        -------  --------  --------   -------   -------   -------
+%          0.000     0.000     0.000     0.000     0.000     0.000
+%          1.000     0.000     0.000     1.000     0.000     0.000
+%          1.000    90.000     0.000     0.000     1.000     0.000
+%          1.000     0.000    90.000     0.000     0.000     1.000
+%          1.000   180.000     0.000    -1.000     0.000     0.000
+%          1.000   -90.000     0.000     0.000    -1.000     0.000
+%          1.000     0.000   -90.000     0.000     0.000    -1.000
+%          1.414    45.000     0.000     1.000     1.000     0.000
+%          1.414     0.000    45.000     1.000     0.000     1.000
+%          1.414    90.000    45.000     0.000     1.000     1.000
+%          1.732    45.000    35.264     1.000     1.000     1.000
+%
+%
+%-Particulars
+%
+%   This routine returns the rectangular coordinates of a point
+%   whose position is input in latitudinal coordinates.
+%
+%   Latitudinal coordinates are defined by a distance from a central
+%   reference point, an angle from a reference meridian, and an angle
+%   above the equator of a sphere centered at the central reference
+%   point.
+%
+%-Exceptions
+%
+%   1)  If any of the input arguments, `radius', `lon' or `lat', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   2)  If any of the input arguments, `radius', `lon' or `lat', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%   3)  If the input vectorizable arguments `radius', `lon' and `lat'
+%       do not have the same measure of vectorization (N), an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed input argument names "longitude" and "latitude" to "lon" and
+%       "lat".
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Edited the header to comply with NAIF standard. Added
+%       meta-kernel to example #1. Updated code example #1 to produce
+%       formatted output and added a call to cspice_kclear. Added the
+%       problem statement to both examples.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 01-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -201,19 +339,19 @@
 %
 %-&
 
-function [rectan] = cspice_latrec(radius, longitude, latitude)
+function [rectan] = cspice_latrec(radius, lon, lat)
 
    switch nargin
       case 3
 
-         radius    = zzmice_dp(radius);
-         longitude = zzmice_dp(longitude);
-         latitude  = zzmice_dp(latitude);
+         radius = zzmice_dp(radius);
+         lon    = zzmice_dp(lon);
+         lat    = zzmice_dp(lat);
 
       otherwise
 
          error ( ['Usage: [_rectan(3)_] = ' ...
-                  'cspice_latrec(_radius_, _longitude_, _latitude_)'] )
+                  'cspice_latrec(_radius_, _lon_, _lat_)'] )
 
    end
 
@@ -221,8 +359,8 @@ function [rectan] = cspice_latrec(radius, longitude, latitude)
    % Call the MEX library.
    %
    try
-      [rectan] = mice('latrec_c',radius,longitude,latitude);
-   catch
-      rethrow(lasterror)
+      [rectan] = mice('latrec_c', radius, lon, lat);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

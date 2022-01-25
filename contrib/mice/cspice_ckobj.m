@@ -1,100 +1,121 @@
 %-Abstract
 %
-%   CSPICE_CKOBJ returns the set of ID codes of all objects in a
-%   specified CK file.
+%   CSPICE_CKOBJ finds the set of ID codes of all objects in a specified CK
+%   file.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
-%   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
+%   CALIFORNIA INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
 %   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
-%   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
-%   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
-%   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED "AS-IS"
+%   TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING ANY
+%   WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR A
+%   PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
 %   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
-%   KNOW OF THE POSSIBILITY.
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, OR NASA
+%   BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, BUT NOT
+%   LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+%   INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY AND LOST PROFITS,
+%   REGARDLESS OF WHETHER CALTECH, JPL, OR NASA BE ADVISED, HAVE
+%   REASON TO KNOW, OR, IN FACT, SHALL KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
-%   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE OF
+%   THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO INDEMNIFY
+%   CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING FROM THE
+%   ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      ck      the name(s) for SPICE CKs .
+%      ckfnm    the name(s) for SPICE CKs .
 %
-%              [1,c1] = size(ck), char = class(ck)
+%               [n,c1] = size(ckfnm); char = class(ckfnm)
 %
-%                 or
+%                  or
 %
-%              [m,c2] = size(ck), char = class(ck)
+%               [1,n] = size(ckfnm); cell = class(ckfnm)
 %
-%                 or
+%      room     a parameter specifying the maximum number of elements that
+%               can be accommodated by the dynamically allocated workspace
+%               cell used internally by this routine.
 %
-%              [1,m] = size(ck), cell = class(ck)
+%               [1,1] = size(room); int32 = class(room)
 %
-%      room    the maximum number of CK IDs to return from 'ck'.
+%               It's not necessary to compute an accurate estimate of how
+%               many elements will be returned in `ids'; rather, the
+%               user can pick a size considerably larger than what's
+%               really required.
 %
-%              [1,1] = size(room), int32 = class(room)
+%      ids_i    an optional input describing an array of CK ID
+%               codes.
 %
-%      ids_i   an optional input describing an array of CK ID
-%              codes. Inclusion of this array results in an output
-%              array consisting of a union of the data retrieved from
-%              the 'ck' kernels and the data in 'ids_i'.
+%               [r,1] = size(ids_i); int32 = class(ids_i)
 %
-%              [n,1] = size(ids_i), int32 = class(ids_i)
+%                  or
 %
-%                 or
+%               [0,0] = size(ids_i); int32 = class(ids_i)
 %
-%              [0,0] = size(ids_i), int32 = class(ids_i)
+%               Inclusion of this array results in an output array consisting
+%               of a union of the data retrieved from the `ckfnm' kernels and
+%               the data in `ids_i'.
+%
 %
 %   the call:
 %
-%      ids = cspice_ckobj( ck, room, ids_i)
+%      [ids] = cspice_ckobj( ckfnm, room, ids_i )
 %
 %         or
 %
-%      ids = cspice_ckobj( ck, room)
+%      [ids] = cspice_ckobj( ckfnm, room )
 %
 %   returns:
 %
-%      ids   the set of unique CK ID codes for which pointing data exists
-%            in 'ck'. If 'ids_i' exists in the argument list, 'ids' returns 
-%            as a union of the coverage data found in 'ck' and the data in
-%            'ids_i'. 'ids' can overwrite 'ids_i'.
+%      ids      the set of unique CK ID codes for which pointing data exists
+%               in `ckfnm'.
 %
-%            [p,1] = size(ids), int32 = class(ids)
+%               [p,1] = size(ids), int32 = class(ids)
+%
+%               If `ids_i' exists in the argument list, `ids' returns as a
+%               union of the data found in `ckfnm' and the data in
+%               `ids_i'. `ids' can overwrite `ids_i'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   Any numerical results shown for this example may differ between
+%   Any numerical results shown for these examples may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Use a simple function to display the CK IDs found in a CK, or set of
-%   CKs, and the time coverage of the data corresponding to those IDs.
-%   This example calls both cspice_ckobj and cspice_ckcov. In practice,
-%   algorithms using cspice_ckobj will also use cspice_ckcov and
-%   vice-versa.
+%   1) Use a simple function to display the CK IDs found in a CK, or set of
+%      CKs, and the time coverage of the data corresponding to those IDs.
 %
-%   function ckcov_t( CK, SCLK, LEVEL )
+%      This example calls both cspice_ckobj and cspice_ckcov. In practice,
+%      algorithms using cspice_ckobj will also use cspice_ckcov and
+%      vice-versa.
+%
+%      Use the LSK kernel below to load the leap seconds and time
+%      constants required for the time conversions.
+%
+%         naif0012.tls
+%
+%
+%      Example code begins here.
+%
+%
+%      function ckobj_ex1( CK, SCLK, LEVEL )
 %
 %         MAXIV  = 100000;
 %         WINSIZ = 2 * MAXIV;
 %         MAXOBJ = 1000;
-%         LSK    = 'naif0010.tls';
+%         LSK    = 'naif0012.tls';
 %
 %         %
 %         % Load a leapseconds kernel and the SCLK corresponding to the
@@ -122,7 +143,8 @@
 %            %
 %            % Extract the coverage data for object 'ids(i)'.
 %            %
-%            cover    = cspice_ckcov(CK, ids(i), 0, LEVEL, 0.0, 'TDB', WINSIZ);
+%            cover    = cspice_ckcov( CK,  ids(i), 0, LEVEL,               ...
+%                                     0.0, 'TDB',     WINSIZ );
 %            [row,col]= size(cover);
 %
 %            %
@@ -132,7 +154,7 @@
 %            fprintf( 'Coverage for object %d\n', ids(i) )
 %
 %            %
-%            %  'cover' has dimension 2Nx1, where 'row' has the value 2N with
+%            %  `cover' has dimension 2Nx1, where 'row' has the value 2N with
 %            %  each window defined as a pair of endpoints such that:
 %            %
 %            %  window 1 = cover(1:2)
@@ -151,7 +173,7 @@
 %               % so cspice_timout returns an array of time strings.
 %               %
 %               % Recall a vectorized input has dimension 1xM so transpose
-%               % the 'cover' slice.
+%               % the `cover' slice.
 %               %
 %               timstr = cspice_timout( cover(j:j+1)', ...
 %                                   'YYYY MON DD HR:MN:SC.### (TDB) ::TDB' );
@@ -168,19 +190,16 @@
 %         %
 %         cspice_kclear
 %
-%   Example (1):
 %
-%      Assign a CK kernel list as and SCLK:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, with the following variables as inputs
 %
-%      >> SCLK = '/kernels/cassini/sclk/cas00101.tsc';
-%      >> CK   = { '/kernels/cassini/ck/05357_05362ra.bc', ...
-%                  '/kernels/cassini/ck/05362_06002ra.bc'   };
+%         CK    = { '05357_05362ra.bc', '05362_06002ra.bc' };
+%         SCLK  =   'cas00101.tsc';
+%         LEVEL =   'INTERVAL';
 %
-%      Output data using the 'INTERVAL' level.
+%      the output was:
 %
-%      >> ckcov_t( CK, SCLK, 'INTERVAL' )
-%
-%   MATLAB outputs:
 %
 %      ========================================
 %      Coverage for object -82000
@@ -200,7 +219,81 @@
 %         Start: 2005 DEC 24 13:56:19.024 (TDB)
 %          Stop: 2005 DEC 24 17:25:42.944 (TDB)
 %
-%                ... continued ...
+%      Interval: 5
+%         Start: 2005 DEC 24 17:29:22.942 (TDB)
+%          Stop: 2005 DEC 25 00:47:58.774 (TDB)
+%
+%      Interval: 6
+%         Start: 2005 DEC 25 00:56:26.770 (TDB)
+%          Stop: 2005 DEC 26 06:59:58.077 (TDB)
+%
+%      Interval: 7
+%         Start: 2005 DEC 26 07:00:17.826 (TDB)
+%          Stop: 2005 DEC 26 13:52:05.918 (TDB)
+%
+%      Interval: 8
+%         Start: 2005 DEC 26 13:54:17.917 (TDB)
+%          Stop: 2005 DEC 26 14:10:53.911 (TDB)
+%
+%      Interval: 9
+%         Start: 2005 DEC 26 14:15:13.909 (TDB)
+%          Stop: 2005 DEC 27 13:34:53.121 (TDB)
+%
+%      Interval: 10
+%         Start: 2005 DEC 27 13:36:01.370 (TDB)
+%          Stop: 2005 DEC 27 18:57:09.247 (TDB)
+%
+%      Interval: 11
+%         Start: 2005 DEC 27 19:01:05.245 (TDB)
+%          Stop: 2005 DEC 27 19:11:01.241 (TDB)
+%
+%      Interval: 12
+%         Start: 2005 DEC 27 19:14:01.240 (TDB)
+%          Stop: 2005 DEC 28 00:01:01.130 (TDB)
+%
+%      Interval: 13
+%         Start: 2005 DEC 28 00:01:05.130 (TDB)
+%          Stop: 2005 DEC 28 18:05:00.713 (TDB)
+%
+%      Interval: 14
+%         Start: 2005 DEC 28 18:07:04.712 (TDB)
+%          Stop: 2005 DEC 28 18:23:00.706 (TDB)
+%
+%      Interval: 15
+%         Start: 2005 DEC 28 18:31:04.703 (TDB)
+%          Stop: 2005 DEC 28 18:31:16.703 (TDB)
+%
+%      Interval: 16
+%         Start: 2005 DEC 28 18:31:44.703 (TDB)
+%          Stop: 2005 DEC 29 13:19:00.269 (TDB)
+%
+%      Interval: 17
+%         Start: 2005 DEC 29 13:21:12.268 (TDB)
+%          Stop: 2005 DEC 29 13:30:28.264 (TDB)
+%
+%      Interval: 18
+%         Start: 2005 DEC 29 13:34:48.263 (TDB)
+%          Stop: 2005 DEC 29 19:33:00.125 (TDB)
+%
+%      Interval: 19
+%         Start: 2005 DEC 29 19:42:32.121 (TDB)
+%          Stop: 2005 DEC 30 10:47:23.773 (TDB)
+%
+%      Interval: 20
+%         Start: 2005 DEC 30 10:47:59.773 (TDB)
+%          Stop: 2005 DEC 30 11:02:11.768 (TDB)
+%
+%      Interval: 21
+%         Start: 2005 DEC 30 11:02:55.767 (TDB)
+%          Stop: 2005 DEC 30 21:10:11.534 (TDB)
+%
+%      Interval: 22
+%         Start: 2005 DEC 30 21:13:43.532 (TDB)
+%          Stop: 2005 DEC 31 14:58:31.123 (TDB)
+%
+%      Interval: 23
+%         Start: 2005 DEC 31 15:06:47.119 (TDB)
+%          Stop: 2005 DEC 31 15:48:11.104 (TDB)
 %
 %      Interval: 24
 %         Start: 2005 DEC 31 15:49:11.103 (TDB)
@@ -208,23 +301,23 @@
 %
 %      Interval: 25
 %         Start: 2006 JAN 01 15:20:30.560 (TDB)
-%          Stop: 2006 JAN 01 16:43:38.528 (TDB)
 %
-%      Interval: 26
-%         Start: 2006 JAN 01 16:45:02.528 (TDB)
-%          Stop: 2006 JAN 01 22:52:10.386 (TDB)
+%      [...]
 %
-%      Interval: 27
-%         Start: 2006 JAN 01 22:52:38.386 (TDB)
-%          Stop: 2006 JAN 02 00:01:02.360 (TDB)
 %
-%   Example (2):
+%      Warning: incomplete output. Only 100 out of 110 lines have been
+%      provided.
 %
-%      Output data using the 'SEGMENT' level.
 %
-%      >> ckcov_t( CK, SCLK, 'SEGMENT' )
+%   2) When Example #1 was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, with the following variables as inputs
 %
-%   MATLAB outputs:
+%         CK    = { '05357_05362ra.bc', '05362_06002ra.bc' };
+%         SCLK  =   'cas00101.tsc';
+%         LEVEL =   'SEGMENT';
+%
+%      the output was:
+%
 %
 %      ========================================
 %      Coverage for object -82000
@@ -236,81 +329,154 @@
 %         Start: 2005 DEC 28 00:01:05.130 (TDB)
 %          Stop: 2006 JAN 02 00:01:02.360 (TDB)
 %
+%
 %-Particulars
+%
+%   This routine provides an API via which applications can determine
+%   the set of objects for which there are pointing data in a
+%   specified CK file.
+%
+%-Exceptions
+%
+%   1)  If the input file has transfer format, the error
+%       SPICE(INVALIDFORMAT) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   2)  If the input file is not a transfer file but has architecture
+%       other than DAF, the error SPICE(INVALIDARCHTYPE) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   3)  If the input file is a binary DAF file of type other than CK,
+%       the error SPICE(INVALIDFILETYPE) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   4)  If the CK file cannot be opened or read, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%   5)  If the size of the output set argument `ids' is insufficient
+%       to contain the actual number of ID codes of objects covered by
+%       the indicated CK file, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   6)  If any of the input arguments, `ckfnm', `room' or `ids_i', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   7)  If any of the input arguments, `ckfnm', `room' or `ids_i', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   This routine reads a C-kernel.
+%
+%-Restrictions
+%
+%   1)  If an error occurs while this routine is updating the set
+%       `ids', the set may be corrupted.
+%
+%-Required_Reading
+%
+%   CELLS.REQ
+%   CK.REQ
+%   DAF.REQ
+%   FRAMES.REQ
+%   MICE.REQ
+%   NAIF_IDS.REQ
+%   SETS.REQ
+%
+%-Literature_References
 %
 %   None.
 %
-%-Required Reading
+%-Author_and_Institution
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine ckobj_c.
-%
-%   MICE.REQ
-%   WINDOWS.REQ
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.3.0, 03-APR-2012, EDW (JPL)
+%   -Mice Version 1.4.0, 26-NOV-2021 (EDW) (JDR)
 %
-%      Edits to Example code and comments. No change to Example code
-%      functionality.
+%       Changed the input argument "ck" to "ckfnm" for consistency with other
+%       routines.
 %
-%      Added error check on 'ids_i' to ensure the argument either has
-%      shape [N,1] or is an empty array with shape [0,0].
+%       Edited the header to comply with NAIF standard.
 %
-%      Renamed the argument 'size' to 'room'. "size" is a Matlab function
-%      name and it's seriously dumb to use a function name word as an argument
-%      name.
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%      Explicitly described ID variables as "CK IDs."
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
 %
-%   -Mice Version 1.2.0, 13-AUG-2009, EDW (JPL)
+%       Updated description of argument "room".
 %
-%      The union of 'ids_i'  with the interface return argument 'ids'
-%      again calculated using the "unique" function, replacing "union."
-%      This implementation results in the expected behavior of the
-%      call in octave when 'ids_i' contains zero or one element.
+%   -Mice Version 1.3.0, 03-APR-2012 (EDW)
 %
-%      Corrected typo in previous Version entry.
+%       Edits to Example code and comments. No change to Example code
+%       functionality.
 %
-%   -Mice Version 1.1.0, 29-DEC-2008, EDW (JPL)
+%       Added error check on 'ids_i' to ensure the argument either has
+%       shape [N,1] or is an empty array with shape [0,0].
 %
-%      Corrected error in comment description for 'ids_i'.
-%      Removed the line:
+%       Renamed the argument 'size' to 'room'. "size" is a Matlab function
+%       name and it's seriously dumb to use a function name word as an
+%       argument name.
 %
-%         Note: 'ids_i' cannot be an empty array.
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
 %
-%      The argument can have the empty array value, [], on
-%      input.
+%       Explicitly described ID variables as "CK IDs."
 %
-%      Corrected several typos.
+%   -Mice Version 1.2.0, 13-AUG-2009 (EDW)
 %
-%      'ids_i' union with interface return call now calculated
-%      using the 'union' function instead of 'unique'.
+%       The union of 'ids_i'  with the interface return argument 'ids'
+%       again calculated using the "unique" function, replacing "union."
+%       This implementation results in the expected behavior of the
+%       call in octave when 'ids_i' contains zero or one element.
 %
-%   -Mice Version 1.0.0, 19-JUN-2007, EDW (JPL)
+%       Corrected typo in previous -Version entry.
+%
+%   -Mice Version 1.1.0, 29-DEC-2008 (EDW)
+%
+%       Corrected error in comment description for 'ids_i'.
+%       Removed the line:
+%
+%          Note: 'ids_i' cannot be an empty array.
+%
+%       The argument can have the empty array value, [], on
+%       input.
+%
+%       Corrected several typos.
+%
+%       'ids_i' union with interface return call now calculated
+%       using the 'union' function instead of 'unique'.
+%
+%   -Mice Version 1.0.0, 19-JUN-2007 (EDW)
 %
 %-Index_Entries
 %
-%   find ID codes in ck file
+%   find id codes of objects in CK file
 %
 %-&
 
-function [ids] = cspice_ckobj( ck, room, ids_i )
+function [ids] = cspice_ckobj( ckfnm, room, ids_i )
 
    switch nargin
       case 2
 
-         ck   = zzmice_str(ck);
-         room = zzmice_int(room);
+         ckfnm = zzmice_str(ckfnm);
+         room  = zzmice_int(room);
 
       case 3
 
-         ck   = zzmice_str(ck);
-         room = zzmice_int(room);
-         ids_i= zzmice_int(ids_i);
+         ckfnm = zzmice_str(ckfnm);
+         room  = zzmice_int(room);
+         ids_i = zzmice_int(ids_i);
 
          %
          % Check 'ids_i' has dimension Nx1 or is an empty array.
@@ -325,7 +491,7 @@ function [ids] = cspice_ckobj( ck, room, ids_i )
 
       otherwise
 
-         error ( 'Usage: [ids] = cspice_ckobj( _`ck`_, room, [ids_i])' )
+         error ( 'Usage: [ids] = cspice_ckobj( _`ckfnm`_, room, [ids_i])' )
 
    end
 
@@ -338,9 +504,9 @@ function [ids] = cspice_ckobj( ck, room, ids_i )
       % Call the MEX library.
       %
       try
-         [ids] = mice('ckobj_c', ck, room );
-      catch
-         rethrow(lasterror)
+         [ids] = mice('ckobj_c', ckfnm, room );
+      catch spiceerr
+         rethrow(spiceerr)
       end
 
    else
@@ -349,14 +515,9 @@ function [ids] = cspice_ckobj( ck, room, ids_i )
       % Call the MEX library.
       %
       try
-         ids = unique( [ [ids_i]; mice('ckobj_c', ck, room ) ] );
-      catch
-         rethrow(lasterror)
+         ids = unique( [ [ids_i]; mice('ckobj_c', ckfnm, room ) ] );
+      catch spiceerr
+         rethrow(spiceerr)
       end
 
    end
-
-
-
-
-

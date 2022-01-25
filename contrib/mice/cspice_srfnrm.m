@@ -36,149 +36,149 @@
 %
 %   Given:
 %
-%      method      is a short string providing parameters defining
-%                  the computation method to be used. In the syntax
-%                  descriptions below, items delimited by brackets
-%                  are optional.
+%      method   a short string providing parameters defining
+%               the computation method to be used.
 %
-%                  [1,c1] = size(method); char = class(method)
+%               [1,c1] = size(method); char = class(method)
 %
-%                     or
+%                  or
 %
-%                  [1,1] = size(method); cell = class(method)
+%               [1,1] = size(method); cell = class(method)
 %
-%                  `method' may be assigned the following values:
+%               In the syntax descriptions below, items delimited by brackets
+%               are optional.
 %
-%                     'ELLIPSOID'
+%               `method' may be assigned the following values:
 %
-%                        The normal vector computation uses a triaxial
-%                        ellipsoid to model the surface of the target
-%                        body. The ellipsoid's radii must be available
-%                        in the kernel pool.
+%                  'ELLIPSOID'
 %
+%                     The normal vector computation uses a triaxial
+%                     ellipsoid to model the surface of the target
+%                     body. The ellipsoid's radii must be available
+%                     in the kernel pool.
 %
-%                     'DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
+%                  'DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
 %
-%                        The normal vector computation uses topographic
-%                        data to model the surface of the target body.
-%                        These data must be provided by loaded DSK
-%                        files.
+%                     The normal vector computation uses topographic
+%                     data to model the surface of the target body.
+%                     These data must be provided by loaded DSK
+%                     files.
 %
-%                        The surface list specification is optional. The
-%                        syntax of the list is
+%                     The surface list specification is optional. The
+%                     syntax of the list is
 %
-%                           <surface 1> [, <surface 2>...]
+%                        <surface 1> [, <surface 2>...]
 %
-%                        If present, it indicates that data only for the
-%                        listed surfaces are to be used; however, data
-%                        need not be available for all surfaces in the
-%                        list. If absent, loaded DSK data for any surface
-%                        associated with the target body are used.
+%                     If present, it indicates that data only for the
+%                     listed surfaces are to be used; however, data
+%                     need not be available for all surfaces in the
+%                     list. If absent, loaded DSK data for any surface
+%                     associated with the target body are used.
 %
-%                        The surface list may contain surface names or
-%                        surface ID codes. Names containing blanks must
-%                        be delimited by double quotes, for example
+%                     The surface list may contain surface names or
+%                     surface ID codes. Names containing blanks must
+%                     be delimited by double quotes, for example
 %
-%                           SURFACES = "Mars MEGDR 128 PIXEL/DEG"
+%                        SURFACES = "Mars MEGDR 128 PIXEL/DEG"
 %
-%                        If multiple surfaces are specified, their names
-%                        or IDs must be separated by commas.
+%                     If multiple surfaces are specified, their names
+%                     or IDs must be separated by commas.
 %
-%                        See the Particulars section below for details
-%                        concerning use of DSK data.
-%
-%
-%                  Neither case nor white space are significant in
-%                  `method', except within double-quoted strings. For
-%                  example, the string ' eLLipsoid ' is valid.
-%
-%                  Within double-quoted strings, blank characters are
-%                  significant, but multiple consecutive blanks are
-%                  considered equivalent to a single blank. Case is
-%                  not significant. So
-%
-%                     "Mars MEGDR 128 PIXEL/DEG"
-%
-%                  is equivalent to
-%
-%                     " mars megdr  128  pixel/deg "
-%
-%                  but not to
-%
-%                     "MARS MEGDR128PIXEL/DEG"
+%                     See the -Particulars section below for details
+%                     concerning use of DSK data.
 %
 %
-%      target      is the name of the target body. `target' is
-%                  case-insensitive, and leading and trailing blanks in
-%                  `target' are not significant. Optionally, you may
-%                  supply a string containing the integer ID code for
-%                  the object. For example both 'MOON' and '301' are
-%                  legitimate strings that indicate the Moon is the
-%                  target body.
+%               Neither case nor white space are significant in
+%               `method', except within double-quoted strings. For
+%               example, the string ' eLLipsoid ' is valid.
 %
-%                  [1,c1] = size(target); char = class(target)
+%               Within double-quoted strings, blank characters are
+%               significant, but multiple consecutive blanks are
+%               considered equivalent to a single blank. Case is
+%               not significant. So
 %
-%                     or
+%                  "Mars MEGDR 128 PIXEL/DEG"
 %
-%                  [1,1] = size(target); cell = class(target)
+%               is equivalent to
 %
-%                  When the target body's surface is represented by a
-%                  tri-axial ellipsoid, this routine assumes that a
-%                  kernel variable representing the ellipsoid's radii is
-%                  present in the kernel pool. Normally the kernel
-%                  variable would be defined by loading a PCK file.
+%                  " mars megdr  128  pixel/deg "
 %
+%               but not to
 %
-%      et          is the epoch for which target surface data will be
-%                  selected, if the surface is modeled using DSK data.
-%                  In this case, only segments having time coverage that
-%                  includes the epoch `et' will be used.
+%                  "MARS MEGDR128PIXEL/DEG"
 %
-%                  [1,1] = size(et); double = class(et)
+%      target   the name of the target body.
 %
-%                  `et' is ignored if the target is modeled as an
-%                  ellipsoid.
+%               [1,c1] = size(target); char = class(target)
 %
-%                  `et' is expressed as TDB seconds past J2000 TDB.
+%                  or
 %
+%               [1,1] = size(target); cell = class(target)
 %
-%      fixref      is the name of a body-fixed reference frame centered
-%                  on the target body. `fixref' may be any such frame
-%                  supported by the SPICE system, including built-in
-%                  frames (documented in the Frames Required Reading)
-%                  and frames defined by a loaded frame kernel (FK). The
-%                  string `fixref' is case-insensitive, and leading and
-%                  trailing blanks in `fixref' are not significant.
+%               `target' is case-insensitive, and leading and trailing
+%               blanks in `target' are not significant. Optionally, you may
+%               supply a string containing the integer ID code for
+%               the object. For example both 'MOON' and '301' are
+%               legitimate strings that indicate the Moon is the
+%               target body.
 %
-%                  [1,c1] = size(target); char = class(target)
+%               When the target body's surface is represented by a
+%               tri-axial ellipsoid, this routine assumes that a
+%               kernel variable representing the ellipsoid's radii is
+%               present in the kernel pool. Normally the kernel
+%               variable would be defined by loading a PCK file.
 %
-%                     or
+%      et       the epoch for which target surface data will be
+%               selected, if the surface is modeled using DSK data.
 %
-%                  [1,1] = size(target); cell = class(target)
+%               [1,1] = size(et); double = class(et)
 %
-%                  The input surface points in the array `srfpts' are
-%                  expressed relative to this reference frame, as are
-%                  the normal vectors computed by this routine.
+%               In this case, only segments having time coverage that
+%               includes the epoch `et' will be used.
 %
-%      srfpts      is an array of target body surface points.
+%               `et' is ignored if the target is modeled as an
+%               ellipsoid.
 %
-%                  [3,n] = size(srfpts); double = class(srfpts)
+%               `et' is expressed as TDB seconds past J2000 TDB.
 %
-%                  Elements
+%      fixref   the name of a body-fixed reference frame centered
+%               on the target body.
 %
-%                     srfpts(1,i)
-%                     srfpts(2,i)
-%                     srfpts(3,i)
+%               [1,c1] = size(target); char = class(target)
 %
-%                  are the Cartesian coordinates, expressed in the
-%                  reference frame designated by `fixref', of the ith
-%                  surface point in the array. Each surface point
-%                  represents an offset from the center of that frame.
+%                  or
 %
-%                  All surface points must actually be "on" the surface,
-%                  that is, the distance of each point from the surface
-%                  must be less than a small margin. See the Parameters
-%                  section below for a description of this margin.
+%               [1,1] = size(target); cell = class(target)
+%
+%               `fixref' may be any such frame supported by the SPICE system,
+%               including built-in frames (documented in the Frames Required
+%               Reading) and frames defined by a loaded frame kernel (FK). The
+%               string `fixref' is case-insensitive, and leading and
+%               trailing blanks in `fixref' are not significant.
+%
+%               The input surface points in the array `srfpts' are
+%               expressed relative to this reference frame, as are
+%               the normal vectors computed by this routine.
+%
+%      srfpts   an array of target body surface points.
+%
+%               [3,n] = size(srfpts); double = class(srfpts)
+%
+%               Elements
+%
+%                  srfpts(1,i)
+%                  srfpts(2,i)
+%                  srfpts(3,i)
+%
+%               are the Cartesian coordinates, expressed in the
+%               reference frame designated by `fixref', of the ith
+%               surface point in the array. Each surface point
+%               represents an offset from the center of that frame.
+%
+%               All surface points must actually be "on" the surface,
+%               that is, the distance of each point from the surface
+%               must be less than a small margin. See the -Parameters
+%               section below for a description of this margin.
 %
 %   the call:
 %
@@ -186,20 +186,54 @@
 %
 %   returns:
 %
-%      normls      is an array of unit length, outward normal vectors
-%                  corresponding to the points in `srfpts'.
+%      normls   an array of unit length, outward normal vectors
+%               corresponding to the points in `srfpts'.
 %
-%                  [3,n] = size(normls); double = class(normls)
+%               [3,n] = size(normls); double = class(normls)
 %
-%                  Elements
+%               Elements
 %
-%                     normls(1,i)
-%                     normls(2,i)
-%                     normls(3,i)
+%                  normls(1,i)
+%                  normls(2,i)
+%                  normls(3,i)
 %
-%                  are the Cartesian coordinates, expressed in the
-%                  reference frame designated by `fixref', of the ith
-%                  normal vector in the array.
+%               are the Cartesian coordinates, expressed in the
+%               reference frame designated by `fixref', of the ith
+%               normal vector in the array.
+%
+%-Parameters
+%
+%   SPICE_DSK_PTMEMM
+%
+%               is the default point-surface membership margin. This
+%               margin limits the distance an input point can be from
+%               a surface and still be considered to lie on that
+%               surface.
+%
+%               The details of the application of
+%
+%                  SPICE_DSK_PTMEMM
+%
+%               are implementation-dependent. In the DSK case, roughly
+%               speaking, a point-surface distance limit within a DSK
+%               segment is set to
+%
+%                  SPICE_DSK_PTMEMM * MAXR
+%
+%               where MAXR is the radius of an outer bounding sphere
+%               for the segment.
+%
+%               For shapes modeled as ellipsoids, the expression
+%               above is applied to the maximum radius of the
+%               ellipsoid.
+%
+%               See the include file
+%
+%                  MiceDtl.m
+%
+%               for the declaration of SPICE_DSK_PTMEMM. This margin
+%               can be overridden. See this header file
+%               and the routine cspice_dskstl for details.
 %
 %-Examples
 %
@@ -207,7 +241,7 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      Compute outward normal vectors at surface points on a target
+%   1) Compute outward normal vectors at surface points on a target
 %      body, where the points correspond to a given planetocentric
 %      longitude/latitude grid. Use both ellipsoid and DSK shape
 %      models.
@@ -218,7 +252,7 @@
 %
 %         KPL/MK
 %
-%         File: srfnrm_t.tm
+%         File: srfnrm_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The kernels shown here should not be
@@ -239,23 +273,26 @@
 %            phobos512.bds                    DSK based on
 %                                             Gaskell ICQ Q=512
 %                                             plate model
+%
 %         \begindata
 %
-%            PATH_SYMBOLS    = 'GEN'
-%            PATH_VALUES     = '/ftp/pub/naif/generic_kernels'
+%            KERNELS_TO_LOAD = ( 'pck00010.tpc',
+%                                'phobos512.bds' )
 %
-%            KERNELS_TO_LOAD = ( '$GEN/pck/pck00010.tpc',
-%                                '$GEN/dsk/phobos/phobos512.bds' )
 %         \begintext
 %
-%   Example(1):
+%         End of meta-kernel
 %
-%      function srfnrm_t
+%
+%      Example code begins here.
+%
+%
+%      function srfnrm_ex1()
 %
 %         %
 %         % Local constants
 %         %
-%         META = 'srfnrm_t.tm';
+%         META = 'srfnrm_ex1.tm';
 %
 %         %
 %         % Set target, reference frame, and epoch.
@@ -280,12 +317,12 @@
 %         % points along latitude bands, working from
 %         % north to south.  The latitude range is selected
 %         % to range from +45 to -45 degrees.  Longitude
-%         % ranges from 0 to 300 degrees.  The increment
-%         % is 45 degrees for latitude and 60 degrees for
+%         % ranges from 0 to 120 degrees.  The increment
+%         % is 90 degrees for latitude and 60 degrees for
 %         % longitude.
 %         %
-%         lat = 45:-45:-45;
-%         lon = 0:60:300;
+%         lat = 45:-90:-45;
+%         lon = 0:60:120;
 %         n   = 0;
 %         grid = eye(2, numel(lat) * numel(lon) );
 %
@@ -321,34 +358,41 @@
 %               %
 %               [ xr, xlon, xlat] = cspice_recrad( srfpts(1:3, j) );
 %
-%               fprintf( [ '\n%s\n'                                       ...
-%                              'Surface point for grid point %d:\n'       ...
-%                              '  Latitudinal Coordinates:\n'             ...
-%                              '    Longitude           (deg): %12.6f\n'  ...
-%                              '    Latitude            (deg): %12.6f\n'  ...
-%                              '    Radius              (km): %12.6f\n' ],...
-%                              char( method(i) ), ...
-%                              j,                 ...
-%                              xlon*cspice_dpr(), ...
-%                              xlat*cspice_dpr(), ...
+%               fprintf( [ '\n%s\n'                                        ...
+%                              'Surface point for grid point %d:\n'        ...
+%                              '  Latitudinal Coordinates:\n'              ...
+%                              '    Longitude           (deg): %12.6f\n'   ...
+%                              '    Latitude            (deg): %12.6f\n'   ...
+%                              '    Radius              (km): %12.6f\n' ], ...
+%                              char( method(i) ),                          ...
+%                              j,                                          ...
+%                              xlon*cspice_dpr(),                          ...
+%                              xlat*cspice_dpr(),                          ...
 %                              xr )
 %
 %               [ nrmrad, nrmlon, nrmlat] = cspice_recrad( normls(1:3, j) );
 %
-%               fprintf( [ '\n'                                           ...
-%                              'Normal vector direction:\n'               ...
-%                              '    Longitude (deg):           %12.6f\n'  ...
-%                              '    Latitude  (deg):           %12.6f\n'],...
-%                              nrmlon * cspice_dpr(), ...
+%               fprintf( [ '\n'                                            ...
+%                              'Normal vector direction:\n'                ...
+%                              '    Longitude (deg):           %12.6f\n'   ...
+%                              '    Latitude  (deg):           %12.6f\n'], ...
+%                              nrmlon * cspice_dpr(),                      ...
 %                              nrmlat * cspice_dpr()  )
 %
 %            end
 %
 %         end
 %
-%         cspice_kclear();
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
-%   Matlab outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      ELLIPSOID
 %      Surface point for grid point 1:
@@ -383,7 +427,38 @@
 %          Longitude (deg):             113.940213
 %          Latitude  (deg):              58.877649
 %
-%      ...
+%      ELLIPSOID
+%      Surface point for grid point 4:
+%        Latitudinal Coordinates:
+%          Longitude           (deg):     0.000000
+%          Latitude            (deg):   -45.000000
+%          Radius              (km):    10.542977
+%
+%      Normal vector direction:
+%          Longitude (deg):               0.000000
+%          Latitude  (deg):             -63.895146
+%
+%      ELLIPSOID
+%      Surface point for grid point 5:
+%        Latitudinal Coordinates:
+%          Longitude           (deg):    60.000000
+%          Latitude            (deg):   -45.000000
+%          Radius              (km):    10.172847
+%
+%      Normal vector direction:
+%          Longitude (deg):              66.059787
+%          Latitude  (deg):             -58.877649
+%
+%      ELLIPSOID
+%      Surface point for grid point 6:
+%        Latitudinal Coordinates:
+%          Longitude           (deg):   120.000000
+%          Latitude            (deg):   -45.000000
+%          Radius              (km):    10.172847
+%
+%      Normal vector direction:
+%          Longitude (deg):             113.940213
+%          Latitude  (deg):             -58.877649
 %
 %      DSK/UNPRIORITIZED
 %      Surface point for grid point 1:
@@ -418,7 +493,13 @@
 %          Longitude (deg):             118.553200
 %          Latitude  (deg):              55.906774
 %
-%      ...
+%
+%      [...]
+%
+%
+%      Warning: incomplete output. Only 100 out of 132 lines have been
+%      provided.
+%
 %
 %-Particulars
 %
@@ -541,10 +622,140 @@
 %
 %         'DSK/UNPRIORITIZED/SURFACES = "Mars MEGDR 64 PIXEL/DEG", 3'
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine srfnrm_c.
+%   1)  If the target body name specified in the input string cannot
+%       be converted to an integer ID code, the error
+%       SPICE(IDCODENOTFOUND) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If the input target body-fixed frame `fixref' is not recognized,
+%       the error SPICE(NOFRAME) is signaled by a routine in the call
+%       tree of this routine. A frame name may fail to be recognized
+%       because a required frame specification kernel has not been
+%       loaded; another cause is a misspelling of the frame name.
+%
+%   3)  If the input frame `fixref' is not centered at the target body,
+%       the error SPICE(INVALIDFRAME) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   4)  If data are not available to convert between the frame
+%       `fixref' and the frame of a DSK segment of interest, an error
+%       is signaled by a routine in the call tree of this
+%       routine.
+%
+%   5)  If the input argument `method' cannot be parsed, an error
+%       is signaled by either this routine or a routine in
+%       the call tree of this routine.
+%
+%   6)  If the computation method specifies an ellipsoidal target
+%       model, and if triaxial radii of the target body have not been
+%       loaded into the kernel pool prior to calling cspice_srfnrm, an error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   7)  If the computation method specifies an ellipsoidal target
+%       model, and if any of the radii of the target body are
+%       non-positive, an error is signaled by a routine in the call
+%       tree of this routine. The target must be an extended body.
+%
+%   8)  If `method' specifies that the target surface is represented by
+%       DSK data, and no DSK files are loaded for the specified
+%       target, an error is signaled by a routine in the call tree
+%       of this routine.
+%
+%   9)  If `method' specifies that the target surface is represented by
+%       DSK data, and data representing the portion of the surface
+%       corresponding to the surface points provided in `srfpts' are
+%       not available, an error is signaled by a routine in the
+%       call tree of this routine.
+%
+%   10) If an input surface point is not within a small tolerance of
+%       the specified surface, the error SPICE(POINTNOTONSURFACE) is
+%       signaled by a routine in the call tree of this routine. See
+%       the -Parameters section for details.
+%
+%   11) If the radii are not available in the kernel pool, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   12) If the target shape is "ellipsoid" and not all radii of the
+%       ellipsoid are strictly positive, the error
+%       SPICE(BADAXISLENGTH) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   13) If any of the input arguments, `method', `target', `et',
+%       `fixref' or `srfpts', is undefined, an error is signaled by
+%       the Matlab error handling system.
+%
+%   14) If any of the input arguments, `method', `target', `et',
+%       `fixref' or `srfpts', is not of the expected type, or it does
+%       not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   Appropriate kernels must be loaded by the calling program before
+%   this routine is called.
+%
+%   The following data are required:
+%
+%   -  Shape data for the target body:
+%
+%        PCK data:
+%
+%           If the target shape is modeled as an ellipsoid,
+%           triaxial radii for the target body must be loaded into
+%           the kernel pool. Typically this is done by loading a
+%           text PCK file via cspice_furnsh.
+%
+%        DSK data:
+%
+%           If the target shape is modeled by DSK data, DSK files
+%           containing topographic data for the target body must be
+%           loaded. If a surface list is specified, data for at
+%           least one of the listed surfaces must be loaded.
+%
+%   -  Target body orientation data: these may be provided in a
+%      text or binary PCK file. In some cases, target body
+%      orientation may be provided by one more more CK files. In
+%      either case, data are made available by loading the files
+%      via cspice_furnsh.
+%
+%   The following data may be required:
+%
+%   -  Frame data: if a frame definition is required to convert
+%      between the body-fixed frame of the target and the frame of
+%      a DSK segment providing topographic data, that definition
+%      must be available in the kernel pool. Typically the
+%      definition is supplied by loading a frame kernel via cspice_furnsh.
+%
+%   -  Surface name-ID associations: if surface names are specified
+%      in `method', the association of these names with their
+%      corresponding surface ID codes must be established by
+%      assignments of the kernel variables
+%
+%         NAIF_SURFACE_NAME
+%         NAIF_SURFACE_CODE
+%         NAIF_SURFACE_BODY
+%
+%      Normally these associations are made by loading a text
+%      kernel containing the necessary assignments. An example of
+%      such a set of assignments is
+%
+%         NAIF_SURFACE_NAME += 'Mars MEGDR 128 PIXEL/DEG'
+%         NAIF_SURFACE_CODE += 1
+%         NAIF_SURFACE_BODY += 499
+%
+%   -  SCLK data: if the target body's orientation is provided by
+%      CK files, an associated SCLK kernel must be loaded.
+%
+%   In all cases, kernel data are normally loaded once per program
+%   run, NOT every time this routine is called.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DSK.REQ
@@ -553,15 +764,39 @@
 %   SPK.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 24-MAR-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement. Reduced the number of grid points
+%       to compute in code example.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 24-MAR-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
 %   map Cartesian surface points to normal vectors
 %   compute normal vectors on topographic surface
-%   compute normal vectors on dsk surface
+%   compute normal vectors on DSK surface
 %
 %-&
 
@@ -588,8 +823,8 @@ function [normls] = cspice_srfnrm( method, target, et, fixref, srfpts )
    %
    try
       [normls] = mice( 'srfnrm_c', method, target, et, fixref, srfpts );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

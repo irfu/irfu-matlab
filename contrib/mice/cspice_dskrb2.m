@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_DSKRB2 determine range bounds for a DSK plate set.
+%   CSPICE_DSKRB2 determines range bounds for a DSK plate set.
 %
 %-Disclaimer
 %
@@ -32,47 +32,49 @@
 %
 %   Given:
 %
-%      vrtces      is an array of coordinates of the vertices. The Ith
-%                  vertex occupies elements [1:3,I] of this array.
+%      vrtces   an array of coordinates of the vertices.
 %
-%                  [3,m] = size(vrtces); double = class(vrtces)
+%               [3,m] = size(vrtces); double = class(vrtces)
 %
-%      plates      is a array representing the triangular plates of a
-%                  shape model. The elements of `plates' are vertex
-%                  indices; vertex indices are 1-based. The vertex
-%                  indices of the Ith plate occupy elements [1:3,I] of
-%                  this array.
+%               The Ith vertex occupies elements [1:3,I] of this array.
 %
-%                  [3,n] = size(plates); int32 = class(plates)
+%      plates   an array representing the triangular plates of a
+%               shape model.
 %
-%      corsys      is an integer parameter identifying the coordinate
-%                  system in which the bounds are to be computed.
+%               [3,n] = size(plates); int32 = class(plates)
 %
-%                  [1,1] = size(corsys); int32 = class(corsys)
+%               The elements of `plates' are vertex indices; vertex indices
+%               are 1-based. The vertex indices of the Ith plate occupy
+%               elements [1:3,I] of this array.
 %
-%                  The bounds apply to the third coordinate in each system:
+%      corsys   an integer parameter identifying the coordinate
+%               system in which the bounds are to be computed.
 %
-%                     Latitudinal:           radius
-%                     Planetodetic:          altitude
-%                     Rectangular:           Z
+%               [1,1] = size(corsys); int32 = class(corsys)
 %
-%      corpar     is a array of parameters associated with the coordinate
-%                 system.
+%               The bounds apply to the third coordinate in each system:
 %
-%                  [2,1] = size(corpar); double = class(corpar)
+%                  Latitudinal: radius
+%                  Planetodetic: altitude
+%                  Rectangular:           Z
 %
-%                 Currently the only supported system that has
-%                 associated parameters is the planetodetic system. For
-%                 planetodetic coordinates,
+%      corpar   an array of parameters associated with the coordinate
+%               system.
 %
-%                    corpar(1) is the equatorial radius
+%               [2,1] = size(corpar); double = class(corpar)
 %
-%                    corpar(2) is the flattening coefficient. Let `re' and
-%                    `rp' represent, respectively, the equatorial and
-%                    polar radii of the reference ellipsoid of the
-%                    system. Then
+%               Currently the only supported system that has
+%               associated parameters is the planetodetic system. For
+%               planetodetic coordinates,
 %
-%                        corpar(2) = ( re - rp ) / re
+%                 corpar(1) is the equatorial radius
+%
+%                 corpar(2) is the flattening coefficient. Let `re' and
+%                 `rp' represent, respectively, the equatorial and
+%                 polar radii of the reference ellipsoid of the
+%                 system. Then
+%
+%                    corpar(2) = ( re - rp ) / re
 %
 %   the call:
 %
@@ -80,24 +82,29 @@
 %
 %   returns:
 %
-%      mncor3    is a lower bound on the range of the third coordinate
-%                of the system identified by `corsys' and `corpar', taken
-%                over all plates.
+%      mncor3   a lower bound on the range of the third coordinate
+%               of the system identified by `corsys' and `corpar', taken
+%               over all plates.
 %
-%                [1,1] = size(mncor3); double = class(mncor3)
+%               [1,1] = size(mncor3); double = class(mncor3)
 %
-%                For latitudinal and rectangular coordinates, `mncor3'
-%                is the greatest lower bound of the third coordinate.
+%               For latitudinal and rectangular coordinates, `mncor3'
+%               is the greatest lower bound of the third coordinate.
 %
-%                For planetodetic coordinates, `mncor3' is an
-%                approximation: it is less than or equal to the greatest
-%                lower bound.
+%               For planetodetic coordinates, `mncor3' is an
+%               approximation: it is less than or equal to the greatest
+%               lower bound.
 %
-%      mxcor3    is the least upper bound on the range of the third
-%                coordinate of the system identified by `corsys' and
-%                `corpar', taken over all plates.
+%      mxcor3   the least upper bound on the range of the third
+%               coordinate of the system identified by `corsys' and
+%               `corpar', taken over all plates.
 %
-%                [1,1] = size(mxcor3); double = class(mxcor3)
+%               [1,1] = size(mxcor3); double = class(mxcor3)
+%
+%-Parameters
+%
+%   See the include file MiceDSK.m for declarations of the public DSK
+%   type 2 parameters used by this routine.
 %
 %-Examples
 %
@@ -105,25 +112,37 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
+%   1) Create a three-segment DSK file using plate model data for
+%      Phobos. Use latitudinal, rectangular, and planetodetic
+%      coordinates in the respective segments. This is not a
+%      realistic example, but it serves to demonstrate use of
+%      the supported coordinate systems.
 %
-%      function dskd02_t
+%      Use the DSK kernel below to provide, for simplicity, the input
+%      plate and vertex data. This file has one segment only.
+%
+%         phobos_3_3.bds
+%
+%
+%      Example code begins here.
+%
+%
+%      function dskrb2_ex1()
 %
 %         %
 %         % MiceUser globally defines DSK parameters.
-%         % For more information, please see DSKMiceUser.m and
-%         % DSKMice02.m.
+%         % For more information, please see MiceDSK.m.
 %         %
 %         MiceUser
 %
 %         NSEG = 3;
 %
-%         cornam = { 'radius', 'Z-coordinate', 'Z-coordinate', 'altitude'};
+%         cornam = {'radius', 'Z-coordinate', 'Z-coordinate', 'altitude'};
 %
 %         %
 %         % Assign names of input and output DSK files.
 %         %
-%         indsk = '/kernels/gen/dsk/phobos_3_3.bds';
+%         indsk = 'phobos_3_3.bds';
 %         dsk   = 'phobos_3_3_3seg.bds';
 %
 %         if ( exist( dsk, 'file' ) == 2 )
@@ -182,10 +201,9 @@
 %            fprintf( 'Creating segment %d\n', segno )
 %            fprintf( 'Creating spatial index...\n' )
 %
-%            [spaixd, spaixi] = cspice_dskmi2( vrtces, plates, finscl, ...
-%                                              corscl, worksz, voxpsz, ...
-%                                              voxlsz, makvtl,         ...
-%                                              spaisz );
+%            [spaixd, spaixi] = cspice_dskmi2( vrtces, plates, finscl,     ...
+%                                              corscl, worksz, voxpsz,     ...
+%                                              voxlsz, makvtl, spaisz );
 %
 %            fprintf( 'Done.\n')
 %
@@ -280,10 +298,11 @@
 %            %
 %            % Compute plate model radius bounds.
 %            %
-%            fprintf( 'Computing %s bounds of plate set...\n', ...
+%            fprintf( 'Computing %s bounds of plate set...\n',             ...
 %                                            char(cornam(corsys)) )
 %
-%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, corsys, corpar );
+%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates,             ...
+%                                              corsys, corpar );
 %
 %            fprintf ( 'Done.\n' )
 %
@@ -292,37 +311,23 @@
 %            %
 %            fprintf( 'Writing segment...\n' )
 %
-%            cspice_dskw02( handle, ...
-%                              center, ...
-%                              surfid, ...
-%                              dclass, ...
-%                              frame,  ...
-%                              corsys, ...
-%                              corpar, ...
-%                              mncor1, ...
-%                              mxcor1, ...
-%                              mncor2, ...
-%                              mxcor2, ...
-%                              mncor3, ...
-%                              mxcor3, ...
-%                              first,  ...
-%                              last,   ...
-%                              vrtces, ...
-%                              plates, ...
-%                              spaixd,  ...
-%                              spaixi )
+%            cspice_dskw02( handle, center, surfid, dclass, frame,         ...
+%                           corsys, corpar, mncor1, mxcor1, mncor2,        ...
+%                           mxcor2, mncor3, mxcor3, first,  last,          ...
+%                           vrtces, plates, spaixd, spaixi        );
 %
 %         end
-%
-%         cspice_dascls( inhan )
-%         cspice_dskcls( handle, true )
 %
 %         %
 %         % Close the input DSK.
 %         %
 %         cspice_dascls( inhan )
+%         cspice_dskcls( handle, true )
 %
-%   MATLAB outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Reading input data...
 %      Done.
@@ -345,28 +350,89 @@
 %      Done.
 %      Writing segment...
 %
-%      After run completion, A DSK exists in the output directory.
+%
+%      Note that after run completion, a new DSK exists in the output
+%      directory.
 %
 %-Particulars
 %
+%   Users planning to create DSK files should consider whether the
+%   SPICE DSK creation utility MKDSK may be suitable for their needs.
+%
+%   This routine supports use of the DSK type 2 segment writer cspice_dskw02
+%   by computing bounds on the range of the third coordinates of
+%   the input plate set.
+%
+%-Exceptions
+%
+%   1)  If the input coordinate system is not recognized, the error
+%       SPICE(NOTSUPPORTED) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   2)  If a conversion from rectangular to planetodetic coordinates
+%       fails, an error is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If any of the input arguments, `vrtces', `plates', `corsys' or
+%       `corpar', is undefined, an error is signaled by the Matlab
+%       error handling system.
+%
+%   4)  If any of the input arguments, `vrtces', `plates', `corsys' or
+%       `corpar', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dskrb2_c.
+%   1)  For planetodetic coordinates, the computation of the lower
+%       altitude bound requires that the surface at altitude `mncor3' be
+%       convex. This is the case for realistic geometries, but can
+%       be false if a plate is very large compared to the overall
+%       shape model.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAS.REQ
 %   DSK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 04-FEB-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 27-AUG-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Added proper usage string. Added missing information
+%       to -I/O descriptions.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 04-FEB-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
-%   compute range bounds for type 2 dsk segment
+%   compute range bounds for type 2 DSK segment
 %
 %-&
 
@@ -382,7 +448,9 @@ function [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, corsys, corpar )
 
       otherwise
 
-         error ( ['Usage:  '] )
+         error ( ['Usage: [mncor3, mxcor3] = '   ...
+                  'cspice_dskrb2( vrtces(3,m), ' ...
+                  'plates(3,n), corsys, corpar(SPICE_DSK_NSYPAR) ) '] )
 
    end
 
@@ -392,8 +460,8 @@ function [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, corsys, corpar )
    try
       [mncor3, mxcor3] = mice( 'dskrb2_c', vrtces, plates, corsys, corpar );
 
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

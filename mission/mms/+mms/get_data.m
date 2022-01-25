@@ -119,6 +119,7 @@ function res = get_data(varStr, Tint, mmsId)
 %   R  = mms.get_data('R_gse',Tint);   % SC GSE position for all MMS SC
 
 res = [];
+res = TSeries([]);
 
 if nargin<3, mmsId = 0; end
 if isempty(intersect(mmsId,0:4))
@@ -298,6 +299,7 @@ switch varStr
   case 'afg_ql_srvy', varStr ='B_dmpa_afg_srvy_ql';
   case 'Nhplus_hpca_sitl', varStr = 'Nhplus_hpca_srvy_sitl';
   case {'R_gse','R_gsm','V_gse','V_gsm'}
+    res = [];
     vC = varStr(1); cS = varStr(3:5);
     
     if mmsId>0
@@ -451,7 +453,7 @@ switch Vr.inst
           end
         end
         if isempty(flux{1,1})
-          res = [];
+          res = TSeries([]);
           return
         end
         paddistarr = [flux{1,1}.data flux{1,2}.data flux{1,3}.data flux{1,4}.data flux{2,4}.data flux{2,3}.data flux{2,2}.data flux{2,1}.data];
@@ -817,7 +819,7 @@ switch Vr.inst
 end
 
   function res = get_ts(dataType)
-    res = [];
+    res = TSeries([]);
     switch dataType
       case 'scalar'
         rX = mms.db_get_ts(dsetName,pref,Tint);
@@ -1032,8 +1034,8 @@ end
         res.species = ion;
       case 'eis_omni'
         file_list = mms.db_list_files(dsetName,Tint);
-        if isempty(file_list);
-          res = [];
+        if isempty(file_list)
+          res = TSeries([]);
           return
         end
         dobj = dataobj([file_list(1).path '/' file_list(1).name]);
@@ -1066,7 +1068,7 @@ end
           for iSen_ = iSen:5
             if not(isequal(energies{iSen+1},energies{iSen_+1}))
               irf.log('critical',sprintf('Energies of sensors %g and %g are not equal. Aborting.',iSen,iSen_))
-              res = [];
+              res = TSeries([]);
               return;
             end
           end

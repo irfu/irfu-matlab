@@ -31,102 +31,100 @@
 %
 %   Given:
 %
+%      istate   state vector(s) in the input `icosys' coordinate system
+%               representing position and velocity.
 %
-%      Arguments-
+%               [6,n] = size(istate); double = class(istate)
 %
-%      input_state       is a state vector in the input ('input_coord_sys')
-%                        coordinate system representing position and velocity.
+%               All angular measurements must be in radians.
 %
-%                        [6,n] = size(input_state); double = class(input_state)
+%               Note: body radii values taken from the kernel
+%               pool are used when converting to or from geodetic or
+%               planetographic coordinates. It is the user's
+%               responsibility to verify the distance inputs are in
+%               the same units as the radii in the kernel pool,
+%               typically kilometers.
 %
-%                        All angular measurements must be in radians.
+%      icosys   the name of the coordinate system that the input state vector
+%               `istate' is currently in.
 %
-%                        Note: body radii values taken from the kernel
-%                        pool are used when converting to or from geodetic or
-%                        planetographic coordinates. It is the user's
-%                        responsibility to verify the distance inputs are in
-%                        the same units as the radii in the kernel pool,
-%                        typically kilometers.
+%               [1,c1] = size(icosys); char = class(icosys)
 %
-%      input_coord_sys   is the name of the coordinate system that the input
-%                        state vector ('input_state') is currently in.
+%                  or
 %
-%                        [1,c1] = size(input_coord_sys)
-%                        char = class(input_coord_sys)
+%               [1,1] = size(icosys); cell = class(icosys)
 %
-%                          or
+%               `icosys' may be any of the following:
 %
-%                        [1,1] = size(output_coord_sys)
-%                        cell = class(output_coord_sys)
+%                  'RECTANGULAR'
+%                  'CYLINDRICAL'
+%                  'LATITUDINAL'
+%                  'SPHERICAL'
+%                  'GEODETIC'
+%                  'PLANETOGRAPHIC'
 %
-%                        'input_coord_sys' may be any of the following:
+%               Leading spaces, trailing spaces, and letter case
+%               are ignored. For example, ' cyLindRical  ' would be
+%               accepted.
 %
-%                              'RECTANGULAR'
-%                              'CYLINDRICAL'
-%                              'LATITUDINAL'
-%                              'SPHERICAL'
-%                              'GEODETIC'
-%                              'PLANETOGRAPHIC'
+%      ocosys   the name of the coordinate system that the state should be
+%               converted to.
 %
-%                        Leading spaces, trailing spaces, and letter case
-%                        are ignored. For example, ' cyLindRical  ' would
-%                        be accepted.
+%               [1,c2] = size(ocosys); char = class(ocosys)
 %
-%      output_coord_sys  is the name of the coordinate system that the state
-%                        should be converted to. Please see the description of
-%                        'input_coord_sys' for details.
+%                  or
 %
-%                        [1,c2] = size(output_coord_sys)
-%                        char = class(output_coord_sys)
+%               [1,1] = size(ocosys); cell = class(ocosys)
 %
-%                          or
+%               Please see the description of `icosys' for details.
 %
-%                        [1,1] = size(output_coord_sys)
-%                        cell = class(output_coord_sys)
+%      body     the name or NAIF ID of the body associated with the
+%               planetographic or geodetic coordinate system.
 %
-%      body              is the name or NAIF ID of the body associated with the
-%                        planetographic or geodetic coordinate system.
+%               [1,c3] = size(body); char = class(body)
 %
-%                        [1,c3] = size(body); char = class(body)
+%                  or
 %
-%                          or
+%               [1,1] = size(body); cell = class(body)
 %
-%                        [1,1] = size(body); cell = class(body)
+%               If neither of the coordinate system choices are
+%               geodetic or planetographic, `body' is ignored. It may
+%               be a blank string.
 %
-%                        If one of the coordinate system choices is not
-%                        geodetic or planetographic, 'body' may be an empty
-%                        string (' ').
+%               Examples of accepted body names or IDs are:
 %
-%                        Examples of accepted body names or IDs are:
-%                                 'Earth'
-%                                 '399'
+%                  'Earth'
+%                  '399'
 %
-%                        Leading spaces, trailing spaces, and letter case are
-%                        ignored.
+%               Leading spaces, trailing spaces, and letter case are
+%               ignored.
 %
 %   the call:
 %
-%      output_state = cspice_xfmsta ( input_state,      input_coord_sys, ...
-%                                     output_coord_sys, body )
+%      [ostate] = cspice_xfmsta( istate, icosys, ocosys, body )
 %
 %   returns:
 %
-%      output_state      is the state vector that has been converted to the
-%                        output coordinate system ('output_coord_sys').
+%      ostate   the state vector(s) that ha(s|ve) been converted to the output
+%               coordinate system `ocosys'.
 %
-%                        [6,n] = size(output_state)
-%                        double = class(output_state)
+%               [6,n] = size(ostate); double = class(ostate)
+%
+%               `ostate' returns with the same vectorization measure, N,
+%               as `istate'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   Any numerical results shown for this example may differ between
+%   Any numerical results shown for these examples may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
 %
-%   Example(1):
-%
-%      Find the apparent state of Phoebe as seen by CASSINI in the
+%   1) Find the apparent state of Phoebe as seen by CASSINI in the
 %      J2000 frame at three times starting at 2004 Jun 11 19:32:00.
 %      Transform the state from rectangular to latitudinal coordinates.
 %      For verification, transform the state back from latitudinal to
@@ -134,6 +132,7 @@
 %
 %      Use the meta-kernel shown below to load the required SPICE
 %      kernels.
+%
 %
 %         KPL/MK
 %
@@ -151,28 +150,30 @@
 %         The names and contents of the kernels referenced
 %         by this meta-kernel are as follows:
 %
-%                File name                     Contents
-%                ---------                     --------
-%                cpck05Mar2004.tpc             Planet orientation and
-%                                              radii
-%                naif0009.tls                  Leapseconds
-%                020514_SE_SAT105.bsp          Satellite ephemeris for
-%                                              Saturn
-%                030201AP_SK_SM546_T45.bsp     CASSINI ephemeris
-%                981005_PLTEPH-DE405S.bsp      Planetary ephemeris
-%
+%            File name                        Contents
+%            ---------                        --------
+%            pck00010.tpc                     Planet orientation and
+%                                             radii
+%            naif0012.tls                     Leapseconds
+%            041014R_SCPSE_01066_04199.bsp    CASSINI, planetary and
+%                                             Saturn Satellite
+%                                             ephemeris
 %
 %         \begindata
 %
-%         KERNELS_TO_LOAD = ( 'naif0009.tls'  ,
-%                             '020514_SE_SAT105.bsp'  ,
-%                             '030201AP_SK_SM546_T45.bsp'  ,
-%                             '981005_PLTEPH-DE405S.bsp',
-%                             'cpck05Mar2004.tpc'   )
+%            KERNELS_TO_LOAD = ( 'naif0012.tls',
+%                                '041014R_SCPSE_01066_04199.bsp',
+%                                'pck00010.tpc'                 )
 %
-%         End of meta-kernel
+%         \begintext
 %
-%       Example program starts here.
+%         End of meta-kernel.
+%
+%
+%      Example code begins here.
+%
+%
+%      function xfmsta_ex1()
 %
 %         metakr = 'xfmsta_ex1.tm';
 %         form = 'YYYY-MM-DD HR:MN:SC (TDB) ::TDB';
@@ -242,44 +243,58 @@
 %         %
 %         cspice_kclear
 %
-%   MATLAB outputs:
 %
-%         Phoebe as seen by Cassini - rectangular
-%         Time: 2004-06-11 19:33:04 (TDB)
-%           Position:     -1982.639762      -934.530471      -166.562595
-%           Velocity:         3.970832        -3.812496        -2.371663
-%         Time: 2004-06-11 19:41:04 (TDB)
-%           Position:      -257.857469     -2932.271650     -1304.929678
-%           Velocity:         3.200173        -4.493939        -2.371569
-%         Time: 2004-06-11 19:49:04 (TDB)
-%           Position:      1075.597532     -5231.009547     -2443.280908
-%           Velocity:         2.342482        -5.064820        -2.371563
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%         Phoebe as seen by Cassini - latitudinal
-%         Time: 2004-06-11 19:33:04 (TDB)
-%           Position:      2198.169858        -2.701121        -0.075846
-%           Velocity:        -1.780939         0.002346        -0.001144
-%         Time: 2004-06-11 19:41:04 (TDB)
-%           Position:      3219.867849        -1.658508        -0.417279
-%           Velocity:         4.797399         0.001217        -0.000145
-%         Time: 2004-06-11 19:49:04 (TDB)
-%           Position:      5872.818108        -1.368003        -0.429078
-%           Velocity:         5.926982         0.000239         0.000018
 %
-%         Verification: Phoebe as seen by Cassini - rectangular
-%         Time: 2004-06-11 19:33:04 (TDB)
-%           Position:     -1982.639762      -934.530471      -166.562595
-%           Velocity:         3.970832        -3.812496        -2.371663
-%         Time: 2004-06-11 19:41:04 (TDB)
-%           Position:      -257.857469     -2932.271650     -1304.929678
-%           Velocity:         3.200173        -4.493939        -2.371569
-%         Time: 2004-06-11 19:49:04 (TDB)
-%           Position:      1075.597532     -5231.009547     -2443.280908
-%           Velocity:         2.342482        -5.064820        -2.371563
+%      Phoebe as seen by Cassini - rectangular
+%      Time: 2004-06-11 19:33:04 (TDB)
+%        Position:     -2059.271283      -942.128329       -95.837672
+%        Velocity:         3.910113        -4.228139        -1.526561
+%      Time: 2004-06-11 19:41:04 (TDB)
+%        Position:      -381.823839     -3135.942729      -828.567239
+%        Velocity:         3.064009        -4.893554        -1.526501
+%      Time: 2004-06-11 19:49:04 (TDB)
+%        Position:       868.679897     -5620.615726     -1561.286108
+%        Velocity:         2.133569        -5.438272        -1.526496
 %
-%   Example(2):
+%      Phoebe as seen by Cassini - latitudinal
+%      Time: 2004-06-11 19:33:04 (TDB)
+%        Position:      2266.580876        -2.712515        -0.042296
+%        Velocity:        -1.730462         0.002416        -0.000706
+%      Time: 2004-06-11 19:41:04 (TDB)
+%        Position:      3265.953141        -1.691957        -0.256502
+%        Velocity:         4.727809         0.001150        -0.000104
+%      Time: 2004-06-11 19:49:04 (TDB)
+%        Position:      5897.757219        -1.417457        -0.267919
+%        Velocity:         5.901077         0.000225         0.000006
 %
-%      Example program starts here.
+%      Verification: Phoebe as seen by Cassini - rectangular
+%      Time: 2004-06-11 19:33:04 (TDB)
+%        Position:     -2059.271283      -942.128329       -95.837672
+%        Velocity:         3.910113        -4.228139        -1.526561
+%      Time: 2004-06-11 19:41:04 (TDB)
+%        Position:      -381.823839     -3135.942729      -828.567239
+%        Velocity:         3.064009        -4.893554        -1.526501
+%      Time: 2004-06-11 19:49:04 (TDB)
+%        Position:       868.679897     -5620.615726     -1561.286108
+%        Velocity:         2.133569        -5.438272        -1.526496
+%
+%
+%   2) Transform a given state from cylindrical to planetographic
+%      coordinates with respect to Earth.
+%
+%      Use the PCK kernel below to load the required triaxial
+%      ellipsoidal shape model and orientation data for the Earth.
+%
+%         pck00010.tpc
+%
+%
+%      Example code begins here.
+%
+%
+%      function xfmsta_ex2()
 %
 %         %   Initialize the cylindrical state.
 %         %
@@ -288,7 +303,7 @@
 %         %
 %         %   Load kernels.
 %         %
-%         cspice_furnsh( 'cpck05Mar2004.tpc' );
+%         cspice_furnsh( 'pck00010.tpc' );
 %
 %         %
 %         %   Transform the state from cylindrical to planetographic.
@@ -309,99 +324,229 @@
 %         %   Report the results.
 %         %
 %         fprintf('\nCylindrical State\n')
-%         fprintf('  Position: %7.3f %7.3f %7.3f\n', state_cyl(1:3))
-%         fprintf('  Velocity: %7.3f %7.3f %7.3f\n', state_cyl(4:6))
+%         fprintf('  Position: %9.3f %9.3f %9.3f\n', state_cyl(1:3))
+%         fprintf('  Velocity: %9.3f %9.3f %9.3f\n', state_cyl(4:6))
 %
 %         fprintf('\nPlanetographic State\n')
-%         fprintf('  Position: %7.3f %7.3f %7.3f\n', state_plan(1:3))
-%         fprintf('  Velocity: %7.3f %7.3f %7.3f\n', state_plan(4:6))
+%         fprintf('  Position: %9.3f %9.3f %9.3f\n', state_plan(1:3))
+%         fprintf('  Velocity: %9.3f %9.3f %9.3f\n', state_plan(4:6))
 %
 %         fprintf('\nVerification: Cylindrical State\n')
-%         fprintf('  Position: %7.3f %7.3f %7.3f\n', state_cyl2(1:3))
-%         fprintf('  Velocity: %7.3f %7.3f %7.3f\n', state_cyl2(4:6))
+%         fprintf('  Position: %9.3f %9.3f %9.3f\n', state_cyl2(1:3))
+%         fprintf('  Velocity: %9.3f %9.3f %9.3f\n', state_cyl2(4:6))
 %
 %         %
 %         %   Unload the kernels.
 %         %
 %         cspice_kclear
 %
-%   MATLAB outputs:
 %
-%         Cylindrical State
-%           Position:   1.000   0.500   0.500
-%           Velocity:   0.200   0.100  -0.200
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%         Planetographic State
-%           Position:   0.500   1.548 -6356.238
-%           Velocity:   0.100  -0.005  -0.195
 %
-%         Verification: Cylindrical State
-%           Position:   1.000   0.500   0.500
-%           Velocity:   0.200   0.100  -0.200
+%      Cylindrical State
+%        Position:     1.000     0.500     0.500
+%        Velocity:     0.200     0.100    -0.200
+%
+%      Planetographic State
+%        Position:     0.500     1.548 -6356.240
+%        Velocity:     0.100    -0.005    -0.195
+%
+%      Verification: Cylindrical State
+%        Position:     1.000     0.500     0.500
+%        Velocity:     0.200     0.100    -0.200
+%
 %
 %-Particulars
 %
 %   Input Order
-%   -------------------------------------------
+%   -----------
 %
-%      The input and output states will be structured by the
-%      following descriptions.
+%   The input and output states will be structured by the
+%   following descriptions.
 %
-%      For rectangular coordinates, the state vector is the following
-%      in which X, Y, and Z are the rectangular position components and
-%      DX, DY, and DZ are the time derivatives of each.
-%              ISTATE = ( X, Y, Z, DX, DY, DZ )
+%   For rectangular coordinates, the state vector is the following
+%   in which `x', `y', and `z' are the rectangular position components and
+%   `dx', `dy', and `dz' are the time derivatives of each position
+%   component.
 %
-%      For cylindrical coordinates, the state vector is the following
-%      in which R is the radius, LONG is the longitude, Z is the
-%      height, and DR, DLONG, and DZ are the time derivatives of each.
-%              ISTATE = ( R, LONG, Z, DR, DLONG, DZ )
+%           istate = ( x, y, z, dx, dy, dz );
 %
-%      For latitudinal coordinates, the state vector is the following
-%      in which R is the radius, LONG is the longitude, LAT is the
-%      latitude, and DR, DLONG, and DLAT are the time derivatives of
-%      each.
-%              ISTATE = ( R, LONG, LAT, DR, DLONG, DLAT )
+%   For cylindrical coordinates, the state vector is the following
+%   in which `r' is the radius, `long' is the longitudes, `z' is the
+%   height, and `dr', `dlong', and `dz' are the time derivatives of each
+%   position component.
 %
-%      For spherical coordinates, the state vector is the following in
-%      which R is the radius, COLAT is the colatitude, LONG is the
-%      longitude, and DR, DCOLAT, and DLONG are the time derivatives of
-%      each.
-%              ISTATE = ( R, COLAT, LONG, DR, DCOLAT, DLONG )
+%           istate = ( r, long, z, dr, dlong, dz );
 %
-%      For geodetic coordinates, the state vector is the following in
-%      which LONG is the longitude, LAT is the latitude, ALT is the
-%      altitude, and DLONG, DLAT, and DALT are the time derivatives of
-%      each.
-%              ISTATE = ( LONG, LAT, ALT, DLONG, DLAT, DALT )
+%   For latitudinal coordinates, the state vector is the following
+%   in which `r' is the radius, `long' is the longitude, `lat' is the
+%   latitude, and `dr', `dlong', and `dlat' are the time derivatives of
+%   each position component.
 %
-%      For planetographic coordinates, the state vector is the
-%      following in which LONG is the longitude, LAT is the latitude,
-%      ALT is the altitude, and DLONG, DLAT, and DALT are the time
-%      derivatives of each.
-%              ISTATE = ( LONG, LAT, ALT, DLONG, DLAT, DALT )
+%           istate = ( r, long, lat, dr, dlong, dlat );
+%
+%   For spherical coordinates, the state vector is the following in
+%   which `r' is the radius, `colat' is the colatitude, `long' is the
+%   longitude, and `dr', `dcolat', and `dlong' are the time derivatives of
+%   each position component.
+%
+%           istate = ( r, colat, long, dr, dcolat, dlong );
+%
+%   For geodetic coordinates, the state vector is the following in
+%   which `long' is the longitude, `lat' is the latitude, `alt' is the
+%   altitude, and `dlong', `dlat', and `dalt' are the time derivatives of
+%   each position component.
+%
+%           istate = ( long, lat, alt, dlong, dlat, dalt );
+%
+%   For planetographic coordinates, the state vector is the
+%   following in which `long' is the longitude, `lat' is the latitude,
+%   `alt' is the altitude, and `dlong', `dlat', and `dalt' are the time
+%   derivatives of each position component.
+%
+%           istate = ( long, lat, alt, dlong, dlat, dalt );
+%
 %
 %   Input Boundaries
-%   -------------------------------------------
+%   ----------------
 %
-%      There are intervals the input angles must fall within if
-%      the input coordinate system is not rectangular.  These
-%      intervals are provided below.
+%   There are intervals the input angles must fall within if
+%   the input coordinate system is not rectangular. These
+%   intervals are provided below.
 %
-%         Input variable    Input meaning   Input interval [rad]
-%         --------------    -------------   ------------------------
-%             LONG           Longitude        0     <= LONG  <  2*pi
-%             LAT            Latitude        -pi/2  <= LAT   <= pi/2
-%             COLAT          Colatitude       0     <= COLAT <= pi
+%      Input variable    Input meaning   Input interval [rad]
+%      --------------    -------------   ------------------------
+%          long           Longitude        0     <= long  <  2*pi
+%          lat            Latitude        -pi/2  <= lat   <= pi/2
+%          colat          Colatitude       0     <= colat <= pi
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine xfmsta_c.
+%   1)  If either the input or output coordinate system is not
+%       recognized, the error SPICE(COORDSYSNOTREC) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   2)  If the input body name cannot be converted to a NAIF ID
+%       (applies to geodetic and planetographic coordinate systems),
+%       the error SPICE(IDCODENOTFOUND) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   3)  If the input state `istate' is not valid, meaning the position
+%       but not the velocity is along the Z-axis, the error
+%       SPICE(INVALIDSTATE) is signaled by a routine in the call tree
+%       of this routine.
+%
+%       Note: If both the input position and velocity are along
+%       the Z-axis and the output coordinate system is not
+%       rectangular, the velocity can still be calculated even
+%       though the Jacobian is undefined. This case will not
+%       signal an error. An example of the input position and
+%       velocity along the Z-axis is below.
+%
+%                     Term    Value
+%                     -----   ------
+%                       x       0
+%                       y       0
+%                       z       z
+%                     dx/dt     0
+%                     dy/dt     0
+%                     dz/dt   dz_dt
+%
+%   4)  If either the input or output coordinate system is geodetic or
+%       planetographic and at least one of the body's radii is less
+%       than or equal to zero, the error SPICE(INVALIDRADIUS) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   5)  If either the input or output coordinate system is geodetic or
+%       planetographic and the difference of the equatorial and polar
+%       radii divided by the equatorial radius would produce numeric
+%       overflow, the error SPICE(INVALIDRADIUS) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   6)  If the product of the Jacobian and velocity components may
+%       lead to numeric overflow, the error SPICE(NUMERICOVERFLOW) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   7)  If radii for `body' are not found in the kernel pool, an error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   8)  If the size of the `body' radii kernel variable is not three,
+%       an error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   9)  If any of the three `body' radii is less-than or equal to zero,
+%       an error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   10) If body's equatorial radii are not equal and either the input
+%       or output coordinate system is geodetic or planetographic, the
+%       error SPICE(NOTSUPPORTED) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   11) If any of the input arguments, `istate', `icosys', `ocosys' or
+%       `body', is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   12) If any of the input arguments, `istate', `icosys', `ocosys' or
+%       `body', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   SPK, PCK, CK, and FK kernels may be required.
+%
+%   If the input or output coordinate systems are either geodetic or
+%   planetographic, a PCK providing the radii of the body
+%   name `body' must be loaded via cspice_furnsh.
+%
+%   Kernel data are normally loaded once per program run, NOT every
+%   time this routine is called.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
+%   MICE.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 28-AUG-2012, SCK (JPL), EDW (JPL)
+%   -Mice Version 1.1.0, 01-NOV-2021 (EDW) (JDR)
+%
+%       Changed argument names "input_state", "input_coord_sys",
+%       "output_coord_sys" and "output_state" to "istate", "icosys", "ocosys"
+%       and "ostate" for consistency with other routines.
+%
+%       Edited the header to comply with NAIF standard.
+%
+%       Updated Examples' kernels set to use PDS archived data.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections. Edited
+%       the header to comply with NAIF standard.
+%
+%       Added square brackets to output argument in function declaration.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 28-AUG-2012 (SCK) (EDW)
 %
 %-Index_Entries
 %
@@ -410,22 +555,20 @@
 %
 %-&
 
-function output_state = cspice_xfmsta ( input_state,      input_coord_sys, ...
-                                        output_coord_sys, body )
+function [ostate] = cspice_xfmsta( istate, icosys, ocosys, body )
 
    switch nargin
       case 4
 
-         input_state      = zzmice_dp (input_state);
-         input_coord_sys  = zzmice_str(input_coord_sys);
-         output_coord_sys = zzmice_str(output_coord_sys);
-         body             = zzmice_str(body);
+         istate = zzmice_dp (istate);
+         icosys = zzmice_str(icosys);
+         ocosys = zzmice_str(ocosys);
+         body   = zzmice_str(body);
 
       otherwise
 
-         error ( ['Usage: [_output_state(6)_] = ' ...
-                  'cspice_xfmsta( `_input_state(6)_`, `input_coord_sys`, ' ...
-                  '`output_coord_sys`, `body`)'] )
+         error ( ['Usage: [_ostate(6)_] = cspice_xfmsta( `_istate(6)_`, ' ...
+                  '`icosys`, `ocosys`, `body`)'] )
 
    end
 
@@ -433,17 +576,7 @@ function output_state = cspice_xfmsta ( input_state,      input_coord_sys, ...
    % Call the MEX library.
    %
    try
-      [output_state] = mice('xfmsta_c', input_state, input_coord_sys,...
-                                        output_coord_sys, body);
-   catch
-      rethrow(lasterror)
+      [ostate] = mice('xfmsta_c', istate, icosys, ocosys, body);
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
-
-
-
-
-
-

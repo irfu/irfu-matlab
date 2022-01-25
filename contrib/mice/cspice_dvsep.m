@@ -33,39 +33,43 @@
 %
 %   Given:
 %
-%      s1   defining a SPICE state(s);
+%      s1       defining a SPICE state(s);
 %
-%           [6,n] = size(s1); double = class(s1)
+%                            dr1
+%                  s1 = (r1, --- ).
+%                             dt
 %
-%              s1 = (r1, dr1 ).
-%                         --
-%                         dt
+%               [6,n] = size(s1); double = class(s1)
 %
-%      s2   defining a second SPICE state(s);
+%      s2       defining a second SPICE state(s);
 %
-%           [6,n] = size(s2); double = class(s2)
+%                            dr2
+%                  s2 = (r2, --- ).
+%                             dt
 %
-%              s2 = (r2, dr2 ).
-%                        --
-%                        dt
+%               [6,n] = size(s2); double = class(s2)
 %
-%      An implicit assumption exists that 's1' and 's2' are specified
-%      in the same reference frame. If this is not the case, the numerical
-%      result has no meaning.
+%               An implicit assumption exists that `s1' and `s2' are
+%               specified in the same reference frame. If this is not the
+%               case, the numerical result has no meaning.
 %
 %   the call:
 %
-%      dvsep = cspice_dvsep( s1, s2)
+%      [dvsep] = cspice_dvsep( s1, s2 )
 %
 %   returns:
 %
-%      dvsep   time derivative(s) of the angular separation between 's1' and
-%              's2'.
+%      dvsep    time derivative(s) of the angular separation between `s1' and
+%               `s2'.
 %
-%              [1,n] = size(dvsep); double = class(dvsep)
+%               [1,n] = size(dvsep); double = class(dvsep)
 %
-%              'dvsep' returns with the same vectorization measure (N)
-%              as 's1' and 's2'.
+%               `dvsep' returns with the same vectorization measure (N)
+%               as `s1' and `s2'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -73,40 +77,88 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Load SPK, PCK, and LSK kernels, use a meta kernel for convenience.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%   1) Calculate the time derivative of the angular separation of
+%      the Earth and Moon as seen from the Sun.
 %
-%      %
-%      % An arbitrary time.
-%      %
-%      BEGSTR = 'JAN 1 2009';
-%      et     = cspice_str2et( BEGSTR );
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Calculate the state vectors sun to Moon, sun to earth at ET.
-%      %
-%      [statee, ltime] = cspice_spkezr('EARTH', et, 'J2000', 'NONE', 'SUN' );
-%      [statem, ltime] = cspice_spkezr('MOON',  et, 'J2000', 'NONE', 'SUN' );
 %
-%      %
-%      % Calculate the time derivative of the angular separation of
-%      % the earth and Moon as seen from the sun at ET.
-%      %
-%      dsept = cspice_dvsep( statee, statem );
-%      fprintf( 'Time derivative of angular separation, rads/sec: %.10e\n', ...
-%                                                                   dsept )
+%         KPL/MK
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
+%         File name: dvsep_ex1.tm
 %
-%   MATLAB outputs:
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      Time derivative of angular separation, rads/sec: 3.8121193603e-09
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            naif0012.tls                  Leapseconds
+%
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'naif0012.tls'  )
+%
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Example code begins here.
+%
+%
+%      function dvsep_ex1()
+%
+%         %
+%         % Load kernels.
+%         %
+%         cspice_furnsh( 'dvsep_ex1.tm' )
+%
+%         %
+%         % An arbitrary time.
+%         %
+%         BEGSTR = 'JAN 1 2009';
+%         et     = cspice_str2et( BEGSTR );
+%
+%         %
+%         % Calculate the state vectors sun to Moon, sun to earth at ET.
+%         %
+%         [statee, lt] = cspice_spkezr('EARTH', et, 'J2000', 'NONE', 'SUN' );
+%         [statem, lt] = cspice_spkezr('MOON',  et, 'J2000', 'NONE', 'SUN' );
+%
+%         %
+%         % Calculate the time derivative of the angular separation of
+%         % the earth and Moon as seen from the sun at ET.
+%         %
+%         dsept = cspice_dvsep( statee, statem );
+%         fprintf( ['Time derivative of angular separation, ', ...
+%                   'rads/sec: %.10e\n'], dsept              )
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Time derivative of angular separation, rads/sec: 3.8121193666e-09
+%
 %
 %-Particulars
 %
@@ -202,16 +254,63 @@
 %   with respect to time; typically the graph is roughly v-shaped at
 %   the singular points.)
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dvsep_c.
+%   1)  If numeric overflow and underflow cases are detected, an error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   2)  Linear dependent position components of `s1' and `s1' constitutes
+%       a non-error exception. The function returns 0 for this case.
+%
+%   3)  If any of the input arguments, `s1' or `s2', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   4)  If any of the input arguments, `s1' or `s2', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%   5)  If the input vectorizable arguments `s1' and `s2' do not have
+%       the same measure of vectorization (N), an error is signaled by
+%       the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and meta-kernel.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 12-MAR-2012 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -239,8 +338,8 @@ function [dvsep] = cspice_dvsep(s1, s2)
    %
    try
       [dvsep] = mice('dvsep_c', s1, s2);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 
