@@ -4,25 +4,29 @@ function res = get_data(varStr,Tint)
 % varStr is one of:
 %
 % MAG:
-%   'L2_mag-srf-normal', 'L2_mag-rtn-normal',
-%   'L2_mag-srf-burst', 'L2_mag-rtn-burst'
+%   'L2_mag-srf-normal' (alias: B_srf_norm), 'L2_mag_rtn_normal' (alias: B_rtn_norm)
+%   'L2_mag-srf-burst' (alias:  B_srf_brst), 'L2_mag-rtn-burst' (alias: B_rtn_brst)
 %
 % RPW:
-%   'L3_rpw-bia-scpot' ,'L3_rpw-bia-efield_srf'
-%   'L3_rpw-bia-efield_rtn', 'L3_rpw-bia-scpot'
-%   'L3_rpw-bia-density', 'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil)
-%   'L2_rpw-lfr-surv-cwf-b-cdag_rtn'
+%   'L3_rpw-bia-scpot' (alias: scpot)
+%   'L3_rpw-bia-efield_srf' (alias: E_srf)
+%   'L3_rpw-bia-efield_rtn' (alias: E_rtn)
+%   'L3_rpw-bia-density' (alias: Nescpot)
+%   'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil) (alias: B_scm_srf)
+%   'L2_rpw-lfr-surv-cwf-b-cdag_rtn' (alias: B_scm_rtn)
 %    Snapshots and other products need to be added!
 %
 % SWA-PAS:
-%   'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN'
-%   'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N'
-%   'L2_swa-pas-grnd-mom_T' (total T), 'L2_swa-pas-grnd-mom_TxTyTz_SRF'
-%   'L2_swa-pas-grnd-mom_TxTyTz_RTN', 'L2_swa-pas-grnd-mom_Tani' ([Tpar, Tperp])
-%   'L2_swa-pas-grnd-mom_Tani_pp' 'L2_swa-pas-grnd-mom_Tani_qq'
-%    Note: _pp means P_perp1 = P_perp2, and _qq  P_perp1 and P_perp2 are most unequal
-%   'L2_swa-pas-grnd-mom_P_SRF' (pressure tensor), 'L2_swa-pas-grnd-mom_P_RTN'
-%   'L2_swa-pas-vdf' 'L2_swa-pas-quality_factor'
+%   'L2_swa-pas-eflux (alias: pas_eflux)',
+%   'L2_swa-pas-grnd-mom_V_RTN' (alias: Vi_rtn)
+%   'L2_swa-pas-grnd-mom_V_SRF' (alias: Vi_srf), 'L2_swa-pas-grnd-mom_N' (alias: Ni)
+%   'L2_swa-pas-grnd-mom_T' (total T) (alias: Ti),
+%   'L2_swa-pas-grnd-mom_TxTyTz_SRF' (alias: Ti_xyz_srf)
+%   'L2_swa-pas-grnd-mom_TxTyTz_RTN' (alias: Ti_xyz_rtn)
+%   'L2_swa-pas-grnd-mom_Tani' ([Tpar, Tperp1 Tperp2]) (alias: Ti_fac)
+%   'L2_swa-pas-grnd-mom_Pi_SRF' (pressure tensor) (alias: Pi_srf),
+%   'L2_swa-pas-grnd-mom_Pi_RTN' (alias: Pi_rtn)
+%   'L2_swa-pas-vdf' (alias: pas_vdf) 'L2_swa-pas-quality_factor' (alias: pas_qf)
 %
 % EPHEMERIS
 %   'pos_rtn' - from solo.get_position
@@ -30,7 +34,7 @@ function res = get_data(varStr,Tint)
 % Example
 %   Tint = irf.tint('2020-07-29T10:20:00.000Z/2020-07-29T11:20:00.000Z');
 %   V = solo.get_data('L2_swa-pas-grnd-mom_V_RTN',Tint) % Solar wind speed in RTN
-%
+
 
 Units = irf_units;
 
@@ -40,13 +44,54 @@ elseif Tint.stop-Tint.start<=0
   error('TINT duration is zero or negative');
 end
 
-vars = {'L2_mag-srf-normal', 'L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rtn-burst', ...
+% List of full variable names. Alias names not inlcluded but changed to
+% proper variable name below.
+vars = {'L2_mag-srf-normal','L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rtn-burst', ...
   'L3_rpw-bia-scpot', 'L3_rpw-bia-efield_srf', 'L3_rpw-bia-efield_rtn', 'L3_rpw-bia-scpot', 'L3_rpw-bia-density', ...
   'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
   'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
   'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
-  'L2_swa-pas-grnd-mom_Tani', 'L2_swa-pas-grnd-mom_Tani_pp', 'L2_swa-pas-grnd-mom_Tani_qq','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
+  'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
   'pos_rtn','L2_swa-pas-quality_factor'};
+
+%%% check if alias is used and change to full variable name
+if isempty(intersect(varStr,vars))
+  var_old = varStr;
+
+  % replace alias with the full variable name
+  if strcmpi(varStr,'B_rtn_brst');   varStr = 'L2_mag-rtn-burst'; end
+  if strcmpi(varStr,'B_rtn_norm');   varStr = 'L2_mag-rtn-normal'; end
+  if strcmpi(varStr,'B_srf_brst');   varStr = 'L2_mag-srf-burst'; end
+  if strcmpi(varStr,'B_srf_norm');   varStr = 'L2_mag-srf-normal'; end
+  if strcmpi(varStr,'Vi_rtn');       varStr = 'L2_swa-pas-grnd-mom_V_RTN'; end
+  if strcmpi(varStr,'Vi_srf');       varStr = 'L2_swa-pas-grnd-mom_V_SRF'; end
+  if strcmpi(varStr,'Ni');           varStr = 'L2_swa-pas-grnd-mom_N'; end
+  if strcmpi(varStr,'Ti');           varStr = 'L2_swa-pas-grnd-mom_T'; end
+  if strcmpi(varStr,'pas_vdf');      varStr = 'L2_swa-pas-vdf'; end
+  if strcmpi(varStr,'pas_qf');       varStr = 'L2_swa-pas-quality_factor'; end
+  if strcmpi(varStr,'pas_eflux');    varStr = 'L2_swa-pas-eflux'; end
+  if strcmpi(varStr,'Ti_xyz_srf');   varStr = 'L2_swa-pas-grnd-mom_TxTyTz_SRF'; end
+  if strcmpi(varStr,'Ti_xyz_rtn');   varStr = 'L2_swa-pas-grnd-mom_TxTyTz_RTN'; end
+  if strcmpi(varStr,'Ti_fac');       varStr = 'L2_swa-pas-grnd-mom_Tani'; end
+  if strcmpi(varStr,'Pi_srf');       varStr = 'L2_swa-pas-grnd-mom_P_SRF'; end
+  if strcmpi(varStr,'Pi_rtn');       varStr = 'L2_swa-pas-grnd-mom_P_RTN'; end
+  if strcmpi(varStr,'scpot');        varStr = 'L3_rpw-bia-scpot'; end
+  if strcmpi(varStr,'E_srf');        varStr = 'L3_rpw-bia-efield_srf'; end
+  if strcmpi(varStr,'E_rtn');        varStr = 'L3_rpw-bia-efield_rtn'; end
+  if strcmpi(varStr,'Nescpot');      varStr = 'L3_rpw-bia-density'; end
+  if strcmpi(varStr,'B_scm_srf');    varStr = 'L2_rpw-lfr-surv-cwf-b-cdag_srf'; end
+  if strcmpi(varStr,'B_scm_rtn');    varStr = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn'; end
+
+  % Sanity check that we have actually changed the variable
+  if strcmp(var_old,varStr)
+    errStr = ['"varStr":', varStr, ' incorrect alias used.'];
+    irf.log('critical', errStr);
+    error(errStr);
+  else
+    % Print what alias has been changed to
+    fprintf(['Alias used: ' var_old ' changed to ' varStr '\n'])
+  end
+end
 
 % Check if the varStr matches the list of acceptable variables
 if ~ismember(varStr, vars)
@@ -147,11 +192,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
                   PYZ = PSRF.data(:,6);
                   Pten = TSeries(PSRF.time,[PXX,PXY,PXZ,PYY,PYZ,PZZ]); % to be consistent with mms.rotate_tensor
                   B0 = irf_filt(BSRF,0,0.1,[],3);
-                  if length(C)==3
-                    PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten));
-                  else
-                    PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten),C{4});
-                  end
+                  PfacT = mms.rotate_tensor(Pten,'fac',B0.resample(Pten));
                   Pfac = TSeries(PfacT.time,[PfacT.data(:,1,1), PfacT.data(:,2,2),PfacT.data(:,3,3)]);
                   res = TSeries(PfacT.time,(Pfac.data./(NPAS.resample(Pfac).data.*Units.kB))./(Units.eV/Units.kB));
                   res.userData = {'par','perp1','perp2'};
