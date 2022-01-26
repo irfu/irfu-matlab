@@ -1,7 +1,7 @@
 function res = get_data(varStr,Tint)
 % res = solo.get_data(varStr, Tint)
 %
-% varStr is one of:
+% varStr is one of the following (note aliases can also be used):
 %
 % MAG:
 %   'L2_mag-srf-normal' (alias: B_srf_norm), 'L2_mag_rtn_normal' (alias: B_rtn_norm)
@@ -205,29 +205,11 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
             case 'quality'
               res = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','quality_factor',Tint);
             case 'vdf'
-              %% FIXME: This section must be cleaned up a lot, and made far less hard coded!!
-              % PAS ion VDFs: Daniel G. please check!
-              t1 = irf_time(Tint(1),'epochtt>vector');
-              t2 = irf_time(Tint(2),'epochtt>vector');
-              dl = datenum(t1(1:3)):1:datenum(t2(1:3));
-              for k=1:length(dl)
-                vdf_fname = ['/Volumes/solo/soar/swa/L2/swa-pas-vdf/' datestr(dl(k),'yyyy') '/' datestr(dl(k),'mm') '/solo_L2_swa-pas-vdf_' datestr(dl(k),'yyyy') datestr(dl(k),'mm') datestr(dl(k),'dd') '_V02.cdf'];
-                if exist(vdf_fname,'file')==2
-                  tmpDataObj = dataobj(vdf_fname);
-                  PDout = solo.make_pdist(tmpDataObj);
-                  clear tmpDataObj
-                  if k==1
-                    tlim1 = irf.tint([irf_time(Tint(1),'epochtt>utc') '/' irf_time(PDout.time(end),'epochtt>utc')]);
-                    PDout = PDout.tlim(tlim1);
-                  end
-                  if k==length(dl)
-                    tlim2 = irf.tint([irf_time(PDout.time(1),'epochtt>utc') '/' irf_time(Tint(2),'epochtt>utc')]);
-                    PDout = PDout.tlim(tlim2);
-                  end
-                else
-                  PDout = [];
-                end
-                res.(datestr(dl(k),'Tyyyymmdd')) = PDout;
+              vdf_files  = solo.db_list_files(['solo_',varStr],Tint);
+              for k=1:length(vdf_files)
+                tmpDataObj = dataobj([vdf_files(k).path, filesep, vdf_files(k).name]);
+                PDout = solo.make_pdist(tmpDataObj);
+                res.(irf_time(vdf_files(k).start,'epochtt>utc_Tyyyymmdd')) = PDout.tlim(Tint);
                 clear PDout
               end
             otherwise
@@ -245,6 +227,6 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
       end
   end
 elseif strcmp(C{1},'pos')
-  % return the solo position - predicted, should be use flown?
+  % return the solo position - predicted, should we use flown?
   res = solo.get_position(Tint, 'predicted', 'frame', 'SOLO_SUN_RTN');
 end
