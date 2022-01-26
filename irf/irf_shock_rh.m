@@ -199,12 +199,11 @@ end
 
 
 if dimInp
-  % define dimensional constants (irf_units is slow)
-  kB_Dim = 1.3806e-23;
-  mp_Dim = 1.6726e-27;
-  me_Dim = 9.1094e-31;
-  mu0_Dim = 1.2566e-06;
-  qe_Dim = 1.6022e-19;
+  % define dimensional constants
+  u = irf_units;
+  mp_Dim = u.mp;
+  mu0_Dim = u.mu0;
+  qe_Dim = u.e;
 
   % get paramters from input
   B = inp.B; % [nT]
