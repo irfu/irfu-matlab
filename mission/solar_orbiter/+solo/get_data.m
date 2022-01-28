@@ -206,11 +206,15 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
               res = solo.db_get_ts('solo_L2_swa-pas-grnd-mom','quality_factor',Tint);
             case 'vdf'
               vdf_files  = solo.db_list_files(['solo_',varStr],Tint);
+              if ~isempty(vdf_files)
               for k=1:length(vdf_files)
                 tmpDataObj = dataobj([vdf_files(k).path, filesep, vdf_files(k).name]);
                 PDout = solo.make_pdist(tmpDataObj);
                 res.(irf_time(vdf_files(k).start,'epochtt>utc_Tyyyymmdd')) = PDout.tlim(Tint);
                 clear PDout
+              end
+              else
+                res = [];
               end
             otherwise
               errStr = 'Not yet defined';
