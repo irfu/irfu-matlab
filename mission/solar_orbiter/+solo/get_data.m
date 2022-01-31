@@ -150,12 +150,16 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
             case 'eflux'
               % omni energy flux
               ieflux = solo.db_get_ts(['solo_',varStr],'eflux',Tint);
-              efulx_file = solo.db_list_files(['solo_',varStr],Tint);
-              iEnergy = spdfcdfread([efulx_file(1).path, filesep, efulx_file(1).name],'variables','Energy');
-              res = struct('t', ieflux.time.epochUnix);
-              res.p = ieflux.data;
-              res.p_label='dEF';
-              res.f = repmat(iEnergy,1,numel(res.t))';
+              if ~isempty(ieflux)
+                efulx_file = solo.db_list_files(['solo_',varStr],Tint);
+                iEnergy = spdfcdfread([efulx_file(1).path, filesep, efulx_file(1).name],'variables','Energy');
+                res = struct('t', ieflux.time.epochUnix);
+                res.p = ieflux.data;
+                res.p_label='dEF';
+                res.f = repmat(iEnergy,1,numel(res.t))';
+              else
+                res = [];
+              end
             case 'grnd'
               % ground-moments
               switch C{3}
@@ -207,12 +211,12 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
             case 'vdf'
               vdf_files  = solo.db_list_files(['solo_',varStr],Tint);
               if ~isempty(vdf_files)
-              for k=1:length(vdf_files)
-                tmpDataObj = dataobj([vdf_files(k).path, filesep, vdf_files(k).name]);
-                PDout = solo.make_pdist(tmpDataObj);
-                res.(irf_time(vdf_files(k).start,'epochtt>utc_Tyyyymmdd')) = PDout.tlim(Tint);
-                clear PDout
-              end
+                for k=1:length(vdf_files)
+                  tmpDataObj = dataobj([vdf_files(k).path, filesep, vdf_files(k).name]);
+                  PDout = solo.make_pdist(tmpDataObj);
+                  res.(irf_time(vdf_files(k).start,'epochtt>utc_Tyyyymmdd')) = PDout.tlim(Tint);
+                  clear PDout
+                end
               else
                 res = [];
               end
