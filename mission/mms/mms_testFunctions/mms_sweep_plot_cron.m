@@ -4,7 +4,7 @@ year = dayToRun(1:4);
 tint = irf.tint([year,'-',dayToRun(5:6),'-',dayToRun(7:8), 'T00:00:00.000000000Z'], ...
   [year,'-',dayToRun(5:6),'-',dayToRun(7:8), 'T23:59:59.999999999Z']);
 dataRoot='/data/mms/';
-sweepFolder=[dataRoot, 'irfu/plots/edp/sweeps/'];
+sweepFolder = fullfile(dataRoot, 'irfu', 'plots', 'edp', 'sweeps', filesep);
 mms.db_init('local_file_db', dataRoot);
 lineStyle = {'black.', 'red.', 'green.', 'blue.', 'magenta.', 'cyan.'};
 nowStr = irf_time(now,'datenum>utc_yyyy-mm-dd');
@@ -42,7 +42,7 @@ for iSc = 1:4
   if isempty(listSweep), irf.log('warning', 'No sweep file found'); continue; end
   %sObj = mms_edp_Sweep([listSweep(1).path, filesep, listSweep(1).name], 1);
   sInfo = evalc('sObj=mms_edp_Sweep([listSweep(1).path,filesep,listSweep(1).name],1);');
-  fid = fopen([sweepFolder, 'logs/all_sweep', scStr, '.txt'],'a');
+  fid = fopen(fullfile(sweepFolder, 'logs', ['all_sweep', scStr, '.txt']),'a');
   fprintf(fid, [listSweep(1).name, ':\n']);
   fprintf(fid, '%s \n', string(sInfo));
   fclose(fid);
@@ -106,12 +106,17 @@ for iSc = 1:4
   %save(sprintf('%sobj/mms%i_%s_sweepTsObj.mat', sweepFolder, iSc, dayToRun), 'S');
   
   %% Load the combined data ("Sw") and combine with the data in "S".
-  load([sweepFolder,'obj/mms',scStr,'_SweepTsCombined.mat'], 'Sw');
-  fName = fieldnames(S);
-  for iField=1:length(fName)
-    Sw.(fName{iField}) = combine(Sw.(fName{iField}), S.(fName{iField}));
+  savedSweepTS = fullfile(sweepFolder, 'obj', ['mms', scStr, '_SweepTsCombined.mat']);
+  if exist(savedSweepTS ,'file')
+    load(savedSweepTS, 'Sw');
+    fName = fieldnames(S);
+    for iField=1:length(fName)
+      Sw.(fName{iField}) = combine(Sw.(fName{iField}), S.(fName{iField}));
+    end
+  else
+    Sw = S;
   end
-  save([sweepFolder,'obj/mms',scStr,'_SweepTsCombined.mat'], 'Sw');
+  save(savedSweepTS, 'Sw');
   close all % close plots..
   
   %% Plot all combined data
