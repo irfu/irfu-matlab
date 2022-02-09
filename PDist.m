@@ -576,10 +576,20 @@ classdef PDist < TSeries
       vy = NaN*obj.data;
       vz = NaN*obj.data;
       
+      sp = obj.species;
+      switch sp
+          case 'ions'
+              m = units.mp;
+              mult = 1;
+          case 'electrons'
+              m = units.me;
+              mult = -1;
+      end
+      
       for ii = 1:length(obj.time)            
-        energy_tmp = energy - scpot(ii);
+        energy_tmp = energy + mult*scpot(ii);
         energy_tmp(energy_tmp<0) = 0; % if scpot is not used, energy_tmp = energy and nothing is changed
-        velocity = sqrt((energy_tmp)*units.eV*2/units.me)/1000; % km/s
+        velocity = sqrt((energy_tmp)*units.eV*2/m)/1000; % km/s
         
         
         [VEL,AZ,POL] = meshgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
