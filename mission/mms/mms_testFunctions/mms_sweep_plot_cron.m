@@ -138,11 +138,11 @@ for iSc = 1:4
   
   % Iph_knee vs time
   c_eval('iPh_knee_movm?=movmedian(Sw.p?_iPh_knee_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);', 1:6);
-  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_iPh_knee_ts, irf.ts_scalar(Sw.p?_iPh_knee_ts.time, iPh_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
-  c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph}_{knee} vs time from sweep on probe ?.'']);', 1:6);
-  c_eval('ylabel(h?,{''I_{ph}_{knee}'',''[nA]''});', 1:6);
+  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_iPh_knee_ts, irf.ts_scalar(Sw.p?_iPh_knee_ts.time, iPh_knee_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
+  c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph}_{,}_{knee} vs time from sweep on probe ?.'']);', 1:6);
+  c_eval('ylabel(h?,{''I_{ph}_{,}_{knee}'',''[nA]''});', 1:6);
   c_eval('ylim(h?,[-55 555]);', 1:6);
-  c_eval('legend(h?,''I_{ph}_{knee}, sweep p?'',''15 days moving median'');', 1:6);
+  c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p?'',''15 days moving median'');', 1:6);
   c_eval('set(h?.Children(1),''LineWidth'',2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 5:6);
@@ -177,6 +177,23 @@ for iSc = 1:4
   legend(h, 'p5', 'p6');
   print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseVsTime_mms',scStr,'_p56.png']);
   close all % close plots
+  % phase of knee vs time
+  figure('units','normalized','outerposition', [0 0 1 1]);
+  h=irf_plot({Sw.p1_phase_knee_ts, Sw.p2_phase_knee_ts, Sw.p3_phase_knee_ts, Sw.p4_phase_knee_ts}, ...
+    'comp', 'linestyle', lineStyle(1:4));
+  ylabel(h,{'Phase at knee, computed from DefAtt','[deg]'});
+  title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase_{knee} vs time.']);
+  legend(h, 'p1', 'p2', 'p3', 'p4');
+  print(h.Parent, '-dpng', [sweepFolder,'summary_plots/SDP/PhaseKneeVsTime_mms',scStr,'_p1234.png']);
+  close all % close plots
+  figure('units','normalized','outerposition', [0 0 1 1]);
+  h=irf_plot({Sw.p5_phase_knee_ts, Sw.p6_phase_knee_ts}, ...
+    'comp', 'linestyle', lineStyle(5:6));
+  ylabel(h,{'Phase at knee, computed from DefAtt','[deg]'});
+  title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase_{knee} vs time.']);
+  legend(h, 'p5', 'p6');
+  print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseKneeVsTime_mms',scStr,'_p56.png']);
+  close all % close plots
   
   % Do not use probes after probe failure when computing how the photo
   % current or impedance depends on phase (or how it did depend on phase
@@ -184,12 +201,14 @@ for iSc = 1:4
   % to highlight the failure in the plots of iPh and impedance vs time.
   if(iSc == 4) % MMS4 p4 failed
     Sw.p4_iPh_ts.data(Sw.p4_iPh_ts.time >= EpochTT('2016-06-12T05:28:48.200Z')) = NaN;
+    Sw.p4_iPh_knee_ts.data(Sw.p4_iPh_ts.time >= EpochTT('2016-06-12T05:28:48.200Z')) = NaN;
     Sw.p4_impedance_ts.data(Sw.p4_impedance_ts.time >= EpochTT('2016-06-12T05:28:48.200Z')) = NaN;
   elseif(iSc == 2) % MMS2 p2 failed
     Sw.p2_iPh_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
+    Sw.p2_iPh_knee_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
     Sw.p2_impedance_ts.data(Sw.p2_impedance_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
   end
-  
+
   % iPh vs phase
   %c_eval('ind?=Sw.p?_iPh_ts.data>50&Sw.p?_iPh_ts.data<500;', 1:4);
   c_eval('ind?=Sw.p?_iPh_ts.data>0;', 1:6);
@@ -206,11 +225,11 @@ for iSc = 1:4
   % iPh_knee vs phase_knee
   %c_eval('ind?=Sw.p?_iPh_ts.data>50&Sw.p?_iPh_ts.data<500;', 1:4);
   c_eval('ind?=Sw.p?_iPh_knee_ts.data>0;', 1:6);
-  nPhaseSegm = 360 / 5; % Number of phase segments
-  c_eval('phaseInd?=discretize(Sw.p?_phase_knee_ts.data,nPhaseSegm);', 1:6); % Index of which phase segment data was measured in
-  c_eval('iPhvsPhaseSegm?=zeros(nPhaseSegm,1);',1:6);
-  c_eval('iPhvsPhaseSegm!(?)=median(Sw.p!_iPh_knee_ts.data(phaseInd!==? & ind!));', 1:nPhaseSegm, 1:6);
-  c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_knee_ts.data(ind?)),Sw.p?_iPh_knee_ts.data(ind?),lineStyle{?});rlim([0 600]);title(''All times, where I_{ph}_{knee}>0.'');subplot(1,2,2);polarplot(deg2rad(360/(2*nPhaseSegm)+(0:360/nPhaseSegm:360)),[iPhKneevsPhaseSegm?; iPhKneevsPhaseSegm?(1)],''-black'',''LineWidth'',2);rlim([0 600]);title(''Median I_{ph}_{knee}, where I_{ph}_{knee}>0, over 5 degrees of phase.'');rticks([0 100 200 300 400 500 600]);suptitle([''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph}_{knee} vs phase, p?.'']);', 1:6);
+  nPhaseKneeSegm = 360 / 5; % Number of phase segments
+  c_eval('phaseKneeInd?=discretize(Sw.p?_phase_knee_ts.data,nPhaseKneeSegm);', 1:6); % Index of which phase segment data was measured in
+  c_eval('iPhKneevsPhaseKneeSegm?=zeros(nPhaseKneeSegm,1);',1:6);
+  c_eval('iPhKneevsPhaseKneeSegm!(?)=median(Sw.p!_iPh_knee_ts.data(phaseKneeInd!==? & ind!));', 1:nPhaseKneeSegm, 1:6);
+  c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_knee_ts.data(ind?)),Sw.p?_iPh_knee_ts.data(ind?),lineStyle{?});rlim([0 600]);title(''All times, where I_{ph}_{,}_{knee}>0.'');subplot(1,2,2);polarplot(deg2rad(360/(2*nPhaseKneeSegm)+(0:360/nPhaseKneeSegm:360)),[iPhKneevsPhaseKneeSegm?; iPhKneevsPhaseKneeSegm?(1)],''-black'',''LineWidth'',2);rlim([0 600]);title(''Median I_{ph}_{,}_{knee}, where I_{ph}_{,}_{knee}>0, over 5 degrees of phase.'');rticks([0 100 200 300 400 500 600]);suptitle([''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph}_{,}_{knee} vs phase of knee, p?.'']);', 1:6);
   %c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_ts.data(ind?)),Sw.p?_iPh_ts.data(ind?),lineStyle{?});rlim([0 600]);title(''All times, where 0<I_{ph}.'');subplot(1,2,2);polarplot(deg2rad(2.5+0:360/nPhaseSegm:(360-1)),iPhvsPhaseSegm?,''-black'',''LineWidth'',2);rlim([0 600]);title(''Median I_{ph}, where 0<I_{ph}, over 5 degrees of phase.'');suptitle([''MMS'',scStr,'' I_{ph} vs phase, p?.'']);', 5:6);
   c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhKneeVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhKneeVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
