@@ -1,13 +1,16 @@
 %
-% Quicklook for the content of one BIAS LFR SWF dataset (CDF file), i.e.
-% DATASET_ID = SOLO_L2_RPW-LFR-SURV-SWF-E.
+% Generate official quicklook for the content of one BIAS LFR SWF dataset (CDF
+% file), i.e. DATASET_ID = SOLO_L2_RPW-LFR-SURV-SWF-E.
 %
 %
-% NOTE: Only capable (default) of only showing either DC diffs or AC diffs.
-% There are hard-coded settings for permitting or forcing both.
-% NOTE: Does not yet support spectrogram overlap.
-% NOTE: Time series panels interpolate between snapshots.
-% NOTE: Color scale is log. Therefore colors represent negative values (probably).
+% NOTES
+% =====
+% * CAN TAKE A SIGNIFICANT AMOUNT OF TIME TO COMPLETE, DUE TO SPECTROGRAMS(?).
+% * Only capable (default) of only showing either DC diffs or AC diffs.
+%   There are hard-coded settings for permitting or forcing both.
+% * Does not yet support spectrogram overlap.
+% * Time series panels interpolate between snapshots.
+% * Color scale is log. Therefore colors represent negative values (probably).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -51,6 +54,8 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %
     % TODO?: Remove interpolation (straight lines) between time series snapshots?
     %
+    % PROPOSAL: If no EDC or EAC (or both), print that somehow on plot.
+    %
     % ~BUG: Algorithm for calculating enlargement of snapshot spectra not always appropriate.
     %   Ex: solo_L2_rpw-lfr-surv-swf-e-cdag_20200228_V01.cdf
     %   PROPOSAL: Enlarge each snapshot spectrum until it reaches neighbour (roughly).
@@ -77,13 +82,15 @@ function hAxesArray = plot_LFR_SWF(filePath)
     % PROPOSAL: Rename. Not (MATLAB) plot, but (MATLAB) figure.
     
     
-
+    % Constants for how to handle certain special cases (unusual datasets)
+    % --------------------------------------------------------------------
     % YK 2020-04-16: Officially only either DC or AC diffs.
     % NOTE: solo_L2_rpw-lfr-surv-cwf-e-cdag_20200228_V01.cdf contains both DC &
     % AC diffs.
     ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS = 0;   % DEFAULT 0. Useful for debugging (runs through all code).
     PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 1;
     ENABLE_SPECTROGRAMS                   = 1;   % DEFAULT 1. Useful for debugging non-spectrogram code.
+    PERMIT_NEITHER_DC_AC_DIFFS            = 1;   % DEFAULT 1?
     
     D = dataobj(filePath);
     
@@ -103,7 +110,12 @@ function hAxesArray = plot_LFR_SWF(filePath)
     if      hasDcDiffs && hasAcDiffs && ~PERMIT_SIMULTANEOUS_DC_AC_DIFFS
         error('Dataset (CDF file) contains both DC diff and AC diff data. Can not handle this case.')
     elseif ~hasDcDiffs && ~hasAcDiffs
-        error('Dataset (CDF file) contains neither DC diff nor AC diff data. Can not handle this case.')
+        MSG = 'Dataset (CDF file) contains neither DC diff nor AC diff data.';
+        if PERMIT_NEITHER_DC_AC_DIFFS
+            warning('Dataset (CDF file) contains neither DC diff nor AC diff data.')
+        else
+            error('%s. Can not handle this case.', MSG)
+        end
     end
 
     zvDcAc12 = solo.sp.utils.merge_zvs(zvDc12, zvAc12);
