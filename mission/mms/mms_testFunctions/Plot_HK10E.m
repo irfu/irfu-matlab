@@ -52,7 +52,7 @@ for id=1:length(SCid)
     for ii=1:length(probes)
       hk10eDB.(SCid{id}).dac.(probes{ii}) = irf.ts_scalar(tint.start, NaN);
       hk10eDB.(SCid{id}).og.(probes{ii}) = irf.ts_scalar(tint.start, NaN);
-      hk10eDB.(SCid{id}).id.(probes{ii}) = irf.ts_scalar(tint.start, NaN);
+      hk10eDB.(SCid{id}).ig.(probes{ii}) = irf.ts_scalar(tint.start, NaN);
     end
   else
     % Load files
