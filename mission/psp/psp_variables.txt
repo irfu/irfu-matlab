@@ -380,13 +380,133 @@ info#end
 
 %%%%
 varName: EFLUX
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_eflux
+related: 
+info#start
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-Ae sensor, mounted on the ram side of the spacecraft.
+The units are differential energy flux and eV.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: THETA
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_theta
+related: 
+info#start
+Elevation angle in spacecraft coordinates. Unit: degrees.
+info#end
+----
+
+%%%%
+varName: PHI
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_phi
+related: 
+info#start
+Azimuthal angle in spacecraft coordinates. Unit: degrees
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_qf
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
+%%%%
+varName: EFLUX
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_eflux
+related: 
+info#start
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-B sensor, localized on the anti-ram side of the spacecraft.
+The units are differential energy flux and eV.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: THETA
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_theta
+related: 
+info#start
+Elevation angle in spacecraft coordinates. Unit: degrees.
+info#end
+----
+
+%%%%
+varName: PHI
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_phi
+related: 
+info#start
+Azimuthal angle in spacecraft coordinates. Unit: degrees
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_qf
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
+%%%%
+varName: EFLUX
 fileName: psp_swp_spa_sf1_L2_32E
 directory: sweap/spe/L2/spa_sf1/20YY/MM
 hourtag: 
 varNameShort: spa_sf1_eflux
 related: 
 info#start
-Differential Energy Flux vs Energy/angle bin
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-Ae sensor, mounted on the ram side of the spacecraft.
 The units are differential energy flux and eV.
 The “sf1” product is an energy spectrum produced on the spacecraft by summing over the theta and phi directions. 
 CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products 
@@ -426,7 +546,7 @@ hourtag:
 varNameShort: spb_sf1_eflux
 related: 
 info#start
-Differential Energy Flux vs Energy/angle bin measured by the SPAN-B sensor localized on the anti-ram side of the spacecraft.
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-B sensor, localized on the anti-ram side of the spacecraft.
 The units are differential energy flux and eV.
 The “sf1” product is an energy spectrum produced on the spacecraft by summing over the theta and phi directions. 
 CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products 

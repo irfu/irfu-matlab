@@ -40,7 +40,11 @@
 %           'rfs_lfr'                - Radio Frequency Spectrometer, RFS, Low Frequency Reciever, LFR
 %           'rfs_hfr'                - Radio Frequency Spectrometer, RFS, High Frequency Reciever, HFR
 %           'spc'                    - SWEAP Solar Probe Cup data for proton moments
-%           'spe'                    - SWEAP SPE Electron Pitch Angle Distribution
+%           'spa_sf0'                - SWEAP SPAN-Ae SPA 3D spectra measured by SPAN-Ae sensor on the ram side of PSP
+%           'spb_sf0'                - SWEAP SPAN-Be SPB 3D spectra measured by SPAN-Be sensor on the anti-ram side of PSP
+%           'spa_sf1'                - SWEAP SPAN-Ae SPA Diff energy flux measured by SPAN-Ae sensor on the ram side of PSP
+%           'spb_sf1'                - SWEAP SPAN-Be SPB Diff energy flux measured by SPAN-Be sensor on the anti-ram side of PSP
+%           'spe'                    - SWEAP SPAN-E SPE Electron Pitch Angle Distribution
 %           'spi'                    - SWEAP SPAN-I Partial Proton Moments, Differential Energy Eflux 
 %           'ephem'                  - ephemeris files
 %           'pl_spi'                 - Loads only density data to be used in the plasma line code
@@ -323,6 +327,50 @@ switch datatype
       'spc_np_moment';'spc_wp_moment';'spc_vp_moment_sc';...
       'spc_vp_moment_rtn';'spc_sc_pos_hci';'spc_sc_vel_hci'};
     
+    hourtag={''};
+  
+  case {'spa_sf0'}
+    filename = 'psp_swp_spa_sf0_L2_16Ax8Dx32E';
+    varnames = {...
+        'EFLUX';'ENERGY';...
+        'THETA';'PHI';...
+        'QUALITY_FLAG'};
+    varnamesout = {'spa_sf0_eflux';...
+        'spa_sf0_energy';'spa_sf0_theta';...
+        'spa_sf0_phi';'spa_sf0_qf'};
+      
+    hourtag={''};
+
+  case {'spb_sf0'}
+    filename = 'psp_swp_spb_sf0_L2_16Ax8Dx32E';
+    varnames = {...
+        'EFLUX';'ENERGY';...
+        'THETA';'PHI';...
+        'QUALITY_FLAG'};
+    varnamesout = {'spb_sf0_eflux';...
+        'spb_sf0_energy';'spb_sf0_theta';...
+        'spb_sf0_phi';'spb_sf0_qf'};
+      
+    hourtag={''};
+      
+  case {'spa_sf1'}
+    filename = 'psp_swp_spa_sf1_L2_32E';
+    varnames = {...
+        'EFLUX';'ENERGY';...
+        'QUALITY_FLAG'};
+    varnamesout = {'spa_sf1_eflux';...
+        'spa_sf1_energy';'spa_sf1_qf'};
+      
+    hourtag={''};
+
+  case {'spb_sf1'}
+    filename = 'psp_swp_spb_sf1_L2_32E';
+    varnames = {...
+        'EFLUX';'ENERGY';...
+        'QUALITY_FLAG'};
+    varnamesout = {'spb_sf1_eflux';...
+        'spb_sf1_energy';'spb_sf1_qf'};
+      
     hourtag={''};
     
   case {'spe'}
