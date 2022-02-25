@@ -8,12 +8,11 @@ discontTimes=EpochTT(solo.ProbePotDiscontinuities);
 
 % Specify output calibration file name
 strname = 'd23K123_20220225_test';
-% Load data
-% One month, but we take +/- 3 days as a margin to better match with the
-% nearby month.
+
+% Select time interval. We take +/- 3 days as a margin to better match with the
+% old calibration file if we only do a partial update.
 margin = 3*24*60*60; %seconds.
-% Tint = irf.tint('2020-03-01T00:00:00Z/2021-12-31T23:59:59.99Z')+[-1,1]*margin;
-Tint = irf.tint('2021-02-26T00:00:00Z/2021-03-03T00:00:00Z')+[-1,1]*margin;
+Tint = irf.tint('2020-03-01T00:00:00Z/2021-12-31T23:59:59.99Z')+[-1,1]*margin;
 
 % If there is a discontinuity in the data, e.g. potential jumps due to the
 % solar panels, as in late 2020, early 2021, generate subintervals and
@@ -155,11 +154,13 @@ end % Exit sub interval loop
 
 c_eval('tmpstrings{?} = [strname,''_subint?_of_'',num2str(NrOfSubints)];',1:NrOfSubints);
 load(tmpstrings{1});
-for ii=1:length(tmpstrings)
-  a=load(tmpstrings{ii});
-  K123 = K123.combine(a.K123);
-  d23 = d23.combine(a.d23);
-  k23 = k23.combine(a.k23);
+if NrOfSubints > 1
+  for ii=1:length(tmpstrings)
+    a=load(tmpstrings{ii});
+    K123 = K123.combine(a.K123);
+    d23 = d23.combine(a.d23);
+    k23 = k23.combine(a.k23);
+  end
 end
 save(strname, 'K123', 'k23','d23');
 
@@ -222,13 +223,27 @@ if cal_param_plot
     markTint = discrete_events(ii)+[-10,10]*60*60;
     irf_pl_mark(h(1:4),markTint,[1,0.65,0]);
   end
-  
-
 end
 
 
+%% Combine calfiles
+% If you wish to combine the new calibration file with the old one run this
+% code section after filling in the name of the old cal file.
 
-
+if 0
+  oldfile = 'd23K123_20220124'; % Needs to be updated
+  newfile = strname;
+  combinedfile = 'd23K123_YYMMDD'; %Needs to be specified
+  
+  oldcal = load(oldfile);
+  newcal = load(strname);
+  
+  K123 = oldcal.K123.combine(newcal.K123);
+  d23 = oldcal.d23.combine(newcal.d23);
+  k23 = oldcal.k23.combine(newcal.k23);  
+  
+  save(combinedfile, 'K123', 'k23','d23');
+end
 
 
 
