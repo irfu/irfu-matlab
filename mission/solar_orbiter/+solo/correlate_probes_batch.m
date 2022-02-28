@@ -168,6 +168,9 @@ save(strname, 'K123', 'k23','d23');
 if cal_param_plot
   Tint=[d23.time.start;d23.time.stop];
   
+  % load bias currents (gives BIAS_current TSeries)
+  load('/Volumes/solo/BJOR_files/Bias_currents.mat');
+  
   posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
   [radius, lon, lat] = cspice_reclat(posSolO.data');
   solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
@@ -209,6 +212,8 @@ if cal_param_plot
   
   hold(h(1),'on');
   text(h(1),0.70,1.1,'Discrete events','fontsize',26,'units','normalized','color',[1,0.65,0]);
+  text(h(1),0.85,1.1,'Bias changes','fontsize',26,'units','normalized','color',[0,0,1]);
+
   
   hold(h(2),'on');
   hold(h(3),'on');
@@ -223,6 +228,12 @@ if cal_param_plot
     markTint = discrete_events(ii)+[-10,10]*60*60;
     irf_pl_mark(h(1:4),markTint,[1,0.65,0]);
   end
+  
+  for ii=1:length(BIAS_current)
+    markTint = BIAS_current.time(ii)+[-10,10]*30*60;
+    irf_pl_mark(h(1:4),markTint,[0,0,1]);
+  end
+  
 end
 
 
