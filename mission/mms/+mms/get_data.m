@@ -684,7 +684,7 @@ switch Vr.inst
     % Some restructuring to include spectrograms
     % This could also be done in splitVs.
     all_ions = {'hplus','heplus','heplusplus','oplus'};
-    ion_index = cellfun(@(s) ~isempty(strfind([Vr.param '_'], [sVr.param '_'])), all_ions);
+    ion_index = cellfun(@(s) ~isempty(strfind([Vr.param '_'], [s '_'])), all_ions);
     ion = all_ions{find(ion_index)};
     param = extractBefore(Vr.param,ion);
     
