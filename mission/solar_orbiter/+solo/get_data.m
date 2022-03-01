@@ -120,7 +120,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
         case 'efield'
           % E-field
           EDC_SRF = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'EDC_SRF', Tint);
-          if strcmp(C{3},'rtn')
+          if strcmp(C{3},'rtn') && ~isempty(EDC_SRF)
             EDC_RTN = EDC_SRF; EDC_RTN.data(:,1:2) = -EDC_RTN.data(:,1:2);
             EDC_RTN.name = 'EDC_RTN';
             res=EDC_RTN;
@@ -130,7 +130,7 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
         case 'surv' % we might need to change this case when we add more RPW products!!!
           % search-coil
           BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
-          if strcmp(C{3},'srf')
+          if strcmp(C{3},'srf') && ~isempty(BSCM)
             res = solo.srf2rtn(BSCM, -1);
             res.name = 'B_SRF';
           else

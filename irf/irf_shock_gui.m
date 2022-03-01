@@ -158,6 +158,9 @@ if ischar(scd)
       ud = manual_input(ud);
       set(gcf,'userdata',ud)
     case 'calc' % click calculate
+      % first update methods
+      ud = set_methods(ud);
+
       % time is set between up- and downstream intervals
       ud.params.t = irf_time(mean([ud.tu(2),ud.td(1)]),'epoch>epochtt');
       % return up and downstream tints for output
@@ -168,6 +171,7 @@ if ischar(scd)
       % check for manual input to overwrite other inputs
       ud = manual_input(ud);
       % get shock parameters (Mach #, beta, Fcp,...)
+
       ud.shp.par = irf_shock_parameters(ud.params);
       
       % set parameters for shock foot width methods
