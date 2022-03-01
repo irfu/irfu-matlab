@@ -118,7 +118,20 @@ for iSc = 1:4
   end
   save(savedSweepTS, 'Sw');
   close all % close plots..
-  
+
+  %% Load DAC settings
+  savedDac = fullfile(dataRoot, 'irfu', 'plots', 'edp', 'DAC', 'obj', ...
+    ['mms', scStr, '_dacTsCombined.mat']);
+  if exist(savedDac, 'file')
+    load(savedDac, 'p1_dac', 'p2_dac', 'p3_dac', 'p4_dac', 'p5_dac', 'p6_dac'); %#ok<NASGU>
+    % iPh & iPh_knee have opposite current direction as compared with DAC
+    % so simply flip DAC values.
+    c_eval('p?_dac.data = -p?_dac.data;', 1:6);
+    plotDAC=true;
+  else
+    plotDAC=false;
+  end
+
   %% Plot all combined data
   % Moving median, Matlab built in uneven sampling time taken into account...
   c_eval('t?=datetime(Sw.p?_iPh_ts.time.utc(''yyyy-mm-ddTHH:MM:SS.mmmZ''),''InputFormat'',''uuuu-MM-dd''''T''''HH:mm:ss.SSS''''Z'''''',''TimeZone'',''UTCLeapSeconds'');', 1:6);
@@ -130,8 +143,14 @@ for iSc = 1:4
   c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph} vs time from sweep on probe ?.'']);', 1:6);
   c_eval('ylabel(h?,{''I_{ph}'',''[nA]''});', 1:6);
   c_eval('ylim(h?,[-55 555]);', 1:6);
-  c_eval('legend(h?,''I_{ph}, sweep p?'',''15 days moving median'');', 1:6);
-  c_eval('set(h?.Children(1),''LineWidth'',2);', 1:6);
+  if (plotDAC)
+    c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
+    c_eval('legend(h?,''I_{ph}, sweep p?'', ''15 days moving median'', ''Commanded DAC current'');', 1:6);
+    c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
+  else
+    c_eval('legend(h?,''I_{ph}, sweep p?'', ''15 days moving median'');', 1:6);
+  end
+  c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhVsTime_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhVsTime_mms'',scStr,''_p?.png'']);', 5:6);
   close all % close plots
@@ -142,8 +161,14 @@ for iSc = 1:4
   c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph}_{,}_{knee} vs time from sweep on probe ?.'']);', 1:6);
   c_eval('ylabel(h?,{''I_{ph}_{,}_{knee}'',''[nA]''});', 1:6);
   c_eval('ylim(h?,[-55 555]);', 1:6);
-  c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p?'',''15 days moving median'');', 1:6);
-  c_eval('set(h?.Children(1),''LineWidth'',2);', 1:6);
+  if (plotDAC)
+    c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
+    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p?'', ''15 days moving median'', ''Commanded DAC currents'');', 1:6);
+    c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
+  else
+    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p?'', ''15 days moving median'');', 1:6);
+  end
+  c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 5:6);
   close all % close plots
