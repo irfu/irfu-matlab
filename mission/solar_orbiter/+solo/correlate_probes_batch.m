@@ -233,7 +233,7 @@ if cal_param_plot
     markTint = BIAS_current.time(ii)+[-10,10]*30*60;
     irf_pl_mark(h(1:4),markTint,[0,0,1]);
   end
-  
+ irf_timeaxis(h(4), 'nodate' ); 
 end
 
 
