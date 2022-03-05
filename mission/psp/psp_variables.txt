@@ -1193,4 +1193,41 @@ particularly when the general quality flag is zero.
 info#end
 ----
 
+%%%%
+varName: electron_density
+fileName: psp_fld_l3_sqtn_rfs_V1V2
+directory: fields/l3/sqtn_rfs_V1V2/20YY/MM
+hourtag: 
+varNameShort: qtn_ne
+related: 
+info#start
+Electron density from quasi-thermal noise.
+For more information see: Moncuquet et al. https://iopscience.iop.org/article/10.3847/1538-4365/ab5a84
+info#end
+----
 
+%%%%
+varName: electron_core_temperature
+fileName: psp_fld_l3_sqtn_rfs_V1V2
+directory: fields/l3/sqtn_rfs_V1V2/20YY/MM
+hourtag: 
+varNameShort: qtn_core_Te
+related: 
+info#start
+Electron core temperature from quasi-thermal noise.
+For more information see: Moncuquet et al. https://iopscience.iop.org/article/10.3847/1538-4365/ab5a84
+info#end
+----
+
+%%%%
+varName: electron_density_delta
+fileName: psp_fld_l3_sqtn_rfs_V1V2
+directory: fields/l3/sqtn_rfs_V1V2/20YY/MM
+hourtag: 
+varNameShort: qtn_ne_delta
+related: 
+info#start
+Electron density delta from quasi-thermal noise.
+For more information see: Moncuquet et al. https://iopscience.iop.org/article/10.3847/1538-4365/ab5a84
+info#end
+----

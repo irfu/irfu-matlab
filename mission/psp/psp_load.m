@@ -53,6 +53,7 @@
 %           'dbm_vac'                - times series of electric field snapshots
 %           'dbm_dvdc'               - times series of electric field snapshots
 %           'dbm_scm'                - times series of SCM snapshots
+%           'qtn'                    - Electron density and temperature from quasi-thermal noise
 %           'XXX'                    - where XXX is long or short name of variables in the list "PSP_VAR *"
 %
 % dateStart & dateStop: date vectors or strings for start and stop day
@@ -427,6 +428,17 @@ switch datatype
       'rfs_lfr_v3v4_hr';'rfs_lfr_v3v4_freq_hr'};
     
     hourtag={''};
+
+  case {'qtn'}
+    filename = 'psp_fld_l3_sqtn_rfs_V1V2';
+    varnames = {...
+      'electron_density';...
+      'electron_core_temperature';...
+      'electron_density_delta'};
+    varnamesout = {'qtn_ne';...
+      'qtn_core_Te';'qtn_ne_delta'};
+    
+    hourtag={''};  
     
   case 'dbm_dvac'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvac');
