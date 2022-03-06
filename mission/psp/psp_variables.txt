@@ -1227,7 +1227,7 @@ hourtag:
 varNameShort: qtn_ne_delta
 related: 
 info#start
-Electron density delta from quasi-thermal noise.
+Electron density delta is the uncertainty of electron density obtained from quasi-thermal noise.
 For more information see: Moncuquet et al. https://iopscience.iop.org/article/10.3847/1538-4365/ab5a84
 info#end
 ----
