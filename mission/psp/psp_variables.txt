@@ -604,13 +604,257 @@ info#end
 
 %%%%
 varName: QUALITY_FLAG
-fileName: psp_swp_spi_sf00_L3_mom_INST
+fileName: psp_swp_spi_sf00_L3_mom
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
 varNameShort: spi_sf00_qf
 related: 
 info#start
-Proton partial density
+Quality flag. The quality flag is a two-byte unsigned integer (CDF_UINT2) with its least significant bit (Bit 0) indicating: Counter Overflow, Bit 1: Survey Snapshot ON (not applicable to archive products), Bit 2: Alternate Energy Table, Bit 3: Spoiler Test, Bit 4: Attenuator Engaged, Bit 5: Highest Archive Rate, Bit 6: No Targeted Sweep, Bit 7: SPAN-Ion New Mass Table (not applicable to electrons), Bit 8: Over-deflection, Bit 9: Archive Snapshot ON, Bit 10: Bad Energy Table, Bit 11: MCP Test, Bit 12: Survey Available, Bit 13: ُArchive Available, Bits 14-15: Reserved.
+info#end
+----
+
+%%%%
+varName: DENS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_dens
+related: 
+info#start
+Partial moments as derived from the SF00 proton data product. It includes the
+solar wind parameters of density, perpendicular and parallel temperatures, and
+the velocity vector in the instrument frame of reference.
+CAVEAT: The solar wind is not fully in the field of view of the instrument, thus
+the calculated densities are partial and therefore smaller.
+info#end
+----
+
+%%%%
+varName: VEL_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_vel_inst
+related: 
+info#start
+Proton velocity in instrument coordinates
+info#end
+----
+
+%%%%
+varName: VEL_SC
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_vel_rsc
+related: 
+info#start
+Proton velocity in spacecraft coordinates. In spacecraft frame, spacecraft velocity NOT removed.
+info#end
+----
+
+%%%%
+varName: VEL_RTN_SUN
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_vel_rtn
+related: 
+info#start
+Proton velocity in RTN coordinates. In Sun frame, spacecraft velocity removed.
+info#end
+----
+
+%%%%
+varName: T_TENSOR_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_t_tensor
+related: 
+info#start
+Partial Moment Temperature Tensor in instrument frame.
+info#end
+----
+
+%%%%
+varName: TEMP
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_temp
+related: 
+info#start
+Proton temperature. Average of Trace of Partial Moment Temperature Tensor.
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_ENERGY
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_eflux_vs_en
+related: 
+info#start
+Proton differential Energy Flux vs Energy
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_THETA
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_eflux_theta
+related: 
+info#start
+Proton differential Energy Flux vs Theta
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_PHI
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_eflux_phi
+related: 
+info#start
+Proton differential Energy Flux vs Phi
+info#end
+----
+
+%%%%
+varName: ENERGY_VALS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_energy
+related: 
+info#start
+Energy values
+info#end
+----
+
+%%%%
+varName: THETA_VALS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_theta
+related: 
+info#start
+Theta angle values
+info#end
+----
+
+%%%%
+varName: PHI_VALS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_phi
+related: 
+info#start
+Phi angle values
+info#end
+----
+
+%%%%
+varName: SUN_DIST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_sun_dist
+related: 
+info#start
+Spacecraft distance to the Sun
+info#end
+----
+
+%%%%
+varName: VENUS_DIST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_venus_dist
+related: 
+info#start
+Spacecraft distance to Venus
+info#end
+----
+
+%%%%
+varName: SC_VEL_RTN_SUN
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_PSP_vel_rtn
+related: 
+info#start
+Spacecraft velocity in RTN coordinates and Sun reference frame
+info#end
+----
+
+%%%%
+varName: QUAT_SC_TO_RTN
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_quat_SC_to_RTN
+related: 
+info#start
+Quaternion for Rotating from Spacecraft to RTN Coordinates
+info#end
+----
+
+%%%%
+varName: MAGF_SC
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_mag_sc
+related: 
+info#start
+Magnetic field in spacecraft coordinates
+info#end
+----
+
+%%%%
+varName: MAGF_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_mag_inst
+related: 
+info#start
+Magnetic field in intrument coordinates
+info#end
+----
+
+%%%%
+varName: ROTMAT_SC_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_rotmat_SC_to_INST
+related: 
+info#start
+Rotating matrix from Spacecraft to instrument Coordinates
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_qf
+related: 
+info#start
+Quality flag. The quality flag is a two-byte unsigned integer (CDF_UINT2) with its least significant bit (Bit 0) indicating: Counter Overflow, Bit 1: Survey Snapshot ON (not applicable to archive products), Bit 2: Alternate Energy Table, Bit 3: Spoiler Test, Bit 4: Attenuator Engaged, Bit 5: Highest Archive Rate, Bit 6: No Targeted Sweep, Bit 7: SPAN-Ion New Mass Table (not applicable to electrons), Bit 8: Over-deflection, Bit 9: Archive Snapshot ON, Bit 10: Bad Energy Table, Bit 11: MCP Test, Bit 12: Survey Available, Bit 13: ُArchive Available, Bits 14-15: Reserved.
 info#end
 ----
 
@@ -619,7 +863,7 @@ varName: DENS
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_dens
+varNameShort: spi_sf00_INST_dens
 related: 
 info#start
 Partial moments as derived from the SF00 proton data product. It includes the
@@ -635,7 +879,7 @@ varName: VEL
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_vel
+varNameShort: spi_sf00_INST_vel
 related: 
 info#start
 Proton velocity
@@ -647,7 +891,7 @@ varName: T_TENSOR
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_t_tensor
+varNameShort: spi_sf00_INST_t_tensor
 related: 
 info#start
 Proton temperature
@@ -659,7 +903,7 @@ varName: TEMP
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_temp
+varNameShort: spi_sf00_INST_temp
 related: 
 info#start
 Proton temperature
@@ -671,7 +915,7 @@ varName: MAGF_INST
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_mag_inst
+varNameShort: spi_sf00_INST_mag_inst
 related: 
 info#start
 Magneric field in intrument coordinates
@@ -683,7 +927,7 @@ varName: EFLUX_VS_ENERGY
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_eflux_vs_en
+varNameShort: spi_sf00_INST_eflux_vs_en
 related: 
 info#start
 Proton differential Energy Flux vs Energy
@@ -695,7 +939,7 @@ varName: EFLUX_VS_THETA
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_eflux_theta
+varNameShort: spi_sf00_INST_eflux_theta
 related: 
 info#start
 Proton differential Energy Flux vs Theta
@@ -707,7 +951,7 @@ varName: EFLUX_VS_PHI
 fileName: psp_swp_spi_sf00_L3_mom_INST
 directory: sweap/spi/L3/spi_sf00/20YY/MM
 hourtag: 
-varNameShort: spi_sf00_eflux_phi
+varNameShort: spi_sf00_INST_eflux_phi
 related: 
 info#start
 Proton differential Energy Flux vs Phi
