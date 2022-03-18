@@ -576,6 +576,7 @@ end
     % gz- data file , status=0 and downloadedFile is set to the downloaded file.
     
     status = 0; % default
+    downloadedFile = 0;
     if doDataStreaming
       % define filename
       tempFileName   = 'delme.cef';
@@ -645,7 +646,7 @@ end
         if(isempty(tmpGetRequest))
           irf.log('warning',['Did not succed to download: ' tempFilePathGz ]);
         else
-          irf.log('warning',['Did not succed to download: ' tmpGetRequest{10} ' ' tmpGetRequest{12} ]);
+          irf.log('warning',['Did not succed to download: ', strjoin(tmpGetRequest)]);
         end
         status = 0;
       end
