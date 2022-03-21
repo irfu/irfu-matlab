@@ -32,7 +32,7 @@ function out=caa_download(varargin)
 %   parameter is parsed to caa_download when downloading data. See help
 %   caa_download.
 %
-%   TTrequest = LOCAL.CAA_DOWNLOAD() return resulting time table TTrequest, where
+%   TTrequest = LOCAL.CAA_DOWNLOAD(...) return resulting time table TTrequest, where
 %
 %		TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
 %		TTRequest.UserData.Downloadfile zip file to download (important if status=0)
@@ -388,7 +388,7 @@ while 1
         isempty(TTRequest.UserData(iRequest).Status) || ...
         TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
       tint=TTRequest.TimeInterval(iRequest,:);
-      tint(2) = tint(2) - 1e-5; % the end is an upper boundary, to avoid the data point being in two intervals as the start and the end point we remove 10^5 from the end time
+      tint(2) = tint(2) - 1e-5; % the end is an upper boundary, to avoid the data point being in two intervals as the start and the end point we remove 10^-5 from the end time
       dataSet = TTRequest.UserData(iRequest).dataset;
       
       irf.log('warning',['Requesting ' dataSet ' interval #' num2str(iRequest) ...

@@ -836,12 +836,11 @@ elseif strcmp(quantity,'a')
   tint = start_time +[-5 dt+10];
   datasetName = sprintf('C%d_CP_AUX_SPIN_TIME',cl_id);
   try
-    caa_download(tint,datasetName,...
-      '&USERNAME=avaivads&PASSWORD=%21kjUY88lm','stream');
+    downloadStatus = caa_download(tint,datasetName,'stream');
   catch, irf_log('dsrc','Error streaming from CSA')
   end
   d = dir(['CAA/' datasetName '/*.cef.gz']);
-  if ~isempty(d)
+  if ~isempty(d) && downloadStatus
     cefFile = ['CAA/' datasetName '/' d.name];
     cef_init(); cef_read(cefFile);
     c1 = onCleanup(@() cef_close());
