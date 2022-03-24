@@ -2475,46 +2475,73 @@ classdef PDist < TSeries
         if isfield(PD.ancillary,'delta_energy_plus'), PD.ancillary.delta_energy_plus = PD.ancillary.delta_energy_plus(:,elevels); end
       end
     end
-    function PD = omni(obj)
+    function PD = omni(obj,V0,varargin)
       % Makes omnidirectional distribution, conserving units.
+      % 
+      % distOmni = dist.OMNI Returns the average omnidirectional distribution
+      %   function in the spacecraft frame. Units are the same as in the
+      %   output.
+      %
+      % distOmni = dist.OMNI(V) Returns the average omnidirectional
+      %   distribution in an arbitrary frame defined by the velocity V.
+      %   V is the velocity of the new frame in the spacecraft frame.
+      %   V is either a vector or a TSeries object with unit of [km/s].
+      % 
+      % distOmni = dist.OMNI(V,propertyFlag,propertyValue) defines the
+      %   property of the resulting omni distribution.
+      %   
+      %   Properties:
+      %     'E' -  New energy grid for the output. Array with units [eV]
+      % 
+      % Example: 
+      %   % Get the ion omni distribution function in the ion rest frame
+      %   idistOmniRestFrame = iPDist.omni(Vi); % Vi is the ion velocity
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end
-      
-      dist = obj;
-      % define angles
-      energysize = size(obj.depend{1});
-      phi = obj.depend{2};
-      theta = obj.depend{3};
-      lengthphi = size(phi,2);
-      if isfield(obj.ancillary,'delta_theta_plus') && isfield(obj.ancillary,'delta_theta_minus')
-        dangletheta = obj.ancillary.delta_theta_plus + obj.ancillary.delta_theta_minus;
-      else
-        dangletheta = median(diff(obj.depend{3}));
+
+      if nargin == 1 % Normal, classical usage
+        dist = obj;
+        % define angles
+        energysize = size(obj.depend{1});
+        phi = obj.depend{2};
+        theta = obj.depend{3};
+        lengthphi = size(phi,2);
+        if isfield(obj.ancillary,'delta_theta_plus') && isfield(obj.ancillary,'delta_theta_minus')
+          dangletheta = obj.ancillary.delta_theta_plus + obj.ancillary.delta_theta_minus;
+        else
+          dangletheta = median(diff(obj.depend{3}));
+        end
+
+        if isfield(obj.ancillary,'delta_phi_plus') && isfield(obj.ancillary,'delta_phi_minus')
+          danglephi = obj.ancillary.delta_phi_plus + obj.ancillary.delta_phi_minus;
+        else
+          danglephi = median(diff(obj.depend{2}(1,:)));
+        end
+
+        dangletheta = dangletheta*pi/180;
+        danglephi = danglephi*pi/180;
+
+        z2 = ones(lengthphi,1)*sind(theta);
+        solida = (danglephi*dangletheta').*z2;
+        allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
+        allsolida = squeeze(permute(allsolida,[3 4 1 2]));
+        dists = dist.data.*allsolida;
+        omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));
+
+        PD = obj;
+        PD.type = 'omni';
+        PD.data_ = omni;
+        PD.depend = {obj.depend{1}};
+        PD.representation = {obj.representation{1}};
+        PD.units = obj.units;
+        PD.name = 'omni';
+      else % frame transformation
+        % call the protected class method
+        PD = obj.get_omni_dist_framedep(V0,varargin{:});
       end
-      
-      if isfield(obj.ancillary,'delta_phi_plus') && isfield(obj.ancillary,'delta_phi_minus')
-        danglephi = obj.ancillary.delta_phi_plus + obj.ancillary.delta_phi_minus;
-      else
-        danglephi = median(diff(obj.depend{2}(1,:)));
-      end
-      
-      dangletheta = dangletheta*pi/180;
-      danglephi = danglephi*pi/180;
-      
-      z2 = ones(lengthphi,1)*sind(theta);
-      solida = (danglephi*dangletheta').*z2;
-      allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
-      allsolida = squeeze(permute(allsolida,[3 4 1 2]));
-      dists = dist.data.*allsolida;
-      omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));
-      
-      PD = obj;
-      PD.type = 'omni';
-      PD.data_ = omni;
-      PD.depend = {obj.depend{1}};
-      PD.representation = {obj.representation{1}};
-      PD.units = obj.units;
-      PD.name = 'omni';
+
+
+
     end
     function spec = specrec(obj,varargin)
       % PDIST.SPECREC Prepares structure to be used with irf_spectrogram or irf_plot
@@ -3589,7 +3616,7 @@ classdef PDist < TSeries
     
     
   end
-  % Plotting functions
+  % Plotting and other functions
   methods (Access = protected)
     function PD = enforce_depend_timeseries(obj,depend)
       % Find if 'depend' is a depend, and if yes, enforce it to be a
@@ -3610,6 +3637,222 @@ classdef PDist < TSeries
         PD.depend{iDep} = repmat(current_depend',[obj.length,1]);
       end
     end
+
+    % help function for PDist.omni
+    function fmean = get_omni_dist_framedep(obj,V0,varargin)
+      % GET_OMNI_DIST_FRAMEDEP Get omnidirectional distribution in an arbitrary frame
+      %
+      %   fOmni = GET_OMNI_DIST_FRAMEDEP(obj,V) returns the omnidirectional
+      %   distribution of the PDist object dist in the frame moving with velocity
+      %   V. V can either be a 1x3 vector for a frame moving with constant
+      %   velocity or a TSeries object for a changing frame. The unit of the
+      %   input distribution is conserved in the output. The unit of V is [km/s].
+      %
+      %   In mathematical terms, this function calculates the spherical mean of
+      %   the distribution function https://en.wikipedia.org/wiki/Spherical_mean
+      %   centered on the velocity in the input. It accomplishes this with a
+      %   Monte-Carlo method where a number of points (5e3 per channel) evenly
+      %   distributed on a sphere centered on V and with radius corresponding to
+      %   each energy value v = sqrt(2*E/m). The omnidirectional
+      %   distribution is then the average value of the distribution the
+      %   Monte-Carlo points for the given energy value.
+      %
+      % Tested but somewhat experimental.
+
+      % TODO:
+      %   - More inputs: energy grid, number of MC points, mass, ...
+      %   - Add more info to the output PDist object?
+      %   - Allow for fast mode data
+
+      % handle input
+      args = varargin;
+      nargs = length(args);
+
+      inpE = 0; % default use obj energy table
+      have_options = nargs > 1;
+      while have_options
+        switch(lower(args{1}))
+          case 'e' % Energy
+            Ef = args{2};
+            inpE = 1;
+            args = args(3:end);
+            % more cases here in the future
+          otherwise
+            irf.log('w','Unknown input')
+
+        end
+        if isempty(args), break, end
+      end
+
+      % units and constants
+      u = irf_units;
+
+      % number of Monte-Carlo points
+      nMC = 5e3; % per energy channel
+
+      % handle inputs
+      if nargin == 1
+        V0 = [0,0,0];
+      end
+
+      % check species (user should be able to input M)
+      switch obj.species
+        case 'ions'
+          M = u.mp;
+        case 'electrons'
+          M = u.me;
+      end
+
+      nt = length(obj);
+
+      % Handle input velocity
+      % make sure V0 is an array with size PDist.length
+      if isa(V0,'TSeries')
+        %if size(V0.data,1) == size(PDist.data,1)
+        if V0.length == obj.length
+          irf.log('w','assuming same time sampling')
+          V0v = V0.data;
+        else
+          irf.log('w','resampling velocity')
+          V0v = V0.resample(obj).data;
+        end
+      elseif isnumeric(V0)
+        irf.log('w','using constant velocity')
+        if size(V0,1)==3
+          V0v = repmat(V0,1,n);
+        else
+          V0v = repmat(V0,nt,1); % hopefully right
+        end
+      end
+
+      % for good measure
+      V0v = double(V0v);
+
+      % pre treat distribution object
+      % start with the normal command so it has the same structure
+      fmean = obj.omni;
+
+      % pre allocate data matrix
+      nE = size(fmean.data,2);
+      fmeanData = zeros(nt,nE);
+
+      % assume they are all the same
+      E = obj.depend{1}; % [eV]
+      % delta energies [eV]
+      if isfield(obj.ancillary,'delta_energy_plus')
+        irf.log('w','PDist ancillary information present')
+        dEp = obj.ancillary.delta_energy_plus;
+        dEm = obj.ancillary.delta_energy_minus;
+      else
+        irf.log('w','PDist ancillary information NOT present')
+        dE = diff(E')';
+        dEp = [dE,dE(:,end)]/2;
+        dEm = [dE(:,1),dE]/2;
+      end
+      % energy edges
+      Ee = [E-dEm,E(:,end)+dEp(:,end)]; % [eV]
+      ve = sqrt(2*Ee*u.e/M)*1e-3; % [km/s]
+
+      % elevation angle
+      th = double(obj.depend{3}); % polar angle in degrees
+      th = th-90; % elevation angle in degrees
+      th = th*pi/180; % in radians
+      dth = median(diff(th));
+      the = [th-dth/2,th(end)+dth/2]; % [radians]
+
+      % If not set, energy table is the same as first in input distribution 
+      if ~ inpE
+        Ef = E(1,:); % [eV]
+      end
+      nEf = length(Ef);
+      % velocity of grid in [km/s]
+      vf = sqrt(2*Ef*u.e/M)*1e-3; % [km/s]
+
+      % create mc particles
+      % acceptence-rejection method (not so slow apparently)
+      % this creates elevation angle points distributed like a cosine
+      thp = zeros(1,nMC);
+      count = 1;
+      while count <= nMC
+        rn1 = rand(1); % [0,1] flat
+        rn1 = (rn1-0.5)*pi; % [-pi/2,pi/2] flat
+
+        rn2 = rand(1);
+        if rn2<abs(cos(rn1))
+          % accept
+          thp(count) = rn1;
+          count = count+1;
+        end % else reject and try again
+      end
+
+      phip = (rand(1,nMC)-0.5)*2*pi; % [-pi,pi] flat
+
+      % velocities in spacecraft frame
+      vxp = zeros(nEf,nMC);
+      vyp = zeros(nEf,nMC);
+      vzp = zeros(nEf,nMC);
+
+      % use the same angle values for all energy values
+      for ii = 1:nEf
+        [vxp(ii,:),vyp(ii,:),vzp(ii,:)] = sph2cart(phip,thp,vf(ii));
+      end
+
+      % get spherical mean of distribution
+      % loop over time steps
+      fprintf('it = %4.0f/%4.0f\n',0,nt) % display progress
+      for it = 1:nt
+        if mod(it,1) == 0, fprintf([repmat('\b', 1, 10) '%4.0f/%4.0f\n'],it,nt); end % display progress
+
+        % ---------------- instrument part ----------------
+        % psd
+        F3d = double(squeeze(double(obj.data(it,:,:,:)))); % whatever units
+
+        % azimuthal angle
+        if size(obj.depend{2},1) > 1 % burst mode mms
+          phi = double(obj.depend{2}(it,:)); % in degrees
+        else % fast mode mms
+          phi = double(obj.depend{2});
+        end
+        phi = phi-180;
+        phi = phi*pi/180; % in radians
+        dphi = median(diff(phi));
+        % edges of bins
+        phie = [phi-dphi/2,phi(end)+dphi/2];
+
+        % ---------------- grid part ----------------
+        % velocities of mc points in desired frame
+        vxp0 = vxp+V0v(it,1);
+        vyp0 = vyp+V0v(it,2);
+        vzp0 = vzp+V0v(it,3);
+
+        % back to the spherical frame
+        [phip0,thp0,vp0] = cart2sph(vxp0,vyp0,vzp0);
+
+        % get good indices
+        idPhip = discretize(phip0,phie);
+        idThp = discretize(thp0,the);
+        idVp = discretize(vp0,ve(it,:));
+
+        % ---------------- calculating mean psd ----------------
+        for jj = 1:nEf
+          % get the instrument bin indices of all MC points
+          idMC = sub2ind(size(F3d),idVp(jj,:),idPhip(jj,:),idThp(jj,:));
+          % sometimes there is no instrument bin corresponding to the MC
+          % point, those indices become NaNs
+          idMC = idMC(~isnan(idMC));
+          fmeanData(it,jj) = mean(F3d(idMC));
+        end
+      end
+
+      % put value in output
+      %fmeanData(isnan(fmeanData)) = 0;
+      fmean.data = fmeanData;
+
+      fmean.ancillary.V0 = V0v; % add velocity to ancillary
+
+      fmean.depend{1} = Ef; % update depend variable
+
+    end
   end
   methods (Static)
     function newUnits = changeunits(from,to)
@@ -3617,3 +3860,4 @@ classdef PDist < TSeries
     end
   end
 end
+
