@@ -39,12 +39,14 @@ function out = fk_powerspec_E80(varargin)
 % numf - number of elements in the frequency vector 
 %
 % numk - number of elements in the wavenumber vector
+% 
+% f - frequency range for the wavelet transform
 %
 % If no output is given the function plots the results
 %
 % Examples:
 % out = fk_powerspec_E80(SCpot,T1)
-% out = fk_powerspec_E80(SCpot,T1,'boom_shortening',1,'w0',4*5.36,'numf',200,'numk',200)
+% out = fk_powerspec_E80(SCpot,T1,'boom_shortening',1,'w0',4*5.36,'numf',200,'numk',200,'f',[100 4000])
 
     
 
@@ -61,7 +63,7 @@ boom_shortening = 0;
 w0 = 5.36;
 numf = 100;
 numk = 100;
-
+f_range_flag = 0;
 %% defining different options
 if numel(varargin)>2
     
@@ -100,6 +102,11 @@ while flag
         case 'numk'
             
             numk = in{2};
+            in(1:2) = [];
+            flag = ~isempty(in);
+        case 'f'
+            f_range_flag = 1;
+            frange = in{2};
             in(1:2) = [];
             flag = ~isempty(in);
             
@@ -180,10 +187,12 @@ E80_2=[-E24.data,-E23.data,E56.data]*1000;E80_2=irf.ts_vec_xyz(V1.time,E80_2);%%
 %% calculating wavelet transforms
 
 fmin=E80.time(2)-E80.time(1);fmin=1/fmin;fmin=fmin/length(E80.data);fmin=ceil(fmin);
+if ~ f_range_flag
+frange = [fmin 4000];
+end
 
-
-w80=irf_wavelet(E80,'nf',numf,'returnpower',0,'f',[fmin 4000],'wavelet_width',w0);
-w80_2=irf_wavelet(E80_2,'nf',numf,'returnpower',0,'f',[fmin 4000],'wavelet_width',w0);
+w80=irf_wavelet(E80,'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
+w80_2=irf_wavelet(E80_2,'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
 f=w80.f;
 
 %% calculating phase difference between E80x and E80_2x
