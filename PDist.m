@@ -3662,7 +3662,9 @@ classdef PDist < TSeries
       % TODO:
       %   - More inputs: energy grid, number of MC points, mass, ...
       %   - Add more info to the output PDist object?
-      %   - Allow for fast mode data
+      %   - Allow for varying dPhi, dTh
+      %   - Remove flags for input, better to force all things to be in
+      %   input
 
       % handle input
       args = varargin;
@@ -3730,11 +3732,7 @@ classdef PDist < TSeries
 
       % pre treat distribution object
       % start with the normal command so it has the same structure
-      fmean = obj.omni;
-
-      % pre allocate data matrix
-      nE = size(fmean.data,2);
-      fmeanData = zeros(nt,nE);
+      % fmean = obj.omni;
 
       % assume they are all the same
       E = obj.depend{1}; % [eV]
@@ -3757,6 +3755,16 @@ classdef PDist < TSeries
       th = double(obj.depend{3}); % polar angle in degrees
       th = th-90; % elevation angle in degrees
       th = th*pi/180; % in radians
+      % SolO PDists don't follow MMS convention and th angles are
+      % decreasing, this causes errors so they must be flipped
+      if ~issorted(th)
+        % assume it's decreasing, if it jumps around the pdist object should feel bad
+        th = fliplr(th);
+        flipTheta = 1; % flag to flip distribution function
+      else
+        flipTheta = 0;
+      end
+
       dth = median(diff(th));
       the = [th-dth/2,th(end)+dth/2]; % [radians]
 
@@ -3767,6 +3775,10 @@ classdef PDist < TSeries
       nEf = length(Ef);
       % velocity of grid in [km/s]
       vf = sqrt(2*Ef*u.e/M)*1e-3; % [km/s]
+
+      % pre allocate data matrix
+      % nE = size(fmean.data,2);
+      fmeanData = zeros(nt,nEf);
 
       % create mc particles
       % acceptence-rejection method (not so slow apparently)
@@ -3807,14 +3819,42 @@ classdef PDist < TSeries
         % psd
         F3d = double(squeeze(double(obj.data(it,:,:,:)))); % whatever units
 
+        % remember to flip the distribution if th was the wrong order
+        if flipTheta
+          F3d = flip(F3d,3); % hopefully not slow
+        end
+
         % azimuthal angle
         if size(obj.depend{2},1) > 1 % burst mode mms
           phi = double(obj.depend{2}(it,:)); % in degrees
-        else % fast mode mms
+        else % fast mode mms or SolO
           phi = double(obj.depend{2});
         end
-        phi = phi-180;
-        phi = phi*pi/180; % in radians
+        phi = phi-180; 
+        phi = phi*pi/180; % in radians (prob fine if outside [-pi,pi])
+
+        % check phi angles (hopefully not slow)
+        if ~issorted(phi)
+          % assume it's decreasing, if it jumps around the pdist object should feel bad
+          phi = fliplr(phi);
+          F3d = flip(F3d,2); % hope and pray
+        end
+
+        % special case for SolO where phi at this stage can be less than
+        % -pi because azimuth is defined between [-180,180] degrees unlike
+        % for MMS where it is defined in [0,360] degrees.
+        % If this happens put a flag to fix the angles ni the -x,+y (second)
+        % quadrant
+        if numel(find(phi<-pi))>0
+          if ~numel(find(phi>pi/2))==0 % can't have more than 2 pi coverage
+            error('something is wrong with the azimuth angles')
+          else
+            fix2ndQuadrant = 1;
+          end
+        else
+          fix2ndQuadrant = 0;
+        end
+
         dphi = median(diff(phi));
         % edges of bins
         phie = [phi-dphi/2,phi(end)+dphi/2];
@@ -3827,6 +3867,14 @@ classdef PDist < TSeries
 
         % back to the spherical frame
         [phip0,thp0,vp0] = cart2sph(vxp0,vyp0,vzp0);
+
+        % phip0 is now distributed in [-pi,pi]
+        % if angles in obj are messed up, redefine phip0 to [-3*pi/2,pi/2]
+        % (SO ELEGANT!!!)
+        if fix2ndQuadrant
+          phip0(phip0>pi/2) = phip0(phip0>pi/2)-2*pi;
+        end
+
 
         % get good indices
         idPhip = discretize(phip0,phie);
@@ -3844,13 +3892,18 @@ classdef PDist < TSeries
         end
       end
 
-      % put value in output
-      %fmeanData(isnan(fmeanData)) = 0;
-      fmean.data = fmeanData;
+      % construct object
+      fmean = PDist(obj.time,fmeanData,'omni',Ef);
 
+      
       fmean.ancillary.V0 = V0v; % add velocity to ancillary
 
-      fmean.depend{1} = Ef; % update depend variable
+      % set useful things
+      fmean.representation = obj.representation(1);
+      fmean.units = obj.units;
+      fmean.name = 'omni';
+      fmean.units = obj.units;
+
 
     end
   end
