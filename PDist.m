@@ -2496,6 +2496,14 @@ classdef PDist < TSeries
       % Example: 
       %   % Get the ion omni distribution function in the ion rest frame
       %   idistOmniRestFrame = iPDist.omni(Vi); % Vi is the ion velocity
+      %
+      %
+      % Note: When there is no full sky coverage, calling PDist.omni
+      % without a velocity does not calculate a proper spherical mean of
+      % the distribution and therefore does not conserve i.e. density. This
+      % happens for SolO distributions. Instead call, PDist.omni([0,0,0])
+      % to get the proper averaged distribution in the spacecraft frame.
+      %
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end
 
@@ -3886,9 +3894,9 @@ classdef PDist < TSeries
           % get the instrument bin indices of all MC points
           idMC = sub2ind(size(F3d),idVp(jj,:),idPhip(jj,:),idThp(jj,:));
           % sometimes there is no instrument bin corresponding to the MC
-          % point, those indices become NaNs
+          % point, those indices become NaNs but should count as zero psd
           idMC = idMC(~isnan(idMC));
-          fmeanData(it,jj) = mean(F3d(idMC));
+          fmeanData(it,jj) = sum(F3d(idMC))/nMC;
         end
       end
 
