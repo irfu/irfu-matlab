@@ -1332,9 +1332,17 @@ classdef PDist < TSeries
         if dim == 1 % 1D plane
           % v, phi, th corresponds to the bins of F3d
           if vgInputEdges
-            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges);
+            if flag_dphi && flag_dtheta
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges,'dphi',deltaphi,'dth',deltatheta);
+            else
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges);
+            end
           else
-            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
+            if flag_dphi && flag_dtheta
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'dphi',deltaphi,'dth',deltatheta);
+            else
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
+            end
           end
           all_vg(i,:) = tmpst.v; % normally vg, but if vg_edges is used, vg is overriden
           all_vg_edges(1,:) = tmpst.v_edges;
