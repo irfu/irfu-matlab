@@ -576,7 +576,7 @@ end
     % gz- data file , status=0 and downloadedFile is set to the downloaded file.
     
     status = 0; % default
-    downloadedFile = 0;
+    downloadedFile = [];
     if doDataStreaming
       % define filename
       tempFileName   = 'delme.cef';

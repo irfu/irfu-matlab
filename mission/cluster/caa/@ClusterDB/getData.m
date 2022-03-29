@@ -830,6 +830,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 elseif strcmp(quantity,'a')
   save_file = './mA.mat';
   pha = [];
+  downloadStatus = 0;
   irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
   currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));
   mkdir(tempDir); cd(tempDir);
@@ -1015,15 +1016,18 @@ elseif strcmp(quantity,'bfgm')
     end
   end
   
+  downloadStatus = 0;
   currentDir = pwd; tempDir = tempname; dat = [];
   try
     dsetName = irf_ssub('C?_CP_FGM_FULL',cl_id);
     mkdir(tempDir);
     cd(tempDir);
-    caa_download(start_time + [0 dt],dsetName,'stream')
-    cd(['CAA' filesep dsetName]);
-    d=dir('*.cef.gz');
-    dat = c_caa_cef_var_get('B_vec_xyz_gse',d.name);
+    downloadStatus = caa_download(start_time + [0 dt],dsetName,'stream')
+    if downloadStatus
+      cd(['CAA' filesep dsetName]);
+      d=dir('*.cef.gz');
+      dat = c_caa_cef_var_get('B_vec_xyz_gse',d.name);
+    end
   catch
     irf_log('dsrc',irf_ssub('Error downloading B from CAA',cl_id))
   end
