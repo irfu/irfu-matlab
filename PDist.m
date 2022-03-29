@@ -3679,6 +3679,8 @@ classdef PDist < TSeries
       nargs = length(args);
 
       inpE = 0; % default use obj energy table
+      inpPhi = 0; % default assume equally-sized bins in angle
+      inpTh = 0;
       have_options = nargs > 1;
       while have_options
         switch(lower(args{1}))
@@ -3693,6 +3695,22 @@ classdef PDist < TSeries
         end
         if isempty(args), break, end
       end
+
+      % handle angles
+      % check if obj has dphi, dth
+      if isfield(obj.ancillary,'delta_phi_plus')
+        % fine to have both plus and minus in if statement because only
+        % having one makes no sense
+        dPhi_plus = obj.ancillary.delta_phi_plus*pi/180; % in radians
+        dPhi_minus = obj.ancillary.delta_phi_minus*pi/180; 
+        inpPhi = 1;
+      end
+      if isfield(obj.ancillary,'delta_theta_plus')
+        dTh_plus = obj.ancillary.delta_theta_plus*pi/180; % in radians
+        dTh_minus = obj.ancillary.delta_theta_minus*pi/180;
+        inpTh = 1;
+      end
+
 
       % units and constants
       u = irf_units;
@@ -3772,9 +3790,13 @@ classdef PDist < TSeries
       else
         flipTheta = 0;
       end
-
-      dth = median(diff(th));
-      the = [th-dth/2,th(end)+dth/2]; % [radians]
+      if inpTh
+        % ensure row vector
+        the = [th-dTh_minus(:)',th(end)+dTh_plus(end)]; % [radians]
+      else
+        dth = median(diff(th)); % assume same size
+        the = [th-dth/2,th(end)+dth/2]; % [radians]
+      end
 
       % If not set, energy table is the same as first in input distribution 
       if ~ inpE
@@ -3839,7 +3861,7 @@ classdef PDist < TSeries
           phi = double(obj.depend{2});
         end
         phi = phi-180; 
-        phi = phi*pi/180; % in radians (prob fine if outside [-pi,pi])
+        phi = phi*pi/180; % in radians (can be outside [-pi,pi])
 
         % check phi angles (hopefully not slow)
         if ~issorted(phi)
@@ -3851,7 +3873,7 @@ classdef PDist < TSeries
         % special case for SolO where phi at this stage can be less than
         % -pi because azimuth is defined between [-180,180] degrees unlike
         % for MMS where it is defined in [0,360] degrees.
-        % If this happens put a flag to fix the angles ni the -x,+y (second)
+        % If this happens put a flag to fix the angles in the -x,+y (second)
         % quadrant
         if numel(find(phi<-pi))>0
           if ~numel(find(phi>pi/2))==0 % can't have more than 2 pi coverage
@@ -3862,10 +3884,14 @@ classdef PDist < TSeries
         else
           fix2ndQuadrant = 0;
         end
-
-        dphi = median(diff(phi));
-        % edges of bins
-        phie = [phi-dphi/2,phi(end)+dphi/2];
+        
+        % edges of phi bins
+        if inpPhi
+          phie = [phi-dPhi_minus(:)',phi(end)+dPhi_plus(end)];
+        else
+          dphi = median(diff(phi));
+          phie = [phi-dphi/2,phi(end)+dphi/2];
+        end
 
         % ---------------- grid part ----------------
         % velocities of mc points in desired frame
