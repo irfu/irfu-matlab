@@ -123,7 +123,7 @@
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
  if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
 
-2020-08-25T03:00:00Z 2020-08-25T05:59:59Z 24  % force MS offsets
+2020-08-25T00:00:00Z 2020-08-25T05:59:59Z 24  % force MS offsets
  [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
  if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
