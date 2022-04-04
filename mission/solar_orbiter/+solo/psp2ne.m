@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2022-04-04T10:58:00';
+codeVerStr = '2022-04-04T16:55:00';
 
 
 % Based on data from 2020-04-07
@@ -120,74 +120,80 @@ NeScp.data = exp(real(CalR.x.data).*NeScp.data + real(CalR.y.data));
 
 %Calibration intervals with 2 fits (i.e when CalR is complex)
 fit2_time = Cal.time(imag(Cal.data(:,1)) ~= 0);
+
+%if the input is before '2021-02-02T00:00:00Z', intervals with 2 fits are
+%not needed and the following section is skipped.
+
+tl = irf_time('2021-02-02T00:00:00Z','utc>ttns');
+if PSP.time.epoch(end) > tl
 %=========================================================================
 %2 fit- interval # 1 --> '2021-02-02T00:00:00Z/2021-04-04T23:59:59Z'
 %intersection between the two fits
-y_eq = 0.7814;
-Tstart = find(NeScp.time==fit2_time(1)); Tend = find(NeScp.time==fit2_time(2));
+    y_eq = 0.7814;
+    Tstart = find(NeScp.time==fit2_time(1)); Tend = find(NeScp.time==fit2_time(2));
 
-PSP1.time = PSP.tlim(fit2_time(1:2)).time(PSP.tlim(fit2_time(1:2)).data<y_eq);
-PSP2.time = PSP.tlim(fit2_time(1:2)).time(PSP.tlim(fit2_time(1:2)).data>=y_eq);
-PSPnan.time = PSP.tlim(fit2_time(1:2)).time(isnan(PSP.tlim(fit2_time(1:2)).data));
+    PSP1.time = PSP.tlim(fit2_time(1:2)).time(PSP.tlim(fit2_time(1:2)).data<y_eq);
+    PSP2.time = PSP.tlim(fit2_time(1:2)).time(PSP.tlim(fit2_time(1:2)).data>=y_eq);
+    PSPnan.time = PSP.tlim(fit2_time(1:2)).time(isnan(PSP.tlim(fit2_time(1:2)).data));
 
-PSP1.data = PSP.tlim(fit2_time(1:2)).data(PSP.tlim(fit2_time(1:2)).data<y_eq);
-PSP2.data = PSP.tlim(fit2_time(1:2)).data(PSP.tlim(fit2_time(1:2)).data>=y_eq);
-PSPnan.data = PSP.tlim(fit2_time(1:2)).data(isnan(PSP.tlim(fit2_time(1:2)).data));
+    PSP1.data = PSP.tlim(fit2_time(1:2)).data(PSP.tlim(fit2_time(1:2)).data<y_eq);
+    PSP2.data = PSP.tlim(fit2_time(1:2)).data(PSP.tlim(fit2_time(1:2)).data>=y_eq);
+    PSPnan.data = PSP.tlim(fit2_time(1:2)).data(isnan(PSP.tlim(fit2_time(1:2)).data));
 
-CalR1.data = CalR.tlim(fit2_time(1:2)).x.data(PSP.tlim(fit2_time(1:2)).data<y_eq);
-CalR2.data = CalR.tlim(fit2_time(1:2)).y.data(PSP.tlim(fit2_time(1:2)).data>=y_eq);
+    CalR1.data = CalR.tlim(fit2_time(1:2)).x.data(PSP.tlim(fit2_time(1:2)).data<y_eq);
+    CalR2.data = CalR.tlim(fit2_time(1:2)).y.data(PSP.tlim(fit2_time(1:2)).data>=y_eq);
 
-NeScp_1 = TSeries(PSP1.time,PSP1.data);
-NeScp_2 = TSeries(PSP2.time,PSP2.data);
-NeScp_nan = TSeries(PSPnan.time,PSPnan.data);
-CalR1 = TSeries(PSP1.time,CalR1.data);
-CalR2 = TSeries(PSP2.time,CalR2.data);
-
-
-
-NeScp_1.data = exp(real(CalR1.data).*NeScp_1.data +imag(CalR1.data));
-NeScp_2.data = exp(real(CalR2.data).*NeScp_2.data +imag(CalR2.data));
+    NeScp_1 = TSeries(PSP1.time,PSP1.data);
+    NeScp_2 = TSeries(PSP2.time,PSP2.data);
+    NeScp_nan = TSeries(PSPnan.time,PSPnan.data);
+    CalR1 = TSeries(PSP1.time,CalR1.data);
+    CalR2 = TSeries(PSP2.time,CalR2.data);
 
 
-NeScp_2fits = NeScp_2.combine(NeScp_1);
-NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
-NeScp.data(Tstart:Tend) = NeScp_2fits.data;
+
+    NeScp_1.data = exp(real(CalR1.data).*NeScp_1.data +imag(CalR1.data));
+    NeScp_2.data = exp(real(CalR2.data).*NeScp_2.data +imag(CalR2.data));
+
+
+    NeScp_2fits = NeScp_2.combine(NeScp_1);
+    NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
+    NeScp.data(Tstart:Tend) = NeScp_2fits.data;
 %==============================================================================
-clear PSP1 PSP2 PSPnan CalR1 CalR2 NeScp_1 NeScp_2 y_eq NeScp_2fits Tstart Tend
+    clear PSP1 PSP2 PSPnan CalR1 CalR2 NeScp_1 NeScp_2 y_eq NeScp_2fits Tstart Tend
 %==============================================================================
 %2 fit- interval # 2 --> '2021-07-28T00:00:00Z/2021-09-04T23:59:59Z'
 %intersection between the two fits
-y_eq = 1.7180;
-Tstart = find(NeScp.time==fit2_time(3)); Tend = find(NeScp.time==fit2_time(4));
+    y_eq = 1.7180;
+    Tstart = find(NeScp.time==fit2_time(3)); Tend = find(NeScp.time==fit2_time(4));
 
-PSP1.time = PSP.tlim(fit2_time(3:4)).time(PSP.tlim(fit2_time(3:4)).data<y_eq);
-PSP2.time = PSP.tlim(fit2_time(3:4)).time(PSP.tlim(fit2_time(3:4)).data>=y_eq);
-PSPnan.time = PSP.tlim(fit2_time(3:4)).time(isnan(PSP.tlim(fit2_time(3:4)).data));
+    PSP1.time = PSP.tlim(fit2_time(3:4)).time(PSP.tlim(fit2_time(3:4)).data<y_eq);
+    PSP2.time = PSP.tlim(fit2_time(3:4)).time(PSP.tlim(fit2_time(3:4)).data>=y_eq);
+    PSPnan.time = PSP.tlim(fit2_time(3:4)).time(isnan(PSP.tlim(fit2_time(3:4)).data));
 
-PSP1.data = PSP.tlim(fit2_time(3:4)).data(PSP.tlim(fit2_time(3:4)).data<y_eq);
-PSP2.data = PSP.tlim(fit2_time(3:4)).data(PSP.tlim(fit2_time(3:4)).data>=y_eq);
-PSPnan.data = PSP.tlim(fit2_time(3:4)).data(isnan(PSP.tlim(fit2_time(3:4)).data));
+    PSP1.data = PSP.tlim(fit2_time(3:4)).data(PSP.tlim(fit2_time(3:4)).data<y_eq);
+    PSP2.data = PSP.tlim(fit2_time(3:4)).data(PSP.tlim(fit2_time(3:4)).data>=y_eq);
+    PSPnan.data = PSP.tlim(fit2_time(3:4)).data(isnan(PSP.tlim(fit2_time(3:4)).data));
 
-CalR1.data = CalR.tlim(fit2_time(3:4)).x.data(PSP.tlim(fit2_time(3:4)).data<y_eq);
-CalR2.data = CalR.tlim(fit2_time(3:4)).y.data(PSP.tlim(fit2_time(3:4)).data>=y_eq);
+    CalR1.data = CalR.tlim(fit2_time(3:4)).x.data(PSP.tlim(fit2_time(3:4)).data<y_eq);
+    CalR2.data = CalR.tlim(fit2_time(3:4)).y.data(PSP.tlim(fit2_time(3:4)).data>=y_eq);
 
-NeScp_1 = TSeries(PSP1.time,PSP1.data);
-NeScp_2 = TSeries(PSP2.time,PSP2.data);
-NeScp_nan = TSeries(PSPnan.time,PSPnan.data);
-CalR1 = TSeries(PSP1.time,CalR1.data);
-CalR2 = TSeries(PSP2.time,CalR2.data);
-
-
-
-NeScp_1.data = exp(real(CalR1.data).*NeScp_1.data +imag(CalR1.data));
-NeScp_2.data = exp(real(CalR2.data).*NeScp_2.data +imag(CalR2.data));
+    NeScp_1 = TSeries(PSP1.time,PSP1.data);
+    NeScp_2 = TSeries(PSP2.time,PSP2.data);
+    NeScp_nan = TSeries(PSPnan.time,PSPnan.data);
+    CalR1 = TSeries(PSP1.time,CalR1.data);
+    CalR2 = TSeries(PSP2.time,CalR2.data);
 
 
-NeScp_2fits = NeScp_1.combine(NeScp_2);
-NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
-NeScp.data(Tstart:Tend) = NeScp_2fits.data;
+
+    NeScp_1.data = exp(real(CalR1.data).*NeScp_1.data +imag(CalR1.data));
+    NeScp_2.data = exp(real(CalR2.data).*NeScp_2.data +imag(CalR2.data));
+
+
+    NeScp_2fits = NeScp_1.combine(NeScp_2);
+    NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
+    NeScp.data(Tstart:Tend) = NeScp_2fits.data;
 %================================================================
-
+end
 
 
 
