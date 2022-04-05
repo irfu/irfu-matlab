@@ -34,7 +34,7 @@ TstopS = Tstop.toUtc;
 TstopS = [TstopS(1:11) '00:00:00Z'];
 Tstop = EpochTT(TstopS);
 
-DT = 7200*3; % 2 hours
+DT = 21600; % 6 hour sliding window. (+-3 hours)
 nSteps =  (Tstop-Tstart)/DT;
 
 outTime = Tstart + ((1:0.5:nSteps)-0.5)*DT;
