@@ -265,6 +265,9 @@ if PSP.time.epoch(end) > tl
 %================================================================
 end
 
+timeOutsideInterval = irf_time('2021-11-22T23:59:59Z','utc>ttns');
+NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
+    
 
 
 NeScp.name = 'NeScp';
