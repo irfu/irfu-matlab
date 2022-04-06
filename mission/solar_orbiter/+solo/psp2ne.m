@@ -102,7 +102,7 @@ Cal = Cal.combine(CalEntry);
 
 CalEntry = irf.ts_vec_xy(...
   irf.tint('2021-07-28T00:00:00Z/2021-09-04T23:59:50Z'),...
-  repmat([0.7042 + 3.3576i  0.1229 + 4.3527i],2,1)); 
+  repmat([0.7812 + 3.3793i  0.3953 + 3.6551i],2,1)); 
 Cal = Cal.combine(CalEntry);
 
 
@@ -128,21 +128,41 @@ tl = irf_time('2021-02-02T00:00:00Z','utc>ttns');
 if PSP.time.epoch(end) > tl
 %=========================================================================
 %2 fit- interval # 1 --> '2021-02-02T00:00:00Z/2021-04-04T23:59:59Z'
-%intersection between the two fits
-    y_eq = 0.7814;
-    Tstart = find(NeScp.time==fit2_time(1)); Tend = find(NeScp.time==fit2_time(2));
 
+
+    %Intersection of the 2 fits
+    y_eq = 0.7814;
+    
+    %Time interval for the fit with 2 coefficients #1
+    Tstart = find(NeScp.time==fit2_time(1)); Tend = find(NeScp.time==fit2_time(2));
+    if isempty(Tend)
+        Tend = length(PSP.time);
+    end
+    
+    %Create a vector with time values with fit 1 (PSP1) and a vector with values
+    %with fit 2 (PSP2) based on the intersection point y_eq
     PSP1.time = PSP.tlim(fit2_time(1:2)).time(PSP.tlim(fit2_time(1:2)).data<y_eq);
     PSP2.time = PSP.tlim(fit2_time(1:2)).time(PSP.tlim(fit2_time(1:2)).data>=y_eq);
-    PSPnan.time = PSP.tlim(fit2_time(1:2)).time(isnan(PSP.tlim(fit2_time(1:2)).data));
+   
 
+    %Create a vector with data values with fit 1 (PSP1) and a vector with values
+    %with fit 2 (PSP2) based on the intersection point y_eq
     PSP1.data = PSP.tlim(fit2_time(1:2)).data(PSP.tlim(fit2_time(1:2)).data<y_eq);
     PSP2.data = PSP.tlim(fit2_time(1:2)).data(PSP.tlim(fit2_time(1:2)).data>=y_eq);
+    
+    %Create a vector with NAN values and their times that will be incorporated in the final
+    %TSeries to maintain the same length as the input
+    PSPnan.time = PSP.tlim(fit2_time(1:2)).time(isnan(PSP.tlim(fit2_time(1:2)).data));
     PSPnan.data = PSP.tlim(fit2_time(1:2)).data(isnan(PSP.tlim(fit2_time(1:2)).data));
-
+    
+    
+    %Create a vector with the coefficient values for the 2 fits based on
+    %the intersection point y_eq
     CalR1.data = CalR.tlim(fit2_time(1:2)).x.data(PSP.tlim(fit2_time(1:2)).data<y_eq);
     CalR2.data = CalR.tlim(fit2_time(1:2)).y.data(PSP.tlim(fit2_time(1:2)).data>=y_eq);
 
+    
+    %Convert the vectors to TSeries
     NeScp_1 = TSeries(PSP1.time,PSP1.data);
     NeScp_2 = TSeries(PSP2.time,PSP2.data);
     NeScp_nan = TSeries(PSPnan.time,PSPnan.data);
@@ -150,33 +170,67 @@ if PSP.time.epoch(end) > tl
     CalR2 = TSeries(PSP2.time,CalR2.data);
 
 
-
+    %Perform the 2 fits (above and below the intersection point)
     NeScp_1.data = exp(real(CalR1.data).*NeScp_1.data +imag(CalR1.data));
     NeScp_2.data = exp(real(CalR2.data).*NeScp_2.data +imag(CalR2.data));
 
-
-    NeScp_2fits = NeScp_2.combine(NeScp_1);
-    NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
+    
+    %Check if the vectors are empty (i.e. 2 fits are not needed)
+    if ~isempty(NeScp_1) && ~isempty(NeScp_2)
+        NeScp_2fits = NeScp_2.combine(NeScp_1);
+    elseif ~isempty(NeScp_1) && isempty(NeScp_2)
+        NeScp_2fits = NeScp_1;
+    elseif  ~isempty(NeScp_2) && isempty(NeScp_1)
+       NeScp_2fits = NeScp_2;
+    elseif isempty(NeScp_1) && isempty(NeScp_2)
+        NeScp_2fits = NeScp(Tstart:Tend);
+    end
+    
+    %Check NANs to keep the same length of NeScp as the original
+    if ~isempty(NeScp_nan)
+        NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
+    end
+    
+    %Incorporate the fitted values with 2 coefficients to the rest of the
+    %data
     NeScp.data(Tstart:Tend) = NeScp_2fits.data;
+    
+    
 %==============================================================================
     clear PSP1 PSP2 PSPnan CalR1 CalR2 NeScp_1 NeScp_2 y_eq NeScp_2fits Tstart Tend
 %==============================================================================
 %2 fit- interval # 2 --> '2021-07-28T00:00:00Z/2021-09-04T23:59:59Z'
-%intersection between the two fits
-    y_eq = 1.7180;
-    Tstart = find(NeScp.time==fit2_time(3)); Tend = find(NeScp.time==fit2_time(4));
 
+    %Intersection of the 2 fits
+    y_eq = 1.7180;
+    
+    %Time interval for the fit with 2 coefficients #2
+    Tstart = find(NeScp.time==fit2_time(3)); Tend = find(NeScp.time==fit2_time(4));
+    if isempty(Tend)
+        Tend = length(PSP.time);
+    end
+    
+    %Create a vector with time values with fit 1 (PSP1) and a vector with values
+    %with fit 2 (PSP2) based on the intersection point y_eq
     PSP1.time = PSP.tlim(fit2_time(3:4)).time(PSP.tlim(fit2_time(3:4)).data<y_eq);
     PSP2.time = PSP.tlim(fit2_time(3:4)).time(PSP.tlim(fit2_time(3:4)).data>=y_eq);
-    PSPnan.time = PSP.tlim(fit2_time(3:4)).time(isnan(PSP.tlim(fit2_time(3:4)).data));
-
+    
+    %Create a vector with data values with fit 1 (PSP1) and a vector with values
+    %with fit 2 (PSP2) based on the intersection point y_eq
     PSP1.data = PSP.tlim(fit2_time(3:4)).data(PSP.tlim(fit2_time(3:4)).data<y_eq);
     PSP2.data = PSP.tlim(fit2_time(3:4)).data(PSP.tlim(fit2_time(3:4)).data>=y_eq);
+    
+    %Create a vector with NAN values and their times that will be incorporated in the final
+    %TSeries to maintain the same length as the input
     PSPnan.data = PSP.tlim(fit2_time(3:4)).data(isnan(PSP.tlim(fit2_time(3:4)).data));
+    PSPnan.time = PSP.tlim(fit2_time(3:4)).time(isnan(PSP.tlim(fit2_time(3:4)).data));
 
+    %Create a vector with the coefficient values for the 2 fits based on
+    %the intersection point y_eq
     CalR1.data = CalR.tlim(fit2_time(3:4)).x.data(PSP.tlim(fit2_time(3:4)).data<y_eq);
     CalR2.data = CalR.tlim(fit2_time(3:4)).y.data(PSP.tlim(fit2_time(3:4)).data>=y_eq);
 
+    %Convert the vectors to TSeries
     NeScp_1 = TSeries(PSP1.time,PSP1.data);
     NeScp_2 = TSeries(PSP2.time,PSP2.data);
     NeScp_nan = TSeries(PSPnan.time,PSPnan.data);
@@ -184,13 +238,29 @@ if PSP.time.epoch(end) > tl
     CalR2 = TSeries(PSP2.time,CalR2.data);
 
 
-
+    %Perform the 2 fits (above and below the intersection point)
     NeScp_1.data = exp(real(CalR1.data).*NeScp_1.data +imag(CalR1.data));
     NeScp_2.data = exp(real(CalR2.data).*NeScp_2.data +imag(CalR2.data));
 
 
-    NeScp_2fits = NeScp_1.combine(NeScp_2);
-    NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
+    %Check if the vectors are empty (i.e. 2 fits are not needed)
+    if ~isempty(NeScp_1) && ~isempty(NeScp_2)
+        NeScp_2fits = NeScp_2.combine(NeScp_1);
+    elseif ~isempty(NeScp_1) && isempty(NeScp_2)
+        NeScp_2fits = NeScp_1;
+    elseif  ~isempty(NeScp_2) && isempty(NeScp_1)
+       NeScp_2fits = NeScp_2;
+    elseif isempty(NeScp_1) && isempty(NeScp_2)
+        NeScp_2fits = NeScp(Tstart:Tend);
+    end
+    
+    %Check NANs to keep the same length of NeScp as the original
+    if ~isempty(NeScp_nan)
+        NeScp_2fits = NeScp_2fits.combine(NeScp_nan);
+    end
+    
+    %Incorporate the fitted values with 2 coefficients to the rest of the
+    %data
     NeScp.data(Tstart:Tend) = NeScp_2fits.data;
 %================================================================
 end
