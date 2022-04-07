@@ -204,6 +204,22 @@ end
 % Returned structure
 %
 
+if (ispc)
+% PC: set characterset to UTF8 before MATLAB 2021a versions 
+  if (cstrcmp(version('-release'), '2021a') < 0)
+    if (cstrcmp(feature('DefaultCharacterSet'), 'UTF-8') ~= 0)
+      feature('DefaultCharacterSet', 'UTF8');
+    end
+  end
+elseif (ismac)
+% Mac: set characterset to UTF8 before MATLAB 2020a versions 
+  if (cstrcmp(version('-release'), '2020a') < 0)
+    if (cstrcmp(feature('DefaultCharacterSet'), 'UTF-8') ~= 0)
+      feature('DefaultCharacterSet', 'UTF8');
+    end
+  end
+end
+
 info1.Filename = '';
 info1.FileModDate = '';
 info1.FileSize = '';
@@ -216,7 +232,7 @@ info1.Variables = {};
 info1.GlobalAttributes = [];
 info1.VariableAttributes = [];
 info1.LibVersion = '';
-info1.PatchVersion = '3.8.0.0';
+info1.PatchVersion = '3.8.1.0';
 info2.Variables = {};
 info2.VariableAttributes = [];
 args.VarStruct = false;
@@ -643,3 +659,14 @@ else
       ctype = 'Gzip';
   end 
 end
+
+
+function c = cstrcmp(a,b)
+% c style strcmp. No type checks, use only strings and char arrays.
+if strcmp(a,b)
+    c=0;
+else
+    [idx,idx]=sort({char(a),char(b)});
+    c=idx(1)-idx(2);
+end
+

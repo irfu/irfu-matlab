@@ -1,5 +1,5 @@
-Directory/MATLAB package for code related to official quicklooks/summary plots.
+Directory for MATLAB code related to software "BIA_QL3" for generating official BIAS quicklooks/summary plots.
+The software is delivered to ROC/LESIA for execution there.
 
-NOTE: According to ROC (Milan Maksimovic, LESIA)
-    "Summary Plot" (SP) = Plot which summarizes the content of a single dataset
-    "Quicklook"         = Plot which summarizes data for entire instrument.
+
+See irfu-matlab/mission/solar_orbiter/bia_ql3/README.TXT

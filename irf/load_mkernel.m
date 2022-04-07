@@ -107,13 +107,13 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
   % Default names for "flown" and "predicted" kernels, (each mission have
   % their own naming standard).
   flown.rosetta          = 'ROS_OPS_*.TM'; % Rosetta flown mk name standard
-  flown.juice            = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
+  flown.juice            = 'juice_crema_5_0b23_1.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
   flown.bepicolombo      = 'bc_ops_*.tm'; % BepiColombo flown
   flown.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   flown.solarorbiter     = 'solo_ANC_soc-flown-mk_v*.tm'; % SolO flown
   
   pred.rosetta           = flown.rosetta; % Rosetta EOL, no more predicted
-  pred.juice             = 'juice_crema_4_2_gco_n56_pp5_q19_ops.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
+  pred.juice             = 'juice_crema_5_0b23_1.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
   pred.bepicolombo       = 'bc_plan_*.tm'; % BepiColombo predicted
   pred.parkersolarprobe  = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   pred.solarorbiter      = 'solo_ANC_soc-pred-mk_v*.tm'; % SolO predicted

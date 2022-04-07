@@ -31,6 +31,7 @@ function particlemoments = psd_moments(varargin)
 
 % 1. basic
 flag_dE = 0;
+flag_dE_SameDim = 0;            % flag for dimension check of energy, energy_plus & energy_minus
 flag_same_e = 0;
 flag_innerelec = 0;
 flag_dphi = 0;
@@ -199,17 +200,24 @@ if isfield(pdist.ancillary,'delta_energy_minus') && isfield(pdist.ancillary,'del
   flag_dE = 1;
   energy_minus = pdist.ancillary.delta_energy_minus;
   energy_plus = pdist.ancillary.delta_energy_plus;
+  % check energy & energy_minus & energy_plus dimensions
+  energy_size = size(energy);
+  energy_minus_size = size(energy_minus);
+  energy_plus_size = size(energy_plus);
+  if isequal(energy_size, energy_minus_size) && isequal(energy_size, energy_plus_size)
+      flag_dE_SameDim = 1;      % same dimensions goto Line 230 section. 
+  end
 end
 
 % Calculate speed widths associated with each energy channel.
 energycorr = energy - SCpot.data*ones(size(energy(1,:)));
 v = real(sqrt(2*qe*(energycorr)/pmass));
-if flag_same_e && flag_dE
-  energyupper = energy + ones(size(pdist.time))*energy_plus';
-  energylower = energy - ones(size(pdist.time))*energy_minus';
+if flag_same_e && flag_dE && ~flag_dE_SameDim
+  energyupper = energy + ones(size(pdist.time)).*energy_plus;
+  energylower = energy - ones(size(pdist.time)).*energy_minus;
   vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
   vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
-elseif flag_same_e && ~flag_dE
+elseif flag_same_e && ~flag_dE && ~flag_dE_SameDim
   temp0 = 2*energy(:,1)-energy(:,2);
   tempend = 2*energy(:,end)-energy(:,end-1);
   energyall = [temp0 energy tempend];
@@ -218,12 +226,12 @@ elseif flag_same_e && ~flag_dE
   energylower = 10.^(log10(energy-diffenall(:,1:end-1)/2));
   vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
   vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
-elseif ~flag_same_e && flag_dE
-	energyupper = energy + energy_plus;
-  energylower = energy - energy_minus;
-  vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
-  vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
-elseif ~flag_same_e && ~flag_dE
+elseif flag_same_e && flag_dE && flag_dE_SameDim
+    energyupper = energy + energy_plus;
+    energylower = energy - energy_minus;
+    vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
+    vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
+elseif ~flag_same_e && ~flag_dE && ~flag_dE_SameDim
   energy0 = pdist.ancillary.energy0;
   energy1 = pdist.ancillary.energy1;
   if size(energy1,2) == 1

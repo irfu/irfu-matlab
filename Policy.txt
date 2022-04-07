@@ -3,7 +3,7 @@ Writing code for irfu-matlab
 
 Coding style
 ------------
-1. According to http://www.datatool.com/prod02.htm
+1. According to https://web.archive.org/web/20210424065750/http://www.datatool.com/downloads/matlab_style_guidelines.pdf
 2. Help follows matlab style, see irf_template
 
 Git

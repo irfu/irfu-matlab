@@ -276,7 +276,8 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2',...
   'Omnifluxion_epd_feeps_brst_l2', 'Omnifluxelectron_epd_feeps_brst_l2', ...
   'Omnifluxion_epd_feeps_srvy_l2', 'Omnifluxelectron_epd_feeps_srvy_l2', ...
-  'Omnifluxion_epd_eis_brst_l2', 'Omnifluxion_epd_eis_srvy_l2' }; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Omnifluxproton_epd_eis_brst_l2', 'Omnifluxoxygen_epd_eis_brst_l2',...
+  'Omnifluxproton_epd_eis_srvy_l2','Omnifluxoxygen_epd_eis_srvy_l2' }; % XXX THESE MUST BE THE SAME VARS AS BELOW
 
 if strcmp(varStr,'vars') % collect all vars, for testing
   res = vars;
@@ -683,7 +684,7 @@ switch Vr.inst
     % Some restructuring to include spectrograms
     % This could also be done in splitVs.
     all_ions = {'hplus','heplus','heplusplus','oplus'};
-    ion_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_ions);
+    ion_index = cellfun(@(s) ~isempty(strfind([Vr.param '_'], [s '_'])), all_ions);
     ion = all_ions{find(ion_index)};
     param = extractBefore(Vr.param,ion);
     
@@ -807,7 +808,7 @@ switch Vr.inst
     dsetName = ['mms' mmsIdS '_' extractAfter(Vr.inst,'_') '_' Vr.tmmode '_' Vr.lev '_' species];
     res = get_ts('feeps_omni');
   case 'epd_eis'
-    all_species = {'ion','electron'};
+    all_species = {'proton','oxygen','electron'};
     species_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_species);
     species = all_species{find(species_index)};
     param = extractBefore(Vr.param,species);
@@ -1042,9 +1043,9 @@ end
         for iSen = 0:5
           switch Vr.tmmode
             case 'brst'
-              pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_P4_flux_t' num2str(iSen)];
+              pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_P4_flux_t' num2str(iSen)];
             case 'srvy'
-              pref = ['mms' mmsIdS '_epd_eis_phxtof_proton_P4_flux_t' num2str(iSen)];
+              pref = ['mms' mmsIdS '_epd_eis_phxtof_' species '_P4_flux_t' num2str(iSen)];
             otherwise, error('invalid mode')
           end
           tmpvar = mms.db_get_ts(dsetName,pref,Tint);
@@ -1052,13 +1053,13 @@ end
             EISdpf{iSen+1} = comb_ts(tmpvar);
             switch Vr.tmmode
               case 'brst'
-                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy']);
-                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
-                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_energy']);
+                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
               case 'srvy'
-                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy']);
-                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dminus']);
-                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_proton_t' num2str(iSen) '_energy_dplus']);
+                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy']);
+                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
               otherwise, error('invalid mode')
             end
           end
@@ -1195,7 +1196,8 @@ hpcaParamSpec = {'Omnifluxoplus','Omnifluxhplus','Omnifluxheplus','Omnifluxheplu
 hpcaParamsTens1 = {'Vhplus','Vheplus','Vheplusplus','Voplus'};
 hpcaParamsTens2 = {'Phplus','Pheplus','Pheplusplus','Poplus',...
   'Thplus','Theplus','Theplusplus','Toplus'};
-feepsParamsScal = {'Omnifluxion','Omnifluxelectron'};
+feepsParamsScal = {'Omnifluxproton','Omnifluxoxygen','Omnifluxelectron'};
+eisParamsScal = {'Omnifluxion'};
 
 
 param = tk{1};
@@ -1209,7 +1211,7 @@ switch param
     tensorOrder = 1;
   case {'Pi', 'partPi', 'Pe', 'partPe', 'Ti', 'partTi', 'Te', 'partTe'}
     tensorOrder = 2;
-  case {hpcaParamsScal{:},hpcaParamSpec{:},feepsParamsScal{:}}
+  case {hpcaParamsScal{:},hpcaParamSpec{:},feepsParamsScal{:},eisParamsScal{:}}
     tensorOrder = 0;
   case hpcaParamsTens1
     tensorOrder = 1;
