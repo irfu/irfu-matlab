@@ -1022,7 +1022,7 @@ elseif strcmp(quantity,'bfgm')
     dsetName = irf_ssub('C?_CP_FGM_FULL',cl_id);
     mkdir(tempDir);
     cd(tempDir);
-    downloadStatus = caa_download(start_time + [0 dt],dsetName,'stream')
+    downloadStatus = caa_download(start_time + [0 dt],dsetName,'stream');
     if downloadStatus
       cd(['CAA' filesep dsetName]);
       d=dir('*.cef.gz');
