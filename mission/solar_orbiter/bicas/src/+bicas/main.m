@@ -20,10 +20,11 @@
 %
 % ARGUMENTS
 % =========
-% varargin: This function expects exactly the CLI arguments submitted to the
-%           bash launcher script as a sequence of MATLAB strings. This function
-%           therefore expects the arguments defined in the RCS ICD and possibly
-%           additional inoffical arguments.
+% varargin
+%       This function expects exactly the CLI arguments submitted to the bash
+%       launcher script as a sequence of MATLAB strings. This function therefore
+%       expects the arguments defined in the RCS ICD and possibly additional
+%       inoffical arguments.
 % Notes:
 % - The official parameter syntax for S/W modes must be in agreement with
 %   "roc_sw_descriptor.js" as specified by the RCS ICD.
@@ -121,13 +122,21 @@ function errorCode = main( varargin )
         %     bicas.Logger.log/logf.
         %========================================================================
         irf('check_path');
-        irf('check_os');              % Maybe not strictly needed.
-        irf('matlab');
-        irf('cdf_leapsecondstable');
-        irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
-
-    
         
+        % Maybe not strictly needed.
+        % NOTE: Creates ~/.matlab_datastore_<hostname>
+        irf('check_os');
+        % NOTE: Creates ~/.matlab_datastore_<hostname>
+        irf('matlab');
+        % NOTE: Creates ~/.matlab_datastore_<hostname>
+        % NOTE: Sets environment variable CDF_LEAPSECONDSTABLE if it has not
+        %       already been set.
+        irf('cdf_leapsecondstable');
+        % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
+        irf('version')
+
+
+
         % Default error code (i.e. no error).
         errorCode = bicas.constants.EMIDP_2_INFO('NoError').errorCode;
         main_without_error_handling(varargin, L);

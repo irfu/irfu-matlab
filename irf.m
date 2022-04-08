@@ -333,7 +333,7 @@ switch lower(action)
     end
     
   case 'check_os'
-    % NASA's SPDF cdf patch use complied mex files. For irfu-matlab only
+    % NASA's SPDF cdf patch use compiled mex files. For irfu-matlab only
     % Linux, Mac and Windows (all of which 64 bit) OS are included.
     switch(computer)
       case({'GLNXA64','PCWIN64','MACI64'})
