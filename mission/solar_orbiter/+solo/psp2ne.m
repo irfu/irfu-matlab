@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2022-04-04T16:55:00';
+codeVerStr = '2022-04-08T16:45:00';
 
 
 % Based on data from 2020-04-07
@@ -121,11 +121,9 @@ NeScp.data = exp(real(CalR.x.data).*NeScp.data + real(CalR.y.data));
 %Calibration intervals with 2 fits (i.e when CalR is complex)
 fit2_time = Cal.time(imag(Cal.data(:,1)) ~= 0);
 
-%if the input is before '2021-02-02T00:00:00Z', intervals with 2 fits are
-%not needed and the following section is skipped.
+checkInterval_1 = PSP.tlim(fit2_time(1:2));
 
-tl = irf_time('2021-02-02T00:00:00Z','utc>ttns');
-if PSP.time.epoch(end) > tl
+if ~isempty(checkInterval_1)
 %=========================================================================
 %2 fit- interval # 1 --> '2021-02-02T00:00:00Z/2021-04-04T23:59:59Z'
 
@@ -134,10 +132,9 @@ if PSP.time.epoch(end) > tl
     y_eq = 0.7814;
     
     %Time interval for the fit with 2 coefficients #1
-    Tstart = find(NeScp.time==fit2_time(1)); Tend = find(NeScp.time==fit2_time(2));
-    if isempty(Tend)
-        Tend = length(PSP.time);
-    end
+    Tstart = find(NeScp.time==checkInterval_1.time(1)); 
+    Tend = find(NeScp.time==checkInterval_1.time(end));
+
     
     %Create a vector with time values with fit 1 (PSP1) and a vector with values
     %with fit 2 (PSP2) based on the intersection point y_eq
@@ -195,20 +192,26 @@ if PSP.time.epoch(end) > tl
     %data
     NeScp.data(Tstart:Tend) = NeScp_2fits.data;
     
-    
+end
+
+
+checkInterval_2 = PSP.tlim(fit2_time(3:4));
+
+if ~isempty(checkInterval_2)
 %==============================================================================
     clear PSP1 PSP2 PSPnan CalR1 CalR2 NeScp_1 NeScp_2 y_eq NeScp_2fits Tstart Tend
 %==============================================================================
+
+
 %2 fit- interval # 2 --> '2021-07-28T00:00:00Z/2021-09-04T23:59:59Z'
 
     %Intersection of the 2 fits
     y_eq = 1.7180;
     
     %Time interval for the fit with 2 coefficients #2
-    Tstart = find(NeScp.time==fit2_time(3)); Tend = find(NeScp.time==fit2_time(4));
-    if isempty(Tend)
-        Tend = length(PSP.time);
-    end
+    Tstart = find(NeScp.time==checkInterval_2.time(1)); 
+    Tend = find(NeScp.time==checkInterval_2.time(end));
+
     
     %Create a vector with time values with fit 1 (PSP1) and a vector with values
     %with fit 2 (PSP2) based on the intersection point y_eq
