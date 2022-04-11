@@ -120,7 +120,8 @@ classdef mms_edp_Sweep < handle
         tmp.iPh = NaN; % Old original "iPh" value
         tmp.iPh_knee = NaN; % New knee current value, new "2021 iPh"
         tmp.impedance = NaN;
-        tmp.optimal_impedance = NaN;
+        tmp.optimal_bias = NaN;
+        tmp.optimal_gradient = NaN;
         tmp.phase = NaN;
         tmp.phase_knee = NaN;
         tmp.type = type;
@@ -522,7 +523,7 @@ classdef mms_edp_Sweep < handle
             biasGroups=findgroups(biasOverKnee);
             averageVoltages=splitapply(@mean, voltageOverKnee, biasGroups);
             [optimalGradient, optIndex] = max(gradient(biasForGradient, averageVoltages));
-            optimalBias=biasForGradient(optIndex);
+            optimalBias = -biasForGradient(optIndex);
           end
         else
           % Unsupported type "00" or entirely saturated (e.g. MMS2 sdp2
