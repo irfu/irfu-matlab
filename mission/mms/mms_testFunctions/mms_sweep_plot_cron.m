@@ -100,6 +100,8 @@ for iSc = 1:4
   c_eval('S.p?_impedance_ts=irf.ts_scalar(p?_time,[sObj.p?.impedance]);', 1:6); % TSeries of impedance
   c_eval('S.p?_iPh_ts=irf.ts_scalar(p?_time,[sObj.p?.iPh]);', 1:6); % TSeries of iPh
   c_eval('S.p?_iPh_knee_ts=irf.ts_scalar(p?_time,[sObj.p?.iPh_knee]);', 1:6); % TSeries of iPh_knee
+  c_eval('S.p?_optimal_bias_ts=irf.ts_scalar(p?_time,[sObj.p?.optimal_bias]);', 1:6); % TSeries of optimal_bias
+  c_eval('S.p?_optimal_gradient_ts=irf.ts_scalar(p?_time,[sObj.p?.optimal_gradient]);', 1:6); % TSeries of optimal_gradient
   c_eval('S.p?_phase_ts=irf.ts_scalar(p?_time,mod([sObj.p?.phase],360));', 1:6); % TSeries of phase
   c_eval('S.p?_phase_knee_ts=irf.ts_scalar(p?_time,mod([sObj.p?.phase_knee],360));', 1:6); % TSeries of phase
   c_eval('S.p?_type_ts=irf.ts_vec_xy(p?_time, double(reshape([sObj.p?.type],2,length(sObj.p?))''));',1:6); % TSeries of type ('--' or '++' etc converted from ASCII char to double)
@@ -171,6 +173,24 @@ for iSc = 1:4
   c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 5:6);
+  close all % close plots
+
+  % "Optimal_bias" vs time
+  c_eval('iPh_optimalBias_movm?=movmedian(Sw.p?_optimal_bias_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);', 1:6);
+  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_optimal_bias_ts, irf.ts_scalar(Sw.p?_optimal_bias_ts.time, iPh_optimalBias_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
+  c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{optimal bias} vs time from sweep on probe ?.'']);', 1:6);
+  c_eval('ylabel(h?,{''I_optimal_bias'',''[nA]''});', 1:6);
+  c_eval('ylim(h?,[-55 555]);', 1:6);
+  if (plotDAC)
+    c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
+    c_eval('legend(h?,''I_{optimal bias}, sweep p?'', ''15 days moving median'', ''Commanded DAC currents'');', 1:6);
+    c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
+  else
+    c_eval('legend(h?,''I_{optimal bias}, sweep p?'', ''15 days moving median'');', 1:6);
+  end
+  c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
+  c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iOptimalVsTime_mms'',scStr,''_p?.png'']);', 1:4);
+  c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/iOptimalVsTime_mms'',scStr,''_p?.png'']);', 5:6);
   close all % close plots
 
   % impedance vs time
