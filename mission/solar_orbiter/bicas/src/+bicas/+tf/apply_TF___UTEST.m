@@ -62,7 +62,7 @@ classdef apply_TF___UTEST < matlab.unittest.TestCase
                 'tfHighFreqLimitFraction', Inf);
             
             % All three tests: No tolerance works on irony but fails in GitHub CI.
-            testCase.verifyEqual(y1B, 0*y1, 'AbsTol', 1e-15)
+            testCase.verifyEqual(y1B, 0*y1, 'AbsTol', 1e-14)
             testCase.verifyEqual(y2B, 0*y1, 'AbsTol', 1e-13)
             testCase.verifyEqual(y2,  0*y1, 'AbsTol', 1e-13)
         end
