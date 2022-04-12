@@ -517,13 +517,13 @@ classdef mms_edp_Sweep < handle
             return % return, with default NaN values (=> use fallback)
           else
             iPhKnee = -biasUniq(indIphSpread-1); % bias current just before linear part
-            biasOverKnee=bias(biasNonSatur>=(-iPhKnee)); %keeping only biases which are to be considered for radient calculation
+            biasOverKnee=biasNonSatur(biasNonSatur>=(-iPhKnee)); % keeping only biases which are to be considered for gradient calculation
             biasForGradient=unique(biasOverKnee);
-            voltageOverKnee=voltageNonSatur(1:length(biasOverKnee)); %getting the corresponding voltage values to calculate the average
+            voltageOverKnee=voltageNonSatur(1:length(biasOverKnee)); % getting the corresponding voltage values to calculate the average
             biasGroups=findgroups(biasOverKnee);
             averageVoltages=splitapply(@mean, voltageOverKnee, biasGroups);
             [optimalGradient, optIndex] = max(gradient(biasForGradient, averageVoltages));
-            optimalBias = -biasForGradient(optIndex);
+            optimalBias = biasForGradient(optIndex);
           end
         else
           % Unsupported type "00" or entirely saturated (e.g. MMS2 sdp2
