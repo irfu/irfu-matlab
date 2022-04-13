@@ -11,6 +11,8 @@ function res = get_data(varStr,Tint)
 %   'L3_rpw-bia-scpot' (alias: scpot)
 %   'L3_rpw-bia-efield_srf' (alias: E_srf)
 %   'L3_rpw-bia-efield_rtn' (alias: E_rtn)
+%   'L3_rpw-bia-efield-10-seconds_srf' (alias: E_srf_10sec)
+%   'L3_rpw-bia-efield-10-seconds_rtn' (alias: E_rtn_10sec)
 %   'L3_rpw-bia-density' (alias: Nescpot)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil) (alias: B_scm_srf)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_rtn' (alias: B_scm_rtn)
@@ -47,8 +49,8 @@ end
 % List of full variable names. Alias names not inlcluded but changed to
 % proper variable name below.
 vars = {'L2_mag-srf-normal','L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rtn-burst', ...
-  'L3_rpw-bia-scpot', 'L3_rpw-bia-efield_srf', 'L3_rpw-bia-efield_rtn', 'L3_rpw-bia-scpot', 'L3_rpw-bia-density', ...
-  'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
+  'L3_rpw-bia-scpot', 'L3_rpw-bia-efield_srf', 'L3_rpw-bia-efield_rtn','L3_rpw-bia-efield-10-seconds_srf','L3_rpw-bia-efield_rtn'...
+  'L3_rpw-bia-scpot', 'L3_rpw-bia-density', 'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
   'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
   'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
   'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
@@ -77,6 +79,8 @@ if ~ismember(varStr, vars)
     case 'scpot',      varStrNew = 'L3_rpw-bia-scpot';
     case 'e_srf',      varStrNew = 'L3_rpw-bia-efield_srf';
     case 'e_rtn',      varStrNew = 'L3_rpw-bia-efield_rtn';
+    case 'e_srf_10sec',varStrNew = 'L3_rpw-bia-efield-10-seconds_srf';    
+    case 'e_rtn_10sec',varStrNew = 'L3_rpw-bia-efield-10-seconds_rtn';   
     case 'nescpot',    varStrNew = 'L3_rpw-bia-density';
     case 'b_scm_srf',  varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_srf';
     case 'b_scm_rtn',  varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn';
