@@ -2,8 +2,8 @@
 <main xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <!--
     NOTE: XML file format is designed so that the content can be converted to a more easy-to-read HTML file using e.g. a command like
-    > xsltproc solo_ns_ops2html.xsl   solo_ns_ops.xml   >   solo_ns_ops.xml.html
-    -->
+    > xsltproc   solo_ns_ops2html.xsl   solo_ns_ops.xml   >   solo_ns_ops.xml.html
+-->
 
     <!-- NOTE: Can not get HTML element <B> to pass through XSLT yet.-->
     <description>
@@ -20,7 +20,7 @@
             2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2022-01-20, Erik P G Johansson: Should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2022-01-16 (inclusive). Only contains manually identified thuster firings.
+            2022-04-14, Erik P G Johansson: Should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2022-03-22 (inclusive). Only contains manually identified thuster firings.
         </note>
     </notesTable>
 
@@ -1079,7 +1079,102 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
-        
+
+
+
+        <event>
+            <startTimeUtc>2022-01-17T01:03:58</startTimeUtc>
+            <stopTimeUtc> 2022-01-17T01:17:17</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-01-24T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2022-01-24T01:14:26</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-01-31T01:04:24</startTimeUtc>
+            <stopTimeUtc> 2022-01-31T01:18:27</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-02-07T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2022-02-07T01:19:06</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-02-14T01:03:24</startTimeUtc>
+            <stopTimeUtc> 2022-02-14T01:14:22</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-02-21T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2022-02-21T01:14:59</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-01T07:04:28</startTimeUtc>
+            <stopTimeUtc> 2022-03-01T07:15:42</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-05T13:04:16</startTimeUtc>
+            <stopTimeUtc> 2022-03-05T13:26:37</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-11T02:39:06</startTimeUtc>
+            <stopTimeUtc> 2022-03-11T02:58:19</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-12T01:04:25</startTimeUtc>
+            <stopTimeUtc> 2022-03-12T01:16:44</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-13T02:39:24</startTimeUtc>
+            <stopTimeUtc> 2022-03-13T02:53:05</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-15T01:04:16</startTimeUtc>
+            <stopTimeUtc> 2022-03-15T01:22:22</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-16T17:34:23</startTimeUtc>
+            <stopTimeUtc> 2022-03-16T17:55:49</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Not sure. Repeats like thruster firing but more negative PSP spikes than positive. /EJ</description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-20T17:34:12</startTimeUtc>
+            <stopTimeUtc> 2022-03-20T17:52:17</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2022-03-22T01:04:27</startTimeUtc>
+            <stopTimeUtc> 2022-03-22T01:18:05</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
     </eventsTable>
 
 </main>
