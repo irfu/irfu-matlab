@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2022-04-12T15:31:00';
+codeVerStr = '2022-04-20T15:31:00';
 
 
 % Based on data from 2020-04-07
@@ -127,7 +127,7 @@ CalEntry = irf.ts_vec_xy(...
   repmat([0.7812 + 3.3793i  0.3953 + 3.6551i],2,1)); 
   
 
-PSPintersection = 1.7180; %Intersection between 2 fits
+PSPintersection = 0.7190; %Intersection between 2 fits
 checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
 
 if ~isempty(checkInterval)
@@ -145,10 +145,29 @@ Cal = Cal.combine(CalEntry);
 
 %
 CalEntry = irf.ts_vec_xy(...
-  irf.tint('2021-09-05T00:00:00Z/2021-11-22T23:59:59Z'),...
-  repmat([0.5882  3.4788],2,1)); 
+  irf.tint('2021-09-05T00:00:00Z/2021-10-23T23:59:59Z'),...
+  repmat([0.5882  3.4791],2,1)); 
 Cal = Cal.combine(CalEntry);
 
+
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2021-10-24T00:00:00Z/2021-12-31T23:59:59Z'),...
+  repmat([0.7463 + 2.7997i  0.4854 + 3.0017i],2,1)); 
+
+
+PSPintersection = 0.60113; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%
 
 %% calibrate
 CalR = Cal.resample(PSP);
@@ -158,7 +177,7 @@ NeScp = PSP;
 NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
 
 
-timeOutsideInterval = irf_time('2021-11-22T23:59:59Z','utc>ttns');
+timeOutsideInterval = irf_time('2021-12-31T23:59:59Z','utc>ttns');
 NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
     
 
@@ -187,7 +206,7 @@ function [C] = TwofitCalibration(PSPint,y_eq,CalData)
         
         
         %Merge both fits and NaNs to keep the same lenght as the input
-        %If statements added for robusteness. An error will be send if 
+        %If statements added for robustness. An error will be send if 
         %combining empty objects.
         if ~isempty(C1) && ~isempty(C2)
             C = C1.combine(C2);
