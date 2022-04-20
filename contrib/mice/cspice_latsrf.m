@@ -84,7 +84,7 @@
 %                        If multiple surfaces are specified, their names
 %                        or IDs must be separated by commas.
 %
-%                        See the Particulars section below for details
+%                        See the -Particulars section below for details
 %                        concerning use of DSK data.
 %
 %
@@ -187,11 +187,22 @@
 %                  at those coordinates having the greatest distance
 %                  from the origin of the coordinate system.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
+%
+%   1) In the following example program, a DSK file containing a
+%      type 2 segment is used to provide a plate model representation
+%      of the surface of Phobos.
+%
+%      Find the surface points on a target body corresponding to a
+%      given planetocentric longitude/latitude grid.
 %
 %      Use the meta-kernel shown below to load the required SPICE
 %      kernels.
@@ -199,7 +210,7 @@
 %
 %         KPL/MK
 %
-%         File: srfnrm_t.tm
+%         File: latsrf_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The kernels shown here should not be
@@ -222,15 +233,18 @@
 %                                             plate model
 %         \begindata
 %
-%            PATH_SYMBOLS    = 'GEN'
-%            PATH_VALUES     = '/ftp/pub/naif/generic_kernels'
+%            KERNELS_TO_LOAD = ( 'pck00010.tpc',
+%                                'phobos512.bds' )
 %
-%            KERNELS_TO_LOAD = ( '$GEN/pck/pck00010.tpc',
-%                                '$GEN/dsk/phobos/phobos512.bds' )
 %         \begintext
 %
+%         End of meta-kernel
 %
-%      function latsrf_t( meta )
+%
+%      Example code begins here.
+%
+%
+%      function latsrf_ex1()
 %
 %         %
 %         % Set target, reference frame, and epoch.
@@ -248,19 +262,19 @@
 %         %
 %         % Load the meta-kernel.
 %         %
-%         cspice_furnsh( meta )
+%         cspice_furnsh( 'latsrf_ex1.tm' )
 %
 %         %
 %         % Now generate the grid points.  We generate
 %         % points along latitude bands, working from
 %         % north to south.  The latitude range is selected
 %         % to range from +45 to -45 degrees.  Longitude
-%         % ranges from 0 to 300 degrees.  The increment
-%         % is 45 degrees for latitude and 60 degrees for
+%         % ranges from 0 to 120 degrees.  The increment
+%         % is 90 degrees for latitude and 60 degrees for
 %         % longitude.
 %         %
-%         lat = 45:-45:-45;
-%         lon = 0:60:300;
+%         lat = 45:-90:-45;
+%         lon = 0:60:120;
 %         n   = 0;
 %         grid = eye(2, numel(lat) * numel(lon) );
 %
@@ -319,7 +333,10 @@
 %
 %         cspice_kclear();
 %
-%   Matlab outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      ELLIPSOID
 %      Intercept for grid point 1:
@@ -359,45 +376,123 @@
 %         Longitude (deg):   120.000000
 %         Latitude  (deg):    45.000000
 %
-%         ...
 %
-%      DSK/UNPRIORITIZED
-%      Intercept for grid point 16:
-%        Cartesian coordinates: (-8.2374e+00,  1.5723e-15, -8.2374e+00)
+%      ELLIPSOID
+%      Intercept for grid point 4:
+%        Cartesian coordinates: ( 7.4550e+00,  0.0000e+00, -7.4550e+00)
 %        Latitudinal Coordinates:
-%         Longitude (deg):   180.000000
+%         Longitude (deg):     0.000000
 %         Latitude  (deg):   -45.000000
-%         Radius     (km):    11.649512
+%         Radius     (km):    10.542977
 %
 %        Original Grid Coordinates:
-%         Longitude (deg):   180.000000
+%         Longitude (deg):     0.000000
+%         Latitude  (deg):   -45.000000
+%
+%
+%      ELLIPSOID
+%      Intercept for grid point 5:
+%        Cartesian coordinates: ( 3.5966e+00,  6.2296e+00, -7.1933e+00)
+%        Latitudinal Coordinates:
+%         Longitude (deg):    60.000000
+%         Latitude  (deg):   -45.000000
+%         Radius     (km):    10.172847
+%
+%        Original Grid Coordinates:
+%         Longitude (deg):    60.000000
+%         Latitude  (deg):   -45.000000
+%
+%
+%      ELLIPSOID
+%      Intercept for grid point 6:
+%        Cartesian coordinates: (-3.5966e+00,  6.2296e+00, -7.1933e+00)
+%        Latitudinal Coordinates:
+%         Longitude (deg):   120.000000
+%         Latitude  (deg):   -45.000000
+%         Radius     (km):    10.172847
+%
+%        Original Grid Coordinates:
+%         Longitude (deg):   120.000000
 %         Latitude  (deg):   -45.000000
 %
 %
 %      DSK/UNPRIORITIZED
-%      Intercept for grid point 17:
-%        Cartesian coordinates: (-3.6277e+00, -6.2833e+00, -7.2553e+00)
+%      Intercept for grid point 1:
+%        Cartesian coordinates: ( 7.1817e+00,  0.0000e+00,  7.1817e+00)
 %        Latitudinal Coordinates:
-%         Longitude (deg):   240.000000
-%         Latitude  (deg):   -45.000000
-%         Radius     (km):    10.260572
+%         Longitude (deg):     0.000000
+%         Latitude  (deg):    45.000000
+%         Radius     (km):    10.156402
 %
 %        Original Grid Coordinates:
-%         Longitude (deg):   240.000000
+%         Longitude (deg):     0.000000
+%         Latitude  (deg):    45.000000
+%
+%
+%      DSK/UNPRIORITIZED
+%      Intercept for grid point 2:
+%        Cartesian coordinates: ( 3.5820e+00,  6.2042e+00,  7.1640e+00)
+%        Latitudinal Coordinates:
+%         Longitude (deg):    60.000000
+%         Latitude  (deg):    45.000000
+%         Radius     (km):    10.131412
+%
+%        Original Grid Coordinates:
+%         Longitude (deg):    60.000000
+%         Latitude  (deg):    45.000000
+%
+%
+%      DSK/UNPRIORITIZED
+%      Intercept for grid point 3:
+%        Cartesian coordinates: (-3.6854e+00,  6.3832e+00,  7.3707e+00)
+%        Latitudinal Coordinates:
+%         Longitude (deg):   120.000000
+%         Latitude  (deg):    45.000000
+%         Radius     (km):    10.423766
+%
+%        Original Grid Coordinates:
+%         Longitude (deg):   120.000000
+%         Latitude  (deg):    45.000000
+%
+%
+%      DSK/UNPRIORITIZED
+%      Intercept for grid point 4:
+%        Cartesian coordinates: ( 8.0269e+00,  0.0000e+00, -8.0269e+00)
+%        Latitudinal Coordinates:
+%         Longitude (deg):     0.000000
+%         Latitude  (deg):   -45.000000
+%         Radius     (km):    11.351730
+%
+%        Original Grid Coordinates:
+%         Longitude (deg):     0.000000
 %         Latitude  (deg):   -45.000000
 %
 %
 %      DSK/UNPRIORITIZED
-%      Intercept for grid point 18:
-%        Cartesian coordinates: ( 3.2881e+00, -5.6952e+00, -6.5762e+00)
+%      Intercept for grid point 5:
+%        Cartesian coordinates: ( 3.3336e+00,  5.7739e+00, -6.6672e+00)
 %        Latitudinal Coordinates:
-%         Longitude (deg):   300.000000
+%         Longitude (deg):    60.000000
 %         Latitude  (deg):   -45.000000
-%         Radius     (km):     9.300154
+%         Radius     (km):     9.428818
 %
 %        Original Grid Coordinates:
-%         Longitude (deg):   300.000000
+%         Longitude (deg):    60.000000
 %         Latitude  (deg):   -45.000000
+%
+%
+%      DSK/UNPRIORITIZED
+%      Intercept for grid point 6:
+%        Cartesian coordinates: (-3.7986e+00,  6.5793e+00, -7.5972e+00)
+%        Latitudinal Coordinates:
+%         Longitude (deg):   120.000000
+%         Latitude  (deg):   -45.000000
+%         Radius     (km):    10.744021
+%
+%        Original Grid Coordinates:
+%         Longitude (deg):   120.000000
+%         Latitude  (deg):   -45.000000
+%
 %
 %-Particulars
 %
@@ -442,7 +537,7 @@
 %      calling cspice_furnsh and can be unloaded by calling cspice_unload or
 %      cspice_kclear. See the documentation of cspice_furnsh for limits on
 %      numbers of loaded DSK files.
-
+%
 %      For run-time efficiency, it's desirable to avoid frequent
 %      loading and unloading of DSK files. When there is a reason to
 %      use multiple versions of data for a given target body---for
@@ -551,19 +646,183 @@
 %
 %         'DSK/UNPRIORITIZED/SURFACES = "Mars MEGDR 64 PIXEL/DEG", 3'
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine latsrf_c.
+%   1)  If the target body name input string cannot be converted to an
+%       integer ID code, the error SPICE(IDCODENOTFOUND) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   2)  If the input target body-fixed frame `fixref' is not recognized,
+%       the error SPICE(NOFRAME) is signaled by a routine in the call
+%       tree of this routine. A frame name may fail to be recognized
+%       because a required frame specification kernel has not been
+%       loaded; another cause is a misspelling of the frame name.
+%
+%   3)  If the input frame `fixref' is not centered at the target body,
+%       the error SPICE(INVALIDFRAME) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   4)  If data are not available to convert between the frame
+%       `fixref' and the frame of a DSK segment of interest, an error
+%       is signaled by a routine in the call tree of this
+%       routine.
+%
+%   5)  If the input argument `method' cannot be parsed, an error
+%       is signaled by either this routine or a routine in
+%       the call tree of this routine.
+%
+%   6)  If the computation method specifies an ellipsoidal target
+%       model, and if triaxial radii of the target body have not been
+%       loaded into the kernel pool prior to calling cspice_latsrf, an error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   7)  If the computation method specifies an ellipsoidal target
+%       model, and if any of the radii of the target body are
+%       non-positive, an error is signaled by a routine in the call
+%       tree of this routine. The target must be an extended body.
+%
+%   8)  If `method' specifies that the target surface is represented by
+%       DSK data, and no DSK files are loaded for the specified
+%       target, an error is signaled by a routine in the call tree
+%       of this routine.
+%
+%   9)  If `method' specifies that the target surface is represented
+%       by DSK data, and data representing the portion of the surface
+%       corresponding to the coordinates provided in `lonlat' are not
+%       available, an error is signaled by a routine in the call
+%       tree of this routine.
+%
+%   10) If a surface point cannot be computed because the ray
+%       corresponding to a longitude/latitude pair fails to intersect
+%       the target surface as defined by the plate model, the error
+%       SPICE(NOINTERCEPT) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   11) If the surface point corresponding to a longitude/latitude
+%       pair in `lonlat' does not have matching longitude and latitude
+%       (because it is on the opposite side of the origin), the error
+%       SPICE(SHAPENOTSUPPORTED) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   12) If the radii are not available in the kernel pool, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   13) If the target shape is "ellipsoid" and not all radii of the
+%       ellipsoid are strictly positive, the error
+%       SPICE(BADAXISLENGTH) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   14) If any of the input arguments, `method', `target', `et',
+%       `fixref' or `lonlat', is undefined, an error is signaled by
+%       the Matlab error handling system.
+%
+%   15) If any of the input arguments, `method', `target', `et',
+%       `fixref' or `lonlat', is not of the expected type, or it does
+%       not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   Appropriate kernels must be loaded by the calling program before
+%   this routine is called.
+%
+%   The following data are required:
+%
+%   -  Shape data for the target body:
+%
+%         PCK data:
+%
+%            If the target shape is modeled as an ellipsoid,
+%            triaxial radii for the target body must be loaded into
+%            the kernel pool. Typically this is done by loading a
+%            text PCK file via cspice_furnsh.
+%
+%         DSK data:
+%
+%            If the target shape is modeled by DSK data, DSK files
+%            containing topographic data for the target body must be
+%            loaded. If a surface list is specified, data for at
+%            least one of the listed surfaces must be loaded.
+%
+%   -  Target body orientation data: these may be provided in a
+%      text or binary PCK file. In some cases, target body
+%      orientation may be provided by one more more CK files. In
+%      either case, data are made available by loading the files
+%      via cspice_furnsh.
+%
+%   The following data may be required:
+%
+%   -  Frame data: if a frame definition is required to convert
+%      between the body-fixed frame of the target and the frame of
+%      a DSK segment providing topographic data, that definition
+%      must be available in the kernel pool. Typically the
+%      definition is supplied by loading a frame kernel via cspice_furnsh.
+%
+%   -  Surface name-ID associations: if surface names are specified
+%      in `method', the association of these names with their
+%      corresponding surface ID codes must be established by
+%      assignments of the kernel variables
+%
+%         NAIF_SURFACE_NAME
+%         NAIF_SURFACE_CODE
+%         NAIF_SURFACE_BODY
+%
+%      Normally these associations are made by loading a text
+%      kernel containing the necessary assignments. An example of
+%      such a set of assignments is
+%
+%         NAIF_SURFACE_NAME += 'Mars MEGDR 128 PIXEL/DEG'
+%         NAIF_SURFACE_CODE += 1
+%         NAIF_SURFACE_BODY += 499
+%
+%   -  SCLK data: if the target body's orientation is provided by
+%      CK files, an associated SCLK kernel must be loaded.
+%
+%   In all cases, kernel data are normally loaded once per program
+%   run, NOT every time this routine is called.
+%
+%-Restrictions
+%
+%   1)  This routine assumes that the origin of the body-fixed
+%       reference frame associated with the target body is located in
+%       the interior of that body.
+%
+%   2)  The results returned by this routine may not be meaningful
+%       if the target surface has multiple surface points associated
+%       with some (longitude, latitude) coordinates.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   FRAMES.REQ
 %   PCK.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 03-MAR-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited -Examples section to comply with NAIF standard. Added example's
+%       problem statement. Reduced the number of grid points to compute in
+%       code example. Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 03-MAR-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
@@ -595,8 +854,8 @@ function [srfpts] = cspice_latsrf( method, target, et, fixref, lonlat )
    %
    try
       [srfpts] = mice( 'latsrf_c', method, target, et, fixref, lonlat );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

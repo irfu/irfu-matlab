@@ -33,173 +33,285 @@
 %
 %   Given:
 %
-%      name    the matchi_c template to use when searching for variable names
-%              in the kernel pool. The characters '*' and '%' are used for the
-%              wild card string and wild card character respectively.  For
-%              details of string pattern matching see the header of the routine
-%              matchi_c.
+%      name     the template to use when searching for variable names
+%               in the kernel pool.
 %
-%              [1,m] = size(name); char = class(name)
+%               [1,c1] = size(name); char = class(name)
 %
-%      start   value for the index indicating the first component of the data
-%              vector assigned to 'name' for return (index 1 for all elements).
+%                  or
 %
-%              [1,1] = size(start); int32 = class(start)
+%               [1,1] = size(name); cell = class(name)
 %
-%      room    value specifying the maximum number of components that can
-%              return for 'name'.
+%               The characters '*' and '%' are used for the wild card string
+%               and wild card character respectively. For details of string
+%               pattern matching see the header of the CSPICE routine matchi_c.
 %
-%              [1,1] = size(room); int32 = class(room)
+%      start    value for the index indicating the first component of the data
+%               vector assigned to `name' for return (index 1 for all
+%               elements).
+%
+%               [1,1] = size(start); int32 = class(start)
+%
+%      room     value specifying the maximum number of components that can
+%               return for `name'.
+%
+%               [1,1] = size(room); int32 = class(room)
 %
 %   the call:
 %
-%      [kvars, found] = cspice_gnpool( name, start, room )
+%      [cvals, found] = cspice_gnpool( name, start, room )
 %
 %   returns:
 %
-%      kvars   the values assigned to 'name' beginning at index 'start'.
-%              'kvars' returns empty if variables described by 'name' does not
-%              exist in the kernel pool.
+%      cvals    the values assigned to `name' beginning at index `start'.
 %
-%              [n,m] = size(kvars); char = class(kvars)
+%               [n,c2] = size(cvals); char = class(cvals)
 %
-%      found   the flag indicating true if variables matching the 'name'
-%              template exist in the kernel pool, false otherwise.
+%               `cvals' returns empty if variables described by `name' does
+%               not exist in the kernel pool.
 %
-%              [1,1] = size(found); logical = class(found)
+%               n <= room, p = length of longest string in return array
+%               `cvals'.
 %
-%              N <= 'room', M = length of longest string in return
-%              array 'kvars'.
+%      found    the flag indicating true if variables matching the `name'
+%               template exist in the kernel pool, false otherwise.
 %
-%-Examples
+%               [1,1] = size(found); logical = class(found)
 %
-%   Any numerical results shown for this example may differ between
-%   platforms as the results depend on the SPICE kernels used as input
-%   and the machine specific arithmetic implementation.
-%
-%   Example(1):
-%
-%      %
-%      % Load a leapseconds kernel.
-%      %
-%      cspice_furnsh( 'standard.tm' )
-%
-%      %
-%      % A template for Jupiter kernel variables.
-%      %
-%      VAR = 'BODY599*';
-%
-%      %
-%      % Query for the variable name, return all matches from
-%      % index 1.
-%      %
-%      INDEX  = 1;
-%      ROOM   = 10;
-%
-%      [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
-%
-%      if( found )
-%
-%         n_elements = size(kervar, 1);
-%
-%         %
-%         % Output the returned variable names.
-%         %
-%         for n=1: n_elements
-%            txt = sprintf( 'Variable %d matching %s: %s', n, VAR, kervar(n,:));
-%            disp( txt )
-%         end
-%
-%      else
-%         txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
-%         disp( txt )
-%      end
-%
-%   MATLAB outputs:
-%
-%      Variable 1 matching BODY599*: BODY599_POLE_RA
-%      Variable 2 matching BODY599*: BODY599_POLE_DEC
-%      Variable 3 matching BODY599*: BODY599_PM
-%      Variable 4 matching BODY599*: BODY599_RADII
-%      Variable 5 matching BODY599*: BODY599_LONG_AXIS
-%
-%   Example(2):
-%
-%      %
-%      % Return to the array 'kervar' the names of the first
-%      % 'ROOM' pool variables. Use the * wildcard character
-%      % as a template to indicate a request for all kernel
-%      % variables.
-%      %
-%      % Return all matches from 'INDEX' 1.
-%      %
-%      INDEX  = 1;
-%      ROOM   = 10;
-%      VAR    = '*';
-%
-%      [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
-%
-%      if ( found )
-%
-%         n_elements = size(kervar, 1);
-%
-%         %
-%         % Output the returned variable names.
-%         %
-%         for n=1: n_elements
-%            txt = sprintf( 'Variable %d matching %s: %s', n, VAR, kervar(n,:));
-%            disp( txt )
-%         end
-%
-%      else
-%         txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
-%         disp( txt )
-%      end
-%
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
-%
-%   MATLAB outputs:
-%
-%      Variable 1 matching *: BODY402_PM
-%      Variable 2 matching *: BODY705_RADII
-%      Variable 3 matching *: BODY618_POLE_RA
-%      Variable 4 matching *: BODY610_PM
-%      Variable 5 matching *: BODY710_LONG_AXIS
-%      Variable 6 matching *: BODY806_PM
-%      Variable 7 matching *: BODY299_PM
-%      Variable 8 matching *: BODY705_NUT_PREC_DEC
-%      Variable 9 matching *: BODY603_RADII
-%      Variable 10 matching *: BODY805_LONG_AXIS
-%
-%   Note, the seemingly random order of the output list reflects the
-%   order used by the SPICE kernel subsystem to store/lookup the
-%   variable names.
-%
-%-Particulars
+%-Parameters
 %
 %   None.
 %
-%-Required Reading
+%-Examples
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine gnpool_c.
+%   Any numerical results shown for these examples may differ between
+%   platforms as the results depend on the SPICE kernels used as input
+%   and the machine specific arithmetic implementation.
+%
+%   1) Load a PCK kernel, create a template for Jupiter kernel
+%      variables, and after performing a query for them, output all the
+%      variable names found in the kernel pool that match that template.
+%
+%      Use the PCK kernel below to load the triaxial ellipsoidal shape
+%      model and orientation data for Jupiter.
+%
+%         pck00010.tpc
+%
+%
+%      Example code begins here.
+%
+%
+%      function gnpool_ex1()
+%
+%         %
+%         % Load a PCK kernel.
+%         %
+%         cspice_furnsh( 'pck00010.tpc' )
+%
+%         %
+%         % A template for Jupiter kernel variables.
+%         %
+%         VAR = 'BODY599*';
+%
+%         %
+%         % Query for the variable name, return all matches from
+%         % index 1.
+%         %
+%         INDEX  = 1;
+%         ROOM   = 10;
+%
+%         [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
+%
+%         if( found )
+%
+%            n_elements = size(kervar, 1);
+%
+%            %
+%            % Output the returned variable names.
+%            %
+%            for n=1: n_elements
+%               txt = sprintf( 'Variable %d matching %s: %s', n, VAR, ...
+%                              kervar(n,:));
+%               disp( txt )
+%            end
+%
+%         else
+%            txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
+%            disp( txt )
+%         end
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Variable 1 matching BODY599*: BODY599_PM
+%      Variable 2 matching BODY599*: BODY599_LONG_AXIS
+%      Variable 3 matching BODY599*: BODY599_RADII
+%      Variable 4 matching BODY599*: BODY599_NUT_PREC_DEC
+%      Variable 5 matching BODY599*: BODY599_NUT_PREC_PM
+%      Variable 6 matching BODY599*: BODY599_POLE_RA
+%      Variable 7 matching BODY599*: BODY599_POLE_DEC
+%      Variable 8 matching BODY599*: BODY599_NUT_PREC_RA
+%
+%
+%   2) Obtain from the kernel pool the names of the first
+%      10 variables stored. Use the * wildcard character
+%      as a template to indicate a request for all kernel
+%      variables.
+%
+%      Use the PCK kernel below to load the triaxial ellipsoidal shape
+%      model and orientation data for all the Solar System planets.
+%
+%         pck00010.tpc
+%
+%
+%      Example code begins here.
+%
+%
+%      function gnpool_ex2()
+%
+%         %
+%         % Load a PCK kernel.
+%         %
+%         cspice_furnsh( 'pck00010.tpc' )
+%         %
+%         % Return all matches from 'INDEX' 1.
+%         %
+%         INDEX  = 1;
+%         ROOM   = 10;
+%         VAR    = '*';
+%
+%         [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
+%
+%         if ( found )
+%
+%            n_elements = size(kervar, 1);
+%
+%            %
+%            % Output the returned variable names.
+%            %
+%            for n=1: n_elements
+%               txt = sprintf( 'Variable %d matching %s: %s', n, VAR, ...
+%                              kervar(n,:));
+%               disp( txt )
+%            end
+%
+%         else
+%            txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
+%            disp( txt )
+%         end
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Variable 1 matching *: BODY611_LONG_AXIS
+%      Variable 2 matching *: BODY4_NUT_PREC_ANGLES
+%      Variable 3 matching *: BODY604_POLE_RA
+%      Variable 4 matching *: BODY605_POLE_DEC
+%      Variable 5 matching *: BODY399_N_GEOMAG_CTR_DIPOLE_LAT
+%      Variable 6 matching *: BODY399_POLE_RA
+%      Variable 7 matching *: BODY703_NUT_PREC_PM
+%      Variable 8 matching *: BODY708_LONG_AXIS
+%      Variable 9 matching *: BODY501_NUT_PREC_RA
+%      Variable 10 matching *: BODY710_NUT_PREC_PM
+%
+%
+%      Note, the seemingly random order of the output list reflects the
+%      order used by the SPICE kernel subsystem to store/lookup the
+%      variable names.
+%
+%-Particulars
+%
+%   This routine provides the user interface for retrieving the names
+%   of kernel pool variables. This interface allows you to retrieve
+%   the names matching a template via multiple accesses. Under some
+%   circumstances this alleviates the problem of having to know in
+%   advance the maximum amount of space needed to accommodate all
+%   matching names.
+%
+%   However, this method of access does come with a price. It is
+%   always more efficient to retrieve all of the data associated with
+%   a kernel pool variable in one call than it is to retrieve it in
+%   sections.
+%
+%-Exceptions
+%
+%   1)  If the value of `room' is less than one, the error
+%       SPICE(BADARRAYSIZE) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   2)  If any of the input arguments, `name', `start' or `room', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `name', `start' or `room', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   KERNEL.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.2.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.2.0, 26-NOV-2021 (EDW) (JDR)
 %
-%      "logical" call replaced with "zzmice_logical."
+%       Changed the output argument name "kvars" to "cvals" for consistency
+%       with other routines. Corrected typo in usage message.
 %
-%      I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header to comply with NAIF standard. Added examples'
+%       problem statement and a reference to the required PCK.
 %
-%   -Mice Version 1.0.0, 15-DEC-2006, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.1.0, 12-MAR-2012 (EDW) (SCK)
+%
+%       "logical" call replaced with "zzmice_logical."
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 15-DEC-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -207,7 +319,7 @@
 %
 %-&
 
-function [kvars,found] = cspice_gnpool( name, start, room )
+function [cvals,found] = cspice_gnpool( name, start, room )
 
    switch nargin
       case 3
@@ -218,7 +330,7 @@ function [kvars,found] = cspice_gnpool( name, start, room )
 
       otherwise
 
-         error ( ['Usage: [kvars(), found] = ' ...
+         error ( ['Usage: [cvals(), found] = ' ...
                   'cspice_gnpool( `name`, start, room )' ] )
 
    end
@@ -227,15 +339,15 @@ function [kvars,found] = cspice_gnpool( name, start, room )
    % Call the MEX library.
    %
    try
-      [kvars, found] = mice( 'gnpool_c', name, start, room );
+      [cvals, found] = mice( 'gnpool_c', name, start, room );
 
       %
       % Convert the integer flags to MATLAB logicals for return to
       % the caller.
       %
       found = zzmice_logical(found);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

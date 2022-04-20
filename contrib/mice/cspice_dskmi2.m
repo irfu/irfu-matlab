@@ -1,188 +1,210 @@
 %-Abstract
 %
-%   CSPICE_DSKMI2 makes a spatial index for type 2 DSK segment.
+%   CSPICE_DSKMI2 makes spatial index for a DSK type 2 segment. The index is
+%   returned as a pair of arrays, one of type integer and one of type
+%   double-precision. These arrays are suitable for use with the DSK type 2
+%   writer cspice_dskw02.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
-%   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
+%   CALIFORNIA INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
 %   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
-%   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
-%   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
-%   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED "AS-IS"
+%   TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING ANY
+%   WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR A
+%   PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
 %   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
-%   KNOW OF THE POSSIBILITY.
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, OR NASA
+%   BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, BUT NOT
+%   LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+%   INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY AND LOST PROFITS,
+%   REGARDLESS OF WHETHER CALTECH, JPL, OR NASA BE ADVISED, HAVE
+%   REASON TO KNOW, OR, IN FACT, SHALL KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
-%   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE OF
+%   THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO INDEMNIFY
+%   CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING FROM THE
+%   ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      vrtces      is an array of coordinates of the vertices. The Ith
-%                  vertex occupies elements [1:3,I] of this array.
+%      vrtces   an array of coordinates of the vertices.
 %
-%                  [3,m] = size(vrtces); double = class(vrtces)
+%               [3,m] = size(vrtces); double = class(vrtces)
 %
-%      plates      is an array representing the triangular plates of a
-%                  shape model. The elements of `plates' are vertex
-%                  indices; vertex indices are 1-based. The vertex
-%                  indices of the Ith plate occupy elements [1:3,I] of
-%                  this array.
+%               The Ith vertex occupies elements [1:3,I] of this array.
 %
-%                  [3,n] = size(plates); int32 = class(plates)
+%      plates   an array representing the triangular plates of a
+%               shape model.
 %
-%      finscl      is the fine voxel scale.
+%               [3,n] = size(plates); int32 = class(plates)
 %
-%                  [1,1] = size(finscl); double = class(finscl)
+%               The vertex indices of the Ith plate occupy elements [1:3,I] of
+%               this array.
 %
-%                  This scale determines the edge length of the cubical
-%                  voxels comprising the fine voxel grid: the edge length
-%                  `voxsiz' is approximately
+%      finscl   the fine voxel scale.
 %
-%                      finscl * {average plate extent}
+%               [1,1] = size(finscl); double = class(finscl)
 %
-%                  where the extents of a plate are the respective
-%                  differences between the maximum and minimum
-%                  coordinate values of the plate's vertices.
+%               This scale determines the edge length of the cubical
+%               voxels comprising the fine voxel grid: the edge length
+%               `voxsiz' is approximately
 %
-%                  The relationship between `voxsiz' and the average plate
-%                  extent is approximate because the `voxsiz' is adjusted
-%                  so that each dimension of the fine voxel grid is an
-%                  integer multiple of the coarse voxel scale.
+%                  finscl * {average plate extent}
 %
-%                  See the Particulars section below for further
-%                  information on voxel scales.
+%               where the extents of a plate are the respective
+%               differences between the maximum and minimum
+%               coordinate values of the plate's vertices.
 %
-%      corscl      is the coarse voxel scale. This integer scale is the
-%                  ratio of the edge length of coarse voxels to that of
-%                  fine voxels. The coarse scale must be large enough so
-%                  that the total number of coarse voxels does not exceed
-%                  SPICE_DSK02_MAXCGR (see DSKMice02.m).
+%               The relationship between `voxsiz' and the average plate
+%               extent is approximate because the `voxsiz' is adjusted
+%               so that each dimension of the fine voxel grid is an
+%               integer multiple of the coarse voxel scale.
 %
-%                  [1,1] = size(corscl); int32 = class(corscl)
+%               See the -Particulars section below for further
+%               information on voxel scales.
 %
-%      worksz      is the second dimension of the workspace array `work'.
+%      corscl   the coarse voxel scale.
 %
-%                  [1,1] = size(worksz); int32 = class(worksz)
+%               [1,1] = size(corscl); int32 = class(corscl)
 %
-%                  `worksz' must be at least as large as the greater of
+%               This integer scale is the ratio of the edge length of coarse
+%               voxels to that of fine voxels. The coarse scale must be large
+%               enough so that the total number of coarse voxels does not
+%               exceed SPICE_DSK02_MAXCGR (see MiceDSK.m).
 %
-%                     - the number of fine voxel-plate associations
+%      worksz   the second dimension of the workspace array `work'.
 %
-%                       This number is equal to
+%               [1,1] = size(worksz); int32 = class(worksz)
 %
-%                          np * {average number of fine voxels
-%                                intersected by each plate}
+%               `worksz' must be at least as large as the greater of
 %
-%                     - the number of vertex-plate associations, if
-%                       the vertex-plate mapping is constructed.
+%                  - the number of fine voxel-plate associations
 %
-%                       This number is equal to
+%                    This number is equal to
 %
-%                          nv + ( 3 * np )
+%                       np * {average number of fine voxels
+%                             intersected by each plate}
 %
-%      voxpsz      is the size of the fine voxel-plate pointer array.
+%                  - the number of vertex-plate associations, if
+%                    the vertex-plate mapping is constructed.
 %
-%                  [1,1] = size(voxpsz); int32 = class(voxpsz)
+%                    This number is equal to
 %
-%                  This array maps fine voxels to lists of plates that
-%                  intersect those voxels. `voxpsz' must be at least as
-%                  large as
+%                       nv + ( 3 * np )
 %
-%                           3
-%                     corscl  * {number of non-empty coarse voxels}
+%      voxpsz   the size of the fine voxel-plate pointer array.
 %
-%      voxlsz      is the size of the fine voxel-plate list array.
+%               [1,1] = size(voxpsz); int32 = class(voxpsz)
 %
-%                  [1,1] = size(voxpsz); int32 = class(voxpsz)
+%               This array maps fine voxels to lists of plates that
+%               intersect those voxels. `voxpsz' must be at least as large as
 %
-%                  This array contains, for each non-empty fine voxel, the
-%                  count of plates that intersect that voxel and the
-%                  IDs of those plates. `voxlsz' must be at least as large
-%                  as
+%                        3
+%                  corscl  * {number of non-empty coarse voxels}
 %
-%                          `np' * {average number of fine voxels
-%                                intersected by each plate}
+%      voxlsz   the size of the fine voxel-plate list array.
 %
-%                      +   {number of non-empty fine voxels}
+%               [1,1] = size(voxlsz); int32 = class(voxlsz)
 %
-%      makvtl      is a logical flag that, when set to true, indicates
-%                  that a  vertex-plate association list is to be
-%                  constructed.
+%               This array contains, for each non-empty fine voxel, the
+%               count of plates that intersect that voxel and the IDs of
+%               those plates. `voxlsz' must be at least as large as
 %
-%                  [1,1] = size(makvtl); logical = class(makvtl)
+%                       `np' * {average number of fine voxels
+%                               intersected by each plate}
 %
-%                  The amount of workspace that is needed may depend on
-%                  whether a vertex-plate association list is
-%                  constructed. When this list is constructed, the size
-%                  of the integer component of the spatial index is
-%                  increased by the size of the list and the size of a
-%                  vertex-plate pointer array; the total of these sizes
-%                  is
+%                   +   {number of non-empty fine voxels}
 %
-%                     ( 2 * nv ) + ( 3 * np )
+%      makvtl   a logical flag that, when set to true, indicates that a
+%               vertex-plate association list is to be constructed.
 %
-%      spxisz      is the declared size of the output array SPAIXI.
+%               [1,1] = size(makvtl); logical = class(makvtl)
 %
-%                  [1,1] = size(voxpsz); int32 = class(voxpsz)
+%               The amount of workspace that is needed may depend on
+%               whether a vertex-plate association list is
+%               constructed. When this list is constructed, the size
+%               of the integer component of the spatial index is
+%               increased by the size of the list and the size of a
+%               vertex-plate pointer array; the total of these sizes
+%               is
 %
-%                   This size must be at least as large as the sum of
+%                  ( 2 * nv ) + ( 3 * np )
 %
-%                     - the fixed-size part of the integer component of
-%                       the index, which includes the coarse voxel grid;
-%                       this value is
+%      spxisz   the declared size of the output array `spaixi'.
 %
-%                          SPICE_DSK02_IDXFIX
+%               [1,1] = size(spxisz); int32 = class(spxisz)
 %
-%                     - the size `voxpsz' of the voxel-plate pointer array
+%               This size must be at least as large as the sum of
 %
-%                     - the size `voxlsz' of the voxel-plate association
-%                       list
+%                  - the fixed-size part of the integer component of
+%                    the index, which includes the coarse voxel grid;
+%                    this value is
 %
-%                  plus, if the vertex-plate association list is
-%                  constructed,
+%                       SPICE_DSK02_IXIFIX
 %
-%                     - the size `nv' of the vertex-plate pointer array
+%                  - the size `voxpsz' of the voxel-plate pointer array
 %
-%                     - the size of the vertex-plate association list;
-%                       this size is
+%                  - the size `voxlsz' of the voxel-plate association
+%                    list
 %
-%                          nv + ( 3 * np )
+%               plus, if the vertex-plate association list is
+%               constructed,
+%
+%                  - the size `nv' of the vertex-plate pointer array
+%
+%                  - the size of the vertex-plate association list;
+%                    this size is
+%
+%                       nv + ( 3 * np )
 %
 %   the call:
 %
-%      [spaixd, spaixi] = cspice_dskmi2( vrtces, plates, finscl, ...
-%                                        corscl, worksz, voxpsz, ...
-%                                        voxlsz, makvtl,         ...
-%                                        spaisz );
+%      [spaixd, spaixi] = cspice_dskmi2( vrtces, plates, finscl,           ...
+%                                        corscl, worksz, voxpsz,           ...
+%                                        voxlsz, makvtl, spaisz );
 %
 %   returns:
 %
 %      spaixd,
-%      spaixi      are, respectively, the double precision and integer
-%                  components of the spatial index of the segment.
+%      spaixi   respectively, the double precision and integer
+%               components of the spatial index of the segment.
 %
-%                  [p,1] = size(spaixd); double = class(spaixd)
-%                  [q,1] = size(spaixi); int32 = class(spaixi)
+%               [p,1] = size(spaixd); double = class(spaixd)
+%               [q,1] = size(spaixi); int32 = class(spaixi)
 %
-%                  `spaixd' must be declared with size at least
-%                  SPICE_DSK02_IXDFIX.
+%               `spaixd' must be declared with size at least
+%               SPICE_DSK02_IXDFIX.
 %
-%                  `spaixi' must be declared with size at least `spxisz'.
+%               `spaixi' must be declared with size at least `spxisz'.
+%
+%-Parameters
+%
+%   See the parameter definitions file
+%
+%      MiceDSK.m
+%
+%   for declarations of DSK data type 2 (plate model) parameters.
+%
+%   See the parameter definitions file
+%
+%      MiceDLA.m
+%
+%   for declarations of DLA descriptor sizes and documentation of the
+%   contents of DLA descriptors.
+%
+%   See the parameter definitions file
+%
+%      MiceDSK.m
+%
+%   for declarations of DSK descriptor sizes and documentation of the
+%   contents of DSK descriptors.
 %
 %-Examples
 %
@@ -190,25 +212,38 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
+%   1) Create a three-segment DSK file using plate model data for
+%      Phobos. Use latitudinal, rectangular, and planetodetic
+%      coordinates in the respective segments. This is not a
+%      realistic example, but it serves to demonstrate use of
+%      the supported coordinate systems.
 %
-%      function dskmi2_t
+%      Use the DSK kernel below to provide, for simplicity, the
+%      input plate and vertex data. The selected input file has one
+%      segment.
+%
+%         phobos_3_3.bds
+%
+%
+%      Example code begins here.
+%
+%
+%      function dskmi2_ex1()
 %
 %         %
 %         % MiceUser globally defines DSK parameters.
-%         % For more information, please see DSKMiceUser.m and
-%         % DSKMice02.m.
+%         % For more information, please see MiceDSK.m.
 %         %
 %         MiceUser
 %
 %         NSEG = 3;
 %
-%         cornam = { 'radius', 'Z-coordinate', 'Z-coordinate', 'altitude'};
+%         cornam = {'radius', 'Z-coordinate', 'Z-coordinate', 'altitude'};
 %
 %         %
 %         % Assign names of input and output DSK files.
 %         %
-%         indsk = '/kernels/gen/dsk/phobos_3_3.bds';
+%         indsk = 'phobos_3_3.bds';
 %         dsk   = 'phobos_3_3_3seg.bds';
 %
 %         if ( exist( dsk, 'file' ) == 2 )
@@ -267,10 +302,9 @@
 %            fprintf( 'Creating segment %d\n', segno )
 %            fprintf( 'Creating spatial index...\n' )
 %
-%            [spaixd, spaixi] = cspice_dskmi2( vrtces, plates, finscl, ...
-%                                              corscl, worksz, voxpsz, ...
-%                                              voxlsz, makvtl,         ...
-%                                              spaisz );
+%            [spaixd, spaixi] = cspice_dskmi2( vrtces, plates, finscl,     ...
+%                                              corscl, worksz, voxpsz,     ...
+%                                              voxlsz, makvtl, spaisz );
 %
 %            fprintf( 'Done.\n')
 %
@@ -365,10 +399,11 @@
 %            %
 %            % Compute plate model radius bounds.
 %            %
-%            fprintf( 'Computing %s bounds of plate set...\n', ...
+%            fprintf( 'Computing %s bounds of plate set...\n',             ...
 %                                            char(cornam(corsys)) )
 %
-%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, corsys, corpar );
+%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates,             ...
+%                                              corsys, corpar );
 %
 %            fprintf ( 'Done.\n' )
 %
@@ -377,37 +412,23 @@
 %            %
 %            fprintf( 'Writing segment...\n' )
 %
-%            cspice_dskw02( handle, ...
-%                              center, ...
-%                              surfid, ...
-%                              dclass, ...
-%                              frame,  ...
-%                              corsys, ...
-%                              corpar, ...
-%                              mncor1, ...
-%                              mxcor1, ...
-%                              mncor2, ...
-%                              mxcor2, ...
-%                              mncor3, ...
-%                              mxcor3, ...
-%                              first,  ...
-%                              last,   ...
-%                              vrtces, ...
-%                              plates, ...
-%                              spaixd,  ...
-%                              spaixi )
+%            cspice_dskw02( handle, center, surfid, dclass, frame,         ...
+%                           corsys, corpar, mncor1, mxcor1, mncor2,        ...
+%                           mxcor2, mncor3, mxcor3, first,  last,          ...
+%                           vrtces, plates, spaixd, spaixi        )
 %
 %         end
-%
-%         cspice_dascls( inhan )
-%         cspice_dskcls( handle, true )
 %
 %         %
 %         % Close the input DSK.
 %         %
 %         cspice_dascls( inhan )
+%         cspice_dskcls( handle, true )
 %
-%   MATLAB outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Reading input data...
 %      Done.
@@ -430,34 +451,216 @@
 %      Done.
 %      Writing segment...
 %
-%      After run completion, A DSK exists in the output directory.
+%
+%      Note that after run completion, a new DSK exists in the output
+%      directory.
 %
 %-Particulars
 %
+%   Users planning to create DSK files should consider whether the
+%   SPICE DSK creation utility MKDSK may be suitable for their needs.
+%
+%   This routine supports use of the DSK type 2 segment writer cspice_dskw02
+%   by creating the "spatial index" arrays required as inputs to that
+%   routine.
+%
+%   A spatial index is a group of data structures that facilitates
+%   rapid high-level computations involving sets of plates. The data
+%   structures created by this routine are aggregated into arrays
+%   of type SpiceInt and type SpiceDouble.
+%
+%
+%   Voxel grids
+%   ===========
+%
+%   A key geometric computation---probably the most important, as it
+%   serves as a foundation for other high-level computations---is
+%   finding the intersection of a ray with the plate set. DSK type 2
+%   segments use data structures called "voxel grids" as part of
+%   their indexing mechanism. There is a "coarse grid": a box that
+%   completely encloses a DSK type 2 segment's plate set, and which
+%   is composed of identically-sized cubes called "coarse voxels."
+%   Each coarse voxel in composed of smaller cubes called "fine
+%   voxels." When the term "voxel" is used without qualification, it
+%   refers to fine voxels.
+%
+%   Type 2 DSK segments contain data structures that associate plates
+%   with the fine voxels intersected by those plates. These
+%   structures enable the type 2 DSK software to rapidly find plates
+%   in a given region of space.
+%
+%   Voxel scales
+%   ============
+%
+%   There are two voxel scales:
+%
+%   -  The coarse voxel scale is the integer ratio of the
+%      edge length of a coarse voxel to the edge length of
+%      a fine voxel
+%
+%   -  The fine voxel scale is the double precision ratio
+%      of the edge length of a fine voxel to the average
+%      extent of the plates in the input plate set. "Extents"
+%      of a plate are the absolute values of the differences
+%      between the respective maximum and minimum X, Y, and Z
+%      coordinates of the plate's vertices.
+%
+%   Voxel scales determine the resolution of the voxel grid.
+%   Voxel scales must be chosen to satisfy size constraints and
+%   provide reasonable plate lookup performance.
+%
+%   The following considerations apply to spatial indexes of
+%   type 2 DSK segments:
+%
+%      1)  The maximum number of coarse voxels is fixed at
+%          SPICE_DSK02_MAXCGR (declared in MiceDSK.m).
+%
+%      2)  If there are too few fine voxels, the average number of
+%          plates per fine voxel will be very large. This largely
+%          negates the performance improvement afforded by having an
+%          index. Also, the number of plates per voxel may exceed
+%          limits imposed by DSK subroutines that use static arrays.
+%
+%      3)  If there are too many fine voxels, the average number of
+%          voxels intersected by a given plate may be too large for
+%          all the plate-voxel associations to be stored. In
+%          addition, the time needed to examine the plate lists for
+%          each voxel (including the empty ones) may become quite
+%          large, again negating the value of the index.
+%
+%   In many cases, voxel scales yielding optimum performance must be
+%   determined by experiment. However, the following heuristics can
+%   provide reasonable starting values:
+%
+%      Let `np' be the number of plates. Let `fs' be the fine voxel
+%      scale. Then a reasonable value of `fs' may be
+%
+%                 (0.25)
+%         fs =  np       / 8.
+%
+%      In general, `fs' should not smaller than 1.
+%
+%-Exceptions
+%
+%   1)  If the fine voxel scale is non-positive, the error
+%       SPICE(BADFINEVOXELSCALE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If the coarse voxel scale is less than 1, the error
+%       SPICE(BADCOARSEVOXSCALE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If `nv', the number of vertices, is less than 3 or greater
+%       than SPICE_DSK02_MAXVRT, the error SPICE(BADVERTEXCOUNT) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   4)  If `np', the number of plates, is less than 1 or greater than
+%       SPICE_DSK02_MAXPLT, the error SPICE(BADPLATECOUNT) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   5)  If the workspace size `worksz' is less than np+1, where `np' is
+%       the number of plates, the error SPICE(WORKSPACETOOSMALL) is
+%       signaled by a routine in the call tree of this routine. This
+%       is merely a sanity check; normally the workspace will need to
+%       be substantially larger than this reference value. See the
+%       description of `worksz' in the header section -I/O
+%       above.
+%
+%   6)  If the voxel-plate pointer array size `voxpsz' is less than 1,
+%       the error SPICE(PTRARRAYTOOSMALL) is signaled by a routine in
+%       the call tree of this routine. This is merely a sanity check;
+%       normally this pointer array will need to be substantially
+%       larger than this reference value. See the description of
+%       `voxpsz' in the header section -I/O above.
+%
+%   7)  If the voxel-plate list array size `voxlsz' is less than np+1,
+%       where `np' is the number of plates, the error
+%       SPICE(PLATELISTTOOSMALL) is signaled by a routine in the call
+%       tree of this routine. This is merely a sanity check; normally
+%       this array will need to be substantially larger than this
+%       reference value. See the description of `voxlsz' in the header
+%       section -I/O above.
+%
+%   8)  If the size `spxisz' of the integer array `spaixi' is too small
+%       to contain its constituent structures, where the sizes
+%       of these structures are derived from the inputs
+%
+%           `nv', `np', `voxpsz', `voxlsz'
+%
+%       the error SPICE(INTINDEXTOOSMALL) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   9)  If there is insufficient room to create any of the data
+%       structures contained in the spatial index, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   10) If any of the input arguments, `vrtces', `plates', `finscl',
+%       `corscl', `worksz', `voxpsz', `voxlsz', `makvtl' or `spxisz',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   11) If any of the input arguments, `vrtces', `plates', `finscl',
+%       `corscl', `worksz', `voxpsz', `voxlsz', `makvtl' or `spxisz',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dskmi2_c.
+%   None.
 %
-%   MICE.REQ
+%-Required_Reading
+%
 %   DAS.REQ
 %   DSK.REQ
+%   MICE.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 04-FEB-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%
+%       Changed the output argument name "spaix" to "spaixi" to comply
+%       with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Added proper usage string. Added missing information to -I/O
+%       descriptions.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 04-FEB-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
-%   make spatial index for type 2 dsk segment
+%   make spatial index for type 2 DSK segment
 %
 %-&
 
-function [spaixd, spaix] = cspice_dskmi2( vrtces, plates, finscl, corscl, ...
-                                          worksz, voxpsz, voxlsz, makvtl, ...
-                                          spxisz )
+function [spaixd, spaixi] = cspice_dskmi2( vrtces, plates, finscl, corscl, ...
+                                           worksz, voxpsz, voxlsz, makvtl, ...
+                                           spxisz )
 
 
    switch nargin
@@ -475,7 +678,9 @@ function [spaixd, spaix] = cspice_dskmi2( vrtces, plates, finscl, corscl, ...
 
       otherwise
 
-         error ( ['Usage:  '] )
+         error ( ['Usage: [ spaixd(SPICE_DSK02_IXDFIX), spaixi(spxisz)] = ' ...
+                  'cspice_dskmi2( vrtces(3,m), plates(3,n), '               ...
+                  'finscl, corscl, worksz, voxpsz, voxlsz, makvtl, spxisz)'] )
 
    end
 
@@ -483,12 +688,12 @@ function [spaixd, spaix] = cspice_dskmi2( vrtces, plates, finscl, corscl, ...
    % Call the MEX library.
    %
    try
-      [spaixd, spaix] = mice( 'dskmi2_c', vrtces, plates, finscl, corscl, ...
-                                          worksz, voxpsz, voxlsz, makvtl, ...
-                                          spxisz);
+      [spaixd, spaixi] = mice( 'dskmi2_c', vrtces, plates, finscl, corscl, ...
+                                           worksz, voxpsz, voxlsz, makvtl, ...
+                                           spxisz);
 
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

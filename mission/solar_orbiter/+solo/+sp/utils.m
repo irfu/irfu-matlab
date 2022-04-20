@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-03-15
 %
-classdef utils   % < handle
+classdef utils    
     % PROPOSAL: Automatic test code.
     
     %#######################

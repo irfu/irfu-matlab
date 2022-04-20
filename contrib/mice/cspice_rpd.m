@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_RPD returns the value of the constant pi/180 which represents  
+%   CSPICE_RPD returns the value of the constant pi/180 which represents
 %   the number of radians per degree of arc.
 %
 %-Disclaimer
@@ -31,19 +31,24 @@
 %
 %-I/O
 %
-%   Given:
+%   The call:
 %
-%      No input required.
-%
-%   the call:
-%
-%      rpd = cspice_rpd
+%      [rpd] = cspice_rpd
 %
 %   returns:
 %
-%      rpd   the number of radians per degree: pi/180.
+%      rpd      the number of radians per degree: pi/180.
 %
-%            [1,1] = size(rpd); double = class(rpd)
+%               [1,1] = size(rpd); double = class(rpd)
+%
+%               The value of pi is determined by the acos function. That
+%               is,
+%
+%                     rpd = acos ( -1.0 ) / 180.0;
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -51,24 +56,77 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   1) Print the number of radians per degree of arc.
+%
+%      Example code begins here.
+%
+%
+%      function rpd_ex1()
+%
+%         %
+%         % Output the number of radians per degree, with 21.18 precision
+%         %
+%         fprintf( 'Radians per degree: %21.18f\n', cspice_rpd )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Radians per degree:  0.017453292519943295
+%
+%
 %-Particulars
+%
+%   The first time the function is referenced, the value is computed
+%   as shown above. The value is saved, and returned directly upon
+%   subsequent reference.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
 %
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine rpd_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header to comply with NAIF standard. Adde complete code
+%       example.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -90,8 +148,8 @@ function [rpd] = cspice_rpd
    %
    try
       [rpd] =  mice('rpd_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_TPICTR takes a time format sample then creates a
-%   time format picture suitable for use by cspice_timout.
+%   CSPICE_TPICTR creates a time format picture suitable for use by the
+%   routine cspice_timout from a given sample time string.
 %
 %-Disclaimer
 %
@@ -33,8 +33,8 @@
 %
 %   Given:
 %
-%      sample   a representative time string to use as a model to 
-%               format time strings (the string need not describe 
+%      sample   a representative time string to use as a model to
+%               format time strings (the string need not describe
 %               an actual date - only format matters).
 %
 %               [1,c1] = size(sample); char = class(sample)
@@ -49,12 +49,12 @@
 %
 %   returns:
 %
-%      pictur   a format picture string suitable for use with the 
+%      pictur   a format picture string suitable for use with the
 %               SPICE routine cspice_timout.
 %
 %               [1,c2] = size(pictur); char = class(pictur)
 %
-%      ok       a boolean indicating whether 'sample' parsed
+%      ok       a boolean indicating whether `sample' parsed
 %               without error, true, or some parse error occurred, false.
 %
 %               [1,1] = size(ok); logical = class(ok)
@@ -64,65 +64,137 @@
 %
 %               [1,c3] = size(errmsg); char = class(errmsg)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Given a sample with the format of the UNIX date string,
-%      % create a SPICE time picture for use in cspice_timout.
-%      %
-%      sample = 'Thu Oct 1 11:11:11 PDT 1111';
+%   1) Given a sample with the format of the UNIX date string,
+%      create a SPICE time picture for use in cspice_timout.
 %
-%      %
-%      % Make the call. 'ok' returns false is an error occurred.
-%      % The error description returns in the err variable.
-%      %
-%      [pictur, ok, errmsg] = cspice_tpictr( sample );
 %
-%      %
-%      % If a false error flag, print the picture; if
-%      % a true error flag, print the error message.
-%      %
-%      if ( ok )
-%         disp( pictur )
-%      else
-%         disp( errmsg )
-%      end
+%      Example code begins here.
 %
-%   MATLAB outputs:
+%
+%      function tpictr_ex1()
+%
+%         sample = 'Thu Oct 1 11:11:11 PDT 1111';
+%
+%         %
+%         % Make the call. 'ok' returns false is an error occurred.
+%         % The error description returns in the err variable.
+%         %
+%         [pictur, ok, errmsg] = cspice_tpictr( sample );
+%
+%         %
+%         % If a false error flag, print the picture; if
+%         % a true error flag, print the error message.
+%         %
+%         if ( ok )
+%            disp( pictur )
+%         else
+%            disp( errmsg )
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Wkd Mon DD HR:MN:SC PDT YYYY ::UTC-7
 %
+%
 %-Particulars
+%
+%   Although the routine cspice_timout provides SPICE users with a great
+%   deal of flexibility in formatting time strings, users must
+%   master the means by which a time picture is constructed
+%   suitable for use by cspice_timout.
+%
+%   This routine allows SPICE users to supply a sample time string
+%   from which a corresponding time format picture can be created,
+%   freeing users from the task of mastering the intricacies of
+%   the routine cspice_timout.
+%
+%   Note that cspice_timout can produce many time strings whose patterns
+%   can not be discerned by this routine. When such outputs are
+%   called for, the user must consult cspice_timout and construct the
+%   appropriate format picture "by hand." However, these exceptional
+%   formats are not widely used and are not generally recognizable
+%   to an uninitiated reader.
+%
+%-Exceptions
+%
+%   1)  All problems with the inputs are reported via `ok' and `errmsg'.
+%
+%   2)  If a format picture can not be created from the sample
+%       time string, `pictur' is returned as a blank string.
+%
+%   3)  If the input argument `sample' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   4)  If the input argument `sample' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
 %
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine tpictr_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 09-MAR-2015, EDW (JPL)
+%   -Mice Version 1.2.0, 25-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed the output argument name "error" to "errmsg" for
+%       consistency with other routines.
 %
-%   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
+%       Edited the header to comply with NAIF standard.
 %
-%      "logical" call replaced with "zzmice_logical."
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%   -Mice Version 1.0.1, 31-MAR-2010, EDW (JPL)
+%       Eliminated use of "lasterror" in rethrow.
 %
-%      Renamed error message argument 'error' to 'errmsg'.
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%   -Mice Version 1.1.1, 09-MAR-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.1.0, 10-MAY-2011 (EDW)
+%
+%       "logical" call replaced with "zzmice_logical."
+%
+%   -Mice Version 1.0.1, 31-MAR-2010 (EDW)
+%
+%       Renamed error message argument 'error' to 'errmsg'.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -130,7 +202,7 @@
 %
 %-&
 
-function [ pictur, ok, errmsg] = cspice_tpictr(sample)
+function [pictur, ok, errmsg] = cspice_tpictr(sample)
 
    switch nargin
       case 1
@@ -139,7 +211,8 @@ function [ pictur, ok, errmsg] = cspice_tpictr(sample)
 
       otherwise
 
-         error ( 'Usage: [ `pictur`, ok, `errmsg`] = cspice_tpictr( `sample`)' )
+         error ( [ 'Usage: [`pictur`, ok, `errmsg`] = ', ...
+                                        'cspice_tpictr( `sample` )' ] )
 
    end
 
@@ -154,8 +227,8 @@ function [ pictur, ok, errmsg] = cspice_tpictr(sample)
       % the caller.
       %
       ok = zzmice_logical(ok);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

@@ -8,10 +8,12 @@ The following is a set of guidelines for contributing to [irfu-matlab](https://g
 These are mostly guidelines, in other words they are not rules or laws or government regulations (*myndighetsföreskrifter* in Swedish). Use your best judgment, and feel free to propose changes to this document in a pull request.
 If you are about to make any pull requests please request a merge to our [devel](https://github.com/irfu/irfu-matlab/tree/devel) branch, and in time these changes will propagate to our master branch when we are ready for a new release of irfu-matlab.
 
+If working on a special development branch (e.g. [MMSdevel](https://github.com/irfu/irfu-matlab/tree/MMSdevel)), make sure to merge all the code from our latest [devel](https://github.com/irfu/irfu-matlab/tree/devel) branch on a semi-regular basis to help avoid merge conflicts if for some reason the code is changed in both branches.
+
 
 Coding style
 ------------
-1. According to [Matlab Style Guidelines](https://www.datatool.com/prod02.htm "MATLAB Programming Style Guidelines")
+1. According to [Matlab Style Guidelines](https://web.archive.org/web/20210424065750/http://www.datatool.com/downloads/matlab_style_guidelines.pdf "MATLAB Programming Style Guidelines")
 2. Help follows matlab style, see [irf_template.m](https://github.com/irfu/irfu-matlab/blob/master/irf/irf_template.m)
 3. Matlab code files checked for possible problems, using [checkcode](https://www.mathworks.com/help/matlab/ref/checkcode.html)
 4. For new code written, use only two spaces as indentation.

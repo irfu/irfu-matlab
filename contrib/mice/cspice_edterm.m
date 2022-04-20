@@ -204,7 +204,7 @@
 %               'EARTH' and '399' are legitimate strings that indicate
 %               the Earth is the observer.
 %
-%               [1,c5] = size(obsrvr); char = class(obsrvr)
+%               [1,c6] = size(obsrvr); char = class(obsrvr)
 %
 %      npts     number of terminator points to compute.
 %
@@ -212,10 +212,10 @@
 %
 %   the call:
 %
-%     [ trgepc, obspos, termpts] = cspice_edterm( trmtyp, source, ...
-%                                                 target, et,     ...
-%                                                 fixfrm, abcorr, ...
-%                                                 obsrvr, npts)
+%     [ trgepc, obspos, trmpts] = cspice_edterm( trmtyp, source, ...
+%                                                target, et,     ...
+%                                                fixref, abcorr, ...
+%                                                obsrvr, npts)
 %
 %   returns:
 %
@@ -285,18 +285,33 @@
 %
 %               [3,npts] = size(trmpts); double = class(trmpts)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   1) Compute sets of umbral and penumbral terminator points on the
+%      Moon. Perform a consistency check using the solar incidence
+%      angle at each point. We expect to see a solar incidence angle of
+%      approximately 90 degrees. Since the solar incidence angle is
+%      measured between the local outward normal and the direction to
+%      the center of the Sun, the solar incidence angle at an umbral
+%      terminator point should exceed 90 degrees by approximately the
+%      angular radius of the Sun, while the angle at a penumbral
+%      terminator points should be less than 90 degrees by that amount.
+%
 %      Use the meta-kernel shown below to load the required SPICE
 %      kernels.
 %
+%
 %         KPL/MK
 %
-%         File name: standard.tm
+%         File name: edterm_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The kernels shown here should not be
@@ -325,132 +340,131 @@
 %
 %         \begintext
 %
-%   Example:
+%         End of meta-kernel
 %
-%      Compute sets of umbral and penumbral terminator points on the
-%      Moon. Perform a consistency check using the solar incidence
-%      angle at each point. We expect to see a solar incidence angle of
-%      approximately 90 degrees. Since the solar incidence angle is
-%      measured between the local outward normal and the direction to
-%      the center of the Sun, the solar incidence angle at an umbral
-%      terminator point should exceed 90 degrees by approximately the
-%      angular radius of the Sun, while the angle at a penumbral
-%      terminator points should be less than 90 degrees by that amount.
 %
-%      META    = 'standard.tm';
-%      NPTS    =  3;
-%      first   = true;
-%      trmtyps = { 'UMBRAL', 'PENUMBRAL' };
-%      s       = [ -1, 1];
-%      R2D     = cspice_dpr();
+%      Example code begins here.
 %
-%      %
-%      % Load meta-kernel.
-%      %
-%      cspice_furnsh( META )
 %
-%      %
-%      % Set observation time.
-%      %
-%      utc    = '2007 FEB 3 00:00:00.000';
+%      function edterm_ex1()
 %
-%      et = cspice_str2et( utc );
-%
-%      %
-%      % Set participating objects, frame, and aberration
-%      % corrections.
-%      %
-%      obsrvr = 'EARTH';
-%      target = 'MOON';
-%      source = 'SUN';
-%      fixref = 'IAU_MOON';
-%      abcorr = 'LT+S';
-%
-%      %
-%      % Look up the radii of the sun.
-%      %
-%      srcrad = cspice_bodvrd( source, 'RADII', 3 );
-%
-%      %
-%      % Compute terminator points.
-%      %
-%      for trmidx=1:2
-%
-%         [ trgepc, obspos, trmpts] = cspice_edterm(      ...
-%                        trmtyps(trmidx), source, target, ...
-%                        et,              fixref, abcorr, ...
-%                        obsrvr,          NPTS );
+%         META    = 'edterm_ex1.tm';
+%         NPTS    =  3;
+%         first   = true;
+%         trmtyps = { 'UMBRAL', 'PENUMBRAL' };
+%         s       = [ -1, 1];
+%         R2D     = cspice_dpr();
 %
 %         %
-%         % Validate terminator points.
+%         % Load meta-kernel.
 %         %
-%         % Look up the target-sun vector at the light-time
-%         % corrected target epoch.
-%         %
-%         if ( first )
-%            [srcpos, ltime] = cspice_spkpos( source, trgepc, ...
-%                                             fixref, abcorr, ...
-%                                             target );
+%         cspice_furnsh( META )
 %
-%            first = false;
+%         %
+%         % Set observation time.
+%         %
+%         utc    = '2007 FEB 3 00:00:00.000';
+%
+%         et = cspice_str2et( utc );
+%
+%         %
+%         % Set participating objects, frame, and aberration
+%         % corrections.
+%         %
+%         obsrvr = 'EARTH';
+%         target = 'MOON';
+%         source = 'SUN';
+%         fixref = 'IAU_MOON';
+%         abcorr = 'LT+S';
+%
+%         %
+%         % Look up the radii of the sun.
+%         %
+%         srcrad = cspice_bodvrd( source, 'RADII', 3 );
+%
+%         %
+%         % Compute terminator points.
+%         %
+%         for trmidx=1:2
+%
+%            [ trgepc, obspos, trmpts] = cspice_edterm(      ...
+%                           trmtyps(trmidx), source, target, ...
+%                           et,              fixref, abcorr, ...
+%                           obsrvr,          NPTS );
+%
+%            %
+%            % Validate terminator points.
+%            %
+%            % Look up the target-sun vector at the light-time
+%            % corrected target epoch.
+%            %
+%            if ( first )
+%               [srcpos, lt] = cspice_spkpos( source, trgepc, ...
+%                                                fixref, abcorr, ...
+%                                                target );
+%
+%               first = false;
+%            end
+%
+%            fprintf(' Terminator type: %s\n', char(trmtyps(trmidx)) )
+%
+%            for i = 1:NPTS
+%
+%               %
+%               % Convert the ith terminator point to latitudinal
+%               % coordinates. Display the point.
+%               %
+%               [radius, lon, lat] = cspice_reclat( trmpts(:,i) );
+%
+%               fprintf('Terminator point :%d\n', i )
+%               fprintf('  Radius                     (km):  %f\n', radius)
+%               fprintf('  Planetocentric longitude   (deg): %f\n', lon*R2D)
+%               fprintf('  Planetocentric latitude    (deg): %f\n', lat*R2D)
+%
+%               %
+%               % Find the illumination angles at the
+%               % ith terminator point.
+%               %
+%               [trgepc, srfvec, phase, solar, emissn] = ...
+%                                        cspice_ilumin( 'Ellipsoid', ...
+%                                               target, et,          ...
+%                                               fixref, abcorr,      ...
+%                                               obsrvr, trmpts(:,i) );
+%
+%               fprintf('  Solar incidence angle      (deg): %f\n', solar*R2D)
+%
+%
+%               %
+%               % Find the angular radius of the Sun as seen from
+%               % the terminator point.
+%               %
+%               angrad = asin( srcrad(1)/cspice_vdist( srcpos, trmpts(:,i)) );
+%
+%
+%               %
+%               % Display the solar incidence angle after
+%               % adjusting the angular radius of the Sun
+%               % as seen from the terminator point.The
+%               % result should be approximately 90 degrees.
+%               %
+%               fprintf('  Solar incidence angle adjusted for\n' )
+%               fprintf('  sun''s angular radius (deg): %18.9f\n\n', ...
+%                            ( solar + ( s(trmidx)*angrad ) ) *R2D)
+%
+%            end
+%
 %         end
 %
-%         fprintf(' Terminator type: %s\n', char(trmtyps(trmidx)) )
-%
-%         for i = 1:NPTS
-%
-%            %
-%            % Convert the ith terminator point to latitudinal
-%            % coordinates. Display the point.
-%            %
-%            [radius, lon, lat] = cspice_reclat( trmpts(:,i) );
-%
-%            fprintf('Terminator point :%d\n', i )
-%            fprintf('  Radius                     (km):  %f\n', radius)
-%            fprintf('  Planetocentric longitude   (deg): %f\n', lon *R2D)
-%            fprintf('  Planetocentric latitude    (deg): %f\n', lat *R2D)
-%
-%            %
-%            % Find the illumination angles at the
-%            % ith terminator point.
-%            %
-%            [trgepc, srfvec, phase, solar, emissn] = ...
-%                                     cspice_ilumin( 'Ellipsoid', ...
-%                                            target, et,          ...
-%                                            fixref, abcorr,      ...
-%                                            obsrvr, trmpts(:,i) );
-%
-%            fprintf('  Solar incidence angle      (deg): %f\n', solar *R2D)
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
 %
-%            %
-%            % Find the angular radius of the Sun as seen from
-%            % the terminator point.
-%            %
-%            angrad = asin( srcrad(1)/cspice_vdist( srcpos, trmpts(:,i)) );
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%
-%            %
-%            % Display the solar incidence angle after
-%            % adjusting the angular radius of the Sun
-%            % as seen from the terminator point.The
-%            % result should be approximately 90 degrees.
-%            %
-%            fprintf('  Solar incidence angle adjusted for\n' )
-%            fprintf('  sun''s angular radius (deg): %18.9f\n\n', ...
-%                         ( solar + ( s(trmidx)*angrad ) ) *R2D)
-%
-%         end
-%
-%      end
-%
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in IDL due to data persistence.
-%      %
-%      cspice_kclear
-%
-%   MATLAB outputs:
 %
 %       Terminator type: UMBRAL
 %      Terminator point :1
@@ -502,6 +516,7 @@
 %        Solar incidence angle adjusted for
 %        sun's angular radius (deg):       90.000000044
 %
+%
 %-Particulars
 %
 %   This routine models the boundaries of shadow regions on an
@@ -512,16 +527,16 @@
 %   Points on the target body's surface are classified according to
 %   their illumination as follows:
 %
-%      -  A target surface point X for which no vector from X to any
-%         point in the light source intersects the target, except at
-%         X, is considered to be "completely illuminated."
+%   -  A target surface point X for which no vector from X to any
+%      point in the light source intersects the target, except at
+%      X, is considered to be "completely illuminated."
 %
-%      -  A target surface point X for which each vector from X to a
-%         point in the light source intersects the target at points
-%         other than X is considered to be "in total shadow."
+%   -  A target surface point X for which each vector from X to a
+%      point in the light source intersects the target at points
+%      other than X is considered to be "in total shadow."
 %
-%      -  All other target points are considered to be in partial
-%         shadow.
+%   -  All other target points are considered to be in partial
+%      shadow.
 %
 %   In this routine, we use the term "umbral terminator" to denote
 %   the curve usually called the "terminator": this curve is the
@@ -541,16 +556,125 @@
 %   the center of the light source, then X lies on the umbral
 %   terminator; otherwise X lies on the penumbral terminator.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine edterm_c.
+%   1)  If the input frame name `fixref' cannot be mapped
+%       to a frame ID code, the error SPICE(NOTRANSLATION) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   2)  If the target name `target' cannot be mapped
+%       to a body ID code, the error SPICE(NOTRANSLATION) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   3)  If the frame designated by `fixref' is not centered
+%       on the target, the error SPICE(INVALIDFIXREF) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   4)  If the terminator type is not recognized, an error
+%       is signaled by a routine in the call tree of
+%       this routine.
+%
+%   5)  If the terminator point count `npts' is not at least 1, an error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   6)  If the light source has non-positive radius, an error
+%       is signaled by a routine in the call tree of
+%       this routine.
+%
+%   7)  If the light source intersects the smallest sphere centered at
+%       the origin and containing the ellipsoid, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%   8)  If radii for the target body or light source are not
+%       available in the kernel pool, an error is signaled by
+%       a routine in the call tree of this routine.
+%
+%   9)  If radii are available but either body does not have three
+%       radii, an error is signaled by a routine in the call tree of
+%       this routine.
+%
+%   10) If any of the radii is less-than or equal to zero, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   11) If any SPK look-up fails, an error is signaled by
+%       a routine in the call tree of this routine.
+%
+%   12) If any of the input arguments, `trmtyp', `source', `target',
+%       `et', `fixref', `abcorr', `obsrvr' or `npts', is undefined, an
+%       error is signaled by the Matlab error handling system.
+%
+%   13) If any of the input arguments, `trmtyp', `source', `target',
+%       `et', `fixref', `abcorr', `obsrvr' or `npts', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   Appropriate SPK, PCK, and frame kernels must be loaded by the
+%   calling program before this routine is called.
+%
+%   The following data are required:
+%
+%   -  SPK data: ephemeris data for the target, observer, and light
+%      source must be loaded. If aberration corrections are used,
+%      the states of all three objects relative to the solar system
+%      barycenter must be calculable from the available ephemeris
+%      data. Typically ephemeris data are made available by loading
+%      one or more SPK files via cspice_furnsh.
+%
+%   -  PCK data: triaxial radii for the target body and
+%      the light source must be loaded into the kernel pool.
+%      Typically this is done by loading a text PCK file via
+%      cspice_furnsh.
+%
+%   -  Further PCK data: rotation data for the target body must
+%      be loaded. These may be provided in a text or binary PCK
+%      file.
+%
+%   -  Frame data: if a frame definition is required to convert
+%      the observer and target states to the target body-fixed
+%      frame designated by `fixref', that definition must be
+%      available in the kernel pool. Typically the definitions of
+%      frames not already built-in to SPICE are supplied by loading
+%      a frame kernel.
+%
+%   In all cases, kernel data are normally loaded once per program
+%   run, NOT every time this routine is called.
+%
+%-Restrictions
+%
+%   1)  This routine models light paths as straight lines.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 18-JUN-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 26-NOV-2021 (EDW) (JDR)
+%
+%       Changed argument names "fixfrm" and "termpts" to "fixref" and
+%       "trmpts".
+%
+%       Edited -Examples section to comply with NAIF standard. Added
+%       -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 18-JUN-2012 (EDW)
 %
 %-Index_Entries
 %
@@ -560,10 +684,10 @@
 %
 %-&
 
-function [ trgepc, obspos, termpts] = cspice_edterm( trmtyp, source, ...
-                                                     target, et,     ...
-                                                     fixfrm, abcorr, ...
-                                                     obsrvr, npts)
+function [ trgepc, obspos, trmpts] = cspice_edterm( trmtyp, source, ...
+                                                    target, et,     ...
+                                                    fixref, abcorr, ...
+                                                    obsrvr, npts)
 
    switch nargin
       case 8
@@ -572,16 +696,16 @@ function [ trgepc, obspos, termpts] = cspice_edterm( trmtyp, source, ...
          source = zzmice_str(source);
          target = zzmice_str(target);
          et     = zzmice_dp(et);
-         fixfrm = zzmice_str(fixfrm);
+         fixref = zzmice_str(fixref);
          abcorr = zzmice_str(abcorr);
          obsrvr = zzmice_str(obsrvr);
          npts   = zzmice_int(npts);
 
       otherwise
 
-         error ( ['Usage: [ trgepc, obspos, termpts] = cspice_edterm( ' ...
-                                       '`trmtyp`, `source`, `target`, ' ...
-                                       'et,       `fixfrm`, `abcorr`, ' ...
+         error ( ['Usage: [trgepc, obspos(3), trmpts(3,npts)] = ' ...
+                        'cspice_edterm( `trmtyp`, `source`, `target`, ' ...
+                                       'et,       `fixref`, `abcorr`, ' ...
                                        '`obsrvr`, npts)' ]  )
 
    end
@@ -590,12 +714,12 @@ function [ trgepc, obspos, termpts] = cspice_edterm( trmtyp, source, ...
    % Call the MEX library.
    %
    try
-      [ trgepc, obspos, termpts] = mice( 'edterm_c', trmtyp, source, ...
-                                                     target, et,     ...
-                                                     fixfrm, abcorr, ...
-                                                     obsrvr, npts);
-   catch
-      rethrow(lasterror)
+      [ trgepc, obspos, trmpts] = mice( 'edterm_c', trmtyp, source, ...
+                                                    target, et,     ...
+                                                    fixref, abcorr, ...
+                                                    obsrvr, npts);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

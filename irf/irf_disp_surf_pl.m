@@ -144,19 +144,19 @@ w5(:,:)=wfinal(6,:,:);color5(:,:)=extraparam(colorchoice,6,:,:);
 % Convert kc_x, kc_z, w1,...w5 to ion units if requested
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if axisnorm == 2
-    % convert k to k*di = k*Va/wci
-    wfac = m_i;
-    kFac = sqrt(m_i)/w_pe;
-    
-    w1 = wfac*w1;
-    w2 = wfac*w2;
-    w3 = wfac*w3;
-    w4 = wfac*w4;
-    w5 = wfac*w5;
-    kc_x = kFac*kc_x;
-    kc_z = kFac*kc_z;
-    kc_x_max = kFac*kc_x_max;
-    kc_z_max = kFac*kc_z_max;
+  % convert k to k*di = k*Va/wci
+  wfac = m_i;
+  kFac = sqrt(m_i)/w_pe;
+  
+  w1 = wfac*w1;
+  w2 = wfac*w2;
+  w3 = wfac*w3;
+  w4 = wfac*w4;
+  w5 = wfac*w5;
+  kc_x = kFac*kc_x;
+  kc_z = kFac*kc_z;
+  kc_x_max = kFac*kc_x_max;
+  kc_z_max = kFac*kc_z_max;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,13 +185,13 @@ if surfchoice(5)
 end
 
 if axisnorm==2
-    xlabel('k_\perp V_A/\omega_{ci}')
-    ylabel('k_{||} V_A/\omega_{ci}')
-    zlabel('\omega/\omega_{ci}')
+  xlabel('k_\perp V_A/\omega_{ci}')
+  ylabel('k_{||} V_A/\omega_{ci}')
+  zlabel('\omega/\omega_{ci}')
 else
-    xlabel('k_\perp c/\omega_{ce}')
-    ylabel('k_{||} c/\omega_{ce}')
-    zlabel('\omega/\omega_{ce}')
+  xlabel('k_\perp c/\omega_{ce}')
+  ylabel('k_{||} c/\omega_{ce}')
+  zlabel('\omega/\omega_{ce}')
 end
 
 set(gca,'xlim',[0 kc_x_max]);

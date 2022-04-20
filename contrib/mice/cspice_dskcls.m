@@ -36,22 +36,26 @@
 %
 %               [1,1] = size(handle); int32 = class(handle)
 %
-%      optimz   is a logical flag indicating whether the DSK  
-%               should be segregated before it is closed. This 
-%               option applies only to files open for write  
-%               access. The value of `optmiz' has no effect for 
-%               files opened for read access.  
+%      optmiz   is a logical flag indicating whether the DSK
+%               should be segregated before it is closed. This
+%               option applies only to files open for write
+%               access. The value of `optmiz' has no effect for
+%               files opened for read access.
 %
-%               [1,1] = size(optimz); logical = class(optimz)
+%               [1,1] = size(optmiz); logical = class(optmiz)
 %
 %   the call:
 %
-%      cspice_dskcls( handle, optimz )
+%      cspice_dskcls( handle, optmiz )
 %
 %   returns:
 %
 %   The routine closes the file indicated by 'handle'. The close operation
 %   tests the file to ensure the presence of data segments.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -59,22 +63,26 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Create a three-segment DSK file using plate model data for
-%   Phobos. Use latitudinal, rectangular, and planetodetic
-%   coordinates in the respective segments. This is not a
-%   realistic example, but it serves to demonstrate use of
-%   the supported coordinate systems.
+%   1) Create a three-segment DSK file using plate model data for
+%      Phobos. Use latitudinal, rectangular, and planetodetic
+%      coordinates in the respective segments. This is not a
+%      realistic example, but it serves to demonstrate use of
+%      the supported coordinate systems.
 %
-%   For simplicity, use an existing DSK file to provide the
-%   input plate and vertex data. The selected input file has one
-%   segment.
+%      Use the DSK kernel below to provide, for simplicity, the input
+%      plate and vertex data. This file has one segment only.
 %
-%      function dskw02_t
+%         phobos_3_3.bds
+%
+%
+%      Example code begins here.
+%
+%
+%      function dskcls_ex1()
 %
 %         %
 %         % MiceUser globally defines DSK parameters.
-%         % For more information, please see DSKMiceUser.m and
-%         % DSKMice02.m.
+%         % For more information, please see MiceDSK.m.
 %         %
 %         MiceUser
 %
@@ -85,7 +93,7 @@
 %         %
 %         % Assign names of input and output DSK files.
 %         %
-%         indsk = '/kernels/gen/dsk/phobos_3_3.bds';
+%         indsk = 'phobos_3_3.bds';
 %         dsk   = 'phobos_3_3_3seg.bds';
 %
 %         if ( exist( dsk, 'file' ) == 2 )
@@ -245,7 +253,8 @@
 %            fprintf( 'Computing %s bounds of plate set...\n', ...
 %                                            char(cornam(corsys)) )
 %
-%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, corsys, corpar );
+%            [mncor3, mxcor3] = cspice_dskrb2( vrtces, plates, ...
+%                                              corsys, corpar );
 %
 %            fprintf ( 'Done.\n' )
 %
@@ -254,25 +263,10 @@
 %            %
 %            fprintf( 'Writing segment...\n' )
 %
-%            cspice_dskw02( handle, ...
-%                              center, ...
-%                              surfid, ...
-%                              dclass, ...
-%                              frame,  ...
-%                              corsys, ...
-%                              corpar, ...
-%                              mncor1, ...
-%                              mxcor1, ...
-%                              mncor2, ...
-%                              mxcor2, ...
-%                              mncor3, ...
-%                              mxcor3, ...
-%                              first,  ...
-%                              last,   ...
-%                              vrtces, ...
-%                              plates, ...
-%                              spaixd,  ...
-%                              spaixi )
+%            cspice_dskw02( handle, center, surfid, dclass, frame,   ...
+%                           corsys, corpar, mncor1, mxcor1, mncor2,  ...
+%                           mxcor2, mncor3, mxcor3, first,  last,    ...
+%                           vrtces, plates, spaixd, spaixi        )
 %
 %         end
 %
@@ -282,7 +276,10 @@
 %         cspice_dascls( inhan )
 %         cspice_dskcls( handle, true )
 %
-%   MATLAB outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Reading input data...
 %      Done.
@@ -305,43 +302,89 @@
 %      Done.
 %      Writing segment...
 %
-%      After run completion, A DSK exists in the output directory.
+%
+%      Note that after run completion, a new DSK exists in the output
+%      directory.
 %
 %-Particulars
 %
 %   A cspice_dskcls call should balance every cspice_dskopn
 %   call.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dskcls_c.
+%   1)  If an error occurs when the file is closed, the error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   2)  If any of the input arguments, `handle' or `optmiz', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `handle' or `optmiz', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   See argument `handle'.
+%
+%-Restrictions
+%
+%   1)  This routine should not be called by user applications that have
+%       loaded a DSK file via cspice_furnsh. Such applications should call
+%       the KEEPER routines cspice_unload or cspice_kclear instead.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAS.REQ
 %   DSK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 02-FEB-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Changed input argument name "optimz" to "optmiz".
+%
+%       Edited the -Examples section to comply with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 02-FEB-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
-%   close a dsk file
+%   close a DSK file
 %
 %-&
 
-function cspice_dskcls( handle, optimz )
+function cspice_dskcls( handle, optmiz )
 
    switch nargin
       case 2
 
          handle = zzmice_int( handle );
-         optimz = zzmice_int( optimz );
+         optmiz = zzmice_int( optmiz );
 
       otherwise
 
-         error ( 'Usage: cspice_dskcls( handle, optimz )' )
+         error ( 'Usage: cspice_dskcls( handle, optmiz )' )
 
    end
 
@@ -349,9 +392,9 @@ function cspice_dskcls( handle, optimz )
    % Call the MEX library.
    %
    try
-      mice( 'dskcls_c', handle, optimz);
-   catch
-      rethrow(lasterror)
+      mice( 'dskcls_c', handle, optmiz);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

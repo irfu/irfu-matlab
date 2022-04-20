@@ -107,43 +107,43 @@ for j = ii
   if regexp(var_name,'^mTMode([1-4]|?)$')==1
     tt = [mode_list(j).st mode_list(j).mode];
   else
-  cd(mode_list(j).dir);
-  if HAVE_LOAD_ARGS
-    eval(['[ok, tt, msg] = c_load(' eval_str ');']);
-  else
-    [ok, tt, msg] = c_load(var_name,cl_id);
-  end
-  if ~ok || isempty(tt), continue, end
-  % Remove NaN times
-  % TODO: times must never be NaN.
-  if ~isstruct(tt), tt(isnan(tt(:,1)),:) = []; end
-  if isempty(tt), continue, end
-  
-  % Uncorrect delta offsets. This is black magic...
-  if regexp(var_name,'^diEs([1-4]|?)p(12|32|34)$')==1
-    % Delta offsets
-    pp = str2double(var_name(end-1:end));
-    [ok,Delauto] = c_load('D?p12p34',cl_id);
-    if ~ok || isempty(Delauto)
-      irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+    cd(mode_list(j).dir);
+    if HAVE_LOAD_ARGS
+      eval(['[ok, tt, msg] = c_load(' eval_str ');']);
     else
-      tt = caa_corof_delta(tt,pp,Delauto,'undo');
+      [ok, tt, msg] = c_load(var_name,cl_id);
+    end
+    if ~ok || isempty(tt), continue, end
+    % Remove NaN times
+    % TODO: times must never be NaN.
+    if ~isstruct(tt), tt(isnan(tt(:,1)),:) = []; end
+    if isempty(tt), continue, end
+    
+    % Uncorrect delta offsets. This is black magic...
+    if regexp(var_name,'^diEs([1-4]|?)p(12|32|34)$')==1
+      % Delta offsets
+      pp = str2double(var_name(end-1:end));
+      [ok,Delauto] = c_load('D?p12p34',cl_id);
+      if ~ok || isempty(Delauto)
+        irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+      else
+        tt = caa_corof_delta(tt,pp,Delauto,'undo');
+      end
+    end
+    
+    % Append time to variables which does not have it
+    % 946684800 = toepoch([2000 01 01 00 00 00])
+    if ~isstruct(tt) && ( tt(1,1) < 946684800 )
+      if size(tt,1)==1, tt = [starts(j)+dts(j)/2.0 tt]; %#ok<AGROW>
+      else, error('loaded bogus data')
+      end
+    elseif DO_MEAN
+      mm = mean(tt(~isnan(tt(:,2)),2:end));
+      if any(~isnan(mm)), tt = [starts(j)+dts(j)/2.0 mm];
+      else, continue
+      end
     end
   end
-  
-  % Append time to variables which does not have it
-  % 946684800 = toepoch([2000 01 01 00 00 00])
-  if ~isstruct(tt) && ( tt(1,1) < 946684800 )
-    if size(tt,1)==1, tt = [starts(j)+dts(j)/2.0 tt]; %#ok<AGROW>
-    else, error('loaded bogus data')
-    end
-  elseif DO_MEAN
-    mm = mean(tt(~isnan(tt(:,2)),2:end));
-    if any(~isnan(mm)), tt = [starts(j)+dts(j)/2.0 mm];
-    else, continue
-    end
-  end
-end
   
   if isempty(data), data = tt;
   elseif ~(isstruct(data) || isstruct(tt))

@@ -37,6 +37,7 @@ classdef rational_func_transform
 %       "analytical_rational_transform".
 %       "rational_func_transform"
 %           NOTE: Implicit that has factor i^k for every coefficient.
+% PROPOSAL: Capitalize initial in class name.
 
 
 

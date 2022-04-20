@@ -20,7 +20,7 @@ classdef TSeries
   %      particle energy or a spectral frequency channel.
   %
   %      For more info on representation see Cluster Metadata Dictionary
-  %           http://caa.estec.esa.int/caa/doc_format_meta.xml
+  %           https://caa.esac.esa.int/caa/doc_format_meta.xml
   %
   %  ARGS MACROs:
   %      'vec_xyz','vec_rtp','vec_rlp','vec_rpz' - 3D vectors
@@ -104,7 +104,9 @@ classdef TSeries
   
   methods
     function obj = TSeries(t,data,varargin)
-      if  nargin == 0, obj.data_ = []; obj.t_ = []; return, end
+      if nargin == 0, obj.data_ = []; obj.t_ = []; return, end
+      if nargin == 1 && isempty(t), obj.data_ = []; obj.t_ = []; return, end
+      if nargin == 2 && or(isempty(t),isempty(data)), obj.data_ = []; obj.t_ = []; return, end
       
       if nargin<2, error('2 inputs required'), end
       if ~isa(t,'GenericTimeArray')
@@ -1368,7 +1370,13 @@ classdef TSeries
       % Resample Ts to timeline of Ts2
       %
       % See also: IRF_RESAMP
-      if isempty(obj), error('Cannot resample empty TSeries'), end
+      
+      %if isempty(obj), error('Cannot resample empty TSeries'), end
+      if isempty(obj) 
+        irf.log('warning','Cannot resample empty TSeries.'); 
+        Ts = TSeries([]);
+        return; 
+      end
       if ~isa(NewTime,'TSeries') && ~isa(NewTime,'GenericTimeArray')
         error('NewTime must be of TSeries or GenericTimeArray type or derived from it')
       end
@@ -1462,7 +1470,7 @@ classdef TSeries
       %
       % Where MODE can be:
       %        'and', 0 (default)
-      %        'xor', 1 
+      %        'xor', 1
       %
       % Ts1 is part of the Ts that is within interval
       % LIM.START <= X(:,1) < LIM.STOP for "AND" mode

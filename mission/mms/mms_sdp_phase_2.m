@@ -137,6 +137,24 @@ sps.sunpulse = sps.sunpulse(keep);
 sps.iifsunper = sps.iifsunper(keep);
 sps.sunssps = sps.sunssps(keep);
 
+% Locate un-physical times and remove their corresponding sunpulses
+% All sunpulses should be some time in the past or at least measured at the
+% same instance as the sun pulse triggered the sun sensor. However due to
+% some onboard jitter include a 60 seconds margin (typically jitter is less
+% than one second, but avoid false positives).
+% This problem is most common after long period of instrument off (such as
+% during long eclipse periods).
+keep = find(sps.sunpulse <= (sps.time + int64(60e9)));
+if length(sps.time) ~= length(keep)
+  logStr = ['Found ', num2str(length(sps.time)-length(keep)), ...
+    ' un-physical pulses (sunpulse >> measurement timestamp). Removing them.'];
+  irf.log('warning', logStr);
+  sps.time = sps.time(keep);
+  sps.sunpulse = sps.sunpulse(keep);
+  sps.iifsunper = sps.iifsunper(keep);
+  sps.sunssps = sps.sunssps(keep);
+end
+
 [sps.time, srt] = sort(sps.time);
 [sps.time, usrt] = unique(sps.time);
 pulse = sps.sunpulse(srt(usrt));
@@ -304,7 +322,7 @@ end
 % ;          between pulses to determine number of spins between pulses.
 for i = 1:ngap+1
   nseg = segs(i+1)-segs(i)-1;  % number of periods in this segment
-  if (nseg == 0), continue; end
+  if (nseg <= 0), continue; end
   
   segind = 1+segs(i)+1:nseg+segs(i)+1; % Index, period data of segment.
   segperiod = period(segind);
@@ -421,7 +439,7 @@ for i = 1:ngap
   
   % ; 1b) find period at end of gap:  median of IIFSUNPER (from pseudopulse)
   % ;     of first pulse after gap, plus next 4 spin periods.
-  if gapidx + 1 ~= segs(i+2)
+  if gapidx + 1 ~= segs(i+2) && gapidx < length(period)
     period2 = median(period(gapidx+1 : min(gapidx+1+5, segs(i+2)-1) ));
     % ; if pulse time at end of gap is out of family, then fix it
     if abs(period(gapidx+1) - period2) > 0.05*1e9

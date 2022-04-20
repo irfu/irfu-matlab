@@ -77,12 +77,11 @@ if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once')) || ~isempty(regexp(v.name
       else
         irf.log('warning','Epoch_plus_var/Epoch_minus_var units are not clear, assume s');
       end
-      toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-      tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-      %toffset = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS-v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
-      %tdiff = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS+v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
-      % Upper 2 lines give wrong results in my MAC (wyli, Matlab 2017b, 20190602.)
-      % If you want to change this part, please let me (wyli.space@gmail.com) know.
+      % toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+      % tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;  
+      % v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS in ms
+      toffset = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS-v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
+      tdiff = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS+v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
       tdiff_data = median(diff(v.DEPEND_0.data)) / 2;                   % ns
       if ~(tdiff_data == mean(tdiff))
         str1 = num2str(mean(v.DEPEND_0.DELTA_PLUS_VAR.data)*flag_PLUS);

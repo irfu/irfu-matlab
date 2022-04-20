@@ -35,9 +35,7 @@ function SETTINGS = create_default_SETTINGS()
 %                                                            Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
 %
-% PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-%
-% PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
+% PROPOSAL: Setting keys should use cased version of zVars and glob.attrs..
 %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
 %
 % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
@@ -54,13 +52,11 @@ function SETTINGS = create_default_SETTINGS()
 %   PROPOSAL: Do every time settings are set, i.e. for default values,
 %       config file values, CLI argument values.
 %
+%
+%
 % =========================
 % BOGIQ: SETTING KEY NAMING
 % =========================
-% PROPOSAL: Setting name change SW_MODES.L1_LFR_TDS_ENABLED--> SW_MODES.L1-L2_LFR_TDS_ENABLED
-%   NOTE: Name change likely influences BICAS testing code and pipeline.
-%         Should therefore only be implemented at the right time.
-%
 % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
 % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
 %
@@ -140,7 +136,7 @@ function SETTINGS = create_default_SETTINGS()
     % When logging contents of matrix/vector, maximum number of unique values
     % printed before switching to shorter representation (min-max range)
     S.define_setting('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED', 5);
-    % When logging contents of TT2000 vector (in practise zVar Epoch), maximum
+    % When logging contents of TT2000 vector (in practice zVar Epoch), maximum
     % number of unique TT2000 values printed before switching to shorter
     % representation (min-max range).
     S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
@@ -150,9 +146,11 @@ function SETTINGS = create_default_SETTINGS()
     % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
     % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
     % opposed to L1 current datasets.
-    S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
-    % Enable s/w modes for processing L2-->L3 datasets.
-    S.define_setting('SW_MODES.L2-L3_ENABLED',      0);
+    S.define_setting('SW_MODES.L1-L2_ENABLED',          0);
+    % Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
+    S.define_setting('SW_MODES.L2-L2_CWF-DWNS_ENABLED', 0);
+    % Enable s/w mode for processing L2-->L3 datasets.
+    S.define_setting('SW_MODES.L2-L3_ENABLED',          0);
 
 
 
@@ -183,14 +181,14 @@ function SETTINGS = create_default_SETTINGS()
     % NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
     S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', 1)
     % NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
-    S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
+    S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
 
-    S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
+    S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
 
     % Require input CDF Global Attribute "DATASET_ID" to match the expected
     % value.
-    S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
-    S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
+    S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY', 'WARNING')    % ERROR, WARNING
+    S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
     % NOTE: This modification applies BEFORE
     % PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
@@ -217,12 +215,6 @@ function SETTINGS = create_default_SETTINGS()
 
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
 
-    % For testing, when HK and SCI time are completely different and do not
-    % overlap (though HK time still has to cover a larger interval than SCI).
-    % Adds/subtracts HK time so that the first HK timestamp equals the first SCI
-    % timestamp.
-    S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',          0)
-
 
 
     %############################################
@@ -242,19 +234,6 @@ function SETTINGS = create_default_SETTINGS()
     % code that calls BICAS many times (batch processing) and when dataset
     % content is unimportant since it speeds up BICAS.
     S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
-
-    % Value that shows up in output dataset
-    % GlobalAttributes.Calibration_version. Value that is used to set the output
-    % dataset GlobalAttribute "Calibration_version". String value.
-    S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
-        '1.1; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Calibrates currents.');
-
-    % Behaviour when the output CDF glob.attr. "Datetime" is not a scalar string
-    % (not a list of strings).
-    % NOTE: Somewhat deceiving to call this "OUTPUT_CDF" since the anomaly is
-    % likely due to the same anomaly in the corresponding input CDF.
-    % NOTE: Warning useful to handle old L2 datasets with non-scalar "Datetime".
-    S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Datetime_NOT_SCALAR_POLICY', 'WARNING')   % ERROR, WARNING
 
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
@@ -298,7 +277,12 @@ function SETTINGS = create_default_SETTINGS()
     %   Master CDFs: Multiple samples/snapshot.
     %   BICAS code:  1 sample/snapshot.
     % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
-    S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)
+    S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
+    
+    % Whether to enable setting glob.attr. MODS.
+    % 2021-05-05: Disabled on request by ROC, until next full reprocessing at
+    % ROC.
+    S.define_setting('OUTPUT_CDF.GA_MODS_ENABLED', 0)    % 0/false, 1/true
 
 
 
@@ -317,7 +301,11 @@ function SETTINGS = create_default_SETTINGS()
     % effort.
     S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
 
-    S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'ERROR')      % WARNING, ERROR
+    % How to react to HK not overlapping with SCI.
+    % NOTE: Switch is shared for LFR & TDS, but WARNING only(?) makes sense for
+    % LFR, since some data can be salvaged in the event of non-overlap for LFR
+    % (using LFR mux mode), but not for TDS.
+    S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'WARNING')    % WARNING, ERROR
     % NOTE: "WARNING": Will lead to using nearest interpolation.
     S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
     S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'WARNING')    % WARNING, ERROR
@@ -328,6 +316,10 @@ function SETTINGS = create_default_SETTINGS()
 
     % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are
     % empty.
+    % Needed for test files
+    %   ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf
+    %   ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E_6b05822_CNE_V02.cdf
+    %   These are not used any more. /2020-10-07
     S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'ERROR')   % ERROR, USE_FILL_VALUE
 
     % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
@@ -338,21 +330,23 @@ function SETTINGS = create_default_SETTINGS()
     %============================================================================
     % Where to obtain the mux mode
     % ----------------------------
+    %
     % BIAS HK data
     % ------------
     % Contains mux mode using its own Epoch (typically ~30 s time resolution?),
     % which means that ~interpolation to SCI data is necessary, which means that
-    % the effective mux mode value can briefly be wrong. BIAS HK may also
-    % potentially not cover the same time range as SCI data at all, and then the
-    % mux mode can be really wrong (e.g. when using different versions).
+    % the effective mux mode value can briefly be wrong.
+    % NOTE: BIAS HK may potentially NOT cover the same time range as SCI data at
+    % all, and then the mux mode can be really wrong (e.g. when using different
+    % versions).
     %
     % LFR SCI data (L1/L1R)
     % ---------------------
     % Contains a zVar for mux mode using the same Epoch as the data.
-    %
+    % NOTE: This mux mode may be available when the BIAS HK mux mode is not.
     % NOTE: The relevant TDS datasets do not contain mux mode.
     %============================================================================
-    S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI
+    S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI, BIAS_HK_LFR_SCI
 
 
 
@@ -360,7 +354,7 @@ function SETTINGS = create_default_SETTINGS()
     % Settings for when to remove data by setting it to fill value
     % ------------------------------------------------------------
     % "L2" refers to output datasets. Both voltage and current data. In
-    % practise, this functionality is there as a temporary solution for removing
+    % practice, this functionality is there as a temporary solution for removing
     % sweeps.
     %============================================================================
     S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
@@ -387,11 +381,18 @@ function SETTINGS = create_default_SETTINGS()
     % If non-empty, then it overrides PROCESSING.RCS_NSO.FILE.RELATIVE_PATH.
     % Can be set to absolute path. Intended for testing.
     S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')
-    % Whether to enable NSO IDs which are intended for test purposes only.
-    S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
+%     % Whether to enable NSO IDs which are intended for test purposes only.
+%     NOTE: Preliminarily abolised functionality.
+%     S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
 
-    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3.
-    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',              2)
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
+    % EFIELD, and SCPOT data; both ORIS and DWNS.
+    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',     2)
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
+    % L2 LFR-SURV-CWF-E-1-SECONDS.
+    % NOTE: This does not affect the corresponding ORIS dataset and is therefore
+    % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
+    S.define_setting('PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN',  2)
 
 
 
@@ -503,18 +504,6 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    %======================================================================
-    % EXPERIMENTAL: LFR sampling frequency-dependent offsets.
-    %
-    % Values obtained from manually fitting F0,F1,F2 (not F3) snapshots in
-    % ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E_59e82ff_CNE_V02.cdf.
-    % NOTE: Values are relative as the absolute level is not known.
-    % NOTE: Might be that LFR offsets also depend on BLTS.
-    % NOTE: Has not set any value for F3.
-    %======================================================================
-    %S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
-    S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
-
     %============================================================================
     % Calibration constants for the "scalar" calibration mode
     % -------------------------------------------------------
@@ -582,7 +571,7 @@ function SETTINGS = create_default_SETTINGS()
     % YK 2020-11-02: Detrend AC data, but do not add linear fit back.
     %===========================================================================
     S.define_setting('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', 1)
-    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    1)
+    S.define_setting('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    true)
     S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
 
 
@@ -608,8 +597,8 @@ function SETTINGS = create_default_SETTINGS()
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
     % corresponds to interface volt.
-    % NOTE: This useful for separately using bicas.calib for analyzing BIAS
-    % standalone calibration tables (BSACT).
+    % NOTE: This useful for separately using bicas.proc.L1L2.cal for analyzing
+    % BIAS standalone calibration tables (BSACT).
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
 
 

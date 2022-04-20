@@ -1,14 +1,14 @@
 %-Abstract
 %
-%   Deprecated: This routine has been superseded by the CSPICE routine
+%   Deprecated: This routine has been superseded by the Mice routine
 %   cspice_illumf. This routine is supported for purposes of backward
 %   compatibility only.
 %
-%   Compute the illumination angles---phase, solar incidence, and
-%   emission---at a specified point on a target body at a particular
-%   epoch, optionally corrected for light time and stellar aberration.
-%   Return logical flags indicating whether the surface point is
-%   shadowed or occulted by the target body.
+%   CSPICE_ILLUM_PLID_PL02 computes the illumination angles---phase, 
+%   solar incidence, and emission---at a specified point on a target 
+%   body at a particular epoch, optionally corrected for light time 
+%   and stellar aberration. In addition, it returns logical flags indicating 
+%   whether the surface point is shadowed or occulted by the target body.
 %
 %   The target body's surface is represented by a triangular plate model
 %   contained in a type 2 DSK segment. The ID of the plate on which the
@@ -44,278 +44,289 @@
 %
 %   Given:
 %
-%      handle      the DAS file handle of a DSK file open for read
-%                  access. This kernel must contain a type 2 segment
-%                  that provides a plate model representing the entire
-%                  surface of the target body.
+%      handle   the DAS file handle of a DSK file open for read
+%               access.
 %
-%                  [1,1] = size(handle); int32 = class(handle)
+%               [1,1] = size(handle); int32 = class(handle)
 %
-%      dladsc      the DLA descriptor of a DSK segment representing
-%                  the surface of the target body.
+%               This kernel must contain a type 2 segment that provides a
+%               plate model representing the entire surface of the target
+%               body.
 %
-%                  [SPICE_DLA_DSCSIZ,1]  = size(dladsc)
-%                                int32 = class(dladsc)
+%      dladsc   the DLA descriptor of a DSK segment representing
+%               the surface of a target body.
 %
-%      target      the name of the target body. `target' is
-%                  case-insensitive, and leading and trailing blanks in
-%                  `target' are not significant. Optionally, you may supply
-%                  a string containing the integer ID code for the object.
-%                  For example both 'MOON' and '301' are legitimate strings
-%                  that indicate the moon is the target body.
+%               [SPICE_DLA_DSCSIZ,1] = size(dladsc); int32 = class(dladsc)
 %
-%                  This routine assumes that the target body's surface is
-%                  represented using a plate model, and that a DSK file
-%                  containing the plate model has been loaded via cspice_dasopr.
+%      target   the name of the target body.
 %
-%                  [1,c1] = size(target); char = class(target)
+%               [1,c1] = size(target); char = class(target)
 %
-%                     or
+%                  or
 %
-%                  [1,1] = size(target); cell = class(target)
+%               [1,1] = size(target); cell = class(target)
 %
-%      et          the epoch, represented as seconds past J2000 TDB, at
-%                  which the illumination angles are to be computed. When
-%                  aberration corrections are used, `et' refers to the
-%                  epoch at which radiation is received at the observer.
+%               `target' is case-insensitive, and leading and trailing blanks
+%               in `target' are not significant. Optionally, you may supply
+%               a string containing the integer ID code for the object.
+%               For example both 'MOON' and '301' are legitimate strings
+%               that indicate the moon is the target body.
 %
-%                  [1,1] = size(et); double = class(et)
+%               This routine assumes that the target body's surface is
+%               represented using a plate model, and that a DSK file
+%               containing the plate model has been loaded via cspice_dasopr.
 %
-%      abcorr      indicates the aberration corrections to be applied to
-%                  the position and orientation of the target body and the
-%                  position of the Sun to account for one-way light time
-%                  and stellar aberration. See the discussion in the
-%                  Particulars section for recommendations on how to choose
-%                  aberration corrections.
+%      et       the epoch, represented as seconds past J2000 TDB, at
+%               which the illumination angles are to be computed.
 %
-%                  [1,c2] = size(abcorr); char = class(abcorr)
+%               [1,1] = size(et); double = class(et)
 %
-%                     or
+%               When aberration corrections are used, `et' refers to the
+%               epoch at which radiation is received at the observer.
 %
-%                  [1,1] = size(abcorr); cell = class(abcorr)
+%      abcorr   indicates the aberration corrections to be applied to
+%               the position and orientation of the target body and the
+%               position of the Sun to account for one-way light time
+%               and stellar aberration.
 %
-%                  `abcorr' may be any of the following:
+%               [1,c2] = size(abcorr); char = class(abcorr)
 %
-%                     'NONE'     Apply no correction. Use the geometric
-%                                positions of the Sun and target body
-%                                relative to the observer; evaluate the
-%                                target body's orientation at `et'.
+%                  or
 %
-%                  The following values of `abcorr' apply to the
-%                  "reception" case in which photons depart from the
-%                  target's location at the light-time corrected epoch
-%                  et-lt and *arrive* at the observer's location at
-%                  `et':
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
-%                     'LT'       Correct for one-way light time (also
-%                                called "planetary aberration") using a
-%                                Newtonian formulation. This correction
-%                                uses the position and orientation of the
-%                                target at the moment it emitted photons
-%                                arriving at the observer at `et'. The
-%                                position of the Sun relative to the
-%                                target is corrected for the one-way light
-%                                time from the Sun to the target.
+%               See the discussion in the -Particulars section for
+%               recommendations on how to choose aberration corrections.
 %
-%                                The light time correction uses an
-%                                iterative solution of the light time
-%                                equation (see Particulars for details).
-%                                The solution invoked by the 'LT' option
-%                                uses one iteration.
+%               `abcorr' may be any of the following:
 %
-%                     'LT+S'     Correct for one-way light time and stellar
-%                                aberration using a Newtonian formulation.
-%                                This option modifies the positions
-%                                obtained with the 'LT' option to account
-%                                for the observer's velocity relative to
-%                                the solar system barycenter (note the
-%                                target plays the role of "observer" in the
-%                                computation of the aberration-corrected
-%                                target-Sun vector). The result is that the
-%                                illumination angles are computed using
-%                                apparent position and orientation of the
-%                                target as seen by the observer and the
-%                                apparent position of the Sun as seen by
-%                                the target.
+%                  'NONE'     Apply no correction. Use the geometric
+%                             positions of the Sun and target body
+%                             relative to the observer; evaluate the
+%                             target body's orientation at `et'.
 %
-%                     'CN'       Converged Newtonian light time correction.
-%                                In solving the light time equation, the
-%                                'CN' correction iterates until the
-%                                solution converges (three iterations on
-%                                all supported platforms).
+%               The following values of `abcorr' apply to the
+%               "reception" case in which photons depart from the
+%               target's location at the light-time corrected epoch
+%               et-lt and *arrive* at the observer's location at
+%               `et':
 %
-%                     'CN+S'     Converged Newtonian light time
-%                                and stellar aberration corrections.
+%                  'LT'       Correct for one-way light time (also
+%                             called "planetary aberration") using a
+%                             Newtonian formulation. This correction
+%                             uses the position and orientation of the
+%                             target at the moment it emitted photons
+%                             arriving at the observer at `et'. The
+%                             position of the Sun relative to the
+%                             target is corrected for the one-way light
+%                             time from the Sun to the target.
 %
-%      obsrvr      the name of the observing body. This is typically a
-%                  spacecraft, the earth, or a surface point on the earth.
-%                  `obsrvr' is case-insensitive, and leading and trailing
-%                  blanks in `obsrvr' are not significant. Optionally, you
-%                  may supply a string containing the integer ID code for
-%                  the object. For example both 'EARTH' and '399' are
-%                  legitimate strings that indicate the earth is the
-%                  observer.
+%                             The light time correction uses an
+%                             iterative solution of the light time
+%                             equation (see -Particulars for details).
+%                             The solution invoked by the 'LT' option
+%                             uses one iteration.
 %
-%                  [1,c3] = size(obsrvr); char = class(obsrvr)
+%                  'LT+S'     Correct for one-way light time and stellar
+%                             aberration using a Newtonian formulation.
+%                             This option modifies the positions
+%                             obtained with the 'LT' option to account
+%                             for the observer's velocity relative to
+%                             the solar system barycenter (note the
+%                             target plays the role of "observer" in the
+%                             computation of the aberration-corrected
+%                             target-Sun vector). The result is that the
+%                             illumination angles are computed using
+%                             apparent position and orientation of the
+%                             target as seen by the observer and the
+%                             apparent position of the Sun as seen by
+%                             the target.
 %
-%                     or
+%                  'CN'       Converged Newtonian light time correction.
+%                             In solving the light time equation, the
+%                             'CN' correction iterates until the
+%                             solution converges (three iterations on
+%                             all supported platforms).
 %
-%                  [1,1] = size(obsrvr); cell = class(obsrvr)
+%                  'CN+S'     Converged Newtonian light time
+%                             and stellar aberration corrections.
 %
-%      spoint      a surface point on the target body, expressed in
-%                  rectangular body-fixed (body equator and prime meridian)
-%                  coordinates. `spoint' need not be visible from the
-%                  observer's location at time `et'.
+%      obsrvr   the name of the observing body.
 %
-%                  [3,1] = size(spoint); double = class(spoint)
+%               [1,c3] = size(obsrvr); char = class(obsrvr)
 %
-%      plid        is the integer ID of the plate on which `spoint' is
-%                  located. If `spoint' was found by calling any of the
-%                  routines
+%                  or
 %
-%                     cspice_dskx02
-%                     cspice_subpt_pl02
-%                     cspice_subsol_pl02
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
 %
-%                  `plid' is the plate ID returned by the called routine.
+%               This is typically a spacecraft, the earth, or a surface point
+%               on the earth. `obsrvr' is case-insensitive, and leading and
+%               trailing blanks in `obsrvr' are not significant. Optionally,
+%               you may supply a string containing the integer ID code for
+%               the object. For example both 'EARTH' and '399' are
+%               legitimate strings that indicate the earth is the
+%               observer.
 %
-%                  [1,1] = size(plid); int32 = class(plid)
+%      spoint   a surface point on the target body, expressed in
+%               rectangular body-fixed (body equator and prime meridian)
+%               coordinates.
+%
+%               [3,1] = size(spoint); double = class(spoint)
+%
+%               `spoint' need not be visible from the observer's location at
+%               time `et'.
+%
+%      plid     the integer ID of the plate on which `spoint' is
+%               located.
+%
+%               [1,1] = size(plid); int32 = class(plid)
+%
+%               If `spoint' was found by calling any of the routines
+%
+%                  cspice_dskx02
+%                  cspice_subpt_pl02
+%                  cspice_subsol_pl02
+%
+%               `plid' is the plate ID returned by the called routine.
 %
 %   the call:
 %
-%      [trgepc, srfvec, phase, solar, emissn, visibl, lit] =    ...
-%                cspice_illum_plid_pl02( handle, dladsc, target, ...
-%                                        et,     abcorr, obsrvr, ...
+%      [trgepc, srfvec, phase, solar, emissn, visibl, lit] =               ...
+%                cspice_illum_plid_pl02( handle, dladsc, target,           ...
+%                                        et,     abcorr, obsrvr,           ...
 %                                        spoint, plid )
 %
 %   returns:
 %
-%   All outputs are computed using the body-fixed, body-centered
-%   reference frame of the DSK segment identified by `handle' and
-%   `dladsc'. This frame is referred to below as `fixref'. The
-%   frame ID of `fixref' may be obtained by calling cspice_dskgd, as
-%   is shown in the Examples section below.
+%      trgepc   the "surface point epoch."
 %
-%   The orientation of the frame `fixref' is evaluated at the
-%   epoch `trgepc'.
+%               [1,1] = size(trgepc); double = class(trgepc)
 %
-%      trgepc      is the "surface point epoch." `trgepc' is defined as
-%                  follows: letting `lt' be the one-way light time between
-%                  the observer and the input surface point `spoint',
-%                  `trgepc' is either the epoch et-lt or `et' depending on
-%                  whether the requested aberration correction is,
-%                  respectively, for received radiation or omitted. `lt' is
-%                  computed using the method indicated by `abcorr'.
+%               `trgepc' is defined as follows: letting `lt' be the one-way
+%               light time between the observer and the input surface point
+%               `spoint', `trgepc' is either the epoch et-lt or `et' depending
+%               on whether the requested aberration correction is,
+%               respectively, for received radiation or omitted. `lt' is
+%               computed using the method indicated by `abcorr'.
 %
-%                  `trgepc' is expressed as seconds past J2000 TDB.
+%               `trgepc' is expressed as seconds past J2000 TDB.
 %
-%                  [1,1] = size(trgepc); double = class(trgepc)
+%      srfvec   the vector from the observer's position at `et' to
+%               the aberration-corrected (or optionally, geometric)
+%               position of `spoint', where the aberration corrections
+%               are specified by `abcorr'.
 %
-%      srfvec      is the vector from the observer's position at `et' to
-%                  the aberration-corrected (or optionally, geometric)
-%                  position of `spoint', where the aberration corrections
-%                  are specified by `abcorr'. `srfvec' is expressed in the
-%                  target body-fixed reference frame designated by
-%                  `fixref', evaluated at `trgepc'.
+%               [3,1] = size(phase); double = class(phase)
 %
-%                  [3,1] = size(phase); double = class(phase)
+%               `srfvec' is expressed in the target body-fixed reference frame
+%               designated by `fixref', evaluated at `trgepc'.
 %
-%                  The components of `srfvec' are given in units of km.
+%               The components of `srfvec' are given in units of km.
 %
-%                  One can use the function norm to obtain the
-%                  distance between the observer and `spoint':
+%               One can use the function norm to obtain the
+%               distance between the observer and `spoint':
 %
-%                     dist = norm( srfvec );
+%                  dist = norm( srfvec );
 %
-%                  The observer's position `obspos', relative to the
-%                  target body's center, where the center's position is
-%                  corrected for aberration effects as indicated by
-%                  `abcorr', can be computed with:
+%               The observer's position `obspos', relative to the
+%               target body's center, where the center's position is
+%               corrected for aberration effects as indicated by
+%               `abcorr', can be computed with:
 %
-%                     obspos = spoint - srfvec
+%                  obspos = spoint - srfvec
 %
-%                  To transform the vector `srfvec' from a reference frame
-%                  `fixref' at time `trgepc' to a time-dependent reference
-%                  frame `ref' at time `et', the routine cspice_pxfrm2 should be
-%                  called. Let `xform' be the 3x3 matrix representing the
-%                  rotation from the reference frame `fixref' at time
-%                  `trgepc' to the reference frame `ref' at time `et'. Then
-%                  `srfvec' can be transformed to the result `refvec' as
-%                  follows:
+%               To transform the vector `srfvec' from a reference frame
+%               `fixref' at time `trgepc' to a time-dependent reference
+%               frame `ref' at time `et', the routine cspice_pxfrm2 should be
+%               called. Let `xform' be the 3x3 matrix representing the
+%               rotation from the reference frame `fixref' at time
+%               `trgepc' to the reference frame `ref' at time `et'. Then
+%               `srfvec' can be transformed to the result `refvec' as
+%               follows:
 %
-%                     xform  = cspice_pxfrm2 ( fixref, ref, trgepc, et )
-%                     refvec = xform * srfvec
+%                  xform  = cspice_pxfrm2 ( fixref, ref, trgepc, et )
+%                  refvec = xform * srfvec
 %
-%      phase       is the phase angle at `spoint', as seen from `obsrvr' at
-%                  time `et'.  This is the angle between the spoint-obsrvr
-%                  vector and the spoint-sun vector. Units are radians. The
-%                  range of `phase' is [0, pi].
+%      phase    the phase angle at `spoint', as seen from `obsrvr' at
+%               time `et'.
 %
-%                  [1,1] = size(phase); double = class(phase)
+%               [1,1] = size(phase); double = class(phase)
 %
-%      solar       is the solar incidence angle at `spoint', as seen from
-%                  `obsrvr' at time `et'.  This is the angle between the
-%                  surface normal vector at `spoint' and the spoint-sun
-%                  vector.  Units are radians.  The range of `solar' is [0,
-%                  pi].
+%               This is the angle between the spoint-obsrvr vector and the
+%               spoint-sun vector. Units are radians. The range of `phase'
+%               is [0, pi].
 %
-%                  Note that if the target surface is non-convex, a solar
-%                  incidence angle less than pi/2 radians does not imply
-%                  the surface point is illuminated. See the description of
-%                  `lit' below.
+%               See -Particulars below for a detailed discussion of the
+%               definitions of this angle.
 %
-%                  [1,1] = size(solar); double = class(solar)
+%      solar    the solar incidence angle at `spoint', as seen from
+%               `obsrvr' at time `et'.
 %
-%      emissn      is the emission angle at `spoint', as seen from `obsrvr'
-%                  at time `et'.  This is the angle between the surface
-%                  normal vector at `spoint' and the spoint-observer
-%                  vector.  Units are radians.  The range of `emissn' is
-%                  is [0, pi].
+%               [1,1] = size(solar); double = class(solar)
 %
-%                  See Particulars below for a detailed discussion of the
-%                  definitions of these angles.
+%               This is the angle between the surface normal vector at
+%               `spoint' and the spoint-sun vector. Units are radians.
+%               The range of `solar' is [0, pi].
 %
-%                  Note that if the target surface is non-convex, an emission
-%                  angle less than pi/2 radians does not imply the surface
-%                  point is visible to the observer. See the description of
-%                  `visible' below.
+%               Note that if the target surface is non-convex, a solar
+%               incidence angle less than pi/2 radians does not imply
+%               the surface point is illuminated. See the description of
+%               `lit' below.
 %
-%                  [1,1] = size(emissn); double = class(emissn)
+%               See -Particulars below for a detailed discussion of the
+%               definitions of this angle.
 %
-%                  See Particulars below for a detailed discussion of the
-%                  definitions of these angles.
+%      emissn   the emission angle at `spoint', as seen from `obsrvr'
+%               at time `et'.
 %
-%      visible     is a logical flag indicating whether the surface point
-%                  is visible to the observer. `visible' takes into account
-%                  whether the target surface occults `spoint', regardless
-%                  of the emission angle at `spoint'. `visible' is returned
-%                  with the value true if `spoint' is visible;
-%                  otherwise it is false.
+%               [1,1] = size(emissn); double = class(emissn)
 %
-%                  [1,1] = size(visibl); logical = class(visibl)
+%               This is the angle between the surface normal vector at
+%               `spoint' and the spoint-obsrvr vector. Units are radians.
+%               The range of `emissn' is is [0, pi].
 %
-%      lit         is a logical flag indicating whether the surface point
-%                  is illuminated; the point is considered to be
-%                  illuminated if the vector from the point to the center
-%                  of the sun doesn't intersect the target surface. `lit'
-%                  takes into account whether the target surface casts a
-%                  shadow on `spoint', regardless of the solar incidence
-%                  angle at `spoint'. `lit' is returned with the value
-%                  true if `spoint' is illuminated; otherwise it is
-%                  false.
+%               Note that if the target surface is non-convex, an emission
+%               angle less than pi/2 radians does not imply the surface
+%               point is visible to the observer. See the description of
+%               `visibl' below.
 %
-%                  [1,1] = size(lit); logical = class(lit)
+%               See -Particulars below for a detailed discussion of the
+%               definitions of this angle.
+%
+%      visibl   a logical flag indicating whether the surface point
+%               is visible to the observer.
+%
+%               [1,1] = size(visibl); logical = class(visibl)
+%
+%               `visibl' takes into account whether the target surface occults
+%               `spoint', regardless of the emission angle at `spoint'.
+%               `visibl' is returned with the value true if `spoint' is
+%               visible; otherwise it is false.
+%
+%      lit      a logical flag indicating whether the surface point
+%               is illuminated; the point is considered to be
+%               illuminated if the vector from the point to the center
+%               of the sun doesn't intersect the target surface.
+%
+%               [1,1] = size(lit); logical = class(lit)
+%
+%               `lit' takes into account whether the target surface casts a
+%               shadow on `spoint', regardless of the solar incidence
+%               angle at `spoint'. `lit' is returned with the value
+%               true if `spoint' is illuminated; otherwise it is
+%               false.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   The numerical results shown for this example may differ across
-%   platforms. The results depend on the SPICE kernels used as input,
-%   the compiler and supporting libraries, and the machine specific
-%   arithmetic implementation.
+%   Any numerical results shown for this example may differ between
+%   platforms as the results depend on the SPICE kernels used as input
+%   and the machine specific arithmetic implementation.
 %
-%   Example:
-%
-%      Find the illumination angles at both the sub-observer point and
+%   1) Find the illumination angles at both the sub-observer point and
 %      sub-solar point on Phobos as seen from Mars for a specified
 %      sequence of times. Perform each computation twice, using both the
 %      "intercept" and "ellipsoid near point" options for the sub-observer
@@ -326,44 +337,61 @@
 %      incidence angles won't generally be zero at the sub-observer
 %      and sub-solar points, respectively.)
 %
-%      In the following example program, the file
+%
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
+%
+%
+%         KPL/MK
+%
+%         File: illum_plid_pl02_ex1.tm
+%
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
+%
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                        Contents
+%            ---------                        --------
+%            mar097.bsp                       Mars satellite ephemeris
+%            pck00010.tpc                     Planet orientation and
+%                                             radii
+%            naif0010.tls                     Leapseconds
+%
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'mar097.bsp',
+%                                'pck00010.tpc',
+%                                'naif0010.tls' )
+%         \begintext
+%
+%         End of meta-kernel
+%
+%
+%      Use the DSK kernel below to provide the plate model representation
+%      of the surface of Phobos.
 %
 %         phobos_3_3.bds
 %
-%      is a DSK file containing a type 2 segment that provides a plate model
-%      representation of the surface of Phobos.  The file
-%
-%         mar097.bsp
-%
-%      is a binary SPK file containing data for Phobos, Mars, and the
-%      Sun for a time interval starting at the date
-%
-%         2000 JAN 1 12:00:00 TDB.
-%
-%      pck00010.tpc is a planetary constants kernel file containing radii
-%      and rotation model constants.  naif0010.tls is a leapseconds kernel.
-%
-%      All of the kernels other than the DSK file should be loaded via
-%      a meta-kernel.  An example of the contents of such a kernel is:
-%
-%          KPL/MK
-%
-%          File name: illum.tm
-%
-%          \begindata
-%
-%             KERNELS_TO_LOAD = ( 'naif0010.tls'
-%                                 'pck00010.tpc'
-%                                 'mar097.bsp' )
-%          \begintext
 %
 %
-%      function illum_plid_pl02_t
+%      Example code begins here.
+%
+%
+%      function illum_plid_pl02_ex1
 %
 %         %
 %         % MiceUser globally defines DSK parameters.
-%         % For more information, please see DSKMiceUser.m and
-%         % DSKMice02.m.
+%         % For more information, please see MiceUser.m and
+%         % MiceDSK.m.
 %         %
 %         MiceUser
 %
@@ -397,14 +425,14 @@
 %         %
 %         % Prompt for the name of a DSK file.
 %         %
-%         dsk = input( 'Enter DSK name         > ','s');
+%         dsknam = input( 'Enter DSK name         > ','s');
 %
 %         %
 %         % Open the DSK file for read access.
 %         % We use the DAS-level interface for
 %         % this function.
 %         %
-%         handle = cspice_dasopr( dsk );
+%         handle = cspice_dasopr( dsknam );
 %
 %         %
 %         % Begin a forward search through the
@@ -422,7 +450,7 @@
 %            % unexpected, but we're prepared for it.
 %            %
 %            cspice_kclear
-%            fprintf( 'No segments found in DSK file %s\n', dsk )
+%            fprintf( 'No segments found in DSK file %s\n', dsknam )
 %            return
 %
 %         end
@@ -446,7 +474,7 @@
 %         if ( strcmp(fixref, ' ') )
 %
 %            cspice_kclear
-%            fprintf( ['Frame ID code # could not be mapped to ' ...
+%            fprintf( ['Frame ID code # could not be mapped to '           ...
 %                      'a frame name %d\n'], dskdsc(SPICE_DSK_FRMIDX) )
 %            return
 %
@@ -471,7 +499,7 @@
 %
 %            et = et0 + i * stepsize;
 %
-%            timstr = cspice_timout( et,                                    ...
+%            timstr = cspice_timout( et,                                   ...
 %                                    'YYYY-MON-DD HR:MN:SC.### ::TDB(TDB)' );
 %
 %
@@ -482,7 +510,7 @@
 %
 %               abcorr = abcorrs( coridx );
 %
-%               fprintf( '   abcorr = %s\n', char(abcorr) );
+%               fprintf( '\n   abcorr = %s\n', char(abcorr) );
 %
 %               for  midx = 1:NMETHOD
 %
@@ -498,8 +526,8 @@
 %                  % model representation of the target's surface.
 %                  %
 %                  [xpt, alt, plid] = ...
-%                        cspice_subpt_pl02( handle, dladsc, method, ...
-%                                           target, et,     abcorr, ...
+%                        cspice_subpt_pl02( handle, dladsc, method,        ...
+%                                           target, et,     abcorr,        ...
 %                                           obsrvr                    );
 %
 %                  %
@@ -507,9 +535,11 @@
 %                  % point. Also compute the light-of-sight visibility and
 %                  % shadowing flags.
 %                  %
-%                  [ trgepc, srfvec, phase, solar, emissn, visible, lit ] = ...
-%                  cspice_illum_plid_pl02( handle, dladsc, target, et,     ...
-%                                          abcorr, obsrvr, xpt, plid );
+%                  [trgepc, srfvec, phase,  solar,                         ...
+%                           emissn, visibl, lit]   =                       ...
+%                       cspice_illum_plid_pl02( handle, dladsc, target,    ...
+%                                               et,     abcorr, obsrvr,    ...
+%                                               xpt,    plid          );
 %
 %                  %
 %                  %  Represent the surface point in latitudinal
@@ -519,32 +549,30 @@
 %
 %                  fprintf(                                                ...
 %                  '\n     Sub-observer point on plate model surface:\n' )
-%                  fprintf( '       Planetocentric Longitude (deg):  %f\n', ...
-%                                                    xlon * cspice_dpr() )
-%                  fprintf( '       Planetocentric Latitude  (deg):  %f\n', ...
-%                                                    xlat * cspice_dpr() )
+%                  fprintf(                                                ...
+%                       '       Planetocentric Longitude (deg):  %f\n',    ...
+%                                                 xlon * cspice_dpr() )
+%                  fprintf(                                                ...
+%                       '       Planetocentric Latitude  (deg):  %f\n',    ...
+%                                                   xlat * cspice_dpr() )
 %
-%                  fprintf(                                              ...
+%                  fprintf(                                                ...
 %                   '\n         Illumination angles derived using a\n' )
 %                  fprintf( '         plate model surface:\n' )
-%                  fprintf(                                              ...
-%                    '             Phase angle              (deg): %f\n', ...
-%                                                  phase  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                   '             Solar incidence angle    (deg): %f\n', ...
-%                                                  solar  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                  '              Illumination flag             : %d\n',  ...
-%                                                  lit )
-%                  fprintf(                                              ...
-%                   '             Emission angle           (deg): %f\n', ...
-%                                                  emissn * cspice_dpr() )
-%                  fprintf(                                              ...
-%                  '              Visibility flag               : %d\n', ...
-%                                                  visible )
-%                  fprintf(                                              ...
-%                  '              Range to surface point    (km): %f\n', ...
-%                                                 norm( srfvec ) )
+%                  fprintf(['             Phase angle'                     ...
+%                           '              (deg): %f\n'],                  ...
+%                                                phase  * cspice_dpr() )
+%                  fprintf(['             Solar incidence angle',          ...
+%                           '    (deg): %f\n'],  solar  * cspice_dpr() )
+%                  fprintf(['             Illumination flag',              ...
+%                           '             : %d\n'],  lit               )
+%                  fprintf(['             Emission angle',                 ...
+%                           '           (deg): %f\n'],                     ...
+%                                                emissn * cspice_dpr() )
+%                  fprintf(['             Visibility flag',                ...
+%                           '               : %d\n'], visibl           )
+%                  fprintf(['             Range to surface point',         ...
+%                           '    (km): %f\n'],  norm( srfvec )         )
 %
 %                  %
 %                  % Compute the illumination angles using an ellipsoidal
@@ -553,23 +581,22 @@
 %                  % normal.
 %                  %
 %
-%                  [trgepc, srfvec, phase,  solar,  emissn] = ...
-%                                           cspice_ilumin( ILUM_METHOD,  ...
-%                                               target, et,     FIXREF,  ...
+%                  [trgepc, srfvec, phase,  solar,  emissn] =              ...
+%                                           cspice_ilumin( ILUM_METHOD,    ...
+%                                               target, et,     FIXREF,    ...
 %                                               abcorr, obsrvr, xpt);
 %
-%                  fprintf(                                              ...
+%                  fprintf(                                                ...
 %                   '         Illumination angles derived using an\n' )
-%                  fprintf( '         ellipsoidal reference surface::\n' )
-%                  fprintf(                                              ...
-%                   '             Phase angle              (deg): %f\n', ...
-%                                                  phase  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                   '             Solar incidence angle    (deg): %f\n', ...
-%                                                  solar  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                   '             Emission angle           (deg): %f\n', ...
-%                                                  emissn * cspice_dpr() )
+%                  fprintf( '         ellipsoidal reference surface:\n' )
+%                  fprintf(['             Phase angle',                    ...
+%                           '              (deg): %f\n'],                  ...
+%                                                phase  * cspice_dpr() )
+%                  fprintf(['             Solar incidence angle',          ...
+%                           '    (deg): %f\n'],  solar  * cspice_dpr() )
+%                  fprintf(['             Emission angle',                 ...
+%                           '           (deg): %f\n'],                     ...
+%                                                emissn * cspice_dpr() )
 %
 %
 %                  %
@@ -580,19 +607,21 @@
 %                  % representation of the target's surface.
 %                  %
 %
-%                  [xpt, dist, plid] = ...
-%                  cspice_subsol_pl02( handle, dladsc, method, ...
-%                                      target, et,     abcorr, ...
-%                                      obsrvr                    );
+%                  [xpt, dist, plid] =                                     ...
+%                           cspice_subsol_pl02( handle, dladsc, method,    ...
+%                                               target, et,     abcorr,    ...
+%                                               obsrvr                );
 %
 %                  %
 %                  % Compute the illumination angles at the sub-solar point.
 %                  % Also compute the light-of-sight visibility and
 %                  % shadowing flags.
 %                  %
-%                  [ trgepc, srfvec, phase, solar, emissn, visible, lit] =  ...
-%                  cspice_illum_plid_pl02( handle, dladsc, target, et,     ...
-%                                          abcorr, obsrvr, xpt, plid );
+%                  [trgepc, srfvec, phase,  solar,                         ...
+%                           emissn, visibl, lit] =                         ...
+%                       cspice_illum_plid_pl02( handle, dladsc, target,    ...
+%                                               et,     abcorr, obsrvr,    ...
+%                                               xpt,    plid          );
 %
 %                  %
 %                  %  Represent the surface point in latitudinal
@@ -600,32 +629,32 @@
 %                  %
 %                  [ xr, xlon, xlat] = cspice_reclat( xpt );
 %
-%                  fprintf( '\n     Sub-solar point on plate model surface:\n' )
-%                  fprintf( '       Planetocentric Longitude (deg):  %f\n', ...
-%                                                     xlon * cspice_dpr() )
-%                  fprintf( '       Planetocentric Latitude  (deg):  %f\n', ...
-%                                                     xlat * cspice_dpr() )
-%                  fprintf(                                              ...
+%                  fprintf(                                                ...
+%                   '\n     Sub-solar point on plate model surface:\n' )
+%                  fprintf(                                                ...
+%                       '       Planetocentric Longitude (deg):  %f\n',    ...
+%                                                 xlon * cspice_dpr() )
+%                  fprintf(                                                ...
+%                       '       Planetocentric Latitude  (deg):  %f\n',    ...
+%                                                   xlat * cspice_dpr() )
+%
+%                  fprintf(                                                ...
 %                   '\n         Illumination angles derived using a\n' )
 %                  fprintf( '         plate model surface:\n' )
-%                  fprintf(                                              ...
-%                   '             Phase angle              (deg): %f\n', ...
-%                                                  phase  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                   '             Solar incidence angle    (deg): %f\n', ...
-%                                                  solar  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                  '              Illumination flag             : %d\n',  ...
-%                                                  lit )
-%                  fprintf(                                              ...
-%                   '             Emission angle           (deg): %f\n', ...
-%                                                  emissn * cspice_dpr() )
-%                  fprintf(                                              ...
-%                  '              Visibility flag               : %d\n', ...
-%                                                  visible )
-%                  fprintf(                                              ...
-%                  '              Range to surface point    (km): %f\n', ...
-%                                                 norm( srfvec ) )
+%                  fprintf(['             Phase angle'                     ...
+%                           '              (deg): %f\n'],                  ...
+%                                                phase  * cspice_dpr() )
+%                  fprintf(['             Solar incidence angle',          ...
+%                           '    (deg): %f\n'],  solar  * cspice_dpr() )
+%                  fprintf(['             Illumination flag',              ...
+%                           '             : %d\n'],  lit               )
+%                  fprintf(['             Emission angle',                 ...
+%                           '           (deg): %f\n'],                     ...
+%                                                emissn * cspice_dpr() )
+%                  fprintf(['             Visibility flag',                ...
+%                           '               : %d\n'], visibl           )
+%                  fprintf(['             Range to surface point',         ...
+%                           '    (km): %f\n'],  norm( srfvec )         )
 %
 %
 %                  %
@@ -634,22 +663,21 @@
 %                  % this representation is to provide an outward surface
 %                  % normal.
 %                  %
-%                  [ etrgep, esrfvc, phase, solar, emissn ] =       ...
-%                   cspice_ilumin( ILUM_METHOD, target, et, fixref, ...
-%                                   abcorr, obsrvr, xpt );
+%                  [ etrgep, esrfvc, phase, solar, emissn ] =              ...
+%                          cspice_ilumin( ILUM_METHOD, target, et, fixref, ...
+%                                         abcorr, obsrvr, xpt );
 %
-%                  fprintf(                                              ...
+%                  fprintf(                                                ...
 %                   '         Illumination angles derived using an\n' )
-%                  fprintf( '         ellipsoidal surface:\n' )
-%                  fprintf(                                              ...
-%                   '             Phase angle              (deg): %f\n', ...
-%                                                  phase  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                   '             Solar incidence angle    (deg): %f\n', ...
-%                                                  solar  * cspice_dpr() )
-%                  fprintf(                                              ...
-%                   '             Emission angle           (deg): %f\n\n', ...
-%                                                  emissn * cspice_dpr() )
+%                  fprintf( '         ellipsoidal reference surface:\n' )
+%                  fprintf(['             Phase angle',                    ...
+%                           '              (deg): %f\n'],                  ...
+%                                                phase  * cspice_dpr() )
+%                  fprintf(['             Solar incidence angle',          ...
+%                           '    (deg): %f\n'],  solar  * cspice_dpr() )
+%                  fprintf(['             Emission angle',                 ...
+%                           '           (deg): %f\n'],                     ...
+%                                                emissn * cspice_dpr() )
 %
 %               end
 %
@@ -668,9 +696,18 @@
 %         %
 %         cspice_kclear
 %
-%   MATLAB outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, using the meta-kernel file named illum_plid_pl02_ex1.tm and
+%      the DSK file named phobos_3_3.bds, the output was:
+%
+%
+%      Enter meta-kernel name > illum_plid_pl02_ex1.tm
+%      Enter DSK name         > phobos_3_3.bds
+%
 %
 %      Observation epoch:  2000-JAN-01 12:00:00.000 (TDB)
+%
 %         abcorr = NONE
 %
 %           Method =Intercept
@@ -683,12 +720,12 @@
 %               plate model surface:
 %                   Phase angle              (deg): 101.596824
 %                   Solar incidence angle    (deg): 98.376877
-%                    Illumination flag             : 0
+%                   Illumination flag             : 0
 %                   Emission angle           (deg): 9.812914
-%                    Visibility flag               : 1
-%                    Range to surface point    (km): 9501.835727
+%                   Visibility flag               : 1
+%                   Range to surface point    (km): 9501.835727
 %               Illumination angles derived using an
-%               ellipsoidal reference surface::
+%               ellipsoidal reference surface:
 %                   Phase angle              (deg): 101.596824
 %                   Solar incidence angle    (deg): 101.695444
 %                   Emission angle           (deg): 0.104977
@@ -701,16 +738,15 @@
 %               plate model surface:
 %                   Phase angle              (deg): 101.665306
 %                   Solar incidence angle    (deg): 13.068798
-%                    Illumination flag             : 1
+%                   Illumination flag             : 1
 %                   Emission angle           (deg): 98.408735
-%                    Visibility flag               : 0
-%                    Range to surface point    (km): 9516.720964
+%                   Visibility flag               : 0
+%                   Range to surface point    (km): 9516.720964
 %               Illumination angles derived using an
-%               ellipsoidal surface:
+%               ellipsoidal reference surface:
 %                   Phase angle              (deg): 101.665306
 %                   Solar incidence angle    (deg): 11.594741
 %                   Emission angle           (deg): 98.125499
-%
 %
 %           Method =Ellipsoid near point
 %
@@ -722,12 +758,12 @@
 %               plate model surface:
 %                   Phase angle              (deg): 101.596926
 %                   Solar incidence angle    (deg): 98.376877
-%                    Illumination flag             : 0
+%                   Illumination flag             : 0
 %                   Emission angle           (deg): 9.812985
-%                    Visibility flag               : 1
-%                    Range to surface point    (km): 9501.837763
+%                   Visibility flag               : 1
+%                   Range to surface point    (km): 9501.837763
 %               Illumination angles derived using an
-%               ellipsoidal reference surface::
+%               ellipsoidal reference surface:
 %                   Phase angle              (deg): 101.596926
 %                   Solar incidence angle    (deg): 101.593324
 %                   Emission angle           (deg): 0.003834
@@ -740,17 +776,39 @@
 %               plate model surface:
 %                   Phase angle              (deg): 101.663675
 %                   Solar incidence angle    (deg): 16.476730
-%                    Illumination flag             : 1
+%                   Illumination flag             : 1
 %                   Emission angle           (deg): 118.124981
-%                    Visibility flag               : 0
-%                    Range to surface point    (km): 9517.506732
+%                   Visibility flag               : 0
+%                   Range to surface point    (km): 9517.506732
 %               Illumination angles derived using an
-%               ellipsoidal surface:
+%               ellipsoidal reference surface:
 %                   Phase angle              (deg): 101.663675
 %                   Solar incidence angle    (deg): 0.422781
 %                   Emission angle           (deg): 101.541470
 %
-%            ...
+%         abcorr = CN+S
+%
+%           Method =Intercept
+%
+%           Sub-observer point on plate model surface:
+%             Planetocentric Longitude (deg):  -0.348101
+%             Planetocentric Latitude  (deg):  0.008861
+%
+%               Illumination angles derived using a
+%               plate model surface:
+%                   Phase angle              (deg): 101.592246
+%                   Solar incidence angle    (deg): 98.372348
+%                   Illumination flag             : 0
+%                   Emission angle           (deg): 9.812902
+%                   Visibility flag               : 1
+%                   Range to surface point    (km): 9502.655917
+%
+%      [...]
+%
+%
+%      Warning: incomplete output. Only 100 out of 479 lines have been
+%      provided.
+%
 %
 %-Particulars
 %
@@ -772,7 +830,7 @@
 %
 %
 %   The diagram below illustrates the geometric relationships defining
-%   these angles.  The labels for the solar incidence, emission, and
+%   these angles. The labels for the solar incidence, emission, and
 %   phase angles are "s.i.", "e.", and "phase".
 %
 %
@@ -798,7 +856,7 @@
 %
 %   Note that if the target-observer vector, the target normal vector
 %   at the surface point, and the target-sun vector are coplanar, then
-%   phase is the sum of incidence and emission.  This is rarely true;
+%   phase is the sum of incidence and emission. This is rarely true;
 %   usually
 %
 %      phase angle  <  solar incidence angle + emission angle
@@ -806,10 +864,10 @@
 %
 %   All of the above angles can be computed using light time
 %   corrections, light time and stellar aberration corrections, or
-%   no aberration corrections.  The way aberration corrections
+%   no aberration corrections. The way aberration corrections
 %   are used is described below.
 %
-%   Care must be used in computing light time corrections.  The
+%   Care must be used in computing light time corrections. The
 %   guiding principle used here is "describe what appears in
 %   an image."
 %
@@ -837,7 +895,7 @@
 %      -------------------------
 %
 %      Using the definitions of `et' and `lt' above, the target
-%      body's orientation at et-lt is used.  The surface
+%      body's orientation at et-lt is used. The surface
 %      normal is dependent on the target body's orientation, so
 %      the body's orientation model must be evaluated for the correct
 %      epoch.
@@ -848,9 +906,9 @@
 %
 %      All surface features on the target body will appear in a
 %      measurement made at `et' as they were at the target at epoch
-%      et-lt.  In particular, lighting on the target body is dependent
+%      et-lt. In particular, lighting on the target body is dependent
 %      on the apparent location of the Sun as seen from the target body
-%      at et-lt.  So, a second light time correction is used in finding
+%      at et-lt. So, a second light time correction is used in finding
 %      the apparent location of the Sun.
 %
 %
@@ -871,7 +929,7 @@
 %
 %      The target body-Sun vector is the apparent position of the Sun,
 %      corrected for light time and stellar aberration, as seen from
-%      the target body at time et-lt.  Note that the target body's
+%      the target body at time et-lt. Note that the target body's
 %      position is not affected by the stellar aberration correction
 %      applied in finding its apparent position as seen by the
 %      observer.
@@ -881,10 +939,119 @@
 %   element of time is eliminated from the computation. The problem
 %   becomes a purely geometric one and is described by the diagram above.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine illum_plid_pl02.
+%   If any of the listed errors occur, the output arguments are
+%   left unchanged.
+%
+%   1)  If `plid' is not a valid plate ID, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%   2)  If either of the input body names `target' or `obsrvr' cannot be
+%       mapped to NAIF integer codes, the error SPICE(IDCODENOTFOUND)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   3)  If `obsrvr' and `target' map to the same NAIF integer ID codes, the
+%       error SPICE(BODIESNOTDISTINCT) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If frame definition data enabling the evaluation of the state
+%       of the target relative to the observer in the target
+%       body-fixed frame have not been loaded prior to calling
+%       cspice_illum_plid_pl02, an error is signaled by a routine in the call
+%       tree of this routine.
+%
+%   5)  If the specified aberration correction is not recognized, an
+%       error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   6)  If insufficient ephemeris data have been loaded prior to
+%       calling cspice_illum_plid_pl02, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   7)  If a DSK providing a DSK type 2 plate model has not been
+%       loaded prior to calling cspice_illum_plid_pl02, an error is signaled
+%       by a routine in the call tree of this routine.
+%
+%   8)  If PCK data supplying a rotation model for the target body
+%       have not been loaded prior to calling cspice_illum_plid_pl02, an
+%       error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   9)  If the segment associated with the input DLA descriptor does not
+%       contain data for the designated target, the error
+%       SPICE(TARGETMISMATCH) is signaled by a routine in the call tree
+%       of this routine. The target body of the DSK segment is determined
+%       from the `center' member of the segment's DSK descriptor.
+%
+%   10) If the segment associated with the input DLA descriptor is not
+%       of data type 2, the error SPICE(WRONGDATATYPE) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   11) Use of transmission-style aberration corrections is not
+%       permitted. If abcorr specified such a correction, the
+%       error SPICE(NOTSUPPORTED) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   12) The observer is presumed to be outside the target body; no
+%       checks are made to verify this.
+%
+%   13) If the DSK segment's coordinate system is not latitudinal
+%       (aka planetocentric), the error SPICE(BADCOORDSYSTEM) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   14) If any of the input arguments, `handle', `dladsc', `target', `et',
+%       `abcorr', `obsrvr', `spoint' or `plit', is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   15) If any of the input arguments, `handle', `dladsc', `target', `et',
+%       `abcorr', `obsrvr', `spoint' or `plid', is not of the expected type,
+%       or it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   Appropriate DSK, SPK, PCK, and frame data must be available to
+%   the calling program before this routine is called. Typically
+%   the data are made available by loading kernels; however the
+%   data may be supplied via subroutine interfaces if applicable.
+%
+%   The following data are required:
+%
+%   -  DSK data:  a DSK file containing a plate model representing the
+%      target body's surface must be loaded. This kernel must contain
+%      a type 2 segment that contains data for the entire surface of
+%      the target body.
+%
+%   -  SPK data: ephemeris data for target, observer, and Sun must be
+%      loaded. If aberration corrections are used, the states of
+%      target and observer relative to the solar system barycenter
+%      must be calculable from the available ephemeris data. Typically
+%      ephemeris data are made available by loading one or more SPK
+%      files via cspice_furnsh.
+%
+%   -  PCK data: rotation data for the target body must
+%      be loaded. These may be provided in a text or binary PCK file.
+%      Either type of file may be loaded via cspice_furnsh.
+%
+%   -  Frame data: if a frame definition is required to convert
+%      the observer and target states to the body-fixed frame of
+%      the target, that definition must be available in the kernel
+%      pool. Typically the definition is supplied by loading a
+%      frame kernel via cspice_furnsh.
+%
+%   In all cases, kernel data are normally loaded once per program
+%   run, NOT every time this routine is called.
+%
+%-Restrictions
+%
+%   1)  The solar illumination state indicated by the output argument `lit'
+%       is computed treating the sun as a point light source. Surface
+%       points that are illuminated by part of the sun's disc are
+%       classified as "lit" or not depending on whether the center of the
+%       sun is visible from those points.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ABCORR.REQ
@@ -893,24 +1060,48 @@
 %   SPK.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 04-APR-2017, NJB (JPL), EDW (JPL)
+%   -Mice Version 1.1.0, 05-DEC-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%       Index lines now state that this routine is deprecated.
+%
+%   -Mice Version 1.0.0, 04-APR-2017 (NJB) (EDW)
 %
 %-Index_Entries
 %
-%   plate model surface point visibility and shadowing
-%   illumination angles using DSK type 2 plate model
-%   lighting angles using DSK type 2 plate model
-%   phase angle using DSK type 2 plate model
-%   emission angle using DSK type 2 plate model
-%   solar incidence angle using DSK type 2 plate model
+%   DEPRECATED plate model point visibility and shadowing
+%   DEPRECATED illumination angles using DSK type 2
+%   DEPRECATED lighting angles using DSK type 2 plate model
+%   DEPRECATED phase angle using DSK type 2 plate model
+%   DEPRECATED emission angle using DSK type 2 plate model
+%   DEPRECATED solar incidence angle using DSK type 2
 %
 %-&
 
-function [trgepc, srfvec, phase, solar, emissn, visibl, lit] =  ...
-                cspice_illum_plid_pl02( handle, dladsc, target, ...
-                                        et,     abcorr, obsrvr, ...
+function [trgepc, srfvec, phase, solar, emissn, visibl, lit] =             ...
+                cspice_illum_plid_pl02( handle, dladsc, target,            ...
+                                        et,     abcorr, obsrvr,            ...
                                         spoint, plid                )
 
    switch nargin
@@ -927,9 +1118,9 @@ function [trgepc, srfvec, phase, solar, emissn, visibl, lit] =  ...
 
       otherwise
 
-         error ( [ 'Usage: [trgepc, srfvec(3), phase, solar, emissn, ' ...
-                   'visibl, lit] = cspice_illum_plid_pl02( handle, '   ...
-                   ' dladsc(SPICE_DLA_DSCSIZ), `target`, ' ...
+         error ( [ 'Usage: [trgepc, srfvec(3), phase, solar, emissn, '     ...
+                   'visibl, lit] = cspice_illum_plid_pl02( handle, '       ...
+                   ' dladsc(SPICE_DLA_DSCSIZ), `target`, '                 ...
                    'et, `abcorr`, `obsrvr`, spoint(3), plid )' ] )
 
    end
@@ -939,8 +1130,8 @@ function [trgepc, srfvec, phase, solar, emissn, visibl, lit] =  ...
    %
    try
 
-      [ilumin, visibl, lit]  = mice( 'illum_plid_pl02_s', ...
-                                     handle, dladsc, target, ...
+      [ilumin, visibl, lit]  = mice( 'illum_plid_pl02_s',                  ...
+                                     handle, dladsc, target,               ...
                                      et,     abcorr, obsrvr, spoint, plid);
       trgepc   = reshape( [ilumin(:).trgepc], 1, [] );
       srfvec   = reshape( [ilumin(:).srfvec], 3, [] );
@@ -949,8 +1140,8 @@ function [trgepc, srfvec, phase, solar, emissn, visibl, lit] =  ...
       emissn   = reshape( [ilumin(:).emissn], 1, [] );
       visibl   = zzmice_logical(visibl);
       lit      = zzmice_logical(lit);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

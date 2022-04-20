@@ -34,16 +34,18 @@
 %
 %   Given:
 %
-%      linpt    [3,1] = size(linpt); double = class(linpt)
+%      linpt,
+%      lindir   are, respectively, a point and a direction vector that define
+%               a line.
 %
-%      lindir   [3,1] = size(lindir); double = class(lindir)
+%               [3,1] = size(linpt); double = class(linpt)
+%               [3,1] = size(lindir); double = class(lindir)
 %
-%               are, respectively, a point and a direction vector that define
-%               a line.  The line is the set of vectors
+%               The line is the set of vectors
 %
-%                     linept   +   t * linedr
+%                  linept   +   t * linedr
 %
-%               where t is any real number.
+%               where `t' is any real number.
 %
 %      point    a point in 3-dimensional space.
 %
@@ -51,17 +53,21 @@
 %
 %   the call:
 %
-%      [ pnear, dist ] = cspice_nplnpt( linpt, lindir, point )
+%      [pnear, dist] = cspice_nplnpt( linpt, lindir, point )
 %
 %   returns:
 %
-%      pnear   the nearest point on the input line to the input 'point'.
+%      pnear    the nearest point on the input line to the input `point'.
 %
-%              [3,1] = size(pnear); double = class(pnear)
+%               [3,1] = size(pnear); double = class(pnear)
 %
-%      dist    distance between the input line and input point.
+%      dist     distance between the input line and input point.
 %
-%              [1,n] = size(dist); double = class(dist)
+%               [1,n] = size(dist); double = class(dist)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -69,51 +75,103 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define a point on a line, a direction for the line, and
-%      % an arbitrary point in space.
-%      %
-%      linept = [  1, 2,  3 ]';
-%      linedr = [  0, 1,  1 ]';
-%      point  = [ -6, 9, 10 ]';
+%   1) Define a line, given a point and a direction for the line, and an
+%      arbitrary point in space, and calculate the location on the line
+%      nearest to the arbitray point, and the distance between these two
+%      points.
 %
-%      %
-%      % Calculate the location on the line nearest the point
-%      % and the distance between the location and the defined
-%      % point.
-%      %
-%      [ pnear, dist ] = cspice_nplnpt( linept, linedr, point )
-%
-%   MATLAB outputs:
-%
-%      pnear =
-%
-%           1
-%           9
-%          10
+%      Example code begins here.
 %
 %
-%      dist =
+%      function nplnpt_ex1()
 %
-%           7
+%         %
+%         % Define a point on a line, a direction for the line, and
+%         % an arbitrary point in space.
+%         %
+%         linept = [  1, 2,  3 ]';
+%         linedr = [  0, 1,  1 ]';
+%         point  = [ -6, 9, 10 ]';
+%
+%         %
+%         % Calculate the location on the line nearest the point
+%         % and the distance between the location and the defined
+%         % point.
+%         %
+%         [pnear, dist] = cspice_nplnpt( linept, linedr, point  );
+%         fprintf('Nearest point: %15.8f %15.8f %15.8f\n', pnear)
+%         fprintf('Distance     : %15.8f\n', dist               )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
+%
+%      Nearest point:      1.00000000      9.00000000     10.00000000
+%      Distance     :      7.00000000
+%
 %
 %-Particulars
 %
 %   For every line L and point P, there is a unique closest point
-%   on L to P.  Call this closest point C.  It is always true that
+%   on L to P. Call this closest point C. It is always true that
 %   P - C  is perpendicular to L, and the length of P - C is called
 %   the "distance" between P and L.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine nplnpt_c.
+%   1)  If the line direction vector `lindir' is the zero vector, the
+%       error SPICE(ZEROVECTOR) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If any of the input arguments, `linpt', `lindir' or `point',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   3)  If any of the input arguments, `linpt', `lindir' or `point',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 14-NOV-2013, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 07-AUG-2020 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement, and updated code example to produce
+%       formatted output.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 14-NOV-2013 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -122,7 +180,7 @@
 %
 %-&
 
-function [ pnear, dist ] = cspice_nplnpt( linpt, lindir, point )
+function [pnear, dist] = cspice_nplnpt( linpt, lindir, point )
 
    switch nargin
       case 3
@@ -133,7 +191,7 @@ function [ pnear, dist ] = cspice_nplnpt( linpt, lindir, point )
 
       otherwise
 
-         error ( ['Usage: [ pnear(3), dist] = ' ...
+         error ( ['Usage: [pnear(3), dist] = ' ...
                   'cspice_nplnpt( linpt(3), lindir(3), point(3) )'] )
 
    end
@@ -146,8 +204,8 @@ function [ pnear, dist ] = cspice_nplnpt( linpt, lindir, point )
       [nplnpt] = mice( 'nplnpt_s', linpt, lindir, point );
       pnear    = reshape( [nplnpt.pos], 3, [] );
       dist     = reshape( [nplnpt.alt], 1, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

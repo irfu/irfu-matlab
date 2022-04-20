@@ -159,7 +159,6 @@ function write_dataobj(filePath, ...
 
 
 
-
 %=======================================================================================================================
 % PROPOSAL: Implement using NASA SPDFs Java code instead?!! Should be possible to easily call Java code from inside MATLAB.
 %   PRO?: Java interface might be more easy to work with and have fewer quirks & limitations.
@@ -223,9 +222,10 @@ function write_dataobj(filePath, ...
     DEFAULT_SETTINGS.calculateMd5Checksum              = 1;
     % Useful for debugging test runs.
     DEFAULT_SETTINGS.disableSpdfcdfwrite               = 0;
-    
+    %
     Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+    
     
     
     % ASSERTION: ZV names are all unique and unambiguous

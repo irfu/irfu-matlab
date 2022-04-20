@@ -43,7 +43,7 @@ function [i1Array, i2Array, n] = split_by_change(varargin)
     % ASSERTION
     % Require at least one argument, since size of return values is ~undefined
     % (?!!) otherwise.
-    assert(numel(varargin) >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
+    assert(numel(varargin) >= 1, 'Must have at least one argument.')
     % NOTE: EJ_library.utils.find_equalities checks that the arguments have the
     % same number of rows.
 

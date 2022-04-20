@@ -58,35 +58,91 @@
 %
 %      value   the string corresponding to the quantity identified by 'item'.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> disp( [ cspice_mice( 'version' ) ' compiled ' ...
-%                 cspice_mice( 'date' )    ' '          ...
-%                 cspice_mice( 'time' ) ] )
+%   1) Display the Mice library version, and its compilation date and
+%      time, as well as the Mice toolkit version.
 %
-%   MATLAB outputs:
+%      Note that the Mice toolkit version is different than the Mice
+%      library shared object version. The earlier is common to all
+%      toolkits, while the later is specific to Mice.
 %
-%      Mice 0.9.54 27-APR-2006 (EDW) compiled Jun 27 2006 08:48:24
+%      Example code begins here.
+%
+%
+%      function mice_ex1()
+%
+%         fprintf( 'Mice toolkit version: %s\n', cspice_tkvrsn( 'toolkit' ) )
+%         fprintf( 'Mice library version: %s\n', cspice_mice  ( 'version' ) )
+%         fprintf( '   Compiled on %s at %s\n', ...
+%                  cspice_mice( 'date' ),         ...
+%                  cspice_mice( 'time' )         )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Mice toolkit version: CSPICE_N0066
+%      Mice library version: Mice 1.5.0 05-JAN-2017 (EDW) (NJB)
+%         Compiled on Apr 11 2018 at 23:27:58
+%
 %
 %-Particulars
 %
 %   None.
 %
-%-Required Reading
+%-Exceptions
+%
+%   None.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the -Examples section to comply with NAIF standard.
+%       Reformatted example's output and added problem statement.
 %
-%   -Mice Version 1.0.0, 26-JUN-2006, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%   -Mice Version 1.0.1, 13-FEB-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 26-JUN-2006 (EDW)
 %
 %-Index_Entries
 %
@@ -113,8 +169,8 @@ function [value] = cspice_mice( item )
    %
    try
       [value] = mice( 'cspice_mice', item );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

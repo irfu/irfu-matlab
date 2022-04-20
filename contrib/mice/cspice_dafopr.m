@@ -5,7 +5,7 @@
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
-%   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
+%   CALIFORNIA INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
 %   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
 %   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
@@ -42,16 +42,20 @@
 %
 %   the call:
 %
-%      handle = cspice_dafopr( fname )
+%      [handle] = cspice_dafopr( fname )
 %
 %   returns:
 %
 %      handle   the file handle used by other DAF routines
-%               to refer to 'fname'.
+%               to refer to `fname'.
 %
 %               [1,1] = size(handle); int32 = class(handle)
 %
 %   Use cspice_dafcls to close files opened by this routine.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -59,66 +63,81 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Use a simple function to output the double precision and integer
-%   values stored in an SPK's segments descriptors. This function opens
-%   a DAF for read, performs a forwards search for the DAF arrays,
-%   prints the segment description for each array found, then closes the DAF.
+%   1) Use a simple routine to output the double precision and integer
+%      values stored in an SPK's segments descriptors. This function
+%      opens a DAF for read, performs a forwards search for the DAF
+%      arrays, prints segments description for each array found, then
+%      closes the DAF.
 %
-%   function daf_t( kernel)
+%      Use the SPK kernel below as input DAF file for the program.
 %
-%      %
-%      % Open a DAF for read. Return a 'handle' referring to the file.
-%      %
-%      handle = cspice_dafopr( kernel );
+%         de421.bsp
 %
-%      %
-%      % Define the summary parameters appropriate
-%      % for an SPK file.
-%      %
-%      ND = 2;
-%      NI = 6;
 %
-%      %
-%      % Begin a forward search on the file.
-%      %
-%      cspice_dafbfs( handle );
+%      Example code begins here.
 %
-%      %
-%      % Search until a DAF array is found.
-%      %
-%      found = cspice_daffna;
 %
-%      %
-%      % Loop while the search finds subsequent DAF arrays.
-%      %
-%      while found
-%
-%         [dc, ic ] = cspice_dafgs( ND, NI );
-%
-%         fprintf( 'Doubles:  ' )
-%         fprintf( '%f   ', dc )
-%         fprintf( '\n' )
-%
-%         fprintf( 'Integers: ' )
-%         fprintf( '%d   ', ic )
-%         fprintf( '\n\n' )
-%
+%      function dafopr_ex1()
 %
 %         %
-%         % Check for another segment.
+%         % Local constants
+%         %
+%         kernel = 'de421.bsp';
+%
+%         %
+%         % Open a DAF for read. Return a `handle' referring to the file.
+%         %
+%         handle = cspice_dafopr( kernel );
+%
+%         %
+%         % Define the summary parameters appropriate
+%         % for an SPK file.
+%         %
+%         ND = 2;
+%         NI = 6;
+%
+%         %
+%         % Begin a forward search on the file.
+%         %
+%         cspice_dafbfs( handle );
+%
+%         %
+%         % Search until a DAF array is found.
 %         %
 %         found = cspice_daffna;
 %
-%      end
+%         %
+%         % Loop while the search finds subsequent DAF arrays.
+%         %
+%         while found
 %
-%      %
-%      % Safely close the DAF.
-%      %
-%      cspice_dafcls( handle )
+%            [dc, ic ] = cspice_dafgs( ND, NI );
 %
-%   Matlab outputs:
+%            fprintf( 'Doubles:  ' )
+%            fprintf( '%f   ', dc )
+%            fprintf( '\n' )
 %
-%      >> daf_t( 'de421.bsp' )
+%            fprintf( 'Integers: ' )
+%            fprintf( '%d   ', ic )
+%            fprintf( '\n\n' )
+%
+%
+%            %
+%            % Check for another segment.
+%            %
+%            found = cspice_daffna;
+%
+%         end
+%
+%         %
+%         % Safely close the DAF.
+%         %
+%         cspice_dafcls( handle )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Doubles:  -3169195200.000000   1696852800.000000
 %      Integers: 1   0   1   2   641   310404
@@ -165,30 +184,111 @@
 %      Doubles:  -3169195200.000000   1696852800.000000
 %      Integers: 499   4   1   2   2098633   2098644
 %
-%   Note, the specific contents of 'ic' and 'dc' depend on the
-%   type of DAF.
 %
-%   Note, the final entries in the integer array contain the segment
-%   start/end indexes. The output indicates the search proceeded
-%   from the start of the file (low value index) towards the end
-%   (high value index).
+%      Note, the specific contents of `ic' and `dc' depend on the
+%      type of DAF.
+%
+%      Note, the final entries in the integer array contain the segment
+%      start/end indexes. The output indicates the search proceeded
+%      from the start of the file (low value index) towards the end
+%      (high value index).
 %
 %-Particulars
 %
 %   Most DAFs require only read access. If you do not need to
 %   change the contents of a file, you should open it with cspice_dafopr.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dafopr_c.
+%   1)  If the specified file has already been opened for read
+%       access, the handle already associated with the file is
+%       returned.
+%
+%   2)  If the specified file has already been opened for write
+%       access, an error is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If the specified file has already been opened by a non-DAF
+%       routine, an error is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If the specified file cannot be opened without exceeding
+%       the maximum number of files, the error SPICE(DAFFTFULL)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   5)  If the attempt to read the file's file record fails, the error
+%       SPICE(FILEREADFAILED) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   6)  If the specified file is not a DAF file, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   7)  If no logical units are available, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   8)  If the file does not exist, an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   9)  If an i/o error occurs in the process of opening the file,
+%       the error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   10) If the file name is blank or otherwise inappropriate,
+%       an error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   11) If the file was transferred improperly via FTP, an error is
+%       signaled by a routine in the call tree of this routine.
+%
+%   12) If the file utilizes a binary file format that is not
+%       currently supported on this platform, an error is signaled by
+%       a routine in the call tree of this routine.
+%
+%   13) If the input argument `fname' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   14) If the input argument `fname' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   See argument `fname'.
+%
+%-Restrictions
+%
+%   1)  Files opened using this routine must be closed with cspice_dafcls.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAF.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 10-JUL-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Edits to the -Examples section to comply with NAIF standard.
+%       Modified code example to hardcode SPK file to be used as input.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 10-JUL-2012 (EDW)
 %
 %-Index_Entries
 %
@@ -214,8 +314,8 @@ function [handle] = cspice_dafopr( fname )
    %
    try
       [handle] = mice( 'dafopr_c', fname );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

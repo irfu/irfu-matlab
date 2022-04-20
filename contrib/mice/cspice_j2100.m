@@ -46,43 +46,86 @@
 %
 %              [1,1] = size(j2100); double = class(j2100)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> j2100 = cspice_j2100
+%   1) Display the double precision value for the J2100 date.
 %
-%      j2100 =
+%      Example code begins here.
 %
-%           2488070
 %
-%      >> sprintf( 'J2100 epoch: %10.3f', cspice_j2100 )
+%      function j2100_ex1()
+%         %
+%         % Display the J2100 date in 16.8 format
+%         %
+%         fprintf( 'J2100 date: %16.8f\n', cspice_j2100)
 %
-%      ans =
 %
-%      J2100 epoch: 2488070.000
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      J2100 date: 2488070.00000000
+%
 %
 %-Particulars
 %
+%   The function always returns the constant value shown above.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine j2100_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -106,7 +149,7 @@ function [j2100] = cspice_j2100
    %
    try
       [j2100] =  mice('j2100_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

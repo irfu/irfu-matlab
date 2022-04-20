@@ -62,9 +62,13 @@ switch lower(action)
     disp(['irfu-matlab version: ' currentVersion]);
     fprintf('Checking if you have latest irfu-matlab... ');
     try
-      logText = urlread(logFileUrl); %#ok<URLRD> webread introduced in R2014b
-    catch
-      disp('Not connected to internet');
+      if verLessThan('matlab', '8.4')
+        logText = urlread(logFileUrl); %#ok<URLRD> webread introduced in R2014b
+      else
+        logText = webread(logFileUrl);
+      end
+    catch ME
+      disp(['Failed to get upstream version information, resulted in error message: ', ME.message]);
       disp(['  Your irfu-matlab: ' currentVersion ...
         ' from ' currentVersionDate]);
       out = false;
@@ -141,31 +145,29 @@ switch lower(action)
     help irfu-matlab
     
   case 'mice'
-    if ~ispc
-      if exist('cspice_j2000','file') % mice is installed
-        try
-          if(cspice_j2000 == 2451545)
-            disp('SPICE/MICE is OK');
-            if nargout, out = true; end
-            return
-          else
-            disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
-            if nargout, out = false; end
-            return
-          end
-        catch
+    if exist('cspice_j2000','file') % mice is installed
+      try
+        if(cspice_j2000 == 2451545)
+          disp('SPICE/MICE is OK');
+          if nargout, out = true; end
+          return
+        else
           disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
           if nargout, out = false; end
           return
         end
-      else
-        micePath = [irf('path') filesep 'contrib' filesep  'mice'];
-        disp(['adding MICE path to matlab: ' micePath]);
-        addpath(micePath);
-        ok = irf('mice');
-        if ~ok
-          disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your inteded use of irfu-matlab!');
-        end
+      catch
+        disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
+        if nargout, out = false; end
+        return
+      end
+    else
+      micePath = [irf('path') filesep 'contrib' filesep  'mice'];
+      disp(['adding MICE path to matlab: ' micePath]);
+      addpath(micePath);
+      ok = irf('mice');
+      if ~ok
+        disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your inteded use of irfu-matlab!');
       end
     end
     

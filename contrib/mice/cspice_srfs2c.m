@@ -1,8 +1,8 @@
 %-Abstract
 %
-%   CSPICE_SRFS2C translates a surface string, together with a body string, 
-%   to the corresponding surface ID code. The input strings may contain 
-%   names or integer ID codes. 
+%   CSPICE_SRFS2C translates a surface string, together with a body string,
+%   to the corresponding surface ID code. The input strings may contain
+%   names or integer ID codes.
 %
 %-Disclaimer
 %
@@ -34,76 +34,87 @@
 %
 %   Given:
 %
-%      srfstr     is a string designating a surface. `srfstr' may contain
-%                 a surface name or a string representation of the
-%                 surface's integer ID code.
+%      srfstr   a string designating a surface.
 %
-%                 [1,c1] = size(srfstr), char = class(srfstr)
+%               [1,c1] = size(srfstr); char = class(srfstr)
 %
-%                    or
+%                  or
 %
-%                 [1,1] = size(srfstr), cell = class(srfstr)
+%               [1,1] = size(srfstr); cell = class(srfstr)
 %
-%                 Case and leading and trailing blanks in a surface name
-%                 are not significant. Sequences of consecutive embedded
-%                 blanks are considered equivalent to a single blank. For
-%                 example, all of the strings below are considered to be
-%                 equivalent:
+%               `srfstr' may contain a surface name or a string
+%               representation of the surface's integer ID code.
 %
-%                    'MGS MOLA 128 PIXEL/DEG'
-%                    'MGS MOLA 128 pixel/deg'
-%                    'MGS MOLA 128 PIXEL/DEG   '
-%                    'MGS MOLA 128    PIXEL/DEG'
-%                    '   MGS MOLA 128 PIXEL/DEG'
+%               If, for the body specified by `bodstr', multiple surface
+%               names are associated with one surface ID code, then any
+%               of these names may be used as the value of `srfstr'.
 %
-%                 However,
+%               Case and leading and trailing blanks in a surface name
+%               are not significant. Sequences of consecutive embedded
+%               blanks are considered equivalent to a single blank.
+%               For example, all of the strings below are considered
+%               to be equivalent:
 %
-%                    'MGSMOLA 128PIXEL/DEG'
+%                  'MGS MOLA 128 PIXEL/DEG'
+%                  'MGS MOLA 128 pixel/deg'
+%                  'MGS MOLA 128 PIXEL/DEG   '
+%                  'MGS MOLA 128    PIXEL/DEG'
+%                  '   MGS MOLA 128 PIXEL/DEG'
 %
-%                 is not equivalent to the names above.
+%               However,
 %
-%      bodstr     is a string designating the body associated with the
-%                 input surface ID code.
+%                  'MGSMOLA 128PIXEL/DEG'
 %
-%                 [1,c1] = size(srfstr), char = class(srfstr)
+%               is not equivalent to the names above.
 %
-%                    or
 %
-%                 [1,1] = size(srfstr), cell = class(srfstr)
+%      bodstr   a string designating the body associated with the input
+%               surface string.
 %
-%                 `bodstr' may contain a body name or a string representation
-%                 of the body's integer ID code. For example, `bodstr' may
-%                 contain
+%               [1,c2] = size(bodstr); char = class(bodstr)
 %
-%                    '1000012'
+%                  or
 %
-%                 instead of
+%               [1,1] = size(bodstr); cell = class(bodstr)
 %
-%                    '67P/CHURYUMOV-GERASIMENKO (1969 R1)'
+%               `bodstr' may contain a body name or a string representation
+%               of the body's integer ID code. For example, `bodstr' may
+%               contain
 %
-%                 Case and leading and trailing blanks in a name are not
-%                 significant. The treatment of blanks in `bodstr' is the
-%                 same as for `srfstr'.
+%                  '1000012'
+%
+%               instead of
+%
+%                  '67P/CHURYUMOV-GERASIMENKO (1969 R1)'
+%
+%               Case and leading and trailing blanks in a name are not
+%               significant. The treatment of blanks in `bodstr' is the
+%               same as for `srfstr'.
 %
 %   the call:
 %
-%      [code, found] = cspice_srfs2c( srfstr, bodstr)
+%      [code, found] = cspice_srfs2c( srfstr, bodstr )
 %
 %   returns:
 %
-%      code       is integer ID code of the surface designated by `srfstr',
-%                 for the body designated by `bodstr', if for this body an
-%                 association exists between the input surface string and a
-%                 surface ID code. `code' is defined if and only if the
-%                 output flag `found' is true.
+%      code     integer ID code of the surface designated by `srfstr', for
+%               the body designated by `bodstr', if for this body an
+%               association exists between the input surface string and a
+%               surface ID code.
 %
-%                 [1,1] = size(code); int32 = class(code)
+%               [1,1] = size(code); int32 = class(code)
 %
-%      found      is a logical flag that is true if a surface code
-%                 corresponding to the input strings was found and
-%                 false otherwise.
+%               `code' is defined if and only if the output flag `found' is
+%               true
 %
-%                 [1,1] = size(found); logical = class(found)
+%      found    a logical flag that is true if a surface code corresponding
+%               to the input strings was found and false otherwise.
+%
+%               [1,1] = size(found); logical = class(found)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -111,10 +122,7 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   The formatting of the results shown for this example may differ
-%   across platforms.
-%
-%      Supposed a text kernel has been loaded that contains
+%   1) Supposed a text kernel has been loaded that contains
 %      the following assignments:
 %
 %         NAIF_SURFACE_NAME += ( 'MGS MOLA  64 pixel/deg',
@@ -133,7 +141,7 @@
 %
 %         KPL/MK
 %
-%         File: srfc2s_t1.tm
+%         File: srfs2c_ex1.tm
 %
 %         This meta-kernel is intended to support operation of SPICE
 %         example programs. The file contents shown here should not be
@@ -151,9 +159,13 @@
 %
 %         \begintext
 %
-%   Example(1):
+%         End of meta-kernel
 %
-%      function srfc2s_t
+%
+%      Example code begins here.
+%
+%
+%      function srfs2c_ex1()
 %
 %         bodstr = { 'MARS', 'PHOBOS', 'MARS', ...
 %                    '499',  'PHOBOS', '499',  ...
@@ -168,7 +180,7 @@
 %                    '1' };
 %
 %         tf     = { 'false', 'true' };
-%         meta   = 'srfc2s_t1.tm';
+%         meta   = 'srfs2c_ex1.tm';
 %
 %         cspice_furnsh( meta );
 %
@@ -191,7 +203,16 @@
 %
 %         end
 %
-%   MATLAB outputs:
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      surface string   = MGS MOLA  64 pixel/deg
 %      body string      = MARS
@@ -231,51 +252,133 @@
 %      body string      = ZZZ
 %      surface ID found = false
 %
+%
 %-Particulars
 %
-%   Surfaces are always associated with bodies (which usually are 
-%   ephemeris objects). For any given body, a mapping between surface 
-%   names and surface ID codes can be established.  
-% 
-%   Bodies serve to disambiguate surface names and ID codes: the set 
-%   of surface names and surface ID codes for a given body can be 
-%   thought of as belonging to a name space. A given surface ID code 
-%   or surface name may be used for surfaces of multiple bodies, 
-%   without conflict. 
-% 
-%   Associations between surface names and ID codes are always made 
-%   via kernel pool assignments; there are no built-in associations. 
-% 
-%   cspice_srfs2c is one of four related subroutines: 
-% 
-%      cspice_srfs2c    Surface string and body string to surface ID code 
-%      cspice_srfscc    Surface string and body ID code to surface ID code 
-%      cspice_srfc2s    Surface ID code and body ID code to surface string 
-%      cspice_srfcss    Surface ID code and body string to surface string 
-% 
-%   cspice_srfs2c, cspice_srfc2s, cspice_srfscc, and cspice_srfcss perform 
-%   translations between surface strings and their corresponding integer 
+%   Surfaces are always associated with bodies (which usually are
+%   ephemeris objects). For any given body, a mapping between surface
+%   names and surface ID codes can be established.
+%
+%   Bodies serve to disambiguate surface names and ID codes: the set
+%   of surface names and surface ID codes for a given body can be
+%   thought of as belonging to a name space. A given surface ID code
+%   or surface name may be used for surfaces of multiple bodies,
+%   without conflict.
+%
+%   Associations between surface names and ID codes are always made
+%   via kernel pool assignments; there are no built-in associations.
+%
+%   cspice_srfs2c is one of four related subroutines:
+%
+%      cspice_srfs2c    Surface string and body string to surface ID code
+%      cspice_srfscc    Surface string and body ID code to surface ID code
+%      cspice_srfc2s    Surface ID code and body ID code to surface string
+%      cspice_srfcss    Surface ID code and body string to surface string
+%
+%   cspice_srfs2c, cspice_srfc2s, cspice_srfscc, and cspice_srfcss perform
+%   translations between surface strings and their corresponding integer
 %   ID codes.
-% 
-%   Refer to naif_ids.req for details concerning adding new surface 
-%   name/code associations at run time by loading text kernels. 
 %
-%-Required Reading
+%   Refer to naif_ids.req for details concerning adding new surface
+%   name/code associations at run time by loading text kernels.
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine srfs2c_c.
+%-Exceptions
 %
-%   MICE.REQ
+%   1)  If the input surface string does not map to an ID code
+%       and does not represent an integer, the output `code' is
+%       undefined and the output `found' is set to false.
+%
+%       This case is not treated as an error.
+%
+%   2)  If the input body string does not map to an ID code and does
+%       not represent an integer, the output `code' is undefined and
+%       the output `found' is set to false.
+%
+%       This case is not treated as an error.
+%
+%   3)  If any of the input arguments, `srfstr' or `bodstr', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `srfstr' or `bodstr', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   Surface name-to-ID mappings may be defined at run time by loading
+%   text kernels containing kernel variable assignments of the form
+%
+%      NAIF_SURFACE_NAME += ( <surface name 1>, ... )
+%      NAIF_SURFACE_CODE += ( <surface code 1>, ... )
+%      NAIF_SURFACE_BODY += ( <body code 1>,    ... )
+%
+%   Above, the ith elements of the lists on the assignments' right
+%   hand sides together define the ith surface name/ID mapping.
+%
+%   The same effect can be achieved using assignments formatted as
+%   follows:
+%
+%      NAIF_SURFACE_NAME += <surface name 1>
+%      NAIF_SURFACE_CODE += <surface code 1>
+%      NAIF_SURFACE_BODY += <body code 1>
+%
+%      NAIF_SURFACE_NAME += <surface name 2>
+%      NAIF_SURFACE_CODE += <surface code 2>
+%      NAIF_SURFACE_BODY += <body code 2>
+%
+%         ...
+%
+%   Note the use of the
+%
+%      +=
+%
+%   operator; this operator appends to rather than overwrites the
+%   kernel variable named on the left hand side of the assignment.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
 %   DSK.REQ
+%   MICE.REQ
 %   NAIF_IDS.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 01-MAR-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 01-NOV-2021 (EDW) (JDR) (NJB)
+%
+%       Updated description of "srfstr" to indicate that any
+%       surface name alias may be used.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections. Edited
+%       the header to comply with NAIF standard.
+%
+%       Added call to cspice_kclear in code example.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 01-MAR-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
-%   surface string and body string to surface ID code  
+%   surface string and body string to surface ID code
 %
 %-&
 
@@ -301,10 +404,6 @@ function [code,found] = cspice_srfs2c( srfstr, bodstr)
       [srfs2c] = mice('srfs2c_s', srfstr, bodstr);
       code     = reshape( [srfs2c.code],  1, [] );
       found    = reshape( [srfs2c.found], 1, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
-

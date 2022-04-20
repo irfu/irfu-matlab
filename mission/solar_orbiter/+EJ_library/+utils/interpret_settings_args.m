@@ -47,23 +47,26 @@
 %
 % ARGUMENTS
 % =========
-% DefaultSettings : Struct with default Settings to be processed (not Settings
-%                   for this function).
-% argsCa          : Cell array representing a sequence of arguments (presumably
-%                   "varargin" or subset thereof) from another function that
-%                   uses this function.
-%                   It is either
-%                       (1) {              key1,value1, ..., keyN,valueN}
-%                       (2) {SettingsArg1, key1,value1, ..., keyN,valueN}
-%                   NOTE: The cell array is permitted to be empty.
+% DefaultSettings
+%       Struct with default Settings to be processed (not Settings for this
+%       function).
+% argsCa          
+%       Cell array representing a sequence of arguments (presumably "varargin"
+%       or subset thereof) from another function that uses this function.
+%       It is either
+%           (1) {              key1,value1, ..., keyN,valueN}, or
+%           (2) {SettingsArg1, key1,value1, ..., keyN,valueN}
+%       NOTE: The cell array is permitted to be empty.
 %
 %
 % RETURN VALUES
 % =============
-% Settings    : Struct. See algorithm.
-% argsCa      : Cell array of strings, representing list of arguments passed to
-%               other function. Typically varargin as received from the
-%               enclosing function directly.
+% Settings
+%       Struct. See algorithm.
+% argsCa
+%       Cell array of strings, representing list of arguments passed to other
+%       function. Typically varargin as received from the enclosing function
+%       directly.
 %
 %
 % Initially created 2018-07-18 by Erik P G Johansson.
@@ -84,7 +87,7 @@ function Settings = interpret_settings_args(DefaultSettings, argsCa)
     % PROPOSAL: Add ability to recognize "string keywords" (one argument, instead of keyword+value) which indicate that
     % a flag (false/true) shall be set.
     %   NOTE: The default value is always false.
-    %   TODO-DECISION: How represent in a struct that a field represents an optional string keyword?
+    %   TODO-DEC: How represent in a struct that a field represents an optional string keyword?
     %       PROPOSAL: Special value, e.g. "string keyword", "argument keyword".
     %       PROPOSAL: Field name naming convention.
     %       NOTE: Might want it to be possible to both specify either a string keyword or a setting+value for the same
@@ -122,6 +125,12 @@ function Settings = interpret_settings_args(DefaultSettings, argsCa)
     %   Ex; Mix arguments for conventional settings, and plotting properties.
     %   CON: Better to group arguments together in cell arrays.
     %   CON: Setting name collisions.
+    %
+    % PROPOSAL: Shorter name.
+    %   PRO: Frequenctly used and referenced function.
+    %   ~parse=p
+    %   ~interpret=i
+    %   psa, isa, isargs, parse_sargs, psargs
     
     assert(iscell(argsCa), 'Argument "argsCa" is not a cell array.')
     
@@ -184,8 +193,9 @@ end
 
 
 
-%================================================================================
-% Lightly modified hard-coded copy of EJ_library.utils.add_struct_to_struct
+%===============================================================================
+% Lightly modified hard-coded copy of
+% EJ_library.ds.add_struct_to_struct()
 % -------------------------------------------------------------------------
 % Modifications: Not use EJ_library.utils.interpret_settings_args
 % (including recursive call).
@@ -193,16 +203,17 @@ end
 % IMPORTANT IMPLEMENTATION NOTE
 % =============================
 % This function (EJ_library.utils.interpret_settings_args) DELIBERATELY
-% DOES NOT USE EJ_library.utils.add_struct_to_struct so that it can use
-% EJ_library.utils.interpret_settings_args INSTEAD. Both using each other
-% would lead to ininite recursion.
-%================================================================================
+% DOES NOT USE EJ_library.ds.add_struct_to_struct() so that it (that
+% function) can use EJ_library.utils.interpret_settings_args() INSTEAD.
+% Both using each other would lead to infinite recursion.
+%===============================================================================
 function A = add_struct_to_struct(A, B, Settings)
 
-    %============================================================================
+    %===========================================================================
     % IMPLEMENTATION NOTE: CAN NOT USE
-    % EJ_library.utils.interpret_settings_args SINCE IT USES THIS FUNCTION!
-    %============================================================================
+    % EJ_library.utils.interpret_settings_args() SINCE IT USES THIS
+    % FUNCTION!
+    %===========================================================================
     if nargin == 2
         Settings = DEFAULT_SETTINGS;
     elseif nargin == 3

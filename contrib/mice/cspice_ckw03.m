@@ -91,21 +91,25 @@
 %
 %   the call:
 %
-%      cspice_ckw03( handle , ...
-%                    begtime, ...
-%                    endtime, ...
-%                    inst   , ...
-%                    ref    , ...
-%                    avflag , ...
-%                    segid  , ...
-%                    sclkdp , ...
-%                    quats  , ...
-%                    avvs   , ...
+%      cspice_ckw03( handle, ...
+%                    begtim, ...
+%                    endtim, ...
+%                    inst,   ...
+%                    ref,    ...
+%                    avflag, ...
+%                    segid,  ...
+%                    sclkdp, ...
+%                    quats,  ...
+%                    avvs,   ...
 %                    starts)
 %
 %   returns:
 %
-%      Adds a type 3 segment to a CK.
+%      None.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -113,149 +117,507 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      INST3      = -77703;
-%      NCOMCH     = 10;
-%      REF        = 'J2000';
-%      SEGID3     = 'Test type 3 test CK';
-%      SECPERTICK = 0.001;
-%      SPACING    = 10.0;
-%      MAXREC     = 50;
+%   1) The following example creates a CK file with a type-3 segment.
 %
-%      %
-%      % Note, sclkdp is a vector input, not a vectorized scalar.
-%      %
-%      sclkdp    = [1:MAXREC]';
-%      sclkdp    = (sclkdp - 1)*SPACING;
+%      Example code begins here.
 %
-%      spinrate  = [1:MAXREC]*1.e-6;
 %
-%      theta     = [0:MAXREC-1]*SPACING;
-%      theta     = theta .* spinrate;
+%      function ckw03_ex1()
 %
-%      %
-%      % Create a zero-filled array for the angular velocity
-%      % vectors. This allocates the needed memory and
-%      % defines a variable of the correct shape.
-%      %
-%      expavvs = zeros( [3 MAXREC] );
+%         INST3      = -77703;
+%         NCOMCH     = 10;
+%         REF        = 'J2000';
+%         SEGID3     = 'Test type 3 test CK';
+%         SECPERTICK = 0.001;
+%         SPACING    = 10.0;
+%         MAXREC     = 50;
 %
-%      a1 = zeros( [1 MAXREC] );
-%      a2 = a1;
+%         %
+%         % Note, `sclkdp' is a vector input, not a vectorized scalar.
+%         %
+%         sclkdp    = [1:MAXREC]';
+%         sclkdp    = (sclkdp - 1)*SPACING;
 %
-%      r  = cspice_eul2m( theta, a2, a1, 3, 1 ,3 );
-%      q  = cspice_m2q( r );
+%         spinrate  = [1:MAXREC]*1.e-6;
 %
-%      %
-%      % Fill the z component of the expavvs vectors with the
-%      % corresponding spinrate element scaled to SECPERTICK.
-%      %
-%      expavvs(3,:) = spinrate/SECPERTICK;
+%         theta     = [0:MAXREC-1]*SPACING;
+%         theta     = theta .* spinrate;
 %
-%      begtime = sclkdp(1);
-%      endtime = sclkdp(MAXREC);
-%      avflag = 1;
+%         %
+%         % Create a zero-filled array for the angular velocity
+%         % vectors. This allocates the needed memory and
+%         % defines a variable of the correct shape.
+%         %
+%         expavvs = zeros( [3 MAXREC] );
 %
-%      starts = [1:(MAXREC/2)]';
-%      starts = (starts-1)*2*SPACING;
+%         a1 = zeros( [1 MAXREC] );
+%         a2 = a1;
 %
-%      %
-%      % Open a new CK, write the data, catch any errors.
-%      %
-%      try
-%         handle = cspice_ckopn( 'test3.ck', 'ck', 0)
-%         cspice_ckw03( handle , ...
-%                       begtime, ...
-%                       endtime, ...
-%                       INST3  , ...
-%                       REF    , ...
-%                       avflag , ...
-%                       SEGID3 , ...
-%                       sclkdp , ...
-%                       q      , ...
-%                       expavvs, ...
-%                       starts )
-%      catch
+%         r  = cspice_eul2m( theta, a2, a1, 3, 1 ,3 );
+%         q  = cspice_m2q( r );
 %
-%         error( [ 'Failure: ' lasterr] )
-%      end
+%         %
+%         % Fill the z component of the expavvs vectors with the
+%         % corresponding spinrate element scaled to SECPERTICK.
+%         %
+%         expavvs(3,:) = spinrate/SECPERTICK;
 %
-%      cspice_ckcls(handle)
+%         begtim = sclkdp(1);
+%         endtim = sclkdp(MAXREC);
+%         avflag = 1;
 %
-%   MATLAB outputs:
+%         starts = [1:(MAXREC/2)]';
+%         starts = (starts-1)*2*SPACING;
 %
-%      The example code creates a CK with one type 3 segment.
+%         %
+%         % Open a new CK, write the data, catch any errors.
+%         %
+%         try
+%            handle = cspice_ckopn( 'ckw03_ex1.ck', 'ck', 0);
+%            cspice_ckw03( handle,  ...
+%                          begtim,  ...
+%                          endtim,  ...
+%                          INST3,   ...
+%                          REF,     ...
+%                          avflag,  ...
+%                          SEGID3,  ...
+%                          sclkdp,  ...
+%                          q,       ...
+%                          expavvs, ...
+%                          starts )
+%         catch
+%
+%            error( [ 'Failure: ' lasterr] )
+%         end
+%
+%         cspice_ckcls(handle)
+%
+%
+%      When this program is executed, no output is presented on
+%      screen. After run completion, a new CK file exists in the
+%      output directory.
 %
 %-Particulars
 %
-%   None.
+%   For a detailed description of a type 3 CK segment please see the
+%   CK Required Reading.
 %
-%-Required Reading
+%   This routine relieves the user from performing the repetitive
+%   calls to the DAF routines necessary to construct a CK segment.
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine ckw03_c.
+%
+%   Quaternion Styles
+%   -----------------
+%
+%   There are different "styles" of quaternions used in
+%   science and engineering applications. Quaternion styles
+%   are characterized by
+%
+%   -  The order of quaternion elements
+%
+%   -  The quaternion multiplication formula
+%
+%   -  The convention for associating quaternions
+%      with rotation matrices
+%
+%   Two of the commonly used styles are
+%
+%      - "SPICE"
+%
+%         > Invented by Sir William Rowan Hamilton
+%         > Frequently used in mathematics and physics textbooks
+%
+%      - "Engineering"
+%
+%         > Widely used in aerospace engineering applications
+%
+%
+%   Mice routine interfaces ALWAYS use SPICE quaternions.
+%   Quaternions of any other style must be converted to SPICE
+%   quaternions before they are passed to Mice routines.
+%
+%
+%   Relationship between SPICE and Engineering Quaternions
+%   ------------------------------------------------------
+%
+%   Let `m' be a rotation matrix such that for any vector `v',
+%
+%      m*v
+%
+%   is the result of rotating `v' by theta radians in the
+%   counterclockwise direction about unit rotation axis vector `a'.
+%   Then the SPICE quaternions representing `m' are
+%
+%      (+/-) (  cos(theta/2),
+%               sin(theta/2) a(1),
+%               sin(theta/2) a(2),
+%               sin(theta/2) a(3)  )
+%
+%   while the engineering quaternions representing `m' are
+%
+%      (+/-) ( -sin(theta/2) a(1),
+%              -sin(theta/2) a(2),
+%              -sin(theta/2) a(3),
+%               cos(theta/2)       )
+%
+%   For both styles of quaternions, if a quaternion q represents
+%   a rotation matrix `m', then -q represents `m' as well.
+%
+%   Given an engineering quaternion
+%
+%      qeng   = ( q0,  q1,  q2,  q3 )
+%
+%   the equivalent SPICE quaternion is
+%
+%      qspice = ( q3, -q0, -q1, -q2 )
+%
+%
+%   Associating SPICE Quaternions with Rotation Matrices
+%   ----------------------------------------------------
+%
+%   Let `from' and `to' be two right-handed reference frames, for
+%   example, an inertial frame and a spacecraft-fixed frame. Let the
+%   symbols
+%
+%      v    ,   v
+%       from     to
+%
+%   denote, respectively, an arbitrary vector expressed relative to
+%   the `from' and `to' frames. Let `m' denote the transformation matrix
+%   that transforms vectors from frame `from' to frame `to'; then
+%
+%      v   =  m * v
+%       to         from
+%
+%   where the expression on the right hand side represents left
+%   multiplication of the vector by the matrix.
+%
+%   Then if the unit-length SPICE quaternion q represents `m', where
+%
+%      q = (q0, q1, q2, q3)
+%
+%   the elements of `m' are derived from the elements of q as follows:
+%
+%        .-                                                         -.
+%        |           2    2                                          |
+%        | 1 - 2*( q2 + q3 )   2*(q1*q2 - q0*q3)   2*(q1*q3 + q0*q2) |
+%        |                                                           |
+%        |                                                           |
+%        |                               2    2                      |
+%    m = | 2*(q1*q2 + q0*q3)   1 - 2*( q1 + q3 )   2*(q2*q3 - q0*q1) |
+%        |                                                           |
+%        |                                                           |
+%        |                                                   2    2  |
+%        | 2*(q1*q3 - q0*q2)   2*(q2*q3 + q0*q1)   1 - 2*( q1 + q2 ) |
+%        |                                                           |
+%        `-                                                         -'
+%
+%   Note that substituting the elements of -q for those of q in the
+%   right hand side leaves each element of `m' unchanged; this shows
+%   that if a quaternion q represents a matrix `m', then so does the
+%   quaternion -q.
+%
+%   To map the rotation matrix `m' to a unit quaternion, we start by
+%   decomposing the rotation matrix as a sum of symmetric
+%   and skew-symmetric parts:
+%
+%                                      2
+%      m = [ i  +  (1-cos(theta)) omega  ] + [ sin(theta) omega ]
+%
+%                   symmetric                   skew-symmetric
+%
+%
+%   `omega' is a skew-symmetric matrix of the form
+%
+%                 .-             -.
+%                 |  0   -n3   n2 |
+%                 |               |
+%       omega  =  |  n3   0   -n1 |
+%                 |               |
+%                 | -n2   n1   0  |
+%                 `-             -'
+%
+%   The vector N of matrix entries (n1, n2, n3) is the rotation axis
+%   of `m' and theta is M's rotation angle. Note that N and theta
+%   are not unique.
+%
+%   Let
+%
+%      C = cos(theta/2)
+%      s = sin(theta/2)
+%
+%   Then the unit quaternions `q' corresponding to `m' are
+%
+%      `q' = +/- ( C, s*n1, s*n2, s*n3 )
+%
+%   The mappings between quaternions and the corresponding rotations
+%   are carried out by the Mice routines
+%
+%      cspice_q2m {quaternion to matrix}
+%      cspice_m2q {matrix to quaternion}
+%
+%   cspice_m2q always returns a quaternion with scalar part greater than
+%   or equal to zero.
+%
+%
+%   SPICE Quaternion Multiplication Formula
+%   ---------------------------------------
+%
+%   Given a SPICE quaternion
+%
+%      q = ( q0, q1, q2, q3 )
+%
+%   corresponding to rotation axis `a' and angle theta as above, we can
+%   represent `q' using "scalar + vector" notation as follows:
+%
+%      s =   q0           = cos(theta/2)
+%
+%      v = ( q1, q2, q3 ) = sin(theta/2) * a
+%
+%      q = s + v
+%
+%   Let `q1' and `q2' be SPICE quaternions with respective scalar
+%   and vector parts s1, s2 and v1, v2:
+%
+%      q1 = s1 + v1
+%      q2 = s2 + v2
+%
+%   We represent the dot product of v1 and v2 by
+%
+%      <v1, v2>
+%
+%   and the cross product of v1 and v2 by
+%
+%      v1 x v2
+%
+%   Then the SPICE quaternion product is
+%
+%      q1*q2 = s1*s2 - <v1,v2>  + s1*v2 + s2*v1 + (v1 x v2)
+%
+%   If `q1' and `q2' represent the rotation matrices `m1' and `m2'
+%   respectively, then the quaternion product
+%
+%      q1*q2
+%
+%   represents the matrix product
+%
+%      m1*m2
+%
+%-Exceptions
+%
+%   1)  If `handle' is not the handle of a C-kernel opened for writing,
+%       an error is signaled by a routine in the call tree of this
+%       routine.
+%
+%   2)  If `segid' is more than 40 characters long, the error
+%       SPICE(SEGIDTOOLONG) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   3)  If `segid' contains any non-printable characters, the error
+%       SPICE(NONPRINTABLECHARS) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If the first encoded SCLK time is negative, the error
+%       SPICE(INVALIDSCLKTIME) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   5)  If the second encoded SCLK or any subsequent times, or if the
+%       encoded SCLK times are not strictly increasing, the error
+%       SPICE(TIMESOUTOFORDER) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   6)  If `begtim' is greater than sclkdp(1) or `endtim' is less than
+%       sclkdp(nrec), where `nrec' is the number of pointing records,
+%       the error SPICE(INVALIDDESCRTIME) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   7)  If the name of the reference frame is not one of those
+%       supported by the Mice routine cspice_namfrm, the error
+%       SPICE(INVALIDREFFRAME) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   8)  If `nrec', the number of pointing records, is less than or
+%       equal to 0, the error SPICE(INVALIDNUMREC) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   9)  If `nints', the number of interpolation intervals, is less
+%       than or equal to 0, the error SPICE(INVALIDNUMINT) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   10) If the encoded SCLK interval start times are not strictly
+%       increasing, the error SPICE(TIMESOUTOFORDER) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   11) If an interval start time does not coincide with a time for
+%       which there is an actual pointing instance in the segment, the
+%       error SPICE(INVALIDSTARTTIME) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   12) This routine assumes that the rotation between adjacent
+%       quaternions that are stored in the same interval has a
+%       rotation angle of `theta' radians, where
+%
+%          0  <=  theta  <  pi.
+%
+%       The routines that evaluate the data in the segment produced
+%       by this routine cannot distinguish between rotations of `theta'
+%       radians, where `theta' is in the interval [0, pi), and
+%       rotations of
+%
+%          theta   +   2 * k * pi
+%
+%       radians, where k is any integer. These `large' rotations
+%       will yield invalid results when interpolated. You must
+%       ensure that the data stored in the segment will not be
+%       subject to this sort of ambiguity.
+%
+%   13) If any quaternion has magnitude zero, the error
+%       SPICE(ZEROQUATERNION) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   14) If the start time of the first interval and the time of the
+%       first pointing instance are not the same, the error
+%       SPICE(TIMESDONTMATCH) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   15) If any of the input arguments, `handle', `begtim', `endtim',
+%       `inst', `ref', `avflag', `segid', `sclkdp', `quats', `avvs' or
+%       `starts', is undefined, an error is signaled by the Matlab
+%       error handling system.
+%
+%   16) If any of the input arguments, `handle', `begtim', `endtim',
+%       `inst', `ref', `avflag', `segid', `sclkdp', `quats', `avvs' or
+%       `starts', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%   17) If the input vector arguments `sclkdp', `quats' and `avvs' do
+%       not have the same dimension (N), an error is signaled by the
+%       Mice interface.
+%
+%-Files
+%
+%   This routine adds a type 3 segment to a C-kernel. The C-kernel
+%   may be either a new one or an existing one opened for writing.
+%
+%-Restrictions
+%
+%   1)  The creator of the segment is given the responsibility for
+%       determining whether it is reasonable to interpolate between
+%       two given pointing values.
+%
+%   2)  This routine assumes that the rotation between adjacent
+%       quaternions that are stored in the same interval has a
+%       rotation angle of `theta' radians, where
+%
+%           0  <=  theta  <  pi.
+%
+%       The routines that evaluate the data in the segment produced
+%       by this routine cannot distinguish between rotations of `theta'
+%       radians, where `theta' is in the interval [0, pi), and
+%       rotations of
+%
+%           theta   +   2 * k * pi
+%
+%       radians, where k is any integer. These `large' rotations will
+%       yield invalid results when interpolated. You must ensure that
+%       the data stored in the segment will not be subject to this
+%       sort of ambiguity.
+%
+%   3)  All pointing instances in the segment must belong to one and
+%       only one of the intervals.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   CK.REQ
 %   DAF.REQ
 %   SCLK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 29-OCT-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed input argument names "begtime" and "endtime" to "begtim"
+%       and "endtim".
 %
-%   -Mice Version 1.0.1, 11-JUL-2012, EDW (JPL)
+%       Edited the header to comply with NAIF standard. Added example's
+%       problem statement.
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%   -Mice Version 1.0.0, 19-MAY-2006, EDW (JPL)
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 29-OCT-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.1, 11-JUL-2012 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 19-MAY-2006 (EDW)
 %
 %-Index_Entries
 %
-%   write ck type_3 pointing data segment
+%   write CK type_3 pointing data segment
 %
 %-&
 
-function cspice_ckw03( handle , ...
-                       begtime, ...
-                       endtime, ...
-                       inst   , ...
-                       ref    , ...
-                       avflag , ...
-                       segid  , ...
-                       sclkdp , ...
-                       quats  , ...
-                       avvs   , ...
+function cspice_ckw03( handle, ...
+                       begtim, ...
+                       endtim, ...
+                       inst,   ...
+                       ref,    ...
+                       avflag, ...
+                       segid,  ...
+                       sclkdp, ...
+                       quats,  ...
+                       avvs,   ...
                        starts )
 
    switch nargin
       case 11
 
-         handle  = zzmice_int(handle);
-         begtime = zzmice_dp(begtime);
-         endtime = zzmice_dp(endtime);
-         avflag  = zzmice_int(avflag);
-         inst    = zzmice_int(inst);
-         sclkdp  = zzmice_dp(sclkdp);
-         quats   = zzmice_dp(quats);
-         avvs    = zzmice_dp(avvs);
-         starts  = zzmice_dp(starts);
+         handle = zzmice_int(handle);
+         begtim = zzmice_dp(begtim);
+         endtim = zzmice_dp(endtim);
+         avflag = zzmice_int(avflag);
+         inst   = zzmice_int(inst);
+         sclkdp = zzmice_dp(sclkdp);
+         quats  = zzmice_dp(quats);
+         avvs   = zzmice_dp(avvs);
+         starts = zzmice_dp(starts);
 
       otherwise
 
-         error ( [ 'Usage: '                ...
-                   'cspice_ckw03( handle, ' ...
-                           'begtime, '      ...
-                           'endtime, '      ...
-                           'inst, '         ...
-                           'ref, '          ...
-                           'avflag, '       ...
-                           'segid, '        ...
-                           'sclkdp(N), '    ...
-                           'quats(4,N), '   ...
-                           'avvs(3,N), '    ...
-                           'starts(M))' ] )
+         error ( [ 'Usage: '                    ...
+                   'cspice_ckw03( handle, '     ...
+                                 'begtim, '     ...
+                                 'endtim, '     ...
+                                 'inst, '       ...
+                                 'ref, '        ...
+                                 'avflag, '     ...
+                                 'segid, '      ...
+                                 'sclkdp(N), '  ...
+                                 'quats(4,N), ' ...
+                                 'avvs(3,N), '  ...
+                                 'starts(M))' ] )
 
    end
 
@@ -263,10 +625,10 @@ function cspice_ckw03( handle , ...
    % Call the MEX library.
    %
    try
-      mice( 'ckw03_c', handle, begtime,  endtime,  inst,  ref,  avflag,  ...
-                       segid,  sclkdp,   quats,    avvs,  starts )
-   catch
-      rethrow(lasterror)
+      mice( 'ckw03_c', handle, begtim, endtim, inst, ref,  avflag,  ...
+                       segid,  sclkdp,  quats, avvs, starts )
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

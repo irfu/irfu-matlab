@@ -35,14 +35,24 @@
 %   Given:
 %
 %      iverts   an array containing three vertices of a triangular
-%               plate. Each vertex is a three-dimensional vector. The
-%               elements
+%               plate.
 %
 %               [3,3]   = size(iverts); double = class(iverts)
 %
+%               Each vertex is a three-dimensional vector. The elements
+%
+%                 iverts(j,i), j = 1 ... 3
+%
+%               are, respectively, the X, Y, and Z components of the
+%               ith vertex.
+%
+%
 %      delta    a fraction by which the plate is to be scaled.
-%               Scaling is done so that the scaled plate has the
-%               following properties:
+%
+%               [1,1]   = size(delta); double = class(delta)
+%
+%               Scaling is done so that the scaled plate has the following
+%               properties:
 %
 %                  -  it is co-planar with the input plate
 %
@@ -56,30 +66,31 @@
 %                     (1+delta) times the corresponding distance for
 %                     the input plate
 %
-%                 [1,1]   = size(delta); double = class(delta)
-%
 %   the call:
 %
-%      overts = cspice_pltexp( iverts, delta)
+%      [overts] = cspice_pltexp( iverts, delta )
 %
 %   returns:
 %
 %      overts   an array containing three vertices of the triangular
 %               plate resulting from scaling the input plate.
 %
+%               [3,3]   = size(overts); double = class(overts)
+%
 %               If `ctroid' is the centroid (the average of the vertices)
 %               of the input plate, then the jth vertex of `overts'
 %
-%                  overts(i,j), i = 1 ... 3
+%                  overts(j,i), j = 1 ... 3
 %
 %               is equal to
 %
-%                  ctroid(i) + (1+delta)*( iverts(i,j) - ctroid(i) ),
+%                  ctroid(j) + (1+delta)*( iverts(j,i) - ctroid(j) ),
 %
-%                  i = 1 ... 3
+%                  j = 1 ... 3
 %
+%-Parameters
 %
-%               [3,3]   = size(overts); double = class(overts)
+%   None.
 %
 %-Examples
 %
@@ -87,7 +98,17 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      function pltexp_t
+%   1) Expand an equilateral triangle that lies in the plane
+%
+%         { (x,y,z) : z = 7 }
+%
+%      Use an expansion fraction of 1.0; this doubles the size of
+%      the plate.
+%
+%      Example code begins here.
+%
+%
+%      function pltexp_ex1()
 %
 %         s     = sqrt( 3.0 ) / 2.0;
 %
@@ -103,14 +124,15 @@
 %         fprintf ( ' I2 = %20.12f %20.12f %20.12f\n', iverts(:,2) )
 %         fprintf ( ' I3 = %20.12f %20.12f %20.12f\n', iverts(:,3) )
 %
-%
-%
 %         fprintf ( '\nVertices of output plate: \n')
 %         fprintf ( ' O1 = %20.12f %20.12f %20.12f\n', overts(:,1) )
 %         fprintf ( ' O2 = %20.12f %20.12f %20.12f\n', overts(:,2) )
 %         fprintf ( ' O3 = %20.12f %20.12f %20.12f\n', overts(:,3) )
 %
-%   MATLAB outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
 %
 %      Vertices of input plate:
 %       I1 =       0.866025403784      -0.500000000000       7.000000000000
@@ -122,6 +144,7 @@
 %       O2 =       0.000000000000       2.000000000000       7.000000000000
 %       O3 =      -1.732050807569      -1.000000000000       7.000000000000
 %
+%
 %-Particulars
 %
 %   This routine supports "greedy" ray-plate intercept algorithms.
@@ -130,16 +153,57 @@
 %   occur. In such an algorithm, the plate of interest is expanded
 %   slightly before the intersection test is performed.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine pltexp_c.
+%   1)  If any of the input arguments, `iverts' or `delta', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
 %
+%   2)  If any of the input arguments, `iverts' or `delta', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
+%   DSK.REQ
 %   MICE.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 28-NOV-2016, EDW (JPL)
+%   -Mice Version 1.1.0, 07-AUG-2020 (EDW) (JDR)
+%
+%       Updated description of input argument "iverts".
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections. Fixed
+%       minor typos in header.
+%
+%       Edited the header to comply with NAIF standard. Added
+%       example task statement.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 28-NOV-2016 (EDW)
 %
 %-Index_Entries
 %
@@ -167,8 +231,6 @@ function [overts] = cspice_pltexp( iverts, delta)
    %
    try
       [overts] = mice('pltexp_c', iverts, delta );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-

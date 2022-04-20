@@ -2814,8 +2814,8 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
       if ~do_burst
         nsops_errlist = [caa_str2errid('hxonly') caa_str2errid('bad_lx')...
           caa_str2errid(irf_ssub('no_p?',probe))];%#ok<NASGU>
-%      else
-%        nsops_errlist = [caa_str2errid(irf_ssub('no_p?',probe))];
+        %      else
+        %        nsops_errlist = [caa_str2errid(irf_ssub('no_p?',probe))];
       end
       remove_problems
       P.(probeS(probe)) = res;

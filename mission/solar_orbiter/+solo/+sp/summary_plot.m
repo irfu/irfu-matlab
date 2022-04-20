@@ -42,7 +42,7 @@ classdef summary_plot < handle
     % like to wrap the function handle, not the add_panel_* method.
     %   Ex: Can not fade line color in wrapper.
     %
-    % TODO-DECISION: Content of figure title
+    % TODO-DEC: Content of figure title
     %   PROPOSAL: Time range
     %   PROPOSAL: DOY.
     %       ~PROBLEM/NOTE: Could span multiple days, or part of day.
@@ -86,7 +86,7 @@ classdef summary_plot < handle
         
         % Same samples/spectrum independent of sampling frequency.
         N_SAMPLES_PER_SPECTRUM_LFR_SWF = ...
-            EJ_library.so.constants.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
+            EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
         
         
 
@@ -96,7 +96,7 @@ classdef summary_plot < handle
         % FH = Function Handle
         N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
         N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
-            cwfSamplFreqHz / EJ_library.so.constants.LFR_F3_HZ ...
+            cwfSamplFreqHz / EJ_library.so.hwzv.const.LFR_F3_HZ ...
             * solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
         
         % Min & max frequencies in LFR __CWF__ plots.
@@ -107,10 +107,10 @@ classdef summary_plot < handle
         % frequency. ==> CWF Autoscaling is OK.
         %
 %         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-%             EJ_library.so.constants.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
-%             EJ_library.so.constants.LFR_F2_HZ / 2];
+%             EJ_library.so.hwzv.const.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+%             EJ_library.so.hwzv.const.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-            EJ_library.so.constants.LFR_F3_HZ ...
+            EJ_library.so.hwzv.const.LFR_F3_HZ ...
             / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
@@ -442,9 +442,9 @@ classdef summary_plot < handle
             nChannels = numel(zvDataCa);
             assert(numel(removeMean) == nChannels)
             
-            bRecords = (zvSamplFreqHz == EJ_library.so.constants.LSF_HZ(iLsf));
-            samplFreqHz = EJ_library.so.constants.LSF_HZ(iLsf);
-            lsfName     = EJ_library.so.constants.LSF_NAME_ARRAY{iLsf};
+            bRecords = (zvSamplFreqHz == EJ_library.so.hwzv.const.LSF_HZ(iLsf));
+            samplFreqHz = EJ_library.so.hwzv.const.LSF_HZ(iLsf);
+            lsfName     = EJ_library.so.hwzv.const.LSF_NAME_ARRAY{iLsf};
             
             
             
@@ -459,7 +459,7 @@ classdef summary_plot < handle
             nSps        = size(zvDataCa{1}, 2);    % SPS = Samples Per Snapshot
             assert(nSps >= 2)
             
-            zvEpoch = EJ_library.so.convert_N_to_1_SPR_Epoch(...
+            zvEpoch = EJ_library.so.hwzv.convert_N_to_1_SPR_Epoch(...
                 zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
             
             for i = 1:nChannels
@@ -475,7 +475,7 @@ classdef summary_plot < handle
                     zvData = zvData - repmat(mean(zvData, 2, 'omitnan'), [1, nSps]);
                 end
                 
-                zvDataCa{i} = EJ_library.so.convert_N_to_1_SPR_redistribute(zvData);
+                zvDataCa{i} = EJ_library.so.hwzv.convert_N_to_1_SPR_redistribute(zvData);
             end
             
             
@@ -559,7 +559,7 @@ classdef summary_plot < handle
                     SpecrecCa{jSs} = S;
                 end
                                 
-                Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
+                Specrec = EJ_library.graph.merge_Specrec(SpecrecCa);
 
                 Specrec.p_label = {'log_{10} [V^2/Hz]'};   % Replaces colorbarlabel
                 % irf_spectrogram() replaces irf_plot
@@ -605,8 +605,8 @@ classdef summary_plot < handle
             
             assert(~obj.figureComplete)
             
-            samplFreqHz = EJ_library.so.constants.LSF_HZ(iLsf);
-            lsfName     = EJ_library.so.constants.LSF_NAME_ARRAY{iLsf};
+            samplFreqHz = EJ_library.so.hwzv.const.LSF_HZ(iLsf);
+            lsfName     = EJ_library.so.hwzv.const.LSF_NAME_ARRAY{iLsf};
             
             bRecords = (zvSamplFreqHz == samplFreqHz);
             
@@ -867,7 +867,7 @@ classdef summary_plot < handle
             
             SpecrecCa(~bKeep) = [];
             %Specrec = solo.sp.summary_plot.merge_Specrec(SpecrecCa);
-            Specrec = EJ_library.utils.merge_Specrec(SpecrecCa);
+            Specrec = EJ_library.graph.merge_Specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
             % irf_spectrogram() replaces irf_plot
@@ -917,7 +917,7 @@ classdef summary_plot < handle
             [nRecords, nSps] = EJ_library.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2]);
-            bicas.proc_utils.assert_zv_Epoch(zvEpoch)
+            bicas.utils.assert_zv_Epoch(zvEpoch)
             
             assert(nSps >= 2)
             
@@ -1045,7 +1045,7 @@ classdef summary_plot < handle
         % irf_powerfft(), with identical frequencies.
         %
         % NOTE: Optionally added fields must be added after merging.
-        % NOTE: Cf EJ_library.utils.merge_Specrec() which is more powerful but
+        % NOTE: Cf EJ_library.graph.merge_Specrec() which is more powerful but
         % which is unnecessary here since only merging spectras with the same
         % frequencies (underlying data uses the same sampling frequency).
         %

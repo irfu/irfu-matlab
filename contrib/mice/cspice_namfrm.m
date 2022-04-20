@@ -33,16 +33,16 @@
 %
 %   Given:
 %
-%      frname   the name of some reference frame (either inertial or
+%      frname   the name(s) of some reference frame(s) (either inertial or
 %               non-inertial).
 %
-%               [n,m] = size(frname); char = class(frname)
+%               [n,c1] = size(frname); char = class(frname)
 %
 %                  or
 %
 %               [1,n] = size(frname); cell = class(frname)
 %
-%               Leading blanks in 'frname' are ignored as is character case.
+%               Leading blanks in `frname' are ignored as is character case.
 %
 %               Note that all legitimate frame names contain 32 or fewer
 %               characters.
@@ -53,16 +53,20 @@
 %
 %   returns:
 %
-%      frcode   the SPICE code(s) used for internal representation of the named
-%               reference frame.
+%      frcode   the SPICE code(s) used for internal representation of the
+%               named reference frame.
 %
 %               [1,n] = size(frcode); int32 = class(frcode)
 %
-%               If the name input through frname is not recognized, 'frcode'
+%               If the name input through `frname' is not recognized, `frcode'
 %               will be returned with a value of zero.
 %
-%              'frcode' returns with the same vectorization measure (N)
-%               as 'frname'.
+%               `frcode' returns with the same vectorization measure (N)
+%               as `frname'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -70,69 +74,154 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Retrieve frame information for a single frame.
-%      %
-%      disp('Scalar' )
-%      name = 'ITRF93';
+%   1) Given a set of frame names, retrieve their associated SPICE
+%      frame ID.
 %
-%      %
-%      % Output the frame name corresponding to 'name'.
-%      %
-%      frcode = cspice_namfrm( name )
+%      Example code begins here.
 %
 %
-%      %
-%      % Retrieve frame information for a vector of names.
-%      % Create a vector of frame IDs, 1 to 5.
-%      %
-%      disp('Vector' )
-%      codes = [1:5];
+%      function namfrm_ex1()
 %
-%      %
-%      % Convert 'codes' to the corresponding frame name.
-%      % 
-%      names = cspice_frmnam( codes );
+%         %
+%         % Retrieve frame information for a single frame.
+%         %
+%         name = 'ITRF93';
 %
-%      %
-%      % Output the frame IDs corresponding to 'names'.
-%      % The result should match the 'codes' vector'.
-%      %
-%      frcode = cspice_namfrm( names )
+%         %
+%         % Output the SPICE frame ID corresponding to 'name'.
+%         %
+%         frcode = cspice_namfrm( name );
 %
-%  MATLAB outputs:
+%         disp('Frame Name  ID code' )
+%         disp('----------  -------' )
+%         disp('Scalar:' )
+%         fprintf('%10s  %d\n', name, frcode )
 %
-%      Scalar
+%         %
+%         % Retrieve frame information for a vector of names.
+%         %
+%         disp('Vector:' )
+%         names = { 'J2000', 'IAU_MARS', 'FK4', 'ECLIPJ2000', 'MYFRAME' };
 %
-%      frcode =
+%         %
+%         % Output the frame IDs corresponding to 'names'.
+%         %
+%         frcode = cspice_namfrm( names );
 %
-%             13000
+%         for i=1:numel( frcode )
 %
-%      Vector
+%            if ( frcode(i) )
+%               fprintf( '%10s  %d\n', char(names(i)), frcode(i) )
+%            else
+%               fprintf( 'No SPICE frame ID associated to the name  %s\n', ...
+%                        char(names(i)) )
+%            end
 %
-%      frcode =
+%         end
 %
-%                 1           2           3           4           5
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Frame Name  ID code
+%      ----------  -------
+%      Scalar:
+%          ITRF93  13000
+%      Vector:
+%           J2000  1
+%        IAU_MARS  10014
+%             FK4  3
+%      ECLIPJ2000  17
+%      No SPICE frame ID associated to the name  MYFRAME
+%
 %
 %-Particulars
 %
+%   This is a low level interface routine intended primarily for
+%   use within the SPK and CK systems to assist in the transformation
+%   to user specified reference frames.
+%
+%   The routine first consults a stored list of reference frame
+%   names in an attempt to determine the appropriate reference
+%   frame code.
+%
+%   If this search is unsuccessful, the routine then examines the
+%   kernel pool to determine whether or not a variable of the
+%   form
+%
+%      'FRAME_' + frname
+%
+%      (where leading blanks of `frname' are ignored)
+%
+%   is present. If it is and the number of values associated with the
+%   name is 1, this value is taken to be the frame ID code.
+%
+%   Note: It is NOT possible to override the default names and
+%   ID codes stored locally in this routine by placing an
+%   appropriately variable in the kernel pool with a different
+%   ID code. The predefined values always take precedence.
+%
+%   Consult the frames.req required reading document for more details
+%   about constructing your own frame definitions.
+%
+%-Exceptions
+%
+%   1)  If the input name is not recognized, `frcode' will be
+%       returned with a value of 0.
+%
+%   2)  If the input argument `frname' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `frname' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine namfrm_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   FRAMES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   M. Liukis           (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 03-JAN-2016, EDW (JPL), ML (JPL)
+%   -Mice Version 1.1.0, 26-NOV-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%       Reformatted example's output and added problem statement.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 03-JAN-2016 (EDW) (ML)
 %
 %       Corrected minor typo, "or" rather than "of."
 %
-%   -Mice Version 1.0.0, 14-NOV-2014, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.0.0, 14-NOV-2014 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -155,8 +244,8 @@ function [frcode] = cspice_namfrm(frname)
 
    try
       [frcode] = mice('namfrm_c',frname);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

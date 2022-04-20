@@ -73,7 +73,7 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir)
 
 
 
-% TODO-NEED-INFO: How set time stamps?
+% TODO-NI: How set time stamps?
 %   NOTE: Time stamps are not copied, nor modifications of existing time stamps.
 %         Can therefor not just reduce to relative times.
 % PROPOSAL: Change function name: Something which implies using a master file and "filling it".
@@ -352,7 +352,7 @@ end
 function create_RCT_file(rctMasterCdfFile, destPath, RctL, RctH, gaCALIBRATION_VERSION)
     % PROPOSAL: Assertion for matching number of records Epoch_L+data, Epoch_H+data.
     %   PROPOSAL: Read from master file which should match.
-    % TODO-DECISION: Require correct MATLAB classes (via write_CDF_dataobj)?
+    % TODO-DEC: Require correct MATLAB classes (via write_CDF_dataobj)?
     
     assert(ischar(gaCALIBRATION_VERSION))
     

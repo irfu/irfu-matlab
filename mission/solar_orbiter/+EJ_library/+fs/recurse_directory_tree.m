@@ -12,71 +12,100 @@
 %
 % ARGUMENTS
 % =========
-% rootPath          : Path to file or directory.
-% FileFunc          : Function pointer that is called for every file that is recursed over.
-%                           result = file_func(ArgStruct).
-%                     result    : An arbitrary value that is passed on to the call for "DirFunc" for the parent
-%                                 directory, via the "childrenResultsList" argument.
-%                     ArgStruct : Struct with fields
-%                          .rootDirPath
-%                          .relativePath
-%                          .fullPath
-%                          .dirCmdResult
-%                          .recursionDepth
+% rootPath
+%       Path to file or directory.
+% FileFunc
+%       Function pointer that is called for every file that is recursed over.
+%           result = file_func(ArgStruct)
+%       ArgStruct
+%           Struct with fields
+%           .rootDirPath
+%           .relativePath
+%           .fullPath
+%           .dirCmdResult
+%           .recursionDepth
+%       result
+%           An arbitrary value that is passed on to the call for "DirFunc" for
+%           the parent directory, via the "childrenResultsList" argument.
 %
-% DirFunc           : Function pointer, that is called for every directory recursed over, including the root directory
-%                     ("rootDirPath"). It is implicit that this function should not need to recurse over the directory
-%                     tree itself.
-%                           result = dir_func(ArgStruct)
-%                     result    : An arbitrary value passed on to the call for "DirFunc" for the parent directory. For
-%                                 the root directory, the value is returned by "recurse_directory_tree" itself.
-%                     ArgStruct : Struct with fields
-%                          .rootDirPath
-%                          .relativePath
-%                          .fullPath
-%                          .dirCmdResult
-%                          .recursionDepth
-%                          .childrenResultsList     : Cell array of "result" values returned from FileFunc and DirFunc
-%                                                     when called for the directory's children.
-%                          .hasRecursedOverChildren : The result of ShouldRecurseFunc for the same directory.
-%                                                     Is used to distinguish the absence of children from the absence of
-%                                                     recursion over children.
+% DirFunc
+%       Function pointer, that is called for every directory recursed over,
+%       including the root directory ("rootDirPath"). It is implicit that this
+%       function should not need to recurse over the directory tree itself.
+%           result = dir_func(ArgStruct)
+%       ArgStruct
+%           Struct with fields
+%           .rootDirPath
+%           .relativePath
+%           .fullPath
+%           .dirCmdResult
+%           .recursionDepth
+%           .childrenResultsList
+%               Cell array of "result" values returned from FileFunc and DirFunc
+%               when called for the directory's children.
+%           .hasRecursedOverChildren
+%               The result of ShouldRecurseFunc for the same directory. Is used
+%               to distinguish the absence of children from the absence of
+%               recursion over children.
+%       result
+%           An arbitrary value passed on to the call for "DirFunc" for the
+%           parent directory. For he root directory, the value is returned by
+%           "recurse_directory_tree" itself.
 %
-% ShouldRecurseFunc : Function pointer:
-%                           shouldRecurse = should_recurse(ArgStruct)
-%                     shouldRecurse : True/false. True iff "recurse_directory_tree" should recurse over the children of
-%                                     the specified directory.
-%                                     NOTE: DirFunc will always be called for the directory specified here.
-%                     ArgStruct     : Struct with fields
-%                          .rootDirPath
-%                          .relativePath
-%                          .fullPath
-%                          .dirCmdResult
-%                          .recursionDepth
+% ShouldRecurseFunc
+%       Function pointer:
+%           shouldRecurse = should_recurse(ArgStruct)
+%       ArgStruct
+%           Struct with fields
+%           .rootDirPath
+%           .relativePath
+%           .fullPath
+%           .dirCmdResult
+%           .recursionDepth
+%       shouldRecurse
+%           True/false. True iff "recurse_directory_tree" should recurse over
+%           the children of the specified directory.
+%           NOTE: DirFunc will always be called for the directory specified
+%           here.
 %                     
-% varargin          : Optional settings on format determined by EJ_library.utils.interpret_settings_args .
-%                     useRootRelativePathPeriod : True/false. When rootPath is a directory, whether ".relativePath" for rootPath (the "root path")
-%                                                 itself should be represented by a period (instead of an empty string).
+% varargin
+%       Optional settings on format determined by
+%       EJ_library.utils.interpret_settings_args().
+%       'useRootRelativePathPeriod'
+%           True/false. When rootPath is a directory, whether ".relativePath"
+%           for rootPath (the "root path") itself should be represented by a
+%           period (instead of an empty string).
 %
 %
 %
 % RETURN VALUE
 % ============
-% result            : What DirFunc returns for the root path. Its format and content are determined by FileFunc, DirFunc
-%                     and ShouldRecurseFunc.
+% result
+%       What DirFunc returns for the root path. Its format and content are
+%       determined by FileFunc, DirFunc and ShouldRecurseFunc.
 %
 %
 %
 % VARIABLE NAMING CONVENTION
 % ==========================
-% rootDirPath    : Path to "root path/directory", i.e. the root of the subtree to be recursed over.
-% relativePath   : Path to a file/directory relative to "rootPath", if rootPath is a directory.
-%                  NOTE: Code uses an empty string instead of "." (or "./") to represent the root path.
-% fullPath       : Path to a file/directory beginning with "rootDirPath". Is thus still relative if "rootDirPath" is.
-% dirCmdResult   : The struct with information for this object that is returned by MATLAB's "dir", 
-%                  i.e. NOT information on all the children, only the object itself.
-% recursionDepth : Number of levels into the rootDirPath subdirectory tree. rootDirPath is level zero.
-%                  Files and directories under the same directory have the same level.
+% rootDirPath
+%       Path to "root path/directory", i.e. the root of the subtree to be
+%       recursed over.
+% relativePath
+%       Path to a file/directory relative to "rootPath", if rootPath is a
+%       directory.
+%       NOTE: Code uses an empty string instead of "." (or "./") to represent
+%       the root path.
+% fullPath
+%       Path to a file/directory beginning with "rootDirPath". Is thus still
+%       relative if "rootDirPath" is.
+% dirCmdResult
+%       The struct with information for this object that is returned by MATLAB's
+%       "dir", i.e. NOT information on all the children, only the object itself.
+% recursionDepth
+%       Number of levels into the rootDirPath subdirectory tree. rootDirPath is
+%       level zero. Files and directories under the same directory have the same
+%       level.
 %
 %
 %
@@ -149,7 +178,9 @@
 %
 % Initially created by Erik P G Johansson, 2016-11-29.
 %
-function result = recurse_directory_tree(rootPath, FileFunc, DirFunc, ShouldRecurseFunc, varargin)
+function result = recurse_directory_tree(...
+        rootPath, FileFunc, DirFunc, ShouldRecurseFunc, varargin)
+
 % GUIDING NEEDS / RATIONALE / MOTIVATION
 % ======================================
 % NEED: Få namn för varje objekt.
@@ -204,7 +235,8 @@ function result = recurse_directory_tree(rootPath, FileFunc, DirFunc, ShouldRecu
     % Set default settings.
     %DEFAULT_SETTINGS.useRelativeDirectorySlash = false;
     DEFAULT_SETTINGS.useRootRelativePathPeriod = false;
-    Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+    Settings = EJ_library.utils.interpret_settings_args(...
+        DEFAULT_SETTINGS, varargin);
     EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
     % ASSERTION
@@ -235,7 +267,8 @@ function result = recurse_directory_tree(rootPath, FileFunc, DirFunc, ShouldRecu
             'dirCmdResult',   dir(rootPath), ...
             'recursionDepth', 0));
 
-    % IMPLEMENTATION NOTE: "isfolder" is incompatible with MATLAB R2016a (i.e. Lapsus).
+    % IMPLEMENTATION NOTE: "isfolder" is incompatible with MATLAB R2016a (i.e.
+    % Lapsus).
     elseif exist(rootPath, 'dir')
         
         rootPath = EJ_library.fs.remove_trailing_slash(rootPath);
@@ -267,26 +300,30 @@ end
 %
 % ARGUMENTS
 % =========
-% rootDirPath         : The path to the root of the ENTIRE recursion. This value
-%                       stays constant for all calls. Always a directory.
-% relativePath        : Path to directory relative to "rootDirPath".
-%                       NOTE: Uses empty string to represent "rootDirPath".
-%                       NOTE: Never has trailing slash/backslash.
-% dirCmdResultCurrent : The "dir" command result (data, record) that pertains to
-%                       this specific directory, i.e. NOT the data/records for
-%                       all of its immediate children (files and directories)
-%                       contained in it.
-% recursionDepth      : Zero for the first call, i.e. for rootDirPath
-%                       (relativePath empty). Incremented by one for every step
-%                       into the directory structure.
+% rootDirPath
+%       The path to the root of the ENTIRE recursion. This value stays constant
+%       for all calls. Always a directory.
+% relativePath
+%       Path to directory relative to "rootDirPath".
+%       NOTE: Uses empty string to represent "rootDirPath".
+%       NOTE: Never has trailing slash/backslash.
+% dirCmdResultCurrent
+%       The "dir" command result (data, record) that pertains to this specific
+%       directory, i.e. NOT the data/records for all of its immediate children
+%       (files and directories) contained in it.
+% recursionDepth
+%       Zero for the first call, i.e. for rootDirPath (relativePath empty).
+%       Incremented by one for every step into the directory structure.
 % FileFunc,
 % DirFunc,
-% ShouldRecurseFunc   : Same as arguments to main function.
+% ShouldRecurseFunc
+%       Same as arguments to main function.
 % 
 %
 % RETURN VALUE
 % ============
-% result              : [] (not cell) if ShouldRecurseFunc returns false for this directory.
+% result
+%       [] (not cell), if ShouldRecurseFunc returns false for this directory.
 % 
 function result = recurse_directory_tree_INTERNAL(...
         rootDirPath, ...
@@ -335,7 +372,8 @@ function result = recurse_directory_tree_INTERNAL(...
         % Get information on the children of the current directory
         %==========================================================
         currentFullPath   = fullfile(rootDirPath, relativePath);
-        DirCmdResultsArray = dir(currentFullPath);                 % Returns column vector of structs.
+        % Returns column vector of structs.
+        DirCmdResultsArray = dir(currentFullPath);
         % Remove non-children from dir command results.
         iDelete = ismember({DirCmdResultsArray.name}, NON_CHILDREN_NAMES);
         DirCmdResultsArray(iDelete) = [];
@@ -413,7 +451,7 @@ end
 % Should only be needed exactly once (for the root directory).
 %
 function DirCmdResult = get_dir_cmd_result_for_single_directory(dirPath)
-    % TODO-DECISION: How handle "/"?
+    % TODO-DEC: How handle "/"?
     
     % IMPLEMENTATION NOTE: Need correct path to later determine the name of the
     % directory (e.g. for relative paths, "/", "..").
@@ -425,17 +463,21 @@ function DirCmdResult = get_dir_cmd_result_for_single_directory(dirPath)
     % IMPLEMENTATION NOTE: Empirically, "dir" returns zero entries for
     % non-readable directories WITHOUT THROWING ANY EXCEPTION. This can give
     % very non-intuitive errors.
-    assert(~isempty(DirCmdResultsArray), '"dir" returned zero entries for directory "%s". Non-existent directory? No read permissions?', absPath)
+    assert(~isempty(DirCmdResultsArray), ...
+        ['"dir" returned zero entries for directory "%s".', ...
+        ' Non-existent directory? No read permissions?'], absPath)
 
     % Replace "." (current directory) with the actual name of the current
     % directory.
     iDir = find(strcmp({DirCmdResultsArray.name}, '.'));
-    assert(isscalar(iDir), 'Can not find exactly one instance of object named "." when using "dir()" on directory.')
+    assert(isscalar(iDir), ...
+        ['Can not find exactly one instance of object named "."', ...
+        ' when using "dir()" on directory.'])
     DirCmdResult = DirCmdResultsArray(iDir);
     
-    % IMPLEMENTATION NOTE: Keep compatible with MATLAB R2009a ==> Do NOT use "~" notation.
+    % IMPLEMENTATION NOTE: Keep compatible with MATLAB R2009a.
+    % ==> Do NOT use "~" notation.
     %[junk, baseName, ext] = fileparts(absPath);
     %dirCmdResult.name = [baseName, ext];
     DirCmdResult.name = EJ_library.fs.get_name(absPath);
 end
-

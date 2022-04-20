@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2021-02-11T15:35:00';
+codeVerStr = '2022-04-12T15:31:00';
 
 
 % Based on data from 2020-04-07
@@ -75,13 +75,136 @@ CalEntry = irf.ts_vec_xy(...
   repmat([0.6834  3.8871],2,1));
 Cal = Cal.combine(CalEntry);
 
+%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2020-12-15T00:00:00Z/2020-12-31T23:59:59Z'),...
+  repmat([0.5556  3.8249],2,1));
+Cal = Cal.combine(CalEntry);
+
+%2021 -- 
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2021-01-01T00:00:00Z/2021-02-01T23:59:59Z'),...
+  repmat([0.8000  4.5233],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+
+
+
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2021-02-02T00:00:00Z/2021-04-04T23:59:50Z'),...
+  repmat([0.8000 + 3.4468i   0.3906 + 3.7661i],2,1)); 
+
+
+PSPintersection = 0.7814; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%   
+
+
+
+%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2021-04-05T00:00:00Z/2021-07-27T23:59:59Z'),...
+  repmat([0.7092 3.0440],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+
+
+
+
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2021-07-28T00:00:00Z/2021-09-04T23:59:50Z'),...
+  repmat([0.7812 + 3.3793i  0.3953 + 3.6551i],2,1)); 
+  
+
+PSPintersection = 1.7180; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------% 
+
+
+
+
+%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2021-09-05T00:00:00Z/2021-11-22T23:59:59Z'),...
+  repmat([0.5882  3.4788],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+
 %% calibrate
 CalR = Cal.resample(PSP);
 NeScp = PSP; 
 
-NeScp.data = exp(CalR.x.data.*NeScp.data +CalR.y.data);
+
+NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
+
+
+timeOutsideInterval = irf_time('2021-11-22T23:59:59Z','utc>ttns');
+NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
+    
+
 
 NeScp.name = 'NeScp';
 NeScp.units = 'cm^-3';
 NeScp.siConversion = 'cm^-3>1e6*m^-3';
 NeScp.userData = '';
+
+end 
+
+
+function [C] = TwofitCalibration(PSPint,y_eq,CalData)
+        CalData = CalData.resample(PSPint);
+         
+        %Identify the data points corresponding to each fit
+        CalR1 = CalData(PSPint.data<y_eq).x;
+        CalR2 = CalData(PSPint.data>=y_eq).y;
+        %Identify NaNs
+        CalRnan= CalData(isnan(PSPint.data));
+    
+        %Create a TSeries with the data points of each fit
+        C1 = irf.ts_vec_xy(CalR1.time,[real(CalR1.data) imag(CalR1.data)]);
+        C2 = irf.ts_vec_xy(CalR2.time,[real(CalR2.data) imag(CalR2.data)]);
+        Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data),1) ones(length(CalRnan.data),1)]);
+        
+        
+        %Merge both fits and NaNs to keep the same lenght as the input
+        %If statements added for robusteness. An error will be send if 
+        %combining empty objects.
+        if ~isempty(C1) && ~isempty(C2)
+            C = C1.combine(C2);
+        elseif ~isempty(C1) && isempty(C2)
+            C = C1;
+        elseif ~isempty(C2) && isempty(C1)
+           C = C2;
+        elseif isempty(C1) && isempty(C2) && isempty(Cnan)
+           C = CalData;
+           irf.log('critical', 'no data at all ?!?')
+        end
+        
+        if ~isempty(Cnan)
+            C = C.combine(Cnan);
+        end
+    
+    
+end
+
+

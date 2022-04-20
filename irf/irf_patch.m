@@ -115,7 +115,7 @@ elseif isa(args{1},'TSeries')
   tmpData = tsData.data;
   tsData = irf.ts_scalar(tsData.time,[zeros(tsData.length,1) tmpData]); % add zero level
   nDim2 = size(tsData.data,2);
-  cmap = colormap('jet'); cmap = flipdim(cmap(fix(linspace(1,64,nDim2-1)),:),1);  
+  cmap = colormap('jet'); cmap = flipdim(cmap(fix(linspace(1,64,nDim2-1)),:),1);
   tPatch = tsData.time.epochUnix-t_start_epoch(tsData.time.epochUnix);
   
   hold(ax,'on')
@@ -151,31 +151,31 @@ elseif isa(args{1},'TSeries')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function t_st_e = t_start_epoch(t)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Gives back the value of t_start_epoch of the figure
-% if not  set, sets t_start_epoch of the figure
-ud = get(gcf,'userdata');
-ii = find(~isnan(t));
-if ~isempty(ii), valid_time_stamp = t(ii(1)); else, valid_time_stamp = []; end
-
-if isfield(ud,'t_start_epoch')
-  t_st_e = double(ud.t_start_epoch);
-elseif ~isempty(valid_time_stamp)
-  if valid_time_stamp > 1e8
-    % Set start_epoch if time is in isdat epoch
-    % Warn about changing t_start_epoch
-    t_st_e = double(valid_time_stamp);
-    ud.t_start_epoch = t_st_e;
-    set(gcf,'userdata',ud);
-    irf.log('notice',['user_data.t_start_epoch is set to ' ...
-      epoch2iso(t_st_e,1)]);
-  else
-    t_st_e = double(0);
+  function t_st_e = t_start_epoch(t)
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Gives back the value of t_start_epoch of the figure
+    % if not  set, sets t_start_epoch of the figure
+    ud = get(gcf,'userdata');
+    ii = find(~isnan(t));
+    if ~isempty(ii), valid_time_stamp = t(ii(1)); else, valid_time_stamp = []; end
+    
+    if isfield(ud,'t_start_epoch')
+      t_st_e = double(ud.t_start_epoch);
+    elseif ~isempty(valid_time_stamp)
+      if valid_time_stamp > 1e8
+        % Set start_epoch if time is in isdat epoch
+        % Warn about changing t_start_epoch
+        t_st_e = double(valid_time_stamp);
+        ud.t_start_epoch = t_st_e;
+        set(gcf,'userdata',ud);
+        irf.log('notice',['user_data.t_start_epoch is set to ' ...
+          epoch2iso(t_st_e,1)]);
+      else
+        t_st_e = double(0);
+      end
+    else
+      t_st_e = double(0);
+    end
+    
   end
-else
-  t_st_e = double(0);
-end
-
-end
 end

@@ -34,111 +34,160 @@
 %
 %   Given:
 %
-%      x     value(s) representing a measurement in the units specified
-%            by 'in'.
+%      x        value(s) representing a measurement in the units specified
+%               by `in'.
 %
-%            [1,n] = size(x); double = class(x)
+%               [1,n] = size(x); double = class(x)
 %
-%      in    the string specifying the units associated with measurement 'x'.
+%      in       the string specifying the units associated with measurement
+%               `x'.
 %
-%            [1,c1] = size(in); char = class(in)
+%               [1,c1] = size(in); char = class(in)
 %
-%               or
+%                  or
 %
-%            [1,1] = size(in); cell = class(in)
+%               [1,1] = size(in); cell = class(in)
 %
-%      out   the string specifying the units desired for the measurement 'x'.
+%      out      the string specifying the units desired for the measurement
+%               `x'.
 %
-%            [1,c2] = size(out); char = class(out)
+%               [1,c2] = size(out); char = class(out)
 %
-%               or
+%                  or
 %
-%            [1,1] = size(out); cell = class(out)
+%               [1,1] = size(out); cell = class(out)
 %
-%            Acceptable units for 'in' and 'out':
+%               Acceptable units for `in' and `out':
 %
-%                 Angles:                 "RADIANS"
-%                                         "DEGREES"
-%                                         "ARCMINUTES"
-%                                         "ARCSECONDS"
-%                                         "HOURANGLE"
-%                                         "MINUTEANGLE"
-%                                         "SECONDANGLE"
+%                  Angles:                 'RADIANS'
+%                                          'DEGREES'
+%                                          'ARCMINUTES'
+%                                          'ARCSECONDS'
+%                                          'HOURANGLE'
+%                                          'MINUTEANGLE'
+%                                          'SECONDANGLE'
 %
-%                 Metric Distances:       "METERS"
-%                                         "M"
-%                                         "KILOMETERS"
-%                                         "KM"
-%                                         "CENTIMETERS"
-%                                         "CM"
-%                                         "MILLIMETERS"
-%                                         "MM"
+%                  Metric Distances:       'METERS'
+%                                          'M'
+%                                          'KILOMETERS'
+%                                          'KM'
+%                                          'CENTIMETERS'
+%                                          'CM'
+%                                          'MILLIMETERS'
+%                                          'MM'
 %
-%                 English Distances:      "FEET"
-%                                         "INCHES"
-%                                         "YARDS"
-%                                         "STATUTE_MILES"
-%                                         "NAUTICAL_MILES"
+%                  English Distances:      'FEET'
+%                                          'INCHES'
+%                                          'YARDS'
+%                                          'STATUTE_MILES'
+%                                          'NAUTICAL_MILES'
 %
-%                 Astrometric Distances:  "AU"
-%                                         "PARSECS"
-%                                         "LIGHTSECS"
-%                                         "LIGHTYEARS" julian lightyears
+%                  Astrometric Distances:  'AU'
+%                                          'PARSECS'
+%                                          'LIGHTSECS'
+%                                          'LIGHTYEARS' julian lightyears
 %
-%                 Time:                   "SECONDS"
-%                                         "MINUTES"
-%                                         "HOURS"
-%                                         "DAYS"
-%                                         "JULIAN_YEARS"
-%                                         "TROPICAL_YEARS"
-%                                         "YEARS" (same as julian years)
+%                  Time:                   'SECONDS'
+%                                          'MINUTES'
+%                                          'HOURS'
+%                                          'DAYS'
+%                                          'JULIAN_YEARS'
+%                                          'TROPICAL_YEARS'
+%                                          'YEARS' (same as julian years)
 %
-%      Neither 'in' nor 'out' are case sensitive.
+%               Neither `in' nor `out' are case sensitive.
 %
 %   the call:
 %
-%      y = cspice_convrt( x, in, out)
+%      [y] = cspice_convrt( x, in, out )
 %
 %   returns:
 %
-%      y   the values representing the input 'x' measurement converted 
-%          to the units defined by 'out'.
+%      y        the value(s) representing the input `x' measurement converted
+%               to the units defined by `out'.
 %
-%          [1,n] = size(y); double = class(y)
+%               [1,n] = size(y); double = class(y)
+%
+%               `y' returns with the same vectorization measure, N, as `x'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   Any numerical results shown for this example may differ between
+%   Any numerical results shown for these examples may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%    Example(1):
+%   1) Convert 300 miles (statute miles) to kilometers and determine
+%      the number of lightyears in a parsec.
 %
-%      %
-%      % Convert 300 miles (statute miles) to kilometers.
-%      %
-%      dist_sm = 300;
-%      dist_km = cspice_convrt( dist_sm, 'statute_miles', 'km' )
+%      Example code begins here.
 %
-%   MATLAB outputs:
 %
-%      dist_km =
+%      function convrt_ex1()
 %
-%        482.8032
+%         %
+%         % Convert 300 miles (statute miles) to kilometers.
+%         %
+%         dist_sm = 300;
+%         dist_km = cspice_convrt( dist_sm, 'statute_miles', 'km' );
 %
-%   Example(2):
+%         fprintf( '300 miles in km  : %15.6f\n', dist_km )
 %
-%      %
-%      % Determine the number of lightyears in a vector of parsec values.
-%      %
-%      parsec     = [1, 3, 5];
-%      lightyears = cspice_convrt( parsec, 'parsecs', 'lightyears' )
+%         %
+%         % Determine the number of lightyears in a vector of parsec values.
+%         %
+%         parsec     = 1;
+%         lightyears = cspice_convrt( parsec, 'parsecs', 'lightyears' );
 %
-%   MATLAB outputs:
+%         fprintf( 'Lightyears/parsec: %15.6f\n', lightyears )
 %
-%      lightyears =
 %
-%          3.2616    9.7847   16.3078
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      300 miles in km  :      482.803200
+%      Lightyears/parsec:        3.261564
+%
+%
+%   2) Determine the number of lightyears for different parsec values
+%      using the vectorized capability of the cspice_convert call.
+%
+%      Example code begins here.
+%
+%
+%      function convrt_ex2()
+%
+%         %
+%         % Determine the number of lightyears in a vector of parsec
+%         % values.
+%         %
+%         parsec     = [1, 3, 5];
+%         lightyears = cspice_convrt( parsec, 'parsecs', 'lightyears' );
+%
+%         fprintf( '# parsec  lightyears\n' );
+%         fprintf( '--------  ----------\n' );
+%
+%         for i=1:3
+%
+%            fprintf( '%8.3f  %10.6f\n', parsec(i), lightyears(i) )
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      # parsec  lightyears
+%      --------  ----------
+%         1.000    3.261564
+%         3.000    9.784691
+%         5.000   16.307819
+%
 %
 %-Particulars
 %
@@ -152,28 +201,99 @@
 %   and distance units) and error message will be produced stating
 %   the requested units and associated types.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine convrt_c.
+%   1)  If the input units, output units, or both input and output
+%       units are not recognized, the error SPICE(UNITSNOTREC) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   2)  If the units being converted between are incompatible, the
+%       error SPICE(INCOMPATIBLEUNITS) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   3)  If any of the input arguments, `x', `in' or `out', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `x', `in' or `out', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   1)  This routine does not do any checking for overflow. The caller
+%       is required to make sure that the units used for the
+%       measurement are such that no floating point overflow will
+%       occur when the conversion is performed.
+%
+%   2)  Some of the units are not "defined" quantities. In such a case
+%       a best estimate is provided as of the date of the current
+%       version of this routine. Those estimated quantities are:
+%
+%          AU               The astronomical unit. The value was taken
+%                           from the JPL ephemeris DE125. This value
+%                           is an approximation and should not be used
+%                           for high-accuracy work. It agrees with the
+%                           value used in the JPL planetary ephemeris
+%                           DE430 (149597870.700 km) at the 100m
+%                           level.
+%
+%          TROPICAL_YEARS   The tropical year is the time from equinox
+%                           to equinox. This varies slightly with
+%                           time.
+%
+%          PARSECS          The parsec is the distance to an object
+%                           whose parallax angle is one arcsecond. Its
+%                           value is dependent upon the value of the
+%                           astronomical unit.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.3, 05-APR-2017, EDW (JPL)
+%   -Mice Version 1.1.0, 23-AUG-2021 (EDW) (JDR)
 %
-%      Header update to correspond to current SPICELIB/CSPICE version.
-%      
-%   -Mice Version 1.0.2, 30-OCT-2014, EDW (JPL)
+%       Edited the header to comply with NAIF standard.
+%       Added examples' problem statements and reformatted examples'
+%       output.
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
+%       Eliminated use of "lasterror" in rethrow.
 %
-%      Added MICE.REQ reference to the Required Reading section.
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
 %
-%   -Mice Version 1.0.0, 07-MAR-2007, EDW (JPL)
+%   -Mice Version 1.0.3, 05-APR-2017 (EDW)
+%
+%       Header update to correspond to current SPICELIB/CSPICE version.
+%
+%   -Mice Version 1.0.2, 30-OCT-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.1, 06-MAY-2009 (EDW)
+%
+%       Added mice.req reference to the Required Reading section.
+%
+%   -Mice Version 1.0.0, 07-MAR-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -201,9 +321,6 @@ function [y] = cspice_convrt( x, in, out)
    %
    try
       [y] = mice('convrt_c', x, in, out);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-

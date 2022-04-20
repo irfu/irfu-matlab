@@ -1,11 +1,12 @@
 %
-% Quicklook for the content of one BIAS LFR CWF dataset (CDF file), ie. any of
-% the following DATASET_IDs:
+% Generate official quicklook for the content of one BIAS LFR CWF dataset (CDF
+% file), ie. any of the following DATASET_IDs:
 %   SOLO_L2_RPW-LFR-SBM1-CWF-E
 %   SOLO_L2_RPW-LFR-SBM2-CWF-E
 %   SOLO_L2_RPW-LFR-SURV-CWF-E
 %
 %
+% NOTE: CAN BE VERY SLOW DUE TO SPECTROGRAMS.
 % NOTE: Color scale is log. Therefore colors represent negative values (probably).
 %
 % 
@@ -16,7 +17,7 @@
 % of already fixed bugs.
 % --
 % FIXED BUG: Empirically: When there is any EAC data, for any time interval,
-% then summay plot only contains VDC1-spectrum for the time interval (VDC1) for
+% then summary plot only contains VDC1-spectrum for the time interval (VDC1) for
 % which there is EAC data, and plots no EDC spectras.
 %   Ex: 2020-04-09: LFR-CWF 107 MiB
 %   Ex: 2020-05-07: LFR-CWF 284 MiB
@@ -31,7 +32,7 @@
 %
 % BUGS
 % ====
-% Can be very slow due to spectrograms.
+% CAN BE VERY SLOW DUE TO SPECTROGRAMS.
 % YK 2020-09-01: Plotting of spectrograms slows it down and that spectrograms
 % should be averaged before plotting.
 % --
@@ -85,10 +86,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     %   Ex: SWF: Permit/force DC+AC diffs
     %   Ex: Disable spectrograms.
     %
-    % PROPOSAL: Change package name to sp (summary plots).
-    %
     % PROPOSAL: Settings for disabling spectrum etc.
-    % PROPOSAL: Rename. Not (MATLAB) plot, but (MATLAB) figure.
     
     D = dataobj(filePath);
     zvEpoch       = D.data.Epoch.data;

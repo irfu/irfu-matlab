@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_TKVRSN returns the latest version string given an item such
-%   as the Toolkit or an entry point name
+%   CSPICE_TKVRSN returns the latest version string of a given item such as
+%   the Toolkit or a routine name.
 %
 %-Disclaimer
 %
@@ -33,28 +33,32 @@
 %
 %   Given:
 %
-%      item   the item name for which to return the version string.
+%      item     the item name for which to return the version string.
 %
-%             [1,c1] = size(item); char = class(item)
+%               [1,c1] = size(item); char = class(item)
 %
-%                or
+%                  or
 %
-%             [1,1] = size(item); cell = class(item)
+%               [1,1] = size(item); cell = class(item)
 %
-%             Currently, the only item supported is "toolkit"
-%             and it will return the toolkit version number.
+%               Currently, the only item supported is "toolkit"
+%               and it will return the toolkit version number.
 %
-%             Any other 'item' will return "No version found."
+%               Any other `item' will return "No version found."
 %
 %   the call:
 %
-%      value = cspice_tkvrsn( item )
+%      [verstr] = cspice_tkvrsn( item )
 %
 %   returns:
 %
-%      value   latest version string for the specified 'item'.
+%      verstr   latest version string for the specified `item'.
 %
-%              [1,c2] = size(value); double = class(value)
+%               [1,c2] = size(verstr); double = class(verstr)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -62,41 +66,106 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> disp( cspice_tkvrsn('toolkit') )
+%   1) Display the Mice library version, and its compilation date and
+%      time, as well as the Mice toolkit version.
 %
-%   MATLAB outputs:
+%      Note that the Mice toolkit version is different than the Mice
+%      library shared object version. The earlier is common to all
+%      toolkits, while the later is specific to Mice.
 %
-%      CSPICE_N0060
+%      Example code begins here.
+%
+%
+%      function tkvrsn_ex1()
+%
+%         fprintf( 'Mice toolkit version: %s\n', cspice_tkvrsn( 'toolkit' ) )
+%         fprintf( 'Mice library version: %s\n', cspice_mice  ( 'version' ) )
+%         fprintf( '   Compiled on %s at %s\n',                            ...
+%                  cspice_mice( 'date' ),                                  ...
+%                  cspice_mice( 'time' )         )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Mice toolkit version: CSPICE_N0066
+%      Mice library version: Mice 1.5.0 05-JAN-2017 (EDW) (NJB)
+%         Compiled on Apr 11 2018 at 23:27:58
+%
 %
 %-Particulars
 %
 %   None.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine tkvrsn_c.
+%   1)  If the `item' whose version string is requested is not
+%       recognized, the string 'No version found.' is returned.
+%
+%   2)  If the input argument `item' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `item' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 13-FEB-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed output argument name "value" to "verstr".
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%       Edited the header to comply with NAIF standard. Reformatted example's
+%       output and added problem statement.
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%   -Mice Version 1.0.0, 26-NOV-2006, EDW (JPL)
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 13-FEB-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 26-NOV-2006 (EDW)
 %
 %-Index_Entries
 %
 %   Return version strings
+%
 %-&
 
-function [value] = cspice_tkvrsn( item )
+function [verstr] = cspice_tkvrsn( item )
 
    switch nargin
       case 1
@@ -105,7 +174,7 @@ function [value] = cspice_tkvrsn( item )
 
       otherwise
 
-         error ( 'Usage: [`value`] = cspice_tkvrsn( `item` )' )
+         error ( 'Usage: [`verstr`] = cspice_tkvrsn( `item` )' )
 
    end
 
@@ -113,9 +182,9 @@ function [value] = cspice_tkvrsn( item )
    % Call the MEX library.
    %
    try
-      [value] = mice( 'tkvrsn_c', item );
-   catch
-      rethrow(lasterror)
+      [verstr] = mice( 'tkvrsn_c', item );
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

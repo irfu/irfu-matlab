@@ -1,7 +1,7 @@
 %-Abstract
 %
 %   CSPICE_TYEAR returns the double precision value of the number
-%   of seconds in a tropical year: 31556926.
+%   of seconds in a tropical year: 31556925.9747
 %
 %-Disclaimer
 %
@@ -37,7 +37,7 @@
 %
 %   the call:
 %
-%      tyear = cspice_tyear
+%      [tyear] = cspice_tyear
 %
 %   returns:
 %
@@ -47,37 +47,100 @@
 %
 %              [1,n] = size(tyear); double = class(tyear)
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> tyear = cspice_tyear
+%   1) The following code example returns the double precision value of
+%      the number of seconds in a tropical year, and prints it out.
 %
-%      tyear =
+%      Example code begins here.
 %
-%           3.155692597470000e+07
+%
+%      function tyear_ex1()
+%
+%         %
+%         % Print the double precision value of seconds in a tropical
+%         % year.
+%         %
+%         fprintf( 'Seconds per tropical year: %20.8f\n', cspice_tyear )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Seconds per tropical year:    31556925.97470000
+%
 %
 %-Particulars
 %
+%   The tropical year is often used as a fundamental unit
+%   of time when dealing with older ephemeris data. For this
+%   reason its value in terms of ephemeris seconds is
+%   recorded in this function.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine tyear_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   [1]  P. Kenneth Seidelmann (Ed.), "Explanatory Supplement to the
+%        Astronomical Almanac," p 80, University Science Books, 1992.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Corrected the value given for the number of seconds in the
+%       tropical year in the -Abstract section.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Edited -Examples section to comply with NAIF standard. Added
+%       example's problem statement.
+%
+%       Changed output argument name "return_val" to "tyear" to comply
+%       with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 13-FEB-2015 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -85,14 +148,14 @@
 %
 %-&
 
-function [return_val] = cspice_tyear
+function [tyear] = cspice_tyear
 
    switch nargin
       case 0
          ;
       otherwise
 
-         error ( 'Usage: double = cspice_tyear' )
+         error ( 'Usage: [tyear] = cspice_tyear' )
 
    end
 
@@ -100,9 +163,7 @@ function [return_val] = cspice_tyear
    % Call the MEX library.
    %
    try
-      [return_val] =  mice('tyear_c' );
-   catch
-      rethrow(lasterror)
+      [tyear] =  mice('tyear_c' );
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-

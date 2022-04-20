@@ -1,93 +1,134 @@
 %-Abstract
 %
-%   CSPICE_DSKX02 determines the plate ID and body-fixed coordinates
-%   of the intersection of a specified ray with the surface defined by a
+%   CSPICE_DSKX02 determines the plate ID and body-fixed coordinates of the
+%   intersection of a specified ray with the surface defined by a
 %   type 2 DSK plate model.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
-%   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
+%   CALIFORNIA INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
 %   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
-%   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
-%   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
-%   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED "AS-IS"
+%   TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING ANY
+%   WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR A
+%   PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
 %   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
-%   KNOW OF THE POSSIBILITY.
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, OR NASA
+%   BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, BUT NOT
+%   LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+%   INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY AND LOST PROFITS,
+%   REGARDLESS OF WHETHER CALTECH, JPL, OR NASA BE ADVISED, HAVE
+%   REASON TO KNOW, OR, IN FACT, SHALL KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
-%   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE OF
+%   THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO INDEMNIFY
+%   CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING FROM THE
+%   ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      handle     the handle of a DSK file containing a type 2
-%                 segment from which data are to be fetched.
+%      handle   the file handle of a DSK file containing a shape model for a
+%               target body.
 %
-%                 [1,1] = size(handle); int32 = class(handle)
+%               [1,1] = size(handle); int32 = class(handle)
 %
-%      dladsc     the DLA descriptor associated with the segment
-%                 from which data are to be fetched.
+%               The shape model is stored in a type 2 DSK segment.
 %
-%                 [SPICE_DLA_DSCSIZ,1]  = size(dladsc)
-%                                 int32 = class(dladsc)
+%      dladsc   the DLA descriptor of a type 2 DSK segment containing plate
+%               model data representing the surface of the target body.
 %
-%      vertex     is the vertex of a ray.  `vertex' is expressed relative
-%                 to the body fixed reference frame associated with the
-%                 target body.  This reference frame is the same frame
-%                 relative to which the vertices of the plate model are
-%                 expressed.  Units are km.
+%               [SPICE_DLA_DSCSIZ,1]  = size(dladsc);
+%                               int32 = class(dladsc)
 %
-%                 [3,1] = size(vertex); double = class(vertex)
+%               Normally this descriptor will be obtained by a search
+%               through a DSK file using the DLA search routines; see the
+%               -Examples header section below for a working code example
+%               illustrating a simple search.
 %
-%                 The vertex is required to be outside the target body.
+%      vertex   the vertex of a ray.
 %
-%      raydir     is the ray's direction vector.  `raydir' is expressed
-%                 relative to the body fixed reference frame associated
-%                 with the target body.
+%               [3,1] = size(vertex); double = class(vertex)
 %
-%                 [3,1] = size(raydir); double = class(raydir)
+%               `vertex' is expressed relative to the body fixed reference
+%               frame associated with the target body. This reference frame
+%               is the same frame relative to which the vertices of the plate
+%               model are expressed. Units are km.
+%
+%               The vertex is required to be outside the target body.
+%
+%      raydir   the ray's direction vector.
+%
+%               [3,1] = size(raydir); double = class(raydir)
+%
+%               `raydir' is expressed relative to the body fixed reference
+%               frame associated with the target body.
 %
 %   the call:
 %
-%      [ plid, xpt, found] = cspice_dskx02( handle, dladsc, vertex, raydir)
+%      [plid, xpt, found] = cspice_dskx02( handle, dladsc, vertex, raydir )
 %
 %   returns:
 %
-%      plid       is the ID of the plate closest to the input ray's
-%                 vertex at which a ray-surface intercept exists.
-%                 If no intercept exists, `plid' is undefined.
+%      plid     the ID of the plate closest to the input ray's
+%               vertex at which a ray-surface intercept exists.
 %
-%                 [1,1] = size(plid); int32 = class(plid)
+%               [1,1] = size(plid); int32 = class(plid)
 %
-%      xpt        is the ray-target intercept closest to the ray's vertex,
-%                 if an intercept exists. `xpt' is expressed relative to
-%                 the body-fixed reference frame associated with the target
-%                 body.  Units are km.
 %
-%                 [3,1] = size(xpt); double = class(xpt)
+%               If no intercept exists, `plid' is undefined.
 %
-%                 If no intercept exists, `xpt' is undefined.
+%      xpt      the ray-target intercept closest to the ray's vertex,
+%               if an intercept exists.
 %
-%      found      is a logical flag that indicates whether or not the ray
-%                 does indeed intersect the target.  If the ray intersects a
-%                 plate, `found' is true.  Otherwise `found' is
-%                 false.
+%               [3,1] = size(xpt); double = class(xpt)
 %
-%                 [1,1] = size(found); logical = class(found)
+%               `xpt' is expressed relative to the body-fixed reference frame
+%               associated with the target body. Units are km.
+%
+%               If no intercept exists, `xpt' is undefined.
+%
+%      found    a logical flag that indicates whether or not the ray
+%               does indeed intersect the target.
+%
+%               [1,1] = size(found); logical = class(found)
+%
+%               If the ray intersects a plate, `found' is true. Otherwise
+%               `found' is false.
+%
+%-Parameters
+%
+%   See the parameter definitions file
+%
+%      MiceDtl.m
+%
+%   for the values of tolerance parameters used by default by the
+%   ray-surface intercept algorithm.
+%
+%   See the parameter definitions file
+%
+%      MiceDLA.m
+%
+%   for declarations of DLA descriptor sizes and documentation of the
+%   contents of DLA descriptors.
+%
+%   See the parameter definitions file
+%
+%      MiceDSK.m
+%
+%   for declarations of DSK descriptor sizes and documentation of the
+%   contents of DSK descriptors.
+%
+%   See the parameter definitions file
+%
+%      MiceDSK.m
+%
+%   for declarations of DSK data type 2 (plate model) parameters.
 %
 %-Examples
 %
@@ -95,26 +136,32 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example (1):
+%   1) Find the surface intercept points corresponding to a latitude/
+%      longitude grid of a specified resolution, for a specified
+%      target body. This simple program assumes the shape model for
+%      the target body is stored in a single type 2 DSK segment, and
+%      that this segment is the first one in the DSK file to which it
+%      belongs.
 %
-%      Look up all the vertices associated with each plate 
-%      of the model contained in a specified type 2 segment. 
-%      For this example, we'll show the context of this look-up: 
-%      opening the DSK file for read access, traversing a trivial, 
-%      one-segment list to obtain the segment of interest. 
+%      Example code begins here.
 %
-%      function dskx02_t( dsk )
+%
+%      function dskx02_ex1()
 %
 %         %
 %         % MiceUser globally defines DSK parameters.
-%         % For more information, please see DSKMiceUser.m and
-%         % DSKMice02.m.
+%         % For more information, please see MiceDSK.m.
 %         %
 %         MiceUser
 %
 %         NLAT             = 9;
 %         NLON             = 9;
 %         TOL              = 1.e-12;
+%
+%         %
+%         % Prompt for the name of the file to search.
+%         %
+%         dsk = input( 'Name of DSK file > ', 's' );
 %
 %         %
 %         % Open the DSK file for read access.
@@ -138,7 +185,7 @@
 %            % contains no segments.  This is
 %            % unexpected, but we're prepared for it.
 %            %
-%            txt = sprintf( ['SPICE(NODATA): ' ...
+%            txt = sprintf( ['SPICE(NODATA): '                             ...
 %                  'No segments found in DSK file %s.\n'], dsk );
 %            error( txt )
 %
@@ -165,7 +212,7 @@
 %         %
 %         dskdsc = cspice_dskgd( handle, dladsc );
 %
-%         maxr =  dskdsc( SPICE_DSK_MX3IDX);
+%         maxr =  dskdsc(SPICE_DSK_MX3IDX);
 %         r    = 2.0 * maxr;
 %
 %         %
@@ -197,8 +244,8 @@
 %               % Find the surface intercept for this
 %               % ray.
 %               %
-%               [plid, xpt, found] = cspice_dskx02( handle, ...
-%                                      dladsc, vertex, raydir );
+%               [plid, xpt, found] = cspice_dskx02( handle, dladsc,        ...
+%                                                   vertex, raydir );
 %
 %               %
 %               % Since the ray passes through the origin on
@@ -211,15 +258,15 @@
 %               %
 %               if ~found
 %
-%                  fprintf ( ['\n'                     ...
-%                           'Intercept not found!\n'   ...
-%                           '   Ray vertex:\n'         ...
-%                           '   Longitude (deg): %f\n' ...
-%                           '   Latitude  (deg): %f\n' ...
-%                           '   Radius     (km): %e\n' ...
-%                           '\n'],                     ...
-%                           lon * cspice_dpr(),        ...
-%                           lat * cspice_dpr(),        ...
+%                  fprintf ( ['\n'                                         ...
+%                           'Intercept not found!\n'                       ...
+%                           '   Ray vertex:\n'                             ...
+%                           '   Longitude (deg): %f\n'                     ...
+%                           '   Latitude  (deg): %f\n'                     ...
+%                           '   Radius     (km): %e\n'                     ...
+%                           '\n'],                                         ...
+%                           lon * cspice_dpr(),                            ...
+%                           lat * cspice_dpr(),                            ...
 %                           r                           )
 %
 %               else
@@ -236,27 +283,28 @@
 %                  %
 %                  [xr, xlon, xlat] = cspice_recrad( xpt );
 %
-%                  fprintf ( ['\n'                                      ...
-%                           'Intercept found:\n'                        ...
-%                           '   Plate ID:                 %ld\n'        ...
-%                           '   Cartesian Coordinates:    (%e %e %e)\n' ...
-%                           '   Latitudinal Coordinates:\n'    ...
-%                           '   Longitude (deg): %f\n'         ...
-%                           '   Latitude  (deg): %f\n'         ...
-%                           '   Radius     (km): %e\n'         ...
-%                           '\n'                               ...
-%                           '   Ray vertex:\n'                 ...
-%                           '   Longitude (deg): %f\n'         ...
-%                           '   Latitude  (deg): %f\n'         ...
-%                           '   Radius     (km): %e\n'         ...
-%                           '\n'],                             ...
-%                           plid,                              ...
-%                           xpt(1), xpt(2), xpt(3),            ...
-%                           xlon * cspice_dpr(),               ...
-%                           xlat * cspice_dpr(),               ...
-%                           xr,                                ...
-%                           lon  * cspice_dpr(),               ...
-%                           lat  * cspice_dpr(),               ...
+%                  fprintf ( ['\n'                                         ...
+%                           'Intercept found:\n'                           ...
+%                           '   Plate ID:                 %ld\n'           ...
+%                           '   Cartesian Coordinates: '                   ...
+%                           '%12.8f %12.8f %12.8f\n'                       ...
+%                           '   Latitudinal Coordinates:\n'                ...
+%                           '   Longitude (deg): %f\n'                     ...
+%                           '   Latitude  (deg): %f\n'                     ...
+%                           '   Radius     (km): %e\n'                     ...
+%                           '\n'                                           ...
+%                           '   Ray vertex:\n'                             ...
+%                           '   Longitude (deg): %f\n'                     ...
+%                           '   Latitude  (deg): %f\n'                     ...
+%                           '   Radius     (km): %e\n'                     ...
+%                           '\n'],                                         ...
+%                           plid,                                          ...
+%                           xpt(1), xpt(2), xpt(3),                        ...
+%                           xlon * cspice_dpr(),                           ...
+%                           xlat * cspice_dpr(),                           ...
+%                           xr,                                            ...
+%                           lon  * cspice_dpr(),                           ...
+%                           lat  * cspice_dpr(),                           ...
 %                           r                                   )
 %
 %                  %
@@ -301,94 +349,120 @@
 %         %
 %         cspice_dascls( handle );
 %
-%   Matlab outputs:
-%      
-%      dskx02_t( '/kernels/gen/dsk/phobos_3_3.bds' )
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, using the DSK file named phobos_3_3.bds, the output
+%      was:
+%
+%
+%      Name of DSK file > phobos_3_3.bds
 %
 %      Intercept found:
 %         Plate ID:                 306238
-%         Cartesian Coordinates:    (1.520878e+00 0.000000e+00 8.625327e+00)
+%         Cartesian Coordinates:   1.52087789   0.00000000   8.62532711
 %         Latitudinal Coordinates:
 %         Longitude (deg): 0.000000
 %         Latitude  (deg): 80.000000
 %         Radius     (km): 8.758387e+00
-%      
+%
 %         Ray vertex:
 %         Longitude (deg): 0.000000
 %         Latitude  (deg): 80.000000
 %         Radius     (km): 2.802354e+01
-%      
-%      
+%
+%
 %      Intercept found:
 %         Plate ID:                 317112
-%         Cartesian Coordinates:    (1.189704e+00 9.982799e-01 8.807772e+00)
+%         Cartesian Coordinates:   1.18970365   0.99827989   8.80777185
 %         Latitudinal Coordinates:
 %         Longitude (deg): 40.000000
 %         Latitude  (deg): 80.000000
 %         Radius     (km): 8.943646e+00
-%      
+%
 %         Ray vertex:
 %         Longitude (deg): 40.000000
 %         Latitude  (deg): 80.000000
 %         Radius     (km): 2.802354e+01
-%      
-%      
+%
+%
 %      Intercept found:
 %         Plate ID:                 324141
-%         Cartesian Coordinates:    (2.777752e-01 1.575341e+00 9.072029e+00)
+%         Cartesian Coordinates:   0.27777518   1.57534131   9.07202903
 %         Latitudinal Coordinates:
 %         Longitude (deg): 80.000000
 %         Latitude  (deg): 80.000000
 %         Radius     (km): 9.211980e+00
-%      
+%
 %         Ray vertex:
 %         Longitude (deg): 80.000000
 %         Latitude  (deg): 80.000000
 %         Radius     (km): 2.802354e+01
-%      
-%         ...
-%      
+%
+%
 %      Intercept found:
-%         Plate ID:                 1893
-%         Cartesian Coordinates:    (-7.783952e-01 -1.348220e+00 -8.828997e+00)
+%         Plate ID:                 327994
+%         Cartesian Coordinates:  -0.81082405   1.40438846   9.19682344
+%         Latitudinal Coordinates:
+%         Longitude (deg): 120.000000
+%         Latitude  (deg): 80.000000
+%         Radius     (km): 9.338699e+00
+%
+%         Ray vertex:
+%         Longitude (deg): 120.000000
+%         Latitude  (deg): 80.000000
+%         Radius     (km): 2.802354e+01
+%
+%
+%      Intercept found:
+%         Plate ID:                 329431
+%         Cartesian Coordinates:  -1.47820193   0.53802150   8.92132122
+%         Latitudinal Coordinates:
+%         Longitude (deg): 160.000000
+%         Latitude  (deg): 80.000000
+%         Radius     (km): 9.058947e+00
+%
+%         Ray vertex:
+%         Longitude (deg): 160.000000
+%         Latitude  (deg): 80.000000
+%         Radius     (km): 2.802354e+01
+%
+%
+%      Intercept found:
+%         Plate ID:                 196042
+%         Cartesian Coordinates:  -1.49854761  -0.54542673   9.04411256
+%         Latitudinal Coordinates:
+%         Longitude (deg): 200.000000
+%         Latitude  (deg): 80.000000
+%         Radius     (km): 9.183633e+00
+%
+%         Ray vertex:
+%         Longitude (deg): 200.000000
+%         Latitude  (deg): 80.000000
+%         Radius     (km): 2.802354e+01
+%
+%
+%      Intercept found:
+%         Plate ID:                 235899
+%         Cartesian Coordinates:  -0.78240454  -1.35516441   8.87447325
 %         Latitudinal Coordinates:
 %         Longitude (deg): 240.000000
-%         Latitude  (deg): -80.000000
-%         Radius     (km): 8.965198e+00
-%      
+%         Latitude  (deg): 80.000000
+%         Radius     (km): 9.011376e+00
+%
 %         Ray vertex:
 %         Longitude (deg): 240.000000
-%         Latitude  (deg): -80.000000
+%         Latitude  (deg): 80.000000
 %         Radius     (km): 2.802354e+01
-%      
-%      
-%      Intercept found:
-%         Plate ID:                 2467
-%         Cartesian Coordinates:    (2.666822e-01 -1.512430e+00 -8.709738e+00)
-%         Latitudinal Coordinates:
-%         Longitude (deg): 280.000000
-%         Latitude  (deg): -80.000000
-%         Radius     (km): 8.844099e+00
-%      
-%         Ray vertex:
-%         Longitude (deg): 280.000000
-%         Latitude  (deg): -80.000000
-%         Radius     (km): 2.802354e+01
-%      
-%      
-%      Intercept found:
-%         Plate ID:                 3187
-%         Cartesian Coordinates:    (1.132409e+00 -9.502036e-01 -8.383597e+00)
-%         Latitudinal Coordinates:
-%         Longitude (deg): 320.000000
-%         Latitude  (deg): -80.000000
-%         Radius     (km): 8.512928e+00
-%      
-%         Ray vertex:
-%         Longitude (deg): 320.000000
-%         Latitude  (deg): -80.000000
-%         Radius     (km): 2.802354e+01
-%      
+%
+%
+%
+%      [...]
+%
+%
+%      Warning: incomplete output. Only 100 out of 1135 lines have
+%      been provided.
+%
+%
 %-Particulars
 %
 %   This routine solves the ray-surface intercept problem for a
@@ -398,25 +472,108 @@
 %
 %   This routine does not assume that the segment from which the surface
 %   model data are read represents the entire surface of the target
-%   body.  A program could call this routine repeatedly to find the
+%   body. A program could call this routine repeatedly to find the
 %   surface intercept of a ray and a shape model partitioned into
 %   multiple segments.
 %
 %   In general, this routine should be expected to run faster when used
 %   with smaller shape models.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please
-%   refer to the CSPICE routine dskx02_c.
+%   1)  If the input handle is invalid, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   2)  If a file read error occurs, the error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   3)  If the input DLA descriptor is invalid, the effect of this
+%       routine is undefined. The error *may* be diagnosed by
+%       routines in the call tree of this routine, but there are no
+%       guarantees.
+%
+%   4)  If an error occurs while trying to look up any component
+%       of the shape model, the error is signaled by a routine in the
+%       call tree of this routine.
+%
+%   5)  If the input ray direction is the zero vector, the error
+%       SPICE(ZEROVECTOR) is signaled by a routine in the call tree of
+%       this routine.
+%
+%   6)  If the coarse voxel grid scale of the shape model is less than
+%       1, the error SPICE(VALUEOUTOFRANGE) is signaled by a routine
+%       in the call tree of this routine.
+%
+%   7)  If the coarse voxel grid of the shape model contains more than
+%       SPICE_DSK02_MAXCGR (see MiceDSK.m) voxels, the error
+%       SPICE(GRIDTOOLARGE) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   8)  If the plate list for any intersected voxel is too large
+%       for this routine to buffer, the error SPICE(ARRAYTOOSMALL)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   9)  Due to round-off errors, results from this routine may
+%       differ across platforms. Results also may differ from
+%       those expected---and not necessarily by a small amount.
+%       For example, a ray may miss a plate it was expected to
+%       hit and instead hit another plate considerably farther
+%       from the ray's vertex, or miss the target entirely.
+%
+%   10) In the event that an intercept point lies on multiple
+%       plates (that is, the point is on an edge or vertex),
+%       a plate will be selected. Due to round-off error, the
+%       selection may vary across platforms.
+%
+%   11) If any of the input arguments, `handle', `dladsc', `vertex' or
+%       `raydir', is undefined, an error is signaled by the Matlab
+%       error handling system.
+%
+%   12) If any of the input arguments, `handle', `dladsc', `vertex' or
+%       `raydir', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   See the description of the input argument `handle'.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
-%   DAS.REQ
-%   DSK.REQ
+%
+%-Literature_References
+%
+%   [1]  A. Woo, "Fast Ray-Box Intersection", Graphic Gems I,
+%        395-396, Aug. 1990
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 30-MAR-2014, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited the -Examples section to comply with NAIF standard. Updated
+%       code example to prompt for the input DSK file. Corrected example's
+%       problem statement.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 30-MAR-2014 (EDW) (NJB)
 %
 %-Index_Entries
 %
@@ -454,8 +611,8 @@ function [ plid, xpt, found] = cspice_dskx02( handle, dladsc, vertex, raydir)
       % the caller.
       %
       found = zzmice_logical(found);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

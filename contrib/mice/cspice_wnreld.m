@@ -33,44 +33,54 @@
 %
 %   Given:
 %
-%      a    SPICE window containing zero or more intervals.
+%      a        SPICE window containing zero or more intervals.
 %
-%           [2l,1] = size(a); double = class(a)
+%               [2l,1] = size(a); double = class(a)
 %
-%      b    SPICE window containing zero or more intervals.
+%      b        SPICE window containing zero or more intervals.
 %
-%           [2m,1] = size(b); double = class(b)
+%               [2m,1] = size(b); double = class(b)
 %
-%      op   comparison operator, indicating the way to compare the input
-%           windows. 'op' may have any of the following values:
+%      op       comparison operator, indicating the way to compare the input
+%               windows.
 %
-%           [1,m] = size(op); char = class(op)
+%               [1,c1] = size(op); char = class(op)
 %
-%              Operator             Meaning
-%              --------  -------------------------------------
-%                "="     a = b is true if 'a' and 'b' are equal
-%                        (contain the same intervals).
+%                  or
 %
-%                "<>"    a <> b is true if 'a' and 'b' are not
-%                               equal.
+%               [1,1] = size(op); cell = class(op)
 %
-%                "<="    a <= b is true if 'a' is a subset of 'b'.
+%               `op' may have any of the following values:
 %
-%                "<"     a < b is true is 'a' is a proper subset
-%                        of 'b'.
+%                  Operator             Meaning
+%                  --------  -----------------------------------------
+%                    '='     a = b  is true if `a' and `b' are equal
+%                                   (contain the same intervals).
 %
-%                ">="    a >= b is true if 'b' is a subset of 'a'.
+%                    '<>'    a <> b is true if `a' and `b' are not
+%                                   equal.
 %
-%                ">"     a > b is true if 'b' is a proper subset
-%                        of 'a'.
+%                    '<='    a <= b is true if `a' is a subset of `b'.
+%
+%                    '<'     a < b  is true if `a' is a proper subset
+%                                   of `b'.
+%
+%                    '>='    a >= b is true if `b' is a subset of `a'.
+%
+%                    '>'     a > b  is true if `b' is a proper subset
+%                                   of `a'.
 %
 %   the call:
 %
-%      retval = cspice_wnreld( a, op, b )
+%      [wnreld] = cspice_wnreld( a, op, b )
 %
 %   returns:
 %
-%      A scalar boolean with value of the comparison.
+%      wnreld   A scalar boolean with value of the comparison.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -78,137 +88,282 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      %  Let a contain the intervals
-%      %
-%      a = [ [ 1; 3 ];  [ 7; 11 ];  [ 23; 27 ] ];
+%   1) Given several double precision windows, compare them and output
+%      the result of those comparisons.
 %
-%      %
-%      %  Let b and c contain the intervals
-%      %
+%      Example code begins here.
 %
-%      b = [ [ 1; 2 ];  [  9; 9 ];  [ 24; 27 ] ];
-%      c = b;
 %
-%      %
-%      %  Let d contain the intervals
-%      %
-%      d = [ [ 5; 10 ];  [ 15; 25 ] ];
+%      function wnreld_ex1()
 %
-%      %
-%      %  Finally, let e and f be empty windows (containing no intervals).
-%      %
-%      e = zeros(0,1);
-%      f = e;
+%         %
+%         % Define the comparison operators.
+%         %
+%         ops = { '=', '<>', '<=', '<', '>=', '>' };
 %
-%      %
-%      % Because b and c contain the same intervals,
-%      %
-%      cspice_wnreld( b, '=',  c )
-%      cspice_wnreld( b, '<=', c )
-%      cspice_wnreld( b, '>=', c )
+%         %
+%         %  Let a contain the intervals
+%         %
+%         a = [ [ 1; 3 ];  [ 7; 11 ];  [ 23; 27 ] ];
 %
-%      %
-%      % are all true, while
-%      %
-%      cspice_wnreld( b, '<>', c )
+%         %
+%         %  Let b and c contain the intervals
+%         %
 %
-%      %
-%      % is false. Because neither b nor c contains any points not also
-%      % contained by the other, neither is a proper subset of the other.
-%      % Thus,
-%      %
-%      cspice_wnreld( b, '<', c )
-%      cspice_wnreld( b, '>', c )
+%         b = [ [ 1; 2 ];  [  9; 9 ];  [ 24; 27 ] ];
+%         c = b;
 %
-%      %
-%      % are both false.
-%      %
-%      % Every point contained in b and c is also contained in a. Thus,
-%      %
-%      cspice_wnreld( b, '<=', a )
-%      cspice_wnreld( a, '>=', c )
+%         %
+%         %  Let d contain the intervals
+%         %
+%         d = [ [ 5; 10 ];  [ 15; 25 ] ];
 %
-%      %
-%      % are both true. In addition, a contains points not contained in
-%      % b and c. (That is, the differences a-b and a-c are not empty.)
-%      % Thus, b and c are proper subsets of a as well, and
-%      %
-%      cspice_wnreld( b, '<', a )
-%      cspice_wnreld( a, '>', b )
+%         %
+%         %  Finally, let e and f be empty windows (containing no intervals).
+%         %
+%         e = zeros(0,1);
+%         f = e;
 %
-%      %
-%      % are both true.
-%      %
-%      % Although a and d have points in common, neither contains the
-%      % other. Thus
-%      %
-%      cspice_wnreld( a, '=',  d )
-%      cspice_wnreld( a, '<=', d )
-%      cspice_wnreld( a, '>=', d )
+%         %
+%         % Compare b and c, which contain the same intervals.
+%         %
+%         disp( 'b and c contain the same intervals:')
+%         for i=1:numel(ops)
+%            if ( cspice_wnreld( b, ops(i),  c ) )
+%               fprintf( '  b %2s c  is True.\n', char(ops(i)))
+%            else
+%               fprintf( '  b %2s c  is False.\n', char(ops(i)))
+%            end
+%         end
+%         disp( '' )
 %
-%      %
-%      % are all false.
-%      %
-%      % In addition, any window is equal to itself, a subset of itself,
-%      % and a superset of itself. Thus,
-%      %
-%      cspice_wnreld( a, '=',  a )
-%      cspice_wnreld( a, '<=', a )
-%      cspice_wnreld( a, '>=', a )
+%         %
+%         % Every point contained in b and c is also contained in a. Thus,
+%         %
+%         disp( 'Every point in b is also in contained in a:')
+%         for i=1:numel(ops)
+%            if ( cspice_wnreld( b, ops(i),  a ) )
+%               fprintf( '  b %2s a  is True.\n', char(ops(i)))
+%            else
+%               fprintf( '  b %2s a  is False.\n', char(ops(i)))
+%            end
+%         end
+%         disp( '' )
 %
-%      %
-%      % are always true. However, no window is a proper subset or a
-%      % proper superset of itself. Thus,
-%      %
-%      cspice_wnreld( a, '<', a )
-%      cspice_wnreld( a, '>', a )
+%         %
+%         % Although a and d have points in common, neither contains the
+%         % other. Thus
+%         %
+%         disp( 'a and d have points in common, neither contains the other:')
+%         for i=1:numel(ops)
+%            if ( cspice_wnreld( a, ops(i),  d ) )
+%               fprintf( '  a %2s d  is True.\n', char(ops(i)))
+%            else
+%               fprintf( '  a %2s d  is False.\n', char(ops(i)))
+%            end
+%         end
+%         disp( '' )
 %
-%      %
-%      % are always false.
-%      %
-%      % Finally, an empty window is a proper subset of any window
-%      % except another empty window. Thus,
-%      %
-%      cspice_wnreld( e, '<', a )
+%         %
+%         % In addition, any window is equal to itself, a subset of itself,
+%         % and a superset of itself. Thus,
+%         %
+%         disp( 'A window compared to itself:')
+%         for i=1:numel(ops)
+%            if ( cspice_wnreld( a, ops(i),  a ) )
+%               fprintf( '  a %2s a  is True.\n', char(ops(i)))
+%            else
+%               fprintf( '  a %2s a  is False.\n', char(ops(i)))
+%            end
+%         end
+%         disp( '' )
 %
-%      %
-%      % is true, but
-%      %
-%      cspice_wnreld( e, '<', f )
+%         %
+%         % Finally, an empty window is a proper subset of any window
+%         % except another empty window. Thus,
+%         %
+%         disp( 'A window compared to an empty window:')
+%         for i=1:numel(ops)
+%            if ( cspice_wnreld( a, ops(i),  e ) )
+%               fprintf( '  a %2s e  is True.\n', char(ops(i)))
+%            else
+%               fprintf( '  a %2s e  is False.\n', char(ops(i)))
+%            end
+%         end
+%         disp( '' )
 %
-%      %
-%      % is false.
-%      %
+%         disp( 'An empty window compared to another empty window:')
+%         for i=1:numel(ops)
+%            if ( cspice_wnreld( f, ops(i),  e ) )
+%               fprintf( '  f %2s e  is True.\n', char(ops(i)))
+%            else
+%               fprintf( '  f %2s e  is False.\n', char(ops(i)))
+%            end
+%         end
+%         disp( '' )
+%
+%         %
+%         % is false.
+%         %
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      b and c contain the same intervals:
+%        b  = c  is True.
+%        b <> c  is False.
+%        b <= c  is True.
+%        b  < c  is False.
+%        b >= c  is True.
+%        b  > c  is False.
+%
+%      Every point in b is also in contained in a:
+%        b  = a  is False.
+%        b <> a  is True.
+%        b <= a  is True.
+%        b  < a  is True.
+%        b >= a  is False.
+%        b  > a  is False.
+%
+%      a and d have points in common, neither contains the other:
+%        a  = d  is False.
+%        a <> d  is True.
+%        a <= d  is False.
+%        a  < d  is False.
+%        a >= d  is False.
+%        a  > d  is False.
+%
+%      A window compared to itself:
+%        a  = a  is True.
+%        a <> a  is False.
+%        a <= a  is True.
+%        a  < a  is False.
+%        a >= a  is True.
+%        a  > a  is False.
+%
+%      A window compared to an empty window:
+%        a  = e  is False.
+%        a <> e  is True.
+%        a <= e  is False.
+%        a  < e  is False.
+%        a >= e  is True.
+%        a  > e  is True.
+%
+%      An empty window compared to another empty window:
+%        f  = e  is True.
+%        f <> e  is False.
+%        f <= e  is True.
+%        f  < e  is False.
+%        f >= e  is True.
+%        f  > e  is False.
+%
 %
 %-Particulars
 %
+%   This function returns True whenever the specified relationship
+%   between the input windows `a' and `b' is satisfied. For example,
+%   the expression
+%
+%      cspice_wnreld ( needed, '<=', avail )
+%
+%   is True whenever the window `needed' is a subset of the window
+%   `avail'. One window is a subset of another window if each of
+%   the intervals in the first window is included in one of the
+%   intervals in the second window. In addition, the first window
+%   is a proper subset of the second if the second window contains
+%   at least one point not contained in the first window. (Thus,
+%   '<' implies '<=', and '>' implies '>='.)
+%
+%   The following pairs of expressions are equivalent.
+%
+%      cspice_wnreld ( a, '>',  b )
+%      cspice_wnreld ( b, '<',  a )
+%
+%      cspice_wnreld ( a, '>=', b )
+%      cspice_wnreld ( b, '<=', a )
+%
+%-Exceptions
+%
+%   1)  If the relational operator is not recognized, the error
+%       SPICE(INVALIDOPERATION) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  The cardinality of the input windows must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   3)  If any of the input arguments, `a', `op' or `b', is undefined,
+%       an error is signaled by the Matlab error handling system.
+%
+%   4)  If any of the input arguments, `a', `op' or `b', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wnreld_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 26-NOV-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and modified example code to generate
+%       formatted output.
 %
-%      "logical" call replaced with "zzmice_logical."
+%       Added square brackets to the output argument in function
+%       declaration, and renamed it to "wnreld".
 %
-%      Corrected version ID in 23-JUL-2009 entry, "1.0.0" to "1.0.1."
+%       Corrected error message format.
 %
-%   -Mice Version 1.0.1, 23-JUL-2009, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
 %
-%      Replaced 'boolean' calls with 'logical' as 'boolean' functionally
-%      aliases 'logical'.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 22-JUL-2007, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%       "logical" call replaced with "zzmice_logical."
+%
+%       Corrected version ID in 23-JUL-2009 entry, "1.0.0" to "1.0.1."
+%
+%   -Mice Version 1.0.1, 23-JUL-2009 (EDW)
+%
+%       Replaced "boolean" calls with "logical" as "boolean" functionally
+%       aliases "logical."
+%
+%   -Mice Version 1.0.0, 22-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -216,7 +371,7 @@
 %
 %-&
 
-function retval = cspice_wnreld( a, op, b )
+function [wnreld] = cspice_wnreld( a, op, b )
 
    switch nargin
 
@@ -228,15 +383,15 @@ function retval = cspice_wnreld( a, op, b )
 
       otherwise
 
-         error( 'boolean = cspice_wnreld( a, `op`, b )' )
+         error( 'Usage: [wnreld] = cspice_wnreld( a, `op`, b )' )
 
       end
 
    try
-      [retval] = mice( 'wnreld_c', [zeros(6,1); a], op, [zeros(6,1); b] );
-      [retval] = zzmice_logical(retval);
-   catch
-      rethrow(lasterror)
+      [wnreld] = mice( 'wnreld_c', [zeros(6,1); a], op, [zeros(6,1); b] );
+      [wnreld] = zzmice_logical(wnreld);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

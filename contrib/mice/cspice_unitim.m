@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_UNITIM returns the double precision value of an input epoch converted
-%   from one uniform time scale to another.
+%   CSPICE_UNITIM transforms time from one uniform scale to another. The
+%   uniform time scales are TAI, GPS, TT, TDT, TDB, ET, JED, JDTDB, JDTDT.
 %
 %-Disclaimer
 %
@@ -33,40 +33,46 @@
 %
 %   Given:
 %
-%      epoch    epoch(s) relative to the 'insys' time scale.
+%      epoch    the epoch(s) relative to the `insys' time scale.
 %
 %               [1,n] = size(epoch); double = class(epoch)
 %
-%      insys    naming the uniform time scale of 'epoch'. Acceptable values:
+%      insys    a time scale.
 %
-%               [1,m] = size(insys); char = class(insys)
+%               [1,c1] = size(insys); char = class(insys)
+%
+%                  or
+%
+%               [1,1] = size(insys); cell = class(insys)
+%
+%               Acceptable values are:
 %
 %                  'TAI'     International Atomic Time.
-%
 %                  'TDB'     Barycentric Dynamical Time.
-%
 %                  'TDT'     Terrestrial Dynamical Time.
-%
+%                  'TT'      Terrestrial Time, identical to TDT.
 %                  'ET'      Ephemeris time (in the SPICE system, this is
 %                            equivalent to TDB).
-%
 %                  'JDTDB'   Julian Date relative to TDB.
-%
 %                  'JDTDT'   Julian Date relative to TDT.
-%
-%                  'JED'     Julian Ephemeris Date (in the SPICE system
+%                  'JED'     Julian Ephemeris date (in the SPICE system
 %                            this is equivalent to JDTDB).
+%                  'GPS'     Global Positioning System Time.
 %
-%               The routine is not sensitive to the case of insys;
-%               'tai' 'Tai' and 'TAI' are all equivalent from the point of
-%               view of this routine.
+%               The routine is not sensitive to the case of the
+%               characters in `insys'; 'tai' 'Tai' and 'TAI' are all
+%               equivalent from the point of view of this routine.
 %
-%      outsys   naming the uniform time scale to which 'epoch' should be
-%               converted. Acceptable values are the same as for 'insys'.
+%      outsys   the time scale to which `epoch' should be converted.
 %
-%               [1,m] = size(outsys); char = class(outsys)
+%               [1,c2] = size(outsys); char = class(outsys)
 %
-%               The routine is not sensitive to the case of 'outsys'.
+%                  or
+%
+%               [1,1] = size(outsys); cell = class(outsys)
+%
+%               Acceptable values are the same as for `insys'. The routine
+%               is not sensitive to the case of `outsys'.
 %
 %   the call:
 %
@@ -74,13 +80,17 @@
 %
 %   returns:
 %
-%      unitim   time(s) in the system specified by 'outsys' equivalent to the
-%               'epoch' in the 'insys' time scale.
+%      unitim   the time(s) in the system specified by `outsys' that is
+%               equivalent to the `epoch' in the `insys' time scale.
 %
 %               [1,n] = size(unitim); double = class(unitim)
 %
-%               'unitimt' returns with the same vectorization measure (N)
-%               as 'epoch'.
+%               `unitim' returns with the same vectorization measure, N,
+%               as `epoch'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -88,77 +98,140 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      Use the meta-kernel shown below to load the required SPICE
-%      kernels.
+%   1) Convert an input UTC string to Julian Ephemeris Date seconds.
 %
-%         KPL/MK
+%      Use the LSK kernel below to load the leap seconds and time
+%      constants required for the conversions.
 %
-%         This meta-kernel is intended to support operation of SPICE
-%         example programs. The kernels shown here should not be
-%         assumed to contain adequate or correct versions of data
-%         required by SPICE-based user applications.
-%
-%         In order for an application to use this meta-kernel, the
-%         kernels referenced here must be present in the user's
-%         current working directory.
-%
-%         The names and contents of the kernels referenced
-%         by this meta-kernel are as follows:
-%
-%            File name                     Contents
-%            ---------                     --------
-%            de421.bsp                     Planetary ephemeris
-%            pck00009.tpc                  Planet orientation and
-%                                          radii
-%            naif0009.tls                  Leapseconds
+%         naif0012.tls
 %
 %
-%         \begindata
-%
-%            KERNELS_TO_LOAD = ( '/kernels/gen/lsk/naif0009.tls'
-%                                '/kernels/gen/spk/de421.bsp'
-%                                '/kernels/gen/pck/pck00009.tpc'
-%                      )
-%
-%         \begintext
+%      Example code begins here.
 %
 %
-%      %
-%      % Load a leapseconds kernel, use a meta kernel for convenience.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%      function unitim_ex1()
 %
-%      et = cspice_str2et( 'Dec 19 2003' );
+%         %
+%         % Load a leapseconds kernel.
+%         %
+%         cspice_furnsh( 'naif0012.tls' )
 %
-%      converted_et = cspice_unitim(et, 'ET','JED')
+%         utcstr = 'Dec 19 2003  16:48:00';
+%         et     = cspice_str2et( utcstr );
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
+%         converted_et = cspice_unitim(et, 'ET','JED');
 %
-%   MATLAB outputs:
+%         fprintf( 'UTC time             : %s\n', utcstr )
+%         fprintf( 'Ephemeris time       : %21.9f\n', et )
+%         fprintf( 'Julian Ephemeris Date: %21.9f\n', converted_et )
 %
-%      converted_et =
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
-%           2.452992500742865e+06
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
+%
+%      UTC time             : Dec 19 2003  16:48:00
+%      Ephemeris time       :   125124544.183560610
+%      Julian Ephemeris Date:     2452993.200742865
+%
 %
 %-Particulars
 %
+%   We use the term uniform time scale to refer to those
+%   representations of time that are numeric (each epoch is
+%   represented by a number) and additive. A numeric time system is
+%   additive if given the representations, `e1' and `e2', of any pair of
+%   successive epochs, the time elapsed between the epochs is given by
+%   e2 - e1.
+%
+%   Given an epoch in one of the uniform time scales specified by
+%   `insys', the function returns the equivalent representation in the
+%   scale specified by `outsys'. A list of the recognized uniform time
+%   scales is given in the detailed input for `insys'.
+%
+%-Exceptions
+%
+%   1)  The kernel pool must contain the variables:
+%
+%          'DELTET/DELTA_T_A'
+%          'DELTET/K'
+%          'DELTET/EB'
+%          'DELTET/M'
+%
+%       If these are not present, the error SPICE(MISSINGTIMEINFO) is
+%       signaled by a routine in the call tree of this routine. (These
+%       variables are typically inserted into the kernel pool by
+%       loading a leapseconds kernel with the SPICE routine cspice_furnsh.)
+%
+%   2)  If the names of either the input or output time types are
+%       unrecognized, the error SPICE(BADTIMETYPE) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   3)  If any of the input arguments, `epoch', `insys' or `outsys',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   4)  If any of the input arguments, `epoch', `insys' or `outsys',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine unitim_c.
+%   1)  The appropriate variable must be loaded into the SPICE kernel
+%       pool (normally by loading a leapseconds kernel with cspice_furnsh)
+%       prior to calling this routine.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
+%
+%       Changed output argument name "output" to "unitim" to comply with NAIF
+%       standard.
+%
+%       Added time system name 'TT' (Terrestrial Time) as alternate
+%       assignment of 'TDT' (Terrestrial Dynamical Time).
+%
+%       Included GPS time system mapping.
+%
+%       Edited the header to comply with NAIF standard. Added a reference to
+%       the required LSK. Changed example's output format.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 12-MAR-2012 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -169,7 +242,7 @@
 %
 %-&
 
-function [output] = cspice_unitim( epoch, insys, outsys )
+function [unitim] = cspice_unitim( epoch, insys, outsys )
 
    switch nargin
       case 3
@@ -180,8 +253,8 @@ function [output] = cspice_unitim( epoch, insys, outsys )
 
       otherwise
 
-         error( [ 'Usage: [_output_] = ' ...
-                          'cspice_unitim( _epoch_, `insys`, `outsys` )'] )
+         error( [ 'Usage: [_unitim_] = '                                    ...
+                  'cspice_unitim( _epoch_, `insys`, `outsys` )' ] )
 
    end
 
@@ -190,7 +263,7 @@ function [output] = cspice_unitim( epoch, insys, outsys )
    % this script.
    %
    try
-      [output] = mice( 'unitim_c', epoch, insys, outsys);
-   catch
-      rethrow(lasterror)
+      [unitim] = mice( 'unitim_c', epoch, insys, outsys);
+   catch spiceerr
+      rethrow(spiceerr)
    end

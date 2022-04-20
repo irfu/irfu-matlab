@@ -62,119 +62,215 @@
 %               'range', 'ra', and 'dec' return with the same
 %               vectorization measure, N, as 'rectan'.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Output the right ascension and declination of the earth's pole
-%      % in the J2000 frame approximately every month for the time
-%      % interval January 1, 1990 to January 1, 2010 (UTC).
-%      %
-%      %
-%      % Load a standard kernel set.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%   1) Output the right ascension and declination of the earth's pole
+%      in the J2000 frame approximately every six months for the time
+%      interval January 1, 2000 to January 1, 2005 (UTC).
 %
-%      %
-%      % Define the time bounds for the time interval,
-%      % 20 years,  convert to ephemeris time J2000.
-%      %
-%      utc_bounds = [ '1 Jan 1990'; '1 Jan 2010' ];
-%      et_bounds = cspice_str2et( utc_bounds);
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Step in units of a month. 20 years ~ 240 months.
-%      %
-%      step = (et_bounds(2) - et_bounds(1)) / 240.;
 %
-%      %
-%      % Create an array of 240 ephemeris times starting at
-%      % et_bounds(1) in intervals of 'step'.
-%      %
-%      et = [0:239]*step + et_bounds(1);
+%         KPL/MK
 %
-%      %
-%      % Set the conversion constant "radians to degrees."
-%      %
-%      r2d = cspice_dpr;
+%         File name: recrad_ex1.tm
 %
-%      %
-%      % Convert the 240-vector of 'et' to an array of corresponding
-%      % transformation matrices (dimensions (3,3,240) ).
-%      %
-%      mat = cspice_pxform( 'IAU_EARTH', 'J2000', et);
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      %
-%      % Extract the pole vector from the transformation matrix,
-%      % convert to RA and DEC expressed in degrees.
-%      %
-%      % The last column in each matrix is the pole vector (z = (0,0,1))
-%      % of the earth in IAU expressed in J2000. We need to copy the
-%      % set of pole vectors to a 3xN array. Use reshape to do this.
-%      %
-%      pole = reshape( mat(:,3,:), 3,[] );
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%      [radius, ra, dec] = cspice_recrad(pole);
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%      ra  = ra * r2d;
-%      dec = dec * r2d;
+%            File name                     Contents
+%            ---------                     --------
+%            pck00010.tpc                  Planet orientation and
+%                                          radii
+%            naif0012.tls                  Leapseconds
 %
-%      %
-%      % Create an array of values for output.
-%      %
-%      output = [ et; ra; dec ];
-%      txt = sprintf( '%17.8f %12.6f %12.6f\n' , output  );
-%      disp(txt)
+%         \begindata
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
+%            KERNELS_TO_LOAD = ( 'pck00010.tpc',
+%                                'naif0012.tls'  )
 %
-%   MATLAB outputs:
+%         \begintext
 %
-%      A partial output centered on et = 0:
+%         End of meta-kernel
 %
-%                         ...
 %
-%     -18408539.52023917   180.003739    89.996751
-%     -15778739.49107254   180.003205    89.997215
-%     -13148939.46190590   180.002671    89.997679
-%     -10519139.43273926   180.002137    89.998143
-%     -7889339.40357262   180.001602    89.998608
-%     -5259539.37440598   180.001068    89.999072
-%     -2629739.34523934   180.000534    89.999536
-%           60.68392730   360.000000    90.000000
-%      2629860.71309394   359.999466    89.999536
-%      5259660.74226063   359.998932    89.999072
-%      7889460.77142727   359.998397    89.998607
-%     10519260.80059391   359.997863    89.998143
-%     13149060.82976055   359.997329    89.997679
-%     15778860.85892719   359.996795    89.997215
-%     18408660.88809383   359.996261    89.996751
+%      Example code begins here.
+%
+%
+%      function recrad_ex1()
+%
+%         %
+%         % Load a standard kernel set.
+%         %
+%         cspice_furnsh( 'recrad_ex1.tm' )
+%
+%         %
+%         % Define the time bounds for the time interval,
+%         % 5 years,  convert to ephemeris time J2000.
+%         %
+%         utc_bounds = [ '1 Jan 2000'; '1 Jan 2005' ];
+%         et_bounds = cspice_str2et( utc_bounds);
+%
+%         %
+%         % Step in units of 6 months. 5 years ~ 10 steps.
+%         %
+%         step = (et_bounds(2) - et_bounds(1)) / 10.;
+%
+%         %
+%         % Create an array of 10 ephemeris times starting at
+%         % et_bounds(1) in intervals of 'step'.
+%         %
+%         et = [0:9]*step + et_bounds(1);
+%
+%         %
+%         % Set the conversion constant "radians to degrees."
+%         %
+%         r2d = cspice_dpr;
+%
+%         %
+%         % Convert the 10-vector of 'et' to an array of corresponding
+%         % transformation matrices (dimensions (3,3,10) ).
+%         %
+%         mat = cspice_pxform( 'IAU_EARTH', 'J2000', et);
+%
+%         %
+%         % Extract the pole vector from the transformation matrix,
+%         % convert to RA and DEC expressed in degrees.
+%         %
+%         % The last column in each matrix is the pole vector (z = (0,0,1))
+%         % of the earth in IAU expressed in J2000. We need to copy the
+%         % set of pole vectors to a 3xN array. Use reshape to do this.
+%         %
+%         pole = reshape( mat(:,3,:), 3,[] );
+%
+%         [radius, ra, dec] = cspice_recrad(pole);
+%
+%         ra  = ra * r2d;
+%         dec = dec * r2d;
+%
+%         %
+%         % Convert ephemeris times to UTC strings.
+%         %
+%         utcstr = cspice_et2utc( et, 'C', 0 );
+%
+%         disp( '      UTC time        Right Ascension    Declination')
+%         disp( '--------------------  ---------------  ---------------')
+%         for i=1:10
+%            fprintf( '%s  %15.9f  %15.9f\n' , utcstr(i,:), ra(i), dec(i))
+%         end
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%            UTC time        Right Ascension    Declination
+%      --------------------  ---------------  ---------------
+%      2000 JAN 01 00:00:00    180.000008762     89.999992386
+%      2000 JUL 01 16:48:00    359.996802446     89.997221470
+%      2000 DEC 31 09:36:00    359.993596129     89.994435326
+%      2001 JUL 02 02:24:00    359.990389813     89.991649182
+%      2001 DEC 31 19:12:00    359.987183497     89.988863039
+%      2002 JUL 02 12:00:00    359.983977181     89.986076895
+%      2003 JAN 01 04:48:00    359.980770864     89.983290751
+%      2003 JUL 02 21:36:00    359.977564548     89.980504607
+%      2004 JAN 01 14:24:00    359.974358232     89.977718464
+%      2004 JUL 02 07:12:00    359.971151916     89.974932320
+%
 %
 %-Particulars
 %
+%   This routine returns the range, right ascension, and declination
+%   of a point specified in rectangular coordinates.
+%
+%   The output is defined by a distance from a central reference
+%   point, an angle from a reference meridian, and an angle above
+%   the equator of a sphere centered at the central reference
+%   point.
+%
+%-Exceptions
+%
+%   1)  If the X and Y components of `rectan' are both zero, the
+%       right ascension is set to zero.
+%
+%   2)  If `rectan' is the zero vector, right ascension and declination
+%       are both set to zero.
+%
+%   3)  If the input argument `rectan' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   4)  If the input argument `rectan' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine recrad_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 13-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement and meta-kernel. Reformatted code
+%       example output.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 01-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -199,7 +295,6 @@ function [range, ra, dec] = cspice_recrad(rectan)
    %
    try
       [range, ra, dec] = mice('recrad_c',rectan);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-

@@ -7,7 +7,7 @@
 %
 % RATIONALE
 % =========
-% sprintf does not appear to be able to do this. sprintf applied to an array
+% sprintf() does not appear to be able to do this. sprintf() applied to an array
 % will produce one combined, ~repeating (except for value) formatted string.
 % With this function, one can choose to join the separate strings with any
 % arbitrary seperator, e.g. comma (without adding after the last formatted
@@ -16,11 +16,12 @@
 %
 % ARGUMENTS
 % =========
-% sprintfFormat : sprintf format string for one variable value (numeric,
-%                 string), i.e. containing ONE %i, or ONE %s etc.
-% array         : Numeric array or cell array, of scalar values to be sent to
-%                 sprintf.
-%                 RATIONALE: Cell array is useful for submitting string values.
+% sprintfFormat
+%       sprintf format string for one variable value (numeric, string), i.e.
+%       containing ONE %i, or ONE %s etc.
+% array
+%       Numeric array or cell array, of scalar values to be sent to sprintf.
+%       RATIONALE: Cell array is useful for submitting string values.
 %
 %
 % RETURN VALUE

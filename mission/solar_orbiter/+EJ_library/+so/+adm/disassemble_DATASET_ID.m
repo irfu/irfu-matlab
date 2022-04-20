@@ -6,7 +6,8 @@
 % =====
 % """"""""
 % 7.1.2 ROC dataset identifier naming convention
-% Each RPW data set must be identified with a unique uppercase string of the following form:
+% Each RPW data set must be identified with a unique uppercase string of the
+% following form:
 % [Source_name]_[Level]_[Descriptor]
 % """"""""
 % /"ROC Data Products", ROC-PRO-DAT-NTT-00006-LES, 01/02 draft
@@ -14,9 +15,9 @@
 %
 % ARGUMENTS
 % =========
-% datasetId : Any RPW DATASET_ID that could possibly be legally defined, i.e.
-%             including all RPW DATASET_IDs in use, including ones unrelated to
-%             BIAS.
+% datasetId
+%       Any DATASET_ID that could possibly be legally defined, including ones
+%       unrelated to BIAS and for instruments other than RPW.
 %
 %
 % RETURN VALUES
@@ -36,7 +37,7 @@ function [sourceName, level, descriptor] = disassemble_DATASET_ID(datasetId)
         datasetId, { ...
         '(ROC-SGSE|SOLO)', '_', ...
         '[^_]*',   '_', ...
-        'RPW-[A-Z0-2-]*'}, ...
+        '[A-Z0-2-]*'}, ...
         'assert match');
     
     sourceName = subStrList{1};

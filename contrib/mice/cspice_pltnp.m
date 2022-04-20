@@ -33,36 +33,40 @@
 %
 %   Given:
 %
-%      point      is an arbitrary point in 3-dimensional space.
+%      point    an arbitrary point in 3-dimensional space.
 %
-%                 [3,1] = size(point); double = class(point)
+%               [3,1] = size(point); double = class(point)
 %
 %      v1,
 %      v2,
-%      v3         are 3-vectors constituting the vertices of
-%                 a triangular plate.
+%      v3       3-vectors constituting the vertices of
+%               a triangular plate.
 %
-%                 The plate is allowed to be degenerate: it may
-%                 consist of a line segment or of a single point.
+%               The plate is allowed to be degenerate: it may
+%               consist of a line segment or of a single point.
 %
-%                 [3,1] = size(v1); double = class(v1)
-%                 [3,1] = size(v2); double = class(v2)
-%                 [3,1] = size(v3); double = class(v3)
+%               [3,1] = size(v1); double = class(v1)
+%               [3,1] = size(v2); double = class(v2)
+%               [3,1] = size(v3); double = class(v3)
 %
 %   the call:
 %
-%       [pnear, dist] = cspice_pltnp(point, v1, v2, v3)
+%      [pnear, dist] = cspice_pltnp( point, v1, v2, v3 )
 %
 %   returns:
 %
-%      pnear      is the closest point on the plate to `point'.
-%                 `pnear' is unique, since the plate is convex.
+%      pnear    the closest point on the plate to `point'.
+%               `pnear' is unique, since the plate is convex.
 %
-%                 [3,1] = size(pnear); double = class(pnear)
+%               [3,1] = size(pnear); double = class(pnear)
 %
-%      dist       is the distance between `point' and `pnear'.
+%      dist     the distance between `point' and `pnear'.
 %
-%                 [1,1] = size(dist); double = class(dist)
+%               [1,1] = size(dist); double = class(dist)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -70,13 +74,15 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
-%
-%      Find the nearest point to the point (2,2,2) on a plate having
+%   1) Find the nearest point to the point (2,2,2) on a plate having
 %      vertices at the unit basis vectors that lie along the positive
 %      X, Y, and Z coordinate axes.
 %
-%      function pltnp_t
+%
+%      Example code begins here.
+%
+%
+%      function pltnp_ex1()
 %
 %         point = [2.0, 2.0, 2.0]';
 %         v1    = [1.0, 0.0, 0.0]';
@@ -102,7 +108,10 @@
 %                     pnear(1), pnear(2), pnear(3),             ...
 %                     dist                                    )
 %
-%   Matlab outputs:
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
 %
 %      Plate vertex 1 =  1.0000000e+00  0.0000000e+00  0.0000000e+00
 %      Plate vertex 2 =  0.0000000e+00  1.0000000e+00  0.0000000e+00
@@ -112,21 +121,64 @@
 %      Near point     =  3.3333333e-01  3.3333333e-01  3.3333333e-01
 %      Distance       =  2.8867513e+00
 %
+%
 %-Particulars
 %
 %   None.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine pltnp_c.
+%   1)  The input plate is allowed to be degenerate: it may be
+%       a line segment or a single point.
 %
-%   MICE.REQ
+%   2)  If any of the input arguments, `point', `v1', `v2' or `v3', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `point', `v1', `v2' or `v3', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
 %   DSK.REQ
+%   MICE.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 16-MAR-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 07-AUG-2020 (EDW) (JDR)
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections. Fixed
+%       minor typos in header.
+%
+%       Edited the header to comply with NAIF standard.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 16-MAR-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
@@ -156,9 +208,6 @@ function [pnear, dist] = cspice_pltnp(point, v1, v2, v3)
    %
    try
       [pnear, dist] = mice( 'pltnp_c', point, v1, v2, v3);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-

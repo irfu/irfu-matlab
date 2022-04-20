@@ -49,140 +49,323 @@
 %
 %      None.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
+%   1) Given two SPK files, begin a forward search on one and, right
+%      after, a backward search on the other. Restitute the search on
+%      the first SPK, and print all the segment IDs found in the file.
+%      Go back to the second file, and print all its segment IDs.
 %
-%      %
-%      % Define two SPK test files.
-%      %
-%      SPK1 = 'test.bsp';
-%      SPK2 = 'test8.bsp';
+%      Use the SPK kernel below as first input DAF file for the program.
 %
-%      %
-%      % Open the DAFs for read
-%      %
-%      han1 = cspice_dafopr( SPK1 );
-%      han2 = cspice_dafopr( SPK2 );
+%         OUTERPLANETS_V0002.BSP
 %
-%      %
-%      % Begin a forward search on SPK1
-%      %
-%      cspice_dafbfs( han1 )
-%      found = cspice_daffna;
+%      Use the SPK kernel below as second input DAF file for the program.
 %
-%      %
-%      % Begin a backwards search on SPK2
-%      %
-%      cspice_dafbbs( han2 )
-%      found2 = cspice_daffpa;
+%         sat382-rocks-merge.bsp
 %
-%      %
-%      % Reinstitute the search on han1, loop
-%      % so long as segment data are found.
-%      %
-%      cspice_dafcs( han1 )
 %
-%      while ( found )
+%      Example code begins here.
 %
-%         segid    = cspice_dafgn;
-%         found    = cspice_daffna;
+%
+%      function dafcs_ex1()
 %
 %         %
-%         % Output each segment ID.
+%         % Define two SPK test files.
 %         %
-%         fprintf( '%s\n', segid )
+%         SPK1 = 'OUTERPLANETS_V0002.BSP';
+%         SPK2 = 'sat382-rocks-merge.bsp';
 %
-%      end
+%         %
+%         % Open the DAFs for read
+%         %
+%         han1 = cspice_dafopr( SPK1 );
+%         han2 = cspice_dafopr( SPK2 );
 %
-%      %
-%      % Close the files.
-%      %
-%      cspice_dafcls( han1 )
-%      cspice_dafcls( han2 )
+%         %
+%         % Begin a forward search on SPK1
+%         %
+%         cspice_dafbfs( han1 )
+%         found = cspice_daffna;
 %
-%   Matlab outputs:
+%         %
+%         % Begin a backwards search on SPK2
+%         %
+%         cspice_dafbbs( han2 )
+%         found2 = cspice_daffpa;
 %
-%      PHOENIX SPACECRAFT
-%      MERCURY BARYCENTER
-%      VENUS BARYCENTER
-%      EARTH BARYCENTER
-%      MARS BARYCENTER
-%      JUPITER BARYCENTER
-%      SATURN BARYCENTER
-%      URANUS BARYCENTER
-%      NEPTUNE BARYCENTER
-%      PLUTO BARYCENTER
-%      MOON
-%      PHOBOS
-%      DEIMOS
-%      IO
-%      EUROPA
-%      GANYMEDE
-%      CALLISTO
-%      TETHYS
-%      DIONE
-%      RHEA
-%      TITAN
-%      HYPERION
-%      IAPETUS
-%      ARIEL
-%      UMBRIEL
-%      TITANIA
-%      OBERON
-%      MIRANDA
-%      TRITON
-%      NERIED
-%      CHARON
-%      MERCURY
-%      VENUS
-%      EARTH
-%      MARS
-%      JUPITER
-%      SATURN
-%      URANUS
-%      NEPTUNE
-%      PLUTO
-%      SUN
-%      GOLDSTONE
-%      CANBERRA
-%      MADRID
-%      PHOBOS BASECAMP
-%      TRANQUILITY BASE
+%         %
+%         % Reinstitute the search on han1, loop
+%         % so long as segment data are found.
+%         %
+%         cspice_dafcs( han1 );
+%         fprintf( 'Segment IDs found on forward search of: %s\n', SPK1 );
 %
-%   Example(2), switch the definitions for SPK1 and SPK2:
+%         while ( found )
 %
-%      %
-%      % Define two SPK test files.
-%      %
-%      SPK2 = 'test.bsp';
-%      SPK1 = 'test8.bsp';
+%            segid    = cspice_dafgn;
+%            found    = cspice_daffna;
 %
-%         ... remainder of example unchanged ..
+%            %
+%            % Output each segment ID.
+%            %
+%            fprintf( '%s\n', segid )
 %
-%   Matlab outputs:
+%         end
 %
-%      SPK type 8 test segment
+%         %
+%         % Reinstitute the search on han2, loop
+%         % so long as segment data are found.
+%         %
+%         cspice_dafcs( han2 )
+%         fprintf( '\nSegment IDs found on backward search of: %s\n', SPK2 );
+%
+%         while ( found2 )
+%
+%            segid    = cspice_dafgn;
+%            found2   = cspice_daffpa;
+%
+%            %
+%            % Output each segment ID.
+%            %
+%            fprintf( '%s\n', segid )
+%
+%         end
+%
+%         %
+%         % Close the files.
+%         %
+%         cspice_dafcls( han1 )
+%         cspice_dafcls( han2 )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Segment IDs found on forward search of: OUTERPLANETS_V0002.BSP
+%      JUP230
+%      SAT261xl
+%      URA083
+%      NEP016.6
+%
+%      Segment IDs found on backward search of: sat382-rocks-merge.bsp
+%      SAT375
+%      DE-0431LE-0431
+%      DE-0431LE-0431
+%      DE-0431LE-0431
+%      DE-0431LE-0431
+%      PAN
+%      DAPHNIS
+%      PAN
+%      DAPHNIS
+%
 %
 %-Particulars
 %
+%   cspice_dafcs supports simultaneous searching of multiple DAFs. In
+%   applications that use this capability, cspice_dafcs should be called
+%   prior to each call to cspice_daffna, cspice_daffpa, cspice_dafgn, or
+%   cspice_dafgs to specify which DAF is to be acted upon.
+%
+%   The DAF search routines are:
+%
+%      cspice_dafbfs       Begin forward search.
+%      cspice_daffna       Find next array.
+%
+%      cspice_dafbbs       Begin backward search.
+%      cspice_daffpa       Find previous array.
+%
+%      cspice_dafgs        Get summary.
+%      cspice_dafgn        Get name.
+%
+%      cspice_dafcs        Continue search.
+%
+%   The main function of these routines is to allow the
+%   contents of any DAF to be examined on an array-by-array
+%   basis.
+%
+%   Conceptually, the arrays in a DAF form a doubly linked list,
+%   which can be searched in either of two directions: forward or
+%   backward. It is possible to search multiple DAFs simultaneously.
+%
+%   cspice_dafbfs (begin forward search) and cspice_daffna are used to
+%   search the arrays in a DAF in forward order. In applications that
+%   search a single DAF at a time, the normal usage is
+%
+%      cspice_dafbfs( handle );
+%      found = cspice_daffna;
+%
+%      while found
+%
+%         [dc, ic] = cspice_dafgs( ND, NI );
+%         [sum]    = cspice_dafps( dc, ic );
+%         name     = cspice_dafgn;
+%
+%          .
+%          .
+%
+%         found = cspice_daffna;
+%
+%      end
+%
+%
+%   cspice_dafbbs (begin backward search) and cspice_daffpa are used to
+%   search the arrays in a DAF in backward order. In applications that
+%   search a single DAF at a time, the normal usage is
+%
+%      cspice_dafbbs( handle );
+%      found = cspice_daffpa;
+%
+%      while found
+%
+%         [dc, ic] = cspice_dafgs( ND, NI );
+%         [sum]    = cspice_dafps( dc, ic );
+%         name     = cspice_dafgn;
+%
+%          .
+%          .
+%
+%         found = cspice_daffpa;
+%
+%      end
+%
+%
+%   In applications that conduct multiple searches simultaneously, the above
+%   usage must be modified to specify the handle of the file to operate on,
+%   in any case where the file may not be the last one specified by
+%   cspice_dafbfs or cspice_dafbbs. The routine cspice_dafcs (DAF, continue
+%   search) is used for this purpose. Below, we give an example of an
+%   interleaved search of two files specified by the handles `handl1' and
+%   `handl2'. The directions of searches in different DAFs are independent;
+%   here we conduct a forward search on one file and a backward search on the
+%   other. Throughout, we use cspice_dafcs to specify which file to operate
+%   on, before calling cspice_daffna, cspice_daffpa, cspice_dafgs, or
+%   cspice_dafgn.
+%
+%
+%      cspice_dafbfs( handl1 );
+%      cspice_dafbbs( handl2 );
+%
+%      cspice_dafcs( handl1 );
+%      found1 = cspice_daffna;
+%
+%      cspice_dafcs( handl2 );
+%      found2 = cspice_daffpa;
+%
+%      while ( found1 | found2 )
+%
+%         if found1
+%
+%            cspice_dafcs( handl1 );
+%            [dc, ic] = cspice_dafgs( ND, NI );
+%            [sum]    = cspice_dafps( dc, ic );
+%            name     = cspice_dafgn;
+%
+%             .
+%             .
+%
+%            cspice_dafcs( handl1 );
+%            found1 = cspice_daffna;
+%
+%         end
+%
+%         if found2
+%
+%            cspice_dafcs( handl2 );
+%            [dc, ic] = cspice_dafgs( ND, NI );
+%            [sum]    = cspice_dafps( dc, ic );
+%            name     = cspice_dafgn;
+%
+%             .
+%             .
+%
+%            cspice_dafcs( handl2 );
+%            found2 = cspice_daffpa;
+%
+%         end
+%
+%      end
+%
+%
+%   At any time, the latest array found (whether by cspice_daffna or
+%   cspice_daffpa) is regarded as the 'current' array for the file in which
+%   the array was found. The last DAF in which a search was started,
+%   executed, or continued by any of cspice_dafbfs, cspice_dafbbs,
+%   cspice_daffna, cspice_daffpa or cspice_dafcs is regarded as the 'current'
+%   DAF. The summary and name for the current array in the current DAF can
+%   be obtained separately, as shown above, by calls to cspice_dafgs
+%   (get summary) and cspice_dafgn (get name).
+%
+%   Once a search has been begun, it may be continued in either
+%   direction. That is, cspice_daffpa may be used to back up during a
+%   forward search, and cspice_daffna may be used to advance during a
+%   backward search.
+%
+%-Exceptions
+%
+%   1)  If the input handle is invalid, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   2)  If this routine is called when no search is in progress in the
+%       the current DAF, the error SPICE(DAFNOSEARCH) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   3)  If the input argument `handle' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   4)  If the input argument `handle' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dafcs_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAF.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 10-JUL-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
+%
+%       Edited the -Examples section to comply with NAIF standard.
+%       Update code example to output segment IDs for both input SPK
+%       files. Added example's problem statement.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 10-JUL-2012 (EDW)
 %
 %-Index_Entries
 %
@@ -208,8 +391,8 @@ function cspice_dafcs( handle )
    %
    try
       mice( 'dafcs_c', handle );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

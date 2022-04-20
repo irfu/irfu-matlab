@@ -13,11 +13,11 @@
 % =====
 % NOTE: Meant to cover DATASET_IDs widely.
 %   ** Old DATASET_IDs beginning with ROC-SGSE, in order to cover old filenames.
-%   ** Datasets unrelated to BIAS processing.
-%   ** Partly lower case DATASET_ID (found in filenames)
+%   ** Datasets unrelated to BIAS processing, including other instruments.
+%   ** Lower case filenames.
 %   ** Recognize -cdag
-% NOTE: Lowercase DATASET_ID in filenames are recognized, and returned
-%       uppercase.
+% NOTE: Lowercase DATASET_ID in filenames are recognized, and returned as
+%       uppercase DATASET_ID.
 % NOTE: Does not work on RCTs (technically has no DATASET_ID).
 % NOTE: Should be possible to use together with
 %       EJ_library.so.adm.create_dataset_filename().
@@ -89,17 +89,19 @@
 %
 % ARGUMENTS
 % =========
-% filename : Filename. To be identified as a dataset filename it must have the
-%            form <DATASET_ID; upper-/lowercase>_<arbitrary>.cdf.
+% filename
+%       Filename. To be identified as a dataset filename it must have the
+%       form <DATASET_ID; upper-/lowercase>_<arbitrary>.cdf.
 %
 %
 % RETURN VALUES
 % =============
-% Result : If not a recognizable dataset filename: []
-%          If     a recognizable dataset filename:
-%               Struct with a varying set of fields,
-%               depending on the filenaming convention the filename adheres to.
-%   Fields always present:
+% Result
+%       If not a recognizable dataset filename, then: []
+%       If     a recognizable dataset filename, then:
+%           Struct with a varying set of fields, depending on the filenaming
+%           convention the filename adheres to.
+%       Fields always present:
 %       .datasetId            : DATASET_ID. (Always uppercase.)
 %       .isCdag               : Logical. Whether or not the file is a CDAG
 %                               (DATASET_ID in filename is appended with
@@ -116,11 +118,11 @@
 %                               interpreted as dataset glob.attr.
 %                               Logical_source, which should include -CDAG when
 %                               present (for now).
-%   Fields sometimes present
-%       .dateVec  : 
-%       .dateVec1 :
-%       .dateVec2 : 
-%       + varying fields corresponding to content in filename.
+%       Fields sometimes present
+%           .dateVec  : 
+%           .dateVec1 :
+%           .dateVec2 : 
+%           + varying fields corresponding to content in filename.
 %       NOTE: dateVec* may be either 1x3 or 1x6.
 % --
 %
@@ -135,6 +137,7 @@
 % First created 2019-12-17.
 %
 function R = parse_dataset_filename(filename)
+    %
     % PROPOSAL: Translate ROC-SGSE_* DATASET_IDs to SOLO_*.
     %   CON: Better to let the caller decide.
     %       PROPOSAL: Separate function for translating, normalizing DATASET_ID.
@@ -246,8 +249,8 @@ function R = parse_dataset_filename(filename)
     %
     % NOTE: Lowercase DATASET_ID+CDAG always have uppercase dataset level.
     [fnDatasetIdCdag, str, n] = EJ_library.str.read_token(trueBasename, 1, ...
-        '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3)_RPW-[A-Z0-2-]*', ...
-        '(solo|roc-sgse)_(HK|L1|L1R|L2|L3)_rpw-[a-z0-2-]*');
+        '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3)_[A-Z0-2-]*', ...
+        '(solo|roc-sgse)_(HK|L1|L1R|L2|L3)_[a-z0-2-]*');
     switch(n)
         case 1
             R.dsicdagCase  = 'upper';
@@ -402,7 +405,7 @@ end
 % string.
 %
 % NOTE: Adds on to existing struct to avoid having to use
-% EJ_library.utils.add_struct_to_struct() (slow?).
+% EJ_library.ds.add_struct_to_struct() (slow?).
 %
 function R = parse_time_interval_str(R, s)
     % yyyymmdd (8 digits).

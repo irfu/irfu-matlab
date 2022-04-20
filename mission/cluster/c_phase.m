@@ -18,7 +18,7 @@ function [res, tInts] = c_phase(time,phase_2)
 narginchk(2,2)
 
 %% Constants
-SPIN_PERIOD_MAX = 4.3;
+SPIN_PERIOD_MAX = 4.5;
 SPIN_PERIOD_MIN = 3.6;
 SPIN_PERIOD_NOMINAL = 4; % rpm
 DT_MAX = 2*SPIN_PERIOD_MAX; % allow extrapolation for max DT_MAX seconds
@@ -132,6 +132,9 @@ res = [time phaseOut];
       spinPeriod = mean(dd);
       if isnan(spinPeriod) || ...
           spinPeriod > SPIN_PERIOD_MAX || spinPeriod < SPIN_PERIOD_MIN
+        if ~isnan(spinPeriod)
+            irf_log('proc',sprintf('Found bad spin period: %f s',spinPeriod));
+        end
         spinPeriod = [];
       end
     end

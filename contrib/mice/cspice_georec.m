@@ -33,37 +33,37 @@
 %
 %   Given:
 %
-%       lon   the value(s) describing the geodetic longitude measured
-%             in radians.
+%      lon      the value(s) describing the geodetic longitude measured
+%               in radians.
 %
-%             [1,n] = size(lon); double = class(lon)
+%               [1,n] = size(lon); double = class(lon)
 %
-%       lat   the value(s) describing the geodetic latitude measured
-%             in radians.
+%      lat      the value(s) describing the geodetic latitude measured
+%               in radians.
 %
-%             [1,n] = size(lat); double = class(lat)
+%               [1,n] = size(lat); double = class(lat)
 %
-%       alt   the value(s) describing the altitude above the reference
-%             spheroid.
+%      alt      the value(s) describing the altitude above the reference
+%               spheroid.
 %
-%             [1,n] = size(alt); double = class(alt)
+%               [1,n] = size(alt); double = class(alt)
 %
-%       re    the equatorial radius of the body of interest.
+%      re       the equatorial radius of the body of interest.
 %
-%             [1,1] = size(re); double = class(re)
+%               [1,1] = size(re); double = class(re)
 %
-%       f     the flattening coefficient of the body, a dimensionless
-%             value defined as:
+%      f        the flattening coefficient of the body, a dimensionless
+%               value defined as:
 %
-%                    equatorial_radius - polar_radius
-%                    --------------------------------
-%                           equatorial_radius
+%                  equatorial_radius - polar_radius
+%                  --------------------------------
+%                         equatorial_radius
 %
-%             [1,n] = size(f); double = class(f)
+%               [1,1] = size(f); double = class(f)
 %
 %   the call:
 %
-%      rectan = cspice_georec( lon, lat, alt, re, f)
+%      [rectan] = cspice_georec( lon, lat, alt, re, f )
 %
 %   returns:
 %
@@ -72,162 +72,265 @@
 %
 %               [3,n] = size(rectan); double = class(rectan)
 %
-%               'rectan' returns with the same units associated with
-%               'alt' and 're'
+%               `rectan' returns with the same units associated with
+%               `alt' and `re'.
 %
-%               'rectan' returns with the same vectorization measure,
-%               n, as 'lon', 'lat', and 'alt'
+%               `rectan' returns with the same vectorization measure,
+%               N, as `lon', `lat', and `alt'
 %
-%-Examples
-%
-%   Any numerical results shown for this example may differ between
-%   platforms as the results depend on the SPICE kernels used as input
-%   and the machine specific arithmetic implementation.
-%
-%      %
-%      % Load the standard kernel set.
-%      %
-%      cspice_furnsh( 'standard.tm' )
-%
-%      %
-%      % Retrieve the triaxial radii of the earth
-%      %
-%      radii = cspice_bodvrd( 'EARTH', 'RADII', 3 );
-%
-%      %
-%      % Calculate the flatness coefficient.
-%      %
-%      flat = (radii(1) - radii(3))/radii(1);
-%
-%      %
-%      % Set a latitude,
-%      % longitude, altitude coordinate at 118 west,
-%      % 32 North, 0 altitude (convert the angular measures
-%      % to radians).
-%      %
-%      lon  = 118. * cspice_rpd;
-%      lat  = 32.  * cspice_rpd;
-%      alt  = 0.;
-%
-%      x = cspice_georec( lon, lat, alt, radii(1), flat );
-%
-%      disp( 'Scalar:' )
-%      txt = sprintf( '%14.6f   %14.6f   %14.6f', x );
-%      disp( txt )
-%
-%      disp( ' ' )
-%
-%      %
-%      % Using the equatorial radius of the Clark66 spheroid
-%      % (CLARKR = 6378.2064 km) and the Clark 66 flattening
-%      % factor (CLARKF = 1.0 / 294.9787 ) convert to
-%      % body fixed rectangular coordinates.
-%      %
-%      CLARKR = 6378.2064;
-%      CLARKF = 1./294.9787;
-%
-%      %
-%      % Define a vector of scalar longitudes, latitudes, and altitudes.
-%      % This is a vector of scalars (1xN), NOT the same as an N-vector (Nx1).
-%      %
-%      lon = [  0., ...
-%               0., ...
-%              90., ...
-%               0., ...
-%             180., ...
-%             -90., ...
-%               0., ...
-%              45., ...
-%               0., ...
-%              90., ...
-%              45. ];
-%
-%      lat = [ 90.      , ...
-%              88.677225, ...
-%              88.677225, ...
-%              90.      , ...
-%              88.677225, ...
-%              88.677225, ...
-%              -90.     , ...
-%              88.129144, ...
-%              88.707084, ...
-%              88.707084, ...
-%              88.171393 ];
-%
-%      alt = [ -6356.5838  , ...
-%              -6356.572258, ...
-%              -6356.572258, ...
-%              -6355.5838,   ...
-%              -6356.572258, ...
-%              -6356.572258, ...
-%              -6355.5838,   ...
-%              -6356.560715, ...
-%              -6355.572518, ...
-%              -6355.572518, ...
-%              -6355.561236  ];
-%
-%      %
-%      % Convert angular measures to radians.
-%      %
-%      lon = lon*cspice_rpd;
-%      lat = lat*cspice_rpd;
-%
-%      %
-%      % Calculate then output the rectangular coordinates.
-%      %
-%      x = cspice_georec( lon, lat, alt, CLARKR, CLARKF);
-%
-%      disp( 'Vector:' )
-%
-%      %
-%      % Create an array of values for output.
-%      %
-%      output = [  x(1,:);  x(2,:);  x(3,:) ];
-%      txt    = sprintf( '%14.6f   %14.6f   %14.6f\n', output);
-%      disp( txt )
-%
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
-%
-%   MATLAB outputs:
-%
-%      Scalar:
-%        -2541.748162      4780.333036      3360.428190
-%
-%      Vector:
-%            0.000000         0.000000         0.000000
-%            1.000000         0.000000        -0.000000
-%            0.000000         1.000000        -0.000000
-%            0.000000         0.000000         1.000000
-%           -1.000000         0.000000        -0.000000
-%            0.000000        -1.000000        -0.000000
-%            0.000000         0.000000        -1.000000
-%            1.000000         1.000000         0.000000
-%            1.000000         0.000000         1.000000
-%            0.000000         1.000000         1.000000
-%            1.000000         1.000000         1.000000
-%
-%-Particulars
+%-Parameters
 %
 %   None.
 %
-%-Required Reading
+%-Examples
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine georec_c.
+%   Any numerical results shown for these examples may differ between
+%   platforms as the results depend on the SPICE kernels used as input
+%   and the machine specific arithmetic implementation.
+%
+%   1) Find the rectangular coordinates of the point having Earth
+%      geodetic coordinates:
+%
+%         lon (deg) =  118.0
+%         lat (deg) =   32.0
+%         alt (km)  =    0.0
+%
+%      Use the PCK kernel below to load the required triaxial
+%      ellipsoidal shape model and orientation data for the Earth.
+%
+%         pck00010.tpc
+%
+%
+%      Example code begins here.
+%
+%
+%      function georec_ex1()
+%
+%         %
+%         % Load a PCK file containing a triaxial
+%         % ellipsoidal shape model and orientation
+%         % data for the Earth.
+%         %
+%         cspice_furnsh( 'pck00010.tpc' );
+%
+%         %
+%         % Retrieve the triaxial radii of the Earth
+%         %
+%         [radii] = cspice_bodvrd( 'EARTH', 'RADII', 3 );
+%
+%         %
+%         % Compute flattening coefficient.
+%         %
+%         re =  radii(1);
+%         rp =  radii(3);
+%         f  =  ( re - rp ) / re;
+%
+%         %
+%         % Set a geodetic position.
+%         %
+%         lon = 118.0 * cspice_rpd;
+%         lat =  30.0 * cspice_rpd;
+%         alt =   0.0;
+%
+%         %
+%         % Do the conversion.
+%         %
+%         [rectan] = cspice_georec( lon, lat, alt, radii(1), f );
+%
+%         fprintf( 'Geodetic coordinates in deg and km (lon, lat, alt)\n' )
+%         fprintf( '%14.6f %13.6f %13.6f\n',                               ...
+%                  lon * cspice_dpr, lat * cspice_dpr, alt )
+%         fprintf( 'Rectangular coordinates in km (x, y, z)\n' )
+%         fprintf( '%14.6f %13.6f %13.6f\n',                               ...
+%                  rectan(1), rectan(2), rectan(3) )
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Geodetic coordinates in deg and km (lon, lat, alt)
+%          118.000000     30.000000      0.000000
+%      Rectangular coordinates in km (x, y, z)
+%        -2595.359123   4881.160589   3170.373523
+%
+%
+%   2) Create a table showing a variety of rectangular coordinates
+%      and the corresponding Earth geodetic coordinates. The
+%      values are computed using the equatorial radius of the Clark
+%      66 spheroid and the Clark 66 flattening factor:
+%
+%         radius: 6378.2064
+%         flattening factor: 1./294.9787
+%
+%      Note: the values shown above may not be current or suitable
+%            for your application.
+%
+%
+%      Corresponding rectangular and geodetic coordinates are
+%      listed to three decimal places. Input angles are in degrees.
+%
+%
+%      Example code begins here.
+%
+%
+%      function georec_ex2()
+%
+%         %
+%         % Local parameters.
+%         %
+%         NREC = 11;
+%
+%         %
+%         % Define the input geodetic coordinates. Angles in
+%         % degrees.
+%         %
+%         lon = [ 0.0,   0.0, 90.0,  0.0, 180.0, -90.0,                    ...
+%                 0.0,  45.0,  0.0, 90.0,  45.0 ];
+%
+%         lat = [  90.0, 0.0,  0.0,   90.0,    0.0,   0.0,                 ...
+%                 -90.0, 0.0, 88.707, 88.707, 88.1713 ];
+%
+%         alt = [ -6356.5838, 0.0,     0.0,        0.0,        0.0,   0.0, ...
+%                     0.0,    0.0, -6355.5725, -6355.5725, -6355.5612 ];
+%
+%         %
+%         % Using the equatorial radius of the Clark66 spheroid
+%         % (clarkr = 6378.2064 km) and the Clark 66 flattening
+%         % factor (clarkf = 1.0 / 294.9787 ) convert from
+%         % body fixed rectangular coordinates.
+%         %
+%         clarkr = 6378.2064;
+%         clarkf = 1.0 / 294.9787;
+%
+%         %
+%         % Print the banner.
+%         %
+%         fprintf( [ '   lon      lat       alt     rectan(1)  rectan(2)', ...
+%                    '  rectan(3)\n' ]                                     )
+%         fprintf( [ ' -------  -------  ---------  ---------  ---------', ...
+%                    '  ---------\n' ]                                     )
+%
+%         %
+%         % Do the conversion.
+%         %
+%         rlon     = lon * cspice_rpd;
+%         rlat     = lat * cspice_rpd;
+%
+%         [rectan] = cspice_georec( rlon, rlat, alt, clarkr, clarkf );
+%
+%         for i=1:NREC
+%
+%            fprintf( '%8.3f %8.3f %10.3f', lon(i), lat(i), alt(i) )
+%            fprintf( '%11.3f %10.3f %10.3f\n', rectan(:,i) )
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%         lon      lat       alt     rectan(1)  rectan(2)  rectan(3)
+%       -------  -------  ---------  ---------  ---------  ---------
+%         0.000   90.000  -6356.584      0.000      0.000      0.000
+%         0.000    0.000      0.000   6378.206      0.000      0.000
+%        90.000    0.000      0.000      0.000   6378.206      0.000
+%         0.000   90.000      0.000      0.000      0.000   6356.584
+%       180.000    0.000      0.000  -6378.206      0.000      0.000
+%       -90.000    0.000      0.000      0.000  -6378.206      0.000
+%         0.000  -90.000      0.000      0.000      0.000  -6356.584
+%        45.000    0.000      0.000   4510.073   4510.073      0.000
+%         0.000   88.707  -6355.573      1.000      0.000      1.000
+%        90.000   88.707  -6355.573      0.000      1.000      1.000
+%        45.000   88.171  -6355.561      1.000      1.000      1.000
+%
+%
+%-Particulars
+%
+%   Given the geodetic coordinates of a point, and the constants
+%   describing the reference spheroid,  this routine returns the
+%   bodyfixed rectangular coordinates of the point. The bodyfixed
+%   rectangular frame is that having the X-axis pass through the
+%   0 degree latitude 0 degree longitude point. The Y-axis passes
+%   through the 0 degree latitude 90 degree longitude. The Z-axis
+%   passes through the 90 degree latitude point. For some bodies
+%   this coordinate system may not be a right-handed coordinate
+%   system.
+%
+%-Exceptions
+%
+%   1)  If the flattening coefficient is greater than or equal to one,
+%       the error SPICE(VALUEOUTOFRANGE) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   2)  If the equatorial radius is less than or equal to zero, the
+%       error SPICE(VALUEOUTOFRANGE) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   3)  If any of the input arguments, `lon', `lat', `alt', `re' or
+%       `f', is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   4)  If any of the input arguments, `lon', `lat', `alt', `re' or
+%       `f', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%   5)  If the input vectorizable arguments `lon', `lat' and `alt' do
+%       not have the same measure of vectorization (N), an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   [1]  R. Bate, D. Mueller, and J. White, "Fundamentals of
+%        Astrodynamics," Dover Publications Inc., 1971.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 06-NOV-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Split the existing
+%       code example into two separate examples.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 06-NOV-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -258,9 +361,6 @@ function [rectan] = cspice_georec( lon, lat, alt, re, f)
    %
    try
       [rectan] = mice( 'georec_c', lon, lat, alt, re, f);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
