@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Check-out repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
@@ -40,7 +40,7 @@ jobs:
           command: tests_before_release;
 
       # upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: test_report.pdf
           path: ciPath/report.pdf

@@ -120,6 +120,8 @@ classdef mms_edp_Sweep < handle
         tmp.iPh = NaN; % Old original "iPh" value
         tmp.iPh_knee = NaN; % New knee current value, new "2021 iPh"
         tmp.impedance = NaN;
+        tmp.optimal_bias = NaN;
+        tmp.optimal_gradient = NaN;
         tmp.phase = NaN;
         tmp.phase_knee = NaN;
         tmp.type = type;
@@ -267,6 +269,11 @@ classdef mms_edp_Sweep < handle
       obj.(p_2)(obj.pTable(2,iSweep)).impedance_src = 'analyse';
       obj.(p_1)(obj.pTable(2,iSweep)).impedance = tmp1.impedance;
       obj.(p_2)(obj.pTable(2,iSweep)).impedance = tmp2.impedance;
+      obj.(p_1)(obj.pTable(2,iSweep)).optimal_gradient = tmp1.optimal_gradient;
+      obj.(p_2)(obj.pTable(2,iSweep)).optimal_gradient = tmp2.optimal_gradient;
+      obj.(p_1)(obj.pTable(2,iSweep)).optimal_bias = tmp1.optimal_bias;
+      obj.(p_2)(obj.pTable(2,iSweep)).optimal_bias = tmp2.optimal_bias;
+      
       if ismember(type, {'+-', '-+'})
         obj.(p_1)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp1{1}+angle1+90,360)-90, mod(ph_knee_tmp1{2}+angle1+90,360)-90};
         obj.(p_2)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp2{1}+angle2+90,360)-90, mod(ph_knee_tmp2{2}+angle2+90,360)-90};
@@ -293,12 +300,16 @@ classdef mms_edp_Sweep < handle
           % iPh knee and impedance on "up" and "down" part separately
           tmp.iPh_knee = {NaN, NaN};
           tmp.impedance = {NaN, NaN};
+          tmp.optimal_gradient = {NaN, NaN};
+          tmp.optimal_bias = {NaN, NaN};
           tmp.iPh_knee_time = {NaN, NaN}; % Time of derived iPh_knee (first and second part)
           tmp.iPh = {NaN, NaN};
           tmp.iPh_time = {NaN, NaN};  % Time of derived iPh (first & second part)
         else
           tmp.iPh_knee = NaN;
           tmp.impedance = NaN;
+          tmp.optimal_gradient = NaN;
+          tmp.optimal_bias = NaN;
           tmp.iPh_knee_time = NaN;
           tmp.iPh_time = NaN;
         end
@@ -338,11 +349,11 @@ classdef mms_edp_Sweep < handle
             % first half
             biasFirst = biasResSegm(1:splitInd);
             voltFirst = voltageSegm(1:splitInd);
-            tmp.iPh_knee{1} = compute_IPh_knee(voltFirst, biasFirst, type);
+            [tmp.iPh_knee{1}, tmp.optimal_gradient{1}, tmp.optimal_bias{1}] = compute_IPh_knee(voltFirst, biasFirst, type);
             % second half
             biasSecond = biasResSegm(splitInd+1:end);
             voltSecond = voltageSegm(splitInd+1:end);
-            tmp.iPh_knee{2} = compute_IPh_knee(voltSecond, biasSecond, type);
+            [tmp.iPh_knee{2}, tmp.optimal_gradient{2}, tmp.optimal_bias{2}] = compute_IPh_knee(voltSecond, biasSecond, type);
             if isnan(tmp.iPh_knee{1}) || isnan(tmp.iPh_knee{2})
               % Any of the new values not ok. Fallback to old method
               oldFallback = true;
@@ -361,7 +372,7 @@ classdef mms_edp_Sweep < handle
             end
           case {'++', '--'}
             % Monotone upward or downward, no need to split
-            tmp.iPh_knee = compute_IPh_knee(voltageSegm, biasResSegm, type);
+            [tmp.iPh_knee, tmp.optimal_gradient, tmp.optimal_bias] = compute_IPh_knee(voltageSegm, biasResSegm, type);
             if isnan(tmp.iPh_knee)
               logStr = 'Failed new "knee" method, fallback to old method.';
               irf.log('debug', logStr);
@@ -462,12 +473,12 @@ classdef mms_edp_Sweep < handle
         
       end
       
-      function iPhKnee = compute_IPh_knee(voltage, bias, type)
+      function [iPhKnee, optimalGradient, optimalBias] = compute_IPh_knee(voltage, bias, type)
         % Help function to compute iPh_knee, a value which nominal
         % operating point wants to avoid..
         narginchk(3,3);
         % Default output
-        iPhKnee = NaN;
+        iPhKnee = NaN; optimalGradient=NaN; optimalBias=NaN;
         % MMS1 2021-04-18T22:59:26 sweep 5 (p3 & p4) have some strange
         % behaviour after the saturation point making the voltage go back
         % towards zero (just a few volts), so instead of a strict
@@ -505,7 +516,14 @@ classdef mms_edp_Sweep < handle
             irf.log('notice', logStr);
             return % return, with default NaN values (=> use fallback)
           else
-            iPhKnee = -biasUniq(indIphSpread-1); % Bias current just before linear part
+            iPhKnee = -biasUniq(indIphSpread-1); % bias current just before linear part
+            biasOverKnee=biasNonSatur(biasNonSatur>=(-iPhKnee)); % keeping only biases which are to be considered for gradient calculation
+            biasForGradient=unique(biasOverKnee);
+            voltageOverKnee=voltageNonSatur(1:length(biasOverKnee)); % getting the corresponding voltage values to calculate the average
+            biasGroups=findgroups(biasOverKnee);
+            averageVoltages=splitapply(@mean, voltageOverKnee, biasGroups);
+            [optimalGradient, optIndex] = max(gradient(biasForGradient, averageVoltages));
+            optimalBias = -biasForGradient(optIndex); % Keep currents direction convention
           end
         else
           % Unsupported type "00" or entirely saturated (e.g. MMS2 sdp2
@@ -715,6 +733,10 @@ classdef mms_edp_Sweep < handle
         Iph2 = obj.(p_2)(obj.pTable(2,iSweep)).iPh;
         dVdI1 = obj.(p_1)(obj.pTable(2,iSweep)).impedance;
         dVdI2 = obj.(p_2)(obj.pTable(2,iSweep)).impedance;
+        dVdI1_optimal = obj.(p_1)(obj.pTable(2,iSweep)).optimal_gradient;
+        dVdI2_optimal = obj.(p_2)(obj.pTable(2,iSweep)).optimal_gradient;
+        dVdI1bias_optimal = obj.(p_1)(obj.pTable(2,iSweep)).optimal_bias;
+        dVdI2bias_optimal = obj.(p_2)(obj.pTable(2,iSweep)).optimal_bias;
         pha1 = obj.(p_1)(obj.pTable(2,iSweep)).phase;
         pha2 = obj.(p_2)(obj.pTable(2,iSweep)).phase;
         Iph1_knee = obj.(p_1)(obj.pTable(2,iSweep)).iPh_knee;
@@ -724,6 +746,8 @@ classdef mms_edp_Sweep < handle
       else
         Iph1 = NaN; Iph2 = NaN;
         dVdI1 = NaN; dVdI2 = NaN;
+        dVdI1_optimal = NaN; dVdI2_optimal = NaN;
+        dVdI1bias_optimal = NaN; dVdI2bias_optimal = NaN;
         pha1 = NaN; pha2 = NaN;
         Iph1_knee = NaN; Iph2_knee = NaN;
         pha1_knee = NaN; pha2_knee = NaN;
@@ -732,15 +756,15 @@ classdef mms_edp_Sweep < handle
       % [double(prb1) double(prb2) Iph1 Iph2 dVdI1 dVdI2]
       if ismember(type, {'+-', '-+'})
         legend(h, ...
-          sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb1, Iph1{1}, Iph1{2}, Iph1_knee{1}, Iph1_knee{2}, dVdI1{1}, dVdI1{2}, 0.75*Iph1{1}, 0.75*Iph1{2}),...
-          sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb2, Iph2{1}, Iph2{2}, Iph2_knee{1}, Iph2_knee{2}, dVdI2{1}, dVdI2{2}, 0.75*Iph2{1}, 0.75*Iph2{2}),...
+          sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA, Optimal Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb1, Iph1{1}, Iph1{2}, Iph1_knee{1}, Iph1_knee{2}, dVdI1{1}, dVdI1{2}, 0.75*Iph1{1}, 0.75*Iph1{2}, dVdI1_optimal{1}, dVdI1bias_optimal{2}, dVdI1bias_optimal{1}, dVdI1bias_optimal{2}),...
+          sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA, Optimal Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb2, Iph2{1}, Iph2{2}, Iph2_knee{1}, Iph2_knee{2}, dVdI2{1}, dVdI2{2}, 0.75*Iph2{1}, 0.75*Iph2{2}, dVdI2_optimal{1}, dVdI2bias_optimal{2}, dVdI2bias_optimal{1}, dVdI2bias_optimal{2}),...
           sprintf('Phase%d  %0.1f & %0.1f (knee: %0.1f & %0.1f),  Phase%d  %0.1f & %0.1f (knee: %0.1f & %0.1f) degrees Type %s', prb1, pha1{1}, pha1{2}, pha1_knee{1}, pha1_knee{2}, prb2, pha2{1}, pha2{2}, pha2_knee{1}, pha2_knee{2}, type),...
           'Location', 'NorthWest', ...
           'AutoUpdate', 'off');
       else
         legend(h, ...
-          sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA', prb1, Iph1, Iph1_knee, dVdI1, 0.75*Iph1),...
-          sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA', prb2, Iph2, Iph2_knee, dVdI2, 0.75*Iph2),...
+          sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA, Optimal Imp: %0.2f MOhm @ %0.1f nA', prb1, Iph1, Iph1_knee, dVdI1, 0.75*Iph1, dVdI1_optimal, dVdI1bias_optimal), ...
+          sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA, Optimal Imp: %0.2f MOhm @ %0.1f nA', prb2, Iph2, Iph2_knee, dVdI2, 0.75*Iph2, dVdI2_optimal, dVdI2bias_optimal),...
           sprintf('Phase%d  %0.1f (knee: %0.1f),  Phase%d  %0.1f (knee: %0.1f) degrees Type %s', prb1, pha1, pha1_knee, prb2, pha2, pha2_knee, type),...
           'Location', 'NorthWest', ...
           'AutoUpdate', 'off');
@@ -1043,4 +1067,3 @@ classdef mms_edp_Sweep < handle
   end % methods(Access=private)
   
 end
-
