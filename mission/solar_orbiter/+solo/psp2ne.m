@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2022-04-20T15:31:00';
+codeVerStr = '2022-04-21T21:10:00';
 
 
 % Based on data from 2020-04-07
@@ -214,6 +214,8 @@ function [C] = TwofitCalibration(PSPint,y_eq,CalData)
             C = C1;
         elseif ~isempty(C2) && isempty(C1)
            C = C2;
+        elseif isempty(C1) && isempty(C2) && ~isempty(Cnan)
+            C = Cnan;
         elseif isempty(C1) && isempty(C2) && isempty(Cnan)
            C = CalData;
            irf.log('critical', 'no data at all ?!?')
