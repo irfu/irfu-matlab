@@ -48,8 +48,7 @@
 %                associated with `handle'. `dladsc' is valid only if the
 %                output argument `found' is true.
 %
-%                [SPICE_DLA_DSCSIZ,1]  = size(dladsc)
-%                                int32 = class(dladsc)
+%                [SPICE_DLA_DSCSIZ,1] = size(dladsc); int32 = class(dladsc)
 %
 %      found     a logical flag indicating whether a segment was found.
 %                `found' has the value true if a segment was found;
@@ -57,91 +56,100 @@
 %
 %                [1,1] = size(found); logical = class(found)
 %
+%-Parameters
+%
+%   SPICE_DLA_DSCSIZ
+%
+%               is the size of a SPICELIB DLA descriptor, defined in
+%               MiceDLA.m.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Open a DLA file for read access, traverse the segment
-%   list from front to back, and display segment address
-%   and size attributes.
+%   1) Open a DLA file for read access, traverse the segment
+%      list from front to back, and display segment address
+%      and size attributes.
 %
-%      function dlab_t( dla )
+%      Example code begins here.
 %
-%          %
-%          % Constants
-%          %
-%          SPICE_DLA_BWDIDX = 1;
-%          SPICE_DLA_FWDIDX = 2;
-%          SPICE_DLA_IBSIDX = 3;
-%          SPICE_DLA_ISZIDX = 4;
-%          SPICE_DLA_DBSIDX = 5;
-%          SPICE_DLA_DSZIDX = 6;
-%          SPICE_DLA_CBSIDX = 7;
-%          SPICE_DLA_CSZIDX = 8;
 %
-%          %
-%          % Open the DSK file for read access.
-%          % We use the DAS-level interface for
-%          % this function.
-%          %
-%          handle = cspice_dasopr( dla );
+%      function dlabfs_ex1()
 %
-%          %
-%          % Begin a forward search through the
-%          % kernel, treating the file as a DLA.
-%          % In this example, it's a very short
-%          % search.
-%          %
-%          segno = 1;
+%         MiceUser
 %
-%          [dladsc, found] = cspice_dlabfs( handle );
+%         %
+%         % Prompt for the name of the file to search.
+%         %
+%         fname = input( 'Name of DLA file > ', 's' );
 %
-%          while  found
+%         %
+%         % Open the DSK file for read access.
+%         % We use the DAS-level interface for
+%         % this function.
+%         %
+%         handle = cspice_dasopr( fname );
 %
-%             %
-%             % Display the contents of the current segment
-%             % descriptor.
-%             %
-%             fprintf('\n\n')
-%             fprintf('Segment number = %d\n', segno )
-%             fprintf('\n')
-%             fprintf('   Backward segment pointer         = %d\n', ...
-%                                        dladsc(SPICE_DLA_BWDIDX) )
-%             fprintf('   Forward segment pointer          = %d\n', ...
-%                                        dladsc(SPICE_DLA_FWDIDX) )
-%             fprintf('   Integer component base address   = %d\n', ...
-%                                        dladsc(SPICE_DLA_IBSIDX) )
-%             fprintf('   Integer component size           = %d\n', ...
-%                                        dladsc(SPICE_DLA_ISZIDX) )
-%             fprintf('   D.p. component base address      = %d\n', ...
-%                                        dladsc(SPICE_DLA_DBSIDX) )
-%             fprintf('   D.p. component size              = %d\n', ...
-%                                        dladsc(SPICE_DLA_DSZIDX) )
-%             fprintf('   Character component base address = %d\n', ...
-%                                        dladsc(SPICE_DLA_CBSIDX) )
-%             fprintf('   Character component size         = %d\n', ...
-%                                        dladsc(SPICE_DLA_CSZIDX) )
-%             fprintf('\n')
-%             %
-%             % Find the next segment.
-%             %
-%             current = dladsc;
-%             segno = segno + 1;
+%         %
+%         % Begin a forward search through the
+%         % kernel, treating the file as a DLA.
+%         % In this example, it's a very short
+%         % search.
+%         %
+%         segno = 1;
 %
-%             [dladsc, found] = cspice_dlafns( handle, current );
+%         [dladsc, found] = cspice_dlabfs( handle );
 %
-%          end
+%         while  found
 %
-%          %
-%          % Close file.
-%          %
-%          cspice_dascls( handle )
+%            %
+%            % Display the contents of the current segment
+%            % descriptor.
+%            %
+%            fprintf('\n\n')
+%            fprintf('Segment number = %d\n', segno )
+%            fprintf('\n')
+%            fprintf('   Backward segment pointer         = %d\n', ...
+%                                       dladsc(SPICE_DLA_BWDIDX) )
+%            fprintf('   Forward segment pointer          = %d\n', ...
+%                                       dladsc(SPICE_DLA_FWDIDX) )
+%            fprintf('   Integer component base address   = %d\n', ...
+%                                       dladsc(SPICE_DLA_IBSIDX) )
+%            fprintf('   Integer component size           = %d\n', ...
+%                                       dladsc(SPICE_DLA_ISZIDX) )
+%            fprintf('   D.p. component base address      = %d\n', ...
+%                                       dladsc(SPICE_DLA_DBSIDX) )
+%            fprintf('   D.p. component size              = %d\n', ...
+%                                       dladsc(SPICE_DLA_DSZIDX) )
+%            fprintf('   Character component base address = %d\n', ...
+%                                       dladsc(SPICE_DLA_CBSIDX) )
+%            fprintf('   Character component size         = %d\n', ...
+%                                       dladsc(SPICE_DLA_CSZIDX) )
+%            fprintf('\n')
+%            %
+%            % Find the next segment.
+%            %
+%            current = dladsc;
+%            segno = segno + 1;
 %
-%   MATLAB outputs:
+%            [dladsc, found] = cspice_dlafns( handle, current );
 %
-%      >> dlab_t( 'phobos_3_3.bds' )
+%         end
+%
+%         %
+%         % Close file.
+%         %
+%         cspice_dascls( handle )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, using the DSK file named phobos512.bds, the output
+%      was:
+%
+%
+%      Name of DLA file > phobos512.bds
 %
 %
 %      Segment number = 1
@@ -149,11 +157,12 @@
 %         Backward segment pointer         = -1
 %         Forward segment pointer          = -1
 %         Integer component base address   = 11
-%         Integer component size           = 3311271
+%         Integer component size           = 29692614
 %         D.p. component base address      = 0
-%         D.p. component size              = 494554
+%         D.p. component size              = 4737076
 %         Character component base address = 0
 %         Character component size         = 0
+%
 %
 %-Particulars
 %
@@ -164,27 +173,75 @@
 %   type.
 %
 %   This routine supports forward traversal of a DLA file's segment
-%   list.  Note that it is not necessary to call this routine to
+%   list. Note that it is not necessary to call this routine to
 %   conduct a forward traversal; all that is necessary is to have
 %   access to the first descriptor in the file, which this routine
 %   provides.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please
-%   refer to the CSPICE routine dlabfs_c.
+%   1)  If the input file handle is invalid, an error is signaled by a
+%       routine in the call tree of this routine.
+%
+%   2)  If an error occurs while reading the DLA file, the error
+%       is signaled by a routine in the call tree of this
+%       routine.
+%
+%   3)  If the input argument `handle' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   4)  If the input argument `handle' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   See description of input argument `handle'.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAS.REQ
 %   DSK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 05-MAY-2014, NJB, EDW (JPL)
+%   -Mice Version 1.1.0, 23-JUL-2021 (EDW) (JDR)
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Edited the header to comply with NAIF standard. Modified
+%       code example to prompt for input DLA file.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 20-APR-2016 (EDW)
+%
+%       Edit to example code to use MiceUser.m.
+%
+%   -Mice Version 1.0.0, 05-MAY-2014 (NJB) (EDW)
 %
 %-Index_Entries
 %
-%   begin forward search in dla file
+%   begin forward search in DLA file
 %
 %-&
 
@@ -197,7 +254,8 @@ function [dladsc, found] = cspice_dlabfs( handle )
 
       otherwise
 
-         error ( 'Usage: [dladsc(8), found] = cspice_dlabfs( handle )' )
+         error ( [ 'Usage: [dladsc(SPICE_DLA_DSCSIZ), found] = '            ...
+                   'cspice_dlabfs( handle )' ] )
 
    end
 
@@ -212,8 +270,6 @@ function [dladsc, found] = cspice_dlabfs( handle )
       % the caller.
       %
       found = zzmice_logical(found);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-

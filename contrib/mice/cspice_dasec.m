@@ -43,41 +43,49 @@
 %
 %               [1,1] = size(bufsiz); int32 = class(bufsiz)
 %
-%      buflen   the allowed length of each string element of the output
-%               `buffer'. This length must be large enough to hold the
-%               longest output string. The SPICE system imposes no limit
-%               on the length of comment lines, so 'buflen' normally
-%               should be set to a "generous" value that is unlikely
-%               to be exceeded.
+%      buffln   the allowed length of each string element of the output
+%               `buffer'.
 %
-%               [1,1] = size(buflen); int32 = class(buflen)
+%               [1,1] = size(buffln); int32 = class(buffln)
+%
+%               This length must be large enough to hold the longest output
+%               string. The SPICE system imposes no limit on the length of
+%               comment lines, so `buffln' normally should be set to a
+%               "generous" value that is unlikely to be exceeded.
 %
 %   the call:
 %
-%      [buffer, done] = cspice_dasec( handle, bufsiz, buflen )
+%      [buffer, done] = cspice_dasec( handle, bufsiz, buffln )
 %
 %   returns:
 %
 %      buffer   a list of at most bufsiz comments which have been
 %               extracted from the comment area of the binary DAS
-%               file attached to handle. `buffer' should be declared as
-%               follows:
-%
-%               On output, `buffer' contains `bufsiz' or less strings of comment
-%               text, with one comment line per string ( bufsiz >= n).
+%               file attached to handle.
 %
 %               [n,c1] = size(buffer); char = class(buffer)
 %
+%               `buffer' should be declared as follows:
+%
+%               On output, `buffer' contains `bufsiz' or less strings of
+%               comment text, with one comment line per string
+%               (bufsiz >= n).
+%
 %      done     a boolean flag indicating whether or not all of the
 %               comment lines from the comment area of the DAS file have
-%               been read. This variable has the value true after the
-%               last comment line has been read. It will have the value
-%               false otherwise.
+%               been read.
+%
+%               [1,1] = size(done); logical = class(done)
+%
+%               This variable has the value true after the last comment line
+%               has been read. It will have the value false otherwise.
 %
 %               If no comments exist in the comment area, this variable
 %               returns as true.
 %
-%               [1,1] = size(done); logical = class(done)
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -85,20 +93,33 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   The following example will extract the comment area of a
-%   binary DAS file attached to `handle', displaying the comments on
-%   the terminal screen.
+%   1) The following example will extract the entire comment area of a
+%      binary DAS file attached to `handle', displaying the comments on
+%      the terminal screen.
 %
-%      function dasec_t( das )
 %
+%      Use the DSK kernel below as input DAS file for the example.
+%
+%         phobos512.bds
+%
+%
+%      Example code begins here.
+%
+%
+%      function dasec_ex1()
+%
+%         %
+%         % Local constants
+%         %
 %         BUFSIZE    = 40;
 %         LINLEN     = 115;
+%         filename   = 'phobos512.bds';
 %
 %         %
 %         % Open for reading the DAS, return the corresponding
-%         % file handle to 'handle'.
+%         % file handle to `handle'.
 %         %
-%         handle = cspice_dasopr( das );
+%         handle = cspice_dasopr( filename );
 %
 %         done = false;
 %
@@ -106,13 +127,19 @@
 %         output = cellstr(buf);
 %
 %         for i=1:numel(output)
+%
 %            fprintf( '%s\n', char(output(i)) );
+%
 %         end
 %
 %         if done
-%            fprintf( 'All comments read from file.\n' );
+%
+%            fprintf( '\nAll comments read from file.\n' );
+%
 %         else
-%            fprintf( 'Not all comments read from file.\n' );
+%
+%            fprintf( '\nNot all comments read from file.\n' );
+%
 %         end
 %
 %         %
@@ -120,17 +147,18 @@
 %         %
 %         cspice_dascls( handle )
 %
-%   Matlab outputs:
 %
-%      >> dasec_t( 'phobos512.bds' )
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      ************************************************************************
+%
+%      ***********************************************************************
 %      MKDSK RUN DATE/TIME: 2010-06-30T16:52:12
 %      MKDSK SETUP FILE:    phobos512.cmd
 %      MKDSK INPUT FILE:    phobos_q512.txt
 %      MKDSK OUTPUT FILE:   phobos512.bds
 %      OUTPUT FILE STATUS:    NEW FILE
-%      ************************************************************************
+%      ***********************************************************************
 %
 %                 \begindata
 %
@@ -158,17 +186,19 @@
 %
 %                 \begintext
 %
+%      ***********************************************************************
 %
-%      ************************************************************************
 %      All comments read from file.
 %
-%   The program outputs `buffsiz' or less lines from the DAS comment area.
 %
-%   Reading all comment lines from a DAS may require a large value for
-%   `buffsiz'. In this case, a BUFSIZ value of 50 will read all comment
-%   lines from a DAS in a single cspice_dasec call. Otherwise, additional
-%   calls to cspice_dasec will read more comment lines
-%   from the DAS in slices of `buffsiz'.
+%      Note, the program outputs BUFSIZE or less lines from the DAS
+%      comment area.
+%
+%      Reading all comment lines from a DAS may require a large value
+%      for BUFSIZE. In this case, a BUFSIZ value of 50 will read all
+%      comment lines from a DAS in a single cspice_dasec call. Otherwise,
+%      additional calls to cspice_dasec will read more comment lines
+%      from the DAS in slices of BUFSIZE.
 %
 %-Particulars
 %
@@ -199,37 +229,106 @@
 %   This routine can be used to "simultaneously" extract comments
 %   from the comment areas of multiple binary DAS files.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dasec_c.
+%   1)  If the size of the output line buffer is is not positive, the
+%       error SPICE(INVALIDARGUMENT) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   2)  If a comment line in a DAS file is longer than the length of a
+%       character string array element of `buffer', the error
+%       SPICE(COMMENTTOOLONG) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If there is a mismatch between the number of comment
+%       characters found and the number of comment characters
+%       expected, the error SPICE(BADDASCOMMENTAREA) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   4)  If the binary DAS file attached to `handle' is not open for
+%       reading, an error is signaled by a routine in the call tree of
+%       this routine.
+%
+%   5)  If any of the input arguments, `handle', `bufsiz' or `buffln',
+%       is undefined, an error is signaled by the Matlab error
+%       handling system.
+%
+%   6)  If any of the input arguments, `handle', `bufsiz' or `buffln',
+%       is not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   See argument `handle' in -I/O.
+%
+%-Restrictions
+%
+%   1)  The comment area may consist only of printing ASCII
+%       characters, decimal values 32 - 126.
+%
+%   2)  There is NO maximum length imposed on the significant portion
+%       of a text line that may be placed into the comment area of a
+%       DAS file. The maximum length of a line stored in the comment
+%       area should be kept reasonable, so that they may be easily
+%       extracted. A good value for this would be 255 characters, as
+%       this can easily accommodate "screen width" lines as well as
+%       long lines which may contain some other form of information.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DAS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 05-JAN-2016, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Changed the input argument name "lenout" to "buffln" for
+%       consistency with other routines.
+%
+%       Edited the -Examples section to comply with NAIF standard.
+%       Added example's problem statement. Updated code example to
+%       hardcode the input DAS file.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 05-JAN-2016 (EDW)
 %
 %-Index_Entries
 %
-%    extract comments from a das file
+%   extract comments from a DAS file
 %
 %-&
 
-function [buffer, done] = cspice_dasec( handle, bufsiz, buflen )
+function [buffer, done] = cspice_dasec( handle, bufsiz, buffln )
 
    switch nargin
       case 3
 
          handle  = zzmice_int(handle);
          bufsiz  = zzmice_int(bufsiz);
-         buflen  = zzmice_int(buflen);
+         buffln  = zzmice_int(buffln);
 
       otherwise
 
          error ( ['Usage: [buffer, done] = ' ...
-                          'cspice_dasec( handle, bufsiz, buflen )'] )
+                          'cspice_dasec( handle, bufsiz, buffln )'] )
 
    end
 
@@ -237,9 +336,9 @@ function [buffer, done] = cspice_dasec( handle, bufsiz, buflen )
    % Call the MEX library.
    %
    try
-      [buffer, done] = mice( 'dasec_c', handle, bufsiz, buflen );
-   catch
-      rethrow(lasterror)
+      [buffer, done] = mice( 'dasec_c', handle, bufsiz, buffln );
+   catch spiceerr
+      rethrow(spiceerr)
       done = zzmice_logical(done);
    end
 

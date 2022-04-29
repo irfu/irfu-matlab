@@ -1,4 +1,3 @@
-
 %-Abstract
 %
 %   CSPICE_DVNORM returns the derivative of the vector norm of a 3-vector.
@@ -33,35 +32,35 @@
 %
 %   Given:
 %
-%      state   6-vector(s), the second three components of the vector(s)
-%              being the derivatives of the first three with respect to
-%              some scalar.
+%      state    6-vector(s), the second three components of the vector(s)
+%               being the derivatives of the first three with respect to
+%               some scalar.
 %
-%                 state =  ( x, dx )
-%                               --
+%                               dx
+%                 state =  ( x, -- )
 %                               ds
 %
-%              A common form for 'state' would contain position and
-%              velocity.
 %
-%              [6,n] = size(state); double = class(state)
+%               A common form for `state' would contain position and
+%               velocity.
+%
+%               [6,n] = size(state); double = class(state)
 %
 %   the call:
 %
-%      dvnorm = cspice_dvnorm(state)
+%      dvnorm = cspice_dvnorm( state )
 %
 %   returns:
 %
-%      dvnorm   the value(s) of d||x|| corresponding to 'state'.
+%      dvnorm   the value(s) of d||x|| corresponding to `state'.
 %                               ------
 %                               ds
 %
-%                                    1/2         2    2    2  1/2
-%               Where ||x|| = < x, x >    =  ( x1 + x2 + x3 )
+%                                     1/2         2     2     2  1/2
+%               Where ||x|| = < x, x >    =  (  x1  + x2  + x3  )
 %
-%
-%                         v = ( dx1, dx2, dx3 )
-%                               ---  ---  ---
+%                               dx1, dx2, dx3
+%                         v = ( ---  ---  --- )
 %                               ds   ds   ds
 %
 %                     d||x||   < x, v >
@@ -69,10 +68,14 @@
 %                      ds             1/2
 %                              < x, x >
 %
-%             'dvnorm' returns with the same vectorization measure (N)
-%             as 'state'.
+%               `dvnorm' returns with the same vectorization measure (N)
+%               as 'state'.
 %
-%              [1,n] = size(dvnorm); double = class(dvnorm)
+%               [1,n] = size(dvnorm); double = class(dvnorm)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -80,63 +83,119 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Create several 6-vectors (6x1 arrays) with the structure
-%      %
-%      %   y = |  x  |
-%      %       |     |
-%      %       |  dx |
-%      %       |  -- |
-%      %       |  ds |
-%      %
-%      % where 'x' is a 3-vector (3x1 array).
-%      %
+%   1) Compute the derivative of the norm of three vectors of
+%      different magnitudes. Use the first two vectors to define
+%      the derivatives as parallel and anti-parallel, and let
+%      the third be the zero vector.
 %
-%      %
-%      % Create 'y' with 'x' of varying magnitudes. Use 'x'
-%      % and '-x' to define the derivative as parallel and
-%      % anti-parallel.
-%      %
-%      mag = [ -4, 4, 12 ];
+%      Example code begins here.
 %
-%      x   = [ 1, sqrt(2), sqrt(3 ) ]';
 %
-%      y   = [ [x * 10^mag(1);  x], ...
-%              [x * 10^mag(2); -x], ...
-%              [  zeros(3,1);  x * 10^mag(3) ] ];
+%      function dvnorm_ex1()
 %
-%      %
-%      % Calculate the derivative of the vector norms with respect
-%      % to 's'.
-%      %
-%      dvnorm = cspice_dvnorm( y );
+%         %
+%         % Create several 6-vectors (6x1 arrays) with the structure
+%         %
+%         %   y = |  x  |
+%         %       |     |
+%         %       |  dx |
+%         %       |  -- |
+%         %       |  ds |
+%         %
+%         % where 'x' is a 3-vector (3x1 array).
+%         %
 %
-%      fprintf( 'Parallel x, dx/ds         : %f\n', dvnorm(1) )
-%      fprintf( 'Anti-parallel x, dx/ds    : %f\n', dvnorm(2) )
-%      fprintf( 'Zero vector x, large dx/ds: %f\n', dvnorm(3) )
+%         %
+%         % Create 'y' with 'x' of varying magnitudes. Use 'x'
+%         % and '-x' to define the derivative as parallel and
+%         % anti-parallel.
+%         %
+%         mag = [ -4, 4, 12 ];
 %
-%   Matlab outputs:
+%         x   = [ 1, sqrt(2), sqrt(3 ) ]';
 %
-%      Parallel x, dx/ds         : 2.449490
-%      Anti-parallel x, dx/ds    : -2.449490
-%      Zero vector x, large dx/ds: 0.000000
+%         y   = [ [x * 10^mag(1);  x], ...
+%                 [x * 10^mag(2); -x], ...
+%                 [  zeros(3,1);  x * 10^mag(3) ] ];
+%
+%         %
+%         % Calculate the derivative of the vector norms with respect
+%         % to 's'.
+%         %
+%         dvnorm = cspice_dvnorm( y );
+%
+%         fprintf( 'Parallel x, dx/ds         : %10.6f\n', dvnorm(1) )
+%         fprintf( 'Anti-parallel x, dx/ds    : %10.6f\n', dvnorm(2) )
+%         fprintf( 'Zero vector x, large dx/ds: %10.6f\n', dvnorm(3) )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Parallel x, dx/ds         :   2.449490
+%      Anti-parallel x, dx/ds    :  -2.449490
+%      Zero vector x, large dx/ds:   0.000000
+%
 %
 %-Particulars
 %
+%   A common use for this routine is to calculate the time derivative
+%   of the radius corresponding to a state vector.
+%
+%-Exceptions
+%
+%   1)  If the first three components of `state' ("x") describe the
+%       origin (zero vector) the routine returns zero as the
+%       derivative of the vector norm.
+%
+%   2)  If the input argument `state' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `state' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dvnorm_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
+%
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
+%
+%       Edited -Examples section to comply with NAIF standard. Added
+%       example's problem statement. Reformatted example's output.
+%
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
 %
 %   -Mice Version 1.0.1, 09-NOV-2012 (EDW)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
 %
 %   -Mice Version 1.0.0, 10-MAY-2010 (EDW)
 %
@@ -164,6 +223,6 @@ function [dvnorm] = cspice_dvnorm(state)
    %
    try
       [dvnorm] = mice('dvnorm_c', state);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end

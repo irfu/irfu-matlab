@@ -34,53 +34,61 @@
 %
 %   Given:
 %
-%      a        
-%      b        
-%      c        [1,1] = size(a); double = class(a)
+%      a,
+%      b,
+%      c        the lengths of the semi-axes of a triaxial ellipsoid.
+%
+%               [1,1] = size(a); double = class(a)
 %               [1,1] = size(b); double = class(b)
 %               [1,1] = size(c); double = class(c)
 %
-%               are the lengths of the semi-axes of a triaxial ellipsoid.
 %               The ellipsoid is centered at the origin and oriented so that
-%               its axes lie on the x, y and z axes. 'a', 'b', and 'c' are
+%               its axes lie on the x, y and z axes. `a', `b', and `c' are
 %               the lengths of the semi-axes that respectively point in the
 %               x, y, and z directions.
 %
-%      linept   
-%      linedr   [3,n] = size(linept); double = class(linept)
-%               [3,n] = size(linedr); double = class(linedr)
+%      linept,
+%      linedr   respectively, a point and a direction vector that define a
+%               line.
 %
-%               are, respectively, a point and a direction vector that define a
-%               line.  The line is the set of vectors
+%               [3,1] = size(linept); double = class(linept)
+%               [3,1] = size(linedr); double = class(linedr)
+%
+%               The line is the set of vectors
 %
 %                     linept   +   t * linedr
 %
-%               where t is any real number.
+%               where `t' is any real number.
 %
 %   the call:
 %
-%      [ pnear, dist ] = cspice_npedln( a, b, c, linept, linedr )
+%      [pnear, dist] = cspice_npedln( a, b, c, linept, linedr )
 %
 %   returns:
 %
 %      pnear   the point on the ellipsoid closest to the line, if the line
 %              doesn't intersect the ellipsoid.
 %
-%              [3,n] = size(pnear); double = class(pnear)
+%              [3,1] = size(pnear); double = class(pnear)
 %
-%              If the line intersects the ellipsoid, pnear will be a point
-%              of intersection.  If linept is outside of the ellipsoid, 'pnear'
-%              will be the closest point of intersection.  If linept is inside
-%              ellipsoid, pnear will not necessarily be the  the closest point
-%              of intersection.
+%              If the line intersects the ellipsoid, `pnear' will be a point
+%              of intersection. If `linept' is outside of the ellipsoid,
+%              `pnear' will be the closest point of intersection. If `linept'
+%              is inside ellipsoid, `pnear' will not necessarily be the
+%              closest point of intersection.
 %
-%      dist    , the distance of the line from the ellipsoid. This is the
-%              minimum distance between any point on the line and any point on
-%              the ellipsoid.
+%      dist    the distance of the line from the ellipsoid.
 %
-%              [1,n] = size(dist); double = class(dist)
+%              [1,1] = size(dist); double = class(dist)
 %
-%              If the line intersects the ellipsoid, 'dist' is zero.
+%              This is the minimum distance between any point on the line
+%              and any point on the ellipsoid.
+%
+%              If the line intersects the ellipsoid, `dist' is zero.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -88,64 +96,140 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % We can find the distance between an instrument optic axis ray
-%      % and the surface of a body modeled as a tri-axial ellipsoid
-%      % using this routine.  If the instrument position and pointing
-%      % unit vector in body-fixed coordinates are:
-%      %
-%      linept = [ 1.0e6,  2.0e6,  3.0e6 ]';
-%      linedr = [ -4.472091234e-1, -8.944182469e-1, -4.472091234e-3 ]';
+%   1) Find the distance between an instrument optic axis ray and
+%      the surface of a body modeled as a tri-axial ellipsoid, given the
+%      instrument position and pointing unit vector, and the body
+%      semi-axes lengths.
 %
-%      %
-%      % The body semi-axes lengths:
-%      %
-%      a = 7.0e5;
-%      b = 7.0e5;
-%      c = 6.0e5;
+%      Example code begins here.
 %
-%      %
-%      % The call to cspice_npedln yields a value for 'pnear', the nearest
-%      % point on the body to the optic axis ray and a value for 'dist',
-%      % the distance to the ray.
-%      %
-%      [ pnear, dist ] = cspice_npedln( a, b, c, linept, linedr )
 %
-%   MATLAB outputs:
+%      function npedln_ex1()
 %
-%      pnear =
+%         %
+%         % We can find the distance between an instrument optic axis ray
+%         % and the surface of a body modeled as a tri-axial ellipsoid
+%         % using this routine.  If the instrument position and pointing
+%         % unit vector in body-fixed coordinates are:
+%         %
+%         linept = [ 1.0e6,  2.0e6,  3.0e6 ]';
+%         linedr = [ -4.472091234e-1, -8.944182469e-1, -4.472091234e-3 ]';
 %
-%          -1.633311079234085e+03
-%          -3.266622215782081e+03
-%           5.999918335000672e+05
+%         %
+%         % The body semi-axes lengths:
+%         %
+%         a = 7.0e5;
+%         b = 7.0e5;
+%         c = 6.0e5;
 %
-%      dist =
+%         %
+%         % The call to cspice_npedln yields a value for `pnear', the nearest
+%         % point on the body to the optic axis ray and a value for `dist',
+%         % the distance to the ray.
+%         %
+%         [pnear, dist] = cspice_npedln( a, b, c, linept, linedr );
 %
-%           2.389967933829971e+06
+%         fprintf( 'Nearest point: %16.7f %16.7f %16.7f\n', pnear );
+%         fprintf( 'Distance     : %16.7f\n',               dist  );
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Nearest point:    -1633.3110792    -3266.6222158   599991.8335001
+%      Distance     :  2389967.9338300
+%
 %
 %-Particulars
 %
 %   For any ellipsoid and line, if the line does not intersect the
 %   ellipsoid, there is a unique point on the ellipsoid that is
-%   closest to the line.  Therefore, the distance dist between
-%   ellipsoid and line is well-defined.  The unique line segment of
+%   closest to the line. Therefore, the distance dist between
+%   ellipsoid and line is well-defined. The unique line segment of
 %   length dist that connects the line and ellipsoid is normal to
 %   both of these objects at its endpoints.
 %
 %   If the line intersects the ellipsoid, the distance between the
 %   line and ellipsoid is zero.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine npedln_c.
+%   If this routine detects an error, the output arguments `pnear' and
+%   `dist' are not modified.
+%
+%   1)  If the length of any semi-axis of the ellipsoid is
+%       non-positive, the error SPICE(INVALIDAXISLENGTH) is signaled
+%       by a routine in the call tree of this routine.
+%
+%   2)  If the line's direction vector is the zero vector, the error
+%       SPICE(ZEROVECTOR) is signaled by a routine in the call tree of
+%       this routine.
+%
+%   3)  If the length of any semi-axis of the ellipsoid is zero after
+%       the semi-axis lengths are scaled by the reciprocal of the
+%       magnitude of the longest semi-axis and then squared, the error
+%       SPICE(DEGENERATECASE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If the input ellipsoid is extremely flat or needle-shaped
+%       and has its shortest axis close to perpendicular to the input
+%       line, numerical problems could cause this routine's algorithm
+%       to fail, in which case, the error SPICE(DEGENERATECASE) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   5)  If any of the input arguments, `a', `b', `c', `linept' or
+%       `linedr', is undefined, an error is signaled by the Matlab
+%       error handling system.
+%
+%   6)  If any of the input arguments, `a', `b', `c', `linept' or
+%       `linedr', is not of the expected type, or it does not have the
+%       expected dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ELLIPSES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%       Reformatted example's output and added problem statement.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Edits to header documentation -I/O. The previous documentation
+%       showed the routine would accept vectorized arguments. All
+%       -I/O arguments are expected as non-vectorized.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 12-MAR-2012 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -155,7 +239,7 @@
 %
 %-&
 
-function [ pnear, dist ] = cspice_npedln( a, b, c, linept, linedr )
+function [pnear, dist] = cspice_npedln( a, b, c, linept, linedr )
 
    switch nargin
       case 5
@@ -181,8 +265,8 @@ function [ pnear, dist ] = cspice_npedln( a, b, c, linept, linedr )
       [npedln] = mice( 'npedln_s',a, b, c, linept, linedr );
       pnear    = reshape( [npedln.pos], 3, [] );
       dist     = reshape( [npedln.alt], 1, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

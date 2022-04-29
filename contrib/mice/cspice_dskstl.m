@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_DSKSTL sets the value of a specified DSK tolerance or 
+%   CSPICE_DSKSTL sets the value of a specified DSK tolerance or
 %   margin parameter.
 %
 %-Disclaimer
@@ -33,18 +33,19 @@
 %
 %   Given:
 %
-%      keywrd     is an integer code specifying the parameter to set. See
-%                 the include file dsktol.inc for a description of the
-%                 possible keywords.
-%   
-%                 [1,1] = size(keywrd); int32 = class(keywrd)
-%   
-%      dpval      is the new value of the parameter specified by `keywrd'. 
-%   
-%                 [1,1] = size(dpval); double = class(dpval)
-%    
-%                 <<< Use extreme caution. This routine performs no
-%                 checks on `dpval'. >>>
+%      keywrd   an integer code specifying the parameter to set.
+%
+%               [1,1] = size(keywrd); int32 = class(keywrd)
+%
+%               See the include file MiceDtl.m for a description of the
+%               possible keywords.
+%
+%      dpval    the new value of the parameter specified by `keywrd'.
+%
+%               [1,1] = size(dpval); double = class(dpval)
+%
+%               <<< Use extreme caution. This routine performs no
+%               checks on `dpval'. >>>
 %
 %   the call:
 %
@@ -54,109 +55,179 @@
 %
 %      None.
 %
+%      This routine operates by side effects.
+%
+%-Parameters
+%
+%   See the include file
+%
+%      MiceDtl.m
+%
+%   for descriptions and values of the tolerance or margin parameters
+%   accessed by this routine, and of the keyword parameters used to
+%   refer to them.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example(1):
+%   1) Retrieve the DSK tolerance keys and their corresponding values.
+%      Alter the values of those parameters for which it is possible,
+%      and confirm the change.
 %
-%      function dskgtl_t
-%      
+%      Example code begins here.
+%
+%
+%      function dskstl_ex1
+%
 %         %
 %         % Retrieve the DSK tolerance keys and corresponding values.
 %         %
 %         MiceUser
-%      
-%      
+%
 %         %
 %         % Define an array of keys, and an array of key names.
 %         %
-%         dskkeys = [ SPICE_DSK_KEYXFR, SPICE_DSK_KEYSGR,  ...
-%                     SPICE_DSK_KEYSPM, SPICE_DSK_KEYPTM,  ...
+%         dskkeys = [ SPICE_DSK_KEYXFR, SPICE_DSK_KEYSGR,                  ...
+%                     SPICE_DSK_KEYSPM, SPICE_DSK_KEYPTM,                  ...
 %                     SPICE_DSK_KEYAMG, SPICE_DSK_KEYLAL ];
-%      
-%         knames = { 'SPICE_DSK_KEYXFR', 'SPICE_DSK_KEYSGR',  ...
-%                    'SPICE_DSK_KEYSPM', 'SPICE_DSK_KEYPTM',  ...
+%
+%         knames = { 'SPICE_DSK_KEYXFR', 'SPICE_DSK_KEYSGR',               ...
+%                    'SPICE_DSK_KEYSPM', 'SPICE_DSK_KEYPTM',               ...
 %                    'SPICE_DSK_KEYAMG', 'SPICE_DSK_KEYLAL' };
-%      
-%      
+%
+%
 %         %
 %         % Output the tolerance keys and values.
 %         %
 %         for i=1:numel( dskkeys )
-%      
+%
 %            dpval = cspice_dskgtl( dskkeys(i) );
-%      
-%            fprintf( 'Key %s, key value %d, parameter value %d\n', ...
+%
+%            fprintf( 'Key %s, key value %d, parameter value %d\n',        ...
 %                             char( knames(i) ), dskkeys(i), dpval )
-%      
+%
 %         end
-%         
+%
 %         fprintf( '\n' )
 %         %
-%         % Alter the values of the parameters. Note, you cannot change 
+%         % Alter the values of the parameters. Note, you cannot change
 %         % parameters SPICE_DSK_KEYAMG and SPICE_DSK_KEYLAL.
 %         % Confirm the change.
 %         %
 %         for i=[1:4]
-%      
+%
 %            cspice_dskstl( dskkeys(i), i*10 );
 %            dpval = cspice_dskgtl( dskkeys(i) );
-%      
-%            fprintf( 'Key %s, key value %d, new parameter value %d\n', ...
+%
+%            fprintf( 'Key %s, key value %d, new parameter value %d\n',    ...
 %                             char( knames(i) ), dskkeys(i), dpval )
 %         end
-%         
-%   Matlab outputs:
-%      
-%      Key SPICE_DSK_KEYXFR, key value 1, parameter value 1.000000e-10
-%      Key SPICE_DSK_KEYSGR, key value 2, parameter value 1.000000e-08
-%      Key SPICE_DSK_KEYSPM, key value 3, parameter value 1.000000e-10
-%      Key SPICE_DSK_KEYPTM, key value 4, parameter value 1.000000e-07
-%      Key SPICE_DSK_KEYAMG, key value 5, parameter value 1.000000e-12
-%      Key SPICE_DSK_KEYLAL, key value 6, parameter value 1.000000e-12
-%      
+%
+%
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, the output was:
+%
+%
+%      Key SPICE_DSK_KEYXFR, key value 1, parameter value 1e-10
+%      Key SPICE_DSK_KEYSGR, key value 2, parameter value 1e-08
+%      Key SPICE_DSK_KEYSPM, key value 3, parameter value 1e-10
+%      Key SPICE_DSK_KEYPTM, key value 4, parameter value 1e-07
+%      Key SPICE_DSK_KEYAMG, key value 5, parameter value 1e-12
+%      Key SPICE_DSK_KEYLAL, key value 6, parameter value 1e-12
+%
 %      Key SPICE_DSK_KEYXFR, key value 1, new parameter value 10
 %      Key SPICE_DSK_KEYSGR, key value 2, new parameter value 20
 %      Key SPICE_DSK_KEYSPM, key value 3, new parameter value 30
 %      Key SPICE_DSK_KEYPTM, key value 4, new parameter value 40
-%      
+%
+%
 %-Particulars
 %
 %   The DSK tolerance routines centralize numeric tolerance and margin
 %   values used by the DSK subsystem. The DSK subsystem retrieves values
 %   from the DSK tolerance subsystem to use at run time.
-% 
-%   The DSK tolerance access functions are 
-% 
-%      cspice_dskgtl {DSK, get tolerance value} 
-%      cspice_dskstl {DSK, set tolerance value} 
-%  
+%
+%   The DSK tolerance access functions are
+%
+%      cspice_dskgtl {DSK, get tolerance value}
+%      cspice_dskstl {DSK, set tolerance value}
+%
 %   To minimize run time overhead, the "keywords" used by these routines
 %   to identify parameters are actually integer codes.
-% 
+%
 %   SPICE users may override certain values maintained by this subsystem;
 %   others values are fixed. It is recommended that any change to the
 %   tolerance values made at run time be performed only by expert SPICE
 %   users.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dskstl_c.
+%   1)  If the input keyword is not recognized, the error
+%       SPICE(INDEXOUTOFRANGE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If an attempt is made to modify a fixed parameter, the error
+%       SPICE(IMMUTABLEVALUE) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If any of the input arguments, `keywrd' or `dpval', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   4)  If any of the input arguments, `keywrd' or `dpval', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   1)  The default settings used by the DSK subsystem should
+%       be overridden only by expert SPICE users.
+%
+%   2)  This routine does not check the  validity of new parameter
+%       values supplied by the calling application.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   DSK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 10-MAR-2016, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 21-JUL-2020 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%       Added example's problem statement.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 10-MAR-2016 (EDW) (NJB)
 %
 %-Index_Entries
 %
-%   set dsk tolerance or margin parameters 
+%   set DSK tolerance or margin parameters
 %
 %-&
 
@@ -167,9 +238,8 @@ function cspice_dskstl( keywrd, dpval )
 
          %
          % The maximum value, 6, defined in the range argument corresponds to
-         % the number of of parameters assigned in dsktol.inc.
+         % the number of of parameters assigned in MiceDtl.m.
          %
-
          keywrd  = zzmice_int(keywrd, [1,6]);
          dpval   = zzmice_dp(dpval);
 
@@ -184,8 +254,8 @@ function cspice_dskstl( keywrd, dpval )
    %
    try
       mice( 'dskstl_c', keywrd, dpval );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

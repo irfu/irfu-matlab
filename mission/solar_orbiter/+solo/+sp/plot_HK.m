@@ -1,9 +1,6 @@
 %
-% Quicklook for the content of one BIAS HK dataset (CDF file), i.e. DATASET_ID =
-% SOLO_HK_RPW-BIA.
-%
-%
-% INCOMPLETE?
+% Generate official quicklook for the content of one BIAS HK dataset (CDF file),
+% i.e. DATASET_ID = SOLO_HK_RPW-BIA.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

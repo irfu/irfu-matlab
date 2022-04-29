@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_WNELMD determine whether a point is an element of a double
+%   CSPICE_WNELMD determines whether a point is an element of a double
 %   precision window.
 %
 %-Disclaimer
@@ -44,18 +44,22 @@
 %
 %   the call:
 %
-%      boolean = cspice_wnelmd( point, window )
+%      [wnelmd] = cspice_wnelmd( point, window )
 %
 %   returns:
 %
-%      A boolean with value true if 'point' exists as an element of
-%      'window'.
+%      A boolean with value true if `point' exists as an element of
+%      `window'.
 %
 %         a(i)  <  point  <  b(i)
 %               -         -
 %
-%      for some interval [ a(i), b(i) ] in 'window', false
+%      for some interval [ a(i), b(i) ] in `window', false
 %      otherwise.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -63,52 +67,126 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Let 'window' contain the intervals
-%      %
-%      window = [ [ 1; 3 ];  [ 7; 11 ];  [ 23; 27 ]; ];
+%   1) Given a set of double precision numbers, determine whether they
+%      are elements of a double precision window.
 %
-%      %
-%      % Then the following expressions take the value true.
-%      %
-%      cspice_wnelmd( 1.0, window )
-%      cspice_wnelmd( 9.0, window )
+%      Example code begins here.
 %
-%      %
-%      % and the following expressions take the value false.
-%      %
-%      cspice_wnelmd(  0.0, window )
-%      cspice_wnelmd( 13.0, window )
-%      cspice_wnelmd( 29.0, window )
+%
+%      function wnelmd_ex1()
+%
+%         %
+%         % Let `window' contain the intervals
+%         %
+%         window = [ [ 1; 3 ];  [ 7; 11 ];  [ 23; 27 ]; ];
+%
+%         points = [ 0.0, 1.0, 9.0, 13.0, 29.0 ];
+%
+%         %
+%         % Loop over the points.
+%         %
+%         for i=1:numel(points)
+%            if ( cspice_wnelmd( points(i), window ) )
+%               fprintf( 'Point %8.3f - an element of the window\n', ...
+%                         points(i) )
+%            else
+%               fprintf('Point %8.3f - not an element of the window\n', ...
+%                         points(i) )
+%            end
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Point    0.000 - not an element of the window
+%      Point    1.000 - an element of the window
+%      Point    9.000 - an element of the window
+%      Point   13.000 - not an element of the window
+%      Point   29.000 - not an element of the window
+%
 %
 %-Particulars
 %
 %   None.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine wnelmd_c.
+%   1)  The cardinality of the input `window' must be even. Left
+%       endpoints of stored intervals must be strictly greater than
+%       preceding right endpoints. Right endpoints must be greater
+%       than or equal to corresponding left endpoints. Invalid window
+%       data are not diagnosed by this routine and may lead to
+%       unpredictable results.
+%
+%   2)  If any of the input arguments, `point' or `window', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `point' or `window', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   WINDOWS.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.2, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 27-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and modified example code to produce
+%       formatted output.
 %
-%      "logical" call replaced with "zzmice_logical."
+%       Added square brackets to output argument in function declaration,
+%       and renamed it to "wnelmd".
 %
-%      Corrected version ID in 23-JUL-2009 entry, "1.0.0" to "1.0.1."
+%       Corrected error message format.
 %
-%   -Mice Version 1.0.1, 23-JUL-2009, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%      Replaced 'boolean' calls with 'logical' as 'boolean' functionally
-%      aliases 'logical'.
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 17-JUL-2007, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.2, 12-MAR-2012 (EDW) (SCK)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%       "logical" call replaced with "zzmice_logical."
+%
+%       Corrected version ID in 23-JUL-2009 entry, "1.0.0" to "1.0.1."
+%
+%   -Mice Version 1.0.1, 23-JUL-2009 (EDW)
+%
+%       Replaced "boolean" calls with "logical" as "boolean" functionally
+%       aliases "logical."
+%
+%   -Mice Version 1.0.0, 17-JUL-2007 (EDW)
 %
 %-Index_Entries
 %
@@ -116,7 +194,7 @@
 %
 %-&
 
-function retval = cspice_wnelmd( point, window )
+function [wnelmd] = cspice_wnelmd( point, window )
 
    switch nargin
 
@@ -128,14 +206,14 @@ function retval = cspice_wnelmd( point, window )
 
       otherwise
 
-         error( 'boolean = cspice_wnelmd( point, window )' )
+         error( 'Usage: [wnelmd] = cspice_wnelmd( point, window )' )
 
       end
 
    try
-      [retval] = mice( 'wnelmd_c', point, [zeros(6,1); window] );
-      [retval] = zzmice_logical(retval);
-   catch
-      rethrow(lasterror)
+      [wnelmd] = mice( 'wnelmd_c', point, [zeros(6,1); window] );
+      [wnelmd] = zzmice_logical(wnelmd);
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

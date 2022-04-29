@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_CLIGHT returns the value for the constant speed of light  
+%   CSPICE_CLIGHT returns the value for the constant speed of light
 %   in a vacuum (IAU official value, in km/sec).
 %
 %-Disclaimer
@@ -31,20 +31,20 @@
 %
 %-I/O
 %
-%   Given:
+%   The call:
 %
-%      No input required.
-%
-%   the call:
-%
-%      clight = cspice_clight
+%      [clight] = cspice_clight
 %
 %   returns:
 %
-%      clight   the IAU official value for the speed of light in 
-%               vacuo: 299792.458 km/sec.
+%      clight   the IAU official value for the speed of light in vacuum:
+%               299792.458 km/sec.
 %
 %               [1,1] = size(clight); double = class(clight)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -52,36 +52,73 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      >> speed_of_light = cspice_clight
+%   1) Display the IAU official double precision value
+%      for the constant speed of light in the vacuum, in km/sec.
 %
-%      speed_of_light =
+%      Example code begins here.
 %
-%         2.9979e+05
 %
-%      >> sprintf( 'Speed of light: %10.3f', cspice_clight )
+%      function clight_ex1()
 %
-%      ans =
+%         fprintf( 'Speed of light: %10.3f', cspice_clight )
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
 %
 %      Speed of light: 299792.458
 %
+%
 %-Particulars
+%
+%   The function always returns the constant value shown above.
+%
+%-Exceptions
+%
+%   Error free.
+%
+%-Files
 %
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine clight_c.
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       I/O descriptions edits to conform to Mice documentation format.
+%       Edited the header to comply with NAIF standard.
+%       Added example's problem statement.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 11-JUN-2013 (EDW)
+%
+%       -I/O descriptions edits to conform to Mice documentation format.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -105,8 +142,6 @@ function [clight] = cspice_clight
    %
    try
       [clight] =  mice('clight_c');
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-

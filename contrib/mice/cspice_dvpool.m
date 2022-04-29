@@ -32,15 +32,20 @@
 %
 %   Given:
 %
-%      name   name(s) of a pool variable(s) to delete from the kernel pool. The
-%             name and associated values are removed from the kernel pool,
-%             freeing the occupied space.
+%      name     name(s) of a pool variable(s) to delete from the kernel pool.
 %
-%             [n,m] = size(name); char = class(name)
+%               [n,c1] = size(name); char = class(name)
 %
-%             If watches are set on the variable(s) designated by 'name',
-%             the corresponding agents are placed on the list of agents
-%             to notify of a kernel variable update.
+%                  or
+%
+%               [1,n] = size(name); cell = class(name)
+%
+%               The name and associated values are removed from the kernel
+%               pool, freeing the occupied space.
+%
+%               If watches are set on the variable(s) designated by `name',
+%               the corresponding agents are placed on the list of agents
+%               to notify of a kernel variable update.
 %
 %   the call:
 %
@@ -48,138 +53,127 @@
 %
 %   performs the delete operation.
 %
+%-Parameters
+%
+%   None.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      Use the meta-kernel shown below to load the required SPICE
-%      kernels.
+%   1) Query the kernel pool for variables matching a pattern,
+%      returning 10 or less matches starting from index #1. Then
+%      remove those variables from the kernel pool, and check that
+%      indeed they have been deleted.
 %
-%         KPL/MK
+%      Use the LSK kernel below to load the variables used within
+%      the example.
 %
-%         This meta-kernel is intended to support operation of SPICE
-%         example programs. The kernels shown here should not be
-%         assumed to contain adequate or correct versions of data
-%         required by SPICE-based user applications.
-%
-%         In order for an application to use this meta-kernel, the
-%         kernels referenced here must be present in the user's
-%         current working directory.
-%
-%         The names and contents of the kernels referenced
-%         by this meta-kernel are as follows:
-%
-%            File name                     Contents
-%            ---------                     --------
-%            de421.bsp                     Planetary ephemeris
-%            pck00009.tpc                  Planet orientation and
-%                                          radii
-%            naif0009.tls                  Leapseconds
+%         naif0009.tls
 %
 %
-%         \begindata
-%
-%            KERNELS_TO_LOAD = ( '/kernels/gen/lsk/naif0009.tls'
-%                                '/kernels/gen/spk/de421.bsp'
-%                                '/kernels/gen/pck/pck00009.tpc'
-%                      )
-%
-%         \begintext
+%      Example code begins here.
 %
 %
-%      %
-%      % Load a kernel set.
-%      %
-%      cspice_furnsh( 'standard.tm' )
-%
-%      %
-%      % A template for the leapseconds kernel variables.
-%      %
-%      VAR = 'DELTET*';
-%
-%      %
-%      % Query for the variable name, return 10 or less matches from
-%      % index 1.
-%      %
-%      INDEX  = 1;
-%      ROOM   = 10;
-%
-%
-%      txt = sprintf( 'Kernel pool state after load.' );
-%      disp( txt )
-%
-%      [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
-%
-%      if( found )
-%
-%         n_elements = size(kervar, 1);
+%      function dvpool_ex1()
 %
 %         %
-%         % Output the returned variable names.
+%         % Load an LSK.
 %         %
-%         for n=1: n_elements
-%            txt = sprintf( 'Variable %d matching %s: %s', ...
-%                                        n, VAR, kervar(n,:) );
+%         cspice_furnsh( 'naif0009.tls' )
+%
+%         %
+%         % A template for the leapseconds kernel variables.
+%         %
+%         VAR = 'DELTET*';
+%
+%         %
+%         % Query for the variable name, return 10 or less matches from
+%         % index 1.
+%         %
+%         INDEX  = 1;
+%         ROOM   = 10;
+%
+%
+%         txt = sprintf( 'Kernel pool state after load.' );
+%         disp( txt )
+%
+%         [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
+%
+%         if( found )
+%
+%            n_elements = size(kervar, 1);
+%
+%            %
+%            % Output the returned variable names.
+%            %
+%            for n=1: n_elements
+%               txt = sprintf( 'Variable %d matching %s: %s', ...
+%                                           n, VAR, kervar(n,:) );
+%               disp( txt )
+%            end
+%
+%         else
+%            txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
 %            disp( txt )
 %         end
 %
-%      else
-%         txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
+%
+%         %
+%         % Delete the kernel pool variables returned from cspice_gnpool.
+%         %
+%         cspice_dvpool( kervar )
+%
+%         txt = sprintf( '\nKernel pool state after deletion.' );
 %         disp( txt )
-%      end
-%
-%
-%      %
-%      % Delete the kernel pool variables returned from cspice_gnpool.
-%      %
-%      cspice_dvpool( kervar )
-%
-%      txt = sprintf( '\nKernel pool state after deletion.' );
-%      disp( txt )
-%
-%      %
-%      % Confirm the variables were deleted from the pool.
-%      %
-%      [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
-%
-%      if ( found )
-%
-%         n_elements = size(kervar, 1);
 %
 %         %
-%         % Output the returned variable names.
+%         % Confirm the variables were deleted from the pool.
 %         %
-%         for n=1: n_elements
-%            txt = sprintf( 'Variable %d matching %s: %s', ...
-%                                        n, VAR, kervar(n,:) );
+%         [kervar, found] = cspice_gnpool( VAR, INDEX, ROOM );
+%
+%         if ( found )
+%
+%            n_elements = size(kervar, 1);
+%
+%            %
+%            % Output the returned variable names.
+%            %
+%            for n=1: n_elements
+%               txt = sprintf( 'Variable %d matching %s: %s', ...
+%                                           n, VAR, kervar(n,:) );
+%               disp( txt )
+%            end
+%
+%         else
+%            txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
 %            disp( txt )
 %         end
 %
-%      else
-%         txt = sprintf( ['Failed to find  ' VAR ' in the kernel pool.'] );
-%         disp( txt )
-%      end
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
 %
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in Matlab due to data persistence.
-%      %
-%      cspice_kclear
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%   MATLAB outputs:
 %
 %      Kernel pool state after load.
-%      Variable 1 matching DELTET*: DELTET/DELTA_T_A
-%      Variable 2 matching DELTET*: DELTET/DELTA_AT
-%      Variable 3 matching DELTET*: DELTET/K
-%      Variable 4 matching DELTET*: DELTET/M
-%      Variable 5 matching DELTET*: DELTET/EB
+%      Variable 1 matching DELTET*: DELTET/DELTA_AT
+%      Variable 2 matching DELTET*: DELTET/K
+%      Variable 3 matching DELTET*: DELTET/M
+%      Variable 4 matching DELTET*: DELTET/EB
+%      Variable 5 matching DELTET*: DELTET/DELTA_T_A
 %
 %      Kernel pool state after deletion.
 %      Failed to find  DELTET* in the kernel pool.
+%
 %
 %-Particulars
 %
@@ -191,17 +185,61 @@
 %   to simply update them; this routine should be used only when
 %   variables are to be removed.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine dvpool_c.
+%   1)  If the specified variable is not present in the kernel pool,
+%       this routine simply returns. No error is signaled.
+%
+%   2)  If the input argument `name' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `name' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   KERNEL.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
+%
+%       Fixed bug: the return value from the zzmice_str call was assigned
+%       to the wrong variable name, causing input cell strings to break the
+%       interface.
+%
+%       Edited the header to comply with NAIF standard. Added
+%       example's meta-kernel.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 12-MAR-2012 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -214,7 +252,7 @@ function cspice_dvpool(name)
    switch nargin
       case 1
 
-         file = zzmice_str(name);
+         name = zzmice_str(name);
 
       otherwise
 
@@ -227,8 +265,8 @@ function cspice_dvpool(name)
    %
    try
       mice('dvpool_c', name);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

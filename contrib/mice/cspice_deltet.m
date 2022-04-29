@@ -34,10 +34,11 @@
 %   Given:
 %
 %      epoch    the epoch(s) at which "delta ET" is to be computed.
-%               'epoch' may be either UTC or ephemeris seconds
-%               past J2000, as specified by 'eptype'.
 %
-%               [1,n] = size(epoch); double = class(epoch)
+%               [1,1] = size(epoch); double = class(epoch)
+%
+%               `epoch' may be either UTC or ephemeris seconds past J2000,
+%               as specified by `eptype'.
 %
 %      eptype   the type of input epoch.
 %
@@ -49,29 +50,45 @@
 %
 %               It may be either of the following:
 %
-%                  'UTC'   UTC seconds past J2000 UTC.
+%                  'UTC'    UTC seconds past J2000 UTC.
 %
-%                  'ET'    Ephemeris seconds past J2000 TDB,
-%                          also known as barycentric
-%                          dynamical time (TDB).
+%                  'ET'     Ephemeris seconds past J2000 TDB,
+%                           also known as barycentric dynamical
+%                           time (TDB).
 %
 %   the call:
 %
-%      delta = cspice_deltet( epoch, eptype )
+%      [delta] = cspice_deltet( epoch, eptype )
 %
 %   returns:
 %
-%      delta   the value(s) of
+%      delta    the value of
 %
-%                 "delta ET" = ET - UTC
+%                  "delta ET" = ET - UTC
 %
-%              at the input 'epoch'. This is added to UTC to
-%              give ET, or subtracted from ET to give UTC.
+%               at the input epoch.
 %
-%              [1,n] = size(delta); double = class(delta)
+%               [1,1] = size(delta); double = class(delta)
 %
-%              'delta' return with the same vectorization measure
-%              (N) as 'epoch'.
+%               This is added to UTC to give ET, or subtracted from ET to
+%               give UTC. The routine is reversible: that is, given the
+%               following calls,
+%
+%                  [del1] = cspice_deltet( utc,      'UTC' );
+%                  [del2] = cspice_deltet( utc+del1, 'ET'  );
+%
+%               the expression
+%
+%                  ( del1 == del2 )
+%
+%               is always true.
+%
+%               `delta' returns with the same vectorization measure
+%               (N) as `epoch'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -79,98 +96,192 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Load a leapsecond file.
-%      %
-%      cspice_furnsh( 'standard.tm' )
+%   1) Calculate the ET to UTC delta times in seconds, at January 1, 1997
+%      and January 1, 2004, and for every Julian year in-between.
 %
-%      %
-%      % Define times of interest and the array size
-%      % parameter.
-%      %
-%      SIZE     = 2004 - 1997 +1;
-%      UTC_1997 = 'Jan 1 1997';
-%      UTC_2004 = 'Jan 1 2004';
+%      Use the LSK kernel below to load the leap seconds and time
+%      constants required for the conversions.
 %
-%      %
-%      % Convert the UTC time strings to ET.
-%      %
-%      et_1997 = cspice_str2et( UTC_1997 );
-%      et_2004 = cspice_str2et( UTC_2004 );
+%         naif0012.tls
 %
-%      %
-%      % Calculate the ET-UTC delta at Jan 1 1997
-%      % and Jan 1 2004.
-%      %
-%      delt_1997 = cspice_deltet( et_1997, 'ET' );
-%      delt_2004 = cspice_deltet( et_2004, 'ET' );
 %
-%      disp( 'Scalar:' )
-%      disp( sprintf( 'Delta 1997: %f'  , delt_1997 ) )
-%      disp( sprintf( 'Delta 2004: %f\n', delt_2004 ) )
+%      Example code begins here.
 %
-%      %
-%      % Given an array of 'SIZE' ephemeris times
-%      % starting from value 'et_1997' with steps being
-%      % of the number of seconds per Julian year, return
-%      % the ET-UTC delta value for each time.
-%      %
-%      et   = [0:SIZE-1]*cspice_jyear + et_1997;
-%      delt = cspice_deltet( et, 'ET' );
 %
-%      %
-%      % Convert 'et' to 'utc'.
-%      %
-%      utc = cspice_et2utc( et, 'C', 3 );
+%      function deltet_ex1()
 %
-%      disp( 'Vector:' )
-%      for n=1:SIZE
-%         txt = sprintf( '%s delta %f', utc(n,:), delt(n) );
-%         disp( txt )
-%      end
+%         %
+%         % Load a leapsecond file.
+%         %
+%         cspice_furnsh( 'naif0012.tls' )
 %
-%      %
-%      % It's always good form to unload kernels after use,
-%      % particularly in MATLAB due to data persistence.
-%      %
-%      cspice_kclear
+%         %
+%         % Define times of interest and the array size
+%         % parameter.
+%         %
+%         SIZE     = 2004 - 1997 +1;
+%         UTC_1997 = '1997 JAN 01 00:00:00.000';
+%         UTC_2004 = '2004 JAN 01 00:00:00.000';
 %
-%   MATLAB outputs:
+%         %
+%         % Convert the UTC time strings to ET.
+%         %
+%         et_1997 = cspice_str2et( UTC_1997 );
+%         et_2004 = cspice_str2et( UTC_2004 );
 %
+%         %
+%         % Calculate the ET-UTC delta at Jan 1 1997
+%         % and Jan 1 2004.
+%         %
+%         delt_1997 = cspice_deltet( et_1997, 'ET' );
+%         delt_2004 = cspice_deltet( et_2004, 'ET' );
+%
+%         disp( '     UTC time             Delta ET-UTC' )
+%         disp( '------------------------  ------------' )
+%         disp( 'Scalar:' )
+%         fprintf( '%s  %12.8f\n', UTC_1997, delt_1997 )
+%         fprintf( '%s  %12.8f\n', UTC_2004, delt_2004 )
+%
+%         %
+%         % Given an array of 'SIZE' ephemeris times
+%         % starting from value 'et_1997' with steps being
+%         % of the number of seconds per Julian year, return
+%         % the ET-UTC delta value for each time.
+%         %
+%         et   = [0:SIZE-1]*cspice_jyear + et_1997;
+%         delt = cspice_deltet( et, 'ET' );
+%
+%         %
+%         % Convert 'et' to 'utc'.
+%         %
+%         utc = cspice_et2utc( et, 'C', 3 );
+%
+%         disp( 'Vector:' )
+%         for n=1:SIZE
+%            fprintf( '%s  %12.8f\n', utc(n,:), delt(n) );
+%         end
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in MATLAB due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%           UTC time             Delta ET-UTC
+%      ------------------------  ------------
 %      Scalar:
-%      Delta 1997: 62.183935
-%      Delta 2004: 64.183912
-%
+%      1997 JAN 01 00:00:00.000   62.18393536
+%      2004 JAN 01 00:00:00.000   64.18391170
 %      Vector:
-%      1997 JAN 01 00:00:00.000 delta 62.183935
-%      1998 JAN 01 05:59:59.000 delta 63.183935
-%      1999 JAN 01 11:59:58.000 delta 64.183935
-%      2000 JAN 01 17:59:58.000 delta 64.183935
-%      2000 DEC 31 23:59:58.000 delta 64.183934
-%      2002 JAN 01 05:59:58.000 delta 64.183934
-%      2003 JAN 01 11:59:58.000 delta 64.183934
-%      2004 JAN 01 17:59:58.000 delta 64.183933
+%      1997 JAN 01 00:00:00.000   62.18393536
+%      1998 JAN 01 05:59:59.000   63.18393508
+%      1999 JAN 01 11:59:58.000   64.18393480
+%      2000 JAN 01 17:59:58.000   64.18393452
+%      2000 DEC 31 23:59:58.000   64.18393424
+%      2002 JAN 01 05:59:58.000   64.18393396
+%      2003 JAN 01 11:59:58.000   64.18393368
+%      2004 JAN 01 17:59:58.000   64.18393341
+%
 %
 %-Particulars
 %
+%   The constants necessary for computing the offset are taken
+%   from the kernel pool, where they are assumed to have been
+%   loaded from a kernel file.
+%
+%   The tables are consulted to determine the number of leap seconds
+%   preceding the input epoch. Also, an approximation to the periodic
+%   yearly variation (which has an amplitude of just under two
+%   milliseconds) in the difference between ET and TAI (Atomic Time)
+%   is computed. The final value of Delta ET is given by
+%
+%      Delta ET = ( et - tai ) + leap seconds
+%
+%-Exceptions
+%
+%   1)  If the input epoch is not recognized, the error
+%       SPICE(INVALIDEPOCH) is signaled by a routine in the call tree
+%       of this routine.
+%
+%   2)  If the variables necessary for the computation of `delta' have
+%       not been loaded into the kernel pool, the error
+%       SPICE(KERNELVARNOTFOUND) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   3)  If the number of leapseconds in the pool is greater than the
+%       local leapseconds buffer size, the error SPICE(BUFFEROVERFLOW)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   4)  If any of the input arguments, `epoch' or `eptype', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   5)  If any of the input arguments, `epoch' or `eptype', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
 %   None.
 %
-%-Required Reading
+%-Restrictions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine deltet_c.
+%   1)  The routines cspice_str2et and cspice_et2utc are preferred for
+%       conversions between UTC and ET. This routine is provided mainly as a
+%       utility for cspice_str2et and cspice_et2utc.
+%
+%   2)  A leapseconds kernel containing leapseconds and relativistic
+%       terms MUST be loaded prior to calling this routine.
+%       Examples demonstrating how to load a kernel pool are included
+%       in the Required Reading file time.req and in the -Examples
+%       section of this header. For more general information about
+%       kernel pools, please consult the Required Reading file
+%       kernel.req.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   TIME.REQ
 %   KERNEL.REQ
 %
+%-Literature_References
+%
+%   [1]  "The Astronomical Almanac for the Year 1990," United States
+%        Naval Observatory, U.S. Government Printing Office,
+%        Washington, D.C., 1989.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 30-OCT-2014, EDW (JPL)
+%   -Mice Version 1.1.0, 25-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and a reference to the required LSK.
+%       Modified example's output.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Added -Parameters, -Particulars, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 30-OCT-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -197,8 +308,8 @@ function [delta] = cspice_deltet( epoch, eptype )
    %
    try
       [delta] = mice('deltet_c', epoch, eptype) ;
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

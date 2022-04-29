@@ -1,21 +1,24 @@
 %
-% Simple code for creating summary plots. Meant to be used by LESIA/ROC only.
-% It is the basis for ROC repo
-% https://gitlab.obspm.fr/ROC/RCS/BIA_QL3
+% Main function for software "BIA_QL3" for creating BIAS summary plots intended
+% to be delivered to, and used by, LESIA/ROC.
 %
-% Therefore it
+% See irfu-matlab/mission/solar_orbiter/bia_ql3/README.TXT for more
+% documentation of "BIA_QL3".
+% 
+% It therefore:
 % ** has a simpler interface specified by ROC
-% ** is meant to be called from bash
+% ** is meant to be called from bash wrapper script
+%    irfu-matlab/mission/solar_orbiter/bia_ql3/roc/bia_ql3
 %
 %
-% INTERFACE
-% =========
+% INTERFACE REQUIREMENTS FOR THIS FUNCTION
+% ========================================
 % See
-% https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/42
+%   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/42
 % for the OS SHELL interface requested by ROC.
-% > shellExecutable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
+%   > shellExecutable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
 % This function's interface mirrors the bash/OS script interface to simplify the
-% bash wrapper script. The code is therefore not very versatile.
+% bash wrapper script. The function is therefore not very versatile.
 %
 %
 % NOTES
@@ -32,28 +35,32 @@
 %
 % ARGUMENTS
 % =========
+% yyyyMmDdStr
+%       String yyyymmdd. yyyy=year (4 digits), mm=Month (2 digits), dd=day of
+%       month (2 digits).
 % hkBiaDir
 %       Path to (day) directory with BIAS HK datasets directly underneath it.
 % lfrWfDirPath
 %       Path to (day) directory with L2 LFR CWF + SWF datasets directly
 %       underneath it.
+% outputDir
+%       Path to output directory.
 % --
-% NOTE: Code fails gracefully and continues if the HK or CWF/SWF datasets or
+% NOTE: The code fails gracefully and continues if the HK or CWF/SWF datasets or
 % directories do not exist. This is useful since datasets as well as directories
-% might legitimatly not exist for days without data.
+% might legitimately not exist for days without data.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-29.
 %
 function bia_ql3(yyyyMmDdStr, hkBiaDir, lfrWfDirPath, outputDir)
     % PROPOSAL: Eliminate use of glob.attr. Do not read file an extra time.
     %   PRO: DATASET_ID is known when calling plot_save_SP_pattern().
     %   CON: Dataset data version has to be extracted from filename.
-    %
-    % PROPOSAL: Use EJ_library.so.sp.plot_save_SP_file().
     
-    % Needed to get paths correct when code is being called from bash script.
+    % IMPLEMENTATION NOTE: Needed to get paths correct when code is being called
+    % from bash script.
     irf
     
     % ASSERTIONS

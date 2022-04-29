@@ -13,7 +13,7 @@ function dspec = irf_shock_parameters(spec)
 % Plasma velocity [km/s]            -   V
 % Plasma number density [cm^-3]     -   n
 % Ion/electron temperature [eV]     -   Ti/Te
-% Reference system                  -   ref_sys
+% Reference system for Mach numbers -   ref_sys
 % Normal vector                     -   nvec
 % Shock speed along nvec            -   Vsh
 %
@@ -22,6 +22,10 @@ function dspec = irf_shock_parameters(spec)
 % Alfven speed      - Va        - B,n
 % fast speed        - Vf        - B,V,n,Ti,Te
 % sound speed       - Vts       - Ti,Te
+%
+% Frame velocities [km/s]
+% Normal incidence frame  - Vnif  - V
+% deHoffmann-Teller frame - Vhtf  - B,V
 %
 % Frequencies [s^-1] (not radians)
 % proton gyrofreq   - Fcp       - B
@@ -39,6 +43,10 @@ function dspec = irf_shock_parameters(spec)
 % It is possible to calculate the Mach numbers in the Normal Incidence
 % Frame (NIF). Set spec.ref_sys = 'NIF' and specify normal vector and
 % optionally shock speed.
+%
+% To transform a velocity to e.g., the NI frame do the following
+% transformation:
+%   V_in_nif = V - Vnif
 %
 % ----------------------
 % Example 1:
@@ -121,7 +129,7 @@ for k = 1:nR
   end
 end
 
-% reference system
+% reference system for Mach numbers
 if ~ismember(fn,'ref_sys')
   spec.ref_sys = 'sc';
 end
@@ -140,6 +148,9 @@ if find(ismember(fn,['V',rgs{1}])); hasV = 1; else, hasV = 0; end
 if find(ismember(fn,['n',rgs{1}])); hasN = 1; else, hasN = 0; end
 if find(ismember(fn,['Ti',rgs{1}])); hasTi = 1; else, hasTi = 0; end
 if find(ismember(fn,['Te',rgs{1}])); hasTe = 1; else, hasTe = 0; end
+
+% Frame velocities need to know wether there is a normal vector
+if find(ismember(fn,'nvec')); hasNvec = 1; else, hasNvec = 0; end 
 
 
 %% Calculate parameters
@@ -163,6 +174,20 @@ end
 if hasN && hasTi && hasV
   for k = 1:nR
     dspec.(['Vf',rgs{k}]) = v_fast(spec.(['B',rgs{k}]),spec.(['V',rgs{k}]),spec.(['n',rgs{k}]),spec.(['Ti',rgs{k}]),spec.(['Te',rgs{k}]));
+  end
+end
+
+%% Frame velocities
+
+if hasV && hasNvec
+  for k = 1:nR
+    dspec.(['Vnif',rgs{k}]) = nif_speed(spec.(['V',rgs{k}]),spec);
+  end
+end
+
+if hasV && hasNvec
+  for k = 1:nR
+    dspec.(['Vhtf',rgs{k}]) = htf_speed(spec.(['B',rgs{k}]),spec.(['V',rgs{k}]),spec);
   end
 end
 
@@ -258,6 +283,21 @@ function Rcp =  ion_gyro_rad(B,V)
 u = irf_units;
 Ep_kin = 1/2*u.mp*norm(V)^2/u.e; % kinetic energy of proton (eV)
 Rcp = irf_plasma_calc(norm(B),0,0,0,Ep_kin,'Rop'); % returns in km
+end
+
+% frame velocities
+function vNIF = nif_speed(V,spec) 
+vNIF = V-(dot(V,spec.nvec)-spec.Vsh)*spec.nvec;
+end
+
+function vHTF = htf_speed(B,V,spec) % 
+% first get the velocity in a shock rest frame
+V_in_shock_rest_frame = V-spec.Vsh*spec.nvec;
+% then get the dHT frame speed in the shock rest frame
+vHTF_srf = cross(spec.nvec,cross(V_in_shock_rest_frame,B))/(dot(B,spec.nvec));
+% then the dHT frame speed in the sc frame is the shock speed plus
+% the dHT frame speed in the shock rest frame (I think)
+vHTF = spec.Vsh*spec.nvec+vHTF_srf;
 end
 
 function Ma = alfv_mach(B,V,n,spec)

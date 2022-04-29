@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_CIDFRM retrieves the ID code and name of the preferred 
+%   CSPICE_CIDFRM retrieves the ID code and name of the preferred
 %   frame associated with a given body ID.
 %
 %-Disclaimer
@@ -33,33 +33,45 @@
 %
 %   Given:
 %
-%      cent   NAIF ID of a body for which a preferred reference frame
-%             exists.
+%      cent     the ID code(s) for object(s) for which there is a preferred
+%               reference frame.
 %
-%             [1,n] = size(cent); int32 = class(cent)
+%               [1,n] = size(cent); int32 = class(cent)
 %
 %   the call:
 %
-%      [ frcode, frname, found] = cspice_cidfrm(cent)
+%      [frcode, frname, found] = cspice_cidfrm( cent )
 %
 %   returns:
 %
-%
-%      frcode   the SPICE frame code(s) associated with 'cent'.
+%      frcode   the frame ID code(s) to associate with the object specified by
+%               `cent'.
 %
 %               [1,n] = size(frcode); int32 = class(frcode)
 %
-%      frname   the name(s) corresponding to 'frcode'.
+%      frname   the name(s) of the frame(s) that should be associated with the
+%               object specified by `cent'.
 %
-%               [n,m] = size(frname); char = class(frname)
+%               [n,c1] = size(frname); char = class(frname)
 %
-%      found    the flag(s) indicating if the appropriate frame ID-code and
-%               frame name can be determined from 'cent'.
+%               `frname' should be declared as CHARACTER*(32) to ensure
+%               that it can contain the full name of the frame. If `frname'
+%               does not have enough room to hold the full name of the frame,
+%               the name will be truncated on the right.
+%
+%      found    true if the appropriate frame ID code and frame name can be
+%               determined.
 %
 %               [1,n] = size(found); logical = class(found)
 %
-%               'frcode', 'frname', and 'found' return with the same
-%               vectorization measure (N) as 'cent'.
+%               Otherwise `found' is returned with the value false.
+%
+%               `frcode', `frname', and `found' return with the same
+%               vectorization measure (N) as `cent'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -67,53 +79,68 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Retrieve frame information for body ID 501.
-%      %
-%      disp('Scalar' )
+%   1) Retrieve the ID code and name of the preferred frame associated
+%      with a set of body IDs.
 %
-%      bodies = 501;
-%      [ frcode, frname, found ] = cspice_cidfrm( bodies );
+%      Example code begins here.
 %
-%      if ( found )
-%         fprintf( '%8d  %8d  %s\n', bodies, frcode, frname )
-%      end
 %
-%      %
-%      % Retrieve frame information for a vector of body IDs.
-%      %
-%      disp('Vector' )
+%      function cidfrm_ex1()
 %
-%      bodies = [ 0, 301, 401, -501 ];
+%         disp( ' Body ID  Frame ID  Frame Name       ' )
+%         disp( '--------  --------  -----------------' )
+%         %
+%         % Retrieve frame information for body ID 501.
+%         %
+%         disp('Scalar:' )
 %
-%      [ frcode, frname, found ] = cspice_cidfrm( bodies );
+%         bodies = 501;
+%         [ frcode, frname, found ] = cspice_cidfrm( bodies );
 %
-%      for i=1:numel( bodies)
-%
-%         if ( found(i) )
-%            fprintf( '%8d  %8d  %s\n', bodies(i), frcode(i), frname(i,:) )
-%         else
-%            fprintf( 'No frame associated with ID %d\n', bodies(i) )
+%         if ( found )
+%            fprintf( '%8d  %8d  %s\n', bodies, frcode, frname )
 %         end
 %
-%      end
+%         %
+%         % Retrieve frame information for a vector of body IDs.
+%         %
+%         disp('Vector:' )
 %
-%   MATLAB outputs:
+%         bodies = [ 0, 301, 401, -501 ];
 %
-%      Scalar
+%         [ frcode, frname, found ] = cspice_cidfrm( bodies );
+%
+%         for i=1:numel( bodies)
+%
+%            if ( found(i) )
+%               fprintf( '%8d  %8d  %s\n', bodies(i), frcode(i), frname(i,:) )
+%            else
+%               fprintf( 'No frame associated with ID %d\n', bodies(i) )
+%            end
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%       Body ID  Frame ID  Frame Name
+%      --------  --------  -----------------
+%      Scalar:
 %           501     10023  IAU_IO
-%
-%      Vector
-%             0        15  DE-202
+%      Vector:
+%             0        16  MARSIAU
 %           301     10020  IAU_MOON
 %           401     10021  IAU_PHOBOS
 %      No frame associated with ID -501
+%
 %
 %-Particulars
 %
 %   This routine allows the user to determine the frame that should
 %   be associated with a particular object. For example, if you
-%   need the frame name and ID associated with Io, you can call 
+%   need the frame name and ID associated with Io, you can call
 %   cspice_cidfrm to return these values.
 %
 %   The preferred frame to use with an object is specified via one
@@ -126,17 +153,54 @@
 %   For those objects that have "built-in" frame names this
 %   routine returns the corresponding "IAU" frame and frame ID code.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine cidfrm_c.
+%   1)  If the input argument `cent' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   2)  If the input argument `cent' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   FRAMES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 11-NOV-2013, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 23-AUG-2021 (EDW) (JDR)
+%
+%       Edited the header to comply with NAIF standard.
+%       Reformatted example's output and added problem statement.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 11-NOV-2013 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -144,7 +208,7 @@
 %
 %-&
 
-function [ frcode, frname, found] = cspice_cidfrm(cent)
+function [frcode, frname, found] = cspice_cidfrm( cent )
 
    switch nargin
       case 1
@@ -168,8 +232,8 @@ function [ frcode, frname, found] = cspice_cidfrm(cent)
       frcode = reshape( [cidfrm(:).code],  1, [] );
       frname = char( cidfrm.name );
       found  = reshape( [cidfrm(:).found], 1, [] );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

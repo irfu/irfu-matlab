@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   MiceOccult.m declares occultation specific definitions. 
+%   MiceOccult.m declares occultation specific parameters. 
 %   
 %-Disclaimer
 %
@@ -32,14 +32,16 @@
 %-I/O
 %
 %   None.
-% 
-%   the call:
-% 
-%       MiceOccult
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   None.
+%   Include these definitions by using the call:
+%
+%      MiceUser;
 % 
 %-Particulars
 %
@@ -48,62 +50,91 @@
 % 
 %    The meaning of the sign of each code is given below.
 % 
-%        Code sign     Meaning
-%        ---------     ------------------------------
-%           > 0        The second ellipsoid is
-%                      partially or fully occulted
-%                      by the first.
+%       Code sign     Meaning
+%       ---------     ------------------------------
+%          > 0        The second ellipsoid is
+%                     partially or fully occulted
+%                     by the first.
 % 
-%           < 0        The first ellipsoid is
-%                      partially of fully
-%                      occulted by the second.
+%          < 0        The first ellipsoid is
+%                     partially of fully
+%                     occulted by the second.
 % 
-%           = 0        No occultation.
+%          = 0        No occultation.
 % 
 %    The meanings of the codes are given below. The variable names indicate
 %    the type of occultation and which target is in the back. For example, 
 %    SPICE_OCCULT_TOTAL1 represents a total occultation in which the 
 %    first target is in the back (or occulted by) the second target.
 % 
-%        Name                       Code     Meaning
-%        ------                     -----    ------------------------------
-%        SPICE_OCCULT_TOTAL1         -3      Total occultation of first
-%                                            target by second. First target
-%                                            is in back.
+%       Name                       Code     Meaning
+%       ------                     -----    ------------------------------
+%       SPICE_OCCULT_TOTAL1         -3      Total occultation of first
+%                                           target by second. First target
+%                                           is in back.
 % 
-%        SPICE_OCCULT_ANNLR1         -2      Annular occultation of first
-%                                            target by second.  The second
-%                                            target does not block the limb is
-%                                            in of the first. First target
-%                                            back.
+%       SPICE_OCCULT_ANNLR1         -2      Annular occultation of first
+%                                           target by second.  The second
+%                                           target does not block the limb is
+%                                           in of the first. First target
+%                                           back.
 % 
-%        SPICE_OCCULT_PARTL1         -1      Partial occultation of first
-%                                            target by second target. First 
-%                                            target is in back.
+%       SPICE_OCCULT_PARTL1         -1      Partial occultation of first
+%                                           target by second target. First 
+%                                           target is in back.
 % 
-%        SPICE_OCCULT_NOOCC           0      No occultation or transit: both
-%                                            objects are completely visible
-%                                            to the observer.
+%       SPICE_OCCULT_NOOCC           0      No occultation or transit: both
+%                                           objects are completely visible
+%                                           to the observer.
 % 
-%        SPICE_OCCULT_PARTL2          1      Partial occultation of second
-%                                            target by first target. Second 
-%                                            target is in back.
+%       SPICE_OCCULT_PARTL2          1      Partial occultation of second
+%                                           target by first target. Second 
+%                                           target is in back.
 % 
-%        SPICE_OCCULT_ANNLR2          2      Annular occultation of second
-%                                            target by first. Second target is
-%                                            in back.
+%       SPICE_OCCULT_ANNLR2          2      Annular occultation of second
+%                                           target by first. Second target is
+%                                           in back.
 % 
-%        SPICE_OCCULT_TOTAL2          3      Total occultation of second
-%                                            target by first. Second target is
-%                                            in back.
+%       SPICE_OCCULT_TOTAL2          3      Total occultation of second
+%                                           target by first. Second target is
+%                                           in back.
 %
-%-Required Reading
+%-Exceptions
 %
 %   None.
 %
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
+%
+%   None.
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 20-FEB-2014, SCK (JPL)
+%   -Mice Version 1.0.1, 03-JUL-2020 (JDR)
+%
+%       Updated the example section with the correct Mice call.
+%
+%       Updated the header for compliance with NAIF standard. Added
+%       -Parameters, -Exceptions, -Files, -Restrictions, -Literature_References
+%       and -Author_and_Institution sections.
+%
+%   -Mice Version 1.0.0, 20-FEB-2014 (SCK)
 %
 %-Index_Entries
 %

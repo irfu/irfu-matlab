@@ -40,8 +40,11 @@
 %
 %      cspice_ckcls( handle )
 %
-%   closes the file indicated by 'handle'. The close operation
-%   tests the file to ensure the presence of data segments.
+%   closes the file attached to 'handle'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -49,56 +52,167 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define needed parameters, a name for the CK, the
-%      % file internal name, and the number of characters
-%      % to reserve for a comment block.
-%      %
-%      CK1        = 'type1.bc';
-%      IFNAME     = 'CK';
-%      NCOMCH     = 10;
+%   1) Create a CK type 3 segment; fill with data for a simple time
+%      dependent rotation and angular velocity, and reserve room in
+%      the CK comments area for 5000 characters.
 %
-%      %
-%      % Open a new kernel.
-%      %
-%       handle = cspice_ckopn( CK1, IFNAME, NCOMCH);
+%      Example code begins here.
 %
-%         ... do some writes to the open CK file ...
 %
-%      %
-%      % SAFELY close the file
-%      %
-%      cspice_ckcls( handle )
+%      function ckcls_ex1()
+%
+%         INST3      = -77703;
+%         NCOMCH     = 5000;
+%         REF        = 'J2000';
+%         CK3        = 'ckcls_ex1.bc';
+%         IFNAME     = 'Test CK type 3 created by cspice_ckw03';
+%         SEGID3     = 'Test type 3 segment test CK';
+%         SECPERTICK = 0.001;
+%         SPACING    = 10.0;
+%         MAXREC     = 50;
+%
+%         %
+%         % Note, sclkdp is a vector input, not a vectorized scalar.
+%         %
+%         sclkdp    = [1:MAXREC]';
+%         sclkdp    = (sclkdp - 1)*SPACING;
+%
+%         spinrate  = [1:MAXREC]*1.e-6;
+%
+%         theta     = [0:MAXREC-1]*SPACING;
+%         theta     = theta .* spinrate;
+%
+%         %
+%         % Create a zero-filled array for the angular velocity
+%         % vectors. This allocates the needed memory and
+%         % defines a variable of the correct shape.
+%         %
+%         expavvs = zeros( [3 MAXREC] );
+%
+%         a1 = zeros( [1 MAXREC] );
+%         a2 = a1;
+%
+%         size(theta)
+%         size(a2)
+%         size(a1)
+%         r  = cspice_eul2m( theta, a2, a1, 3, 1 ,3 );
+%         q  = cspice_m2q( r );
+%
+%         %
+%         % Fill the z component of the expavvs vectors with the
+%         % corresponding spinrate element scaled to SECPERTICK.
+%         %
+%         expavvs(3,:) = spinrate/SECPERTICK;
+%
+%         begtim = sclkdp(1);
+%         endtim = sclkdp(MAXREC);
+%         avflag = 1;
+%
+%         starts = [1:(MAXREC/2)]';
+%         starts = (starts-1)*2*SPACING;
+%
+%         %
+%         % Open a new CK, write the data, catch any errors.
+%         %
+%         try
+%            handle = cspice_ckopn( CK3, IFNAME, NCOMCH )
+%            cspice_ckw03( handle,  ...
+%                          begtim,  ...
+%                          endtim,  ...
+%                          INST3,   ...
+%                          REF,     ...
+%                          avflag,  ...
+%                          SEGID3,  ...
+%                          sclkdp,  ...
+%                          q,       ...
+%                          expavvs, ...
+%                          starts )
+%         catch
+%
+%            error( [ 'Failure: ' lasterr] )
+%         end
+%
+%         cspice_ckcls(handle)
+%
+%
+%      When this program is executed, no output is presented on
+%      screen. After run completion, a new CK file exists in the
+%      output directory.
 %
 %-Particulars
 %
-%   A cspice_ckcls call should balance every cspice_ckopn
-%   call.
+%   Close the CK file attached to `handle'.
 %
-%-Required Reading
+%   The close operation tests the file to ensure the presence of data
+%   segments.
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine ckcls_c.
+%   A cspice_ckcls call should balance every cspice_ckopn call.
+%
+%-Exceptions
+%
+%   1)  If there are no segments in the file, the error
+%       SPICE(NOSEGMENTSFOUND) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If the input argument `handle' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   3)  If the input argument `handle' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   CK.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.1.1, 29-OCT-2014, EDW (JPL)
+%   -Mice Version 1.2.0, 10-AUG-2021 (EDW) (JDR)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Updated the header to comply with NAIF standard. Added
+%       complete code example based on existing fragment.
 %
-%   -Mice Version 1.1.0, 22-JUL-2009, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
 %
-%      Corrected the function definition name. This wrapper had a
-%      the function name "cspice_ckopn" instead of "cspice_ckcls."
+%       Eliminated use of "lasterror" in rethrow.
 %
-%   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.1.1, 29-OCT-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.1.0, 22-JUL-2009 (EDW)
+%
+%       Corrected the function definition name. This wrapper had a
+%       the function name "cspice_ckopn" instead of "cspice_ckcls."
+%
+%   -Mice Version 1.0.0, 22-NOV-2005 (EDW)
 %
 %-Index_Entries
 %
-%   close a ck file
+%   close a CK file
 %
 %-&
 
@@ -120,8 +234,8 @@ function cspice_ckcls( handle)
    %
    try
       mice( 'ckcls_c', handle);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

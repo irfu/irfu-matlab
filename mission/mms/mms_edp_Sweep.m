@@ -117,9 +117,13 @@ classdef mms_edp_Sweep < handle
           irf.log('warning', ['Empty sweep ', num2str(iSweep), ' of ', num2str(obj.nSweeps)]);
         end
         tmp.time = sweepTime;
-        tmp.iPh = NaN;
+        tmp.iPh = NaN; % Old original "iPh" value
+        tmp.iPh_knee = NaN; % New knee current value, new "2021 iPh"
         tmp.impedance = NaN;
+        tmp.optimal_bias = NaN;
+        tmp.optimal_gradient = NaN;
         tmp.phase = NaN;
+        tmp.phase_knee = NaN;
         tmp.type = type;
         tmp.impedance_src = ''; % keep track source used for ".impedance" (is it from "plot_time()" or "analyse()")
         switch prb1
@@ -141,19 +145,25 @@ classdef mms_edp_Sweep < handle
       % Analyze sweep
       %
       % This function analyzes a sweep and determines iPh, impedance,
-      % and phase for one sweep in a sweep object obj
+      % "iPh_knee" (current value of the typical sweep "knee"),
+      % and spin phase of the "knee" for one sweep in a sweep object obj
       %
       % analyze(obj,iSweep[,sps])
       %
       % Input: iSweep - sweep number in the file
-      %        sps is a sunpulse structure obtained from sunpulse_from_hk101()
+      %        sps is a sunpulse structure obtained from
+      %        sunpulse_from_hk101() or spin phase information from
+      %        ancillary defatt files.
+      % If using ancillary defatt, it can be loaded first using:
+      %  sps = mms_load_ancillary(defattFileName, 'defatt');
+      %  idxBad = diff(sps.time)==0; % Identify duplicates to be removed
+      %  sps.time(idxBad) = []; sps.zphase(idxBad) = [];
       %
       % If sps is absent no phase is computed
       narginchk(2,3);
       if(nargin==2), doPhase=false; else, doPhase=true; end
-      [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
-        eVolt, eBias, v01, v02]...
-        = getSweep(obj,iSweep);
+      [sweepTime, prb1, ~, voltage1, biasRes1, voltage2, biasRes2,...
+        ~, ~, v01, v02] = getSweep(obj,iSweep);
       if isempty(voltage1)
         disp(['*** Warning, not analyzed empty sweep ', num2str(iSweep), ...
           ' of ', num2str(obj.nSweeps)]);
@@ -167,51 +177,78 @@ classdef mms_edp_Sweep < handle
       % Determine type of sweep:
       % ++ = up only, -- = down only, +- = up-down, -+ = down-up, 00 = wiggly
       type = obj.(['p' num2str(obj.pTable(1,iSweep))])(obj.pTable(2,iSweep)).type;
-      if strcmp(type,'00')
+      if (strcmp(type,'00') || strcmp(type, '**'))
         disp(['*** Warning, not analyzed type ', type, ' sweep ', num2str(iSweep), ...
           ' of ', num2str(obj.nSweeps)]);
         return
       end
       if (prb1 == 1 || prb1 == 3) && ...
           round(min(biasRes1)) == -250 && round(max(biasRes1)) == 100
+        %% ThoNi 2021/11: When is/was this shift ever used?
         biasRes1 = (biasRes1+250)/(100+250)*(50+460) - 460;
         biasRes2 = (biasRes2+250)/(100+250)*(50+460) - 460;
         disp('*** Warning, biasRes tables changed from [-250,100] to [-460,50]');
       end
-      % Compute photoemission iPh and impedance dV/dI
-      tmp1 = compute_IPh_Impedance(voltage1, v01, biasRes1);
+      % Compute photoemission iPh (and its timestamp) and impedance dV/dI
+      tmp1 = compute_IPh_Impedance(voltage1, v01, biasRes1, type, sweepTime);
       % do the same for the other probe
-      tmp2 = compute_IPh_Impedance(voltage2, v02, biasRes2);
-      if doPhase
-        if strcmp(type,'+-') || strcmp(type,'-+') || strcmp(type,'00')
-          disp(['*** Warning, phase not computed for type ',type,' sweep ',num2str(iSweep),...
-            ' of ',num2str(obj.nSweeps)]);
-          ph_tmp1 = NaN;
-          ph_tmp2 = NaN;
-        else
-          t_iph = sweepTime.start.epoch ...
-            + (-tmp1.iPh - biasRes1(1)) / (biasRes1(end)-biasRes1(1)) ...
-            * (sweepTime.stop.epoch-sweepTime.start.epoch);
-          if isfield(sps,'zphase')
-            phase = mms_defatt_phase(sps,t_iph);
-            ph_tmp1 = phase.data;
-          else
-            [ph_tmp1, ~] = mms_sdp_phase_2(sps,t_iph);
-          end
-          t_iph = sweepTime.start.epoch ...
-            + (-tmp2.iPh - biasRes2(1)) / (biasRes2(end)-biasRes2(1)) ...
-            * (sweepTime.stop.epoch-sweepTime.start.epoch);
-          if isfield(sps,'zphase')
-            phase = mms_defatt_phase(sps,t_iph);
-            ph_tmp2 = phase.data;
-          else
-            [ph_tmp2, ~] = mms_sdp_phase_2(sps,t_iph);
-          end
-        end
+      tmp2 = compute_IPh_Impedance(voltage2, v02, biasRes2, type, sweepTime);
+      % Default NaN-filled phase
+      if ismember(type, {'+-', '-+'})
+        ph_knee_tmp1 = {NaN, NaN};
+        ph_knee_tmp2 = {NaN, NaN};
+        ph_tmp1 = {NaN, NaN};
+        ph_tmp2 = {NaN, NaN};
       else
+        ph_knee_tmp1 = NaN;
+        ph_knee_tmp2 = NaN;
         ph_tmp1 = NaN;
         ph_tmp2 = NaN;
       end
+      if doPhase
+        switch type
+          case '00'
+            disp(['*** Warning, phase not computed for type ', type, ...
+              ' sweep ', num2str(iSweep), ' of ', num2str(obj.nSweeps)]);
+            phaseTimesIn = [];
+          case {'+-', '-+'}
+            % sweep has been split
+            phaseTimesIn = {tmp1.iPh_knee_time{1}, tmp1.iPh_knee_time{2}, ...
+              tmp2.iPh_knee_time{1}, tmp2.iPh_knee_time{2}, ...
+              tmp1.iPh_time{1}, tmp1.iPh_time{2}, ...
+              tmp2.iPh_time{1}, tmp2.iPh_time{2}};
+            phasesOut = {'ph_knee_tmp1{1}', 'ph_knee_tmp1{2}', ...
+              'ph_knee_tmp2{1}', 'ph_knee_tmp2{2}', ...
+              'ph_tmp1{1}', 'ph_tmp1{2}', ...
+              'ph_tmp2{1}', 'ph_tmp2{2}'};
+          case {'++', '--'}
+            % Plain "++" or "--" sweeps
+            phaseTimesIn = {tmp1.iPh_knee_time, tmp2.iPh_knee_time, ...
+              tmp1.iPh_time, tmp2.iPh_time};
+            phasesOut = {'ph_knee_tmp1', 'ph_knee_tmp2', ...
+              'ph_tmp1', 'ph_tmp2'};
+          otherwise
+            irf.log('warning', ['Unexpected type', type,' to compute z-phase for...']);
+            phaseTimesIn = [];
+        end
+        if isfield(sps, 'zphase')
+          % phase from defatt
+          for iPhase = 1:length(phaseTimesIn)
+            if ~isnan(phaseTimesIn{iPhase})
+              phase = mms_defatt_phase(sps, phaseTimesIn{iPhase}); %#ok<NASGU>
+              eval([phasesOut{iPhase}, '=phase.data;']);
+            end
+          end
+        else
+          % phase from sunpulses
+          for iPhase = 1:length(phaseTimesIn)
+            if ~isnan(phaseTimesIn{iPhase})
+              [phase, ~] = mms_sdp_phase_2(sps, phaseTimesIn{iPhase}); %#ok<ASGLU>
+              eval([phasesOut{iPhase}, '=phase;']);
+            end
+          end
+        end
+      end % doPhase
       switch obj.pTable(1,iSweep)
         case 1, p_1='p1'; p_2='p2'; angle1=30; angle2=210;
         case 2, p_1='p2'; p_2='p1'; angle1=210; angle2=30;
@@ -232,40 +269,271 @@ classdef mms_edp_Sweep < handle
       obj.(p_2)(obj.pTable(2,iSweep)).impedance_src = 'analyse';
       obj.(p_1)(obj.pTable(2,iSweep)).impedance = tmp1.impedance;
       obj.(p_2)(obj.pTable(2,iSweep)).impedance = tmp2.impedance;
-      obj.(p_1)(obj.pTable(2,iSweep)).phase = mod(ph_tmp1+angle1+90,360)-90;
-      obj.(p_2)(obj.pTable(2,iSweep)).phase = mod(ph_tmp2+angle2+90,360)-90;
+      obj.(p_1)(obj.pTable(2,iSweep)).optimal_gradient = tmp1.optimal_gradient;
+      obj.(p_2)(obj.pTable(2,iSweep)).optimal_gradient = tmp2.optimal_gradient;
+      obj.(p_1)(obj.pTable(2,iSweep)).optimal_bias = tmp1.optimal_bias;
+      obj.(p_2)(obj.pTable(2,iSweep)).optimal_bias = tmp2.optimal_bias;
+      
+      if ismember(type, {'+-', '-+'})
+        obj.(p_1)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp1{1}+angle1+90,360)-90, mod(ph_knee_tmp1{2}+angle1+90,360)-90};
+        obj.(p_2)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp2{1}+angle2+90,360)-90, mod(ph_knee_tmp2{2}+angle2+90,360)-90};
+        obj.(p_1)(obj.pTable(2,iSweep)).phase = {mod(ph_tmp1{1}+angle1+90,360)-90, mod(ph_tmp1{2}+angle1+90,360)-90};
+        obj.(p_2)(obj.pTable(2,iSweep)).phase = {mod(ph_tmp2{1}+angle2+90,360)-90, mod(ph_tmp2{2}+angle2+90,360)-90};
+      else
+        obj.(p_1)(obj.pTable(2,iSweep)).phase_knee = mod(ph_knee_tmp1+angle1+90,360)-90;
+        obj.(p_2)(obj.pTable(2,iSweep)).phase_knee = mod(ph_knee_tmp2+angle2+90,360)-90;
+        obj.(p_1)(obj.pTable(2,iSweep)).phase = mod(ph_tmp1+angle1+90,360)-90;
+        obj.(p_2)(obj.pTable(2,iSweep)).phase = mod(ph_tmp2+angle2+90,360)-90;
+      end
+      % New "iPh knee" values
+      obj.(p_1)(obj.pTable(2,iSweep)).iPh_knee = tmp1.iPh_knee;
+      obj.(p_2)(obj.pTable(2,iSweep)).iPh_knee = tmp2.iPh_knee;
       return
       
       % Help function
-      function tmp = compute_IPh_Impedance(voltage, v0, biasRes)
-        % Compute photoemission iPh and impedance dV/dI
-        narginchk(3,3);
-        % Default output
-        tmp = struct('iPh', NaN, 'impedance', NaN, 'phase', NaN);
-        % Second version, to be refined...
-        % Find maximum negative voltage
-        vmin = min(voltage);
-        % Find v0 for first point
-        %v0 = voltage1(1);
-        %v0 = v01;
-        % Find -Iph for the average voltage (2*V0+Vmin)/3
-        % skipping the first 8 bias values (settling time)...
-        [~,indIph] = min(abs(voltage(9:end)-(2*v0+vmin)/3));
-        tmp.iPh = -biasRes(8+indIph);
-        % Find dVdI = slope of curve between -0.8*Iph and -0.7*Iph
-        [~,ind80] = min(abs(biasRes-(-0.8*tmp.iPh)));
-        [~,ind70] = min(abs(biasRes-(-0.7*tmp.iPh)));
-        %disp(['1 ind80 ',num2str(ind80),' ind70 ',num2str(ind70),' n ',num2str(ind70-ind80+1)]);
-        if ind70-ind80 > 1
-          p = polyfit(biasRes(ind80:ind70),voltage(ind80:ind70),1);
-          tmp.impedance = 1000*p(1);
+      function tmp = compute_IPh_Impedance(voltage, v0, biasRes, type, sweepTime)
+        % Compute photoemission iPh, iPh_knee (and its timestamp) and impedance dV/dI
+        narginchk(5,5);
+        %% Default output
+        tmp = struct('iPh', NaN);
+        if ismember(type, {'+-', '-+'})
+          % iPh knee and impedance on "up" and "down" part separately
+          tmp.iPh_knee = {NaN, NaN};
+          tmp.impedance = {NaN, NaN};
+          tmp.optimal_gradient = {NaN, NaN};
+          tmp.optimal_bias = {NaN, NaN};
+          tmp.iPh_knee_time = {NaN, NaN}; % Time of derived iPh_knee (first and second part)
+          tmp.iPh = {NaN, NaN};
+          tmp.iPh_time = {NaN, NaN};  % Time of derived iPh (first & second part)
+        else
+          tmp.iPh_knee = NaN;
+          tmp.impedance = NaN;
+          tmp.optimal_gradient = NaN;
+          tmp.optimal_bias = NaN;
+          tmp.iPh_knee_time = NaN;
+          tmp.iPh_time = NaN;
         end
-        if ind70-ind80 < 1
-          p = polyfit(biasRes(ind70:ind80),voltage(ind70:ind80),1);
-          tmp.impedance = 1000*p(1);
+        
+        %% Find settling time (with fallback max 10% of sweep) based on
+        % voltage response ("--" sweep should have negative gradient "++"
+        % sweep should have positive gradient of voltage, so discard the
+        % first part of the sweep not as aligned with this expectation).
+        % Also exclude any NaN's returned from getSweep
+        switch type
+          case {'++', '+-'}
+            % Initially increasing bias current => implies increasing probe
+            % voltage response
+            settleTime = find(diff(voltage)>0 & ~isnan(biasRes(1:end-1)), 1, 'first');
+          case {'--', '-+'}
+            % Initially decreasing bias current => implies decreasing probe
+            % voltage resonse
+            settleTime = find(diff(voltage)<0 & ~isnan(biasRes(1:end-1)), 1, 'first');
+          otherwise
+            % type="00"?. For now fallback to 8.
+            settleTime = 8;
         end
+        if settleTime > 0.1*length(voltage)
+          % Fallback to 8 or first non-NaN, if computed settleTime is more
+          % than 10% of the entire sweep. (some bad I/V sweep responses)
+          settleTime = max(8, find(~isnan(biasRes), 1, 'first'));
+        end
+        voltageSegm = voltage(settleTime:end);
+        biasResSegm = biasRes(settleTime:end);
+        oldFallback = false; % <- Is set to true if new method fails.
+
+        %% Split up and down part of sweep
+        switch type
+          case {'+-', '-+'}
+            % Split upward and downward part
+            splitInd = length(biasRes)/2-settleTime;
+            % first half
+            biasFirst = biasResSegm(1:splitInd);
+            voltFirst = voltageSegm(1:splitInd);
+            [tmp.iPh_knee{1}, tmp.optimal_gradient{1}, tmp.optimal_bias{1}] = compute_IPh_knee(voltFirst, biasFirst, type);
+            % second half
+            biasSecond = biasResSegm(splitInd+1:end);
+            voltSecond = voltageSegm(splitInd+1:end);
+            [tmp.iPh_knee{2}, tmp.optimal_gradient{2}, tmp.optimal_bias{2}] = compute_IPh_knee(voltSecond, biasSecond, type);
+            if isnan(tmp.iPh_knee{1}) || isnan(tmp.iPh_knee{2})
+              % Any of the new values not ok. Fallback to old method
+              oldFallback = true;
+            else
+              % iPh_knee_time{1} time of iPh_knee for the first part of the sweep,
+              % iPh_knee_time{2} time of iPh_knee for the second part of the sweep
+              % (computed similarly but segment start at half time of the
+              % sweep for second half).
+              tmp.iPh_knee_time{1} = sweepTime.start.epoch ...
+                + (-tmp.iPh_knee{1} - biasRes(1)) / (biasRes(splitInd)-biasRes(1)) ...
+                * ((sweepTime.stop.epoch-sweepTime.start.epoch)/2);
+              tmp.iPh_knee_time{2} = sweepTime.start.epoch ...
+                + (-tmp.iPh_knee{2} - biasRes(splitInd+1)) / (biasRes(end)-biasRes(splitInd+1)) ...
+                * ((sweepTime.stop.epoch-sweepTime.start.epoch)/2) ...
+                + (sweepTime.stop.epoch-sweepTime.start.epoch)/2;
+            end
+          case {'++', '--'}
+            % Monotone upward or downward, no need to split
+            [tmp.iPh_knee, tmp.optimal_gradient, tmp.optimal_bias] = compute_IPh_knee(voltageSegm, biasResSegm, type);
+            if isnan(tmp.iPh_knee)
+              logStr = 'Failed new "knee" method, fallback to old method.';
+              irf.log('debug', logStr);
+              oldFallback = true;
+            else
+              % Compute time of iPh_knee
+              tmp.iPh_knee_time = sweepTime.start.epoch ...
+                + (-tmp.iPh_knee - biasRes(1)) / (biasRes(end)-biasRes(1)) ...
+                * (sweepTime.stop.epoch-sweepTime.start.epoch);
+            end
+          otherwise
+            % "type" is not supported by compute_IPh_knee yet, use old
+            % method as a fallback
+            oldFallback = true;
+        end
+        
+        %% Old method
+        if ismember(type, {'+-', '-+'})
+          % Split upward and downward part (was not done in the original
+          % old method)
+          splitInd = length(biasRes)/2-8;
+          % first half
+          biasFirst = biasResSegm(1:splitInd);
+          voltFirst = voltageSegm(1:splitInd);
+          % Find maximum negative voltage
+          vmin = min(voltFirst);
+          [~, old_indIph] = min(abs(voltFirst-(2*v0+vmin)/3));
+          tmp.iPh{1} = -biasFirst(old_indIph);
+          % Compute time of iPh
+          timeArray = int64(linspace(0, double(sweepTime.stop.ttns-sweepTime.start.ttns), length(biasRes))) + sweepTime.start.ttns;
+          tmp.iPh_time{1} = timeArray(8+old_indIph);
+          % second half
+          biasSecond = biasResSegm(splitInd+1:end);
+          voltSecond = voltageSegm(splitInd+1:end);
+          [~, old_indIph] = min(abs(voltSecond-(2*v0+vmin)/3));         
+          tmp.iPh{2} = -biasSecond(old_indIph);
+          tmp.iPh_time{2} = timeArray(splitInd + old_indIph);
+        else
+          % basic one way no need to split
+          % Find maximum negative voltage
+          vmin = min(voltage(9:end));
+          [~, old_indIph] = min(abs(voltage(9:end)-(2*v0+vmin)/3));
+          tmp.iPh = -biasRes(8+old_indIph);
+          % Compute time of iPh
+          timeArray = int64(linspace(0, double(sweepTime.stop.ttns-sweepTime.start.ttns), length(biasRes))) + sweepTime.start.ttns;
+          tmp.iPh_time = timeArray(8+old_indIph);
+        end
+        if oldFallback
+          if ismember(type, {'+-', '-+'})
+            tmp.iPh_knee{1} = tmp.iPh;
+            tmp.iPh_knee{2} = tmp.iPh;
+            % tmp.iPh_knee_time remains default "{NaN, NaN}"
+          else
+            tmp.iPh_knee = tmp.iPh;
+            tmp.iPh_knee_time = sweepTime.start.epoch ...
+              + (-tmp.iPh - biasRes(1)) / (biasRes(end)-biasRes(1)) ...
+              * (sweepTime.stop.epoch-sweepTime.start.epoch);
+          end
+        end
+
+        % TODO:
+        % Future improvements could be to possibly try to compute "optimal"
+        % dV/dI (max value) per sweep instead value at 70-80% of iPh..
+        % Or possibly try to make use of iPh_knee.
+        if ismember(type, {'+-', '-+'})
+          % first half
+          [~,ind80] = min(abs(biasFirst-(-0.8*tmp.iPh{1})));
+          [~,ind70] = min(abs(biasFirst-(-0.7*tmp.iPh{1})));
+          if ind70-ind80 > 1
+            p = polyfit(biasFirst(ind80:ind70), voltFirst(ind80:ind70), 1);
+            tmp.impedance{1} = 1000*p(1);
+          elseif ind70-ind80 < 1
+            p = polyfit(biasFirst(ind70:ind80), voltFirst(ind70:ind80), 1);
+            tmp.impedance{1} = 1000*p(1);
+          end
+          % second half
+          [~,ind80] = min(abs(biasSecond-(-0.8*tmp.iPh{2})));
+          [~,ind70] = min(abs(biasSecond-(-0.7*tmp.iPh{2})));
+          if ind70-ind80 > 1
+            p = polyfit(biasSecond(ind80:ind70), voltSecond(ind80:ind70), 1);
+            tmp.impedance{2} = 1000*p(1);
+          elseif ind70-ind80 < 1
+            p = polyfit(biasSecond(ind70:ind80), voltSecond(ind70:ind80), 1);
+            tmp.impedance{2} = 1000*p(1);
+          end
+        else
+          % Find dVdI = slope of curve between -0.8*Iph and -0.7*Iph
+          [~,ind80] = min(abs(biasRes-(-0.8*tmp.iPh)));
+          [~,ind70] = min(abs(biasRes-(-0.7*tmp.iPh)));
+          if ind70-ind80 > 1
+            p = polyfit(biasRes(ind80:ind70),voltage(ind80:ind70),1);
+            tmp.impedance = 1000*p(1);
+          elseif ind70-ind80 < 1
+            p = polyfit(biasRes(ind70:ind80),voltage(ind70:ind80),1);
+            tmp.impedance = 1000*p(1);
+          end
+        end
+        
       end
       
+      function [iPhKnee, optimalGradient, optimalBias] = compute_IPh_knee(voltage, bias, type)
+        % Help function to compute iPh_knee, a value which nominal
+        % operating point wants to avoid..
+        narginchk(3,3);
+        % Default output
+        iPhKnee = NaN; optimalGradient=NaN; optimalBias=NaN;
+        % MMS1 2021-04-18T22:59:26 sweep 5 (p3 & p4) have some strange
+        % behaviour after the saturation point making the voltage go back
+        % towards zero (just a few volts), so instead of a strict
+        % instrument saturation voltage (-107V) use a limit of <= -100 V for MMS.
+        saturLimit = -100; % V, voltages below this value is considered saturated
+        % mms1 20210402 sweep1 p2 visually have iPh knee first "spread" at 0.28 V
+        % mms1 20210411 sweep1 p1 visually have iPh knee first "spread" at 0.29 V
+        % mms3 20191201 sweep1 p1 visually have iPh knee first "spread" at 0.23 V
+        % mms3 20191213 sweep4 p1 visually have iPh knee first "spread" at 0.26 V
+        biasSpreadLimit = 0.3; % V, voltage spread limit (per bias current) for detecting iPh
+        % Locate any saturated voltages (<= saturLimit V)
+        voltageSaturated = voltage <= saturLimit;
+        if ~all(voltageSaturated) && ismember(type, {'++', '--', '+-', '-+'})
+          % Not all data was saturated
+          voltageNonSatur = voltage(~voltageSaturated);
+          biasNonSatur = bias(~voltageSaturated);
+          biasUniq = unique(biasNonSatur);
+          biasUniqLen = length(biasUniq);
+          if biasUniqLen == length(biasNonSatur)
+            logStr = 'Only one voltage datapoint per bias current. Sweep voltage spread-response method does NOT work!';
+            irf.log('warning', logStr);
+            return % return, with default NaN values (=> use fallback)
+          end
+          biasSpread = NaN(biasUniqLen, 1);
+          for iBias=1:biasUniqLen
+            biasSpread(iBias) = max(voltageNonSatur(biasNonSatur == biasUniq(iBias))) - min(voltageNonSatur(biasNonSatur == biasUniq(iBias)));
+          end
+          % "iPh" identification based on voltage spread should be less
+          % than "biasSpreadLimit" V per bias current. And ensure it is not
+          % the first datapoint (as it can be just after voltage saturation
+          % and we later want to move down one step)
+          indIphSpread = find(biasSpread < biasSpreadLimit & [false; true(biasUniqLen-1,1)], 1, 'first');
+          if isempty(indIphSpread)
+            logStr=  'Failed to detect iPh based on voltage spread-response, fallback to old method';
+            irf.log('notice', logStr);
+            return % return, with default NaN values (=> use fallback)
+          else
+            iPhKnee = -biasUniq(indIphSpread-1); % bias current just before linear part
+            biasOverKnee=biasNonSatur(biasNonSatur>=(-iPhKnee)); % keeping only biases which are to be considered for gradient calculation
+            biasForGradient=unique(biasOverKnee);
+            voltageOverKnee=voltageNonSatur(1:length(biasOverKnee)); % getting the corresponding voltage values to calculate the average
+            biasGroups=findgroups(biasOverKnee);
+            averageVoltages=splitapply(@mean, voltageOverKnee, biasGroups);
+            [optimalGradient, optIndex] = max(gradient(biasForGradient, averageVoltages));
+            optimalBias = -biasForGradient(optIndex); % Keep currents direction convention
+          end
+        else
+          % Unsupported type "00" or entirely saturated (e.g. MMS2 sdp2
+          % after its probe failure)
+          logStr = ['Either all data is saturated with voltage below ', ...
+            num2str(saturLimit), 'V or "type" is not supported'];
+          irf.log('notice', logStr);
+          return % return, with default NaN values (=> use fallback)
+        end % all data saturated? & supported type?
+      end
     end % analyze
     
     function analyze_all(obj,sps,printStatus)
@@ -324,8 +592,7 @@ classdef mms_edp_Sweep < handle
       %  v02 - last voltage value of other probe before sweep
       %
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
-        eVolt, eBias, v01, v02]...
-        = getSweep(obj, iSweep);
+        eVolt, eBias, v01, v02] = getSweep(obj, iSweep);
       return
     end
     
@@ -378,8 +645,7 @@ classdef mms_edp_Sweep < handle
         irf.log('critical',msg); error(msg); %#ok<SPERR>
       end
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2, ...
-        eVolt, eBias, v01, v02]...
-        = getSweep(obj,iSweep);
+        ~, ~, ~, ~] = getSweep(obj,iSweep);
       if isempty(voltage1)
         disp(['*** Warning, not plotted empty sweep ', num2str(iSweep), ...
           ' of ', num2str(obj.nSweeps)]);
@@ -397,6 +663,7 @@ classdef mms_edp_Sweep < handle
       end
       if (prb1 == 1 || prb1 == 3) && ...
           round(min(biasRes1)) == -250 && round(max(biasRes1)) == 100
+        %% ThoNi 2021/11: When is/was this shift ever used?
         biasRes1 = (biasRes1+250)/(100+250)*(50+460) - 460;
         biasRes2 = (biasRes2+250)/(100+250)*(50+460) - 460;
         disp('*** Warning, biasRes tables changed from [-250,100] to [-460,50]')
@@ -466,20 +733,42 @@ classdef mms_edp_Sweep < handle
         Iph2 = obj.(p_2)(obj.pTable(2,iSweep)).iPh;
         dVdI1 = obj.(p_1)(obj.pTable(2,iSweep)).impedance;
         dVdI2 = obj.(p_2)(obj.pTable(2,iSweep)).impedance;
+        dVdI1_optimal = obj.(p_1)(obj.pTable(2,iSweep)).optimal_gradient;
+        dVdI2_optimal = obj.(p_2)(obj.pTable(2,iSweep)).optimal_gradient;
+        dVdI1bias_optimal = obj.(p_1)(obj.pTable(2,iSweep)).optimal_bias;
+        dVdI2bias_optimal = obj.(p_2)(obj.pTable(2,iSweep)).optimal_bias;
         pha1 = obj.(p_1)(obj.pTable(2,iSweep)).phase;
         pha2 = obj.(p_2)(obj.pTable(2,iSweep)).phase;
+        Iph1_knee = obj.(p_1)(obj.pTable(2,iSweep)).iPh_knee;
+        Iph2_knee = obj.(p_2)(obj.pTable(2,iSweep)).iPh_knee;
+        pha1_knee = obj.(p_1)(obj.pTable(2,iSweep)).phase_knee;
+        pha2_knee = obj.(p_2)(obj.pTable(2,iSweep)).phase_knee;
       else
         Iph1 = NaN; Iph2 = NaN;
         dVdI1 = NaN; dVdI2 = NaN;
+        dVdI1_optimal = NaN; dVdI2_optimal = NaN;
+        dVdI1bias_optimal = NaN; dVdI2bias_optimal = NaN;
         pha1 = NaN; pha2 = NaN;
+        Iph1_knee = NaN; Iph2_knee = NaN;
+        pha1_knee = NaN; pha2_knee = NaN;
       end
       % Output for debugging
-      %[double(prb1) double(prb2) Iph1 Iph2 dVdI1 dVdI2]
-      legend(h, ...
-        sprintf('V%d  Iph %0.1f nA,  %0.2f MOhm @ %0.1f nA', prb1, Iph1, dVdI1, 0.75*Iph1), ...
-        sprintf('V%d  Iph %0.1f nA,  %0.2f MOhm @ %0.1f nA', prb2, Iph2, dVdI2, 0.75*Iph2), ...
-        sprintf('Phase%d  %0.1f,  Phase%d  %0.1f degrees Type %s', prb1, pha1, prb2, pha2, type), ...
-        'Location', 'NorthWest')
+      % [double(prb1) double(prb2) Iph1 Iph2 dVdI1 dVdI2]
+      if ismember(type, {'+-', '-+'})
+        legend(h, ...
+          sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA, Optimal Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb1, Iph1{1}, Iph1{2}, Iph1_knee{1}, Iph1_knee{2}, dVdI1{1}, dVdI1{2}, 0.75*Iph1{1}, 0.75*Iph1{2}, dVdI1_optimal{1}, dVdI1bias_optimal{2}, dVdI1bias_optimal{1}, dVdI1bias_optimal{2}),...
+          sprintf('V%d  Iph %0.1f & %0.1f (knee: %0.1f & %0.1f) nA,  Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA, Optimal Imp: %0.2f (& %0.2f) MOhm @ %0.1f (& %0.1f) nA', prb2, Iph2{1}, Iph2{2}, Iph2_knee{1}, Iph2_knee{2}, dVdI2{1}, dVdI2{2}, 0.75*Iph2{1}, 0.75*Iph2{2}, dVdI2_optimal{1}, dVdI2bias_optimal{2}, dVdI2bias_optimal{1}, dVdI2bias_optimal{2}),...
+          sprintf('Phase%d  %0.1f & %0.1f (knee: %0.1f & %0.1f),  Phase%d  %0.1f & %0.1f (knee: %0.1f & %0.1f) degrees Type %s', prb1, pha1{1}, pha1{2}, pha1_knee{1}, pha1_knee{2}, prb2, pha2{1}, pha2{2}, pha2_knee{1}, pha2_knee{2}, type),...
+          'Location', 'NorthWest', ...
+          'AutoUpdate', 'off');
+      else
+        legend(h, ...
+          sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA, Optimal Imp: %0.2f MOhm @ %0.1f nA', prb1, Iph1, Iph1_knee, dVdI1, 0.75*Iph1, dVdI1_optimal, dVdI1bias_optimal), ...
+          sprintf('V%d  Iph %0.1f (knee: %0.1f) nA,  %0.2f MOhm @ %0.1f nA, Optimal Imp: %0.2f MOhm @ %0.1f nA', prb2, Iph2, Iph2_knee, dVdI2, 0.75*Iph2, dVdI2_optimal, dVdI2bias_optimal),...
+          sprintf('Phase%d  %0.1f (knee: %0.1f),  Phase%d  %0.1f (knee: %0.1f) degrees Type %s', prb1, pha1, pha1_knee, prb2, pha2, pha2_knee, type),...
+          'Location', 'NorthWest', ...
+          'AutoUpdate', 'off');
+      end
       grid(h, 'on')
       if nargout, hout = h; end
     end % PLOT
@@ -489,14 +778,14 @@ classdef mms_edp_Sweep < handle
       %
       % Plots a sweep as I(t), V(t) and dVdI(t) [ and Phase(t) ]
       %
-      % hout = plot2(obj,[h],iSweep[,sps])
+      % hout = plot_time(obj, [h], iSweep [, sps, evfile])
       %
       % Input:
       %    iSweep - sweep number in the file
       %    h - axes handle [optional]
       %    sps - a sunpulse structure obtained from sunpulse_from_hk101()
       %    if sps is not given, no phase is plotted
-      %    evfile - corresponding dce file?
+      %    evfile - corresponding dce file
       %
       if nargin==4, evfile = sps; plotev = true; else, plotev = false; end
       if nargin>=3, sps = iSweep; iSweep = h; h = []; doPhase = true;
@@ -510,8 +799,7 @@ classdef mms_edp_Sweep < handle
         irf.log('critical', msg); error(msg); %#ok<SPERR>
       end
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
-        eVolt, eBias, v01, v02]...
-        = getSweep(obj,iSweep);
+        ~, ~, v01, v02] = getSweep(obj,iSweep);
       if isempty(voltage1)
         disp(['*** Warning, not plotted empty sweep ', num2str(iSweep), ...
           ' of ', num2str(obj.nSweeps)]);
@@ -519,6 +807,7 @@ classdef mms_edp_Sweep < handle
           ' of ', num2str(obj.nSweeps)]);
         return
       end
+      type = obj.(['p' num2str(obj.pTable(1,iSweep))])(obj.pTable(2,iSweep)).type;
       dwl = obj.sweep.data.([obj.scId, '_sweep_dwell']).data(iSweep);
       stp = obj.sweep.data.([obj.scId, '_sweep_steps']).data(iSweep);
       len = length(voltage1);
@@ -579,13 +868,13 @@ classdef mms_edp_Sweep < handle
           switch prb1
             case 1
               v12 = irf.ts_scalar(efield.time(ind), efield.data(ind, 1));
-              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 1), vfield.data(ind, 1)-efield.data(ind, 1)*0.12]);
+              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 1), vfield.data(ind, 1)-efield.data(ind, 1)*0.12]); % SDP distance 120 m (*10^-3 since mV->V)
             case 3
               v12 = irf.ts_scalar(efield.time(ind), efield.data(ind, 2));
               v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 2), vfield.data(ind, 2)-efield.data(ind, 2)*0.12]);
             case 5
               v12 = irf.ts_scalar(efield.time(ind), efield.data(ind, 3));
-              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 3), vfield.data(ind, 3)-efield.data(ind, 3)*0.12]);
+              v1 = irf.ts_vec_xy(efield.time(ind), [vfield.data(ind, 3), vfield.data(ind, 3)-efield.data(ind, 3)*0.0292]); % ADP distance 29.2 m
             otherwise, error('Bad probe number')
           end
           h1=irf_plot({...
@@ -618,8 +907,31 @@ classdef mms_edp_Sweep < handle
       ylabel(h1(2), {'Voltage', ['[', getunits(obj.sweep, [obj.scId, '_edp_sweeps']), ']']});
       legend(h1(1), p_1);
       legend(h1(2), p_1, p_2);
-      imp1 = impedance1(ind_impedance); medi1 = median(imp1(isfinite(imp1)));
-      imp2 = impedance2(ind_impedance); medi2 = median(imp2(isfinite(imp2)));
+      switch type
+        case {'+-', '-+'}
+          % separate upward and downward parts
+          ind_imp_part1 = ind_impedance(1:length(ind_impedance)/2);
+          ind_imp_part2 = ind_impedance(length(ind_impedance)/2+1:end);
+          imp1 = impedance1(ind_imp_part1);
+          medi1 = {median(imp1(isfinite(imp1)))};
+          imp1 = impedance1(ind_imp_part2);
+          medi1{2} = median(imp1(isfinite(imp1)));
+          imp2 = impedance2(ind_imp_part1);
+          medi2 = {median(imp2(isfinite(imp2)))};
+          imp2 = impedance2(ind_imp_part2);
+          medi2{2} = median(imp2(isfinite(imp2)));
+        case {'--', '++', '00'}
+          % strictly increasing or decreasing or (wiggle "00")
+          imp1 = impedance1(ind_impedance);
+          medi1 = median(imp1(isfinite(imp1)));
+          imp2 = impedance2(ind_impedance);
+          medi2 = median(imp2(isfinite(imp2)));
+        otherwise
+          % Unknown type
+          irf.log('warning', ['Type:', type, ' is not yet supported. Fallback to NaN.']);
+          medi1 = NaN;
+          medi2 = NaN;
+      end
       if strcmp(obj.(p_1)(obj.pTable(2,iSweep)).impedance_src, 'analyse')
         % We have impedance computed from "analyse", give warning before
         % replacing it.
@@ -637,20 +949,41 @@ classdef mms_edp_Sweep < handle
           ylabel(h1(6), {'Phase', '[deg]'})
           legend(h1(3), p_1, p_2)
           legend(h1(4), ['p', num2str(prb1), num2str(prb2)])
-          legend(h1(5), [p_1, ' median=', num2str(medi1, '%4.1f')], ...
-            [p_2, ' median=', num2str(medi2, '%4.1f')])
+          if ismember(type, {'+-', '-+'})
+            legend(h1(5), [p_1, ' median=', num2str(medi1{1}, '%4.1f'), ...
+              ' & ', num2str(medi1{2}, '%4.1f')], ...
+              [p_2, ' median=', num2str(medi2{1}, '%4.1f'), ' & ', ...
+              num2str(medi2{2}, '%4.1f')])
+          else
+            legend(h1(5), [p_1, ' median=', num2str(medi1, '%4.1f')], ...
+              [p_2, ' median=', num2str(medi2, '%4.1f')])
+          end
           legend(h1(6), p_1)
         else
           ylabel(h1(3), {'dVdI', '[MOhm]'})
           ylabel(h1(4), {'Phase', '[deg]'})
-          legend(h1(3), [p_1, ' median=', num2str(medi1, '%4.1f')], ...
-            [p_2, ' median=', num2str(medi2, '%4.1f')])
+          if ismember(type, {'-+', '+-'})
+            legend(h1(3), [p_1, ' median=', num2str(medi1{1}, '%4.1f'), ...
+              ' & ', num2str(medi1{2}, '%4.1f')], ...
+              [p_2, ' median=', num2str(medi2{1}, '%4.1f'), ' & ', ...
+              num2str(medi2{2}, '%4.1f')]);
+          else
+            legend(h1(3), [p_1, ' median=', num2str(medi1, '%4.1f')], ...
+              [p_2, ' median=', num2str(medi2, '%4.1f')]);
+          end
           legend(h1(4), p_1)
         end
       else
         ylabel(h1(3), {'dVdI', '[MOhm]'})
-        legend(h1(3), [p_1, ' median=', num2str(medi1, '%4.1f')], ...
-          [p_2, ' median=', num2str(medi2, '%4.1f')])
+        if ismember(type, {'+-', '-+'})
+          legend(h1(3), [p_1, ' median=', num2str(medi1{1}, '%4.1f'), ...
+            ' & ', num2str(medi1{2}, '%4.1f')], ...
+            [p_2, ' median=', num2str(medi2{1}, '%4.1f'), ' & ', ...
+            num2str(medi2{2}, '%4.1f')]);
+        else
+          legend(h1(3), [p_1, ' median=', num2str(medi1, '%4.1f')], ...
+            [p_2, ' median=', num2str(medi2, '%4.1f')]);
+        end
       end
       if nargout, hout = h1; end
     end % PLOT_TIME
@@ -734,4 +1067,3 @@ classdef mms_edp_Sweep < handle
   end % methods(Access=private)
   
 end
-

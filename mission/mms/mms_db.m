@@ -90,6 +90,7 @@ classdef mms_db < handle
           error('Expecting DATAOBJ input')
         end
         v = get_variable(sciData,varName);
+   
         if isempty(v)
           irf.log('waring','Empty return from get_variable()')
           return
@@ -97,6 +98,12 @@ classdef mms_db < handle
         if ~isstruct(v) || ~(isfield(v,'data') && isfield(v,'DEPEND_0'))
           error('Data does not contain DEPEND_0 or DATA')
         end
+
+        if v.nrec == 1% this is a quick fix of the problem of having PDist burst files with nrec =1 remove when fixed by FPI people
+            irf.log('waring','PDist with nrec = 1')
+          return
+        end
+            
         
         if isempty(res), res = v; return, end
         if iscell(res), res = [res {v}]; return, end

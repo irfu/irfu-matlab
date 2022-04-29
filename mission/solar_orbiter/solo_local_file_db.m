@@ -308,31 +308,47 @@ classdef solo_local_file_db < solo_file_db
       instr     = temp{1};
         
       if strcmp(instr, 'rpw')
-        % CASE: Searching for RPW data.
-          
+        %==============================
+        % CASE: Searching for RPW data
+        %==============================
         if exist(fullfile(obj.dbRoot, 'latest'), 'dir')
-          % CASE: RPW BIAS data (L2, L3) processed at IRFU.
+          % CASE: obj.dbRoot has subdirectory "latest/".
+          %       ==> RPW BIAS data (L2, L3) processed at IRFU.
+          %
           % Ex: obj.dbRoot == /data/solo/data_irfu/
+          %               ==> /data/solo/data_irfu/latest/rpw/
+          
           rDir = fullfile(obj.dbRoot, 'latest', 'rpw');
         else
-          % CASE: RPW data (all subsystems) mirrored from ROC/LESIA.
+          % CASE: obj.dbRoot DOES NOT have subdirectory "latest/".
+          %       ==> RPW data (all subsystems) mirrored from ROC/LESIA.
+          %
           % Ex: obj.dbRoot == /data/solo/
+          %               ==> /data/solo/remote/data/
           rDir = fullfile(obj.dbRoot, 'remote', 'data');
         end
       else
-        % CASE: Searching for non-RPW data.
-        
+        %==================================
+        % CASE: Searching for non-RPW data
+        %==================================        
         rDir = fullfile(obj.dbRoot, 'soar', instr);
         if exist(rDir, 'dir')
-            % CASE: Direct to SOAR mirror.
-            % Ex: obj.dbRoot == /data/solo/ folder
+            % CASE: obj.dbRoot has subdirectory "soar".
+            %       ==> Use (presumed) SOAR mirror.
+            %
+            % Ex: obj.dbRoot == /data/solo/
+            %               ==> /data/solo/soar/<instr>/
             return
         end
         
         rDir = fullfile(obj.dbRoot, instr);
         if exist(rDir, 'dir')
-            % CASE: obj.dbRoot is general folder for (multiple) non-RPW instruments.
+            % CASE: obj.dbRoot has subdirectory named after instrument.
+            %       ==> obj.dbRoot is general folder for (multiple) non-RPW
+            %           instruments.
+            %
             % Ex: obj.dbRoot == /data/solo/data_manual/
+            %               ==> /data/solo/data_manual/<instr>/
             return
         end
       end

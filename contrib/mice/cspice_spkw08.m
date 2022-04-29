@@ -64,11 +64,11 @@
 %               [1,1] = size(first); double = class(first)
 %               [1,1] = size(last);  double = class(last)
 %
-%      segid    is the segment identifier.  An SPK segment
+%      segid    is the segment identifier. An SPK segment
 %               identifier may contain up to 40 characters.
 %
 %      degree   the degree of the Lagrange polynomials used to
-%               interpolate the states.  All components of the
+%               interpolate the states. All components of the
 %               state vectors are interpolated by polynomials of
 %               fixed degree.
 %
@@ -81,16 +81,16 @@
 %
 %               [6,m] = size(states); double = class(states)
 %
-%      epoch1   the epoch corresponding to the first state in
-%               the state array.  Because extra states are needed
+%      begtim   the epoch corresponding to the first state in
+%               the state array. Because extra states are needed
 %               at the beginning and end of the segment in order
-%               for the interpolation method to work, epoch1 will
+%               for the interpolation method to work, begtim will
 %               normally precede first.
 %
-%               [1,1] = size(epoch1); double = class(epoch1)
+%               [1,1] = size(begtim); double = class(begtim)
 %
 %      step     the time step separating the epochs of adjacent
-%               states in the input state array.  step is specified
+%               states in the input state array. step is specified
 %               in TDB seconds.
 %
 %               [1,1] = size(step); double = class(step)
@@ -98,13 +98,17 @@
 %   the call:
 %
 %      cspice_spkw08( handle, body,  center, frame,  first,  ...
-%                     last,   segid, degree, states, epoch1, ...
+%                     last,   segid, degree, states, begtim, ...
 %                     step )
 %
 %   returns:
 %
-%   The routine writes to the SPK file referred to by 'handle' a type 8 SPK
-%   segment containing the data listed in 'states'.
+%   The routine writes to the SPK file referred to by `handle' a type 8 SPK
+%   segment containing the data listed in `states'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -112,92 +116,187 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example:
+%   1) This example demonstrates how to create an SPK type 8 kernel
+%      containing only one segment, given a time-ordered set of
+%      discrete states and epochs.
 %
 %
-%      %
-%      % Define the segment identifier parameters.
-%      %
-%      BODY       = 3;
-%      CENTER     = 10;
-%      REF        = 'J2000';
-%      POLY_DEG   = 3;
-%      SPK8       = 'test8.bsp';
-%      N_DISCRETE = 9;
+%      Example code begins here.
 %
-%      %
-%      % A set of epochs.
-%      %
-%      DISCRETEEPOCHS = (1:9)*100;
 %
-%      %
-%      % An array of discrete states to write to the SPK segment.
-%      %
-%      base = [ (1:6)*100 ]';
+%      function spkw08_ex1()
 %
-%      %
-%      % Create the 6xN array of states.
-%      %
-%      DISCRETESTATES = [(base+1), (base+2), (base+3), ...
-%                        (base+4), (base+5), (base+6), ...
-%                        (base+7), (base+8), (base+9) ];
+%         %
+%         % Define the segment identifier parameters.
+%         %
+%         BODY       = 3;
+%         CENTER     = 10;
+%         REF        = 'J2000';
+%         POLY_DEG   = 3;
+%         SPK8       = 'spkw08_ex1.bsp';
+%         N_DISCRETE = 9;
 %
-%      %
-%      % Create a segment identifier.
-%      %
-%      segid = 'SPK type 8 test segment';
+%         %
+%         % A set of epochs.
+%         %
+%         DISCRETEEPOCHS = (1:9)*100;
 %
-%      %
-%      % Open a new SPK file. Delete if a file of the same name exists.
-%      %
-%      if ( exist( SPK8, 'file' ) == 2 )
-%         delete( SPK8 )
-%      end
+%         %
+%         % An array of discrete states to write to the SPK segment.
+%         %
+%         base = [ (1:6)*100 ]';
 %
-%      handle = cspice_spkopn( SPK8, segid, 4 );
+%         %
+%         % Create the 6xN array of states.
+%         %
+%         DISCRETESTATES = [(base+1), (base+2), (base+3), ...
+%                           (base+4), (base+5), (base+6), ...
+%                           (base+7), (base+8), (base+9) ];
 %
-%      step   = DISCRETEEPOCHS(2) - DISCRETEEPOCHS(1);
+%         %
+%         % Create a segment identifier.
+%         %
+%         segid = 'SPK type 8 test segment';
 %
-%      %
-%      % Create a type 8 segment.
-%      %
-%      cspice_spkw08( handle,                       ...
-%                     BODY,                         ...
-%                     CENTER,                       ...
-%                     REF,                          ...
-%                     DISCRETEEPOCHS(1),            ...
-%                     DISCRETEEPOCHS(N_DISCRETE),   ...
-%                     segid,                        ...
-%                     POLY_DEG,                     ...
-%                     DISCRETESTATES,               ...
-%                     DISCRETEEPOCHS(1),            ...
-%                     step )
+%         %
+%         % Open a new SPK file.
+%         %
+%         handle = cspice_spkopn( SPK8, segid, 4 );
 %
-%      %
-%      % Close the SPK file.
-%      %
-%      cspice_spkcls( handle )
+%         step   = DISCRETEEPOCHS(2) - DISCRETEEPOCHS(1);
 %
-%   MATLAB outputs:
+%         %
+%         % Create a type 8 segment.
+%         %
+%         cspice_spkw08( handle,                       ...
+%                        BODY,                         ...
+%                        CENTER,                       ...
+%                        REF,                          ...
+%                        DISCRETEEPOCHS(1),            ...
+%                        DISCRETEEPOCHS(N_DISCRETE),   ...
+%                        segid,                        ...
+%                        POLY_DEG,                     ...
+%                        DISCRETESTATES,               ...
+%                        DISCRETEEPOCHS(1),            ...
+%                        step )
 %
-%      SPK file "test8.bsp" created containing a single type 8 segment.
+%         %
+%         % Close the SPK file.
+%         %
+%         cspice_spkcls( handle )
+%
+%
+%      When this program is executed, no output is presented on
+%      screen. After run completion, a new SPK type 8 exists in
+%      the output directory.
 %
 %-Particulars
 %
+%   This routine writes an SPK type 08 data segment to the open SPK
+%   file according to the format described in the type 08 section of
+%   the SPK Required Reading. The SPK file must have been opened with
+%   write access.
+%
+%-Exceptions
+%
+%   If any of the following exceptions occur, this routine will return
+%   without creating a new segment.
+%
+%   1)  If `frame' is not a recognized name, the error
+%       SPICE(INVALIDREFFRAME) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   2)  If the last non-blank character of `segid' occurs past index 40,
+%       the error SPICE(SEGIDTOOLONG) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   3)  If `segid' contains any nonprintable characters, the error
+%       SPICE(NONPRINTABLECHARS) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   4)  If `degree' is not at least 1 or is greater than MAXDEG, the
+%       error SPICE(INVALIDDEGREE) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   5)  If the number of states `n' is not at least degree+1, the
+%       error SPICE(TOOFEWSTATES) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   6)  If `first' is greater than `last', the error SPICE(BADDESCRTIMES)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   7)  If `step' is non-positive, the error SPICE(INVALIDSTEPSIZE) is
+%       signaled by a routine in the call tree of this routine.
+%
+%   8)  If the start time of the first record exceeds the descriptor
+%       begin time by more than a computed tolerance, or if the end
+%       time of the last record precedes the descriptor end time by
+%       more than a computed tolerance, the error SPICE(COVERAGEGAP)
+%       is signaled by a routine in the call tree of this routine. See
+%       the -Parameters section above for a description of the
+%       tolerance.
+%
+%   9)  If any of the input arguments, `handle', `body', `center',
+%       `frame', `first', `last', `segid', `degree', `states',
+%       `begtim' or `step', is undefined, an error is signaled by the
+%       Matlab error handling system.
+%
+%   10) If any of the input arguments, `handle', `body', `center',
+%       `frame', `first', `last', `segid', `degree', `states',
+%       `begtim' or `step', is not of the expected type, or it does
+%       not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   A new type 8 SPK segment is written to the SPK file attached
+%   to `handle'.
+%
+%-Restrictions
+%
 %   None.
 %
-%-Required Reading
+%-Required_Reading
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine spkw08_c.
+%   MICE.REQ
+%   NAIF_IDS.REQ
+%   SPC.REQ
+%   SPK.REQ
+%   TIME.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 23-MAY-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 10-AUG-2021 (EDW) (JDR)
+%
+%       Changed the input argument name "epoch1" to "begtim" for
+%       consistency with other routines.
+%
+%       Edited the -Examples section to comply with NAIF standard. Added
+%       example's problem statement.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections, and
+%       completed -Particulars section. Updated the Required Reading section.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 23-MAY-2012 (EDW)
 %
 %-Index_Entries
 %
-%   write spk type_8 ephemeris data segment
+%   write SPK type_8 ephemeris data segment
 %
 %-&
 
@@ -210,7 +309,7 @@ function cspice_spkw08( handle, ...
                         segid,  ...
                         degree, ...
                         states, ...
-                        epoch1, ...
+                        begtim, ...
                         step )
 
    switch nargin
@@ -225,7 +324,7 @@ function cspice_spkw08( handle, ...
          segid   = zzmice_str(segid);
          degree  = zzmice_int(degree);
          states  = zzmice_dp(states);
-         epoch1  = zzmice_dp(epoch1);
+         begtim  = zzmice_dp(begtim);
          step    = zzmice_dp(step);
 
       otherwise
@@ -240,7 +339,7 @@ function cspice_spkw08( handle, ...
                                   'segid, ' ...
                                   'degree, '...
                                   'states, '...
-                                  'epoch1, '...
+                                  'begtim, '...
                                   'step )' ] )
 
    end
@@ -258,9 +357,9 @@ function cspice_spkw08( handle, ...
                         segid,  ...
                         degree, ...
                         states, ...
-                        epoch1, ...
+                        begtim, ...
                         step )
 
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end

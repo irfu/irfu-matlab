@@ -36,37 +36,36 @@
 %   Given:
 %
 %      positn   the array(s) defining the Cartesian position of a point with
-%               respect to the center of an ellipsoid. The vector is expressed
-%               in a body-fixed reference frame. The semi-axes of the
-%               ellipsoid are aligned with the x, y, and z-axes of the
-%               body-fixed frame.
+%               respect to the center of an ellipsoid.
 %
 %               [3,n] = size(rectan); double = class(rectan)
 %
-%      a,       values of the ellipsoid's triaxial radii ellipsoid, where:
+%               The vector is expressed in a body-fixed reference frame. The
+%               semi-axes of the ellipsoid are aligned with the x, y, and
+%               z-axes of the body-fixed frame.
+%
+%      a,
 %      b,
-%      c
-%                  'a' is length in kilometers of the semi-axis of the
-%                  ellipsoid parallel to the x-axis of the body-fixed
-%                  reference frame.
+%      c        values of the ellipsoid's triaxial radii ellipsoid, where:
 %
-%                  [1,1] = size(a); double = class(a)
+%               `a' is length in kilometers of the semi-axis of the ellipsoid
+%               parallel to the x-axis of the body-fixed reference frame.
 %
-%                  'b' is length in kilometers of the semi-axis of the
-%                  ellipsoid parallel to the y-axis of the body-fixed
-%                  reference frame.
+%               [1,1] = size(a); double = class(a)
 %
-%                  [1,1] = size(b); double = class(b)
+%               `b' is length in kilometers of the semi-axis of the ellipsoid
+%               parallel to the y-axis of the body-fixed reference frame.
 %
-%                  'c' is length in kilometers of the semi-axis of the
-%                  ellipsoid parallel to the z-axis of the body-fixed
-%                  reference frame.
+%               [1,1] = size(b); double = class(b)
 %
-%                  [1,1] = size(c); double = class(c)
+%               `c' is length in kilometers of the semi-axis of the ellipsoid
+%               parallel to the z-axis of the body-fixed reference frame.
+%
+%               [1,1] = size(c); double = class(c)
 %
 %   the call:
 %
-%      [ npoint ] = mice_nearpt( positn, a, b, c )
+%      [npoint] = mice_nearpt( positn, a, b, c )
 %
 %   returns:
 %
@@ -76,125 +75,261 @@
 %
 %               Each structure consists of the fields:
 %
-%                  'pos'   the double precision 3-vector defining the location
-%                          in the body-fixed frame on the ellipsoid closest
-%                          to 'positn'
+%                  pos      the double precision 3-vector defining the
+%                           location in the body-fixed frame on the ellipsoid
+%                           closest to `positn'.
 %
-%                  [3,1] = size(npoint(i).pos); double = class(npoint(i).pos)
+%                           [3,1]  = size(npoint.pos);
+%                           double = class(npoint.pos)
 %
-%                  'alt'   the double precision scalar altitude of 'positn'
-%                          above the ellipsoid. If 'positn' is inside the
-%                          ellipsoid, 'alt' will be negative and have magnitude
-%                          equal to the distance between 'pos' and 'positn'
+%                  alt      the double precision scalar altitude of `positn'
+%                           above the ellipsoid.
 %
-%                  [1,1] = size(npoint(i).alt); double = class(npoint(i).alt)
+%                           [1,1]  = size(npoint.alt);
+%                           double = class(npoint.alt)
 %
-%      'npoint' returns with the same vectorization measure, N, as 'positn'.
+%                           If `positn' is inside the ellipsoid, `alt' will be
+%                           negative and have magnitude equal to the distance
+%                           between `pos' and `positn'.
+%
+%               `npoint' returns with the same vectorization measure, N, as
+%               `positn'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   Any numerical results shown for this example may differ between
+%   Any numerical results shown for these examples may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   1) Given a point outside an ellipsoid, compute the nearest point
+%      on its surface.
 %
-%      %
-%      % Define the radii of an ellipsoid.
-%      %
-%      a  =  1.;
-%      b  =  2.;
-%      c  =  3.;
+%      Example code begins here.
 %
-%      %
-%      % Use point on the X axis, outside the ellipsoid.
-%      %
-%      point = [ 3.5; 0.; 0. ];
-%      pnear = mice_nearpt( point, a, b, c);
 %
-%   MATLAB outputs:
+%      function nearpt_ex1()
+%         %
+%         % Define the radii of an ellipsoid.
+%         %
+%         a  =  1.;
+%         b  =  2.;
+%         c  =  3.;
 %
-%      pnear.pos
+%         %
+%         % Use point on the X axis, outside the ellipsoid.
+%         %
+%         point = [ 3.5; 0.; 0. ];
+%         pnear = mice_nearpt( point, a, b, c);
 %
-%      ans =
+%         fprintf('Nearest point: %6.2f %6.2f %6.2f\n', pnear.pos )
+%         fprintf('Altitude:      %6.2f\n',             pnear.alt )
 %
-%           1
-%           0
-%           0
 %
-%   MATLAB outputs:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%      pnear.alt
 %
-%      ans =
+%      Nearest point:   1.00   0.00   0.00
+%      Altitude:        2.50
 %
-%         2.50000000000000
 %
-%   MATLAB outputs:
+%   2) Compute the point on the Earth nearest to the Moon at ephemeris
+%      time 0.0 (Jan 1 2000, 12:00 TBD).
 %
-%      %
-%      % Load a meta kernel containing SPK and leapseconds kernels.
-%      %
-%      cspice_furnsh( 'standard.tm')
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
 %
-%      %
-%      % Retrieve the position of the Moon wrt the Earth at
-%      % ephemeris time 0.d (Jan 1 2000 12:00 TDB) in the Earth-fixed
-%      % reference frame.
-%      %
-%      epoch  = 0.;
-%      abcorr = 'LT+S';
-%      loc    = mice_spkpos( 'moon', epoch, 'IAU_EARTH', abcorr, 'earth' );
 %
-%      %
-%      % Retrieve the triaxial radii for Earth (body ID 399).
-%      %
-%      radii = cspice_bodvrd( 'EARTH', 'RADII', 3);
+%         KPL/MK
 %
-%      %
-%      % Now calculate the point on the Earth nearest to the Moon
-%      % given LT+S aberration correction at the epoch time.
-%      %
-%      npoint = mice_nearpt( loc.pos, radii(1), radii(2), radii(3) );
+%         File name: nearpt_ex2.tm
 %
-%   MATLAB outputs:
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
 %
-%      npoint.pos
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
 %
-%      ans =
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
 %
-%         1.0e+03 *
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            pck00010.tpc                  Planet orientation and
+%                                          radii
 %
-%         3.34708386495926
-%        -5.29453888129091
-%        -1.19828126398311
+%         \begindata
 %
-%   MATLAB outputs:
+%            KERNELS_TO_LOAD = ( 'de421.bsp',
+%                                'pck00010.tpc' )
 %
-%      npoint.alt
+%         \begintext
 %
-%      ans =
+%         End of meta-kernel
 %
-%         3.960372197033597e+05
+%
+%      Example code begins here.
+%
+%
+%      function nearpt_ex2()
+%         %
+%         % Load a meta kernel containing SPK and leapseconds kernels.
+%         %
+%         cspice_furnsh( 'nearpt_ex2.tm' )
+%
+%         %
+%         % Retrieve the position of the Moon wrt the Earth at
+%         % ephemeris time 0.d (Jan 1 2000 12:00 TDB) in the Earth-fixed
+%         % reference frame.
+%         %
+%         epoch  = 0.;
+%         abcorr = 'LT+S';
+%         loc    = mice_spkpos( 'moon', epoch, 'IAU_EARTH', abcorr, 'earth' );
+%
+%         %
+%         % Retrieve the triaxial radii for Earth (body ID 399).
+%         %
+%         radii = cspice_bodvrd( 'EARTH', 'RADII', 3);
+%
+%         %
+%         % Now calculate the point on the Earth nearest to the Moon
+%         % given LT+S aberration correction at the epoch time.
+%         %
+%         npoint = mice_nearpt( loc.pos, radii(1), radii(2), radii(3) );
+%
+%         fprintf('Epoch:         %15.8f\n', epoch                    )
+%         fprintf('Nearest point: %15.8f %15.8f %15.8f\n', npoint.pos )
+%         fprintf('Altitude:      %15.8f\n',               npoint.alt )
+%
+%         %
+%         % It's always good form to unload kernels after use,
+%         % particularly in Matlab due to data persistence.
+%         %
+%         cspice_kclear
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Epoch:              0.00000000
+%      Nearest point:   3347.08204098  -5294.53585186  -1198.28264121
+%      Altitude:      396037.22419372
+%
 %
 %-Particulars
 %
 %   A sister version of this routine exists named cspice_nearpt that returns
 %   the structure field data as separate arguments.
 %
-%-Required Reading
+%   Many applications of this routine are more easily performed
+%   using the higher-level Mice routine cspice_subpnt. This routine
+%   is the mathematical workhorse on which cspice_subpnt relies.
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine nearpt_c.
+%   This routine solves for the location, N, on the surface of an
+%   ellipsoid nearest to an arbitrary location, P, relative to that
+%   ellipsoid.
+%
+%-Exceptions
+%
+%   1)  If any of the axis lengths `a', `b' or `c' are non-positive, the
+%       error SPICE(BADAXISLENGTH) is signaled by a routine in the
+%       call tree of this routine.
+%
+%   2)  If the ratio of the longest to the shortest ellipsoid axis
+%       is large enough so that arithmetic expressions involving its
+%       squared value may overflow, the error SPICE(BADAXISLENGTH)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   3)  If any of the expressions
+%
+%          a * abs( positn(1) ) / m^2
+%          b * abs( positn(2) ) / m^2
+%          c * abs( positn(3) ) / m^2
+%
+%       where `m' is the minimum of { `a', `b', `c' }, is large enough so
+%       that arithmetic expressions involving these sub-expressions
+%       may overflow, the error SPICE(INPUTSTOOLARGE) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   4)  If the axes of the ellipsoid have radically different
+%       magnitudes, for example if the ratios of the axis lengths vary
+%       by 10 orders of magnitude, the results may have poor
+%       precision. No error checks are done to identify this problem.
+%
+%   5)  If the axes of the ellipsoid and the input point `positn' have
+%       radically different magnitudes, for example if the ratio of
+%       the magnitude of `positn' to the length of the shortest axis is
+%       1.E25, the results may have poor precision. No error checks
+%       are done to identify this problem.
+%
+%   6)  If any of the input arguments, `positn', `a', `b' or `c', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   7)  If any of the input arguments, `positn', `a', `b' or `c', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   See -Exceptions section.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 03-DEC-2014, EDW (JPL)
+%   -Mice Version 2.0.0, 10-AUG-2021 (NJB) (JDR) (EDW)
 %
-%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edit to logic to reduce unneeded operations when
+%       error or projection vectors equal zero. Addition
+%       of details concerning the "ellipsoid near point"
+%       problem and solution.
 %
-%   -Mice Version 1.0.0, 21-DEC-2005, EDW (JPL)
+%       Edited the header to comply with NAIF standard. Added
+%       examples' problem statement, and meta-kernel for code example #2.
+%       Updated code examples to produce formatted output and added
+%       cspice_kclear to code example #2.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions, -Particulars,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 03-DEC-2014 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 21-DEC-2005 (EDW)
 %
 %-Index_Entries
 %
@@ -214,7 +349,7 @@ function [ npoint ] = mice_nearpt( positn, a, b, c )
          c      = zzmice_dp(c);
 
       otherwise
-         error ( ['Usage: [_npoint_] = ' ...
+         error ( ['Usage: [_npoint_] = '                                   ...
                   'mice_nearpt( _positn(3)_, a, b, c )'] )
    end
 
@@ -224,8 +359,8 @@ function [ npoint ] = mice_nearpt( positn, a, b, c )
    %
    try
       [npoint] = mice( 'nearpt_s', positn, a, b, c  );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 
 

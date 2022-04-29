@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   CSPICE_NVC2PL constructs a SPICE plane from a normal vector and a point
+%   CSPICE_NVP2PL constructs a SPICE plane from a normal vector and a point
 %   on the plane.
 %
 %-Disclaimer
@@ -33,34 +33,39 @@
 %
 %   Given:
 %
-%      normal   [3,1] = size(normal); double = class(normal)
+%      normal,
+%      point    respectively, a normal vector and point that define a
+%               plane in three-dimensional space.
 %
-%      point    [3,1] = size(point); double = class(point)
+%               [3,1] = size(normal); double = class(normal)
+%               [3,1] = size(point); double = class(point)
 %
-%               are, respectively, a normal vector and point that
-%               define a plane in three-dimensional space.  normal
-%               need not be a unit vector. Let the symbol < a, b >
-%               indicate the inner product of vectors a and b;
-%               then the geometric plane is the set of vectors x
-%               in three-dimensional space that satisfy
+%               `normal' need not be a unit vector. Let the symbol < a, b >
+%               indicate the inner product of vectors an and b; then the
+%               geometric plane is the set of vectors `x' in
+%               three-dimensional space that satisfy
 %
 %                  < x - point, normal >  =  0.
 %
 %   the call:
 %
-%      plane = cspice_nvp2pl( normal, point )
+%      [plane] = cspice_nvp2pl( normal, point )
 %
 %   returns:
 %
-%      plane   a structure describing a SPICE plane defined by
-%              'normal' and 'point'
+%      plane    a SPICE plane that represents the geometric plane defined by
+%               `point' and `normal'.
 %
-%              [1,1] = size(plane); struct = class(plane)
+%               [1,1] = size(plane); struct = class(plane)
 %
-%              The structure has the fields:
+%               The structure has the fields:
 %
-%                 normal:     [3,1] = size(normal); double = class(normal)
-%                 constant:   [1,1] = size(constant); double = class(constant)
+%                  normal:   [3,1] = size(normal); double = class(normal)
+%                  constant: [1,1] = size(constant); double = class(constant)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -68,64 +73,76 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define a normal vector from a plane and a
-%      % point in a plane.
-%      %
-%      normal = [ -1.;  5.;   -3.5 ];
-%      point  = [  9.; -0.65; -12. ];
+%   1) Construct a SPICE plane from a normal vector and a point on
+%      that plane, and calculate a point and two orthogonal spanning
+%      vectors that generate the specified plane. Verify that the
+%      point and the spanning vectors are mutually orthogonal.
 %
-%      %
-%      % Create a plane from the vectors.
-%      %
-%      plane = cspice_nvp2pl( normal, point );
-%
-%      %
-%      % Calculate a point in the plane, and
-%      % two spanning vectors in the plane such that
-%      % the point and spanning are mutually orthogonal.
-%      %
-%      [point, span1, span2] = cspice_pl2psv( plane )
-%
-%      %
-%      % Test point, span1, and span2 orthogonality. The dot
-%      % products of any two vectors should equal zero to
-%      % within round-off.
-%      %
-%      fprintf( 'dot( point, span1) = %18.15e\n', dot( point, span1) )
-%      fprintf( 'dot( point, span2) = %18.15e\n', dot( point, span2) )
-%      fprintf( 'dot( span1, span2) = %18.15e\n', dot( span1, span2) )
-%
-%    Matlab outputs:
-%
-%        point =
-%
-%            -7.777777777777776e-01
-%             3.888888888888888e+00
-%            -2.722222222222222e+00
+%      Example code begins here.
 %
 %
-%        span1 =
+%      function nvp2pl_ex1()
+%         %
+%         % Define a normal vector from a plane and a
+%         % point in a plane.
+%         %
+%         normal = [ -1.;  5.;   -3.5 ];
+%         point  = [  9.; -0.65; -12. ];
 %
-%                                 0
-%             5.734623443633283e-01
-%             8.192319205190405e-01
+%         %
+%         % Create a plane from the vectors.
+%         %
+%         plane = cspice_nvp2pl( normal, point );
+%         fprintf( 'Input plane:\n' )
+%         fprintf( '  Normal vector  : %15.12f %15.12f %15.12f\n', ...
+%                                                        plane.normal   )
+%         fprintf( '  Constant       : %15.12f\n\n',       plane.constant)
+%
+%         %
+%         % Calculate a point in the plane, and
+%         % two spanning vectors in the plane such that
+%         % the point and spanning are mutually orthogonal.
+%         %
+%         [point, span1, span2] = cspice_pl2psv( plane );
+%
+%         fprintf( 'Point            : %15.12f %15.12f %15.12f\n',   point )
+%         fprintf( 'Spanning vector 1: %15.12f %15.12f %15.12f\n',   span1 )
+%         fprintf( 'Spanning vector 2: %15.12f %15.12f %15.12f\n\n', span2 )
+%
+%         %
+%         % Test 'point', 'span1', and 'span2' orthogonality. The dot
+%         % products of any two vectors should equal zero to
+%         % within round-off.
+%         %
+%         fprintf( 'dot(point,span1) : %20.17f\n', dot( point, span1) )
+%         fprintf( 'dot(point,span2) : %20.17f\n', dot( point, span2) )
+%         fprintf( 'dot(span1,span2) : %20.17f\n', dot( span1, span2) )
 %
 %
-%        span2 =
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%             9.868415319342446e-01
-%             1.324619505952006e-01
-%            -9.272336541664042e-02
 %
-%        dot( point, span1) = 0.000000000000000e+00
-%        dot( point, span2) = 5.551115123125783e-17
-%        dot( span1, span2) = 0.000000000000000e+00
+%      Input plane:
+%        Normal vector  : -0.161690416691  0.808452083454 -0.565916458418
+%        Constant       :  4.810289896554
+%
+%      Point            : -0.777777777778  3.888888888889 -2.722222222222
+%      Spanning vector 1:  0.000000000000  0.573462344363  0.819231920519
+%      Spanning vector 2:  0.986841531934  0.132461950595 -0.092723365417
+%
+%      dot(point,span1) :  0.00000000000000000
+%      dot(point,span2) :  0.00000000000000006
+%      dot(span1,span2) :  0.00000000000000000
+%
+%
+%      Note that, as expected, the dot products of any two vectors equal
+%      zero to within round-off.
 %
 %-Particulars
 %
 %   Mice geometry routines that deal with planes use the `plane'
-%   data type to represent input and output planes.  This data type
+%   data type to represent input and output planes. This data type
 %   makes the subroutine interfaces simpler and more uniform.
 %
 %   The Mice routines that produce SPICE planes from data that
@@ -146,21 +163,65 @@
 %   routine's output, 'plane', to another representation of a
 %   geometric plane.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine nvp2pl_c.
+%   1)  If the input vector `normal' is the zero vector, the error
+%       SPICE(ZEROVECTOR) is signaled by a routine in the call tree of
+%       this routine.
+%
+%   2)  If any of the input arguments, `normal' or `point', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `normal' or `point', is not of
+%       the expected type, or it does not have the expected dimensions
+%       and size, an error is signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   PLANES.REQ
 %
+%-Literature_References
+%
+%   [1]  G. Thomas and R. Finney, "Calculus and Analytic Geometry,"
+%        7th Edition, Addison Wesley, 1988.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 27-AUG-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 27-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement and modified code example to produce
+%       formatted output.
 %
-%   -Mice Version 1.0.0, 30-DEC-2008, EDW (JPL)
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 27-AUG-2012 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 30-DEC-2008 (EDW)
 %
 %-Index_Entries
 %
@@ -188,7 +249,6 @@ function [plane] = cspice_nvp2pl( normal, point )
    %
    try
       [plane] = mice('nvp2pl_c', normal, point );
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-

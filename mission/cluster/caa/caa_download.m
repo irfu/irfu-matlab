@@ -31,8 +31,8 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
 %
 % Input flags
-%   'file_interval=..' - see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
-%   'format=..'		- see command line manual http://goo.gl/VkkoI, default 'format=cdf'
+%   'file_interval=..' - see command line manual https://caa.esac.esa.int/documents/CAA-EST-CMDLINE-0015.pdf, default 'file_interval=72hours'
+%   'format=..'		- see command line manual https://caa.esac.esa.int/documents/CAA-EST-CMDLINE-0015.pdf, default 'format=cdf'
 %   'nowildcard'	- download the dataset without any expansion in the name and not checking if data are there
 %   'overwrite'		- overwrite files in directory (to keep single cdf file)
 %   'schedule'		- schedule the download, (returns zip file link)
@@ -118,15 +118,18 @@ end
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
 % https://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
-Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa/aio/';
-Default.Csa.urlQuery            = 'product-action?&NON_BROWSER';
-Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';
-Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';
-Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';
-Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';
-Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
-Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
-Default.Csa.urlListFormat       = '&RETURN_TYPE=CSV';
+% Some are split cells, ie. "{, }" as metadata request may need to insert
+% format or other parameters before the ADQL (sql-style) query (which gets
+% appended with further search parameters based on used input).
+Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa-sl-tap/';
+Default.Csa.urlQuery            = 'data?RETRIEVAL_TYPE=product&';
+Default.Csa.urlQueryAsync       = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=deferred&'];
+Default.Csa.urlStream           = [Default.Csa.urlQuery, 'RETRIEVAL_ACCESS=streaming&'];
+Default.Csa.urlInventory        = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_time,end_time,num_instances,inventory_version+FROM+csa.v_dataset_inventory'};
+Default.Csa.urlFileInventory    = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+logical_file_id,file_start_date,file_end_date,caa_ingestion_date+FROM+csa.v_file'};
+Default.Csa.urlListDataset      = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title+FROM+csa.v_dataset'};
+Default.Csa.urlListDatasetDesc  = {'tap/sync?REQUEST=doQuery&LANG=ADQL', '&QUERY=SELECT+dataset_id,start_date,end_date,title,description+FROM+csa.v_dataset'};
+Default.Csa.urlListFormat       = '&FORMAT=CSV';
 Default.Csa.urlNotifyOn         = '';
 Default.Csa.urlNotifyOff        = '&NO_NOTIFY';
 Default.Csa.urlDataset          = '&DATASET_ID=';
@@ -151,7 +154,7 @@ downloadDirectory       = './CAA/';% local directory where to put downloaded dat
 %% check input
 if nargin==0 % [..]=caa_download
   checkDownloadStatus=true;
-elseif  nargin == 1 && ischar(tint) && strcmpi('test',tint)  % [..]=caa_download('testcsa')
+elseif  nargin == 1 && ischar(tint) && strcmpi('test',tint)  % [..]=caa_download('test')
   downloadStatus = test_csa;
   if nargout == 0, clear downloadStatus;end
   return;
@@ -161,9 +164,9 @@ elseif nargout>0 && nargin>0 % [..]=caa_download(..)
   doLog = false;
 end
 
-if nargin>=1 % check if first argument is not caa zip or tar.gz file link
+if nargin>=1 % check if first argument is not caa .zip or tar.gz or .tgz file link
   if ischar(tint) && ...
-      (any(regexp(tint,'\.zip')) || any(regexp(tint,'\.tar.gz'))) % tint is file link
+      (any(regexp(tint,'\.((tar.gz)|(tgz)|(zip))'))) % tint is file link
     specifiedFileLink = true;
     if nargin > 1
       varargin=[dataset varargin];
@@ -218,11 +221,11 @@ if ~isempty(varargin) % check for additional flags
     elseif any(strcmpi('caa',flag)) % download from CAA instead of CAA
       irf.log('warning','caa_download(): flag ''caa'' is not supported anymore. CAA interface is closed and only CSA download is available');
     elseif strcmpi('json',flag) % set query format to JSON
-      urlListFormat = '&RETURN_TYPE=JSON';
+      urlListFormat = '&FORMAT=JSON';
     elseif strcmpi('csv',flag) % set query format to CSV
-      urlListFormat = '&RETURN_TYPE=CSV';
+      urlListFormat = '&FORMAT=CSV';
     elseif strcmpi('votable',flag) % set query format to VOTABLE
-      urlListFormat = '&RETURN_TYPE=votable';
+      urlListFormat = '&FORMAT=VOTable';
     elseif strfind(lower(flag),'downloaddirectory=') %#ok<STRIFCND>
       downloadDirectory = flag(strfind(flag,'=')+1:end);
       if downloadDirectory(end) ~= filesep...
@@ -255,7 +258,7 @@ end
 % caa.dataset - dataset to download
 % caa.tintiso - time interval
 % caa.zip - zip files to download
-% caa.status - status ('submitted','downloaded','finnished')
+% caa.status - status ('submitted','downloaded','finished')
 % caa.timeofrequest - in matlab time units
 
 %%
@@ -321,13 +324,13 @@ end
 if any(strfind(urlDataFormat,'&format'))% change/add defaults, hasn't added these to above flag checking
   urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
-caaQuery            = [Caa.urlServer urlQuery urlIdentity urlDataFormat...
-  urlFileInterval urlNonotify urlIngestedSince];
-caaStream           = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
-caaInventory        = [Caa.urlServer Caa.urlInventory       urlListFormat ];
-caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
-caaListDataset	    = [Caa.urlServer Caa.urlListDataset     urlListFormat ];
-caaListDatasetDesc  = [Caa.urlServer Caa.urlListDatasetDesc urlListFormat ];
+caaQuery            = [Caa.urlServer, urlQuery, urlIdentity, urlDataFormat, ...
+  urlFileInterval, urlNonotify, urlIngestedSince];
+caaStream           = [Caa.urlServer, Caa.urlStream, urlIdentity, urlIngestedSince];
+caaInventory        = [Caa.urlServer, Caa.urlInventory{1},       urlListFormat, Caa.urlInventory{2}];
+caaFileInventory    = [Caa.urlServer, Caa.urlFileInventory{1},   urlListFormat, Caa.urlFileInventory{2}];
+caaListDataset      = [Caa.urlServer, Caa.urlListDataset{1},     urlListFormat, Caa.urlListDataset{2}];
+caaListDatasetDesc  = [Caa.urlServer, Caa.urlListDatasetDesc{1}, urlListFormat, Caa.urlListDatasetDesc{2}];
 
 %% Check status of downloads if needed
 if checkDownloadStatus    % check/show status of downloads from .caa file
@@ -351,7 +354,7 @@ if checkDownloadStatus    % check/show status of downloads from .caa file
   jobsToRemove = false(1,length(caa));
   jobsFinished = false(1,length(caa));
   for j=1:length(caa) % go through jobs
-    if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finnished') || strcmpi(caa{j}.status,'finished') % 'finnished shoudl be removed after some time % do nothing
+    if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finished') % do nothing
       jobsFinished(j) = true;
     elseif strcmpi(caa{j}.status,'submitted')
       disp(['=== Checking status of job nr: ' num2str(j) '==='])
@@ -404,11 +407,15 @@ if specifiedTimeInterval
   divider=strfind(tintUTC,'/');
   t1UTC = tintUTC(1:divider-1);
   t2UTC = tintUTC(divider+1:end);
+  % data
   queryTime = ['&START_DATE=' t1UTC '&END_DATE=' t2UTC];
-  queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2UTC '''',...
-    ' AND FILE.END_DATE >= ''' t1UTC ''''];
-  queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2UTC '''',...
-    ' AND DATASET_INVENTORY.END_TIME >= ''' t1UTC ''''];
+  % meta data (list, listdesc, inventory and fileinventory)
+  queryTimeFileInventory = ['+AND+file_start_date<=''' t2UTC '''',...
+    '+AND+file_end_date>=''' t1UTC '''+ORDER+BY+file_start_date'];
+  queryTimeInventory = ['+AND+start_time<=''' t2UTC '''',...
+    '+AND+end_time>=''' t1UTC '''+ORDER+BY+start_time'];
+  queryTimeList = ['+AND+start_date<=''', t2UTC, '''', ...
+    '+AND+end_date>=''', t1UTC, '''+ORDER+BY+start_date'];
 end
 
 %% define queryDataset and queryDatasetInventory
@@ -449,7 +456,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
     urlListDatasets = [caaListDataset queryDatasetInventory];
     returnTimeTable='list';
   elseif any(strfind(dataset,'fileinventory'))
-    urlListDatasets = [caaFileInventory queryDatasetInventory ];
+    urlListDatasets = [caaFileInventory queryDatasetInventory];
     returnTimeTable='fileinventory';
   elseif any(strfind(dataset,'inventory'))
     urlListDatasets = [caaInventory queryDatasetInventory ];
@@ -458,6 +465,8 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
   if specifiedTimeInterval
     if any(strfind(dataset,'fileinventory'))
       urlListDatasets = [urlListDatasets queryTimeFileInventory];
+    elseif any(strfind(dataset, 'list'))
+      urlListDatasets = [urlListDatasets, queryTimeList];
     else
       urlListDatasets = [urlListDatasets queryTimeInventory];
     end
@@ -565,9 +574,9 @@ end
     % download data file, if success status=1 and file is uncompressed and moved
     % to data directory, downloadedFile is set to empty. If there is no
     % gz- data file , status=0 and downloadedFile is set to the downloaded file.
-    if  ~strfind(urlLink,'.gz');  error('urlLink is not gz file!') ; end %#ok<STRIFCND>
     
     status = 0; % default
+    downloadedFile = [];
     if doDataStreaming
       % define filename
       tempFileName   = 'delme.cef';
@@ -582,55 +591,62 @@ end
       if(isempty(tmpGetRequest))
         [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave introduced in R2014b
       else
-        %         if verLessThan('matlab', '8.4')
-        [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
-          'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
-        %         else
-        %           indUser = strcmp(tmpGetRequest, 'USERNAME');
-        %           indPass = strcmp(tmpGetRequest, 'PASSWORD');
-        %           webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
-        %             'Username', tmpGetRequest{find(indUser)+1}, ...
-        %             'Password', tmpGetRequest{find(indPass)+1});
-        %           tmpGetRequest(indUser) = []; % Clear USERNAME
-        %           tmpGetRequest(indUser(1:end-1)) = [];
-        %           indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
-        %           tmpGetRequest(indPass) = [];
-        %           tmpGetRequest(indPass(1:end-1)) = [];
-        %           try
-        %             downloadedFile = websave(tempFilePathGz, urlLink, ...
-        %               tmpGetRequest{:}, webOpt);
-        %             isReady = true;
-        %           catch
-        %             isReady = false;
-        %           end
-        %         end
+        if verLessThan('matlab', '8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
+          % websave was introduced in 2014b, but websave failed for
+          % Cluster data with Username/Password on 2019b so this is a fallback.
+          [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
+            'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
+        else
+          indUser = strcmp(tmpGetRequest, 'USERNAME');
+          indPass = strcmp(tmpGetRequest, 'PASSWORD');
+          webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+            'Username', tmpGetRequest{find(indUser)+1}, ...
+            'Password', tmpGetRequest{find(indPass)+1});
+          tmpGetRequest(indUser) = []; % Clear USERNAME
+          tmpGetRequest(indUser(1:end-1)) = [];
+          indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+          tmpGetRequest(indPass) = [];
+          tmpGetRequest(indPass(1:end-1)) = [];
+          try
+            downloadedFile = websave(tempFilePathGz, urlLink, ...
+              tmpGetRequest{:}, webOpt);
+            isReady = true;
+          catch
+            isReady = false;
+          end
+        end
       end
       if isReady
+        % Cluster TAP interface provide gzip'ed tar file (with subfolders),
+        % exctract this and move resulting file to the expected path (as it
+        % was for the old CAIO interface).
         gunzip(tempFilePathGz);
-        % find the file name
-        fid   = fopen(tempFilePath); % remove .gz at the end
-        tline = fgetl(fid);
-        while ischar(tline)
-          if strfind(tline,'FILE_NAME') %#ok<STRIFCND>
-            i = strfind(tline,'"');
-            fileNameCefGz = [tline(i(1)+1:i(2)-1) '.gz'];
-            irf.log('debug',['CEF.gz file name: ' fileNameCefGz]);
-            break;
+        cefFile = untar(tempFilePath, datasetDirName);
+        fileNameCefGz = gzip(cefFile); % Re-gzip file only (without subdirs)
+        [pathCef, fileNameCef, fileNameCefExt] = fileparts(fileNameCefGz);
+        movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef, fileNameCefExt]);
+        delete(tempFilePath); % remove gunzipped tar file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
+        delete(tempFilePathGz); % remove gzipped tar file which was first downloaded
+        try
+          delete(cefFile{1}); % remove untar'ed file, then try to remove untar'ed subdirs (Cluster TAP use two folder levels as per 2021-12)
+          if contains(['.', filesep, pathCef], [datasetDirName, 'CSA_Download_'])
+            rmdir(pathCef); % lowest level folder
+            pathCefParts = fileparts(pathCef);
+            if contains(['.', filesep, pathCefParts], [datasetDirName, 'CSA_Download_'])
+              rmdir(pathCefParts); % penultimate level folder
+            end
           end
-          tline = fgetl(fid);
+        catch
+          irf.log('warning', ['Failed to cleanup downloaded temporary files and dirs, please have a manual look at ', datasetDirName]);
         end
-        fclose(fid);
-        movefile(tempFilePathGz,[datasetDirName fileNameCefGz]);
-        delete(tempFilePath); % remove gunzipped file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
-        
         irf.log('notice',['Downloaded: ' urlLink]);
-        irf.log('notice',['into ->' datasetDirName fileNameCefGz]);
+        irf.log('notice',['into ->' datasetDirName, fileNameCef, fileNameCefExt]);
         status = 1;
       else
         if(isempty(tmpGetRequest))
           irf.log('warning',['Did not succed to download: ' tempFilePathGz ]);
         else
-          irf.log('warning',['Did not succed to download: ' tmpGetRequest{10} ' ' tmpGetRequest{12} ]);
+          irf.log('warning',['Did not succed to download: ', strjoin(tmpGetRequest)]);
         end
         status = 0;
       end
@@ -642,28 +658,30 @@ end
     if(isempty(tmpGetRequest))
       [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave introduced in R2014b
     else
-      %       if verLessThan('matlab','8.4')
-      [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
-        'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
-      %       else
-      %         indUser = strcmp(tmpGetRequest, 'USERNAME');
-      %         indPass = strcmp(tmpGetRequest, 'PASSWORD');
-      %         webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
-      %           'Username', tmpGetRequest{find(indUser)+1}, ...
-      %           'Password', tmpGetRequest{find(indPass)+1});
-      %         tmpGetRequest(indUser) = []; % Clear USERNAME
-      %         tmpGetRequest(indUser(1:end-1)) = [];
-      %         indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
-      %         tmpGetRequest(indPass) = [];
-      %         tmpGetRequest(indPass(1:end-1)) = [];
-      %         try
-      %           downloadedFile = websave(downloadedFile, urlLink, ...
-      %             tmpGetRequest{:}, webOpt);
-      %           isZipFileReady = true;
-      %         catch
-      %           isZipFileReady = false;
-      %         end
-      %       end
+      if verLessThan('matlab','8.4') || strcmp(version, '9.7.0.1190202 (R2019b)')
+        % websave was introduced in 2014b, but websave failed for
+        % Cluster data with Username/Password on 2019b so this is a fallback.
+        [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
+          'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
+      else
+        indUser = strcmp(tmpGetRequest, 'USERNAME');
+        indPass = strcmp(tmpGetRequest, 'PASSWORD');
+        webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+          'Username', tmpGetRequest{find(indUser)+1}, ...
+          'Password', tmpGetRequest{find(indPass)+1});
+        tmpGetRequest(indUser) = []; % Clear USERNAME
+        tmpGetRequest(indUser(1:end-1)) = [];
+        indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+        tmpGetRequest(indPass) = [];
+        tmpGetRequest(indPass(1:end-1)) = [];
+        try
+          downloadedFile = websave(downloadedFile, urlLink, ...
+            tmpGetRequest{:}, webOpt);
+          isZipFileReady = true;
+        catch
+          isZipFileReady = false;
+        end
+      end
     end
     
     if isZipFileReady %
@@ -792,8 +810,11 @@ end
     % for wildcards, inventory requests use '%' as wildcard,
     % while data requests use '*' (something that was not easy to implement)
     if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list files
+      %% FIXME: ThoNi possible bug here "&&" can it be true for both, should it not be "||"?
       if strcmpi(dataset,'list') && strcmpi(dataset,'listdesc') % list all files
         filter='*';
+      elseif isequal(lower(dataset), 'inventory') || isequal(lower(dataset), 'listdesc') || isequal(lower(dataset), 'list')
+        filter='*';  % called with only "inventory" or only "listdesc" or only "list".
       else                        % list only filtered files
         filter=dataset(strfind(dataset,':')+1:end);
       end
@@ -807,7 +828,7 @@ end
       end
     end
     queryDataset = ['&DATASET_ID=' filter];
-    queryDatasetInventory = ['&QUERY=DATASET.DATASET_ID like ''' csa_parse_url(filter) ''''];
+    queryDatasetInventory = ['+WHERE+dataset_id+like+''' csa_parse_url(filter) ''''];
   end
 
 % Nested function. Get CSA identity
@@ -859,41 +880,85 @@ end
     TT=irf.TimeTable;
     switch returnTimeTable
       case 'inventory'
-        %"DATASET_INVENTORY.DATASET_ID","DATASET_INVENTORY.START_DATE","DATASET_INVENTORY.END_DATE"
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+        % "dataset_id","start_time","end_time",num_instances,inventory_version
+        % with one first line header as header (similar to "sqlite .headers on")
+        textLine = textscan(caalog, '%q %q %q %d %d', 'HeaderLines', 1, ...
+          'Delimiter', ',');
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).dataset] = deal(textLine{1}{1:end});
         for jj = 1:numel(TT.UserData)
-          TT.UserData(jj).number = str2double(textLine{4}{1+jj});
+          TT.UserData(jj).number = textLine{4}(jj);
+          TT.UserData(jj).version = textLine{5}(jj);
         end
-        [TT.UserData(:).version]=deal(textLine{5}{2:end});
       case 'fileinventory'
-        %"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).filename]=deal(textLine{1}{2:end});
-        [TT.UserData(:).caaIngestionDate]=deal(textLine{4}{2:end});
+        % "logical_file_id","file_start_date","file_end_date","caa_ingestion_date"
+        textLine = textscan(caalog, '%q %q %q %q', 'HeaderLines', 1, ...
+          'Delimiter', ',');
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).filename]=deal(textLine{1}{1:end});
+        [TT.UserData(:).caaIngestionDate]=deal(textLine{4}{1:end});
       case 'list'
-        %DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+        % dataset_id,"start_date","end_date",title
+        % Note: Some are quoted, some others are not it is not consistent.
+        % Second note: Some fields may contain nothing and some contain
+        % commas making decoding almost impossible as standard "csv" file.
+        % This must be cleaned up before decoding.
+        % Locate all quoted segments in returned "csv"
+        quotes = find(ismember(caalog, '"'));
+        quoteInd = false(size(caalog));
+        for i=1:2:length(quotes)
+          quoteInd(quotes(i):quotes(i+1)) = true;
+        end
+        % do we have any "CR" "LF" "," (csv files with extra commas is
+        % really bad) in quoted segment? Remove them.
+        % It does not appear to contain CR/LF here in the quoted strings
+        % but check for them anyhow, similar to "listdesc".
+        indNewlineInQuote = bitand(ismember(caalog, char([10 13 44])), quoteInd);
+        caalog(indNewlineInQuote) = [];
+        % we have now have plain a CSV result
+        textLine = textscan(sprintf(caalog), ...
+          '%s %q %q %s', ... % start_time and end_time is always quoted if present
+          'Delimiter', ',', ...
+          'HeaderLines', 1);
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).dataset] = deal(textLine{1}{1:end});
       case 'listdesc'
-        %DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION
-        textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
-        TT.UserData(numel(textLine{1})-1).dataset = [];
-        [TT.UserData(:).dataset]=deal(textLine{1}{2:end});
-        [TT.UserData(:).description] = deal(textLine(:).description);
+        % dataset_id,"start_date","end_date",title,"description"
+        % Note: Some are quoted, some others are not it is not consistent.
+        % Second note: Some fields may contain nothing and some are
+        % multiple lines and some are single lines, making decoding almost
+        % impossible as standard "csv" file. This must be cleaned up before
+        % decoding.
+        % Locate all quoted segments in returned "csv"
+        quotes = find(ismember(caalog, '"'));
+        quoteInd = false(size(caalog));
+        for i=1:2:length(quotes)
+          quoteInd(quotes(i):quotes(i+1)) = true;
+        end
+        % do we have any "CR" "LF" "," (csv files with extra commas is
+        % really bad) in quoted segment? Remove them.
+        indNewlineInQuote = bitand(ismember(caalog, char([10 13 44])), quoteInd);
+        caalog(indNewlineInQuote) = [];
+        % we have now have plain a CSV result
+        textLine = textscan(sprintf(caalog), ...
+          '%s %q %q %s %s', ... % start_time and end_time is always quoted if present
+          'Delimiter', ',', ...
+          'HeaderLines', 1);
+        TT.UserData(numel(textLine{1})).dataset = [];
+        [TT.UserData(:).dataset] = deal(textLine{1}{1:end});
+        [TT.UserData(:).description] = deal(textLine{5}{1:end});
       otherwise
         return;
     end
-    tStart = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{2}(2:end));
-    tEnd   = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{3}(2:end));
+    tStart = cell2mat(arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{2}(1:end), ...
+      'UniformOutput', false));
+    tEnd   = cell2mat(arrayfun(@(x) irf_time(x{1},'utc>epoch'), textLine{3}(1:end), ...
+      'UniformOutput', false));
     tint = [tStart tEnd];
-    TT.TimeInterval=tint;
+    TT.TimeInterval = tint;
     TT.Header = {};
-    TT.Comment=cell(numel(TT),1);
-    TT.Description=cell(numel(TT),1);
+    TT.Comment = cell(numel(TT),1);
+    TT.Description = cell(numel(TT),1);
   end
 end
 %% Functions (not nested)
@@ -925,11 +990,12 @@ end
 function [url, getRequest] = splitUrlLink(urlLink)
 % Help function to split CSA url requests to account for new interface.
 % CSA is to replace thier interface from 2016/05/04 onward.
-if(~isempty(regexpi(urlLink,'password')))
+if(~isempty(regexpi(urlLink,'password', 'once')))
   % It it a password protected page being requested, split it.
-  tmpSplit = strsplit(urlLink,'&');
-  url = strrep(tmpSplit{1}, '?',''); % strip "?"
-  for ii=2:length(tmpSplit)
+  urlLink = strsplit(urlLink, '?');
+  url = urlLink{1};
+  tmpSplit = strsplit(urlLink{2},'&');
+  for ii=1:length(tmpSplit)
     tmpSplit2 = strsplit(tmpSplit{ii},'=');
     % Single element, such as "NON_BROWSER", Add "1" as second argument.
     if(size(tmpSplit2,2)==1), tmpSplit2{2}='1'; end

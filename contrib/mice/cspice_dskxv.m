@@ -1,142 +1,173 @@
 %-Abstract
 %
-%   CSPICE_DSKXV computes ray-surface intercepts for a set of rays,
-%   using data provided by multiple loaded DSK segments.
+%   CSPICE_DSKXV computes ray-surface intercepts for a set of rays, using
+%   data provided by multiple loaded DSK segments.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
-%   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
+%   CALIFORNIA INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
 %   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
-%   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
-%   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
-%   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED "AS-IS"
+%   TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING ANY
+%   WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR A
+%   PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
 %   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
-%   KNOW OF THE POSSIBILITY.
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, OR NASA
+%   BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, BUT NOT
+%   LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+%   INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY AND LOST PROFITS,
+%   REGARDLESS OF WHETHER CALTECH, JPL, OR NASA BE ADVISED, HAVE
+%   REASON TO KNOW, OR, IN FACT, SHALL KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
-%   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE OF
+%   THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO INDEMNIFY
+%   CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING FROM THE
+%   ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      pri        is a logical flag indicating whether to perform
-%                 a prioritized or unprioritized DSK segment search.
-%                 In an unprioritized search, no segment masks another:
-%                 data from all specified segments are used to
-%                 define the surface of interest.
+%      pri      a logical flag indicating whether to perform
+%               a prioritized or unprioritized DSK segment search.
 %
-%                 [1,1] = size(pri); logical = class(pri)
+%               [1,1] = size(pri); logical = class(pri)
 %
-%                 The search is unprioritized if and only if `pri'
-%                 is set to false. In the N0066 SPICE Toolkit, this
-%                 is the only allowed value.
+%               In an unprioritized search, no segment masks another:
+%               data from all specified segments are used to
+%               define the surface of interest.
 %
-%      target     is the name of the target body on which a surface
-%                 intercept is sought.
+%               The search is unprioritized if and only if `pri'
+%               is set to false. In the N0066 SPICE Toolkit, this
+%               is the only allowed value.
 %
-%                 [1,c1] = size(target); char = class(target)
+%      target   the name of the target body on which a surface
+%               intercept is sought.
 %
-%                    or
+%               [1,c1] = size(target); char = class(target)
 %
-%                 [1,1] = size(target); cell = class(target)
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
 %
 %      nsurf,
-%      srflst     are, respectively, a count of surface ID codes in a
-%                 list and an containing the list. Only DSK segments for
-%                 for the body designated by `target' and having surface
-%                 IDs in this list will considered in the intercept
-%                 computation. If the list is empty, all DSK segments
-%                 for `target' will be considered.
+%      srflst   respectively, a count of surface ID codes in a
+%               list and the containing list.
 %
-%      et         is the epoch of the intersection computation,
-%                 expressed as seconds past J2000 TDB. This epoch is
-%                 used only for DSK segment selection. Segments used
-%                 the intercept computation must include `et' in their
-%                 time coverage intervals.
+%               [1,1]     = size(nsurf);  int32 = class(nsurf)
+%               [1,nsurf] = size(srflst); int32 = class(srflst)
 %
-%      fixref     is the name of a body-fixed, body-centered reference
-%                 frame associated with the target. The input ray vectors
-%                 are specified in this frame, as is the output intercept
-%                 point.
+%               Only DSK segments for the body designated by `target' and
+%               having surface IDs in this list will considered in the
+%               intercept computation. If the list is empty, all DSK segments
+%               for `target' will be considered.
 %
-%                 [1,c2] = size(fixref); char = class(fixref)
+%      et       the epoch of the intersection computation, expressed as
+%               seconds past J2000 TDB.
 %
-%                    or
+%               [1,1] = size(et); double = class(et)
 %
-%                 [1,1] = size(fixref); cell = class(fixref)
+%               This epoch is used only for DSK segment selection. Segments
+%               used the intercept computation must include `et' in their
+%               time coverage intervals.
 %
-%                 The frame designated by `fixref' must have a fixed
-%                 orientation relative to the frame of any DSK segment
-%                 used in the computation.
+%      fixref   the name of a body-fixed, body-centered reference frame
+%               associated with the target.
+%
+%               [1,c2] = size(fixref); char = class(fixref)
+%
+%                  or
+%
+%               [1,1] = size(fixref); cell = class(fixref)
+%
+%               The input ray vectors are specified in this frame, as is the
+%               output intercept point.
+%
+%               The frame designated by `fixref' must have a fixed
+%               orientation relative to the frame of any DSK segment
+%               used in the computation.
 %
 %      vtxarr,
-%      dirarr     are, respectively, a count of rays, an array containing
-%                 the vertices of rays, and an array containing the
-%                 direction vectors of the rays.
+%      dirarr   respectively, a count of rays, an array containing
+%               the vertices of rays, and an array containing the
+%               direction vectors of the rays.
 %
+%               [3,nrays] = size(vtxarr); double = class(vtxarr)
+%               [3,nrays] = size(dirarr); double = class(dirarr)
 %
-%                 [3,n] = size(vtxarr); double = class(vtxarr)
-%                 [3,n] = size(dirarr); double = class(dirarr)
+%               The ray's vertices are considered to represent offsets
+%               from the center of the target body.
 %
-%                 The ray's vertices are considered to represent offsets
-%                 from the center of the target body.
-%
-%                 The rays' vertices and direction vectors are
-%                 represented in the reference frame designated by
-%                 `fixref'.
+%               The rays' vertices and direction vectors are
+%               represented in the reference frame designated by
+%               `fixref'.
 %
 %   the call:
 %
-%      [ xptarr, fndarr] = cspice_dskxsi( pri,             ...
-%                                         target, nsurf,   ...
-%                                         srflst, et,      ...
-%                                         fixref, vtxarr,  ...
-%                                         dirarr )
+%      [xptarr, fndarr] = cspice_dskxv( pri, target, nsurf,  srflst,       ...
+%                                       et,  fixref, vtxarr, dirarr )
 %
 %   returns:
 %
-%      xptarr     is an array containing the intercepts of the input
-%                 rays on the surface specified by the inputs
+%      xptarr   an array containing the intercepts of the input
+%               rays on the surface specified by the inputs
 %
-%                    pri
-%                    target
-%                    nsurf
-%                    srflst
-%                    et
+%                  pri
+%                  target
+%                  nsurf
+%                  srflst
+%                  et
 %
-%                 [3,n] = size(xptarr); double = class(xptarr)
+%               [3,nrays] = size(xptarr); double = class(xptarr)
 %
-%                 The ith element of `xptarr' is the intercept
-%                 corresponding to the ith ray, if such an intercept
-%                 exists. If a ray intersects the surface at multiple
-%                 points, the intercept closest to the ray's vertex is
-%                 selected.
+%               The ith element of `xptarr' is the intercept
+%               corresponding to the ith ray, if such an intercept
+%               exists. If a ray intersects the surface at multiple
+%               points, the intercept closest to the ray's vertex is
+%               selected.
 %
-%                 The ith element of `xptarr' is defined if and only if the
-%                 ith element of `fndarr' is true.
+%               The ith element of `xptarr' is defined if and only if the
+%               ith element of `fndarr' is true.
 %
-%                 Units are km.
+%               Units are km.
 %
-%      fndarr     is an array of logical flags indicating whether the
-%                 input rays intersect the surface. The ith element of
-%                 `fndarr' is set to true if and only if an intercept
-%                 was found for the ith ray.
+%      fndarr   an array of logical flags indicating whether the
+%               input rays intersect the surface.
 %
-%                 [1,n] = size(fndarr); logical = class(fndarr)
+%               [1,nrays] = size(fndarr); logical = class(fndarr)
+%
+%               The ith element of `fndarr' is set to true if and only if an
+%               intercept was found for the ith ray.
+%
+%-Parameters
+%
+%   See the parameter definitions file
+%
+%      MiceDtl.m
+%
+%   for the values of tolerance parameters used by default by the
+%   ray-surface intercept algorithm.
+%
+%   These parameters are discussed in the -Particulars section
+%   below.
+%
+%   See the parameter definitions file
+%
+%      MiceDLA.m
+%
+%   for declarations of DLA descriptor sizes and documentation of the
+%   contents of DLA descriptors.
+%
+%   See the parameter definitions file
+%
+%      MiceDSK.m
+%
+%   for declarations of DSK descriptor sizes and documentation of the
+%   contents of DSK descriptors.
 %
 %-Examples
 %
@@ -144,9 +175,7 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%   Example (1):
-%
-%      Compute surface intercepts of rays emanating from a set of
+%   1) Compute surface intercepts of rays emanating from a set of
 %      vertices distributed on a longitude-latitude grid. All
 %      vertices are outside the target body, and all rays point
 %      toward the target's center.
@@ -155,8 +184,10 @@
 %      number of errors, the number of computations, and the
 %      number of intercepts found.
 %
+%
 %      Use the meta-kernel shown below to load example SPICE
 %      kernels.
+%
 %
 %          KPL/MK
 %
@@ -181,23 +212,24 @@
 %                                              plate model
 %          \begindata
 %
-%             PATH_SYMBOLS    = 'GEN'
-%             PATH_VALUES     = '/ftp/pub/naif/generic_kernels'
-%
-%             KERNELS_TO_LOAD = ( '$GEN/dsk/phobos/phobos512.bds' )
+%             KERNELS_TO_LOAD = ( 'phobos512.bds' )
 %
 %          \begintext
 %
+%          End of meta-kernel
 %
-%      function dskxv_t( META )
+%
+%      Example code begins here.
+%
+%
+%      function dskxv_ex1( META )
 %
 %         % This program expects all loaded DSKs
 %         % to represent the same body and surface.
 %
 %         %
 %         % MiceUser globally defines DSK parameters.
-%         % For more information, please see DSKMiceUser.m and
-%         % DSKMice02.m.
+%         % For more information, please see MiceDSK.m.
 %         %
 %         MiceUser
 %
@@ -219,7 +251,7 @@
 %
 %            otherwise
 %
-%               error( 'Command syntax:  dskxv_t( <meta-kernel> )' )
+%               error( 'Command syntax:  dskxv_ex1( <meta-kernel> )' )
 %
 %         end
 %
@@ -247,13 +279,12 @@
 %         surfid = dskdsc(SPICE_DSK_SRFIDX);
 %         framid = dskdsc(SPICE_DSK_FRMIDX);
 %
-%         [target, found ] = cspice_bodc2n( bodyid );
+%         [target, found] = cspice_bodc2n( bodyid );
 %
 %         if ~found
 %
-%            txt = sprintf( ...
-%          ['SPICE(BODYNAMENOTFOUND): Cannot map body ID %s to a name.'], ...
-%          bodyid);
+%            txt = sprintf( ['SPICE(BODYNAMENOTFOUND): Cannot map '        ...
+%                            'body ID %s to a name.'], bodyid);
 %
 %            error(txt)
 %         end
@@ -262,9 +293,8 @@
 %
 %         if fixref == ' '
 %
-%            txt = sprintf( ...
-%          ['SPICE(BODYNAMENOTFOUND): Cannot map frame ID %s to a name.'], ...
-%          framid);
+%            txt = sprintf( ['SPICE(BODYNAMENOTFOUND): Cannot map '        ...
+%                            'frame ID %s to a name.'], framid);
 %
 %            error(txt)
 %         end
@@ -326,8 +356,8 @@
 %                  end
 %               end
 %
-%               vtxarr(:,nrays) = cspice_latrec( r, ...
-%                                 lon*cspice_rpd(), lat*cspice_rpd() );
+%               vtxarr(:,nrays) = cspice_latrec( r, lon*cspice_rpd(),      ...
+%                                                   lat*cspice_rpd() );
 %
 %               nrays  = nrays  + 1;
 %               nlstep = nlstep + 1;
@@ -359,13 +389,13 @@
 %         % Find the surface intercept of the ith ray.
 %         %
 %
-%         [xptarr, fndarr] = cspice_dskxv( false, ...
-%                                         target, ...
-%                                         nsurf,  ...
-%                                         srflst, ...
-%                                         0,      ...
-%                                         fixref, ...
-%                                         vtxarr(:,1:nrays), ...
+%         [xptarr, fndarr] = cspice_dskxv(false,                           ...
+%                                         target,                          ...
+%                                         nsurf,                           ...
+%                                         srflst,                          ...
+%                                         0,                               ...
+%                                         fixref,                          ...
+%                                         vtxarr(:,1:nrays),               ...
 %                                         dirarr(:,1:nrays) );
 %
 %         for i = 1:nrays
@@ -385,7 +415,7 @@
 %               % the intercept. Make sure these agree
 %               % well with those of the vertex.
 %               %
-%               [ radius, lon, lat ] = cspice_reclat( xptarr(:,i) );
+%               [radius, lon, lat] = cspice_reclat( xptarr(:,i) );
 %
 %               %
 %               % Recover the vertex longitude and latitude.
@@ -401,10 +431,9 @@
 %                  fprintf( 'Lon = %f;  Lat = %f\n', lon, lat );
 %                  fprintf( 'Bad intercept\n'               );
 %                  fprintf( 'Distance error = %e\n', d      );
-%                  fprintf( 'xpt    = (%e %e %e)\n', ...
-%                            xpt(1), xpt(2), xpt(3) );
-%                  fprintf( 'xyzhit = (%e %e %e)\n', ...
-%                            xyzhit(1), xyzhit(2), xyzhit(3) );
+%                  fprintf( 'xpt    = (%e %e %e)\n', xpt(1), xpt(2), xpt(3) );
+%                  fprintf( 'xyzhit = (%e %e %e)\n', xyzhit(1), xyzhit(2), ...
+%                                                    xyzhit(3)            );
 %
 %                  nderr = nderr + 1;
 %               end
@@ -439,9 +468,14 @@
 %         %
 %         cspice_kclear
 %
-%   Matlab outputs:
 %
-%      dskxv_t( 'dskxv_ex1.tm' )
+%      When this program was executed on a Mac/Intel/Octave5.x/64-bit
+%      platform, with the following variable as input
+%
+%         META =   'dskxv_ex1.tm';
+%
+%      the output was:
+%
 %
 %      Computing intercepts...
 %      Done.
@@ -449,6 +483,7 @@
 %      nrays = 32580
 %      nhits = 32580
 %      nderr = 0
+%
 %
 %-Particulars
 %
@@ -458,7 +493,7 @@
 %
 %   For cases in which it is necessary to know the source of the
 %   data defining the surface on which an intercept was found,
-%   use the CSPICE routine cspice_dskxsi.
+%   use the Mice routine cspice_dskxsi.
 %
 %   For cases in which a ray's vertex is not explicitly known but is
 %   defined by relative observer-target geometry, the Mice
@@ -470,6 +505,7 @@
 %   reference frames may be used in a single computation. The only
 %   restriction is that any pair of reference frames used directly or
 %   indirectly are related by a constant rotation.
+%
 %
 %   Using DSK data
 %   ==============
@@ -568,12 +604,12 @@
 %
 %               1 + SPICE_DSK_XFRACT
 %
-%            where XFRACT is declared in
+%            where SPICE_DSK_XFRACT is declared in
 %
-%               DSKtol.m
+%               MiceDtl.m
 %
-%            For example, given a value for XFRACT of 1.e-10, the
-%            sides of the plate are lengthened by 1/10 of a micron
+%            For example, given a value for SPICE_DSK_XFRACT of 1.e-10,
+%            the sides of the plate are lengthened by 1/10 of a micron
 %            per km. The expansion keeps the centroid of the plate
 %            fixed.
 %
@@ -587,27 +623,145 @@
 %            cause an intersection to be found when the ray misses
 %            the target by a very small distance.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please
-%   refer to the CSPICE routine dskxv_c.
+%   1)  If the input prioritization flag `pri' is set to true, the
+%       error SPICE(BADPRIORITYSPEC) is signaled by a routine in the
+%       call tree of this routine.
 %
-%   MICE.REQ
-%   DAS.REQ
+%   2)  If `nsurf' is less than 0, the error SPICE(INVALIDCOUNT)
+%       is signaled by a routine in the call tree of this routine.
+%
+%   3)  If the input body name `target' cannot be mapped to an ID code,
+%       the error SPICE(IDCODENOTFOUND) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   4)  If the input frame name `fixref' cannot be mapped to an ID code,
+%       the error SPICE(IDCODENOTFOUND) is signaled by a routine in
+%       the call tree of this routine.
+%
+%   5)  If the frame center associated with `fixref' cannot be
+%       retrieved, the error SPICE(NOFRAMEINFO) is signaled by a
+%       routine in the call tree of this routine.
+%
+%   6)  If the frame center associated with `fixref' is not the target
+%       body, the error SPICE(INVALIDFRAME) is signaled by a routine
+%       in the call tree of this routine.
+%
+%   7)  If an error occurs during the intercept computation, the error
+%       is signaled by a routine in the call tree of this routine.
+%
+%   8)  If any of the input arguments, `pri', `target', `nsurf',
+%       `srflst', `et', `fixref', `vtxarr' or `dirarr', is undefined,
+%       an error is signaled by the Matlab error handling system.
+%
+%   9)  If any of the input arguments, `pri', `target', `nsurf',
+%       `srflst', `et', `fixref', `vtxarr' or `dirarr', is not of the
+%       expected type, or it does not have the expected dimensions and
+%       size, an error is signaled by the Mice interface.
+%
+%   10) If the input vector arguments `vtxarr' and `dirarr' do not
+%       have the same dimension (n), an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   Appropriate kernels must be loaded by the calling program before
+%   this routine is called.
+%
+%   The following data are required:
+%
+%   -  SPK data: ephemeris data for the positions of the centers
+%      of DSK reference frames relative to the target body are
+%      required if those frames are not centered at the target
+%      body center.
+%
+%      Typically ephemeris data are made available by loading one
+%      or more SPK files via cspice_furnsh.
+%
+%   -  DSK data: DSK files containing topographic data for the
+%      target body must be loaded. If a surface list is specified,
+%      data for at least one of the listed surfaces must be loaded.
+%
+%   -  Frame data: if a frame definition is required to convert
+%      DSK segment data to the body-fixed frame designated by
+%      `fixref', the target, that definition must be available in the
+%      kernel pool. Typically the definitions of frames not already
+%      built-in to SPICE are supplied by loading a frame kernel.
+%
+%   -  CK data: if the frame to which `fixref' refers is a CK frame,
+%      and if any DSK segments used in the computation have a
+%      different frame, at least one CK file will be needed to
+%      permit transformation of vectors between that frame and both
+%      the J2000 and the target body-fixed frames.
+%
+%   -  SCLK data: if a CK file is needed, an associated SCLK
+%      kernel is required to enable conversion between encoded SCLK
+%      (used to time-tag CK data) and barycentric dynamical time
+%      (TDB).
+%
+%   In all cases, kernel data are normally loaded once per program
+%   run, NOT every time this routine is called.
+%
+%-Restrictions
+%
+%   1)  The frame designated by `fixref' must have a fixed
+%       orientation relative to the frame of any DSK segment
+%       used in the computation. This routine has no
+%       practical way of ensuring that this condition is met;
+%       so this responsibility is delegated to the calling
+%       application.
+%
+%-Required_Reading
+%
+%   CK.REQ
 %   DSK.REQ
+%   FRAMES.REQ
+%   MICE.REQ
+%   PCK.REQ
+%   SPK.REQ
+%   TIME.REQ
+%
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   N.J. Bachman        (JPL)
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 21-APR-2014, EDW (JPL), NJB (JPL)
+%   -Mice Version 1.1.0, 26-NOV-2021 (EDW) (JDR)
+%
+%       Corrected declared function name from cspice_dskxsi to
+%       cspice_dskxv.
+%
+%       Added proper usage string. Added missing information
+%       in -I/O section and corrected incorrect call example.
+%
+%       Edited the header to comply with NAIF standard.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 21-APR-2014 (EDW) (NJB)
 %
 %-Index_Entries
 %
 %   vectorized ray-surface intercept
-%   vectorized ray-dsk intercept
+%   vectorized ray-DSK intercept
 %
 %-&
 
-function [ xptarr, fndarr] = cspice_dskxsi( pri,             ...
+function [ xptarr, fndarr] = cspice_dskxv(  pri,             ...
                                             target, nsurf,   ...
                                             srflst, et,      ...
                                             fixref, vtxarr,  ...
@@ -627,7 +781,10 @@ function [ xptarr, fndarr] = cspice_dskxsi( pri,             ...
 
       otherwise
 
-         error ( [ 'Usage:' ] )
+         error ( [ 'Usage: [ xptarr(3,n), fndarr(n)] = '   ...
+                   'cspice_dskxv( pri, '                   ...
+                   '`target`, nsurf, srflst(nsurf), et, '  ...
+                   '`fixref`, vtxarr(3,n), dirarr(3,n) )' ] )
    end
 
    %
@@ -645,7 +802,7 @@ function [ xptarr, fndarr] = cspice_dskxsi( pri,             ...
       % the caller.
       %
       fndarr = zzmice_logical(fndarr);
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
 

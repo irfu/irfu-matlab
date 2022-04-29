@@ -33,38 +33,42 @@
 %
 %   Given:
 %
-%     frcode   a SPICE ID for some reference frame.
+%      frcode   a SPICE ID(s) for some reference frame(s).
 %
-%              [1,n] = size(frcode); int32 = class(frcode)
+%               [1,n] = size(frcode); int32 = class(frcode)
 %
 %   the call:
 %
-%      [cent, clss, clssid, found] = cspice_frinfo( frcode )
+%      [cent, frclss, clssid, found] = cspice_frinfo( frcode )
 %
 %   returns:
 %
-%      cent     the SPICE body ID for the center of the reference frame
+%      cent     the SPICE body ID(s) for the center of the reference frame(s)
 %               (if such an ID is appropriate).
 %
 %               [1,n] = size(cent); int32 = class(cent)
 %
-%      clss     the class ID or type of the frame. This identifies which
+%      frclss   the class ID(s) or type(s) of the frame. This identifies which
 %               subsystem will perform frame transformations.
 %
-%               [1,n] = size(clss); int32 = class(clss)
+%               [1,n] = size(frclss); int32 = class(frclss)
 %
-%      clssid   the ID used for the frame within its class. This may be
+%      clssid   the ID(s) used for the frame within its class. This may be
 %               different from the frame ID.
 %
 %               [1,n] = size(clssid); int32 = class(clssid)
 %
-%      found    flag returning true if 'cent', 'frclss' and 'frcode' are
+%      found    flag(s) returning true if `cent', `frclss' and `frcode' are
 %               available, false if not.
 %
 %               [1,n] = size(found); logical = class(found)
 %
-%               'cent', 'clss', 'clssid' and 'found' return with the same
-%               vectorization measure (N) as 'frcode'.
+%               `cent', `frclss', `clssid' and `found' return with the same
+%               vectorization measure (N) as `frcode'.
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
@@ -72,42 +76,66 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Retrieve frame information for a scalar 'code'.
-%      %
-%      disp('Scalar' )
-%      code = 13000;
+%   1) Given a set of frame IDs, retrieve the SPICE body ID associated
+%      with the frame's center, the frame class (or type of the frame),
+%      and the ID used for the frame within its class.
 %
-%      [cent, clss, clssid, found] = cspice_frinfo( code );
-%      fprintf(' code   center  class  class_ID  found\n' );
-%      fprintf( '%d    %d      %d     %d        %d\n', ...
-%               code, cent, clss, clssid, int32(found) );
 %
-%      %
-%      % Retrieve frame information for a vector of 'codes'.
-%      %
-%      disp('Vector' )
-%      codes = [1:5];
+%      Example code begins here.
 %
-%      [cent, clss, clssid, found] = cspice_frinfo( codes );
 %
-%      fprintf( 'code center class class_ID found\n')
-%      fprintf( '%d    %d      %d     %d        %d\n', ...
-%             [codes; cent; clss; clssid; int32(found) ] );
+%      function frinfo_ex1()
 %
-%   MATLAB outputs:
+%         %
+%         % Retrieve frame information for a scalar 'code'.
+%         %
+%         code = 13000;
 %
-%      Scalar
-%       code   center  class  class_ID  found
-%      13000    399      2     3000        1
+%         [cent, frclss, clssid, found] = cspice_frinfo( code );
+%         disp(' code   center  class  class_ID' )
+%         disp('-----  -------  -----  --------' )
+%         disp('Scalar:' )
+%         if ( found )
+%            fprintf( '%5d  %7d  %5d  %6d\n', ...
+%                     code, cent, frclss, clssid   );
+%         end
 %
-%      Vector
-%      code center class class_ID found
-%      1    0      1     1        1
-%      2    0      1     2        1
-%      3    0      1     3        1
-%      4    0      1     4        1
-%      5    0      1     5        1
+%         %
+%         % Retrieve frame information for a vector of 'codes'.
+%         %
+%         disp('Vector:' )
+%         codes = [1, 2, 3, 4, 5, 245];
+%
+%         [cent, frclss, clssid, found] = cspice_frinfo( codes );
+%
+%         for i=1:numel( codes )
+%
+%            if ( found(i) )
+%               fprintf( '%5d  %7d  %5d  %6d\n', ...
+%                       codes(i), cent(i), frclss(i), clssid(i) )
+%            else
+%               fprintf( 'No data available for frame ID %d\n', codes(i) )
+%            end
+%
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%       code   center  class  class_ID
+%      -----  -------  -----  --------
+%      Scalar:
+%      13000      399      2    3000
+%      Vector:
+%          1        0      1       1
+%          2        0      1       2
+%          3        0      1       3
+%          4        0      1       4
+%          5        0      1       5
+%      No data available for frame ID 245
+%
 %
 %-Particulars
 %
@@ -117,24 +145,82 @@
 %
 %   The routine first examines local "hard-coded" information about
 %   reference frames to see if the requested frame belongs to this
-%   set.  If it does that information is returned.
+%   set. If it does that information is returned.
 %
 %   If the requested information is not stored locally, the routine
 %   then examines the kernel pool to see if the requested information
-%   is stored there.  If it is and has the expected format, the data
+%   is stored there. If it is and has the expected format, the data
 %   is retrieved and returned.
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine frinfo_c.
+%   1)  If a frame definition is encountered that does not define a
+%       central body for the frame, an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   2)  If a frame definition is encountered that does not define
+%       a class for the frame, an error is signaled by a routine
+%       in the call tree of this routine.
+%
+%   3)  If a frame definition is encountered that does not define a
+%       class ID for the frame, an error is signaled by a routine in
+%       the call tree of this routine.
+%
+%   4)  If a kernel variable defining a frame name is found, but that
+%       variable has dimension greater than 1, the error
+%       SPICE(INVALIDDIMENSION) is signaled by a routine in the call
+%       tree of this routine.
+%
+%   5)  If the input argument `frcode' is undefined, an error is
+%       signaled by the Matlab error handling system.
+%
+%   6)  If the input argument `frcode' is not of the expected type, or
+%       it does not have the expected dimensions and size, an error is
+%       signaled by the Mice interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   FRAMES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   S.C. Krening        (JPL)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%   -Mice Version 1.1.0, 24-AUG-2021 (EDW) (JDR)
+%
+%       Changed the output argument name "clss" to "frclss" for
+%       consistency with other routines.
+%
+%       Edited the -Examples section to comply with NAIF standard.
+%       Reformatted example's output and added problem statement.
+%       Added case for demonstrating usage of `found' flag.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.0, 12-MAR-2012 (EDW) (SCK)
 %
 %-Index_Entries
 %
@@ -142,7 +228,7 @@
 %
 %-&
 
-function [cent, clss, clssid, found] = cspice_frinfo( frcode )
+function [cent, frclss, clssid, found] = cspice_frinfo( frcode )
 
    switch nargin
       case 1
@@ -151,7 +237,7 @@ function [cent, clss, clssid, found] = cspice_frinfo( frcode )
 
       otherwise
 
-         error( ['Usage: [_cent_, _clss_, _clssid_, _found_] = ' ...
+         error( ['Usage: [_cent_, _frclss_, _clssid_, _found_] = ' ...
                                            'cspice_frinfo(_frcode_)'] )
 
    end
@@ -164,14 +250,10 @@ function [cent, clss, clssid, found] = cspice_frinfo( frcode )
       [frinfo] = mice('frinfo_s', frcode);
 
       cent   = reshape( [frinfo.center],   1, [] );
-      clss   = reshape( [frinfo.class],    1, [] );
+      frclss = reshape( [frinfo.class],    1, [] );
       clssid = reshape( [frinfo.class_ID], 1, [] );
       found  = reshape( [frinfo.found],    1, [] );
 
-   catch
-      rethrow(lasterror)
+   catch spiceerr
+      rethrow(spiceerr)
    end
-
-
-
-

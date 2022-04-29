@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_CGV2EL forms a SPICE ellipse from a center vector and two generating
-%   vectors.
+%   CSPICE_CGV2EL forms a SPICE ellipse from a center vector and two
+%   generating vectors.
 %
 %-Disclaimer
 %
@@ -37,85 +37,156 @@
 %
 %               [3,1] = size(center); double = class(center)
 %
-%      vec1 &
+%      vec1,
 %      vec2     the two vectors defining the ellipse (the generating vectors)
-%               with the 'center' in three-dimensional space. The ellipse is
+%               with the `center' in three-dimensional space. The ellipse is
 %               the set of points
 %
 %                  center  +  cos(theta) vec1  +  sin(theta) vec2
 %
 %               where theta ranges over the interval (-pi, pi].
 %
-%               'vec1' and 'vec2' need not be linearly independent.
+%               `vec1' and `vec2' need not be linearly independent.
 %
 %               [3,1] = size(vec1); double = class(vec1)
-%
 %               [3,1] = size(vec2); double = class(vec2)
 %
 %   the call:
 %
-%      ellipse = cspice_cgv2el( center, vec1, vec2 )
+%      [ellips] = cspice_cgv2el( center, vec1, vec2 )
 %
 %   returns:
 %
-%      ellipse   a structure describing a SPICE ellipse defined by the input
-%                vectors. 
+%      ellips   a structure describing a SPICE ellipse defined by the input
+%               vectors.
 %
-%                [1,1] = size(ellipse); struct = class(ellipse)
+%               [1,1] = size(ellips); struct = class(ellips)
 %
-%                The structure has the fields:
+%               The structure has the fields:
 %
-%                center:    [3,1] = size(center); double = class(center)
-%                semiMinor: [3,1] = size(semiMinor); double = class(semiMinor)
-%                semiMajor: [3,1] = size(semiMajor); double = class(semiMajor)
+%               center:    [3,1] = size(center); double = class(center)
+%               semiMinor: [3,1] = size(semiMinor); double = class(semiMinor)
+%               semiMajor: [3,1] = size(semiMajor); double = class(semiMajor)
+%
+%-Parameters
+%
+%   None.
 %
 %-Examples
 %
-%   Any numerical results shown for this example may differ between
+%   Any numerical results shown for these examples may differ between
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      %
-%      % Define the center and two linearly independent
-%      % generating vectors of an ellipse (the vectors need not
-%      % be linearly independent).
-%      %
-%      center = [ -1.;  1.; -1. ];
-%      vec1   = [  1.;  1.;  1. ];
-%      vec2   = [  1.; -1.;  1. ];
+%   1) Create a SPICE ellipse given its center and two linearly independent
+%      generating vectors of the ellipse.
 %
-%      %
-%      % Create the CSPICE_ELLIPSE structure.
-%      %
-%      ellipse = cspice_cgv2el( center, vec1, vec2 );
+%      Example code begins here.
 %
-%      ellipse.semiMinor
-%      ellipse.semiMajor
-%      ellipse.center
 %
-%   MATLAB outputs for ellipse.semiMinor:
+%      function cgv2el_ex1()
 %
-%         ans =
+%         %
+%         % Define the center and two linearly independent
+%         % generating vectors of an ellipse (the vectors need not
+%         % be linearly independent).
+%         %
+%         center = [ -1.;  1.; -1. ];
+%         vec1   = [  1.;  1.;  1. ];
+%         vec2   = [  1.; -1.;  1. ];
 %
-%             0.0000
-%             1.4142
-%             0.0000
+%         %
+%         % Create the CSPICE_ELLIPSE structure.
+%         %
+%         ellips = cspice_cgv2el( center, vec1, vec2 );
 %
-%   MATLAB outputs for ellipse.semiMajor:
+%         fprintf( 'SPICE ellipse:\n' );
+%         fprintf( '  Semi-minor axis: %10.6f %10.6f %10.6f\n',            ...
+%                                              ellips.semiMinor);
+%         fprintf( '  Semi-major axis: %10.6f %10.6f %10.6f\n',            ...
+%                                              ellips.semiMajor);
+%         fprintf( '  Center         : %10.6f %10.6f %10.6f\n',            ...
+%                                              ellips.center   );
+%         fprintf( '\n' );
 %
-%         ans =
+%         %
+%         % Obtain the center and generating vectors from the
+%         % `ellips'.
+%         %
+%         [ecentr, smajor, sminor] = cspice_el2cgv( ellips );
+%         fprintf( 'SPICE ellipse (using cspice_el2cgv):\n' );
+%         fprintf( '  Semi-minor axis: %10.6f %10.6f %10.6f\n', sminor);
+%         fprintf( '  Semi-major axis: %10.6f %10.6f %10.6f\n', smajor);
+%         fprintf( '  Center         : %10.6f %10.6f %10.6f\n', ecentr);
 %
-%             1.4142
-%            -0.0000
-%             1.4142
 %
-%   MATLAB outputs for ellipse.center:
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
 %
-%         ans =
 %
-%             -1
-%              1
-%             -1
+%      SPICE ellipse:
+%        Semi-minor axis:   0.000000   1.414214   0.000000
+%        Semi-major axis:   1.414214  -0.000000   1.414214
+%        Center         :  -1.000000   1.000000  -1.000000
+%
+%      SPICE ellipse (using cspice_el2cgv):
+%        Semi-minor axis:   0.000000   1.414214   0.000000
+%        Semi-major axis:   1.414214  -0.000000   1.414214
+%        Center         :  -1.000000   1.000000  -1.000000
+%
+%
+%   2) Find the intersection of an ellipse with a plane.
+%
+%
+%      Example code begins here.
+%
+%
+%      function cgv2el_ex2()
+%
+%         %
+%         % Local variables.
+%         %
+%         xpts = zeros(2,3);
+%
+%         %
+%         % The ellipse is defined by the vectors `center', `vec1', and
+%         % `vec2'. The plane is defined by the normal vector `normal'
+%         % and the `center'.
+%         %
+%         center = [ 0.0,  0.0,  0.0]';
+%         vec1   = [ 1.0,  7.0,  2.0]';
+%         vec2   = [-1.0,  1.0,  3.0]';
+%
+%         normal = [ 0.0,  1.0,  0.0]';
+%
+%         %
+%         % Make a SPICE ellipse and a plane.
+%         %
+%         [ellips] = cspice_cgv2el( center, vec1, vec2 );
+%         [plane]  = cspice_nvp2pl( normal, center     );
+%
+%         %
+%         % Find the intersection of the ellipse and plane.
+%         % `nxpts' is the number of intersection points; `xpts'
+%         % are the points themselves.
+%         %
+%         [nxpts, xpts(1,:), xpts(2,:)] = cspice_inelpl( ellips, plane );
+%
+%         fprintf( 'Number of intercept points: %2d\n', nxpts )
+%
+%         for i=1:nxpts
+%            fprintf( ' Point %1d : %9.6f %9.6f %9.6f\n', i, xpts(i,:) )
+%         end
+%
+%
+%      When this program was executed on a Mac/Intel/Octave6.x/64-bit
+%      platform, the output was:
+%
+%
+%      Number of intercept points:  2
+%       Point 1 :  1.131371  0.000000 -2.687006
+%       Point 2 : -1.131371 -0.000000  2.687006
+%
 %
 %-Particulars
 %
@@ -128,28 +199,74 @@
 %      cspice_cgv2el( Center and generating vectors to ellipse )
 %      cspice_el2cgv( Ellipse to center and generating vectors )
 %
-%-Required Reading
+%-Exceptions
 %
-%   For important details concerning this module's function, please refer to
-%   the CSPICE routine cgv2el_c.
+%   1)  If `vec1' and `vec2' are linearly dependent, `ellips' will be
+%       degenerate. SPICE ellipses are allowed to represent
+%       degenerate geometric ellipses.
+%
+%   2)  If any of the input arguments, `center', `vec1' or `vec2', is
+%       undefined, an error is signaled by the Matlab error handling
+%       system.
+%
+%   3)  If any of the input arguments, `center', `vec1' or `vec2', is
+%       not of the expected type, or it does not have the expected
+%       dimensions and size, an error is signaled by the Mice
+%       interface.
+%
+%-Files
+%
+%   None.
+%
+%-Restrictions
+%
+%   None.
+%
+%-Required_Reading
 %
 %   MICE.REQ
 %   ELLIPSES.REQ
 %
+%-Literature_References
+%
+%   None.
+%
+%-Author_and_Institution
+%
+%   J. Diaz del Rio     (ODC Space)
+%   E.D. Wright         (JPL)
+%
 %-Version
 %
-%   -Mice Version 1.0.1, 09-NOV-2012, EDW (JPL)
+%   -Mice Version 1.1.0, 13-AUG-2021 (EDW) (JDR)
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Changed output argument name "ellipse" to "ellips".
 %
-%   -Mice Version 1.0.0, 30-DEC-2008, EDW (JPL)
+%       Edited the header to comply with NAIF standard. Added
+%       example's problem statement, reformatted example's output and added
+%       second example.
+%
+%       Added -Parameters, -Exceptions, -Files, -Restrictions,
+%       -Literature_References and -Author_and_Institution sections.
+%
+%       Eliminated use of "lasterror" in rethrow.
+%
+%       Removed reference to the function's corresponding CSPICE header from
+%       -Required_Reading section.
+%
+%   -Mice Version 1.0.1, 09-NOV-2012 (EDW)
+%
+%       Edited -I/O section to conform to NAIF standard for Mice
+%       documentation.
+%
+%   -Mice Version 1.0.0, 30-DEC-2008 (EDW)
 %
 %-Index_Entries
 %
 %   center and generating vectors to ellipse
 %
 %-&
-function [ellipse] = cspice_cgv2el( center, vec1, vec2 )
+function [ellips] = cspice_cgv2el( center, vec1, vec2 )
 
    switch nargin
 
@@ -161,7 +278,7 @@ function [ellipse] = cspice_cgv2el( center, vec1, vec2 )
 
       otherwise
 
-         error ( ['Usage: [ellipse] = ' ...
+         error ( ['Usage: [ellips] = ' ...
                   'cspice_cgv2el( center(3), vec1(3), vec2(3) )'] )
 
    end
@@ -170,7 +287,7 @@ function [ellipse] = cspice_cgv2el( center, vec1, vec2 )
    % Call the MEX library.
    %
    try
-      [ellipse] = mice('cgv2el_c', center, vec1, vec2 );
-   catch
-      rethrow(lasterror)
+      [ellips] = mice('cgv2el_c', center, vec1, vec2 );
+   catch spiceerr
+      rethrow(spiceerr)
    end
