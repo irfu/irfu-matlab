@@ -4,31 +4,32 @@ function res = get_data(varStr,Tint)
 % varStr is one of the following (note aliases can also be used):
 %
 % MAG:
-%   'L2_mag-srf-normal' (alias: B_srf_norm), 'L2_mag_rtn_normal' (alias: B_rtn_norm)
-%   'L2_mag-srf-burst' (alias:  B_srf_brst), 'L2_mag-rtn-burst' (alias: B_rtn_brst)
+%   'L2_mag-srf-normal' (alias: b_srf_norm), 'L2_mag_rtn_normal' (alias: b_rtn_norm)
+%   'L2_mag-srf-burst' (alias:  b_srf_brst), 'L2_mag-rtn-burst' (alias: b_rtn_brst)
 %
 % RPW:
 %   'L3_rpw-bia-scpot' (alias: scpot)
-%   'L3_rpw-bia-efield_srf' (alias: E_srf)
-%   'L3_rpw-bia-efield_rtn' (alias: E_rtn)
-%   'L3_rpw-bia-efield-10-seconds_srf' (alias: E_srf_10sec)
-%   'L3_rpw-bia-efield-10-seconds_rtn' (alias: E_rtn_10sec)
-%   'L3_rpw-bia-density' (alias: Nescpot)
-%   'L3_rpw-bia-density-10-seconds' (alias: Nescpot_10sec)
-%   'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil) (alias: B_scm_srf)
-%   'L2_rpw-lfr-surv-cwf-b-cdag_rtn' (alias: B_scm_rtn)
+%   'L3_rpw-bia-efield_srf' (alias: e_srf)
+%   'L3_rpw-bia-efield_rtn' (alias: e_rtn)
+%   'L3_rpw-bia-efield-10-seconds_srf' (alias: e_srf_10sec)
+%   'L3_rpw-bia-efield-10-seconds_rtn' (alias: e_rtn_10sec)
+%   'L3_rpw-bia-density' (alias: nescpot)
+%   'L3_rpw-bia-density-10-seconds' (alias: nescpot_10sec)
+%   'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil) (alias: b_scm_srf)
+%   'L2_rpw-lfr-surv-cwf-b-cdag_rtn' (alias: b_scm_rtn)
+%   'L2_rpw-lfr-surv-cwf-e-1-second' (alias: vdc_1sec)
 %    Snapshots and other products need to be added!
 %
 % SWA-PAS:
 %   'L2_swa-pas-eflux (alias: pas_eflux)',
-%   'L2_swa-pas-grnd-mom_V_RTN' (alias: Vi_rtn)
-%   'L2_swa-pas-grnd-mom_V_SRF' (alias: Vi_srf), 'L2_swa-pas-grnd-mom_N' (alias: Ni)
-%   'L2_swa-pas-grnd-mom_T' (total T) (alias: Ti),
-%   'L2_swa-pas-grnd-mom_TxTyTz_SRF' (alias: Ti_xyz_srf)
-%   'L2_swa-pas-grnd-mom_TxTyTz_RTN' (alias: Ti_xyz_rtn)
-%   'L2_swa-pas-grnd-mom_Tani' ([Tpar, Tperp1 Tperp2]) (alias: Ti_fac)
-%   'L2_swa-pas-grnd-mom_Pi_SRF' (pressure tensor) (alias: Pi_srf),
-%   'L2_swa-pas-grnd-mom_Pi_RTN' (alias: Pi_rtn)
+%   'L2_swa-pas-grnd-mom_V_RTN' (alias: vi_rtn)
+%   'L2_swa-pas-grnd-mom_V_SRF' (alias: vi_srf), 'L2_swa-pas-grnd-mom_N' (alias: ni)
+%   'L2_swa-pas-grnd-mom_T' (total T) (alias: ti),
+%   'L2_swa-pas-grnd-mom_TxTyTz_SRF' (alias: ti_xyz_srf)
+%   'L2_swa-pas-grnd-mom_TxTyTz_RTN' (alias: ti_xyz_rtn)
+%   'L2_swa-pas-grnd-mom_Tani' ([Tpar, Tperp1 Tperp2]) (alias: ti_fac)
+%   'L2_swa-pas-grnd-mom_Pi_SRF' (pressure tensor) (alias: pi_srf),
+%   'L2_swa-pas-grnd-mom_Pi_RTN' (alias: pi_rtn)
 %   'L2_swa-pas-vdf' (alias: pas_vdf) 'L2_swa-pas-quality_factor' (alias: pas_qf)
 %
 % EPHEMERIS
@@ -52,7 +53,7 @@ end
 vars = {'L2_mag-srf-normal','L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rtn-burst', ...
     'L3_rpw-bia-scpot', 'L3_rpw-bia-efield_srf', 'L3_rpw-bia-efield_rtn','L3_rpw-bia-efield-10-seconds_srf','L3_rpw-bia-efield_rtn'...
     'L3_rpw-bia-scpot', 'L3_rpw-bia-density', 'L3_rpw-bia-density-10-seconds', 'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
-    'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
+    'L2_rpw-lfr-surv-cwf-e-1-second', 'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
     'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
     'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
     'pos_rtn','L2_swa-pas-quality_factor'};
@@ -78,6 +79,7 @@ if ~ismember(varStr, vars)
         case 'pi_srf',     varStrNew = 'L2_swa-pas-grnd-mom_P_SRF';
         case 'pi_rtn',     varStrNew = 'L2_swa-pas-grnd-mom_P_RTN';
         case 'scpot',      varStrNew = 'L3_rpw-bia-scpot';
+        case 'vdc_1sec',   varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second';
         case 'e_srf',      varStrNew = 'L3_rpw-bia-efield_srf';
         case 'e_rtn',      varStrNew = 'L3_rpw-bia-efield_rtn';
         case 'e_srf_10sec',varStrNew = 'L3_rpw-bia-efield-10-seconds_srf';
@@ -133,14 +135,18 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
                     else
                         res=EDC_SRF;
                     end
-                case 'surv' % we might need to change this case when we add more RPW products!!!
-                    % search-coil
-                    BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
-                    if strcmp(C{3},'srf') && ~isempty(BSCM)
-                        res = solo.srf2rtn(BSCM, -1);
-                        res.name = 'B_SRF';
-                    else
-                        res = BSCM;
+                case 'surv'
+                    switch C2{5}
+                        case 'b' % search-coil
+                            BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
+                            if strcmp(C{3},'srf') && ~isempty(BSCM)
+                                res = solo.srf2rtn(BSCM, -1);
+                                res.name = 'B_SRF';
+                            else
+                                res = BSCM;
+                            end
+                        case 'e'  % VDC
+                            res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
                     end
                 otherwise
                     errStr = 'Not yet defined';
