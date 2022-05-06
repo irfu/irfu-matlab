@@ -129,8 +129,9 @@ switch datatype
     
   case {'wf_scm'}
     filename= 'psp_fld_l2_dfb_wf_scm';
-    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
-    varnamesout = {'wf_scm_sensor'};
+    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor';...
+      'psp_fld_l2_dfb_wf_scm_hg_sc'};
+    varnamesout = {'wf_scm_sensor';'wf_scm_sc'};
     
     hourtag={'00';'06';'12';'18'};
     

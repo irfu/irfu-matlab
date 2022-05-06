@@ -410,11 +410,11 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_wf_scm_(lg|hg)_sensor
+varName: psp_fld_l2_dfb_wf_scm_(lg|hg)_(sensor|sc)
 fileName: psp_fld_l2_dfb_wf_scm
 hourtag: 6h
 directory: fields/l2/dfb_wf_scm/20YY/MM
-varNameShort: wf_scm_(lg|hg)_sensor
+varNameShort: wf_scm_(lg|hg)_(sensor|sc)
 related: 
 info#start
 xxx
