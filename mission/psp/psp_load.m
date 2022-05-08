@@ -20,6 +20,7 @@
 % datatype: 'mag_rtn','fgm_rtn'      - FGM, RTN coordinates
 %           'mag_sc','fgm_sc'        - FGM, SC coordinates
 %           'wf_dvdc'                - DBF Digital Fields Board Differential Voltage Waveform
+%           'wf_vdc'                 - DBF Digital Fields Board Differential Voltage Waveform
 %           'wf_scm'                 - DBF Digital Fields Board Search Coil Magnetometer Waveform
 %           'ac_bpf_dv34'            - DFB AC-coupled Differential Voltage, V3-V4 Antennae, Bandpass filtered, High Gain
 %           'ac_bpf_SCMulfhg'        - DFB AC-coupled SCM, Bandpass filtered, Low Frequency, High Gain, u-component
@@ -116,6 +117,13 @@ end
 
 switch datatype
     
+  case {'wf_vdc'}
+    filename= 'psp_fld_l2_dfb_wf_scm';
+    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
+    varnamesout = {'wf_scm_sensor'};
+    
+    hourtag={'00';'06';'12';'18'};  
+
   case {'wf_scm'}
     filename= 'psp_fld_l2_dfb_wf_scm';
     varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
