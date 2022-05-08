@@ -29,8 +29,15 @@
 %           'ac_spec_dv34'           - DFB AC-coupled Differential Voltage, V3-V4 Antennae, Dipole Mode, Spectra, High Gain
 %           'ac_spec_v5'             - DFB AC-coupled V5 Antenna Voltage, Monopole Mode, Auto Spectra, High Gain
 %           'ac_xspec'               - DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra
-%           'ac_spec_scmv'           - DFB AC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
-%           'ac_spec_scmu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
+%           'ac_spec_SCMv'           - DFB AC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
+%           'ac_spec_SCMu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
+%           'ac_spec_SCMd'           - DFB AC-coupled SCM, Low Frequency, High Gain, d-component, Sensor coordinates only Enc 1 (2018/11) 
+%           'ac_spec_SCMe'           - DFB AC-coupled SCM, Low Frequency, High Gain, e-component, Sensor coordinates only Enc 1 (2018/11)
+%           'ac_spec_SCMf'           - DFB AC-coupled SCM, Low Frequency, High Gain, f-component, Sensor coordinates only Enc 1 (2018/11)
+%           'dc_xspec_SCMvw'         - DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates
+%           'dc_xspec_SCMde'         - DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, d-component, e-component, High Gain, Sensor coordinates only Enc 1 (2018/11)
+%           'dc_xspec_SCMdf'         - DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, d-component, f-component, High Gain, Sensor coordinates only Enc 1 (2018/11)
+%           'dc_xspec_SCMef'         - DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, e-component, f-component, High Gain, Sensor coordinates only Enc 1 (2018/11)
 %           'dc_bpf_dv34'            - DFB DC-coupled Diff Volt V34 antenas Bandpass Filtered (BPF)
 %           'dc_bpf_SCMulfhg'        - DFB DC-coupled SCM, Bandpass filtered, Low Frequency, High Gain, u-component
 %           'dc_bpf_SCMvlfhg'        - DFB DC-coupled SCM, Bandpass filtered, Low Frequency, High Gain, v-component
@@ -38,6 +45,9 @@
 %           'dc_spec_SCMv'           - DFB DC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
 %           'dc_spec_SCMu'           - DFB DC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
 %           'dc_spec_SCMw'           - DFB DC-coupled SCM, Low Frequency, High Gain, w-component, Sensor coordinates
+%           'dc_spec_SCMd'           - DFB DC-coupled SCM, Low Frequency, High Gain, d-component, Sensor coordinates only Enc 1 (2018/11) 
+%           'dc_spec_SCMe'           - DFB DC-coupled SCM, Low Frequency, High Gain, e-component, Sensor coordinates only Enc 1 (2018/11)
+%           'dc_spec_SCMf'           - DFB DC-coupled SCM, Low Frequency, High Gain, f-component, Sensor coordinates only Enc 1 (2018/11)
 %           'rfs_lfr'                - Radio Frequency Spectrometer, RFS, Low Frequency Reciever, LFR
 %           'rfs_hfr'                - Radio Frequency Spectrometer, RFS, High Frequency Reciever, HFR
 %           'spc'                    - SWEAP Solar Probe Cup data for proton moments
@@ -53,6 +63,7 @@
 %           'dbm_dvac'               - times series of electric field snapshots
 %           'dbm_vac'                - times series of electric field snapshots
 %           'dbm_dvdc'               - times series of electric field snapshots
+%           'dbm_vdc'                - times series of electric field snapshots
 %           'dbm_scm'                - times series of SCM snapshots
 %           'qtn'                    - Electron density and temperature from quasi-thermal noise
 %           'XXX'                    - where XXX is long or short name of variables in the list "PSP_VAR *"
@@ -126,8 +137,9 @@ switch datatype
 
   case {'wf_scm'}
     filename= 'psp_fld_l2_dfb_wf_scm';
-    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
-    varnamesout = {'wf_scm_sensor'};
+    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor';...
+      'psp_fld_l2_dfb_wf_scm_hg_sc'};
+    varnamesout = {'wf_scm_sensor';'wf_scm_sc'};
     
     hourtag={'00';'06';'12';'18'};
     
@@ -208,7 +220,35 @@ switch datatype
     varnamesout = {'ac_spec_scmu_freq_bins';'ac_spec_scmu_pw'};
     
     hourtag={''};
+
+  case {'ac_spec_scmd'}
+    filename = 'psp_fld_l2_dfb_ac_spec_SCMdlfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_SCMdlfhg_frequency_bins';...
+      'psp_fld_l2_dfb_ac_spec_SCMdlfhg'};
+    varnamesout = {'ac_spec_scmd_freq_bins';'ac_spec_scmd_pw'};
+    
+    hourtag={''};
       
+  case {'ac_spec_scme'}
+    filename = 'psp_fld_l2_dfb_ac_spec_SCMelfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_SCMelfhg_frequency_bins';...
+      'psp_fld_l2_dfb_ac_spec_SCMelfhg'};
+    varnamesout = {'ac_spec_scme_freq_bins';'ac_spec_scme_pw'};
+    
+    hourtag={''};
+
+  case {'ac_spec_scmf'}
+    filename = 'psp_fld_l2_dfb_ac_spec_SCMflfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_ac_spec_SCMflfhg_frequency_bins';...
+      'psp_fld_l2_dfb_ac_spec_SCMflfhg'};
+    varnamesout = {'ac_spec_scmf_freq_bins';'ac_spec_scmf_pw'};
+    
+    hourtag={''};
+  
+
   case {'ac_xspec'}
     filename = 'psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg';
     varnames = {...
@@ -296,6 +336,105 @@ switch datatype
     
     hourtag={''};
     
+  case {'dc_spec_scmd'}
+    filename = 'psp_fld_l2_dfb_dc_spec_SCMdlfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_spec_SCMdlfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_spec_SCMdlfhg'};
+    varnamesout = {'dc_spec_scmd_freq_bins';'dc_spec_scmd_pw'};
+    
+    hourtag={''};
+    
+  case {'dc_spec_scme'}
+    filename = 'psp_fld_l2_dfb_dc_spec_SCMelfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_spec_SCMelfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_spec_SCMelfhg'};
+    varnamesout = {'dc_spec_scme_freq_bins';'dc_spec_scme_pw'};
+    
+    hourtag={''};
+    
+  case {'dc_spec_scmf'}
+    filename = 'psp_fld_l2_dfb_dc_spec_SCMflfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_spec_SCMflfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_spec_SCMflfhg'};
+    varnamesout = {'dc_spec_scmf_freq_bins';'dc_spec_scmf_pw'};
+    
+    hourtag={''};
+
+  case {'dc_xspec_SCMvw'}
+    filename = 'psp_fld_l2_dfb_dc_xspec_SCMvlfhg_SCMwlfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_xspec_SCMvlfhg_SCMwlfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch1_SCMvlfhg';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch2_SCMwlfhg';...
+      'psp_fld_l2_dfb_dc_xspec_coh_SCMvlfhg_SCMwlfhg';...
+      'psp_fld_l2_dfb_dc_xspec_phase_SCMvlfhg_SCMwlfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Real_SCMvlfhg_SCMwlfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Imag_SCMvlfhg_SCMwlfhg'};
+    varnamesout = {'dc_xspec_scmv_scmw_freq_bins';...
+      'dc_xspec_pw_scmv';'dc_xspec_pw_scmw';...
+      'dc_xspec_coh_scmv_scmw';'dc_xspec_ph_scmv_scmw';...
+      'dc_xspec_xterm_Re_scmv_scmw';...
+      'dc_xspec_xterm_Im_scmv_scmw'};
+
+    hourtag={''};
+
+  case {'dc_xspec_SCMde'}
+    filename = 'psp_fld_l2_dfb_dc_xspec_SCMdlfhg_SCMelfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_xspec_SCMdlfhg_SCMelfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch1_SCMdlfhg';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch2_SCMelfhg';...
+      'psp_fld_l2_dfb_dc_xspec_coh_SCMdlfhg_SCMelfhg';...
+      'psp_fld_l2_dfb_dc_xspec_phase_SCMdlfhg_SCMelfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Real_SCMdlfhg_SCMelfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Imag_SCMdlfhg_SCMelfhg'};
+    varnamesout = {'dc_xspec_scmd_scme_freq_bins';...
+      'dc_xspec_pw_scmd';'dc_xspec_pw_scme';...
+      'dc_xspec_coh_scmd_scme';'dc_xspec_ph_scmd_scme';...
+      'dc_xspec_xterm_Re_scmd_scme';...
+      'dc_xspec_xterm_Im_scmd_scme'};
+
+    hourtag={''};
+
+  case {'dc_xspec_SCMdf'}
+    filename = 'psp_fld_l2_dfb_dc_xspec_SCMdlfhg_SCMflfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_xspec_SCMdlfhg_SCMflfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch1_SCMdlfhg';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch2_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_coh_SCMdlfhg_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_phase_SCMdlfhg_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Real_SCMdlfhg_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Imag_SCMdlfhg_SCMflfhg'};
+    varnamesout = {'dc_xspec_scmd_scmf_freq_bins';...
+      'dc_xspec_pw_scmd';'dc_xspec_pw_scmf';...
+      'dc_xspec_coh_scmd_scmf';'dc_xspec_ph_scmd_scmf';...
+      'dc_xspec_xterm_Re_scmd_scmf';...
+      'dc_xspec_xterm_Im_scmd_scmf'};
+
+    hourtag={''};
+
+  case {'dc_xspec_SCMef'}
+    filename = 'psp_fld_l2_dfb_dc_xspec_SCMelfhg_SCMflfhg';
+    varnames = {...
+      'psp_fld_l2_dfb_dc_xspec_SCMelfhg_SCMflfhg_frequency_bins';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch1_SCMelfhg';...
+      'psp_fld_l2_dfb_dc_xspec_power_ch2_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_coh_SCMelfhg_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_phase_SCMelfhg_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Real_SCMelfhg_SCMflfhg';...
+      'psp_fld_l2_dfb_dc_xspec_crossterm_Imag_SCMelfhg_SCMflfhg'};
+    varnamesout = {'dc_xspec_scme_scmf_freq_bins';...
+      'dc_xspec_pw_scme';'dc_xspec_pw_scmf';...
+      'dc_xspec_coh_scme_scmf';'dc_xspec_ph_scme_scmf';...
+      'dc_xspec_xterm_Re_scme_scmf';...
+      'dc_xspec_xterm_Im_scme_scmf'};
+
+    hourtag={''};
+
   case {'rfs_lfr'}
     filename = 'psp_fld_l2_rfs_lfr';
     varnames = {...
@@ -484,7 +623,10 @@ switch datatype
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvdc');
     output       = get_data_dbm_dvdc(listCDFFiles);
     return;
-    
+  case 'dbm_vdc'
+    listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_vdc');
+    output       = get_data_dbm_vdc(listCDFFiles);
+    return;  
   case 'dbm_scm'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_scm');
     output       = get_data_dbm_scm(listCDFFiles);
@@ -716,7 +858,7 @@ end
 
   function out = get_data_dbm_dvac(listCDFFiles)
     % output is structure witf fields
-    % .ts: time series with two columns dvac12 and dvac13
+    % .ts: time series with two columns dvac12 and dvac34
     % .ts_sc: time series in sc coordinate system
     % .startStopMatriTT: start and stop times of snapshots in TT
     % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
@@ -749,7 +891,7 @@ end
 
   function out = get_data_dbm_vac(listCDFFiles)
     % output is structure witf fields
-    % .ts: time series with two columns dvac12 and dvac13
+    % .ts: time series with five columns vac1, vac2, vac3, vac4 and vac5
     % .ts_sc: time series in sc coordinate system
     % .startStopMatriTT: start and stop times of snapshots in TT
     % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
@@ -792,7 +934,7 @@ end
 
 function out = get_data_dbm_dvdc(listCDFFiles)
     % output is structure witf fields
-    % .ts: time series with two columns dvac12 and dvac13
+    % .ts: time series with two columns dvdc12 and dvdc34
     % .ts_sc: time series in sc coordinate system
     % .startStopMatriTT: start and stop times of snapshots in TT
     % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
@@ -821,7 +963,50 @@ function out = get_data_dbm_dvdc(listCDFFiles)
     dbm_dvdc_sc = psp_coordinate_transform(dbm_dvdc,'e>sc');
     out = struct('ts',dbm_dvdc,'ts_sc',dbm_dvdc_sc,...
       'startStopTT',tStartStopTT);
-  end
+end 
+  
+  function out = get_data_dbm_vdc(listCDFFiles)
+    % output is structure witf fields
+    % .ts: time series with five columns vdc1, vdc2, vdc3, vdc4 and vdc5
+    % .ts_sc: time series in sc coordinate system
+    % .startStopMatriTT: start and stop times of snapshots in TT
+    % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
+    %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
+    dbm_vdc = double([]);
+    tFinal = [];
+    for iCdfFile = 1:numel(listCDFFiles)
+      fileCDF = listCDFFiles{iCdfFile};
+      disp(['Reading: ' fileCDF]);
+      res = spdfcdfread(fileCDF,'VARIABLES', {...
+        'psp_fld_l2_dfb_dbm_vdc_time_series_TT2000',...
+        'psp_fld_l2_dfb_dbm_vdc1',...
+        'psp_fld_l2_dfb_dbm_vdc2',...
+        'psp_fld_l2_dfb_dbm_vdc3',...
+        'psp_fld_l2_dfb_dbm_vdc4',...
+        'psp_fld_l2_dfb_dbm_vdc5'},...
+        'KeepEpochAsIs',true,'dataonly',true);
+      tt=res{1}; temp1 = res{2};
+      temp2 = res{3}; temp3 = res{4};
+      temp4 = res{5}; temp5 = res{6};
+      t=[tt(1,:);tt;tt(end,:)];t=t(:);
+      tFinal = [tFinal; t];
+      vecNaN = nan(size(tt,2),1,'single');
+      dbm_vdc_temp1 = [vecNaN temp1 vecNaN]';
+      dbm_vdc_temp2 = [vecNaN temp2 vecNaN]';
+      dbm_vdc_temp3 = [vecNaN temp3 vecNaN]';
+      dbm_vdc_temp4 = [vecNaN temp4 vecNaN]';
+      dbm_vdc_temp5 = [vecNaN temp5 vecNaN]';
+      dbm_vdc = [dbm_vdc; [dbm_vdc_temp1(:),...
+        dbm_vdc_temp2(:), dbm_vdc_temp3(:),...
+        dbm_vdc_temp4(:), dbm_vdc_temp5(:)]];
+    end
+    tStartStopTT = reshape(tFinal(diff(tFinal)==0),2,[])';
+    dbm_vdc(dbm_vdc < -1e30) = NaN;
+    dbm_vdc    = TSeries(EpochTT(tFinal),dbm_vdc);
+    dbm_vdc_sc = psp_coordinate_transform(dbm_vdc,'e>sc');
+    out = struct('ts',dbm_vdc,'ts_sc',dbm_vdc_sc,...
+      'startStopTT',tStartStopTT);
+  end 
 
   function out = get_data_dbm_scm(listCDFFiles)
     % output is structure witf fields

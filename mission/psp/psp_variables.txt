@@ -293,6 +293,84 @@ info#end
 ----
 
 %%%%
+varName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg_frequency_bins
+fileName: psp_fld_l2_dfb_dc_xspecc_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_scm(v|d|e)_scm(w|e|f)freq_bins
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+Frequency bins for the SCM(V|S|E)lfhg-SCM(W|E|F)lfhg cross spectra data.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_power_ch(1|2)_SCM(v|w|d|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_pw_scm(v|w|d|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Power for channels SCM(V|D|E)LFHG and SCM(W|E|F)LFHG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_coh_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_coh_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Coherence between channel SCM(V|D|E)LFHG and channel SCM(W|E|F)LFHG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_phase_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_ph_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Phase of channel SCM(V|D|E)LFHG and SCM(W|E|F)lfhg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_crossterm_Real_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec__SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_xterm_Re_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Real Part of Crossterm (FT_1 x FT_2^*) for channel SCM(V|D|E)LFHG and SCM(W|E|F)lfhg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_crossterm_Imag_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_xterm_Im_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Imag Part of Crossterm (FT_1 x FT_2^*) for channel SCM(V|D|E)LFHG and SCM(W|E|F)lfhg.
+info#end
+----
+
+%%%%
 varName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
 fileName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
 directory: fields/l2/dfb_dc_spec/20YY/MM
@@ -306,11 +384,11 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w)lfhg
-fileName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w)lfhg
+varName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w|d|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w|d|e|f)lfhg
 directory: fields/l2/dfb_dc_spec/20YY/MM
 hourtag: 
-varNameShort: dc_spec_scm(u|v|w)lfhg
+varNameShort: dc_spec_scm(u|v|w|d|e|f)lfhg
 related: 
 info#start
 xxx
@@ -319,11 +397,11 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
-fileName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w)lfhg
+varName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w|d|e|f)lfhg
+fileName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w|d|e|f)lfhg
 directory: fields/l2/dfb_ac_spec/20YY/MM
 hourtag: 
-varNameShort: ac_spec_scm(u|v|w)lfhg
+varNameShort: ac_spec_scm(u|v|w|d|e|f)lfhg
 related: 
 info#start
 xxx
@@ -332,11 +410,11 @@ info#end
 ----
 
 %%%%
-varName: psp_fld_l2_dfb_wf_scm_(lg|hg)_sensor
+varName: psp_fld_l2_dfb_wf_scm_(lg|hg)_(sensor|sc)
 fileName: psp_fld_l2_dfb_wf_scm
 hourtag: 6h
 directory: fields/l2/dfb_wf_scm/20YY/MM
-varNameShort: wf_scm_(lg|hg)_sensor
+varNameShort: wf_scm_(lg|hg)_(sensor|sc)
 related: 
 info#start
 xxx
