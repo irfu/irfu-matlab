@@ -1025,6 +1025,8 @@ classdef mms_sdp_dmgr < handle
             model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
           elseif(DATAC.scId == 2 && all(DATAC.dce.time > EpochTT('2018-09-21T06:04:45.810Z').ttns)) % MMS2 p2 failed
             model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'p134', 'e34'});
+          elseif(DATAC.scId == 3 && all(DATAC.dce.time > EpochTT('2022-05-08T23:18:44.300Z').ttns)) % MMS3 p2 failed
+            model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'p134', 'e34'});
           else
             model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
           end
@@ -1270,7 +1272,7 @@ classdef mms_sdp_dmgr < handle
       function e_from_asym()
         % Compute E in asymmetric configuration
         
-        if ~ismember(DATAC.scId, [2 4]), return, end
+        if ~ismember(DATAC.scId, [2 3 4]), return, end
         
         %PROBE MAGIC
         if DATAC.scId == 4
@@ -1286,6 +1288,13 @@ classdef mms_sdp_dmgr < handle
           TTFail = EpochTT('2018-09-21T06:04:45.810Z');
           senV = 'v2';
           mergeBrst = false; % mms2p2 failed completely.
+          senE = 'e12';
+          senA = 'v1'; senB = 'v3'; senC = 'v4';
+        elseif DATAC.scId == 3
+          %MMS3, Probe 3 fail, 2022-05-08T23:18:44.3
+          TTFail = EpochTT('2022-05-08T23:18:44.300Z');
+          senV = 'v2';
+          mergeBrst = false; % mms3p2 failed completely.
           senE = 'e12';
           senA = 'v1'; senB = 'v3'; senC = 'v4';
         end
@@ -2160,10 +2169,13 @@ classdef mms_sdp_dmgr < handle
       
       % Probe failures
       assymConf = MMS_CONST.Bitmask.ASYMM_CONF;
-      if scId == 4 % Probe 4 bias failure on MMS4
+      if scId == 4 % Probe 4 bias failure on MMS4 (2016-06-12T05:28:48.200)
         Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, assymConf);
         Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, assymConf);
-      elseif scId == 2 % Probe 2 complete failure on MMS2
+      elseif scId == 2 % Probe 2 complete failure on MMS2 (2018-09-21T06:04:45.810)
+        Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v2.bitmask, assymConf);
+        Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, assymConf);
+      elseif scId == 3 % Probe 2 complete failure on MMS3 (2022-05-08T23:18:44.300)
         Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v2.bitmask, assymConf);
         Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, assymConf);
       end

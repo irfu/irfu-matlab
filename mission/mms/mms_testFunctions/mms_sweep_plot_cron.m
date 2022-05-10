@@ -77,6 +77,8 @@ for iSc = 1:4
     warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS4 p4 failed
   elseif(iSc==2 && tint.stop.ttns > EpochTT('2018-09-21T06:04:45.810Z').ttns)
     warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS2 p2 failed
+  elseif(iSc==3 && tint.stop.ttns > EpochTT('2022-05-08T23:18:44.390Z').ttns)
+    warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS3 p2 failed
   else
     warning('on','MATLAB:polyfit:PolyNotUnique');  % Other s/c (with working probes) should warn
   end
@@ -252,6 +254,10 @@ for iSc = 1:4
     Sw.p2_iPh_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
     Sw.p2_iPh_knee_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
     Sw.p2_impedance_ts.data(Sw.p2_impedance_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
+  elseif(iSc == 3) % MMS2 p2 failed
+    Sw.p2_iPh_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2022-05-08T23:18:44.300Z')) = NaN;
+    Sw.p2_iPh_knee_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2022-05-08T23:18:44.300Z')) = NaN;
+    Sw.p2_impedance_ts.data(Sw.p2_impedance_ts.time >= EpochTT('2022-05-08T23:18:44.300Z')) = NaN;
   end
 
   % iPh vs phase
