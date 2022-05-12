@@ -77,7 +77,7 @@ for iSc = 1:4
     warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS4 p4 failed
   elseif(iSc==2 && tint.stop.ttns > EpochTT('2018-09-21T06:04:45.810Z').ttns)
     warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS2 p2 failed
-  elseif(iSc==3 && tint.stop.ttns > EpochTT('2022-05-08T23:18:44.390Z').ttns)
+  elseif(iSc==3 && tint.stop.ttns > EpochTT('2022-05-08T23:18:44.300Z').ttns)
     warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS3 p2 failed
   else
     warning('on','MATLAB:polyfit:PolyNotUnique');  % Other s/c (with working probes) should warn
