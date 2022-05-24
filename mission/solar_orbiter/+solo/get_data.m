@@ -5,6 +5,7 @@ function res = get_data(varStr,Tint)
 %
 % MAG:
 %   'L2_mag-srf-normal' (alias: b_srf_norm), 'L2_mag_rtn_normal' (alias: b_rtn_norm)
+%   'L2_mag-srf-normal-1-minute' (alias: b_srf_norm_1min), 'L2_mag_rtn_normal-1-minute' (alias: b_rtn_norm_1min))
 %   'L2_mag-srf-burst' (alias:  b_srf_brst), 'L2_mag-rtn-burst' (alias: b_rtn_brst)
 %
 % RPW:
@@ -50,7 +51,7 @@ end
 
 % List of full variable names. Alias names not inlcluded but changed to
 % proper variable name below.
-vars = {'L2_mag-srf-normal','L2_mag-rtn-normal', 'L2_mag-srf-burst', 'L2_mag-rtn-burst', ...
+vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2_mag-rtn-normal-1-minute', 'L2_mag-srf-burst', 'L2_mag-rtn-burst', ...
     'L3_rpw-bia-scpot', 'L3_rpw-bia-efield_srf', 'L3_rpw-bia-efield_rtn','L3_rpw-bia-efield-10-seconds_srf','L3_rpw-bia-efield_rtn'...
     'L3_rpw-bia-scpot', 'L3_rpw-bia-density', 'L3_rpw-bia-density-10-seconds', 'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
     'L2_rpw-lfr-surv-cwf-e-1-second', 'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
@@ -64,8 +65,10 @@ if ~ismember(varStr, vars)
         % short alias and full variable names
         case 'b_rtn_brst', varStrNew = 'L2_mag-rtn-burst';
         case 'b_rtn_norm', varStrNew = 'L2_mag-rtn-normal';
+        case 'b_rtn_norm_1min', varStrNew = 'L2_mag-rtn-normal-1-minute';
         case 'b_srf_brst', varStrNew = 'L2_mag-srf-burst';
         case 'b_srf_norm', varStrNew = 'L2_mag-srf-normal';
+        case 'b_srf_norm_1min', varStrNew = 'L2_mag-srf-normal-1-minute';
         case 'vi_rtn',     varStrNew = 'L2_swa-pas-grnd-mom_V_RTN';
         case 'vi_srf',     varStrNew = 'L2_swa-pas-grnd-mom_V_SRF';
         case 'ni',         varStrNew = 'L2_swa-pas-grnd-mom_N';
