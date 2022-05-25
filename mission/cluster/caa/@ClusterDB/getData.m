@@ -846,31 +846,36 @@ elseif strcmp(quantity,'a')
     cef_init(); cef_read(cefFile);
     c1 = onCleanup(@() cef_close());
     c2 = onCleanup(@() rmdir([currentDir '/' tempDir],'s'));
-    tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum>epoch');
-    spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
-    % find errors
-    iJump = find(abs(spinPeriod-median(spinPeriod))>5*std(spinPeriod));
-    if length(iJump) < min(4,length( spinPeriod ))
-      if length(iJump)>1 && iJump(end)-iJump(1)==2, iJump=iJump(1)+(1:3)'-1; end
-      for i = iJump'
-        irf_log('proc',['removing erroneous point at ' epoch2iso(tt(i))])
-      end
-      spinPeriod(iJump) = [];
-      tt(iJump) = [];
-    end
-    refTime = [-.5 .5]; % part of spin
-    refPhase = refTime*360+180; % spin period center corresponds to phase 0
-    deltaT = repmat(refTime,size(tt,1),1).*...
-      repmat(double(spinPeriod),1,length(refTime));
-    tmat = repmat(tt(:,1),1,length(refTime))+deltaT;
-    amat = repmat(refPhase,size(tt,1),1);
-    tmat = reshape(tmat',numel(tmat),1);
-    difftmat = diff(tmat); ii = find(difftmat<0); tmat(ii) = tmat(ii+1);
-    if sum(tmat>=start_time & tmat<=start_time+dt)>1 % at least 2 points
-      amat = reshape(amat',numel(amat),1);
-      pha = [tmat amat];
+    tt = cef_var('time_tags');
+    if isempty(tt) % check for empty cef file return
+      irf_log('dsrc','did not suceed: zero data points returned')
     else
-      irf_log('dsrc','did not suceed: too few data points returned')
+      tt = irf_time( cef_date(tt'),'datenum>epoch');
+      spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
+      % find errors
+      iJump = find(abs(spinPeriod-median(spinPeriod))>5*std(spinPeriod));
+      if length(iJump) < min(4,length( spinPeriod ))
+        if length(iJump)>1 && iJump(end)-iJump(1)==2, iJump=iJump(1)+(1:3)'-1; end
+        for i = iJump'
+          irf_log('proc',['removing erroneous point at ' epoch2iso(tt(i))])
+        end
+        spinPeriod(iJump) = [];
+        tt(iJump) = [];
+      end
+      refTime = [-.5 .5]; % part of spin
+      refPhase = refTime*360+180; % spin period center corresponds to phase 0
+      deltaT = repmat(refTime,size(tt,1),1).*...
+        repmat(double(spinPeriod),1,length(refTime));
+      tmat = repmat(tt(:,1),1,length(refTime))+deltaT;
+      amat = repmat(refPhase,size(tt,1),1);
+      tmat = reshape(tmat',numel(tmat),1);
+      difftmat = diff(tmat); ii = find(difftmat<0); tmat(ii) = tmat(ii+1);
+      if sum(tmat>=start_time & tmat<=start_time+dt)>1 % at least 2 points
+        amat = reshape(amat',numel(amat),1);
+        pha = [tmat amat];
+      else
+        irf_log('dsrc','did not suceed: too few data points returned')
+      end
     end
   end
   cd(currentDir)
