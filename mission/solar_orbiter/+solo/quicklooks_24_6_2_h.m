@@ -46,7 +46,11 @@ yyaxis(h(2),'right');
 if ~isempty(data.B)
     fci = qe*data.B.abs*10^-9/mp/(2*pi);
     irf_plot(h(2),data.B.abs.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
-    h(2).YLim=[floor(min(data.B.abs.data)),ceil(max(data.B.abs.data))];
+    %h(2).YLim=[floor(min(data.B.abs.data)),ceil(max(data.B.abs.data))];
+    Bnan = rmmissing(data.B.abs.data);
+    if ~isempty(Bnan)
+        h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
+    end
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
 h(2).YColor=[1,0,0];
@@ -164,23 +168,22 @@ ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 %Ion energy spectrum
 if ~isempty(data.ieflux)
     myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
-    iEnergy = cdfread([myFile.path '/' myFile(1).name],'variables','Energy');
-    iEnergy = iEnergy{1};
-
     iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
-    iDEF.p = data.ieflux.tlim(Tint).data;
+    for ii = 1:(Tint(2)-Tint(1))/3600/24 
+        iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
+        iEnergy = iEnergy{1};
+        iDEF.p = data.ieflux.data;
+          
+    end
     iDEF.p_label='dEF';
     iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
     irf_spectrogram(h(9),iDEF,'log');
     % set(h(1),'ytick',[1e1 1e2 1e3]);
     %caxis(h(9),[-1 1])
     hold(h(9),'on');
-    if ~isempty(data.B)
-        irf_plot(h(9),fci,'k','linewidth',lwidth);
-    end
     set(h(9), 'YScale', 'log');
     colormap(h(9),jet)
-    ylabel(h(9),'[eV]')
+    ylabel(h(9),{'Eflux_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
 
 end 
 
@@ -196,11 +199,11 @@ if ~isempty(data.Etnr)
     hold(h(10),'on');
     irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
     text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
-    %set(h(10), 'YScale', 'log');
+    set(h(10), 'YScale', 'log');
     colormap(h(10),jet)   
-   % ylabel(h(9),'f [kHz]')
     set(h(10),'ColorScale','log')
     %caxis(h(10),[.01 1]*10^-12)
+    ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
 end
 
 
@@ -424,7 +427,7 @@ for i6h = 1:4
     
     filesmth = Tint_6h(end);
     filesmth = filesmth.utc;
-    filestr2 = filesmth(1:8);
+    filestr2 = filesmth(1:13);
     filestr2([5,8])=[];
     path2=fullfile(paths.path_6h,[filestr1,'_',filestr2,'.png']);
     print('-dpng',path2);

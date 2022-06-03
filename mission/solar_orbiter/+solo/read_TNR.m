@@ -34,7 +34,7 @@ function out =  read_TNR(tint)
 
 %% 
 
-%tint = irf.tint('2020-10-12T00:00:00Z','2020-10-13T00:00:00Z');
+%tint = irf.tint('2020-11-18T00:00:00Z','2020-11-19T00:00:00Z');
 date_vector = irf_time(tint,'epochTT>vector');
 yyyy = num2str(date_vector(1,1));
 
@@ -47,8 +47,9 @@ if numel(dd)==1;dd=['0' dd];end
 
 
 sensor = 5;
-path = ['/Volumes/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
-%tint = irf.tint('2020-10-04T00:00:00.00Z','2020-10-04T53:99:00.00Z');
+sensor2 = 4;
+path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
+
     data_l2 = rcdf(path, tint);
 
     n_freqs = size(data_l2.tnr_band_freq.data, 2) * 4;
@@ -89,8 +90,15 @@ path = ['/Volumes/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-c
 
     timet_ = epoch_';
 
-    sens0_ = find(confg_(:, 1) == sensor)';
-    sens1_ = find(confg_(:, 2) == sensor)';
+  sens0_1 = find(confg_(:, 1) == sensor)';
+  sens0_2 = find(confg_(:, 1) == sensor2)';
+  sens0_ = sort([sens0_1 sens0_2]);
+  
+  sens1_1 = find(confg_(:, 2) == sensor)';
+  sens1_2 = find(confg_(:, 2) == sensor2)';
+  sens1_ = sort([sens1_1 sens1_2]);
+   
+
 
     if ~isempty(sens0_) && ~isempty(sens1_)
         auto_calib = [auto1_(sens0_, :); auto2_(sens1_, :)];
@@ -166,22 +174,23 @@ path = ['/Volumes/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-c
   
   
   %==============Moving Window 
-   %for i = 1:f100_ind
-   %    movm(:,i) = movmean(vp(:,i),3505); 
-   %end
-   %vp = vp-movm;
+%    for i = 1:f100_ind
+%        movm(:,i) = movmean(vp(:,i),200); 
+%    end
+%    vp = vp-movm;
+    vp(vp<0)=0;
    %=============   
     out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p', vp);
-    out.p_label={'log_{10}E^{2}','V^2 Hz^{-1}'};
+    out.p_label={'dB'};
     
 
-% 
+
 %      hh=irf_panel('tnr');
-%      irf_spectrogram(hh,out,'lin')
+%      irf_spectrogram(hh,out,'log')
 %      set(hh, 'YScale', 'log');
 %      colormap(hh,jet)
 %      set(hh,'ColorScale','log')
-%      caxis(hh,[.01 1]*10^-12)
+%      caxis(hh,[-165 -115])
 end
 
 %%
