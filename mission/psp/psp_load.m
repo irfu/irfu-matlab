@@ -21,7 +21,8 @@
 %           'mag_sc','fgm_sc'        - FGM, SC coordinates
 %           'wf_dvdc'                - DBF Digital Fields Board Differential Voltage Waveform
 %           'wf_vdc'                 - DBF Digital Fields Board Differential Voltage Waveform
-%           'wf_scm'                 - DBF Digital Fields Board Search Coil Magnetometer Waveform
+%           'wf_scm_sc'              - DBF Digital Fields Board Search Coil Magnetometer Waveform SC coordinates (usually has no valid data, only NaN's)
+%           'wf_scm_sensor'          - DBF Digital Fields Board Search Coil Magnetometer Waveform sensor coordinates
 %           'ac_bpf_dv34'            - DFB AC-coupled Differential Voltage, V3-V4 Antennae, Bandpass filtered, High Gain
 %           'ac_bpf_SCMulfhg'        - DFB AC-coupled SCM, Bandpass filtered, Low Frequency, High Gain, u-component
 %           'ac_bpf_SCMumfhg'        - DFB AC-coupled SCM, Bandpass filtered, Medium Frequency, High Gain, u-component
@@ -135,13 +136,19 @@ switch datatype
     
     hourtag={'00';'06';'12';'18'};  
 
-  case {'wf_scm'}
+  case {'wf_scm_sensor'}
     filename= 'psp_fld_l2_dfb_wf_scm';
-    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor';...
-      'psp_fld_l2_dfb_wf_scm_hg_sc'};
-    varnamesout = {'wf_scm_sensor';'wf_scm_sc'};
+    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
+    varnamesout = {'wf_scm_sensor'};
     
     hourtag={'00';'06';'12';'18'};
+
+  case {'wf_scm_sc'}
+    filename= 'psp_fld_l2_dfb_wf_scm';
+    varnames = {'psp_fld_l2_dfb_wf_scm_hg_sc'};
+    varnamesout = {'wf_scm_sc'};
+    
+    hourtag={'00';'06';'12';'18'};  
     
   case {'ac_bpf_dv34'}
     filename = 'psp_fld_l2_dfb_ac_bpf_dV34hg';
