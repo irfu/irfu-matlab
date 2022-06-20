@@ -107,10 +107,10 @@ classdef swmode_defs
 
 
     % PRIVATE, STATIC, CONSTANTS
-    properties(Constant, GetAccess=private)        
-        
-        SWM_PURPOSE_AMENDMENT = ' INOFFICIAL wrt. ROC.';
-    end
+%     properties(Constant, GetAccess=private)
+%
+%         SWM_PURPOSE_AMENDMENT = ' INOFFICIAL wrt. ROC.';
+%     end
 
     
     

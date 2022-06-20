@@ -391,11 +391,11 @@ classdef constants
 
 
 
-            %=================================================
-            % Lists of commonly used groups DATASET_IDs (DSI)
-            % -----------------------------------------------
+            %====================================================
+            % Lists of commonly used GROUPS of DATASET_IDs (DSI)
+            % --------------------------------------------------
             % NOTE: Groups are allowed to overlap.
-            %=================================================
+            %====================================================
             L2_LFR_DSIs = {...
                 'SOLO_L2_RPW-LFR-SBM1-CWF-E', ...
                 'SOLO_L2_RPW-LFR-SBM2-CWF-E', ...
@@ -624,6 +624,7 @@ classdef constants
         
         
         
+        % Add a single MODS entry (string) for multiple DATASET_IDs.
         function add_MODS_entry(Map, datasetIdsCa, entryStr)
             % PROPOSAL: "Flatten" datasetIdsCa if cell arrays of cell arrays.
             
