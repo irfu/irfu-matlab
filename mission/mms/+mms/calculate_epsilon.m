@@ -167,8 +167,8 @@ end
 energycorr = energy - SCpot.data*ones(size(energy(1,:)));
 v = real(sqrt(2*qe*(energycorr)/pmass));
 if flag_same_e && flag_dE
-  energyupper = energy + ones(size(PDist.time))*energy_plus;
-  energylower = energy - ones(size(PDist.time))*energy_minus;
+  energyupper = energy + energy_plus;
+  energylower = energy - energy_minus;
   vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
   vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 elseif flag_same_e && ~flag_dE
