@@ -1,5 +1,5 @@
 function output = read_LL(varStr,Tint)
-% output = solo.read_solo_LL(varStr, Tint)
+% output = solo.read_LL(varStr, Tint)
 % 
 % Read Solar Orbiter low latency data
 % Warning: this data is not to be used for science
@@ -8,7 +8,7 @@ function output = read_LL(varStr,Tint)
 % B_RTN B_SRF V_RTN V_SRF N
 %
 % Example
-%   Tint = irf.tint('2020-07-29T10:20:00.000Z/2020-07-29T11:20:00.000Z');
+%   Tint = irf.tint('2020-08-10T00:00:00.000Z/2021-01-25T00:00:00.000Z');
 %   V = solo.get_data('V_RTN',Tint) % Solar wind speed in RTN low latency
 % 
 % Script can be improved/optimised in the future
@@ -123,16 +123,18 @@ else
     output = [];
 end
 
-if conv==1
+if conv==1 && ~isempty(output)
     output = solo.srf2rtn(output,-1);
     output.coordinateSystem = 'SRF';
     output.name = 'SWA_PAS_VELOCITY_SRF';
 end
 
-if conv==0
+if conv==0 && ~isempty(output)
     output = solo.srf2rtn(output,-1);
     output.coordinateSystem = 'RTN';
     output.name = 'SWA_PAS_VELOCITY_RTN';
 end
 
+if ~isempty(output)
 output.userData = 'Low Latency data, not for science!';
+end
