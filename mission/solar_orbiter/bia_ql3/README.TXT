@@ -9,13 +9,17 @@ Syntax 1: --help
 Syntax 2: matlab_executable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
 
 
-NOTE
-====
+NOTES
+=====
 According to ROC (Milan Maksimovic, LESIA):
     "Summary Plot" (SP) = Plot which summarizes the content of a single dataset
     "Quicklook"         = Plot which summarizes data for entire instrument.
 Hence this code generates what he calls "summary plots" and MATALB package "solo.sp".
 However, ROC has named the software "BIA_QL3" (QL=Quicklooks? L3?!) so the usage is inconsistent.
+--
+Since the software is run by ROC/LESIA, the code has to conform to the interface which they specify.
+Not a formal description, but see e.g.
+https://gitlab.obspm.fr/ROC/RCS/BIA_QL3/-/issues/1
 
 
 IRFU-MATLAB DIRECTORIES ASSOCIATED WITH BIA_QL3
