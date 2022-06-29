@@ -1,5 +1,7 @@
 function res = get_data(varStr,Tint)
 % res = solo.get_data(varStr, Tint)
+%  
+% Read Solar Orbiter data from the IRF server
 %
 % varStr is one of the following (note aliases can also be used):
 %
@@ -33,6 +35,9 @@ function res = get_data(varStr,Tint)
 %   'L2_swa-pas-grnd-mom_Pi_RTN' (alias: pi_rtn)
 %   'L2_swa-pas-vdf' (alias: pas_vdf) 'L2_swa-pas-quality_factor' (alias: pas_qf)
 %
+% LOW LATENCY (NOT FOR SCIENCE!)
+%   'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N'
+%
 % EPHEMERIS
 %   'pos_rtn' - from solo.get_position
 %
@@ -57,7 +62,7 @@ vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2
     'L2_rpw-lfr-surv-cwf-e-1-second', 'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
     'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
     'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
-    'pos_rtn','L2_swa-pas-quality_factor'};
+    'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N'};
 
 %% check if alias is used and change to full variable name
 if ~ismember(varStr, vars)
@@ -112,7 +117,7 @@ end
 
 C = strsplit(varStr,'_');
 
-if strcmp(varStr(1),'L') % check if request L2/3 data
+if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
     switch C{2}(1:3)
         case 'mag'
             % MAG variables
@@ -249,7 +254,11 @@ if strcmp(varStr(1),'L') % check if request L2/3 data
                     error(errStr);
             end
     end
-elseif strcmp(C{1},'pos')
+end
+if strcmp(C{1},'pos')
     % return the solo position - predicted, should we use flown?
     res = solo.get_position(Tint, 'predicted', 'frame', 'SOLO_SUN_RTN');
+end
+if strcmp(C{1},'LL')
+    res = solo.read_LL(varStr(4:end),Tint);
 end
