@@ -9,7 +9,7 @@ function output = read_LL(varStr,Tint)
 %
 % Example
 %   Tint = irf.tint('2020-08-10T00:00:00.000Z/2021-01-25T00:00:00.000Z');
-%   V = solo.get_data('V_RTN',Tint) % Solar wind speed in RTN low latency
+%   V = solo.read_LL('V_RTN',Tint) % Solar wind speed in RTN low latency
 % 
 % Script can be improved/optimised in the future
 
