@@ -320,7 +320,9 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
   PSH.CN          = numel(CA_final); % number of holes
   PSH.Cxy         = CA_final;
   PSH.Cparam      = double(hole_stats);
-  
+
+  % return filtered dist
+  PSH.filt_dist = f1Dn;
 end
 
 

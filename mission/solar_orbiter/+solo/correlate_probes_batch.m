@@ -11,8 +11,9 @@ strname = 'd23K123_20220225_test';
 
 % Select time interval. We take +/- 3 days as a margin to better match with the
 % old calibration file if we only do a partial update.
+calTint = irf.tint('2020-03-01T00:00:00Z/2021-12-31T23:59:59.99Z');
 margin = 3*24*60*60; %seconds.
-Tint = irf.tint('2020-03-01T00:00:00Z/2021-12-31T23:59:59.99Z')+[-1,1]*margin;
+Tint=calTint+[-1,1]*margin;
 
 % If there is a discontinuity in the data, e.g. potential jumps due to the
 % solar panels, as in late 2020, early 2021, generate subintervals and

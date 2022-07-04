@@ -37,8 +37,8 @@
 % Uppsala, Sweden. Modified by Erik P G Johansson.
 %
 function quicklook_main(...
-        logoPath, vhtDataDir, outputDir, ...
-        runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+       logoPath, vhtDataDir, outputDir, ...
+       runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 %
 % PROPOSAL: Log wall time used.
 %   NOTE: ~Can not time per plot.
@@ -83,13 +83,14 @@ irf
 %================================
 % For data on the IRFU server the following two are sufficient. You also need
 % V_RPW.mat and V_RPW_1h.mat, found on solo/data_yuri.
+
 solo.db_init('local_file_db', '/data/solo/');
 solo.db_init('local_file_db', '/data/solo/data_irfu');
+
 
 % Setup cache
 solo.db_init('db_cache_size_max', 4096)
 solo.db_cache('on', 'save')
-
 
 
 %===========
@@ -102,7 +103,7 @@ ENABLE_B = 1;
 % Specify subdirectories for saving the respective types of plots.
 PATHS.path_2h  = fullfile(outputDir, '2h' );
 PATHS.path_6h  = fullfile(outputDir, '6h' );
-PATHS.path_24h = fullfile(outputDir, '24h');
+PATHS.path_24h = fullfile(outputDir, '24h' );
 PATHS.path_1w  = fullfile(outputDir, '1w' );
 
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
@@ -190,6 +191,12 @@ if runNonweeklyPlots
         % Proton & alpha density:
         Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
         
+        % Ion spectrum
+        Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
+        
+        %TNR E-field
+        Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+        
         % Solar Orbiter position
         % Note: solopos uses SPICE, but should be taken care of by
         % "solo.get_position".
@@ -261,6 +268,12 @@ if runWeeklyPlots
         
         % Proton & alpha density:
         Data2.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
+                
+        % Ion spectrum
+        Data2.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
+     
+        %TNR E-field
+        Data2.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
         
         % Solar Orbiter position
         % Note: solopos uses SPICE, but should be taken care of by
