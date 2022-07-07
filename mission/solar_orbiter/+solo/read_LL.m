@@ -153,7 +153,6 @@ if conv==1 && ~isempty(output)
 end
 
 if conv==0 && ~isempty(output)
-    output = solo.srf2rtn(output,-1);
     output.coordinateSystem = 'RTN';
     output.name = 'SWA_PAS_VELOCITY_RTN';
 end
