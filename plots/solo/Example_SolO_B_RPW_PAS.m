@@ -1,14 +1,15 @@
 %% Load the data
-tint = irf.tint('2021-11-03T12:10:00.000Z/2021-11-03T12:40:00.000Z');
-B = solo.get_data('B_rtn_norm',tint);
-scpot = solo.get_data('scpot', tint);
-E = solo.get_data('e_rtn',tint);
-Vi = solo.get_data('Vi_rtn',tint);
-Ni = solo.get_data('Ni',tint);
+Tint = irf.tint('2021-08-22T02:00:00.00Z/2021-08-22T02:40:00.00Z');
+B = solo.get_data('B_rtn_norm',Tint);
+scpot = solo.get_data('scpot', Tint);
+E = solo.get_data('e_rtn',Tint);
+Vi = solo.get_data('Vi_rtn',Tint);
+Ni = solo.get_data('Ni',Tint);
 Ne = solo.psp2ne(scpot);
-Ti = solo.get_data('Ti',tint);
-Eiflux = solo.get_data('pas_eflux',tint);
-QF = solo.get_data('pas_qf',tint);
+%Ti = solo.get_data('Ti',tint); % Scalar temperature
+Ti = solo.get_data('Ti_fac',Tint);
+Eiflux = solo.get_data('pas_eflux',Tint);
+QF = solo.get_data('pas_qf',Tint);
 
 %% Calculate ellipticity and wavelet Bsum
 b0 = irf_filt(B,0,0.01,[],3);
@@ -41,12 +42,8 @@ specrec_Bsum.f_label='';
 specrec_Bsum.p_label={'log_{10}B^{2}','nT^2 Hz^{-1}'};
 
 %% Plot the data
-
-% Define blue-red colormap
-rr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
-gg = interp1([1 64 128 192 256],[0.0  0.5 0.75 0.5 0.00],1:256);
-bb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
-bgrcmap = [rr' gg' bb'];
+bgrcmap=irf_colormap('bluered');
+spacmap=irf_colormap('space');
 
 h = irf_figure(10);
 irf_plot(h(1),B.abs);
@@ -63,7 +60,7 @@ irf_legend(h(3),{'E_r';'E_t';'E_n'},[1.02 0.98],'fontsize',15)
 
 irf_spectrogram(h(4),specrec_Bsum); 
 set(h(4), 'YScale', 'log')
-colormap(h(4),'jet'); ylabel(h(4),'f [Hz]')
+colormap(h(4),spacmap); ylabel(h(4),'f [Hz]')
 
 irf_spectrogram(h(5),spec_ellipticity,'log'); 
 caxis(h(5),[-1 1])
@@ -87,16 +84,22 @@ irf_legend(h(8),{'';'V_t';'V_n'},[1.02 0.98],'fontsize',15)
 
 irf_plot(h(9),Ti)
 ylabel(h(9),'T_{i} [eV]','Interpreter','tex')
+if size(Ti.data,2)>1
+  irf_legend(h(9),{'T_{||}';'T_{\perp 1}';'T_{\perp 2}'},[1.02 0.98],'fontsize',15)
+end
 
 irf_spectrogram(h(10),Eiflux); 
 set(h(10), 'YScale', 'log'); 
 ylabel(h(10),'E [eV]');
-colormap(h(10),'jet');
+colormap(h(10),spacmap);
+
 
 set(h,'linewidth',1,'fontsize',15)
 axis(h,'tight')
-irf_zoom(h,'x',tint)
+irf_zoom(h,'x',Tint)
 irf_plot_axis_align(h);
+
+set(h(10), 'YLim', [300 5000]); 
 
 title(h(1),['SWA quality factor ' num2str(min(QF.data)) ' - ' num2str(max(QF.data))],'fontsize',15,'FontWeight','normal')
 h(1).TitleHorizontalAlignment = 'right';
