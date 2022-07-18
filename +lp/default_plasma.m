@@ -14,6 +14,7 @@ plasmaList = {'sw@1AU',       @p_sw_1AU;...
   'swfast@1AU',   @p_sw_fast_1AU;...
   'swslow@1AU',   @p_sw_slow_1AU;...
   'sw@028AU',     @p_sw_028AU;...
+  'bow_shock',    @p_bow_shock;...
   'plasma sheet', @p_plasma_sheet...
   };
 plasmaNamesList = plasmaList(:,1);
@@ -84,6 +85,15 @@ end
     Plasma.mp   = [0   0   1];
     Plasma.T    = [25 100 30];
     Plasma.v    = 400e3;
+  end
+  function Plasma = p_bow_shock
+    Plasma      = lp.plasma;
+    Plasma.name = 'Bow shock';
+    Plasma.qe   = [-1 1];
+    Plasma.n    = 30e6;
+    Plasma.mp   = [0 1];
+    Plasma.T    = [60 300];
+    Plasma.v    = [0 100e3];
   end
   function Plasma = p_plasma_sheet
     Plasma      = lp.plasma;

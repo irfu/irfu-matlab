@@ -2,6 +2,11 @@
 % The user is asked to select which event and which reference frame to plot
 % the data in. 
 %
+% The ambition is to have a complete list of MMS IP shock crossings with
+% burst or fast mode data available. Add more events here as they happen.
+%
+% Only FF shocks for now
+%
 % The script shows how to convert shock related plasma data to
 % the normal incidence frame. The same procedure can be used at the bow
 % shock.
@@ -9,7 +14,7 @@
 % /AJ
 
 eventNum = irf_ask('Which event? (1-?) [%] > ','eventNum',1);
-refFrameNum = irf_ask('Which frame? (1: s/c frame, 2: NI frame) [%] > ','refFrameNum',2);
+refFrameNum = irf_ask('Which frame? (1: s/c frame, 2: NI frame) [%] > ','refFrameNum',1);
 switch refFrameNum
   case 1
     refFrame = 'scf';
@@ -20,7 +25,25 @@ end
 inpE = 0; % if energy should be in input for omni distribution
 
 switch eventNum
+
   case 1
+    % secret, first IP shock seen by MMS (don't tell anyone)
+
+    % time interval
+    tint = irf.tint('2017-10-24T08:25:45/2017-10-24T08:27:45');
+    % time for upstream
+    tintu = irf.tint('2017-10-24T08:26:36/2017-10-24T08:26:42');
+    % time for downstream
+    tintd = irf.tint('2017-10-24T08:26:54/2017-10-24T08:27:04');
+
+    % set dataMode to "brst" or "fast"
+    dataMode = 'brst';
+
+  case 2
+    % Officially the first IP shock seen by MMS, maybe even first IP shock
+    % ever observed!?!?:
+    % https://nypost.com/2019/08/13/nasa-finds-evidence-of-interplanetary-shock-for-first-time/
+
     % time interval
     tint = irf.tint('2018-01-08T06:40:45/2018-01-08T06:41:30');
     % time for upstream
@@ -33,18 +56,58 @@ switch eventNum
     Eg = logspace(.3,3.93,32);
     inpE = 1;
 
-  case 2
+    dataMode = 'brst';
+
+  case 3
     tint = irf.tint('2022-02-01T22:17:00/2022-02-01T22:20:00'); %
     tintu = irf.tint('2022-02-01T22:18:08/2022-02-01T22:18:26');
     tintd = irf.tint('2022-02-01T22:18:43/2022-02-01T22:18:56');
 
-  case 3
+    dataMode = 'brst';
+
+  case 4
+    % Not selected by SITL
+    % Actually not 100% sure this is a shock
+    
+    tint = irf.tint('2022-01-18T23:30:00/2022-01-18T23:43:00');
+    % tintu and tintd is left as a exercise for the user
+
+    dataMode = 'fast';
+
+  case 5
     tint = irf.tint('2022-02-11T10:23:20/2022-02-11T10:25:10');
     tintu = irf.tint('2022-02-11T10:24:05/2022-02-11T10:24:07');
     tintd = irf.tint('2022-02-11T10:24:16/2022-02-11T10:24:22');
 
     Eg = logspace(.3,3.93,32);
     inpE = 1;
+
+    dataMode = 'brst';
+
+  case 6 % possibly qpar
+    % There should be burst data
+    tint = irf.tint('2022-04-12T11:17:13/2022-04-12T11:27:33');
+    % tintu and tintd is left as a exercise for the user
+
+    Eg = logspace(.3,3.93,32);
+    inpE = 1;
+
+    dataMode = 'fast';
+
+
+  case 7
+    % Not selected by SITL, no data yet
+    tint = irf.tint('2022-04-20T16:25:00/2022-04-20T16:30:00');
+    % tintu and tintd is left as a exercise for the user
+
+    dataMode = 'fast';
+
+
+  case 8 % IP shock in foreshock :O
+    tint = irf.tint('2022-05-11T13:50:00/2022-05-11T14:05:00');
+    % tintu and tintd is left as a exercise for the user
+
+    dataMode = 'fast';
 end
 
 % add more events here as they come in
@@ -67,31 +130,49 @@ vx1D = linspace(vxlim(1),vxlim(2),100);
 nMC = 2e2;
 
 
-
-
 %% Get data (needs a database initialized)
-% get ion distribution (mms.get_data is somewhat slow)
-% also get errors
-iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
-iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
+ 
+% read fast or burst data
+switch dataMode
+  case 'brst'
+    % get ion distribution
+    % also get errors
+    iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
+    iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
+    % ignore psd where count is 1
+    iPDist.data(iPDist.data<1.1*iPDistErr.data) = 0;
 
-% ignore psd where count is 1 
-iPDist.data(iPDist.data<1.1*iPDistErr.data) = 0;
+    %
+    B = mms.get_data('B_gse_fgm_brst_l2',tint,ic);
 
-%
-B = mms.get_data('B_gse_fgm_brst_l2',tint,ic);
+    %
+    Ni = mms.get_data('Ni_fpi_brst_l2',tint,ic);
+    Ne = mms.get_data('Ne_fpi_brst_l2',tint,ic);
+    Vi = mms.get_data('Vi_gse_fpi_brst_l2',tint,ic);
 
-%
-Ni = mms.get_data('Ni_fpi_brst_l2',tint,ic);
-Ne = mms.get_data('Ne_fpi_brst_l2',tint,ic);
-Vi = mms.get_data('Vi_gse_fpi_brst_l2',tint,ic);
+  case 'fast'
+    % get ion distribution
+    % also get errors
+    iPDist = mms.get_data('PDi_fpi_fast_l2',tint,ic);
+    iPDistErr = mms.get_data('PDERRi_fpi_fast_l2',tint,ic);
+
+    % ignore psd where count is 1
+    iPDist.data(iPDist.data<1.1*iPDistErr.data) = 0;
+    %
+    B = mms.get_data('B_gse_fgm_srvy_l2',tint,ic);
+
+    %
+    Ni = mms.get_data('Ni_fpi_fast_l2',tint,ic);
+    Ne = mms.get_data('Ne_fpi_fast_l2',tint,ic);
+    Vi = mms.get_data('Vi_gse_fpi_fast_l2',tint,ic);
+end
 
 % sc position (if irfu NAS24 is mounted)
-R = mms.get_data('R_gse',tint);
-c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?(:,1:3));')
-
-% otherwise replace with
-%c_eval('R? = mms.db_get_ts(''mms?_mec_srvy_l2_epht89q'',''mms?_mec_r_gse'',tint);')
+% R = mms.get_data('R_gse',tint);
+% c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?(:,1:3));')
+% 
+% % otherwise replace with
+% %c_eval('R? = mms.db_get_ts(''mms?_mec_srvy_l2_epht89q'',''mms?_mec_r_gse'',tint);')
 
 
 %% Set up- and downstream parameters
@@ -206,6 +287,7 @@ switch refFrame
     hca.ColorOrder = [0,0,0;1,0,0];
     hold(hca,'on')
     irf_plot(hca,Ne,'linewidth',1.5)
+    hca.YLimMode = 'auto';
     ylabel(hca,'$n$ [cm$^{-3}$]','interpreter','latex')
     irf_legend(hca,{'$n_i$';'$n_e$'},[1.02,0.98],'fontsize',18,...
       'interpreter','latex')
@@ -273,6 +355,7 @@ switch refFrame
     hca.ColorOrder = [0,0,0;1,0,0];
     hold(hca,'on')
     irf_plot(hca,Ne,'linewidth',1.5)
+    hca.YLimMode = 'auto';
     ylabel(hca,'$n$ [cm$^{-3}$]','interpreter','latex')
     irf_legend(hca,{'$n_i$';'$n_e$'},[1.02,0.98],'fontsize',18,...
       'interpreter','latex')
@@ -307,7 +390,7 @@ switch refFrame
     hold(hca,'on')
     hcb2 = colorbar(hca);
     ylabel(hcb2,{'$\log_{10} F_i$',' [s m$^{-4}$]'},'interpreter','latex','fontsize',15)
-    ylabel(hca,'$v_{n}$ [km/s]','interpreter','latex')
+    ylabel(hca,'$v_{x}$ [km/s]','interpreter','latex')
     % irf_colormap(hca,'waterfall')
 
 

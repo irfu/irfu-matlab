@@ -2541,7 +2541,7 @@ classdef PDist < TSeries
         solida = (danglephi*dangletheta').*z2;
         allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
         allsolida = squeeze(permute(allsolida,[3 4 1 2]));
-        dists = dist.data.*allsolida;
+        dists = squeeze(dist.data).*allsolida;
         omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));
 
         PD = obj;
@@ -2712,8 +2712,10 @@ classdef PDist < TSeries
       switch obj.species
         case {'e','electrons','electron'}
           mm = units.me/units.mp;
-        case {'i','p','ions','ion'}
+        case {'i','p','ions','ion','hplus'}
           mm = 1;
+        case {'oplus'}
+          mm = 16;
         otherwise
           error('Units not supported.')
       end
@@ -2765,8 +2767,10 @@ classdef PDist < TSeries
       switch obj.species
         case {'e','electrons','electron'}
           mm = units.me/units.mp;
-        case {'i','p','ions','ion'}
+        case {'i','p','ions','ion','hplus'}
           mm = 1;
+        case {'oplus'}
+          mm = 16;
         otherwise
           error('Units not supported.')
       end
@@ -3117,8 +3121,10 @@ classdef PDist < TSeries
       switch obj.species
         case {'e','electrons','electron'}
           m = units.me;
-        case {'i','p','ions','ion'}
+        case {'i','p','ions','ion','hplus'}
           m = units.mp;
+        case {'oplus'}
+          m = 16*units.mp;
         otherwise
           error('Species not supported.')
       end

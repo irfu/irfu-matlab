@@ -9,19 +9,29 @@ if 1 % parameters
   title_text='';
   %Rsolo=0.28;UV=1;R_plasma_nobias=3e6;R_plasma_bias=0.1e6;plasma=getfield(solar_orbiter('plasma'),'perihelion');
   Rsolo=1.0;UV=1;
-  T_plasma_eV=10; % plasma temperature in eV
-  n = 2*1e6;      % plasma density m^-3
+  T_plasma_eV=30; % plasma temperature in eV
+  n = 20*1e6;      % plasma density m^-3
   title_text=[title_text 'T_p=' num2str(T_plasma_eV) ' eV, '];
   % HFA
   HFA_antenna_eff_length=2.5/2; % efficient distance between antennas
-  HFA_R_plasma_nobias=467e6;HFA_R_plasma_bias=3e6;
+  HFA_R_plasma_nobias=14e6;HFA_R_plasma_bias=5e6;
   HFA_probe=lp.default_lprobe('THOR_HFA');
   HFA_C_antenna=HFA_probe.capacitance; % antenna capacitance in F
   title_text=[title_text 'HFAC_{ant}=' num2str(HFA_probe.capacitance/1e-12) ' pF, '];
   A_antenna=HFA_probe.Area.total; % antenna area in m2
   title_text=[title_text 'HFAA_{ant}=' num2str(HFA_probe.Area.total,'%5.2f') ' m^2, '];
+  
+  % HFA-D
+  HFD_antenna_eff_length=2/2; % efficient distance between antennas % 2m-long dipole
+  HFD_R_plasma_nobias=30e6;HFD_R_plasma_bias=10e6;
+  HFD_probe=lp.default_lprobe('THOR_HFD');
+  HFD_C_antenna=HFD_probe.capacitance; % antenna capacitance in F
+  title_text=[title_text 'HFDC_{ant}=' num2str(HFD_probe.capacitance/1e-12) ' pF, '];
+  A_antenna=HFD_probe.Area.total; % antenna area in m2
+  title_text=[title_text 'HFDA_{ant}=' num2str(HFD_probe.Area.total,'%5.2f') ' m^2, '];
+  
   % SDP
-  SDP_antenna_eff_length=100; % efficient distance between antennas
+  SDP_antenna_eff_length=50; % efficient distance between antennas
   SDP_R_plasma_nobias=916e6;SDP_R_plasma_bias=25e6; SDP_R_plasma_bias_low=10e6;
   SDP_probe=lp.default_lprobe('THOR_SDP');
   SDP_C_antenna=SDP_probe.capacitance; % antenna capacitance in F
@@ -121,6 +131,20 @@ if 1 % read example solar wind spectra
   end
   clear xx yy;
 end
+if 1 % read example magnetopause whistler spectra from LeContell 2016
+  %file readind
+  xx = load('whistlerspec.mat');
+  MP_example_Espectra_MMS1brstMPwhi(:,1) = xx.whistlerspec.freq; % Hz
+  MP_example_Espectra_MMS1brstMPwhi(:,2) = xx.whistlerspec.power*1e-6; % (V/m)^2/Hz
+  clear xx ;
+end
+if 1 % read example magnetopause IAW spectra from Steinvall 2021
+  %file readind
+  xx = load('acousticspec.mat');
+  MP_example_Espectra_MMS1brstMPaiw(:,1) = xx.acousticspec.freq; % Hz
+  MP_example_Espectra_MMS1brstMPaiw(:,2) = xx.acousticspec.power*1e-6; % (V/m)^2/Hz
+  clear xx ;
+end
 if 1 % read example shock spectra
   %file reading
   [xx,yy]=textread('MMS4_brst_EyShock_20151222_071324.dat','%s%s','headerlines',4);
@@ -168,6 +192,45 @@ if 1 % instrument noise calculations HFA
   if 1 % total noise = shot noise photo + thermal
     HFA_total_noise_bias=irf_add(1,HFA_shot_noise_photoelectron_bias,1,HFA_thermal_noise_bias);
     HFA_total_noise_nobias=irf_add(1,HFA_shot_noise_photoelectron_nobias,1,HFA_thermal_noise_nobias);
+  end
+  if 1 % bit noise
+    f_sampling=25e3; % DC up to kHz
+    tmunit=15.2e-6; % in V/m for gain=1
+    tmrange=0.5;    % in V/m
+    SOFI_bit_noise_gain1=[f_range(1) f_range(1)*10]';
+    SOFI_bit_noise_gain1(:,2)=(tmunit/2)^2/(f_sampling/2)/3;
+  end
+end
+
+if 1 % instrument noise calculations HFA-D
+  if 1 % preamp parameters
+    HFD_preamp_noise=150e-9; % preamplifier noise 4nV/Hz1/2
+    HFD_preamp_noise_level=(HFD_preamp_noise/HFD_antenna_eff_length)^2;
+    f_break=300; % transition frequency at which 1/f noise is starting
+  end
+  if 1 % preamplifier noise
+    HFD_instr_noise=[f(1) f_break f(end)]';
+    HFD_instr_noise(:,2)=2*HFD_preamp_noise_level*[(f_break/f(1))^2; 1;  1];
+  end
+  if 1 % photoelectron thermal noise  S=4kTZ
+    T_eV=1; % photoelectron temperature
+    HFD_thermal_noise_bias=[f 4*Units.e*T_eV*sqrt(HFD_R_plasma_bias^2./(1+(2*pi*f).^2*HFD_R_plasma_bias^2*HFD_C_antenna^2))/HFD_antenna_eff_length^2];
+    HFD_thermal_noise_nobias=[f 4*Units.e*T_eV*sqrt(HFD_R_plasma_nobias^2./(1+(2*pi*f).^2*HFD_R_plasma_nobias^2*HFD_C_antenna^2))/HFD_antenna_eff_length^2];
+  end
+  if 1 % shot noise plasma and photoelectrons
+    % SOFI_shot_noise_plasma XXX WE IGNORE THIS
+    %nu=n/2*sqrt(8*Units.e*T_plasma_eV/pi/Units.me)*A_antenna;
+    %SOFI_shot_noise_bias=[f 2*Units.e^2*nu*(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
+    %SOFI_shot_noise_nobias=[f 2*Units.e^2*nu*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
+    % SOFI_shot_noise_photoelectron
+    HFD_I=lp.current(HFD_probe,-1,Rsolo,UV,[]);
+    
+    HFD_shot_noise_photoelectron_bias=[f 2*Units.e*abs(HFD_I.photo)*(HFD_R_plasma_bias^2./(1+(2*pi*f).^2*HFD_R_plasma_bias^2*HFD_C_antenna^2))/HFD_antenna_eff_length^2];
+    HFD_shot_noise_photoelectron_nobias=[f 2*Units.e*abs(HFD_I.photo)*(HFD_R_plasma_nobias^2./(1+(2*pi*f).^2*HFD_R_plasma_nobias^2*HFD_C_antenna^2))/HFD_antenna_eff_length^2];
+  end
+  if 1 % total noise = shot noise photo + thermal
+    HFD_total_noise_bias=irf_add(1,HFD_shot_noise_photoelectron_bias,1,HFD_thermal_noise_bias);
+    HFD_total_noise_nobias=irf_add(1,HFD_shot_noise_photoelectron_nobias,1,HFD_thermal_noise_nobias);
   end
   if 1 % bit noise
     f_sampling=25e3; % DC up to kHz
@@ -269,21 +332,39 @@ if 1 % initialize figure - HFA
   set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
   set(gcf,'Position',[10 10 xSize*50 ySize*50])
 end
-if 0 % electric field example spectra
+if 1 % electric field example spectra
+  % MMS MP IAWs
+  %loglog(MP_example_Espectra_MMS1brstMPaiw(:,1), MP_example_Espectra_MMS1brstMPaiw(:,2),'color',[0.1 0.5 0.0],'linewidth',1);
+  %text(129,8e-9,'MMS-burst-iaw-MP','fontsize',10,'color',[0.1 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+  %hca=h(1);
+  %hold(hca,'on');
+
   % MMS shock
   loglog(SW_example_Espectra_MMS4brstShock(:,1), SW_example_Espectra_MMS4brstShock(:,2),'color',[0.8 0.5 0.0],'linewidth',1);
-  text(129,9e-9,'MMS-burst','fontsize',10,'color',[0.8 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+  text(129,9e-9,'MMS-shocks-IAWs','fontsize',10,'color',[0.8 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
   hca=h(1);
   hold(hca,'on');
+
+  % MMS MP Whistlers
+  loglog(MP_example_Espectra_MMS1brstMPwhi(:,1), MP_example_Espectra_MMS1brstMPwhi(:,2),'color',[0.1 0.5 0.0],'linewidth',1);
+  text(1290,7e-10,'MMS-MP-Whistlers','fontsize',10,'color',[0.1 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+  hca=h(1);
+  hold(hca,'on');
+
+  
   
   % MMS hmfe SW Langmuir waves
-  loglog(SW_example_Espectra_MMS4hmfe(:,1), SW_example_Espectra_MMS4hmfe(:,2),'color',[0.5 0.5 0],'linewidth',1);
-  text(4e4,1.2e-11,'MMS-hmfe','fontsize',10,'color',[0.5 0.5 0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+  loglog(SW_example_Espectra_MMS4hmfe(2048:end,1), SW_example_Espectra_MMS4hmfe(2048:end,2),'color',[0.5 0.5 0],'linewidth',1);
+  text(1e4,2e-10,'MMS-SW-LWs','fontsize',10,'color',[0.5 0.5 0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+
+  % Cluster example solar wind spectrum from CalibrationReport
+  %loglog(SW_example_Espectra_Cluster4(:,1), SW_example_Espectra_Cluster4(:,2),'color',[.49 .18 .56],'linewidth',1);
+  %text(3,3e-10,'Cluster-sw','fontsize',10,'color',[.49 .18 .56],'units','data','horizontalalignment','left','verticalalignment','bottom'); 
 end
 if 1 % electric field plot
   hca=h(1); hold(hca,'on');set(hca,'XScale','log','YScale','log')
-  set(hca,'xlim',[0.5 5e5])
-  set(hca,'ylim',[2e-17 9e-8])
+  set(hca,'xlim',[10 1e5])
+  set(hca,'ylim',[2e-16 9e-7])
   set(hca,'xtick',10.^[log10(f_range(1)):1:log10(f_range(2))]),
   set(hca,'ytick',10.^[log10(PE_range(1)):2:log10(PE_range(2))]),
   grid(hca,'on');
@@ -299,24 +380,47 @@ end
 
 if 1 % plot electric field noises
   
-  if 1 % HFA
-    HFA_color = [0.8 0.5 0.0];
+  if 0 % HFA
+    HFA_color = [0.8 0.5 0.5];
     loglog(HFA_total_noise_bias,HFA_total_noise_bias(:,2),'color',HFA_color);hold(hca,'on');
-    %loglog(HFA_total_noise_nobias(:,1),HFA_total_noise_nobias(:,2),'color',HFA_color,'linestyle',':');
-    %text(HFA_total_noise_nobias(1,1)*1.5,HFA_total_noise_nobias(1,2),'HFA nobias noise','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
-    text(HFA_total_noise_bias(1,1)*5000.5,HFA_total_noise_bias(1,2)*2,' plasma+photoelectron\newline fluctuation level','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
-    %loglog(f_range(1)*[1 5],PE_range(1)*30*[1 1],'color',HFA_color,'linestyle',':');
-    loglog(1*[1 5],1e-17*10*[1 1],'color',HFA_color,'linestyle','-');
-    %text(f_range(1)*6,PE_range(1)*30,['unbiased HFA, R=' num2str(HFA_R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
-    text(8,1e-16,['biased HFA, R=' num2str(HFA_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    loglog(HFA_total_noise_nobias(:,1),HFA_total_noise_nobias(:,2),'color',HFA_color,'linestyle',':');
+    text(HFA_total_noise_nobias(1,1)*200,HFA_total_noise_nobias(1,2),'HFA nobias noise','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
+    text(HFA_total_noise_bias(1,1)*5000,HFA_total_noise_bias(1,2)*1.2,' plasma+photoelectron\newline fluctuation level','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
+    loglog(1*[1 5],5e-17*10*[1 1],'color',HFA_color,'linestyle',':');
+    loglog(1*[1 5],2e-17*10*[1 1],'color',HFA_color,'linestyle','-');
+    text(8,5e-16,['unbiased HFA, R=' num2str(HFA_R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    text(8,2e-16,['biased HFA, R=' num2str(HFA_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
     loglog(HFA_instr_noise(:,1), HFA_instr_noise(:,2),'color',[0.3 0.3 0.3]); hold(hca,'on');
     text(HFA_instr_noise(2,1),HFA_instr_noise(end,2)*0.9,'preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
     loglog(hca,HFA_EMC.f,HFA_EMC.Epower,'o-','markersize',10,'color',[0 0.8 0]);
     text(0.98,0.55,'EMC req','fontsize',12,'fontweight','demi','color',[0 0.8 0],'units','normalized','horizontalalignment','right','parent',hca);
   end
-  %irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
+
+  if 1 % HFA-D
+    HFD_color = [0.0 0.0 0.0];
+    if 0 % nobias
+      loglog(HFD_total_noise_nobias(:,1),HFD_total_noise_nobias(:,2),'color',HFD_color,'linestyle',':');
+      text(HFD_total_noise_nobias(1,1)*200,HFD_total_noise_nobias(1,2),'HFA-D nobias noise','fontsize',10,'color',HFD_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
+      loglog(1*[1 5],5e-16*10*[1 1],'color',HFD_color,'linestyle',':');
+      text(8,5e-15,['unbiased HFA-D, R=' num2str(HFD_R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    end
+    if 1 % bias
+      loglog(HFD_total_noise_bias,HFD_total_noise_bias(:,2),'color',HFD_color);hold(hca,'on');
+      text(HFD_total_noise_bias(1,1)*5000,HFD_total_noise_bias(1,2)*1.2,' HFA-D bias noise','fontsize',10,'color',HFD_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
+      loglog(1*[1 5],2e-16*10*[1 1],'color',HFD_color,'linestyle','-');
+      text(12,2e-15,['biased HFA-D, R=' num2str(HFD_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    end
+    if 0 % preamp
+      loglog(HFD_instr_noise(:,1), HFD_instr_noise(:,2),'color',[0.5 0.5 0.5]); hold(hca,'on');
+      text(HFD_instr_noise(2,1),HFD_instr_noise(end,2)*0.9,'preamp noise D','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
+    end
+    %loglog(hca,HFA_EMC.f,HFA_EMC.Epower,'o-','markersize',10,'color',[0 0.8 0]);
+    %text(0.98,0.55,'EMC req','fontsize',12,'fontweight','demi','color',[0 0.8 0],'units','normalized','horizontalalignment','right','parent',hca);
+  end
+
+  irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
 end
-irf_legend(0,['THOR EFI-HFA noise ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_legend(0,['PO EFI-HFA noise ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
 irf_print_fig(['HFA_noise_' datestr(now,'yyyymmdd')],'png')
 
 if 1 % initialize figure - SDP

@@ -10,10 +10,15 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 lwidth=1.0;
 fsize=18;
 legsize=22;
-h=irf_plot(8,'newfigure');
+h=irf_plot(10,'newfigure');
 fig=gcf;
 fig.Position=[1,1,1095,800];
 colors = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
+
+Units=irf_units;
+
+Me=Units.me; %Electron mass [kg]
+epso = Units.eps0; %Permitivitty of free space [Fm^-1]
 mp=1.6726e-27; %proton mass [km]
 qe=1.6022e-19; %elementary charge [C]
 if ~isempty(data.B)
@@ -41,7 +46,11 @@ yyaxis(h(2),'right');
 if ~isempty(data.B)
     fci = qe*data.B.abs*10^-9/mp/(2*pi);
     irf_plot(h(2),data.B.abs.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
-    h(2).YLim=[floor(min(data.B.abs.data)),ceil(max(data.B.abs.data))];
+    %h(2).YLim=[floor(min(data.B.abs.data)),ceil(max(data.B.abs.data))];
+    Bnan = rmmissing(data.B.abs.data);
+    if ~isempty(Bnan)
+        h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
+    end
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
 h(2).YColor=[1,0,0];
@@ -124,6 +133,7 @@ end
 ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
 irf_zoom(h(5),'y');
 
+
 % y,z PAS velocities
 if ~isempty(data.Vpas)
     irf_plot(h(6),data.Vpas.y.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
@@ -155,11 +165,53 @@ irf_zoom(h(8),'y');
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 
 
+%Ion energy spectrum
+if ~isempty(data.ieflux)
+    myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
+    iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
+    for ii = 1:(Tint(2)-Tint(1))/3600/24 
+        iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
+        iEnergy = iEnergy{1};
+        iDEF.p = data.ieflux.data;
+          
+    end
+    iDEF.p_label='dEF';
+    iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
+    irf_spectrogram(h(9),iDEF,'log');
+    % set(h(1),'ytick',[1e1 1e2 1e3]);
+    %caxis(h(9),[-1 1])
+    hold(h(9),'on');
+    set(h(9), 'YScale', 'log');
+    colormap(h(9),jet)
+    ylabel(h(9),{'Eflux_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
 
-irf_plot_axis_align(h(1:8));
-irf_zoom(h(1:8),'x',Tint);
+end 
+
+%E-field spectrum (TNR)
+if ~isempty(data.Etnr)
+    %Electron plasma frequency
+    wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
+    fpe_sc = (wpe_sc/2/pi)/1000;
+    [TNR] =  solo.read_TNR(Tint);
+    irf_spectrogram(h(10),TNR,'log')
+    fpe_sc.units = 'kHz';
+    fpe_sc.name = 'f [kHz]';
+    hold(h(10),'on');
+    irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
+    text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
+    set(h(10), 'YScale', 'log');
+    colormap(h(10),jet)   
+    set(h(10),'ColorScale','log')
+    %caxis(h(10),[.01 1]*10^-12)
+    ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+end
+
+
+irf_plot_axis_align(h(1:10));
+irf_zoom(h(1:10),'x',Tint);
 irf_zoom(h(1),'y');
-irf_zoom(h(5:8),'y');
+irf_zoom(h(5:10),'y');
+
 h(2).YLabel.Position=[1.05,0.5,0];
 yyaxis(h(2),'left');
 h(2).YLabel.Units='normalized';
@@ -170,22 +222,22 @@ if ~isempty(data.solopos.tlim(Tint))
     teststr = ['SolO: ',[sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/Au),'Au, '],...
         [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'\circ, '],...
         [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'\circ']];
-    text1=text(h(8),-0.11,-0.5,teststr,'units','normalized','fontsize',18);
+    text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 else
     teststr=char();
-    text1=text(h(8),-0.11,-0.5,teststr,'units','normalized','fontsize',18);
+    text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 end
 
 % Add Earth longitude as text.
 if ~isempty(data.earthpos)
     teststr =['Earth: EcLon ',sprintf('%d',round(data.earthpos(1,2)*180/pi)),'\circ'];
-    text2=text(h(8),-0.11,-0.75,teststr,'units','normalized','fontsize',18);
+    text2=text(h(10),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
 else
     teststr=char();
-    text2=text(h(8),0.9,-0.5,teststr,'units','normalized','fontsize',18);
+    text2=text(h(10),0.9,-0.925,teststr,'units','normalized','fontsize',18);
 end
 
-
+xtickangle(h(10),0)
 % Add plot information and IRF logo
 logopos = h(1).Position;
 logopos(1)=logopos(1)+logopos(3)+0.04;
@@ -207,7 +259,7 @@ infostr2 = '. Data available at http://soar.esac.esa.int/';
 text(h(1),0,1.2,[infostr,infostr2],'Units','normalized')
 
 % Fix YTicks
-for iax=1:8
+for iax=1:10
     cax=h(iax);
     mintick = min(cax.YTick);
     maxtick = max(cax.YTick);
@@ -298,7 +350,7 @@ for i6h = 1:4
     
     %Zoom in to 6h interval and save plot.
     Tint_6h = Tint(1)+[60*60*6*(i6h-1),60*60*6*(i6h)];
-    irf_zoom(h(1:8),'x',Tint_6h);
+    irf_zoom(h(1:10),'x',Tint_6h);
     irf_zoom(h(1),'y');
     %Zoom on N/|B| plot..
     Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(Tint_6h)) && ~all(isnan(data.Ne.tlim(Tint_6h).data));
@@ -321,7 +373,7 @@ for i6h = 1:4
     irf_zoom(h(5:8),'y');
     
     %Remove overlapping ticks
-    for iax=1:8
+    for iax=1:10
         cax=h(iax);
         mintick = min(cax.YTick);
         maxtick = max(cax.YTick);
@@ -371,7 +423,7 @@ for i6h = 1:4
     filesmth = Tint_6h(1);
     filesmth = filesmth.utc;
     filestr1 = filesmth(1:13);
-    filestr1([5,8])=[];
+    filestr1([5,10])=[];
     
     filesmth = Tint_6h(end);
     filesmth = filesmth.utc;
@@ -384,7 +436,7 @@ for i6h = 1:4
     for i2h=1:3
         %Define 2h interval and zoom in
         Tint_2h = Tint_6h(1)+[60*60*2*(i2h-1),60*60*2*(i2h)];
-        irf_zoom(h(1:8),'x',Tint_2h);
+        irf_zoom(h(1:10),'x',Tint_2h);
         irf_zoom(h(1),'y');
         
         Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(Tint_2h)) && ~all(isnan(data.Ne.tlim(Tint_2h).data));
@@ -405,9 +457,9 @@ for i6h = 1:4
             h(2).YLim=[floor(min(data.B.abs.tlim(Tint_2h).data)),ceil(max(data.B.abs.tlim(Tint_2h).data))];
         end
         
-        irf_zoom(h(5:8),'y');
+        irf_zoom(h(5:10),'y');
         %Remove overlapping Tics
-        for iax=1:8
+        for iax=1:10
             cax=h(iax);
             mintick = min(cax.YTick);
             maxtick = max(cax.YTick);

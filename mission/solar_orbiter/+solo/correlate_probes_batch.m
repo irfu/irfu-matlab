@@ -11,8 +11,9 @@ strname = 'd23K123_20220225_test';
 
 % Select time interval. We take +/- 3 days as a margin to better match with the
 % old calibration file if we only do a partial update.
+calTint = irf.tint('2020-03-01T00:00:00Z/2022-12-31T23:59:59.99Z');
 margin = 3*24*60*60; %seconds.
-Tint = irf.tint('2020-03-01T00:00:00Z/2021-12-31T23:59:59.99Z')+[-1,1]*margin;
+Tint=calTint+[-1,1]*margin;
 
 % If there is a discontinuity in the data, e.g. potential jumps due to the
 % solar panels, as in late 2020, early 2021, generate subintervals and
@@ -168,6 +169,9 @@ save(strname, 'K123', 'k23','d23');
 if cal_param_plot
   Tint=[d23.time.start;d23.time.stop];
   
+  BLL = solo.get_data('LL_B_RTN',Tint);
+  VLL = solo.get_data('LL_V_RTN',Tint);
+
   % load bias currents (gives BIAS_current TSeries)
   load('/Volumes/solo/BJOR_files/Bias_currents.mat');
   
@@ -184,7 +188,7 @@ if cal_param_plot
   d123=irf.ts_scalar(K123.time,K123.data(:,2));
   k123=irf.ts_scalar(K123.time,K123.data(:,1));
   
-  h=irf_plot(4,'newfigure');
+  h=irf_plot(6,'newfigure');
   fig=h.Parent;
   fig.Position=[10 10 2500 1000];
   
@@ -202,14 +206,21 @@ if cal_param_plot
   irf_plot(h(4),k123,'-o','MarkerFaceColor','k','MarkerSize',2);
   ylabel(h(4),'k123','interpreter','tex');
   
+  irf_plot(h(5),BLL)
+  ylabel(h(5),'B [nT] LL ','interpreter','tex');
   
-  irf_zoom(h(1:4),'x',Tint);
+    irf_plot(h(6),VLL)
+  ylabel(h(6),'V [km/s] LL ','interpreter','tex');
+
+  irf_zoom(h(1:6),'x',Tint);
   
-  h(1).YLim=[-1.5,0.5];
-  h(2).YLim=[0.8,1.3];
-  h(3).YLim=[-2,0.5];
-  h(4).YLim=[0.8,1.8];
-  
+  h(1).YLim=[-2,2];
+  h(2).YLim=[0.5 1.5];
+  h(3).YLim=[-5,0.5];
+  h(4).YLim=[0.3,1.8];
+  h(5).YLim=[-60,60];
+  h(6).YLim=[-1000 500];
+
   hold(h(1),'on');
   text(h(1),0.70,1.1,'Discrete events','fontsize',26,'units','normalized','color',[1,0.65,0]);
   text(h(1),0.85,1.1,'Bias changes','fontsize',26,'units','normalized','color',[0,0,1]);
@@ -226,12 +237,12 @@ if cal_param_plot
   yyaxis(h(3),'left');
   for ii=1:length(discrete_events)
     markTint = discrete_events(ii)+[-10,10]*60*60;
-    irf_pl_mark(h(1:4),markTint,[1,0.65,0]);
+    irf_pl_mark(h(1:6),markTint,[1,0.65,0]);
   end
   
   for ii=1:length(BIAS_current)
     markTint = BIAS_current.time(ii)+[-10,10]*30*60;
-    irf_pl_mark(h(1:4),markTint,[0,0,1]);
+    irf_pl_mark(h(1:6),markTint,[0,0,1]);
   end
  irf_timeaxis(h(4), 'nodate' ); 
 end

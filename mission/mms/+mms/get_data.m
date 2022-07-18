@@ -1106,44 +1106,76 @@ end
           otherwise, error('invalid species')
         end
         
-        dsetPref= ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' species];
+        dsetPref= ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' species];  
+%       load 'electron_energy' directly from v6 data; 20220702 [wenya];
+        energy = mms.db_get_variable(dsetName, [species '_energy'],Tint);
+%       load 'electron_energy' directly from v7 data; 20220702 [wenya];
+        if isempty(energy)
+            nSensors = length(sensors);
+            for iSen = 1 : nSensors            
+                energy_suf_top = [dsetName(1:5), 'epd_feeps_brst_l2_', species, '_top_energy_centroid_sensorid_', num2str(sensors(iSen))];
+                energy_top_tmp = mms.db_get_variable(dsetName, energy_suf_top, Tint);
+                if iSen == 1
+                    energies = energy_top_tmp.data;
+                else
+                    energies = energies + energy_top_tmp.data;
+                end
+                energy_suf_bottom = [dsetName(1:5), 'epd_feeps_brst_l2_', species, '_bottom_energy_centroid_sensorid_', num2str(sensors(iSen))];
+                energy_bottom_tmp = mms.db_get_variable(dsetName, energy_suf_bottom, Tint);
+                energies = energies + energy_bottom_tmp.data;
+            end
+            energies = energies / 2 / nSensors;
+            data_version = 'new';
+        else 
+            energies = energy.data;
+            data_version = 'old';
+        end
         
-        eLow = mms.db_get_variable(dsetName, [species '_energy_lower_bound'],Tint);
-        eUp = mms.db_get_variable(dsetName, [species '_energy_upper_bound'],Tint);
-        energies = (eLow.data + eUp.data)/2. + eval([species(1) 'Ecorr(mmsId)']); % eV
+% Backup scripts [20220702 wenya]:  
+%       eLow = mms.db_get_variable(dsetName, [species '_energy_lower_bound'],Tint);
+%       eUp = mms.db_get_variable(dsetName, [species '_energy_upper_bound'],Tint);            
+%       energies = (eLow.data + eUp.data)/2. + eval([species(1) 'Ecorr(mmsId)']); % eV
         
+        % mms1_epd_feeps_brst_l2_electron_top_intensity_sensorid_1;
+        % mms1_epd_feeps_brst_l2_electron_top_sector_mask_sensorid_1;
+          
         nSensors = length(sensors);
         for iSen = 1:nSensors
-          sen = sensors(iSen); suf = sprintf('intensity_sensorid_%d',sen);
-          %sen = sensors(iSen); suf = sprintf('count_rate_sensorid_%d',sen);
-          sufMask = sprintf('sector_mask_sensorid_%d',sen);
-          top = mms.db_get_ts(dsetName,[dsetPref '_top_' suf],Tint);
-          mask = mms.db_get_ts(dsetName,[dsetPref '_top_' sufMask],Tint);
-          %mask_var = mms.db_get_variable(dsetName,[dsetPref '_top_' sufMask],Tint);
-          if all(size((mask.data))==size((top.data)))
-            % Here I'm assuming that a mask value of 0 is a good sector. So
-            % I find all indices that are not equal to zero.
-            idMask = find(not(isequal(mask.data,0)));
-            if not(isempty(idMask))
-              irf.log('warning',sprintf('MMS%s, FEEPS: Masking %g indices for top sensor %g.',mmsIdS,numel(idMask),iSen))
+            sen = sensors(iSen); 
+            suf = sprintf('intensity_sensorid_%d',sen);
+            sufMask = sprintf('sector_mask_sensorid_%d',sen);
+          % Top eyes
+          top = mms.db_get_ts(dsetName, [dsetPref '_top_' suf], Tint);
+          if strcmp(data_version, 'old')        % only works for FEEPS data version older than v6 (included)
+             mask = mms.db_get_ts(dsetName, [dsetPref '_top_' sufMask], Tint);
+            %mask_var = mms.db_get_variable(dsetName,[dsetPref '_top_' sufMask],Tint);
+             if all(size((mask.data))==size((top.data)))
+                % Here I'm assuming that a mask value of 0 is a good sector. So
+                % I find all indices that are not equal to zero.
+                idMask = find(not(isequal(mask.data,0)));
+                    if not(isempty(idMask))
+                    irf.log('warning',sprintf('MMS%s, FEEPS: Masking %g indices for top sensor %g.',mmsIdS,numel(idMask),iSen))
+                    end
+                top.data(idMask) = NaN;
+            else
+                top.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
             end
-            top.data(idMask) = NaN;
-          else
-            top.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
           end
-          
+          % Bottom eyes;
           bot = mms.db_get_ts(dsetName,[dsetPref '_bottom_' suf],Tint);
-          mask = mms.db_get_ts(dsetName,[dsetPref '_bottom_' sufMask],Tint);
-          if all(size((mask.data))==size((bot.data)))
-            % Here I'm assuming that a mask value of 0 is a good sector. So
-            % I find all indices that are not equal to zero.
-            idMask = find(not(isequal(mask.data,0)));
-            if not(isempty(idMask))
-              irf.log('warning',sprintf('MMS%s, FEEPS: Masking %g indices for bot sensor %g.',mmsIdS,numel(idMask),iSen))
+          if strcmp(data_version, 'old')        % only works for FEEPS data version older than v6 (included)
+            mask = mms.db_get_ts(dsetName,[dsetPref '_bottom_' sufMask],Tint);
+            if all(size((mask.data))==size((bot.data)))
+                    % Here I'm assuming that a mask value of 0 is a good sector. So
+                    % I find all indices that are not equal to zero.
+                idMask = find(not(isequal(mask.data,0)));
+                if not(isempty(idMask))
+                    irf.log('warning',sprintf('MMS%s, FEEPS: Masking %g indices for bot sensor %g.',mmsIdS,numel(idMask),iSen))
+                end
+                bot.data(idMask) = NaN;
+            else
+                bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
             end
-            bot.data(idMask) = NaN;
-          else
-            bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
           end
           Tit{iSen} = top;
           Bit{iSen} = bot;

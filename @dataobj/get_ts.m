@@ -17,7 +17,7 @@ end
 
 % MMS special case. This is ugly, but convenient.
 if isfield(data.GlobalAttributes,'Mission_group') && ...
-    strcmpi(data.GlobalAttributes.Mission_group,'mms')
+    strcmpi(data.GlobalAttributes.Mission_group{1},'mms')
   res = mms.variable2ts(data); return
 end
 
