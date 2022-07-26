@@ -1152,38 +1152,49 @@ end
           end
         end
         
-        % Combine all sensors in order to bin them later
+        % Define pitch angles
         pitch_angle_bin_edges = 0:15:180; 
         pitch_angle_bin_centers = 15/2:15:180; 
         nPitchangles = numel(pitch_angle_bin_edges)-1;
         nEnergies = numel(energies{1}.data);
         nTimes = EISdpf{1}.length;
         
+        % Initialize matrices
         dpf = zeros(nTimes,nEnergies,nPitchangles);
         A = zeros(nTimes,nEnergies,nPitchangles);
         N = zeros(nTimes,nEnergies,nPitchangles);
+        Ntot = zeros(nTimes,nEnergies,nPitchangles);
         
-        
-        for iSen = 0:5   
-          bins = discretize(pitch_angles{iSen+1}.data,pitch_angle_bin_edges);
-          iBins = unique(bins);
-          for iE = 1:nEnergies            
+        % Loop over sensors and energies to bin the data
+        % pitch_angles{iSen+1} into bins pitch_angle_bin_edges
+        for iSen = 0:5
+          bins = discretize(pitch_angles{iSen+1}.data,pitch_angle_bin_edges);          
+          for iE = 1:nEnergies
+            % Mean flux over all data points within each given bin
             A(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE),[nTimes,nPitchangles],@mean);
-            %N(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE)>0,[nTimes,nPitchangles]);
-          end
-          %dpf = dpf + A./N;
-          dpf = dpf + A;
-        end
-        dpf = dpf/6;
-        
-        
-        %[N edges mid loc] = histcn([all_times(:),);
+            % Number of non-zerodatapoints for each bin
+            N(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE)>0,[nTimes,nPitchangles]);
+          end          
+          % Get new average data, take into account the number of
+          % datapoints (i.e. coverage) so that we do not add a datapoint
+          % from one sensors with a pitchangle bin that has no data from
+          % another sensor
+          old_total = dpf.*Ntot; % average * nCounts
+          new_total = A.*N; % average * nCounts
+          Ntot = Ntot + N; % total counts for given bin
+          dpf = (old_total + new_total)./Ntot; % new average
+          dpf(isnan(dpf)) = 0;
+          dpf(isinf(dpf)) = 0;
+        end           
+                
         % Should take into acount Nans here.        
         dist = PDist(EISdpf{1}.time,dpf,'pitchangle',energies{1}.data*1e3,pitch_angle_bin_centers); % energies keV -> eV
         res = dist;
         res.siConversion = EISdpf{1}.siConversion;
         res.units = EISdpf{1}.units;
         res.species = species;
+        res.ancillary.Coverage.STR = 'N - Number of data points in each (time,energy,pitchangle) bin.';
+        res.ancillary.Coverage.N = Ntot;        
         res.ancillary.delta_energy_minus = energies_dminus{1}.data;
         res.ancillary.delta_energy_plus = energies_dplus{1}.data;
         res.ancillary.delta_pitchangle_minus = abs(pitch_angle_bin_edges(1:end-1)-pitch_angle_bin_centers);
@@ -1290,7 +1301,7 @@ end
         end
         
         switch dataType
-          case 'feeps_omni' % omni        
+          case 'feeps_omni' % omni
             %eval(['dTmp=' specie(1) 'Tit' num2str(sensors(1)) ';'])
             dataTmp = Tit{1};
             omniD = NaN( [size(dataTmp.data) nSensors*2]);
@@ -1310,7 +1321,8 @@ end
             res.siConversion = Tit{1}.siConversion;
             res.units = Tit{1}.units;
             res.species = species;
-          case 'feeps_pitchangle'
+          case 'feeps_pitchangle' % pitchangle
+            % Load pitchangles
             % e.g. mms2_epd_eis_brst_l2_phxtof_pitch_angle_t0
             pref_pitchangle = ['mms' mmsIdS '_epd_feeps_' Vr.tmmode '_' Vr.lev '_ion_pitch_angle'];
             ts_pitchangle = mms.db_get_ts(dsetName,pref_pitchangle,Tint);
@@ -1322,46 +1334,57 @@ end
             nPitchangles = numel(pitch_angle_bin_edges)-1;
             nEnergies = numel(energies);
             nTimes = Tit{1}.length;
-
+            
+            % Intialize matrices
             dpf = zeros(nTimes,nEnergies,nPitchangles);
             A = zeros(nTimes,nEnergies,nPitchangles);
             N = zeros(nTimes,nEnergies,nPitchangles);
+            Ntot = zeros(nTimes,nEnergies,nPitchangles);
 
             % Ordering of given pitchangles:
-            % pitch_angles.userData.LABL_PTR_1.CATDESC: 'TOP_SENSOR_6,TOP_SENSOR_7,TOP_SENSOR_8,BOT_SENSOR_6,BOT_SENSOR_7,BOT_SENSOR_8'
-            sensorsTopBot = {'Tit','Bit'};
-            for iTopBot = 1:2
+            % pitch_angles.userData.LABL_PTR_1.CATDESC: 'TOP_SENSOR_6,TOP_SENSOR_7,TOP_SENSOR_8,BOT_SENSOR_6,BOT_SENSOR_7,BOT_SENSOR_8'            
+            iSenCount = 0;
+            for iTopBot = 1:2 % top: indices 1-3, bot: indices 4-6
               for iSen = 1:nSensors 
-                if iTopBot == 1 % Tit
-                  bins = discretize(pitch_angles.data(:,iSen),pitch_angle_bin_edges);
-                  iBins = unique(bins);
-                  for iE = 1:nEnergies            
-                    A(:,iE,:) = accumarray([(1:nTimes)' bins],Tit{iSen}.data(:,iE),[nTimes,nPitchangles],@nanmean);                    
-                  end
-                elseif iTopBot == 2 % Bit
-                  bins = discretize(pitch_angles.data(:,iSen+nSensors),pitch_angle_bin_edges);
-                  iBins = unique(bins);
-                  for iE = 1:nEnergies            
-                    A(:,iE,:) = accumarray([(1:nTimes)' bins],Bit{iSen}.data(:,iE),[nTimes,nPitchangles],@nanmean);                    
-                  end
-                end                
-                dpf = dpf + A;
+                iSenCount = iSenCount + 1;
+                % Sepcify sensor
+                if iTopBot == 1 % Tit, top sensors
+                  data = Tit{iSen};
+                elseif iTopBot == 2 % Bit, bottom sensors
+                  data = Bit{iSen};
+                end
+                
+                % Bin pitchangles
+                bins = discretize(pitch_angles.data(:,iSenCount),pitch_angle_bin_edges);
+                
+                % Accumulate all the data into proper grid 
+                for iE = 1:nEnergies
+                  A(:,iE,:) = accumarray([(1:nTimes)' bins],data.data(:,iE),[nTimes,nPitchangles],@nanmean);                    
+                  N(:,iE,:) = accumarray([(1:nTimes)' bins],(data.data(:,iE)>0),[nTimes,nPitchangles],@sum);
+                end
+                
+                % Get new average data
+                old_total = dpf.*Ntot; % average * nCounts
+                new_total = A.*N; % average * nCounts
+                Ntot = Ntot + N; % total counts for given bin
+                dpf = (old_total + new_total)./Ntot; % new average
+                dpf(isnan(dpf)) = 0;
+                dpf(isinf(dpf)) = 0;                                
               end
             end
-            dpf = dpf/(2*nSensors)*Gfact(mmsId);
+            
+            dpf = dpf*Gfact(mmsId); % Apply geometric factor
 
-
-            %[N edges mid loc] = histcn([all_times(:),);
-            % Should take into acount Nans here.        
+            % Construct PDist type pitchangle
             dist = PDist(Tit{1}.time,dpf,'pitchangle',energies*1e3,pitch_angle_bin_centers); % energies keV -> eV
             res = dist;
             res.siConversion = Tit{1}.siConversion;
             res.units = Tit{1}.units;
             res.species = species;
-            %res.ancillary.delta_energy_minus = energies_dminus{1}.data;
-            %res.ancillary.delta_energy_plus = energies_dplus{1}.data;
             res.ancillary.delta_pitchangle_minus = abs(pitch_angle_bin_edges(1:end-1)-pitch_angle_bin_centers);
             res.ancillary.delta_pitchangle_plus = abs(pitch_angle_bin_edges(2:end)-pitch_angle_bin_centers);
+            res.ancillary.Coverage.STR = 'N - Number of data points in each (time,energy,pitchangle) bin.';
+            res.ancillary.Coverage.N = Ntot;        
             res.name = [Tit{1}.name '-' Tit{end}.name(end)];
             res.name = strrep(res.name,'top','top/bot');
             res.userData.Description = 'Pitch angle distribution created from Input';
