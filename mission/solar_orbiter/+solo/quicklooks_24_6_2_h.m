@@ -19,8 +19,8 @@ Units=irf_units;
 
 Me=Units.me; %Electron mass [kg]
 epso = Units.eps0; %Permitivitty of free space [Fm^-1]
-mp=1.6726e-27; %proton mass [km]
-qe=1.6022e-19; %elementary charge [C]
+mp=Units.mp; %proton mass [km]
+qe=Units.e; %elementary charge [C]
 if ~isempty(data.B)
     irf_plot(h(1),data.B.tlim(Tint),'linewidth',lwidth);
     hold(h(1),'on');
@@ -37,20 +37,19 @@ end
 if ~isempty(data.Npas)
     irf_plot(h(2),data.Npas.tlim(Tint),'-','color',colors(2,:),'linewidth',lwidth);
 end
-ylb2=ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
+ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
 h(2).ColorOrder=colors;
 irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',legsize);
-irf_zoom(h(2),'y');
+%irf_zoom(h(2),'y');
 
 yyaxis(h(2),'right');
 if ~isempty(data.B)
     fci = qe*data.B.abs*10^-9/mp/(2*pi);
     irf_plot(h(2),data.B.abs.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
-    %h(2).YLim=[floor(min(data.B.abs.data)),ceil(max(data.B.abs.data))];
-    Bnan = rmmissing(data.B.abs.data);
-    if ~isempty(Bnan)
-        h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
-    end
+    %Bnan = rmmissing(data.B.abs.data);
+    %if ~isempty(Bnan)
+    %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
+    %end
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
 h(2).YColor=[1,0,0];
@@ -158,9 +157,9 @@ ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',fsize);
 if ~isempty(data.E)
     irf_plot(h(8),data.E.y,'color',colors(2,:),'linewidth',lwidth)
     hold(h(8),'on');
-    irf_plot(h(8),data.E.z,'color',colors(3,:),'linewidth',lwidth)
+    %irf_plot(h(8),data.E.z,'color',colors(3,:),'linewidth',lwidth)
 end
-irf_legend(h(8),{'','E_y','E_z'},[0.98 0.15],'Fontsize',legsize);
+irf_legend(h(8),{'','E_y'},[0.98 0.15],'Fontsize',legsize);
 irf_zoom(h(8),'y');
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 
@@ -175,15 +174,17 @@ if ~isempty(data.ieflux)
         iDEF.p = data.ieflux.data;
           
     end
-    iDEF.p_label='dEF';
+    iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
     iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
-    irf_spectrogram(h(9),iDEF,'log');
+    irf_spectrogram(h(9),iDEF,'log','donotfitcolorbarlabel');
     % set(h(1),'ytick',[1e1 1e2 1e3]);
     %caxis(h(9),[-1 1])
     hold(h(9),'on');
     set(h(9), 'YScale', 'log');
     colormap(h(9),jet)
-    ylabel(h(9),{'Eflux_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
+    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
+
+    
 
 end 
 
@@ -193,7 +194,7 @@ if ~isempty(data.Etnr)
     wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
     fpe_sc = (wpe_sc/2/pi)/1000;
     [TNR] =  solo.read_TNR(Tint);
-    irf_spectrogram(h(10),TNR,'log')
+    irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
     fpe_sc.units = 'kHz';
     fpe_sc.name = 'f [kHz]';
     hold(h(10),'on');
@@ -204,6 +205,7 @@ if ~isempty(data.Etnr)
     set(h(10),'ColorScale','log')
     %caxis(h(10),[.01 1]*10^-12)
     ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+    yticks(h(10),[10^1 10^2]);
 end
 
 

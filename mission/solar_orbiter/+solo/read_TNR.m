@@ -34,7 +34,7 @@ function out =  read_TNR(tint)
 
 %% 
 
-%tint = irf.tint('2020-11-18T00:00:00Z','2020-11-19T00:00:00Z');
+%tint = irf.tint('2021-05-18T00:00:00Z','2021-05-19T00:00:00Z');
 date_vector = irf_time(tint,'epochTT>vector');
 yyyy = num2str(date_vector(1,1));
 
@@ -180,17 +180,18 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
 %    vp = vp-movm;
     vp(vp<0)=0;
    %=============   
-    out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p', vp);
+   
+    out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
     out.p_label={'dB'};
     
 
-
+% 
 %      hh=irf_panel('tnr');
 %      irf_spectrogram(hh,out,'log')
 %      set(hh, 'YScale', 'log');
 %      colormap(hh,jet)
 %      set(hh,'ColorScale','log')
-%      caxis(hh,[-165 -115])
+     %caxis(hh,[-165 -115])
 end
 
 %%
