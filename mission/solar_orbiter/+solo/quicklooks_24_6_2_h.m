@@ -425,7 +425,7 @@ for i6h = 1:4
     filesmth = Tint_6h(1);
     filesmth = filesmth.utc;
     filestr1 = filesmth(1:13);
-    filestr1([5,10])=[];
+    filestr1([5,8])=[];
     
     filesmth = Tint_6h(end);
     filesmth = filesmth.utc;
