@@ -276,7 +276,7 @@ classdef dc
 
 
                 % Extract subsequence of DATA records to "demux".
-                ssSamplesTm = bicas.proc.utils.select_row_range_from_cell_comps(...
+                ssSamplesCaTm = bicas.proc.utils.select_row_range_from_cell_comps(...
                     PreDc.Zv.samplesCaTm, iFirst, iLast);
                 % NOTE: "zVariable" (i.e. first index=record) for only the
                 % current subsequence.
@@ -298,76 +298,29 @@ classdef dc
                 %=====================
                 % ITERATE OVER BLTS's
                 %=====================
-                ssSamplesAVolt = cell(5,1);
+                ssSamplesAVoltCa = cell(5,1);
                 for iBlts = 1:5
-
-                    if strcmp(BltsSrcAsrArray(iBlts).category, 'Unknown')
-                        % ==> Calibrated data == NaN.
-                        ssSamplesAVolt{iBlts} = nan(size(ssSamplesTm{iBlts}));
-
-                    elseif ismember(BltsSrcAsrArray(iBlts).category, {'GND', '2.5V Ref'})
-                        % ==> No calibration.
-                        ssSamplesAVolt{iBlts} = ssSamplesTm{iBlts};
-
-                    else
-                        assert(BltsSrcAsrArray(iBlts).is_ASR())
-                        % ==> Calibrate (unless explicitly stated that should
-                        % not)
-
-                        if PreDc.hasSnapshotFormat
-                            ssSamplesCaTm = ...
-                                bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
-                                    double(ssSamplesTm{iBlts}), ...
-                                    ssZvNValidSamplesPerRecord);
-                        else
-                            assert(all(ssZvNValidSamplesPerRecord == 1))
-                            ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
-                        end
-
-                        %######################
-                        %######################
-                        %  CALIBRATE VOLTAGES
-                        %######################
-                        %######################
-                        % IMPLEMENTATION NOTE: Must explicitly disable
-                        % calibration for LFR zVar BW=0
-                        % ==> CALIBRATION_TABLE_INDEX(1,:) illegal value.
-                        % ==> Can not calibrate.
-                        % Therefore uses ufv_ss to disable calibration.
-                        % It is thus not enough to overwrite the values later.
-                        % This incidentally also potentially speeds up the code.
-                        % Ex: LFR SWF 2020-02-25, 2020-02-28.
-                        CalSettings = struct();
-                        CalSettings.iBlts        = iBlts;
-                        CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
-                        CalSettings.biasHighGain = biasHighGain;
-                        CalSettings.iCalibTimeL  = iCalibL_ss;
-                        CalSettings.iCalibTimeH  = iCalibH_ss;
-                        CalSettings.iLsf         = iLsf_ss;
-                        %#######################################################
-                        ssSamplesCaAVolt = Cal.calibrate_voltage_all(...
-                            ssDtSec, ssSamplesCaTm, ...
-                            PreDc.isLfr, PreDc.isTdsCwf, CalSettings, ...
-                            CALIBRATION_TABLE_INDEX_ss, ufv_ss);
-                        %#######################################################
-
-                        if PreDc.hasSnapshotFormat
-                            [ssSamplesAVolt{iBlts}, ~] = ...
-                                bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
-                                    ssSamplesCaAVolt, ...
-                                    size(ssSamplesTm{iBlts}, 2));
-                        else
-                            % NOTE: Must be column array.
-                            ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};
-                        end
-                    end
+                    ssSamplesAVoltCa{iBlts} = bicas.proc.L1L2.dc.calibrate_BLTS(...
+                        BltsSrcAsrArray(iBlts), ...
+                        ssSamplesCaTm{iBlts}, ...
+                        iBlts, ...
+                        PreDc.hasSnapshotFormat, ...
+                        ssZvNValidSamplesPerRecord, ...
+                        biasHighGain, ...
+                        iCalibL_ss, ...
+                        iCalibH_ss, ...
+                        iLsf_ss, ...
+                        ssDtSec, ...
+                        PreDc.isLfr, PreDc.isTdsCwf, ...
+                        CALIBRATION_TABLE_INDEX_ss, ufv_ss, ...
+                        Cal);
                 end    % for iBlts = 1:5
 
                 %====================================
                 % DEMULTIPLEXER: DERIVE MISSING ASRs
                 %====================================
                 [~, SsAsrSamplesAVolt] = bicas.proc.L1L2.demuxer.main(...
-                    MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
+                    MUX_SET_ss, dlrUsing12_ss, ssSamplesAVoltCa);
 
                 % Add demuxed sequence to the to-be complete set of records.
                 AsrSamplesAVolt = bicas.proc.utils.set_struct_field_rows(...
@@ -381,6 +334,86 @@ classdef dc
             %bicas.log_speed_profiling(L, 'bicas.proc.L1L2.dc.calibrate_demux_voltages', tTicToc, nRecords, 'record')
             %bicas.log_memory_profiling(L, 'bicas.proc.L1L2.dc.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
+
+
+
+        % Calibrate one BLTS channel.
+        function samplesAVolt = calibrate_BLTS(...
+                BltsSrcAsr, samplesTm, iBlts, ...
+                hasSnapshotFormat, ...
+                zvNValidSamplesPerRecord, biasHighGain, ...
+                iCalibL, iCalibH, iLsf, dtSec, ...
+                isLfr, isTdsCwf, ...
+                CALIBRATION_TABLE_INDEX, ufv, ...
+                Cal)
+            % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
+            % but the original code made calibrate_demux_voltages() to large and
+            % unwieldy. It also highlights the dependencies.
+            %
+            % PROPOSAL: CalSettings as parameter.
+            %   PRO: Reduces number of parameters.
+            %   PROPOSAL: Add values to CalSettings: isLfr, isTdsCwf, CALIBRATION_TABLE_INDEX
+            %       CON: cal does not seem to use more values.
+
+            if strcmp(BltsSrcAsr.category, 'Unknown')
+                % ==> Calibrated data == NaN.
+                samplesAVolt = nan(size(samplesTm));
+
+            elseif ismember(BltsSrcAsr.category, {'GND', '2.5V Ref'})
+                % ==> No calibration.
+                samplesAVolt = ssSamplesTm;
+
+            else
+                assert(BltsSrcAsr.is_ASR())
+                % ==> Calibrate (unless explicitly stated that should not)
+
+                if hasSnapshotFormat
+                    samplesCaTm = ...
+                        bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
+                            double(samplesTm), zvNValidSamplesPerRecord);
+                else
+                    assert(all(zvNValidSamplesPerRecord == 1))
+                    samplesCaTm = {double(samplesTm)};
+                end
+
+                %######################
+                %######################
+                %  CALIBRATE VOLTAGES
+                %######################
+                %######################
+                % IMPLEMENTATION NOTE: Must explicitly disable
+                % calibration for LFR zVar BW=0
+                % ==> CALIBRATION_TABLE_INDEX(1,:) illegal value.
+                % ==> Can not calibrate.
+                % Therefore uses ufv_ss to disable calibration.
+                % It is thus not enough to overwrite the values later.
+                % This incidentally also potentially speeds up the code.
+                % Ex: LFR SWF 2020-02-25, 2020-02-28.
+                CalSettings = struct();
+                CalSettings.iBlts        = iBlts;
+                CalSettings.BltsSrc      = BltsSrcAsr;
+                CalSettings.biasHighGain = biasHighGain;
+                CalSettings.iCalibTimeL  = iCalibL;
+                CalSettings.iCalibTimeH  = iCalibH;
+                CalSettings.iLsf         = iLsf;
+                %#######################################################
+                ssSamplesCaAVolt = Cal.calibrate_voltage_all(...
+                    dtSec, samplesCaTm, ...
+                    isLfr, isTdsCwf, CalSettings, ...
+                    CALIBRATION_TABLE_INDEX, ufv);
+                %#######################################################
+
+                if hasSnapshotFormat
+                    [samplesAVolt, ~] = ...
+                        bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
+                            ssSamplesCaAVolt, ...
+                            size(samplesTm, 2));
+                else
+                    % NOTE: Must be column array.
+                    samplesAVolt = ssSamplesCaAVolt{1};
+                end
+            end
+        end    % calibrate_BLTS
 
 
 
