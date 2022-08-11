@@ -61,6 +61,14 @@ classdef L1L2
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
 %
+% PROPOSAL: Classes for PreDc, PostDc, PreDc.Zv, PostDc.Zv.
+%   PRO: Better documentation of formats.
+%   PRO: Can abolish
+%       bicas.proc.L1L2.assert_PreDC
+%       bicas.proc.L1L2.assert_PostDC
+% PROPOSAL: Class for HkSciTime.
+% PROPOSAL: Class for DemuxerOutput.
+%
 %#######################################################################################################################
 
 

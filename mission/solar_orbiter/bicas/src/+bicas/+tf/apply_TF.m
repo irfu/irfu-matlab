@@ -155,7 +155,7 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     tfB = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
 
 
-    
+
     %#####################
     % Optionally DE-trend
     %#####################

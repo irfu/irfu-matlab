@@ -74,15 +74,15 @@ classdef utils
 
 
 
-        function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
-        % For every cell in a cell array, select an index range in the first
-        % dimension for every cell array component.
+        function ca2 = select_row_range_from_cell_comps(ca1, iFirst, iLast)
+        % For every cell in a cell array, select a (non-cell array) index range
+        % in the first dimension for every cell array component.
             
             % ASSERTIONS
-            bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(c1)
+            bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(ca1)
             
-            for i = 1:numel(c1)
-                c2{i} = c1{i}(iFirst:iLast, :, :,:,:,:);
+            for i = 1:numel(ca1)
+                ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
             end
         end
 

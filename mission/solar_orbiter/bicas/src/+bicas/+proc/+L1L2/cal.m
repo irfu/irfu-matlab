@@ -737,9 +737,9 @@ classdef cal < handle
             CalibData = obj.get_BIAS_LFR_calib_data(...
                 CalSettings, iNonBiasRct, cti2);
 
-            %=======================================
+            %====================================
             % CALIBRATE: LFR TM --> TM --> avolt
-            %=======================================
+            %====================================
             samplesCaAVolt = cell(size(samplesCaTm));
             for i = 1:numel(samplesCaTm)
                 

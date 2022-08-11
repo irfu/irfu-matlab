@@ -68,13 +68,13 @@ classdef dc
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
-            [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(iCalibLZv);
+            [iFirstList, iLastList, nSs] = EJ_library.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
                 ['Calibrating currents -', ...
                 ' One sequence of records with identical settings at a time.'])
-            for iSubseq = 1:nSubseq
-                iFirst = iFirstList(iSubseq);
-                iLast  = iLastList(iSubseq);
+            for iSs = 1:nSs
+                iFirst = iFirstList(iSs);
+                iLast  = iLastList(iSs);
 
                 iRecords = iFirst:iLast;
 
@@ -205,8 +205,11 @@ classdef dc
             % NOTE: Rx (the relevant value from R0, R1, R2) is not included
             %       since it is not needed, since data has already been
             %       separated into separate DC/AC variables.
+            %
+            % SS = Subsequence (single, constant value valid for entire
+            %      subsequence)
             %===================================================================
-            [iFirstList, iLastList, nSubseq] = EJ_library.utils.split_by_change(...
+            [iFirstList, iLastList, nSs] = EJ_library.utils.split_by_change(...
                 PreDc.Zv.MUX_SET, ...
                 PreDc.Zv.DIFF_GAIN, ...
                 dlrUsing12zv, ...
@@ -220,15 +223,13 @@ classdef dc
                 ['Calibrating voltages -', ...
                 ' One sequence of records with identical settings at a time.'])
 
-            for iSubseq = 1:nSubseq
+            for iSs = 1:nSs
 
-                iFirst = iFirstList(iSubseq);
-                iLast  = iLastList (iSubseq);
+                iFirst = iFirstList(iSs);
+                iLast  = iLastList (iSs);
 
                 % Extract SCALAR settings to use for entire subsequence of
                 % records.
-                % SS = Subsequence (single, constant value valid for entire
-                %      subsequence)
                 MUX_SET_ss                 = PreDc.Zv.MUX_SET  (              iFirst);
                 DIFF_GAIN_ss               = PreDc.Zv.DIFF_GAIN(              iFirst);
                 dlrUsing12_ss              = dlrUsing12zv(                    iFirst);
@@ -249,7 +250,7 @@ classdef dc
                     %         it requires the entire table to pre-exist before execution.
                     %   PROPOSAL: Print after all iterations.
                     %
-                    % NOTE: DIFF_GAIN needs three characters two fit in "NaN".
+                    % NOTE: DIFF_GAIN needs three characters to fit in "NaN".
                     L.logf('info', ['Records %8i-%8i : %s -- %s', ...
                         ' MUX_SET=%i; DIFF_GAIN=%-3i; dlrUsing12=%i;', ...
                         ' freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
@@ -372,7 +373,7 @@ classdef dc
                 AsrSamplesAVolt = bicas.proc.utils.set_struct_field_rows(...
                     AsrSamplesAVolt, SsAsrSamplesAVolt, iFirst:iLast);
 
-            end    % for iSubseq = 1:length(iFirstList)
+            end    % for iSs = 1:length(iFirstList)
 
 
 
