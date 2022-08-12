@@ -36,6 +36,7 @@ classdef utils
 %       TODO-DEC: Move to subfile if only used there instead?
 %           Ex: Move function to lfr.m instead of L1L2.m?
 %
+% PROPOSAL: Test code.
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_TT2000 and its inversion.
 %
 % N-->1 sample/record
@@ -196,18 +197,23 @@ classdef utils
         %
         % ARGUMENTS
         % =========
-        % data         : Numeric array with N rows.                 
-        % bRowFilter   : Numeric/logical column vector with N rows.
+        % zvData
+        %       Numeric array with N rows.
+        % bRowFilter
+        %       Numeric/logical column vector with N rows.
         %
         %
         % RETURN VALUE
         % ============
-        % filteredData :
-        %         Array of the same size as "data", such that
-        %         filteredData(i,:,:) == NaN,         for rowFilter(i)==0.
-        %         filteredData(i,:,:) == data(i,:,:), for rowFilter(i)~=0.
+        % zvData :
+        %       Array of the same size as "data", such that
+        %       zvData(i,:,:) == NaN,         for bRowFilter(i)==0.
+        %       zvData(i,:,:) == data(i,:,:), for bRowFilter(i)~=0.
         
         % PROPOSAL: Better name? ~set_records_NaN
+        % BUG/PROBLEM: Function name/documentation unclear on meaning of
+        %              bRowFilter: Does true mean REMOVE or KEEP data?
+        %              Currently: true <=> REMOVE data
 
             % ASSERTIONS
             % Mostly to make sure the caller knows that it represents true/false.
@@ -221,13 +227,11 @@ classdef utils
                 zvData,     [-1, NaN, NaN], ...
                 bRowFilter, [-1])
 
-
-            
             % Overwrite data with NaN
             % -----------------------
-            % IMPLEMENTATION NOTE: Command works empirically for filteredData
+            % IMPLEMENTATION NOTE: Command works empirically for zvData
             % having any number of dimensions. However, if rowFilter and
-            % filteredData have different numbers of rows, then the final array
+            % zvData have different numbers of rows, then the final array
             % may get the wrong dimensions (without triggering error!) since new
             % array components (indices) are assigned. ==> Having a
             % corresponding ASSERTION is important!

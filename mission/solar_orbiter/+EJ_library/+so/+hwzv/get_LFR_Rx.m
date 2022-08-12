@@ -6,8 +6,7 @@
 % ARGUMENTS
 % =========
 % zvR0, zvR1, zvR2, iLsf
-%       LFR CDF zVariable-like. All must have identical array sizes.
-%       iLsf(i) == 1 (not 0) ==> F0 and so on.
+%       LFR CDF zVariable-like variables. All must have identical array sizes.
 %
 %
 % RETURN VALUE
@@ -15,8 +14,10 @@
 % Rx
 %       Same size array as arguments. The relevant values are copied,
 %       respectively, from R0, R1, R2, or an analogous hypothetical "R3" that is
-%       a constant (=1) depending on the value of iLsf in the corresponding
+%       a constant (=1), depending on the value of iLsf in the corresponding
 %       component.
+%       iLsf(i) == 1 ==> Rx(i) == zvR0(i),
+%       iLsf(i) == 2 ==> Rx(i) == zvR1(i), and so on.
 %       NOTE: Numeric (like R0, R1, R2). Not MATLAB class "logical".
 %
 %

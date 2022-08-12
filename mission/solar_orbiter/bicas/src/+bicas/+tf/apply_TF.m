@@ -1,6 +1,14 @@
 %
-% Apply transfer function to signal. Potentially modifies TF and data before and
-% after application of TF.
+% Apply transfer function to signal according to chosen algorithm. Potentially
+% modify TF and data before and after application of TF.
+%
+%
+% TERMINOLOGY
+% ===========
+% De-trending : REMOVING fit on data BEFORE applying the TF. It does NOT
+%               automatically imply RE-trending.
+% Re-trending : ADDING BACK a scaled version of the previously removed fit when
+%               de-trending, AFTER applying the TF.
 %
 %
 % NOTES
@@ -14,8 +22,9 @@
 % (counterexample: sine wave, one cycle). The implementation scales the "trend"
 % (polynomial fit) by tfZ(omega==0).
 % --
-% NOTE: Retrending is bad for non-lowpass filters since the retrending requires
-% scaling the fit by tfZ(omega=0) which is only meaningful for lowpass filters.
+% NOTE: Retrending is bad for non-lowpass filters (TFs) since the retrending
+% requires scaling the fit by tfZ(omega=0) which is only meaningful for lowpass
+% filters.
 % --
 % ** Code has the ability to enable/disable de-trending:
 %       -- To handle both DC and AC signals.
@@ -25,26 +34,19 @@
 %    part of the TF itself.
 %
 %
-% TERMINOLOGY
-% ===========
-% De-trending : REMOVING fit on data BEFORE applying the TF. It does NOT
-%               automatically imply RE-trending.
-% Re-trending : ADDING BACK a scaled version of the previously removed fit when
-%               de-trending, AFTER applying the TF.
-%
-%
 % ARGUMENTS
 % =========
 % dt, y1, tf
 %       Same as for bicas.tf.apply_TF_freq(). May be modified by this
-%       function before actually being submitted.
+%       function before actually applying the TF.
 % varargin
 %       Optional settings arguments as interpreted by
 %       EJ_library.utils.interpret_settings_args().
 %       Available settings:
 %         * 'detrendingDegreeOf'
+%               Integer.
 %               >=0 : Degree of the polynomical fit used for de-trending.
-%               <0  : No de-trending.
+%                <0 : No de-trending.
 %               Default = -1.
 %         * 'retrendingEnabled'
 %         * 'tfHighFreqLimitFraction'
@@ -78,10 +80,9 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     % PROPOSAL: Return modified y1 actually used.
     % PROPOSAL: Return struct.
     %   PRO: Avoid confusing return arguments.
-    %
-    % PROPOSAL: Separate function for modifying TF.
-    %   NOTE: tfHighFreqLimitFraction depends on sampling frequency and can not
-    %         be done in advance.
+    %   PRO: Easy to add (and to some extent remove) fields while maintaining
+    %        backward compatibility.
+    %   CON: Locks in field names.
     %
     % PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq
     %           if all data is non-finite.
@@ -132,12 +133,11 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     clear DEFAULT_SETTINGS
     
 
-    
     % ASSERTION: Arguments
     assert(iscolumn(y1), 'Argument y1 is not a column vector.')
     
-    
-    
+
+
     %=========================================================================
     % Create modified version of TF which is set to zero for high frequencies
     %=========================================================================

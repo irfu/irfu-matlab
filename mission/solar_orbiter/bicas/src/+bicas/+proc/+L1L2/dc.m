@@ -18,6 +18,10 @@ classdef dc
     %           should only accept the needed zVars and variables.
     %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
     %         from struct.
+    %
+    % PROPOSAL: Make AsrSamplesAVolt a class.
+    %   PRO: Can initialize right-sized empty fields in constructor.
+
     
     %#######################
     %#######################
@@ -362,6 +366,8 @@ classdef dc
             %   PRO: Reduces number of parameters.
             %   PROPOSAL: Add values to CalSettings: isLfr, isTdsCwf, CALIBRATION_TABLE_INDEX
             %       CON: cal does not seem to use more values.
+            % PROPOSAL: Reorder arguments to group them.
+            %   PROPOSAL: Group arguments from PreDc.
 
             if strcmp(BltsSrcAsr.category, 'Unknown')
                 % ==> Calibrated data == NaN.

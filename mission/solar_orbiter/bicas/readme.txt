@@ -55,7 +55,12 @@ dataset (data set)         = A CDF file on one of a number standardized formats
                              specified by the various RPW teams.
                              All CDF files in the context of BICAS are
                              datasets.
-
+RV
+    Return Value.
+TF
+    Transfer Function.
+ZV
+    zVariable as in a CDF file.
 
 
 #################
