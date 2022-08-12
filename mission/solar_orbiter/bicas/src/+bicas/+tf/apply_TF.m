@@ -39,9 +39,13 @@
 %
 % ARGUMENTS
 % =========
-% dt, y1, tf
-%       Same as for bicas.tf.apply_TF_freq(). May be modified by this
-%       function before actually applying the TF.
+% dt
+%       Scalar. Time difference between samples.
+% y1
+%       Column vector of samples. May be modified by this function before
+%       actually applying the TF.
+% tf
+%       Function handle. Transfer function. Same as for bicas.tf.apply_TF_freq().
 % varargin
 %       Optional settings arguments as interpreted by
 %       EJ_library.utils.interpret_settings_args().
@@ -243,16 +247,15 @@ function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
 
 
 
-    
     %#########################
     % APPLY TRANSFER FUNCTION
     %#########################
     switch(Settings.method)
-        
+
         case 'FFT'
             y2Modif = bicas.tf.apply_TF_freq(dt, y1Modif, tf);
             %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
-            
+
         case 'kernel'
             % TODO-NI: Kernel length == Signal length
             %          ==> Bad for very long time series? E.g. CWF?
@@ -261,14 +264,14 @@ function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
             lenKernel = length(y1);
             %lenKernelMax = ceil(10 / dt);
             %lenKernel = min(lenKernel, lenKernelMax);
-            
+
             % NOTE: The called function applies the Hann window instead of
             % current function since it only applies to kernel method (as
             % opposed to de-trending & re-trending).
             y2Modif = bicas.tf.apply_TF_time(...
                 dt, y1Modif, tf, lenKernel, Settings.kernelEdgePolicy, ...
                 'hannWindow', Settings.kernelHannWindow);
-            
+
         otherwise
             error('BICAS:Assertion:IllegalArgument', ...
                 'Illegal setting "method" value.')

@@ -41,7 +41,7 @@
 % CA     = Cell Array
 % --
 % LSF    = LFR Sampling Frequency (F0...F3)
-%          NOTE: When used as a variabe (array index), 1=F0, ..., 4=F3.
+%          NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
 % TF     = Transfer function (Z=Z(omega), i.e. in frequency domain)
 % FTF    = Forward Transfer Function = TF that describes physical
 %          INPUT-to-OUTPUT (not the reverse)
@@ -74,7 +74,7 @@
 % Deg        = Degrees (angle). 1 revolution=360 degrees=2*pi radians.
 % RPS        = Radians/second
 % Sec        = Seconds
-% 
+%
 %
 % BLTS = BIAS-LFR/TDS SIGNAL
 % ---------------------------
@@ -175,7 +175,7 @@ classdef cal < handle
 %   CON: Extracting variables makes it clear which fields are expected and used.
 %
 % TODO-DEC: How distribute the calibration formulas/algorithms between
-%   (1) calibrate_* functions, 
+%   (1) calibrate_* functions,
 %   (2) functions that select relevant calibration data (get_BIAS_calib_data)
 %   (2) RCT reading functions,
 %   (3) classes that store TFs?
@@ -339,24 +339,27 @@ classdef cal < handle
 % PROPOSAL: Move shared definitions and naming conventions to a
 %           ~MISC_NAMING_CONVENTIONS.md file analogous with for
 %           JUICE/RPWI_pipeline git repo.
+%
+% PROPOSAL: Refactor to use a struct constant for those arguments to
+%           bicas.tf.apply_TF() which are constant.
 
 
 
     properties(Access=private, Constant)
-        
+
         % Local TF constant for convenience.
         NAN_TF = @(omegaRps) (omegaRps * NaN);
-        
+
     end
 
 
 
     properties(SetAccess=private, GetAccess=public)
-        
+
         %==================
         % Calibration data
         %==================
-        
+
         % RCT calibration data
         % --------------------------------------------------
         % containers.Map: RCT Type ID --> Data
@@ -367,20 +370,20 @@ classdef cal < handle
         % empty cells for non-BIAS RCTs which should not (and can not) be
         % loaded.
         RctDataMap = containers.Map();
-        
+
         % Non-RCT calibration data
         % ------------------------
         % BIAS scalar (simplified) calibration, not in the RCTs. For
         % debugging/testing purposes.
         BiasScalarGain
         HkBiasCurrent
-        
-        
-        
+
+
+
         %==================================================
         % Settings for what kind of calibration to perform
         %==================================================
-        
+
         % Corresponds to SETTINGS key-value.
         tfMethod
         %
@@ -395,24 +398,24 @@ classdef cal < handle
         kernelHannWindow
         snfEnabled
         snfSubseqMinSamples
-                
+
         % What type of calibration to use.
         allVoltageCalibDisabled    % Use TM values (not set to NaN).
         useBiasTfScalar
         biasOffsetsDisabled
         lfrTdsTfDisabled
-        
+
         % Whether to select non-BIAS RCT using global attribute
         % CALIBRATION_TABLE (and CALIBRATION_TABLE_INDEX(iRecord,1)).
-        use_CALIBRATION_TABLE_rcts        
+        use_CALIBRATION_TABLE_rcts
         % Whether to use CALIBRATION_TABLE_INDEX(iRecord,2) for calibration.
         use_CALIBRATION_TABLE_INDEX2
 
-        
+
     end
-    
-    
-    
+
+
+
     %###########################################################################
 
 
@@ -474,16 +477,16 @@ classdef cal < handle
                 RctDataMap.keys, ...
                 bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP.keys)
             assert(isscalar(RctDataMap('BIAS')))
-            
-            
-            
+
+
+
             %====================
             % Set obj.RctDataMap
             %====================
             obj.RctDataMap = RctDataMap;
-            
-            
-            
+
+
+
             %==================================================================
             % Store miscellaneous SETTINGS key values
             % ---------------------------------------
@@ -495,31 +498,31 @@ classdef cal < handle
             %==================================================================
             obj.HkBiasCurrent.offsetTm             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
             obj.HkBiasCurrent.gainAapt             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
-            
+
             obj.BiasScalarGain.alphaIvpav          = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
             obj.BiasScalarGain.betaIvpav           = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
             obj.BiasScalarGain.gammaIvpav.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
             obj.BiasScalarGain.gammaIvpav.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
-            
+
             obj.tfMethod                           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.METHOD');
-            
+
             obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION');
             % NOTE: Converts Hz-->rad/s
             obj.itfAcConstGainLowFreqRps           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
-            
+
             obj.dcDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
             obj.dcRetrendingEnabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
             obj.acDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
-            
+
             obj.kernelEdgePolicy                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
             obj.kernelHannWindow                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
             obj.snfEnabled                         = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
             obj.snfSubseqMinSamples                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
-            
+
             obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
             obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
             obj.lfrTdsTfDisabled                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
-            
+
             %-------------------------
             % Set obj.useBiasTfScalar
             %-------------------------
@@ -536,9 +539,9 @@ classdef cal < handle
                         ' PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".'], ...
                         settingBiasTf)
             end
-            
-            
-            
+
+
+
             %============================
             % Store some argument values
             %============================
@@ -555,7 +558,7 @@ classdef cal < handle
         %
         function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
                 biasCurrentTm, iAntenna, iCalibTimeL)
-            
+
             %==============================
             % Obtain calibration constants
             %==============================
@@ -595,11 +598,11 @@ classdef cal < handle
         %
         function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
                 biasCurrentTm, iAntenna)
-            
+
             % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK.
             % Not strictly required, but the variable has to be some integer.
             assert(isa(biasCurrentTm, 'uint16'))
-            
+
             %=============================================================
             % CALIBRATE
             % ---------
@@ -614,9 +617,9 @@ classdef cal < handle
             biasCurrentAAmpere = obj.HkBiasCurrent.gainAapt(iAntenna) * ...
                 (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));    % LINEAR FUNCTION
         end
-        
-        
-        
+
+
+
         % Calibrate all voltages. Function will choose the more specific
         % algorithm internally.
         %
@@ -643,7 +646,7 @@ classdef cal < handle
         function samplesCaAVolt = calibrate_voltage_all(obj, ...
                 dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, ...
                 zv_CALIBRATION_TABLE_INDEX, voltageNaN)
-            
+
             % ASSERTIONS
             assert(isstruct(CalSettings))
 %             EJ_library.assert.struct(CalSettings, {...
@@ -651,8 +654,8 @@ classdef cal < handle
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             EJ_library.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
             assert(islogical(voltageNaN) && isscalar(voltageNaN))
-            
-            
+
+
 
             % Set iNonBiasRct, cti2 by extracting values from
             % zv_CALIBRATION_TABLE_INDEX or emulating it.
@@ -666,12 +669,12 @@ classdef cal < handle
             % can vary between LFR, TDS-CWF, TDS-RSWF.
             cti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
 
-            
-            
+
+
             if obj.allVoltageCalibDisabled || voltageNaN
-                
+
                 samplesCaAVolt = cell(size(samplesCaTm));
-                
+
                 for i = 1:numel(samplesCaTm)
                     if obj.allVoltageCalibDisabled
                         % CASE: Set voltages to TM values.
@@ -679,13 +682,13 @@ classdef cal < handle
                     end
                     if voltageNaN
                         % CASE: Set voltages to NaN.
-                        
+
                         % IMPLEMENTATION NOTE: Potentially overwrites TM value
                         % set in above "if" statement.
                         samplesCaAVolt{i} = nan(size(samplesCaTm{i}));
                     end
                 end
-                
+
             else
 
                 if isLfr
@@ -708,7 +711,7 @@ classdef cal < handle
                             dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
                     end
                 end
-                
+
             end
         end
 
@@ -733,8 +736,8 @@ classdef cal < handle
             EJ_library.assert.vector(dtSec)
             assert(numel(samplesCaTm) == numel(dtSec))
 
-            
-            
+
+
             %=============================
             % Obtain all calibration data
             %=============================
@@ -746,7 +749,7 @@ classdef cal < handle
             %====================================
             samplesCaAVolt = cell(size(samplesCaTm));
             for i = 1:numel(samplesCaTm)
-                
+
                 % APPLY TRANSFER FUNCTION (BIAS + LFR)
                 tempSamplesAVolt = bicas.tf.apply_TF(...
                     dtSec(i), ...
@@ -765,7 +768,7 @@ classdef cal < handle
                 samplesCaAVolt{i} = tempSamplesAVolt + CalibData.BiasCalibData.offsetAVolt;
             end
         end
-        
+
 
 
         % ARGUMENTS
@@ -783,7 +786,7 @@ classdef cal < handle
             biasHighGain = CalSettings.biasHighGain;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
-            
+
             % ASSERTIONS
             EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
@@ -791,20 +794,20 @@ classdef cal < handle
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
             assert(iNonBiasRct >= 1)
-            
+
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % TODO? ASSERTION: cti2 = 0???
                 error(...
                     'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
                     'TDS-CWF calibration never uses CALIBRATION_TABLE_INDEX2.')
             end
-            
+
             % Initialize empty output variable.
             samplesCaAVolt = cell(size(samplesCaTm));
 
             if ismember(iBlts, [1,2,3])
                 % CASE: BLTS 1-3 which TDS does support.
-                
+
                 %==============================
                 % Obtain calibration constants
                 %==============================
@@ -812,22 +815,22 @@ classdef cal < handle
                 % arbitrary.
                 BiasCalibData = obj.get_BIAS_calib_data(...
                     BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
-                
+
                 if obj.lfrTdsTfDisabled
                     tdsFactorIvpt = 1;
                 else
                     RctList       = obj.RctDataMap('TDS-CWF');
                     tdsFactorIvpt = RctList{iNonBiasRct}.factorsIvpt(iBlts);
                 end
-                
+
                 for i = 1:numel(samplesCaTm)
-                    
+
                     %===============================================
                     % CALIBRATE: TDS TM --> TDS/BIAS interface volt
                     %===============================================
                     % MULTIPLICATION
                     tempSamplesIVolt = tdsFactorIvpt * samplesCaTm{i};
-                   
+
                     %=====================================================
                     % CALIBRATE: TDS/BIAS interface volt --> antenna volt
                     %=====================================================
@@ -844,20 +847,20 @@ classdef cal < handle
                         'kernelHannWindow',        obj.kernelHannWindow, ...
                         'snfEnabled',              obj.snfEnabled, ...
                         'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
-                    
+
                     % ADD BIAS OFFSET
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
 
-            else                
+            else
                 % CASE: BLTS 4-5 which TDS does NOT support.
-                
+
                 for i = 1:numel(samplesCaTm)
                     % Always return NaN.
                     samplesCaAVolt{i} = NaN * samplesCaTm{i};
                 end
             end
-            
+
         end
 
 
@@ -868,7 +871,7 @@ classdef cal < handle
         %
         function samplesCaAVolt = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
-            
+
 %             EJ_library.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
@@ -877,7 +880,7 @@ classdef cal < handle
             biasHighGain = CalSettings.biasHighGain;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
-            
+
             % ASSERTIONS
             EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
@@ -885,14 +888,14 @@ classdef cal < handle
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
             assert(iNonBiasRct >= 1)
-            
+
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % TODO? ASSERTION: cti2 = 0???
                 error(...
                     'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
                     'TDS-RSWF calibration never uses CALIBRATION_TABLE_INDEX2.')
             end
-            
+
             %==============================
             % Obtain calibration constants
             %==============================
@@ -900,11 +903,11 @@ classdef cal < handle
             % arbitrary.
             BiasCalibData = obj.get_BIAS_calib_data(...
                 BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
-            
+
             % Initialize empty output variable.
             samplesCaAVolt = cell(size(samplesCaTm));
             if ismember(iBlts, [1,2,3])
-                
+
                 %======================================
                 % Create combined ITF for TDS and BIAS
                 %======================================
@@ -919,7 +922,7 @@ classdef cal < handle
                     tdsItfIvpt(omegaRps) ...
                     .* ...
                     BiasCalibData.itfAvpiv(omegaRps));
-                
+
                 %====================================
                 % CALIBRATE: TDS TM --> antenna volt
                 %====================================
@@ -937,7 +940,7 @@ classdef cal < handle
                         'kernelHannWindow',        obj.kernelHannWindow, ...
                         'snfEnabled',              obj.snfEnabled, ...
                         'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
-                    
+
                     % ADD BIAS OFFSET
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
@@ -948,14 +951,14 @@ classdef cal < handle
                     samplesCaAVolt{i} = NaN * samplesCaTm{i};
                 end
             end
-            
+
         end
 
 
 
         function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
             BiasRctDataCa = obj.RctDataMap('BIAS');
-            
+
             iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
                 Epoch, BiasRctDataCa{1}.epochL);
         end
@@ -964,7 +967,7 @@ classdef cal < handle
 
         function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
             BiasRctDataCa = obj.RctDataMap('BIAS');
-            
+
             iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
                 Epoch, BiasRctDataCa{1}.epochH);
         end
@@ -990,16 +993,16 @@ classdef cal < handle
         %
         function BiasCalibData = get_BIAS_calib_data(obj, ...
                 BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
-            
+
             % PROPOSAL: Log warning message when simultaneously biasHighGain=NaN
             % and the value is needed.
-            
+
             % ASSERTION
             assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
-            
+
             BiasRctCa = obj.RctDataMap('BIAS');
             BiasRct   = BiasRctCa{1};
 
@@ -1008,15 +1011,15 @@ classdef cal < handle
             % (forward) transfer function.
             switch(BltsSrc.category)
                 case 'DC single'
-                    
+
                     % NOTE: List of ITFs for different times.
                     biasItfAvpiv = BiasRct.ItfSet.dcSingleAvpiv{iCalibTimeL};
                     kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
                     offsetAVolt  = BiasRct.dcSingleOffsetsAVolt(...
                         iCalibTimeH, BltsSrc.antennas);
-                    
+
                 case 'DC diff'
-                    
+
                     biasItfAvpiv = BiasRct.ItfSet.dcDiffAvpiv{iCalibTimeL};
                     kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
                     if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = BiasRct.DcDiffOffsets.E12AVolt(iCalibTimeH);
@@ -1026,9 +1029,9 @@ classdef cal < handle
                         error('BICAS:Assertion:IllegalArgument', ...
                             'Illegal BltsSrc.');
                     end
-                    
+
                 case 'AC diff'
-                    
+
                     if     biasHighGain == 0
                         biasItfAvpiv = BiasRct.ItfSet.acLowGainAvpiv{iCalibTimeL};
                         kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.lowGain;
@@ -1053,7 +1056,7 @@ classdef cal < handle
                         ' Can not obtain calibration data for this type of signal.'], ...
                         BltsSrc.category)
             end
-            
+
             if obj.biasOffsetsDisabled && ~isnan(offsetAVolt)
                 % NOTE: Overwrites "offsetAVolt".
                 offsetAVolt = 0;
@@ -1063,36 +1066,36 @@ classdef cal < handle
                 biasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
             end
             %###################################################################
-            
-            
-            
+
+
+
             BiasCalibData.itfAvpiv    = biasItfAvpiv;
             BiasCalibData.offsetAVolt = offsetAVolt;
 
         end
-        
-        
-        
+
+
+
         % Obtain LFR ITF, but handle the case that should never happen for
         % actual non-NaN data (LSF F3 + BLTS 4 or 5) and return a TF that only
         % returns NaN instead. BICAS may still iterate over that combination
         % though when calibrating.
-        % 
+        %
         function lfrItfIvpt = get_LFR_ITF(obj, iNonBiasRct, iBlts, iLsf)
             % ASSERTIONS
             assert(iNonBiasRct >= 1)
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             bicas.proc.L1L2.cal_utils.assert_iLsf(iLsf)
-            
+
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 % CASE: F3 and BLTS={4,5}
-                
+
                 % NOTE: There is no tabulated LFR TF and no such combination
                 % signal route, so the TF can not be returned even in principle.
                 lfrItfIvpt = bicas.proc.L1L2.cal.NAN_TF;
             else
                 RctDataList = obj.RctDataMap('LFR');
-                
+
                 % ASSERTION
                 % IMPLEMENTATION NOTE: Anonymous function below will fail at a
                 % later stage if these assertions are false. Checking for these
@@ -1112,13 +1115,13 @@ classdef cal < handle
                     ' that BICAS did not try to load the corresponding RCT', ...
                     ' in glob. attr. CALIBRATION_TABLE.'], ...
                     iNonBiasRct)
-                
+
                 lfrItfIvpt = RctDataList{iNonBiasRct}.ItfModifIvptCaCa{iLsf}{iBlts};
             end
         end
-        
-        
-        
+
+
+
         % Return calibration data for LFR+BIAS calibration.
         %
         % RATIONALE
@@ -1134,7 +1137,7 @@ classdef cal < handle
         % values to make sure that the caller does not confuse the return values
         % with each other.
         function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, cti2)
-            
+
             % ASSERTIONS
 %             EJ_library.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
@@ -1145,7 +1148,7 @@ classdef cal < handle
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
             iLsf         = CalSettings.iLsf;
-            
+
             % ASSERTIONS
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.BLTS_src_dest'))
@@ -1173,16 +1176,16 @@ classdef cal < handle
                     'BICAS:IllegalArgument:Assertion', ...
                     'cti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
                     cti2+1, iLsf)
-                
+
                 % NOTE: Override earlier iLsf.
                 % NOTE: This is the only place cti2 is used in this class.
                 iLsf = cti2 + 1;
             end
-            
-            
+
+
 
             CalData = struct();
-            
+
             %====================================================
             % Obtain settings for bicas.tf.apply_TF()
             %====================================================
@@ -1200,22 +1203,22 @@ classdef cal < handle
                 CalData.retrendingEnabled  = obj.dcRetrendingEnabled;
             end
             CalData.itfHighFreqLimitFraction = obj.itfHighFreqLimitFraction;
-            
+
             %==============================
             % Obtain BIAS calibration data
             %==============================
             CalData.BiasCalibData = obj.get_BIAS_calib_data(...
                 BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
-            
+
             %========================================
             % Obtain (official) LFR calibration data
-            %========================================            
+            %========================================
             if obj.lfrTdsTfDisabled
                 CalData.lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
             else
                 CalData.lfrItfIvpt = obj.get_LFR_ITF(iNonBiasRct, iBlts, iLsf);
             end
-            
+
             %======================================
             % Create combined ITF for LFR and BIAS
             %======================================
@@ -1234,8 +1237,8 @@ classdef cal < handle
 
     %###########################################################################
 
-    
-    
+
+
     methods(Static, Access=public)
 
 
@@ -1243,45 +1246,45 @@ classdef cal < handle
 %         function tfZ = parasitic_capacitance_TF(tfOmega)
 %             % Calculate Z(omega) values for TF representing parasitic
 %             % capacitances (based on analytic function).
-% 
+%
 %             % Function name? "Input capacitance"?
 %             % Not read R & C from constants here? Submit as arguments?
 %             capacitanceFarad =
 %             impedanceOhm     =
-%             
+%
 %             % Correct for a TF?!
 %             % 2020-11-11, EJ: Not same as in paper note.
 %             tfZ = 1 / (1 + 1j*tfOmega*capacitanceFarad*impedanceOhm);
-%             
+%
 %             error('BICAS:OperationNotImplemented', 'Function not implemented Yet.')
 %         end
-        
-        
-        
+
+
+
         % Convert "set current" to TC/TM units.
         %
         function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
-            
+
             % ASSERTION: Input values are within range.
             % NOTE: max(...) ignores NaN, unless that is the only value, which
             % then becomes the max value.
             [maxAbsSAmpere, iMax] = max(abs(currentSAmpere(:)));
             if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= EJ_library.so.hwzv.const.MAX_ABS_SAMPERE))
-                
+
                 error('BICAS:Assertion:IllegalArgument', ...
                     ['Argument currentSAmpere (unit: set current/ampere)', ...
                     ' contains illegally large value(s).', ...
                     ' Largest found value is %g.'], ...
                     currentSAmpere(iMax))
             end
-            
+
             biasCurrentTm = currentSAmpere * EJ_library.so.hwzv.const.TM_PER_SAMPERE;
         end
-        
-        
-        
+
+
+
     end    % methods(Static, Access=public)
-    
-    
+
+
 
 end
