@@ -501,7 +501,7 @@ classdef cal < handle
             
             obj.tfMethod                           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.METHOD');
             
-            obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION');
+            obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION');
             % NOTE: Converts Hz-->rad/s
             obj.itfAcConstGainLowFreqRps           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
             

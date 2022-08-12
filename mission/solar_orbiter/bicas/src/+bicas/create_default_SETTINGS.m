@@ -593,7 +593,7 @@ function SETTINGS = create_default_SETTINGS()
     % inf = No limit.
     % YK 2020-09-15: Set inverted transfer function to zero for
     % omega>0.8*omega_Nyquist (not 0.7).
-    S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.8)
+    S.define_setting('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION',  0.8)
 
     % When using AC, the combined LFR+BIAS ITFs are modified to have constant
     % gain between 0 Hz and this frequency. The gain used is taken from this
