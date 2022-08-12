@@ -9,10 +9,13 @@
 %               automatically imply RE-trending.
 % Re-trending : ADDING BACK a scaled version of the previously removed fit when
 %               de-trending, AFTER applying the TF.
+% SNF         : Split by Non-Finite values. Splits time series into separate
+%               smaller time series before applying de-trending and (modified)
+%               TF.
 %
 %
-% NOTES
-% =====
+% De-trending / Re-trending
+% =========================
 % NOTE: Detrending makes it impossible to modify the amplitude & phase for the
 % frequency components in the trend itself (the fit), e.g. to delay the signal
 % in the trend. If the input signal is interpreted as N-periodic (e.g. when
@@ -52,32 +55,30 @@
 %         * 'tfHighFreqLimitFraction'
 %               Fraction of Nyquist frequency (1/dt). TF is regarded as zero
 %               above this frequency. Can be Inf.
+%         +more. See implementation.
 %
 %
 % RETURN VALUES
 % =============
 % y2
-%       y1 after algorithm.
-% y1B
-%       Potentially modified y1 on which the TF is applied.
-%       For debugging and automatic tests.
-% y2B
-%       Data after applying TF and before it is potentially modified.
-%       For debugging and automatic tests.
-% tfB
-%       The actual (ptoentially modified) TF used.
-%       For debugging and automatic tests.
-%
+%       y1 after applying modifications and TF. Always column vector.
+% Debug
+%       Struct. For debugging and automatic tests.
+%       .y1ModifCa
+%           Potentially modified y1 on which the TF is applied.
+%       .y2ModifCa
+%           Data after applying TF and before it is potentially modified
+%           (again).
+%       .tfModif
+%           The actual (potentially modified) TF used.
+%       .i1Array, .i2Array
+%           1D column arrays with indices into y1 for the first and last index
+%           for the respective time intervals separated by non-finite y1 values.
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-11-04.
 %
-function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
-    % NOTE: Could switch out the internal apply_TF_freq() for other function,
-    %       e.g. apply_TF_time().
-    %
-    % PROPOSAL: Return modified TF actually used.
-    % PROPOSAL: Return modified y1 actually used.
+function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
     % PROPOSAL: Return struct.
     %   PRO: Avoid confusing return arguments.
     %   PRO: Easy to add (and to some extent remove) fields while maintaining
@@ -119,23 +120,50 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     %   PROPOSAL: Replace with pair of functions: before and after call to bicas.tf.apply_TF_freq().
     %   PROPOSAL: Replace with class with two non-constructor methods
     %             y=c.method(y) before & after.
-    
-    DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
-    DEFAULT_SETTINGS.retrendingEnabled       = false;
-    DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
-    DEFAULT_SETTINGS.method                  = 'FFT';
-    DEFAULT_SETTINGS.kernelEdgePolicy        = 'mirror';
-    DEFAULT_SETTINGS.kernelHannWindow        = false;
-    
-    Settings = EJ_library.utils.interpret_settings_args(...
+    %
+    % TODO-DEC: Format for RVs of modified signals split up?
+    %   PROPOSAL: Cell arrays signals
+    %       PRO: Minimizes amount of data.
+    %       PRO: Explicitly enumerates/isolates time intervals.
+    %       PROPOSAL: Cell array for first, last indices into initial array.
+    %
+    %   PROPOSAL: Analogous with actual returned signal: One long array with
+    %             non-finite values between intervals of data.
+    %       PRO: Good for plotting.
+    %
+    % PROPOSAL: Abbreviation for splitting by non-finite values (useful for
+    %           setting in this file) or fill values (useful for BICAS setting
+    %           name).
+    %   PROPOSAL: ~split, ~FV, ~nonfinite,
+    %   PROPOSAL: SNF = Split by Non-Finite
+    %   PROPOSAL: SFV = Split by FV
+    %   PROPOSAL: NFS = Non-Finite Splitting
+
+
+    DEFAULT_SETTINGS.detrendingDegreeOf         = -1;
+    DEFAULT_SETTINGS.retrendingEnabled          = false;
+    DEFAULT_SETTINGS.tfHighFreqLimitFraction    = Inf;
+    DEFAULT_SETTINGS.method                     = 'FFT';
+    DEFAULT_SETTINGS.kernelEdgePolicy           = 'mirror';
+    DEFAULT_SETTINGS.kernelHannWindow           = false;
+    DEFAULT_SETTINGS.snfEnabled                 = false;
+    DEFAULT_SETTINGS.snfSubseqMinSamples        = 1;
+
+    S = EJ_library.utils.interpret_settings_args(...
         DEFAULT_SETTINGS, varargin);
-    EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+    EJ_library.assert.struct(S, fieldnames(DEFAULT_SETTINGS), {})
     clear DEFAULT_SETTINGS
-    
+
+    assert(...
+        isscalar( S.snfEnabled) && ...
+        islogical(S.snfEnabled))
+    assert(...
+        isscalar(S.snfSubseqMinSamples) && ...
+        S.snfSubseqMinSamples >= 1)
 
     % ASSERTION: Arguments
     assert(iscolumn(y1), 'Argument y1 is not a column vector.')
-    
+
 
 
     %=========================================================================
@@ -143,17 +171,66 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     %=========================================================================
     % NOTE: Permit Settings.tfHighFreqLimitFraction to be +Inf.
     assert(...
-        isnumeric(  Settings.tfHighFreqLimitFraction) ...
-        && isscalar(Settings.tfHighFreqLimitFraction) ...
-        && ~isnan(  Settings.tfHighFreqLimitFraction) ...
-        && (        Settings.tfHighFreqLimitFraction >= 0))
+        isnumeric(  S.tfHighFreqLimitFraction) ...
+        && isscalar(S.tfHighFreqLimitFraction) ...
+        && ~isnan(  S.tfHighFreqLimitFraction) ...
+        && (        S.tfHighFreqLimitFraction >= 0))
     % Nyquist frequency [rad/s] =
     % = 2*pi [rad/sample] * (1/2 * 1/dt [samples/s])
     % = pi/dt
     nyquistFreqRps     = pi/dt;
-    tfHighFreqLimitRps = Settings.tfHighFreqLimitFraction * nyquistFreqRps;
-    tfB = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
+    tfHighFreqLimitRps = S.tfHighFreqLimitFraction * nyquistFreqRps;
+    tfModif = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
 
+
+
+    if S.snfEnabled
+        %===================================================================
+        % Split up time interval into sub-intervals separated by non-finite
+        % samples (fill values)
+        %===================================================================
+        % SS = SubSequence
+        [i1Array, i2Array] = EJ_library.utils.split_by_false(isfinite(y1));
+        nSs = numel(i1Array);
+    else
+        i1Array = 1;
+        i2Array = numel(y1);
+        nSs     = 1;
+    end
+
+    % Pre-allocate and initialize values that will not later be overwritten.
+    y2 = NaN(size(y1));
+
+    Debug = struct();
+    Debug.y1ModifCa = cell(nSs, 1);   % Pre-allocate
+    Debug.y2ModifCa = cell(nSs, 1);   % Pre-allocate
+    Debug.i1Array   = i1Array;
+    Debug.i2Array   = i2Array;
+    Debug.tfModif   = tfModif;
+
+    for iSs = 1:nSs
+        i1 = i1Array(iSs);
+        i2 = i2Array(iSs);
+
+        y1ss = y1(i1:i2);
+
+        if numel(y1ss) >= S.snfSubseqMinSamples
+            [y2ss, D] = apply_TF_with_DRT(dt, y1ss, tfModif, S);
+            Debug.y1ModifCa{iSs} = D.y1Modif;
+            Debug.y2ModifCa{iSs} = D.y2Modif;
+        else
+            y2ss = NaN(size(y1ss));
+            Debug.y1ModifCa{iSs} = [];
+            Debug.y2ModifCa{iSs} = [];
+        end
+
+        y2(i1:i2) = y2ss;
+    end
+end
+
+
+
+function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
 
 
     %#####################
@@ -162,7 +239,8 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     Drt = bicas.tf.drt(...
         Settings.detrendingDegreeOf, ...
         Settings.retrendingEnabled);
-    y1B = Drt.detrend(y1);
+    y1Modif = Drt.detrend(y1);
+
 
 
     
@@ -172,7 +250,7 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     switch(Settings.method)
         
         case 'FFT'
-            y2B = bicas.tf.apply_TF_freq(dt, y1B, tfB);
+            y2Modif = bicas.tf.apply_TF_freq(dt, y1Modif, tf);
             %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
             
         case 'kernel'
@@ -187,8 +265,8 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
             % NOTE: The called function applies the Hann window instead of
             % current function since it only applies to kernel method (as
             % opposed to de-trending & re-trending).
-            y2B = bicas.tf.apply_TF_time(...
-                dt, y1B, tfB, lenKernel, Settings.kernelEdgePolicy, ...
+            y2Modif = bicas.tf.apply_TF_time(...
+                dt, y1Modif, tf, lenKernel, Settings.kernelEdgePolicy, ...
                 'hannWindow', Settings.kernelHannWindow);
             
         otherwise
@@ -201,6 +279,11 @@ function [y2, y1B, y2B, tfB] = apply_TF(dt, y1, tf, varargin)
     %#####################
     % Optionally RE-trend
     %#####################
-    y2 = Drt.retrend(y2B, tfB(0));    
-    
+    y2 = Drt.retrend(y2Modif, tf(0));
+
+
+
+    Debug = struct();
+    Debug.y1Modif = y1Modif;
+    Debug.y2Modif = y2Modif;
 end

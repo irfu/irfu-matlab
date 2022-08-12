@@ -605,6 +605,15 @@ function SETTINGS = create_default_SETTINGS()
     % filter at 7 Hz".
     S.define_setting('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ', 7)
 
+    % Whether to split a time series into shorter time series, separated by fill
+    % values, before de-trending and applying the (modified) TF. This avoids
+    % applying TF to fill values which avoids destroying non-fill value data.
+    S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',     true)
+    % Minimum number of samples in a time series (after splitting).
+    % NOTE: Limit does not apply if there was no splitting (for "backward
+    % compatibility").
+    S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
+
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
     % corresponds to interface volt.

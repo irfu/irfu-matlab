@@ -393,6 +393,8 @@ classdef cal < handle
         %
         kernelEdgePolicy
         kernelHannWindow
+        snfEnabled
+        snfSubseqMinSamples
                 
         % What type of calibration to use.
         allVoltageCalibDisabled    % Use TM values (not set to NaN).
@@ -511,6 +513,8 @@ classdef cal < handle
             
             obj.kernelEdgePolicy                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
             obj.kernelHannWindow                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
+            obj.snfEnabled                         = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
+            obj.snfSubseqMinSamples                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
             
             obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
             obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
@@ -753,7 +757,9 @@ classdef cal < handle
                     'retrendingEnabled',       CalibData.retrendingEnabled, ...
                     'tfHighFreqLimitFraction', CalibData.itfHighFreqLimitFraction, ...
                     'kernelEdgePolicy',        obj.kernelEdgePolicy, ...
-                    'kernelHannWindow',        obj.kernelHannWindow);
+                    'kernelHannWindow',        obj.kernelHannWindow, ...
+                    'snfEnabled',              obj.snfEnabled, ...
+                    'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 
                 % ADD BIAS offset
                 samplesCaAVolt{i} = tempSamplesAVolt + CalibData.BiasCalibData.offsetAVolt;
@@ -835,7 +841,9 @@ classdef cal < handle
                         'retrendingEnabled',       obj.dcRetrendingEnabled, ...
                         'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction, ...
                         'kernelEdgePolicy',        obj.kernelEdgePolicy, ...
-                        'kernelHannWindow',        obj.kernelHannWindow);
+                        'kernelHannWindow',        obj.kernelHannWindow, ...
+                        'snfEnabled',              obj.snfEnabled, ...
+                        'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
                     
                     % ADD BIAS OFFSET
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
@@ -926,7 +934,9 @@ classdef cal < handle
                         'retrendingEnabled',       obj.dcRetrendingEnabled, ...
                         'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction, ...
                         'kernelEdgePolicy',        obj.kernelEdgePolicy, ...
-                        'kernelHannWindow',        obj.kernelHannWindow);
+                        'kernelHannWindow',        obj.kernelHannWindow, ...
+                        'snfEnabled',              obj.snfEnabled, ...
+                        'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
                     
                     % ADD BIAS OFFSET
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
