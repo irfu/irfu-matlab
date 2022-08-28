@@ -59,6 +59,7 @@ h(2).YColor=[1,0,0];
 
 %Spectra h(3), h(4)
 if ~isempty(data.B)
+   if  ~isempty(rmmissing(data.B.data))
     bb = data.B;
     if median(diff((bb.time.epochUnix))) < 0.1250*0.95
         fMag = 128; fMax = 7;
@@ -122,6 +123,7 @@ if ~isempty(data.B)
     cbb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
     bgrcmap = [crr' cgg' cbb'];
     colormap(h(4),bgrcmap);
+   end
 end
 
 
@@ -194,18 +196,21 @@ if ~isempty(data.Etnr)
     wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
     fpe_sc = (wpe_sc/2/pi)/1000;
     [TNR] =  solo.read_TNR(Tint);
-    irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
-    fpe_sc.units = 'kHz';
-    fpe_sc.name = 'f [kHz]';
-    hold(h(10),'on');
-    irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
-    text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
-    set(h(10), 'YScale', 'log');
-    colormap(h(10),jet)   
-    set(h(10),'ColorScale','log')
-    %caxis(h(10),[.01 1]*10^-12)
-    ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
-    yticks(h(10),[10^1 10^2]);
+    sz_tnr = size(TNR.p);
+    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
+        irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
+        fpe_sc.units = 'kHz';
+        fpe_sc.name = 'f [kHz]';
+        hold(h(10),'on');
+        irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
+        text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
+        set(h(10), 'YScale', 'log');
+        colormap(h(10),jet)   
+        set(h(10),'ColorScale','log')
+        %caxis(h(10),[.01 1]*10^-12)
+        ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+        yticks(h(10),[10^1 10^2]);
+    end
 end
 
 

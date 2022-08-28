@@ -98,7 +98,7 @@ ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 if ~isempty(data.ieflux)
     myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
     iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
-    for ii = 1:(Tint(2)-Tint(1))/3600/24 
+    for ii = 1:ceil((myFile(end).stop-myFile(1).start)/3600/24)
         iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
         iEnergy = iEnergy{1};
         iDEF.p = data.ieflux.data;
