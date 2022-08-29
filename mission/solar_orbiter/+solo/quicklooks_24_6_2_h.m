@@ -40,7 +40,7 @@ end
 ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
 h(2).ColorOrder=colors;
 irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',legsize);
-%irf_zoom(h(2),'y');
+irf_zoom(h(2),'y',[min(data.Npas.tlim(Tint).data)-5 max(data.Ne.tlim(Tint).data)+5]);
 
 yyaxis(h(2),'right');
 if ~isempty(data.B)
@@ -50,9 +50,11 @@ if ~isempty(data.B)
     %if ~isempty(Bnan)
     %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
     %end
+    irf_zoom(h(2),'y',[min(data.B.tlim(Tint).abs.data)-1 max(data.B.tlim(Tint),abs.data)+1]);
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
 h(2).YColor=[1,0,0];
+
 
 
 %%
@@ -247,7 +249,7 @@ end
 xtickangle(h(10),0)
 % Add plot information and IRF logo
 logopos = h(1).Position;
-logopos(1)=logopos(1)+logopos(3)+0.04;
+logopos(1)=logopos(1)+logopos(3)+0.06;
 logopos(2)=logopos(2)+0.06;
 logopos(3)=0.05;
 logopos(4)=logopos(3)*1095/800;
@@ -308,14 +310,14 @@ oldlims2 = h(2).YLim;
 oldticks2 = h(2).YTick;
 h(2).YScale='log';
 h(2).YTick=[1,10,100];
-h(2).YLim=[0.8,200];
+%h(2).YLim=[0.8,200];
 
 yyaxis(h(2),'right');
 oldlims2_r=h(2).YLim;
 oldticks2_r = h(2).YTick;
 h(2).YScale='log';
 h(2).YTick=[1,10,100];
-h(2).YLim=[0.1,200];
+%h(2).YLim=[0.1,200];
 
 oldlims5 = h(5).YLim;
 oldticks5 = h(5).YTick;
@@ -341,10 +343,10 @@ print('-dpng',path1);
 
 h(2).YScale='lin';
 h(2).YTick=oldticks2_r;
-h(2).YLim=oldlims2_r;
+%h(2).YLim=oldlims2_r;
 yyaxis(h(2),'left');
 h(2).YScale='lin';
-h(2).YLim=oldlims2;
+%h(2).YLim=oldlims2;
 h(2).YTick=oldticks2;
 
 
