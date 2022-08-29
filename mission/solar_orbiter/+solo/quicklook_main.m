@@ -171,6 +171,7 @@ if runNonweeklyPlots
         % Time interval
         Tint=irf.tint(times_1d(iTint), times_1d(iTint+1));
         
+        Data = [];
         Data.Vrpw = S.V_RPW_1h.tlim(Tint);
 
         % E-field:
