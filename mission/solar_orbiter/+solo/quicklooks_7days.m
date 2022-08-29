@@ -71,7 +71,7 @@ if ~isempty(data.Vpas)
     irf_plot(h(5),data.Vpas.z.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
 end
 irf_legend(h(5),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',legsize);
-%irf_zoom(h(5),'y');
+irf_zoom(h(5),'y');
 ylabel(h(5),{'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
 hold(h(6),'on');
@@ -108,7 +108,7 @@ if ~isempty(data.ieflux)
     iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
     irf_spectrogram(h(8),iDEF,'log','donotfitcolorbarlabel');
     % set(h(1),'ytick',[1e1 1e2 1e3]);
-    %caxis(h(9),[-1 1])
+    caxis(h(9),[-1 1])
     hold(h(8),'on');
     if ~isempty(data.B)
         irf_plot(h(8),fci,'k','linewidth',lwidth);
@@ -125,12 +125,11 @@ if ~isempty(data.Etnr)
     myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
     wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
     fpe_sc = (wpe_sc/2/pi)/1000;
-    tt = [Tint(1) Tint(1)+24*60*60];
     tp =[];pp=[];
     warning('off', 'fuzzy:general:warnDeprecation_Combine');
     for iii = 1:ceil((myFile2(end).stop-myFile2(1).start)/3600/24)
+        tt = [myFile2(iii).start myFile2(iii).stop];
         [TNRp] =  solo.read_TNR(tt);
-        tt = tt+24*60*60;
         TNR.t = combine(tp,TNRp.t);
         tp = TNR.t;
         TNR.p = combine(pp,TNRp.p);
@@ -148,7 +147,7 @@ if ~isempty(data.Etnr)
     colormap(h(9),jet)   
    % ylabel(h(9),'f [kHz]')
     set(h(9),'ColorScale','log')
-    caxis([.01 10]*10^-12)
+    %caxis([.01 10]*10^-12)
     yticks(h(9),[10^1 10^2]);
 end
 
@@ -256,7 +255,7 @@ oldlims5 = h(5).YLim;
 oldticks5 = h(5).YTick;
 h(5).YScale='log';
 h(5).YTick=[1,10,100];
-h(5).YLim=[0.5,300];
+%h(5).YLim=[0.5,300];
 
 c_eval('h(?).FontSize=18;',1:9);
 
