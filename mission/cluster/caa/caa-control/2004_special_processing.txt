@@ -1,5 +1,11 @@
 % Special processing 2004. Force MS offset even if PL2 >-8V. Quicklook per-orbit overview used for reference.
 % Remember to put extra newline at end of file or last command will fail.
+
+2004-06-23T18:00:00Z 2004-06-23T20:59:59Z 1234  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
 %C1-4
 2004-07-09T20:00:00.00Z 2004-07-11T14:00:00.00Z 1234 % force MS offsets
  Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
@@ -47,4 +53,16 @@
 %C1-4
 2004-11-03T05:00:00.00Z 2004-11-05T05:00:00.00Z 1234 % force MS offsets
  Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C3
+2004-12-10T18:00:00Z 2004-12-10T20:59:59Z 3  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+%C134
+2004-12-13T21:00:00Z 2004-12-13T23:59:59Z 134  % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
 
