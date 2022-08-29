@@ -122,12 +122,13 @@ end
 %E-field spectrum (TNR)
 if ~isempty(data.Etnr)
     %Electron plasma frequency
+    myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
     wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
     fpe_sc = (wpe_sc/2/pi)/1000;
     tt = [Tint(1) Tint(1)+24*60*60];
     tp =[];pp=[];
     warning('off', 'fuzzy:general:warnDeprecation_Combine');
-    for iii = 1:ceil((myFile(end).stop-myFile(1).start)/3600/24)
+    for iii = 1:ceil((myFile2(end).stop-myFile2(1).start)/3600/24)
         [TNRp] =  solo.read_TNR(tt);
         tt = tt+24*60*60;
         TNR.t = combine(tp,TNRp.t);
