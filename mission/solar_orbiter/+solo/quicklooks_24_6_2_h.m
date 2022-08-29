@@ -40,7 +40,7 @@ end
 ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
 h(2).ColorOrder=colors;
 irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',legsize);
-irf_zoom(h(2),'y',[min(data.Npas.tlim(Tint).data)-5 max(data.Ne.tlim(Tint).data)+5]);
+
 
 yyaxis(h(2),'right');
 if ~isempty(data.B)
