@@ -127,7 +127,7 @@ if ~isempty(data.Etnr)
     tt = [Tint(1) Tint(1)+24*60*60];
     tp =[];pp=[];
     warning('off', 'fuzzy:general:warnDeprecation_Combine');
-    for iii = 1:(Tint(2)-Tint(1))/3600/24
+    for iii = 1:ceil((myFile(end).stop-myFile(1).start)/3600/24)
         [TNRp] =  solo.read_TNR(tt);
         tt = tt+24*60*60;
         TNR.t = combine(tp,TNRp.t);
