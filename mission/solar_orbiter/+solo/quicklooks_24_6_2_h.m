@@ -172,7 +172,7 @@ ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 if ~isempty(data.ieflux)
     myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
     iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
-    for ii = 1:(Tint(2)-Tint(1))/3600/24 
+    for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
         iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
         iEnergy = iEnergy{1};
         iDEF.p = data.ieflux.data;
@@ -186,32 +186,36 @@ if ~isempty(data.ieflux)
     hold(h(9),'on');
     set(h(9), 'YScale', 'log');
     colormap(h(9),jet)
-    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
+    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tcloex','fontsize',fsize);
 
     
 
 end 
 
 %E-field spectrum (TNR)
-if ~isempty(data.Etnr) && ~isempty(data.Ne)
-    %Electron plasma frequency
-    wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
-    fpe_sc = (wpe_sc/2/pi)/1000;
+if ~isempty(data.Etnr) 
     [TNR] =  solo.read_TNR(Tint);
     sz_tnr = size(TNR.p);
     if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
         irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
-        fpe_sc.units = 'kHz';
-        fpe_sc.name = 'f [kHz]';
         hold(h(10),'on');
-        irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
+        if ~isempty(data.Ne)
+                %Electron plasma frequency
+                wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
+                fpe_sc = (wpe_sc/2/pi)/1000;
+                irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
+                fpe_sc.units = 'kHz';
+                fpe_sc.name = 'f [kHz]';
+        end
+        hold(h(10),'off');
         text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
-        set(h(10), 'YScale', 'log');
-        colormap(h(10),jet)   
-        set(h(10),'ColorScale','log')
+        set(h(10), 'YScale', 'log'); 
+        %set(h(10),'ColorScale','log')
         %caxis(h(10),[.01 1]*10^-12)
         ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+        colormap(h(10),jet)  
         yticks(h(10),[10^1 10^2]);
+        irf_zoom(h(10),'y',[10^1 10^2])
     end
 end
 

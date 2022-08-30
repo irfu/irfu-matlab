@@ -98,7 +98,7 @@ ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 if ~isempty(data.ieflux)
     myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
     iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
-    for ii = 1:ceil((myFile(end).stop-myFile(1).start)/3600/24)
+    for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
         iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
         iEnergy = iEnergy{1};
         iDEF.p = data.ieflux.data;
@@ -123,11 +123,9 @@ end
 if ~isempty(data.Etnr)
     %Electron plasma frequency
     myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
-    wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
-    fpe_sc = (wpe_sc/2/pi)/1000;
     tp =[];pp=[];
     warning('off', 'fuzzy:general:warnDeprecation_Combine');
-    for iii = 1:ceil((myFile2(end).stop-myFile2(1).start)/3600/24)
+    for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
         tt = [myFile2(iii).start myFile2(iii).stop];
         [TNRp] =  solo.read_TNR(tt);
         TNR.t = combine(tp,TNRp.t);
@@ -138,9 +136,13 @@ if ~isempty(data.Etnr)
     TNR.f = TNRp.f;
     TNR.p_label = TNRp.p_label;
     irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
-    fpe_sc.units = 'kHz';
-    fpe_sc.name = 'f [kHz]';
     hold(h(9),'on');
+    if ~isempty(data.Ne)
+            wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
+            fpe_sc = (wpe_sc/2/pi)/1000;
+            fpe_sc.units = 'kHz';
+            fpe_sc.name = 'f [kHz]';
+    end
     irf_plot(h(9),fpe_sc,'r','linewidth',lwidth);
     text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
     %set(h(9), 'YScale', 'log');
