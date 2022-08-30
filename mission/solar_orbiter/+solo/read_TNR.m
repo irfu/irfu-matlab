@@ -113,7 +113,9 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
         sens_ = sens1_;
         timet_ici = timet_(sens1_);
     else
-        irf.log('critical', 'no data at all ?!?')
+        out = 0;
+        return;
+        %irf.log('critical', 'no data at all ?!?')
     end
     
     [~, ord_time] = sort(timet_ici);
