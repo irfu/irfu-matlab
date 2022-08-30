@@ -1,7 +1,7 @@
 function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
-% Given data in the struct 'data' (see solo.quicklook_main), generates
+% Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
 % plots and saves them in the paths specified in the struct 'paths' (see
-% solo.quicklook_main). Computes spectrum of B, so takes a while to run.
+% solo.qli.quicklooks_main). Computes spectrum of B, so takes a while to run.
 % Tint should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
 
@@ -187,7 +187,8 @@ if ~isempty(data.ieflux)
     hold(h(9),'on');
     set(h(9), 'YScale', 'log');
     colormap(h(9),jet)
-    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tcloex','fontsize',fsize);
+    %ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tcloex','fontsize',fsize);
+    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','latex','fontsize',fsize);
 
     
 

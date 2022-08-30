@@ -1,7 +1,7 @@
 function quicklooks_7days(data,paths,Tint,logoPath)
-% Given data in the struct 'data' (see solo.quicklook_main), generates
+% Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
 % plots and saves them in the paths specified in the struct 'paths' (see
-% solo.quicklook_main). Tint should be a 7-day time interval, e.g.
+% solo.qli.quicklooks_main). Tint should be a 7-day time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-08T00:00:00.00Z');
 
 % Setup figure:

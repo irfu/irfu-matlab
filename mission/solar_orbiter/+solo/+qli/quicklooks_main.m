@@ -3,14 +3,13 @@
 % just RPW) for a specified time interval.
 %
 % Intended for batch processing, e.g. being called from bash script, e.g. cron
-% job.
+% job via a MATLAB wrapper script.
 %
+% NOTE: Requires solo.db_init() to have been properly used to initialize dataset
+%       lookup.
 % NOTE: Uses SPICE implicitly, and therefore relies on some path convention. Not
 %       sure which, but presumably it does at least find /data/solo/SPICE/.
-% NOTE: Still uses some hard-coded paths for locating datasets (solo.db_init()).
 % NOTE: Creates subdirectories to the output directory if not pre-existing.
-% NOTE: The time coverage of weekly plots uses 7-day periods that always start
-%       with utcBegin.
 % NOTE: There will only be plots that cover full 7-day periods. If the global
 %       time interval is not a multiple of 7 days, then end of that global time
 %       interval will not be covered by a 7-day plot.
@@ -39,11 +38,9 @@
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
 % Uppsala, Sweden. Modified by Erik P G Johansson.
 %
- function quicklook_main(...
+ function quicklooks_main(...
         logoPath, vhtDataDir, outputDir, ...
         runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
-%
-% PROPOSAL: Log wall time per day of data.
 %
 % TODO-NI: Overwrites pre-existing plots?
 %
@@ -66,78 +63,28 @@
 %       PROPOSAL: plot_*
 %       PROPOSAL: 24_6_2_h
 %
-% PROPOSAL: Put "initializer calls" to irf, solo.db_init() in wrapper used for
-%           cron jobs.
-%   PROBLEM: Such wrapper(s) would then be specifically adapted to a system. How
-%            handle bash scripts for multiple systems?
-%       NOTE: Previously used same bash script and quicklooks_main for both
-%             brain/spis and irony.
-%       PROPOSAL: so_qli should accept argument with function path.
-%           NOTE: Must then assume it has the same arguments.
-%   PRO: solo.db_init() specify explicit hardcoded paths which would then be
-%        removed.
-%   PROPOSAL: quicklooks_cron
-%   PROPOSAL: Use more standard flags for runNonweeklyPlots, runWeeklyPlots:
-%             logical/bool.
 %
-%
-%
-% PROPOSAL: Always start weeks with same weekday.
-%   NOTE: Currently only plots weeks which are entirely covered by input time
-%   interval. Weeks always start with start date.
-%   PROBLEM: If rounding to nearest previous/successive Monday, then one will
-%   always plot too much, or too little.
-%       PROPOSAL: Argument/setting for policy.
-%           ~all     : Always plot time interval. Round to larger time interval.
-%                      Incomplete plots if global time interval does not fall on Monday 00:00.
-%           ~smaller : Round to smaller time interval.
-%       PROPOSAL: Always round to smaller time interval. The caller has to be
-%       aware of time intervals if want to cover specifik weeks.
-%   PROBLEM: Mission begins on 2020-02-12=Wednesday.
-%   ==> There is no SPICE data on Monday-Tuesday before this date.
-%   ==> Code fails for week Monday-to-Sunday.
-%       PROPOSAL: Additionally round start time up to start date.
-
-
-runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
-runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
+% NOTE: Mission begins on 2020-02-12=Wednesday.
+% ==> There is no SPICE data on Monday-Tuesday before this date.
+% ==> Code fails for week Monday-to-Sunday.
+%     PROPOSAL: Additionally round start time up to start date.
 
 
 
-% IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
-% bash.
-irf
-
-
-
-%================================
-% Specify Solar Orbiter database
-%================================
-% For data on the IRFU server the following two are sufficient. You also need
-% V_RPW.mat and V_RPW_1h.mat, found on solo/data_yuri.
-
-solo.db_init('local_file_db', '/data/solo/');
-solo.db_init('local_file_db', '/data/solo/data_irfu');
-
-
-% Setup cache
-solo.db_init('db_cache_size_max', 4096)
-solo.db_cache('on', 'save')
-
-
-%===========
-% Constants
-%===========
-% "Disabling B" speeds up solo.quicklooks_24_6_2_h() greatly. Useful for
-% testing.
+%============
+% ~Constants
+%============
+% IMPLEMENTATION NOTE: Disabling B (use empty) speeds up
+% solo.qli.quicklooks_24_6_2_h() greatly. Useful for testing.
 ENABLE_B = 1;
 
 % Specify subdirectories for saving the respective types of plots.
 PATHS.path_2h  = fullfile(outputDir, '2h' );
 PATHS.path_6h  = fullfile(outputDir, '6h' );
-PATHS.path_24h = fullfile(outputDir, '24h' );
+PATHS.path_24h = fullfile(outputDir, '24h');
 PATHS.path_1w  = fullfile(outputDir, '1w' );
 
+% NOTE: Usually found on solo/data_yuri.
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
 VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 
@@ -159,15 +106,8 @@ tSec = tic();
 % Non-weekly plots.
 TimeIntervalNonWeeks = irf.tint(utcBegin, utcEnd);
 % Weekly plots
-tWeeksBegin = round_to_week(TimeIntervalNonWeeks(1),  1, FIRST_DAY_OF_WEEK);
-tWeeksEnd   = round_to_week(TimeIntervalNonWeeks(2), -1, FIRST_DAY_OF_WEEK);
-if tWeeksBegin <= tWeeksEnd
-    TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksEnd);
-else
-    % Empty week. ~Hackish.
-    TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksBegin);
-end
-% TimeIntervalWeeks = TimeInterval;
+TimeIntervalWeeks = derive_TimeIntervalWeeks(...
+    TimeIntervalNonWeeks(1), TimeIntervalNonWeeks(2), FIRST_DAY_OF_WEEK);
 
 
 
@@ -258,7 +198,7 @@ if runNonweeklyPlots
         end
 
         % Plot data and save figure
-        solo.quicklooks_24_6_2_h(Data,PATHS,Tint,logoPath)
+        solo.qli.quicklooks_24_6_2_h(Data,PATHS,Tint,logoPath)
         
     end    % for
 end
@@ -336,7 +276,7 @@ if runWeeklyPlots
         end
         
         % Plot data and save figure
-        solo.quicklooks_7days(Data2,PATHS,Tint,logoPath)
+        solo.qli.quicklooks_7days(Data2,PATHS,Tint,logoPath)
         
     end    % for
 end
@@ -356,18 +296,40 @@ end    % function
 
 
 
-% Auxilliary function
-%
-function out_times = make_tints(Tint, nDays)
+% Function for deriving the exact week boundaries to use.
+function TimeIntervalWeeks = derive_TimeIntervalWeeks(TimeBegin, TimeEnd, firstDayOfWeek)
+    assert(isscalar(TimeBegin))
+    assert(isscalar(TimeEnd))
 
-    t0          = Tint(1);
-    tlength     = Tint(2) - Tint(1);
+    tWeeksBegin = round_to_week(TimeBegin,  1, firstDayOfWeek);
+    tWeeksEnd   = round_to_week(TimeEnd,   -1, firstDayOfWeek);
+
+    if tWeeksBegin <= tWeeksEnd
+        TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksEnd);
+    else
+        % Empty week. ~Hackish.
+        TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksBegin);
+    end
+end
+
+
+
+% Generate timestamps with specific and constant frequency.
+%
+% TintInterval
+%       Time interval
+% nDays
+%       Number of days between each timestamp.
+function TimeArray = make_tints(TintInterval, nDays)
+    assert(length(TintInterval) == 2)
+
+    t0          = TintInterval(1);
+    tlength     = TintInterval(2) - TintInterval(1);
     % NOTE: Does not take leap seconds into account.
     stepSizeSec = nDays*24*60*60;    % seconds.
 
     dt          = 0:stepSizeSec:tlength;
-    out_times   = t0+dt;
-
+    TimeArray   = t0+dt;
 end
 
 
@@ -376,7 +338,7 @@ end
 %
 % NOTE: solo.db_get_ts() has been observed to return cell array of TSeries
 % (instead of TSeries) for Npas, Tpas and Vpas for
-% solo.quicklook_main('2020-10-21T00:00:00', '2020-10-28T00:00:00', '/data/solo/data_yuri', ...)
+% solo.qli.quicklooks_main('2020-10-21T00:00:00', '2020-10-28T00:00:00', '/data/solo/data_yuri', ...)
 % There might be other cases but those are as of yet unknown.
 % /Erik P G Johansson 2021-03-22
 %
@@ -411,32 +373,11 @@ end
 
 
 
-% Interpret argument for main function interface. Intended accept and normalize
-% arguments which are either
-% (1) MATLAB-friendly (numeric/logical), or
-% (2) bash script-friendly (strings).
-%
-function value = interpret_argument_flag(arg)
-    assert(isscalar(arg), 'Flag argument is not scalar.')
-    
-    if isnumeric(arg) || islogical(arg)
-        value = logical(arg);
-    elseif ischar(arg) && arg=='0'
-        value = false;
-    elseif ischar(arg) && arg=='1'
-        value = true;
-    else
-        error('Can not interpret argument flag. Illegal format.')
-    end
-end
-
-
-
 % Round timestamp down/up to beginning of week.
 %
 % t1, t2 : GenericTimeArray, scalar.
 function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
-    
+    assert(isscalar(t1))
     assert(ismember(roundDir, [-1, 1]))
 
 
