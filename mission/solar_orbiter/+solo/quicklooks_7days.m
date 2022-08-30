@@ -128,10 +128,15 @@ if ~isempty(data.Etnr)
     for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
         tt = [myFile2(iii).start myFile2(iii).stop];
         [TNRp] =  solo.read_TNR(tt);
-        TNR.t = combine(tp,TNRp.t);
-        tp = TNR.t;
-        TNR.p = combine(pp,TNRp.p);
-        pp = TNR.p;
+        if isa(TNRp,'struct')
+            sz_tnr = size(TNR.p);
+            if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
+                TNR.t = combine(tp,TNRp.t);
+                tp = TNR.t;
+                TNR.p = combine(pp,TNRp.p);
+                pp = TNR.p;
+            end
+        end
     end
     TNR.f = TNRp.f;
     TNR.p_label = TNRp.p_label;

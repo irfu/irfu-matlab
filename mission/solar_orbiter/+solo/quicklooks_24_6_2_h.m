@@ -195,27 +195,29 @@ end
 %E-field spectrum (TNR)
 if ~isempty(data.Etnr) 
     [TNR] =  solo.read_TNR(Tint);
-    sz_tnr = size(TNR.p);
-    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-        irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
-        hold(h(10),'on');
-        if ~isempty(data.Ne)
+    if isa(TNR,'struct')
+        sz_tnr = size(TNR.p);
+        if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
+            irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
+            hold(h(10),'on');
+            if ~isempty(data.Ne)
                 %Electron plasma frequency
                 wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
                 fpe_sc = (wpe_sc/2/pi)/1000;
                 irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
                 fpe_sc.units = 'kHz';
                 fpe_sc.name = 'f [kHz]';
+            end
+            hold(h(10),'off');
+            text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
+            set(h(10), 'YScale', 'log'); 
+            %set(h(10),'ColorScale','log')
+            %caxis(h(10),[.01 1]*10^-12)
+            ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+            colormap(h(10),jet)  
+            yticks(h(10),[10^1 10^2]);
+            irf_zoom(h(10),'y',[10^1 10^2])
         end
-        hold(h(10),'off');
-        text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
-        set(h(10), 'YScale', 'log'); 
-        %set(h(10),'ColorScale','log')
-        %caxis(h(10),[.01 1]*10^-12)
-        ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
-        colormap(h(10),jet)  
-        yticks(h(10),[10^1 10^2]);
-        irf_zoom(h(10),'y',[10^1 10^2])
     end
 end
 
