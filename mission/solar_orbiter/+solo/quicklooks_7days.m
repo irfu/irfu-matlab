@@ -136,11 +136,18 @@ if ~isempty(data.Etnr)
                 tp = TNR.t;
                 TNR.p = combine(pp,TNRp.p);
                 pp = TNR.p;
+
+                % IMPLEMENTATION NOTE: Only read from TNRp from within this if
+                % clause, since it might not be a struct if read from elsewhere,
+                % even if it in principle means overwriting the value multiple
+                % times as for TNRp.f and TNRp.p_label.
+                TNR.f       = TNRp.f;
+                TNR.p_label = TNRp.p_label;
         end
     end
     if isstruct(TNR)
-        TNR.f = TNRp.f;
-        TNR.p_label = TNRp.p_label;
+        % TNR.f       = TNRp.f;
+        % TNR.p_label = TNRp.p_label;
         sz_tnr = size(TNR.p);
         if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
             irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
