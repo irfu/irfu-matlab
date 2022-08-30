@@ -50,7 +50,7 @@ if ~isempty(data.B)
     %if ~isempty(Bnan)
     %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
     %end
-    irf_zoom(h(2),'y',[min(data.B.tlim(Tint).abs.data)-1 max(data.B.tlim(Tint),abs.data)+1]);
+    irf_zoom(h(2),'y',[min(data.B.tlim(Tint).abs.data)-1 max(data.B.tlim(Tint).abs.data)+1]);
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
 h(2).YColor=[1,0,0];
