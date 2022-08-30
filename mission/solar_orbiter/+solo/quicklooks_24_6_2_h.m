@@ -193,7 +193,7 @@ if ~isempty(data.ieflux)
 end 
 
 %E-field spectrum (TNR)
-if ~isempty(data.Etnr)
+if ~isempty(data.Etnr) && ~isempty(data.Ne)
     %Electron plasma frequency
     wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
     fpe_sc = (wpe_sc/2/pi)/1000;
