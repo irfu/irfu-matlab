@@ -98,7 +98,8 @@ ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 if ~isempty(data.ieflux)
     myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
     iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
-    for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
+    %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
+    for ii = 1:length(myFile)
         iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
         iEnergy = iEnergy{1};
         iDEF.p = data.ieflux.data;
@@ -125,7 +126,9 @@ if ~isempty(data.Etnr)
     myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
     tp =[];pp=[];
     warning('off', 'fuzzy:general:warnDeprecation_Combine');
-    for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+    TNR = [];
+    %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+    for iii = 1:length(myFile2)
         tt = [myFile2(iii).start myFile2(iii).stop];
         [TNRp] =  solo.read_TNR(tt);
         if isa(TNRp,'struct')
@@ -134,29 +137,30 @@ if ~isempty(data.Etnr)
                 TNR.p = combine(pp,TNRp.p);
                 pp = TNR.p;
         end
-            
     end
-    TNR.f = TNRp.f;
-    TNR.p_label = TNRp.p_label;
-    sz_tnr = size(TNR);
-    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-        irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
-        hold(h(9),'on');
+    if isstruct(TNR)
+        TNR.f = TNRp.f;
+        TNR.p_label = TNRp.p_label;
+        sz_tnr = size(TNR.p);
+        if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
+            irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
+            hold(h(9),'on');
+        end
+        if ~isempty(data.Ne)
+                wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
+                fpe_sc = (wpe_sc/2/pi)/1000;
+                fpe_sc.units = 'kHz';
+                fpe_sc.name = 'f [kHz]';
+                irf_plot(h(9),fpe_sc,'r','linewidth',lwidth);
+        end
+        text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
+        %set(h(9), 'YScale', 'log');
+        colormap(h(9),jet)   
+       % ylabel(h(9),'f [kHz]')
+        set(h(9),'ColorScale','log')
+        %caxis([.01 10]*10^-12)
+        yticks(h(9),[10^1 10^2]);
     end
-    if ~isempty(data.Ne)
-            wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
-            fpe_sc = (wpe_sc/2/pi)/1000;
-            fpe_sc.units = 'kHz';
-            fpe_sc.name = 'f [kHz]';
-    end
-    irf_plot(h(9),fpe_sc,'r','linewidth',lwidth);
-    text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
-    %set(h(9), 'YScale', 'log');
-    colormap(h(9),jet)   
-   % ylabel(h(9),'f [kHz]')
-    set(h(9),'ColorScale','log')
-    %caxis([.01 10]*10^-12)
-    yticks(h(9),[10^1 10^2]);
 end
 
 
