@@ -130,7 +130,7 @@ end
 %=============================================
 if runNonweeklyPlots
     
-    times_1d = make_tints(TimeIntervalNonWeeks, 1); % Daily time-intervals
+    times_1d = make_time_array(TimeIntervalNonWeeks, 1); % Daily time-intervals
 
     % Load data
     % This is the .mat file containing RPW speeds at 1h resolution.
@@ -173,26 +173,28 @@ if runNonweeklyPlots
         % Solar Orbiter position
         % Note: solopos uses SPICE, but should be taken care of by
         % "solo.get_position".
-        posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');        
-        if ~isempty(posSolO)
-            [radius, lon, lat] = cspice_reclat(posSolO.data');
-            Data.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
-        else
-            Data.solopos=posSolO;
-        end
+%         posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
+%         if ~isempty(posSolO)
+%             [radius, lon, lat] = cspice_reclat(posSolO.data');
+%             Data.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
+%         else
+%             Data.solopos=posSolO;
+%         end
+        Data.solopos = get_SolO_pos(Tint);
         
         % Earth position (also uses SPICE)
         dt=60*60;
-        et = Tint.start.tts:dt:Tint.stop.tts;
-        posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
-        if ~isempty(posEarth)
-            [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
-            Data.earthpos = [E_radius',E_lon',E_lat'];    
-        else
-            Data.earthpos=[];
-        end
-        
-        
+%         et = Tint.start.tts:dt:Tint.stop.tts;
+%         posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+%         if ~isempty(posEarth)
+%             [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
+%             Data.earthpos = [E_radius',E_lon',E_lat'];    
+%         else
+%             Data.earthpos=[];
+%         end
+        Data.earthpos = get_Earth_pos(Tint, dt);
+
+
         if ~ENABLE_B
             Data.B = [];
         end
@@ -210,7 +212,7 @@ end
 %===================================
 if runWeeklyPlots
         
-    times_7d = make_tints(TimeIntervalWeeks, 7);% weekly time-intervals
+    times_7d = make_time_array(TimeIntervalWeeks, 7);% weekly time-intervals
     
     % Load data
     % This is the .mat file containing RPW speeds at 6h resolution.
@@ -253,27 +255,35 @@ if runWeeklyPlots
         % Solar Orbiter position
         % Note: solopos uses SPICE, but should be taken care of by
         % "solo.get_position".
-        posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');        
-        if ~isempty(posSolO)
-            [radius, lon, lat] = cspice_reclat(posSolO.data');
-            Data2.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
-        else
-            Data2.solopos=posSolO;
-        end
+%         posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
+%         if ~isempty(posSolO)
+%             [radius, lon, lat] = cspice_reclat(posSolO.data');
+%             Data2.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
+%         else
+%             Data2.solopos=posSolO;
+%         end
+        Data2.solopos = get_SolO_pos(Tint);
         
         % Earth position (also uses SPICE)
         dt=60*60;
-        et = Tint.start.tts:dt:Tint.stop.tts;
         Tlength=Tint(end)-Tint(1);
         dTimes = 0:dt:Tlength;
         Times = Tint(1)+dTimes;
-        posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
-        if ~isempty(posEarth)
-            [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
-            Data2.earthpos = irf.ts_vec_xyz(Times,[E_radius',E_lon',E_lat']);    
+%         et = Tint.start.tts:dt:Tint.stop.tts;
+%         posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+%         if ~isempty(posEarth)
+%             [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
+%             Data2.earthpos = irf.ts_vec_xyz(Times,[E_radius',E_lon',E_lat']);    
+%         else
+%             Data2.earthpos=TSeries();
+%         end
+        earthPos = get_Earth_pos(Tint, dt);
+        if ~isempty(earthPos)
+            Data2.earthpos = irf.ts_vec_xyz(Times, earthPos);
         else
-            Data2.earthpos=TSeries();
+            Data2.earthpos = TSeries();
         end
+        
         
         % Plot data and save figure
         solo.qli.quicklooks_7days(Data2,PATHS,Tint,logoPath)
@@ -296,6 +306,43 @@ end    % function
 
 
 
+% Get Solar Orbiter position
+%
+% NOTE: Uses SPICE and "solo.get_position()".
+function soloPos = get_SolO_pos(Tint)
+    % IM = irfu-matlab
+    imSoloPos = solo.get_position(Tint,'frame','ECLIPJ2000');
+
+    % BUG?!!: If solo.get_position() is non-empty, and presumably contains a
+    %         value, THEN use SPICE value anyway?!!
+    if ~isempty(imSoloPos)
+        [radius, lon, lat] = cspice_reclat(imSoloPos.data');
+        soloPos = irf.ts_vec_xyz(imSoloPos.time,[radius',lon',lat']);
+    else
+        soloPos = imSoloPos;
+    end
+end
+
+
+
+% Use SPICE to get Earth's position.
+function earthPos = get_Earth_pos(Tint, dt)
+    assert(length(Tint) == 2)
+    assert(isnumeric(dt))
+
+    et = Tint.start.tts : dt : Tint.stop.tts;
+
+    spiceEarthPos = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+    if ~isempty(spiceEarthPos)
+        [E_radius, E_lon, E_lat] = cspice_reclat(spiceEarthPos);
+        earthPos = [E_radius',E_lon',E_lat'];
+    else
+        earthPos = [];
+    end
+end
+
+
+
 % Function for deriving the exact week boundaries to use.
 function TimeIntervalWeeks = derive_TimeIntervalWeeks(TimeBegin, TimeEnd, firstDayOfWeek)
     assert(isscalar(TimeBegin))
@@ -314,13 +361,13 @@ end
 
 
 
-% Generate timestamps with specific and constant frequency.
+% Generate array of timestamps with specific and constant frequency.
 %
 % TintInterval
 %       Time interval
 % nDays
 %       Number of days between each timestamp.
-function TimeArray = make_tints(TintInterval, nDays)
+function TimeArray = make_time_array(TintInterval, nDays)
     assert(length(TintInterval) == 2)
 
     t0          = TintInterval(1);
