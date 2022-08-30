@@ -2,23 +2,26 @@
 % Generate multiple IRFU-local types of quicklooks (files) for SolO data (not
 % just RPW) for a specified time interval.
 %
-% Intended for batch processing, e.g. being called from bash script.
+% Intended for batch processing, e.g. being called from bash script, e.g. cron
+% job.
 %
 % NOTE: Uses SPICE implicitly, and therefore relies on some path convention. Not
-% sure which, but presumably it does at least find /data/solo/SPICE/.
+%       sure which, but presumably it does at least find /data/solo/SPICE/.
 % NOTE: Still uses some hard-coded paths for locating datasets (solo.db_init()).
 % NOTE: Creates subdirectories to the output directory if not pre-existing.
 % NOTE: The time coverage of weekly plots uses 7-day periods that always start
-% with utcBegin.
+%       with utcBegin.
 % NOTE: There will only be plots that cover full 7-day periods. If the global
-% time interval is not a multiple of 7 days, then end of that global time
-% interval will not be covered by a 7-day plot.
+%       time interval is not a multiple of 7 days, then end of that global time
+%       interval will not be covered by a 7-day plot.
 %
 %
 % ARGUMENTS
 % =========
 % logoPath
 %       Path to IRF logo image.
+%       Normally located in irfu-matlab:
+%       irfu-matlab/mission/solar_orbiter/+solo/irf_logo.png
 %       Empty ==> Do not plot any logo.
 % vhtDataDir
 %       Path to directory containing VHT (velocity) .mat files.
@@ -40,15 +43,44 @@
         logoPath, vhtDataDir, outputDir, ...
         runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 %
-% PROPOSAL: Log wall time used.
-%   NOTE: ~Can not time per plot.
-%   PROPOSAL: Log wall time per day of data.
+% PROPOSAL: Log wall time per day of data.
 %
 % TODO-NI: Overwrites pre-existing plots?
 %
+% PROPOSAL: Have its own package: solo.qli
+%   TODO-DEC: quicklooks_main name?
+%       ~main
+%       ~plot, ~generate
 % PROPOSAL: Reorg to separate internal functions for non-weekly and weekly plots
-% respectively.
-%   NOTE: Would need to have arguments for debugging constants like DISABLE_B etc.
+%           respectively.
+%   NOTE: Would need to have arguments for debugging constants like ENABLE_B etc.
+%   NOTE: make_tints(), wrapper function db_get_ts() would be used by both functions
+%         (nonweekly+weekly).
+%   TODO-DEC: Function names?
+%       PROPOSAL: quicklooks_24_6_2_h_loop()
+%                 quicklooks_7days_loop()
+%   PROPOSAL: Functions as external files.
+%   PROPOSAL: Change names of
+%       quicklooks_24_6_2_h
+%       quicklooks_7days
+%       PROPOSAL: plot_*
+%       PROPOSAL: 24_6_2_h
+%
+% PROPOSAL: Put "initializer calls" to irf, solo.db_init() in wrapper used for
+%           cron jobs.
+%   PROBLEM: Such wrapper(s) would then be specifically adapted to a system. How
+%            handle bash scripts for multiple systems?
+%       NOTE: Previously used same bash script and quicklooks_main for both
+%             brain/spis and irony.
+%       PROPOSAL: so_qli should accept argument with function path.
+%           NOTE: Must then assume it has the same arguments.
+%   PRO: solo.db_init() specify explicit hardcoded paths which would then be
+%        removed.
+%   PROPOSAL: quicklooks_cron
+%   PROPOSAL: Use more standard flags for runNonweeklyPlots, runWeeklyPlots:
+%             logical/bool.
+%
+%
 %
 % PROPOSAL: Always start weeks with same weekday.
 %   NOTE: Currently only plots weeks which are entirely covered by input time
@@ -113,7 +145,6 @@ VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 % NOTE: First day of data (launch+2 days) is 2020-02-12, a Wednesday.
 % Therefore using Wednesday as beginning of "week" for weekly plots (until
 % someone complains).
-% IMPLEMENTATION NOTE: 
 FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 
 
@@ -172,6 +203,7 @@ if runNonweeklyPlots
         Tint=irf.tint(times_1d(iTint), times_1d(iTint+1));
         
         Data = [];
+
         Data.Vrpw = S.V_RPW_1h.tlim(Tint);
 
         % E-field:
@@ -250,6 +282,8 @@ if runWeeklyPlots
         % Time interval
         Tint = irf.tint(times_7d(iTint), times_7d(iTint+1));
         
+        Data2 = [];
+        
         Data2.Vrpw = S.V_RPW.tlim(Tint);
         
         % E-field:
@@ -315,8 +349,8 @@ plotsTimeDays = (TimeIntervalNonWeeks.tts(2) - TimeIntervalNonWeeks.tts(1)) / 86
 
 % NOTE: Execution speed may vary by orders of magnitude depending on settings
 % (nonweekly vs weekly plots). May therefore want scientific notation.
-fprintf('Wall time used:                  %g [h] = %g [s]\n',     wallTimeHours, wallTimeSec);
-fprintf('Wall time used per day of plots: %g [h/day]\n', wallTimeHours / plotsTimeDays);
+fprintf('Wall time used:                  %g [h] = %g [s]\n', wallTimeHours, wallTimeSec);
+fprintf('Wall time used per day of plots: %g [h/day]\n',      wallTimeHours / plotsTimeDays);
 
 end    % function
 
