@@ -129,19 +129,20 @@ if ~isempty(data.Etnr)
         tt = [myFile2(iii).start myFile2(iii).stop];
         [TNRp] =  solo.read_TNR(tt);
         if isa(TNRp,'struct')
-            sz_tnr = size(TNR.p);
-            if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
                 TNR.t = combine(tp,TNRp.t);
                 tp = TNR.t;
                 TNR.p = combine(pp,TNRp.p);
                 pp = TNR.p;
-            end
         end
+            
     end
     TNR.f = TNRp.f;
     TNR.p_label = TNRp.p_label;
-    irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
-    hold(h(9),'on');
+    sz_tnr = size(TNR);
+    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
+        irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
+        hold(h(9),'on');
+    end
     if ~isempty(data.Ne)
             wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
             fpe_sc = (wpe_sc/2/pi)/1000;
