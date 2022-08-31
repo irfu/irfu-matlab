@@ -44,10 +44,8 @@
 %
 % TODO-NI: Overwrites pre-existing plots?
 %
-% PROPOSAL: Have its own package: solo.qli
-%   TODO-DEC: quicklooks_main name?
-%       ~main
-%       ~plot, ~generate
+% PROPOSAL: Better name: quicklooks_main?
+%       ~main, ~plot, ~generate
 % PROPOSAL: Reorg to separate internal functions for non-weekly and weekly plots
 %           respectively.
 %   NOTE: Would need to have arguments for debugging constants like ENABLE_B etc.
@@ -68,7 +66,9 @@
 % ==> There is no SPICE data on Monday-Tuesday before this date.
 % ==> Code fails for week Monday-to-Sunday.
 %     PROPOSAL: Additionally round start time up to start date.
-
+%
+% PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
+%           of via TimeIntervalNonWeeks and TimeIntervalWeeks.
 
 
 %============
@@ -105,7 +105,7 @@ tSec = tic();
 %=================================
 % Non-weekly plots.
 TimeIntervalNonWeeks = irf.tint(utcBegin, utcEnd);
-% Weekly plots
+% Weekly plots: Indirectly sets weekly boundaries.
 TimeIntervalWeeks = derive_TimeIntervalWeeks(...
     TimeIntervalNonWeeks(1), TimeIntervalNonWeeks(2), FIRST_DAY_OF_WEEK);
 
@@ -136,7 +136,7 @@ if runNonweeklyPlots
     % This is the .mat file containing RPW speeds at 1h resolution.
     % The file should be in the current path. This file can be found in
     % /solo/data/data_yuri/.
-    S = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
+    vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
 
     for iTint=1:length(times_1d)-1
         % Time interval
@@ -144,7 +144,7 @@ if runNonweeklyPlots
         
         Data = [];
 
-        Data.Vrpw = S.V_RPW_1h.tlim(Tint);
+        Data.Vrpw = vht1h.V_RPW_1h.tlim(Tint);
 
         % E-field:
         Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
@@ -217,7 +217,7 @@ if runWeeklyPlots
     % Load data
     % This is the .mat file containing RPW speeds at 6h resolution.
     % The file should be in the same folder as this script (quicklook_main).
-    S = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
+    vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
     
     for iTint=1:length(times_7d)-1
   
@@ -226,7 +226,7 @@ if runWeeklyPlots
         
         Data2 = [];
         
-        Data2.Vrpw = S.V_RPW.tlim(Tint);
+        Data2.Vrpw = vht6h.V_RPW.tlim(Tint);
         
         % E-field:
         Data2.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
