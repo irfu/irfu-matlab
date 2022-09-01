@@ -187,8 +187,7 @@ if ~isempty(data.ieflux)
     hold(h(9),'on');
     set(h(9), 'YScale', 'log');
     colormap(h(9),jet)
-    %ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tcloex','fontsize',fsize);
-    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','latex','fontsize',fsize);
+    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
 
     
 
