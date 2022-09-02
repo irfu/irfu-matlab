@@ -21,6 +21,7 @@ function res = get_data(varStr,Tint)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil) (alias: b_scm_srf)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_rtn' (alias: b_scm_rtn)
 %   'L2_rpw-lfr-surv-cwf-e-1-second' (alias: vdc_1sec)
+%   'L2_rpw-lfr-surv-cwf-e' (alias: vdc)
 %    Snapshots and other products need to be added!
 %
 % SWA-PAS:
@@ -60,7 +61,7 @@ vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2
     'L3_rpw-bia-scpot', 'L3_rpw-bia-efield_srf', 'L3_rpw-bia-efield_rtn','L3_rpw-bia-efield-10-seconds_srf','L3_rpw-bia-efield_rtn'...
     'L3_rpw-bia-scpot', 'L3_rpw-bia-density', 'L3_rpw-bia-density-10-seconds', 'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
     'L2_rpw-lfr-surv-cwf-e-1-second', 'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
-    'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
+    'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', 'L2_rpw-lfr-surv-cwf-e',...
     'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
     'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N'};
 
@@ -88,6 +89,7 @@ if ~ismember(varStr, vars)
         case 'pi_rtn',     varStrNew = 'L2_swa-pas-grnd-mom_P_RTN';
         case 'scpot',      varStrNew = 'L3_rpw-bia-scpot';
         case 'vdc_1sec',   varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second';
+        case 'vdc',        varStrNew = 'L2_rpw-lfr-surv-cwf-e';
         case 'e_srf',      varStrNew = 'L3_rpw-bia-efield_srf';
         case 'e_rtn',      varStrNew = 'L3_rpw-bia-efield_rtn';
         case 'e_srf_10sec',varStrNew = 'L3_rpw-bia-efield-10-seconds_srf';
