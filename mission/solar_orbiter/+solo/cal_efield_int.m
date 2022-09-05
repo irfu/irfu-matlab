@@ -91,8 +91,15 @@ if ~isempty(vdc)
         end
     end
 
-
     if ~isempty(B) && ~isempty(V)
+        x1 = B.time(1).epochUnix;   y1 = V.time(1).epochUnix;
+        x2 = B.time(end).epochUnix; y2 = V.time(end).epochUnix;
+        check_ol = (y1>x1 && y1<x2) || (y2>x1 && y2<x2);
+    else
+        check_ol = 0;
+    end
+
+    if check_ol
         B = B.resample(V);
         E_exb = irf_e_vxb(V,B); % Compute convective E-field
         if isfield(B.userData,'GlobalAttributes')
