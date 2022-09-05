@@ -109,13 +109,13 @@ if ~isempty(vdc)
             V_str = 'LL';
         end
 
-corr_y=corrcoef(DCE_SRF.resample(E_exb).y.data, E_exb.y.data);
-cc_y=corr_y(1,2);
+        corr_y=corrcoef(DCE_SRF.resample(E_exb).y.data, E_exb.y.data);
+        cc_y=corr_y(1,2);
 
-corr_z=corrcoef(DCE_SRF.resample(E_exb).z.data, E_exb.z.data);
-cc_z=corr_z(1,2);
+        corr_z=corrcoef(DCE_SRF.resample(E_exb).z.data, E_exb.z.data);
+        cc_z=corr_z(1,2);
 
-params = [params;cc_y,cc_z];
+        params = [params;cc_y,cc_z];
 
     else
         E_exb = irf.ts_vec_xyz(DCE_SRF.time,DCE_SRF.data*0);
@@ -123,6 +123,7 @@ params = [params;cc_y,cc_z];
         V_str = 'n/a';
         cc_y = nan;
         cc_z = nan;
+        params = [params;cc_y,cc_z];
     end
 
 
