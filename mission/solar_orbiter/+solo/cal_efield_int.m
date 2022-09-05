@@ -144,8 +144,8 @@ params = [params;cc_y,cc_z];
         subplot(3,2,1)
         plot(v2,v3,'kx')
         hold
-        xlabel('v2')
-        ylabel('v3')
+        xlabel('v2 [V]')
+        ylabel('v3 [V]')
         axis equal
         set(gca,'linewidth',1.8,'fontsize',20)
         plot(v2,v2*k23 + d23,'r','linewidth',2)
@@ -158,8 +158,8 @@ params = [params;cc_y,cc_z];
         subplot(3,2,2)
         plot(v23,v1,'kx')
         hold on
-        xlabel('v2_{scaled}3')
-        ylabel('v1')
+        xlabel('v2_{scaled}3 [V]')
+        ylabel('v1 [V]')
         axis equal
         set(gca,'linewidth',1.8,'fontsize',20)
         plot(v23,v23*k123 + d123,'r','linewidth',2)
