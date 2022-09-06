@@ -8,7 +8,7 @@
 % s : String, or cell arrays of strings.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created <=2020-04-01.
 %
 function s = escape_str(s)

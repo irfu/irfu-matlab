@@ -28,7 +28,7 @@
 %
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2022-08-30.
 %
 function quicklooks_main_cron(...

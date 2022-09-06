@@ -3,7 +3,7 @@
 % reading (and logging) RCTs so that bicas.proc.L1L2.cal does not need to.
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16, by moving out functions from bicas.proc.L1L2.cal.
 %
 classdef cal_RCT    

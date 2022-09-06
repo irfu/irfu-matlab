@@ -21,7 +21,7 @@
 %       Same size as iLsf.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-26, when broken out from other code.
 %
 function freqHz = get_LFR_frequency(iLsf)

@@ -32,7 +32,7 @@
 %       obviously natural way of setting them.
 %
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % Initially created 2020-04-10
 %
 function [fauxHashArray] = find_equalities(searchDistance, varargin)

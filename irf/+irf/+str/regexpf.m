@@ -32,7 +32,7 @@
 %       arrays.
 %
 %
-% Initially created 2018-07-12 by Erik P G Johansson.
+% Initially created 2018-07-12 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function isMatch = regexpf(str, regexpPattern)
 %

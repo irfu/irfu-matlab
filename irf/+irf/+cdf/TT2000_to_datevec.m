@@ -16,7 +16,7 @@
 %              NOTE: (:,6) are typically decimal numbers and therefore double.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-25.
 %
 function dateVecUtc = TT2000_to_datevec(tt2000)

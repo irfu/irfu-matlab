@@ -15,7 +15,7 @@
 % SSS  = SnapShot Spectrogram/Spectrum
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-10-13
 %
 classdef summary_plot < handle

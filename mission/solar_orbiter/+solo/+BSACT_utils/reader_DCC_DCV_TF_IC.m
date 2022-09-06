@@ -108,7 +108,7 @@
 % BICAS calculates the "input" signals from the "output" signals.
 %
 %
-% Author: Erik P G Johansson, IRF, Uppsala, Sweden.
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-12-11
 %
 classdef reader_DCC_DCV_TF_IC < handle

@@ -67,7 +67,7 @@
 %       For debugging and automatic tests.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-11-04.
 %
 function [y2, y1B, y2B, tfB] = apply_TF_freq_modif(dt, y1, tf, varargin)

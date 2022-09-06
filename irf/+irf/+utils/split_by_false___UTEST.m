@@ -3,7 +3,7 @@
 % irf.utils.split_by_false().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2022-08-11
 %
 classdef split_by_false___UTEST < matlab.unittest.TestCase

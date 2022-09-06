@@ -58,7 +58,7 @@
 %   has sensible name
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-29, when broken out from of other code.
 %
 function [condSatisfied, varargout] = sizes(varargin)

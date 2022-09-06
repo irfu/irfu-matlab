@@ -45,7 +45,7 @@
 %            "string arrays" which were introduced in MATLAB R2017a.
 %
 %
-% Initially created 2018-07-11 by Erik P G Johansson.
+% Initially created 2018-07-11 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 classdef assert
 %

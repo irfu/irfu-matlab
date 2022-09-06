@@ -26,7 +26,7 @@
 %       abs(x(i)-x(j)) <= xMargin.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-09.
 %
 function b2 = true_with_margin(x, b1, xMargin)

@@ -16,7 +16,7 @@
 % filename
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-03-30.
 %
 function filename = create_dataset_filename(yearMonth, verNbr)

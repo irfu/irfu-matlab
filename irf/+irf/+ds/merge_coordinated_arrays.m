@@ -27,7 +27,7 @@
 %       takes precedence over y1.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-08-14.
 %
 function [xCa, y] = merge_coordinated_arrays(fillVal, x1Ca, y1, x2Ca, y2)

@@ -46,7 +46,7 @@
 % NOTE: searchDir==-1 ==> [remainingStr, token] == str
 %
 %
-% Initially created 2020-03-10, by Erik P G Johansson.
+% Initially created 2020-03-10, by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function [token, remainingStr, iRegexp] = read_token(str, searchDir, varargin)
     % PROPOSAL: Use for irf.PDS_utils.convert_ODL_to_structs.

@@ -6,7 +6,7 @@
 % NOTE: Not necessarily proper subset, i.e. equality counts as subset.
 %
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % Initially created <2020-04-09.
 %
 function v1IsSubsetOfV2 = is_range_subset(v1, v2)

@@ -11,7 +11,7 @@
 %             Multiple NSO events may have the same NSO ID.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-22
 %
 classdef NSO_table    
@@ -254,7 +254,7 @@ classdef NSO_table
         % NsoTable : Struct of arrays representing file content. Not class.
         %
         %
-        % Author: Erik P G Johansson, Uppsala, Sweden
+        % Author: Erik P G Johansson, IRF, Uppsala, Sweden
         % First created 2020-09-21.
         %
         function NsoTable = read_file(filePath)

@@ -67,7 +67,7 @@
 %
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-23.
 %
 function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current(t1, zvIBIASx1)

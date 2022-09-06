@@ -11,7 +11,7 @@
 %        IMPORTANT NOTE: If path ends with slash, then the name is an empty string.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created circa 2020-04-29.
 %
 function [name, parentPath] = get_name(path)

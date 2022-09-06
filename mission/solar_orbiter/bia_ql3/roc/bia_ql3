@@ -26,7 +26,7 @@ large datasets that include spectra (i.e. CWF+SWF, but not HK).
 Arguments: matlab_executable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
 
 
-Script initially created 2021-02-23 by Erik P G Johansson.
+Script initially created 2021-02-23 by Erik P G Johansson, IRF, Uppsala, Sweden.
 SCRIPT_INFO
 } #-------------------------------------------------------------------------------
 

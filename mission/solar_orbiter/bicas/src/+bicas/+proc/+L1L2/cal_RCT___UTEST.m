@@ -8,7 +8,7 @@
 % NOTE: Creates temporary directory and files for every test, separately.
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16
 %
 classdef cal_RCT___UTEST < matlab.unittest.TestCase

@@ -19,7 +19,7 @@
 % sizeArray : 1D array. Sums up to totalSize (barring rounding errors).
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-08.
 %
 function [sizeArray] = distribute_segments(totalSize, fixedSizeArray, weightArray)

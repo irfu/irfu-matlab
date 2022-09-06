@@ -6,7 +6,7 @@
 % sampere = set ampere
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-26
 %
 classdef const

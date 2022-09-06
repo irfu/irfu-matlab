@@ -26,7 +26,7 @@
 %       Modified standard deviation otherwise.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-10-22.
 %
 function mstd = modif_std_deviation(v, ref, iDim)

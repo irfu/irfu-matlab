@@ -13,7 +13,7 @@
 %       Arbitrary number of arguments representing fieldnames.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-17.
 %
 function S = empty_struct(size, varargin)

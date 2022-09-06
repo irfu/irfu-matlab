@@ -81,7 +81,7 @@
 %               CDF does not contain values.
 %
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-25
 %
 function S = get_zvs_metadata_struct(Variables, VariableAttributes)

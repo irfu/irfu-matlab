@@ -11,7 +11,7 @@
 %                execution that is being profiled.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-27.
 %
 function log_memory_profiling(L, locationName)

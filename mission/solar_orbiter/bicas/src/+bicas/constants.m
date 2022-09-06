@@ -18,7 +18,7 @@
 %         message IDs. Therefore uses the term "part" instead.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-09, as a replacement for the FUNCTION
 % error_safe_constant created 2016-06-02.
 %

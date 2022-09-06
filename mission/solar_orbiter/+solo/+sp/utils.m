@@ -2,7 +2,7 @@
 % Collection of trivial ~utility functions shared by summary plots.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-03-15
 %
 classdef utils    

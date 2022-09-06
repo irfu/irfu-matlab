@@ -12,7 +12,7 @@
 % RCT-reading code (bicas.RCT) does not need to.
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-19, by moving out functions from
 % bicas.proc.L1L2.cal_RCT.
 %

@@ -2,7 +2,7 @@
 % Collection of TDS-related processing functions.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-25
 %
 classdef tds    

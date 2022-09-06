@@ -9,7 +9,7 @@
 %       uint8 1D array.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-03.
 %
 function write_file(filePath, byteArray)

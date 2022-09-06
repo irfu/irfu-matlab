@@ -14,7 +14,7 @@
 %              seconds.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-10-21
 %
 classdef time    

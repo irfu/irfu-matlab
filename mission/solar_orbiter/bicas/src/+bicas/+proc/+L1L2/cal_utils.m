@@ -5,7 +5,7 @@
 % Selected functions in bicas.proc.L1L2.cal are meant to be moved here.
 % 
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-11-05.
 %
 classdef cal_utils

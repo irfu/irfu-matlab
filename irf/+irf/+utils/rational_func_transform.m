@@ -27,7 +27,7 @@
 %   ** Z does not converge to zero when omega goes to infinity.
 %
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-12
 %
 classdef rational_func_transform

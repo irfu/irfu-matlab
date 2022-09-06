@@ -42,7 +42,7 @@
 %       to this function.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-08-14.
 %
 function Specrec = merge_Specrec(SpecrecCa)

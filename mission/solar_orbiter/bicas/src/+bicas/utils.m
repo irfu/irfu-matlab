@@ -3,7 +3,7 @@
 % used all over BICAS.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-27, with moved from bicas.proc.utils.
 %
 classdef utils    

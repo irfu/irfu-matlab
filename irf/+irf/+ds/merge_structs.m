@@ -20,7 +20,7 @@
 % NOTE: irf.ds.add_struct_to_struct is similar but not the same.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-10-12
 %
 function S12 = merge_structs(S1, S2)

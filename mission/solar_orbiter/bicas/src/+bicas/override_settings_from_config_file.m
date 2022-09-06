@@ -9,7 +9,7 @@
 % NOTE: Hardcoded settings value source string.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-18.
 %
 function override_settings_from_config_file(configFile, SETTINGS, L)

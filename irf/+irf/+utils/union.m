@@ -14,7 +14,7 @@
 %     1D column array. Only unique values. Sorted.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-24.
 %
 function u = union(varargin)

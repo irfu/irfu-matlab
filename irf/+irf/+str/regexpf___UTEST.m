@@ -2,7 +2,7 @@
 % matlab.unittest automatic test code for irf.str.regexpf().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16, converted from other test code.
 %
 classdef regexpf___UTEST < matlab.unittest.TestCase

@@ -48,7 +48,7 @@
 % A : Struct. Corresponds to argument "A", with the fields of "B" added to it.
 %
 %
-% Initially created 201x-xx-xx (=<2017) by Erik P G Johansson.
+% Initially created 201x-xx-xx (=<2017) by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function A = add_struct_to_struct(A, B, varargin)
 %

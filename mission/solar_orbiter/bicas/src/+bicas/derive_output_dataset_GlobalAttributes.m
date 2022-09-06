@@ -46,7 +46,7 @@
 %               the exact names of CDF global attributes.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-03-31, based on two functions broken out of
 % execute_sw_mode().
 %

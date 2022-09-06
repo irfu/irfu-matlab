@@ -66,7 +66,7 @@
 %                 one change, but warning for another).
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-12-02.
 %
 function [S2, fnChangeList] = normalize_struct_fieldnames(...

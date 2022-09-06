@@ -21,7 +21,7 @@
 %       specific set of fields is required.
 % 
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24 as a separate file, by moving the function out from
 % bicas.executed_sw_mode().
 %

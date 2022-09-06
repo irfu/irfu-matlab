@@ -16,7 +16,7 @@
 %       and covers all true values in boolArray exactly once.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-26.
 %
 function [i1Array, i2Array] = split_by_false(boolArray)

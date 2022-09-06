@@ -5,7 +5,7 @@
 % official CDF version, i.e. using the BICAS delivery git repo, not irfu-matlab.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-02.
 %
 function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir)

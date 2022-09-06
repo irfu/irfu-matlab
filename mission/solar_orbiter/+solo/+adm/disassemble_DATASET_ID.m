@@ -27,7 +27,7 @@
 % descriptor : String.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-29.
 %
 function [sourceName, level, descriptor] = disassemble_DATASET_ID(datasetId)

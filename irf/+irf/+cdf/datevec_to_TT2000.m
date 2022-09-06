@@ -17,7 +17,7 @@
 %          spdfcomputett2000 fails to convert, e.g. for out-of-range date.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-xx.
 %
 function tt2000 = datevec_to_TT2000(dateVecUtc)

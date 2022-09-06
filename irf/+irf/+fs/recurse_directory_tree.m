@@ -176,7 +176,7 @@
 %
 %
 %
-% Initially created by Erik P G Johansson, 2016-11-29.
+% Initially created 2016-11-29 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function result = recurse_directory_tree(...
         rootPath, FileFunc, DirFunc, ShouldRecurseFunc, varargin)

@@ -29,7 +29,7 @@
 % stringCa : Cell array of strings. Same size as array.
 %
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-11
 %
 function stringCa = sprintf_many(sprintfFormat, array)

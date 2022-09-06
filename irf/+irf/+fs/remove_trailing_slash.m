@@ -15,7 +15,7 @@
 % path : Input argument without trailing slash.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-16.
 %
 function path = remove_trailing_slash(path)

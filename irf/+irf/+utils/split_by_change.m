@@ -32,7 +32,7 @@
 %                    caller who would normally have to derive this anyway.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-08-13.
 %
 function [i1Array, i2Array, n] = split_by_change(varargin)

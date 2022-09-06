@@ -7,7 +7,7 @@
 % byteArray : 1D array of uint8.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-10.
 %
 function byteArray = read_file(filePath)

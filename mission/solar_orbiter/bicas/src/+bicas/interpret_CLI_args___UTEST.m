@@ -2,7 +2,7 @@
 % matlab.unittest automatic test code for bicas.interpret_CLI_args().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-12
 %
 classdef interpret_CLI_args___UTEST < matlab.unittest.TestCase

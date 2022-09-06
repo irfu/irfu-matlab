@@ -9,7 +9,7 @@
 % ABOLISH AND DELETE?
 % 
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % Initially created <2020-04-09.
 %
 function rangesIntersect = ranges_intersect(v1, v2)

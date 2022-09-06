@@ -3,7 +3,7 @@
 % bicas.settings_value_to_display_str___UTEST().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-12
 %
 classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase

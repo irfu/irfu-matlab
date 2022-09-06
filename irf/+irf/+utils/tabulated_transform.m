@@ -42,7 +42,7 @@
 %   ** The constructor can initialize using two common formats.
 % 
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-12
 %
 classdef tabulated_transform

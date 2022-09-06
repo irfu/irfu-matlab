@@ -2,7 +2,7 @@
 % Collection of shared code used for creating downsampled datasets.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-18
 %
 classdef dwns    

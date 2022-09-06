@@ -14,7 +14,7 @@
 % utcStr : String. Example: 2020-04-01T01:23:45.678901234
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-04-03.
 %
 function utcStr = TT2000_to_UTC_str(tt2000)    

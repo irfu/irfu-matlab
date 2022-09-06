@@ -14,7 +14,7 @@
 % NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-17 as a separate file, by moving out the function from
 % bicas.executed_sw_mode.
 %

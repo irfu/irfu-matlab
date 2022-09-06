@@ -36,7 +36,7 @@
 %
 %
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
-% Uppsala, Sweden. Modified by Erik P G Johansson.
+% Uppsala, Sweden. Modified by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
  function quicklooks_main(...
         logoPath, vhtDataDir, outputDir, ...

@@ -16,7 +16,7 @@
 % size.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-20.
 %
 function intervalsIntersect = intervals_intersect(u1, u2, v1, v2, edgePolicy)

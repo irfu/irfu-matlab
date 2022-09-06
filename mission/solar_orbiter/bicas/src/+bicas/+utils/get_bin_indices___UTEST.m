@@ -2,7 +2,7 @@
 % matlab.unittest automatic test code for bicas.utils.get_bin_indices().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-10 from older test code.
 %
 classdef get_bin_indices___UTEST < matlab.unittest.TestCase

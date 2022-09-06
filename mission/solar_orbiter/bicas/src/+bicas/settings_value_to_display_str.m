@@ -20,7 +20,7 @@
 % displayStr
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-12, by breaking out code from bicas.sprint_SETTINGS().
 %
 function displayStr = settings_value_to_display_str(value)

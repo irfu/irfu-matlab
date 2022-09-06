@@ -49,7 +49,7 @@
 % value : Same as table{i, 2} for which table{i, 1}==key (string comparison).
 % 
 %
-% Initially created 2019-09-18 by Erik P G Johansson.
+% Initially created 2019-09-18 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function value = translate(table, key, varargin)
     % PROPOSAL: Submit function returning error message string. Only evaluated if error.

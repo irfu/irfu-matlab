@@ -69,7 +69,7 @@
 %       directly.
 %
 %
-% Initially created 2018-07-18 by Erik P G Johansson.
+% Initially created 2018-07-18 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function Settings = interpret_settings_args(DefaultSettings, argsCa)
     % PROPOSAL: Assert SettingsArg1 and SettingsArgListPairs fields to always exist in DefaultSettings.

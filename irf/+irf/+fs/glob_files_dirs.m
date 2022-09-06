@@ -46,7 +46,7 @@
 % struct fields.
 %
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-04-06
 %
 function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargin)

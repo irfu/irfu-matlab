@@ -20,7 +20,7 @@
 %       itself does not have to exist.
 %
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-09.
 %
 function path = get_abs_path(path)

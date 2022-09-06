@@ -14,7 +14,7 @@
 % utcStrCa : Cell array of strings. Same size as tt2000. Example: '2020-04-01T01:23:45.678901234'
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-04-03.
 %
 function utcStrCa = TT2000_to_UTC_str_many(tt2000Array)

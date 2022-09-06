@@ -14,7 +14,7 @@
 % isSubset : Whether set1 is a subset of set2 (including equal sets).
 % 
 %
-% Author: Erik P G Johansson
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-03-25.
 %
 function isSubset = subset(set1, set2)
