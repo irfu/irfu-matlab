@@ -167,7 +167,7 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
         ['The setting value is illegal.', ...
         ' Can therefore not handle the error/anomaly.'];
     
-    anomalyDescriptionMsg = EJ_library.str.indent(...
+    anomalyDescriptionMsg = irf.str.indent(...
         anomalyDescriptionMsg, numel(PREFIX));
     anomalyDescriptionMsg(1:numel(PREFIX)) = PREFIX;
 
@@ -222,6 +222,6 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
     end
     %===========================================================================
     function logi(logLevel, str)
-        L.log(logLevel, EJ_library.str.indent(str, N_INDENT))
+        L.log(logLevel, irf.str.indent(str, N_INDENT))
     end
 end

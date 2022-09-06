@@ -29,8 +29,6 @@
 %   NOTE: Can handle the absence of matching datasets/directories, but fails on
 %   multiple matching datasets (assertion).
 % * Works for both CDAG/non-CDAG filenames.
-% * The simple functionality has the advantage that the code does not need some
-%   other EJ code which therefore does not need to be put in EJ_library.
 %
 %
 % ARGUMENTS
@@ -69,7 +67,7 @@ function bia_ql3(yyyyMmDdStr, hkBiaDir, lfrWfDirPath, outputDir)
         'yyyyMmDdStr="%s" does not have exactly 8 characters.', yyyyMmDdStr)
     % NOTE: Does not necessarily give a perfect error message, but does print
     % the flawed string.
-    EJ_library.assert.castring_regexp(yyyyMmDdStr, '20[1-9][0-9][0-1][0-9][0-3][0-9]')
+    irf.assert.castring_regexp(yyyyMmDdStr, '20[1-9][0-9][0-1][0-9][0-3][0-9]')
     
     plot_save_SP_pattern(outputDir, hkBiaDir,     'solo_HK_rpw-bia_%s_V*.cdf',             yyyyMmDdStr)
     plot_save_SP_pattern(outputDir, lfrWfDirPath, 'solo_L2_rpw-lfr-surv-cwf-e*_%s_V*.cdf', yyyyMmDdStr)

@@ -3,7 +3,7 @@
 % SOLO_L2_RPW-LFR-SURV-CWF-E.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-18
 %
 classdef L2L2    

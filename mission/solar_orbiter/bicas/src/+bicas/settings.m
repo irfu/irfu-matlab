@@ -199,7 +199,7 @@ classdef settings < handle
         function override_value(obj, key, newValue, valueSource)
             
             % ASSERTIONS
-            EJ_library.assert.castring(valueSource)
+            irf.assert.castring(valueSource)
             if obj.readOnlyForever
                 error('BICAS:Assertion', ...
                     'Trying to modify read-only settings object.')
@@ -339,7 +339,7 @@ classdef settings < handle
             
             
             valueArrayStruct = obj.DataMap(key);
-            EJ_library.assert.struct(...
+            irf.assert.struct(...
                 valueArrayStruct, ...
                 {'value', 'valueSource'}, {})
         end
@@ -395,13 +395,13 @@ classdef settings < handle
             if ischar(value)
                 
                 % Do nothing
-                EJ_library.assert.castring(value)
+                irf.assert.castring(value)
                 
             elseif isnumeric(value) ...
                     || iscell(value) ...
                     || islogical(value)
                 
-                EJ_library.assert.vector(value)
+                irf.assert.vector(value)
                 
             else
                 

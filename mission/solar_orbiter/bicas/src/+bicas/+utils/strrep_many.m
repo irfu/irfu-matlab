@@ -28,8 +28,8 @@ function s = strrep_many(s, varargin)
             newSs = varargin{2};
             
             % ASSERTIONS
-            EJ_library.assert.castring(oldSs)
-            EJ_library.assert.castring(newSs)
+            irf.assert.castring(oldSs)
+            irf.assert.castring(newSs)
             
             varargin = varargin(3:end);
         elseif numel(varargin) == 0

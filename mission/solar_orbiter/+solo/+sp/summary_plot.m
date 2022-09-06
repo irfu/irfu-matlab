@@ -15,7 +15,7 @@
 % SSS  = SnapShot Spectrogram/Spectrum
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-10-13
 %
 classdef summary_plot < handle
@@ -69,14 +69,14 @@ classdef summary_plot < handle
     %   NOTE: f_max not so important since log y scale (and frequencies are
     %         linear).
     %
-    % ~BUG: The use/non-use of EJ_library.graph.escape_str() is likely inconsistent, given
+    % ~BUG: The use/non-use of irf.graph.escape_str() is likely inconsistent, given
     % how calls are made from plot_LFR_CWF/SWF.
     %
     % PROPOSAL: Speed up by disabling drawing until all modifications have been
     %           made.
     %
     % PROPOSAL: Reorg. methods (fewer?) and have them use
-    %       EJ_library.utils.interpret_settings_args() for any customization.
+    %       irf.utils.interpret_settings_args() for any customization.
 
 
 
@@ -86,7 +86,7 @@ classdef summary_plot < handle
         
         % Same samples/spectrum independent of sampling frequency.
         N_SAMPLES_PER_SPECTRUM_LFR_SWF = ...
-            EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
+            solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;  % /YK 2021-03-02
         
         
 
@@ -96,7 +96,7 @@ classdef summary_plot < handle
         % FH = Function Handle
         N_SAMPLES_PER_SPECTRUM_CWF_F3 = 128;
         N_SAMPLES_PER_SPECTRUM_CWF_FH = @(cwfSamplFreqHz) (...
-            cwfSamplFreqHz / EJ_library.so.hwzv.const.LFR_F3_HZ ...
+            cwfSamplFreqHz / solo.hwzv.const.LFR_F3_HZ ...
             * solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3);
         
         % Min & max frequencies in LFR __CWF__ plots.
@@ -107,10 +107,10 @@ classdef summary_plot < handle
         % frequency. ==> CWF Autoscaling is OK.
         %
 %         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-%             EJ_library.so.hwzv.const.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
-%             EJ_library.so.hwzv.const.LFR_F2_HZ / 2];
+%             solo.hwzv.const.LFR_F3_HZ / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
+%             solo.hwzv.const.LFR_F2_HZ / 2];
         LFR_CWF_SPECTRUM_FREQ_MINMAX_HZ = [...
-            EJ_library.so.hwzv.const.LFR_F3_HZ ...
+            solo.hwzv.const.LFR_F3_HZ ...
             / solo.sp.summary_plot.N_SAMPLES_PER_SPECTRUM_CWF_F3, ...
             Inf];
         
@@ -255,7 +255,7 @@ classdef summary_plot < handle
                 
                 % NOTE: Command puts the text relative to the specified
                 % coordinates in different ways depending on coordinates.
-                irf_legend(hAxes, EJ_library.graph.escape_str(channelName), CHANNEL_NAME_POS);
+                irf_legend(hAxes, irf.graph.escape_str(channelName), CHANNEL_NAME_POS);
                 
                 set(hAxes, 'Clipping', 'on')   % Should be default, so not necessary.
                 set(hAxes, 'ClippingStyle', 'rectangle')
@@ -283,7 +283,7 @@ classdef summary_plot < handle
         % zvData        : Array. (iRecord, iChannel). ~CWF data.
         % varargin
         %       Arguments as interpreted by
-        %       EJ_library.utils.interpret_settings_args().
+        %       irf.utils.interpret_settings_args().
         %           yLabel
         %           linesPropCa
         %               Key-value properties arguments to set for the line
@@ -306,8 +306,8 @@ classdef summary_plot < handle
             SETTINGS.yLabel      = '';
             SETTINGS.tlLegend    = {};
             SETTINGS.trLegend    = {};
-            Settings = EJ_library.utils.interpret_settings_args(SETTINGS, varargin);
-            EJ_library.assert.struct(Settings, fieldnames(SETTINGS), {})
+            Settings = irf.utils.interpret_settings_args(SETTINGS, varargin);
+            irf.assert.struct(Settings, fieldnames(SETTINGS), {})
             
             
             
@@ -361,7 +361,7 @@ classdef summary_plot < handle
             zvEpoch, zvData, yLabel, varargin)
         
             % ASSERTIONS
-            EJ_library.assert.sizes(...
+            irf.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2])
         
@@ -392,7 +392,7 @@ classdef summary_plot < handle
                 'linesPropCa', linesPropCa, ...
                 'axesPropCa',  axesPropCa, ...
                 'tlLegend',    {}, ...
-                'trLegend',    {EJ_library.graph.escape_str(zvName)})
+                'trLegend',    {irf.graph.escape_str(zvName)})
         end
         
         
@@ -419,7 +419,7 @@ classdef summary_plot < handle
             % CALL INSTANCE METHOD
             obj.add_panel_time_series_general(panelTag, zvEpoch, zvData, ...
                 'fadeLines', 1, ...
-                'trLegend',  {EJ_library.graph.escape_str(zvNamesCa{1}), '2', '3'});
+                'trLegend',  {irf.graph.escape_str(zvNamesCa{1}), '2', '3'});
         end
         
 
@@ -442,16 +442,16 @@ classdef summary_plot < handle
             nChannels = numel(zvDataCa);
             assert(numel(removeMean) == nChannels)
             
-            bRecords = (zvSamplFreqHz == EJ_library.so.hwzv.const.LSF_HZ(iLsf));
-            samplFreqHz = EJ_library.so.hwzv.const.LSF_HZ(iLsf);
-            lsfName     = EJ_library.so.hwzv.const.LSF_NAME_ARRAY{iLsf};
+            bRecords = (zvSamplFreqHz == solo.hwzv.const.LSF_HZ(iLsf));
+            samplFreqHz = solo.hwzv.const.LSF_HZ(iLsf);
+            lsfName     = solo.hwzv.const.LSF_NAME_ARRAY{iLsf};
             
             
             
             zvEpoch     = zvEpoch(bRecords);
             
             % IMPLEMENTATION NOTE: Can not obviously use
-            % EJ_library.assert.sizes() to derive nRecords and nSps since both
+            % irf.assert.sizes() to derive nRecords and nSps since both
             % zvEpoch and zvDataCa are in the process of being transformed (LSF
             % subset, SWF-->CWF), and the values need to be derived and used in
             % the middle of that transformation.
@@ -459,7 +459,7 @@ classdef summary_plot < handle
             nSps        = size(zvDataCa{1}, 2);    % SPS = Samples Per Snapshot
             assert(nSps >= 2)
             
-            zvEpoch = EJ_library.so.hwzv.convert_N_to_1_SPR_Epoch(...
+            zvEpoch = solo.hwzv.convert_N_to_1_SPR_Epoch(...
                 zvEpoch, nSps, ones(nRecords, 1)*samplFreqHz);
             
             for i = 1:nChannels
@@ -475,7 +475,7 @@ classdef summary_plot < handle
                     zvData = zvData - repmat(mean(zvData, 2, 'omitnan'), [1, nSps]);
                 end
                 
-                zvDataCa{i} = EJ_library.so.hwzv.convert_N_to_1_SPR_redistribute(zvData);
+                zvDataCa{i} = solo.hwzv.convert_N_to_1_SPR_redistribute(zvData);
             end
             
             
@@ -518,7 +518,7 @@ classdef summary_plot < handle
             % ASSERTIONS
             assert(~obj.figureComplete)
             assert(nargin == 1+6)
-            EJ_library.assert.sizes(colLimits, [1,2])
+            irf.assert.sizes(colLimits, [1,2])
             
             obj.add_panel_internal_vars(...
                 @() (panel_spectrogram()), zvEpoch, 0, 1);
@@ -535,7 +535,7 @@ classdef summary_plot < handle
                 % SS = SubSequence. Sequence with constant sampling frequency
                 %      according to zvSamplingFreqHz.
                 [iSs1Array, iSs2Array, nSs] = ...
-                    EJ_library.utils.split_by_change(zvSamplingFreqHz);
+                    irf.utils.split_by_change(zvSamplingFreqHz);
 
                 SpecrecCa = cell(nSs, 1);
                 parfor jSs = 1:nSs    % PARFOR
@@ -559,7 +559,7 @@ classdef summary_plot < handle
                     SpecrecCa{jSs} = S;
                 end
                                 
-                Specrec = EJ_library.graph.merge_Specrec(SpecrecCa);
+                Specrec = irf.graph.merge_Specrec(SpecrecCa);
 
                 Specrec.p_label = {'log_{10} [V^2/Hz]'};   % Replaces colorbarlabel
                 % irf_spectrogram() replaces irf_plot
@@ -605,8 +605,8 @@ classdef summary_plot < handle
             
             assert(~obj.figureComplete)
             
-            samplFreqHz = EJ_library.so.hwzv.const.LSF_HZ(iLsf);
-            lsfName     = EJ_library.so.hwzv.const.LSF_NAME_ARRAY{iLsf};
+            samplFreqHz = solo.hwzv.const.LSF_HZ(iLsf);
+            lsfName     = solo.hwzv.const.LSF_NAME_ARRAY{iLsf};
             
             bRecords = (zvSamplFreqHz == samplFreqHz);
             
@@ -683,7 +683,7 @@ classdef summary_plot < handle
             % panels are adjacent to each other.
             heightPanelArray1 = cellfun(@(x) ([x(4)]), positionCa);
             
-            heightPanelArray2 = EJ_library.utils.distribute_segments(...
+            heightPanelArray2 = irf.utils.distribute_segments(...
                 sum(heightPanelArray1), ...
                 obj.panelHeightFixedSizeArray, ...
                 obj.panelHeightWeightArray);
@@ -763,7 +763,7 @@ classdef summary_plot < handle
             filename = [basename, suffix];
             
             labelTimestamp = datestr(clock, 'yyyy-mm-dd HH:MM:SS');
-            title(hTopAxes, {plotTypeStr, EJ_library.graph.escape_str(...
+            title(hTopAxes, {plotTypeStr, irf.graph.escape_str(...
                 sprintf('Plot time: %s, %s', labelTimestamp, filename))})
         end
         
@@ -792,7 +792,7 @@ classdef summary_plot < handle
             % IMPLEMENTATION NOTE: Implemented to potentially be modified in the
             % future to handle TDS snapshots that vary in length.
             
-            EJ_library.assert.sizes(colLimits, [1,2])
+            irf.assert.sizes(colLimits, [1,2])
             
             
             
@@ -867,7 +867,7 @@ classdef summary_plot < handle
             
             SpecrecCa(~bKeep) = [];
             %Specrec = solo.sp.summary_plot.merge_Specrec(SpecrecCa);
-            Specrec = EJ_library.graph.merge_Specrec(SpecrecCa);
+            Specrec = irf.graph.merge_Specrec(SpecrecCa);
             
             Specrec.p_label = {'log_{10} [V^2/Hz]'};    % Replaces colorbarlabel
             % irf_spectrogram() replaces irf_plot
@@ -914,7 +914,7 @@ classdef summary_plot < handle
             % NOTE: No special treatment of snapshots with only NaN.
             
             assert(isscalar(samplingFreqHz))
-            [nRecords, nSps] = EJ_library.assert.sizes(...
+            [nRecords, nSps] = irf.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2]);
             bicas.utils.assert_zv_Epoch(zvEpoch)
@@ -938,7 +938,7 @@ classdef summary_plot < handle
         % Add .dt values to Specrec struct based on nearest spectra (.t
         % timestamps). This is useful before merging multiple Specrec.
         function S = add_Specrec_dt(S, max2Dt)
-            EJ_library.assert.struct(S, {'t', 'p', 'f'}, {})
+            irf.assert.struct(S, {'t', 'p', 'f'}, {})
             
             specMaxWidthArray = solo.sp.summary_plot.get_distance_to_nearest(...
                 S.t, max2Dt);
@@ -1045,7 +1045,7 @@ classdef summary_plot < handle
         % irf_powerfft(), with identical frequencies.
         %
         % NOTE: Optionally added fields must be added after merging.
-        % NOTE: Cf EJ_library.graph.merge_Specrec() which is more powerful but
+        % NOTE: Cf irf.graph.merge_Specrec() which is more powerful but
         % which is unnecessary here since only merging spectras with the same
         % frequencies (underlying data uses the same sampling frequency).
         %
@@ -1080,7 +1080,7 @@ classdef summary_plot < handle
 %                 if ~isempty(S)
 %                     
 %                     % ASSERTIONS
-%                     EJ_library.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
+%                     irf.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
 %                     assert(iscolumn(S.dt), 'S.dt is not a column.')
 %                     assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
 %                     

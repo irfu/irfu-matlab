@@ -16,7 +16,7 @@
 %
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-08-13.
 %
 function filename = create_SP_filename(srcDatasetId, dateVec3, versionNbr)

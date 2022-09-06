@@ -133,8 +133,8 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
     %       to misreading due to unrelated errors (e.g. not finding functions).
     %       Only safe due to using error message IDs.
     %   PROPOSAL: Eliminate internal use of try-catch.
-    % PROPOSAL: Reimplement string parsing parts using EJ_library.str, probably
-    %           EJ_library.str.regexp_str_parts.
+    % PROPOSAL: Reimplement string parsing parts using irf.str, probably
+    %           irf.str.regexp_str_parts.
     %==============================================================================================
     
     
@@ -226,7 +226,7 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                     % NOTE: Works with metadataList==[];
                     metadataList = [...
                         metadataList, ...
-                        EJ_library.ds.merge_structs(...
+                        irf.ds.merge_structs(...
                             HeaderRowSettings, RowCTableMetadata)];
                     expectedRowType = 'Test';
                 catch Exc

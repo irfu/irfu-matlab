@@ -2,7 +2,7 @@
 % matlab.unittest automatic test code for bicas.proc.utils().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-08 from older test code.
 %
 classdef utils___UTEST < matlab.unittest.TestCase

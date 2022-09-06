@@ -3,7 +3,7 @@
 % used all over BICAS.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-27, with moved from bicas.proc.utils.
 %
 classdef utils    
@@ -25,7 +25,7 @@ classdef utils
             
             bicas.utils.assert_zv_Epoch(zvTt2000)
             
-            utcStr = EJ_library.cdf.TT2000_to_UTC_str(zvTt2000);
+            utcStr = irf.cdf.TT2000_to_UTC_str(zvTt2000);
         end
 
 
@@ -55,7 +55,7 @@ classdef utils
             LL = 'debug';
 
             fnList     = fieldnames(Zvs);
-            ColumnStrs = EJ_library.ds.empty_struct([0,1], ...
+            ColumnStrs = irf.ds.empty_struct([0,1], ...
                 'name', 'size', 'nNan', 'percentageNan', ...
                 'nUniqueValues', 'values');
             
@@ -64,7 +64,7 @@ classdef utils
                 zvValue = Zvs.(zvName);
                 
                 if iscolumn(zvValue) && isa(zvValue, 'int64') ...
-                        && any(EJ_library.str.regexpf(...
+                        && any(irf.str.regexpf(...
                         zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
@@ -99,7 +99,7 @@ classdef utils
             dataStrs(:,6) = {ColumnStrs(:).values}';
             columnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
             [HEADER_STRS, dataStrs, columnWidths] = ...
-                EJ_library.str.assist_print_table(...
+                irf.str.assist_print_table(...
                     HEADER_STRS, dataStrs,  columnAdjustments);
 
             L.log(LL, strjoin(HEADER_STRS, ' '))
@@ -128,7 +128,7 @@ classdef utils
             % NOTE: No check for monotonically increasing timestamps. Done in
             % other locations. Universally? Slow?
             
-            % PROPOSAL: Move to EJ_library.
+            % PROPOSAL: Move to irf.
             %   PRO: Used by solo.sp.summary_plot.
 
             assert(iscolumn(zvEpoch), ...
@@ -151,7 +151,7 @@ classdef utils
         
             assert(isa(  ACQUISITION_TIME, 'uint32'), ...
                 EMID, 'ACQUISITION_TIME is not uint32.')
-            EJ_library.assert.sizes(ACQUISITION_TIME, [NaN, 2])
+            irf.assert.sizes(ACQUISITION_TIME, [NaN, 2])
             assert(all(  ACQUISITION_TIME(:, 1) >= 0), ...
                 EMID, 'ACQUISITION_TIME has negative number of integer seconds.')
             % IMPLEMENTATION NOTE: Does not need to check for negative values
@@ -275,7 +275,7 @@ classdef utils
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
                         bicas.utils.assert_zv_Epoch(uniqueValues)
-                        valueStrs = EJ_library.cdf.TT2000_to_UTC_str_many(uniqueValues);
+                        valueStrs = irf.cdf.TT2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
                     else
                         valuesStr = '-';

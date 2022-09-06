@@ -18,7 +18,7 @@
 %         message IDs. Therefore uses the term "part" instead.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-09, as a replacement for the FUNCTION
 % error_safe_constant created 2016-06-02.
 %
@@ -266,9 +266,9 @@ classdef constants
             %======================
             % ASSERTIONS: SETTINGS
             %======================
-            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), ...
+            irf.assert.castring_regexp(MAP('SWD.release.version'), ...
                 '[0-9]+\.[0-9]+\.[0-9]+')
-            EJ_library.assert.castring_regexp(MAP('SWD.release.date'), ...
+            irf.assert.castring_regexp(MAP('SWD.release.date'), ...
                 '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
             % Validate S/W release version
             % ----------------------------
@@ -277,7 +277,7 @@ classdef constants
             % NOTE: It is hard to thoroughly follow the description, but the end
             % result should be under release-->version-->pattern (not to be
             % confused with release_dataset-->version--pattern).
-            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
+            irf.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
 
         end
         
@@ -382,7 +382,7 @@ classdef constants
             %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
             %
             % PROPOSAL: DSI lists as public constants.
-            %   PROPOSAL: EJ_library.so.hwzv.const.
+            %   PROPOSAL: solo.hwzv.const.
             %   PRO: Could be used by functions for classifying DSIs.
             %       Ex: bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID().
             %       CON: Not if want to be really general, e.g. accounting for
@@ -592,7 +592,7 @@ classdef constants
             % ASSERTION
             for keyCa = Map.keys
                 % ASSERT: All MODS strings are unique for DATASET_ID.
-                EJ_library.assert.castring_set(Map(keyCa{1}))
+                irf.assert.castring_set(Map(keyCa{1}))
             end
             
         end    % init_GA_MODS
@@ -629,7 +629,7 @@ classdef constants
             % PROPOSAL: "Flatten" datasetIdsCa if cell arrays of cell arrays.
             
             % ASSERTIONS
-            EJ_library.assert.castring_set(datasetIdsCa)
+            irf.assert.castring_set(datasetIdsCa)
             bicas.constants.assert_MODS_entry_str(entryStr)
             
             for i = 1:numel(datasetIdsCa)
@@ -661,7 +661,7 @@ classdef constants
         function assert_MODS_entry_str(s)
             % PROPOSAL: Automatic test code.
 
-            EJ_library.assert.castring_regexp(s, ...
+            irf.assert.castring_regexp(s, ...
                 ['20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]', ...
                 ' -- V[0-9]+.[0-9]+.[0-9]+ -- ', ...
                 '[-<=_|.()& a-zA-Z0-9]+'])

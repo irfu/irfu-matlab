@@ -13,7 +13,7 @@
 % padValue
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24 as a separate file, moved from bicas.executed_sw_mode.
 %
 function [fillValue, padValue] = get_fill_pad_values(Do, zvName)

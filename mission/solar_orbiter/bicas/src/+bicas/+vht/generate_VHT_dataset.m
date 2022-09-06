@@ -16,7 +16,7 @@
 % (1) The RCS interface (2021-03-31) can not handle this case in principle:
 %     Multiple input datasets (one for every day of the month) for one output
 %     dataset (one per month). Can not construct such s/w mode.
-%     Footnote: Erik Johansson's BICAS batch processing utilities (not part of
+%     Footnote: Erik P G Johansson's BICAS batch processing utilities (not part of
 %     BICAS) also do not cover this case. Can not find combinations of datasets
 %     that determine what to process.
 % (2) output datasets can not be generated from arbitrary (versions of) input
@@ -41,7 +41,7 @@
 % (none)
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-03-26.
 %
 function generate_VHT_dataset(...
@@ -185,7 +185,7 @@ function generate_VHT_dataset(...
     %---------------------------------------------------------------------------
     GaSubset = bicas.derive_output_dataset_GlobalAttributes(...
         InputDatasetsMap, OutputDataset, ...
-        EJ_library.fs.get_name(outputFile), BICAS_SETTINGS, BICAS_L);
+        irf.fs.get_name(outputFile), BICAS_SETTINGS, BICAS_L);
     
     bicas.write_dataset_CDF(...
         Zv, GaSubset, outputFile, masterCdfPath, ...

@@ -14,7 +14,7 @@ NOTES
 According to ROC (Milan Maksimovic, LESIA):
     "Summary Plot" (SP) = Plot which summarizes the content of a single dataset
     "Quicklook"         = Plot which summarizes data for entire instrument.
-Hence this code generates what he calls "summary plots" and MATALB package "solo.sp".
+Hence this code generates what he calls "summary plots" and the MATLAB package is called "solo.sp".
 However, ROC has named the software "BIA_QL3" (QL=Quicklooks? L3?!) so the usage is inconsistent.
 --
 Since the software is run by ROC/LESIA, the code has to conform to the interface which they specify.

@@ -5,7 +5,7 @@
 % DC = Demux (demultiplex) & Calibrate
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-25
 %
 classdef dc
@@ -72,7 +72,7 @@ classdef dc
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
-            [iFirstList, iLastList, nSs] = EJ_library.utils.split_by_change(iCalibLZv);
+            [iFirstList, iLastList, nSs] = irf.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
                 ['Calibrating currents -', ...
                 ' One sequence of records with identical settings at a time.'])
@@ -163,11 +163,11 @@ classdef dc
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
             assert(iscell(  PreDc.Zv.samplesCaTm))
-            EJ_library.assert.vector(PreDc.Zv.samplesCaTm)
+            irf.assert.vector(PreDc.Zv.samplesCaTm)
             assert(numel(PreDc.Zv.samplesCaTm) == 5)
             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
                 PreDc.Zv.samplesCaTm)
-            [nRecords, nSamplesPerRecordChannel] = EJ_library.assert.sizes(...
+            [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
                 PreDc.Zv.MUX_SET,        [-1,  1], ...
                 PreDc.Zv.DIFF_GAIN,      [-1,  1], ...
                 PreDc.Zv.samplesCaTm{1}, [-1, -2]);
@@ -209,7 +209,7 @@ classdef dc
             %
             % SS = Subsequence
             %===================================================================
-            [iFirstList, iLastList, nSs] = EJ_library.utils.split_by_change(...
+            [iFirstList, iLastList, nSs] = irf.utils.split_by_change(...
                 PreDc.Zv.MUX_SET, ...
                 PreDc.Zv.DIFF_GAIN, ...
                 PreDc.Zv.freqHz, ...
@@ -447,8 +447,8 @@ classdef dc
             %===================================================================
             if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
-                sciEpochUtcStr    = EJ_library.cdf.TT2000_to_UTC_str(min(sciEpoch));
-                curEpochMinUtcStr = EJ_library.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
+                sciEpochUtcStr    = irf.cdf.TT2000_to_UTC_str(min(sciEpoch));
+                curEpochMinUtcStr = irf.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
 
                 [settingValue, settingKey] = SETTINGS.get_fv(...
                     'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
@@ -491,7 +491,7 @@ classdef dc
         
         
         
-        % Wrapper around EJ_library.so.hwzv.CURRENT_zv_to_current_interpolate for
+        % Wrapper around solo.hwzv.CURRENT_zv_to_current_interpolate for
         % anomaly handling.
         function sciZv_IBIASx = zv_TC_to_current(...
                 curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
@@ -502,7 +502,7 @@ classdef dc
             % Calibrate currents
             %====================
             [sciZv_IBIASx, duplicateAnomaly] = ...
-                EJ_library.so.hwzv.CURRENT_zv_to_current_interpolate(...
+                solo.hwzv.CURRENT_zv_to_current_interpolate(...
                     curZv_Epoch, ...
                     curZv_IBIAS_x, ...
                     sciZv_Epoch);

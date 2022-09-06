@@ -2,7 +2,7 @@
 % matlab.unittest automatic test code for bicas.proc.L1L2.cal_utils.
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16
 %
 classdef cal_utils___UTEST < matlab.unittest.TestCase

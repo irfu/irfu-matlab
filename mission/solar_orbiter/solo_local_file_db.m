@@ -391,8 +391,8 @@ classdef solo_local_file_db < solo_file_db
 
           % Official directory names used by ROC and that IRFU should therefore
           % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
-          % Erik Johansson 2020-11-27.
-          % /Erik Johansson 2020-12-15.
+          % Erik P G Johansson 2020-11-27.
+          % /Erik P G Johansson 2020-12-15.
           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
             subDir = 'lfr_density';
           case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}

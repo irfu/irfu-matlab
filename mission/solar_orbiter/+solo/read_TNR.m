@@ -34,7 +34,7 @@ function out =  read_TNR(tint)
 
 %% 
 
-%tint = irf.tint('2020-11-18T00:00:00Z','2020-11-19T00:00:00Z');
+%tint = irf.tint('2021-05-18T00:00:00Z','2021-05-19T00:00:00Z');
 date_vector = irf_time(tint,'epochTT>vector');
 yyyy = num2str(date_vector(1,1));
 
@@ -113,7 +113,9 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
         sens_ = sens1_;
         timet_ici = timet_(sens1_);
     else
-        irf.log('critical', 'no data at all ?!?')
+        out = 0;
+        return;
+        %irf.log('critical', 'no data at all ?!?')
     end
     
     [~, ord_time] = sort(timet_ici);
@@ -165,32 +167,42 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
     vp = v_(1:f100_ind, 2:end)';
   
   %==============Integration
-  for ii = 1:f100_ind
-        itg(ii) = trapz(vp(:,ii))/length(vp(:,1));
-  end
-      
-   vp = vp-itg;
-  %===============
-  
-  
-  %==============Moving Window 
+%   for ii = 1:f100_ind
+%         itg(ii) = trapz(vp(:,ii))/length(vp(:,1));
+%   end
+%       
+%    vp = vp-itg;
+%   %===============
+%   
+%   
+%   %==============Moving Window 
 %    for i = 1:f100_ind
-%        movm(:,i) = movmean(vp(:,i),200); 
+%        movm(:,i) = movmean(vp(:,i),5); 
 %    end
 %    vp = vp-movm;
-    vp(vp<0)=0;
+%    vp(vp<0)=0;
    %=============   
-    out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p', vp);
+   
+    out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
     out.p_label={'dB'};
     
-
-
-%      hh=irf_panel('tnr');
-%      irf_spectrogram(hh,out,'log')
-%      set(hh, 'YScale', 'log');
-%      colormap(hh,jet)
-%      set(hh,'ColorScale','log')
-%      caxis(hh,[-165 -115])
+%         h(10)=irf_panel('tnr');
+%         irf_spectrogram(h(10),out,'log','donotfitcolorbarlabel')
+%         %fpe_sc.units = 'kHz';
+%         %fpe_sc.name = 'f [kHz]';
+%         hold(h(10),'on');
+%         %irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
+%         hold(h(10),'off');
+%         text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
+%         irf_legend(h(10),'(a)',[0.99 0.98],'color','k','fontsize',12)
+%         irf_legend(h(10),'f_{pe}',[0.15 0.60],'color','k','fontsize',12)
+%         set(h(10), 'YScale', 'log'); 
+%         %set(h(10),'ColorScale','log')
+%         %caxis(h(10),[.01 1]*10^-12)
+%         ylabel(h(10),{'f';'(kHz)'},'interpreter','tex');
+%         colormap(h(10),jet)  
+%         yticks(h(10),[10^1 10^2]);
+%         irf_zoom(h(10),'y',[10^1 10^2])
 end
 
 %%

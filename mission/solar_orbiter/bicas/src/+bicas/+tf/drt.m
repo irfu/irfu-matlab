@@ -31,7 +31,7 @@
 % each other.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-12
 %
 classdef drt < handle

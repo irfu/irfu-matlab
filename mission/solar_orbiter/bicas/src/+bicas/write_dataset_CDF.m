@@ -21,7 +21,7 @@
 %       specific set of fields is required.
 % 
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24 as a separate file, by moving the function out from
 % bicas.executed_sw_mode().
 %
@@ -288,11 +288,11 @@ function DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L)
     %======================================================================
     [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
     if isfloat(zvValuePd)
-        zvValueTemp = EJ_library.utils.replace_value(zvValuePd, NaN, fillValue);
+        zvValueTemp = irf.utils.replace_value(zvValuePd, NaN, fillValue);
     else
         zvValueTemp = zvValuePd;
     end
-    cdfMatlabClass = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
+    cdfMatlabClass = irf.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
     zvValueCdf     = cast(zvValueTemp, cdfMatlabClass);
     
@@ -412,7 +412,7 @@ function DataObj = handle_empty_zVar_anomaly(...
         'processing data. This should only happen for incomplete processing.'], ...
         masterCdfPath, zvName);
     
-    matlabClass   = EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
+    matlabClass   = irf.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
     isNumericZVar = isnumeric(cast(0.0, matlabClass));
     
@@ -441,7 +441,7 @@ function DataObj = handle_empty_zVar_anomaly(...
                 [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
                 zvSize      = [nEpochRecords, DataObj.data.(fn{1}).dim];
                 zvValueTemp = cast(zeros(zvSize), matlabClass);
-                zvValueCdf  = EJ_library.utils.replace_value(zvValueTemp, 0, fillValue);
+                zvValueCdf  = irf.utils.replace_value(zvValueTemp, 0, fillValue);
                 
                 DataObj.data.(zvName).data = zvValueCdf;
                 
@@ -487,7 +487,7 @@ function write_nominal_dataset_CDF(DataObj, outputFile, SETTINGS, L)
     end
     
     L.logf('info', 'Writing dataset CDF file: %s', outputFile)
-    EJ_library.cdf.write_dataobj( ...
+    irf.cdf.write_dataobj( ...
         outputFile, ...
         DataObj.GlobalAttributes, ...
         DataObj.data, ...

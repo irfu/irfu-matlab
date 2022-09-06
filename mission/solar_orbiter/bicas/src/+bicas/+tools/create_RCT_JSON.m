@@ -65,7 +65,7 @@
 % rctJsonPath : Path to the file created. Useful for printing log messages.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24.
 %
 function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename)
@@ -95,6 +95,6 @@ function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename)
     %fprintf(str);    % DEBUG
     
     rctJsonPath = fullfile(destDir, RCT_JSON_FILENAME);
-    EJ_library.fs.write_file(rctJsonPath, uint8(str));
+    irf.fs.write_file(rctJsonPath, uint8(str));
 
 end

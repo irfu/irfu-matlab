@@ -10,7 +10,7 @@
 % slow generation of summary plots.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-08-13.
 %
 function save_SP_figure(spPath, hFig)

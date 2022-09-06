@@ -5,7 +5,7 @@
 % official CDF version, i.e. using the BICAS delivery git repo, not irfu-matlab.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-02.
 %
 function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir)
@@ -19,6 +19,6 @@ function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir)
     rctPath     = bicas.tools.create_RCT(rctMasterCdfFile, destDir);
     fprintf(1, 'Created RCT file      "%s"\n', rctPath);
     
-    rctJsonPath = bicas.tools.create_RCT_JSON(destDir, EJ_library.fs.get_name(rctPath));
+    rctJsonPath = bicas.tools.create_RCT_JSON(destDir, irf.fs.get_name(rctPath));
     fprintf(1, 'Created RCT JSON file "%s"\n', rctJsonPath);
 end

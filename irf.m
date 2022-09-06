@@ -167,7 +167,7 @@ switch lower(action)
       addpath(micePath);
       ok = irf('mice');
       if ~ok
-        disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your inteded use of irfu-matlab!');
+        disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your intended use of irfu-matlab!');
       end
     end
     
@@ -218,7 +218,7 @@ switch lower(action)
           disp('   and install the package and all required libraries into: ');
           disp(['   ',irf('path'),filesep,'contrib',filesep,'libirbem']);
         else
-          disp('IRBEM .. not OK. Please contact IRFU if you need IRBEM for your inteded use of irfu-matlab!');
+          disp('IRBEM .. not OK. Please contact IRFU if you need IRBEM for your intended use of irfu-matlab!');
         end
         if nargout, out=false; end
         return;
@@ -229,7 +229,7 @@ switch lower(action)
       addpath(oneraPath);
       ok=irf('irbem');
       if ~ok
-        disp('IRBEM .. NOT OK. Please contact IRFU if you need IRBEM for your inteded use of irfu-matlab!');
+        disp('IRBEM .. NOT OK. Please contact IRFU if you need IRBEM for your intended use of irfu-matlab!');
       end
     end
     
@@ -246,12 +246,12 @@ switch lower(action)
             if nargout, out = true; end
             datastore('irfu_matlab','okCeflib',true);
           else
-            disp('There are CEFLIB problems. Please contact IRFU if you need CEF for your inteded use of irfu-matlab!');
+            disp('There are CEFLIB problems. Please contact IRFU if you need CEF for your intended use of irfu-matlab!');
             if nargout, out = false; end
             datastore('irfu_matlab','okCeflib',false);
           end
         catch
-          disp('There are CEFLIB problems. Please contact IRFU if you need CEF for your inteded use of irfu-matlab!');
+          disp('There are CEFLIB problems. Please contact IRFU if you need CEF for your intended use of irfu-matlab!');
           if nargout, out = false; end
           datastore('irfu_matlab','okCeflib',false);
         end

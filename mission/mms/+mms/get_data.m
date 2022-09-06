@@ -277,7 +277,9 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Omnifluxion_epd_feeps_brst_l2', 'Omnifluxelectron_epd_feeps_brst_l2', ...
   'Omnifluxion_epd_feeps_srvy_l2', 'Omnifluxelectron_epd_feeps_srvy_l2', ...
   'Omnifluxproton_epd_eis_brst_l2', 'Omnifluxoxygen_epd_eis_brst_l2',...
-  'Omnifluxproton_epd_eis_srvy_l2','Omnifluxoxygen_epd_eis_srvy_l2' }; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Omnifluxproton_epd_eis_srvy_l2','Omnifluxoxygen_epd_eis_srvy_l2',...
+  'Pitchanglefluxproton_epd_eis_brst_l2','Pitchanglefluxoxygen_epd_eis_brst_l2',...
+  'Pitchanglefluxion_epd_feeps_brst_l2'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 
 if strcmp(varStr,'vars') % collect all vars, for testing
   res = vars;
@@ -806,7 +808,12 @@ switch Vr.inst
     % the files only has feeps, e.g.: mms1_feeps_brst_l2_ion_20170804093413_v6.1.2.cdf
     % but the variables have epd_feeps, e.g.: mms1_epd_feeps_brst_l2_ion_top_intensity_sensorid_6
     dsetName = ['mms' mmsIdS '_' extractAfter(Vr.inst,'_') '_' Vr.tmmode '_' Vr.lev '_' species];
-    res = get_ts('feeps_omni');
+    switch param
+      case 'Omniflux'
+        res = get_ts('feeps_omni');
+      case 'Pitchangleflux'
+        res = get_ts('feeps_pitchangle');
+    end
   case 'epd_eis'
     all_species = {'proton','oxygen','electron'};
     species_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_species);
@@ -814,7 +821,12 @@ switch Vr.inst
     param = extractBefore(Vr.param,species);
     dsetName = ['mms' mmsIdS '_' strrep(Vr.inst,'_','-') '_' Vr.tmmode '_' Vr.lev '_phxtof'];
     % mms?_epd-eis_srvy_l2_phxtof
-    res = get_ts('eis_omni');
+    switch lower(param)
+      case 'omniflux'
+        res = get_ts('eis_omni');
+      case 'pitchangleflux'
+        res = get_ts('eis_pitchangle');
+    end
   otherwise
     error('not implemented yet')
 end
@@ -1043,7 +1055,7 @@ end
         for iSen = 0:5
           switch Vr.tmmode
             case 'brst'
-              pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_P4_flux_t' num2str(iSen)];
+              pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_P4_flux_t' num2str(iSen)];
             case 'srvy'
               pref = ['mms' mmsIdS '_epd_eis_phxtof_' species '_P4_flux_t' num2str(iSen)];
             otherwise, error('invalid mode')
@@ -1051,16 +1063,81 @@ end
           tmpvar = mms.db_get_ts(dsetName,pref,Tint);
           if not(isempty(tmpvar))
             EISdpf{iSen+1} = comb_ts(tmpvar);
+            % Get energies
             switch Vr.tmmode
               case 'brst'
-                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_energy']);
-                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
-                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
+                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy']);
+                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
               case 'srvy'
                 energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy']);
                 energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
                 energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
               otherwise, error('invalid mode')
+            end                        
+          end
+        end
+        % check if energies are equal or not.
+        for iSen = 0:4
+          for iSen_ = iSen:5
+            if not(isequal(energies{iSen+1},energies{iSen_+1}))
+              irf.log('critical',sprintf('Energies of sensors %g and %g are not equal. Aborting.',iSen,iSen_))
+              res = TSeries([]);
+              return;
+            end
+          end
+        end
+        
+        
+        % Should take into acount Nans here.
+        omnidata = (EISdpf{1}.data+EISdpf{2}.data+EISdpf{3}.data+EISdpf{4}.data+EISdpf{5}.data+EISdpf{6}.data)/6;
+        dist = PDist(EISdpf{1}.time,omnidata,'omni',energies{1}.data*1e3); % energies keV -> eV
+        res = dist;
+        res.siConversion = EISdpf{1}.siConversion;
+        res.units = EISdpf{1}.units;
+        res.species = 'ion';
+        res.ancillary.delta_energy_minus = energies_dminus{1}.data;
+        res.ancillary.delta_energy_plus = energies_dplus{1}.data;
+      case 'eis_pitchangle'
+        file_list = mms.db_list_files(dsetName,Tint);
+        if isempty(file_list)
+          res = TSeries([]);
+          return
+        end
+        dobj = dataobj([file_list(1).path '/' file_list(1).name]);
+        for iSen = 0:5
+          switch Vr.tmmode
+            case 'brst'
+              pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_P4_flux_t' num2str(iSen)];
+            case 'srvy'
+              pref = ['mms' mmsIdS '_epd_eis_phxtof_' species '_P4_flux_t' num2str(iSen)];
+            otherwise, error('invalid mode')
+          end
+          tmpvar = mms.db_get_ts(dsetName,pref,Tint); % get data
+          if not(isempty(tmpvar))
+            EISdpf{iSen+1} = comb_ts(tmpvar); % combine TSeries from several files into one TSeries
+            % Get energies
+            switch Vr.tmmode
+              case 'brst'
+                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy']);
+                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
+              case 'srvy'
+                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy']);
+                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
+              otherwise, error('invalid mode')
+            end
+            
+            % Get pitch angles
+            switch Vr.tmmode
+              case 'brst'
+                % e.g. mms2_epd_eis_brst_l2_phxtof_pitch_angle_t0
+                pref_pitchangle = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_pitch_angle_t' num2str(iSen)];
+                ts_pitchangle = mms.db_get_ts(dsetName,pref_pitchangle,Tint);
+                pitch_angles{iSen+1} = comb_ts(ts_pitchangle);
+                %pitch_angles{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_pitch_angle_t' num2str(iSen)]);
+              otherwise, warning(sprintf('Mode %s not implemented',Vr.tmmode))
             end
           end
         end
@@ -1075,16 +1152,58 @@ end
           end
         end
         
-        % Should take into acount Nans here.
-        omnidata = (EISdpf{1}.data+EISdpf{2}.data+EISdpf{3}.data+EISdpf{4}.data+EISdpf{5}.data+EISdpf{6}.data)/6;
-        dist = PDist(EISdpf{1}.time,omnidata,'omni',energies{1}.data*1e3); % energies keV -> eV
+        % Define pitch angles
+        pitch_angle_bin_edges = 0:15:180; 
+        pitch_angle_bin_centers = 15/2:15:180; 
+        nPitchangles = numel(pitch_angle_bin_edges)-1;
+        nEnergies = numel(energies{1}.data);
+        nTimes = EISdpf{1}.length;
+        
+        % Initialize matrices
+        dpf = zeros(nTimes,nEnergies,nPitchangles);
+        A = zeros(nTimes,nEnergies,nPitchangles);
+        N = zeros(nTimes,nEnergies,nPitchangles);
+        Ntot = zeros(nTimes,nEnergies,nPitchangles);
+        
+        % Loop over sensors and energies to bin the data
+        % pitch_angles{iSen+1} into bins pitch_angle_bin_edges
+        for iSen = 0:5
+          bins = discretize(pitch_angles{iSen+1}.data,pitch_angle_bin_edges);          
+          for iE = 1:nEnergies
+            % Mean flux over all data points within each given bin
+            A(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE),[nTimes,nPitchangles],@mean);
+            % Number of non-zerodatapoints for each bin
+            N(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE)>0,[nTimes,nPitchangles]);
+          end          
+          % Get new average data, take into account the number of
+          % datapoints (i.e. coverage) so that we do not add a datapoint
+          % from one sensors with a pitchangle bin that has no data from
+          % another sensor
+          old_total = dpf.*Ntot; % average * nCounts
+          new_total = A.*N; % average * nCounts
+          Ntot = Ntot + N; % total counts for given bin
+          dpf = (old_total + new_total)./Ntot; % new average
+          dpf(isnan(dpf)) = 0;
+          dpf(isinf(dpf)) = 0;
+        end           
+                
+        % Should take into acount Nans here.        
+        dist = PDist(EISdpf{1}.time,dpf,'pitchangle',energies{1}.data*1e3,pitch_angle_bin_centers); % energies keV -> eV
         res = dist;
         res.siConversion = EISdpf{1}.siConversion;
         res.units = EISdpf{1}.units;
-        res.species = 'ion';
-        res.ancillary.delta_energy_minus = energies_dminus{1};
-        res.ancillary.delta_energy_plus = energies_dplus{1};
-      case 'feeps_omni'
+        res.species = species;
+        res.ancillary.Coverage.STR = 'N - Number of data points in each (time,energy,pitchangle) bin.';
+        res.ancillary.Coverage.N = Ntot;        
+        res.ancillary.delta_energy_minus = energies_dminus{1}.data;
+        res.ancillary.delta_energy_plus = energies_dplus{1}.data;
+        res.ancillary.delta_pitchangle_minus = abs(pitch_angle_bin_edges(1:end-1)-pitch_angle_bin_centers);
+        res.ancillary.delta_pitchangle_plus = abs(pitch_angle_bin_edges(2:end)-pitch_angle_bin_centers);
+        res.name = [EISdpf{1}.name '-' EISdpf{end}.name(end-1:end)];
+        res.userData.Description = 'Pitch angle distribution created from Input';
+        res.userData.Input = cellfun(@(x) x.userData.FIELDNAM,EISdpf,'UniformOutput',false);
+        res.userData.GlobalAttributes = EISdpf{end}.userData.GlobalAttributes;                
+      case {'feeps_omni','feeps_pitchangle'}
         % FROM SPEDAS: Added by DLT on 31 Jan 2017: set unique energy and gain correction factors per spacecraft
         eEcorr = [14.0, -1.0, -3.0, -3.0]; % energy correction
         iEcorr = [0.0, 0.0, 0.0, 0.0]; % energy correction
@@ -1181,26 +1300,97 @@ end
           Bit{iSen} = bot;
         end
         
-        % omni
-        %eval(['dTmp=' specie(1) 'Tit' num2str(sensors(1)) ';'])
-        dataTmp = Tit{1};
-        omniD = NaN( [size(dataTmp.data) nSensors*2]);
-        for iSen = 1:nSensors
-          omniD(:,:,iSen) = Tit{iSen}.data;
-          omniD(:,:,nSensors+iSen) = Bit{iSen}.data;
-          %c_eval(['omniD(:,:,iSen) = ' specie(1) 'Tit?.data;'...
-          %  'omniD(:,:,nSensors+iSen) = ' specie(1) 'Bit?.data;'],sensors(iSen))
-        end
-        omnidata = dataTmp;
-        omnidata.data = mean(double(omniD),3,'omitnan')*Gfact(mmsId);
-        %eval([specie(1) 'Omni = dTmp; ' specie(1) 'Omni.data =' ...
-        %  'mean(double(omniD),3,''omitnan'')*' specie(1) 'Gfact(ic);'])
-        
-        dist = PDist(omnidata.time,omnidata.data,'omni',energies*1e3); % energies keV -> eV
-        res = dist;
-        res.siConversion = Tit{1}.siConversion;
-        res.units = Tit{1}.units;
-        res.species = species;
+        switch dataType
+          case 'feeps_omni' % omni
+            %eval(['dTmp=' specie(1) 'Tit' num2str(sensors(1)) ';'])
+            dataTmp = Tit{1};
+            omniD = NaN( [size(dataTmp.data) nSensors*2]);
+            for iSen = 1:nSensors
+              omniD(:,:,iSen) = Tit{iSen}.data;
+              omniD(:,:,nSensors+iSen) = Bit{iSen}.data;
+              %c_eval(['omniD(:,:,iSen) = ' specie(1) 'Tit?.data;'...
+              %  'omniD(:,:,nSensors+iSen) = ' specie(1) 'Bit?.data;'],sensors(iSen))
+            end
+            omnidata = dataTmp;
+            omnidata.data = mean(double(omniD),3,'omitnan')*Gfact(mmsId);
+            %eval([specie(1) 'Omni = dTmp; ' specie(1) 'Omni.data =' ...
+            %  'mean(double(omniD),3,''omitnan'')*' specie(1) 'Gfact(ic);'])
+
+            dist = PDist(omnidata.time,omnidata.data,'omni',energies*1e3); % energies keV -> eV
+            res = dist;
+            res.siConversion = Tit{1}.siConversion;
+            res.units = Tit{1}.units;
+            res.species = species;
+          case 'feeps_pitchangle' % pitchangle
+            % Load pitchangles
+            % e.g. mms2_epd_eis_brst_l2_phxtof_pitch_angle_t0
+            pref_pitchangle = ['mms' mmsIdS '_epd_feeps_' Vr.tmmode '_' Vr.lev '_ion_pitch_angle'];
+            ts_pitchangle = mms.db_get_ts(dsetName,pref_pitchangle,Tint);
+            pitch_angles = comb_ts(ts_pitchangle);
+            
+            % Combine all sensors in order to bin them later
+            pitch_angle_bin_edges = 0:15:180; 
+            pitch_angle_bin_centers = 15/2:15:180; 
+            nPitchangles = numel(pitch_angle_bin_edges)-1;
+            nEnergies = numel(energies);
+            nTimes = Tit{1}.length;
+            
+            % Intialize matrices
+            dpf = zeros(nTimes,nEnergies,nPitchangles);
+            A = zeros(nTimes,nEnergies,nPitchangles);
+            N = zeros(nTimes,nEnergies,nPitchangles);
+            Ntot = zeros(nTimes,nEnergies,nPitchangles);
+
+            % Ordering of given pitchangles:
+            % pitch_angles.userData.LABL_PTR_1.CATDESC: 'TOP_SENSOR_6,TOP_SENSOR_7,TOP_SENSOR_8,BOT_SENSOR_6,BOT_SENSOR_7,BOT_SENSOR_8'            
+            iSenCount = 0;
+            for iTopBot = 1:2 % top: indices 1-3, bot: indices 4-6
+              for iSen = 1:nSensors 
+                iSenCount = iSenCount + 1;
+                % Sepcify sensor
+                if iTopBot == 1 % Tit, top sensors
+                  data = Tit{iSen};
+                elseif iTopBot == 2 % Bit, bottom sensors
+                  data = Bit{iSen};
+                end
+                
+                % Bin pitchangles
+                bins = discretize(pitch_angles.data(:,iSenCount),pitch_angle_bin_edges);
+                
+                % Accumulate all the data into proper grid 
+                for iE = 1:nEnergies
+                  A(:,iE,:) = accumarray([(1:nTimes)' bins],data.data(:,iE),[nTimes,nPitchangles],@nanmean);                    
+                  N(:,iE,:) = accumarray([(1:nTimes)' bins],(data.data(:,iE)>0),[nTimes,nPitchangles],@sum);
+                end
+                
+                % Get new average data
+                old_total = dpf.*Ntot; % average * nCounts
+                new_total = A.*N; % average * nCounts
+                Ntot = Ntot + N; % total counts for given bin
+                dpf = (old_total + new_total)./Ntot; % new average
+                dpf(isnan(dpf)) = 0;
+                dpf(isinf(dpf)) = 0;                                
+              end
+            end
+            
+            dpf = dpf*Gfact(mmsId); % Apply geometric factor
+
+            % Construct PDist type pitchangle
+            dist = PDist(Tit{1}.time,dpf,'pitchangle',energies*1e3,pitch_angle_bin_centers); % energies keV -> eV
+            res = dist;
+            res.siConversion = Tit{1}.siConversion;
+            res.units = Tit{1}.units;
+            res.species = species;
+            res.ancillary.delta_pitchangle_minus = abs(pitch_angle_bin_edges(1:end-1)-pitch_angle_bin_centers);
+            res.ancillary.delta_pitchangle_plus = abs(pitch_angle_bin_edges(2:end)-pitch_angle_bin_centers);
+            res.ancillary.Coverage.STR = 'N - Number of data points in each (time,energy,pitchangle) bin.';
+            res.ancillary.Coverage.N = Ntot;        
+            res.name = [Tit{1}.name '-' Tit{end}.name(end)];
+            res.name = strrep(res.name,'top','top/bot');
+            res.userData.Description = 'Pitch angle distribution created from Input';
+            res.userData.Input = cellfun(@(x) x.userData.FIELDNAM,{Tit{:}, Bit{:}},'UniformOutput',false);
+            res.userData.GlobalAttributes = Tit{end}.userData.GlobalAttributes;                
+        end      
       otherwise
         error('data type not implemented')
     end
@@ -1228,8 +1418,8 @@ hpcaParamSpec = {'Omnifluxoplus','Omnifluxhplus','Omnifluxheplus','Omnifluxheplu
 hpcaParamsTens1 = {'Vhplus','Vheplus','Vheplusplus','Voplus'};
 hpcaParamsTens2 = {'Phplus','Pheplus','Pheplusplus','Poplus',...
   'Thplus','Theplus','Theplusplus','Toplus'};
-feepsParamsScal = {'Omnifluxproton','Omnifluxoxygen','Omnifluxelectron'};
-eisParamsScal = {'Omnifluxion'};
+feepsParamsScal = {'Omnifluxproton','Omnifluxoxygen','Omnifluxelectron','Pitchanglefluxion'};
+eisParamsScal = {'Omnifluxion','Pitchanglefluxproton','Pitchanglefluxoxygen'};
 
 
 param = tk{1};

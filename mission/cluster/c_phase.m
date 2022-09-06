@@ -18,8 +18,8 @@ function [res, tInts] = c_phase(time,phase_2)
 narginchk(2,2)
 
 %% Constants
-SPIN_PERIOD_MAX = 4.5;
-SPIN_PERIOD_MIN = 3.6;
+SPIN_PERIOD_MAX = 4.5; % std 4.5. on commissioning year 2000 value 6.0
+SPIN_PERIOD_MIN = 3.6; % std 3.6. on commissioning year 2000 value 2.0
 SPIN_PERIOD_NOMINAL = 4; % rpm
 DT_MAX = 2*SPIN_PERIOD_MAX; % allow extrapolation for max DT_MAX seconds
 SPIN_GAP_MAX = 1200; % max gap in phase we tolerate

@@ -126,7 +126,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     % NOTE: Interprets RCS ICD as permitting (official) arguments next to
     % non-s/w mode functionality mode arguments.
     %=====================================================================
-    CliData.SpecInputParametersMap = EJ_library.ds.create_containers_Map(...
+    CliData.SpecInputParametersMap = irf.ds.create_containers_Map(...
         'char', 'char', {}, {});
     
     
@@ -203,7 +203,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     else               CliData.configFile = temp(end).optionValues{1};
     end
     
-    EJ_library.assert.struct(CliData, ...
+    irf.assert.struct(CliData, ...
         {'functionalityMode', 'swModeArg', 'icdLogFile', 'matlabLogFile', ...
         'configFile', 'SpecInputParametersMap', ...
         'ModifiedSettingsMap'}, {})
@@ -214,7 +214,7 @@ end
 
 % NOTE: Checks (assertion) for doubles.
 function Map = convert_SIP_OptionValues_2_Map(optionValues)
-    Map = EJ_library.ds.create_containers_Map('char', 'char', {}, {});
+    Map = irf.ds.create_containers_Map('char', 'char', {}, {});
     
     for iSip = 1:numel(optionValues)
         %temp = optionValues{iSip}{1};
@@ -233,7 +233,7 @@ end
 
 % NOTE: Deliberately does not check for doubles.
 function Map = convert_modif_settings_OptionValues_2_Map(optionValues)
-    Map = EJ_library.ds.create_containers_Map('char', 'char', {}, {});
+    Map = irf.ds.create_containers_Map('char', 'char', {}, {});
     
     for iSetting = 1:length(optionValues)
         settingKey   = optionValues(iSetting).optionValues{1};

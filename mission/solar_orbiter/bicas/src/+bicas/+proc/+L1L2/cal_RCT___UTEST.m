@@ -8,7 +8,7 @@
 % NOTE: Creates temporary directory and files for every test, separately.
 %
 %
-% Author: Erik P G Johansson, IRF Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16
 %
 classdef cal_RCT___UTEST < matlab.unittest.TestCase
@@ -130,7 +130,7 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
 
             for fileCa = filenamesCa(:)'
                 % Create empty file.
-                EJ_library.fs.write_file(...
+                irf.fs.write_file(...
                     fullfile(tempDir, fileCa{1}), ...
                     zeros(1,0,'uint8'))
             end

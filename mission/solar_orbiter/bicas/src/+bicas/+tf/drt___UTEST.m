@@ -2,7 +2,7 @@
 % matlab.unittest automatic test code for bicas.tf.drt___UTEST().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-12
 %
 classdef drt___UTEST < matlab.unittest.TestCase

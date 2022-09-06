@@ -51,7 +51,7 @@
 %       NOTE: Data outside the lowest and highest boundary are not represented.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-20.
 %
 function iInBinCa = get_bin_indices(t, bb, nBbThreshold)

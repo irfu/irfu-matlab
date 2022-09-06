@@ -177,7 +177,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     elseif ~(dt>0)
         error(EMID_ARG, 'dt is not positive.')
     elseif ~isa(tf, 'function_handle')
-        % EJ_library.assert.func does not seem to handle return values
+        % irf.assert.func does not seem to handle return values
         % correctly.
         error(EMID_ARG, 'tf is not a function.')
     elseif ~isreal(tf(0))

@@ -108,7 +108,7 @@
 % BICAS calculates the "input" signals from the "output" signals.
 %
 %
-% Author: Erik P G Johansson, IRF, Uppsala, Sweden.
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-12-11
 %
 classdef reader_DCC_DCV_TF_IC < handle
@@ -139,7 +139,7 @@ classdef reader_DCC_DCV_TF_IC < handle
 % PROPOSAL: Functions for reading files in separate file (or static functions in separate class).
 % PROPOSAL: Function for recognizing and parsing data/CTable filenames.
 % Eliminate cTableFilesPattern, testLogbookFile.
-%   NOTE: Compare EJ_library.so.adm.parse_dataset_filename().
+%   NOTE: Compare solo.adm.parse_dataset_filename().
 %   PROBLEM: May not be able to eliminate testLogbookFile since there are
 %            multiple logbooks and no known algorithm for selecting the correct
 %            one.
@@ -200,13 +200,13 @@ classdef reader_DCC_DCV_TF_IC < handle
         % mebTemperatureCelsius
         %       The MEB temperature at which the tests are made.
             
-            testLogbookRowList = EJ_library.fs.read_text_file(...
+            testLogbookRowList = irf.fs.read_text_file(...
                 testLogbookFile, '\r?\n');
             metadataList = solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(...
                 testLogbookRowList, dataType);
             
             % TODO-NI: Necessary to use special function here? Can replace call with one-liner?
-            metadataList = EJ_library.ds.merge_structs(...
+            metadataList = irf.ds.merge_structs(...
                 metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
 
 
@@ -310,7 +310,7 @@ classdef reader_DCC_DCV_TF_IC < handle
             % since information redundancy can be dangerous.
 %             % Add fields to Data, fields which are likely to be used for
 %             % plotting.
-%             [Data.freqRps, Data.z] = EJ_library.utils.convert_TF_human2math(...
+%             [Data.freqRps, Data.z] = irf.utils.convert_TF_human2math(...
 %                 Data.freqHz, ...
 %                 Data.gainEnergyDb, ...
 %                 Data.phaseShiftDeg);

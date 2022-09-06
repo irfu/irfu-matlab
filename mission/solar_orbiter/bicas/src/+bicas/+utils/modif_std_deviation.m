@@ -26,7 +26,7 @@
 %       Modified standard deviation otherwise.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-10-22.
 %
 function mstd = modif_std_deviation(v, ref, iDim)
@@ -66,5 +66,5 @@ function mstd = modif_std_deviation(v, ref, iDim)
     
     % ASSERTION
     % NOTE: Requires mstd to always be set (outside if-then).
-    %EJ_library.assert.sizes(mstd, mstdSize)   % Disable?
+    %irf.assert.sizes(mstd, mstdSize)   % Disable?
 end

@@ -2,7 +2,7 @@
 % Collection of constants related to validating BICAS (output) master CDFs.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-11-12
 %
 classdef const    

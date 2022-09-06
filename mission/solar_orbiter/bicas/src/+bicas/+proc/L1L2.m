@@ -156,7 +156,7 @@ classdef L1L2
                     ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
                     USE_ZV_ACQUISITION_TIME_HK)
             end
-            if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
+            if ~irf.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
                 %---------------------------------------
                 % CASE: SCI does not overlap HK in time
                 %---------------------------------------
@@ -169,7 +169,7 @@ classdef L1L2
                     settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
                     'BICAS:SWModeProcessing')
-            elseif ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
+            elseif ~irf.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 %-------------------------------------------------
                 % CASE: SCI does not cover a subset of HK in time
                 %-------------------------------------------------
@@ -231,7 +231,7 @@ classdef L1L2
 
 
             % ASSERTIONS
-            EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
         end
 
 
@@ -279,7 +279,7 @@ classdef L1L2
             % ASSERTION
             bicas.proc.L1L2.assert_PreDC(PreDc)
             bicas.proc.L1L2.assert_PostDC(PostDc)
-            nRecords = EJ_library.assert.sizes(PreDc.Zv.Epoch, [-1]);
+            nRecords = irf.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
 
 
@@ -328,8 +328,8 @@ classdef L1L2
                 % Log the relevant NSO event in the GLOBAL NSO events table
                 %===========================================================
                 L.logf('info', '    %s -- %s %s', ...
-                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
-                    EJ_library.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGlobalEvent)), ...
+                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
+                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGlobalEvent)), ...
                     eventNsoId);
 
 
@@ -340,7 +340,7 @@ classdef L1L2
                 % Optionally translate (selected) TEST NSO IDs into actual
                 % NSO IDs.
                 %==========================================================
-%                 eventNsoIdTranslated = EJ_library.utils.translate({...
+%                 eventNsoIdTranslated = irf.utils.translate({...
 %                     {bicas.constants.NSOID.TEST_THRUSTER_FIRING}, ...
 %                      bicas.constants.NSOID.THRUSTER_FIRING}, ...
 %                     eventNsoId, eventNsoId);
@@ -474,16 +474,16 @@ classdef L1L2
                     ' for this DATASET_ID classification.'])
             end
 
-            EJ_library.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
+            irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
         end
 
 
 
         function assert_PreDC(PreDc)
-            EJ_library.assert.struct(PreDc, ...
+            irf.assert.struct(PreDc, ...
                 {'Zv', 'Ga', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
 
-            EJ_library.assert.struct(PreDc.Zv, ...
+            irf.assert.struct(PreDc.Zv, ...
                 {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', ...
                 'iLsf', 'DIFF_GAIN', ...
                 'MUX_SET', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
@@ -499,10 +499,10 @@ classdef L1L2
 
 
         function assert_PostDC(PostDc)
-            EJ_library.assert.struct(PostDc, ...
+            irf.assert.struct(PostDc, ...
                 {'Zv'}, {});
 
-            EJ_library.assert.struct(PostDc.Zv, ...
+            irf.assert.struct(PostDc.Zv, ...
                 {'DemuxerOutput', 'currentAAmpere'}, {'L2_QUALITY_BITMASK'});
 
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
@@ -551,7 +551,7 @@ classdef L1L2
             %==========================================
             % Find exact indices/CDF records to remove
             %==========================================
-            zvUseFillValues = EJ_library.utils.true_with_margin(...
+            zvUseFillValues = irf.utils.true_with_margin(...
                 zvEpoch, ...
                 ismember(zv_MUX_SET, muxModesRemove), ...
                 removeMarginSec * 1e9);
@@ -566,7 +566,7 @@ classdef L1L2
                 '    Setting %s = [%s]\n', ...
                 '    Setting %s = %f\n'], ...
                 settingMuxModesKey, ...
-                strjoin(EJ_library.str.sprintf_many('%g', muxModesRemove), ', '), ...
+                strjoin(irf.str.sprintf_many('%g', muxModesRemove), ', '), ...
                 settingMarginKey, ...
                 removeMarginSec);
             bicas.proc.L1L2.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
@@ -580,7 +580,7 @@ classdef L1L2
         function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
             LL = 'info';    % LL = Log Level
 
-            [i1Array, i2Array] = EJ_library.utils.split_by_false(zvUfv);
+            [i1Array, i2Array] = irf.utils.split_by_false(zvUfv);
             nUfvIntervals = numel(i1Array);
             if nUfvIntervals > 0
 
@@ -595,8 +595,8 @@ classdef L1L2
                 for iRi = 1:nUfvIntervals
                     iCdfRecord1 = i1Array(iRi);
                     iCdfRecord2 = i2Array(iRi);
-                    utc1  = EJ_library.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord1));
-                    utc2  = EJ_library.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord2));
+                    utc1  = irf.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord1));
+                    utc2  = irf.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord2));
                     L.logf(LL, '    Records %7i-%7i, %s -- %s', ...
                         iCdfRecord1, iCdfRecord2, utc1, utc2);
                 end
