@@ -31,7 +31,7 @@ classdef lfr
             % modified later
             InSciNorm = InSci;
 
-            nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
+            nRecords = irf.assert.sizes(InSci.Zv.Epoch, [-1]);
 
 
 
@@ -132,7 +132,7 @@ classdef lfr
                 InSci.Zv.QUALITY_FLAG,    'QUALITY_FLAG');
 
             % ASSERTIONS
-            EJ_library.assert.sizes(...
+            irf.assert.sizes(...
                 InSciNorm.Zv.QUALITY_BITMASK, [nRecords, 1], ...
                 InSciNorm.Zv.QUALITY_FLAG,    [nRecords, 1])
 
@@ -154,14 +154,14 @@ classdef lfr
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
             
             % ASSERTIONS: CDF
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
                 'BICAS:DatasetFormat', ...
                 ['Voltage (science) dataset timestamps Epoch do not', ...
                 ' increase monotonously.'])
-            nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
+            nRecords = irf.assert.sizes(InSci.Zv.Epoch, [-1]);
 
 
 
@@ -178,16 +178,16 @@ classdef lfr
                 % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
                 % index values (1=F0) used in loaded RCT data structs.
             end
-            EJ_library.assert.sizes(iLsfZv, [nRecords])
+            irf.assert.sizes(iLsfZv, [nRecords])
 
 
 
             % NOTE: Needed also for 1 SPR.
-            zvFreqHz = EJ_library.so.hwzv.get_LFR_frequency( iLsfZv );
+            zvFreqHz = solo.hwzv.get_LFR_frequency( iLsfZv );
 
             % Obtain the relevant values (one per record) from zVariables R0,
             % R1, R2, and the virtual "R3".
-            zv_Rx = EJ_library.so.hwzv.get_LFR_Rx(...
+            zv_Rx = solo.hwzv.get_LFR_Rx(...
                 InSci.Zv.R0, ...
                 InSci.Zv.R1, ...
                 InSci.Zv.R2, ...
@@ -209,10 +209,10 @@ classdef lfr
             E = single(permute(InSci.Zv.E, [1,3,2]));
 
             % ASSERTIONS
-            nCdfSamplesPerRecord = EJ_library.assert.sizes(...
+            nCdfSamplesPerRecord = irf.assert.sizes(...
                 InSci.Zv.V, [nRecords, -1], ...
                 E,          [nRecords, -1, 2]);
-            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
+            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
             else                assert(nCdfSamplesPerRecord == 1)
             end
 
@@ -361,7 +361,7 @@ classdef lfr
                 end
             end
 
-            EJ_library.assert.sizes(zv2, [NaN])
+            irf.assert.sizes(zv2, [NaN])
         end
         
         

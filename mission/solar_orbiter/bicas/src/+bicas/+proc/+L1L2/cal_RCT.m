@@ -194,7 +194,7 @@ classdef cal_RCT
             dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
             filenameList = {dirObjectList.name};
             % Eliminate non-matching filenames.
-            filenameList(~EJ_library.str.regexpf(filenameList, filenameRegexp)) = [];
+            filenameList(~irf.str.regexpf(filenameList, filenameRegexp)) = [];
             
             % ASSERTION / WARNING
             if numel(filenameList) == 0
@@ -261,7 +261,7 @@ classdef cal_RCT
             
             % ASSERTION            
             assert(iscell(ga_CALIBRATION_TABLE))
-            nCt = EJ_library.assert.sizes(...
+            nCt = irf.assert.sizes(...
                 ga_CALIBRATION_TABLE,       [-1, 1], ...
                 zv_CALIBRATION_TABLE_INDEX, [-2, 2], ...
                 zv_BW,                      [-2, 1]);

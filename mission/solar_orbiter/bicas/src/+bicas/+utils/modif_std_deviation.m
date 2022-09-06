@@ -66,5 +66,5 @@ function mstd = modif_std_deviation(v, ref, iDim)
     
     % ASSERTION
     % NOTE: Requires mstd to always be set (outside if-then).
-    %EJ_library.assert.sizes(mstd, mstdSize)   % Disable?
+    %irf.assert.sizes(mstd, mstdSize)   % Disable?
 end

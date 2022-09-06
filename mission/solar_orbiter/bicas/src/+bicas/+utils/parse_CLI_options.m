@@ -122,8 +122,8 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
     
     % ASSERTIONS: Check argument types, sizes.
     assert(iscell(cliArgumentsList), 'cliArgumentsList is not a cell array.')
-    EJ_library.assert.vector(cliArgumentsList)
-    EJ_library.assert.isa(OptionsConfigMap, 'containers.Map')
+    irf.assert.vector(cliArgumentsList)
+    irf.assert.isa(OptionsConfigMap, 'containers.Map')
     
     
     
@@ -194,7 +194,7 @@ function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
     % Search for a matching CLI option string
     %=========================================
     % NOTE: More convenient to work with arrays than maps here.
-    iRegexpMatches  = find(EJ_library.str.regexpf(...
+    iRegexpMatches  = find(irf.str.regexpf(...
         cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
 
     % IP = Interpretation Priority
@@ -277,7 +277,7 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(...
         ModifOptionConfig = OptionsConfigMap(optionId);
         
         % ASSERTION: OptionConfig is the right struct.
-        EJ_library.assert.struct(ModifOptionConfig, ...
+        irf.assert.struct(ModifOptionConfig, ...
             {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, ...
             {'interprPriority'})
         
@@ -296,7 +296,7 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(...
         % (optionId values).
         % NOTE: Applies to both options with and without values!
         %EmptyOptionValuesMap(optionId) = {};
-        EmptyOptionValuesMap(optionId) = EJ_library.ds.empty_struct(...
+        EmptyOptionValuesMap(optionId) = irf.ds.empty_struct(...
             [0,1], 'iOptionHeaderCliArgument', 'optionHeader', 'optionValues');
     end
     

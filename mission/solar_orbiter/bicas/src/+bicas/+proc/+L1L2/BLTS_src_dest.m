@@ -92,7 +92,7 @@ classdef BLTS_src_dest %< handle
             end
             
             % ASSERTION: category
-            EJ_library.assert.castring(category)
+            irf.assert.castring(category)
 
             % ASSERTIONS: category, antennas
             nAntennas = numel(antennas);

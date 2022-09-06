@@ -109,7 +109,7 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     % argument for a single path.
     assert(nargin == 2, 'Wrong number of arguments.')
 
-    % Needed for EJ_library.
+    % Needed for irf.
     % Needed for sdfpcdfread?
     % NOTE: Might run automatically run as part of user-configured MATLAB
     % initialization.
@@ -120,9 +120,9 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %=====================================
     % Iterate over all files in directory
     %=====================================
-    % NOTE: EJ_library.fs.glob_files_dirs does not add ^ and $.
+    % NOTE: irf.fs.glob_files_dirs does not add ^ and $.
     filenameRegexp = ['^', filenameRegexp, '$'];
-    oiList = EJ_library.fs.glob_files_dirs(dirPath, {filenameRegexp});   % OI = Object Info.
+    oiList = irf.fs.glob_files_dirs(dirPath, {filenameRegexp});   % OI = Object Info.
     oiList = oiList(~[oiList.isdir]);
     doList = {};             % DO = dataobj
     nFiles = numel(oiList);
@@ -207,7 +207,7 @@ function Do = validate_file(filePath)
 
     Do         = dataobj(filePath);    % DO = dataobj
     Ga         = Do.GlobalAttributes;
-    Zmd        = EJ_library.cdf.get_zvs_metadata_struct(Do.Variables, Do.VariableAttributes);
+    Zmd        = irf.cdf.get_zvs_metadata_struct(Do.Variables, Do.VariableAttributes);
     zvNameList = fieldnames(Zmd);
     
     
@@ -611,7 +611,7 @@ end
 %
 function validation_warning(varargin)
     msg    = sprintf(varargin{:});
-    msg    = EJ_library.str.indent(msg, 3);
+    msg    = irf.str.indent(msg, 3);
     msg(2) ='*';
 
     fwrite(1, msg)

@@ -17,7 +17,7 @@
 function log_memory_profiling(L, locationName)
     % PROPOSAL: Automatic test code.
     %
-    % PROPOSAL: Use generic code for creating tables. EJ_library.str.assist_print_table.
+    % PROPOSAL: Use generic code for creating tables. irf.str.assist_print_table.
     % PROPOSAL: Convert to kiB, MiB.
     %   PROPOSAL: Different for different variables.
     % PROPOSAL: Make more grep-friendly.
@@ -58,14 +58,14 @@ function log_memory_profiling(L, locationName)
     
     
     
-    [headerStrs, dataStrs, ~] = EJ_library.str.assist_print_table(...
+    [headerStrs, dataStrs, ~] = irf.str.assist_print_table(...
         HEADER_STRS, dataStrs, COLUMN_ADJUSTMENTS);
 
     
     
     headerDataCa = {strjoin(headerStrs, COLUMN_SEPARATOR)};
-    dividerStr1  = EJ_library.str.repeat(DIVIDER_LINE_1_CHAR, numel(headerDataCa{1}));
-    dividerStr2  = EJ_library.str.repeat(DIVIDER_LINE_2_CHAR, numel(headerDataCa{1}));
+    dividerStr1  = irf.str.repeat(DIVIDER_LINE_1_CHAR, numel(headerDataCa{1}));
+    dividerStr2  = irf.str.repeat(DIVIDER_LINE_2_CHAR, numel(headerDataCa{1}));
     headerDataCa{end+1} = dividerStr1;
     for iRow = 1:nDataRows
         if iRow == nDataRows
@@ -74,10 +74,10 @@ function log_memory_profiling(L, locationName)
         headerDataCa{end+1} = strjoin(dataStrs(iRow, :), COLUMN_SEPARATOR);
     end
     tableStr = [strjoin(headerDataCa, newline), newline];
-    tableStr = EJ_library.str.indent(tableStr, INDENT_SIZE);   % Indent table.
+    tableStr = irf.str.indent(tableStr, INDENT_SIZE);   % Indent table.
 
     str = [firstRowStr, tableStr];
-    str = EJ_library.str.add_prefix_on_every_row(str, LOG_PREFIX);
+    str = irf.str.add_prefix_on_every_row(str, LOG_PREFIX);
     L.logf('debug', str)
 end
 

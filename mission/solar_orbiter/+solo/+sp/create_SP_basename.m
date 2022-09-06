@@ -58,7 +58,7 @@ function basename = create_SP_basename(srcDatasetId, dateVec3, versionNbr)
     % PROPOSAL: Use (future) assertion function on DATASET_ID.
     
     % ASSERTIONS
-    EJ_library.assert.castring(srcDatasetId)
+    irf.assert.castring(srcDatasetId)
     assert(isnumeric(dateVec3))
     assert(numel(dateVec3) == 3)
     assert(isscalar(versionNbr))

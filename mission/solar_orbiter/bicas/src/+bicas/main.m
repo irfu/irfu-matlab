@@ -91,7 +91,7 @@ function errorCode = main( varargin )
     %       NOTE: Different on irfu-matlab and bicas_ROC.
     %   PROPOSAL: git branch
     %
-    % PROPOSAL: Use EJ_library.str.assist_print_table more.
+    % PROPOSAL: Use irf.str.assist_print_table more.
     %   Ex: Logging settings, CLI arguments(?), error codes & messages(?)
     
     
@@ -116,8 +116,8 @@ function errorCode = main( varargin )
         %       rest of irfu-matlab).
         %
         % IMPLEMENTATION NOTE: bicas.Logger.ICD_log_msg uses
-        % EJ_library.str.add_prefix_on_every_row.
-        % ==> Must initialize paths for EJ_library BEFORE using
+        % irf.str.add_prefix_on_every_row.
+        % ==> Must initialize paths for irf BEFORE using
         %     bicas.Logger.log/logf.
         %========================================================================
         irf('check_path');
@@ -246,7 +246,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
         % NOTE: Does not capture return value errorCode.
         recursiveMsg = recursive_exception_msg(Exception.cause{iCause});
         
-        recursiveMsg = EJ_library.str.indent(recursiveMsg, ...
+        recursiveMsg = irf.str.indent(recursiveMsg, ...
             CAUSES_RECURSIVE_INDENTATION_LENGTH);
         msg = [msg, recursiveMsg];
     end
@@ -313,7 +313,7 @@ function main_without_error_handling(cliArgumentsList, L)
     % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
     % Use path of the current MATLAB file.
     [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-    bicasRootPath         = EJ_library.fs.get_abs_path(...
+    bicasRootPath         = irf.fs.get_abs_path(...
         fullfile(matlabSrcPath, '..', '..'));
     
     
@@ -501,8 +501,8 @@ function main_without_error_handling(cliArgumentsList, L)
             L.logf('info', 'rctDir       = "%s"', rctDir)
             L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
 
-            EJ_library.assert.dir_exists(rctDir)
-            EJ_library.assert.dir_exists(masterCdfDir)
+            irf.assert.dir_exists(rctDir)
+            irf.assert.dir_exists(masterCdfDir)
             
             
             
@@ -709,7 +709,7 @@ function s = sprint_constants()
     for i = 1:nKeys
         valuesCa{i, 1} = bicas.constants.SWD_METADATA(keysCa{i});
     end
-    [~, dataCa, columnWidths] = EJ_library.str.assist_print_table(...
+    [~, dataCa, columnWidths] = irf.str.assist_print_table(...
         {'Constant', 'Value'}, [keysCa, valuesCa], {'left', 'left'});
     
     for iRow = 1:size(dataCa, 1)

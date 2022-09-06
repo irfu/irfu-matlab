@@ -429,7 +429,7 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
 
 
 
-    dv1  = EJ_library.cdf.TT2000_to_datevec(t1.ttns);
+    dv1  = irf.cdf.TT2000_to_datevec(t1.ttns);
     dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
     
     % Round to midnight.
@@ -448,6 +448,6 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
         dt1c = dt1c - days(7);
     end
     
-    tt2000 = EJ_library.cdf.datevec_to_TT2000(datevec(dt1c));
+    tt2000 = irf.cdf.datevec_to_TT2000(datevec(dt1c));
     t2     = irf.time_array(tt2000);
 end

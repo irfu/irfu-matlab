@@ -211,7 +211,7 @@ classdef swmode_defs
             
             
 
-            SwModeList = EJ_library.ds.empty_struct([0,1], ...
+            SwModeList = irf.ds.empty_struct([0,1], ...
                 'prodFunc', 'cliOption', 'swdPurpose', ...
                 'inputsList', 'outputsList');
             % Iterate over [L1R] (one component), or [L1, L1R]...
@@ -417,14 +417,14 @@ classdef swmode_defs
 
             obj.List = SwModeList;
             
-            EJ_library.assert.castring_set({obj.List(:).cliOption})
+            irf.assert.castring_set({obj.List(:).cliOption})
         end    % Constructor
 
 
 
         function swModeInfo = get_sw_mode_info(obj, swModeCliOption)
             i = find(strcmp(swModeCliOption, {obj.List(:).cliOption}));
-            EJ_library.assert.scalar(i)
+            irf.assert.scalar(i)
             swModeInfo = obj.List(i);
         end
         
@@ -460,15 +460,15 @@ classdef swmode_defs
             bicas.swmode_defs.assert_text(              Def.swdPurpose)
             
             % Important. Check uniqueness of SIP options.
-            EJ_library.assert.castring_set( {...
+            irf.assert.castring_set( {...
                 Def.inputsList( :).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody })
             
             assert(isstruct(Def.inputsList ))
             assert(isstruct(Def.outputsList))
             
-            EJ_library.assert.castring_set( { Def.inputsList(:).prodFuncInputKey   })
-            EJ_library.assert.castring_set( { Def.outputsList(:).prodFuncOutputKey })
+            irf.assert.castring_set( { Def.inputsList(:).prodFuncInputKey   })
+            irf.assert.castring_set( { Def.outputsList(:).prodFuncOutputKey })
         end
 
         
@@ -492,7 +492,7 @@ classdef swmode_defs
                 cliOptionHeaderBody, datasetId, prodFuncOutputKey, ...
                 swdName, swdDescription, skeletonVersion)
             
-            [~, datasetLevel, ~] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
+            [~, datasetLevel, ~] = solo.adm.disassemble_DATASET_ID(datasetId);
             
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
             Def.datasetId           = datasetId;
@@ -507,7 +507,7 @@ classdef swmode_defs
             bicas.swmode_defs.assert_text(              Def.swdName)
             bicas.swmode_defs.assert_text(              Def.swdDescription)
             bicas.swmode_defs.assert_DATASET_ID(        Def.datasetId)
-            EJ_library.so.adm.assert_dataset_level(     Def.datasetLevel)
+            solo.adm.assert_dataset_level(     Def.datasetLevel)
             bicas.assert_skeleton_version(              Def.skeletonVersion)
         end
 
@@ -518,7 +518,7 @@ classdef swmode_defs
             bicas.assert_BICAS_DATASET_ID(datasetId)
             
             % ASSERTION: Only using SOLO_* DATASET_IDs.
-            [sourceName, ~, ~] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
+            [sourceName, ~, ~] = solo.adm.disassemble_DATASET_ID(datasetId);
             assert(strcmp(sourceName, 'SOLO'))
         end
         
@@ -526,14 +526,14 @@ classdef swmode_defs
 
         % Assert that string contains human-readable text.
         function assert_text(str)
-            EJ_library.assert.castring_regexp(str, '.* .*')
-            EJ_library.assert.castring_regexp(str, '[^<>]*')
+            irf.assert.castring_regexp(str, '.* .*')
+            irf.assert.castring_regexp(str, '[^<>]*')
         end
         
         
         
         function assert_SW_mode_CLI_option(swModeCliOption)
-            EJ_library.assert.castring_regexp(...
+            irf.assert.castring_regexp(...
                 swModeCliOption, ...
                 bicas.constants.SW_MODE_CLI_OPTION_REGEX)
         end
@@ -542,7 +542,7 @@ classdef swmode_defs
 
         % NOTE: Really refers to "option body".
         function assert_SIP_CLI_option(sipCliOptionBody)
-            EJ_library.assert.castring_regexp(...
+            irf.assert.castring_regexp(...
                 sipCliOptionBody, ...
                 bicas.constants.SIP_CLI_OPTION_BODY_REGEX)
         end

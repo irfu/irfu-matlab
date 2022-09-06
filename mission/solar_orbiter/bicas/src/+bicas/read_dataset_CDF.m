@@ -70,10 +70,10 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
                     fillValue = ofvFillVal;
                 end
                 
-                zvValue = EJ_library.utils.replace_value(zvValue, fillValue, NaN);
+                zvValue = irf.utils.replace_value(zvValue, fillValue, NaN);
             end
             if ~disableReplacePadValue
-                zvValue = EJ_library.utils.replace_value(zvValue, padValue,  NaN);
+                zvValue = irf.utils.replace_value(zvValue, padValue,  NaN);
             end
         end
         
@@ -99,7 +99,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/7#note_11016
     % states that the correct string is "Dataset_ID".
     %=================================================================================
-    [GlobalAttributes, fnChangeList] = EJ_library.ds.normalize_struct_fieldnames(...
+    [GlobalAttributes, fnChangeList] = irf.ds.normalize_struct_fieldnames(...
         DataObj.GlobalAttributes, ...
         {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}}, ...
         'Assert one matching candidate');
@@ -193,7 +193,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     % Just printing filename to avoid that actual time information is too far
     % right.
     bicas.log_speed_profiling(L, ...
-        sprintf('%s: %s', mfilename, EJ_library.fs.get_name(filePath)), ...
+        sprintf('%s: %s', mfilename, irf.fs.get_name(filePath)), ...
         tTicToc)
 end
 

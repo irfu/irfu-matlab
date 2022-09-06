@@ -325,7 +325,7 @@ classdef cal < handle
 %               obj.HkBiasCurrent.offsetTm
 %       calibrate_current_sampere_to_TM()
 %           Static
-%           Uses EJ_library.so.hwzv.const.TM_PER_SAMPERE
+%           Uses solo.hwzv.const.TM_PER_SAMPERE
 %   PRO: Class is large, ~1250 rows.
 %   PRO: Remaining class becomes entirely about voltage calibration.
 %   CON: Use needs to instantiate two calibration objects.
@@ -459,7 +459,7 @@ classdef cal < handle
 
             % ASSERTIONS: Arguments
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
-            EJ_library.assert.subset(...
+            irf.assert.subset(...
                 RctDataMap.keys, ...
                 bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP.keys)
             assert(isscalar(RctDataMap('BIAS')))
@@ -628,10 +628,10 @@ classdef cal < handle
             
             % ASSERTIONS
             assert(isstruct(CalSettings))
-%             EJ_library.assert.struct(CalSettings, {...
+%             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
-            EJ_library.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
+            irf.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
             assert(islogical(voltageNaN) && isscalar(voltageNaN))
             
             
@@ -710,9 +710,9 @@ classdef cal < handle
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
 
             % ASSERTIONS
-            EJ_library.assert.vector(samplesCaTm)
+            irf.assert.vector(samplesCaTm)
             assert(iscell(samplesCaTm))
-            EJ_library.assert.vector(dtSec)
+            irf.assert.vector(dtSec)
             assert(numel(samplesCaTm) == numel(dtSec))
 
             
@@ -752,7 +752,7 @@ classdef cal < handle
         function samplesCaAVolt = calibrate_voltage_BIAS_TDS_CWF(obj, ...
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
 
-%             EJ_library.assert.struct(CalSettings, {...
+%             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
             iBlts        = CalSettings.iBlts;
@@ -762,7 +762,7 @@ classdef cal < handle
             iCalibTimeH  = CalSettings.iCalibTimeH;
             
             % ASSERTIONS
-            EJ_library.assert.vector(dtSec)
+            irf.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
@@ -841,7 +841,7 @@ classdef cal < handle
         function samplesCaAVolt = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
             
-%             EJ_library.assert.struct(CalSettings, {...
+%             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
             iBlts        = CalSettings.iBlts;
@@ -851,7 +851,7 @@ classdef cal < handle
             iCalibTimeH  = CalSettings.iCalibTimeH;
             
             % ASSERTIONS
-            EJ_library.assert.vector(dtSec)
+            irf.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
@@ -1103,7 +1103,7 @@ classdef cal < handle
         function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, cti2)
             
             % ASSERTIONS
-%             EJ_library.assert.struct(CalSettings, {...
+%             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'BltsSrc', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             iBlts        = CalSettings.iBlts;
@@ -1233,7 +1233,7 @@ classdef cal < handle
             % NOTE: max(...) ignores NaN, unless that is the only value, which
             % then becomes the max value.
             [maxAbsSAmpere, iMax] = max(abs(currentSAmpere(:)));
-            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= EJ_library.so.hwzv.const.MAX_ABS_SAMPERE))
+            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= solo.hwzv.const.MAX_ABS_SAMPERE))
                 
                 error('BICAS:Assertion:IllegalArgument', ...
                     ['Argument currentSAmpere (unit: set current/ampere)', ...
@@ -1242,7 +1242,7 @@ classdef cal < handle
                     currentSAmpere(iMax))
             end
             
-            biasCurrentTm = currentSAmpere * EJ_library.so.hwzv.const.TM_PER_SAMPERE;
+            biasCurrentTm = currentSAmpere * solo.hwzv.const.TM_PER_SAMPERE;
         end
         
         

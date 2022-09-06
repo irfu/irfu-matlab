@@ -110,7 +110,7 @@ classdef utils
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S);
             nRowsSa = bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(SNew);
             assert(numel(iRowsArray) == nRowsSa)
-            EJ_library.assert.castring_sets_equal(fieldnames(S), fieldnames(SNew))
+            irf.assert.castring_sets_equal(fieldnames(S), fieldnames(SNew))
             
             fieldNamesList = fieldnames(SNew);
             for i=1:length(fieldNamesList)
@@ -142,8 +142,8 @@ classdef utils
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
             
             % ASSERTIONS
-            EJ_library.assert.vector(nCopyColsPerRowArray)
-            nRows = EJ_library.assert.sizes(...
+            irf.assert.vector(nCopyColsPerRowArray)
+            nRows = irf.assert.sizes(...
                 M,                    [-1, NaN], ...
                 nCopyColsPerRowArray, [-1, 1]);
             
@@ -168,9 +168,9 @@ classdef utils
         function [M, nCopyColsPerRowVec] = ...
                 convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
             assert(iscell(ca))
-            EJ_library.assert.vector(ca)
+            irf.assert.vector(ca)
             assert(isscalar(nMatrixColumns))
-            EJ_library.assert.vector(nMatrixColumns)
+            irf.assert.vector(nMatrixColumns)
             
             nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
             M                  = nan(  numel(ca), nMatrixColumns);
@@ -217,7 +217,7 @@ classdef utils
                 ['Argument "data" is not a floating-point class (can', ...
                 ' therefore not represent NaN).'])
             % Not really necessary to require row vector, only 1D vector.
-            EJ_library.assert.sizes(...
+            irf.assert.sizes(...
                 zvData,     [-1, NaN, NaN], ...
                 bRowFilter, [-1])
 
@@ -238,7 +238,7 @@ classdef utils
         
         function zv = set_NaN_after_snapshots_end(zv, snapshotLengths)
             % ASSERTIONS
-            [nRecords, snapshotMaxLength] = EJ_library.assert.sizes(...
+            [nRecords, snapshotMaxLength] = irf.assert.sizes(...
                 zv,              [-1, -2], ...
                 snapshotLengths, [-1]);
             assert(snapshotMaxLength >= max([snapshotLengths; 0]))
@@ -357,7 +357,7 @@ classdef utils
             ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
             
             % ASSERTIONS
-            nRecords = EJ_library.assert.sizes(freqHz, [-1]);
+            nRecords = irf.assert.sizes(freqHz, [-1]);
             assert(isfloat(freqHz) && all(isfinite(freqHz)), ...
                 'BICAS:Assertion:IllegalArgument', ...
                 'Argument "freqHz" does not consist of non-NaN floats.')
@@ -377,7 +377,7 @@ classdef utils
                 zv_DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;
             end
             zv_DELTA_PLUS_MINUS = cast(zv_DELTA_PLUS_MINUS, ...
-                EJ_library.cdf.convert_CDF_type_to_MATLAB_class(...
+                irf.cdf.convert_CDF_type_to_MATLAB_class(...
                     ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
         
@@ -419,7 +419,7 @@ classdef utils
 
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
-        % PROPOSAL: Implement using new features in EJ_library.assert.sizes().
+        % PROPOSAL: Implement using new features in irf.assert.sizes().
         
             fieldNamesList1 = fieldnames(S);
             nRowsArray = [];
@@ -477,7 +477,7 @@ classdef utils
         %
         function assert_cell_array_comps_have_same_N_rows(ca)
             nRowsArray = cellfun(@(v) (size(v,1)), ca, 'UniformOutput', true);
-            EJ_library.assert.all_equal( nRowsArray )
+            irf.assert.all_equal( nRowsArray )
         end
 
 
