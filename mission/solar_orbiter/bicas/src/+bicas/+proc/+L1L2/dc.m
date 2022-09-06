@@ -276,7 +276,7 @@ classdef dc
                 % frequencies change for every CDF record.
                 %
                 % PROPOSAL: Make into "proper" table with top rows with column names.
-                %   NOTE: Can not use EJ_library.str.assist_print_table() since
+                %   NOTE: Can not use irf.str.assist_print_table() since
                 %         it requires the entire table to pre-exist before execution.
                 %   PROPOSAL: Print after all iterations.
                 %

@@ -48,7 +48,7 @@
 %       Function handle. Transfer function. Same as for bicas.tf.apply_TF_freq().
 % varargin
 %       Optional settings arguments as interpreted by
-%       EJ_library.utils.interpret_settings_args().
+%       irf.utils.interpret_settings_args().
 %       Available settings:
 %         * 'detrendingDegreeOf'
 %               Integer.
@@ -153,9 +153,9 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
     DEFAULT_SETTINGS.snfEnabled                 = false;
     DEFAULT_SETTINGS.snfSubseqMinSamples        = 1;
 
-    S = EJ_library.utils.interpret_settings_args(...
+    S = irf.utils.interpret_settings_args(...
         DEFAULT_SETTINGS, varargin);
-    EJ_library.assert.struct(S, fieldnames(DEFAULT_SETTINGS), {})
+    irf.assert.struct(S, fieldnames(DEFAULT_SETTINGS), {})
     clear DEFAULT_SETTINGS
 
     assert(...
@@ -194,7 +194,7 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
         % samples (fill values)
         %===================================================================
         % SS = SubSequence
-        [i1Array, i2Array] = EJ_library.utils.split_by_false(isfinite(y1));
+        [i1Array, i2Array] = irf.utils.split_by_false(isfinite(y1));
         nSs = numel(i1Array);
     else
         i1Array = 1;

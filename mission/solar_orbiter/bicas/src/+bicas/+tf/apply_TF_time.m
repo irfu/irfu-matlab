@@ -18,7 +18,7 @@
 % edgePolicy
 % varargin
 %       Optional settings arguments as interpreted by
-%       EJ_library.utils.interpret_settings_args().
+%       irf.utils.interpret_settings_args().
 %
 %
 % RETURN VALUES
@@ -50,9 +50,9 @@ function [y2, yKernelB] = apply_TF_time(dt, y1, tf, lenKernel, edgePolicy, varar
     DEFAULT_SETTINGS.retrendingEnabled  = false;
     DEFAULT_SETTINGS.hannWindow         = false;
     
-    Settings = EJ_library.utils.interpret_settings_args(...
+    Settings = irf.utils.interpret_settings_args(...
         DEFAULT_SETTINGS, varargin);
-    EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+    irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
     clear DEFAULT_SETTINGS
 
 
