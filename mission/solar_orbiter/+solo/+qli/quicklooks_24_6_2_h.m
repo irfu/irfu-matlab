@@ -199,8 +199,14 @@ if ~isempty(data.ieflux)
 end 
 
 %E-field spectrum (TNR)
-if ~isempty(data.Etnr) 
-    [TNR] =  solo.read_TNR(Tint);
+if ~isempty(data.Etnr)
+    try
+        [TNR] = solo.read_TNR(Tint);
+    catch Exc
+        if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
+            TNR = [];
+        end
+    end
     if isa(TNR,'struct')
         sz_tnr = size(TNR.p);
         if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
