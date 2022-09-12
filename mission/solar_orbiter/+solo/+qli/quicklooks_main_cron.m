@@ -3,9 +3,9 @@
 % called from system scripts (e.g. bash) for the purpose of cron jobs on
 % brain/spis. The arguments have also been designed for this purpose and
 % therefore all strings.
-% It is therefore NOT intended to be called from MATLAB by the average user.
 %
-% See solo.qli.quicklooks_main().
+% NOTE: This script is NOT intended to be called from MATLAB by the average
+%       user. See solo.qli.quicklooks_main() instead.
 %
 %
 % ARGUMENTS
@@ -35,25 +35,26 @@ function quicklooks_main_cron(...
         logoPath, vhtDataDir, outputDir, ...
         runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 
-runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
-runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
+    runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
+    runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
 
-% IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
-% bash.
-irf
+    % IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
+    % bash.
+    irf
 
-%================================
-% Specify Solar Orbiter database
-%================================
-solo.db_init('local_file_db', '/data/solo/');
-solo.db_init('local_file_db', '/data/solo/data_irfu');
-% Setup cache
-solo.db_init('db_cache_size_max', 4096)
-solo.db_cache('on', 'save')
+    %=================================
+    % Configure Solar Orbiter database
+    %=================================
+    % NOTE: System-dependent configuration!
+    solo.db_init('local_file_db', '/data/solo/');
+    solo.db_init('local_file_db', '/data/solo/data_irfu');
+    % Setup cache
+    solo.db_init('db_cache_size_max', 4096)
+    solo.db_cache('on', 'save')
 
-solo.qli.quicklooks_main(...
-    logoPath, vhtDataDir, outputDir, ...
-    runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+    solo.qli.quicklooks_main(...
+        logoPath, vhtDataDir, outputDir, ...
+        runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 
 end
 

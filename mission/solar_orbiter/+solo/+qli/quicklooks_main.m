@@ -61,7 +61,6 @@
 %       PROPOSAL: plot_*
 %       PROPOSAL: 24_6_2_h
 %
-%
 % NOTE: Mission begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
 % ==> Code fails for week Monday-to-Sunday.
@@ -69,13 +68,20 @@
 %
 % PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
 %           of via TimeIntervalNonWeeks and TimeIntervalWeeks.
+% PROPOSAL: Print time intervals for which
+%           solo.qli.quicklooks_24_6_2_h() and
+%           solo.qli.quicklooks_7days() are called.
+%   PRO: Text will be stored in logs (not created by this code, but by bash
+%        wrapper scripts).
+%   PRO: Useful for more easily determining for which time intervals the code
+%        (those two functions) crashes.
 
 
 %============
 % ~Constants
 %============
-% IMPLEMENTATION NOTE: Disabling B (use empty) speeds up
-% solo.qli.quicklooks_24_6_2_h() greatly. Useful for testing.
+% IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
+% speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
 ENABLE_B = 1;
 
 % Specify subdirectories for saving the respective types of plots.
@@ -129,7 +135,7 @@ end
 % Run the code for 2-, 6-, 24-hour quicklooks
 %=============================================
 if runNonweeklyPlots
-    
+
     times_1d = make_time_array(TimeIntervalNonWeeks, 1); % Daily time-intervals
 
     % Load data
@@ -139,7 +145,7 @@ if runNonweeklyPlots
     vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
 
     for iTint=1:length(times_1d)-1
-        % Time interval
+        % Select time interval.
         Tint=irf.tint(times_1d(iTint), times_1d(iTint+1));
         
         Data = [];
@@ -220,8 +226,7 @@ if runWeeklyPlots
     vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
     
     for iTint=1:length(times_7d)-1
-  
-        % Time interval
+        % Select time interval.
         Tint = irf.tint(times_7d(iTint), times_7d(iTint+1));
         
         Data2 = [];
@@ -310,11 +315,13 @@ end    % function
 %
 % NOTE: Uses SPICE and "solo.get_position()".
 function soloPos = get_SolO_pos(Tint)
-    % IM = irfu-matlab
+    % IM = irfu-matlab (as opposed to SPICE).
     imSoloPos = solo.get_position(Tint,'frame','ECLIPJ2000');
 
     % BUG?!!: If solo.get_position() is non-empty, and presumably contains a
-    %         value, THEN use SPICE value anyway?!!
+    %         value, THEN use SPICE value anyway?!! Note: This behaviour does
+    %         however mimick the behaviour of the original code (before
+    %         refactoring).
     if ~isempty(imSoloPos)
         [radius, lon, lat] = cspice_reclat(imSoloPos.data');
         soloPos = irf.ts_vec_xyz(imSoloPos.time,[radius',lon',lat']);
@@ -391,12 +398,12 @@ end
 %
 function Ts = db_get_ts(varargin)
     temp = solo.db_get_ts(varargin{:});
-    
+
     % Normalize (TSeries or cell array) --> TSeries.
     if iscell(temp)
         temp = cell_array_TS_to_TS(temp);
     end
-    
+
     Ts = temp;
 end
 
@@ -404,7 +411,7 @@ end
 
 % Takes a cell-array of TSeries and merges them to one TSeries.
 function OutputTs = cell_array_TS_to_TS(InputTs)
-    
+
     assert(iscell(InputTs))
 
     nCells   = numel(InputTs);
@@ -415,7 +422,7 @@ function OutputTs = cell_array_TS_to_TS(InputTs)
             OutputTs = OutputTs.combine(InputTs{iCell});
         end
     end
-    
+
 end
 
 
@@ -431,7 +438,7 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
 
     dv1  = irf.cdf.TT2000_to_datevec(t1.ttns);
     dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
-    
+
     % Round to midnight.
     dt1b = dateshift(dt1a, 'start', 'day');
     if (roundDir == 1) && (dt1a ~= dt1b)
@@ -439,7 +446,7 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
         % timestamp is already midnight. Therefore do not want use that.
         dt1b = dt1b + days(1);
     end
-    
+
     % Round to week boundary, as defined by beginningOfWeek.
     % NOTE: dateshift( 'dayofweek' ) rounds to next match, including potentially
     % the same day.
@@ -447,7 +454,7 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
     if (roundDir == -1) && (dt1b ~= dt1c)
         dt1c = dt1c - days(7);
     end
-    
+
     tt2000 = irf.cdf.datevec_to_TT2000(datevec(dt1c));
     t2     = irf.time_array(tt2000);
 end
