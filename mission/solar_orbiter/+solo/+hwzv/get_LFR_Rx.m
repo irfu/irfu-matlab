@@ -41,7 +41,7 @@ function zvRx = get_LFR_Rx(zvR0, zvR1, zvR2, iLsf)
     b = (iLsf==2);   zvRx(b) = zvR1(b);
     b = (iLsf==3);   zvRx(b) = zvR2(b);
     b = (iLsf==4);   zvRx(b) = 1;
-    % Last one is the value of a hypothetical (non-existant, constant) analogous
+    % Last one is the value of a hypothetical (non-existent, constant) analogous
     % zVariable "R3".
     
     % NOTE: Prevents that iLsf=NaN ==> NaN. Desirable?

@@ -36,9 +36,10 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
+% Note: Also see readme.txt.
+% --
 % Offset = Value (constant) that is ADDED to (not subtracted from) a measured
 %          value during the calibration process.
-% CA     = Cell Array
 % --
 % LSF    = LFR Sampling Frequency (F0...F3)
 %          NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.

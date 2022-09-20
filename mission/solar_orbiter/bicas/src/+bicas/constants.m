@@ -500,7 +500,6 @@ classdef constants
             
             
             
-            % BICAS v5.0.0 (already delivered):
             % No new L2 MODS entries (if excluding NSOPS update).
             bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, ...
                 ['2021-02-02 -- V5.0.0 -- ', ...
@@ -508,8 +507,7 @@ classdef constants
                 ' until 2021-01-26.'])
 
             
-            
-            % NOTE: Not included since it does not affect any already existant
+            % NOTE: Not included since it does not affect any already existent
             % datasets: "Salvage LFR DC data when HK does not overlap with
             % science anywhere in dataset."
             bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
@@ -661,22 +659,26 @@ classdef constants
         function assert_MODS_entry_str(s)
             % PROPOSAL: Automatic test code.
 
+            % NOTE: Not aware of any permitted character set in bulk message.
+            %       Effectively adding characters as needed.
             irf.assert.castring_regexp(s, ...
                 ['20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]', ...
                 ' -- V[0-9]+.[0-9]+.[0-9]+ -- ', ...
                 '[-<=_|.()& a-zA-Z0-9]+'])
             
             % No more than one whitespace per occurrence.
-            assert(~contains(s, '  '))
+            assert(~contains(s, '  '), ...
+                'MODS entry contains illegal double whitespace.')
 
             % All pipes surrounded by whitespace and all but last sentence end
             % with period.
             iPipes1 = strfind(s, '. | ') + 2;
             iPipes2 = strfind(s,  '|');
-            assert(isequal(iPipes1, iPipes2))
+            assert(isequal(iPipes1, iPipes2), ...
+                'Pipes not used correctly in MODS entry.')
             
             % Last sentence ends with period.
-            assert(s(end) == '.')
+            assert(s(end) == '.', 'MODS entry does not end with period.')
         end
         
         

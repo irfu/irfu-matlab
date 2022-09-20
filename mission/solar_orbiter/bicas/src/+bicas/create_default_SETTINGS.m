@@ -595,7 +595,8 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    % Frequency above which the ITF is set to zero.
+    % Frequency above which the ITF is set to zero
+    % --------------------------------------------
     % Expressed as a fraction of the Nyquist frequency (half the sampling
     % frequency; 1 sample/s = 1 Hz).
     % inf = No limit.

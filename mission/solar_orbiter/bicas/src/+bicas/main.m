@@ -129,13 +129,16 @@ function errorCode = main( varargin )
         % since this causes some kind of problems for ROC (Quynh Nhu NGUYEN
         % when running BICAS in parallel).
         % See https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/71 .
+        %
         % Not clear why this is a problem since the commands should be able to
         % read the file if it has already been created. Since the function calls
-        % are not truly necessary, they are simply disabled. Of these commands,
-        % irf('cdf_leapsecondstable') is the most useful one, but the only(?)
-        % functionality it adds is still only to select the most recent version
-        % leap second table of the default one and CDF_LEAPSECONDSTABLE.
-        % /Erik P G Johansson 2022-04-11
+        % are not truly necessary, they have simply been disabled. Of these
+        % commands, irf('cdf_leapsecondstable') is the most useful one, but the
+        % only functionality it adds is still only to check which is the most
+        % recent version leap second table of (1) the built-in one, and (2)
+        % CDF_LEAPSECONDSTABLE, and give a warning if CDF_LEAPSECONDSTABLE is
+        % not the most recent one.
+        % /Erik P G Johansson 2022-09-16
         %=======================================================================
         % Not strictly needed.
         % NOTE: Creates ~/.matlab_datastore_<hostname>
