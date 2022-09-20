@@ -35,7 +35,7 @@ Bugfix to handle LFR L1 zVar BW=0.
 Preliminary sweep removal.
 Performance improvement (speed-up).
 Preliminary setting of zVar QUALITY_FLAG (max 2).
-Inofficial preliminary support for producing L2-->L3.
+Unofficial preliminary support for producing L2-->L3.
 
 
 Version 3.1.1

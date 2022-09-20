@@ -109,10 +109,10 @@
 %       .dsicdagCase          : String constant describing the case of
 %                               DATASET_ID+CDAG: 'upper', 'lower'.
 %       .versionStr           : String (not number). Excludes "V".
-%       .inoffExtension       : []       : There is no inofficial basename
+%       .inoffExtension       : []       : There is no unofficial basename
 %                                          extension.
 %                             : 1x1 cell : {1} = String. The arbitrary string
-%                                          part of inofficial basename extension.
+%                                          part of unofficial basename extension.
 %       .fnDatasetIdCdag      : DATASET_ID + CDAG as present in filename (FN),
 %                               including case. In practice meant to be
 %                               interpreted as dataset glob.attr.
@@ -205,7 +205,7 @@ function R = parse_dataset_filename(filename)
     %        separate filenaming scheme.
     %   CON: Harder to reuse similarities.
     %       Ex: DATASET_ID, version
-    %       Ex: Inofficial filenaming scheme
+    %       Ex: Unofficial filenaming scheme
     %   PRO: Cleaner functions.
     %       PRO: Consistent return format.
     %           CON: Not true for time vectors which reflect format of time
@@ -276,7 +276,7 @@ function R = parse_dataset_filename(filename)
     LES_TESTSTR_RE = 'les-[0-9a-f]{7,7}';
     CNE_TESTSTR_RE = '[0-9a-f]{7,7}_CNE';
     
-    % Inofficial extension, arbitrary string part amended to the end of the
+    % Unofficial extension, arbitrary string part amended to the end of the
     % legal basename
     % --------------------------------------------------------------------------
     % IMPORTANT NOTE: Important to require initial separator string between
@@ -285,15 +285,15 @@ function R = parse_dataset_filename(filename)
     % non-CDAG in-flight datasets.
     % IMPORTANT NOTE:
     %   Official filenames do not use this separator string.
-    %   ==> Must permit INOFF_EXTENSION_RE to match empty string.
+    %   ==> Must permit UNOFF_EXTENSION_RE to match empty string.
     %   ==> Can make irf.str.regexp_str_parts mistakenly match
-    %       INOFF_EXTENSION_RE to an EMPTY STRING (when there is an inofficial
+    %       UNOFF_EXTENSION_RE to an EMPTY STRING (when there is an unofficial
     %       extension).
     %   ==> Not "perfect match".
     %   ==> Function classifies filename as not dataset filename.
-    % Therefore, must express INOFF_EXTENSION_RE such that it will try to match
+    % Therefore, must express UNOFF_EXTENSION_RE such that it will try to match
     % a non-empty string FIRST, and an empty string SECOND. THE ORDER MATTERS.
-    INOFF_EXTENSION_RE = '(\..*|)';
+    UNOFF_EXTENSION_RE = '(\..*|)';
     
     
     
@@ -318,13 +318,13 @@ function R = parse_dataset_filename(filename)
     % Standard (incl. CDAG; tested for earlier)
     %===========================================
     [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
-        {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, INOFF_EXTENSION_RE}, ...
+        {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
         'permit non-match');
     if perfectMatch
         R = parse_time_interval_str(R, subStrList{2});
         R.timeIntervalStr = subStrList{2};
         R.versionStr      = ver_2_versionStr(subStrList{4});
-        R.inoffExtension  = inoff_extension_RE_to_str(subStrList{5});
+        R.inoffExtension  = unoff_extension_RE_to_str(subStrList{5});
         return
     end
     
@@ -333,13 +333,13 @@ function R = parse_dataset_filename(filename)
     %=====
     [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
         {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
-        LES_TESTSTR_RE, INOFF_EXTENSION_RE}, 'permit non-match');
+        LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
     if perfectMatch
         R = parse_time_interval_str(R, subStrList{2});
         R.timeIntervalStr = subStrList{2};
         R.versionStr      = ver_2_versionStr(         subStrList{4});
         R.lesTestStr      =                           subStrList{6};
-        R.inoffExtension  = inoff_extension_RE_to_str(subStrList{7});
+        R.inoffExtension  = unoff_extension_RE_to_str(subStrList{7});
         return
     end
 
@@ -347,12 +347,12 @@ function R = parse_dataset_filename(filename)
     % CNES
     %======
     [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
-        {'_', CNE_TESTSTR_RE, '_', VERSION_RE, INOFF_EXTENSION_RE}, ...
+        {'_', CNE_TESTSTR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
         'permit non-match');
     if perfectMatch
         R.cneTestStr     =                           subStrList{2};
         R.versionStr     = ver_2_versionStr(         subStrList{4});
-        R.inoffExtension = inoff_extension_RE_to_str(subStrList{5});
+        R.inoffExtension = unoff_extension_RE_to_str(subStrList{5});
         return
     end
     
@@ -389,13 +389,13 @@ end
 
 
 
-% "inoff_extension_RE" = The part of string that matches regular expression
+% "unoff_extension_RE" = The part of string that matches regular expression
 % (RE).
-function inoffExtension = inoff_extension_RE_to_str(s)
+function unoffExtension = unoff_extension_RE_to_str(s)
     if isempty(s)
-        inoffExtension = [];
+        unoffExtension = [];
     else
-        inoffExtension = {s(2:end)};
+        unoffExtension = {s(2:end)};
     end
 end
 

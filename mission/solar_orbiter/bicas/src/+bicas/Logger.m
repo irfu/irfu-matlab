@@ -54,7 +54,7 @@ classdef Logger < handle
 % PROPOSAL: Way of emphasizing selected log messages.
 %   PROPOSAL: Message is framed with "=".
 %   PROPOSAL: All text is uppercase.
-%   PROPOSAL: Inofficial logLevel='WARNING' (capitals) which is formatted and
+%   PROPOSAL: Unofficial logLevel='WARNING' (capitals) which is formatted and
 %             translated into a regular logLevel='warning'.
 %   PROPOSAL: Separate log method.
 

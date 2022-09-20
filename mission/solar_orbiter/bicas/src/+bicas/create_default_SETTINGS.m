@@ -141,7 +141,7 @@ function SETTINGS = create_default_SETTINGS()
     % representation (min-max range).
     S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 
-    % Enable inofficial (to ROC) support for S/W modes
+    % Enable unofficial (to ROC) support for S/W modes
     % ------------------------------------------------
     % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
     % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as

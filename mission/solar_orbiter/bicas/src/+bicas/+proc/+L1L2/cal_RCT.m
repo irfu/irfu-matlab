@@ -68,7 +68,7 @@ classdef cal_RCT
         % =====
         % NOTE: Can be useful for manual experimentation with calibration of L1R
         %       (and L1) data.
-        % NOTE: Necessary when processing L1-->L2 (inofficially) since L1 does
+        % NOTE: Necessary when processing L1-->L2 (unofficially) since L1 does
         %       not have CALIBRATION_TABLE+CALIBRATION_TABLE_INDEX.
         % NOTE: Will only load ONE of each RCT type (no potential RCT time
         %       dependence as per global attribute CALIBRATION_TABLE) and

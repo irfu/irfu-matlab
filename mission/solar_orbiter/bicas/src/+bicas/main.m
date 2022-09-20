@@ -28,7 +28,7 @@
 % Notes:
 % - The official parameter syntax for S/W modes must be in agreement with
 %   "roc_sw_descriptor.js" as specified by the RCS ICD.
-% - The parameter syntax may contain additional inofficial parameters, which are
+% - The parameter syntax may contain additional unofficial parameters, which are
 %   useful for development/debugging, but which are still compatible with the
 %   RCS ICD.
 % - The (MATLAB) code ignores but permits the CLI option --log.
@@ -100,7 +100,7 @@ function errorCode = main( varargin )
     try
         
         % NOTE: Permitting logging to file from MATLAB instead of bash wrapper
-        % in case of using inofficial option.
+        % in case of using unofficial option.
         L = bicas.Logger('bash wrapper', true);
         
         
@@ -397,7 +397,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     %==============================================================
-    % Configure inofficial log file, written to from within MATLAB
+    % Configure unofficial log file, written to from within MATLAB
     %==============================================================
     if ~isempty(CliData.matlabLogFile)
         % NOTE: Requires that bicas.Logger has been initialized to permit
@@ -427,11 +427,11 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     %=========================================================
-    % Modify settings according to (inofficial) CLI arguments
+    % Modify settings according to (unofficial) CLI arguments
     %=========================================================
     L.log('info', ...
         ['Overriding subset of in-memory settings using', ...
-        ' (optional, inofficial) CLI arguments, if any.'])
+        ' (optional, unofficial) CLI arguments, if any.'])
     SETTINGS.override_values_from_strings(...
         CliData.ModifiedSettingsMap, 'CLI arguments');
     
