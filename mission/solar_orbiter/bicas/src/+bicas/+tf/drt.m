@@ -1,6 +1,8 @@
 %
-% Class for detrending and retrending a signal before & after the application of
-% a TF to it.
+% Class for detrending and retrending a signal e.g. before & after the
+% application of a TF to it.
+%
+% DRT = De/Re-Trending
 %
 %
 % IMPLEMENTATION NOTES
@@ -37,7 +39,6 @@ classdef drt < handle
     % PROPOSAL: Better name.
     %   deretrending
     %   deretr
-    %   drt
     %   detrending
     
     

@@ -281,8 +281,10 @@ classdef tds
             PreDc.isLfr             = false;
             PreDc.isTdsCwf          = C.isTdsCwf;
             PreDc.hasSnapshotFormat = C.isTdsRswf;
+
             % Only set because the code shared with LFR requires it.
             PreDc.Zv.iLsf           = nan(nRecords, 1);
+            PreDc.Zv.lfrRx          = ones(nRecords, 1);
 
 
 

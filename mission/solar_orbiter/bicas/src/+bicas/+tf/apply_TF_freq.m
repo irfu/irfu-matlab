@@ -52,9 +52,9 @@
 %
 % IMPLEMENTATION NOTES, DESIGN INTENT
 % ===================================
-% -- Modification of transfer functions should be made by wrapper functions and
-%    NOT by this function.
-%       Ex: Modificatuibs to fit the input format.
+% -- Modifications of the transfer function should be made by wrapper functions
+%    and NOT by this function.
+%       Ex: Modifications to fit the input format.
 %           Ex: Turn a given tabulated TF into an actual MATLAB function
 %               (handle).
 %       Ex: Remove high frequency components for inverted lowpass filter.
@@ -94,16 +94,21 @@
 %
 % ARGUMENTS
 % =========
-% dt       : Time between each sample. Unit: seconds
-% y1       : Nx1. Samples. Must be real-valued (assertion).
-%            NOTE: May contain non-finite values.
-% tf       : Function handle to function z=tf(omega). z is a complex value
-%            (amplitude+phase) and has not unit. omega unit: rad/s.
-%            Will only be called for omega>=0. tf(0) must be real.
-%            NOTE: If the caller wants to use a tabulated TF, then s/he should
-%            construct an anonymous function that interpolates the tabulated TF
-%            (e.g. using "interp1") and submit it as argument.
-%            NOTE: Function is permitted to return NaN. This will set y2 to NaN.
+% dt
+%       Time between each sample. Unit: seconds
+% y1
+%       Nx1. Samples. Must be real-valued (assertion).
+%       NOTE: May contain non-finite values.
+% tf
+%       Function handle to function z=tf(omega). z is a complex value
+%       (amplitude+phase) and has not unit. omega unit: rad/s.
+%       Will only be called for omega>=0. tf(0) must be real.
+%       NOTE: Permitted to return NaN, but not infinity.
+%       NOTE: If the caller wants to use a tabulated TF, then s/he should
+%       construct an anonymous function that interpolates the tabulated TF
+%       (e.g. using "interp1") and submit it as argument.
+%       NOTE: Transfer function is permitted to return NaN. This will set y2 to
+%       NaN.
 % 
 %
 % RETURN VALUES
@@ -143,6 +148,11 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 %           dt, same tf).
 %   PRO: Faster?
 %       PRO: Can call tf once.
+%
+% PROPOSAL: Assert not inf in signal.
+%   NOTE: NaN is deliberately permitted in signal.
+%   NOTE: NaN but not infinity is deliberately permitted in TF.
+
 
 
 

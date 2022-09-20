@@ -35,7 +35,7 @@ Bugfix to handle LFR L1 zVar BW=0.
 Preliminary sweep removal.
 Performance improvement (speed-up).
 Preliminary setting of zVar QUALITY_FLAG (max 2).
-Inofficial preliminary support for producing L2-->L3.
+Unofficial preliminary support for producing L2-->L3.
 
 
 Version 3.1.1
@@ -80,3 +80,10 @@ Using new L2 master CDFs.
 Sets CDF zVariable attributes SCALEMIN & SCALEMAX using zVar min & max values.
 Disabled excessive log messages for processing L1/L1R-->L2 LFR SWF representing sequences of CDF records.
 Permits HK and science input datasets to not overlap at all in order to salvage some LFR DC data. Previously only allowed for partial datasets (otherwise error).
+
+
+Version 6.0.1
+-------------
+Non-Standard Operations (NSO) table thruster firings updated for until 2022-09-03.
+Bugfix: Use LFR's R0/R1/R2 for splitting into time intervals. This bugfix should keep some LFR L2 data that was previously deleted.
+Addresses https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/71 by not producing any .matlab_datastore_* file.

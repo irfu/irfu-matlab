@@ -125,8 +125,9 @@ classdef L2L3
             %=================================================================
             % Call BICAS-external code to calculate (EFIELD, SCPOT) + DENSITY
             %=================================================================
+            % solo.vdccal()
             R = bicas.proc.L2L3.calc_EFIELD_SCPOT(InLfrCwf.Zv, SETTINGS);
-            %
+            % solo.psp2ne()
             [NeScpTs, psp2neCodeVerStr] = bicas.proc.L2L3.calc_DENSITY(R.PspTs);
 
 
@@ -461,7 +462,7 @@ classdef L2L3
         %
         % NOTE: Empirically, some return values are NaN.
         % NOTE: Shortening "SCP" comes from the return variable name in
-        % solo.psp2ne(). Do not know what it means.
+        % solo.psp2ne(). Do not know what it means (SpaceCraft Potential?).
         %
         % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
         % relies on PSP values for which this has already been done.

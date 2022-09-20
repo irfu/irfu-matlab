@@ -187,7 +187,7 @@ classdef lfr
 
             % Obtain the relevant values (one per record) from zVariables R0,
             % R1, R2, and the virtual "R3".
-            zv_Rx = solo.hwzv.get_LFR_Rx(...
+            zvRx = solo.hwzv.get_LFR_Rx(...
                 InSci.Zv.R0, ...
                 InSci.Zv.R1, ...
                 InSci.Zv.R2, ...
@@ -223,10 +223,10 @@ classdef lfr
             PreDc.Zv.samplesCaTm    = cell(5,1);
             PreDc.Zv.samplesCaTm{1} = single(InSci.Zv.V);
             % Copy values, except when zvRx==0 (==>NaN).
-            PreDc.Zv.samplesCaTm{2} = bicas.proc.utils.filter_rows( E(:,:,1), zv_Rx==0 );
-            PreDc.Zv.samplesCaTm{3} = bicas.proc.utils.filter_rows( E(:,:,2), zv_Rx==0 );
-            PreDc.Zv.samplesCaTm{4} = bicas.proc.utils.filter_rows( E(:,:,1), zv_Rx==1 );
-            PreDc.Zv.samplesCaTm{5} = bicas.proc.utils.filter_rows( E(:,:,2), zv_Rx==1 );
+            PreDc.Zv.samplesCaTm{2} = bicas.proc.utils.filter_rows( E(:,:,1), zvRx==0 );
+            PreDc.Zv.samplesCaTm{3} = bicas.proc.utils.filter_rows( E(:,:,2), zvRx==0 );
+            PreDc.Zv.samplesCaTm{4} = bicas.proc.utils.filter_rows( E(:,:,1), zvRx==1 );
+            PreDc.Zv.samplesCaTm{5} = bicas.proc.utils.filter_rows( E(:,:,2), zvRx==1 );
 
             PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
             PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
@@ -244,6 +244,7 @@ classdef lfr
             PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
             PreDc.Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
 
+            PreDc.Zv.lfrRx = zvRx;
 
 
             %==========================================

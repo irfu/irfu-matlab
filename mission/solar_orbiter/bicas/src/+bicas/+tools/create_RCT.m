@@ -32,7 +32,7 @@
 % (1) There are two RCTs with identical calibration data content (ROC-SGSE +
 %     RODP),
 % (2) it saves work when updating the master RCT .cdf (generated from master
-%     Excel file), including making inofficial intermediate versions in the
+%     Excel file), including making unofficial intermediate versions in the
 %     master (e.g. fixing typos)
 % (3) it is easier to edit (compared to using cdfedit), e.g. (a) editing
 %     existing information as well as (b) adding records

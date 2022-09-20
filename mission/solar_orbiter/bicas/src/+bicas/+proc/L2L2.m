@@ -44,7 +44,7 @@ classdef L2L2
         % (2) produces a similarily downsampled dataset.
         % However, that might be a bad idea since it also
         % (1) uses another sampling rate (less shared processing), and
-        % (2) should remain inofficial (both s/w mode and the output dataset),
+        % (2) should remain unofficial (both s/w mode and the output dataset),
         %     as opposed to process_L2_to_L3() which produces official datasets
         %     and might one day be "officially" run at ROC.
         %

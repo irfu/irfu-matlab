@@ -1,7 +1,7 @@
 %
 % Function for doing the first interpretation of BICAS' CLI arguments and
 % returns the data as a more easy-to-understand struct. This function covers
-% both official and inofficial arguments.
+% both official and unofficial arguments.
 %
 %
 % RETURN VALUE
@@ -75,7 +75,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     % Configure
     % (1) permitted RCS ICD CLI options COMMON for all BICAS functionality modes
     % (2) RCS ICD CLI options for special input parameters
-    % (2) inofficial options
+    % (2) unofficial options
     % NOTE: Exclude the argument for functionality mode itself.
     %==================================================================================
     OPTIONS_CONFIG_MAP = containers.Map();
@@ -92,7 +92,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     OPTIONS_CONFIG_MAP('MATLAB_log_file')           = struct('optionHeaderRegexp', '--log-matlab',     'occurrenceRequirement', '0-1',   'nValues', 1);
     OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',         'occurrenceRequirement', '0-1',   'nValues', 1);
     
-    % Inofficial arguments
+    % Unofficial arguments
     OPTIONS_CONFIG_MAP('modified_settings')         = struct('optionHeaderRegexp', '--set',    'occurrenceRequirement', '0-inf', 'nValues', 2);
     
     
@@ -102,7 +102,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     
     
     %============================================================================
-    % Extract the modified settings from the inofficial CLI arguments
+    % Extract the modified settings from the unofficial CLI arguments
     % ---------------------------------------------------------------
     % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE
     % option (in the meaning of parse_CLI_options) and is filled with the

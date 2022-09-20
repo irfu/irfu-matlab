@@ -20,14 +20,15 @@
 %
 % ARGUMENTS
 % =========
-% varargin: This function expects exactly the CLI arguments submitted to the
-%           bash launcher script as a sequence of MATLAB strings. This function
-%           therefore expects the arguments defined in the RCS ICD and possibly
-%           additional inoffical arguments.
+% varargin
+%       This function expects exactly the CLI arguments submitted to the bash
+%       launcher script as a sequence of MATLAB strings. This function therefore
+%       expects the arguments defined in the RCS ICD and possibly additional
+%       inoffical arguments.
 % Notes:
 % - The official parameter syntax for S/W modes must be in agreement with
 %   "roc_sw_descriptor.js" as specified by the RCS ICD.
-% - The parameter syntax may contain additional inofficial parameters, which are
+% - The parameter syntax may contain additional unofficial parameters, which are
 %   useful for development/debugging, but which are still compatible with the
 %   RCS ICD.
 % - The (MATLAB) code ignores but permits the CLI option --log.
@@ -99,7 +100,7 @@ function errorCode = main( varargin )
     try
         
         % NOTE: Permitting logging to file from MATLAB instead of bash wrapper
-        % in case of using inofficial option.
+        % in case of using unofficial option.
         L = bicas.Logger('bash wrapper', true);
         
         
@@ -121,13 +122,38 @@ function errorCode = main( varargin )
         %     bicas.Logger.log/logf.
         %========================================================================
         irf('check_path');
-        irf('check_os');              % Maybe not strictly needed.
-        irf('matlab');
-        irf('cdf_leapsecondstable');
-        irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
-
-    
         
+        %=======================================================================
+        % IMPLEMENTATION NOTE: Disabling irf(...) commands that produce file
+        %   ~/.matlab_datastore_<hostname>
+        % since this causes some kind of problems for ROC (Quynh Nhu NGUYEN
+        % when running BICAS in parallel).
+        % See https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/71 .
+        %
+        % Not clear why this is a problem since the commands should be able to
+        % read the file if it has already been created. Since the function calls
+        % are not truly necessary, they have simply been disabled. Of these
+        % commands, irf('cdf_leapsecondstable') is the most useful one, but the
+        % only functionality it adds is still only to check which is the most
+        % recent version leap second table of (1) the built-in one, and (2)
+        % CDF_LEAPSECONDSTABLE, and give a warning if CDF_LEAPSECONDSTABLE is
+        % not the most recent one.
+        % /Erik P G Johansson 2022-09-16
+        %=======================================================================
+        % Not strictly needed.
+        % NOTE: Creates ~/.matlab_datastore_<hostname>
+        % irf('check_os');
+        % NOTE: Creates ~/.matlab_datastore_<hostname>
+        % irf('matlab');
+        % NOTE: Creates ~/.matlab_datastore_<hostname>
+        % NOTE: Sets environment variable CDF_LEAPSECONDSTABLE if it has not
+        %       already been set.
+        % irf('cdf_leapsecondstable');
+        % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
+        % irf('version')
+
+
+
         % Default error code (i.e. no error).
         errorCode = bicas.constants.EMIDP_2_INFO('NoError').errorCode;
         main_without_error_handling(varargin, L);
@@ -371,7 +397,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     %==============================================================
-    % Configure inofficial log file, written to from within MATLAB
+    % Configure unofficial log file, written to from within MATLAB
     %==============================================================
     if ~isempty(CliData.matlabLogFile)
         % NOTE: Requires that bicas.Logger has been initialized to permit
@@ -401,11 +427,11 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     %=========================================================
-    % Modify settings according to (inofficial) CLI arguments
+    % Modify settings according to (unofficial) CLI arguments
     %=========================================================
     L.log('info', ...
         ['Overriding subset of in-memory settings using', ...
-        ' (optional, inofficial) CLI arguments, if any.'])
+        ' (optional, unofficial) CLI arguments, if any.'])
     SETTINGS.override_values_from_strings(...
         CliData.ModifiedSettingsMap, 'CLI arguments');
     

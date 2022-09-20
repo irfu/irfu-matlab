@@ -7,12 +7,12 @@
         "icd_version": "1.4"
     },
     "release": {
-        "version":      "6.0.0",
-        "date":         "2021-09-21T15:09:00Z",
+        "version":      "6.0.1",
+        "date":         "2022-09-20T11:08:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-09-21; Setting zVar attributes SCALEMIN & SCALEMAX using zVar min & max values; Using new L2 master CDFs; Less excessive log messages for processing L1/L1R-->L2 LFR SWF; Permits HK and science input datasets to not overlap at all in order to salvage some LFR DC data.",
+        "modification": "Non-Standard Operations (NSO) table for thruster firings & saturation up until 2022-09-03; Bugfix: Use LFR's R0/R1/R2 for splitting time into time intervals",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {
