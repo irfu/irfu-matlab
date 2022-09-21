@@ -75,6 +75,13 @@
 %        wrapper scripts).
 %   PRO: Useful for more easily determining for which time intervals the code
 %        (those two functions) crashes.
+%
+% PROPOSAL: Catch plot bugs?
+% PROPOSAL: Some way of handling disk access error?
+%   PROPOSAL: try-catch plot code once (weekly or non-weekly plot function).
+%             Then try without catch a second time, maybe after delay.
+%             If the first call fails due to disk access error, it might still
+%             trigger automount which makes the second attempt succeed.
 
 
 %============
