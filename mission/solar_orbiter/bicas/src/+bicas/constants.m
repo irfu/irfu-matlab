@@ -18,7 +18,7 @@
 %         message IDs. Therefore uses the term "part" instead.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-09, as a replacement for the FUNCTION
 % error_safe_constant created 2016-06-02.
 %
@@ -215,8 +215,8 @@ classdef constants
             % 0.Y.Z beta version for instance). In all cases, any change in the
             % S/W must lead to update the version number.
             % """"""""
-            MAP('SWD.release.version')            = '6.0.0';
-            MAP('SWD.release.date')               = '2021-09-21T15:09:00Z';
+            MAP('SWD.release.version')            = '6.0.1';
+            MAP('SWD.release.date')               = '2022-09-20T11:08:00Z';
             MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
             MAP('SWD.release.contact')            = 'erjo@irfu.se';
             MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -246,15 +246,21 @@ classdef constants
 %                 ' & saturation up until 2021-01-26', ...
 %                 '; Better output CDF standards compliance', ...
 %                 '; Using new master CDFs']; % v5.0.0
-            MAP('SWD.release.modification')       = ...
-                ['Non-Standard Operations (NSO) table for thruster firings', ...
-                ' & saturation up until 2021-09-21', ...
-                '; Setting zVar attributes', ...
-                ' SCALEMIN & SCALEMAX using zVar min & max values', ...
-                '; Using new L2 master CDFs', ...
-                '; Less excessive log messages for processing L1/L1R-->L2 LFR SWF', ...
-                '; Permits HK and science input datasets to not overlap at', ...
-                ' all in order to salvage some LFR DC data.']; % v6.0.0
+%             MAP('SWD.release.modification')       = ...
+%                 ['Non-Standard Operations (NSO) table for thruster firings', ...
+%                 ' & saturation up until 2021-09-21', ...
+%                 '; Setting zVar attributes', ...
+%                 ' SCALEMIN & SCALEMAX using zVar min & max values', ...
+%                 '; Using new L2 master CDFs', ...
+%                 '; Less excessive log messages for processing L1/L1R-->L2 LFR SWF', ...
+%                 '; Permits HK and science input datasets to not overlap at', ...
+%                 ' all in order to salvage some LFR DC data.']; % v6.0.0
+            MAP('SWD.release.modification')       = [...
+                'Non-Standard Operations (NSO) table for thruster firings', ...
+                ' & saturation up until 2022-09-03', ...
+                '; Bugfix: Use LFR''s R0/R1/R2 for splitting time into', ...
+                ' time intervals', ...
+            ]; % v6.0.1
             MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
             % Appropriate branch? "master" instead?
             %
@@ -266,9 +272,9 @@ classdef constants
             %======================
             % ASSERTIONS: SETTINGS
             %======================
-            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), ...
+            irf.assert.castring_regexp(MAP('SWD.release.version'), ...
                 '[0-9]+\.[0-9]+\.[0-9]+')
-            EJ_library.assert.castring_regexp(MAP('SWD.release.date'), ...
+            irf.assert.castring_regexp(MAP('SWD.release.date'), ...
                 '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
             % Validate S/W release version
             % ----------------------------
@@ -277,7 +283,7 @@ classdef constants
             % NOTE: It is hard to thoroughly follow the description, but the end
             % result should be under release-->version-->pattern (not to be
             % confused with release_dataset-->version--pattern).
-            EJ_library.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
+            irf.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
 
         end
         
@@ -382,7 +388,7 @@ classdef constants
             %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
             %
             % PROPOSAL: DSI lists as public constants.
-            %   PROPOSAL: EJ_library.so.hwzv.const.
+            %   PROPOSAL: solo.hwzv.const.
             %   PRO: Could be used by functions for classifying DSIs.
             %       Ex: bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID().
             %       CON: Not if want to be really general, e.g. accounting for
@@ -391,11 +397,11 @@ classdef constants
 
 
 
-            %=================================================
-            % Lists of commonly used groups DATASET_IDs (DSI)
-            % -----------------------------------------------
+            %====================================================
+            % Lists of commonly used GROUPS of DATASET_IDs (DSI)
+            % --------------------------------------------------
             % NOTE: Groups are allowed to overlap.
-            %=================================================
+            %====================================================
             L2_LFR_DSIs = {...
                 'SOLO_L2_RPW-LFR-SBM1-CWF-E', ...
                 'SOLO_L2_RPW-LFR-SBM2-CWF-E', ...
@@ -500,7 +506,6 @@ classdef constants
             
             
             
-            % BICAS v5.0.0 (already delivered):
             % No new L2 MODS entries (if excluding NSOPS update).
             bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, ...
                 ['2021-02-02 -- V5.0.0 -- ', ...
@@ -508,8 +513,7 @@ classdef constants
                 ' until 2021-01-26.'])
 
             
-            
-            % NOTE: Not included since it does not affect any already existant
+            % NOTE: Not included since it does not affect any already existent
             % datasets: "Salvage LFR DC data when HK does not overlap with
             % science anywhere in dataset."
             bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
@@ -520,6 +524,21 @@ classdef constants
             
             
             
+            % BICAS v6.0.1
+            sTds = ['2022-09-15 -- V6.0.1 -- ', ...
+                'Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
+                ' until 2022-09-03.', ...
+            ];
+            sLfr = [sTds, ...
+                ' | Bugfix: Use LFR''s R0/R1/R2 for splitting into', ...
+                ' time intervals.', ...
+            ];
+            bicas.constants.add_MODS_entry(Map, L2_LFR_DSIs, sLfr)
+            bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, sTds)
+            clear sLfr sTds
+
+
+
             %===================================================================
             % L3 DENSITY+EFIELD+SCPOT (not VHT)
             % ---------------------------------
@@ -592,7 +611,7 @@ classdef constants
             % ASSERTION
             for keyCa = Map.keys
                 % ASSERT: All MODS strings are unique for DATASET_ID.
-                EJ_library.assert.castring_set(Map(keyCa{1}))
+                irf.assert.castring_set(Map(keyCa{1}))
             end
             
         end    % init_GA_MODS
@@ -624,11 +643,12 @@ classdef constants
         
         
         
+        % Add a single MODS entry (string) for multiple DATASET_IDs.
         function add_MODS_entry(Map, datasetIdsCa, entryStr)
             % PROPOSAL: "Flatten" datasetIdsCa if cell arrays of cell arrays.
             
             % ASSERTIONS
-            EJ_library.assert.castring_set(datasetIdsCa)
+            irf.assert.castring_set(datasetIdsCa)
             bicas.constants.assert_MODS_entry_str(entryStr)
             
             for i = 1:numel(datasetIdsCa)
@@ -660,22 +680,27 @@ classdef constants
         function assert_MODS_entry_str(s)
             % PROPOSAL: Automatic test code.
 
-            EJ_library.assert.castring_regexp(s, ...
+            % NOTE: Not aware of any permitted character set in bulk message.
+            %       Effectively adding characters as needed.
+            irf.assert.castring_regexp(s, ...
                 ['20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]', ...
                 ' -- V[0-9]+.[0-9]+.[0-9]+ -- ', ...
-                '[-<=_|.()& a-zA-Z0-9]+'])
+                '[-<=_|.()&:''/ a-zA-Z0-9]+'] ...
+            )
             
             % No more than one whitespace per occurrence.
-            assert(~contains(s, '  '))
+            assert(~contains(s, '  '), ...
+                'MODS entry contains illegal double whitespace.')
 
             % All pipes surrounded by whitespace and all but last sentence end
             % with period.
             iPipes1 = strfind(s, '. | ') + 2;
             iPipes2 = strfind(s,  '|');
-            assert(isequal(iPipes1, iPipes2))
+            assert(isequal(iPipes1, iPipes2), ...
+                'Pipes not used correctly in MODS entry.')
             
             % Last sentence ends with period.
-            assert(s(end) == '.')
+            assert(s(end) == '.', 'MODS entry does not end with period.')
         end
         
         

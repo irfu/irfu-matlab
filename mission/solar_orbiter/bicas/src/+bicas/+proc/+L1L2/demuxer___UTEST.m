@@ -5,7 +5,7 @@
 % meaningful.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-08, using older test code.
 %
 classdef demuxer___UTEST < matlab.unittest.TestCase

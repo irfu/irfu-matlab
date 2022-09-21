@@ -21,6 +21,9 @@ function res = get_data(varStr,Tint)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil) (alias: b_scm_srf)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_rtn' (alias: b_scm_rtn)
 %   'L2_rpw-lfr-surv-cwf-e-1-second' (alias: vdc_1sec)
+%   'L2_rpw-lfr-surv-cwf-e' (alias: vdc)
+%   'L2_rpw-lfr-surv-cwf-e-1-second_qual' (alias: vdc_1sec_qual)
+%   'L2_rpw-lfr-surv-cwf-e_qual' (alias: vdc_qual)
 %    Snapshots and other products need to be added!
 %
 % SWA-PAS:
@@ -60,42 +63,45 @@ vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2
     'L3_rpw-bia-scpot', 'L3_rpw-bia-efield_srf', 'L3_rpw-bia-efield_rtn','L3_rpw-bia-efield-10-seconds_srf','L3_rpw-bia-efield_rtn'...
     'L3_rpw-bia-scpot', 'L3_rpw-bia-density', 'L3_rpw-bia-density-10-seconds', 'L2_rpw-lfr-surv-cwf-b-cdag_srf', 'L2_rpw-lfr-surv-cwf-b-cdag_rtn', ...
     'L2_rpw-lfr-surv-cwf-e-1-second', 'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
-    'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', ...
-    'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', ...
+    'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', 'L2_rpw-lfr-surv-cwf-e','L2_rpw-lfr-surv-cwf-e-1-second_qual',...
+    'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', 'L2_rpw-lfr-surv-cwf-e_qual',...
     'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N'};
 
 %% check if alias is used and change to full variable name
 if ~ismember(varStr, vars)
     switch lower(varStr) % effectivly ignore letter case
         % short alias and full variable names
-        case 'b_rtn_brst', varStrNew = 'L2_mag-rtn-burst';
-        case 'b_rtn_norm', varStrNew = 'L2_mag-rtn-normal';
+        case 'b_rtn_brst',      varStrNew = 'L2_mag-rtn-burst';
+        case 'b_rtn_norm',      varStrNew = 'L2_mag-rtn-normal';
         case 'b_rtn_norm_1min', varStrNew = 'L2_mag-rtn-normal-1-minute';
-        case 'b_srf_brst', varStrNew = 'L2_mag-srf-burst';
-        case 'b_srf_norm', varStrNew = 'L2_mag-srf-normal';
+        case 'b_srf_brst',      varStrNew = 'L2_mag-srf-burst';
+        case 'b_srf_norm',      varStrNew = 'L2_mag-srf-normal';
         case 'b_srf_norm_1min', varStrNew = 'L2_mag-srf-normal-1-minute';
-        case 'vi_rtn',     varStrNew = 'L2_swa-pas-grnd-mom_V_RTN';
-        case 'vi_srf',     varStrNew = 'L2_swa-pas-grnd-mom_V_SRF';
-        case 'ni',         varStrNew = 'L2_swa-pas-grnd-mom_N';
-        case 'ti',         varStrNew = 'L2_swa-pas-grnd-mom_T';
-        case 'pas_vdf',    varStrNew = 'L2_swa-pas-vdf';
-        case 'pas_qf',     varStrNew = 'L2_swa-pas-quality_factor';
-        case 'pas_eflux',  varStrNew = 'L2_swa-pas-eflux';
-        case 'ti_xyz_srf', varStrNew = 'L2_swa-pas-grnd-mom_TxTyTz_SRF';
-        case 'ti_xyz_rtn', varStrNew = 'L2_swa-pas-grnd-mom_TxTyTz_RTN';
-        case 'ti_fac',     varStrNew = 'L2_swa-pas-grnd-mom_Tani';
-        case 'pi_srf',     varStrNew = 'L2_swa-pas-grnd-mom_P_SRF';
-        case 'pi_rtn',     varStrNew = 'L2_swa-pas-grnd-mom_P_RTN';
-        case 'scpot',      varStrNew = 'L3_rpw-bia-scpot';
-        case 'vdc_1sec',   varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second';
-        case 'e_srf',      varStrNew = 'L3_rpw-bia-efield_srf';
-        case 'e_rtn',      varStrNew = 'L3_rpw-bia-efield_rtn';
-        case 'e_srf_10sec',varStrNew = 'L3_rpw-bia-efield-10-seconds_srf';
-        case 'e_rtn_10sec',varStrNew = 'L3_rpw-bia-efield-10-seconds_rtn';
-        case 'nescpot',    varStrNew = 'L3_rpw-bia-density';
-        case 'nescpot_10sec',varStrNew = 'L3_rpw-bia-density-10-seconds';
-        case 'b_scm_srf',  varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_srf';
-        case 'b_scm_rtn',  varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn';
+        case 'vi_rtn',          varStrNew = 'L2_swa-pas-grnd-mom_V_RTN';
+        case 'vi_srf',          varStrNew = 'L2_swa-pas-grnd-mom_V_SRF';
+        case 'ni',              varStrNew = 'L2_swa-pas-grnd-mom_N';
+        case 'ti',              varStrNew = 'L2_swa-pas-grnd-mom_T';
+        case 'pas_vdf',         varStrNew = 'L2_swa-pas-vdf';
+        case 'pas_qf',          varStrNew = 'L2_swa-pas-quality_factor';
+        case 'pas_eflux',       varStrNew = 'L2_swa-pas-eflux';
+        case 'ti_xyz_srf',      varStrNew = 'L2_swa-pas-grnd-mom_TxTyTz_SRF';
+        case 'ti_xyz_rtn',      varStrNew = 'L2_swa-pas-grnd-mom_TxTyTz_RTN';
+        case 'ti_fac',          varStrNew = 'L2_swa-pas-grnd-mom_Tani';
+        case 'pi_srf',          varStrNew = 'L2_swa-pas-grnd-mom_P_SRF';
+        case 'pi_rtn',          varStrNew = 'L2_swa-pas-grnd-mom_P_RTN';
+        case 'scpot',           varStrNew = 'L3_rpw-bia-scpot';
+        case 'vdc_1sec',        varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second';
+        case 'vdc',             varStrNew = 'L2_rpw-lfr-surv-cwf-e';
+        case 'vdc_1sec_qual',   varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second_qual';
+        case 'vdc_qual',        varStrNew = 'L2_rpw-lfr-surv-cwf-e_qual';
+        case 'e_srf',           varStrNew = 'L3_rpw-bia-efield_srf';
+        case 'e_rtn',           varStrNew = 'L3_rpw-bia-efield_rtn';
+        case 'e_srf_10sec',     varStrNew = 'L3_rpw-bia-efield-10-seconds_srf';
+        case 'e_rtn_10sec',     varStrNew = 'L3_rpw-bia-efield-10-seconds_rtn';
+        case 'nescpot',         varStrNew = 'L3_rpw-bia-density';
+        case 'nescpot_10sec',   varStrNew = 'L3_rpw-bia-density-10-seconds';
+        case 'b_scm_srf',       varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_srf';
+        case 'b_scm_rtn',       varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn';
         otherwise
             % fallback, it was not a full variable name nor short alias
             errStr = ['"varStr":', varStr, ' incorrect alias used.'];
@@ -154,7 +160,13 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
                                 res = BSCM;
                             end
                         case 'e'  % VDC
+                            if length(C)>2
+                                if strcmp(C{3},'qual')
+                                    res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'QUALITY_FLAG', Tint);
+                                end
+                            else
                             res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
+                            end
                     end
                 otherwise
                     errStr = 'Not yet defined';

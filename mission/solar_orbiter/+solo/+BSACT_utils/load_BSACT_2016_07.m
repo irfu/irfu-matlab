@@ -2,7 +2,7 @@
 % Load the July 2016 BSACT files.
 %
 %
-% Author: Erik P G Johansson, IRF, Uppsala, Sweden.
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-12-12
 %
 function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)

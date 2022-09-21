@@ -160,3 +160,10 @@ end
 if ~isempty(output)
     output.userData = 'Low Latency data, not for science!';
 end
+
+% remove repeated values in time axis
+if length((output.time.epochUnix)) ~= length(unique(output.time.epochUnix))
+[~,ia,~] = unique(output.time.epochUnix);
+ output = TSeries(output.time(ia),output.data(ia,:),'TensorOrder',1,'TensorBasis','xyz',...
+                                'repres',{'x','y','z'});
+end

@@ -2,7 +2,7 @@
 % Class whose instances represent one loaded dataset (CDF file).
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-09
 %
 classdef InputDataset

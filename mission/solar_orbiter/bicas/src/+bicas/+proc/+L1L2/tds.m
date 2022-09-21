@@ -2,7 +2,7 @@
 % Collection of TDS-related processing functions.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-25
 %
 classdef tds    
@@ -31,7 +31,7 @@ classdef tds
             % modified later
             InSciNorm = InSci;
 
-            nRecords = EJ_library.assert.sizes(InSci.Zv.Epoch, [-1]);
+            nRecords = irf.assert.sizes(InSci.Zv.Epoch, [-1]);
 
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
 
@@ -53,7 +53,7 @@ classdef tds
             % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
             % to be the correct one. /2020-01-21
             %===========================================================
-            [InSci.Zv, fnChangeList] = EJ_library.ds.normalize_struct_fieldnames(...
+            [InSci.Zv, fnChangeList] = irf.ds.normalize_struct_fieldnames(...
                 InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
                 'Assert one matching candidate');
@@ -118,8 +118,8 @@ classdef tds
                 %============================================================
                 zv_SAMPS_PER_CH_corrected = round(2.^round(log2(double(InSci.Zv.SAMPS_PER_CH))));
                 zv_SAMPS_PER_CH_corrected = cast(zv_SAMPS_PER_CH_corrected, class(InSci.Zv.SAMPS_PER_CH));
-                zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MIN);
-                zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MAX);
+                zv_SAMPS_PER_CH_corrected = max( zv_SAMPS_PER_CH_corrected, solo.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MIN);
+                zv_SAMPS_PER_CH_corrected = min( zv_SAMPS_PER_CH_corrected, solo.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MAX);
 
                 if any(zv_SAMPS_PER_CH_corrected ~= InSci.Zv.SAMPS_PER_CH)
                     % CASE: SAMPS_PER_CH has at least one illegal value
@@ -133,8 +133,8 @@ classdef tds
                         ['TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected', ...
                         ' value(s) which are not on the form 2^n and in the', ...
                         ' interval %.0f to %.0f: %s'], ...
-                        EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MIN, ...
-                        EJ_library.so.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MAX, ...
+                        solo.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MIN, ...
+                        solo.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MAX, ...
                         badValuesDisplayStr);
 
                     [settingValue, settingKey] = SETTINGS.get_fv(...
@@ -179,7 +179,7 @@ classdef tds
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
 
@@ -189,7 +189,7 @@ classdef tds
             assert(issorted(InSci.Zv.Epoch, 'strictascend'), ...
                 'BICAS:DatasetFormat', ...
                 'Voltage (science) dataset timestamps Epoch do not increase monotonously.')
-            [nRecords, WAVEFORM_DATA_nChannels, nCdfSamplesPerRecord] = EJ_library.assert.sizes(...
+            [nRecords, WAVEFORM_DATA_nChannels, nCdfSamplesPerRecord] = irf.assert.sizes(...
                 InSci.Zv.Epoch, [-1], ...
                 InSci.Zv.WAVEFORM_DATA, [-1, -2, -3]);
             if     C.isL1r   WAVEFORM_DATA_nChannels_expected = 3;
@@ -199,7 +199,7 @@ classdef tds
                 WAVEFORM_DATA_nChannels == WAVEFORM_DATA_nChannels_expected, ...
                 'BICAS:Assertion:DatasetFormat', ...
                 'TDS zVar WAVEFORM_DATA has an unexpected size.')
-            if C.isTdsRswf   assert(nCdfSamplesPerRecord == EJ_library.so.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD)
+            if C.isTdsRswf   assert(nCdfSamplesPerRecord == solo.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD)
             else             assert(nCdfSamplesPerRecord == 1)
             end
 
@@ -281,8 +281,10 @@ classdef tds
             PreDc.isLfr             = false;
             PreDc.isTdsCwf          = C.isTdsCwf;
             PreDc.hasSnapshotFormat = C.isTdsRswf;
+
             % Only set because the code shared with LFR requires it.
             PreDc.Zv.iLsf           = nan(nRecords, 1);
+            PreDc.Zv.lfrRx          = ones(nRecords, 1);
 
 
 
@@ -345,7 +347,7 @@ classdef tds
                     'BICAS:Assertion:IllegalArgument', ...
                     ['Number of samples per CDF record is not 1, as expected.', ...
                     ' Bad input CDF?'])
-                EJ_library.assert.sizes(...
+                irf.assert.sizes(...
                     OutSci.Zv.QUALITY_BITMASK, [nRecords, 1], ...
                     OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
 
@@ -371,10 +373,10 @@ classdef tds
 
                 if     C.isLfr
                     SAMPLES_PER_RECORD_CHANNEL = ...
-                        EJ_library.so.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;
+                        solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;
                 elseif C.isTds
                     SAMPLES_PER_RECORD_CHANNEL = ...
-                        EJ_library.so.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD;
+                        solo.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD;
                 else
                     error(...
                         'BICAS:Assertion', ...
@@ -418,7 +420,7 @@ classdef tds
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
             % NOTE: Not really necessary since the list of zVars will be checked
             % against the master CDF?
-            EJ_library.assert.struct(OutSci.Zv, {...
+            irf.assert.struct(OutSci.Zv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})

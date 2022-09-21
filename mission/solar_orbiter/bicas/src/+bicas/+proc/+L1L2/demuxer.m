@@ -216,7 +216,7 @@ classdef demuxer
             assert(isscalar(demuxMode))
             assert(isscalar(dlrUsing12))
             assert(iscell(bltsSamplesAVolt))            
-            EJ_library.assert.vector(bltsSamplesAVolt)
+            irf.assert.vector(bltsSamplesAVolt)
             assert(numel(bltsSamplesAVolt)==5)
             % Should ideally check for all indices, but one helps.
             assert(isnumeric(bltsSamplesAVolt{1}))
@@ -349,7 +349,7 @@ classdef demuxer
             
             
             % ASSERTIONS
-            EJ_library.assert.struct(As, bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA, {})
+            irf.assert.struct(As, bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA, {})
             assert(numel(RoutingArray) == 5)
             assert(isstruct(RoutingArray))
             
@@ -442,7 +442,7 @@ classdef demuxer
                 end
             end
             
-            EJ_library.assert.struct(As, bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA, {})
+            irf.assert.struct(As, bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA, {})
             
             AsrSamplesAVolt = As;
         end
@@ -508,7 +508,7 @@ classdef demuxer
                 AsrSamples, BltsSamplesAVolt, RoutingArray)
             
             % ASSERTIONS
-            EJ_library.assert.all_equal(...
+            irf.assert.all_equal(...
                 [numel(BltsSamplesAVolt), numel(RoutingArray), 5])
             
             for iBlts = 1:5

@@ -13,13 +13,14 @@
 %       (2) numbers (1D vector)
 %       (3) cell array of strings (1D vector)
 % --
-% A settings object progress through three phases, in order, and stays
-% ROC_PIP_NAME/write-protected in the last phase:
-% (1) From creation: New keys can be defined and set to their initial values.
-% (2) Definition disabled: Can set the values of pre-existing keys
+% A settings object progresses through three phases, in order, and stays
+% write-protected in the last phase:
+% (1) After creation: New keys can be defined and set to their initial values.
+% (2) Definition disabled: Can set/modify the values of pre-existing keys
 % (3) Read-only: Can not modify the object at all. Can only read key values.
 %     (Object can not leave this phase.)
-% Separate get methods are used for phases (1)-(2), and (3) respectively.
+% Separate get methods are used for phases (1)-(2), and (3) respectively to
+% ensure that the caller knows whether it reads a final value or not.
 % --
 % RATIONALE: This concept makes it natural to, when possible, clearly and
 % conclusively separate the writing (setting) and reading of settings. Ideally,
@@ -108,7 +109,6 @@ classdef settings < handle
 %                  --set?
 %
 % PROPOSAL: Automatic tests, in particular for different settings values data types.
-%
 
 
 
@@ -199,7 +199,7 @@ classdef settings < handle
         function override_value(obj, key, newValue, valueSource)
             
             % ASSERTIONS
-            EJ_library.assert.castring(valueSource)
+            irf.assert.castring(valueSource)
             if obj.readOnlyForever
                 error('BICAS:Assertion', ...
                     'Trying to modify read-only settings object.')
@@ -244,17 +244,17 @@ classdef settings < handle
         %
         % ARGUMENTS
         % =========
-        % ModifiedSettingsAsStrings
+        % ModifiedSettingsMap
         %       containers.Map
         %       <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS
         %                  key.
         %       <values> = Settings values AS STRINGS.
         %                  Preserves the type of settings value for strings and
-        %                  numerics. If the pre-existing value is numeric, then
-        %                  the argument value will be converted to a number.
-        %                  Numeric row vectors are represented as a comma
-        %                  separated-list (no brackets), e.g. "1,2,3". Empty
-        %                  numeric vectors can not be represented.
+        %                  numerics. For example, if the pre-existing value is
+        %                  numeric, then the argument value will be converted to
+        %                  a number. Numeric row vectors are represented as a
+        %                  comma separated-list (no brackets), e.g. "1,2,3".
+        %                  Empty numeric vectors can not be represented.
         %
         function obj = override_values_from_strings(...
                 obj, ModifiedSettingsMap, valueSource)
@@ -339,7 +339,7 @@ classdef settings < handle
             
             
             valueArrayStruct = obj.DataMap(key);
-            EJ_library.assert.struct(...
+            irf.assert.struct(...
                 valueArrayStruct, ...
                 {'value', 'valueSource'}, {})
         end
@@ -395,13 +395,13 @@ classdef settings < handle
             if ischar(value)
                 
                 % Do nothing
-                EJ_library.assert.castring(value)
+                irf.assert.castring(value)
                 
             elseif isnumeric(value) ...
                     || iscell(value) ...
                     || islogical(value)
                 
-                EJ_library.assert.vector(value)
+                irf.assert.vector(value)
                 
             else
                 

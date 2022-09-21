@@ -377,7 +377,7 @@ classdef solo_local_file_db < solo_file_db
           case {'rpw-lfr-surv-cwf-b', 'rpw-lfr-surv-swf-b'}
             subDir = 'lfr_wf_b';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
           case {'rpw-lfr-surv-cwf-e', 'rpw-lfr-surv-cwf-e-1-second', 'rpw-lfr-surv-swf-e'}
-            % NOTE: 'rpw-lfr-surv-cwf-e-1-second' refers to an inofficial
+            % NOTE: 'rpw-lfr-surv-cwf-e-1-second' refers to an unofficial
             % dataset (DATASET_ID) only used internally at IRF. /2021-05-21
             subDir = 'lfr_wf_e';  % ie combined 2nd "_" 4th and 5th (excl first char of 4th, which is unqiue)
           case {'rpw-tds-surv-rswf-b', 'rpw-tds-surv-tswf-b'}
@@ -391,8 +391,8 @@ classdef solo_local_file_db < solo_file_db
 
           % Official directory names used by ROC and that IRFU should therefore
           % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
-          % Erik Johansson 2020-11-27.
-          % /Erik Johansson 2020-12-15.
+          % Erik P G Johansson 2020-11-27.
+          % /Erik P G Johansson 2020-12-15.
           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
             subDir = 'lfr_density';
           case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}

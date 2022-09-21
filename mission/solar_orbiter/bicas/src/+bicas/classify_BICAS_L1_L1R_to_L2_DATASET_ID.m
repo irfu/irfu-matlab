@@ -16,14 +16,14 @@
 %       Struct with fields for relevant flags.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-29.
 %
 function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
     % PROPOSAL: Automatic test code.
     
     [~, datasetLevel, descriptor] = ...
-        EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
+        solo.adm.disassemble_DATASET_ID(datasetId);
     
     C.isL1  = false;
     C.isL1r = false;

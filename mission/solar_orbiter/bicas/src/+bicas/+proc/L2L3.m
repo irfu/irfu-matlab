@@ -113,7 +113,7 @@ classdef L2L3
             % Normalize zVar names
             %======================
             [InLfrCwf.Zv, fnChangeList] = ...
-                EJ_library.ds.normalize_struct_fieldnames(InLfrCwf.Zv, ...
+                irf.ds.normalize_struct_fieldnames(InLfrCwf.Zv, ...
                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
 
             bicas.proc.utils.handle_zv_name_change(...
@@ -125,8 +125,9 @@ classdef L2L3
             %=================================================================
             % Call BICAS-external code to calculate (EFIELD, SCPOT) + DENSITY
             %=================================================================
+            % solo.vdccal()
             R = bicas.proc.L2L3.calc_EFIELD_SCPOT(InLfrCwf.Zv, SETTINGS);
-            %
+            % solo.psp2ne()
             [NeScpTs, psp2neCodeVerStr] = bicas.proc.L2L3.calc_DENSITY(R.PspTs);
 
 
@@ -149,8 +150,8 @@ classdef L2L3
                 ['solo.vdccal() returns an empty vdccalMatVerStr', ...
                 ' (string representing the version of the corresponding', ...
                 ' .mat file). BICAS therefore needs to be updated.'])
-            EJ_library.assert.castring_regexp(R.vdccalCodeVerStr, CODE_VER_STR_REGEXP)
-            EJ_library.assert.castring_regexp(psp2neCodeVerStr,   CODE_VER_STR_REGEXP)
+            irf.assert.castring_regexp(R.vdccalCodeVerStr, CODE_VER_STR_REGEXP)
+            irf.assert.castring_regexp(psp2neCodeVerStr,   CODE_VER_STR_REGEXP)
             %
             % NOTE: Should not add BICAS version to glob.attr.
             % "Misc_calibration_versions" since this is already encoded in
@@ -400,7 +401,7 @@ classdef L2L3
             
             
             % ASSERTIONS
-            EJ_library.assert.sizes(...
+            irf.assert.sizes(...
                 zv_Epoch,      [-1, 1], ...
                 EdcSrfTs.data, [-1, 3], ...
                 PspTs.data,    [-1, 1], ...
@@ -461,7 +462,7 @@ classdef L2L3
         %
         % NOTE: Empirically, some return values are NaN.
         % NOTE: Shortening "SCP" comes from the return variable name in
-        % solo.psp2ne(). Do not know what it means.
+        % solo.psp2ne(). Do not know what it means (SpaceCraft Potential?).
         %
         % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
         % relies on PSP values for which this has already been done.
@@ -475,7 +476,7 @@ classdef L2L3
             %==========================
             
             % ASSERTIONS
-            EJ_library.assert.sizes(...
+            irf.assert.sizes(...
                 PspTs.data,   [-1, 1], ...
                 NeScpTs.data, [-1, 1]);
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...

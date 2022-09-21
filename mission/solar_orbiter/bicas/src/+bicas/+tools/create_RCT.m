@@ -32,7 +32,7 @@
 % (1) There are two RCTs with identical calibration data content (ROC-SGSE +
 %     RODP),
 % (2) it saves work when updating the master RCT .cdf (generated from master
-%     Excel file), including making inofficial intermediate versions in the
+%     Excel file), including making unofficial intermediate versions in the
 %     master (e.g. fixing typos)
 % (3) it is easier to edit (compared to using cdfedit), e.g. (a) editing
 %     existing information as well as (b) adding records
@@ -290,7 +290,7 @@ function zVarRecord = create_tfc_zv_record(C, varargin)
     % ASSERTIONS
     assert(all(isfinite(zVarRecord), 'all'), ...
         'create_RCT:Assertion', 'zVarRecord contains non-finite values.')
-    EJ_library.assert.sizes(zVarRecord, [1, 2, C.N_ZVAR_COEFF, 4])
+    irf.assert.sizes(zVarRecord, [1, 2, C.N_ZVAR_COEFF, 4])
     
     %###########################################################################
     
@@ -300,7 +300,7 @@ function zVarRecord = create_tfc_zv_record(C, varargin)
         % ASSERTIONS
         assert(iscell(ca))        
         assert(numel(ca) == 2)
-        EJ_library.assert.sizes(...
+        irf.assert.sizes(...
             ca{1}, [1, NaN], ...
             ca{2}, [1, NaN])
         assert(ca{2}(end) == 1, ...
@@ -316,7 +316,7 @@ function zVarRecord = create_tfc_zv_record(C, varargin)
         na = permute(na, [3,1,2]);    % 1 x 2 x N_ZVAR_COEFF
         
         % ASSERTIONS
-        EJ_library.assert.sizes(na, [1, 2, C.N_ZVAR_COEFF])
+        irf.assert.sizes(na, [1, 2, C.N_ZVAR_COEFF])
     end
 end
 
@@ -369,7 +369,7 @@ function create_RCT_file(rctMasterCdfFile, destPath, RctL, RctH, gaCALIBRATION_V
     DataObj.data.E_OFFSET.data                 = RctH.E_OFFSET;                    % Epoch_H
     DataObj.data.V_OFFSET.data                 = RctH.V_OFFSET;                    % Epoch_H
 
-    EJ_library.cdf.write_dataobj(...
+    irf.cdf.write_dataobj(...
         destPath, ...
         DataObj.GlobalAttributes, ...
         DataObj.data, ...

@@ -13,11 +13,11 @@ function assert_BICAS_DATASET_ID(datasetId)
     % NOTE: MATLAB regxp can not handle recursive brackets it seems, i.e.
     % ((...|...)|(...|...)) .
     
-    % NOTE: EJ_library.so.adm.disassemble_DATASET_ID does some assertions on
+    % NOTE: solo.adm.disassemble_DATASET_ID does some assertions on
     % sourceName and level. /2020-09-29
-    [~, ~, descriptor] = EJ_library.so.adm.disassemble_DATASET_ID(datasetId);
+    [~, ~, descriptor] = solo.adm.disassemble_DATASET_ID(datasetId);
     
     % NOTE: Constrain DATASET_ID to roughly BICAS-related datasets.
-    EJ_library.assert.castring_regexp(descriptor, 'RPW-(BIA|LFR|TDS)[A-Z0-2-]*')
+    irf.assert.castring_regexp(descriptor, 'RPW-(BIA|LFR|TDS)[A-Z0-2-]*')
     
 end

@@ -90,7 +90,7 @@ function str = print_JSON_object_recursive(...
     if iscell(JsonObj)
         % CASE: Cell array - Interpret as a JSON array of (unnamed) JSON objects.
         
-        EJ_library.assert.vector(JsonObj)
+        irf.assert.vector(JsonObj)
         
         if indentFirstLine
             str = [str, INDENT_0_STR];

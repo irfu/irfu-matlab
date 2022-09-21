@@ -5,7 +5,7 @@
 % Selected functions in bicas.proc.L1L2.cal are meant to be moved here.
 % 
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-11-05.
 %
 classdef cal_utils
@@ -74,7 +74,7 @@ classdef cal_utils
         function ModifTabTf = extrapolate_tabulated_TF_to_zero_Hz(TabTf)
             % ASSERTIONS
             assert(TabTf.omegaRps(1) > 0)
-            assert(isa(TabTf, 'EJ_library.utils.tabulated_transform'))
+            assert(isa(TabTf, 'irf.utils.tabulated_transform'))
 
             % NOTE: Can not just use the lowest-frequency Z value for 0 Hz since
             % it has to be real (not complex).
@@ -89,7 +89,7 @@ classdef cal_utils
             omegaRps = [0;  TabTf.omegaRps(:)];
             Z        = [Z0; TabTf.Z(:)       ];
             
-            ModifTabTf = EJ_library.utils.tabulated_transform(omegaRps, Z);
+            ModifTabTf = irf.utils.tabulated_transform(omegaRps, Z);
         end
 
         
@@ -297,7 +297,7 @@ classdef cal_utils
             % PROPOSAL: valueOutsideTable only applies within some specified margins (not to infinity).
             % PROPOSAL: Automatic test code. 
             
-            assert(isa(TabTf, 'EJ_library.utils.tabulated_transform'))
+            assert(isa(TabTf, 'irf.utils.tabulated_transform'))
             assert(isfinite(valueOutsideTable))
             
             % NOTE: interp1 returns NaN for values outside range.
@@ -375,7 +375,7 @@ classdef cal_utils
         function log_TF_tabulated(logLevel, tfName, Tf, L)
             % PROPOSAL: Somehow prevent printing unnecessary trailing zeros.
             
-            assert(isa(Tf, 'EJ_library.utils.tabulated_transform'))
+            assert(isa(Tf, 'irf.utils.tabulated_transform'))
             
             assert(numel(tfName) <= 38, ...
                 'String argument "tfName" is too long. numel(tfName)=%i.', ...
@@ -457,10 +457,10 @@ classdef cal_utils
         % Ex: '(3.1416, 2.7183, 1.6180)'
         function s = vector_string(pattern, v)
             assert(~isempty(v))
-            EJ_library.assert.vector(v)
+            irf.assert.vector(v)
             s = sprintf(...
                 '(%s)', ...
-                strjoin(EJ_library.str.sprintf_many(pattern, v), ', '));
+                strjoin(irf.str.sprintf_many(pattern, v), ', '));
         end
         
         

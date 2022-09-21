@@ -180,7 +180,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
         for iLsf = 1:3
             Sp.add_panel_time_series_SWF_LSF(...
                 'V1,V12,V23 DC', zvEpoch, {zvDc1, zvDc12, zvDc23}, zvSamplRateHz, iLsf, ...
-                EJ_library.graph.escape_str({'V1_DC','V12_DC','V23_DC'}), [0,0,0]);
+                irf.graph.escape_str({'V1_DC','V12_DC','V23_DC'}), [0,0,0]);
         end
 
     end
@@ -191,7 +191,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
         for iLsf = 1:3
             Sp.add_panel_time_series_SWF_LSF(...
                 'V1,V12,V23 DC/AC', zvEpoch, {zvDc1, zvAc12, zvAc23}, zvSamplRateHz, iLsf, ...
-                EJ_library.graph.escape_str({'V1_DC','V12_AC','V23_AC'}), [0,1,1]);
+                irf.graph.escape_str({'V1_DC','V12_AC','V23_AC'}), [0,1,1]);
         end
     end
     if displayDcDiffs && displayAcDiffs
@@ -203,7 +203,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
         for iLsf = 1:3
             Sp.add_panel_time_series_SWF_LSF(...
                 'V12,V23 AC', zvEpoch, {zvAc12, zvAc23}, zvSamplRateHz, iLsf, ...
-                EJ_library.graph.escape_str({'V12_AC','V23_AC'}), [1,1]);
+                irf.graph.escape_str({'V12_AC','V23_AC'}), [1,1]);
         end
     end
 

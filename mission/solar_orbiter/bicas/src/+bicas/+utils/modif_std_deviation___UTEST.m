@@ -2,7 +2,7 @@
 % matlab.unittest automatic test code for bicas.utils.modif_std_deviation().
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-10 from older test code.
 %
 classdef modif_std_deviation___UTEST < matlab.unittest.TestCase

@@ -15,46 +15,72 @@ see RCS ICD and RUM documents (see below).
 
 
 
-#######################
- Acronyms / Dictionary
-#######################
-NOTE: This list also applies to comments in the source code.
+###############################################
+ Abbreviations, Dictionary, Naming conventions
+###############################################
+NOTE: This list also applies to comments in the source code. Some source
+files also define abbreviations widely used in the source code.
+See e.g. bicas.proc.L1L2.cal source code comments for relating to
+calibration.
 --
-RCS                        = RPW Calibration Software. BICAS is an example of
-                             an RCS.
-ICD                        = Interface Control Document
-ROC DFMD                   = Document ROC-TST-GSE-NTT-00017-LES, "Data format
-                             and metadata definition for the ROC-SGSE data"
-ROC Engineering Guidelines = Document ROC-GEN-SYS-NTT-00019-LES, "ROC
-                             Engineering Guidelines for External Users"
-RCS ICD                    = Originally document ROC-TST-GSE-ICD-00023-LES,
-                             "RPW Calibration Software ICD Documentation",
-                             which was later superseded by ROC-PRO-PIP-
-                             ICD-00037-LES, "RPW Calibration Software Interface
-                             Document".
-                             NOTE: "RCS ICD" does not at this time (2019-07-24)
-                             distinguish between these two which gives room for
-                             confusion since a later rev/iss for the old RCS
-                             ICD may thus be superseded by a lower rev/iss for
-                             the newer RCS ICD.
-RUM                        = Document ROC-PRO-SFT-SUM-00080, "RCS User Manual"
-BIAS specification         = Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW
-                             Instrument -- BIAS Specification"
-S/W mode                   = A "S/W mode" defines a set of required input CDF
-                             files and a set of output CDF files derived from
-                             the input files. BICAS can execute only one such
-                             mode on each run. Executing such modes is the
-                             primary purpose of an RCS. (Defined by the RCS
-                             ICD.)
-S/W descriptor             = Text on JSON format which describes among other
-                             things the S/W modes, including the required CLI
-                             parameters that every mode requires albeit not
-                             very clearly. (Defined by the RCS ICD.)
-CLI                        = Command-line interface
-dataset (data set)         = A CDF file on one of a number standardized formats
-                             specified by the various RPW teams.
-                             All CDF files in the context of BICAS are
-                             datasets.
+BIAS specification
+    Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW
+    Instrument -- BIAS Specification"
+CA
+    Cell Array.
+CLI
+    Command-line interface
+dataset (data set)
+    A CDF file on any one of a number standardized formats
+    specified by the various RPW teams.
+    All CDF files in the context of BICAS are datasets.
+DSI
+    DATASET_ID
+ICD
+    Interface Control Document
+RCS
+    RPW Calibration Software. BICAS is an example of an RCS.
+RCS ICD
+    Originally document ROC-TST-GSE-ICD-00023-LES,
+    "RPW Calibration Software ICD Documentation",
+    which was later superseded by ROC-PRO-PIP-
+    ICD-00037-LES, "RPW Calibration Software Interface
+    Document".
+    NOTE: "RCS ICD" does not at this time (2019-07-24)
+    distinguish between these two which gives room for
+    confusion since a later rev/iss for the old RCS
+    ICD may thus be superseded by a lower rev/iss for
+    the newer RCS ICD.
+RCT
+    RPW Calibration Table. CDF with calibration data. See RCS ICD.
+ROC DFMD
+    Document ROC-TST-GSE-NTT-00017-LES, "Data format
+    and metadata definition for the ROC-SGSE data"
+ROC Engineering Guidelines
+    Document ROC-GEN-SYS-NTT-00019-LES, "ROC
+    Engineering Guidelines for External Users"
+RUM
+    Document ROC-PRO-SFT-SUM-00080, "RCS User Manual"
+RV
+    Return Value.
+SWD, S/W descriptor
+    Text on JSON format which describes among other
+    things the S/W modes, including the required CLI
+    parameters that every mode requires albeit not
+    very clearly. (Defined by the RCS ICD.)
+S/W mode
+    A "S/W mode" defines a set of required input CDF
+    files and a set of output CDF files derived from
+    the input files. BICAS can execute only one such
+    mode on each run. Executing such modes is the
+    primary purpose of an RCS. (Defined by the RCS
+    ICD.)
+TF
+    Transfer Function. Transfer function Z=Z(omega) in the frequency domain.
+    .
+ZV
+    zVariable as in a CDF file.
+--
 
 
 

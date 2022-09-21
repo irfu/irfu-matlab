@@ -11,7 +11,7 @@
 %             Multiple NSO events may have the same NSO ID.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-22
 %
 classdef NSO_table    
@@ -75,7 +75,7 @@ classdef NSO_table
             %           bicas.NSO_table.read_file ?
             % PROPOSAL: Check that FULL_SATURATION and PARTIAL SATURATION do not overlap.
             
-            EJ_library.assert.sizes(...
+            irf.assert.sizes(...
                 NsoTable.evtStartTt2000Array, [-1], ...
                 NsoTable.evtStopTt2000Array,  [-1], ...
                 NsoTable.evtNsoIdCa,          [-1]);
@@ -90,10 +90,10 @@ classdef NSO_table
                 iEvt = find(diff(NsoTable.evtStartTt2000Array) < 0) + 1;
                 assert(~isempty(iEvt));
                 
-                utcCa = EJ_library.cdf.TT2000_to_UTC_str_many(...
+                utcCa = irf.cdf.TT2000_to_UTC_str_many(...
                     NsoTable.evtStartTt2000Array(iEvt));
                 
-                sCa = EJ_library.str.sprintf_many('    %s\n', utcCa);
+                sCa = irf.str.sprintf_many('    %s\n', utcCa);
                 timestampsListStr = strjoin(sCa);
                 
                 error('BICAS:FailedToReadInterpretNsOps', ...
@@ -182,7 +182,7 @@ classdef NSO_table
             %                         into bArray.
             %   PRO: Can log every instance in NSO table.
             
-            bEvents = EJ_library.utils.intervals_intersect(...
+            bEvents = irf.utils.intervals_intersect(...
                 obj.evtStartTt2000Array, ...
                 obj.evtStopTt2000Array, ...            
                 min(tt2000Array), ...
@@ -219,7 +219,7 @@ classdef NSO_table
             
             
             % ASSERTIONS
-            EJ_library.assert.sizes(...
+            irf.assert.sizes(...
                 bEvtArraysCa,       [-1], ...
                 evtNsoIdCa,         [-1], ...
                 iGlobalEventsArray, [-1])
@@ -254,7 +254,7 @@ classdef NSO_table
         % NsoTable : Struct of arrays representing file content. Not class.
         %
         %
-        % Author: Erik P G Johansson, Uppsala, Sweden
+        % Author: Erik P G Johansson, IRF, Uppsala, Sweden
         % First created 2020-09-21.
         %
         function NsoTable = read_file(filePath)
@@ -265,7 +265,7 @@ classdef NSO_table
             
             % List of all legal NSO IDs.
             LEGAL_NSOID_CA = struct2cell(bicas.constants.NSOID);
-            EJ_library.assert.castring_set(LEGAL_NSOID_CA)
+            irf.assert.castring_set(LEGAL_NSOID_CA)
             
             
             

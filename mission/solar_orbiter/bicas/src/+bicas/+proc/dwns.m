@@ -2,7 +2,7 @@
 % Collection of shared code used for creating downsampled datasets.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-18
 %
 classdef dwns    
@@ -280,7 +280,7 @@ classdef dwns
                 % CASE: zvAllTt2000 is empty.
                 
                 % NOTE: Later calls to
-                % EJ_library.cdf.time.TT2000_to_TT2000WOLS() are not applicable
+                % irf.cdf.time.TT2000_to_TT2000WOLS() are not applicable
                 % if there is no timestamp. Must therefore have special case.
                 
                 zvBinsTt2000    = int64(ones(0,1));
@@ -292,9 +292,9 @@ classdef dwns
             
             
             
-            ttw1           = EJ_library.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(1));
-            ttw2           = EJ_library.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(end));
-            boundaryRefTtw = EJ_library.cdf.time.TT2000_to_TT2000WOLS(boundaryRefTt2000);
+            ttw1           = irf.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(1));
+            ttw2           = irf.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(end));
+            boundaryRefTtw = irf.cdf.time.TT2000_to_TT2000WOLS(boundaryRefTt2000);
             
             %======================================
             % Find bin boundaries & bin timestamps
@@ -312,8 +312,8 @@ classdef dwns
             zvBinsTtw     = boundariesTtw(1:end-1) + binTimestampPosWolsNs;
             
             
-            boundariesTt2000 = EJ_library.cdf.time.TT2000WOLS_to_TT2000(boundariesTtw);
-            zvBinsTt2000     = EJ_library.cdf.time.TT2000WOLS_to_TT2000(zvBinsTtw);
+            boundariesTt2000 = irf.cdf.time.TT2000WOLS_to_TT2000(boundariesTtw);
+            zvBinsTt2000     = irf.cdf.time.TT2000WOLS_to_TT2000(zvBinsTtw);
             binSizeArrayNs   = diff(boundariesTt2000);
             
             %===================================================================
@@ -387,7 +387,7 @@ classdef dwns
             % ASSERTION
             assert(isfloat(zv))
             assert(nMinReqRecords >= 0)
-            [nRecordsOris, nRecordsDwns, nSpr] = EJ_library.assert.sizes(...
+            [nRecordsOris, nRecordsDwns, nSpr] = irf.assert.sizes(...
                 zv,              [-1, -3], ...
                 iRecordsInBinCa, [-2]);
             

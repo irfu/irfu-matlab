@@ -43,7 +43,7 @@ classdef Logger < handle
 %           CLI log arguments to log to file from MATLAB.
 %   Ex: --log-to-file-from-matlab <log file>
 %
-% PROPOSAL: EJ_library.assert.trailing_LF
+% PROPOSAL: irf.assert.trailing_LF
 %   PROPOSAL: Simultaneously assert not trailing CR+LF.
 %
 % TODO-DEC: Should special, extra logging functionality be in this class or outside of it?
@@ -54,7 +54,7 @@ classdef Logger < handle
 % PROPOSAL: Way of emphasizing selected log messages.
 %   PROPOSAL: Message is framed with "=".
 %   PROPOSAL: All text is uppercase.
-%   PROPOSAL: Inofficial logLevel='WARNING' (capitals) which is formatted and
+%   PROPOSAL: Unofficial logLevel='WARNING' (capitals) which is formatted and
 %             translated into a regular logLevel='warning'.
 %   PROPOSAL: Separate log method.
 
@@ -233,7 +233,7 @@ classdef Logger < handle
                 case 'bash wrapper'
                     % String that is intended to be read by BICAS bash wrapper
                     % as stdout.
-                    bashWrapperRecipientStr = EJ_library.str.add_prefix_on_every_row(...
+                    bashWrapperRecipientStr = irf.str.add_prefix_on_every_row(...
                         rcsIcdLogMsg, ...
                         bicas.constants.LOG_FILE_PREFIX_TBW);
                     
@@ -270,7 +270,7 @@ classdef Logger < handle
                 % on separate lines. Not doing so produces some output rows (at
                 % least inside the MATLAB GUI) with mixed stderr and std out
                 % content which is hard to read.
-                % NOTE: EJ_library.str.add_prefix_on_every_row already does this
+                % NOTE: irf.str.add_prefix_on_every_row already does this
                 % for the log messages.
                 stderrStr = msg;
                 if stderrStr(end) ~= obj.LINE_FEED
@@ -364,7 +364,7 @@ classdef Logger < handle
             rcsIcdRowPrefix    = sprintf('%s -- %s -- ', ...
                 rcsIcdRowTimestamp, logLevelStr);
             
-            rcsIcdLogMsg = EJ_library.str.add_prefix_on_every_row(...
+            rcsIcdLogMsg = irf.str.add_prefix_on_every_row(...
                 logMsg, rcsIcdRowPrefix);
         end
 

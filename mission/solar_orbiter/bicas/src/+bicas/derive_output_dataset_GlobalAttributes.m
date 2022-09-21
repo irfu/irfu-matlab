@@ -46,7 +46,7 @@
 %               the exact names of CDF global attributes.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-03-31, based on two functions broken out of
 % execute_sw_mode().
 %
@@ -57,7 +57,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     % PROPOSAL: Automatic test code.
     
     % ASSERTIONS
-    EJ_library.assert.struct(OutputDataset.Ga, ...
+    irf.assert.struct(OutputDataset.Ga, ...
         {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
 
     
@@ -154,7 +154,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         
         % NOTE: Parsing INPUT dataset filename to set some global attributes.
         [logicalFileId, ~, dataVersionStr, ~] = parse_dataset_filename(...
-            EJ_library.fs.get_name(InputDatasetInfo.filePath));
+            irf.fs.get_name(InputDatasetInfo.filePath));
         % Sets string, not number. Correct?
         OutGaSubset.Parent_version{end+1} = dataVersionStr;
         OutGaSubset.Parents       {end+1} = ['CDF>', logicalFileId];
@@ -223,8 +223,8 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     % higher than highest LFR sampling frequency (not sure of highest for
     % TDS-LFM).
     TIME_MINMAX_FORMAT = '%.10f';
-    gaTimeMinNbr = juliandate(EJ_library.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(1  )));
-    gaTimeMaxNbr = juliandate(EJ_library.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(end)));
+    gaTimeMinNbr = juliandate(irf.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(1  )));
+    gaTimeMaxNbr = juliandate(irf.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(end)));
     OutGaSubset.TIME_MIN = sprintf(TIME_MINMAX_FORMAT, gaTimeMinNbr);
     OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
     
@@ -258,7 +258,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     end
 
     % ASSERTION: Required subset for every dataset.
-    EJ_library.assert.struct(OutGaSubset, ...
+    irf.assert.struct(OutGaSubset, ...
         {'Parents', 'Parent_version', 'Provider', ...
         'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
 end
@@ -279,7 +279,7 @@ function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
     % NOTE: Will include IRFU-internal filenaming extension.
     logicalFileId = basename;
 
-    R = EJ_library.so.adm.parse_dataset_filename(filename);
+    R = solo.adm.parse_dataset_filename(filename);
     assert(~isempty(R), 'BICAS:Assertion', ...
         ['Can not parse dataset filename "%s" and therefore not', ...
         ' derive values for global attributes', ...

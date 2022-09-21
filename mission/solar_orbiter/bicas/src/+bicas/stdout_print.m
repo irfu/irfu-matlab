@@ -19,7 +19,7 @@
 %
 function stdout_print(msgStr)
     
-    printStr = EJ_library.str.add_prefix_on_every_row(...
+    printStr = irf.str.add_prefix_on_every_row(...
         msgStr, bicas.constants.STDOUT_PREFIX_TBW);
     
     % NOTE: Must print using function that reacts to trailing line feed.

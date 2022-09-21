@@ -25,7 +25,7 @@
 % NOTE: Function does not follow convention that L is the last argument.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-27.
 %
 function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)

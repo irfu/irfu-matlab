@@ -141,7 +141,7 @@ function SETTINGS = create_default_SETTINGS()
     % representation (min-max range).
     S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 
-    % Enable inofficial (to ROC) support for S/W modes
+    % Enable unofficial (to ROC) support for S/W modes
     % ------------------------------------------------
     % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
     % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
@@ -171,9 +171,12 @@ function SETTINGS = create_default_SETTINGS()
     % INPUT_CDF.*
     %#############
 
-    % The epoch for ACQUISITION_TIME.
+    % The epoch for zVar ACQUISITION_TIME.
     % The time in UTC at which ACQUISITION_TIME is [0,0].
-    % Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
+    % Format: Year-month-day
+    %         -hour-minute-second
+    %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
+    %
     % PROPOSAL: Store the value returned by
     %           spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
     S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);
@@ -278,10 +281,18 @@ function SETTINGS = create_default_SETTINGS()
     %   BICAS code:  1 sample/snapshot.
     % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
     S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
-    
+
     % Whether to enable setting glob.attr. MODS.
     % 2021-05-05: Disabled on request by ROC, until next full reprocessing at
     % ROC.
+    % """"""""
+    % Using MODS attribute has been indeed in « standby » for a while. It is true that we are very in late on the LESIA side from the initial planning concerning the « big L1 data re-processing ».
+    % Especially, the implementation in the ROC pipeline of the QUALITY_BITMASK L1 CDF zVariable setting has been several times delayed the last few months due to more urgent activities.
+    % This implementation is now done, but I still need to find time to check everything works well before passing to the next step.
+    %
+    % I would like to plan a new RCS telecon before the summer to discuss about the remaining activities on RPW data processing. I will let you know.
+    % """""""" /Xavier Bonnin, e-mail 2022-04-20
+    %
     S.define_setting('OUTPUT_CDF.GA_MODS_ENABLED', 0)    % 0/false, 1/true
 
 
@@ -551,6 +562,14 @@ function SETTINGS = create_default_SETTINGS()
     % the LFR/TDS transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 
+
+    S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, kernel
+    %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'kernel')   % FFT, kernel
+    %S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'zeros')   % zeros, cyclic, mirror
+    S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'mirror')   % zeros, cyclic, mirror
+    S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)   % false, true
+
+
     %===========================================================================
     % De-/re-trending
     % ---------------
@@ -576,13 +595,14 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    % Frequency above which the ITF is set to zero.
+    % Frequency above which the ITF is set to zero
+    % --------------------------------------------
     % Expressed as a fraction of the Nyquist frequency (half the sampling
     % frequency; 1 sample/s = 1 Hz).
     % inf = No limit.
     % YK 2020-09-15: Set inverted transfer function to zero for
     % omega>0.8*omega_Nyquist (not 0.7).
-    S.define_setting('PROCESSING.CALIBRATION.TF_HIGH_FREQ_LIMIT_FRACTION',  0.8)
+    S.define_setting('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION',  0.8)
 
     % When using AC, the combined LFR+BIAS ITFs are modified to have constant
     % gain between 0 Hz and this frequency. The gain used is taken from this
@@ -593,6 +613,15 @@ function SETTINGS = create_default_SETTINGS()
     % NOTE: "BIAS specifications", Section 2.3.2.4 specifies (AC) "a high pass
     % filter at 7 Hz".
     S.define_setting('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ', 7)
+
+    % Whether to split a time series into shorter time series, separated by fill
+    % values, before de-trending and applying the (modified) TF. This avoids
+    % applying TF to fill values which avoids destroying non-fill value data.
+    S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',     true)
+    % Minimum number of samples in a time series (after splitting).
+    % NOTE: Limit does not apply if there was no splitting (for "backward
+    % compatibility").
+    S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
 
     % Whether to disable LFR/TDS transfer functions (but still potentially use
     % the BIAS transfer functions). This effectively means that TM voltage
