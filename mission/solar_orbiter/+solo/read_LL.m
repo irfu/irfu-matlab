@@ -162,8 +162,15 @@ if ~isempty(output)
 end
 
 % remove repeated values in time axis
-if length((output.time.epochUnix)) ~= length(unique(output.time.epochUnix))
-[~,ia,~] = unique(output.time.epochUnix);
- output = TSeries(output.time(ia),output.data(ia,:),'TensorOrder',1,'TensorBasis','xyz',...
-                                'repres',{'x','y','z'});
+if ~isempty(output)
+    if length((output.time.epochUnix)) ~= length(unique(output.time.epochUnix))
+        [~,ia,~] = unique(output.time.epochUnix);
+        
+        if size(output.data,2)==3
+        output = TSeries(output.time(ia),output.data(ia,:),'TensorOrder',1,'TensorBasis','xyz',...
+            'repres',{'x','y','z'});
+        else
+        output = irf.ts_scalar(output.time(ia),output.data(ia,:));
+        end
+    end
 end
