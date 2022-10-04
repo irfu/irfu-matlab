@@ -25,16 +25,19 @@ function [apar,aperp,alpha]=irf_dec_parperp(b0,a,flagspinplane)
 % Begin temporary fix to convert TS format to older format
 rtrnTS = 0;
 if isa(b0,'TSeries')
+  if isempty(b0), apar = TSeries([]); aperp = TSeries([]); alpha = TSeries([]); return; end
   b0Time = b0.time;
   datatemp = double(b0.data);
   b0 = [b0Time.epochUnix(), double(datatemp)];
 end
 if isa(a,'TSeries')
+  if isempty(a), apar = TSeries([]); aperp = TSeries([]); alpha = TSeries([]); return; end
   aTime = a.time;
   datatemp = double(a.data);
   a = [aTime.epochUnix(), datatemp];
   rtrnTS = 1;
 end
+
 % End of temporary fix
 
 if nargin<3 || flagspinplane==0

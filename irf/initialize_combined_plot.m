@@ -21,7 +21,7 @@ function [h1, h2] = initialize_combined_plot(nTimePanels,nRows,nCols,totCols,sor
 %     [h1,h2] = INITIALIZE_COMBINED_PLOT(8,2,2,3,'vertical')
 
 scrsz = get(groot,'ScreenSize');
-figure('Position',scrsz)
+%figure('Position',scrsz)
 h1 = irf_plot(nTimePanels);
 if isempty(sorting)
   sorting = 'horizontal';

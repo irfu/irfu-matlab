@@ -34,7 +34,8 @@ persistent lat long cl_id_saved
 CL_SP_AUX = [];
 
 narginchk(3,8)
-if isempty(x), y=[]; return; end % if empty input, empty output
+if isempty(x) && isa(x,'TSeries'), y = TSeries([]); return;
+elseif isempty(x), y = []; return; end % if empty input, empty output
 
 allowed_coord_sys={'GSE','DSC','SR2','DSI','ISR2','GSM'};
 
