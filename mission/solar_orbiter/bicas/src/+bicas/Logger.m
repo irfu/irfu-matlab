@@ -360,7 +360,7 @@ classdef Logger < handle
                         'Illegal logLevel="%s"', logLevel)
             end
             
-            rcsIcdRowTimestamp = datestr(clock, 'yyyy-mm-ddTHH:MM:SS');
+            rcsIcdRowTimestamp = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"))
             rcsIcdRowPrefix    = sprintf('%s -- %s -- ', ...
                 rcsIcdRowTimestamp, logLevelStr);
             

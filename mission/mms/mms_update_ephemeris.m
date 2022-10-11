@@ -18,7 +18,7 @@ function [R, V, RGSM, VGSM] = mms_update_ephemeris
 % save /data/mms/irfu/mmsRGSM.mat RGSM
 % save /data/mms/irfu/mmsVGSM.mat VGSM
 
-nowUtc = datestr(now,'yyyy-mm-ddTHH:MM:SSZ');
+nowUtc = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss'Z'","TimeZone","UTCLeapSeconds"));
 tint = irf.tint(['2015-03-13T00:00:00Z/' nowUtc]);
 %newTime = EpochTT((tint.start.epoch:int64(60*1e9):tint.stop.epoch)');
 

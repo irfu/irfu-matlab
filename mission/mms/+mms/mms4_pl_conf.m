@@ -451,7 +451,7 @@ switch lower(action)
       text(.57,yy,'MMS3','parent',hca);
       text(.84,yy,'MMS4','parent',hca);
       axis(hca,'off');
-      ht=irf_legend(hca,['mms.mms4_pl_conf() ' datestr(now)],[0,0],'fontsize',8);
+      ht=irf_legend(hca,['mms.mms4_pl_conf() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0,0],'fontsize',8);
       set(ht,'interpreter','none');
       htime=irf_legend(hca,['MMS configuration\newline ' irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm')],[0,.95]);
       set(htime,'fontsize',12);

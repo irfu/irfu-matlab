@@ -30,7 +30,7 @@ function mms_sdc_sdp_log_init(procStr, fileStr, runTime)
 % See also: MMS_SDC_SDP_INIT, MMS_CONSTANTS.
 
 narginchk(3,3);
-if ~regexp(runTime,'\d{8,8}T\d{6,6}'), runTime = datestr(now, 'yyyymmddTHHMMSS'); end
+if ~regexp(runTime,'\d{8,8}T\d{6,6}'), runTime = char(datetime("now","Format","uuuuMMdd'T'HHmmss")); end
 procStr = lower(procStr);
 
 % Get environment variables

@@ -11,7 +11,7 @@ function outhandle=irf_pl_info(string,inhandle,position)
 % if inhandle is 0 use the whole figure area as coordinates
 %
 % Example:
-%   ht=irf_pl_info(['c_pl_sc_orient() ' datestr(now)],gca,[0,1 ]);
+%   ht=irf_pl_info(['c_pl_sc_orient() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],gca,[0,1 ]);
 %   set(ht,'interpreter','none','FontSize', 10);
 %
 % $Id$

@@ -31,7 +31,7 @@ title('2D reconnection geometry. x-normal,z-outflow.')
 grid on
 xlabel('Bz')
 ylabel('V inflow')
-ht=irf_pl_info([mfilename '  ' datestr(now)],gca,[0,1 ]);
+ht=irf_pl_info([mfilename '  ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],gca,[0,1 ]);
 
 subplot(2,1,2);
 plot(Bz,vout)

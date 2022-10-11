@@ -171,7 +171,7 @@ h=irf_plot({n,n,n,n,nf,[nfef_bn nfef_bp(:,2)]});
 %%%%%% subplot 1 %%%%%%
 ylabel(h(1),'N_{Vps} [cm^{-3}]');
 title_text=['s/c' num2str(ic) '  ' legend_corr '(' flag_corr_deriv_str ') ' ff_str '.'];
-irf_pl_info([mfilename '  ' datestr(now) '. ' title_text],h(1)); % add information to the plot
+irf_pl_info([mfilename '  ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss")) '. ' title_text],h(1)); % add information to the plot
 
 ud=get(gcf,'userdata');
 if isfield(ud,'t_start_epoch'), ts = ud.t_start_epoch;

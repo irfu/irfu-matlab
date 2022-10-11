@@ -398,7 +398,7 @@ switch lower(action)
     
     % add text
     cla(h(4))
-    irf_legend(h(4),['mms.sc_orient() ' datestr(now)],[0,1],'fontsize',8,'interpreter','none','color',[0.5 0.5 0.5]);
+    irf_legend(h(4),['mms.sc_orient() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0,1],'fontsize',8,'interpreter','none','color',[0.5 0.5 0.5]);
     irf_legend(h(4),['MMS' num2str(data.ic)],[0,.9],'fontsize',10);
     if data.flag_b==1
       irf_legend(h(4),['angle beteen p34 and B ' num2str(angle_deg_p34_vs_b,'%3.1f') 'deg'],[0,.82],'interpreter','none','fontsize',10);

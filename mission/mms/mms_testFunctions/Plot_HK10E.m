@@ -21,7 +21,7 @@ function Plot_HK10E(DayOfInterest, bashRun)
 
 narginchk(1,2);
 if nargin == 1, bashRun=false; end
-nowStr = irf_time(now,'datenum>utc_yyyy-mm-dd');
+nowStr = char(datetime("now", "TimeZone","UTC", "Format","uuuu-MM-dd"));
 if((numel(sscanf(DayOfInterest,'%4d-%2d-%2d%s'))~=3)||(length(DayOfInterest)~=10))
   error('Incorrect day string, format should be "YYYY-MM-DD".');
 end

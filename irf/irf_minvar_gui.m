@@ -64,7 +64,7 @@ switch action
     ud.tlim = [min(X(:,1)) max(X(:,1))];
     ud.tlim_mva=ud.tlim+[-1 1]; % default tlim_mva includes all interval, add 1s to help later in program
     
-    %  irf_pl_info(h(1),['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
+    %  irf_pl_info(h(1),['irf\_minvar\_gui() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
     set(h(1),'layer','top');
     grid(h(1),'on');
     ax=axis(h(1));
@@ -114,7 +114,7 @@ switch action
     
     h(5)=subplot(4,2,8);
     axis(h(5),'off');
-    irf_legend(0,['irf\_minvar\_gui() ' datestr(now)],[0.02 0.02],'fontsize',8); % add information to the plot
+    irf_legend(0,['irf\_minvar\_gui() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0.02 0.02],'fontsize',8); % add information to the plot
     ud.result_text=text(0,0.8,'result','parent',h(5));
     
     set(gcf,'userdata',ud);

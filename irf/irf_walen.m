@@ -118,7 +118,7 @@ end
 figure(117), clf
 plot(valfv(:,2),vtransf(:,2),'b.',valfv(:,3),vtransf(:,3),'g.',valfv(:,4),vtransf(:,4),'r.');
 axis equal;grid on;
-ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
+ht=irf_pl_info([mfilename ' ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); set(ht,'interpreter','none','FontSize', 5);
 
 title(['Walen test ' strint])
 xlabel('V_{A} [km/s]');ylabel('V-V_{HT} [km/s]')

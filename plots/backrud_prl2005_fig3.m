@@ -127,7 +127,7 @@ grid on
 irf_zoom([-6.9999 -3.0001],'y');
 ylabel('V_{ps} [V]');
 title_text=['s/c' num2str(ic) '  ' legend_corr ff_str '.'];
-%irf_pl_info([mfilename '  ' datestr(now) '. ' title_text]); % add information to the plot
+%irf_pl_info([mfilename '  ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss")) '. ' title_text]); % add information to the plot
 
 %%%%%% subplot 2 %%%%%%
 axes(h(ipanel));ipanel=ipanel+1;

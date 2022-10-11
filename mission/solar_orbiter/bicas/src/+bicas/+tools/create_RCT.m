@@ -251,7 +251,7 @@ function [destFilename, gaCALIBRATION_VERSION] = create_RCT_filename()
     % BIAS RCT specify?).
     
     % NOTE: Should not contain seconds.
-    gaCALIBRATION_VERSION = datestr(clock, 'yyyymmddHHMM');
+    gaCALIBRATION_VERSION = char(datetime("now","Format","uuuuMMddHHmm"));
     
     % NOTE: Minus in "RPW-BIAS".
     destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);

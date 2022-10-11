@@ -66,7 +66,7 @@ for ic=sc_list % which satellite
   if exist('mP.mat','file'), eval(irf_ssub('load mP P?;p=irf_tlim(P?,tint);',ic));irf_plot(p);end
   title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
   ylabel('Vps [V]');
-  irf_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
+  irf_pl_info(['c\_e\_mp() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
   
   irf_zoom([-35 -2],'y');
   
