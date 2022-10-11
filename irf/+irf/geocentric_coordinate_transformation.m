@@ -34,6 +34,8 @@ persistent dipoleDirectionGSE
 if(nargin==2), Hapgood = true; end % Default to old method.
 
 isInpTSeries = isa(inp,'TSeries');
+if isempty(inp) && isInpTSeries, out = TSeries([]); return;
+elseif isempty(inp), out = []; return; end
 
 if strfind(flag,'>')  %#ok<STRIFCND>% if input and output reference frames are the same return input
   refSystIn  = flag(1:strfind(flag,'>')-1);

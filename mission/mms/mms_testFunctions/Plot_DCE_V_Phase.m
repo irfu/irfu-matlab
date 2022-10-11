@@ -91,7 +91,7 @@ V1234 = [irf_time(dataObj.data.Epoch.data,'ttns>epoch'), ...
 clear dataObj
 
 %% Plot
-today = irf_time(now, 'datenum>utc_yyyy/mm/dd');
+today = char(datetime("now", "TimeZone","UTC", "Format","uuuu/MM/dd"));
 
 % Set plot colors to same as that used for Cluster.
 set(groot, 'defaultAxesColorOrder', [0 0 0; 1 0 0; 0 0.5 0; 0 0 1]);

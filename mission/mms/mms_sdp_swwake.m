@@ -468,7 +468,7 @@ for in = iok
     end
   end
   if plotflag_now && in~=iok(end)
-    title(['Plot created: ',datestr(now,'yyyy/mm/dd'),'. Wakes on pair: ', pair, ' spin: ', num2str(in)]);
+    title(['Plot created: ', char(datetime("now","Format","uuuu/MM/dd")), '. Wakes on pair: ', pair, ' spin: ', num2str(in)]);
     plot_step = irf_ask('Step? (0-continue, -1 return) [%]>','plot_step',1);
     if plot_step==0
       plotflag = 0;

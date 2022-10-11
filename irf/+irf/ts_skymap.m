@@ -36,3 +36,4 @@ if ~isnumeric(phi); phi = phi.data; end
 if ~isnumeric(theta); theta = theta.data; end
 
 TS = PDist(epoch,data,'skymap',energy,phi,theta,varargin{:});
+TS.ancillary.energy = energy;

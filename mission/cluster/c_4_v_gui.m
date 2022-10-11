@@ -106,7 +106,7 @@ switch action
     
     ud=get(gcf,'userdata');
     
-    irf_legend(0,['c\_4\_v\_int() ' datestr(now)],[0.01 0.99],'fontsize',7); % add information to the plot
+    irf_legend(0,['c\_4\_v\_int() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0.01 0.99],'fontsize',7); % add information to the plot
     irf_legend(h(1),{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
     hh=h(1,1);  % use the first subplot to estimate available time interval
     xl=get(hh,'XLim');

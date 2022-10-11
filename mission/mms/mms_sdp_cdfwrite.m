@@ -1220,7 +1220,7 @@ cd(oldDir);
     GATTRIB.Discipline = {'Space Physics>Magnetospheric Science'};
     GATTRIB.DOI = cell(0,1); % NASA req. for public data products (ie our L2 scpot), otherwise just recommended
     GATTRIB.Calibration_file = cell(0,1); % Name of calibration file used.
-    GATTRIB.Generation_date = {datestr(now,'yyyymmdd')};
+    GATTRIB.Generation_date = {char(datetime("now","Format","uuuuMMdd"))};
     GATTRIB.Instrument_type = {'Electric Fields (space)'};
     GATTRIB.Logical_file_id = cell(0,1); % Same as filename without ".cdf".
     GATTRIB.Logical_source = cell(0,1); % Ex: mms3_edp_fast_ql_swd (mmsSC_instrument_mode_dataLevel_optionalDescriptor)
