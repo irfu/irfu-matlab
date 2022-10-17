@@ -97,7 +97,7 @@ switch lower(action)
       end
       if nargout, out = false; end
     else
-      disp('YES:)');
+      disp('YES :)');
       if nargout, out = true; end
     end
     
