@@ -71,7 +71,6 @@ switch lower(action)
     data.sc_list=sc_list;
     c_eval('data.r.C?=[];data.R.C?=[];');
     if nargin ==2
-      disp('test')
       t0 = EpochUnix(data.t);
       timeLine = R.time.epochUnix;
       R.C1 = [timeLine R.gseR1];
