@@ -51,6 +51,10 @@
 %           'dc_spec_SCMf'           - DFB DC-coupled SCM, Low Frequency, High Gain, f-component, Sensor coordinates only Enc 1 (2018/11)
 %           'rfs_lfr'                - Radio Frequency Spectrometer, RFS, Low Frequency Reciever, LFR
 %           'rfs_hfr'                - Radio Frequency Spectrometer, RFS, High Frequency Reciever, HFR
+%           'tds_wf'                 - TDS Waveform Bursts-high-gain difference of V2(Ch2)/V5(Ch5) NOT corrected for frequency response (engineering mV).
+%           'tds_wf'                 - TDS Waveform Bursts-high-gain difference of V1-V2(Ch3)/V3-V4(Ch1) NOT corrected for frequency response (engineering mV).
+%           'tds_wf_scm4'            - TDS Waveform Bursts-high-gain SCM MF sensor(Ch4) NOT corrected for frequency response (engineering nT)
+%           'tds_wf_sol_dist'        - TDS Waveform Bursts-provided distance to the sun at the time of this burst.
 %           'spc'                    - SWEAP Solar Probe Cup data for proton moments
 %           'spa_sf0'                - SWEAP SPAN-Ae SPA 3D spectra measured by SPAN-Ae sensor on the ram side of PSP
 %           'spb_sf0'                - SWEAP SPAN-Be SPB 3D spectra measured by SPAN-Be sensor on the anti-ram side of PSP
@@ -448,9 +452,29 @@ switch datatype
       'psp_fld_l2_rfs_lfr_auto_averages_ch0_V1V2';...
       'frequency_lfr_auto_averages_ch0_V1V2';...
       'psp_fld_l2_rfs_lfr_auto_averages_ch1_V3V4';...
-      'frequency_lfr_auto_averages_ch1_V3V4'};
+      'frequency_lfr_auto_averages_ch1_V3V4';...
+      'psp_fld_l2_rfs_lfr_auto_peaks_ch0_V1V2';...
+      'psp_fld_l2_rfs_lfr_auto_peaks_ch1_V3V4';...
+      'psp_fld_l2_rfs_lfr_hires_averages_ch0_V1V2';...
+      'psp_fld_l2_rfs_lfr_hires_averages_ch1_V3V4';...
+      'psp_fld_l2_rfs_lfr_hires_peaks_ch0_V1V2';...
+      'psp_fld_l2_rfs_lfr_hires_peaks_ch1_V3V4';...
+      'psp_fld_l2_rfs_lfr_cross_im_V1V2_V3V4';...
+      'psp_fld_l2_rfs_lfr_cross_re_V1V2_V3V4';...
+      'psp_fld_l2_rfs_lfr_coher_V1V2_V3V4';...
+      'psp_fld_l2_rfs_lfr_phase_V1V2_V3V4'};
     varnamesout = {'rfs_lfr_v1v2';'rfs_lfr_v1v2_freq';...
-      'rfs_lfr_v3v4';'rfs_lfr_v3v4_freq'};
+      'rfs_lfr_v3v4';'rfs_lfr_v3v4_freq';...
+      'rfs_lfr_auto_pks_V1V2';...
+      'rfs_lfr_auto_pks_V3V4';...
+      'rfs_lfr_hires_avs_V1V2';...
+      'rfs_lfr_hires_avs_V3V4';...
+      'rfs_lfr_hires_pks_V1V2';...
+      'rfs_lfr_hires_pks_V3V4';...
+      'rfs_lfr_cross_im_V1V2_V3V4';...
+      'rfs_lfr_cross_re_V1V2_V3V4';...
+      'rfs_lfr_coher_V1V2_V3V4';...
+      'rfs_lfr_phase_V1V2_V3V4'};
     
     hourtag={''};
     
@@ -615,7 +639,24 @@ switch datatype
       'qtn_core_Te';'qtn_ne_delta'};
     
     hourtag={''};  
-    
+
+%   case {'tds_wf_sol_dist'}
+%     filename = 'psp_fld_l2_tds_wf';
+%     varnames = {'PSP_FLD_L2_TDS_WF_SC_Solar_Distance'};
+%     varnamesout = {'tds_wf_sol_dist'};
+%     
+%     hourtag={''};  
+% 
+%   case 'tds_wf'
+%     listCDFFiles = get_file_list('psp_fld_l2_tds_wf');
+%     output       = get_data_tds_wf(listCDFFiles);
+%     return;
+
+  case 'tds_wf_scm4'
+    listCDFFiles = get_file_list('psp_fld_l2_tds_wf');
+    output       = get_data_tds_wf(listCDFFiles);
+    return;  
+
   case 'dbm_dvac'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvac');
     output       = get_data_dbm_dvac(listCDFFiles);
@@ -862,6 +903,42 @@ end
       out = [out fullfile({listDir.folder},{listDir.name})];
     end
   end
+
+%   function out = get_data_tds_wf(listCDFFiles)
+%     % output is structure witf fields
+%     % .ts: time series with two columns tds_wf_burst_V1V2, tds_wf_burst_V3V4, tds_wf_burst_V2 and tds_wf_burst_V5
+%     % .startStopMatriTT: start and stop times of snapshots in TT
+%     % .startStopLineEpoch: vector with start stop times and NaNs inbetween, to plot intervals of snapshots
+%     %               irf_plot([tSnapline tSnapline*0],'-.','markersize',5);
+%     tds_wf = double([]);
+%     tFinal = [];
+%     for iCdfFile = 1:numel(listCDFFiles)
+%       fileCDF = listCDFFiles{iCdfFile};
+%       disp(['Reading: ' fileCDF]);
+%       res = spdfcdfread(fileCDF,'VARIABLES', {...
+%         'PSP_FLD_L2_TDS_WF_Burst_Time_Series_Times_TT2000',...
+%         'PSP_FLD_L2_TDS_WF_Burst_Time_Series_V2_Engineering_mV',...
+%         'PSP_FLD_L2_TDS_WF_Burst_Time_Series_V5_Engineering_mV',...
+%         'PSP_FLD_L2_TDS_WF_Burst_Time_Series_V1V2_Engineering_mV',...
+%         'PSP_FLD_L2_TDS_WF_Burst_Time_Series_V3V4_Engineering_mV'},...
+%         'KeepEpochAsIs',true,'dataonly',true);
+%       tt=res{1}; tempV2 = res{2}; tempV5 = res{3}; tempV1V2 = res{4}; tempV3V4 = res{5};
+%       t=[tt(1,:);tt;tt(end,:)];t=t(:);
+%       tFinal = [tFinal; t];
+%       vecNaN = nan(size(tt,2),1,'single');
+%       tds_wf_tempV2 = [vecNaN tempV2 vecNaN]';
+%       tds_wf_tempV5 = [vecNaN tempV5 vecNaN]';
+%       tds_wf_tempV1V2 = [vecNaN tempV1V2 vecNaN]';
+%       tds_wf_tempV3V4 = [vecNaN tempV3V4 vecNaN]';
+%       tds_wf = [tds_wf; [tds_wf_tempV1V2(:) tds_wf_tempV3V4(:) tds_wf_tempV2(:) tds_wf_tempV5(:)]];
+%     end
+%     tStartStopTT = reshape(tFinal(diff(tFinal)==0),2,[])';
+%     tds_wf(tds_wf < -1e30) = NaN;
+%     tds_wf    = TSeries(EpochTT(tFinal),tds_wf);
+%     tds_wf.name = ['V1V2,' ' ' 'V3V4,' ' ' 'V2,' ' ' 'V5'];
+%     tds_wf.units = 'V';
+%     out = struct('ts_wf',tds_wf,'startStopTT',tStartStopTT);
+%   end
 
   function out = get_data_dbm_dvac(listCDFFiles)
     % output is structure witf fields

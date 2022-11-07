@@ -1090,7 +1090,7 @@ info#end
 varName: psp_fld_l2_mag_SC
 fileName: psp_fld_l2_mag_SC
 directory: fields/l2/mag_SC/20YY/MM
-hourtag: 
+hourtag: 6h
 varNameShort: mag_sc
 related: 
 info#start
@@ -1199,6 +1199,54 @@ low gain mode, due to large intermittent signals related to the SCM
 anomaly described under https://fields.ssl.berkeley.edu/data/#scm-anomaly. 
 Starting from Encounter 5, the DFB was configured to always record 
 SCM burst waveforms in high gain.
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_Burst_Time_Series_V(2|5)_Engineering_mV
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_v(2|5)
+related: 
+info#start
+Time Domain Sampler (TDS) waveform burst time series for the high-gain V2/V5 sensor (Ch2/Ch5) NOT corrected for frequency response (engineering mV).
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_Burst_Time_Series_V(1|3)V(2|4)_Engineering_mV
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_v(1|3)v(2|4)
+related: 
+info#start
+TDS wave-form burst time series for the high-gain difference of V1-V2 (Ch3)/ V3-V4 (Ch1) NOT corrected for frequency response (engineering mV).
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_Burst_Time_Series_SCM4_Engineering_nT
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_scm4
+related: 
+info#start
+TDS wave-form burst time series for the high-gain SCM MF sensor (Ch4) NOT corrected for frequency response (engineering nT).
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_SC_Solar_Distance
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_sol_dist
+related: 
+info#start
+Value is the S/C provided distance to the sun at the time of this burst.
 info#end
 ----
 
