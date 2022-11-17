@@ -1,4 +1,4 @@
-function hout=mms4_pl_conf(time)
+function hout=mms4_pl_conf(time,R_init)
 %MMS.MMS4_PL_CONF   Plot the configuration of MMS in XYZ coordinates
 %
 %   h = MMS.MMS4_PL_CONF([time]);
@@ -27,6 +27,10 @@ end
 if (nargin==1 && ischar(time))
   action=time;
   irf.log('debug',['action=' action]);
+end
+
+if nargin ==2
+ R=R_init;
 end
 
 sc_list=1:4;
@@ -66,8 +70,19 @@ switch lower(action)
     data.plot_type=plot_type;
     data.sc_list=sc_list;
     c_eval('data.r.C?=[];data.R.C?=[];');
-    set(gcf,'userdata',data);
-    mms.mms4_pl_conf('read_position');
+    if nargin ==2
+      t0 = EpochUnix(data.t);
+      timeLine = R.time.epochUnix;
+      R.C1 = [timeLine R.gseR1];
+      R.C2 = [timeLine R.gseR2];
+      R.C3 = [timeLine R.gseR3];
+      R.C4 = [timeLine R.gseR4];
+      data.R =R;
+      set(gcf,'userdata',data);
+    else
+        set(gcf,'userdata',data);
+        mms.mms4_pl_conf('read_position');
+    end 
     mms.mms4_pl_conf(plot_type);
   case 'read_position'
     data=get(gcf,'userdata');

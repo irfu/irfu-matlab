@@ -36,12 +36,13 @@ suite = testsuite(testsToRun);
 
 % Add tests for MATLAB packages where automated test files can be
 % automatically found.
-for pkgPathCa = {'bicas', 'irf.str', 'irf.utils'}
+for pkgPathCa = {'bicas', 'irf.str', 'irf.utils', 'solo.shk'}
     suite = [ ...
         suite, matlab.unittest.TestSuite.fromPackage(...
             pkgPathCa{1}, 'IncludingSubpackages', true) ...
     ];
 end
+
 import matlab.unittest.plugins.TestReportPlugin;
 runner = matlab.unittest.TestRunner.withTextOutput;
 ciPath = [irf('path'), filesep, 'ciPath'];
