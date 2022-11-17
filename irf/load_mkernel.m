@@ -10,6 +10,7 @@ function load_mkernel(mission, varargin)
 %               'parkersolarprobe'
 %               'rosetta'
 %               'solarorbiter'
+%               'comet-interceptor'
 %   ['flown_or_predicted'] - optional indicator of the metakernel to load:
 %          'flown'     = only the reconstructed actual flown orbit kernels.
 %          'predicted' = predicted orbit kernels files, (for past dates
@@ -44,7 +45,7 @@ function load_mkernel(mission, varargin)
 p = inputParser;
 addRequired(p, 'mission', ...
   @(x) any(validatestring(x, ...
-  {'bepicolombo', 'juice', 'parkersolarprobe', 'rosetta', 'solarorbiter'})));
+  {'bepicolombo', 'juice', 'parkersolarprobe', 'rosetta', 'solarorbiter', 'comet-interceptor'})));
 addOptional(p, 'flown_or_predicted', 'predicted', ...
   @(x) any(validatestring(x, {'flown', 'predicted'})));
 parse(p, mission, varargin{:});
@@ -111,12 +112,14 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
   flown.bepicolombo      = 'bc_ops_*.tm'; % BepiColombo flown
   flown.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   flown.solarorbiter     = 'solo_ANC_soc-flown-mk_v*.tm'; % SolO flown
+  flown.cometinterceptor = 'interceptor_study_v02.tm'; % FIXME: Some other orbit senario?/Update when CI has launched.
   
   pred.rosetta           = flown.rosetta; % Rosetta EOL, no more predicted
   pred.juice             = 'juice_crema_5_0b23_1.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
   pred.bepicolombo       = 'bc_plan_*.tm'; % BepiColombo predicted
   pred.parkersolarprobe  = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   pred.solarorbiter      = 'solo_ANC_soc-pred-mk_v*.tm'; % SolO predicted
+  pred.cometinterceptor  = 'interceptor_study_v02.tm'; % FIXME: Some other orbit senario?/Update when CI has launched.
   
   switch p.Results.flown_or_predicted
     case 'predicted'
