@@ -420,9 +420,9 @@ classdef L2L3
             % Set E_x = NaN, but ONLY if assertion deems that the corresponding
             % information is missing.
             %
-            % IMPLEMENTATION NOTE: solo.vdccal set antenna 1 to be zero, if the
-            % source data is non-fill value/NaN, but NaN if fill value. Must
-            % therefore check for both zero and NaN.
+            % IMPLEMENTATION NOTE: solo.vdccal() sets antenna 1 values to be
+            % zero, if its input data is non-fill value/NaN, but NaN if fill
+            % value. Must therefore check for both zero and NaN.
             % Ex: Dataset 2020-08-01
             %===================================================================
             zvEdcMvpm = EdcSrfTs.data;    % MVPM = mV/m

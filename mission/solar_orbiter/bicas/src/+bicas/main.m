@@ -96,7 +96,6 @@ function errorCode = main( varargin )
     %   Ex: Logging settings, CLI arguments(?), error codes & messages(?)
     
     
-    
     try
         
         % NOTE: Permitting logging to file from MATLAB instead of bash wrapper
@@ -117,7 +116,7 @@ function errorCode = main( varargin )
         %       rest of irfu-matlab).
         %
         % IMPLEMENTATION NOTE: bicas.Logger.ICD_log_msg uses
-        % irf.str.add_prefix_on_every_row.
+        % irf.str.add_prefix_on_every_row().
         % ==> Must initialize paths for irf BEFORE using
         %     bicas.Logger.log/logf.
         %========================================================================
@@ -331,7 +330,7 @@ function main_without_error_handling(cliArgumentsList, L)
     L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', ...
         getenv('CDF_LEAPSECONDSTABLE'));
     
-    
+
     
     %===============================
     % Derive BICAS's directory root

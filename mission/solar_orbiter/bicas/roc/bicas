@@ -262,7 +262,6 @@ loggable_main_code() {
     # https://se.mathworks.com/help/matlab/matlab_prog/resolving-out-of-memory-errors.html
     #===============================================================================================================
     echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
-    # NOTE: EJ_library is needed before calling irf(...).
     "${MATLAB_COMMAND}" -nodisplay -r "\
         try;\
             addpath('${BICAS_ROOT_PATH}/src',                   '-begin');\
