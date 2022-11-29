@@ -371,7 +371,7 @@ end
 if plot_type ~=0
   axes(h(1));
   title(['Width Morlet wavelet = ' num2str(Morlet_width)]);
-  %ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
+  %ht=irf_pl_info([mfilename '  ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); set(ht,'interpreter','none'); % add information to the plot
   irf_zoom(h,'x',[min(t) max(t)]);
   irf_timeaxis(h)
 end

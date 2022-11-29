@@ -63,7 +63,7 @@ ccol=['k','r','g','b'];
 h=plot(b1(:,1),d2d1,'-ko','MarkerFaceColor','r','MarkerSize',2);
 title('Distance between flux tubes on which sc are located');
 ylabel('R_a(dots)-R_B(line) [km]');
-irf_pl_info(['c\_pl\_flux\_tube\_distance() ' datestr(now)]); % add information to the plot
+irf_pl_info(['c\_pl\_flux\_tube\_distance() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
 
 grid on
 hold on

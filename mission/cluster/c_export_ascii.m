@@ -669,7 +669,7 @@ if CEF
     fprintf(fid,[mask '\n'],var(j,2:end)');
   end
 else
-  fprintf(fid,['%% this file was created on ' datestr(now) ' \n%%\n']);
+  fprintf(fid,['%% this file was created on ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss")) ' \n%%\n']);
   fprintf(fid,['%% SC:        Cluster ' cl_id ' \n']);
   fprintf(fid,['%% Intrument: ' inst ' \n']);
   fprintf(fid,['%% Signal:    ' sig ' \n']);

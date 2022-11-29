@@ -50,7 +50,7 @@ print -depsc2 -painters -loose delme.eps  % -loose is necessary for MATLAB2014 a
 %
 % text and legends
 help irf_legend
-ht=irf_legend(gca,[mfilename '  ' datestr(now)],[0.02 1.01], 'interpreter','none','fontsize',8);
+ht=irf_legend(gca,[mfilename '  ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0.02 1.01], 'interpreter','none','fontsize',8);
 %
 % labels a),b)...
 help irf_pl_number_subplots

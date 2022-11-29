@@ -231,7 +231,7 @@ elseif flag_same_e && flag_dE && flag_dE_SameDim
     energylower = energy - energy_minus;
     vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
     vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
-elseif ~flag_same_e && ~flag_dE && ~flag_dE_SameDim
+elseif ~flag_same_e % && ~flag_dE && ~flag_dE_SameDim
   energy0 = pdist.ancillary.energy0;
   energy1 = pdist.ancillary.energy1;
   if size(energy1,2) == 1

@@ -47,7 +47,7 @@ end
 switch action
   case 'create_default_object'
     % if no input arguments, create a default object
-    dobj.FileModDate = datestr(now);
+    dobj.FileModDate = char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"));
     dobj.VariableAttributes = {};
     dobj.GlobalAttributes = {};
     dobj.Variables = {};

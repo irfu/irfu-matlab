@@ -63,7 +63,7 @@ ccol=['k','r','g','b'];
 plot(sc_distance(:,1),sc_distance(:,2),'-ko','MarkerFaceColor','r','MarkerSize',2);
 title('Sc separation');
 ylabel('dR [km]');
-irf_pl_info(['c\_sc\_distance() ' datestr(now)]); % add information to the plot
+irf_pl_info(['c\_sc\_distance() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
 
 grid on
 hold on

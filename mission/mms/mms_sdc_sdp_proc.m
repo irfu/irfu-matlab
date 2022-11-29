@@ -7,7 +7,7 @@ function mms_sdc_sdp_proc( procName, varargin)
 
 % Store runTime when script was called. To ease for SDC, keep track of
 % start time (logs are written with this time in their file name).
-runTime = datestr(now,'yyyymmddTHHMMSS');
+runTime = char(datetime("now","Format","uuuuMMdd'T'HHmmss"));
 
 global ENVIR MMS_CONST;
 

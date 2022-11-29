@@ -19,7 +19,7 @@ function [ outFileName ] = mms_sdp_cdfwrite( HeaderInfo, Dmgr )
 % Verify that we have all the information that is required.
 narginchk(2,2);
 
-global ENVIR;
+global ENVIR; %#ok<GVMIS>
 MMS_CONST = Dmgr.CONST;
 
 INST_NAME = 'edp'; % Electric double probe
@@ -1047,6 +1047,63 @@ switch procId
       name.dplus,   'support_data'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
     
+    %% Update GlobalAttribute
+    % ref: https://heliophysicsdata.gsfc.nasa.gov/queries/CDAWeb_SPASE.html
+    % (as per 2022-08-30T11:30 CEST)
+    switch tmMode
+      case MMS_CONST.TmMode.brst
+        GATTRIB.spase_DatasetResourceID = {sprintf('spase://NASA/NumericalData/MMS/%i/FIELDS/EDP/Burst/Level2/SpacecraftPotential/PT0.0001220703125S', scId)};
+        switch scId
+          case 1
+            doiSuffix = '7t5y-eq71';
+          case 2
+            doiSuffix = 'a6r6-hr28';
+          case 3
+            doiSuffix = 'x3td-gh63';
+          case 4
+            doiSuffix = 'j5ge-t096';
+          otherwise
+            errStr = 'MMS scId must be one of [1, 2, 3 or 4].';
+            irf.log('critical', errStr);
+            error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
+        end
+      case MMS_CONST.TmMode.fast
+        GATTRIB.spase_DatasetResourceID = {sprintf('spase://NASA/NumericalData/MMS/%i/FIELDS/EDP/Fast/Level2/SpacecraftPotential/PT0.03125S', scId)};
+        switch scId
+          case 1
+            doiSuffix = 'jjsp-6g51';
+          case 2
+            doiSuffix = 'myvz-be60';
+          case 3
+            doiSuffix = 'kzh6-vf67';
+          case 4
+            doiSuffix = '194m-pq72';
+          otherwise
+            errStr = 'MMS scId must be one of [1, 2, 3 or 4].';
+            irf.log('critical', errStr);
+            error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
+        end
+      case MMS_CONST.TmMode.slow
+        GATTRIB.spase_DatasetResourceID = {sprintf('spase://NASA/NumericalData/MMS/%i/FIELDS/EDP/Slow/Level2/SpacecraftPotential/PT0.125S', scId)};
+        switch scId
+          case 1
+            doiSuffix = '5t77-ka57';
+          case 2
+            doiSuffix = 'mgay-bk26';
+          case 3
+            doiSuffix = '5vc4-ys82';
+          case 4
+            doiSuffix = 't44j-x227';
+          otherwise
+            errStr = 'MMS scId must be one of [1, 2, 3 or 4].';
+            irf.log('critical', errStr);
+            error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
+        end
+      otherwise
+        % error
+    end
+    GATTRIB.DOI = {['https://doi.org/10.48322/', doiSuffix]};
+
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
@@ -1161,8 +1218,9 @@ cd(oldDir);
     GATTRIB.Data_version = cell(0,1); % Same as version number in filename.
     GATTRIB.Descriptor = {'EDP>Electric Double Probe'};
     GATTRIB.Discipline = {'Space Physics>Magnetospheric Science'};
+    GATTRIB.DOI = cell(0,1); % NASA req. for public data products (ie our L2 scpot), otherwise just recommended
     GATTRIB.Calibration_file = cell(0,1); % Name of calibration file used.
-    GATTRIB.Generation_date = {datestr(now,'yyyymmdd')};
+    GATTRIB.Generation_date = {char(datetime("now","Format","uuuuMMdd"))};
     GATTRIB.Instrument_type = {'Electric Fields (space)'};
     GATTRIB.Logical_file_id = cell(0,1); % Same as filename without ".cdf".
     GATTRIB.Logical_source = cell(0,1); % Ex: mms3_edp_fast_ql_swd (mmsSC_instrument_mode_dataLevel_optionalDescriptor)
@@ -1172,6 +1230,7 @@ cd(oldDir);
     GATTRIB.PI_affiliation = {'SWRI, LASP, KTH'};
     GATTRIB.PI_name = {'J.Burch, R.Ergun, P.Lindqvist.'};
     GATTRIB.Project = {'STP>Solar-Terrestrial Physics'};
+    GATTRIB.spase_DatasetResourceID = cell(0,1); % NASA req. for public data products (ie our L2 scpot), otherwise just recommended
     GATTRIB.Source_name = {sprintf('MMS%i>MMS Satellite Number %i',scId,scId)}; % Or possibly 'MMS>MMS Constellation'.
     GATTRIB.TEXT = {'https://mms.gsfc.nasa.gov/'; ...
       ['The full name of PI affiliations: SWRI - Southwest Research Institute. ',...
@@ -1202,7 +1261,7 @@ cd(oldDir);
     end
     % Global Attributes OPTIONAL:
     %    GATTRIB.Parents = cell(0,1); % Req if number of source cdf >= 2.
-    GATTRIB.Skeleton_version = {'v0.0.7'};
+    GATTRIB.Skeleton_version = {'v0.0.8'};
     GATTRIB.Rules_of_use = cell(0,1);
     GATTRIB.Time_resolution = cell(0,1);
   end

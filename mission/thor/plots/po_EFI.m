@@ -420,8 +420,8 @@ if 1 % plot electric field noises
 
   irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
 end
-irf_legend(0,['PO EFI-HFA noise ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
-irf_print_fig(['HFA_noise_' datestr(now,'yyyymmdd')],'png')
+irf_legend(0,['PO EFI-HFA noise ' char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"))],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_print_fig(['HFA_noise_' char(datetime("now","Format","uuuuMMdd"))],'png')
 
 if 1 % initialize figure - SDP
   figure(13);clf
@@ -519,8 +519,8 @@ if 1 % plot electric field noises
   end
   %irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
 end
-irf_legend(0,['THOR EFI-SDP noise ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
-irf_print_fig(['SDP_noise_' datestr(now,'yyyymmdd')],'png')
+irf_legend(0,['THOR EFI-SDP noise ' char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"))],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_print_fig(['SDP_noise_' char(datetime("now","Format","uuuuMMdd"))],'png')
 
 
 %% HFA in dB uV/m
@@ -554,8 +554,8 @@ if 1
   title(['EFI-' ant ' requirement'])
   ylabel('E-field [ dB ({\mu}V/m) ]'), xlabel('frequency [Hz]')
   legend('Broadband noise limit','Limit for stable narrowband emissions')
-  irf_legend(0,['THOR EFI-' ant ' EMC req ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
-  irf_print_fig([ant '_req_dBuVm_' datestr(now,'yyyymmdd')],'png')
+  irf_legend(0,['THOR EFI-' ant ' EMC req ' char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"))],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+  irf_print_fig([ant '_req_dBuVm_' char(datetime("now","Format","uuuuMMdd"))],'png')
 end
 
 %% SDP in dB uV/m
@@ -607,8 +607,8 @@ if 1
   title(['EFI-' ant ' requirement'])
   ylabel('E-field [ dB ({\mu}V/m) ]'), xlabel('frequency [Hz]')
   legend('Broadband noise limit (goal --)','Limit for stable narrowband emissions  (goal --)')
-  irf_legend(0,['THOR EFI-' ant ' EMC req ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
-  irf_print_fig([ant '_req_dBuVm_' datestr(now,'yyyymmdd')],'png')
+  irf_legend(0,['THOR EFI-' ant ' EMC req ' char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"))],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+  irf_print_fig([ant '_req_dBuVm_' char(datetime("now","Format","uuuuMMdd"))],'png')
 end
 
 %% compare to SolO, JUICE
@@ -672,8 +672,8 @@ set(gca,'XLim',[.1 2e5],'YLim',[-20 38])
 grid on, set(gca,'xminorgrid','off'), set(gca,'yminorgrid','off')
 title(['EMC reqs on broadband noise (scaled to HFA location)'])
 
-irf_legend(0,['THOR/JUICE/SOLO EMC req ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
-irf_print_fig(['THOR_EMC_vs_JUICE_SOLO_' datestr(now,'yyyymmdd')],'png')
+irf_legend(0,['THOR/JUICE/SOLO EMC req ' char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"))],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_print_fig(['THOR_EMC_vs_JUICE_SOLO_' char(datetime("now","Format","uuuuMMdd"))],'png')
 
 %% compare to SolO, JUICE in dB (uV/m)^2 /Hz
 
@@ -729,5 +729,5 @@ set(gca,'XLim',[.1 2e5],'YLim',[-20 38])
 grid on, set(gca,'xminorgrid','off'), set(gca,'yminorgrid','off')
 title(['EMC reqs on broadband noise (scaled to 1m from the S/C)'])
 
-irf_legend(0,['THOR/JUICE/SOLO EMC req ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
-irf_print_fig(['THOR_EMC_vs_JUICE_SOLO_' datestr(now,'yyyymmdd')],'png')
+irf_legend(0,['THOR/JUICE/SOLO EMC req ' char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"))],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_print_fig(['THOR_EMC_vs_JUICE_SOLO_' char(datetime("now","Format","uuuuMMdd"))],'png')

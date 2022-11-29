@@ -61,7 +61,6 @@
 %       PROPOSAL: plot_*
 %       PROPOSAL: 24_6_2_h
 %
-%
 % NOTE: Mission begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
 % ==> Code fails for week Monday-to-Sunday.
@@ -69,13 +68,27 @@
 %
 % PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
 %           of via TimeIntervalNonWeeks and TimeIntervalWeeks.
+% PROPOSAL: Print time intervals for which
+%           solo.qli.quicklooks_24_6_2_h() and
+%           solo.qli.quicklooks_7days() are called.
+%   PRO: Text will be stored in logs (not created by this code, but by bash
+%        wrapper scripts).
+%   PRO: Useful for more easily determining for which time intervals the code
+%        (those two functions) crashes.
+%
+% PROPOSAL: Catch plot bugs?
+% PROPOSAL: Some way of handling disk access error?
+%   PROPOSAL: try-catch plot code once (weekly or non-weekly plot function).
+%             Then try without catch a second time, maybe after delay.
+%             If the first call fails due to disk access error, it might still
+%             trigger automount which makes the second attempt succeed.
 
 
 %============
 % ~Constants
 %============
-% IMPLEMENTATION NOTE: Disabling B (use empty) speeds up
-% solo.qli.quicklooks_24_6_2_h() greatly. Useful for testing.
+% IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
+% speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
 ENABLE_B = 1;
 
 % Specify subdirectories for saving the respective types of plots.
@@ -129,7 +142,7 @@ end
 % Run the code for 2-, 6-, 24-hour quicklooks
 %=============================================
 if runNonweeklyPlots
-    
+
     times_1d = make_time_array(TimeIntervalNonWeeks, 1); % Daily time-intervals
 
     % Load data
@@ -139,69 +152,10 @@ if runNonweeklyPlots
     vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
 
     for iTint=1:length(times_1d)-1
-        % Time interval
+        % Select time interval.
         Tint=irf.tint(times_1d(iTint), times_1d(iTint+1));
-        
-        Data = [];
 
-        Data.Vrpw = vht1h.V_RPW_1h.tlim(Tint);
-
-        % E-field:
-        Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
-        
-        % RPW density:
-        Data.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
-        
-        % B-field:
-        Data.B = db_get_ts('solo_L2_mag-rtn-normal','B_RTN', Tint);
-        
-        % Proton & alpha temperature:
-        Data.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
-        
-        % Proton & alpha velocity:
-        Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
-        
-        % Proton & alpha density:
-        Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
-        
-        % Ion spectrum
-        Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
-        
-        %TNR E-field
-        Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
-        
-        % Solar Orbiter position
-        % Note: solopos uses SPICE, but should be taken care of by
-        % "solo.get_position".
-%         posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
-%         if ~isempty(posSolO)
-%             [radius, lon, lat] = cspice_reclat(posSolO.data');
-%             Data.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
-%         else
-%             Data.solopos=posSolO;
-%         end
-        Data.solopos = get_SolO_pos(Tint);
-        
-        % Earth position (also uses SPICE)
-        dt=60*60;
-%         et = Tint.start.tts:dt:Tint.stop.tts;
-%         posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
-%         if ~isempty(posEarth)
-%             [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
-%             Data.earthpos = [E_radius',E_lon',E_lat'];    
-%         else
-%             Data.earthpos=[];
-%         end
-        Data.earthpos = get_Earth_pos(Tint, dt);
-
-
-        if ~ENABLE_B
-            Data.B = [];
-        end
-
-        % Plot data and save figure
-        solo.qli.quicklooks_24_6_2_h(Data,PATHS,Tint,logoPath)
-        
+        quicklooks_24_6_2_h_local(Tint, vht1h, PATHS, logoPath, ENABLE_B)
     end    % for
 end
 
@@ -211,83 +165,19 @@ end
 % Run the code for weekly overviews
 %===================================
 if runWeeklyPlots
-        
+
     times_7d = make_time_array(TimeIntervalWeeks, 7);% weekly time-intervals
-    
+
     % Load data
     % This is the .mat file containing RPW speeds at 6h resolution.
     % The file should be in the same folder as this script (quicklook_main).
     vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
-    
+
     for iTint=1:length(times_7d)-1
-  
-        % Time interval
+        % Select time interval.
         Tint = irf.tint(times_7d(iTint), times_7d(iTint+1));
-        
-        Data2 = [];
-        
-        Data2.Vrpw = vht6h.V_RPW.tlim(Tint);
-        
-        % E-field:
-        Data2.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
-        
-        % RPW density:
-        Data2.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
-        
-        % B-field:
-        Data2.B = db_get_ts('solo_L2_mag-rtn-normal-1-minute','B_RTN', Tint);
-        
-        % Proton & alpha temperature:
-        Data2.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
-        
-        % Proton & alpha velocity:
-        Data2.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
-        
-        % Proton & alpha density:
-        Data2.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
-                
-        % Ion spectrum
-        Data2.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
-     
-        %TNR E-field
-        Data2.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
-        
-        % Solar Orbiter position
-        % Note: solopos uses SPICE, but should be taken care of by
-        % "solo.get_position".
-%         posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
-%         if ~isempty(posSolO)
-%             [radius, lon, lat] = cspice_reclat(posSolO.data');
-%             Data2.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
-%         else
-%             Data2.solopos=posSolO;
-%         end
-        Data2.solopos = get_SolO_pos(Tint);
-        
-        % Earth position (also uses SPICE)
-        dt=60*60;
-        Tlength=Tint(end)-Tint(1);
-        dTimes = 0:dt:Tlength;
-        Times = Tint(1)+dTimes;
-%         et = Tint.start.tts:dt:Tint.stop.tts;
-%         posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
-%         if ~isempty(posEarth)
-%             [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
-%             Data2.earthpos = irf.ts_vec_xyz(Times,[E_radius',E_lon',E_lat']);    
-%         else
-%             Data2.earthpos=TSeries();
-%         end
-        earthPos = get_Earth_pos(Tint, dt);
-        if ~isempty(earthPos)
-            Data2.earthpos = irf.ts_vec_xyz(Times, earthPos);
-        else
-            Data2.earthpos = TSeries();
-        end
-        
-        
-        % Plot data and save figure
-        solo.qli.quicklooks_7days(Data2,PATHS,Tint,logoPath)
-        
+
+        quicklooks_7days_local(Tint, vht6h, PATHS, logoPath)
     end    % for
 end
 
@@ -306,15 +196,147 @@ end    % function
 
 
 
+function quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, enableB)
+    Data = [];
+
+    Data.Vrpw = vht1h.V_RPW_1h.tlim(Tint);
+
+    % E-field:
+    Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
+
+    % RPW density:
+    Data.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
+
+    % B-field:
+    Data.B = db_get_ts('solo_L2_mag-rtn-normal','B_RTN', Tint);
+
+    % Proton & alpha temperature:
+    Data.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
+
+    % Proton & alpha velocity:
+    Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
+
+    % Proton & alpha density:
+    Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
+
+    % Ion spectrum
+    Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
+
+    %TNR E-field
+    Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+
+    % Solar Orbiter position
+    % Note: solopos uses SPICE, but should be taken care of by
+    % "solo.get_position".
+    % posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
+    % if ~isempty(posSolO)
+    %     [radius, lon, lat] = cspice_reclat(posSolO.data');
+    %     Data.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
+    % else
+    %     Data.solopos=posSolO;
+    % end
+    Data.solopos = get_SolO_pos(Tint);
+
+    % Earth position (also uses SPICE)
+    dt=60*60;
+    % et = Tint.start.tts:dt:Tint.stop.tts;
+    % posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+    % if ~isempty(posEarth)
+    %     [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
+    %     Data.earthpos = [E_radius',E_lon',E_lat'];
+    % else
+    %     Data.earthpos=[];
+    % end
+    Data.earthpos = get_Earth_pos(Tint, dt);
+
+    if ~enableB
+        Data.B = [];
+    end
+
+    % Plot data and save figure
+    solo.qli.quicklooks_24_6_2_h(Data, Paths, Tint, logoPath)
+end
+
+
+
+function quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+    Data = [];
+
+    Data.Vrpw = vht6h.V_RPW.tlim(Tint);
+
+    % E-field:
+    Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
+
+    % RPW density:
+    Data.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
+
+    % B-field:
+    Data.B = db_get_ts('solo_L2_mag-rtn-normal-1-minute','B_RTN', Tint);
+
+    % Proton & alpha temperature:
+    Data.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
+
+    % Proton & alpha velocity:
+    Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
+
+    % Proton & alpha density:
+    Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
+
+    % Ion spectrum
+    Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
+
+    %TNR E-field
+    Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+
+    % Solar Orbiter position
+    % Note: solopos uses SPICE, but should be taken care of by
+    % "solo.get_position".
+    % posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
+    % if ~isempty(posSolO)
+    %     [radius, lon, lat] = cspice_reclat(posSolO.data');
+    %     Data2.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
+    % else
+    %     Data2.solopos=posSolO;
+    % end
+    Data.solopos = get_SolO_pos(Tint);
+
+    % Earth position (also uses SPICE)
+    dt=60*60;
+    Tlength=Tint(end)-Tint(1);
+    dTimes = 0:dt:Tlength;
+    Times = Tint(1)+dTimes;
+    % et = Tint.start.tts:dt:Tint.stop.tts;
+    % posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+    % if ~isempty(posEarth)
+    %     [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
+    %     Data2.earthpos = irf.ts_vec_xyz(Times,[E_radius',E_lon',E_lat']);
+    % else
+    %     Data2.earthpos=TSeries();
+    % end
+    earthPos = get_Earth_pos(Tint, dt);
+    if ~isempty(earthPos)
+        Data.earthpos = irf.ts_vec_xyz(Times, earthPos);
+    else
+        Data.earthpos = TSeries();
+    end
+
+    % Plot data and save figure
+    solo.qli.quicklooks_7days(Data, Paths, Tint, logoPath)
+end
+
+
+
 % Get Solar Orbiter position
 %
 % NOTE: Uses SPICE and "solo.get_position()".
 function soloPos = get_SolO_pos(Tint)
-    % IM = irfu-matlab
+    % IM = irfu-matlab (as opposed to SPICE).
     imSoloPos = solo.get_position(Tint,'frame','ECLIPJ2000');
 
     % BUG?!!: If solo.get_position() is non-empty, and presumably contains a
-    %         value, THEN use SPICE value anyway?!!
+    %         value, THEN use SPICE value anyway?!! Note: This behaviour does
+    %         however mimick the behaviour of the original code (before
+    %         refactoring).
     if ~isempty(imSoloPos)
         [radius, lon, lat] = cspice_reclat(imSoloPos.data');
         soloPos = irf.ts_vec_xyz(imSoloPos.time,[radius',lon',lat']);
@@ -391,12 +413,12 @@ end
 %
 function Ts = db_get_ts(varargin)
     temp = solo.db_get_ts(varargin{:});
-    
+
     % Normalize (TSeries or cell array) --> TSeries.
     if iscell(temp)
         temp = cell_array_TS_to_TS(temp);
     end
-    
+
     Ts = temp;
 end
 
@@ -404,7 +426,7 @@ end
 
 % Takes a cell-array of TSeries and merges them to one TSeries.
 function OutputTs = cell_array_TS_to_TS(InputTs)
-    
+
     assert(iscell(InputTs))
 
     nCells   = numel(InputTs);
@@ -415,7 +437,7 @@ function OutputTs = cell_array_TS_to_TS(InputTs)
             OutputTs = OutputTs.combine(InputTs{iCell});
         end
     end
-    
+
 end
 
 
@@ -431,7 +453,7 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
 
     dv1  = irf.cdf.TT2000_to_datevec(t1.ttns);
     dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
-    
+
     % Round to midnight.
     dt1b = dateshift(dt1a, 'start', 'day');
     if (roundDir == 1) && (dt1a ~= dt1b)
@@ -439,7 +461,7 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
         % timestamp is already midnight. Therefore do not want use that.
         dt1b = dt1b + days(1);
     end
-    
+
     % Round to week boundary, as defined by beginningOfWeek.
     % NOTE: dateshift( 'dayofweek' ) rounds to next match, including potentially
     % the same day.
@@ -447,7 +469,7 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
     if (roundDir == -1) && (dt1b ~= dt1c)
         dt1c = dt1c - days(7);
     end
-    
+
     tt2000 = irf.cdf.datevec_to_TT2000(datevec(dt1c));
     t2     = irf.time_array(tt2000);
 end

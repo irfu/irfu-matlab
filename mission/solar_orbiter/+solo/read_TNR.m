@@ -224,9 +224,20 @@ function out_struct = rcdf(path, tint)
 %     out_struct : struct
 %       L2 data structure.
     
-    
-    
-    data_obj = dataobj(path);
+    try
+        data_obj = dataobj(path);
+    catch CauseExc
+        % IMPLEMENTATION NOTE: Assumes that error is due to File-not-found.
+        % "path" contains "*" i.e. it is not a real path, but dataobj() can
+        % handle that. Can therefore not (easily) manually check for path
+        % existence outside of dataobj().
+        % SolO IRFU quicklooks (solo.qli.quicklooks_main()) fails for 2022-08-08
+        % if not for some way of handling non-existent path here.
+        % /Erik P G Johansson 2022-09-12
+        Exc = MException('read_TNR:FileNotFound', 'Can not find/open file path="%s".', path);
+        Exc = addCause(Exc, CauseExc);
+        throw(Exc)
+    end
 
     % Key of the TNR frequencies
     freqs_key = 'TNR_BAND_FREQ';

@@ -111,7 +111,7 @@ for ic=sc_list % which satellite
   else
     disp('No satellite potential data');
   end
-  irf_pl_info([mfilename '  '  datestr(now)]); % add information to the plot
+  irf_pl_info([mfilename '  '  char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
   
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(b_lmn);grid on;axis tight;ylabel('B_{LMN} [nT]');

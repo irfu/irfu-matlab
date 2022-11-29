@@ -199,8 +199,14 @@ if ~isempty(data.ieflux)
 end 
 
 %E-field spectrum (TNR)
-if ~isempty(data.Etnr) 
-    [TNR] =  solo.read_TNR(Tint);
+if ~isempty(data.Etnr)
+    try
+        [TNR] = solo.read_TNR(Tint);
+    catch Exc
+        if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
+            TNR = [];
+        end
+    end
     if isa(TNR,'struct')
         sz_tnr = size(TNR.p);
         if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
@@ -273,8 +279,7 @@ if ~isempty(logoPath)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
-tempdate=datestr(date,2);
-currdate=['20',tempdate(7:8),'-',tempdate(1:2),'-',tempdate(4:5)];
+currdate = char(datetime("now","Format","uuuu-MM-dd"))
 infostr = ['Swedish Institute of Space Physics, Uppsala (IRFU), ',currdate];
 infostr2 = '. Data available at http://soar.esac.esa.int/';
 text(h(1),0,1.2,[infostr,infostr2],'Units','normalized')

@@ -167,7 +167,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     OutGaSubset.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
     
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
-    OutGaSubset.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         
+    OutGaSubset.Generation_date     = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
     
     % NOTE: Parsing OUTPUT dataset filename to set some global attributes.
     [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = parse_dataset_filename(outputFilename);

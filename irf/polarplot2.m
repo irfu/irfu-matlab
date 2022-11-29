@@ -151,7 +151,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   xlabel('UT')
   ylabel('mV/m')
   title([' nfft=' num2str(steplength) ', av=' num2str(avnumber)] )
-  ht=irf_pl_info(['polarplot2() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none');
+  ht=irf_pl_info(['polarplot2() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],gca,[0,1 ]); set(ht,'interpreter','none');
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
   
