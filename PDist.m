@@ -1399,8 +1399,10 @@ classdef PDist < TSeries
       PD.userData = dist.userData;
       PD.ancillary.v_units = 'km/s';
       PD.ancillary.energy = obj.depend{1};
-      PD.ancillary.delta_energy_minus = obj.ancillary.delta_energy_minus;
-      PD.ancillary.delta_energy_plus = obj.ancillary.delta_energy_plus;
+      if isfield(obj.ancillary,'delta_energy_minus')
+        PD.ancillary.delta_energy_minus = obj.ancillary.delta_energy_minus;
+        PD.ancillary.delta_energy_plus = obj.ancillary.delta_energy_plus;
+      end
       
       % set units and projection directions
       if dim == 1
