@@ -18,7 +18,7 @@ START_META     =   DATASET_DESCRIPTION
    ENTRY       =   "This dataset contains measurements of the"
    ENTRY       =   "electric field measured by probes 12/32 and 34"
    ENTRY       =   "from the EFW experiment on the Cluster CXXX spacecraft."
-   ENTRY       =   "Flag_p32 indicates whether P12 (Flag_p32=0) of P32 (Flag_p32=0)"
+   ENTRY       =   "Flag_p32 indicates whether P12 (Flag_p32=0) or P32 (Flag_p32=1)"
    ENTRY       =   "is used for E12/32."
 END_META       =   DATASET_DESCRIPTION
 START_META     =   TIME_RESOLUTION
