@@ -36,4 +36,4 @@ START_META     =   INSTRUMENT_CAVEATS
    ENTRY       =   ""
    ENTRY       =   "EFW operations caveats:"
    ENTRY       =   "*C1_CQ_EFW_INST"
-END_META       =   INSTRUMENT_CAVEATS 
+END_META       =   INSTRUMENT_CAVEATS
