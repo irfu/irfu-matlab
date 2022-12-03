@@ -2,6 +2,8 @@
 ! Source: C4_CH_EFW_INST_CAV.ceh
 !
 START_META     =   INSTRUMENT_CAVEATS
+   ENTRY       =   "Before 2001-02-01: Commissioning data. Use with care."
+   ENTRY       =   ""
    ENTRY       =   "Events:"
    ENTRY       =   ""
    ENTRY       =   "2013-07-01 14:43 Probe 4 failed"
@@ -12,13 +14,10 @@ START_META     =   INSTRUMENT_CAVEATS
    ENTRY       =   "Before 2013-07-01 C4 EFW uses all probes, and full time resolution"
    ENTRY       =   "vector electric field data are available using 4 probes in the spin"
    ENTRY       =   "plane."
-   ENTRY       =   "After 2013-07-01 C4 EFW uses only 3 probes, and full time resolution"
-   ENTRY       =   "vector electric field data are available using only 3 probes in the spin"
-   ENTRY       =   "plane. The effect is reduced quality in the full time resolution"
-   ENTRY       =   "electric field data (25 samples/s in NM, 450 samples/s in BM)."
-   ENTRY       =   "Spacecraft potential data and 4-second resolution electric field data"
-   ENTRY       =   "are not affected."
-   ENTRY       =   "After 2015-02-17 no full resolution data available."
+   ENTRY       =   ""
+   ENTRY       =   "After 2013-07-01 C4 EFW uses only 3 probes."
+   ENTRY       =   "Electric field is obtained from one probe pair (p12)."
+   ENTRY       =   "Electric field is not available at full resolution."
    ENTRY       =   "All products have reduced quality."
    ENTRY       =   ""
    ENTRY       =   "EFW operations caveats:"
