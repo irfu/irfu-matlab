@@ -246,7 +246,7 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
                                 for k=1:length(vdf_files)
                                     tmpDataObj = dataobj([vdf_files(k).path, filesep, vdf_files(k).name]);
                                     PDout = solo.make_pdist(tmpDataObj);
-                                    res.(irf_time(vdf_files(k).start,'epochtt>utc_Tyyyymmdd')) = PDout.tlim(Tint);
+                                    res.(irf_time(Tint(1),'epochtt>utc_Tyyyymmdd')) = PDout.tlim(Tint);
                                     clear PDout
                                 end
                             else
