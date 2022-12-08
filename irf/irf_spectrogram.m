@@ -30,6 +30,7 @@ function [hout,hcb,hlpe] = irf_spectrogram(varargin)
 %              'log' - (default) plot spectrogram values in log10 scale
 %              'donotfitcolorbarlabel' - do not shrink colorbar label fonts to fit axes size
 %              'donotshowcolorbar' - do not create a colorbar in plot
+%              'donotassumetimeaxis' - do not assume that x axis is time, e.g. plotting pitch angle spectrograms
 %
 % See also IRF_POWERFFT
 
@@ -51,6 +52,7 @@ f_multiplier = 1;          % default value using Hz units when units not specifi
 fitColorbarLabel = true;   % fit font size of colorbar label to fit into axes size
 showColorbar = true;
 flagReducePlot = false;    % by default do not reduce spectrogram size to fit window pixels
+useTStartEpoch = true;
 
 %% Check input
 if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
@@ -71,6 +73,8 @@ if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
           flagReducePlot = true;
         case 'donotshowcolorbar'
           showColorbar = false;
+        case 'donotassumetimeaxis'
+          useTStartEpoch = false;
         otherwise
           errStr= ['irf_spectrogram(), unknown flag:' flagValue];
           irf.log('critical',errStr);
@@ -272,7 +276,11 @@ for comp=1:min(length(h),ncomp)
   if flagLog
     cData = log10(cData);
   end
-  xData = double(tt-t_start_epoch)';
+  if useTStartEpoch
+    xData = double(tt-t_start_epoch)';
+  else 
+    xData = double(tt)';
+  end
   if flagReducePlot
     axes(h(comp));
     hlpe = SpecPlotReducer(xData,ff,cData);
