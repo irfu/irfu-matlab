@@ -34,7 +34,7 @@ if isempty(calfile_name)
     % Caller did not specify calibration file.
     % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
     % OFFICIAL DATASETS.
-    calfile_name = 'd23K123_20220124.mat';
+    calfile_name = 'd23K123_20221206.mat';
 else
     % Caller specified calibration file. Useful for debugging/testing new
     % calibrations.
