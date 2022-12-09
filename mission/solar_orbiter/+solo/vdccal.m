@@ -34,7 +34,7 @@ if isempty(calfile_name)
     % Caller did not specify calibration file.
     % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
     % OFFICIAL DATASETS.
-    calfile_name = 'd23K123_20220124.mat';
+    calfile_name = 'd23K123_20221206.mat';
 else
     % Caller specified calibration file. Useful for debugging/testing new
     % calibrations.
@@ -51,7 +51,7 @@ a = load(calfile_name);
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
 % timestamp, so that a constant value represents the same function/algorithm.
-codeVerStr = '2021-10-21T12:00:00';
+codeVerStr = '2022-12-06T13:23:14';
 % Version of the .mat file. Using filename, or at least for now.
 % This string is used by BICAS to set a CDF global attribute in official
 % datasets for traceability.
@@ -125,9 +125,9 @@ for isub=1:length(sub_int_times)-1
     V3 = double(VDC.z.data);
     V23 = (V2_scaled+V3)/2; % Corresponding to a measurement point between the two antennas.
 
-    V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); %Correcting V23 to V1
+    V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); % Correcting V23 to V1
     
-    PSP = irf.ts_scalar(VDC.time,(V23_scaled + V1)/2); %Compute PSP from corrected quantities.
+    PSP = irf.ts_scalar(VDC.time,(V23_scaled + V1)/2); % Compute PSP from corrected quantities.
     
     % Use alternate, simpler "calculation" for single-probe data.
     PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
@@ -145,13 +145,13 @@ for isub=1:length(sub_int_times)-1
     V_d23 = V2_scaled-V3; %Fixed V2-V3.
     Ey_SRF = -V_d23*1e3/6.99;
     
-    % Ez_SRF = V23 - V1
-    % Here we use the antenna length of 11.2 m, which correponds to
+    % Here we use the effective antenna length of 11.2 m, which correponds to
     % the distance between the center of ANT1 and a symmetric antenna on the
-    % other side having voltage V23 corr.
-    Ez_SRF = V23 - V1;  %Note that V23 is not scaled with K123, d123.
-%     Ez_SRF = V23.*K123R.data(:,1)+K123R.data(:,2) - V1; % Scale V23.
-    Ez_SRF = Ez_SRF*1e3/11.2;
+    % other side having voltage V23_scaled (see above).
+    
+    % For non scaled V23, the effective length would be L_123 = 6.97m, as shown in
+    % Steinvall et al., 2021
+    Ez_SRF = (V23_scaled - V1)*1e3/11.2;
     
     DCE_SRF = irf.ts_vec_xyz(VDC.time,[Ey_SRF*0 Ey_SRF Ez_SRF]);
     DCE_SRF.units = 'mV/m';

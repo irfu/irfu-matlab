@@ -10,7 +10,7 @@ function [DCE_SRF, params, E_vxb] = cal_efield_int(tt,win,plot_cali,output_res,v
 %   win is the total length of the window in hours for calibration, if empty then a 3 hour window will be used with tt as the center
 %   plot_cali - 1 will plot the calibration result
 %   output_res = 1 (output full resolution), = 0 (use 1 second)
-%   vxb_dat = 1 (L2), 0 (LL), 3 (L2 if available else use LL)
+%   vxb_dat = 1 (L2), 0 (LL), 3 (L2 if available else use LL), 4 (don't compute vxb)
 %
 % OUTPUTS
 %   DCE_SRF is the calibrated E-field in SRF
@@ -99,6 +99,10 @@ if ~isempty(vdc)
 
         params = [k23 d23 ; k123 d123];
 
+
+if vxb_dat~=4
+
+        
         if vxb_dat == 1 || vxb_dat == 3
             B = solo.get_data('b_srf_norm',tint);
         else
@@ -106,7 +110,9 @@ if ~isempty(vdc)
         end
         if isempty(B) % use LL data if L2 not available
             B = solo.get_data('LL_B_SRF',tint);
-            irf_log('dsrc','MAG data not found, usinf LL')
+            if vxb_dat ~=0
+                irf_log('dsrc','MAG data not found, usinf LL')
+            end
             if isempty(B)
                 irf_log('log_msg','MAG LL data not found')
             end
@@ -119,14 +125,16 @@ if ~isempty(vdc)
         end
         if isempty(V) % use LL data if L2 not available
             V = solo.get_data('LL_V_SRF',tint);
-            irf_log('dsrc','PAS data not found, usinf LL')
+            if vxb_dat ~=0
+                irf_log('dsrc','PAS data not found, usinf LL')
+            end
             if isempty(V)
                 irf_log('log_msg','PAS LL data not found')
             end
         end
 
         if ~isempty(B) && ~isempty(V)
-              bvint = intersect(B.resample(V).time.epoch,V.time.epoch);
+            bvint = intersect(B.resample(V).time.epoch,V.time.epoch);
             if isempty(bvint)
                 check_ol = 0;
             else
@@ -152,16 +160,16 @@ if ~isempty(vdc)
             else
                 V_str = 'LL';
             end
-                 
+
             if ~isempty(intersect(DCE_SRF.resample(E_vxb).time.epoch,E_vxb.time.epoch))
                 corr_y=corrcoef(fillmissing(DCE_SRF.resample(E_vxb).y.data,'nearest'), fillmissing(E_vxb.y.data,'nearest'));
                 cc_y=corr_y(1,2);
 
-              
+
                 corr_z=corrcoef(fillmissing(DCE_SRF.resample(E_vxb).z.data,'nearest'), fillmissing(E_vxb.z.data,'nearest'));
                 cc_z=corr_z(1,2);
 
-            
+
                 params = [params;cc_y,cc_z];
             else
                 E_vxb = irf.ts_vec_xyz(DCE_SRF.time,DCE_SRF.data*0);
@@ -169,10 +177,11 @@ if ~isempty(vdc)
                 V_str = 'n/a';
                 cc_y = nan;
                 cc_z = nan;
-              
+
                 params = [params;cc_y,cc_z];
             end
 
+            
         else
             E_vxb = irf.ts_vec_xyz(DCE_SRF.time,DCE_SRF.data*0);
             B_str = 'n/a';
@@ -180,8 +189,13 @@ if ~isempty(vdc)
             cc_y = nan;
             cc_z = nan;
 
-                     params = [params;cc_y,cc_z];
+            params = [params;cc_y,cc_z];
         end
+else
+    params = [params;nan nan];
+    plot_cali=0;
+    E_vxb=[];
+end
 
         if plot_cali
 
