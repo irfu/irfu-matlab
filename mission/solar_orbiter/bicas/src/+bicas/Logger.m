@@ -17,7 +17,8 @@
 % ==========================================================
 % Improve flexibility. No matter how complex the configuration of the logging
 % is, it can be done once when configuring the class instance, and all the
-% variables are then passed along with the object.
+% parameters are then passed along with the object and be used when generating
+% log messages.
 % --
 % Ex: Switch between any combination of logging to
 %   (1a) file and/or (1b) stdout, or (2) don't log at all.
@@ -340,7 +341,9 @@ classdef Logger < handle
         %       wrapper script to recognize log file messages in stdout. This is
         %       intentional since one may want both log message version with and
         %       without bicas.constants.LOG_FILE_PREFIX_TBW.
-        % NOTE: Could be a static method.
+        % NOTE: Current implementation could be a static method, but should
+        %       probably remain an instance method as future changes might
+        %       require it.
         %
         % RETURN VALUE
         % ============
@@ -360,7 +363,7 @@ classdef Logger < handle
                         'Illegal logLevel="%s"', logLevel)
             end
             
-            rcsIcdRowTimestamp = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"))
+            rcsIcdRowTimestamp = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
             rcsIcdRowPrefix    = sprintf('%s -- %s -- ', ...
                 rcsIcdRowTimestamp, logLevelStr);
             
