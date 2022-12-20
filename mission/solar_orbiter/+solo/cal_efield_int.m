@@ -23,7 +23,7 @@ function [DCE_SRF, params, E_vxb] = cal_efield_int(tt,win,plot_cali,output_res,v
 if length(tt)==1
     if isempty(win)
         win = 3;
-        irf_log('proc','Calibration window set to default 6 hours')
+        irf.log('warning','Calibration window set to default 6 hours')
     end
     tint = tt+[-0.5*win*60*60 0.5*win*60*60];
 else
@@ -111,10 +111,10 @@ if vxb_dat~=4
         if isempty(B) % use LL data if L2 not available
             B = solo.get_data('LL_B_SRF',tint);
             if vxb_dat ~=0
-                irf_log('dsrc','MAG data not found, usinf LL')
+                irf.log('warning','MAG data not found, usinf LL')
             end
             if isempty(B)
-                irf_log('log_msg','MAG LL data not found')
+                irf.log('warning','MAG LL data not found')
             end
         end
 
@@ -126,10 +126,10 @@ if vxb_dat~=4
         if isempty(V) % use LL data if L2 not available
             V = solo.get_data('LL_V_SRF',tint);
             if vxb_dat ~=0
-                irf_log('dsrc','PAS data not found, usinf LL')
+                irf.log('warning','PAS data not found, usinf LL')
             end
             if isempty(V)
-                irf_log('log_msg','PAS LL data not found')
+                irf.log('warning','PAS LL data not found')
             end
         end
 
@@ -332,12 +332,12 @@ end
         DCE_SRF = [];
         params = [];
         E_vxb = [];
-        irf_log('dsrc','Not enough points for calibration')
+        irf.log('critical','Not enough points for calibration')
     end
 
 else
     DCE_SRF = [];
     params = [];
     E_vxb = [];
-    irf_log('dsrc','VDC data was not found')
+    irf.log('warning','VDC data was not found')
 end

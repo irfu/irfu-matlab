@@ -72,7 +72,7 @@ while options
           maxfreq = args{2}(2);
           frange = 1;
         else
-          irf_log('proc','lfbandpass not recognized.');
+          irf.log('critical','lfbandpass not recognized.');
           return;
         end
       end
@@ -89,7 +89,7 @@ while options
     case 'vmax'
       vmax = args{2};
     otherwise
-      irf_log('fcal',['Unknown flag: ' args{1}])
+      irf.log('warning',['Unknown flag: ' args{1}])
       l=1;
       break
   end
