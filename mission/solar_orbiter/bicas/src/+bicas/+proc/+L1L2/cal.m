@@ -13,8 +13,8 @@
 %
 % SHORTCOMINGS(?)
 % ===============
-% Does not implement parasitic capacitance yet due to lack of calibration values
-% (at least).
+% Does not implement parasitic capacitance due to lack of calibration values (at
+% least). Should not need to implement according to Thomas Chust(?).
 %
 %
 % IMPLEMENTATION NOTES
@@ -41,74 +41,11 @@
 % Offset = Value (constant) that is ADDED to (not subtracted from) a measured
 %          value during the calibration process.
 % --
-% LSF    = LFR Sampling Frequency (F0...F3)
-%          NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
-% TF     = Transfer function (Z=Z(omega), i.e. in frequency domain)
-% FTF    = Forward Transfer Function = TF that describes physical
-%          INPUT-to-OUTPUT (not the reverse)
-% ITF    = Inverse Transfer Function = TF that describes physical
-%          OUTPUT-to-INPUT (not the reverse)
 % CTI    = CALIBRATION_TABLE_INDEX (zVar)
 % CTI1   = First  value in a record of zVar CALIBRATION_TABLE_INDEX.
 % CTI2   = Second value in a record of zVar CALIBRATION_TABLE_INDEX.
 % RCTS   = RCT CALIBRATION_TABLE (glob.attr)+CALIBRATION_TABLE_INDEX (zVar).
 %          S = plural, RCT= RPW Calibration Table (ROC acronym).
-%
-%
-% UNITS / TYPES OF QUANTITIES
-% ---------------------------
-% TM         = Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using
-%              this instead of the term "count".
-% IV=ivolt   = Interface Volt = Calibrated volt at the interface between BIAS and
-%              LFR/TDS.
-% AV=avolt   = Antenna Volt = Calibrated volt at the antennas, i.e. the final
-%              calibrated (measured) value, including for reconstructed signals
-%              (e.g. diffs calculated from singles). May also refer to offsets
-%              and values without offsets.
-% AA=aampere = Antenna ampere = Calibrated ampere at the antenna.
-% sampere    = Set current ampere. Exactly proportional to bias current in TM.
-% TPIV       = TM/interface volt (=TM per interface volt)
-% IVPT       = Interface volt/TM
-% AAPT       = Antenna ampere/TM
-% AVPIV      = Antenna volt/interface volt
-% IVPAV      = Interface volt/antenna volt
-% Deg        = Degrees (angle). 1 revolution=360 degrees=2*pi radians.
-% RPS        = Radians/second
-% Sec        = Seconds
-%
-%
-% BLTS = BIAS-LFR/TDS SIGNAL
-% ---------------------------
-% Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the
-% BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5, but
-% includes various stages of calibration/non-calibration, including in
-% particular
-%   - TM units (inside LFR/TDS),
-%   - Interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
-%   - Calibrated values inside BIAS but without demuxer addition and subtraction
-%     inside BIAS (i.e. including using BIAS offsets, BIAS transfer functions;
-%     volt).
-% NOTE: Definition is partly created to avoid using term "BIAS_i" since it is
-% easily confused with other things (the subsystem BIAS, bias currents), partly
-% to include various stages of calibration.
-%
-%
-% ASR = Antenna Signal Representation
-% -----------------------------------
-% The "physical antenna signals" which BIAS-LFR/TDS is trying to measure, or a
-% measurement thereof. In reality, the terminology is:
-% ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF (DC
-%               diff, antenna 1-2)
-% ASR samples : Samples representing a specific ASR (as opposed to BLTS).
-% NOTE: There are 9 ASRs, i.e. they can refer also to signals not represented by
-% any single BLTS, given a chosen mux mode (and latching relay setting).
-%
-%
-% BIAS_i, i=1..5
-% --------------
-% Defined in BIAS specifications document. Equal to the physical signal at the
-% physical boundary between BIAS and LFR/TDS. Unit: LFR/TDS calibrated volt.
-% Mostly replaced by BLTS+specified unit in the code.
 %
 %
 % HOW CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX (L1R) WORK

@@ -7,12 +7,12 @@
         "icd_version": "1.4"
     },
     "release": {
-        "version":      "6.0.1",
-        "date":         "2022-09-20T11:08:00Z",
+        "version":      "6.0.2",
+        "date":         "2022-12-20T10:45:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Non-Standard Operations (NSO) table for thruster firings & saturation up until 2022-09-03; Bugfix: Use LFR's R0/R1/R2 for splitting time into time intervals",
+        "modification": "Non-Standard Operations (NSO) table for thruster firings updated for up until 2022-12-17; Bugfix: Corrected algorithm/formula for calculating Ez_SRF (vdccal.m).; Recalculated and added E-field calibration data. Now covers 2020-02-28 to 2022-12-03.",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {

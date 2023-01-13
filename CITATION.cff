@@ -1,0 +1,39 @@
+# This CITATION.cff file was generated with cffinit.
+# See https://citation-file-format.github.io/
+
+cff-version: 1.2.0
+title: IRFU-Matlab
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+# Note explicit "authors" listed are only the six most prolific
+# contributors to IRFU-Matlab, please see git history for full
+# list of all contributing authors (for now they are covered by
+# "IRFU-Matlab team")...
+authors:
+  - name: "IRFU-Matlab team"
+  - family-names: Khotyaintsev
+    given-names: Yuri
+    affiliation: IRF Uppsala, Sweden
+    orcid: "https://orcid.org/0000-0001-5550-3113"
+  - family-names: Nilsson
+    given-names: Thomas
+    affiliation: IRF Uppsala, Sweden
+    orcid: "https://orcid.org/0000-0001-9604-6377"
+  - family-names: Johansson
+    given-names: Erik
+    affiliation: IRF Uppsala, Sweden
+    orcid: "https://orcid.org/0000-0001-9386-8148"
+  - family-names: Vaivads
+    given-names: Andris
+    affiliation: KTH, Sweden
+    orcid: "https://orcid.org/0000-0003-1654-841X"
+  - family-names: Graham
+    given-names: Daniel
+    affiliation: IRF Uppsala, Sweden
+    orcid: "https://orcid.org/0000-0002-1046-746X"
+  - family-names: Karlsson
+    given-names: Jan
+    affiliation: IRF Uppsala, Sweden
+repository-code: 'https://github.com/irfu/irfu-matlab'
