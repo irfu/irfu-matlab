@@ -3,7 +3,6 @@ function [st,dt] = caa_read_interval(sp)
 %
 % [iso_t,dt] = caa_read_interval([sp])
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -83,4 +83,3 @@
 %   caa_reg_skel          - make skeleton XML file from coverage data
 %   caa_testsfit          - test script for C_EFW_C_EFW_SPINFIT_MX
 %
-% $Id$

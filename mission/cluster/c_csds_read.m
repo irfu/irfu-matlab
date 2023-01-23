@@ -27,7 +27,6 @@ function data=c_csds_read(data_path,start_time,dt,cl_id,quantity)
 %
 % See also C_GET, TOEPOCH
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

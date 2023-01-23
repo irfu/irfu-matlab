@@ -1,7 +1,6 @@
 function res = getfillval(dobj,var_s)
 %GETFILLVAL(dobj, var_s)  get FILLVALUE for a variable
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

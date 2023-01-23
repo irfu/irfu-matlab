@@ -5,7 +5,6 @@ function caa_deliver(sp)
 %   sp - storage path
 %	compress and deliver CEF files to the CAA
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

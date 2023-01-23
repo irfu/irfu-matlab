@@ -4,7 +4,6 @@ function res = caa_is_sh_interval(dir_s)
 % CAA_IS_SH_INTERVAL([DIR_S])
 %     Check for .caa_sh_interval in DIR_S on in the current dir (no DIR_S)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

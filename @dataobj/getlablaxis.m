@@ -1,7 +1,6 @@
 function res = getlablaxis(dobj,var_s)
 %GETLABAXIS(dobj, var_s)  get axis label for a variable
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

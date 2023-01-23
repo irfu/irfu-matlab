@@ -12,7 +12,6 @@ function data = caa_corof_delta(data,probe_p,dof,action)
 %
 % See also C_EFW_DELTA_OFF
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

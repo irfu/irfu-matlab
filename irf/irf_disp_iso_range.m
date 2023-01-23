@@ -5,7 +5,6 @@ function s = irf_disp_iso_range(data,fmt)
 %
 % See also: EPOCH2ISO
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

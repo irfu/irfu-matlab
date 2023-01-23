@@ -10,7 +10,6 @@ function [d]=irf_ang(t1,p1,t2,p2)
 % theta corresponds to latitude
 % pi is positive against clock, zero at  x-axis
 %
-% $Id$
 
 if nargin ==3 % two vectors in XYZ
   nt=size(t1,2);

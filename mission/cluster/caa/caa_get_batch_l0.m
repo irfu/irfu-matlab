@@ -9,7 +9,6 @@ function caa_get_batch_l0(iso_t,dt,cl_id,sdir,srcvars)
 %         sdir - directory to save the data
 %      srcvars - see help ClusterProc/getData, ex. 'dies|die'
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

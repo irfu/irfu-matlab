@@ -3,7 +3,6 @@
 % export to ASCII files
 % uses isGetDataLite
 %
-% $Id$
 
 DP_S = c_ctl(0,'data_path');
 csds_dir = [DP_S '/CSDS/'];

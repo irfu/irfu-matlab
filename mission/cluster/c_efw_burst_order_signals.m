@@ -6,7 +6,6 @@ function data8ord = c_efw_burst_order_signals(data8, varsb, nmdata, pha, ref_pro
 % Restore the correct order of the EFW internal burst siglals by comparing
 % them to the normal mode data
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

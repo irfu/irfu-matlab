@@ -3,7 +3,6 @@ function caa_get_edi(fname)
 %
 % caa_sh_get_edi(fname)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

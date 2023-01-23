@@ -17,7 +17,6 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 %
 % See also CAA_POWERFFT
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

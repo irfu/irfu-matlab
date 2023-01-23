@@ -7,7 +7,6 @@ function [xpar]=irf_par(x,y)
 % if necessary linearly interpolates (and/or extrapolates) y to x
 % if x == [x1 x2 x3] (x is single vector with 3 components) then use y time axis
 %
-% $Id$
 
 time_axis=[];
 if nargin<3, flag=0;end

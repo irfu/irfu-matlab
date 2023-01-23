@@ -3,7 +3,6 @@ function caa_ms_reproc(fname)
 %
 % caa_ms_reproc(fname)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

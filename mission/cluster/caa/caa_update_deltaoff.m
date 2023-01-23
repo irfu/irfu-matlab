@@ -8,7 +8,6 @@ function caa_update_deltaoff(d,cl_id)
 %
 % See also CAA_COROF_DELTA, ClusterProc/getData
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

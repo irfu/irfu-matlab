@@ -22,7 +22,6 @@ function out=summaryPlot(cp,cl_id,varargin)
 %   summaryPlot(ClusterProc('/home/yuri/caa-data/20020304'),1,'cs','gse')
 %   summaryPlot(ClusterProc('.'),2,'st',toepoch([2004 1 4 12 47 0]),'dt',60,'fullb')
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

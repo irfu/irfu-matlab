@@ -12,7 +12,6 @@ function res = caa_rm_blankt(data,time_int,mode)
 %   P_NO_WHI = caa_rm_blankt(P1,WHIP1);
 %   E_WAKE = caa_rm_blankt(diEs1p34,LOWAKE1p34);
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

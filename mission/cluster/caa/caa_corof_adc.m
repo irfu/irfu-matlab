@@ -6,7 +6,6 @@ function [new_data,offset] = caa_corof_adc(data,start_time,dt,whip)
 %   [new_data,offset] = caa_corof_adc(data,start_time,dt)
 %   [new_data,offset] = caa_corof_adc(data,start_time,dt,whip)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

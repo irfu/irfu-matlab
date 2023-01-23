@@ -6,7 +6,6 @@ function data = caa_append_data(data,app)
 %
 % See also CAA_FILL_GAPS
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -41,7 +41,6 @@ function irf_log(log_ids,log_msg)
 %   IRF_LOG ON  - swith ON the showing of log messages
 %   IRF_LOG OFF - switch OFF the showing of log messages
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

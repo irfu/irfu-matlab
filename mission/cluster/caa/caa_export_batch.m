@@ -7,7 +7,6 @@ function caa_export_batch(cl_id,outdir,m_vars,m_vers)
 % M_VERS is a corresponding array containing subintervals, file version and
 %        data quality information
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -8,7 +8,6 @@ function [probeNum,flag_lx,probeStr] = caa_sfit_probe(cl_id,probe)
 % [p_res,flag_lx] = caa_sfit_probe(cl_id)
 %    get/display probe pair for CL_ID
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

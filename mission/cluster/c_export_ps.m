@@ -17,7 +17,6 @@ function c_export_ps(st,varargin)
 %
 % See also C_EXPORT_PNG, IRF_FNAME
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -17,7 +17,6 @@ function [st,dt] = irf_stdt(st_in,dt_in)
 %
 % See also ISO2EPOCH
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

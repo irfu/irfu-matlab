@@ -1,7 +1,6 @@
 function res = get(dobj,var_s)
 %GET(dobj, var_s)  get VariableAttributes, GlobalAttributes or a variable
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

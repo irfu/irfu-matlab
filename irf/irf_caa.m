@@ -2,7 +2,6 @@
 %
 % See also SPDFCDFREAD
 %
-% $Id$
 
 flag_show_menu=1;
 flag_variable_menu=1;

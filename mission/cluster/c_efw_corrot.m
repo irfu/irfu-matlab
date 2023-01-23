@@ -7,7 +7,6 @@ function [res, ecorr] = c_efw_corrot(cl_id,diEs,diBr,P,R,SAX,diV)
 %
 % See also: CAA_COMP_EFW_EDI_CORR
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

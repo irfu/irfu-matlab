@@ -7,7 +7,6 @@ function dof = c_efw_delta_off(data,cl_id)
 %
 % See also CAA_COROF_DELTA, CAA_UPDATE_DELTAOFF
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

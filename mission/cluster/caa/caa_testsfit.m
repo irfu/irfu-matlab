@@ -1,6 +1,5 @@
 % test script for C_EFW_C_EFW_SPINFIT_MX
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -12,7 +12,6 @@ function [HBIASSA,wakedesc] = c_efw_hbias_satur(e,pair,phase_2,whip,plotflag)
 % Output:
 %   HBIASSA - dirty intervals
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

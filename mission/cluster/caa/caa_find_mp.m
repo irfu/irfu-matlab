@@ -11,7 +11,6 @@ function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id, Rin,sc_source)
 %
 % See also IRF_SHUE_MP
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

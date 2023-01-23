@@ -16,7 +16,6 @@ function caa_reproc(fname,l0vars,l1vars,cfiles)
 %
 % See also CAA_SH_REPROC, CAA_MS_REPROC
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

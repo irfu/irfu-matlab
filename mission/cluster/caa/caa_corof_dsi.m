@@ -12,7 +12,6 @@ function data = caa_corof_dsi(data,Dx,Dy,Da)
 %
 % See also C_EFW_DSI_OFF
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -15,7 +15,6 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %
 % In iso_t='-1' and dt=-1, they will be determined automatically
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

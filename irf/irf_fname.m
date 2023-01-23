@@ -14,7 +14,6 @@ function out=irf_fname(tint,fmt)
 %	4: YYMMDD_hhmmss_mmm
 %	5: YYYYMMDD_hhmmss_YYYYMMDD_hhmmss (CAA/MAARBLE)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

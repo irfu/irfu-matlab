@@ -23,7 +23,6 @@ function [hout,jout,divBout,jparout,jperpout]=c_pl_j(varargin)
 %
 % See also C_4_J, IRF_JZ, IRF_DEC_PARPERP, IRF_LOWPASS
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

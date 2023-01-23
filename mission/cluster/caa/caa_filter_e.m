@@ -7,7 +7,6 @@ function res = caa_filter_e(data,wind)
 %
 % See also: IRF_FILT
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

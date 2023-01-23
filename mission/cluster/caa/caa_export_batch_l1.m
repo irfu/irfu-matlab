@@ -3,7 +3,6 @@ function caa_export_batch_l1(cl_id,out_path,lev_list)
 %
 % caa_export_batch_l1(cl_id,[out_path],[lev_list])
 %
-% $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 

@@ -10,7 +10,6 @@ function caa_ms2sh_int(sc_list)
 %          'die' (if mEDSIf.mat exists)
 %     Then zero PSWAKE and LOWAKE, and finally create .caa_sh_interval
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -8,7 +8,6 @@ function caa_comp_efw_edi_corr(cl_id)
 %
 % See also: C_EFW_CORROT
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

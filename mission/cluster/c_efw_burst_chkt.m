@@ -12,7 +12,6 @@ function startSAT=c_efw_burst_chkt(database,filename)
 % There are several problems that can occur here, so don't be
 % scared if the calculated time seems strange.
 %
-% $Id$
 
 % By Anders Tjulin, last update 17/5-2004
 

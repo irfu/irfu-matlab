@@ -45,7 +45,6 @@ function c_get_batch(st,dt,varargin)
 %
 % See also ClusterDB/getData, ClusterProc/getData
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

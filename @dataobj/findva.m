@@ -1,7 +1,6 @@
 function res = findva(dobj,field,var_s)
 %FINDVA(dobj, var_s) find attribute for a variable in a list
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -5,7 +5,6 @@ function caa_ms_pl_xoff(st,et)
 %
 % See also CAA_SH_PL_XOFF
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

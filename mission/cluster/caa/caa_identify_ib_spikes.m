@@ -10,7 +10,6 @@ function [pdata,idx] = caa_identify_ib_spikes(idata)
 % PDATA - data with spikes removed and interpolated by nearest good values
 % IDX - indeces if the points with spikes
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

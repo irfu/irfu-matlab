@@ -1,7 +1,6 @@
 function irf_pl_add_info
 %IRF_PL_ADD_INFO add a string "created dd-mm-yy by \n user@host"
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

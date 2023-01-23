@@ -7,7 +7,6 @@ function J = irf_is_cmap(m)
 %   IRF_IS_CMAP, by itself, is the same length as the current colormap.
 %   Use COLORMAP(IRF_IS_CMAP).
 %
-% $Id$
 
 %   By Anders Tjulin (Last update 10/1-2003)
 

@@ -8,7 +8,6 @@ function [z]=irf_tappl(x,s)
 % Example:
 %    y=irf_tappl(x,'*2/1e3');
 %
-% $Id$
 Units=irf_units;
 
 z=x;

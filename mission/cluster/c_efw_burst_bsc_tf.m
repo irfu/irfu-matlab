@@ -6,7 +6,6 @@ function bout = c_efw_burst_bsc_tf(binp,cl_id,component)
 % If COMP is given, we assume that BINP contains only one B component
 % for example COMP=2, means BINP=[t By]
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -4,7 +4,6 @@ function caa_join_phase(cl_id,gap)
 % caa_join_phase(cl_id,iso_t)
 % caa_join_phase(cl_id,gap_len)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

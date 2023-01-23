@@ -11,7 +11,6 @@ function [t1_d,t2_d,t1_dd,t2_dd]=irf_corr_deriv(x1,x2,fla)
 %               first derivatives (steepest gradients) [default]
 %             - times of zero crossings [flag=1]
 %
-% $Id$
 
 if nargin<3, fla = 0; end
 

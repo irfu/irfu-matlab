@@ -7,7 +7,6 @@ function varargout = tt_browse(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% $Id$
 % $Revision$  $Date$
 
 % Begin initialization code - DO NOT EDIT

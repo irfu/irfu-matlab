@@ -6,7 +6,6 @@ function display(varargin)
 % mode : 'full'  - list everything
 %        'short' - only data varibles
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

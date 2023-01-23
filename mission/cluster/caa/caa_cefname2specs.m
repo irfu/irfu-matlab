@@ -5,7 +5,6 @@ function [data_level,caa_vs,cl_id,DATA_VERSION,sp,st,dt]=caa_cefname2specs(s)
 %
 % See also CAA_EXPORT
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

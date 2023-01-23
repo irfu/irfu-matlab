@@ -5,7 +5,6 @@
 %
 % See also C_GET_BATCH
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

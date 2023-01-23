@@ -9,7 +9,6 @@ function res = irf_lstyle(n)
 %         plot(t,x(:,i),irf_lstyle(i)); hold on
 %       end
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

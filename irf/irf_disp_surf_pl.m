@@ -15,7 +15,6 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
 %  AXISNORM = how axes in the plots are normalized, 1 is electron constants
 %  and 2 is ion constants
 %
-% $Id$
 
 % By Anders Tjulin, last update 4/2-2003.
 

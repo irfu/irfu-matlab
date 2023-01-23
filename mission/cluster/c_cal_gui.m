@@ -11,7 +11,6 @@ function c_cal_gui(varargin)
 %
 % See also ClusterProc/corrSOffsetM
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -4,7 +4,6 @@ function showdep(dobj,var_s)
 % SHOWDEP(dobj, var_s)
 % give values for each dependency and other information
 
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

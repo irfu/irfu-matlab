@@ -23,7 +23,6 @@ function c_export_ascii(var,varargin)
 %
 %   c_export_ascii(dE,'var_name','dump') - no headers
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

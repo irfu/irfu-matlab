@@ -14,7 +14,6 @@ function out=c_ctl(varargin)
 % c_ctl('load_aspoc_active')
 % c_ctl('load_bad_ib');
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

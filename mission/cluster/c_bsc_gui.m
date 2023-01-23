@@ -3,7 +3,6 @@ function c_bsc_gui(varargin)
 %
 % This program is to help getting STAFF-SC B data
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

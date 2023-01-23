@@ -11,7 +11,6 @@ function out = epoch2iso(t,fmt)
 %
 %   See also EPOCH2DATE, ISO2EPOCH, TOEPOCH, FROMEPOCH
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

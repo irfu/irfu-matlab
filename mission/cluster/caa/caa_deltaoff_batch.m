@@ -3,7 +3,6 @@ function caa_deltaoff_batch(fname)
 %
 % caa_deltaoff_batch(fname)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

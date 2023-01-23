@@ -10,7 +10,6 @@ function [outspecrec,outPxx,outF] = caa_powerfft(data,nfft,sfreq,overlap)
 %
 % See also FFT, CAA_SPECTROGRAM
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

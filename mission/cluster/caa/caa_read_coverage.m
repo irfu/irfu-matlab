@@ -3,7 +3,6 @@ function  [onoff,cover] = caa_read_coverage(path_s)
 %
 % [onoff,cover] = caa_read_coverage([path_s])
 %
-% $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 

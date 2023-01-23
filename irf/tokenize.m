@@ -9,7 +9,6 @@ function tokens = tokenize(str, delimiter)
 %
 %   See also STRTOK,STRFIND
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

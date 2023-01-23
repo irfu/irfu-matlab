@@ -7,7 +7,6 @@ function caa_ib_sp_batch(iso_t,dt,cl_id,int2)
 %
 % List of internal bursts is obtained from listing isdat cluster/burst dir.
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

@@ -23,7 +23,6 @@ function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par,units)
 %
 % See also isGetDataLite
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

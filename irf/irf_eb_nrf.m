@@ -27,7 +27,6 @@ function [emp,nl,nm,nn]=irf_eb_nrf(e,b,v,flag)
 %  v = [vx vy vz]
 %  xmp=[t xl xm xn]
 %
-% $Id$
 
 if nargin ==3, flag_case='A';end
 if (nargin ==4)

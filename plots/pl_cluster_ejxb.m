@@ -18,7 +18,6 @@ function [Blnm1,h]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flag_EdotB,sc_list)
 %   [blnm] = pl_cluster_ejxb(toepoch([2002 03 30 13 11 42])+[0 8],...
 %          31.4* [ -0.94 -0.21 -0.25],[0 0 1],-1,0);
 %
-% $Id$
 
 persistent Vmp_str L_str tint_str sc_list_str sc_list_pl icb  Te1 n_coef
 

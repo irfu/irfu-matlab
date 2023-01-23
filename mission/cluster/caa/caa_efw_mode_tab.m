@@ -14,7 +14,6 @@ function [t_start_save,t_stop_save,fdm_save]=caa_efw_mode_tab(fdm,var_list_s)
 % ss	Sampling mode
 % tm	Tape mode
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

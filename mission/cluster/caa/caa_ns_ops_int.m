@@ -5,7 +5,6 @@ function [st_out,dt_out] = caa_ns_ops_int(st,dt,ns_ops,errlist)
 %
 % See also: C_CTL, CAA_GET_NS_OPS_INT
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

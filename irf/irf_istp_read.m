@@ -17,7 +17,6 @@ function [time,data] = irf_istp_read(filename)
 %
 %   See also SPDFCDFREAD, DATENUM, DATESTR
 %
-% $Id$
 
 % Copyright Yuri Khotyaintsev, 2003
 

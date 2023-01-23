@@ -15,7 +15,6 @@ function ret = caa_get_bursts(filename, plot_flag)
 % Example:
 %       caa_get_bursts('070831101839we.03')
 %
-% $Id$
 
 narginchk(1,2);
 

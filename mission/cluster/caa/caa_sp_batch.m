@@ -6,7 +6,6 @@ function caa_sp_batch(fname)
 %
 % See also: CAA_PL_SUMMARY_L1
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware

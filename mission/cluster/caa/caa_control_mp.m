@@ -7,7 +7,6 @@ function caa_control_mp(st,et)
 %
 % See also CAA_FIND_MP, CAA_SH_PLAN
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % SPDX-License-Identifier: Beerware
