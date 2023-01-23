@@ -9,6 +9,7 @@ classdef mms_edp_Sweep < handle
   %   and printStatus indicates whether to print (1) or not print (0) status for each sweep
   
   % ----------------------------------------------------------------------------
+  % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
   % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
   % can do whatever you want with this stuff. If we meet some day, and you think

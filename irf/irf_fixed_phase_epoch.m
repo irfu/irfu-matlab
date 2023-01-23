@@ -13,6 +13,7 @@ function res = irf_fixed_phase_epoch(Phase,pha0,phaStep,phaOffs)
 %    PHA_OFFS - offset from PHA_0 (default PHA_STEP/2)
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

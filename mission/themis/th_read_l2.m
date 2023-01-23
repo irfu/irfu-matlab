@@ -10,6 +10,7 @@ function res = th_read_l2(varName,tint)
 %   bs = th_read_l2('the_fgs_dsl',iso2epoch('2008-04-20T22:20:00Z')+[0 3600]);
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

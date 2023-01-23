@@ -13,6 +13,7 @@ function [bout,ii,ttGap] = th_clean_eb(bs,mode)
 %         ttGap - time table corresponding to the spikes
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

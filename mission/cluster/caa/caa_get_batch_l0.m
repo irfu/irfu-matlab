@@ -12,6 +12,7 @@ function caa_get_batch_l0(iso_t,dt,cl_id,sdir,srcvars)
 % $Id$
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think
