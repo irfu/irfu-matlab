@@ -8,7 +8,6 @@ function [newdata]=irf_lowpass(data,fcut,fhz)
 %
 % see also ELLIP, FILTFILT
 %
-% $Id$
 
 
 fnyq=fhz/2;

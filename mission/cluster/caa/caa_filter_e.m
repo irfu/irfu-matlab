@@ -7,9 +7,9 @@ function res = caa_filter_e(data,wind)
 %
 % See also: IRF_FILT
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

@@ -33,7 +33,6 @@ function spinfit = c_efw_onesfit(pair,fout,maxit,minpts,te,data,tp,ph)
 %
 % See also C_EFW_SFIT
 %
-% $Id$
 
 % Anders.Eriksson@irfu.se, 13 December 2002
 

@@ -17,7 +17,6 @@ function [elmn,h]=irf_pl_eb_nrf(vngse,tint,e,b,sc_list)
 % b - b field in DS ref frame, if not given loaded from mB.mat
 % elmn = [t El Em En] field in NML reference frame
 %
-% $Id$
 
 q_flag=irf_ask('LMN frame defined by \n 0) L || B and N closest to vn \n 1) N || vn (stationary frame), L along mean B \n 2) N||vn, L closest to the specified direction [%]>','q_flag',2);
 if q_flag == 0, title_lmn='L-along B, N-closest to vn, M=NxL';flag=0;end
@@ -66,7 +65,7 @@ for ic=sc_list % which satellite
   if exist('mP.mat','file'), eval(irf_ssub('load mP P?;p=irf_tlim(P?,tint);',ic));irf_plot(p);end
   title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
   ylabel('Vps [V]');
-  irf_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
+  irf_pl_info(['c\_e\_mp() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
   
   irf_zoom([-35 -2],'y');
   

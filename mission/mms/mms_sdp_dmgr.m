@@ -172,7 +172,6 @@ classdef mms_sdp_dmgr < handle
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
           %          interp_time()
-          chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
           chk_bias_guard()
@@ -182,6 +181,7 @@ classdef mms_sdp_dmgr < handle
           chk_sdp_v_vals()
           %e_corr_cmd()
           e_from_asym()
+          chk_latched_p()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};

@@ -18,7 +18,6 @@ function result = caa_set_bitmask_and_quality(result, time_int, bitmask, quality
 %
 %  Author:     Mikael Lundberg, Swedish Institute of Space Physics, <milu@irfu.se>
 %
-% $Id$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks.

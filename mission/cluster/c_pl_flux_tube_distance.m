@@ -13,7 +13,6 @@ function [d1,d2,d3,d4]=c_pl_flux_tube_distance(r1,r2,r3,r4,b1,b2,b3,b4,n_skip) %
 %   [d1,d2,d3,d4]= C_PL_FLUX_TUBE_DISTANCE(n_skip);
 %     if only n_skip is given load R1 .. R4 from mR and B1 .. B4 from mB
 %
-% $Id$
 
 flag_distance_along_B=1; % to plot also distance along B
 
@@ -63,7 +62,7 @@ ccol=['k','r','g','b'];
 h=plot(b1(:,1),d2d1,'-ko','MarkerFaceColor','r','MarkerSize',2);
 title('Distance between flux tubes on which sc are located');
 ylabel('R_a(dots)-R_B(line) [km]');
-irf_pl_info(['c\_pl\_flux\_tube\_distance() ' datestr(now)]); % add information to the plot
+irf_pl_info(['c\_pl\_flux\_tube\_distance() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
 
 grid on
 hold on

@@ -14,9 +14,9 @@ function out=irf_fname(tint,fmt)
 %	4: YYMMDD_hhmmss_mmm
 %	5: YYYYMMDD_hhmmss_YYYYMMDD_hhmmss (CAA/MAARBLE)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

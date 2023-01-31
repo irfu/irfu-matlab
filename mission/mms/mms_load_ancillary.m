@@ -109,6 +109,12 @@ switch lower(dataType)
     dataIN.pra =    tmpData{1,11};
     dataIN.pdec =   tmpData{1,12};
     dataIN.pphase = tmpData{1,13};
+    % As per e-mail discussion of 2015/04/07, duplicated timestamps can
+    % occur in Defatt (per design). If any are found, use the last data
+    % point and disregard the first duplicate.
+    idxBad = diff(dataIN.time)==0; % Identify first duplicate
+    fs = fields(dataIN);
+    for idxFs=1:length(fs), dataIN.(fs{idxFs})(idxBad) = []; end
     
   case 'defeph'
     % Convert time to fromat TT2000 using the irf_time function by first

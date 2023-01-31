@@ -3,7 +3,6 @@ function [v,vdate] = caa_read_version(sp)
 %
 % [v,vdate] = caa_read_version([sp])
 %
-% $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 

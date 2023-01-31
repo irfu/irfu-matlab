@@ -33,7 +33,6 @@ function h=irf_pl_ebs(e,b,B,parameters)
 % Example:
 %    h=IRF_PL_EBS(e,b,B,[1000 2 180 50 5.36 1 1 2 0]);
 %
-% $Id$
 
 % Modified by Andris Vaivads 15 April 2003
 % By Anders Tjulin (Last update 15/4-2003)
@@ -371,7 +370,7 @@ end
 if plot_type ~=0
   axes(h(1));
   title(['Width Morlet wavelet = ' num2str(Morlet_width)]);
-  %ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
+  %ht=irf_pl_info([mfilename '  ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); set(ht,'interpreter','none'); % add information to the plot
   irf_zoom(h,'x',[min(t) max(t)]);
   irf_timeaxis(h)
 end

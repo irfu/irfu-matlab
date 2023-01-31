@@ -7,9 +7,9 @@ function dataObject = append(dataObject1,dataObject2)
 % in which case it just appends the values of dobj2 to dobj1
 %
 
-% $Id$
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

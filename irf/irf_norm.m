@@ -6,7 +6,6 @@ function [y]=irf_norm(x)
 % if 3 components then assumed [x1,x2,x3]
 % y returns normalized x
 %
-% $Id$
 
 lx= size(x,2); % the number of vector components
 

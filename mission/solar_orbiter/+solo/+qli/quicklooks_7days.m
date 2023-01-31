@@ -212,8 +212,7 @@ if ~isempty(logoPath)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
-tempdate=datestr(date,2);
-currdate=['20',tempdate(7:8),'-',tempdate(1:2),'-',tempdate(4:5)];
+currdate = char(datetime("now","Format","uuuu-MM-dd"))
 infostr = ['Swedish Institute of Space Physics, Uppsala (IRFU), ',currdate];
 infostr2 = '. Data available at http://soar.esac.esa.int/';
 text(h(1),0,1.2,[infostr,infostr2],'Units','normalized')

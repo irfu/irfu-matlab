@@ -87,3 +87,10 @@ Version 6.0.1
 Non-Standard Operations (NSO) table thruster firings updated for until 2022-09-03.
 Bugfix: Use LFR's R0/R1/R2 for splitting into time intervals. This bugfix should keep some LFR L2 data that was previously deleted.
 Addresses https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/71 by not producing any .matlab_datastore_* file.
+
+
+Version 6.0.2
+-------------
+Bugfix: Corrected algorithm/formula for calculating Ez_SRF (vdccal.m).
+Recalculated and added E-field calibration data. Now covers 2020-02-28 to 2022-12-03.
+Non-Standard Operations (NSO) table thruster firings updated for until 2022-12-17.

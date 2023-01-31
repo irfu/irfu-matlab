@@ -24,7 +24,6 @@ function status = irf_minvar_nest_gui(x,column)
 %
 % See also IRF_MINVAR_NEST, IRF_MINVAR
 %
-% $Id$
 
 global ud
 persistent tlim message t0;
@@ -72,7 +71,7 @@ switch action
     ud.h=h;
     
     set(gcf,    'windowbuttondownfcn', 'irf_minvar_nest_gui(''ax'')');zoom off;
-    irf_pl_info(['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
+    irf_pl_info(['irf\_minvar\_gui() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
     set(ud.h(1),'layer','top');
     ax=axis;grid on;
     ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y');

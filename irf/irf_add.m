@@ -7,7 +7,6 @@ function [y]=irf_add(c1,x1,c2,x2)
 % c1,c2 - scalars
 % x1,x2 - time series with column one being time
 %
-% $Id$
 
 if isa(x1,'TSeries') % assumes x2 is TSeries and no. columns are the same
   x2 = x2.resample(x1);

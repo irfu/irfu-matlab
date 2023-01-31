@@ -14,7 +14,6 @@ function h=c_efw_pl_orient(spacecraft,time,phase_time_series,magnetic_field,velo
 %   v  - velocity vector [vx vy vz] in GSE which will be marked in the plots,
 %        e.g. magnetopause velocity
 %
-% $Id$
 
 %   figuserdata=[h];
 eval_figuserdata='figuserdata={h};';
@@ -254,7 +253,7 @@ elseif strcmp(action,'plot')
   end
   
   axes(h(4))
-  ht=irf_pl_info(['c_efw_pl_orient() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none');
+  ht=irf_pl_info(['c_efw_pl_orient() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],gca,[0,1 ]); set(ht,'interpreter','none');
   xp=0;yp=.9;dyp=-0.1;
   yp=yp+dyp;
   %if flag_v==1, % add v velocity

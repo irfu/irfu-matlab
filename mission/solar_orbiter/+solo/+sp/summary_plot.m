@@ -762,7 +762,7 @@ classdef summary_plot < handle
             [~, basename, suffix] = fileparts(filePath);
             filename = [basename, suffix];
             
-            labelTimestamp = datestr(clock, 'yyyy-mm-dd HH:MM:SS');
+            labelTimestamp = char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"));
             title(hTopAxes, {plotTypeStr, irf.graph.escape_str(...
                 sprintf('Plot time: %s, %s', labelTimestamp, filename))})
         end

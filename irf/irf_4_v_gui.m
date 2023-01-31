@@ -171,7 +171,7 @@ irf_pl_tx(h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);
 ylabel(h(2),var_label(ud.variable_str,ud.var_col));
 
 % add information to the plot
-irf_legend(0,['irf\_4\_v\_gui ' datestr(now)],[0.01 0.99],'fontsize',7);
+irf_legend(0,['irf\_4\_v\_gui ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0.01 0.99],'fontsize',7);
 irf_legend(h(1),sc_label(ud),[1, 1.1],'color','cluster');
 
 hh=h(1,1);  % use the first subplot to estimate available time interval

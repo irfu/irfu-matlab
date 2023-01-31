@@ -4,6 +4,7 @@ function caa_ms_pl_xoff_stats(xoff)
 % caa_ms_pl_xoff_stats(DdsiXn)
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

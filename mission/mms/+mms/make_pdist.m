@@ -148,7 +148,7 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
     stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
     stepTable = stepTable.data;
   end
-  usec_offsets = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_usec_offsets']);
+  usec_offsets = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptimeoffsets_' fileInfo.tmMode]);
   
   % energy table can start at energy1
   energy0 = energy(find(stepTable==0,1,'first'),:);

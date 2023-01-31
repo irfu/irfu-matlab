@@ -11,6 +11,7 @@ function [Ddsi,Damp] = c_efw_dsi_off(t,cl_id,Ps)
 % See also CAA_COROF_DSI
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think
@@ -93,7 +94,7 @@ elseif t>=toepoch([2001 02 02 15 00 0]), Ddsi = [ .55      .77 .44  .1  ];
 elseif t>=toepoch([2001 02 02 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ]; % Special puck/guard ?
 elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .55      .8  .4   .1  ];
 else
-  Ddsi = [ 0 0 0 0];
+  Ddsi = [ .55 .8 .4 .1 ];
 end
 
 if nargin == 1, return, end
@@ -155,7 +156,7 @@ elseif t>=toepoch([2002 12 02 00 0 0]), Ddsi = [ 1.42  1.98 1.64  2.00 ];
 elseif t>=toepoch([2002 05 02 00 0 0]), Ddsi = [ 1.33  1.98 1.66  1.30 ];
 elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ 1.33  1.98 1.66  2.00 ];
 elseif t>=toepoch([2001 06 01 00 0 0]), Ddsi = [ 1.26  1.74 1.54  1.06 ];
-elseif t>=toepoch([2001 02 01 00 0 0]), Ddsi = [ 1.21  1.92 1.25  1.02 ];
+elseif t>=toepoch([2001 01 01 00 0 0]), Ddsi = [ 1.21  1.92 1.25  1.02 ];
 else
   Ddsi = DdsiSW;
 end

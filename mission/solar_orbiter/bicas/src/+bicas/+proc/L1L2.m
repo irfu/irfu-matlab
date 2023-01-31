@@ -13,13 +13,7 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
-% See bicas.proc.L1L2.cal.
-% ZV  : CDF zVariable, or something analogous to it. If refers to CDF:ish
-%       content, then the first index corresponds to the CDF record.
-% SPR : Samples Per (CDF) Record. Only refers to actual data (currents,
-%       voltages), not metadata.
-% UFV : Use Fill Values (refers to records which data should overwritten with
-%       fill values)
+% See bicas.proc.L1L2.cal and readme.txt.
 %
 %
 % SOME INTERMEDIATE PROCESSING DATA FORMATS

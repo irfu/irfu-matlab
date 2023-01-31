@@ -18,7 +18,10 @@ jobs:
   # This workflow contains a job called "matlab"
   matlab:
     # Runs Matlab
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
+    # which does not appear to have "libgfortran4" (used for tests of +whamp/) in its repo.
+    runs-on: ubuntu-20.04
     steps:
       # Check-out repository
       - uses: actions/checkout@v3

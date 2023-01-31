@@ -23,9 +23,9 @@ function c_export_ascii(var,varargin)
 %
 %   c_export_ascii(dE,'var_name','dump') - no headers
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think
@@ -669,7 +669,7 @@ if CEF
     fprintf(fid,[mask '\n'],var(j,2:end)');
   end
 else
-  fprintf(fid,['%% this file was created on ' datestr(now) ' \n%%\n']);
+  fprintf(fid,['%% this file was created on ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss")) ' \n%%\n']);
   fprintf(fid,['%% SC:        Cluster ' cl_id ' \n']);
   fprintf(fid,['%% Intrument: ' inst ' \n']);
   fprintf(fid,['%% Signal:    ' sig ' \n']);

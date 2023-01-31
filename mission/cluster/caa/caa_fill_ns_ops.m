@@ -4,7 +4,6 @@ function result = caa_fill_ns_ops(data, ns_ops, bitmask_col, fillval)
 % res = caa_fill_gaps(data,te)
 %       append NaNs to the end of DATA untill TE
 %
-% $Id$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks.

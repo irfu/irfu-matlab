@@ -29,7 +29,6 @@ function B=c_ri_get_B(from,to,cl_id,mode,path_output)
 %	calibrate and save in a format which matlab can read
 %	using "fmgtel - fgmcal -fgmhrt-fgmvec"
 %
-% $Id$
 
 %Written by Robert Isaksson in the summer of -03
 

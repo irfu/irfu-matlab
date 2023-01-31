@@ -1207,7 +1207,8 @@ classdef PDist < TSeries
       % try to make initialization and scPot correction outside time-loop
       
       if not(any([vgInput,vgInputEdges])) % prepare a single grid outside the time-loop
-        emax = dist.ancillary.energy(1,end)+dist.ancillary.delta_energy_plus(1,end);
+%        emax = dist.ancillary.energy(1,end)+dist.ancillary.delta_energy_plus(1,end);
+        emax = dist.depend{1}(1,end)+dist.ancillary.delta_energy_plus(1,end);
         vmax = units.c*sqrt(1-(emax*units.e/(M*units.c^2)+1).^(-2));
         nv = 100;
         vgcart_noinput = linspace(-vmax,vmax,nv);
@@ -1391,6 +1392,11 @@ classdef PDist < TSeries
       PD.species = dist.species;
       PD.userData = dist.userData;
       PD.ancillary.v_units = 'km/s';
+      PD.ancillary.energy = obj.depend{1};
+      if isfield(obj.ancillary,'delta_energy_minus')
+        PD.ancillary.delta_energy_minus = obj.ancillary.delta_energy_minus;
+        PD.ancillary.delta_energy_plus = obj.ancillary.delta_energy_plus;
+      end
       
       % set units and projection directions
       if dim == 1
@@ -1780,6 +1786,10 @@ classdef PDist < TSeries
       %             default is [0 Inf]
       %     'colorbar'/value - value is 0 for no colorbar or 1 for
       %             colorbar, default is to plot colorbar
+      %     'off-diag-pres-cont'/v1/v2 - plots contributions to pressure
+      %             tensor components, v1 and v2 are TSeries with the bulk 
+      %             speeds from moments, bulk speed from distribution not 
+      %             yet implemented
       %
       %     Example:
       %       tint = irf.tint('2017-07-06T13:53:50.00Z',25);
@@ -1826,6 +1836,7 @@ classdef PDist < TSeries
       doCircles = 0;
       doFLim = 1; flim = [0 Inf];
       doSmooth = 0;
+      doP12 = 0;
       
       if strcmp(dist.species,'electrons')
         v_scale = 1e-3;
@@ -1847,6 +1858,11 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         switch(lower(args{1}))
+          case 'off-diag-pres-cont'
+            l = 3;
+            doP12 = 1;
+            v1 = args{2};
+            v2 = args{3};
           case {'tint','time','t'}
             l = 2;
             notint = 0;
@@ -1914,6 +1930,7 @@ classdef PDist < TSeries
         args = args(l+1:end);
         if isempty(args), break, end
       end
+      if doP12, doLog10 = 0; end
       
       % due to Matlab functionality, we must explicitly call the overloaded
       % subsref (defined within this subclass), otherwise it will call the
@@ -1935,6 +1952,29 @@ classdef PDist < TSeries
       if doSmooth
         plot_data = smooth2(plot_data,nSmooth);
       end
+      if doP12
+        v1_bulk = mean(v1.resample(dist).data,1);
+        v2_bulk = mean(v2.resample(dist).data,1);
+        [V1,V2] = ndgrid(dist.depend{1}(1,:),dist.depend{2}(1,:)); % km/s
+        V1V2 = (V1-v1_bulk).*(V2-v2_bulk)*1e3*1e3; % km/s -> m/s
+        % units_scaling
+        new_units = 'arb. units';
+        vp12_scale = 1;
+        switch dist.units
+          case 's^2/m^5'
+            vp12_scale = 1e0; % depend: m -> m
+            new_units = 'm^{-3}'; % [f] m/s*m/s = s2m-5*m*m*s-1*s-1 = m-3
+          otherwise
+            disp('unsupported/unimplemented units, output is in arb. units')
+        end
+        plot_data = vp12_scale*plot_data.*V1V2; % e.g. 1*s2*m-5*ms-1*ms-1 = m-3
+        dv1 = diff(squeeze(irf.nanmean(dist.ancillary.vx_edges,1)))*1e3; % km/s -> m/s
+        dv2 = diff(squeeze(irf.nanmean(dist.ancillary.vy_edges,1)))*1e3; % km/s -> m/s
+        
+        integrated_p12 = dist.mass*nansum(nansum(plot_data.*(dv1*dv2'))); % kg*m-3*m/s*m/s = kg*m*s-2 = Pa
+        % pascal is kg*m*s-2, so go to nPa 
+        integrated_p12 = integrated_p12*1e9; % Pa -> nPa
+      end
       % main surface plot
       % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
       plot_x_edges = squeeze(irf.nanmean(dist.ancillary.vx_edges,1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
@@ -1950,7 +1990,10 @@ classdef PDist < TSeries
       view(ax,[0 0 1])
       ax.Box = 'on';
       shading(ax,'flat');
-      
+
+      if doP12 % add info about integrated value
+        irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+      end      
       if doContour
         hold(ax,'on')
         if isempty(contour_levels), contour_levels = 10;
@@ -1985,10 +2028,15 @@ classdef PDist < TSeries
       end
       if doColorbar
         hcb = colorbar('peer',ax);
-        if doLog10
-          hcb.YLabel.String = sprintf('log_{10} f (%s)',dist.units);
+        data_units = dist.units;
+        if doP12 
+          hcb.YLabel.String = sprintf('f(v_1,v_2)(v_1-<v_1>)(v_2-<v_2>) (%s)',new_units);
         else
-          hcb.YLabel.String = sprintf('f (%s)',dist.units);
+          if doLog10
+            hcb.YLabel.String = sprintf('log_{10} f (%s)', dist.units);
+          else
+            hcb.YLabel.String = sprintf('f (%s)', dist.units);
+          end
         end
         all_handles.Colorbar = hcb;
       end
@@ -2659,6 +2707,7 @@ classdef PDist < TSeries
           spec.f_label = {'\theta (deg.)'};
         case {'velocity','1D_velocity','velocity_1D'}
           if ~any(strcmp(obj.type_,{'line (reduced)','1Dcart'})); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end
+          %if ~strcmp(obj.type_,'line (reduced)'); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end
           % check for additional argument given
           if ~isempty(varargin) && strcmp(varargin{1},'10^3 km/s') % make y (v) units in 10^3 km/s (because they often go up 10^4)
             spec.f = obj.depend{1}*1e-3;

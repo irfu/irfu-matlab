@@ -11,6 +11,7 @@ function dobj = dataobj(varargin)
 %                                See epoch2iso.
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think
@@ -47,7 +48,7 @@ end
 switch action
   case 'create_default_object'
     % if no input arguments, create a default object
-    dobj.FileModDate = datestr(now);
+    dobj.FileModDate = char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"));
     dobj.VariableAttributes = {};
     dobj.GlobalAttributes = {};
     dobj.Variables = {};

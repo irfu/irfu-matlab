@@ -7,7 +7,7 @@ dataRoot='/data/mms/';
 sweepFolder = fullfile(dataRoot, 'irfu', 'plots', 'edp', 'sweeps', filesep);
 mms.db_init('local_file_db', dataRoot);
 lineStyle = {'black.', 'red.', 'green.', 'blue.', 'magenta.', 'cyan.'};
-nowStr = irf_time(now,'datenum>utc_yyyy-mm-dd');
+nowStr = char(datetime("now", "TimeZone","UTC", "Format","uuuu-MM-dd"));
 %   % F10.7 From Swarm database (this contains all published data from 1947
 %   % and forward and is updated by a separate daily cronjob).
 %   % Source:

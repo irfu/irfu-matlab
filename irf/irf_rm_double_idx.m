@@ -3,7 +3,6 @@ function res = irf_rm_double_idx(ii)
 %
 % res_idx = irf_rm_double_idx(ii)
 %
-% $Id$
 
 ii = ii(:);
 ii = sort(ii);

@@ -90,6 +90,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 % See also C_GET, C_CTL
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think
@@ -1105,14 +1106,14 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
       % Different timelines. Need to correct
       irf_log('proc','making common timeline')
       [ii12,ii34] = irf_find_comm_idx(e12,e34);
-      
+
       % If more than 50% of data missing on one probe
       % we base timeline on the probe pair which has more data
       if length(ii12) < .5*max(size(e12,1),size(e34,1))
         if size(e12,1)>size(e34,1)
           irf_log('proc',['Setting Ep34 to 0, except for '...
             num2str(length(ii12)) ' data points'])
-          E_info.probe = p12;
+          E_info.probe = num2str(p12);
           e34_tmp = e12;
           e34_tmp(~isnan(e12(:,2)),2) = 0;
           e34_tmp(ii12,2) = e34(ii34,2);

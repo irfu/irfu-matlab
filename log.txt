@@ -1,3 +1,4 @@
+2022-10-17 v1.16.3 MMS correct bitmask and add DOI to cdf, updated SolarOrbiter code base, a lot more minor fixes.
 2022-07-06 v1.16.2 MMS fix for MMS3 sdp2 failure (2022-05-08), updated SolarOrbiter code base, a lot more minor fixes.
 2022-04-20 v1.16.1 Cluster CSA TAP interface, new NASA CDF patch and MICE, updated SolarOrbiter code base, a lot more minor fixes.
 2021-06-23 v1.16.0 NASA CDF patch, updated compiled Fortran mex, updated SolarOrbiter code base, and a lot more minor fixes.

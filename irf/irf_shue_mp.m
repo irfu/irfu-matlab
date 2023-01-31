@@ -15,7 +15,6 @@ function r_mp = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
 %
 % See also IRF_GSE2GSM
 %
-% $Id$
 
 % Copyright 2006 Yuri Khotyaintsev
 

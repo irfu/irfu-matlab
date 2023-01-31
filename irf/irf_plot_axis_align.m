@@ -12,7 +12,6 @@ function irf_plot_axis_align(nsubplot,h)
 %     nsbuplot: subplot with respect to which align axis
 %               if none given align to fit all
 %
-% $Id$
 
 narginchk(0,2)
 

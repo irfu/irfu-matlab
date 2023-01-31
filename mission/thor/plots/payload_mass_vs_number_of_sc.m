@@ -84,7 +84,7 @@ plot_spacecraft(TorESA)
 plot_m4(M4BigMum)
 %legend_m4(M4BigMum)
 
-irf_legend(h,[datestr(now,31) '  ' mfilename],[0.99 1.01],...
+irf_legend(h,[char(datetime("now","Format","uuuu-MM-dd HH:mm:ss")) '  ' mfilename],[0.99 1.01],...
   'fontsize',6,'interpreter','none','color',[0.9 0.9 0.9])
 %% Functions nested
   function plot_spacecraft(Sc,varargin)

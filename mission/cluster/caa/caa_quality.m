@@ -8,7 +8,6 @@ function caa_quality(dflt)
 %   3 - good for publication, subject to PI approval
 %   4 - excellent data which has received special treatment
 %
-% $Id$
 
 if nargin<1, dflt=3; end
 

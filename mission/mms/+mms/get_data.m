@@ -1195,6 +1195,8 @@ end
         A = zeros(nTimes,nEnergies,nPitchangles);
         N = zeros(nTimes,nEnergies,nPitchangles);
         Ntot = zeros(nTimes,nEnergies,nPitchangles);
+        N_nonzero = zeros(nTimes,nEnergies,nPitchangles);
+        Ntot_nonzero = zeros(nTimes,nEnergies,nPitchangles);
         
         % Loop over sensors and energies to bin the data
         % pitch_angles{iSen+1} into bins pitch_angle_bin_edges
@@ -1203,8 +1205,10 @@ end
           for iE = 1:nEnergies
             % Mean flux over all data points within each given bin
             A(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE),[nTimes,nPitchangles],@mean);
-            % Number of non-zerodatapoints for each bin
-            N(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE)>0,[nTimes,nPitchangles]);
+            % Number of non-zero datapoints for each bin
+            N_nonzero(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE)>0,[nTimes,nPitchangles]);
+            % Number of zero and non-zerodatapoints for each bin
+            N(:,iE,:) = accumarray([(1:nTimes)' bins],EISdpf{iSen+1}.data(:,iE)>-1,[nTimes,nPitchangles]);
           end          
           % Get new average data, take into account the number of
           % datapoints (i.e. coverage) so that we do not add a datapoint
@@ -1213,10 +1217,20 @@ end
           old_total = dpf.*Ntot; % average * nCounts
           new_total = A.*N; % average * nCounts
           Ntot = Ntot + N; % total counts for given bin
+          Ntot_nonzero = Ntot_nonzero + N_nonzero; % total counts for given bin
           dpf = (old_total + new_total)./Ntot; % new average
           dpf(isnan(dpf)) = 0;
           dpf(isinf(dpf)) = 0;
         end           
+
+
+        % All bin with zero coverage, be it zero or non-zero data
+        % therein, we put to NaN. This way, we can differ between bins
+        % with no coverage, and bins with coverage, but zero flux. One just
+        % needs to take care when combining different spacecraft. Also,
+        % now, ancillary.N*is redundant, but that is whatever for now.
+        dpf(Ntot==0) = NaN;
+
                 
         % Should take into acount Nans here.        
         dist = PDist(EISdpf{1}.time,dpf,'pitchangle',energies{1}.data*1e3,pitch_angle_bin_centers); % energies keV -> eV
@@ -1224,8 +1238,10 @@ end
         res.siConversion = EISdpf{1}.siConversion;
         res.units = EISdpf{1}.units;
         res.species = species;
-        res.ancillary.Coverage.STR = 'N - Number of data points in each (time,energy,pitchangle) bin.';
+        res.ancillary.Coverage.STR = 'N - Number of zero and non-zero data points in each (time,energy,pitchangle) bin.';
         res.ancillary.Coverage.N = Ntot;        
+        res.ancillary.Coverage.STRdata = 'Ndata - Number of non-zero data points in each (time,energy,pitchangle) bin.';
+        res.ancillary.Coverage.N_nonzero = Ntot_nonzero;
         res.ancillary.delta_energy_minus = energies_dminus{1}.data;
         res.ancillary.delta_energy_plus = energies_dplus{1}.data;
         res.ancillary.delta_pitchangle_minus = abs(pitch_angle_bin_edges(1:end-1)-pitch_angle_bin_centers);
@@ -1307,9 +1323,9 @@ end
                     irf.log('warning',sprintf('MMS%s, FEEPS: Masking %g indices for top sensor %g.',mmsIdS,numel(idMask),iSen))
                     end
                 top.data(idMask) = NaN;
-            else
+             else
                 top.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
-            end
+             end
           end
           % Bottom eyes;
           bot = mms.db_get_ts(dsetName,[dsetPref '_bottom_' suf],Tint);
@@ -1371,6 +1387,9 @@ end
             A = zeros(nTimes,nEnergies,nPitchangles);
             N = zeros(nTimes,nEnergies,nPitchangles);
             Ntot = zeros(nTimes,nEnergies,nPitchangles);
+            N_nonzero = zeros(nTimes,nEnergies,nPitchangles);
+            Ntot_nonzero = zeros(nTimes,nEnergies,nPitchangles);
+            
 
             % Ordering of given pitchangles:
             % pitch_angles.userData.LABL_PTR_1.CATDESC: 'TOP_SENSOR_6,TOP_SENSOR_7,TOP_SENSOR_8,BOT_SENSOR_6,BOT_SENSOR_7,BOT_SENSOR_8'            
@@ -1391,12 +1410,14 @@ end
                 % Accumulate all the data into proper grid 
                 for iE = 1:nEnergies
                   A(:,iE,:) = accumarray([(1:nTimes)' bins],data.data(:,iE),[nTimes,nPitchangles],@nanmean);                    
-                  N(:,iE,:) = accumarray([(1:nTimes)' bins],(data.data(:,iE)>0),[nTimes,nPitchangles],@sum);
+                  N(:,iE,:) = accumarray([(1:nTimes)' bins],(data.data(:,iE)>-1),[nTimes,nPitchangles],@sum);
+                  N_nonzero(:,iE,:) = accumarray([(1:nTimes)' bins],(data.data(:,iE)>0),[nTimes,nPitchangles],@sum);                  
                 end
                 
                 % Get new average data
                 old_total = dpf.*Ntot; % average * nCounts
-                new_total = A.*N; % average * nCounts
+                new_total = A.*N_nonzero; % average * nCounts
+                Ntot_nonzero = Ntot_nonzero + N_nonzero; % total counts for given bin
                 Ntot = Ntot + N; % total counts for given bin
                 dpf = (old_total + new_total)./Ntot; % new average
                 dpf(isnan(dpf)) = 0;
@@ -1406,6 +1427,14 @@ end
             
             dpf = dpf*Gfact(mmsId); % Apply geometric factor
 
+            % All bin with zero coverage, be it zero or non-zero data
+            % therein, we put to NaN. This way, we can differ between bins
+            % with no coverage, and bins with coverage, but zero flux. One
+            % just needs to take care when combining different spacecraft.
+            % Also, now, ancillary.N*is redundant, but that is whatever for 
+            % now.            
+            dpf(Ntot==0) = NaN;
+
             % Construct PDist type pitchangle
             dist = PDist(Tit{1}.time,dpf,'pitchangle',energies*1e3,pitch_angle_bin_centers); % energies keV -> eV
             res = dist;
@@ -1414,8 +1443,10 @@ end
             res.species = species;
             res.ancillary.delta_pitchangle_minus = abs(pitch_angle_bin_edges(1:end-1)-pitch_angle_bin_centers);
             res.ancillary.delta_pitchangle_plus = abs(pitch_angle_bin_edges(2:end)-pitch_angle_bin_centers);
-            res.ancillary.Coverage.STR = 'N - Number of data points in each (time,energy,pitchangle) bin.';
+            res.ancillary.Coverage.N_DESC = 'N - Number of data points (both zero and non-zero) in each (time,energy,pitchangle) bin.';
             res.ancillary.Coverage.N = Ntot;        
+            res.ancillary.Coverage.N_nonzero_DESC = 'N_nonzero - Number of non-zero data points in each (time,energy,pitchangle) bin.';
+            res.ancillary.Coverage.N_nonzero = Ntot_nonzero;        
             res.name = [Tit{1}.name '-' Tit{end}.name(end)];
             res.name = strrep(res.name,'top','top/bot');
             res.userData.Description = 'Pitch angle distribution created from Input';

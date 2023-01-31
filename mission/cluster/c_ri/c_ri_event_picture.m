@@ -98,7 +98,7 @@ for g =1:f_count
   
   disp(['saving: ' p_and_f_picture '.png']);
   
-  ht=irf_pl_info([datestr(now) '. ' p_and_f_picture '.png'] ,gca,[0,1 ]); set(ht,'interpreter','none','FontSize', 10);
+  ht=irf_pl_info([char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss")) '. ' p_and_f_picture '.png'] ,gca,[0,1 ]); set(ht,'interpreter','none','FontSize', 10);
   close(fg)
 end
 

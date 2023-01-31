@@ -5,7 +5,6 @@ function res=irf_find_max(data, fla)
 % Find maxima using quadratic and cubic interpolation.
 % If flag=1, minima are found instead.
 %
-% $Id$
 
 % Part of the code was copied from /usr/local/matl7/toolbox/optim/findmax.m
 

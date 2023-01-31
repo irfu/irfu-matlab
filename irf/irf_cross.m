@@ -11,7 +11,6 @@ function [z]=irf_cross(x,y,flag)
 %
 % if given flag=1 then return only values without time column
 %
-% $Id$
 
 time_axis=[];
 if nargin<3, flag=0;end

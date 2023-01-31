@@ -17,7 +17,6 @@ function corrSOffsetM(cp,cl_id)
 %
 %  See also: C_CAL_GUI
 %
-% $Id$
 
 % Copyright 2004,2007 Yuri Khotyaintsev (yuri@irfu.se)
 %

@@ -3,7 +3,6 @@ function caa_sh_get_cis(fname)
 %
 % caa_sh_get_cis(fname)
 %
-% $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
 

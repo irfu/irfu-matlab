@@ -20,7 +20,7 @@ function Plot_dcecomm_daily(DayOfInterest, bashRun)
 narginchk(1,2); % DayOfInterest, [bashRun]
 nargoutchk(0,0); % No outputs returned
 
-nowStr = irf_time(now,'datenum>utc_yyyy-mm-dd');
+nowStr = char(datetime("now", "TimeZone","UTC", "Format","uuuu-MM-dd"));
 
 DayOfInterest = cell2mat(regexp(DayOfInterest, '\d{4,4}-\d{2,2}-\d{2,2}', 'match'));
 if isempty(DayOfInterest)
