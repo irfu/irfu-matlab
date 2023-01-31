@@ -103,6 +103,7 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Phplus_gsm_hpca_srvy_l2', 'Pheplus_gsm_hpca_srvy_l2', 'Pheplusplus_gsm_hpca_srvy_l2', 'Poplus_gsm_hpca_srvy_l2',...
 %     'Thplus_gsm_hpca_srvy_l2', 'Theplus_gsm_hpca_srvy_l2', 'Theplusplus_gsm_hpca_srvy_l2', 'Toplus_gsm_hpca_srvy_l2',...
 %     'Nhplus_hpca_sitl',
+%     'Vhplus_hpca_brst_l2',
 %     'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2'
 %  EPD [FEEPS+EIS]:
 %     'Omnifluxion_epd_feeps_brst_l2', 'Omnifluxelectron_epd_feeps_brst_l2', ...
@@ -271,15 +272,17 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Thplus_dbcs_hpca_srvy_sitl','Theplus_dbcs_hpca_srvy_sitl','Theplusplus_dbcs_hpca_srvy_sitl','Toplus_dbcs_hpca_srvy_sitl',...
   'Vhplus_gsm_hpca_srvy_sitl','Vheplus_gsm_hpca_srvy_sitl','Vheplusplus_gsm_hpca_srvy_sitl','Voplus_gsm_hpca_srvy_sitl',...
   'Phplus_gsm_hpca_srvy_sitl','Pheplus_gsm_hpca_srvy_sitl','Pheplusplus_gsm_hpca_srvy_sitl','Poplus_gsm_hpca_srvy_sitl',...
-  'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...
+  'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...  
+  'Vhplus_gsm_hpca_brst_l2','Vhplus_dbcs_hpca_brst_l2',...
   'Nhplus_hpca_sitl','aspoc_status',...
   'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2',...
+  'Omnifluxoplus_hpca_srvy_l2','Omnifluxhplus_hpca_srvy_l2','Omnifluxheplus_hpca_srvy_l2','Omnifluxheplusplus_srvy_brst_l2',...  
   'Omnifluxion_epd_feeps_brst_l2', 'Omnifluxelectron_epd_feeps_brst_l2', ...
   'Omnifluxion_epd_feeps_srvy_l2', 'Omnifluxelectron_epd_feeps_srvy_l2', ...
   'Omnifluxproton_epd_eis_brst_l2', 'Omnifluxoxygen_epd_eis_brst_l2',...
   'Omnifluxproton_epd_eis_srvy_l2','Omnifluxoxygen_epd_eis_srvy_l2',...
   'Pitchanglefluxproton_epd_eis_brst_l2','Pitchanglefluxoxygen_epd_eis_brst_l2',...
-  'Pitchanglefluxion_epd_feeps_brst_l2'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Pitchanglefluxion_epd_feeps_brst_l2','Pitchanglefluxion_epd_feeps_srvy_l2'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 
 if strcmp(varStr,'vars') % collect all vars, for testing
   res = vars;
@@ -307,6 +310,10 @@ switch varStr
     
     if mmsId>0
       res = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
+        ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      if ~isempty(res), return, end
+      
+      res = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89q'],...
         ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
       if ~isempty(res), return, end
       
@@ -1053,26 +1060,50 @@ end
         end
         dobj = dataobj([file_list(1).path '/' file_list(1).name]);
         for iSen = 0:5
+          % There seems to be different product names, the following tries
+          % them out one by one by seeing if they are a field of the dobj 
+          % or not. 
           switch Vr.tmmode
             case 'brst'
-              pref = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_P4_flux_t' num2str(iSen)];
+              pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_P4_flux_t' num2str(iSen)];
+              pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_'];              
+              if not(isfield(dobj.data,pref))
+                pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_P4_flux_t' num2str(iSen)];
+                pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_'];            
+              end  
+              if not(isfield(dobj.data,pref))
+                pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_P5_flux_t' num2str(iSen)];
+                pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_'];            
+              end               
             case 'srvy'
-              pref = ['mms' mmsIdS '_epd_eis_phxtof_' species '_P4_flux_t' num2str(iSen)];
-            otherwise, error('invalid mode')
+              pref        = ['mms' mmsIdS '_epd_eis_phxtof_' species '_P4_flux_t' num2str(iSen)];
+              pref_energy = ['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_'];              
+              if not(isfield(dobj.data,pref))
+                pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_P4_flux_t' num2str(iSen)];
+                pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_'];
+              end
+              if not(isfield(dobj.data,pref))                  
+                pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev  '_phxtof_' species '_P4_flux_t' num2str(iSen)];
+                pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev  '_phxtof_' species '_t' num2str(iSen) '_'];
+              end
+              if not(isfield(dobj.data,pref))
+                pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev  '_phxtof_' species '_P5_flux_t' num2str(iSen)];
+                pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev  '_phxtof_' species '_t' num2str(iSen) '_'];
+              end
           end
           tmpvar = mms.db_get_ts(dsetName,pref,Tint);
           if not(isempty(tmpvar))
             EISdpf{iSen+1} = comb_ts(tmpvar);
-            % Get energies
+            % Get energies            
             switch Vr.tmmode
-              case 'brst'
-                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy']);
-                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
-                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev '_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
+              case 'brst'                
+                energies{iSen+1} = dobj.data.([pref_energy 'energy']);
+                energies_dminus{iSen+1} = dobj.data.([pref_energy 'energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.([pref_energy 'energy_dplus']);
               case 'srvy'
-                energies{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy']);
-                energies_dminus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dminus']);
-                energies_dplus{iSen+1} = dobj.data.(['mms' mmsIdS '_epd_eis_phxtof_' species '_t' num2str(iSen) '_energy_dplus']);
+                energies{iSen+1} = dobj.data.([pref_energy 'energy']);
+                energies_dminus{iSen+1} = dobj.data.([pref_energy 'energy_dminus']);
+                energies_dplus{iSen+1} = dobj.data.([pref_energy 'energy_dplus']);
               otherwise, error('invalid mode')
             end                        
           end
@@ -1232,14 +1263,14 @@ end
         if isempty(energy)
             nSensors = length(sensors);
             for iSen = 1 : nSensors            
-                energy_suf_top = [dsetName(1:5), 'epd_feeps_brst_l2_', species, '_top_energy_centroid_sensorid_', num2str(sensors(iSen))];
+                energy_suf_top = [dsetName(1:5), 'epd_feeps_' Vr.tmmode '_' Vr.lev '_', species, '_top_energy_centroid_sensorid_', num2str(sensors(iSen))];
                 energy_top_tmp = mms.db_get_variable(dsetName, energy_suf_top, Tint);
                 if iSen == 1
                     energies = energy_top_tmp.data;
                 else
                     energies = energies + energy_top_tmp.data;
                 end
-                energy_suf_bottom = [dsetName(1:5), 'epd_feeps_brst_l2_', species, '_bottom_energy_centroid_sensorid_', num2str(sensors(iSen))];
+                energy_suf_bottom = [dsetName(1:5), 'epd_feeps_' Vr.tmmode '_' Vr.lev '_', species, '_bottom_energy_centroid_sensorid_', num2str(sensors(iSen))];
                 energy_bottom_tmp = mms.db_get_variable(dsetName, energy_suf_bottom, Tint);
                 energies = energies + energy_bottom_tmp.data;
             end
