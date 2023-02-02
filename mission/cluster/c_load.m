@@ -45,6 +45,7 @@ function [res,v,msg] = c_load(vs,cl_id,mode_s,probe_id)
 % See also C_DESC, IRF_SSUB
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

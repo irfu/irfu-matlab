@@ -15,7 +15,6 @@ function c_export_png(st,sc_list,varargin)
 %
 % See also C_EXPORT_PS, IRF_FNAME
 %
-% $Id$
 
 % Copyright 2004,2005 Yuri Khotyaintsev (yuri@irfu.se)
 

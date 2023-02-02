@@ -3,7 +3,6 @@ function [plan, plan_ind] = caa_pl_coverage(onoff,cover,tint,plotflag)
 %
 % [plan, plan_ind] = caa_pl_coverage(onoff,cover, tint)
 %
-% $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 

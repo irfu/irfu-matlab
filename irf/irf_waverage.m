@@ -6,6 +6,7 @@ function out = irf_waverage(data,fsample,nAveragePoints)
 % nAveragePoints = 7 (default) or 5 - number of point to average over
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

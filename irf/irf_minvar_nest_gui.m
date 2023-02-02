@@ -24,7 +24,6 @@ function status = irf_minvar_nest_gui(x,column)
 %
 % See also IRF_MINVAR_NEST, IRF_MINVAR
 %
-% $Id$
 
 global ud
 persistent tlim message t0;

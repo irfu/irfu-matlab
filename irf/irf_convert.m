@@ -11,7 +11,6 @@ function out = irf_convert(in,flag)
 % To see all possibilities execute
 %   irf_convert
 %
-% $Id$
 
 if nargin==0
   disp(' ');

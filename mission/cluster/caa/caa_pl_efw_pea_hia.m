@@ -19,6 +19,7 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range,varargin)
 %         'st','2003-11-01T00:10:00Z','dt',3600,'novz'))
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

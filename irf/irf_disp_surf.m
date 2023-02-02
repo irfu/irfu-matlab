@@ -2,7 +2,6 @@
 %
 % This program needs the functions IRF_DISP_SURF_CALC and IRF_DISP_SURF_PL
 %
-% $Id$
 
 % By Anders Tjulin. Last update 4/2-2003.
 %

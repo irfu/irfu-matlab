@@ -16,7 +16,6 @@ function V=c_4_v(r1,r2,r3,r4,t)
 %
 %  if more than 4 columns only the first 4 are used
 %
-% $Id$
 
 %  Reference: ISSI book  Eq.12.9 Note that t_alpha should be(t_alpha-t_0)
 %  m_l=Sk Rkl^-1

@@ -13,7 +13,6 @@ function OUT=c_efw_burst_geth(filename)
 % program is not the computer generating the index files due to
 % byte ordering problems.
 %
-% $Id$
 
 % By Anders Tjulin, last update 4/9-2003
 

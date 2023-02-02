@@ -3,7 +3,6 @@ function caa_reg_skel(year,month,outdir)
 %
 % caa_reg_skel(year,month,[outdir])
 %
-% $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 

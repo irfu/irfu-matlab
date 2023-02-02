@@ -22,7 +22,6 @@ function [varargout]=irf_cdf_read(cdf_file,var_name,flag)
 %
 % See also SPDFCDFREAD
 %
-% $Id$
 
 flag_latest=0;
 persistent old_cdfread_call;

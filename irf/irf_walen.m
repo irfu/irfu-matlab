@@ -19,7 +19,6 @@ function [slope,cc]=irf_walen(v,b,n,vht,tpar,tperp,tint,tint_ex)
 %
 % See also IRF_VHT, IRF_VHT_PLOT
 %
-% $Id$
 
 % Alessandro Retino`
 % 2004/11/26

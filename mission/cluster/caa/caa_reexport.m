@@ -5,7 +5,6 @@ function caa_reexport(s,QUALITY)
 %
 % See also CAA_EXPORT, CAA_CEFNAME2SPECS
 %
-% $Id$
 
 if nargin<2, QUALITY = 3; end
 [data_level,caa_vs,cl_id,DATA_VERSION,sp,st,dt] = caa_cefname2specs(s);

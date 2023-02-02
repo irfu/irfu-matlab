@@ -14,7 +14,6 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
 %  M_I = ion mass in terms of electron masses
 %  WP_E = electron plasma frequency in terms of electron gyro frequency
 %
-% $Id$
 
 %  By Anders Tjulin, last update 25/3-2003.
 

@@ -9,7 +9,6 @@ function [t1new,t2new,ind1new,ind2new]=irf_find_closest(t1,t2)
 %               t1new(2)<->t2new(2)
 %               ...
 %
-% $Id$
 
 t1_orig=t1;t2_orig=t2;
 flag=1;

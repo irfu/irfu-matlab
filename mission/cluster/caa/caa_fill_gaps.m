@@ -4,9 +4,9 @@ function [data, filldata] = caa_fill_gaps(data,te,max_gaps)
 % res = caa_fill_gaps(data,te)
 %       append NaNs to the end of DATA untill TE
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

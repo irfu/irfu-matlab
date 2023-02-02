@@ -6,6 +6,7 @@ function [spin_period,err_angle,err_angle_mean, phc_coef] = c_spin_period(phase,
 % Compute Cluster spin period from PHASE_2 or PHASE (FLAG=1)
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

@@ -7,7 +7,6 @@ function [z]=irf_vec_x_scal(x,y,p)
 % y - scalar time series
 % p - power
 %
-% $Id$
 
 if nargin==2,p=1;end
 if isscalar(y), y=[x(:,1) ones(size(x(:,1)))*y]; end

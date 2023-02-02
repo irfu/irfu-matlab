@@ -33,7 +33,6 @@ function h=irf_pl_ebs(e,b,B,parameters)
 % Example:
 %    h=IRF_PL_EBS(e,b,B,[1000 2 180 50 5.36 1 1 2 0]);
 %
-% $Id$
 
 % Modified by Andris Vaivads 15 April 2003
 % By Anders Tjulin (Last update 15/4-2003)

@@ -4,7 +4,6 @@
 %
 % 	See also IRF.TT,IRF.TImeTable
 %
-% $Id$
 
 
 tint=[irf_time([2001,1,1,0,0,0]) irf_time(now,'date>epoch')];

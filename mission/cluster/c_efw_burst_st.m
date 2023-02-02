@@ -3,7 +3,6 @@ function OUT=c_efw_burst_st(filename)
 %
 % OUT=c_efw_burst_st(filename)
 %
-% $Id$
 
 % By Anders Tjulin 13/8-2002
 

@@ -25,7 +25,6 @@ function out=tt(varargin)
 %
 
 
-% $Id$
 
 %  =========== BELOW NOT IMPLEMENTED =========
 %

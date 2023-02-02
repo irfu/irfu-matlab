@@ -14,7 +14,6 @@ function h=c_efw_pl_orient(spacecraft,time,phase_time_series,magnetic_field,velo
 %   v  - velocity vector [vx vy vz] in GSE which will be marked in the plots,
 %        e.g. magnetopause velocity
 %
-% $Id$
 
 %   figuserdata=[h];
 eval_figuserdata='figuserdata={h};';

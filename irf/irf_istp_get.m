@@ -22,7 +22,6 @@ function data=irf_istp_get(data_path,start_time,dt_int,sc_id,quantity,lev)
 %
 % See also C_GET, TOEPOCH
 %
-% $Id$
 
 % Copyright 2006 Yuri Khotyaintsev
 

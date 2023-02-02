@@ -3,7 +3,6 @@ function caa_rerun_L3E(fname)
 %
 % caa_rerun_L3E(fname)
 %
-% $Id$
 
 % Copyright 2006 Yuri Khotyaintsev
 

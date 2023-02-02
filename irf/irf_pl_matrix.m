@@ -18,7 +18,6 @@ function hout = irf_pl_matrix(x,y,F,dx,dy,Flab,xlab,ylab)
 %
 % See also CAA_SPECTROGRAM
 %
-% $Id$
 
 narginchk(1,6)
 

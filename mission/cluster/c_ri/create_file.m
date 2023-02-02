@@ -9,7 +9,6 @@ function output_file = create_file(time,cl_id,mode)
 %	time -time in epoch
 %	mode -b/n, means burst or normal
 %
-% $Id$
 
 %Written by Robert Isaksson in the summer of -03
 

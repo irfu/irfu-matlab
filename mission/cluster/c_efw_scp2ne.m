@@ -16,7 +16,6 @@ function n=c_efw_scp2ne(Vps,flag,coef)
 %        -1   convert from Ne to Vps
 %   coef - multiplication factor for the final density, default = 1
 %
-% $Id$
 
 %   Created by the good team of Andris Vaivads and Jan-Erik Wahlund at
 %   the Swedish Institute of Space Physics, Uppsala division, 2002.
