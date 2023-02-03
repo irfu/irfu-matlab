@@ -58,6 +58,7 @@ function CBLH = cblabel(varargin)
 %   DISCLAIMER:
 %   cblabel.m is provided "as is" without warranty of any kind, under the
 %   revised BSD license.
+% SPDX-License-Identifier: BSD-2-Clause
 
 %   Copyright (c) 2008-2014 Carlos Adrian Vargas Aguilera
 

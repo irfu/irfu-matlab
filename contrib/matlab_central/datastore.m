@@ -49,6 +49,7 @@
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/34081-datastore/
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2011, Ben Mitch
 % All rights reserved.

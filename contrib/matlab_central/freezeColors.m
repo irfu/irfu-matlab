@@ -76,6 +76,7 @@ function freezeColors(varargin)
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/7943-freezecolors---unfreezecolors/content/freezeColors/freezeColors.m
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2005, John Iversen
 % All rights reserved.

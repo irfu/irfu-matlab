@@ -85,6 +85,7 @@ function CBH = cbfreeze(varargin)
 %   DISCLAIMER:
 %   cbfreeze.m is provided "as is" without warranty of any kind, under the
 %   revised BSD license.
+% SPDX-License-Identifier: BSD-2-Clause
 
 %   Copyright (c) 2009-2014 Carlos Adrian Vargas Aguilera
 

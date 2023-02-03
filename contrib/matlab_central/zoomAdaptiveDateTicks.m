@@ -15,6 +15,7 @@ function zoomAdaptiveDateTicks(varargin)
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/15342-zoom-adaptive-date-ticks
 
+% SPDX-License-Identifier: BSD-3-Clause
 % LICENSE
 % Copyright (c) 2007, The MathWorks, Inc.
 % All rights reserved.

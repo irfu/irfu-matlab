@@ -14,6 +14,7 @@
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/16450-get-computer-name-hostname/
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2013, Manuel Marin
 % All rights reserved.
