@@ -13,13 +13,7 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
-% See bicas.proc.L1L2.cal.
-% ZV   : CDF zVariable, or something analogous to it. If refers to CDF:ish
-%        content, then the first index corresponds to the CDF record.
-% SPR  : Samples Per (CDF) Record. Only refers to actual data (currents,
-%        voltages), not metadata.
-% ORIS : Oiginal sampling (frequency), as opposed to DWNS.
-% DWNS : Downsampled, as opposed to ORIS.
+% See readme.txt.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

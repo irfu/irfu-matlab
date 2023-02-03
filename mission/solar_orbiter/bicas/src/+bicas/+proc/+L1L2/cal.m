@@ -36,16 +36,7 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
-% Note: Also see readme.txt.
-% --
-% Offset = Value (constant) that is ADDED to (not subtracted from) a measured
-%          value during the calibration process.
-% --
-% CTI    = CALIBRATION_TABLE_INDEX (zVar)
-% CTI1   = First  value in a record of zVar CALIBRATION_TABLE_INDEX.
-% CTI2   = Second value in a record of zVar CALIBRATION_TABLE_INDEX.
-% RCTS   = RCT CALIBRATION_TABLE (glob.attr)+CALIBRATION_TABLE_INDEX (zVar).
-%          S = plural, RCT= RPW Calibration Table (ROC acronym).
+% Note: See readme.txt.
 %
 %
 % HOW CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX (L1R) WORK

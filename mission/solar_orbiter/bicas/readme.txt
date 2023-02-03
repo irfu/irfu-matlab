@@ -16,11 +16,10 @@ see RCS ICD and RUM documents (see below).
 
 
 ###############################################
- Abbreviations, Dictionary, Naming conventions
+ Abbreviations, dictionary, naming Conventions
 ###############################################
-NOTE: This list also applies to comments in the source code. Some source
-files also define abbreviations widely used in the source code. See e.g.
-bicas.proc.L1L2.cal source code comments for relating to calibration.
+NOTE: This list also applies to comments and identifiers in the source code.
+Some source files also define abbreviations widely used in the source code.
 --
 AA, aampere
     Antenna ampere. Calibrated ampere at the antenna.
@@ -64,6 +63,10 @@ CA
     Cell Array.
 CLI
     Command-line interface
+CTI
+    CALIBRATION_TABLE_INDEX (zVariable).
+CTI2
+    Second value in a CDF record of zVariable CALIBRATION_TABLE_INDEX.
 Dataset (data set)
     A CDF file on any one of a number standardized formats specified by the
     various RPW teams. All CDF files in the context of BICAS are datasets.
@@ -71,14 +74,16 @@ Deg
     Degrees (angle). 1 revolution=360 degrees=2*pi radians.
 DSI
     DATASET_ID
+DWNS
+    Downsampled. Cf. ORIS.
 FTF
     Forward Transfer Function = TF that describes the conversion of physical
-    INPUT to OUTPUT (not the reverse).
+    INPUT to OUTPUT (not the reverse). Cf. ITF.
 ICD
     Interface Control Document
 ITF
     Inverse Transfer Function = TF that describes the conversion of physical
-    OUTPUT to INPUT (not the reverse).
+    OUTPUT to INPUT (not the reverse). Cf. FTF.
 IV, ivolt, Interface Volt
     Calibrated volt at the interface between BIAS and LFR/TDS.
 IVPAV
@@ -88,6 +93,15 @@ IVPT
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
+NSO
+    Non-Standard Operations. Functionality for making BICAS modify processed
+    data based on manually compiled list of "events". Can e.g. set quality
+    bits and remove data.
+Offset
+    Value (constant) that is ADDED to (not subtracted from) a measured
+    value during the calibration process.
+ORIS
+    Original sampling (rate). Used in the context of downsampling. Cf DWNS.
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
 RCS ICD
@@ -99,7 +113,12 @@ RCS ICD
     two which gives room for confusion since a later rev/iss for the old RCS
     ICD may thus be superseded by a lower rev/iss for the newer RCS ICD.
 RCT
-    RPW Calibration Table. CDF with calibration data. See RCS ICD.
+    RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
+RCTS
+    RCT CALIBRATION_TABLE (glob.attr) + CALIBRATION_TABLE_INDEX (zVariable).
+    S = plural.
+ROC
+    RPW Operations Center.
 ROC DFMD
     Document ROC-TST-GSE-NTT-00017-LES, "Data format and metadata definition for
     the ROC-SGSE data"
@@ -113,7 +132,7 @@ RUM
 RV
     Return Value.
 sampere
-    Set current ampere. Exactly proportional to bias current in TM.
+    "Set current ampere". Exactly proportional to bias current in TM.
 Sec
     Seconds
 SPR

@@ -13,7 +13,7 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
-% See bicas.proc.L1L2.cal and readme.txt.
+% See readme.txt.
 %
 %
 % SOME INTERMEDIATE PROCESSING DATA FORMATS
