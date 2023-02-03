@@ -23,7 +23,7 @@
             2022-12-20, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2022-12-17 (inclusive). Only contains manually identified thuster firings.
         </note>
         <note>
-            Note that since data gaps may be filled in after that a time interval has been manually searched for thruster firings etc, it still might not label all such thruster firings (etc).
+            Note that since data gaps may be filled in after that a time interval has been manually searched for thruster firings etc., it still might not label all such thruster firings (etc.).
         </note>
     </notesTable>
 
@@ -46,13 +46,13 @@
             <startTimeUtc>2020-04-01T21:59:34</startTimeUtc>
             <stopTimeUtc> 2020-04-01T22:05:17</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Only one spike so unsure, but seems plausible. Same time as day before.</description>
+            <description>Only one spike so unsure, but seems plausible. Same time as day before. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2020-04-03T21:59:34</startTimeUtc>
             <stopTimeUtc> 2020-04-03T22:05:14</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Only one spike.</description>
+            <description>Only one spike. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2020-04-08T21:59:30</startTimeUtc>
@@ -327,9 +327,7 @@
             <startTimeUtc>2020-07-05T09:10:00</startTimeUtc>
             <stopTimeUtc> 2020-07-05T14:16:57</stopTimeUtc>
             <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
-            <description>
-                Unsure of beginning of time interval. /EJ
-            </description>
+            <description>Unsure of beginning of time interval. /EJ</description>
         </event>
 
 
@@ -359,15 +357,13 @@
             <startTimeUtc>2020-07-14T00:00:00.50</startTimeUtc>
             <stopTimeUtc> 2020-07-20T07:39:41.54</stopTimeUtc>
             <rcsNsoId>FULL_SATURATION</rcsNsoId>
-            <description>Due to bad bias current commanding.</description>
+            <description>Due to bad bias current commanding. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2020-07-24T09:35:20</startTimeUtc>
             <stopTimeUtc> 2020-07-27T12:00:00</stopTimeUtc>
             <rcsNsoId>FULL_SATURATION</rcsNsoId>
-            <description>
-                Due to bad bias current commanding.
-            </description>
+            <description>Due to bad bias current commanding. /EJ</description>
         </event>
 
 
@@ -391,9 +387,7 @@
             <startTimeUtc>2020-08-06T00:00:00</startTimeUtc>
             <stopTimeUtc> 2020-08-09T02:35:00</stopTimeUtc>
             <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
-            <description>
-                Beginning of time period is set quite arbitrarily.
-            </description>
+            <description> Beginning of time period is set quite arbitrarily. /EJ</description>
         </event>
 
 
@@ -457,7 +451,7 @@
             <startTimeUtc>2020-09-19T13:04:17</startTimeUtc>
             <stopTimeUtc> 2020-09-19T13:16:23</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>14 spikes. Therefore long time interval.</description>
+            <description>14 spikes. Therefore long time interval. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2020-09-21T01:04:01</startTimeUtc>
@@ -609,7 +603,7 @@
             <startTimeUtc>2020-11-13T00:59:39</startTimeUtc>
             <stopTimeUtc> 2020-11-13T01:08:09</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Not as visually obvious that it is a thruster firing as other firings but it can be found in the SOLO HK.</description>
+            <description>Not as visually obvious that it is a thruster firing as other firings but it can be found in the SOLO HK. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2020-11-16T01:04:20</startTimeUtc>
@@ -675,7 +669,7 @@
             <startTimeUtc>2021-01-02T05:58:28</startTimeUtc>
             <stopTimeUtc> 2021-01-02T06:07:51</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Unusually many thruster firings.</description>
+            <description>Unusually many thruster firings. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-01-07T13:59:27</startTimeUtc>
@@ -699,13 +693,13 @@
             <startTimeUtc>2021-01-24T22:15:05</startTimeUtc>
             <stopTimeUtc> 2021-01-24T22:35:34</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Unusually many thruster firings.</description>
+            <description>Unusually many thruster firings. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-01-28T21:56:32</startTimeUtc>
             <stopTimeUtc> 2021-01-28T22:14:53</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Unusually many thruster firings.</description>
+            <description>Unusually many thruster firings. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-02-01T01:04:13</startTimeUtc>
@@ -741,7 +735,7 @@
             <startTimeUtc>2021-02-20T13:04:20</startTimeUtc>
             <stopTimeUtc> 2021-02-20T13:19:23</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Look a bit different than normally, but still unambiguous.</description>
+            <description>Look a bit different than normally, but still unambiguous. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-02-22T01:04:30</startTimeUtc>
@@ -831,7 +825,7 @@
             <startTimeUtc>2021-05-03T01:04:32</startTimeUtc>
             <stopTimeUtc> 2021-05-03T01:13:30</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Different shape than normal (in PSP; bumps more distinctly negative instead of positive), but still unambiguous.</description>
+            <description>Different shape than normal (in PSP; bumps more distinctly negative instead of positive), but still unambiguous. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-05-10T01:03:51</startTimeUtc>
@@ -880,7 +874,7 @@
             <startTimeUtc>2021-06-01T06:27:42</startTimeUtc>
             <stopTimeUtc> 2021-06-01T07:03:23</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Not entirely sure, but likely thruster firing during full saturation.</description>
+            <description>Not entirely sure, but likely thruster firing during full saturation. /EJ</description>
         </event>
 
 
@@ -940,7 +934,7 @@
             <startTimeUtc>2021-07-12T09:49:24</startTimeUtc>
             <stopTimeUtc> 2021-07-12T09:58:17</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Appears to be a single thruster firing. Therefore somewhat unclear if correct labelling.</description>
+            <description>Appears to be a single thruster firing. Therefore somewhat unclear if correct labelling. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-07-12T15:39:13</startTimeUtc>
@@ -970,7 +964,7 @@
             <startTimeUtc>2021-08-02T06:59:13</startTimeUtc>
             <stopTimeUtc> 2021-08-02T07:08:07</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Only five s/c potential peaks. Looks irregular but still looks much like a thruster firing.</description>
+            <description>Only five s/c potential peaks. Looks irregular but still looks much like a thruster firing. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-08-05T22:04:20</startTimeUtc>
@@ -982,13 +976,13 @@
             <startTimeUtc>2021-08-09T02:00:30</startTimeUtc>
             <stopTimeUtc> 2021-08-09T02:12:00</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Different looking. Only two s/c potential peaks, 0.8 V, and longer-than-usual return to normal.</description>
+            <description>Different looking. Only two s/c potential peaks, 0.8 V, and longer-than-usual return to normal. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-08-09T06:50:27</startTimeUtc>
             <stopTimeUtc> 2021-08-09T06:57:53</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Unsure if thruster firing. Just one peak, 0.7 V. Also unusual to have second thruster firing on the same day.</description>
+            <description>Unsure if thruster firing. Just one peak, 0.7 V. Also unusual to have second thruster firing on the same day. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2021-08-12T19:24:15</startTimeUtc>
@@ -1462,7 +1456,7 @@
             <startTimeUtc>2022-07-04T16:34:21</startTimeUtc>
             <stopTimeUtc> 2022-07-04T16:46:21</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Note: First observation of a second thruster firing on the same day.</description>
+            <description>Note: First observation of a second thruster firing on the same day. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2022-07-11T00:34:21</startTimeUtc>
@@ -1624,13 +1618,13 @@
             <startTimeUtc>2022-10-10T01:04:08</startTimeUtc>
             <stopTimeUtc> 2022-10-10T01:36:44</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Very long thruster firing (~24 min+margins), but still unambiguous./EJ</description>
+            <description>Very long thruster firing (~24 min+margins), but still unambiguous. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2022-10-12T01:04:08</startTimeUtc>
             <stopTimeUtc> 2022-10-12T01:35:57</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Very long thruster firing (~24 min+margins), but still unambiguous./EJ</description>
+            <description>Very long thruster firing (~24 min+margins), but still unambiguous. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2022-10-14T01:04:24</startTimeUtc>
@@ -1660,7 +1654,7 @@
             <startTimeUtc>2022-10-24T01:04:23</startTimeUtc>
             <stopTimeUtc> 2022-10-24T01:18:12</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Obvious from the repetitions, and sharp spikes, but not otherwise.</description>
+            <description>Obvious from the repetitions, and sharp spikes, but not otherwise. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2022-10-26T01:04:27</startTimeUtc>
