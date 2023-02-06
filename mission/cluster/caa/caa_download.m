@@ -624,7 +624,11 @@ end
         cefFile = untar(tempFilePath, datasetDirName);
         fileNameCefGz = gzip(cefFile); % Re-gzip file only (without subdirs)
         [pathCef, fileNameCef, fileNameCefExt] = fileparts(fileNameCefGz);
-        movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef, fileNameCefExt]);
+        if iscell(fileNameCef)
+            movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef{1}, fileNameCefExt{1}]);
+        else
+            movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef, fileNameCefExt]);
+        end
         delete(tempFilePath); % remove gunzipped tar file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
         delete(tempFilePathGz); % remove gzipped tar file which was first downloaded
         try
