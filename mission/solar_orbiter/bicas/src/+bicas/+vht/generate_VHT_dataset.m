@@ -19,7 +19,7 @@
 %     Footnote: Erik P G Johansson's BICAS batch processing utilities (not part of
 %     BICAS) also do not cover this case. Can not find combinations of datasets
 %     that determine what to process.
-% (2) output datasets can not be generated from arbitrary (versions of) input
+% (2) Output datasets can not be generated from arbitrary (versions of) input
 %     datasets. Exact input dataset versions are linked to the content of
 %     .mat file.
 %

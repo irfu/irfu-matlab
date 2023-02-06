@@ -76,6 +76,11 @@ DSI
     DATASET_ID
 DWNS
     Downsampled. Cf. ORIS.
+EMIDP
+    (MATLAB) Error Message Identifier Part. One of the colon-separated
+    parts of the MException .identifier string field (error message ID).
+    NOTE: "Component" has a special meaning in the context of error
+    message IDs. Therefore uses the term "part" instead.
 FTF
     Forward Transfer Function = TF that describes the conversion of physical
     INPUT to OUTPUT (not the reverse). Cf. ITF.
@@ -147,6 +152,8 @@ S/W mode
     CDF files derived from the input files. BICAS can execute only one such mode
     on each run. Executing such modes is the primary purpose of an RCS. (Defined
     by the RCS ICD.)
+TBW
+    To Bash Wrapper.
 TF
     Transfer Function. Transfer function Z=Z(omega) in the frequency domain.
     Conventionally here on the form of a complex number (Z) as a function of

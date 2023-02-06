@@ -10,7 +10,7 @@
 % Ex: Log to file from within MATLAB.
 %
 % NOTE: If logging to file from MATLAB, then one can not (in principle) log
-%          MATLAB's own startup messages.
+%       MATLAB's own startup messages.
 %
 %
 % RATIONALE: INSTANTIATED CLASS INSTEAD OF LOGGING FUNCTIONS

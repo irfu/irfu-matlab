@@ -46,6 +46,12 @@
 % -- Possible need for backward compatibility.
 %
 %
+% NOTE
+% ====
+% There is no s/w mode for generating VHT datasets. They are therefore not
+% represented here.
+%
+%
 % DEFINITIONS
 % ===========
 % SIP = "Specific Input Parameters" (RCS ICD).
@@ -109,7 +115,7 @@ classdef swmode_defs
     % PRIVATE, STATIC, CONSTANTS
 %     properties(Constant, GetAccess=private)
 %
-%         SWM_PURPOSE_AMENDMENT = ' INOFFICIAL wrt. ROC.';
+%         SWM_PURPOSE_AMENDMENT = ' UNOFFICIAL wrt. ROC.';
 %     end
 
     
@@ -160,6 +166,10 @@ classdef swmode_defs
             %       How relates to s/w modes?
             %   
             % PROPOSAL: Merge LFR and TDS loops.
+            % PROPOSAL: Split constructor into separate functions, one per s/w
+            %           mode (or at least the big ones)
+            %   L1/L1R --> L2 mode
+            %   L2     --> L3
 
             % Arrays with constants.
             % {1} = S/w modes (science) L1R-->L2
@@ -172,7 +182,7 @@ classdef swmode_defs
                 inputDatasetLevelList{end+1} = 'L1';
                 inputDashEList{end+1}        = '';
                 swmSuffixList{end+1}         = '_L1';
-                swmPurposeAmendmList{end+1}  = ' INOFFICIAL wrt. ROC.';
+                swmPurposeAmendmList{end+1}  = ' UNOFFICIAL wrt. ROC.';
             end
 
 
@@ -199,10 +209,10 @@ classdef swmode_defs
                 'SBMx_SURV',       {'SBM1', 'SBM2', 'SURV', 'SURV'}, ...
                 'CWF_SWF',         {'CWF',  'CWF',  'CWF',  'SWF' }, ...
                 'modeStr',         {...
-                'selective burst mode 1', ...
-                'selective burst mode 2', ...
-                'survey mode', ...
-                'survey mode' ...
+                    'selective burst mode 1', ...
+                    'selective burst mode 2', ...
+                    'survey mode', ...
+                    'survey mode' ...
                 }, ...
                 'outputSkeletonVersion', {'13', '13', '13', '13'});
             TDS_SW_MODE_DATA = struct(...
@@ -507,7 +517,7 @@ classdef swmode_defs
             bicas.swmode_defs.assert_text(              Def.swdName)
             bicas.swmode_defs.assert_text(              Def.swdDescription)
             bicas.swmode_defs.assert_DATASET_ID(        Def.datasetId)
-            solo.adm.assert_dataset_level(     Def.datasetLevel)
+            solo.adm.assert_dataset_level(              Def.datasetLevel)
             bicas.assert_skeleton_version(              Def.skeletonVersion)
         end
 

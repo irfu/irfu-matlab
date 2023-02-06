@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-11-12
 %
-classdef const    
+classdef const
     % PROPOSAL: Collect functions too.
     
 
@@ -17,12 +17,12 @@ classdef const
     %#####################
     properties(Constant)
         % Docs specifies spelling "Acknowledgment", but ISTP specifies spelling
-        % "Acknowledgement" ("ledg" vs "ledge").
+        % "Acknowledgement" ("-ledg" vs "-ledge").
         %
         % NOTE: Incomplete list of mandatory global attributes (too long).
         % NOTE: Most of global attributes names have just been copied from
-        % defacto datasets. There is still value in that it checks that the same
-        % global attributes are used everywhere.
+        %       de facto datasets. There is still value in that it checks that
+        %       the same global attributes are used everywhere.
         EXACT_L2_GLOBAL_ATTRIBUTES = {...
             'ACCESS_FORMAT', 'ACCESS_URL', 'Acknowledgement', ...
             'Dataset_ID', 'Data_type', ...

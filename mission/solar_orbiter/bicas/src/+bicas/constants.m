@@ -9,15 +9,6 @@
 % codes that should (maybe) be used in documentation.
 %
 %
-% VARIABLE NAMING CONVENTIONS
-% ===========================
-% TBW   = To Bash Wrapper.
-% EMIDP = (MATLAB) Error Message Identifier Part. One of the colon-separated
-%         parts of the MException .identifier string field (error message ID).
-%         NOTE: "Component" has a special meaning in the context of error
-%         message IDs. Therefore uses the term "part" instead.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-09, as a replacement for the FUNCTION
 % error_safe_constant created 2016-06-02.
@@ -32,9 +23,9 @@ classdef constants
     % PROPOSAL: Change name to "const".
     %   PRO: Shorter
     %   PRO: More ~standard.
-    
-    
-    
+
+
+
     properties(Constant)
 
         % Permissible string values returned by "version('-release')" when using
@@ -49,11 +40,11 @@ classdef constants
         % that this is also implicitly the constant for the default config file
         % filename.
         DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');
-        
+
         % MATLAB stdout prefix to signal to bash wrapper that the log message
         % should be passed on to STDOUT (without the prefix).
         STDOUT_PREFIX_TBW                 = 'STDOUT: ';
-        
+
         % MATLAB stdout prefix to signal to bash wrapper that the log message
         % should be passed on to LOG FILE (without the prefix).
         LOG_FILE_PREFIX_TBW               = 'LOG FILE: ';
@@ -78,13 +69,13 @@ classdef constants
         %
         %
         EMIDP_2_INFO = bicas.constants.init_EMIDP_2_INFO;
-        
-        
-        
+
+
+
         SWD_METADATA = bicas.constants.init_swd_metadata();
-        
-        
-        
+
+
+
         % Regular expression which the CLI name of a s/w mode must satisfy.
         %
         % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems to
@@ -97,17 +88,17 @@ classdef constants
         % NOTE: help regexp: "\w    A word character [a-z_A-Z0-9]"
         %
         SW_MODE_CLI_OPTION_REGEX = '[A-Za-z][\w-]+';
-        
-        
-        
+
+
+
         % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only
         % permits these characters (and only lowercase!).
         % This regexp only describes the "option body", i.e. not the preceding
         % "--".
         SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
-        
-        
-        
+
+
+
         % Field values = Legal RCS NSO IDs used in the RCS NSO XML file.
         % Field names can be used as constants for those strings inside BICAS.
         %
@@ -119,22 +110,22 @@ classdef constants
         %
         % IMPLEMENTATION NOTE: One does not want to use the RCS NSO ID string
         % constants directly inside the code, in case of typos.
-        % 
+        %
         NSOID = struct(...
             'PARTIAL_SATURATION',      'PARTIAL_SATURATION', ...
             'FULL_SATURATION',         'FULL_SATURATION', ...
             'THRUSTER_FIRING',         'THRUSTER_FIRING');
 %             'TEST_QF0',                'TEST_QUALITY_FLAG_0', ...
-%             'TEST_UFV',                'TEST_UFV', ...            
+%             'TEST_UFV',                'TEST_UFV', ...
 %             'TEST_THRUSTER_FIRING',    'TEST_THRUSTER_FIRING', ...
-        
+
         % Define the bits in L2_QUALITY_BITMASK (L2QBM).
         % Intended for bit operations.
         L2QBM_PARTIAL_SATURATION = uint16(1);
         L2QBM_FULL_SATURATION    = uint16(2);
-        
-        
-        
+
+
+
         % Minimum number of non-downsampled records per downsampled record.
         % NOTE: Does not consider whether samples are fill values.
         %
@@ -144,14 +135,14 @@ classdef constants
         % NOTE: Currently used for both L2 downsampled and L3 downsampled.
         % /2021-05-24
         N_MIN_SAMPLES_PER_DWNS_BIN = 3;
-        
+
 
 
         GA_MODS = bicas.constants.init_GA_MODS();
 
     end    % properties(Constant)
-    
-    
+
+
 
     %########################
     %########################
@@ -168,7 +159,7 @@ classdef constants
         %
         function MAP = init_swd_metadata()
             MAP = containers.Map();
-            
+
             IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';
             %
             MAP('SWD.identification.project')     = 'ROC';
@@ -182,10 +173,10 @@ classdef constants
                 ' Also has undocumented support for processing', ...
                 ' L1 (not L1R) to L2, and BIAS L2 to L3 data', ...
                 ' (both disabled by default).'];
-            
+
             % 2021-09-21: Latest RCS ICD version is 01/05.
             MAP('SWD.identification.icd_version') = '1.4';
-            
+
             % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
             % Users":
             % """"""""
@@ -273,8 +264,8 @@ classdef constants
             %
             % Relative path to BICAS executable. See RCS ICD.
             MAP('SWD.environment.executable')     = 'roc/bicas';
-            
-            
+
+
 
             %======================
             % ASSERTIONS: SETTINGS
@@ -293,17 +284,17 @@ classdef constants
             irf.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
 
         end
-        
-        
+
+
 
         function MAP = init_EMIDP_2_INFO()
             % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section
             % 3.4.3 specifies
             %   error code 0 : No error
             %   error code 1 : Every kind of error (!)
-            
+
             MAP = containers.Map('KeyType', 'char', 'ValueType', 'any');
-            
+
             MAP('NoError')                      = init_struct(0, ...
                 'No error');
             MAP('BadMatlabVersion')             = init_struct(1, ...
@@ -356,7 +347,7 @@ classdef constants
             MAP('CannotFindRegexMatchingRCT')   = init_struct(1, ...
                 ['Can not find any matching calibration file to read. No', ...
                 ' file matches regular expression.']);
-            
+
             % IMPLEMENTATION NOTE: Using a nested function merely to keep the
             % function call short.
             function ErrorTypeInfo = init_struct(errorCode, errorDescription)
@@ -364,11 +355,11 @@ classdef constants
                     'errorCode',   errorCode, ...
                     'description', errorDescription);
             end
-            
+
         end
-        
-        
-        
+
+
+
         % Initialize data structure containing the CDF global attribute (GA)
         % MODS.
         %
@@ -385,7 +376,7 @@ classdef constants
         % by the pipe character (“|”)""""
         %
         function Map = init_GA_MODS()
-            % PROPOSAL: Exclude VHT since not produced by BICAS.
+            % PROPOSAL: Exclude VHT since not produced by BICAS proper.
             %   CON: Production uses BICAS infrastrucutre for writing datasets.
             %
             % PROPOSAL: Use function to create MODS entry strings.
@@ -401,6 +392,16 @@ classdef constants
             %       CON: Not if want to be really general, e.g. accounting for
             %            ROC-SGSE/SOLO distinctions.
             % PROPOSAL: Setting L2 and L3 in separate (sub)functions.
+            %
+            % PROPOSAL: Separate class(es) for data structure.
+            %   PRO: Clearer data structure.
+            %   PRO: Smaller bicas.constants with only constants.
+            %   PRO: More easily testable.
+            %   PROPOSAL: Class for entire data structure: All DSIs, all
+            %             dates/entries per DSI,
+            %             all strings/comments per date/entry.
+            %   PROPOSAL: Class for one DSI.
+            %   PROPOSAL: Class for one date/entry.
 
 
 
@@ -432,32 +433,32 @@ classdef constants
 
 
 
-            %================================================================
-            % Initialize MAP (data struct with all MODS entries), with empty
+            %==================================================================
+            % Initialize "Map" (data struct with all MODS entries), with empty
             % lists for every (relevant) DATASET_ID
-            %================================================================
+            %==================================================================
             Map = containers.Map('KeyType', 'char', 'ValueType', 'Any');
 
             bicas.constants.add_empty_MODS_list(Map, L2_LFR_TDS_DSIs)
-            
-            % NOTE: INOFFICIAL DATASET. Sensible not strictly required.
+
+            % NOTE: UNOFFICIAL DATASET. Sensible not strictly required.
             % NOTE: Formal parent dataset(s) might be changed due to
             % reorganizing s/w mode, which could change the technically correct
             % value.
             bicas.constants.add_empty_MODS_list(Map, {'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'})
-            
+
             bicas.constants.add_empty_MODS_list(Map, L3_DES_DSIs)
             bicas.constants.add_empty_MODS_list(Map, {'SOLO_L3_RPW-BIA-VHT'})
-            
-            
-            
+
+
+
             %##############################################################
             % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DATASET_IDs
             %##############################################################
-            
+
             %===================================================================
-            % L2
-            % --
+            % L2: At most one entry per BICAS version
+            % ---------------------------------------
             % NOTE: L2 dates should be taken from ROC's BICAS git repo commits
             % since those represent deliveries to ROC.
             %===================================================================
@@ -465,40 +466,40 @@ classdef constants
             
             bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
                 '2020-05-18 -- V2.0.1 -- Bias currents bugfixed to be correct unit.')
-            
-            
-            
+
+
+
             sTds = ...
                 ['2020-07-07 -- V3.0.0 -- Bias currents changed to nA (not ampere).', ...
                 ' | Ignoring frequencies above high-frequency cutoff at', ...
                 ' 0.7 times Nyquist frequency.'];
-            sLfr = [sTds, ' | Hereafter copying LFR L1 zVar BW.'];            
+            sLfr = [sTds, ' | Hereafter copying LFR L1 zVar BW.'];
             bicas.constants.add_MODS_entry(Map, L2_LFR_DSIs, sLfr)
             bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, sTds)
             clear sLfr sTds
-            
-            
-            
+
+
+
             bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
                 ['2020-09-01 -- V3.1.0 -- Bugfix to handle LFR L1 zVar BW=0.', ...
                 ' | Crude sweep removal based on mux mode.', ...
                 ' | Preliminary setting of QUALITY_FLAG (max 2).'])
-            
-            
-          
+
+
+
             bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
                 ['2020-09-15 -- V3.1.1 -- ', ...
                 'Ignoring frequencies above high-frequency cutoff at 0.8', ...
                 ' (instead of 0.7) multiplied by Nyquist frequency.'])
-            
-            
-            
+
+
+
             bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
                 ['2020-10-07 -- V4.0.0 -- ', ...
                 'Uses table to set zVars QUALITY_FLAG and L2_QUALITY_BITMASK.'])
 
-            
-            
+
+
             sTds = ['2020-12-07 -- V4.1.0 -- ', ...
                 'Set QUALITY_FLAG and L2_QUALITY_BITMASK based on', ...
                 ' tabulated thruster firings.'];
@@ -510,9 +511,9 @@ classdef constants
             bicas.constants.add_MODS_entry(Map, L2_LFR_DSIs, sLfr)
             bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, sTds)
             clear sLfr sTds
-            
-            
-            
+
+
+
             % No new L2 MODS entries (if excluding NSOPS update).
             bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, ...
                 ['2021-02-02 -- V5.0.0 -- ', ...
@@ -528,9 +529,9 @@ classdef constants
                 'Set zVar attributes SCALEMIN & SCALEMAX using data min & max.', ...
                 ' | Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
                 ' until 2021-09-11.'])
-            
-            
-            
+
+
+
             sTds = ['2022-09-15 -- V6.0.1 -- ', ...
                 'Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
                 ' until 2022-09-03.', ...
@@ -563,28 +564,24 @@ classdef constants
             % NOTE: L3 dates are effectively determined by dataset deliveries to
             % ROC were generated.
             % --
-            % NOTE: Since
+            % NOTE:
             % (1) BICAS is used for generating L3 at IRF (not ROC), and
-            % (2) BICAS version numbers are only updated when delivering to
-            % ROC. Therefore,
+            % (2) BICAS version numbers are only updated when delivering to ROC.
+            % Therefore,
             % (1) the MODS BICAS version numbers do not exactly specify the
-            % BICAS version, only the previous official version, and
-            % (2). The dates may
-            % conflict with the combinations of BICAS version and
-            % date for other MODS entries.
+            %     BICAS version, only the previous official version, and
+            % (2) the dates may conflict with the combinations of BICAS version
+            %     and date for other MODS entries.
             %===================================================================
             % NOTE: No MODS entries for initial delivery.
-            % NOTE: Including VHT, since VHT uses the same BICAS functions for
-            % writing datasets (including
-            % bicas.derive_output_dataset_GlobalAttributes).
             
-            % Delivery 1: ~2021-01-29
+            % L3 delivery 1: ~2021-01-29
             % NOTE: No entries, but the date is needed for determining MODS
             % between delivery 1 and 2.
             
             
             
-            % Delivery 2: ~2021-02-16
+            % L3 delivery 2: ~2021-02-16
             % NOTE: Master CDFs updated according to feedback. ==> No MODS.
             % psp2ne.m updated ==> DENSITY
             bicas.constants.add_MODS_entry(Map, ...
@@ -594,7 +591,7 @@ classdef constants
             
             
             
-            % Delivery 3: ~2021-04-09
+            % L3 delivery 3: ~2021-04-09
             % vdccal.m updated ==> EFIELD updated.
             bicas.constants.add_MODS_entry(Map, ...
                 {'SOLO_L3_RPW-BIA-EFIELD', ...
@@ -603,7 +600,7 @@ classdef constants
             
             
             
-            % Delivery 4: ~2022-12-20
+            % L3 delivery 4: ~2022-12-20
             bicas.constants.add_MODS_entry(Map, ...
                 {'SOLO_L3_RPW-BIA-EFIELD', ...
                  'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
@@ -612,45 +609,40 @@ classdef constants
 
 
 
-            % NEXT DELIVERY
-%             s = '?? :: Better handling of edge cases of fill values in quality variables and data.';
-%             % MODS: (~2021-05-27) Improved calibration for Dec 2020. (new solo.vdccal)
-%             bicas.constants.add_MODS_entry(Map, L3_EFIELD_SCPOT_DSIs, s)
-%             clear s
-            
-            
-            
             %=================================================================
             % L3 VHT
             % ------
             % NOTE: L3 dates are effectively determined by deliveries to ROC.
+            % NOTE: Including VHT, since VHT uses the same BICAS functions for
+            %       writing datasets (including
+            %       bicas.derive_output_dataset_GlobalAttributes).
             %=================================================================
-            
+
             % Delivery 1: 2021-04-27 (Generation_time)
             % NOTE: No entries, but the date is needed for determining MODS for
             % delivery 2 (i.e. determine modifications between delivery 1 and 2).
-            
+
             % 2020-05-19: There has not been any second delivery, and therefore
             % no MODS.
-            
-            
-            
+
+
+
             % ASSERTION
             for keyCa = Map.keys
                 % ASSERT: All MODS strings are unique for DATASET_ID.
                 irf.assert.castring_set(Map(keyCa{1}))
             end
-            
+
         end    % init_GA_MODS
-        
-        
-        
+
+
+
         % Add empty entries to Map (handle object) for specified DATASET_IDs.
-        function add_empty_MODS_list(Map, datasetIdsCa)            
-            
+        function add_empty_MODS_list(Map, datasetIdsCa)
+
             for i = 1:numel(datasetIdsCa)
                 dsi = datasetIdsCa{i};
-                
+
                 % ASSERTION: dsi is an unused key
                 % -------------------------------
                 % IMPLEMENTATION NOTE: In principle overkill since later code
@@ -661,26 +653,26 @@ classdef constants
                     error('BICAS:Assertion', ...
                         'Map already has a key dsi="%s".', dsi)
                 end
-                
+
                 % NOTE: Effectively (additional) assertion on that "dsi" is a
                 % valid key.
                 Map(dsi) = {};
             end
         end
-        
-        
-        
+
+
+
         % Add a single MODS entry (string) for multiple DATASET_IDs.
         function add_MODS_entry(Map, datasetIdsCa, entryStr)
             % PROPOSAL: "Flatten" datasetIdsCa if cell arrays of cell arrays.
-            
+
             % ASSERTIONS
             irf.assert.castring_set(datasetIdsCa)
             bicas.constants.assert_MODS_entry_str(entryStr)
-            
+
             for i = 1:numel(datasetIdsCa)
                 dsi = datasetIdsCa{i};
-                
+
                 % ASSERTION: dsi is a valid key
                 % -----------------------------
                 % IMPLEMENTATION NOTE: In principle overkill since later code
@@ -691,7 +683,7 @@ classdef constants
                     error('BICAS:Assertion', ...
                         'Map does not have key dsi="%s".', dsi)
                 end
-                
+
                 % NOTE: Effectively (additional) assertion on that "dsi" is a
                 % valid key.
                 MODS        = Map(dsi);
@@ -699,9 +691,9 @@ classdef constants
                 Map(dsi)    = MODS;
             end
         end
-        
-        
-        
+
+
+
         % Assert that a string is on the format required by ROC for a single
         % MODS entry.
         function assert_MODS_entry_str(s)
@@ -714,7 +706,7 @@ classdef constants
                 ' -- V[0-9]+.[0-9]+.[0-9]+ -- ', ...
                 '[-<=_|.()&:''/ a-zA-Z0-9]+'] ...
             )
-            
+
             % No more than one whitespace per occurrence.
             assert(~contains(s, '  '), ...
                 'MODS entry contains illegal double whitespace.')
@@ -725,13 +717,13 @@ classdef constants
             iPipes2 = strfind(s,  '|');
             assert(isequal(iPipes1, iPipes2), ...
                 'Pipes not used correctly in MODS entry.')
-            
+
             % Last sentence ends with period.
             assert(s(end) == '.', 'MODS entry does not end with period.')
         end
-        
-        
-        
+
+
+
     end    % methods(Static, Access=private)
 
 end
