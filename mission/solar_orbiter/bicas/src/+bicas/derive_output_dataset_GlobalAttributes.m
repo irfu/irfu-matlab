@@ -232,7 +232,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
 
     enableMods = SETTINGS.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
     
-    MODS = bicas.constants.GA_MODS(outputDatasetId);
+    MODS = bicas.constants.GA_MODS_DB.get_MODS_strings_CA(outputDatasetId);
     if ~isempty(MODS) && enableMods
         OutGaSubset.MODS = MODS;
     end

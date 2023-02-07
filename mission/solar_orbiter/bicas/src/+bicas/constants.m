@@ -138,7 +138,7 @@ classdef constants
 
 
 
-        GA_MODS = bicas.constants.init_GA_MODS();
+        GA_MODS_DB = bicas.constants.init_GA_MODS_DB();
 
     end    % properties(Constant)
 
@@ -375,15 +375,9 @@ classdef constants
         % by the change descriptions, which shall be separated
         % by the pipe character (“|”)""""
         %
-        function Map = init_GA_MODS()
+        function Db = init_GA_MODS_DB()
             % PROPOSAL: Exclude VHT since not produced by BICAS proper.
             %   CON: Production uses BICAS infrastrucutre for writing datasets.
-            %
-            % PROPOSAL: Use function to create MODS entry strings.
-            %   CON: Makes strings less readable.
-            %   CON: Makes overlap between similar entries harder.
-            %   PRO: Enforces correct format.
-            %   PROPOSAL: %create_entry = @(dateStr, varargin) ([dateStr, ' :: ', join(varargin, ' | ')]);
             %
             % PROPOSAL: DSI lists as public constants.
             %   PROPOSAL: solo.hwzv.const.
@@ -393,17 +387,7 @@ classdef constants
             %            ROC-SGSE/SOLO distinctions.
             % PROPOSAL: Setting L2 and L3 in separate (sub)functions.
             %
-            % PROPOSAL: Separate class(es) for data structure.
-            %   PRO: Clearer data structure.
-            %   PRO: Smaller bicas.constants with only constants.
-            %   PRO: More easily testable.
-            %   PROPOSAL: Class for entire data structure: All DSIs, all
-            %             dates/entries per DSI,
-            %             all strings/comments per date/entry.
-            %   PROPOSAL: Class for one DSI.
-            %   PROPOSAL: Class for one date/entry.
-
-
+            % PROPOSAL: Move to code to bicas.gamods.*.
 
             %====================================================
             % Lists of commonly used GROUPS of DATASET_IDs (DSI)
@@ -433,25 +417,22 @@ classdef constants
 
 
 
-            %==================================================================
-            % Initialize "Map" (data struct with all MODS entries), with empty
-            % lists for every (relevant) DATASET_ID
-            %==================================================================
-            Map = containers.Map('KeyType', 'char', 'ValueType', 'Any');
-
-            bicas.constants.add_empty_MODS_list(Map, L2_LFR_TDS_DSIs)
-
-            % NOTE: UNOFFICIAL DATASET. Sensible not strictly required.
+            %======================================================
+            % Initialize empty data structure for all MODS entries)
+            %======================================================
+            % NOTE: Includes UNOFFICIAL DATASETS. Not strictly required.
             % NOTE: Formal parent dataset(s) might be changed due to
-            % reorganizing s/w mode, which could change the technically correct
-            % value.
-            bicas.constants.add_empty_MODS_list(Map, {'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'})
+            %       reorganizing s/w mode, which could change the technically
+            %       correct value.
+            DSI_CA = [...
+                L2_LFR_TDS_DSIs, L3_DES_DSIs, ...
+                {'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND', ...
+                 'SOLO_L3_RPW-BIA-VHT'}...
+            ]';
+            Db = bicas.gamods.Database(DSI_CA);
 
-            bicas.constants.add_empty_MODS_list(Map, L3_DES_DSIs)
-            bicas.constants.add_empty_MODS_list(Map, {'SOLO_L3_RPW-BIA-VHT'})
-
-
-
+            
+            
             %##############################################################
             % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DATASET_IDs
             %##############################################################
@@ -488,53 +469,58 @@ classdef constants
 
 
 
-            bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
-                '2020-05-18 -- V2.0.1 -- Bias currents bugfixed to be correct unit.')
+            Db.add_version_entry(L2_LFR_TDS_DSIs, ...
+                bicas.gamods.VersionEntry('2020-05-18', '2.0.1', ...
+                    {'Bias currents bugfixed to be correct unit.'}))
 
 
 
-            sTds = ...
-                ['2020-07-07 -- V3.0.0 -- Bias currents changed to nA (not ampere).', ...
-                ' | Ignoring frequencies above high-frequency cutoff at', ...
-                ' 0.7 times Nyquist frequency.'];
-            sLfr = [sTds, ' | Hereafter copying LFR L1 zVar BW.'];
-            bicas.constants.add_MODS_entry(Map, L2_LFR_DSIs, sLfr)
-            bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, sTds)
-            clear sLfr sTds
+            veTds = bicas.gamods.VersionEntry('2020-07-07', '3.0.0', ...
+                {'Bias currents changed to nA (not ampere).', ...
+                 'Ignoring frequencies above high-frequency cutoff at 0.7 times Nyquist frequency.'});
+            veLfr = veTds.add_comments({'Hereafter copying LFR L1 zVar BW.'});
+            Db.add_version_entry(L2_LFR_DSIs, veLfr)
+            Db.add_version_entry(L2_TDS_DSIs, veTds)
+            clear veTds veLfr
+            
+
+
+            veTds = bicas.gamods.VersionEntry('2020-09-01', '3.1.0', {...
+                    'Crude sweep removal based on mux mode.', ...
+                    'Preliminary setting of QUALITY_FLAG (max 2).'});
+            veLfr = veTds.add_comments({'Bugfix to handle LFR L1 zVar BW=0.'});
+            Db.add_version_entry(L2_LFR_DSIs, veLfr)
+            Db.add_version_entry(L2_TDS_DSIs, veTds)
+            clear veTds veLfr
 
 
 
-            bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
-                ['2020-09-01 -- V3.1.0 -- Bugfix to handle LFR L1 zVar BW=0.', ...
-                ' | Crude sweep removal based on mux mode.', ...
-                ' | Preliminary setting of QUALITY_FLAG (max 2).'])
+            Db.add_version_entry(L2_LFR_TDS_DSIs, ...
+                bicas.gamods.VersionEntry('2020-09-15', '3.1.1', {...
+                    ['Ignoring frequencies above high-frequency cutoff at 0.8', ...
+                    ' (instead of 0.7) multiplied by Nyquist frequency.']}))
 
 
 
-            bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
-                ['2020-09-15 -- V3.1.1 -- ', ...
-                'Ignoring frequencies above high-frequency cutoff at 0.8', ...
-                ' (instead of 0.7) multiplied by Nyquist frequency.'])
+            Db.add_version_entry(L2_LFR_TDS_DSIs, ...
+                bicas.gamods.VersionEntry('2020-10-07', '4.0.0', ...
+                {'Uses table to set zVars QUALITY_FLAG and L2_QUALITY_BITMASK.'}))
 
 
 
-            bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
-                ['2020-10-07 -- V4.0.0 -- ', ...
-                'Uses table to set zVars QUALITY_FLAG and L2_QUALITY_BITMASK.'])
-
-
-
-            sTds = ['2020-12-07 -- V4.1.0 -- ', ...
-                'Set QUALITY_FLAG and L2_QUALITY_BITMASK based on', ...
-                ' tabulated thruster firings.'];
-            sLfr = [sTds, ...
-                ' | Bugfixed AC detrending that only removes mean and does', ...
-                  ' not add linear component (mostly SWF).', ...
-                ' | Inverting AC using artificial constant gain for low', ...
-                  ' frequencies to not amplify noise.'];
-            bicas.constants.add_MODS_entry(Map, L2_LFR_DSIs, sLfr)
-            bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, sTds)
-            clear sLfr sTds
+            veTds = bicas.gamods.VersionEntry('2020-12-07', '4.1.0', {...
+                ['Set QUALITY_FLAG and L2_QUALITY_BITMASK based on', ...
+                ' tabulated thruster firings.']...
+            });
+            veLfr = veTds.add_comments({...
+                ['Bugfixed AC detrending that only removes mean and does', ...
+                ' not add linear component (mostly SWF).'], ...
+                ['Inverting AC using artificial constant gain for low', ...
+                ' frequencies to not amplify noise.']...
+            });
+            Db.add_version_entry(L2_LFR_DSIs, veLfr)
+            Db.add_version_entry(L2_TDS_DSIs, veTds)
+            clear veTds veLfr
 
 
 
@@ -545,29 +531,31 @@ classdef constants
 
 
             % No new L2 MODS entries (if excluding NSOPS update).
-            bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, ...
-                ['2021-02-02 -- V5.0.0 -- ', ...
-                'Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-                ' until 2021-01-26.'])
+            Db.add_version_entry(L2_TDS_DSIs, bicas.gamods.VersionEntry(...
+                '2021-02-02', '5.0.0', ...
+                {['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
+                ' until 2021-01-26.']}))
 
 
 
             % L3 delivery 2: ~2021-02-16
             % NOTE: Master CDFs updated according to feedback. ==> No MODS.
             % psp2ne.m updated ==> DENSITY
-            bicas.constants.add_MODS_entry(Map, ...
+            Db.add_version_entry(...
                 {'SOLO_L3_RPW-BIA-DENSITY', ...
                  'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'}, ...
-                '2021-02-16 -- V5.0.0 -- Updated algorithm for density.')
+                bicas.gamods.VersionEntry('2021-02-16', '5.0.0', ...
+                    {'Updated algorithm for density.'}))
 
 
 
             % L3 delivery 3: ~2021-04-09
             % vdccal.m updated ==> EFIELD updated.
-            bicas.constants.add_MODS_entry(Map, ...
+            Db.add_version_entry(...
                 {'SOLO_L3_RPW-BIA-EFIELD', ...
                  'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
-                '2021-04-09 -- V5.0.0 -- Updated antenna scaling of E_z.')
+                bicas.gamods.VersionEntry('2021-04-09', '5.0.0', ...
+                    {'Updated antenna scaling of E_z.'}))
 
 
 
@@ -582,143 +570,41 @@ classdef constants
             % NOTE: Not included since it does not affect any already existent
             % datasets: "Salvage LFR DC data when HK does not overlap with
             % science anywhere in dataset."
-            bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
-                ['2021-09-21 -- V6.0.0 -- ', ...
-                'Set zVar attributes SCALEMIN & SCALEMAX using data min & max.', ...
-                ' | Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-                ' until 2021-09-11.'])
+            Db.add_version_entry(L2_LFR_TDS_DSIs, ...
+                bicas.gamods.VersionEntry('2021-09-21', '6.0.0', ...
+                    {'Set zVar attributes SCALEMIN & SCALEMAX using data min & max.', ...
+                    ['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
+                    ' until 2021-09-11.']}))
 
 
 
-            sTds = ['2022-09-15 -- V6.0.1 -- ', ...
-                'Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-                ' until 2022-09-03.', ...
-            ];
-            sLfr = [sTds, ...
-                ' | Bugfix: Use LFR''s R0/R1/R2 for splitting into', ...
-                ' time intervals.', ...
-            ];
-            bicas.constants.add_MODS_entry(Map, L2_LFR_DSIs, sLfr)
-            bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, sTds)
-            clear sLfr sTds
+            veTds = bicas.gamods.VersionEntry('2022-09-15', '6.0.1', ...
+                {['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
+                ' until 2022-09-03.']});
+            veLfr = veTds.add_comments(...
+                {'Bugfix: Use LFR''s R0/R1/R2 for splitting into time intervals.'});
+            Db.add_version_entry(L2_LFR_DSIs, veLfr)
+            Db.add_version_entry(L2_TDS_DSIs, veTds)
+            clear veLfr veTds
 
 
 
             % BICAS v6.0.2
-            sTds = ['2022-12-17 -- V6.0.2 -- ', ...
-                'Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-                ' until 2022-12-17.', ...
-            ];
-            sLfr = sTds;
-            bicas.constants.add_MODS_entry(Map, L2_LFR_DSIs, sLfr)
-            bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, sTds)
-            clear sLfr sTds
+            Db.add_version_entry(L2_LFR_TDS_DSIs, ...
+                bicas.gamods.VersionEntry('2022-12-17', '6.0.2', ...
+                    {['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
+                    ' until 2022-12-17.']}))
 
 
 
             % L3 delivery 4: ~2022-12-20
-            bicas.constants.add_MODS_entry(Map, ...
+            Db.add_version_entry(...
                 {'SOLO_L3_RPW-BIA-EFIELD', ...
                  'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
-                ['2022-12-20 -- V6.0.2 -- Bugfix: Updated formula for E_z.', ...
-                ' | New E field calibration data.'])
-
-
-
-            % ASSERTION
-            for keyCa = Map.keys
-                % ASSERT: All MODS strings are unique for DATASET_ID.
-                irf.assert.castring_set(Map(keyCa{1}))
-            end
-
-        end    % init_GA_MODS
-
-
-
-        % Add empty entries to Map (handle object) for specified DATASET_IDs.
-        function add_empty_MODS_list(Map, datasetIdsCa)
-
-            for i = 1:numel(datasetIdsCa)
-                dsi = datasetIdsCa{i};
-
-                % ASSERTION: dsi is an unused key
-                % -------------------------------
-                % IMPLEMENTATION NOTE: In principle overkill since later code
-                % effectively contains the same assertion but without proper
-                % error message), but it is actually useful when configuring
-                % hardcoded values manually.
-                if Map.isKey(dsi)
-                    error('BICAS:Assertion', ...
-                        'Map already has a key dsi="%s".', dsi)
-                end
-
-                % NOTE: Effectively (additional) assertion on that "dsi" is a
-                % valid key.
-                Map(dsi) = {};
-            end
-        end
-
-
-
-        % Add a single MODS entry (string) for multiple DATASET_IDs.
-        function add_MODS_entry(Map, datasetIdsCa, entryStr)
-            % PROPOSAL: "Flatten" datasetIdsCa if cell arrays of cell arrays.
-
-            % ASSERTIONS
-            irf.assert.castring_set(datasetIdsCa)
-            bicas.constants.assert_MODS_entry_str(entryStr)
-
-            for i = 1:numel(datasetIdsCa)
-                dsi = datasetIdsCa{i};
-
-                % ASSERTION: dsi is a valid key
-                % -----------------------------
-                % IMPLEMENTATION NOTE: In principle overkill since later code
-                % effectively contains the same assertion but without proper
-                % error message), but it is actually useful when configuring
-                % hardcoded values manually.
-                if ~Map.isKey(dsi)
-                    error('BICAS:Assertion', ...
-                        'Map does not have key dsi="%s".', dsi)
-                end
-
-                % NOTE: Effectively (additional) assertion on that "dsi" is a
-                % valid key.
-                MODS        = Map(dsi);
-                MODS{end+1} = entryStr;
-                Map(dsi)    = MODS;
-            end
-        end
-
-
-
-        % Assert that a string is on the format required by ROC for a single
-        % MODS entry.
-        function assert_MODS_entry_str(s)
-            % PROPOSAL: Automatic test code.
-
-            % NOTE: Not aware of any permitted character set in bulk message.
-            %       Effectively adding characters as needed.
-            irf.assert.castring_regexp(s, ...
-                ['20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]', ...
-                ' -- V[0-9]+.[0-9]+.[0-9]+ -- ', ...
-                '[-<=_|.()&:''/ a-zA-Z0-9]+'] ...
-            )
-
-            % No more than one whitespace per occurrence.
-            assert(~contains(s, '  '), ...
-                'MODS entry contains illegal double whitespace.')
-
-            % All pipes surrounded by whitespace and all but last sentence end
-            % with period.
-            iPipes1 = strfind(s, '. | ') + 2;
-            iPipes2 = strfind(s,  '|');
-            assert(isequal(iPipes1, iPipes2), ...
-                'Pipes not used correctly in MODS entry.')
-
-            % Last sentence ends with period.
-            assert(s(end) == '.', 'MODS entry does not end with period.')
-        end
+                 bicas.gamods.VersionEntry('2022-12-20', '6.0.2', ...
+                    {'Bugfix: Updated formula for E_z.', ...
+                     'New E field calibration data.'}))
+        end    % init_GA_MODS_DB
 
 
 
