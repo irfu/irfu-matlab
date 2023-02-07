@@ -460,10 +460,34 @@ classdef constants
             % L2: At most one entry per BICAS version
             % ---------------------------------------
             % NOTE: L2 dates should be taken from ROC's BICAS git repo commits
-            % since those represent deliveries to ROC.
+            %       since those represent deliveries to ROC.
             %===================================================================
+            % L3 DENSITY+EFIELD+SCPOT (not VHT): At most one entry per delivery
+            % -----------------------------------------------------------------
+            % NOTE: L3 dates are effectively determined by when dataset
+            %       deliveries to ROC were generated.
+            % --
+            % NOTE:
+            % (1) BICAS is used for generating L3 at IRF (not ROC), and
+            % (2) BICAS version numbers are only updated when delivering to ROC.
+            % Therefore,
+            % (1) the MODS BICAS version numbers do not exactly specify the
+            %     BICAS version, only the previous official version, and
+            % (2) the dates may conflict with the combinations of BICAS version
+            %     and date for other MODS entries.
+            %===================================================================
+            % L3 VHT
+            % ------
+            % NOTE: L3 dates are effectively determined by deliveries to ROC.
+            % NOTE: Including VHT, since VHT uses the same BICAS functions for
+            %       writing datasets (including
+            %       bicas.derive_output_dataset_GlobalAttributes).
+            %===================================================================
+
             % BICAS v1.0.0 : No MODS needed.
-            
+
+
+
             bicas.constants.add_MODS_entry(Map, L2_LFR_TDS_DSIs, ...
                 '2020-05-18 -- V2.0.1 -- Bias currents bugfixed to be correct unit.')
 
@@ -514,13 +538,47 @@ classdef constants
 
 
 
+            % L3 delivery 1: ~2021-01-29
+            % NOTE: No entries, but the date is needed for determining MODS
+            % between delivery 1 and 2.
+
+
+
             % No new L2 MODS entries (if excluding NSOPS update).
             bicas.constants.add_MODS_entry(Map, L2_TDS_DSIs, ...
                 ['2021-02-02 -- V5.0.0 -- ', ...
                 'Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
                 ' until 2021-01-26.'])
 
-            
+
+
+            % L3 delivery 2: ~2021-02-16
+            % NOTE: Master CDFs updated according to feedback. ==> No MODS.
+            % psp2ne.m updated ==> DENSITY
+            bicas.constants.add_MODS_entry(Map, ...
+                {'SOLO_L3_RPW-BIA-DENSITY', ...
+                 'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'}, ...
+                '2021-02-16 -- V5.0.0 -- Updated algorithm for density.')
+
+
+
+            % L3 delivery 3: ~2021-04-09
+            % vdccal.m updated ==> EFIELD updated.
+            bicas.constants.add_MODS_entry(Map, ...
+                {'SOLO_L3_RPW-BIA-EFIELD', ...
+                 'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
+                '2021-04-09 -- V5.0.0 -- Updated antenna scaling of E_z.')
+
+
+
+            % VHT delivery 1: 2021-04-27 (Generation_time)
+            % NOTE: No entries, but the date is needed for determining MODS for
+            % delivery 2 (i.e. determine modifications between delivery 1 and 2).
+            % 2023-02-07: There has not been any second delivery, and therefore
+            % no MODS.
+
+
+
             % NOTE: Not included since it does not affect any already existent
             % datasets: "Salvage LFR DC data when HK does not overlap with
             % science anywhere in dataset."
@@ -558,72 +616,12 @@ classdef constants
 
 
 
-            %===================================================================
-            % L3 DENSITY+EFIELD+SCPOT (not VHT)
-            % ---------------------------------
-            % NOTE: L3 dates are effectively determined by dataset deliveries to
-            % ROC were generated.
-            % --
-            % NOTE:
-            % (1) BICAS is used for generating L3 at IRF (not ROC), and
-            % (2) BICAS version numbers are only updated when delivering to ROC.
-            % Therefore,
-            % (1) the MODS BICAS version numbers do not exactly specify the
-            %     BICAS version, only the previous official version, and
-            % (2) the dates may conflict with the combinations of BICAS version
-            %     and date for other MODS entries.
-            %===================================================================
-            % NOTE: No MODS entries for initial delivery.
-            
-            % L3 delivery 1: ~2021-01-29
-            % NOTE: No entries, but the date is needed for determining MODS
-            % between delivery 1 and 2.
-            
-            
-            
-            % L3 delivery 2: ~2021-02-16
-            % NOTE: Master CDFs updated according to feedback. ==> No MODS.
-            % psp2ne.m updated ==> DENSITY
-            bicas.constants.add_MODS_entry(Map, ...
-                {'SOLO_L3_RPW-BIA-DENSITY', ...
-                 'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'}, ...
-                '2021-02-16 -- V5.0.0 -- Updated algorithm for density.')
-            
-            
-            
-            % L3 delivery 3: ~2021-04-09
-            % vdccal.m updated ==> EFIELD updated.
-            bicas.constants.add_MODS_entry(Map, ...
-                {'SOLO_L3_RPW-BIA-EFIELD', ...
-                 'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
-                '2021-04-09 -- V5.0.0 -- Updated antenna scaling of E_z.')
-            
-            
-            
             % L3 delivery 4: ~2022-12-20
             bicas.constants.add_MODS_entry(Map, ...
                 {'SOLO_L3_RPW-BIA-EFIELD', ...
                  'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
                 ['2022-12-20 -- V6.0.2 -- Bugfix: Updated formula for E_z.', ...
                 ' | New E field calibration data.'])
-
-
-
-            %=================================================================
-            % L3 VHT
-            % ------
-            % NOTE: L3 dates are effectively determined by deliveries to ROC.
-            % NOTE: Including VHT, since VHT uses the same BICAS functions for
-            %       writing datasets (including
-            %       bicas.derive_output_dataset_GlobalAttributes).
-            %=================================================================
-
-            % Delivery 1: 2021-04-27 (Generation_time)
-            % NOTE: No entries, but the date is needed for determining MODS for
-            % delivery 2 (i.e. determine modifications between delivery 1 and 2).
-
-            % 2020-05-19: There has not been any second delivery, and therefore
-            % no MODS.
 
 
 
