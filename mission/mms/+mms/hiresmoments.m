@@ -2,7 +2,7 @@ function moments = hiresmoments(varargin)
 % PARTIALMOMENTS Compute moments from partial distribution function
 % Written by D. B. Graham
 %
-% moments = mms.hiresmoments(Distpart,SCpot)
+% moments = mms.hiresmoments(Distpart,SCpot,'energyrange',[10 3e4])
 %
 % Input:
 %   Distpart - partial particle distribution. Must be PDist format.
