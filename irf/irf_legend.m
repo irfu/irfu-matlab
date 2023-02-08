@@ -72,7 +72,16 @@ else
 end
 
 unit_format='normalized';
-colord=get(axis_handle, 'ColorOrder');
+switch class(axis_handle)
+  case 'matlab.graphics.axis.Axes'
+    colord = get(axis_handle, 'ColorOrder');
+  case 'matlab.graphics.chart.primitive.Line'
+    for ii = 1:numel(axis_handle)
+      colord(ii,:) = axis_handle(ii).Color;
+      axis_handle(ii) = axis_handle(ii).Parent;
+    end
+    axis_handle = unique(axis_handle);
+end
 cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1];[1 0 1];[1 1 0];[0 1 1]];
 mms_colors=[[0 0 0];[213,94,0];[0,158,115];[86,180,233]]/255;
 

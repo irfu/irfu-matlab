@@ -42,13 +42,14 @@ avg_reduce_integral = 'avg';
 vectorlabelcolor = [1 1 1];
 tId = 1:dist.length;
 eId = 1:32;
+tint = dist.time([1 end]);
 [~,xi] = hist([log10(10),log10(30e3)],32); energyTable = 10.^xi;
 % Set up spherical coordinate system.
 r = 1; % radius of sphere
 phi_edges = linspace(0,2*pi,size(dist.data,3)+1);  % azimuthal angle bin edges, default
 theta_edges = linspace(0,pi,size(dist.data,4)+1); % polar angle bin edges, default
 
-if nargs > 1, have_options = 1; end
+if nargs > 1, have_options = 1; else have_options = 0; end
 
 while have_options
   l = 1;
@@ -116,6 +117,8 @@ if strcmp(dist.type, 'skymap')
   energyTable = irf.nanmean(energyTable_all(tId, :), 1);
   if flag_energy
     eId = find(abs(energyTable-energy)==min(abs(energyTable-energy)));
+  else
+    eId = 1:numel(energyTable);
   end
 end
 
