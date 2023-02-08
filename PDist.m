@@ -352,20 +352,22 @@ classdef PDist < TSeries
       end
       
       % ancillary data
-      nameFields = fieldnames(obj.ancillary);
-      nFields = numel(nameFields);
-      for iField = 1:nFields
-        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
-        if sizeField(1) == TsTmp.length
-          old_ancillary = eval(['obj.ancillary.' nameFields{iField}]);
-          
-          % temporary fix for upsampling any non single or double data (esteptable!)
-          if not(any([isa(old_ancillary,'double'),isa(old_ancillary,'single')])) 
-            old_ancillary = single(old_ancillary); 
+      if not(isempty(obj.ancillary))
+        nameFields = fieldnames(obj.ancillary);
+        nFields = numel(nameFields);
+        for iField = 1:nFields
+          eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+          if sizeField(1) == TsTmp.length
+            old_ancillary = eval(['obj.ancillary.' nameFields{iField}]);
+            
+            % temporary fix for upsampling any non single or double data (esteptable!)
+            if not(any([isa(old_ancillary,'double'),isa(old_ancillary,'single')])) 
+              old_ancillary = single(old_ancillary); 
+            end
+            
+            new_ancillary = irf_resamp([tData old_ancillary], newTimeTmp, varargin{:});
+            eval(['obj.ancillary.' nameFields{iField} ' = new_ancillary(:,2:end);'])
           end
-          
-          new_ancillary = irf_resamp([tData old_ancillary], newTimeTmp, varargin{:});
-          eval(['obj.ancillary.' nameFields{iField} ' = new_ancillary(:,2:end);'])
         end
       end
     end
@@ -1623,7 +1625,7 @@ classdef PDist < TSeries
                     continue;
                   end
                   
-%                   if doScpot 
+%                 if doScpot 
 %                     energy_minus = energy_minus ;
 %                     energy_plus = energy_plus - scpot.data(it);            
 %                     energy_edges = energy_edges - scpot.data(it);
