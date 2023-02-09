@@ -163,20 +163,25 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
 
 
 
-    OutGaSubset.Software_name       = bicas.constants.SWD_METADATA('SWD.identification.name');
-    OutGaSubset.Software_version    = bicas.constants.SWD_METADATA('SWD.release.version');
+    OutGaSubset.Software_name    = bicas.constants.SWD_METADATA('SWD.identification.name');
+    OutGaSubset.Software_version = bicas.constants.SWD_METADATA('SWD.release.version');
     
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
-    OutGaSubset.Generation_date     = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
+    OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
     
     % NOTE: Parsing OUTPUT dataset filename to set some global attributes.
     [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = parse_dataset_filename(outputFilename);
 
-    OutGaSubset.Logical_file_id     = logicalFileId;
-    % Logical_source: Overwrites skeleton value. Can otherwise not handle -cdag.
-    OutGaSubset.Logical_source      = logicalSource;    
-    OutGaSubset.Data_version        = dataVersionStr;
-    OutGaSubset.Datetime            = timeIntervalStr;
+    % Ex: Logical_file_id="solo_L1_rpw-tds-surv-hist2d_20220301_V01"
+    OutGaSubset.Logical_file_id  = logicalFileId;
+    % Logical_source:
+    % NOTE: Overwrites skeleton value. Can otherwise not handle -cdag.
+    % NOTE: Could in principle be set by assuming
+    %       lowercase(DATASET_ID) = Logical_source if not for -cdag and.
+    % Ex: Logical_source="solo_L1_rpw-tds-surv-hist2d"
+    OutGaSubset.Logical_source   = logicalSource;
+    OutGaSubset.Data_version     = dataVersionStr;
+    OutGaSubset.Datetime         = timeIntervalStr;
     
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
     %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
@@ -270,6 +275,7 @@ end
 % official RCS test package.
 %
 % NOTE: Does not change case.
+% NOTE: Wrapper around solo.adm.parse_dataset_filename().
 %
 function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
         = parse_dataset_filename(filename)
@@ -278,6 +284,7 @@ function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
     % NOTE: Will include IRFU-internal filenaming extension.
     logicalFileId = basename;
 
+    % Actually parse the dataset filename.
     R = solo.adm.parse_dataset_filename(filename);
     assert(~isempty(R), 'BICAS:Assertion', ...
         ['Can not parse dataset filename "%s" and therefore not', ...
