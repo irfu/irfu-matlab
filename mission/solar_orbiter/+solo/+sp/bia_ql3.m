@@ -121,9 +121,9 @@ function plot_save_SP_pattern(outputDir, datasetDir, filenamePattern, yyyyMmDdSt
             ' attribute Data_version in file "%s"'], datasetPath)
     end
     
-    %==========================
+    %=====================================
     % dateVec3 := reformatted yyyyMmDdStr
-    %==========================
+    %=====================================
     dateVec3 = [...
         str2double(yyyyMmDdStr(1:4)), ...
         str2double(yyyyMmDdStr(5:6)), ...

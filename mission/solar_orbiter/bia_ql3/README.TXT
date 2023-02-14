@@ -27,16 +27,17 @@ IRFU-MATLAB DIRECTORIES ASSOCIATED WITH BIA_QL3
 irfu-matlab/mission/solar_orbiter/bia_ql3/
     Non-MATLAB files
 irfu-matlab/mission/solar_orbiter/+solo/+sp/
-    MATLAB code
-irfu-matlab/mission/solar_orbiter/+solo/+sp/bia_ql3.m
-    Main MATLAB function.
+    MATLAB code.
+    Includes among others bia_ql3.m which is the main MATLAB function.
 
 
 OFFICIAL DELIVERIES TO ROC/LESIA
 ================================
-irfu-matlab is the basis for separate git repo
+The source code is included in irfu-matlab and the software is developed
+there. This code is then copied to the separate git repo
     https://gitlab.obspm.fr/ROC/RCS/BIA_QL3
-which is used for official deliveries to ROC/LESIA.
+which is used for official deliveries to ROC/LESIA. Official versions are
+specified (tagged) in this git repo.
 
 
 VERSION HISTORY
