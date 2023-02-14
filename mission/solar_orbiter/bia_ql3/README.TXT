@@ -37,3 +37,9 @@ OFFICIAL DELIVERIES TO ROC/LESIA
 irfu-matlab is the basis for separate git repo
     https://gitlab.obspm.fr/ROC/RCS/BIA_QL3
 which is used for official deliveries to ROC/LESIA.
+
+
+VERSION HISTORY
+===============
+v1.2.1: Bugfix
+v1.2.2: No longer generate .matlab_datastore_* files.
