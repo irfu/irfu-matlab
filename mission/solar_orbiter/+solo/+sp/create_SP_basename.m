@@ -5,7 +5,8 @@
 %
 % ARGUMENTS
 % =========
-% versionNbr : Should be dataset version number (not plot file version).
+% versionNbr
+%       Should be dataset version number (not plot file version).
 %
 %
 % Xavier Bonnin e-mail 2020-04-10
@@ -52,7 +53,7 @@ function basename = create_SP_basename(srcDatasetId, dateVec3, versionNbr)
     %
     % PROPOSAL: Create corresponding parse_summary_plot_filename().
     %   PRO: May be useful for algorithms for selecting datasets when batch
-    %   processing.
+    %        processing.
     %   PROBLEM: Future SPs may produce multiple SPs per dataset. ==> Unclear
     %            return format, complexity.
     % PROPOSAL: Use (future) assertion function on DATASET_ID.
@@ -63,6 +64,7 @@ function basename = create_SP_basename(srcDatasetId, dateVec3, versionNbr)
     assert(numel(dateVec3) == 3)
     assert(isscalar(versionNbr))
     assert(isnumeric(versionNbr))
+    assert(versionNbr >= 1)
     
     % NOTE: Output should have uppercase "L3", despite most of basename being
     % lower case.
