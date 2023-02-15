@@ -50,11 +50,9 @@
 %   solo_L1_rpw-bia-current-cdag_20200401T000000-20200421T000000_V01.cdf
 %       NOTE: Should eventually be phased out for currents (not sweeps).
 %             /EJ+XB-mail 2020-05-27
-%   solo_L1_rpw-bia-current-cdag_20200301-20200331_V01.cdf                 
+%   solo_L1_rpw-bia-current-cdag_20200301-20200331_V01.cdf
 %       NOTE: Future replacement for currents (not sweeps).
 %             /EJ+XB-mail 2020-05-27
-%
-%   --
 %
 %
 % UN-RECOGNIZED FILENAMING CONVENTIONS: EXAMPLES
@@ -109,7 +107,7 @@
 %       .dsicdagCase          : String constant describing the case of
 %                               DATASET_ID+CDAG: 'upper', 'lower'.
 %       .versionStr           : String (not number). Excludes "V".
-%       .inoffExtension       : []       : There is no unofficial basename
+%       .unoffExtension       : []       : There is no unofficial basename
 %                                          extension.
 %                             : 1x1 cell : {1} = String. The arbitrary string
 %                                          part of unofficial basename extension.
@@ -119,9 +117,9 @@
 %                               Logical_source, which should include -CDAG when
 %                               present (for now).
 %       Fields sometimes present
-%           .dateVec  : 
+%           .dateVec  :
 %           .dateVec1 :
-%           .dateVec2 : 
+%           .dateVec2 :
 %           + varying fields corresponding to content in filename.
 %       NOTE: dateVec* may be either 1x3 or 1x6.
 % --
@@ -137,14 +135,6 @@
 % First created 2019-12-17.
 %
 function R = parse_dataset_filename(filename)
-    %
-    % PROPOSAL: Translate ROC-SGSE_* DATASET_IDs to SOLO_*.
-    %   CON: Better to let the caller decide.
-    %       PROPOSAL: Separate function for translating, normalizing DATASET_ID.
-    %       PROPOSAL: solo.adm.classify_DATASET_ID can return flag for this.
-    %
-    % PROPOSAL: React to what should be a dataset but still can not parse the filename.
-    %   Ex: Contains DATASET_ID and suffix .cdf, but can not interpret the rest.
     %
     % PROPOSAL: Return version NUMBER, not string.
     %   CON: Harder to adapt to changing versioning scheme.
@@ -185,24 +175,23 @@ function R = parse_dataset_filename(filename)
     %       R.
     %
     % PROPOSAL: Move
-    %   solo.adm.parse_dataset_filename, and 
-    %   solo.adm.create_dataset_filename
-    %   into a class.
+    %       solo.adm.parse_dataset_filename(), and
+    %       solo.adm.create_dataset_filename()
+    %       into a class.
     %   PRO: Can share constants.
     %       Ex: Regular expressions for assertions, parsing.
-    %   PRO: More natural to have one ATEST code function.
+    %   PRO: More natural to have one test code function.
     %   PRO: More natural to have shared comments.
     %       Ex: Shared filenaming conventionts.
     %   PROPOSAL: Class name dataset_filename, dsfn.
     %       Methods create, parse.
-    %   TODO-DEC: How handle solo.adm.parse_dataset_filename_many() ?
     %
-    % PROPOSAL: Separate parse & create functions for summary plot files.
-    %
-    % PROPOSAL: Exclude dsicdagCase. Should be regarded as part of the respective filenaming conventions.
+    % PROPOSAL: Abolish dsicdagCase. Should be regarded as part of the
+    %           respective filenaming conventions.
+    % PROPOSAL: Abolish unoffExtension.
     %
     % PROPOSAL: Separate (globally available) parse/create functions for every
-    %        separate filenaming scheme.
+    %           separate filenaming scheme.
     %   CON: Harder to reuse similarities.
     %       Ex: DATASET_ID, version
     %       Ex: Unofficial filenaming scheme
@@ -223,21 +212,41 @@ function R = parse_dataset_filename(filename)
     % PROPOSAL: Return value for basename without IRFU-internal filenaming
     %           extension.
     %
-    % PROPOSAL: Try to speed up somehow.
+    % PROPOSAL: Refactor to return class.
+    %
+    % PROPOSAL: Replace date vectors with datetime.
+    %   CON: Currently using the length of date vectors to specify the filename
+    %        format (time interval format). 
+    %        In particular, with datetime only, create_dataset_filename() would
+    %        not know which time interval format to use!
+    %        YYYYMMDD, YYYYMMDD-YYYYMMDD, or YYYYMMDThhmmss-YYYYMMDThhmmss.
+    %       PROPOSAL: Separate argument for time interval format.
+    %           PROPOSAL: String constant.
+    %   NOTE: Would need assertion on hour=minute=second=0 for YYYYMMDD
+    %         format.
+    %
+    % PROPOSAL: Always use two timestamps.
+    %   NOTE: How handle YYYYMMDD time interval format? 
+    %       PROPOSAL: Assertion on hour=minute=second=0 for beginning and end?
+    %           CON: Not consistent with boundaries if reading time boundaries
+    %                from file content.
+    %       PROPOSAL: Assertion dt1-dt2 = 1 calendar day?
+    %           CON: Not consistent with boundaries if reading time boundaries
+    %                from file content.
 
     NO_MATCH_RETURN_VALUE = [];
-    
-    
-    
+
+
+
     % NOTE: Parse from the END.
     [~, trueBasename, n] = irf.str.read_token(filename, -1, '\.cdf');
     if n == -1
         R = NO_MATCH_RETURN_VALUE;
         return
     end
-    
-    
-    
+
+
+
     %==========================
     % Parse DATA_SET_ID + CDAG
     %==========================
@@ -253,11 +262,11 @@ function R = parse_dataset_filename(filename)
         '(solo|roc-sgse)_(HK|L1|L1R|L2|L3)_[a-z0-2-]*');
     switch(n)
         case 1
-            R.dsicdagCase  = 'upper';
-            R.isCdag       = strcmp(fnDatasetIdCdag(end-4:end), '-CDAG');
+            R.dsicdagCase = 'upper';
+            R.isCdag      = strcmp(fnDatasetIdCdag(end-4:end), '-CDAG');
         case 2
-            R.dsicdagCase  = 'lower';
-            R.isCdag       = strcmp(fnDatasetIdCdag(end-4:end), '-cdag');
+            R.dsicdagCase = 'lower';
+            R.isCdag      = strcmp(fnDatasetIdCdag(end-4:end), '-cdag');
         otherwise
             R = NO_MATCH_RETURN_VALUE;
             return
@@ -268,14 +277,14 @@ function R = parse_dataset_filename(filename)
         R.datasetId = upper(fnDatasetIdCdag);
     end
     R.fnDatasetIdCdag = fnDatasetIdCdag;
-    
-    
-    
+
+
+
     % Recurring regular expressions.
     VERSION_RE     = 'V[0-9][0-9]+';       % NOTE: Permits more than two digits.
     LES_TESTSTR_RE = 'les-[0-9a-f]{7,7}';
     CNE_TESTSTR_RE = '[0-9a-f]{7,7}_CNE';
-    
+
     % Unofficial extension, arbitrary string part amended to the end of the
     % legal basename
     % --------------------------------------------------------------------------
@@ -294,9 +303,9 @@ function R = parse_dataset_filename(filename)
     % Therefore, must express UNOFF_EXTENSION_RE such that it will try to match
     % a non-empty string FIRST, and an empty string SECOND. THE ORDER MATTERS.
     UNOFF_EXTENSION_RE = '(\..*|)';
-    
-    
-    
+
+
+
     %===========================================================================
     % Different types of supported filenaming conventions
     % ---------------------------------------------------
@@ -311,9 +320,9 @@ function R = parse_dataset_filename(filename)
     % decreasing likelyhood of being used.
     % ==> Potential speedup.
     %===========================================================================
-    
+
     TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
-    
+
     %===========================================
     % Standard (incl. CDAG; tested for earlier)
     %===========================================
@@ -324,10 +333,10 @@ function R = parse_dataset_filename(filename)
         R = parse_time_interval_str(R, subStrList{2});
         R.timeIntervalStr = subStrList{2};
         R.versionStr      = ver_2_versionStr(subStrList{4});
-        R.inoffExtension  = unoff_extension_RE_to_str(subStrList{5});
+        R.unoffExtension  = unoff_extension_RE_to_str(subStrList{5});
         return
     end
-    
+
     %=====
     % LES
     %=====
@@ -339,7 +348,7 @@ function R = parse_dataset_filename(filename)
         R.timeIntervalStr = subStrList{2};
         R.versionStr      = ver_2_versionStr(         subStrList{4});
         R.lesTestStr      =                           subStrList{6};
-        R.inoffExtension  = unoff_extension_RE_to_str(subStrList{7});
+        R.unoffExtension  = unoff_extension_RE_to_str(subStrList{7});
         return
     end
 
@@ -352,12 +361,12 @@ function R = parse_dataset_filename(filename)
     if perfectMatch
         R.cneTestStr     =                           subStrList{2};
         R.versionStr     = ver_2_versionStr(         subStrList{4});
-        R.inoffExtension = unoff_extension_RE_to_str(subStrList{5});
+        R.unoffExtension = unoff_extension_RE_to_str(subStrList{5});
         return
     end
-    
+
     % CASE: Could not match filename to anything.
-    
+
     R = NO_MATCH_RETURN_VALUE;
 end
 
@@ -369,17 +378,17 @@ end
 
 
 
-function dateVec = datetime_2_dateVec(s)
+function dateVec = date_time_str_2_dateVec6(s)
     dateVec = str2double({s(1:4), s(5:6), s(7:8), s(10:11), s(12:13), s(14:15)});
 
-    % NOTE: Is not a check on filename, but on implementation. read_token should
-    % guarantee that strings can be parsed as numbers.
+    % NOTE: Is not a check on filename, but on implementation. read_token()
+    % should guarantee that strings can be parsed as numbers.    
     %assert(~any(isnan(dateVec)))
 end
 
 
 
-function dateVec = date_2_dateVec(s)
+function dateVec = date_str_2_dateVec3(s)
     dateVec = str2double({s(1:4), s(5:6), s(7:8)});
 
     % NOTE: Is not a check on filename, but on implementation. read_token should
@@ -409,36 +418,36 @@ end
 %
 function R = parse_time_interval_str(R, s)
     % yyyymmdd (8 digits).
-    DATE_RE            = '20[0-9][0-9][01][0-9][0-3][0-9]';
-    
+    DATE_RE     = '20[0-9][0-9][01][0-9][0-3][0-9]';
+
     % NOTE: DATETIME_RE not same as glob.attr. Datetime, but component of.
     % yyyymmddThhmmss (8+1+6=15 digits/T)
-    DATETIME_RE        = '20[0-9]{6,6}T[0-9]{6,6}';
-    
-    
-    
+    DATETIME_RE = '20[0-9]{6,6}T[0-9]{6,6}';
+
+
+
     [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
         {DATE_RE}, 'permit non-match');
     if perfectMatch
-        R.dateVec = date_2_dateVec(subStrList{1});
+        R.dateVec = date_str_2_dateVec3(subStrList{1});
         return
     end
 
     [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
         {DATE_RE, '-', DATE_RE}, 'permit non-match');
     if perfectMatch
-        R.dateVec1 = date_2_dateVec(subStrList{1});
-        R.dateVec2 = date_2_dateVec(subStrList{3});
+        R.dateVec1 = date_str_2_dateVec3(subStrList{1});
+        R.dateVec2 = date_str_2_dateVec3(subStrList{3});
         return
     end
-    
+
     [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
         {DATETIME_RE, '-', DATETIME_RE}, 'permit non-match');
     if perfectMatch
-        R.dateVec1 = datetime_2_dateVec(subStrList{1});
-        R.dateVec2 = datetime_2_dateVec(subStrList{3});
+        R.dateVec1 = date_time_str_2_dateVec6(subStrList{1});
+        R.dateVec2 = date_time_str_2_dateVec6(subStrList{3});
         return
     end
-    
+
     error('Can not interpret time interval string "%s".', s)
 end
