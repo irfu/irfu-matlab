@@ -44,23 +44,30 @@ function dsmdGroupsCa = find_overlapping_DSMD_groups(DsmdArray, datasetIdList)
     DsmdArray = solo.adm.filter_DSMD_DATASET_ID(DsmdArray, datasetIdList);
     DsmdArray = DsmdArray(:);
 
-    % NOTE: Requires .dateVec1/2 to be ROW vector.
-    DT0 = datetime(2000, 1, 1, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
-    t1Array = seconds(vertcat(DsmdArray.dt1) - DT0);
-    t2Array = seconds(vertcat(DsmdArray.dt2) - DT0);
+    if isempty(DsmdArray)
+       dsmdGroupsCa = cell(0, 1);
+    else
+        % NOTE: Requires .dateVec1/2 to be ROW vector.
+        DT0 = datetime(2000, 1, 1, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
 
-    [setsCa, nArray, oiT1Array, oiT2Array] = irf.utils.find_interval_overlaps(...
-        t1Array, t2Array);
+        % IMPLEMENTATION NOTE: Does not work for empty DsmdArray in which case
+        % vertcat(DsmdArray.dt1) etc. does not produce a datetime array.
+        t1Array = seconds(vertcat(DsmdArray.dt1) - DT0);
+        t2Array = seconds(vertcat(DsmdArray.dt2) - DT0);
 
-    % Only keep overlaps with (1) the exact number of datasets, and (2) non-zero
-    % length overlap.
-    bKeep = (nArray == numel(datasetIdList)) & (oiT1Array ~= oiT2Array);
-    setCa = setsCa(bKeep);
+        [setsCa, nArray, oiT1Array, oiT2Array] = irf.utils.find_interval_overlaps(...
+            t1Array, t2Array);
 
-    nGroups = numel(setCa);
+        % Only keep overlaps with (1) the exact number of datasets, and (2) non-zero
+        % length overlap.
+        bKeep = (nArray == numel(datasetIdList)) & (oiT1Array ~= oiT2Array);
+        setCa = setsCa(bKeep);
 
-    dsmdGroupsCa = cell(nGroups, 1);
-    for i = 1:nGroups
-        dsmdGroupsCa{i,1} = DsmdArray(setCa{i});
+        nGroups = numel(setCa);
+
+        dsmdGroupsCa = cell(nGroups, 1);
+        for i = 1:nGroups
+            dsmdGroupsCa{i,1} = DsmdArray(setCa{i});
+        end
     end
 end
