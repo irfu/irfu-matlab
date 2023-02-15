@@ -3,7 +3,6 @@ function res = caa_is_valid_dirname(s)
 %
 % res = caa_is_valid_dirname(dir_name)
 %
-% $Id$
 
 % Copyright 2006 Yuri Khotyaintsev
 

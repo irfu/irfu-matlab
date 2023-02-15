@@ -3,7 +3,6 @@ function caa_make_jobs(year,month,region_s,outdir)
 %
 % caa_make_jobs(year,month,region_s,[outdir])
 %
-% $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 

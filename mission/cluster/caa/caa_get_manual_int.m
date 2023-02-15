@@ -7,7 +7,6 @@ function [intervals, qualities] = caa_get_manual_int(st,dt,man_int)
 %
 % See also: C_CTL
 %
-% $Id$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks.

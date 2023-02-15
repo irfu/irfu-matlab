@@ -139,7 +139,7 @@ classdef PDist < TSeries
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
         case {'line (reduced)','1Dcart'} % % construct 1D distribution, through integration over the other 2 dimensions
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity'};
-        case {'plane (reduced)'} % construct 2D distribution, either through integration or by taking a slice
+        case {'plane (reduced)','2Dcart'} % construct 2D distribution, either through integration or by taking a slice
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity1'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'velocity2'};
         case {'plane (slice)'} % construct 2D distribution, either through integration or by taking a slice
@@ -352,20 +352,22 @@ classdef PDist < TSeries
       end
       
       % ancillary data
-      nameFields = fieldnames(obj.ancillary);
-      nFields = numel(nameFields);
-      for iField = 1:nFields
-        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
-        if sizeField(1) == TsTmp.length
-          old_ancillary = eval(['obj.ancillary.' nameFields{iField}]);
-          
-          % temporary fix for upsampling any non single or double data (esteptable!)
-          if not(any([isa(old_ancillary,'double'),isa(old_ancillary,'single')])) 
-            old_ancillary = single(old_ancillary); 
+      if not(isempty(obj.ancillary))
+        nameFields = fieldnames(obj.ancillary);
+        nFields = numel(nameFields);
+        for iField = 1:nFields
+          eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+          if sizeField(1) == TsTmp.length
+            old_ancillary = eval(['obj.ancillary.' nameFields{iField}]);
+            
+            % temporary fix for upsampling any non single or double data (esteptable!)
+            if not(any([isa(old_ancillary,'double'),isa(old_ancillary,'single')])) 
+              old_ancillary = single(old_ancillary); 
+            end
+            
+            new_ancillary = irf_resamp([tData old_ancillary], newTimeTmp, varargin{:});
+            eval(['obj.ancillary.' nameFields{iField} ' = new_ancillary(:,2:end);'])
           end
-          
-          new_ancillary = irf_resamp([tData old_ancillary], newTimeTmp, varargin{:});
-          eval(['obj.ancillary.' nameFields{iField} ' = new_ancillary(:,2:end);'])
         end
       end
     end
@@ -511,6 +513,7 @@ classdef PDist < TSeries
       %     vlim = [-5 5]; clim = [3 5];
       %     set(gca,'clim',clim,'xlim',vlim,'ylim',vlim,'zlim',vlim)
       
+      units = irf_units;
       doScpot = 0;
       doReturnTSeries = 0;
       doSqueeze = 0;
@@ -563,8 +566,7 @@ classdef PDist < TSeries
       theta = obj.depend{1,3};
       polar = repmat(theta*pi/180,obj.length,1);
       
-      energy = obj.depend{1};
-      units = irf_units;
+      energy = obj.depend{1};      
       
       if doScpot 
         scpot = scpot.resample(obj).data;
@@ -578,36 +580,30 @@ classdef PDist < TSeries
       
       sp = obj.species;
       switch sp
-          case 'ions'
-              m = units.mp;
-              mult = 1;
-          case 'electrons'
-              m = units.me;
-              mult = -1;
+        case 'ions'
+          m = units.mp;
+          mult = 1;
+        case 'electrons'
+          m = units.me;
+          mult = -1;
       end
       
-      for ii = 1:length(obj.time)            
-        energy_tmp = energy + mult*scpot(ii);
+      for ii = 1:length(obj.time)   
+        % Adjust for spacecraft potential
+        energy_tmp = energy(ii,:) + mult*scpot(ii);
         energy_tmp(energy_tmp<0) = 0; % if scpot is not used, energy_tmp = energy and nothing is changed
+        
+        % Energy -> speed
         velocity = sqrt((energy_tmp)*units.eV*2/m)/1000; % km/s
+          
+        % ndgrid of spherical coordinates
+        [VEL,AZ,POL] = ndgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
         
-        
-        [VEL,AZ,POL] = meshgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
-        %[AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
-        
-        
-        VX = -VEL.*sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
+        % From spherical to cartesian coordinates
+        % '-' because the data shows which direction the particles were coming from
+        VX = -VEL.*sin(POL).*cos(AZ); 
         VY = -VEL.*sin(POL).*sin(AZ);
-        VZ = -VEL.*cos(POL);
-        
-        % meshgrid permutes the 1st and 2nd indices,
-        % see for example [I1,I2] = meshgrid(1:3,1:2); size(I1), size(I2)
-        % the following permutes them back
-        % (one can also leave this out and do the following above:
-        % [AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
-        VX = permute(VX,[2 1 3]);
-        VY = permute(VY,[2 1 3]);
-        VZ = permute(VZ,[2 1 3]);
+        VZ = -VEL.*cos(POL);        
         
         if doRotation % Transform into different coordinate system
           VxX = reshape(VX,numel(VX),1);
@@ -1629,7 +1625,7 @@ classdef PDist < TSeries
                     continue;
                   end
                   
-%                   if doScpot 
+%                 if doScpot 
 %                     energy_minus = energy_minus ;
 %                     energy_plus = energy_plus - scpot.data(it);            
 %                     energy_edges = energy_edges - scpot.data(it);
@@ -1792,6 +1788,10 @@ classdef PDist < TSeries
       %             default is [0 Inf]
       %     'colorbar'/value - value is 0 for no colorbar or 1 for
       %             colorbar, default is to plot colorbar
+      %     'off-diag-pres-cont'/v1/v2 - plots contributions to pressure
+      %             tensor components, v1 and v2 are TSeries with the bulk 
+      %             speeds from moments, bulk speed from distribution not 
+      %             yet implemented
       %
       %     Example:
       %       tint = irf.tint('2017-07-06T13:53:50.00Z',25);
@@ -1818,7 +1818,7 @@ classdef PDist < TSeries
       all_handles.Axes = ax;
       
       % Make sure first non axes-handle input is PDist of the right type.
-      if isa(args{1},'PDist') && any(strcmp(args{1}.type,{'plane (reduced)','plane (slice)'}))
+      if isa(args{1},'PDist') && any(strcmp(args{1}.type,{'plane (reduced)','plane (slice)','2Dcart'}))
         dist_orig = args{1};
       else
         error('First input that is not an axes handle must be a PDist of type ''plane (reduced)'' or ''plane (slice)'', see PDist.reduce.')
@@ -1837,6 +1837,7 @@ classdef PDist < TSeries
       doContourFill = 0;
       doCircles = 0;
       doFLim = 1; flim = [0 Inf];
+      doSmooth = 0;
       doP12 = 0;
       
       if strcmp(dist.species,'electrons')
@@ -1920,6 +1921,10 @@ classdef PDist < TSeries
             l = 2;
             doFLim = 1;
             flim = args{2};
+          case 'smooth'
+            l = 2;
+            doSmooth = 1;
+            nSmooth = args{2};            
           case {'colorbar','docolorbar'}
             l = 2;
             doColorbar = args{2};
@@ -1946,9 +1951,14 @@ classdef PDist < TSeries
       if doLog10 % take log10 of data
         plot_data = log10(plot_data);
       end
+      if doSmooth
+        plot_data = smooth2(plot_data,nSmooth);
+      end
       if doP12
+        v1_bulk = mean(v1.resample(dist).data,1);
+        v2_bulk = mean(v2.resample(dist).data,1);
         [V1,V2] = ndgrid(dist.depend{1}(1,:),dist.depend{2}(1,:)); % km/s
-        V1V2 = (V1-mean(v1.data)).*(V2-mean(v2.data))*1e3*1e3; % km/s -> m/s
+        V1V2 = (V1-v1_bulk).*(V2-v2_bulk)*1e3*1e3; % km/s -> m/s
         % units_scaling
         new_units = 'arb. units';
         vp12_scale = 1;
@@ -2201,7 +2211,7 @@ classdef PDist < TSeries
           case 'flim'
             l = 2;
             doFLim = 1;
-            flim = args{2};
+            flim = args{2};            
         end
         args = args(l+1:end);
         if isempty(args), break, end
@@ -2698,6 +2708,7 @@ classdef PDist < TSeries
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
         case {'velocity','1D_velocity','velocity_1D'}
+          if ~any(strcmp(obj.type_,{'line (reduced)','1Dcart'})); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end
           %if ~strcmp(obj.type_,'line (reduced)'); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end
           % check for additional argument given
           if ~isempty(varargin) && strcmp(varargin{1},'10^3 km/s') % make y (v) units in 10^3 km/s (because they often go up 10^4)

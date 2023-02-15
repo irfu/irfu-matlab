@@ -3,7 +3,6 @@ function caa_sh_reproc(fname)
 %
 % caa_sh_reproc(fname)
 %
-% $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
 

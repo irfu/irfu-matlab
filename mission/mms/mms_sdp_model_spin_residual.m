@@ -13,6 +13,7 @@ function [ModelOut,Model360] = mms_sdp_model_spin_residual(Dce,Dcv,Phase,signals
 %                    e.g {'e12', 'e34'} or {'v1', 'v3'}
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

@@ -20,7 +20,6 @@ function [b_n, l2_l3_ratio, v1_mv_nest, v2_mv_nest, v3_mv_nest]=irf_minvar_nest(
 %
 % See also IRF_MINVAR_NEST_GUI, IRF_MINVAR
 %
-% $Id$
 
 fromepoch(cs_centre);
 fromepoch(tint);

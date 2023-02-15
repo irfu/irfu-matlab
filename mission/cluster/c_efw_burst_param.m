@@ -3,7 +3,6 @@ function [varsb, freq] = c_efw_burst_param(filename)
 %
 % [PARAMS, FREQ] = C_EFW_BURST_PARAM(FILENAME)
 %
-% $Id$
 
 fid=fopen(filename,'rb'); % opens the binary file for reading
 if fid==-1

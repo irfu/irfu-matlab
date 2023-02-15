@@ -11,7 +11,6 @@ function res = irf_find_diff(data,data0)
 %     3
 %     7
 %
-% $Id$
 
 a = size(data);
 n_data = a(1);

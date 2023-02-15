@@ -25,6 +25,7 @@ function res = plot(dobj,varargin)
 % for common cluster variables see: https://bit.ly/pKWVKh
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

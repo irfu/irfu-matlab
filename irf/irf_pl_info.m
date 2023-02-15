@@ -14,7 +14,6 @@ function outhandle=irf_pl_info(string,inhandle,position)
 %   ht=irf_pl_info(['c_pl_sc_orient() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],gca,[0,1 ]);
 %   set(ht,'interpreter','none','FontSize', 10);
 %
-% $Id$
 
 disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 disp('IRF_PL_INFO will be removed! Use IRF_LEGEND instead.');

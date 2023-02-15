@@ -5,7 +5,6 @@ function OUT=c_efw_burst_load(filename,cols)
 % burst data from file with name 'FILENAME'. COLS is the number of
 % columns in the output data matrix.
 %
-% $Id$
 
 % By Anders Tjulin, last update 7/11-2002
 

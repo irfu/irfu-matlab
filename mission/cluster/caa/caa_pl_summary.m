@@ -6,7 +6,6 @@ function caa_pl_summary(sp,op)
 %   options :
 %     'noexport' do not export plot imaged (PS,PDF,PNG)
 %
-% $Id$
 
 do_export = 1;
 

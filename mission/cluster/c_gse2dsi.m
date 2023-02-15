@@ -20,7 +20,6 @@ function [y] = c_gse2dsi( x, spin_axis, direction )
 %
 %     See also c_gse2dsc
 %
-% $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 debug_flag=0;

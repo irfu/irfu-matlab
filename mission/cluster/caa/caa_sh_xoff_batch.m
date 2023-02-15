@@ -12,7 +12,6 @@ function [dE_out,dAmp_out,dt_int,weight] = caa_sh_xoff_batch(st,dt,flag_amp)
 %
 % See also CAA_SH_XOFF, CAA_SH_PLAN, CAA_COROF_DSI, CAA_SH_PL_XOFF
 %
-% $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
 

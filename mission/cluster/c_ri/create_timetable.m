@@ -16,7 +16,6 @@ function [timetable_b, timetable_n] = create_timetable(from,to,cl_id)
 %
 % See also CREATE_FILE, GET_TIMETABLE
 %
-% $Id$
 
 %Written by Robert Isaksson in the summer of -03
 

@@ -18,7 +18,6 @@ function [elmn,h]=irf_pl_ebv_nrf(vngse,tint,e,b,sc_list)
 % b - b field in DS ref frame, if not given loaded from mB.mat
 % elmn = [t El Em En] field in NML reference frame
 %
-% $Id$
 
 persistent q_flag  q_L_direction
 

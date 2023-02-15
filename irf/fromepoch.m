@@ -17,6 +17,7 @@ function full_time = fromepoch(second)
 %   See also: TOEPOCH, EPOCH2ISO, IRF_TIME, DATENUM, DATESTR
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

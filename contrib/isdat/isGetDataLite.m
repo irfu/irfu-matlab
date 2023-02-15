@@ -38,7 +38,6 @@ function [timedat,reqdat,iserr]=isGetDataLite(db,starttime,duration,proj,mem,ins
 %
 % See also: Mat_DbOpen, FROMEPOCH.
 %
-% $Id$
 
 narginchk(4,11)
 

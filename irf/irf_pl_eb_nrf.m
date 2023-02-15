@@ -17,7 +17,6 @@ function [elmn,h]=irf_pl_eb_nrf(vngse,tint,e,b,sc_list)
 % b - b field in DS ref frame, if not given loaded from mB.mat
 % elmn = [t El Em En] field in NML reference frame
 %
-% $Id$
 
 q_flag=irf_ask('LMN frame defined by \n 0) L || B and N closest to vn \n 1) N || vn (stationary frame), L along mean B \n 2) N||vn, L closest to the specified direction [%]>','q_flag',2);
 if q_flag == 0, title_lmn='L-along B, N-closest to vn, M=NxL';flag=0;end

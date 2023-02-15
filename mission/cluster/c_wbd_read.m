@@ -15,7 +15,6 @@ function data=c_wbd_read(start_time,dt,cl_id)
 %
 % see also C_GET
 %
-% $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
 

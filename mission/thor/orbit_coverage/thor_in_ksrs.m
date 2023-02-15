@@ -39,10 +39,17 @@ f_bsX = @(r,R0) 0.5*45.3/0.04-sqrt((0.5*45.3/0.04)^2+r.^2/0.04)+f_bsR0(Bz,Dp,M);
 
 %% Check if THOR is inside bowshock or not
 iKSR = irf.ts_scalar(rTHOR.time,nan(rTHOR.length,1));
+useConstantBforForeshock = 1;
+Bspiral = [-1,1,0];
 
 [outsideMP,insideMP,crossingMP] = magnetopause(rTHOR,B.z.data,Dp.data);
 [outsideBS,insideBS,crossingBS] = bowshock(rTHOR,B.z.data,Dp.data,M.data,BSNX.data);
-[outsideFS,insideFS,crossingFS] = foreshock(rTHOR,B.data,BSNX.data);
+if useConstantBforForeshock
+  [outsideFS,insideFS,crossingFS] = foreshock(rTHOR,Bspiral,BSNX.data);
+else
+  [outsideFS,insideFS,crossingFS] = foreshock(rTHOR,B.data,BSNX.data);
+end
+
 
 %plot(rTHOR(outsideMP).x.data,rTHOR(outsideMP).y.data,'.r',rTHOR(insideMP).x.data,rTHOR(insideMP).y.data,'.b',rTHOR(crossingMP).x.data,rTHOR(crossingMP).y.data,'.g')
 %plot(rTHOR(outsideBS).x.data,rTHOR(outsideBS).y.data,'.r',rTHOR(insideBS).x.data,rTHOR(insideBS).y.data,'.b',rTHOR(crossingBS).x.data,rTHOR(crossingBS).y.data,'.g')
@@ -60,14 +67,19 @@ iKSR.data(isMSP) = repmat(1,numel(isMSP),1);
 iKSR.data(isMSH) = repmat(2,numel(isMSH),1);
 iKSR.data(isFS) = repmat(3,numel(isFS),1);
 iKSR.data(isPSW) = repmat(4,numel(isPSW),1);
+iKSR.data(crossingMP) = repmat(5,numel(crossingMP),1);
 iKSR.data(crossingBS) = repmat(6,numel(crossingBS),1);
-1;
+
 iKSR.userData.indexKSR.i_1 = 'magnetosphere, inside magnetopause';
 iKSR.userData.indexKSR.i_2 = 'magnetosheath, outside magnetopause but inside bowshock';
 iKSR.userData.indexKSR.i_3 = 'foreshock, outside bowshock but inside the region limited by the tangent of IMF B to the bowshock';
 iKSR.userData.indexKSR.i_4 = 'pristine solar wind, outside bowshock and foreshock';
 iKSR.userData.indexKSR.i_5 = 'magnetopause crossing';
 iKSR.userData.indexKSR.i_6 = 'bowshock crossing';
+
+if useConstantBforForeshock
+  iKSR.userData.indexKSR.i_3 = sprintf('foreshock, outside bowshock but inside the region limited by the tangent of IMF B/|B| = [%.1f,%.1f,%.1f]; to the bowshock',Bspiral/norm(Bspiral));
+end
 
 return
 
@@ -79,7 +91,7 @@ units = irf_units;
 xTHOR = rTHOR.x.data/units.RE*1e3; % km->RE
 yTHOR = rTHOR.y.data/units.RE*1e3;
 zTHOR = rTHOR.z.data/units.RE*1e3;
-r_THOR = sqrt(yTHOR.^2+zTHOR.^2);
+r_THOR = sqrt(xTHOR.^2+yTHOR.^2+zTHOR.^2);
 
 % B = Bz
 % Magnetopause model
@@ -150,7 +162,8 @@ zTHOR = rTHOR.z.data/units.RE*1e3;
 r_THOR = sqrt(yTHOR.^2+zTHOR.^2);
 
 B = B./norm(B);
-B0 = [-1 1 0]; % parker spiral
+B0 = B;
+%B0 = [-1,1,0]; % parker spiral
 % Bowshock model
 BAng = atan2d(B(:,2),B(:,1));
 BAng = atan2d(B0(:,2),B0(:,1));

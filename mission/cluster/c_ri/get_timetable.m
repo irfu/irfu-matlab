@@ -15,7 +15,6 @@ function timetable = get_timetable(from,to,p_f)
 %
 % See also CREATE_FILE, CREATE_TIMETABLE
 %
-% $Id$
 
 %Written by Robert Isaksson in the summer of -03
 

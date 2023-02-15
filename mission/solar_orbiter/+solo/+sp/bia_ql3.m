@@ -59,7 +59,12 @@ function bia_ql3(yyyyMmDdStr, hkBiaDir, lfrWfDirPath, outputDir)
     
     % IMPLEMENTATION NOTE: Needed to get paths correct when code is being called
     % from bash script.
-    irf
+    % IMPLEMENTATION NOTE: Not using irf(...) commands that produce file
+    %   ~/.matlab_datastore_<hostname>
+    % since this causes some kind of problems for ROC (Quynh Nhu NGUYEN
+    % when running BICAS in parallel).
+    % See https://gitlab.obspm.fr/ROC/RCS/BIA_QL3/-/issues/3/.
+    irf('check_path');
     
     % ASSERTIONS
     assert(ischar(yyyyMmDdStr))
@@ -116,9 +121,9 @@ function plot_save_SP_pattern(outputDir, datasetDir, filenamePattern, yyyyMmDdSt
             ' attribute Data_version in file "%s"'], datasetPath)
     end
     
-    %==========================
+    %=====================================
     % dateVec3 := reformatted yyyyMmDdStr
-    %==========================
+    %=====================================
     dateVec3 = [...
         str2double(yyyyMmDdStr(1:4)), ...
         str2double(yyyyMmDdStr(5:6)), ...

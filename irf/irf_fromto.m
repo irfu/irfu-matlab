@@ -2,7 +2,6 @@ function irf_fromto(fromto)
 % UI_FROMTO - callback for the buttons in the time selection window
 %   fromto - action to do
 %
-% $Id$
 
 ud = get(gcbf, 'userdata'); % get userdata of time manager window
 

@@ -15,7 +15,6 @@ function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref) %#ok<INUSL>
 % V    - s/c velocity (first column time, next columns vx vy vz)
 % B    - magnetic field (first column time, next columns Bx By Bz)
 %
-% $Id$
 
 if nargin < 1, help c_pl_sc_pos_mf;return; end
 

@@ -26,9 +26,9 @@ function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotfla
 % names of the parameters to override followed by their value. For example:
 %   extraparams={'DEBUG','1','WAKE_MAX_HALFWIDTH','30','MAX_SPIN_PERIOD','4.8'}
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
+% SPDX-License-Identifier: Beerware
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
 % can do whatever you want with this stuff. If we meet some day, and you think

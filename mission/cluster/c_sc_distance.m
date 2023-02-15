@@ -13,7 +13,6 @@ function [sc_distance]=c_sc_distance(tint,dt)
 %
 %   c_sc_distance; % plot for the whole cluster interval
 %
-% $Id$
 
 narginchk(0,2)
 if nargin==0

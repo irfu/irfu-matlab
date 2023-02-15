@@ -4,7 +4,6 @@ function date_string=epoch2yyyymmdd(isdat_epoch)
 % date_string=epoch2yyyymmdd(isdat_epoch)
 % epoch2yyyymmdd convert isdat epoch to string YYYYMMDD
 %
-% $Id$
 
 t=fromepoch(isdat_epoch);
 date_string=sprintf('%04d%02d%02d',t(1),t(2),t(3));
