@@ -28,6 +28,8 @@ classdef find_overlapping_DSMD_groups___UTEST < matlab.unittest.TestCase
                     dsmdArray, datasetIdList);
 
                 testCase.assertEqual(actDsmdGroupsCa, expDsmdGroupsCa)
+                testCase.assertTrue(iscell(expDsmdGroupsCa))
+                testCase.assertTrue(iscolumn(expDsmdGroupsCa))
             end
 
             function Dsmd = DSMD(filename)
@@ -52,6 +54,9 @@ classdef find_overlapping_DSMD_groups___UTEST < matlab.unittest.TestCase
 
             % CUR_02 = DSMD('solo_L1_rpw-bia-current-cdag_20200201T000000-20200301T000000_V01.cdf');
             % CUR_03 = DSMD('solo_L1_rpw-bia-current-cdag_20200301T000000-20200401T000000_V01.cdf');
+
+            % NOTE: Implementation has special case for empty array.
+            test(solo.adm.DSMD.empty(1, 0), {'SOLO_HK_RPW-BIA'}, cell(0, 1));
 
             test([HK_14], {'SOLO_HK_RPW-BIA'}, {HK_14});
             test([HK_13, HK_15], {'SOLO_HK_RPW-BIA'}, {HK_13; HK_15});
