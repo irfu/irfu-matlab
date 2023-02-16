@@ -123,6 +123,7 @@ function [h,yy,zz] = arrow(varargin)
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/278-arrow-m/
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2009, Erik A Johnson
 % All rights reserved.

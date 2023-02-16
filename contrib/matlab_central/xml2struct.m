@@ -30,6 +30,7 @@ function [ s ] = xml2struct( file )
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/28518-xml2struct/
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2010, Wouter Falkena
 % All rights reserved.

@@ -14,7 +14,7 @@ function Plot_dcecomm_daily(DayOfInterest, bashRun)
 %
 % License: CreativeCommons BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/
-%
+% SPDX-License-Identifier: CC-BY-NC-SA-4.0
 % See also PLOT_HK10E
 
 narginchk(1,2); % DayOfInterest, [bashRun]

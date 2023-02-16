@@ -1,11 +1,11 @@
 classdef mms_local_file_db < mms_file_db
   %MMS_LOCAL_FILE_DB  Local file database for MMS
   %   Class handling a database of local MMS files
-  
+
   properties (SetAccess = immutable)
     dbRoot
   end
-  
+
   methods
     function obj = mms_local_file_db(rootPath)
       % Create local database for MMS data located in rootPath.
@@ -13,7 +13,7 @@ classdef mms_local_file_db < mms_file_db
       %   MMS_DB = MMS_LOCAL_FILE_DB('/data/mms');
       if nargin == 0, rootPath = pwd; end
       if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
-      
+
       obj@mms_file_db(rootPath); obj.dbRoot = rootPath;
       if nargin == 0, return, end
       if ~ischar(rootPath)
@@ -24,7 +24,7 @@ classdef mms_local_file_db < mms_file_db
         irf.log('critical',errStr), error(errStr)
       end
     end
-    
+
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
       % fileList = list_files(obj, filePrefix, [tint]);
@@ -126,7 +126,7 @@ classdef mms_local_file_db < mms_file_db
           if isempty(listing), return, end
           arrayfun(@(x) add2list(x.name), listing)
         end
-        
+
         function add2list(name)
           [~,fName,fExt] = fileparts(name);
           ver = str2double(fExt(3:4));
@@ -145,13 +145,25 @@ classdef mms_local_file_db < mms_file_db
             e.stop = get_time('stop');
             function epoch = get_time(s)
               epoch = []; sss=[];
-              cmd = sprintf('grep -m1 -i %s_time %s/%s | awk ''{print $3}''',...
-                s,e.path,e.name);
-              [sta,out] = unix(cmd); if sta>0, return, end
-              if isempty(out)
-                cmd = sprintf('grep -m1 -i %stime %s/%s | awk ''{print $3}''',...
+              if isunix
+                cmd = sprintf('grep -m1 -i %s_time %s/%s | awk ''{print $3}''',...
                   s,e.path,e.name);
-                [sta,out] = unix(cmd); if sta>0 || isempty(out), return, end
+                [sta,out] = unix(cmd); if sta>0, return, end
+                if isempty(out)
+                  cmd = sprintf('grep -m1 -i %stime %s/%s | awk ''{print $3}''',...
+                    s,e.path,e.name);
+                  [sta,out] = unix(cmd); if sta>0 || isempty(out), return, end
+                end
+              else
+                % Windows user, findstr is slower as it "greps" all occurrances, does not stop after first match.
+                cmd = sprintf('findstr /b /i %s_time "%s\\%s"', ...
+                  s,e.path,e.name);
+                [sta,out] = system(cmd); if sta>0, return, end
+                if isempty(out)
+                  cmd = sprintf('findstr /b /i %stime "%s\\%s"',...
+                    s,e.path,e.name);
+                  [sta,out] = system(cmd); if sta>0 || isempty(out), return, end
+                end
               end
               try
                 % Split up doy string YYYY-DOYThh:mm:ss.mmmuuunnn
@@ -188,7 +200,7 @@ classdef mms_local_file_db < mms_file_db
           end % ADD_SS
         end % ADD2LIST
       end % LOAD_ANCILLARY
-      
+
       %% LIST_SCI_TINT
       function list_sci_tint()
         fDir = get_prefix();
@@ -218,7 +230,7 @@ classdef mms_local_file_db < mms_file_db
             end
           end
         end
-        
+
         function p = get_prefix()
           p = [obj.dbRoot, filesep, strjoin(C, filesep)];
         end
@@ -270,7 +282,7 @@ classdef mms_local_file_db < mms_file_db
           arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
         end
       end
-      
+
       %% LIST SCI
       function list_sci()
         fileDir = [obj.dbRoot, filesep, strjoin(C, filesep)];
@@ -315,7 +327,7 @@ classdef mms_local_file_db < mms_file_db
           fnd.dataLevel];
         if ~isempty(fnd.dataType), fName = [fName '_' fnd.dataType]; end
         fName = [fName '_' fnd.date '_'];
-        
+
         hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
         if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
         iSame = find(hasFile);
@@ -370,7 +382,7 @@ classdef mms_local_file_db < mms_file_db
     %% LOAD FILES
     function res = load_file(obj,fileName)
       narginchk(2,3)
-      
+
       irf.log('notice',['loading ' fileName])
       if mms.db_index
         fileNameFullPath = fileName;
@@ -382,19 +394,19 @@ classdef mms_local_file_db < mms_file_db
         res = dataobj(fileNameFullPath);
         return
       end
-      
+
       % ancillary
       [res,~] = mms_load_ancillary(fileNameFullPath,...
         mms_local_file_db.get_anc_type(fileName));
     end % LOAD_FILES
-    
+
     %% FILE_HAS_VAR
     function res = file_has_var(obj,fileName,varName)
       % checks if fileName includes variable name varName
       % res = true/false
       narginchk(3,3)
       res = false; if isempty(varName) || isempty(fileName), return, end
-      
+
       entryTmp = obj.cache.get_by_key(fileName);
       if ~isempty(entryTmp)
         res = any(cellfun(@(x) strcmp(x,varName), entryTmp.vars(:,1)));
@@ -411,7 +423,7 @@ classdef mms_local_file_db < mms_file_db
         irf.log('warning', ['Fies does not exist: ' fullPath])
         return
       end
-      
+
       if ~mms_local_file_db.is_cdf_file(fileName) % ancillary
         ANC_VARS.defatt = {'wphase','zra','zdec','zphase','lra','ldec',...
           'lphase','pra','pdec','pphase'};
@@ -439,7 +451,7 @@ classdef mms_local_file_db < mms_file_db
       end
     end
   end
-  
+
   methods (Access=private)
     function p = get_path_to_file(obj,fileName)
       C = strsplit(lower(fileName),'_');
@@ -453,7 +465,7 @@ classdef mms_local_file_db < mms_file_db
       end
     end
   end
-  
+
   methods (Static, Access=private)
     function res = is_cdf_file(fileName)
       res = false;
@@ -467,6 +479,6 @@ classdef mms_local_file_db < mms_file_db
       res = C{2};
     end
   end
-  
+
 end
 

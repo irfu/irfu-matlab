@@ -339,6 +339,7 @@ function hn=arrow3(p1,p2,s,w,h,ip,alpha,beta)
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/14056-arrow3-version-5/content/arrow3.m
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2002, Tom Davis
 % All rights reserved.

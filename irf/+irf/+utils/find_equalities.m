@@ -11,6 +11,22 @@
 %   -- Counts NaN as equal to itself.
 %
 %
+% NOTES ON PERFORMANCE
+% ====================
+% NOTE: The performance of the function should theoretically depend very much on
+% (1) which rows are equal or not,
+% (2) the number of input variables,
+% (3) the data types of input variables,
+% (4) the order if arguments,
+% (5) argument "searchDistance".
+% --
+% Empirically, the speed varies widely depending on data type:
+% (For vectors of unique values:)
+%   time_datetime / time_double ~ 270x
+%   time_string   / time_double ~ 15x-16x
+%   time_int64    / time_double ~ 1x   (about same speed)
+%
+%
 % ARGUMENTS
 % =========
 % searchDistance
