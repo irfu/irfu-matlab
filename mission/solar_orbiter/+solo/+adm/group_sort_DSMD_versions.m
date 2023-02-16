@@ -179,13 +179,27 @@ function Result = group_sort_DSMD_versions(DsmdArray1, mode, varargin)
     % IMPORTANT NOTE: irf.utils.find_equalities() can be very slow
     % for large numbers of DSMDs.
     % IMPLEMENTATION NOTE: Can not use vertcat for strings.
-    datasetIdArray = {DsmdArray1.datasetId};
-    datasetIdArray = datasetIdArray(:);
-    fhArray   = irf.utils.find_equalities(Inf, ...
-        vertcat(DsmdArray1.dt1), ...
-        vertcat(DsmdArray1.dt2), ...
-        datasetIdArray ...
-    );
+    
+    DT0 = datetime('2020-01-01T00:00:00.000Z', 'TimeZone', 'UTCLeapSeconds');
+    if isempty(DsmdArray1)
+        t1 = zeros(0, 1);
+        t2 = zeros(0, 1);
+    else
+        % IMPLEMENTATION NOTE: vertcat() for empty array returns double (not
+        %                      datetime).
+        t1 = seconds(vertcat(DsmdArray1.dt1) - DT0);
+        t2 = seconds(vertcat(DsmdArray1.dt2) - DT0);
+    end
+    datasetIdCa = {DsmdArray1.datasetId};
+    datasetIdCa = datasetIdCa(:);
+    
+    % IMPORTANT: The call to irf.utils.find_equalities() is critical for
+    % performance. The arguments and their order are chosen to speed it up.
+    % Fastest arrays first. time_double < time_strings << time_datetime. In
+    % particular, avoiding datetime.
+    % t = tic();
+    fhArray = irf.utils.find_equalities(Inf, t1, t2, datasetIdCa);
+    
     fhUniques = unique(fhArray);
     nSets     = numel(fhUniques);
 
