@@ -22,6 +22,7 @@ function errorbar_tick(h,w,xtype)
 %   http://www.developpez.net/forums/u125006/dut/
 % It was further modified by Arnaud Laurent and Jerome Briot.
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2009, Arnaud Laurent
 % All rights reserved.

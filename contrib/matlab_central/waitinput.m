@@ -21,6 +21,7 @@ function output = waitinput(prompt,t,s)
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/28881-waitinput
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2010, Grzegorz Knor
 % Copyright (c) 2005-prese, Jos van der Geest

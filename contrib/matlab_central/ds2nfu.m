@@ -54,6 +54,7 @@ function varargout = ds2nfu(varargin)
 % Source: Matlab Central File Exchange
 % https://se.mathworks.com/matlabcentral/fileexchange/10656-data-space-to-figure-units-conversion
 
+% SPDX-License-Identifier: BSD-3-Clause
 % LICENSE
 % Copyright (c) 2006, The MathWorks, Inc.
 % Copyright (c) 1997, Christophe COUVREUR

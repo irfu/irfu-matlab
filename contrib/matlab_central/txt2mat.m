@@ -674,6 +674,7 @@ function [A,ffn,numHeader,repChar,hl,fpos] = txt2mat(varargin)
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/18430-txt2mat
 
+% SPDX-License-Identifier: BSD-3-Clause
 % LICENSE
 % Copyright (c) 2019, Andres
 % All rights reserved.

@@ -28,7 +28,7 @@
 %
 % License: CreativeCommons BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/
-%
+% SPDX-License-Identifier: CC-BY-NC-SA-4.0
 
 function [ZPHASE, E1234, V1234, dcePlot, dcvPlot] = Plot_DCE_V_Phase(defattFile, dceFile, dcvFile)
 
