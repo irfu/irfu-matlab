@@ -149,8 +149,6 @@ function Result = group_sort_DSMD_versions(DsmdArray1, mode, varargin)
     % PROPOSAL: Abolish cdagAlgorithm, sortWrtFormerVersionsDir.
     % PROPOSAL: Abolish currentHack?
 
-
-
     SETTINGS.cdagAlgorithm            = 'CDAG then non-CDAG';
     SETTINGS.sortWrtFormerVersionsDir = false;
     SETTINGS.currentHack              = true;
@@ -234,7 +232,6 @@ function Result = group_sort_DSMD_versions(DsmdArray1, mode, varargin)
     end
 
     assert(numel(Result) == nSets)
-
 end
 
 

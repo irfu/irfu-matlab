@@ -84,7 +84,7 @@ classdef group_sort_DSMD_versions___UTEST < matlab.unittest.TestCase
             ALG_CN = 'CDAG then non-CDAG';
             ALG_NC = 'non-CDAG then CDAG';
             ECA = cell(0,1);
-            EDSMDA = solo.adm.DSMD.empty(0,1);
+            EDSMDA = solo.adm.DSMD.empty(0,1);   % EDSMDA = Empty DSMD Array
 
 
 
