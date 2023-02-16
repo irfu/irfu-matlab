@@ -102,6 +102,7 @@ function [CMAP,LEV,WID,CLIM] = cmjoin(varargin)
 %   DISCLAIMER:
 %   cmjoin.m is provided "as is" without warranty of any kind, under the
 %   revised BSD license.
+% SPDX-License-Identifier: BSD-2-Clause
 
 %   Copyright (c) 2006,2009 Carlos Adrian Vargas Aguilera
 

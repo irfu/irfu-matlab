@@ -49,6 +49,7 @@ function [Y,Nsum] = moving_average(X,F,DIM)
 %   2008 Mar. Use CUMSUM as RUNMEAN by Jos van der Geest, no more
 %   subfunctions.
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2016, Carlos Adrian Vargas Aguilera
 % All rights reserved.

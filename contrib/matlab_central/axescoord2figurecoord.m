@@ -26,6 +26,7 @@ function [xfigure, yfigure]=axescoord2figurecoord(varargin)
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/13634-axescoord2figurecoord/
 
+% SPDX-License-Identifier: BSD-2-Clause
 % LICENSE
 % Copyright (c) 2009, Beno� Valley
 % All rights reserved.

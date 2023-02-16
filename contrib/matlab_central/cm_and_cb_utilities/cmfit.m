@@ -76,6 +76,7 @@ function [CMAP,CLIM,WIDTH,REF,LEVELS] = cmfit(CMAP,CLIM,WIDTH,REF,CENTER,varargi
 %   DISCLAIMER:
 %   cmfit.m is provided "as is" without warranty of any kind, under the
 %   revised BSD license.
+% SPDX-License-Identifier: BSD-2-Clause
 
 %   Copyright (c) 2008,2009 Carlos Adrian Vargas Aguilera
 

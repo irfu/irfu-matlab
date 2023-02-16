@@ -17,7 +17,7 @@ function Plot_HK10E(DayOfInterest, bashRun)
 %
 % License: CreativeCommons BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/
-%
+% SPDX-License-Identifier: CC-BY-NC-SA-4.0
 
 narginchk(1,2);
 if nargin == 1, bashRun=false; end

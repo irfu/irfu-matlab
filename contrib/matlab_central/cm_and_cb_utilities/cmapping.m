@@ -111,6 +111,7 @@ function RGB = cmapping(varargin)
 %   DISCLAIMER:
 %   cmapping.m is provided "as is" without warranty of any kind, under the
 %   revised BSD license.
+% SPDX-License-Identifier: BSD-2-Clause
 
 %   Copyright (c) 2009 Carlos Adrian Vargas Aguilera
 
