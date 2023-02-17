@@ -407,6 +407,7 @@ classdef constants
             L2_TDS_DSIs = {...
                 'SOLO_L2_RPW-TDS-LFM-CWF-E', ...
                 'SOLO_L2_RPW-TDS-LFM-RSWF-E'};
+            % NOTE: Only official L2 datasets.
             L2_LFR_TDS_DSIs = [L2_LFR_DSIs, L2_TDS_DSIs];
 
             % DES = Density+EField+Scpot (not VHT).

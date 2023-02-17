@@ -86,7 +86,7 @@ classdef VersionEntry   % < handle
 
             for i = 1:numel(commentsCa)
                 s = commentsCa{i};
-                irf.assert.castring_regexp(s, '[-<=_.()&:''/ a-zA-Z0-9]+')
+                irf.assert.castring_regexp(s, '[-<=_.,()&:''/ a-zA-Z0-9]+')
 
                 % Check that comments ends with period.
                 % NOTE: Besides for consistency, this is useful for checking

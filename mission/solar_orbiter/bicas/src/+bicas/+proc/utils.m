@@ -50,9 +50,9 @@ classdef utils
 
 
     methods(Static, Access=public)
-        
-        
-        
+
+
+
         % Wrapper around bicas.handle_struct_name_change() to be used
         % locally.
         %
@@ -78,10 +78,10 @@ classdef utils
         function ca2 = select_row_range_from_cell_comps(ca1, iFirst, iLast)
         % For every cell in a cell array, select a (non-cell array) index range
         % in the first dimension for every cell array component.
-            
+
             % ASSERTIONS
             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(ca1)
-            
+
             for i = 1:numel(ca1)
                 ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
             end
@@ -101,7 +101,7 @@ classdef utils
         %       Struct. Only numeric fields.
         %       All fields have same number of rows.
         % SNew
-        %       Struct. Only numeric fields. 
+        %       Struct. Only numeric fields.
         %       All fields have same number of rows. Same fields as S.
         % iRowsArray
         %       1D array. Same length as number of rows in SNew fields.
@@ -112,19 +112,19 @@ classdef utils
             nRowsSa = bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(SNew);
             assert(numel(iRowsArray) == nRowsSa)
             irf.assert.castring_sets_equal(fieldnames(S), fieldnames(SNew))
-            
+
             fieldNamesList = fieldnames(SNew);
             for i=1:length(fieldNamesList)
                 fn = fieldNamesList{i};
-                
+
                 % ASSERTIONS
                 assert(isnumeric(S.(fn)))
                 assert(isnumeric(SNew.(fn)))
-                
+
                 S.(fn)(iRowsArray, :) = SNew.(fn)(:, :);
             end
         end
-        
+
 
 
         % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
@@ -141,23 +141,23 @@ classdef utils
         % ca                   : Column cell array of 1D vectors.
         %
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
-            
+
             % ASSERTIONS
             irf.assert.vector(nCopyColsPerRowArray)
             nRows = irf.assert.sizes(...
                 M,                    [-1, NaN], ...
                 nCopyColsPerRowArray, [-1, 1]);
-            
-            
-            
+
+
+
             ca = cell(size(M, 1), 1);
             for iRow = 1:nRows
                 ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
             end
         end
-        
 
-        
+
+
         % ARGUMENTS
         % =========
         % ca                 : Column cell array of 1D vectors.
@@ -172,24 +172,24 @@ classdef utils
             irf.assert.vector(ca)
             assert(isscalar(nMatrixColumns))
             irf.assert.vector(nMatrixColumns)
-            
+
             nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
             M                  = nan(  numel(ca), nMatrixColumns);
             for iRow = 1:numel(nCopyColsPerRowVec)
                 nCopyColsPerRowVec(iRow)            = numel(ca{iRow});
                 M(iRow, 1:nCopyColsPerRowVec(iRow)) = ca{iRow};
             end
-            
+
         end
 
-        
-        
+
+
         %################################
         % MODIFYING, DERIVING ZVARIABLES
         %################################
-        
-        
-        
+
+
+
         function zvData = filter_rows(zvData, bRowFilter)
         % Function intended for filtering out data from a zVariable by setting
         % parts of it to NaN. Also useful for constructing aonymous functions.
@@ -209,7 +209,7 @@ classdef utils
         %       Array of the same size as "data", such that
         %       zvData(i,:,:) == NaN,         for bRowFilter(i)==0.
         %       zvData(i,:,:) == data(i,:,:), for bRowFilter(i)~=0.
-        
+
         % PROPOSAL: Better name? ~set_records_NaN
         % BUG/PROBLEM: Function name/documentation unclear on meaning of
         %              bRowFilter: Does true mean REMOVE or KEEP data?
@@ -238,8 +238,8 @@ classdef utils
             zvData(bRowFilter, :) = NaN;
         end
 
-        
-        
+
+
         function zv = set_NaN_after_snapshots_end(zv, snapshotLengths)
             % ASSERTIONS
             [nRecords, snapshotMaxLength] = irf.assert.sizes(...
@@ -248,7 +248,7 @@ classdef utils
             assert(snapshotMaxLength >= max([snapshotLengths; 0]))
             % Add zero to vector so that max gives sensible value for empty
             % snapshotLengths.
-                        
+
             % IMPLEMENTATION
             for iRecord = 1:nRecords
                 zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
@@ -256,21 +256,21 @@ classdef utils
         end
 
 
-        
+
         function tt2000 = ACQUISITION_TIME_to_TT2000(...
                 ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
         %
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for
         % Epoch in CDF files.
-        % 
-        % 
+        %
+        %
         % ARGUMENTS
         % =========
         % ACQUSITION_TIME            : NOTE: Can be negative since it is uint32.
         % ACQUISITION_TIME_EPOCH_UTC :
         %               Numeric row vector. The time in UTC at
         %               which ACQUISITION_TIME == [0,0], expressed as
-        %               [year, month, day, hour, minute, second, 
+        %               [year, month, day, hour, minute, second,
         %                millisecond, microsecond(0-999), nanoseconds(0-999)].
         %
         %
@@ -278,9 +278,9 @@ classdef utils
         % ============
         % tt2000 : NOTE: int64
         %
-        
+
             bicas.utils.assert_zv_ACQUISITION_TIME(ACQUISITION_TIME)
-            
+
             % at = ACQUISITION_TIME
             ACQUISITION_TIME = double(ACQUISITION_TIME);
             atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;
@@ -288,9 +288,9 @@ classdef utils
             tt2000 = spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) ...
                 + int64(atSeconds * 1e9);
         end
-        
 
-        
+
+
         function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(...
                 tt2000, ACQUISITION_TIME_EPOCH_UTC)
         %
@@ -306,7 +306,7 @@ classdef utils
         % ACQUISITION_TIME : Nx2 vector. uint32.
         %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
         %
-        
+
             % ASSERTIONS
             bicas.utils.assert_zv_Epoch(tt2000)
 
@@ -314,7 +314,7 @@ classdef utils
             % AT = ACQUISITION_TIME
             atSeconds = double(int64(tt2000) - ...
                 spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;
-            
+
             % ASSERTION: ACQUISITION_TIME must not be negative.
             if any(atSeconds < 0)
                 error(...
@@ -322,10 +322,10 @@ classdef utils
                     ['Can not produce ACQUISITION_TIME (uint32) with', ...
                     ' negative number of integer seconds.'])
             end
-            
+
             atSeconds = round(atSeconds*65536) / 65536;
             atSecondsFloor = floor(atSeconds);
-            
+
             ACQUISITION_TIME = uint32([]);
             ACQUISITION_TIME(:, 1) = uint32(atSecondsFloor);
             ACQUISITION_TIME(:, 2) = uint32((atSeconds - atSecondsFloor) * 65536);
@@ -351,15 +351,15 @@ classdef utils
         %          integer (assertion).
         % nSpr   : Number of samples/record.
         %
-        % 
+        %
         % RETURN VALUE
         % ============
         % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64.
         %                    NOTE: Unit ns.
         %
-        
+
             ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
-            
+
             % ASSERTIONS
             nRecords = irf.assert.sizes(freqHz, [-1]);
             assert(isfloat(freqHz) && all(isfinite(freqHz)), ...
@@ -368,9 +368,9 @@ classdef utils
             assert(isscalar(nSpr), ...
                 'BICAS:Assertion:IllegalArgument', ...
                 'Argument "nSpr" is not a scalar.')
-            
-            
-            
+
+
+
             zv_DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
             %DELTA_PLUS_MINUS = zeros([nRecords, 1]);    % Always 1 sample/record.
             for i = 1:nRecords
@@ -384,15 +384,15 @@ classdef utils
                 irf.cdf.convert_CDF_type_to_MATLAB_class(...
                     ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
-        
-        
-        
+
+
+
         %############
         % ASSERTIONS
         %############
-        
-        
-        
+
+
+
         function nRows = assert_struct_num_fields_have_same_N_rows(S)
         % Assert that data structure have the same number of rows in its
         % constituent parts.
@@ -424,53 +424,53 @@ classdef utils
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
         % PROPOSAL: Implement using new features in irf.assert.sizes().
-        
+
             fieldNamesList1 = fieldnames(S);
             nRowsArray = [];
             for iFn1 = 1:length(fieldNamesList1)
                 fieldValue = S.(fieldNamesList1{iFn1});
-                
+
                 if isnumeric(fieldValue) || islogical(fieldValue)
-                    
+
                     nRowsArray(end+1) = size(fieldValue, 1);
-                    
+
                 elseif iscell(fieldValue)
-                    
+
                     for iCc = 1:numel(fieldValue)
                         nRowsArray(end+1) = size(fieldValue{iCc}, 1);
                     end
-                    
+
                 elseif isstruct(fieldValue)
-                    
+
                     fieldNamesList2 = fieldnames(fieldValue);
                     for iFn2 = 1:length(fieldNamesList2)
                         nRowsArray(end+1) = size(...
                             fieldValue.(fieldNamesList2{iFn2}), ...
                             1);
                     end
-                    
+
                 else
-                    
+
                     error('BICAS:Assertion', ...
                         'Can not handle this type of struct field.')
-                    
+
                 end
             end
-            
+
             % NOTE: Empty vector if nRowsArray is empty.
-            nRows = unique(nRowsArray);   
-            
+            nRows = unique(nRowsArray);
+
             % NOTE: length==0 valid for struct containing zero numeric fields.
-            if length(unique(nRowsArray)) > 1    
+            if length(unique(nRowsArray)) > 1
                 error('BICAS:Assertion', ...
                     ['Numeric fields and cell array components', ...
                     ' in struct do not have the same number', ...
                     ' of rows (likely corresponding to CDF zVar records).'])
             end
         end
-        
-        
-        
+
+
+
         % Assert that all cell array components have the same number of rows.
         % This is useful when cell array components represent zVar-like data,
         % where rows represent CDF records.

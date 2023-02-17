@@ -55,6 +55,8 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         SETTINGS, L)
 
     % PROPOSAL: Automatic test code.
+    % PROPOSAL: Create class for GAs.
+    %   PRO: Can detect accidental overwriting/reuse of keys.
     
     % ASSERTIONS
     irf.assert.struct(OutputDataset.Ga, ...
@@ -137,9 +139,6 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         %   "Parent_version"      1:    CDF_CHAR     { " " }
         %-----------------------------------------------------------------------
         
-        % NOTE: Using Data_version to set Parent_version.
-        %OutGaSubset.Parent_version{end+1} = InputGa.Data_version{1};   % Number, not string. Correct?!
-        %OutGaSubset.Parents       {end+1} = ['CDF>', InputGa.Logical_file_id{1}];
         if isfield(InputGa, 'Provider')
             OutGaSubset.Provider = union(OutGaSubset.Provider, InputGa.Provider);
         else
@@ -179,12 +178,18 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     % NOTE: Could in principle be set by assuming
     %       lowercase(DATASET_ID) = Logical_source if not for -cdag and.
     % Ex: Logical_source="solo_L1_rpw-tds-surv-hist2d"
-    OutGaSubset.Logical_source   = logicalSource;
+    OutGaSubset.Logical_source   = logicalSource;   % Override skeleton.
     OutGaSubset.Data_version     = dataVersionStr;
     OutGaSubset.Datetime         = timeIntervalStr;
-    
-    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
-    %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
+    % OutGaSubset.Dataset_ID       = outputDatasetId; % Override skeleton. Wise?
+    % IMPLEMENTATION NOTE: Unclear if it is wise to overwrite GA Dataset_ID and
+    % Logical_source. In principle, the skeletons should contain the correct
+    % values. In principle, the ideal solution is to assert that GA Dataset_ID
+    % and Logical_source in the master CDF are the expected ones, but it is
+    % unclear if this fits well with how master CDFs are currently loaded and if
+    % one did, should one not do so for other values as well?
+    % NOTE: Could almost overwrite "Descriptor" too (can be derived from
+    % Logical_source or DATASET_ID), but it also includes human-readable text.
 
     %---------------------------------------------------------------------------
     % "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009:
@@ -258,10 +263,14 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
             ['The value of the input CDF files'' global attribute "Provider"', ...
             ' differ (and they should not, or?).'], ...
             'BICAS:DatasetFormat')
-        % NOTE: Maybe wrong choice of error ID "DatasetFormat".
+        % NOTE: Maybe the wrong choice of error ID, "DatasetFormat".
     end
 
-    % ASSERTION: Required subset for every dataset.
+    % ASSERTION: Required subset for every dataset
+    % --------------------------------------------
+    % NOTE: GAs can be conditional. Ex: MODS, Provider
+    % TODO-DEC: Is this assertion sensible? There are many permanent GAs not
+    %           mentioned here. Remove assertion?
     irf.assert.struct(OutGaSubset, ...
         {'Parents', 'Parent_version', 'Provider', ...
         'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
