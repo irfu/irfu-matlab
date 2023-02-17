@@ -94,3 +94,9 @@ Version 6.0.2
 Bugfix: Corrected algorithm/formula for calculating Ez_SRF (vdccal.m).
 Recalculated and added E-field calibration data. Now covers 2020-02-28 to 2022-12-03.
 Non-Standard Operations (NSO) table thruster firings updated for until 2022-12-17.
+
+
+Version 7.0.0
+-------------
+Using new L2 master CDFs with corrections for DELTA_PLUS/MINUS_VAR, APPLICABLE, Data_type.
+Non-Standard Operations (NSO) table thruster firings updated for until 2023-02-05.
