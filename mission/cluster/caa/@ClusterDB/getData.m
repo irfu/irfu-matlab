@@ -567,7 +567,10 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
         irf_log('dsrc',sprintf('            !Too high bias current on p34 for sc%d',cl_id));
       end
     case 2
-      if start_time>toepoch([2015 10 12 12 00 0])
+      if start_time>toepoch([2022 08 23 12 08 16])
+        pl = [];
+        irf_log('dsrc',sprintf('            !No diff measurement on sc%d',cl_id));
+      elseif start_time>toepoch([2015 10 12 12 00 0])
         pl = 34;
         irf_log('dsrc',sprintf('  !Only p34 exists on sc%d',cl_id));
       elseif start_time>toepoch([2007 11 24 15 40 0])
@@ -674,7 +677,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
   switch cl_id
     case 1
       if start_time>toepoch([2018 12 10 03 00 16])
-        % p2 failure
+        % p3 failure
         probe_list = 2;
         irf_log('dsrc',sprintf('p1, p3 and p4 are BAD on sc%d',cl_id))
       elseif start_time>toepoch([2009 10 14 07 00 00]) || ...
@@ -702,8 +705,12 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         param={'180Hz'};
       end
     case 2
-      if start_time>toepoch([2015 10 12 12 00 0])
-        % P2 failure
+      if start_time>toepoch([2022 08 23 12 08 16])
+        % p3 failure
+        probe_list = 4;
+        irf_log('dsrc',sprintf('p1, p2 & p3 are BAD on sc%d',cl_id));  
+      elseif start_time>toepoch([2015 10 12 12 00 0])
+        % p2 failure
         probe_list = 3:4;
         irf_log('dsrc',sprintf('p1&p2 are BAD on sc%d',cl_id))
       elseif start_time>=toepoch([2007 06 01 17 20 00])
