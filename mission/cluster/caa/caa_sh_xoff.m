@@ -1,3 +1,4 @@
+
 function [dE, dAmp, weight] = caa_sh_xoff(st,dt,flag_amp)
 %CAA_SH_XOFF  sunward offset and amplitude correction in the sh/sw
 %
@@ -68,7 +69,7 @@ end
 
 % Try loading C1 CIS-HIA from CAA
 diVCEh1 = [];
-diVCh1 = caa_stream_var(st,dt,'C1_CP_CIS_HIA_ONBOARD_MOMENTS','velocity_isr2');
+diVCh1 = caa_stream_var(st,dt,'C1_CP_CIS-HIA_ONBOARD_MOMENTS','velocity_isr2');
 if ~isempty(diVCh1)
   % Fetch B interval limited to CIS for speed reasons
   diB1 = caa_stream_var(diVCh1(1,1)-3,diVCh1(end,1)-diVCh1(1,1)+6,...
@@ -86,7 +87,7 @@ end
 
 % Try loading C3 CIS-HIA from CAA
 if st+dt < iso2epoch('2009-11-11T08:30:00Z') % No CIS-HIA on C3 after this
-  diVCh3 = caa_stream_var(st,dt,'C1_CP_CIS_HIA_ONBOARD_MOMENTS','velocity_isr2');
+  diVCh3 = caa_stream_var(st,dt,'C1_CP_CIS-HIA_ONBOARD_MOMENTS','velocity_isr2');
   if ~isempty(diVCh3)
     % Fetch B interval limited to CIS for speed reasons
     diB3 = caa_stream_var(diVCh3(1,1)-3,diVCh3(end,1)-diVCh3(1,1)+6,...
