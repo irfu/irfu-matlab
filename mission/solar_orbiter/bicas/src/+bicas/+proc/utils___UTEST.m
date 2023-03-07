@@ -93,9 +93,42 @@ classdef utils___UTEST < matlab.unittest.TestCase
             test({[0,1,2],                [3]},   {[0,1,2]});
             test({[0,1,2,3,4; 5,6,7,8,9], [2;4]}, {[0,1,NaN,NaN,NaN; 5,6,7,8,NaN]});
         end
-        
-        
-        
+
+
+
+        function test_assert_increasing(testCase)
+            function test(array, isMonotonic)
+                errorId = 'test:Error';
+                msg = '<Error message>';
+
+                % Test both with and without transposition.
+                bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg);
+                bicas.proc.utils.assert_increasing(array', isMonotonic, errorId, msg);
+            end
+
+            function test_exc(array, isMonotonic)
+                errorId = 'test:Error';
+                msg = '<Error message>';
+                testCase.verifyError(...
+                    @() bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg), ...
+                    ?MException)
+            end
+            %===================================================================
+
+            for isMonotonic = [false, true]
+                test(zeros(0, 1), isMonotonic)
+                test([3], isMonotonic)
+                test([1,2,3,4,5], isMonotonic)
+
+                test_exc([5,4,6,7,8], isMonotonic)
+            end
+
+            test([1,2,3,3,4], false)
+            test_exc([1,2,3,3,4], true)
+        end
+
+
+
     end    % methods(Test)
 
 

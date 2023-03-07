@@ -486,8 +486,42 @@ classdef utils
 
 
 
+        function assert_increasing(v, isMonotonic, errorId, msg)
+            assert(isnumeric(v) && isvector(v))
+            assert(islogical(isMonotonic) && isscalar(isMonotonic))
+
+            if isMonotonic
+                option = 'strictascend';
+            else
+                option = 'ascend';
+            end
+
+            if ~issorted(v, option)
+                % Indices at which Epoch does not increment
+                iDecrArray = find(diff(v) < 0) + 1;
+                decrStr = sprintf(...
+                    '\nIndices with negative increment: [%s]', ...
+                    strjoin(string(iDecrArray), ', ') ...
+                );
+
+                if ~isMonotonic
+                    error(errorId, [msg, decrStr])
+                else
+                    iEqualArray = find(diff(v) == 0) + 1;
+                    equalStr = sprintf(...
+                        '\nIndices with zero increment: [%s]', ...
+                        strjoin(string(iEqualArray), ', ') ...
+                    );
+                    error(errorId, [msg, equalStr, decrStr])
+                end
+            end
+
+        end
+
+
+
     end   % Static
-    
-    
-    
+
+
+
 end
