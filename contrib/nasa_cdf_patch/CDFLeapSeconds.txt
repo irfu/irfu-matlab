@@ -1,5 +1,5 @@
 ; Source: <http://maia.usno.navy.mil/ser7/tai-utc.dat>
-; Updated: 20160801
+; Updated: 20161025
 ; Leap Seconds Table - used by CDF
 ; Update it when a leap second(s) is added.
 ; Comment lines starts with ";" at column 1.
