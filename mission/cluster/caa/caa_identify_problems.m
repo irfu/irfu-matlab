@@ -190,6 +190,9 @@ clear ok problem_intervals msg
 if mask_type~=4
   % Mark bad bias from bias current indication
   for probe_id = probe_list
+    if isnan(probe_id) % commissioning NaN probes handling
+        return
+    end
     [ok, problem_intervals] = c_load(irf_ssub('BADBIAS?p!', spacecraft_id, probe_id));
     if ok
       if ~isempty(problem_intervals)
