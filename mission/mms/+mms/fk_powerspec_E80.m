@@ -42,6 +42,12 @@ function out = fk_powerspec_E80(varargin)
 % 
 % f - frequency range for the wavelet transform
 %
+% return_fields - flag to return electric fields in E80 and E120 coordinate
+% system along with all 6 probe potentials
+%
+% correct_timeshifts - default is 1 where the time lag between probes is
+% accounted for. 0 do not account for time lag.
+%
 % If no output is given the function plots the results
 %
 % Examples:
@@ -64,6 +70,9 @@ w0 = 5.36;
 numf = 100;
 numk = 100;
 f_range_flag = 0;
+return_fields = 0;
+correct_timeshifts = 1;
+
 %% defining different options
 if numel(varargin)>2
     
@@ -109,7 +118,14 @@ while flag
             frange = in{2};
             in(1:2) = [];
             flag = ~isempty(in);
-            
+        case 'return_fields'
+            return_fields = in{2};
+            in(1:2) = [];
+            flag = ~isempty(in);
+        case 'correct_timeshifts'
+            correct_timeshifts = in{2};
+            in(1:2) = [];
+            flag = ~isempty(in);
         otherwise
             
             irf.log('warning',['Unknown flag: ' in{1}]);
@@ -120,7 +136,7 @@ while flag
     
 end
     
-
+if correct_timeshifts
 %% Correct for timing in spacecraft potential data.
 E12 = TSeries(SCpot.time,(SCpot.data(:,1)-SCpot.data(:,2))/0.120);
 E34 = TSeries(SCpot.time,(SCpot.data(:,3)-SCpot.data(:,4))/0.120);
@@ -154,7 +170,7 @@ V6 = V5 - E56 * 0.0292;
 % Make new SCpot with corrections
 SCpot = irf.ts_scalar(V1.time,[V1.data V2.data V3.data V4.data V5.data V6.data]);
 clear V1 V2 V3 V4 V5 V6 E12 E34 E56
-
+end
 
 %% defining Tseries and focusing on the waveburst
 
@@ -180,9 +196,16 @@ E56=-(V5-V6)/dl56;
 
 E13=-(V3-V1)/dl13;E14=-(V4-V1)/dl13;
 E80=[E13.data,E14.data,E56.data]*1000;E80=irf.ts_vec_xyz(V1.time,E80);
+E80.coordinateSystem = 'E80';
 
 E23=-(V3-V2)/dl13;E24=-(V4-V2)/dl13;
 E80_2=[-E24.data,-E23.data,E56.data]*1000;E80_2=irf.ts_vec_xyz(V1.time,E80_2);%%the negative so the timing is between the same vectors (13 and 42, 14 and 32)
+E80_2.coordinateSystem = 'E80_2';
+
+%%%calculate Efield with probes 1 2 3 and 4
+E12=-(V2-V1)/dl12;E34=-(V4-V3)/dl12;
+E120=[-E12.data,-E34.data,E56.data]*1000;E120=irf.ts_vec_xyz(V1.time,E120);%%the negative sign is to have the positive x in the direction of probe 1
+E120.coordinateSystem = 'E120';
 
 %% calculating wavelet transforms
 
@@ -195,18 +218,22 @@ w80=irf_wavelet(E80,'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
 w80_2=irf_wavelet(E80_2,'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
 f=w80.f;
 
-%% calculating phase difference between E80x and E80_2x
+%% calculating powerspectrum in the f,k_x space
 
 p80x=w80.p{2};p80x_2=w80_2.p{2};
 [k_80_x,pow_80_x]=disprel(numf,numk,p80x,p80x_2,dl13);
 
-%% calculating the correlation between E80y and E80_2y
+%% calculating powerspectrum in the f,k_y space
 
 p80y=w80.p{1};p80y_2=w80_2.p{1};
 [k_80_y,pow_80_y]=disprel(numf,numk,p80y,p80y_2,dl13);
 
 out{1} = struct('pow_x',pow_80_x,'k_x',k_80_x,'f',f);
 out{2} = struct('pow_y',pow_80_y,'k_y',k_80_y,'f',f);
+TS = struct('E80',E80,'E80_2',E80_2,'E120',E120,'V1',V1,'V2',V2,'V3',V3,'V4',V4,'V5',V5,'V6',V6);
+if return_fields
+    out{length(out)+1} = TS;
+end
 
 if nargout == 0
     
