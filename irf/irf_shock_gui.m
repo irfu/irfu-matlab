@@ -901,29 +901,29 @@ irf_plot(hca,ud.omnidata(:,1:4))
 ylabel(hca,'B (nT)')
 irf_legend(hca,{'B_x','B_y','B_z'},[0.98,0.98])
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.Bu;ud.params.Bu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.Bu;ud.params.Bu]])
 
 hca = irf_panel(h,'n_i');
 irf_plot(hca,ud.omnidata(:,[1,5]))
 ylabel(hca,'n (cm^{-3})')
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.nu;ud.params.nu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.nu;ud.params.nu]])
 
 hca = irf_panel(h,'V');
 irf_plot(hca,ud.omnidata(:,[1,6:8]))
 ylabel(hca,'V (km/s)')
 irf_legend(hca,{'V_x','V_y','V_z'},[0.98,0.98])
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.Vu;ud.params.Vu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.Vu;ud.params.Vu]])
 
 hca = irf_panel(h,'T');
 irf_plot(hca,ud.omnidata(:,[1,9]))% needs SI
 ylabel(hca,'Ti (eV)')
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.Tiu;ud.params.Tiu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.Tiu;ud.params.Tiu]])
 
 for i = 1:4
-  irf_pl_mark(h(i),ud.tu',[0.7,0.7,0])
+  irf_pl_mark(h(i),ud.tu'+[-60 60],[0.7,0.7,0])
 end
 irf_zoom(h(1:end),'x',EpochUnix(ud.omnidata(:,1)));
 end
