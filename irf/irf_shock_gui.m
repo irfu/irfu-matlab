@@ -862,7 +862,7 @@ if ud.use_omni.B
   %   Bomni = nanmean(irf_resamp(ud.omnidata(:,1:4),ud.tu),1);
   %   ud.params.Bu = Bomni(2:4);
   
-  Bomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,2:4)).tlim(EpochUnix(ud.tu)).data,1);
+  Bomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,2:4)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Bu = Bomni;
 else; ud.params.Bu = ud.sc_up.Bu;
 end
@@ -870,7 +870,7 @@ if ud.use_omni.n
   %   nomni = nanmean(irf_resamp(ud.omnidata(:,[1,5]),ud.tu),1);
   %   ud.params.nu = nomni(2);
   
-  nomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,5)).tlim(EpochUnix(ud.tu)).data,1);
+  nomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,5)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.nu = nomni;
 else; ud.params.nu = ud.sc_up.nu;
 end
@@ -878,7 +878,7 @@ if ud.use_omni.V
   %   Vomni = nanmean(irf_resamp(ud.omnidata(:,[1,6:8]),ud.tu),1);
   %   ud.params.Vu = Vomni(2:4);
   
-  Vomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,6:8)).tlim(EpochUnix(ud.tu)).data,1);
+  Vomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,6:8)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Vu = Vomni;
 else; ud.params.Vu = ud.sc_up.Vu;
 end
@@ -886,7 +886,7 @@ if ud.use_omni.Ti
   %   Tomni = nanmean(irf_resamp(ud.omnidata(:,[1,9]),ud.tu),1);
   %   ud.params.Tiu = Tomni(2);
   
-  Tomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,9)).tlim(EpochUnix(ud.tu)).data,1);
+  Tomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,9)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Tiu = Tomni;
 else; ud.params.Tiu = ud.sc_up.Tiu;
 end
