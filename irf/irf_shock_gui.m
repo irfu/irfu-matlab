@@ -862,7 +862,7 @@ if ud.use_omni.B
   %   Bomni = nanmean(irf_resamp(ud.omnidata(:,1:4),ud.tu),1);
   %   ud.params.Bu = Bomni(2:4);
   
-  Bomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,2:4)).tlim(EpochUnix(ud.tu)).data,1);
+  Bomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,2:4)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Bu = Bomni;
 else; ud.params.Bu = ud.sc_up.Bu;
 end
@@ -870,7 +870,7 @@ if ud.use_omni.n
   %   nomni = nanmean(irf_resamp(ud.omnidata(:,[1,5]),ud.tu),1);
   %   ud.params.nu = nomni(2);
   
-  nomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,5)).tlim(EpochUnix(ud.tu)).data,1);
+  nomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,5)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.nu = nomni;
 else; ud.params.nu = ud.sc_up.nu;
 end
@@ -878,7 +878,7 @@ if ud.use_omni.V
   %   Vomni = nanmean(irf_resamp(ud.omnidata(:,[1,6:8]),ud.tu),1);
   %   ud.params.Vu = Vomni(2:4);
   
-  Vomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,6:8)).tlim(EpochUnix(ud.tu)).data,1);
+  Vomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,6:8)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Vu = Vomni;
 else; ud.params.Vu = ud.sc_up.Vu;
 end
@@ -886,7 +886,7 @@ if ud.use_omni.Ti
   %   Tomni = nanmean(irf_resamp(ud.omnidata(:,[1,9]),ud.tu),1);
   %   ud.params.Tiu = Tomni(2);
   
-  Tomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,9)).tlim(EpochUnix(ud.tu)).data,1);
+  Tomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,9)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Tiu = Tomni;
 else; ud.params.Tiu = ud.sc_up.Tiu;
 end
@@ -901,29 +901,29 @@ irf_plot(hca,ud.omnidata(:,1:4))
 ylabel(hca,'B (nT)')
 irf_legend(hca,{'B_x','B_y','B_z'},[0.98,0.98])
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.Bu;ud.params.Bu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.Bu;ud.params.Bu]])
 
 hca = irf_panel(h,'n_i');
 irf_plot(hca,ud.omnidata(:,[1,5]))
 ylabel(hca,'n (cm^{-3})')
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.nu;ud.params.nu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.nu;ud.params.nu]])
 
 hca = irf_panel(h,'V');
 irf_plot(hca,ud.omnidata(:,[1,6:8]))
 ylabel(hca,'V (km/s)')
 irf_legend(hca,{'V_x','V_y','V_z'},[0.98,0.98])
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.Vu;ud.params.Vu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.Vu;ud.params.Vu]])
 
 hca = irf_panel(h,'T');
 irf_plot(hca,ud.omnidata(:,[1,9]))% needs SI
 ylabel(hca,'Ti (eV)')
 hold(hca,'on')
-irf_plot(hca,[ud.tu,[ud.params.Tiu;ud.params.Tiu]])
+irf_plot(hca,[ud.tu+[-60; 60],[ud.params.Tiu;ud.params.Tiu]])
 
 for i = 1:4
-  irf_pl_mark(h(i),ud.tu',[0.7,0.7,0])
+  irf_pl_mark(h(i),ud.tu'+[-60 60],[0.7,0.7,0])
 end
 irf_zoom(h(1:end),'x',EpochUnix(ud.omnidata(:,1)));
 end
