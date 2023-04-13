@@ -225,6 +225,8 @@ if plotfigure
   
   set(h(1:2),'fontsize',14);
   set(gcf,'color','w');
+  xtickangle(h,0)
+
 end
 
 end
