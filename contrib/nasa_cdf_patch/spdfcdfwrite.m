@@ -9,7 +9,9 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   variable values in a cell array, where each element in the cell array
 %   represents a record. Another way, the better one, is to place the
 %   values in a vector (single or multi-dimensional) with the option
-%   'RecordBound' being specified.  
+%   'RecordBound' being specified.
+%   Note: For variable with string data, make sure all strings are of equal
+%         length.
 %
 %   SPDFCDFWRITE(..., 'PadValues', PADVALS) writes out pad values for given
 %   variable names.  PADVALS is a cell array of pairs of a variable name (a
@@ -428,10 +430,10 @@ function spdfcdfwrite(filename, varcell, varargin)
 %
 %   info=spdfcdfinfo('master.cdf');
 %   for p = 1:length(info.Variables(:,1))
-%     compress{(2*p)-1} = info.Variables(p,1); 	% Variable name
-%     compress{2*p} = info.Variables(p,7);	% Variable compression
-%     sparse{(2*p)-1} = info.Variables(p,1);	% Variable name
-%     sparse{2*p} = info.Variables(p,6);	% Variable sparseness
+%     compress{(2*p)-1} = info.Variables{p,1}; 	% Variable name
+%     compress{2*p} = info.Variables{p,7};	% Variable compression
+%     sparse{(2*p)-1} = info.Variables{p,1};	% Variable name
+%     sparse{2*p} = info.Variables{p,6};	% Variable sparseness
 %     bf{2*p-1} = info.Variables{p,1};		% Variable name
 %     bf{2*p} = info.Variables{p,8};		% Variable blocking factor
 %     pad{2*p-1} = info.Variables{p,1};		% Variable name
