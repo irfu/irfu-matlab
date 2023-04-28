@@ -8,7 +8,7 @@ function [DCE_SRF, params, E_vxb] = cal_efield_int(tt,win,plot_cali,output_res,v
 % INPUTS:
 %   tt is the center of window to calibrate in epochtt
 %   win is the total length of the window in hours for calibration, if empty then a 3 hour window will be used with tt as the center
-%   plot_cali - 1 will plot the calibration result
+%   plot_cali = 1 will plot the calibration result
 %   output_res = 1 (output full resolution), = 0 (use 1 second)
 %   vxb_dat = 1 (L2), 0 (LL), 3 (L2 if available else use LL), 4 (don't compute vxb)
 %
@@ -19,6 +19,9 @@ function [DCE_SRF, params, E_vxb] = cal_efield_int(tt,win,plot_cali,output_res,v
 %     row 2 = [k123 d123];
 %     row 3 = [cc_y,cc_z]; correlation coefficients for y and z efield with vxb
 %   E_vxb is the convecitve electric field if PAS and MAG L2 or LL are available
+%
+% Example
+% [DCE_SRF, params, E_vxb] = solo.cal_efield_int(irf_time('2022-07-25T06:00:00.000Z','utc>epochtt'),6,1,1,1)
 
 if length(tt)==1
     if isempty(win)
@@ -210,7 +213,9 @@ end
             end
             scal_val = 2;
 
-            figure('Visible','off')
+            if ~plot_cali
+                figure('Visible','off')
+            end
 
             subplot(6,2,1)
             plot(v2,v3,'kx')
