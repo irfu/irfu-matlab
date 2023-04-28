@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2022-05-27T16:04:00';
+codeVerStr = '2023-04-28T11:38:00';
 
 
 % Based on data from 2020-04-07
@@ -370,11 +370,11 @@ Cal = Cal.combine(CalEntry);
 %25
 %======================2 fits=========================%
 CalEntry = irf.ts_vec_xy(...
-  irf.tint('2021-11-21T00:00:00Z/2021-12-26T23:59:59Z'),...
-  repmat([0.6837 + 2.7283i  0.5384 + 2.8575i],2,1)); 
+  irf.tint('2021-11-21T00:00:00Z/2021-12-18T23:59:59Z'),...
+  repmat([0.6849 + 2.7147i  0.4785 + 2.9694i],2,1)); 
 
 
-PSPintersection = 0.710; %Intersection between 2 fits
+PSPintersection = 1.1; %Intersection between 2 fits
 checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
 
 if ~isempty(checkInterval)
@@ -389,11 +389,182 @@ Cal = Cal.combine(CalEntry);
 
 %26
 CalEntry = irf.ts_vec_xy(...
-  irf.tint('2021-12-27T00:00:00Z/2021-12-31T23:59:59Z'),...
-  repmat([0.5467  2.7777],2,1)); 
+  irf.tint('2021-12-19T00:00:00Z/2021-12-31T23:59:59Z'),...
+  repmat([0.5435  2.8046],2,1)); 
 Cal = Cal.combine(CalEntry);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%2022%%%%%%%%%%%%%%%%%%%%%%%%%%
+%27
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-01-01T00:00:00Z/2022-01-09T23:59:59Z'),...
+  repmat([0.8065 + 2.7517i  0.4831 + 2.8837i],2,1)); 
 
+
+PSPintersection = 0.4081; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%
+
+%28
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-01-10T00:00:00Z/2022-01-31T23:59:59Z'),...
+  repmat([0.6289  2.9140],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%29
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-02-01T00:00:00Z/2022-02-07T23:59:59Z'),...
+  repmat([0.7092  3.0180],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%30
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-02-08T00:00:00Z/2022-02-14T23:59:59Z'),...
+  repmat([0.5814  3.2496],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%31
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-02-15T00:00:00Z/2022-02-16T23:59:59Z'),...
+  repmat([0.6536 + 3.1604i  0.3484 + 3.4695i],2,1)); 
+
+
+PSPintersection = 1.3932; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%
+
+%32
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-02-17T00:00:00Z/2022-02-21T14:29:59Z'),...
+  repmat([0.4545  3.3593],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%33
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-02-21T14:30:00Z/2022-02-21T23:59:59Z'),...
+  repmat([0.8621  3.6587],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%34
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-02-22T00:00:00Z/2022-02-24T13:29:59Z'),...
+  repmat([0.6452  3.1224],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%35
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-02-24T13:30:00Z/2022-03-01T23:59:59Z'),...
+  repmat([0.4975 + 3.3311i 0.1812 + 3.8343i],2,1)); 
+
+
+PSPintersection = 1.5912; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%
+
+%36
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-02T00:00:00Z/2022-03-02T23:59:59Z'),...
+  repmat([0.8000  3.6187],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%37
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-03T00:00:00Z/2022-03-07T23:59:59Z'),...
+  repmat([0.6579  3.9701],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%38
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-08T00:00:00Z/2022-03-08T05:29:59Z'),...
+  repmat([0.3676  3.7905],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%39
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-08T05:30:00Z/2022-03-08T14:45:59Z'),...
+  repmat([0.5917 + 3.6481i  0.3344 + 3.8349i],2,1)); 
+
+
+PSPintersection =0.7302; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%
+
+%40
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-08T14:46:00Z/2022-03-10T21:59:59Z'),...
+  repmat([0.5682 + 3.9543i  0.0579 + 4.5401i],2,1)); 
+
+
+PSPintersection =1.1516; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%
+
+%41
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-10T22:00:00Z/2022-03-12T07:59:59Z'),...
+  repmat([0.4854  3.9150],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%42
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-12T08:00:00Z/2022-03-12T23:59:59Z'),...
+  repmat([0.5102  3.9640],2,1)); 
+Cal = Cal.combine(CalEntry);
+
+%43
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-03-13T00:00:00Z/2022-03-31T23:59:59Z'),...
+  repmat([0.4049  4.0706],2,1)); 
+Cal = Cal.combine(CalEntry);
 %% calibrate
 CalR = Cal.resample(PSP);
 NeScp = PSP; 
@@ -402,7 +573,7 @@ NeScp = PSP;
 NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
 
 
-timeOutsideInterval = irf_time('2021-12-31T23:59:59Z','utc>ttns');
+timeOutsideInterval = irf_time('2022-03-31T23:59:59Z','utc>ttns');
 NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
     
 
@@ -430,7 +601,7 @@ function [C] = TwofitCalibration(PSPint,y_eq,CalData)
         Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data),1) ones(length(CalRnan.data),1)]);
         
         
-        %Merge both fits and NaNs to keep the same lenght as the input
+        %Merge both fits and NaNs to keep the same length as the input
         %If statements added for robustness. An error will be send if 
         %combining empty objects.
         if ~isempty(C1) && ~isempty(C2)
