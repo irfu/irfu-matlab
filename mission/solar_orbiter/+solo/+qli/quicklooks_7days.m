@@ -90,7 +90,7 @@ if ~isempty(data.E)
     hold(h(7),'on');
     %irf_plot(h(7),data.E.z,'color',colors(3,:),'linewidth',lwidth)
 end
-irf_legend(h(7),{'','E_y'},[0.98 0.15],'Fontsize',legsize);
+irf_legend(h(7),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
 irf_zoom(h(7),'y');
 ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 
@@ -170,7 +170,16 @@ if ~isempty(data.Etnr)
     end
 end
 
+irf_plot_axis_align(h(1:9));
+irf_zoom(h(1:9),'x',Tint);
+irf_zoom(h(1),'y');
+irf_zoom(h(5:9),'y');
 
+h(2).YLabel.Position=[1.05,0.5,0];
+yyaxis(h(2),'left');
+h(2).YLabel.Units='normalized';
+h(2).YLabel.Position=h(3).YLabel.Position;
+h(9).XLabel.Visible = 'off';
 
 
 Au=149597871; %Astronomical unit.

@@ -159,7 +159,7 @@ end
 if ~isempty(data.Vpas)
     irf_plot(h(7),data.Vpas.x.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
 end
-irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',legsize);
+irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(7),'y');
 ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
@@ -168,7 +168,7 @@ if ~isempty(data.E)
     hold(h(8),'on');
     %irf_plot(h(8),data.E.z,'color',colors(3,:),'linewidth',lwidth)
 end
-irf_legend(h(8),{'','E_y'},[0.98 0.15],'Fontsize',legsize);
+irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
 irf_zoom(h(8),'y');
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 
@@ -234,6 +234,13 @@ if ~isempty(data.Etnr)
 end
 
 
+if isempty(data.Vrpw) && isempty(data.E) && isempty(data.Ne) && isempty(data.B) ...
+        && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
+        && isempty(data.Etnr)
+    nanPlot = irf.ts_scalar(Tint,ones(1,2)*NaN);
+    irf_plot(h(10),nanPlot);
+    grid(h(10),'off');
+end 
 irf_plot_axis_align(h(1:10));
 irf_zoom(h(1:10),'x',Tint);
 irf_zoom(h(1),'y');
