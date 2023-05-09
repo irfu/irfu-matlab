@@ -6,6 +6,7 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
 
 
+
 % Setup figure:
 lwidth=1.0;
 fsize=18;
@@ -21,6 +22,10 @@ Me=Units.me; %Electron mass [kg]
 epso = Units.eps0; %Permitivitty of free space [Fm^-1]
 mp=Units.mp; %proton mass [km]
 qe=Units.e; %elementary charge [C]
+
+%==============
+% Fill panel 1
+%==============
 if ~isempty(data.B)
     irf_plot(h(1),data.B.tlim(Tint),'linewidth',lwidth);
     hold(h(1),'on');
@@ -29,6 +34,11 @@ end
 irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',legsize);
 ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',fsize);
 
+
+
+%==============
+% Fill panel 2
+%==============
 %%
 hold(h(2),'on');
 if ~isempty(data.Ne)
@@ -40,7 +50,6 @@ end
 ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
 h(2).ColorOrder=colors;
 irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',legsize);
-
 
 yyaxis(h(2),'right');
 if ~isempty(data.B)
@@ -62,9 +71,10 @@ h(2).YColor=[1,0,0];
 
 
 
+%======================================
+% Fill panel 3 & 4: Spectra h(3), h(4)
+%======================================
 %%
-
-%Spectra h(3), h(4)
 if ~isempty(data.B)
    if  ~isempty(rmmissing(data.B.data))
     bb = data.B;
@@ -74,8 +84,10 @@ if ~isempty(data.B)
         fMag = 8; fMax = 3;
     end
     b0 = bb.filt(0, 0.01,fMag, 5);
+
+    % IMPORTANT NOTE: The call to irf_ebsp() seems very slow.
     ebsp = irf_ebsp([],bb,[],b0,[],[0.05 fMax],'fullB=dB', 'polarization', 'fac');
-    
+
     frequency = ebsp.f;
     time = ebsp.t;
     Bsum = ebsp.bb_xxyyzzss(:,:,4);
@@ -134,7 +146,10 @@ if ~isempty(data.B)
 end
 
 
-% Ion temperature
+
+%===============================
+% Fill panel 5: Ion temperature
+%===============================
 if ~isempty(data.Tpas)
     irf_plot(h(5),data.Tpas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth); 
 end
@@ -143,8 +158,9 @@ ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
 
 
 
-
-% y,z PAS velocities
+%==================================
+% Fill panel 6: y,z PAS velocities
+%==================================
 if ~isempty(data.Vpas)
     irf_plot(h(6),data.Vpas.y.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
     hold(h(6),'on');
@@ -155,7 +171,10 @@ irf_zoom(h(6),'y');
 ylabel(h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
 
-%Vrpw, Vpas velocities
+
+%=====================================
+% Fill panel 7: Vrpw, Vpas velocities
+%=====================================
 hold(h(7),'on');
 if ~isempty(data.Vrpw)
     irf_plot(h(7),-data.Vrpw,'o-','color',colors(1,:));
@@ -168,7 +187,10 @@ irf_zoom(h(7),'y');
 ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
 
-%Electric field
+
+%==============================
+% Fill panel 8: Electric field
+%==============================
 if ~isempty(data.E)
     irf_plot(h(8),data.E.y,'color',colors(2,:),'linewidth',lwidth)
     hold(h(8),'on');
@@ -179,7 +201,10 @@ irf_zoom(h(8),'y');
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 
 
-%Ion energy spectrum
+
+%===================================
+% Fill panel 9: Ion energy spectrum
+%===================================
 if ~isempty(data.ieflux)
     myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
     iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
@@ -199,12 +224,13 @@ if ~isempty(data.ieflux)
     set(h(9), 'YScale', 'log');
     colormap(h(9),jet)
     ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
+end
 
-    
 
-end 
 
-%E-field spectrum (TNR)
+%=======================================
+% Fill panel 10: E-field spectrum (TNR)
+%=======================================
 if ~isempty(data.Etnr)
     try
         [TNR] = solo.read_TNR(Tint);
@@ -239,7 +265,6 @@ if ~isempty(data.Etnr)
     end
 end
 
-
 if isempty(data.Vrpw) && isempty(data.E) && isempty(data.Ne) && isempty(data.B) ...
         && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
         && isempty(data.Etnr)
@@ -248,6 +273,12 @@ if isempty(data.Vrpw) && isempty(data.E) && isempty(data.Ne) && isempty(data.B) 
     grid(h(10),'off');
     ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
 end 
+
+
+
+%======================
+% Other, miscellaneous
+%======================
 irf_plot_axis_align(h(1:10));
 irf_zoom(h(1:10),'x',Tint);
 irf_zoom(h(1),'y');
@@ -385,7 +416,10 @@ h(2).YTick=oldticks2;
 h(5).YScale='lin';
 h(5).YLim=oldlims5;
 h(5).YTick=oldticks5;
-% Print 6h figures
+%===========================
+% Iterate over 6h intervals
+%===========================
+% Print 6h figures.
 for i6h = 1:4
     
     %Zoom in to 6h interval and save plot.
@@ -492,7 +526,10 @@ for i6h = 1:4
     path2=fullfile(paths.path_6h,[filestr1,'_',filestr2,'.png']);
     print('-dpng',path2);
     
-    %Print 2h figures
+    %==================================================
+    % Iterate over 2h intervals within one 6h interval
+    %==================================================
+    % Print 2h figures
     for i2h=1:3
         %Define 2h interval and zoom in
         Tint_2h = Tint_6h(1)+[60*60*2*(i2h-1),60*60*2*(i2h)];
@@ -536,7 +573,7 @@ for i6h = 1:4
                 irf_zoom(h(6),'y',[minV-10, maxV+10]);
             end
         end
-    irf_zoom(h(7:8),'y');
+        irf_zoom(h(7:8),'y');
         
         
         %Remove overlapping Tics
@@ -603,6 +640,5 @@ for i6h = 1:4
     
 end
 close(fig);
-
 
 %%
