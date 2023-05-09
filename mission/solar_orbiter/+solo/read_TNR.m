@@ -3,6 +3,11 @@ function out =  read_TNR(tint)
 %
 %     @author: Louis Richard
 %     Updated by: Jordi Boldu
+%
+%     NOTE: Relies on hardcoded file system path for finding CDFs and then
+%     reading them itself. Does not use irfu-matlab's solo.db_get_ts() for
+%     obtaining CDF data.
+%
 %     Parameters
 %     ----------
 %     path : str
