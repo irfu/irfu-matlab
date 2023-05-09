@@ -5,6 +5,8 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 % Tint should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
 
+tBeginSec = tic();
+
 
 
 % Setup figure:
@@ -33,6 +35,8 @@ if ~isempty(data.B)
 end
 irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',legsize);
 ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',fsize);
+
+tBeginSec = log_time('End panel 1', tBeginSec);
 
 
 
@@ -69,6 +73,8 @@ end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
 h(2).YColor=[1,0,0];
 
+tBeginSec = log_time('End panel 2', tBeginSec);
+
 
 
 %======================================
@@ -86,7 +92,9 @@ if ~isempty(data.B)
     b0 = bb.filt(0, 0.01,fMag, 5);
 
     % IMPORTANT NOTE: The call to irf_ebsp() seems very slow.
+    tBeginSec = log_time('irf_ebsp(): Begin call', tBeginSec);
     ebsp = irf_ebsp([],bb,[],b0,[],[0.05 fMax],'fullB=dB', 'polarization', 'fac');
+    tBeginSec = log_time('irf_ebsp(): End call', tBeginSec);
 
     frequency = ebsp.f;
     time = ebsp.t;
@@ -145,6 +153,8 @@ if ~isempty(data.B)
    end
 end
 
+tBeginSec = log_time('End panel 3 & 4', tBeginSec);
+
 
 
 %===============================
@@ -155,6 +165,8 @@ if ~isempty(data.Tpas)
 end
 irf_zoom(h(5),'y');
 ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
+
+tBeginSec = log_time('End panel 5', tBeginSec);
 
 
 
@@ -169,6 +181,8 @@ end
 irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(6),'y');
 ylabel(h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
+
+tBeginSec = log_time('End panel 6', tBeginSec);
 
 
 
@@ -186,6 +200,8 @@ irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(7),'y');
 ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
+tBeginSec = log_time('End panel 7', tBeginSec);
+
 
 
 %==============================
@@ -199,6 +215,8 @@ end
 irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
 irf_zoom(h(8),'y');
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
+
+tBeginSec = log_time('End panel 8', tBeginSec);
 
 
 
@@ -225,6 +243,8 @@ if ~isempty(data.ieflux)
     colormap(h(9),jet)
     ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
 end
+
+tBeginSec = log_time('End panel 9', tBeginSec);
 
 
 
@@ -273,6 +293,8 @@ if isempty(data.Vrpw) && isempty(data.E) && isempty(data.Ne) && isempty(data.B) 
     grid(h(10),'off');
     ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
 end 
+
+tBeginSec = log_time('End panel 10', tBeginSec);
 
 
 
@@ -411,15 +433,17 @@ h(2).YScale='lin';
 %h(2).YLim=oldlims2;
 h(2).YTick=oldticks2;
 
-
-
 h(5).YScale='lin';
 h(5).YLim=oldlims5;
 h(5).YTick=oldticks5;
+
+
+
 %===========================
 % Iterate over 6h intervals
 %===========================
 % Print 6h figures.
+tBeginSec = log_time('Begin iterating over 6 h intervals', tBeginSec);
 for i6h = 1:4
     
     %Zoom in to 6h interval and save plot.
@@ -529,6 +553,7 @@ for i6h = 1:4
     %==================================================
     % Iterate over 2h intervals within one 6h interval
     %==================================================
+    tBeginSec = log_time('Begin iterating over 2 h intervals', tBeginSec);
     % Print 2h figures
     for i2h=1:3
         %Define 2h interval and zoom in
@@ -641,4 +666,19 @@ for i6h = 1:4
 end
 close(fig);
 
-%%
+
+
+tBeginSec = log_time('End of quicklooks_24_6_2_h.m', tBeginSec);
+
+
+end
+
+
+
+function tBeginSec = log_time(locationStr, tBeginSec)
+    % Simple function for logging number of seconds from previous call.
+    % For debugging speed.
+    tSec = toc(tBeginSec);
+    fprintf(1, '%s: %.1f [s]\n', locationStr, tSec)
+    tBeginSec = tic();
+end
