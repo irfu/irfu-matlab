@@ -5,6 +5,18 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 % Tint should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
 
+% PROPOSAL: Convert two similar sections "Remove overlapping Tics" into function
+%           files. Add tests.
+%   NOTE: They are identical (diff -b).
+
+% BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
+%   /EJ 2023-05-10
+%   Ex: 20220329T04_20220329T06.png
+% BUG?: Panel 6: V_T, V_N: Y limits seem bad (recently gotten worse from earlier implementation).
+%   /EJ 2023-05-10
+%   Ex: 2022-03-23T10-T12. -- Seems wrong timestamp.
+%   Mistakenly looked at wrong plots?
+
 tBeginSec = tic();
 
 
@@ -77,9 +89,9 @@ tBeginSec = log_time('End panel 2', tBeginSec);
 
 
 
-%======================================
-% Fill panel 3 & 4: Spectra h(3), h(4)
-%======================================
+%===========================
+% Fill panel 3 & 4: Spectra
+%===========================
 %%
 if ~isempty(data.B)
    if  ~isempty(rmmissing(data.B.data))
@@ -423,8 +435,18 @@ filesmth = filesmth.utc;
 filestr2 = filesmth(1:13);
 filestr2([5,8])=[];
 path1=fullfile(paths.path_24h,[filestr1,'_',filestr2,'.png']);
+%=====================
+% Save figure to file
+%=====================
 print('-dpng',path1);
 
+
+
+%=====================================================
+% Make "global" modifications, AFTER saving 24 h plot
+%=====================================================
+% Change panel 2+5 y scales to "lin" (were previously "log").
+% Keep old ticks!
 h(2).YScale='lin';
 h(2).YTick=oldticks2_r;
 %h(2).YLim=oldlims2_r;
@@ -446,17 +468,19 @@ h(5).YTick=oldticks5;
 tBeginSec = log_time('Begin iterating over 6 h intervals', tBeginSec);
 for i6h = 1:4
     
-    %Zoom in to 6h interval and save plot.
+    % Zoom in to 6h interval and save plot.
     Tint_6h = Tint(1)+[60*60*6*(i6h-1),60*60*6*(i6h)];
     irf_zoom(h(1:10),'x',Tint_6h);
     irf_zoom(h(1),'y');
-    %Zoom on N/|B| plot..
+    % Zoom on N/|B| plot..
     Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(Tint_6h)) && ~all(isnan(data.Ne.tlim(Tint_6h).data));
     Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_6h));
     if Neflag && Npasflag
         yyaxis(h(2),'left');
-        h(2).YLim=[min(floor([min(data.Npas.tlim(Tint_6h).data),min(data.Ne.tlim(Tint_6h).data)])),...
-            max(ceil([max(data.Npas.tlim(Tint_6h).data),max(data.Ne.tlim(Tint_6h).data)]))];
+        h(2).YLim=[...
+            min(floor([min(data.Npas.tlim(Tint_6h).data),min(data.Ne.tlim(Tint_6h).data)])),...
+            max(ceil( [max(data.Npas.tlim(Tint_6h).data),max(data.Ne.tlim(Tint_6h).data)]))...
+        ];
     elseif Neflag
         yyaxis(h(2),'left');
         h(2).YLim=[floor(min(data.Ne.tlim(Tint_6h).data)),ceil(max(data.Ne.tlim(Tint_6h).data))];
@@ -528,7 +552,7 @@ for i6h = 1:4
         cax.YLim=[newmin,newmax];
     end
 
-    %Update text
+    % Update text
     if ~isempty(data.solopos.tlim(Tint_6h))
         teststr = ['SolO: ',[sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/Au),'Au, '],...
             [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
@@ -548,6 +572,9 @@ for i6h = 1:4
     filestr2 = filesmth(1:13);
     filestr2([5,8])=[];
     path2=fullfile(paths.path_6h,[filestr1,'_',filestr2,'.png']);
+    %=====================
+    % Save figure to file
+    %=====================
     print('-dpng',path2);
     
     %==================================================
@@ -565,8 +592,10 @@ for i6h = 1:4
         Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_2h));
         if Neflag && Npasflag
             yyaxis(h(2),'left');
-            h(2).YLim=[min(floor([min(data.Npas.tlim(Tint_2h).data),min(data.Ne.tlim(Tint_2h).data)])),...
-                max(ceil([max(data.Npas.tlim(Tint_2h).data),max(data.Ne.tlim(Tint_2h).data)]))];
+            h(2).YLim=[...
+                min(floor([min(data.Npas.tlim(Tint_2h).data),min(data.Ne.tlim(Tint_2h).data)])),...
+                max(ceil( [max(data.Npas.tlim(Tint_2h).data),max(data.Ne.tlim(Tint_2h).data)]))...
+            ];
         elseif Neflag
             yyaxis(h(2),'left');
             h(2).YLim=[floor(min(data.Ne.tlim(Tint_2h).data)),ceil(max(data.Ne.tlim(Tint_2h).data))];
@@ -640,7 +669,7 @@ for i6h = 1:4
         end
         
         
-        %Update text
+        % Update text
         if ~isempty(data.solopos.tlim(Tint_2h))
             teststr = ['SolO: ',[sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/Au),'Au, '],...
                 [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
@@ -660,6 +689,9 @@ for i6h = 1:4
         filestr2 = filesmth(1:13);
         filestr2([5,8])=[];
         path2=fullfile(paths.path_2h,[filestr1,'_',filestr2,'.png']);
+        %=====================
+        % Save figure to file
+        %=====================
         print('-dpng',path2);
     end
     
@@ -670,7 +702,6 @@ close(fig);
 
 tBeginSec = log_time('End of quicklooks_24_6_2_h.m', tBeginSec);
 
-
 end
 
 
@@ -678,6 +709,10 @@ end
 function tBeginSec = log_time(locationStr, tBeginSec)
     % Simple function for logging number of seconds from previous call.
     % For debugging speed.
+    
+    % PROPOSAL: Convert to function file, that is used by both weekly and
+    %           nonweekly plots.
+    
     tSec = toc(tBeginSec);
     fprintf(1, '%s: %.1f [s]\n', locationStr, tSec)
     tBeginSec = tic();
