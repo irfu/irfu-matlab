@@ -136,10 +136,12 @@ end
 
 % Ion temperature
 if ~isempty(data.Tpas)
-    irf_plot(h(5),data.Tpas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(5),data.Tpas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth); 
 end
-ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
 irf_zoom(h(5),'y');
+ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
+
+
 
 
 % y,z PAS velocities
@@ -152,6 +154,8 @@ irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(6),'y');
 ylabel(h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
+
+%Vrpw, Vpas velocities
 hold(h(7),'on');
 if ~isempty(data.Vrpw)
     irf_plot(h(7),-data.Vrpw,'o-','color',colors(1,:));
@@ -163,6 +167,8 @@ irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(7),'y');
 ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
+
+%Electric field
 if ~isempty(data.E)
     irf_plot(h(8),data.E.y,'color',colors(2,:),'linewidth',lwidth)
     hold(h(8),'on');
@@ -240,6 +246,7 @@ if isempty(data.Vrpw) && isempty(data.E) && isempty(data.Ne) && isempty(data.B) 
     nanPlot = irf.ts_scalar(Tint,ones(1,2)*NaN);
     irf_plot(h(10),nanPlot);
     grid(h(10),'off');
+    ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
 end 
 irf_plot_axis_align(h(1:10));
 irf_zoom(h(1:10),'x',Tint);
@@ -403,7 +410,27 @@ for i6h = 1:4
         yyaxis(h(2),'right');
         h(2).YLim=[floor(min(data.B.abs.tlim(Tint_6h).data)),ceil(max(data.B.abs.tlim(Tint_6h).data))];
     end
-    irf_zoom(h(5:8),'y');
+    if ~isempty(data.Tpas)
+        minTi = min(data.Tpas.tlim(Tint_6h).abs.data);
+        maxTi = max(data.Tpas.tlim(Tint_6h).abs.data);
+        if ~isnan(minTi) && ~isnan(maxTi)
+            % Only zoom if min & max are not NaN (==> Avoid crash).
+            irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
+        end
+    end
+    if ~isempty(data.Vpas)
+        minVy = min(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
+        minVz = min(rmmissing(data.Vpas.z.tlim(Tint_6h).data));
+        maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
+        maxVz = max(rmmissing(data.Vpas.z.tlim(Tint_6h).data));
+        maxV = max(maxVy,maxVz);
+        minV = min(minVy,minVz);
+        if ~isempty(minV) && ~isempty(maxV)
+            % Only zoom if min & max are not NaN (==> Avoid crash).
+            irf_zoom(h(6),'y',[minV-10, maxV+10]);
+        end
+    end
+    irf_zoom(h(7:8),'y');
     
     %Remove overlapping ticks
     for iax=1:10
@@ -489,8 +516,29 @@ for i6h = 1:4
             yyaxis(h(2),'right');
             h(2).YLim=[floor(min(data.B.abs.tlim(Tint_2h).data)),ceil(max(data.B.abs.tlim(Tint_2h).data))];
         end
+        if ~isempty(data.Tpas)
+            minTi = min(data.Tpas.tlim(Tint_2h).abs.data);
+            maxTi = max(data.Tpas.tlim(Tint_2h).abs.data);
+            if ~isnan(minTi) && ~isnan(maxTi)
+                % Only zoom if min & max are not NaN (==> Avoid crash).
+                irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
+            end
+        end
+        if ~isempty(data.Vpas)
+            minVy = min(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
+            minVz = min(rmmissing(data.Vpas.z.tlim(Tint_2h).data));
+            maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
+            maxVz = max(rmmissing(data.Vpas.z.tlim(Tint_2h).data));
+            maxV = max(maxVy,maxVz);
+            minV = min(minVy,minVz);
+            if ~isempty(minV) && ~isempty(maxV)
+                % Only zoom if min & max are not NaN (==> Avoid crash).
+                irf_zoom(h(6),'y',[minV-10, maxV+10]);
+            end
+        end
+    irf_zoom(h(7:8),'y');
         
-        irf_zoom(h(5:10),'y');
+        
         %Remove overlapping Tics
         for iax=1:10
             cax=h(iax);

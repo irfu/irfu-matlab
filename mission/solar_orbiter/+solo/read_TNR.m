@@ -48,12 +48,8 @@ if numel(dd)==1;dd=['0' dd];end
 
 sensor = 5;
 sensor2 = 4;
-path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
-    
-if ~isfile(path)
-    out = [];
-    return
-end
+path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];    
+
     data_l2 = rcdf(path, tint);
 
     n_freqs = size(data_l2.tnr_band_freq.data, 2) * 4;
