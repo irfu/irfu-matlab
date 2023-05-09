@@ -410,7 +410,7 @@ for i6h = 1:4
         yyaxis(h(2),'right');
         h(2).YLim=[floor(min(data.B.abs.tlim(Tint_6h).data)),ceil(max(data.B.abs.tlim(Tint_6h).data))];
     end
-    if ~isempty(data.Tpas)
+    if ~isempty(data.Tpas.tlim(Tint_6h))
         minTi = min(data.Tpas.tlim(Tint_6h).abs.data);
         maxTi = max(data.Tpas.tlim(Tint_6h).abs.data);
         if ~isnan(minTi) && ~isnan(maxTi)
@@ -418,7 +418,7 @@ for i6h = 1:4
             irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
         end
     end
-    if ~isempty(data.Vpas)
+    if ~isempty(data.Vpas.tlim(Tint_6h))
         minVy = min(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
         minVz = min(rmmissing(data.Vpas.z.tlim(Tint_6h).data));
         maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
@@ -516,7 +516,7 @@ for i6h = 1:4
             yyaxis(h(2),'right');
             h(2).YLim=[floor(min(data.B.abs.tlim(Tint_2h).data)),ceil(max(data.B.abs.tlim(Tint_2h).data))];
         end
-        if ~isempty(data.Tpas)
+        if ~isempty(data.Tpas.tlim(Tint_2h))
             minTi = min(data.Tpas.tlim(Tint_2h).abs.data);
             maxTi = max(data.Tpas.tlim(Tint_2h).abs.data);
             if ~isnan(minTi) && ~isnan(maxTi)
@@ -524,7 +524,7 @@ for i6h = 1:4
                 irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
             end
         end
-        if ~isempty(data.Vpas)
+        if ~isempty(data.Vpas.tlim(Tint_2h))
             minVy = min(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
             minVz = min(rmmissing(data.Vpas.z.tlim(Tint_2h).data));
             maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
