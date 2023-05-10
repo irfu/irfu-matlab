@@ -447,13 +447,17 @@ print('-dpng',path1);
 %=====================================================
 % Change panel 2+5 y scales to "lin" (were previously "log").
 % Keep old ticks!
+yyaxis(h(2),'right');
 h(2).YScale='lin';
-h(2).YTick=oldticks2_r;
+%h(2).YTick=oldticks2_r;
 %h(2).YLim=oldlims2_r;
+h(2).YTickMode = 'auto';
+
 yyaxis(h(2),'left');
 h(2).YScale='lin';
 %h(2).YLim=oldlims2;
-h(2).YTick=oldticks2;
+%h(2).YTick=oldticks2;
+h(2).YTickMode = 'auto';
 
 h(5).YScale='lin';
 h(5).YLim=oldlims5;
