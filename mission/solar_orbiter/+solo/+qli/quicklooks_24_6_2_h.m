@@ -321,7 +321,11 @@ irf_zoom(h(5:10),'y');
 h(2).YLabel.Position=[1.05,0.5,0];
 yyaxis(h(2),'left');
 h(2).YLabel.Units='normalized';
-h(2).YLabel.Position=h(3).YLabel.Position;
+% NOTE: Not using h(3), h(4) since they do not have ylabels if relevant data is
+% missing. h(1) ylabel always has a position. Using h(3) (old implementation) lead to
+% left panel 2 ylabel having the wrong position (too far left) when h(3) did not
+% have any label).
+h(2).YLabel.Position=h(1).YLabel.Position;
 % Add spacecraft position as text.
 Au=149597871; %km
 if ~isempty(data.solopos.tlim(Tint))
