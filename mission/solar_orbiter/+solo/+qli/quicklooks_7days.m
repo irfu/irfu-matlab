@@ -22,6 +22,9 @@ mp=Units.mp; %proton mass [km]
 qe=Units.e; %elementary charge [C]
 
 
+%===================================
+% Fill panel 1: B vector components
+%===================================
 if ~isempty(data.B)
     irf_plot(h(1),data.B.tlim(Tint),'linewidth',lwidth);
     hold(h(1),'on');
@@ -31,6 +34,11 @@ irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',legsize);
 ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',fsize);
 irf_zoom(h(1),'y');
 
+
+
+%======================
+% Fill panel 2: abs(B)
+%======================
 if ~isempty(data.B)
     fci = qe*data.B.abs*10^-9/mp/(2*pi);
     irf_plot(h(2),data.B.abs.tlim(Tint),'linewidth',lwidth);
@@ -40,7 +48,11 @@ h(2).YScale='log';
 h(2).YTick=[10,100];
 %h(2).YLim=[0.1,200];
 
-% Densities
+
+
+%=========================
+% Fill panel 3: Densities
+%=========================
 hold(h(3),'on');
 if ~isempty(data.Ne)
     irf_plot(h(3),data.Ne.tlim(Tint),'color',colors(1,:),'linewidth',lwidth);
@@ -55,6 +67,11 @@ h(3).YScale='log';
 h(3).YTick=[10,100];
 %h(3).YLim=[0.8,200];
 
+
+
+%===============================
+% Fill panel 4: Ion temperature
+%===============================
 if ~isempty(data.Tpas)
     irf_plot(h(4),data.Tpas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
 end
@@ -64,6 +81,10 @@ h(4).YTick=[1,10,100];
 h(4).YLim=[0.5,300];
 
 
+
+%==============
+% Fill panel 5
+%==============
 % y,z PAS velocities
 if ~isempty(data.Vpas)
     irf_plot(h(5),data.Vpas.y.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
@@ -74,6 +95,11 @@ irf_legend(h(5),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(5),'y');
 ylabel(h(5),{'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
+
+
+%==============
+% Fill panel 6
+%==============
 hold(h(6),'on');
 if ~isempty(data.Vrpw)
     irf_plot(h(6),-data.Vrpw,'o','color',colors(1,:));
@@ -85,6 +111,11 @@ irf_legend(h(6),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',legsize);
 %h(6).YLim=[150,950];
 ylabel(h(6),{'v_{R}';'(km/s)'},'interpreter','tex','fontsize',fsize);
 
+
+
+%==============
+% Fill panel 7
+%==============
 if ~isempty(data.E)
     irf_plot(h(7),data.E.y,'color',colors(2,:),'linewidth',lwidth)
     hold(h(7),'on');
@@ -94,7 +125,11 @@ irf_legend(h(7),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
 irf_zoom(h(7),'y');
 ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 
-%Ion energy spectrum
+
+
+%===================================
+% Fill panel 8: Ion energy spectrum
+%===================================
 if ~isempty(data.ieflux)
     myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
     iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
@@ -103,7 +138,6 @@ if ~isempty(data.ieflux)
         iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
         iEnergy = iEnergy{1};
         iDEF.p = data.ieflux.data;
-          
     end
     iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
     iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
@@ -120,12 +154,15 @@ if ~isempty(data.ieflux)
     set(h(8), 'YScale', 'log');
     colormap(h(8),jet)
     ylabel(h(8),'[eV]')
+end
 
-end 
 
-%E-field spectrum (TNR)
+
+%======================================
+% Fill panel 9: E-field spectrum (TNR)
+%======================================
 if ~isempty(data.Etnr)
-    %Electron plasma frequency
+    % Electron plasma frequency
     myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
     tp =[];pp=[];
     warning('off', 'fuzzy:general:warnDeprecation_Combine');
@@ -166,13 +203,18 @@ if ~isempty(data.Etnr)
         text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
         %set(h(9), 'YScale', 'log');
         colormap(h(9),jet)   
-       % ylabel(h(9),'f [kHz]')
+        %ylabel(h(9),'f [kHz]')
         set(h(9),'ColorScale','log')
         %caxis([.01 10]*10^-12)
         yticks(h(9),[10^1 10^2]);
     end
 end
 
+
+
+%======================
+% Other, miscellaneous
+%======================
 irf_plot_axis_align(h(1:9));
 irf_zoom(h(1:9),'x',Tint);
 irf_zoom(h(1),'y');
@@ -192,8 +234,6 @@ if ~isempty(data.solopos.tlim(Tint))
         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'\circ, '],...
         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'\circ']];
     text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-
-
 else
     teststr=char();
     text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);

@@ -12,6 +12,7 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
 %   /EJ 2023-05-10
 %   Ex: 20220329T04_20220329T06.png
+%   EJ 2023-05-11: Should be fixed.
 % BUG?: Panel 6: V_T, V_N: Y limits seem bad (recently gotten worse from earlier implementation).
 %   /EJ 2023-05-10
 %   Ex: 2022-03-23T10-T12. -- Seems wrong timestamp.
@@ -93,7 +94,7 @@ tBeginSec = log_time('End panel 2', tBeginSec);
 % Fill panel 3 & 4: Spectra
 %===========================
 %%
-if ~isempty(data.B)
+if ~isempty(data.B)   % && false
    if  ~isempty(rmmissing(data.B.data))
     bb = data.B;
     if median(diff((bb.time.epochUnix))) < 0.1250*0.95
@@ -488,6 +489,7 @@ h(5).YTick=oldticks5;
 % Print 6h figures.
 tBeginSec = log_time('Begin iterating over 6 h intervals', tBeginSec);
 for i6h = 1:4
+%for i6h = 2:2
     
     % Zoom in to 6h interval and save plot.
     Tint_6h = Tint(1)+[60*60*6*(i6h-1),60*60*6*(i6h)];
@@ -610,8 +612,9 @@ for i6h = 1:4
     %==================================================
     tBeginSec = log_time('Begin iterating over 2 h intervals', tBeginSec);
     % Print 2h figures
-    for i2h=1:3
-        %Define 2h interval and zoom in
+    for i2h = 1:3
+    %for i2h = 1:1
+        % Define 2h interval and zoom in
         Tint_2h = Tint_6h(1)+[60*60*2*(i2h-1),60*60*2*(i2h)];
         irf_zoom(h(1:10),'x',Tint_2h);
         irf_zoom(h(1),'y');
