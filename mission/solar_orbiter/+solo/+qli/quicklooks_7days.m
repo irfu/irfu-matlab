@@ -348,7 +348,11 @@ filesmth = filesmth.utc;
 filestr2 = filesmth(1:13);
 filestr2([5,8])=[];
 path1=fullfile(paths.path_1w,[filestr1,'_',filestr2,'.png']);
+%=====================
+% Save figure to file
+%=====================
 print('-dpng',path1);
+% TODO-NI: Why are there any commands (except close()) after this?
 
 % h(2).YScale='lin';
 % h(2).YTick=oldticks2_r;

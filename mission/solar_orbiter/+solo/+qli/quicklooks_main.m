@@ -9,6 +9,8 @@
 %       lookup.
 % NOTE: Uses SPICE implicitly, and therefore relies on some path convention. Not
 %       sure which, but presumably it does at least find /data/solo/SPICE/.
+% NOTE: Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
+%       path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
 % NOTE: Creates subdirectories to the output directory if not pre-existing.
 % NOTE: 7-day plots will only cover that largest sub-time interval that is
 %       composed of full 7-day periods. Note: 7-day periods begin with a
@@ -92,6 +94,30 @@
 %   Ex: derive_TimeIntervalWeeks()
 %       make_time_array()
 %       round_to_week()
+%
+% quicklooks_24_6_2_h.m(), quicklooks_7day()
+% ==========================================
+% PROBLEM: Lots of cases of, and checks for data that may or may not be missing.
+% PROBLEM: Missing data can be represented as [] (0x0), rather than e.g. Nx0.
+%   Stems from solo.db_get_ts() (?) not finding any data for selected time
+%   interval. Can not know the dimensions of missing data if can not find any
+%   CDF at all.
+% PROPOSAL: Function for normalizing data returned from solo.db_get_ts() to
+%           zero-length TSeries.
+%   CON: Can not do since does not know non-time dimensions.
+% PROPOSAL: Iterations over 6h an 2h seem to be identical. Wrap in function(s).
+%
+%
+% Examples of missing data
+% ========================
+% POLICY: Incomplete list of examples of missing data that could be useful for
+%         testing(?).
+% POLICY: Not necessarily the entire data gaps. Only segments that trigger
+%         special handling or errors.
+% NOTE: SolO data gaps may be filled laters.
+% --
+% 2022-03-12T07:22:03.090373000Z -- 2022-03-13T00
+%   Missing data.Tpas
 
 
 %============
