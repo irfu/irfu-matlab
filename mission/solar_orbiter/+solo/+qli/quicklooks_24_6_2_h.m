@@ -139,7 +139,6 @@ if ~isempty(data.B)
     hold(h(3),'on');
     irf_plot(h(3),fci,'k','linewidth',lwidth);
     text(h(3),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
-    ylabel(h(3),{'f';'(Hz)'},'fontsize',fsize);
     colormap(h(3),'jet');
     
     
@@ -154,7 +153,6 @@ if ~isempty(data.B)
     caxis(h(4),[-1 1])
     hold(h(4),'on');
     irf_plot(h(4),fci,'k','linewidth',lwidth);
-    ylabel(h(4),{'f';'(Hz)'},'fontsize',fsize);
     text(h(4),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
     
     crr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
@@ -164,7 +162,8 @@ if ~isempty(data.B)
     colormap(h(4),bgrcmap);
    end
 end
-
+ylabel(h(3),{'f';'(Hz)'},'fontsize',fsize);
+ylabel(h(4),{'f';'(Hz)'},'fontsize',fsize);
 tBeginSec = log_time('End panel 3 & 4', tBeginSec);
 
 
@@ -223,9 +222,13 @@ if ~isempty(data.E)
     irf_plot(h(8),data.E.y,'color',colors(2,:),'linewidth',lwidth)
     hold(h(8),'on');
     %irf_plot(h(8),data.E.z,'color',colors(3,:),'linewidth',lwidth)
+    minEy = min(rmmissing(data.E.y.data));
+    maxEy = max(rmmissing(data.E.y.data));
+        if ~isempty(minEy) && ~isempty(maxEy)
+        irf_zoom(h(8),'y',[minEy-5 maxEy+5]);
+        end
 end
 irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
-irf_zoom(h(8),'y');
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
 
 tBeginSec = log_time('End panel 8', tBeginSec);
@@ -251,11 +254,17 @@ if ~isempty(data.ieflux)
     % set(h(1),'ytick',[1e1 1e2 1e3]);
     %caxis(h(9),[-1 1])
     hold(h(9),'on');
-    set(h(9), 'YScale', 'log');
-    colormap(h(9),jet)
-    ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
+    h9_clims = h(9).CLim; 
+    % Fix color axis
+    h9_medp = mean(iDEF.p);
+    h9_medp = min(h9_medp(h9_medp>0));
+    if h9_medp > 0 && h9_medp > h9_clims(1) && log10(h9_medp)+2<(max(max(log10(iDEF.p))))
+        caxis(h(9),[log10(h9_medp)+2 (max(max(log10(iDEF.p))))])
+    end
 end
-
+set(h(9), 'YScale', 'log');
+colormap(h(9),jet)
+ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
 tBeginSec = log_time('End panel 9', tBeginSec);
 
 
@@ -296,6 +305,9 @@ if ~isempty(data.Etnr)
         end
     end
 end
+ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize); 
+yticks(h(10),[10^1 10^2]);
+irf_zoom(h(10),'y',[10^1 10^2])
 
 if isempty(data.Vrpw) && isempty(data.E) && isempty(data.Ne) && isempty(data.B) ...
         && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
@@ -316,7 +328,7 @@ tBeginSec = log_time('End panel 10', tBeginSec);
 irf_plot_axis_align(h(1:10));
 irf_zoom(h(1:10),'x',Tint);
 irf_zoom(h(1),'y');
-irf_zoom(h(5:10),'y');
+%irf_zoom(h(5:10),'y');
 
 h(2).YLabel.Position=[1.05,0.5,0];
 yyaxis(h(2),'left');
@@ -375,8 +387,9 @@ for iax=1:10
     minlim = cax.YLim(1);
     maxlim = cax.YLim(2);
     
-    if maxtick>0
-        if maxlim<1.1*maxtick
+    
+    if maxtick >= 0 
+        if maxlim<(1.1*maxtick)
             newmax = 1.1*maxtick;
         else
             newmax = maxlim;
@@ -386,7 +399,7 @@ for iax=1:10
             newmax = 0.9*maxtick;
         else
             newmax = maxlim;
-        end       
+        end 
     end
     
     if mintick>0  
@@ -500,7 +513,7 @@ for i6h = 1:4
         yyaxis(h(2),'right');
         h(2).YLim=[floor(min(data.B.abs.tlim(Tint_6h).data)),ceil(max(data.B.abs.tlim(Tint_6h).data))];
     end
-    if ~isempty(data.Tpas.tlim(Tint_6h))
+    if ~isempty(data.Tpas)
         minTi = min(data.Tpas.tlim(Tint_6h).abs.data);
         maxTi = max(data.Tpas.tlim(Tint_6h).abs.data);
         if ~isnan(minTi) && ~isnan(maxTi)
@@ -508,7 +521,7 @@ for i6h = 1:4
             irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
         end
     end
-    if ~isempty(data.Vpas.tlim(Tint_6h))
+    if ~isempty(data.Vpas)
         minVy = min(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
         minVz = min(rmmissing(data.Vpas.z.tlim(Tint_6h).data));
         maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
@@ -520,7 +533,14 @@ for i6h = 1:4
             irf_zoom(h(6),'y',[minV-10, maxV+10]);
         end
     end
-    irf_zoom(h(7:8),'y');
+    if ~isempty(data.E)
+        minEy_6h = min(rmmissing(data.E.y.tlim(Tint_6h).data));
+        maxEy_6h = max(rmmissing(data.E.y.tlim(Tint_6h).data));
+        if ~isempty(minEy_6h) && ~isempty(maxEy_6h)
+            irf_zoom(h(8),'y',[minEy_6h-5 maxEy_6h+5]);
+        end
+    end
+    irf_zoom(h(7),'y');
     
     %Remove overlapping ticks
     for iax=1:10
@@ -530,7 +550,7 @@ for i6h = 1:4
         minlim = cax.YLim(1);
         maxlim = cax.YLim(2);
         
-        if maxtick>0
+        if maxtick>=0
             if maxlim<1.1*maxtick
                 newmax = 1.1*maxtick;
             else
@@ -615,15 +635,15 @@ for i6h = 1:4
             yyaxis(h(2),'right');
             h(2).YLim=[floor(min(data.B.abs.tlim(Tint_2h).data)),ceil(max(data.B.abs.tlim(Tint_2h).data))];
         end
-        if ~isempty(data.Tpas.tlim(Tint_2h))
-            minTi = min(data.Tpas.tlim(Tint_2h).abs.data);
-            maxTi = max(data.Tpas.tlim(Tint_2h).abs.data);
-            if ~isnan(minTi) && ~isnan(maxTi)
+        if ~isempty(data.Tpas)
+            minTi = min(rmmissing(data.Tpas.tlim(Tint_2h).abs.data));
+            maxTi = max(rmmissing(data.Tpas.tlim(Tint_2h).abs.data));
+            if ~isempty(minTi) && ~isempty(maxTi)
                 % Only zoom if min & max are not NaN (==> Avoid crash).
                 irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
             end
         end
-        if ~isempty(data.Vpas.tlim(Tint_2h))
+        if ~isempty(data.Vpas)
             minVy = min(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
             minVz = min(rmmissing(data.Vpas.z.tlim(Tint_2h).data));
             maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
@@ -635,7 +655,14 @@ for i6h = 1:4
                 irf_zoom(h(6),'y',[minV-10, maxV+10]);
             end
         end
-        irf_zoom(h(7:8),'y');
+        if ~isempty(data.E)
+            minEy_2h = min(rmmissing(data.E.y.tlim(Tint_2h).data));
+            maxEy_2h = max(rmmissing(data.E.y.tlim(Tint_2h).data));
+            if ~isempty(minEy_2h) && ~isempty(maxEy_2h)
+            irf_zoom(h(8),'y',[minEy_2h-5 maxEy_2h+5]);
+            end
+        end
+        irf_zoom(h(7),'y');
         
         
         %Remove overlapping Tics
@@ -646,7 +673,7 @@ for i6h = 1:4
             minlim = cax.YLim(1);
             maxlim = cax.YLim(2);
             
-            if maxtick>0
+            if maxtick>=0
                 if maxlim<1.1*maxtick
                     newmax = 1.1*maxtick;
                 else

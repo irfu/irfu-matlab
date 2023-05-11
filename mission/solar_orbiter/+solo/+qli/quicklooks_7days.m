@@ -109,10 +109,13 @@ if ~isempty(data.ieflux)
     iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
     irf_spectrogram(h(8),iDEF,'log','donotfitcolorbarlabel');
     % set(h(1),'ytick',[1e1 1e2 1e3]);
-    caxis(h(9),[-1 1])
     hold(h(8),'on');
-    if ~isempty(data.B)
-        irf_plot(h(8),fci,'k','linewidth',lwidth);
+    h8_clims = h(8).CLim; 
+    % Fix color axis
+    h8_medp = mean(iDEF.p);
+    h8_medp = min(h8_medp(h8_medp>0));
+    if h8_medp > 0 && h8_medp > h8_clims(1) && log10(h8_medp)+2<(max(max(log10(iDEF.p))))
+        caxis(h(8),[log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
     end
     set(h(8), 'YScale', 'log');
     colormap(h(8),jet)
@@ -176,7 +179,7 @@ irf_zoom(h(1),'y');
 irf_zoom(h(5:9),'y');
 
 h(2).YLabel.Position=[1.05,0.5,0];
-yyaxis(h(2),'left');
+%yyaxis(h(2),'left');
 h(2).YLabel.Units='normalized';
 h(2).YLabel.Position=h(3).YLabel.Position;
 h(9).XLabel.Visible = 'off';
@@ -234,7 +237,7 @@ for iax=1:9
     minlim = cax.YLim(1);
     maxlim = cax.YLim(2);
     
-    if maxtick>0
+    if maxtick>=0
         if maxlim<1.1*maxtick
             newmax = 1.1*maxtick;
         else
@@ -264,18 +267,18 @@ for iax=1:9
     cax.YLim=[newmin,newmax];
 end
 
-yyaxis(h(2),'left');
+%yyaxis(h(2),'left');
 oldlims2 = h(2).YLim;
 oldticks2 = h(2).YTick;
 h(2).YScale='log';
 h(2).YTick=[1,10,100];
 h(2).YLim=[0.8,200];
 
-yyaxis(h(2),'right');
-oldlims2_r=h(2).YLim;
-oldticks2_r = h(2).YTick;
-h(2).YScale='log';
-h(2).YTick=[1,10,100];
+% yyaxis(h(2),'right');
+% oldlims2_r=h(2).YLim;
+% oldticks2_r = h(2).YTick;
+% h(2).YScale='log';
+% h(2).YTick=[1,10,100];
 %h(2).YLim=[0.1,200];
 
 oldlims5 = h(5).YLim;
@@ -307,10 +310,10 @@ filestr2([5,8])=[];
 path1=fullfile(paths.path_1w,[filestr1,'_',filestr2,'.png']);
 print('-dpng',path1);
 
-h(2).YScale='lin';
-h(2).YTick=oldticks2_r;
-h(2).YLim=oldlims2_r;
-yyaxis(h(2),'left');
+% h(2).YScale='lin';
+% h(2).YTick=oldticks2_r;
+% h(2).YLim=oldlims2_r;
+%yyaxis(h(2),'left');
 h(2).YScale='lin';
 h(2).YLim=oldlims2;
 h(2).YTick=oldticks2;
