@@ -516,9 +516,9 @@ for i6h = 1:4
         h(2).YLim=[floor(min(data.B.abs.tlim(Tint_6h).data)),ceil(max(data.B.abs.tlim(Tint_6h).data))];
     end
     if ~isempty(data.Tpas)
-        minTi = min(data.Tpas.tlim(Tint_6h).abs.data);
-        maxTi = max(data.Tpas.tlim(Tint_6h).abs.data);
-        if ~isnan(minTi) && ~isnan(maxTi)
+        minTi = min(rmmissing(data.Tpas.tlim(Tint_6h).abs.data));
+        maxTi = max(rmmissing(data.Tpas.tlim(Tint_6h).abs.data));
+        if ~isempty(minTi) && ~isempty(maxTi)
             % Only zoom if min & max are not NaN (==> Avoid crash).
             irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
         end
