@@ -82,8 +82,19 @@
 %   PRO: Useful for more easily determining for which time intervals the code
 %        (those two functions) crashes.
 %
-% PROPOSAL: Catch exceptions raised by plot bugs?
+% PROPOSAL: Catch exceptions raised by plotting subfunctions?
 %   PROPOSAL: Make configurable.
+%   PROPOSAL: Config 1: Catch exceptions but return error code after completing
+%             entire time interval.
+%       NOTE: Can catch multiple crashes/bugs in one run.
+%       PRO: Good for debugging since can find multiple dates with crashes in
+%            one (long, e.g. overnight) test run.
+%       PRO: Useful for batch processing, cron jobs.
+%           PRO: Not worse than the old crash immediately behaviour.
+%   PROPOSAL: Config 2: Immediately raise exception when catching exception.
+%       PRO: Good for debugging (?).
+%   PROPOSAL: Config 3: Catch all exceptions.
+%
 % PROPOSAL: Some way of handling disk access error?
 %   PROPOSAL: try-catch plot code once (weekly or non-weekly plot function).
 %             Then try without catch a second time, maybe after delay.
@@ -94,6 +105,7 @@
 %   Ex: derive_TimeIntervalWeeks()
 %       make_time_array()
 %       round_to_week()
+%
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()
 % ==========================================
@@ -438,7 +450,6 @@ end
 
 % Takes a cell-array of TSeries and merges them to one TSeries.
 function OutputTs = cell_array_TS_to_TS(InputTs)
-
     assert(iscell(InputTs))
 
     nCells   = numel(InputTs);
@@ -449,7 +460,6 @@ function OutputTs = cell_array_TS_to_TS(InputTs)
             OutputTs = OutputTs.combine(InputTs{iCell});
         end
     end
-
 end
 
 

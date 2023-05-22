@@ -5,21 +5,22 @@ function quicklooks_7days(data,paths,Tint,logoPath)
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-08T00:00:00.00Z');
 
 % Setup figure:
-lwidth=1.0;
-fsize=18;
-legsize=22;
-h=irf_plot(9,'newfigure');
-fig=gcf;
-fig.Position=[1,1,1095,800];
-colors = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
+lwidth  = 1.0;
+fsize   = 18;
+legsize = 22;
+h       = irf_plot(9,'newfigure');
+fig     = gcf;
+fig.Position = [1,1,1095,800];
+colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 
-Units=irf_units;
+Units = irf_units;
+Me   = Units.me;      % Electron mass [kg]
+epso = Units.eps0;    % Permitivitty of free space [Fm^-1]
+mp   = Units.mp;      % Proton mass [km]
+qe   = Units.e;       % Elementary charge [C]
+Au   = 149597871;     % Astronomical unit [km]
 
-Me=Units.me; %Electron mass [kg]
-epso = Units.eps0; %Permitivitty of free space [Fm^-1]
-mp=Units.mp; %proton mass [km]
-qe=Units.e; %elementary charge [C]
 
 
 %===================================
@@ -144,7 +145,7 @@ if ~isempty(data.ieflux)
     irf_spectrogram(h(8),iDEF,'log','donotfitcolorbarlabel');
     % set(h(1),'ytick',[1e1 1e2 1e3]);
     hold(h(8),'on');
-    h8_clims = h(8).CLim; 
+    h8_clims = h(8).CLim;
     % Fix color axis
     h8_medp = mean(iDEF.p);
     h8_medp = min(h8_medp(h8_medp>0));
@@ -172,17 +173,17 @@ if ~isempty(data.Etnr)
         tt = [myFile2(iii).start myFile2(iii).stop];
         [TNRp] =  solo.read_TNR(tt);
         if isa(TNRp,'struct')
-                TNR.t = combine(tp,TNRp.t);
-                tp = TNR.t;
-                TNR.p = combine(pp,TNRp.p);
-                pp = TNR.p;
+            TNR.t = combine(tp,TNRp.t);
+            tp    = TNR.t;
+            TNR.p = combine(pp,TNRp.p);
+            pp    = TNR.p;
 
-                % IMPLEMENTATION NOTE: Only read from TNRp from within this if
-                % clause, since it might not be a struct if read from elsewhere,
-                % even if it in principle means overwriting the value multiple
-                % times as for TNRp.f and TNRp.p_label.
-                TNR.f       = TNRp.f;
-                TNR.p_label = TNRp.p_label;
+            % IMPLEMENTATION NOTE: Only read from TNRp from within this if
+            % clause, since it might not be a struct if read from elsewhere,
+            % even if it in principle means overwriting the value multiple
+            % times as for TNRp.f and TNRp.p_label.
+            TNR.f       = TNRp.f;
+            TNR.p_label = TNRp.p_label;
         end
     end
     if isstruct(TNR)
@@ -194,15 +195,15 @@ if ~isempty(data.Etnr)
             hold(h(9),'on');
         end
         if ~isempty(data.Ne)
-                wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));                         
-                fpe_sc = (wpe_sc/2/pi)/1000;
-                fpe_sc.units = 'kHz';
-                fpe_sc.name = 'f [kHz]';
-                irf_plot(h(9),fpe_sc,'r','linewidth',lwidth);
+            wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
+            fpe_sc = (wpe_sc/2/pi)/1000;
+            fpe_sc.units = 'kHz';
+            fpe_sc.name  = 'f [kHz]';
+            irf_plot(h(9),fpe_sc,'r','linewidth',lwidth);
         end
         text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
         %set(h(9), 'YScale', 'log');
-        colormap(h(9),jet)   
+        colormap(h(9),jet)
         %ylabel(h(9),'f [kHz]')
         set(h(9),'ColorScale','log')
         %caxis([.01 10]*10^-12)
@@ -227,16 +228,15 @@ h(2).YLabel.Position=h(3).YLabel.Position;
 h(9).XLabel.Visible = 'off';
 
 
-Au=149597871; %Astronomical unit.
-
 if ~isempty(data.solopos.tlim(Tint))
-    teststr = ['SolO: ',[' R=',sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/Au),'Au, '],...
+    teststr = ['SolO: ', ...
+        [' R=',sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/Au),'Au, '],...
         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'\circ, '],...
         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'\circ']];
     text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 else
-    teststr=char();
-    text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+    teststr = char();
+    text1   = text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 
 end
 
@@ -276,22 +276,22 @@ for iax=1:9
     maxtick = max(cax.YTick);
     minlim = cax.YLim(1);
     maxlim = cax.YLim(2);
-    
+
     if maxtick>=0
         if maxlim<1.1*maxtick
             newmax = 1.1*maxtick;
         else
             newmax = maxlim;
-        end  
+        end
     else
         if abs(maxlim)>0.9*abs(maxtick)
             newmax = 0.9*maxtick;
         else
             newmax = maxlim;
-        end       
+        end
     end
-    
-    if mintick>0  
+
+    if mintick>0
         if minlim>0.9*mintick
             newmin = 0.9*mintick;
         else
@@ -367,3 +367,5 @@ h(5).YLim=oldlims5;
 h(5).YTick=oldticks5;
 
 close(fig);
+
+end
