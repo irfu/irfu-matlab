@@ -41,11 +41,6 @@ function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits)
     %                 (max minus min).
     %       PROPOSAL: Assume logarithmic, except when one tick=0 and use
     %                 assumption only for padding att tick=0.
-    %
-    % PROPOSAL: Refactor to use one function for both min and max.
-    %   PRO: Symmetry.
-    %   PRO: Avoids duplication of code.
-    % PROPOSAL: Constants for 0.9 and 1.1.
 
     % NOTE: 2022-03-22, 24h plot, panel 8/E_SRF has bad y margins for
     % "e723101f Erik P G Johansson (2023-05-10 18:10:25 +0200) SolO QLI:
@@ -70,26 +65,28 @@ function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits)
 
     % linearMargin = (dataMax - dataMin) * 0.1;
 
-    if tickMax>0
-        minDataMax = 1.1 * tickMax;
-    elseif tickMax<0
-        minDataMax = 0.9 * tickMax;
-    else
-        minDataMax = dataMax;   % NOTE: Not tickMax.
-    end
-    plotMax = max(dataMax, minDataMax);
-
-    if tickMin>0
-        maxDataMin = 0.9 * tickMin;
-    elseif tickMin<0
-        maxDataMin = 1.1 * tickMin;
-    else
-        maxDataMin = dataMin;   % NOTE: Not tickMin.
-    end
-    plotMin = min(dataMin, maxDataMin);
+    plotMax =  ensure_high_data_tick_margin( tickMax,  dataMax);
+    plotMin = -ensure_high_data_tick_margin(-tickMin, -dataMin);
 
     plotLimits = [plotMin; plotMax];
 end
+
+
+
+function plotMax = ensure_high_data_tick_margin(tickMax, dataMax)
+    C_DIMINISH = 0.9;
+    C_MAGNIFY  = 1.1;
+
+    if tickMax > 0
+        minDataMax = C_MAGNIFY  * tickMax;
+    elseif tickMax < 0
+        minDataMax = C_DIMINISH * tickMax;
+    else
+        minDataMax = dataMax;    % NOTE: Not tickMax. Bad?
+    end
+    plotMax = max(dataMax, minDataMax);
+end
+
 
 
 % Original code from quicklooks_24_6_2_h.m which this function largely replaces.
