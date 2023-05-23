@@ -47,12 +47,13 @@ classdef context_info_strings___UTEST < matlab.unittest.TestCase
                 ] ...
             );
 
+            % In-range time interval.
             ti1 = EpochTT(['2024-01-09T00:00:00.000000000Z'; '2024-03-13T00:00:00.000000000Z']);
-            test({Ts, ti1}, {'SolO:  R=1.00Au,  EcLat=229\circ,  EcLon=172\circ'})
+            test({Ts, Ts, ti1}, {'SolO:  R=1.00Au,  EcLat=229\circ,  EcLon=172\circ', 'Earth: EcLon=172\circ'})
 
             % Out-of-range time interval.
             ti2 = EpochTT(['2024-01-01T00:00:00.000000000Z'; '2024-01-02T00:00:00.000000000Z']);
-            test({Ts, ti2}, {''})
+            test({Ts, Ts, ti2}, {'', ''})
 
         end
 

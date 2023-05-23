@@ -51,7 +51,6 @@ Me    = Units.me;              % Electron mass [kg]
 epso  = Units.eps0;            % Permitivitty of free space [Fm^-1]
 mp    = Units.mp;              % Proton mass [km]
 qe    = Units.e;               % Elementary charge [C]
-AU_KM = Units.AU / Units.km;   % Astronomical unit [km]
 
 
 %==============
@@ -356,6 +355,8 @@ h(2).YLabel.Units='normalized';
 % have any label).
 h(2).YLabel.Position=h(1).YLabel.Position;
 
+
+
 % Add spacecraft position as text.
 % if ~isempty(data.solopos.tlim(Tint))
 %     teststr = ['SolO: ', ...
@@ -367,18 +368,20 @@ h(2).YLabel.Position=h(1).YLabel.Position;
 %     teststr=char();
 %     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 % end
-teststr = solo.qli.context_info_strings(data.solopos, Tint);
-text1 = text(h(10), -0.11, -0.575, teststr, 'units', 'normalized', 'fontsize', 18);
-
+[soloStr, earthStr] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
+text1 = text(h(10), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', 18);
 
 % Add Earth longitude as text.
-if ~isempty(data.earthpos)
-    teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos(1,2)*180/pi)),'\circ'];
-    text2=text(h(10),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
-else
-    teststr=char();
-    text2=text(h(10),0.9,-0.925,teststr,'units','normalized','fontsize',18);
-end
+% if ~isempty(data.earthpos)
+%     teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos(1,2)*180/pi)),'\circ'];
+%     text2=text(h(10),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
+% else
+%     teststr=char();
+%     text2=text(h(10),0.9,-0.925,teststr,'units','normalized','fontsize',18);
+% end
+text(h(10), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
+
+
 
 xtickangle(h(10),0)
 % Add plot information and IRF logo
@@ -612,7 +615,7 @@ for i6h = 1:4
 %     else
 %         text1.String=[];
 %     end
-    text1.String = solo.qli.context_info_strings(data.solopos, Tint_6h);
+    [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_6h);
 
     filesmth = Tint_6h(1);
     filesmth = filesmth.utc;
@@ -739,7 +742,7 @@ for i6h = 1:4
 %         else
 %             text1.String=[];
 %         end
-        text1.String = solo.qli.context_info_strings(data.solopos, Tint_2h);
+        [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_2h);
 
 
         filesmth = Tint_2h(1);

@@ -334,15 +334,16 @@ function quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
 
     % Earth position (also uses SPICE)
     dt       = 60*60;
-    Tlength  = Tint(end)-Tint(1);
-    dTimes   = 0:dt:Tlength;
-    Times    = Tint(1)+dTimes;
-    earthPos = get_Earth_pos(Tint, dt);
-    if ~isempty(earthPos)
-        Data.earthpos = irf.ts_vec_xyz(Times, earthPos);
-    else
-        Data.earthpos = TSeries();
-    end
+%     Tlength  = Tint(end)-Tint(1);
+%     dTimes   = 0:dt:Tlength;
+%     Times    = Tint(1)+dTimes;
+    earthPosTSeries = get_Earth_pos(Tint, dt);
+%     if ~isempty(earthPos)
+%         Data.earthpos = irf.ts_vec_xyz(Times, earthPos);
+%     else
+%         Data.earthpos = TSeries();
+%     end
+    Data.earthpos = earthPosTSeries;
 
     % Plot data and save figure
     solo.qli.quicklooks_7days(Data, Paths, Tint, logoPath)
@@ -354,6 +355,8 @@ end
 %
 % NOTE: Uses SPICE and "solo.get_position()".
 function soloPos = get_SolO_pos(Tint)
+    assert(length(Tint) == 2)
+    
     % IM = irfu-matlab (as opposed to SPICE).
     imSoloPos = solo.get_position(Tint,'frame','ECLIPJ2000');
 
@@ -372,7 +375,7 @@ end
 
 
 % Use SPICE to get Earth's position.
-function earthPos = get_Earth_pos(Tint, dt)
+function earthPosTSeries = get_Earth_pos(Tint, dt)
     assert(length(Tint) == 2)
     assert(isnumeric(dt))
 
@@ -381,9 +384,15 @@ function earthPos = get_Earth_pos(Tint, dt)
     spiceEarthPos = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
     if ~isempty(spiceEarthPos)
         [E_radius, E_lon, E_lat] = cspice_reclat(spiceEarthPos);
-        earthPos = [E_radius',E_lon',E_lat'];
+        earthPos = [E_radius', E_lon', E_lat'];
+        
+        Tlength  = Tint(end)-Tint(1);
+        dTimes   = 0:dt:Tlength;
+        Times    = Tint(1)+dTimes;
+        earthPosTSeries = irf.ts_vec_xyz(Times, earthPos);
     else
-        earthPos = [];
+        % earthPos = [];
+        earthPosTSeries = TSeries();
     end
 end
 
