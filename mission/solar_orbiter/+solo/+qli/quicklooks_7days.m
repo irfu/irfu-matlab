@@ -304,16 +304,9 @@ irf_zoom(h(1:9),'x',Tint);
 fig=gcf;
 fig.PaperPositionMode='auto';
 
-filesmth = Tint(1);
-filesmth = filesmth.utc;
-filestr1 = filesmth(1:13);
-filestr1([5,8])=[];
+filename = solo.qli.utils.get_plot_filename(Tint);
+path1    = fullfile(paths.path_1w, filename);
 
-filesmth = Tint(end);
-filesmth = filesmth.utc;
-filestr2 = filesmth(1:13);
-filestr2([5,8])=[];
-path1=fullfile(paths.path_1w,[filestr1,'_',filestr2,'.png']);
 %=====================
 % Save figure to file
 %=====================

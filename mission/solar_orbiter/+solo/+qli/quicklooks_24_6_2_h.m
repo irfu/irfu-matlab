@@ -425,16 +425,9 @@ h(5).YLim=[0.5,300];
 fig=gcf;
 fig.PaperPositionMode='auto';
 
-filesmth = Tint(1);
-filesmth = filesmth.utc;
-filestr1 = filesmth(1:13);
-filestr1([5,8])=[];
+filename = solo.qli.utils.get_plot_filename(Tint);
+path1    = fullfile(paths.path_24h, filename);
 
-filesmth = Tint(end);
-filesmth = filesmth.utc;
-filestr2 = filesmth(1:13);
-filestr2([5,8])=[];
-path1=fullfile(paths.path_24h,[filestr1,'_',filestr2,'.png']);
 %=====================
 % Save figure to file
 %=====================
@@ -541,16 +534,9 @@ for i6h = 1:4
 %     end
     [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_6h);
 
-    filesmth = Tint_6h(1);
-    filesmth = filesmth.utc;
-    filestr1 = filesmth(1:13);
-    filestr1([5,8])=[];
+    filename = solo.qli.utils.get_plot_filename(Tint_6h);
+    path2    = fullfile(paths.path_6h, filename);
 
-    filesmth = Tint_6h(end);
-    filesmth = filesmth.utc;
-    filestr2 = filesmth(1:13);
-    filestr2([5,8])=[];
-    path2=fullfile(paths.path_6h,[filestr1,'_',filestr2,'.png']);
     %=====================
     % Save figure to file
     %=====================
@@ -631,17 +617,9 @@ for i6h = 1:4
 %         end
         [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_2h);
 
+        filename = solo.qli.utils.get_plot_filename(Tint_2h);
+        path2    = fullfile(paths.path_2h, filename);
 
-        filesmth = Tint_2h(1);
-        filesmth = filesmth.utc;
-        filestr1 = filesmth(1:13);
-        filestr1([5,8])=[];
-
-        filesmth = Tint_2h(end);
-        filesmth = filesmth.utc;
-        filestr2 = filesmth(1:13);
-        filestr2([5,8])=[];
-        path2=fullfile(paths.path_2h,[filestr1,'_',filestr2,'.png']);
         %=====================
         % Save figure to file
         %=====================

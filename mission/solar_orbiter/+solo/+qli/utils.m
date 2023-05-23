@@ -48,6 +48,25 @@ classdef utils   % < handle
 
 
 
+        function filename = get_plot_filename(Tint)
+            assert(isa(Tint, 'EpochTT'))
+            assert(length(Tint) == 2)
+
+            ett1 = Tint(1);
+            utcStr1 = ett1.utc;
+            utcStr1 = utcStr1(1:13);
+            utcStr1([5,8])=[];
+
+            ett2 = Tint(end);
+            utcStr2 = ett2.utc;
+            utcStr2 = utcStr2(1:13);
+            utcStr2([5,8])=[];
+
+            filename = [utcStr1,'_',utcStr2,'.png'];
+        end
+
+
+
     end    % methods(Static)
 
 
