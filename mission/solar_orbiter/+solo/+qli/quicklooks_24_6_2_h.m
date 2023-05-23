@@ -399,7 +399,7 @@ str = solo.qli.utils.generate_data_source_info();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
 % Remove overlapping tics.
-solo.qli.ensure_axes_data_tick_margins(h)
+solo.qli.utils.ensure_axes_data_tick_margins(h)
 
 yyaxis(h(2),'left');
 %oldlims2 = h(2).YLim;
@@ -527,7 +527,7 @@ for i6h = 1:4
     irf_zoom(h(7),'y');
 
     % Remove overlapping ticks.
-    solo.qli.ensure_axes_data_tick_margins(h)
+    solo.qli.utils.ensure_axes_data_tick_margins(h)
 
     % Update text
 %     if ~isempty(data.solopos.tlim(Tint_6h))
@@ -617,7 +617,7 @@ for i6h = 1:4
         irf_zoom(h(7),'y');
 
         % Remove overlapping ticks.
-        solo.qli.ensure_axes_data_tick_margins(h)
+        solo.qli.utils.ensure_axes_data_tick_margins(h)
 
         % Update text
 %         if ~isempty(data.solopos.tlim(Tint_2h))

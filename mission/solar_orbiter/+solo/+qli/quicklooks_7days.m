@@ -271,7 +271,7 @@ str = solo.qli.utils.generate_data_source_info();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
 % Remove overlapping tics.
-solo.qli.ensure_axes_data_tick_margins(h)
+solo.qli.utils.ensure_axes_data_tick_margins(h)
 
 %yyaxis(h(2),'left');
 oldlims2 = h(2).YLim;
