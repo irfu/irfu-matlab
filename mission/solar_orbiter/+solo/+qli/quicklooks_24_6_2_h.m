@@ -400,48 +400,8 @@ infostr = ['Swedish Institute of Space Physics, Uppsala (IRFU), ',currdate];
 infostr2 = '. Data available at http://soar.esac.esa.int/';
 text(h(1),0,1.2,[infostr,infostr2],'Units','normalized')
 
-% Remove overlapping Tics
-for iax=1:10
-    cax=h(iax);
-%     mintick = min(cax.YTick);
-%     maxtick = max(cax.YTick);
-%     minlim = cax.YLim(1);
-%     maxlim = cax.YLim(2);
-% 
-% 
-%     if maxtick >= 0
-%         if maxlim<(1.1*maxtick)
-%             newmax = 1.1*maxtick;
-%         else
-%             newmax = maxlim;
-%         end
-%     else
-%         if abs(maxlim)>0.9*abs(maxtick)
-%             newmax = 0.9*maxtick;
-%         else
-%             newmax = maxlim;
-%         end
-%     end
-% 
-%     if mintick>0
-%         if minlim>0.9*mintick
-%             newmin = 0.9*mintick;
-%         else
-%             newmin = minlim;
-%         end
-%     else
-%         if abs(minlim)<1.1*abs(mintick)
-%             newmin=1.1*mintick;
-%         else
-%             newmin=minlim;
-%         end
-%     end
-%     cax.YLim=[newmin,newmax];
-    cax.YLim = solo.qli.ensure_data_tick_margins(...
-        [min(cax.YTick), max(cax.YTick) ], ...
-        [    cax.YLim(1),    cax.YLim(2)] ...
-    );
-end
+% Remove overlapping tics.
+solo.qli.ensure_axes_data_tick_margins(h)
 
 yyaxis(h(2),'left');
 %oldlims2 = h(2).YLim;
@@ -568,47 +528,8 @@ for i6h = 1:4
     end
     irf_zoom(h(7),'y');
 
-    % Remove overlapping ticks
-    for iax=1:10
-%         cax=h(iax);
-%         mintick = min(cax.YTick);
-%         maxtick = max(cax.YTick);
-%         minlim = cax.YLim(1);
-%         maxlim = cax.YLim(2);
-% 
-%         if maxtick>=0
-%             if maxlim<1.1*maxtick
-%                 newmax = 1.1*maxtick;
-%             else
-%                 newmax = maxlim;
-%             end
-%         else
-%             if abs(maxlim)>0.9*abs(maxtick)
-%                 newmax = 0.9*maxtick;
-%             else
-%                 newmax = maxlim;
-%             end
-%         end
-% 
-%         if mintick>0
-%             if minlim>0.9*mintick
-%                 newmin = 0.9*mintick;
-%             else
-%                 newmin = minlim;
-%             end
-%         else
-%             if abs(minlim)<1.1*abs(mintick)
-%                 newmin=1.1*mintick;
-%             else
-%                 newmin=minlim;
-%             end
-%         end
-%         cax.YLim=[newmin,newmax];
-        cax.YLim = solo.qli.ensure_data_tick_margins(...
-            [min(cax.YTick), max(cax.YTick) ], ...
-            [    cax.YLim(1),    cax.YLim(2)] ...
-        );
-    end
+    % Remove overlapping ticks.
+    solo.qli.ensure_axes_data_tick_margins(h)
 
     % Update text
 %     if ~isempty(data.solopos.tlim(Tint_6h))
@@ -697,49 +618,8 @@ for i6h = 1:4
         end
         irf_zoom(h(7),'y');
 
-
-        % Remove overlapping Tics
-        for iax=1:10
-            cax=h(iax);
-%             mintick = min(cax.YTick);
-%             maxtick = max(cax.YTick);
-%             minlim = cax.YLim(1);
-%             maxlim = cax.YLim(2);
-% 
-%             if maxtick>=0
-%                 if maxlim<1.1*maxtick
-%                     newmax = 1.1*maxtick;
-%                 else
-%                     newmax = maxlim;
-%                 end
-%             else
-%                 if abs(maxlim)>0.9*abs(maxtick)
-%                     newmax = 0.9*maxtick;
-%                 else
-%                     newmax = maxlim;
-%                 end
-%             end
-% 
-%             if mintick>0
-%                 if minlim>0.9*mintick
-%                     newmin = 0.9*mintick;
-%                 else
-%                     newmin = minlim;
-%                 end
-%             else
-%                 if abs(minlim)<1.1*abs(mintick)
-%                     newmin=1.1*mintick;
-%                 else
-%                     newmin=minlim;
-%                 end
-%             end
-%             cax.YLim=[newmin,newmax];
-            cax.YLim = solo.qli.ensure_data_tick_margins(...
-                [min(cax.YTick), max(cax.YTick) ], ...
-                [    cax.YLim(1),    cax.YLim(2)] ...
-            );
-        end
-
+        % Remove overlapping ticks.
+        solo.qli.ensure_axes_data_tick_margins(h)
 
         % Update text
 %         if ~isempty(data.solopos.tlim(Tint_2h))
