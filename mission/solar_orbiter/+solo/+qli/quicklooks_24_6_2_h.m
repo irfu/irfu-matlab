@@ -10,7 +10,6 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 %   NOTE: They are identical (diff -b).
 % PROPOSAL: Simplify, clairfy generation of printed human-readable strings below panels.
 %       Reduce repetitions. More efficient use of sprintf().
-% PROPOSAL: Use Units.AU (converted to km).
 
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
 %   /EJ 2023-05-10
@@ -48,11 +47,11 @@ fig.Position =[1,1,1095,800];
 colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 Units = irf_units;
-Me   = Units.me;      % Electron mass [kg]
-epso = Units.eps0;    % Permitivitty of free space [Fm^-1]
-mp   = Units.mp;      % Proton mass [km]
-qe   = Units.e;       % Elementary charge [C]
-Au   = 149597871;     % Astronomical unit [km]
+Me    = Units.me;              % Electron mass [kg]
+epso  = Units.eps0;            % Permitivitty of free space [Fm^-1]
+mp    = Units.mp;              % Proton mass [km]
+qe    = Units.e;               % Elementary charge [C]
+AU_KM = Units.AU / Units.km;   % Astronomical unit [km]
 
 
 %==============
@@ -359,7 +358,7 @@ h(2).YLabel.Position=h(1).YLabel.Position;
 % Add spacecraft position as text.
 if ~isempty(data.solopos.tlim(Tint))
     teststr = ['SolO: ',...
-        [sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/Au),'Au, '],...
+        [sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/AU_KM),'Au, '],...
         [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'\circ, '],...
         [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'\circ']];
     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
@@ -602,7 +601,7 @@ for i6h = 1:4
     % Update text
     if ~isempty(data.solopos.tlim(Tint_6h))
         teststr = ['SolO: ', ...
-            [sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/Au),'Au, '],...
+            [sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/AU_KM),'Au, '],...
             [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
             [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'\circ']];
         text1.String=teststr;
@@ -728,7 +727,7 @@ for i6h = 1:4
         % Update text
         if ~isempty(data.solopos.tlim(Tint_2h))
             teststr = ['SolO: ', ...
-                [sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/Au),'Au, '],...
+                [sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/AU_KM),'Au, '],...
                 [' EcLat ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
                 [' EcLon ',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'\circ']];
             text1.String=teststr;
