@@ -228,17 +228,19 @@ h(2).YLabel.Position=h(3).YLabel.Position;
 h(9).XLabel.Visible = 'off';
 
 
-if ~isempty(data.solopos.tlim(Tint))
-    teststr = ['SolO: ', ...
-        [' R=', sprintf('%.2f',data.solopos.tlim(Tint   ).data(1,1)/AU_KM),'Au, '],...
-        [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,3)*180/pi)),'\circ, '],...
-        [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,2)*180/pi)),'\circ']];
-    text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-else
-    teststr = char();
-    text1   = text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+% if ~isempty(data.solopos.tlim(Tint))
+%     teststr = ['SolO: ', ...
+%         [' R=', sprintf('%.2f',data.solopos.tlim(Tint   ).data(1,1)/AU_KM),'Au, '],...
+%         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,3)*180/pi)),'\circ, '],...
+%         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,2)*180/pi)),'\circ']];
+%     text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+% else
+%     teststr = char();
+%     text1   = text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+% end
+teststr = solo.qli.context_info_strings(data.solopos, Tint);
+text(h(9), -0.11, -0.575, teststr, 'units', 'normalized', 'fontsize', 18);
 
-end
 
 % Add Earth longitude as text.
 if ~isempty(data.earthpos)

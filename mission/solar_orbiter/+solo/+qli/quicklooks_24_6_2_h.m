@@ -355,17 +355,21 @@ h(2).YLabel.Units='normalized';
 % left panel 2 ylabel having the wrong position (too far left) when h(3) did not
 % have any label).
 h(2).YLabel.Position=h(1).YLabel.Position;
+
 % Add spacecraft position as text.
-if ~isempty(data.solopos.tlim(Tint))
-    teststr = ['SolO: ', ...
-        [' R=', sprintf('%.2f',data.solopos.tlim(Tint   ).data(1,1)/AU_KM),'Au, '],...
-        [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,3)*180/pi)),'\circ, '],...
-        [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,2)*180/pi)),'\circ']];
-    text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-else
-    teststr=char();
-    text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-end
+% if ~isempty(data.solopos.tlim(Tint))
+%     teststr = ['SolO: ', ...
+%         [' R=', sprintf('%.2f',data.solopos.tlim(Tint   ).data(1,1)/AU_KM),'Au, '],...
+%         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,3)*180/pi)),'\circ, '],...
+%         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,2)*180/pi)),'\circ']];
+%     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+% else
+%     teststr=char();
+%     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+% end
+teststr = solo.qli.context_info_strings(data.solopos, Tint);
+text1 = text(h(10), -0.11, -0.575, teststr, 'units', 'normalized', 'fontsize', 18);
+
 
 % Add Earth longitude as text.
 if ~isempty(data.earthpos)
@@ -599,15 +603,16 @@ for i6h = 1:4
     end
 
     % Update text
-    if ~isempty(data.solopos.tlim(Tint_6h))
-        teststr = ['SolO: ', ...
-            [' R=', sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/AU_KM),'Au, '],...
-            [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
-            [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'\circ']];
-        text1.String=teststr;
-    else
-        text1.String=[];
-    end
+%     if ~isempty(data.solopos.tlim(Tint_6h))
+%         teststr = ['SolO: ', ...
+%             [' R=', sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/AU_KM),'Au, '],...
+%             [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
+%             [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'\circ']];
+%         text1.String=teststr;
+%     else
+%         text1.String=[];
+%     end
+    text1.String = solo.qli.context_info_strings(data.solopos, Tint_6h);
 
     filesmth = Tint_6h(1);
     filesmth = filesmth.utc;
@@ -725,15 +730,17 @@ for i6h = 1:4
 
 
         % Update text
-        if ~isempty(data.solopos.tlim(Tint_2h))
-            teststr = ['SolO: ', ...
-                [' R=', sprintf('%.2f',data.solopos.tlim(Tint_2h).data(1,1)/AU_KM),'Au, '],...
-                [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_2h).data(1,3)*180/pi)),'\circ, '],...
-                [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_2h).data(1,2)*180/pi)),'\circ']];
-            text1.String=teststr;
-        else
-            text1.String=[];
-        end
+%         if ~isempty(data.solopos.tlim(Tint_2h))
+%             teststr = ['SolO: ', ...
+%                 [' R=', sprintf('%.2f',data.solopos.tlim(Tint_2h).data(1,1)/AU_KM),'Au, '],...
+%                 [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_2h).data(1,3)*180/pi)),'\circ, '],...
+%                 [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_2h).data(1,2)*180/pi)),'\circ']];
+%             text1.String=teststr;
+%         else
+%             text1.String=[];
+%         end
+        text1.String = solo.qli.context_info_strings(data.solopos, Tint_2h);
+
 
         filesmth = Tint_2h(1);
         filesmth = filesmth.utc;
