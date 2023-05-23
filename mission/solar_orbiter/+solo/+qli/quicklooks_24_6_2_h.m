@@ -5,9 +5,6 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 % Tint should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
 
-% PROPOSAL: Convert four identical sections "Remove overlapping Tics" into
-%           function files (3 in this function, 1 in *7days*). Add tests.
-%   NOTE: They are identical (diff -b).
 % PROPOSAL: Simplify, clairfy generation of printed human-readable strings below panels.
 %       Reduce repetitions. More efficient use of sprintf().
 
@@ -406,40 +403,44 @@ text(h(1),0,1.2,[infostr,infostr2],'Units','normalized')
 % Remove overlapping Tics
 for iax=1:10
     cax=h(iax);
-    mintick = min(cax.YTick);
-    maxtick = max(cax.YTick);
-    minlim = cax.YLim(1);
-    maxlim = cax.YLim(2);
-
-
-    if maxtick >= 0
-        if maxlim<(1.1*maxtick)
-            newmax = 1.1*maxtick;
-        else
-            newmax = maxlim;
-        end
-    else
-        if abs(maxlim)>0.9*abs(maxtick)
-            newmax = 0.9*maxtick;
-        else
-            newmax = maxlim;
-        end
-    end
-
-    if mintick>0
-        if minlim>0.9*mintick
-            newmin = 0.9*mintick;
-        else
-            newmin = minlim;
-        end
-    else
-        if abs(minlim)<1.1*abs(mintick)
-            newmin=1.1*mintick;
-        else
-            newmin=minlim;
-        end
-    end
-    cax.YLim=[newmin,newmax];
+%     mintick = min(cax.YTick);
+%     maxtick = max(cax.YTick);
+%     minlim = cax.YLim(1);
+%     maxlim = cax.YLim(2);
+% 
+% 
+%     if maxtick >= 0
+%         if maxlim<(1.1*maxtick)
+%             newmax = 1.1*maxtick;
+%         else
+%             newmax = maxlim;
+%         end
+%     else
+%         if abs(maxlim)>0.9*abs(maxtick)
+%             newmax = 0.9*maxtick;
+%         else
+%             newmax = maxlim;
+%         end
+%     end
+% 
+%     if mintick>0
+%         if minlim>0.9*mintick
+%             newmin = 0.9*mintick;
+%         else
+%             newmin = minlim;
+%         end
+%     else
+%         if abs(minlim)<1.1*abs(mintick)
+%             newmin=1.1*mintick;
+%         else
+%             newmin=minlim;
+%         end
+%     end
+%     cax.YLim=[newmin,newmax];
+    cax.YLim = solo.qli.ensure_data_tick_margins(...
+        [min(cax.YTick), max(cax.YTick) ], ...
+        [    cax.YLim(1),    cax.YLim(2)] ...
+    );
 end
 
 yyaxis(h(2),'left');
@@ -569,40 +570,44 @@ for i6h = 1:4
 
     % Remove overlapping ticks
     for iax=1:10
-        cax=h(iax);
-        mintick = min(cax.YTick);
-        maxtick = max(cax.YTick);
-        minlim = cax.YLim(1);
-        maxlim = cax.YLim(2);
-
-        if maxtick>=0
-            if maxlim<1.1*maxtick
-                newmax = 1.1*maxtick;
-            else
-                newmax = maxlim;
-            end
-        else
-            if abs(maxlim)>0.9*abs(maxtick)
-                newmax = 0.9*maxtick;
-            else
-                newmax = maxlim;
-            end
-        end
-
-        if mintick>0
-            if minlim>0.9*mintick
-                newmin = 0.9*mintick;
-            else
-                newmin = minlim;
-            end
-        else
-            if abs(minlim)<1.1*abs(mintick)
-                newmin=1.1*mintick;
-            else
-                newmin=minlim;
-            end
-        end
-        cax.YLim=[newmin,newmax];
+%         cax=h(iax);
+%         mintick = min(cax.YTick);
+%         maxtick = max(cax.YTick);
+%         minlim = cax.YLim(1);
+%         maxlim = cax.YLim(2);
+% 
+%         if maxtick>=0
+%             if maxlim<1.1*maxtick
+%                 newmax = 1.1*maxtick;
+%             else
+%                 newmax = maxlim;
+%             end
+%         else
+%             if abs(maxlim)>0.9*abs(maxtick)
+%                 newmax = 0.9*maxtick;
+%             else
+%                 newmax = maxlim;
+%             end
+%         end
+% 
+%         if mintick>0
+%             if minlim>0.9*mintick
+%                 newmin = 0.9*mintick;
+%             else
+%                 newmin = minlim;
+%             end
+%         else
+%             if abs(minlim)<1.1*abs(mintick)
+%                 newmin=1.1*mintick;
+%             else
+%                 newmin=minlim;
+%             end
+%         end
+%         cax.YLim=[newmin,newmax];
+        cax.YLim = solo.qli.ensure_data_tick_margins(...
+            [min(cax.YTick), max(cax.YTick) ], ...
+            [    cax.YLim(1),    cax.YLim(2)] ...
+        );
     end
 
     % Update text
@@ -696,39 +701,43 @@ for i6h = 1:4
         % Remove overlapping Tics
         for iax=1:10
             cax=h(iax);
-            mintick = min(cax.YTick);
-            maxtick = max(cax.YTick);
-            minlim = cax.YLim(1);
-            maxlim = cax.YLim(2);
-
-            if maxtick>=0
-                if maxlim<1.1*maxtick
-                    newmax = 1.1*maxtick;
-                else
-                    newmax = maxlim;
-                end
-            else
-                if abs(maxlim)>0.9*abs(maxtick)
-                    newmax = 0.9*maxtick;
-                else
-                    newmax = maxlim;
-                end
-            end
-
-            if mintick>0
-                if minlim>0.9*mintick
-                    newmin = 0.9*mintick;
-                else
-                    newmin = minlim;
-                end
-            else
-                if abs(minlim)<1.1*abs(mintick)
-                    newmin=1.1*mintick;
-                else
-                    newmin=minlim;
-                end
-            end
-            cax.YLim=[newmin,newmax];
+%             mintick = min(cax.YTick);
+%             maxtick = max(cax.YTick);
+%             minlim = cax.YLim(1);
+%             maxlim = cax.YLim(2);
+% 
+%             if maxtick>=0
+%                 if maxlim<1.1*maxtick
+%                     newmax = 1.1*maxtick;
+%                 else
+%                     newmax = maxlim;
+%                 end
+%             else
+%                 if abs(maxlim)>0.9*abs(maxtick)
+%                     newmax = 0.9*maxtick;
+%                 else
+%                     newmax = maxlim;
+%                 end
+%             end
+% 
+%             if mintick>0
+%                 if minlim>0.9*mintick
+%                     newmin = 0.9*mintick;
+%                 else
+%                     newmin = minlim;
+%                 end
+%             else
+%                 if abs(minlim)<1.1*abs(mintick)
+%                     newmin=1.1*mintick;
+%                 else
+%                     newmin=minlim;
+%                 end
+%             end
+%             cax.YLim=[newmin,newmax];
+            cax.YLim = solo.qli.ensure_data_tick_margins(...
+                [min(cax.YTick), max(cax.YTick) ], ...
+                [    cax.YLim(1),    cax.YLim(2)] ...
+            );            
         end
 
 
