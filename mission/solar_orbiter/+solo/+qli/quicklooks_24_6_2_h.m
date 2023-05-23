@@ -1,8 +1,8 @@
-function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
+function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
 % Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
 % plots and saves them in the paths specified in the struct 'paths' (see
 % solo.qli.quicklooks_main). Computes spectrum of B, so takes a while to run.
-% Tint should be a 24hour time interval, e.g.
+% Tint_24h should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
 
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
@@ -55,9 +55,9 @@ qe    = Units.e;       % Elementary charge [C]
 % Fill panel 1
 %==============
 if ~isempty(data.B)
-    irf_plot(h(1),data.B.tlim(Tint),'linewidth',lwidth);
+    irf_plot(h(1),data.B.tlim(Tint_24h),'linewidth',lwidth);
     hold(h(1),'on');
-    irf_plot(h(1),data.B.abs.tlim(Tint),'linewidth',lwidth);
+    irf_plot(h(1),data.B.abs.tlim(Tint_24h),'linewidth',lwidth);
 end
 irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',legsize);
 ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',fsize);
@@ -72,10 +72,10 @@ tBeginSec = log_time('End panel 1', tBeginSec);
 %%
 hold(h(2),'on');
 if ~isempty(data.Ne)
-    irf_plot(h(2),data.Ne.tlim(Tint),'-','color',colors(1,:),'linewidth',lwidth);
+    irf_plot(h(2),data.Ne.tlim(Tint_24h),'-','color',colors(1,:),'linewidth',lwidth);
 end
 if ~isempty(data.Npas)
-    irf_plot(h(2),data.Npas.tlim(Tint),'-','color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(2),data.Npas.tlim(Tint_24h),'-','color',colors(2,:),'linewidth',lwidth);
 end
 ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
 h(2).ColorOrder=colors;
@@ -84,13 +84,13 @@ irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',legsize);
 yyaxis(h(2),'right');
 if ~isempty(data.B)
     fci = qe*data.B.abs*10^-9/mp/(2*pi);
-    irf_plot(h(2),data.B.abs.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
+    irf_plot(h(2),data.B.abs.tlim(Tint_24h),'color',colors(3,:),'linewidth',lwidth);
     %Bnan = rmmissing(data.B.abs.data);
     %if ~isempty(Bnan)
     %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
     %end
-    minAbsB = min(data.B.tlim(Tint).abs.data);
-    maxAbsB = max(data.B.tlim(Tint).abs.data);
+    minAbsB = min(data.B.tlim(Tint_24h).abs.data);
+    maxAbsB = max(data.B.tlim(Tint_24h).abs.data);
     if ~isnan(minAbsB) && ~isnan(maxAbsB)
         % Only zoom if min & max are not NaN (==> Avoid crash).
         irf_zoom(h(2),'y',[minAbsB-1, maxAbsB+1]);
@@ -185,7 +185,7 @@ tBeginSec = log_time('End panel 3 & 4', tBeginSec);
 % Fill panel 5: Ion temperature
 %===============================
 if ~isempty(data.Tpas)
-    irf_plot(h(5),data.Tpas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(5),data.Tpas.tlim(Tint_24h),'color',colors(2,:),'linewidth',lwidth);
 end
 irf_zoom(h(5),'y');
 ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
@@ -198,9 +198,9 @@ tBeginSec = log_time('End panel 5', tBeginSec);
 % Fill panel 6: y,z PAS velocities
 %==================================
 if ~isempty(data.Vpas)
-    irf_plot(h(6),data.Vpas.y.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(6),data.Vpas.y.tlim(Tint_24h),'color',colors(2,:),'linewidth',lwidth);
     hold(h(6),'on');
-    irf_plot(h(6),data.Vpas.z.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
+    irf_plot(h(6),data.Vpas.z.tlim(Tint_24h),'color',colors(3,:),'linewidth',lwidth);
 end
 irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(6),'y');
@@ -218,7 +218,7 @@ if ~isempty(data.Vrpw)
     irf_plot(h(7),-data.Vrpw,'o-','color',colors(1,:));
 end
 if ~isempty(data.Vpas)
-    irf_plot(h(7),data.Vpas.x.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(7),data.Vpas.x.tlim(Tint_24h),'color',colors(2,:),'linewidth',lwidth);
 end
 irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',legsize);
 irf_zoom(h(7),'y');
@@ -252,8 +252,8 @@ tBeginSec = log_time('End panel 8', tBeginSec);
 % Fill panel 9: Ion energy spectrum
 %===================================
 if ~isempty(data.ieflux)
-    myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
-    iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
+    myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint_24h);
+    iDEF   = struct('t',  data.ieflux.tlim(Tint_24h).time.epochUnix);
     % for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
     for ii = 1:length(myFile)
         iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
@@ -286,7 +286,7 @@ tBeginSec = log_time('End panel 9', tBeginSec);
 %=======================================
 if ~isempty(data.Etnr)
     try
-        [TNR] = solo.read_TNR(Tint);
+        [TNR] = solo.read_TNR(Tint_24h);
     catch Exc
         if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
             TNR = [];
@@ -299,7 +299,7 @@ if ~isempty(data.Etnr)
             hold(h(10),'on');
             if ~isempty(data.Ne)
                 %Electron plasma frequency
-                wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
+                wpe_sc = (sqrt(((data.Ne.tlim(Tint_24h)*1000000)*qe^2)/(Me*epso)));
                 fpe_sc = (wpe_sc/2/pi)/1000;
                 irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
                 fpe_sc.units = 'kHz';
@@ -325,7 +325,7 @@ if isempty(data.Vrpw) ...
         && isempty(data.E)    && isempty(data.Ne)   && isempty(data.B) ...
         && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
         && isempty(data.Etnr)
-    nanPlot = irf.ts_scalar(Tint,ones(1,2)*NaN);
+    nanPlot = irf.ts_scalar(Tint_24h,ones(1,2)*NaN);
     irf_plot(h(10),nanPlot);
     grid(h(10),'off');
     ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
@@ -339,7 +339,7 @@ tBeginSec = log_time('End panel 10', tBeginSec);
 % Other, miscellaneous
 %======================
 irf_plot_axis_align(h(1:10));
-irf_zoom(h(1:10),'x',Tint);
+irf_zoom(h(1:10),'x',Tint_24h);
 irf_zoom(h(1),'y');
 %irf_zoom(h(5:10),'y');
 
@@ -355,17 +355,17 @@ h(2).YLabel.Position=h(1).YLabel.Position;
 
 
 % Add spacecraft position as text.
-% if ~isempty(data.solopos.tlim(Tint))
+% if ~isempty(data.solopos.tlim(Tint_24h))
 %     teststr = ['SolO: ', ...
-%         [' R=', sprintf('%.2f',data.solopos.tlim(Tint   ).data(1,1)/AU_KM),'Au, '],...
-%         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,3)*180/pi)),'\circ, '],...
-%         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,2)*180/pi)),'\circ']];
+%         [' R=', sprintf('%.2f',data.solopos.tlim(Tint_24h   ).data(1,1)/AU_KM),'Au, '],...
+%         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_24h   ).data(1,3)*180/pi)),'\circ, '],...
+%         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_24h   ).data(1,2)*180/pi)),'\circ']];
 %     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 % else
 %     teststr=char();
 %     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 % end
-[soloStr, earthStr] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
+[soloStr, earthStr] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_24h);
 text1 = text(h(10), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', 18);
 
 % Add Earth longitude as text.
@@ -425,7 +425,7 @@ h(5).YLim=[0.5,300];
 fig=gcf;
 fig.PaperPositionMode='auto';
 
-filename = solo.qli.utils.get_plot_filename(Tint);
+filename = solo.qli.utils.get_plot_filename(Tint_24h);
 path1    = fullfile(paths.path_24h, filename);
 
 %=====================
@@ -467,7 +467,7 @@ for i6h = 1:4
 %for i6h = 2:2
 
     % Zoom in to 6h interval and save plot.
-    Tint_6h = Tint(1)+[60*60*6*(i6h-1),60*60*6*(i6h)];
+    Tint_6h = Tint_24h(1)+[60*60*6*(i6h-1),60*60*6*(i6h)];
     irf_zoom(h(1:10),'x',Tint_6h);
     irf_zoom(h(1),'y');
     % Zoom on N/|B| plot.
