@@ -52,6 +52,8 @@ function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits)
     % Need to check that this code fixes the same bug eventually.
     % /EJ 2023-05-11
 
+    C_LINEAR_MARGIN = 0.1;
+
     assert(length(tickLimits) == 2)
     assert(length(dataLimits) == 2)
 
@@ -63,28 +65,33 @@ function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits)
     assert(tickMin <= tickMax)
     assert(dataMin <= dataMax)
 
-    % linearMargin = (dataMax - dataMin) * 0.1;
+    linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
 
-    plotMax =  ensure_high_data_tick_margin( tickMax,  dataMax);
-    plotMin = -ensure_high_data_tick_margin(-tickMin, -dataMin);
+    plotMax =  ensure_high_data_tick_margin( tickMax,  dataMax, linearMargin);
+    plotMin = -ensure_high_data_tick_margin(-tickMin, -dataMin, linearMargin);
 
     plotLimits = [plotMin; plotMax];
 end
 
 
 
-function plotMax = ensure_high_data_tick_margin(tickMax, dataMax)
+function plotMax = ensure_high_data_tick_margin(tickMax, dataMax, linearMargin)
     C_DIMINISH = 0.9;
     C_MAGNIFY  = 1.1;
 
+    assert(linearMargin >= 0)
+
     if tickMax > 0
-        minDataMax = C_MAGNIFY  * tickMax;
+        minPlotMax = C_MAGNIFY  * tickMax;
     elseif tickMax < 0
-        minDataMax = C_DIMINISH * tickMax;
+        minPlotMax = C_DIMINISH * tickMax;
     else
-        minDataMax = dataMax;    % NOTE: Not tickMax. Bad?
+        % CASE: tickMax == 0
+
+        % minPlotMax = dataMax;    % NOTE: Not tickMax. Bad?
+        minPlotMax = linearMargin;
     end
-    plotMax = max(dataMax, minDataMax);
+    plotMax = max(dataMax, minPlotMax);
 end
 
 
