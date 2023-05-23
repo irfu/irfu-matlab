@@ -276,7 +276,7 @@ function quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, enableB)
     % Ion spectrum
     Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
 
-    %TNR E-field
+    % TNR E-field
     Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
     % Solar Orbiter position
@@ -324,7 +324,7 @@ function quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
     % Ion spectrum
     Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
 
-    %TNR E-field
+    % TNR E-field
     Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
     % Solar Orbiter position

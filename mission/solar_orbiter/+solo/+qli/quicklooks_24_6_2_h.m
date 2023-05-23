@@ -10,6 +10,7 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 %   NOTE: They are identical (diff -b).
 % PROPOSAL: Simplify, clairfy generation of printed human-readable strings below panels.
 %       Reduce repetitions. More efficient use of sprintf().
+% PROPOSAL: Use Units.AU (converted to km).
 
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
 %   /EJ 2023-05-10
@@ -19,6 +20,18 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 %   /EJ 2023-05-10
 %   Ex: 2022-03-23T10-T12. -- Seems wrong timestamp.
 %   Mistakenly looked at wrong plots?
+%
+% BUG: Cirka dfe637c8 (2023-05-12 11:02:05 +0200)
+%   Panels can get extra wide, and IRF logo is partly outside image. Presumably
+%   when there is no color bar (due to missing data).
+%   NOTE: Might not be able to observe bug later if relevant data gaps are later
+%         filled in.
+%   Ex: 6h plots, as of 2023-05-23:
+%      2023-02-05 18-00: Normal. Has one colorbar for "f (kHz)"
+%      2023-02-06 00-06: Wider panels. Has no colorbar for "f (kHz)"
+%   Ex: 24h plots, as of 2023-05-23:
+%      2023-02-05: Normal. Has one colorbar for "f (kHz)"
+%      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
 
 
 tBeginSec = tic();
