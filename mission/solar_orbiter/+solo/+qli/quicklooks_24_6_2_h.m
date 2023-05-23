@@ -395,10 +395,8 @@ if ~isempty(logoPath)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
-currdate = char(datetime("now","Format","uuuu-MM-dd"));
-infostr = ['Swedish Institute of Space Physics, Uppsala (IRFU), ',currdate];
-infostr2 = '. Data available at http://soar.esac.esa.int/';
-text(h(1),0,1.2,[infostr,infostr2],'Units','normalized')
+str = solo.qli.utils.generate_data_source_info();
+text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
 % Remove overlapping tics.
 solo.qli.ensure_axes_data_tick_margins(h)
