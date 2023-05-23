@@ -5,9 +5,6 @@ function quicklooks_24_6_2_h(data,paths,Tint,logoPath)
 % Tint should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
 
-% PROPOSAL: Simplify, clairfy generation of printed human-readable strings below panels.
-%       Reduce repetitions. More efficient use of sprintf().
-
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
 %   /EJ 2023-05-10
 %   Ex: 20220329T04_20220329T06.png
@@ -34,6 +31,10 @@ tBeginSec = tic();
 
 
 
+% Whether to enable/disable panels with time-consuming spetra. Disabling these
+% is useful for debugging and testing. Should be enabled by default.
+SPECTRA_ENABLED = 1;
+
 % Setup figure:
 lwidth  = 1.0;
 fsize   = 18;
@@ -44,10 +45,10 @@ fig.Position =[1,1,1095,800];
 colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 Units = irf_units;
-Me    = Units.me;              % Electron mass [kg]
-epso  = Units.eps0;            % Permitivitty of free space [Fm^-1]
-mp    = Units.mp;              % Proton mass [km]
-qe    = Units.e;               % Elementary charge [C]
+Me    = Units.me;      % Electron mass [kg]
+epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
+mp    = Units.mp;      % Proton mass [km]
+qe    = Units.e;       % Elementary charge [C]
 
 
 %==============
@@ -106,74 +107,73 @@ tBeginSec = log_time('End panel 2', tBeginSec);
 % Fill panel 3 & 4: Spectra
 %===========================
 %%
-if ~isempty(data.B)   % && false
-   if  ~isempty(rmmissing(data.B.data))
-    bb = data.B;
-    if median(diff((bb.time.epochUnix))) < 0.1250*0.95
-        fMag = 128; fMax = 7;
-    else
-        fMag = 8; fMax = 3;
+if ~isempty(data.B) && SPECTRA_ENABLED
+    if  ~isempty(rmmissing(data.B.data))
+        bb = data.B;
+        if median(diff((bb.time.epochUnix))) < 0.1250*0.95
+            fMag = 128; fMax = 7;
+        else
+            fMag =   8; fMax = 3;
+        end
+        b0 = bb.filt(0, 0.01,fMag, 5);
+
+        % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming.
+        tBeginSec = log_time('irf_ebsp(): Begin call', tBeginSec);
+        ebsp = irf_ebsp([],bb,[],b0,[],[0.05 fMax],'fullB=dB', 'polarization', 'fac');
+        tBeginSec = log_time('irf_ebsp(): End call', tBeginSec);
+
+        frequency = ebsp.f;
+        time = ebsp.t;
+        Bsum = ebsp.bb_xxyyzzss(:,:,4);
+        ellipticity = ebsp.ellipticity;
+        dop = ebsp.dop;
+
+        % Remove points with very low degree of polarization
+        dopthresh = 0.7;
+        removepts = find(dop < dopthresh);
+        ellipticity(removepts) = NaN;
+
+        % Remove "lonely" pixels
+        msk = ellipticity;
+        msk(~isnan(msk)) = 1;
+        msk(isnan(msk)) = 0;
+        msk_denoise = bwareaopen(msk,8);
+        ellipticity(msk_denoise==0) = NaN;
+
+        % Plot
+        specrec=struct('t',time);
+        specrec.f=frequency;
+        specrec.p=Bsum;
+        specrec.f_label='';
+        specrec.p_label={'log_{10}B^{2}','nT^2 Hz^{-1}'};
+        irf_spectrogram(h(3),specrec,'log','donotfitcolorbarlabel');
+        set(h(3),'yscale','log');
+        % set(h(1),'ytick',[1e1 1e2 1e3]);
+        % caxis(h(3),[-8 -1])
+        hold(h(3),'on');
+        irf_plot(h(3),fci,'k','linewidth',lwidth);
+        text(h(3),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
+        colormap(h(3),'jet');
+
+        specrec=struct('t',time);
+        specrec.f=frequency;
+        specrec.p=ellipticity;
+        specrec.f_label='';
+        specrec.p_label={'Ellipticity','DOP>0.7'};
+        irf_spectrogram(h(4),specrec,'log','donotfitcolorbarlabel');
+        set(h(4),'yscale','log');
+        % set(h(1),'ytick',[1e1 1e2 1e3]);
+        caxis(h(4),[-1 1])
+        hold(h(4),'on');
+        irf_plot(h(4),fci,'k','linewidth',lwidth);
+        text(h(4),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
+
+        crr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
+        cgg = interp1([1 64 128 192 256],[0.0  0.5 0.75 0.5 0.00],1:256);
+        cbb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
+        bgrcmap = [crr' cgg' cbb'];
+        colormap(h(4),bgrcmap);
     end
-    b0 = bb.filt(0, 0.01,fMag, 5);
-
-    % IMPORTANT NOTE: The call to irf_ebsp() seems very slow.
-    tBeginSec = log_time('irf_ebsp(): Begin call', tBeginSec);
-    ebsp = irf_ebsp([],bb,[],b0,[],[0.05 fMax],'fullB=dB', 'polarization', 'fac');
-    tBeginSec = log_time('irf_ebsp(): End call', tBeginSec);
-
-    frequency = ebsp.f;
-    time = ebsp.t;
-    Bsum = ebsp.bb_xxyyzzss(:,:,4);
-    ellipticity = ebsp.ellipticity;
-    dop = ebsp.dop;
-
-    % Remove points with very low degree of polarization
-    dopthresh = 0.7;
-    removepts = find(dop < dopthresh);
-    ellipticity(removepts) = NaN;
-
-    % Remove "lonely" pixels
-    msk = ellipticity;
-    msk(~isnan(msk)) = 1;
-    msk(isnan(msk)) = 0;
-    msk_denoise = bwareaopen(msk,8);
-    ellipticity(msk_denoise==0) = NaN;
-
-    % Plot
-    specrec=struct('t',time);
-    specrec.f=frequency;
-    specrec.p=Bsum;
-    specrec.f_label='';
-    specrec.p_label={'log_{10}B^{2}','nT^2 Hz^{-1}'};
-    irf_spectrogram(h(3),specrec,'log','donotfitcolorbarlabel');
-    set(h(3),'yscale','log');
-    % set(h(1),'ytick',[1e1 1e2 1e3]);
-    % caxis(h(3),[-8 -1])
-    hold(h(3),'on');
-    irf_plot(h(3),fci,'k','linewidth',lwidth);
-    text(h(3),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
-    colormap(h(3),'jet');
-
-
-    specrec=struct('t',time);
-    specrec.f=frequency;
-    specrec.p=ellipticity;
-    specrec.f_label='';
-    specrec.p_label={'Ellipticity','DOP>0.7'};
-    irf_spectrogram(h(4),specrec,'log','donotfitcolorbarlabel');
-    set(h(4),'yscale','log');
-    % set(h(1),'ytick',[1e1 1e2 1e3]);
-    caxis(h(4),[-1 1])
-    hold(h(4),'on');
-    irf_plot(h(4),fci,'k','linewidth',lwidth);
-    text(h(4),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
-
-    crr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
-    cgg = interp1([1 64 128 192 256],[0.0  0.5 0.75 0.5 0.00],1:256);
-    cbb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
-    bgrcmap = [crr' cgg' cbb'];
-    colormap(h(4),bgrcmap);
-   end
 end
 ylabel(h(3),{'f';'(Hz)'},'fontsize',fsize);
 ylabel(h(4),{'f';'(Hz)'},'fontsize',fsize);
@@ -237,9 +237,9 @@ if ~isempty(data.E)
     %irf_plot(h(8),data.E.z,'color',colors(3,:),'linewidth',lwidth)
     minEy = min(rmmissing(data.E.y.data));
     maxEy = max(rmmissing(data.E.y.data));
-        if ~isempty(minEy) && ~isempty(maxEy)
+    if ~isempty(minEy) && ~isempty(maxEy)
         irf_zoom(h(8),'y',[minEy-5 maxEy+5]);
-        end
+    end
 end
 irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
@@ -259,7 +259,6 @@ if ~isempty(data.ieflux)
         iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
         iEnergy = iEnergy{1};
         iDEF.p = data.ieflux.data;
-
     end
     iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
     iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
@@ -322,7 +321,8 @@ ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
 yticks(h(10),[10^1 10^2]);
 irf_zoom(h(10),'y',[10^1 10^2])
 
-if isempty(data.Vrpw) && isempty(data.E) && isempty(data.Ne) && isempty(data.B) ...
+if isempty(data.Vrpw) ...
+        && isempty(data.E)    && isempty(data.Ne)   && isempty(data.B) ...
         && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
         && isempty(data.Etnr)
     nanPlot = irf.ts_scalar(Tint,ones(1,2)*NaN);
@@ -444,15 +444,15 @@ for iax=1:10
 end
 
 yyaxis(h(2),'left');
-oldlims2 = h(2).YLim;
-oldticks2 = h(2).YTick;
+%oldlims2 = h(2).YLim;
+%oldticks2 = h(2).YTick;
 h(2).YScale='log';
 h(2).YTick=[1,10,100];
 %h(2).YLim=[0.8,200];
 
 yyaxis(h(2),'right');
-oldlims2_r=h(2).YLim;
-oldticks2_r = h(2).YTick;
+%oldlims2_r=h(2).YLim;
+%oldticks2_r = h(2).YTick;
 h(2).YScale='log';
 h(2).YTick=[1,10,100];
 %h(2).YLim=[0.1,200];
@@ -737,7 +737,7 @@ for i6h = 1:4
             cax.YLim = solo.qli.ensure_data_tick_margins(...
                 [min(cax.YTick), max(cax.YTick) ], ...
                 [    cax.YLim(1),    cax.YLim(2)] ...
-            );            
+            );
         end
 
 
@@ -775,9 +775,10 @@ close(fig);
 
 
 
-tBeginSec = log_time('End of quicklooks_24_6_2_h.m', tBeginSec);
+[~] = log_time('End of quicklooks_24_6_2_h.m', tBeginSec);
 
 end
+
 
 
 

@@ -15,10 +15,10 @@ colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 
 Units = irf_units;
-Me    = Units.me;              % Electron mass [kg]
-epso  = Units.eps0;            % Permitivitty of free space [Fm^-1]
-mp    = Units.mp;              % Proton mass [km]
-qe    = Units.e;               % Elementary charge [C]
+Me    = Units.me;      % Electron mass [kg]
+epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
+mp    = Units.mp;      % Proton mass [km]
+qe    = Units.e;       % Elementary charge [C]
 
 
 
@@ -56,7 +56,6 @@ h(2).YTick=[10,100];
 hold(h(3),'on');
 if ~isempty(data.Ne)
     irf_plot(h(3),data.Ne.tlim(Tint),'color',colors(1,:),'linewidth',lwidth);
-else
 end
 if ~isempty(data.Npas)
     irf_plot(h(3),data.Npas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);

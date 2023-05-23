@@ -1,6 +1,7 @@
 %
 % Generate human-readable "context strings" to put at bottom of plots.
 %
+%
 % IMPLEMENTATION NOTES
 % ====================
 % Could be split up into two functions, one per string. Is not since both
