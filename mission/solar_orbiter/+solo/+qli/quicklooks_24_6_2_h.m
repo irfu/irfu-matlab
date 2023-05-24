@@ -445,11 +445,11 @@ h(5).YTick=oldticks5;
 %===========================
 % Print 6h figures.
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBeginSec);
-for i6h = 1:4
-%for i6h = 1:1
+for i6h = 0:3
+%for i6h = 0:0
 
-    % Zoom in to 6h interval and save plot.
-    Tint_6h = Tint_24h(1)+[60*60*6*(i6h-1),60*60*6*(i6h)];
+    % Define 6h interval and zoom in.
+    Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
     irf_zoom(h(1:10),'x',Tint_6h);
     irf_zoom(h(1),'y');
     % Zoom on N/|B| plot.
@@ -522,11 +522,11 @@ for i6h = 1:4
     % Iterate over 2h intervals within one 6h interval
     %==================================================
     tBeginSec = solo.qli.utils.log_time('Begin iterating over 2 h intervals', tBeginSec);
-    % Print 2h figures
-    for i2h = 1:3
-    %for i2h = 1:1
+    for i2h = 0:2
+    %for i2h = 0:0
+
         % Define 2h interval and zoom in
-        Tint_2h = Tint_6h(1)+[60*60*2*(i2h-1),60*60*2*(i2h)];
+        Tint_2h = Tint_6h(1) + 2*60*60*(i2h+[0, 1]);
         irf_zoom(h(1:10),'x',Tint_2h);
         irf_zoom(h(1),'y');
 
