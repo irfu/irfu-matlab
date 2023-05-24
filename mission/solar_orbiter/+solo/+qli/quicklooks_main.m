@@ -192,7 +192,6 @@ if runNonweeklyPlots
     for iTint=1:length(Time1DayStepsArray)-1
         % Select time interval.
         Tint = irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
-
         try
             quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, ENABLE_B)
         catch Exc
@@ -220,7 +219,6 @@ if runWeeklyPlots
     for iTint=1:length(Time7DayStepsArray)-1
         % Select time interval.
         Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
-
         try
             quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
         catch Exc
@@ -255,6 +253,18 @@ end    % function
 
 
 
+function log_plot_function_time_interval(Tint)
+    utcStr1 = Tint(1).utc;
+    utcStr2 = Tint(2).utc;
+    utcStr1 = utcStr1(1:19);
+    utcStr2 = utcStr2(1:19);
+
+    % Not specifying which plot function is called (weekly, nonweekly plots).
+    fprintf('Calling plot function for %s--%s.', utcStr1, utcStr2);
+end
+
+
+
 % Handle *PLOTTING* exception.
 %
 % Historically, the plotting code has caused many exceptions. One may want
@@ -283,6 +293,8 @@ end
 
 
 function quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, enableB)
+    log_plot_function_time_interval(Tint)
+
     Data = [];
 
     Data.Vrpw = vht1h.V_RPW_1h.tlim(Tint);
@@ -331,6 +343,8 @@ end
 
 
 function quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+    log_plot_function_time_interval(Tint)
+
     Data = [];
 
     Data.Vrpw = vht6h.V_RPW.tlim(Tint);
