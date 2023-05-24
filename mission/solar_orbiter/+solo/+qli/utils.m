@@ -67,6 +67,16 @@ classdef utils   % < handle
 
 
 
+        % Simple function for logging number of seconds from previous call.
+        % For debugging speed.
+        function tBeginSec = log_time(locationStr, tBeginSec)
+            tSec = toc(tBeginSec);
+            fprintf(1, '%s: %.1f [s]\n', locationStr, tSec)
+            tBeginSec = tic();
+        end
+
+
+
     end    % methods(Static)
 
 
