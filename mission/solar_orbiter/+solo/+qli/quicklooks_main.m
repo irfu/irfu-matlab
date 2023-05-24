@@ -112,7 +112,13 @@
 %============
 % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
 % speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
-ENABLE_B = 1;
+% Should be enabled by default.
+ENABLE_B                      = 1;
+% Whether to catch plotting exceptions (and continue) in order to produce as
+% many plots as possible. Should be enabled by default.
+CATCH_PLOT_EXCEPTIONS_ENABLED = 1;
+
+
 
 % NOTE: Usually found on solo/data_yuri.
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
@@ -134,6 +140,9 @@ Paths.path_1w  = fullfile(outputDir, '1w' );
 
 
 tSec = tic();
+
+% Array of plotting exceptions caught.
+PlotExcArray = MException.empty(1, 0);
 
 
 
@@ -182,9 +191,14 @@ if runNonweeklyPlots
 
     for iTint=1:length(Time1DayStepsArray)-1
         % Select time interval.
-        Tint=irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
+        Tint = irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
 
-        quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, ENABLE_B)
+        try
+            quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, ENABLE_B)
+        catch Exc
+            PlotExcArray(end+1) = Exc;
+            handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
+        end
     end
 end
 
@@ -207,7 +221,12 @@ if runWeeklyPlots
         % Select time interval.
         Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
 
-        quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+        try
+            quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+        catch Exc
+            PlotExcArray(end+1) = Exc;
+            handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
+        end
     end
 end
 
@@ -222,7 +241,44 @@ plotsTimeDays = (TimeIntervalNonWeeks.tts(2) - TimeIntervalNonWeeks.tts(1)) / 86
 fprintf('Wall time used:                  %g [h] = %g [s]\n', wallTimeHours, wallTimeSec);
 fprintf('Wall time used per day of plots: %g [h/day]\n',      wallTimeHours / plotsTimeDays);
 
+
+
+if CATCH_PLOT_EXCEPTIONS_ENABLED && ~isempty(PlotExcArray)
+    fprintf(2, 'Caught %i plotting exceptions.\n', numel(PlotExcArray))
+    fprintf(2, 'Rethrowing old (last) exception.\n')
+    % NOTE: This does display (stderr) the stack trace for position
+    % of the *ORIGINAL* error.
+    rethrow(PlotExcArray(end))
+end
+
 end    % function
+
+
+
+% Handle *PLOTTING* exception.
+%
+% Historically, the plotting code has caused many exceptions. One may want
+% different behaviour depending on context.
+%
+% Production: Produce as many plots as possible.
+%             => Catch exception and continue.
+% Testing:    Crash on first exception so that it can be fixed.
+%             => Rethrow exception as soon as possible.
+function handle_plot_exception(catchExceptionEnabled, Exc)
+    if catchExceptionEnabled
+        % Print stack trace without rethrowing exception.
+        % One wants that in log.
+        % NOTE: fprintf(FID=2) => stderr
+        fprintf(2, 'Caught plotting error without rethrowing it.\n')
+        fprintf(2, 'Plot error/exception: "%s"\n', Exc.message)
+        for i = 1:numel(Exc.stack)
+            s = Exc.stack(i);
+            fprintf(2, '    Error in %s (line %i)\n', s.name, s.line)
+        end
+    else
+        rethrow(Exc)
+    end
+end
 
 
 
