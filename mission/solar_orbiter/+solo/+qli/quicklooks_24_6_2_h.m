@@ -450,68 +450,62 @@ for i6h = 0:3
 
     % Define 6h interval and zoom in.
     Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
-    irf_zoom(h(1:10),'x',Tint_6h);
-    irf_zoom(h(1),'y');
+    modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_6h, paths.path_6h)
+end
 
-    % Zoom on N/|B| plot.
-    adjust_panel_ylimits_N_B(  h(2), data,      Tint_6h)
-    adjust_panel_ylimits_Ti(   h(5), data.Tpas, Tint_6h)
-    adjust_panel_ylimits_VT_VN(h(6), data.Vpas, Tint_6h)
-    adjust_panel_ylimits_ESRF( h(8), data.E,    Tint_6h)
-    irf_zoom(h(7),'y');
+%===========================
+% Iterate over 2h intervals
+%===========================
+tBeginSec = solo.qli.utils.log_time('Begin iterating over 2 h intervals', tBeginSec);
+for i2h = 0:11
+%for i2h = 0:0
+
+    Tint_2h = Tint_24h(1) + 2*60*60*(i2h+[0, 1]);
+    modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_2h, paths.path_2h)
+end
+
+
+
+close(fig);
+
+[~] = solo.qli.utils.log_time('End of quicklooks_24_6_2_h.m', tBeginSec);
+
+end
+
+
+
+% Function to remove duplicated code.
+%
+% Presumes pre-existing figure with specific axes. Uses customized code to zoom
+% in on the sub-time interval and adjusts the y limits for that interval.
+function modify_save_subinterval_plot(hAxesArray, hCisText1, hCisText2, data, Tint, parentDirPath)
+    assert(isa(hAxesArray, 'matlab.graphics.axis.Axes'))
+    assert(isa(hCisText1, 'matlab.graphics.primitive.Text'))
+    assert(isa(hCisText2, 'matlab.graphics.primitive.Text'))
+    assert(isstruct(data))
+    assert(isa(Tint, 'EpochTT'))
+
+    irf_zoom(hAxesArray(1:10), 'x', Tint);
+
+    irf_zoom(hAxesArray(1), 'y');
+    adjust_panel_ylimits_N_B(  hAxesArray(2), data,      Tint)
+    adjust_panel_ylimits_Ti(   hAxesArray(5), data.Tpas, Tint)
+    adjust_panel_ylimits_VT_VN(hAxesArray(6), data.Vpas, Tint)
+    adjust_panel_ylimits_ESRF( hAxesArray(8), data.E,    Tint)
+    irf_zoom(hAxesArray(7), 'y');
 
     % Remove overlapping ticks.
-    solo.qli.utils.ensure_axes_data_tick_margins(h)
+    solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray)
 
     % Update text
-    [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_6h);
+    [hCisText1.String, hCisText2.String] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
 
     %=====================
     % Save figure to file
     %=====================
-    filename = solo.qli.utils.get_plot_filename(Tint_6h);
-    path2    = fullfile(paths.path_6h, filename);
-    print('-dpng',path2);
-
-    %==================================================
-    % Iterate over 2h intervals within one 6h interval
-    %==================================================
-    tBeginSec = solo.qli.utils.log_time('Begin iterating over 2 h intervals', tBeginSec);
-    for i2h = 0:2
-    %for i2h = 0:0
-
-        % Define 2h interval and zoom in
-        Tint_2h = Tint_6h(1) + 2*60*60*(i2h+[0, 1]);
-        irf_zoom(h(1:10),'x',Tint_2h);
-        irf_zoom(h(1),'y');
-
-        adjust_panel_ylimits_N_B(  h(2), data,      Tint_2h)
-        adjust_panel_ylimits_Ti(   h(5), data.Tpas, Tint_2h)
-        adjust_panel_ylimits_VT_VN(h(6), data.Vpas, Tint_2h)
-        adjust_panel_ylimits_ESRF( h(8), data.E,    Tint_2h)
-        irf_zoom(h(7),'y');
-
-        % Remove overlapping ticks.
-        solo.qli.utils.ensure_axes_data_tick_margins(h)
-
-        % Update text
-        [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_2h);
-
-        %=====================
-        % Save figure to file
-        %=====================
-        filename = solo.qli.utils.get_plot_filename(Tint_2h);
-        path2    = fullfile(paths.path_2h, filename);
-        print('-dpng',path2);
-    end
-
-end
-close(fig);
-
-
-
-[~] = solo.qli.utils.log_time('End of quicklooks_24_6_2_h.m', tBeginSec);
-
+    filename = solo.qli.utils.get_plot_filename(Tint);
+    filePath = fullfile(parentDirPath, filename);
+    print('-dpng', filePath);
 end
 
 
