@@ -53,24 +53,6 @@
 %
 % PROPOSAL: Better name: quicklooks_main?
 %       ~main, ~plot, ~generate
-% PROPOSAL: Reorg to separate internal functions for non-weekly and weekly plots
-%           respectively, including the loops.
-%   NOTE: Would need to have arguments for debugging constants like ENABLE_B etc.
-%   NOTE: make_tints(), wrapper function db_get_ts() would be used by both functions
-%         (nonweekly+weekly).
-%   TODO-DEC: Function names?
-%       PROPOSAL: quicklooks_24_6_2_h_loop()
-%                 quicklooks_7days_loop()
-%   PROPOSAL: Functions as external files.
-%   PROPOSAL: Change names of
-%       quicklooks_24_6_2_h
-%       quicklooks_7days
-%       PROPOSAL: plot_*
-%       PROPOSAL: 24_6_2_h
-%   PROPOSAL: Convert quicklooks_24_6_2_h_local() and quicklooks_7days_local()
-%             to include loops.
-%       CON: Useful to *not* include loops, to ensure that variables are not
-%            reused.
 %
 % PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
 %           of via TimeIntervalNonWeeks and TimeIntervalWeeks.
@@ -105,6 +87,11 @@
 %   Ex: derive_TimeIntervalWeeks()
 %       make_time_array()
 %       round_to_week()
+%
+% PROPOSAL: Log time period being plotted.
+%   PRO: Useful for identifying time period/day that causes crash.
+% PROPOSAL: Log time consumption for each call to plot functions.
+%   PROPOSAL: Use solo.qli.utils.log_time().
 %
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()

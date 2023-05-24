@@ -27,6 +27,7 @@ function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
 %      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
 
 
+
 tBeginSec = tic();
 
 
@@ -51,6 +52,7 @@ mp    = Units.mp;      % Proton mass [km]
 qe    = Units.e;       % Elementary charge [C]
 
 
+
 %==============
 % Fill panel 1
 %==============
@@ -66,10 +68,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 
 
 
-%==============
-% Fill panel 2
-%==============
-%%
+%=======================
+% Fill panel 2: N & |B|
+%=======================
 hold(h(2),'on');
 if ~isempty(data.Ne)
     irf_plot(h(2),data.Ne.tlim(Tint_24h),'-','color',colors(1,:),'linewidth',lwidth);
@@ -106,7 +107,6 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 %===========================
 % Fill panel 3 & 4: Spectra
 %===========================
-%%
 if ~isempty(data.B) && SPECTRA_ENABLED
     if  ~isempty(rmmissing(data.B.data))
         bb = data.B;
@@ -352,30 +352,10 @@ h(2).YLabel.Units='normalized';
 % have any label).
 h(2).YLabel.Position=h(1).YLabel.Position;
 
-
-
 % Add spacecraft position as text.
-% if ~isempty(data.solopos.tlim(Tint_24h))
-%     teststr = ['SolO: ', ...
-%         [' R=', sprintf('%.2f',data.solopos.tlim(Tint_24h   ).data(1,1)/AU_KM),'Au, '],...
-%         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_24h   ).data(1,3)*180/pi)),'\circ, '],...
-%         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_24h   ).data(1,2)*180/pi)),'\circ']];
-%     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-% else
-%     teststr=char();
-%     text1=text(h(10),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-% end
 [soloStr, earthStr] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_24h);
 text1 = text(h(10), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', 18);
-
 % Add Earth longitude as text.
-% if ~isempty(data.earthpos)
-%     teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos(1,2)*180/pi)),'\circ'];
-%     text2=text(h(10),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
-% else
-%     teststr=char();
-%     text2=text(h(10),0.9,-0.925,teststr,'units','normalized','fontsize',18);
-% end
 text(h(10), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
 
 
@@ -425,12 +405,13 @@ h(5).YLim=[0.5,300];
 fig=gcf;
 fig.PaperPositionMode='auto';
 
-filename = solo.qli.utils.get_plot_filename(Tint_24h);
-path1    = fullfile(paths.path_24h, filename);
+
 
 %=====================
 % Save figure to file
 %=====================
+filename = solo.qli.utils.get_plot_filename(Tint_24h);
+path1    = fullfile(paths.path_24h, filename);
 print('-dpng',path1);
 
 
@@ -523,23 +504,13 @@ tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBegin
     solo.qli.utils.ensure_axes_data_tick_margins(h)
 
     % Update text
-%     if ~isempty(data.solopos.tlim(Tint_6h))
-%         teststr = ['SolO: ', ...
-%             [' R=', sprintf('%.2f',data.solopos.tlim(Tint_6h).data(1,1)/AU_KM),'Au, '],...
-%             [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,3)*180/pi)),'\circ, '],...
-%             [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_6h).data(1,2)*180/pi)),'\circ']];
-%         text1.String=teststr;
-%     else
-%         text1.String=[];
-%     end
     [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_6h);
-
-    filename = solo.qli.utils.get_plot_filename(Tint_6h);
-    path2    = fullfile(paths.path_6h, filename);
 
     %=====================
     % Save figure to file
     %=====================
+    filename = solo.qli.utils.get_plot_filename(Tint_6h);
+    path2    = fullfile(paths.path_6h, filename);
     print('-dpng',path2);
 
     %==================================================
@@ -606,23 +577,13 @@ tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBegin
         solo.qli.utils.ensure_axes_data_tick_margins(h)
 
         % Update text
-%         if ~isempty(data.solopos.tlim(Tint_2h))
-%             teststr = ['SolO: ', ...
-%                 [' R=', sprintf('%.2f',data.solopos.tlim(Tint_2h).data(1,1)/AU_KM),'Au, '],...
-%                 [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint_2h).data(1,3)*180/pi)),'\circ, '],...
-%                 [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint_2h).data(1,2)*180/pi)),'\circ']];
-%             text1.String=teststr;
-%         else
-%             text1.String=[];
-%         end
         [text1.String, ~] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_2h);
-
-        filename = solo.qli.utils.get_plot_filename(Tint_2h);
-        path2    = fullfile(paths.path_2h, filename);
 
         %=====================
         % Save figure to file
         %=====================
+        filename = solo.qli.utils.get_plot_filename(Tint_2h);
+        path2    = fullfile(paths.path_2h, filename);
         print('-dpng',path2);
     end
 

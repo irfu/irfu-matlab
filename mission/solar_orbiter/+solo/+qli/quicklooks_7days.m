@@ -17,7 +17,7 @@ colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 Units = irf_units;
 Me    = Units.me;      % Electron mass [kg]
 epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
-mp    = Units.mp;      % Proton mass [km]
+%mp    = Units.mp;      % Proton mass [km]
 qe    = Units.e;       % Elementary charge [C]
 
 
@@ -40,7 +40,7 @@ irf_zoom(h(1),'y');
 % Fill panel 2: abs(B)
 %======================
 if ~isempty(data.B)
-    fci = qe*data.B.abs*10^-9/mp/(2*pi);
+    %fci = qe*data.B.abs*10^-9/mp/(2*pi);
     irf_plot(h(2),data.B.abs.tlim(Tint),'linewidth',lwidth);
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
@@ -225,29 +225,10 @@ h(2).YLabel.Units='normalized';
 h(2).YLabel.Position=h(3).YLabel.Position;
 h(9).XLabel.Visible = 'off';
 
-
-
-% if ~isempty(data.solopos.tlim(Tint))
-%     teststr = ['SolO: ', ...
-%         [' R=', sprintf('%.2f',data.solopos.tlim(Tint   ).data(1,1)/AU_KM),'Au, '],...
-%         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,3)*180/pi)),'\circ, '],...
-%         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,2)*180/pi)),'\circ']];
-%     text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-% else
-%     teststr = char();
-%     text1   = text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-% end
+% Add spacecraft position as text.
 [soloStr, earthStr] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
 text(h(9), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', 18);
-
 % Add Earth longitude as text.
-% if ~isempty(data.earthpos)
-%     teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos.data(1,2)*180/pi)),'\circ'];
-%     text2=text(h(9),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
-% else
-%     teststr=char();
-%     text2=text(h(9),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
-% end
 text(h(9), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
 
 
@@ -304,12 +285,11 @@ irf_zoom(h(1:9),'x',Tint);
 fig=gcf;
 fig.PaperPositionMode='auto';
 
-filename = solo.qli.utils.get_plot_filename(Tint);
-path1    = fullfile(paths.path_1w, filename);
-
 %=====================
 % Save figure to file
 %=====================
+filename = solo.qli.utils.get_plot_filename(Tint);
+path1    = fullfile(paths.path_1w, filename);
 print('-dpng',path1);
 % TODO-NI: Why are there any commands (except close()) after this?
 

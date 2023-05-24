@@ -17,7 +17,6 @@ classdef utils   % < handle
 
         % Generate text string with information on data source and when the plot
         % was generated.
-        %
         function str = generate_data_source_info()
             dateStr = char(datetime("now", "Format", "uuuu-MM-dd"));
             str = sprintf( ...
@@ -32,7 +31,6 @@ classdef utils   % < handle
 
 
         % ~Utility function that removes duplicated code from plot functions.
-        %
         function ensure_axes_data_tick_margins(hAxesArray)
             assert(isa(hAxesArray, 'matlab.graphics.axis.Axes'))
 
