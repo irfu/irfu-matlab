@@ -35,6 +35,12 @@ tBeginSec = tic();
 % Whether to enable/disable panels with time-consuming spetra. Disabling these
 % is useful for debugging and testing. Should be enabled by default.
 SPECTRA_ENABLED = 1;
+% Whether to generate all plots or only some (e.g. one 6h plot, one 2h plot).
+% Disabling this is useful for debugging and testing. Should be enabled by
+% default.
+ALL_PLOTS_ENABLED = 1;
+
+
 
 % Setup figure:
 lwidth  = 1.0;
@@ -426,13 +432,19 @@ h(5).YTick  = oldticks5;
 
 
 
+I_6H = 0:3;
+I_2H = 0:11;
+if ~ALL_PLOTS_ENABLED
+    % For debugging/testing.
+    I_6H = 0:0;
+    I_2H = 0:0;
+end
+
 %===========================
 % Iterate over 6h intervals
 %===========================
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBeginSec);
-for i6h = 0:3
-%for i6h = 0:0
-
+for i6h = I_6H
     Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
     modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_6h, paths.path_6h)
 end
@@ -441,9 +453,7 @@ end
 % Iterate over 2h intervals
 %===========================
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 2 h intervals', tBeginSec);
-for i2h = 0:11
-%for i2h = 0:0
-
+for i2h = I_2H
     Tint_2h = Tint_24h(1) + 2*60*60*(i2h+[0, 1]);
     modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_2h, paths.path_2h)
 end
