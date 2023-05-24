@@ -40,10 +40,10 @@ SPECTRA_ENABLED = 1;
 lwidth  = 1.0;
 fsize   = 18;
 legsize = 22;
+colors  = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 h       = irf_plot(10,'newfigure');
 fig     = gcf;
 fig.Position =[1,1,1095,800];
-colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 Units = irf_units;
 Me    = Units.me;      % Electron mass [kg]
@@ -53,9 +53,9 @@ qe    = Units.e;       % Elementary charge [C]
 
 
 
-%==============
-% Fill panel 1
-%==============
+%===================================
+% Fill panel 1: B vector components
+%===================================
 if ~isempty(data.B)
     irf_plot(h(1),data.B.tlim(Tint_24h),'linewidth',lwidth);
     hold(h(1),'on');
@@ -299,7 +299,7 @@ if ~isempty(data.Etnr)
             irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
             hold(h(10),'on');
             if ~isempty(data.Ne)
-                %Electron plasma frequency
+                % Electron plasma frequency
                 wpe_sc = (sqrt(((data.Ne.tlim(Tint_24h)*1000000)*qe^2)/(Me*epso)));
                 fpe_sc = (wpe_sc/2/pi)/1000;
                 irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
@@ -342,22 +342,20 @@ tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
 irf_plot_axis_align(h(1:10));
 irf_zoom(h(1:10),'x',Tint_24h);
 irf_zoom(h(1),'y');
-%irf_zoom(h(5:10),'y');
 
 h(2).YLabel.Position=[1.05,0.5,0];
 yyaxis(h(2),'left');
 h(2).YLabel.Units='normalized';
-% NOTE: Not using h(3), h(4) since they do not have ylabels if relevant data is
-% missing. h(1) ylabel always has a position. Using h(3) (old implementation) lead to
-% left panel 2 ylabel having the wrong position (too far left) when h(3) did not
-% have any label).
+% NOTE: *NOT* using h(3) or h(4) since they do not have ylabels if the relevant
+% data is missing. h(1) ylabel always has a position. Using h(3) (old
+% implementation) lead to left panel 2 ylabel having the wrong position (too far
+% left) when h(3) did not have any label).
 h(2).YLabel.Position=h(1).YLabel.Position;
 
-% Add spacecraft position as text.
+% Add context info strings (CIS): Spacecraft position, Earth longitude as text.
 [soloStr, earthStr] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint_24h);
-text1 = text(h(10), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', 18);
-% Add Earth longitude as text.
-text(h(10), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
+hCisText1 = text(h(10), -0.11, -0.575, soloStr,  'units', 'normalized', 'fontsize', 18);
+hCisText2 = text(h(10), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
 
 
 
@@ -382,25 +380,18 @@ text(h(1), 0, 1.2, str, 'Units', 'normalized')
 % Remove overlapping tics.
 solo.qli.utils.ensure_axes_data_tick_margins(h)
 
-yyaxis(h(2),'left');
-%oldlims2 = h(2).YLim;
-%oldticks2 = h(2).YTick;
-h(2).YScale='log';
-h(2).YTick=[1,10,100];
-%h(2).YLim=[0.8,200];
+yyaxis(h(2), 'left');
+h(2).YScale = 'log';       % NOTE: Later changed to LIN.
+h(2).YTick  = [1, 10, 100];
+yyaxis(h(2), 'right');
+h(2).YScale = 'log';       % NOTE: Later changed to LIN.
+h(2).YTick  = [1, 10, 100];
 
-yyaxis(h(2),'right');
-%oldlims2_r=h(2).YLim;
-%oldticks2_r = h(2).YTick;
-h(2).YScale='log';
-h(2).YTick=[1,10,100];
-%h(2).YLim=[0.1,200];
-
-oldlims5 = h(5).YLim;
+oldlims5  = h(5).YLim;
 oldticks5 = h(5).YTick;
-h(5).YScale='log';
-h(5).YTick=[1,10,100];
-h(5).YLim=[0.5,300];
+h(5).YScale = 'log';       % NOTE: Later changed to LIN.
+h(5).YTick  = [1, 10, 100];
+h(5).YLim   = [0.5, 300];
 
 % Plot complete. Print in 24h, 6h and 2h intervals.
 fig=gcf;
@@ -408,9 +399,9 @@ fig.PaperPositionMode='auto';
 
 
 
-%=====================
-% Save figure to file
-%=====================
+%===========================
+% Save figure to file (24h)
+%===========================
 filename = solo.qli.utils.get_plot_filename(Tint_24h);
 path1    = fullfile(paths.path_24h, filename);
 print('-dpng',path1);
@@ -420,35 +411,28 @@ print('-dpng',path1);
 %=====================================================
 % Make "global" modifications, AFTER saving 24 h plot
 %=====================================================
-% Change panel 2+5 y scales to "lin" (were previously "log").
-% Keep old ticks!
+% Change panel 2+5 y scales to "lin" (previously "log").
+% h(5): Keep old ylimits and ticks!
 yyaxis(h(2),'right');
-h(2).YScale='lin';
-%h(2).YTick=oldticks2_r;
-%h(2).YLim=oldlims2_r;
+h(2).YScale    = 'lin';       % NOTE: Previously LOG.
+h(2).YTickMode = 'auto';
+yyaxis(h(2), 'left');
+h(2).YScale    = 'lin';       % NOTE: Previously LOG.
 h(2).YTickMode = 'auto';
 
-yyaxis(h(2),'left');
-h(2).YScale='lin';
-%h(2).YLim=oldlims2;
-%h(2).YTick=oldticks2;
-h(2).YTickMode = 'auto';
-
-h(5).YScale='lin';
-h(5).YLim=oldlims5;
-h(5).YTick=oldticks5;
+h(5).YScale = 'lin';          % NOTE: Previously LOG.
+h(5).YLim   = oldlims5;
+h(5).YTick  = oldticks5;
 
 
 
 %===========================
 % Iterate over 6h intervals
 %===========================
-% Print 6h figures.
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBeginSec);
 for i6h = 0:3
 %for i6h = 0:0
 
-    % Define 6h interval and zoom in.
     Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
     modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_6h, paths.path_6h)
 end

@@ -64,19 +64,6 @@
 %   PRO: Useful for more easily determining for which time intervals the code
 %        (those two functions) crashes.
 %
-% PROPOSAL: Catch exceptions raised by plotting subfunctions?
-%   PROPOSAL: Make configurable.
-%   PROPOSAL: Config 1: Catch exceptions but return error code after completing
-%             entire time interval.
-%       NOTE: Can catch multiple crashes/bugs in one run.
-%       PRO: Good for debugging since can find multiple dates with crashes in
-%            one (long, e.g. overnight) test run.
-%       PRO: Useful for batch processing, cron jobs.
-%           PRO: Not worse than the old crash immediately behaviour.
-%   PROPOSAL: Config 2: Immediately raise exception when catching exception.
-%       PRO: Good for debugging (?).
-%   PROPOSAL: Config 3: Catch all exceptions.
-%
 % PROPOSAL: Some way of handling disk access error?
 %   PROPOSAL: try-catch plot code once (weekly or non-weekly plot function).
 %             Then try without catch a second time, maybe after delay.
@@ -93,6 +80,11 @@
 % PROPOSAL: Log time consumption for each call to plot functions.
 %   PROPOSAL: Use solo.qli.utils.log_time().
 %
+% PROPOSAL: Have local function db_get_ts() normalize data returned from
+%           solo.db_get_ts() to TSeries, also for absent data.
+%   NOTE: Would require argument for dimensions when empty.
+%   PRO: Could (probably) simplify plot code a lot.
+%
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()
 % ==========================================
@@ -101,10 +93,6 @@
 %   Stems from solo.db_get_ts() (?) not finding any data for selected time
 %   interval. Can not know the dimensions of missing data if can not find any
 %   CDF at all.
-% PROPOSAL: Function for normalizing data returned from solo.db_get_ts() to
-%           zero-length TSeries.
-%   CON: Can not do since does not know non-time dimensions.
-% PROPOSAL: Iterations over 6h an 2h seem to be identical. Wrap in function(s).
 %
 %
 % Examples of missing data
@@ -126,12 +114,6 @@
 % speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
 ENABLE_B = 1;
 
-% Specify subdirectories for saving the respective types of plots.
-PATHS.path_2h  = fullfile(outputDir, '2h' );
-PATHS.path_6h  = fullfile(outputDir, '6h' );
-PATHS.path_24h = fullfile(outputDir, '24h');
-PATHS.path_1w  = fullfile(outputDir, '1w' );
-
 % NOTE: Usually found on solo/data_yuri.
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
 VHT_6H_DATA_FILENAME = 'V_RPW.mat';
@@ -142,6 +124,12 @@ VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 % Therefore using Wednesday as beginning of "week" for weekly plots (until
 % someone complains).
 FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
+
+% Specify subdirectories for saving the respective types of plots.
+Paths.path_2h  = fullfile(outputDir, '2h' );
+Paths.path_6h  = fullfile(outputDir, '6h' );
+Paths.path_24h = fullfile(outputDir, '24h');
+Paths.path_1w  = fullfile(outputDir, '1w' );
 
 
 
@@ -168,8 +156,8 @@ TimeIntervalWeeks = derive_TimeIntervalWeeks(...
 %   NOTE: This simplifies bash wrapper scripts that copy content of
 %         sub-directories to analogous sub-directories, also when not all
 %         plot types are generated.
-for fnCa = fieldnames(PATHS)'
-    dirPath = PATHS.(fnCa{1});
+for fnCa = fieldnames(Paths)'
+    dirPath = Paths.(fnCa{1});
     [parentDir, dirBasename, dirSuffix] = fileparts(dirPath);
     % NOTE: Works (without warnings) also if subdirectories pre-exist ("msg"
     % contains warning which is never printed.)
@@ -183,8 +171,8 @@ end
 % Run the code for 2-, 6-, 24-hour quicklooks
 %=============================================
 if runNonweeklyPlots
-
-    Time1DayStepsArray = make_time_array(TimeIntervalNonWeeks, 1); % Daily time-intervals
+    % Daily time-intervals
+    Time1DayStepsArray = make_time_array(TimeIntervalNonWeeks, 1);
 
     % Load data
     % This is the .mat file containing RPW speeds at 1h resolution.
@@ -196,7 +184,7 @@ if runNonweeklyPlots
         % Select time interval.
         Tint=irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
 
-        quicklooks_24_6_2_h_local(Tint, vht1h, PATHS, logoPath, ENABLE_B)
+        quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, ENABLE_B)
     end
 end
 
@@ -207,7 +195,8 @@ end
 %===================================
 if runWeeklyPlots
 
-    Time7DayStepsArray = make_time_array(TimeIntervalWeeks, 7);% weekly time-intervals
+    % Weekly time-intervals
+    Time7DayStepsArray = make_time_array(TimeIntervalWeeks, 7);
 
     % Load data
     % This is the .mat file containing RPW speeds at 6h resolution.
@@ -218,7 +207,7 @@ if runWeeklyPlots
         % Select time interval.
         Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
 
-        quicklooks_7days_local(Tint, vht6h, PATHS, logoPath)
+        quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
     end
 end
 
@@ -343,7 +332,7 @@ end
 % NOTE: Uses SPICE and "solo.get_position()".
 function soloPos = get_SolO_pos(Tint)
     assert(length(Tint) == 2)
-    
+
     % IM = irfu-matlab (as opposed to SPICE).
     imSoloPos = solo.get_position(Tint,'frame','ECLIPJ2000');
 
@@ -372,7 +361,7 @@ function earthPosTSeries = get_Earth_pos(Tint, dt)
     if ~isempty(spiceEarthPos)
         [E_radius, E_lon, E_lat] = cspice_reclat(spiceEarthPos);
         earthPos = [E_radius', E_lon', E_lat'];
-        
+
         Tlength  = Tint(end)-Tint(1);
         dTimes   = 0:dt:Tlength;
         Times    = Tint(1)+dTimes;
@@ -432,6 +421,7 @@ end
 % /Erik P G Johansson 2021-03-22
 %
 function Ts = db_get_ts(varargin)
+
     temp = solo.db_get_ts(varargin{:});
 
     % Normalize (TSeries or cell array) --> TSeries.
@@ -467,16 +457,15 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
     assert(isscalar(t1))
     assert(ismember(roundDir, [-1, 1]))
 
-
-
     dv1  = irf.cdf.TT2000_to_datevec(t1.ttns);
     dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
 
     % Round to midnight.
     dt1b = dateshift(dt1a, 'start', 'day');
     if (roundDir == 1) && (dt1a ~= dt1b)
-        % IMPLEMENTATION NOTE: dateshift(..., 'end', 'day') "rounds" to one day after if
-        % timestamp is already midnight. Therefore do not want use that.
+        % IMPLEMENTATION NOTE: dateshift(..., 'end', 'day') "rounds" to one day
+        % after if timestamp is already midnight. Therefore do not want use
+        % that.
         dt1b = dt1b + days(1);
     end
 

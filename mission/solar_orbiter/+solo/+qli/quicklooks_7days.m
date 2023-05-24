@@ -8,18 +8,16 @@ function quicklooks_7days(data,paths,Tint,logoPath)
 lwidth  = 1.0;
 fsize   = 18;
 legsize = 22;
+colors  = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 h       = irf_plot(9,'newfigure');
 fig     = gcf;
 fig.Position = [1,1,1095,800];
-colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 
 Units = irf_units;
 Me    = Units.me;      % Electron mass [kg]
 epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
-%mp    = Units.mp;      % Proton mass [km]
 qe    = Units.e;       % Elementary charge [C]
-
 
 
 %===================================
@@ -255,8 +253,8 @@ text(h(1), 0, 1.2, str, 'Units', 'normalized')
 solo.qli.utils.ensure_axes_data_tick_margins(h)
 
 %yyaxis(h(2),'left');
-oldlims2 = h(2).YLim;
-oldticks2 = h(2).YTick;
+%oldlims2 = h(2).YLim;
+%oldticks2 = h(2).YTick;
 h(2).YScale='log';
 h(2).YTick=[1,10,100];
 h(2).YLim=[0.8,200];
@@ -268,8 +266,8 @@ h(2).YLim=[0.8,200];
 % h(2).YTick=[1,10,100];
 %h(2).YLim=[0.1,200];
 
-oldlims5 = h(5).YLim;
-oldticks5 = h(5).YTick;
+%oldlims5 = h(5).YLim;
+%oldticks5 = h(5).YTick;
 h(5).YScale='log';
 h(5).YTick=[1,10,100];
 %h(5).YLim=[0.5,300];
@@ -292,18 +290,19 @@ filename = solo.qli.utils.get_plot_filename(Tint);
 path1    = fullfile(paths.path_1w, filename);
 print('-dpng',path1);
 % TODO-NI: Why are there any commands (except close()) after this?
+%          Did the code use to iterate over 24h, 6h, 2h plots too?
 
 % h(2).YScale='lin';
 % h(2).YTick=oldticks2_r;
 % h(2).YLim=oldlims2_r;
 %yyaxis(h(2),'left');
-h(2).YScale='lin';
-h(2).YLim=oldlims2;
-h(2).YTick=oldticks2;
-
-h(5).YScale='lin';
-h(5).YLim=oldlims5;
-h(5).YTick=oldticks5;
+% h(2).YScale='lin';
+% h(2).YLim=oldlims2;
+% h(2).YTick=oldticks2;
+%
+% h(5).YScale='lin';
+% h(5).YLim=oldlims5;
+% h(5).YTick=oldticks5;
 
 close(fig);
 

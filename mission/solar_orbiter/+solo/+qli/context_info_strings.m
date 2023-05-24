@@ -22,9 +22,9 @@
 %
 % RETURN VALUES
 % =============
-% Human-readable string.
+% Two human-readable strings.
 %       One-row.
-%       Empty string if no data for time interval.
+%       Empty string(s) if no corresponding data for time interval.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -32,10 +32,14 @@
 function [soloStr, earthStr] = context_info_strings(soloPosTSeries, earthPosTSeries, Tint)
     % TODO-DEC: Function name?
     %       Context, info, string(s)
+    % PROPOSAL: Move to solo.qli.utils.
+    %
     % PROPOSAL: No Tint argument. Caller submits already truncated TSeries.
     %   PRO: One fewer arguments.
     %   CON: Caller has to truncate twice.
     %   CON: Caller might truncate differently for different TSeries.
+    % PROPOSAL: Return cell array of strings.
+    % PROPOSAL: Return multirow strings (with LF).
 
     assert(isa(soloPosTSeries,  'TSeries'))
     assert(isa(earthPosTSeries, 'TSeries'))
