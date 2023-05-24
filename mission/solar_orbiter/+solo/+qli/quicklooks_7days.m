@@ -15,11 +15,10 @@ colors       = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 
 Units = irf_units;
-Me    = Units.me;              % Electron mass [kg]
-epso  = Units.eps0;            % Permitivitty of free space [Fm^-1]
-mp    = Units.mp;              % Proton mass [km]
-qe    = Units.e;               % Elementary charge [C]
-AU_KM = Units.AU / Units.km;   % Astronomical unit [km]
+Me    = Units.me;      % Electron mass [kg]
+epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
+mp    = Units.mp;      % Proton mass [km]
+qe    = Units.e;       % Elementary charge [C]
 
 
 
@@ -57,7 +56,6 @@ h(2).YTick=[10,100];
 hold(h(3),'on');
 if ~isempty(data.Ne)
     irf_plot(h(3),data.Ne.tlim(Tint),'color',colors(1,:),'linewidth',lwidth);
-else
 end
 if ~isempty(data.Npas)
     irf_plot(h(3),data.Npas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
@@ -228,26 +226,31 @@ h(2).YLabel.Position=h(3).YLabel.Position;
 h(9).XLabel.Visible = 'off';
 
 
-if ~isempty(data.solopos.tlim(Tint))
-    teststr = ['SolO: ', ...
-        [' R=',sprintf('%.2f',data.solopos.tlim(Tint).data(1,1)/AU_KM),'Au, '],...
-        [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,3)*180/pi)),'\circ, '],...
-        [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint).data(1,2)*180/pi)),'\circ']];
-    text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
-else
-    teststr = char();
-    text1   = text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
 
-end
+% if ~isempty(data.solopos.tlim(Tint))
+%     teststr = ['SolO: ', ...
+%         [' R=', sprintf('%.2f',data.solopos.tlim(Tint   ).data(1,1)/AU_KM),'Au, '],...
+%         [' EcLat=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,3)*180/pi)),'\circ, '],...
+%         [' EcLon=',sprintf('%d',round(data.solopos.tlim(Tint   ).data(1,2)*180/pi)),'\circ']];
+%     text1=text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+% else
+%     teststr = char();
+%     text1   = text(h(9),-0.11,-0.575,teststr,'units','normalized','fontsize',18);
+% end
+[soloStr, earthStr] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
+text(h(9), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', 18);
 
 % Add Earth longitude as text.
-if ~isempty(data.earthpos)
-    teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos.data(1,2)*180/pi)),'\circ'];
-    text2=text(h(9),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
-else
-    teststr=char();
-    text2=text(h(9),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
-end
+% if ~isempty(data.earthpos)
+%     teststr =['Earth: EcLon=',sprintf('%d',round(data.earthpos.data(1,2)*180/pi)),'\circ'];
+%     text2=text(h(9),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
+% else
+%     teststr=char();
+%     text2=text(h(9),-0.11,-0.925,teststr,'units','normalized','fontsize',18);
+% end
+text(h(9), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
+
+
 
 xtickangle(h(9),0)
 % Add plot information and IRF logo
@@ -264,48 +267,11 @@ if ~isempty(logoPath)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
-currdate = char(datetime("now","Format","uuuu-MM-dd"));
-infostr = ['Swedish Institute of Space Physics, Uppsala (IRFU), ',currdate];
-infostr2 = '. Data available at http://soar.esac.esa.int/';
-text(h(1),0,1.2,[infostr,infostr2],'Units','normalized')
+str = solo.qli.utils.generate_data_source_info();
+text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
-% Fix YTicks
-for iax=1:9
-    cax=h(iax);
-    mintick = min(cax.YTick);
-    maxtick = max(cax.YTick);
-    minlim = cax.YLim(1);
-    maxlim = cax.YLim(2);
-
-    if maxtick>=0
-        if maxlim<1.1*maxtick
-            newmax = 1.1*maxtick;
-        else
-            newmax = maxlim;
-        end
-    else
-        if abs(maxlim)>0.9*abs(maxtick)
-            newmax = 0.9*maxtick;
-        else
-            newmax = maxlim;
-        end
-    end
-
-    if mintick>0
-        if minlim>0.9*mintick
-            newmin = 0.9*mintick;
-        else
-            newmin = minlim;
-        end
-    else
-        if abs(minlim)<1.1*abs(mintick)
-            newmin=1.1*mintick;
-        else
-            newmin=minlim;
-        end
-    end
-    cax.YLim=[newmin,newmax];
-end
+% Remove overlapping tics.
+solo.qli.utils.ensure_axes_data_tick_margins(h)
 
 %yyaxis(h(2),'left');
 oldlims2 = h(2).YLim;
@@ -338,16 +304,9 @@ irf_zoom(h(1:9),'x',Tint);
 fig=gcf;
 fig.PaperPositionMode='auto';
 
-filesmth = Tint(1);
-filesmth = filesmth.utc;
-filestr1 = filesmth(1:13);
-filestr1([5,8])=[];
+filename = solo.qli.utils.get_plot_filename(Tint);
+path1    = fullfile(paths.path_1w, filename);
 
-filesmth = Tint(end);
-filesmth = filesmth.utc;
-filestr2 = filesmth(1:13);
-filestr2([5,8])=[];
-path1=fullfile(paths.path_1w,[filestr1,'_',filestr2,'.png']);
 %=====================
 % Save figure to file
 %=====================
