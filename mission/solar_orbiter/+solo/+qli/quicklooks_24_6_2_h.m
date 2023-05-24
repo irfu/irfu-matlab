@@ -452,57 +452,12 @@ for i6h = 0:3
     Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
     irf_zoom(h(1:10),'x',Tint_6h);
     irf_zoom(h(1),'y');
+
     % Zoom on N/|B| plot.
-%     Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(  Tint_6h)) && ~all(isnan(data.Ne.tlim(Tint_6h).data));
-%     Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_6h));
-%     if Neflag && Npasflag
-%         yyaxis(h(2),'left');
-%         h(2).YLim=[...
-%             min(floor([min(data.Npas.tlim(Tint_6h).data),min(data.Ne.tlim(Tint_6h).data)])),...
-%             max(ceil( [max(data.Npas.tlim(Tint_6h).data),max(data.Ne.tlim(Tint_6h).data)]))...
-%         ];
-%     elseif Neflag
-%         yyaxis(h(2),'left');
-%         h(2).YLim=[floor(min(data.Ne.tlim(Tint_6h).data)),ceil(max(data.Ne.tlim(Tint_6h).data))];
-%     elseif Npasflag
-%         yyaxis(h(2),'left');
-%         h(2).YLim=[floor(min(data.Npas.tlim(Tint_6h).data)),ceil(max(data.Npas.tlim(Tint_6h).data))];
-%     end
-%     if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_6h)) && ~all(isnan(data.B.abs.tlim(Tint_6h).data))
-%         yyaxis(h(2),'right');
-%         h(2).YLim=[floor(min(data.B.abs.tlim(Tint_6h).data)),ceil(max(data.B.abs.tlim(Tint_6h).data))];
-%     end
-    adjust_panel_ylimits_N_B(h(2), data, Tint_6h)
-%     if ~isempty(data.Tpas)
-%         minTi = min(rmmissing(data.Tpas.tlim(Tint_6h).abs.data));
-%         maxTi = max(rmmissing(data.Tpas.tlim(Tint_6h).abs.data));
-%         if ~isempty(minTi) && ~isempty(maxTi)
-%             % Only zoom if min & max are not NaN (==> Avoid crash).
-%             irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
-%         end
-%     end
-    adjust_panel_ylimits_Ti(h(5), data.Tpas, Tint_6h)
-%     if ~isempty(data.Vpas)
-%         minVy = min(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
-%         minVz = min(rmmissing(data.Vpas.z.tlim(Tint_6h).data));
-%         maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_6h).data));
-%         maxVz = max(rmmissing(data.Vpas.z.tlim(Tint_6h).data));
-%         maxV = max(maxVy,maxVz);
-%         minV = min(minVy,minVz);
-%         if ~isempty(minV) && ~isempty(maxV)
-%             % Only zoom if min & max are not NaN (==> Avoid crash).
-%             irf_zoom(h(6),'y',[minV-10, maxV+10]);
-%         end
-%     end
+    adjust_panel_ylimits_N_B(  h(2), data,      Tint_6h)
+    adjust_panel_ylimits_Ti(   h(5), data.Tpas, Tint_6h)
     adjust_panel_ylimits_VT_VN(h(6), data.Vpas, Tint_6h)
-%     if ~isempty(data.E)
-%         minEy_6h = min(rmmissing(data.E.y.tlim(Tint_6h).data));
-%         maxEy_6h = max(rmmissing(data.E.y.tlim(Tint_6h).data));
-%         if ~isempty(minEy_6h) && ~isempty(maxEy_6h)
-%             irf_zoom(h(8),'y',[minEy_6h-5 maxEy_6h+5]);
-%         end
-%     end
-    adjust_panel_ylimits_ESRF(h(8), data.E, Tint_6h)
+    adjust_panel_ylimits_ESRF( h(8), data.E,    Tint_6h)
     irf_zoom(h(7),'y');
 
     % Remove overlapping ticks.
@@ -530,56 +485,10 @@ for i6h = 0:3
         irf_zoom(h(1:10),'x',Tint_2h);
         irf_zoom(h(1),'y');
 
-%         Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(  Tint_2h)) && ~all(isnan(data.Ne.tlim(Tint_2h).data));
-%         Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint_2h));
-%         if Neflag && Npasflag
-%             yyaxis(h(2),'left');
-%             h(2).YLim=[...
-%                 min(floor([min(data.Npas.tlim(Tint_2h).data),min(data.Ne.tlim(Tint_2h).data)])),...
-%                 max(ceil( [max(data.Npas.tlim(Tint_2h).data),max(data.Ne.tlim(Tint_2h).data)]))...
-%             ];
-%         elseif Neflag
-%             yyaxis(h(2),'left');
-%             h(2).YLim=[floor(min(data.Ne.tlim(Tint_2h).data)),ceil(max(data.Ne.tlim(Tint_2h).data))];
-%         elseif Npasflag
-%             yyaxis(h(2),'left');
-%             h(2).YLim=[floor(min(data.Npas.tlim(Tint_2h).data)),ceil(max(data.Npas.tlim(Tint_2h).data))];
-%         end
-%         if ~isempty(data.B) && ~isempty(data.B.tlim(Tint_2h)) && ~all(isnan(data.B.abs.tlim(Tint_2h).data))
-%             yyaxis(h(2),'right');
-%             h(2).YLim=[floor(min(data.B.abs.tlim(Tint_2h).data)),ceil(max(data.B.abs.tlim(Tint_2h).data))];
-%         end
-        adjust_panel_ylimits_N_B(h(2), data, Tint_2h)
-%         if ~isempty(data.Tpas)
-%             minTi = min(rmmissing(data.Tpas.tlim(Tint_2h).abs.data));
-%             maxTi = max(rmmissing(data.Tpas.tlim(Tint_2h).abs.data));
-%             if ~isempty(minTi) && ~isempty(maxTi)
-%                 % Only zoom if min & max are not NaN (==> Avoid crash).
-%                 irf_zoom(h(5),'y',[minTi-2, maxTi+2]);
-%             end
-%         end
-        adjust_panel_ylimits_Ti(h(5), data.Tpas, Tint_2h)
-%         if ~isempty(data.Vpas)
-%             minVy = min(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
-%             minVz = min(rmmissing(data.Vpas.z.tlim(Tint_2h).data));
-%             maxVy = max(rmmissing(data.Vpas.y.tlim(Tint_2h).data));
-%             maxVz = max(rmmissing(data.Vpas.z.tlim(Tint_2h).data));
-%             maxV = max(maxVy,maxVz);
-%             minV = min(minVy,minVz);
-%             if ~isempty(minV) && ~isempty(maxV)
-%                 % Only zoom if min & max are not NaN (==> Avoid crash).
-%                 irf_zoom(h(6),'y',[minV-10, maxV+10]);
-%             end
-%         end
+        adjust_panel_ylimits_N_B(  h(2), data,      Tint_2h)
+        adjust_panel_ylimits_Ti(   h(5), data.Tpas, Tint_2h)
         adjust_panel_ylimits_VT_VN(h(6), data.Vpas, Tint_2h)
-%         if ~isempty(data.E)
-%             minEy_2h = min(rmmissing(data.E.y.tlim(Tint_2h).data));
-%             maxEy_2h = max(rmmissing(data.E.y.tlim(Tint_2h).data));
-%             if ~isempty(minEy_2h) && ~isempty(maxEy_2h)
-%                 irf_zoom(h(8),'y',[minEy_2h-5 maxEy_2h+5]);
-%             end
-%         end
-        adjust_panel_ylimits_ESRF(h(8), data.E, Tint_2h)
+        adjust_panel_ylimits_ESRF( h(8), data.E,    Tint_2h)
         irf_zoom(h(7),'y');
 
         % Remove overlapping ticks.
@@ -609,11 +518,6 @@ end
 
 % Function to remove duplicated code.
 function adjust_panel_ylimits_N_B(hAxes, data, Tint)
-    % PROPOSAL: Convert into function that does not work on graphical
-    %           objects, i.e. returns ylimits.
-    %   PRO: Better for testing.
-    %   CON: Setting YLim is conditional, and depends on left/right.
-
     assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isstruct(data))
     assert(isa(Tint, 'EpochTT'))
@@ -644,6 +548,8 @@ end
 
 % Function to remove duplicated code.
 function adjust_panel_ylimits_Ti(hAxes, TpasTSeries, Tint)
+    Y_MARGIN = 2;
+
     assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isa(TpasTSeries, 'TSeries') || isempty(TpasTSeries))
     assert(isa(Tint, 'EpochTT'))
@@ -654,7 +560,7 @@ function adjust_panel_ylimits_Ti(hAxes, TpasTSeries, Tint)
 
         if ~isempty(minTi) && ~isempty(maxTi)
             % Only zoom if min & max are not NaN (==> Avoid crash).
-            irf_zoom(hAxes,'y',[minTi-2, maxTi+2]);
+            irf_zoom(hAxes,'y',[minTi-Y_MARGIN, maxTi+Y_MARGIN]);
         end
     end
 end
@@ -663,6 +569,8 @@ end
 
 % Function to remove duplicated code.
 function adjust_panel_ylimits_VT_VN(hAxes, VpasTSeries, Tint)
+    Y_MARGIN = 10;
+
     assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isa(VpasTSeries, 'TSeries') || isempty(VpasTSeries))
     assert(isa(Tint, 'EpochTT'))
@@ -676,7 +584,7 @@ function adjust_panel_ylimits_VT_VN(hAxes, VpasTSeries, Tint)
         minV = min(minVy,minVz);
         if ~isempty(minV) && ~isempty(maxV)
             % Only zoom if min & max are not NaN (==> Avoid crash).
-            irf_zoom(hAxes,'y',[minV-10, maxV+10]);
+            irf_zoom(hAxes,'y',[minV-Y_MARGIN, maxV+Y_MARGIN]);
         end
     end
 end
@@ -685,6 +593,8 @@ end
 
 % Function to remove duplicated code.
 function adjust_panel_ylimits_ESRF(hAxes, ETSeries, Tint)
+    Y_MARGIN = 5;
+
     assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isa(ETSeries, 'TSeries') || isempty(ETSeries))
     assert(isa(Tint, 'EpochTT'))
@@ -694,7 +604,7 @@ function adjust_panel_ylimits_ESRF(hAxes, ETSeries, Tint)
         maxEy = max(rmmissing(ETSeries.y.tlim(Tint).data));
 
         if ~isempty(minEy) && ~isempty(maxEy)
-            irf_zoom(hAxes,'y',[minEy-5 maxEy+5]);
+            irf_zoom(hAxes,'y',[minEy-Y_MARGIN, maxEy+Y_MARGIN]);
         end
     end
 end
