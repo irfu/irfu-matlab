@@ -5,31 +5,32 @@ function quicklooks_7days(data,paths,Tint,logoPath)
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-08T00:00:00.00Z');
 
 % Setup figure:
-lwidth  = 1.0;
-fsize   = 18;
-legsize = 22;
-colors  = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
-h       = irf_plot(9,'newfigure');
-fig     = gcf;
-fig.Position = [1,1,1095,800];
-
+LWIDTH   = 1.0;   % irf_plot() line width
+FSIZE    = 18;    % Font size
+LEG_SIZE = 22;    % irf_legend font size
+COLORS   = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 Units = irf_units;
 Me    = Units.me;      % Electron mass [kg]
 epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
 qe    = Units.e;       % Elementary charge [C]
 
+h            = irf_plot(9,'newfigure');
+fig          = gcf;
+fig.Position = [1,1,1095,800];
+
+
 
 %===================================
 % Fill panel 1: B vector components
 %===================================
 if ~isempty(data.B)
-    irf_plot(h(1),data.B.tlim(Tint),'linewidth',lwidth);
+    irf_plot(h(1),data.B.tlim(Tint),'linewidth',LWIDTH);
     hold(h(1),'on');
-    irf_plot(h(1),data.B.abs.tlim(Tint),'linewidth',lwidth);
+    irf_plot(h(1),data.B.abs.tlim(Tint),'linewidth',LWIDTH);
 end
-irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',legsize);
-ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',fsize);
+irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
+ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 irf_zoom(h(1),'y');
 
 
@@ -39,9 +40,9 @@ irf_zoom(h(1),'y');
 %======================
 if ~isempty(data.B)
     %fci = qe*data.B.abs*10^-9/mp/(2*pi);
-    irf_plot(h(2),data.B.abs.tlim(Tint),'linewidth',lwidth);
+    irf_plot(h(2),data.B.abs.tlim(Tint),'linewidth',LWIDTH);
 end
-ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 h(2).YScale='log';
 h(2).YTick=[10,100];
 %h(2).YLim=[0.1,200];
@@ -53,13 +54,13 @@ h(2).YTick=[10,100];
 %=========================
 hold(h(3),'on');
 if ~isempty(data.Ne)
-    irf_plot(h(3),data.Ne.tlim(Tint),'color',colors(1,:),'linewidth',lwidth);
+    irf_plot(h(3),data.Ne.tlim(Tint),'color',COLORS(1,:),'linewidth',LWIDTH);
 end
 if ~isempty(data.Npas)
-    irf_plot(h(3),data.Npas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(3),data.Npas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
-ylabel(h(3),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
-irf_legend(h(3),{'N_{e,RPW} ',' N_{i,PAS}'},[0.98 0.16],'Fontsize',legsize);
+ylabel(h(3),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FSIZE);
+irf_legend(h(3),{'N_{e,RPW} ',' N_{i,PAS}'},[0.98 0.16],'Fontsize',LEG_SIZE);
 h(3).YScale='log';
 h(3).YTick=[10,100];
 %h(3).YLim=[0.8,200];
@@ -70,9 +71,9 @@ h(3).YTick=[10,100];
 % Fill panel 4: Ion temperature
 %===============================
 if ~isempty(data.Tpas)
-    irf_plot(h(4),data.Tpas.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(4),data.Tpas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
-ylabel(h(4),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(4),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
 h(4).YScale='log';
 h(4).YTick=[1,10,100];
 h(4).YLim=[0.5,300];
@@ -84,13 +85,13 @@ h(4).YLim=[0.5,300];
 %==============
 % y,z PAS velocities
 if ~isempty(data.Vpas)
-    irf_plot(h(5),data.Vpas.y.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(5),data.Vpas.y.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
     hold(h(5),'on');
-    irf_plot(h(5),data.Vpas.z.tlim(Tint),'color',colors(3,:),'linewidth',lwidth);
+    irf_plot(h(5),data.Vpas.z.tlim(Tint),'color',COLORS(3,:),'linewidth',LWIDTH);
 end
-irf_legend(h(5),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',legsize);
+irf_legend(h(5),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
 irf_zoom(h(5),'y');
-ylabel(h(5),{'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(5),{'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
 
 
@@ -99,14 +100,14 @@ ylabel(h(5),{'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
 %==============
 hold(h(6),'on');
 if ~isempty(data.Vrpw)
-    irf_plot(h(6),-data.Vrpw,'o','color',colors(1,:));
+    irf_plot(h(6),-data.Vrpw,'o','color',COLORS(1,:));
 end
 if ~isempty(data.Vpas)
-    irf_plot(h(6),data.Vpas.x.tlim(Tint),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(6),data.Vpas.x.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
-irf_legend(h(6),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',legsize);
+irf_legend(h(6),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',LEG_SIZE);
 %h(6).YLim=[150,950];
-ylabel(h(6),{'v_{R}';'(km/s)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(6),{'v_{R}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
 
 
@@ -114,13 +115,13 @@ ylabel(h(6),{'v_{R}';'(km/s)'},'interpreter','tex','fontsize',fsize);
 % Fill panel 7
 %==============
 if ~isempty(data.E)
-    irf_plot(h(7),data.E.y,'color',colors(2,:),'linewidth',lwidth)
+    irf_plot(h(7),data.E.y,'color',COLORS(2,:),'linewidth',LWIDTH)
     hold(h(7),'on');
-    %irf_plot(h(7),data.E.z,'color',colors(3,:),'linewidth',lwidth)
+    %irf_plot(h(7),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
 end
-irf_legend(h(7),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
+irf_legend(h(7),{'','E_y'},[0.98 0.20],'Fontsize',LEG_SIZE);
 irf_zoom(h(7),'y');
-ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',FSIZE);
 
 
 
@@ -195,7 +196,7 @@ if ~isempty(data.Etnr)
             fpe_sc = (wpe_sc/2/pi)/1000;
             fpe_sc.units = 'kHz';
             fpe_sc.name  = 'f [kHz]';
-            irf_plot(h(9),fpe_sc,'r','linewidth',lwidth);
+            irf_plot(h(9),fpe_sc,'r','linewidth',LWIDTH);
         end
         text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
         %set(h(9), 'YScale', 'log');

@@ -43,13 +43,10 @@ ALL_PLOTS_ENABLED = 1;
 
 
 % Setup figure:
-lwidth  = 1.0;
-fsize   = 18;
-legsize = 22;
-colors  = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
-h       = irf_plot(10,'newfigure');
-fig     = gcf;
-fig.Position =[1,1,1095,800];
+LWIDTH   = 1.0;   % irf_plot() Line width
+FSIZE    = 18;    % Font size
+LEG_SIZE = 22;    % irf_legend() font size
+COLORS   = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 Units = irf_units;
 Me    = Units.me;      % Electron mass [kg]
@@ -57,18 +54,22 @@ epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
 mp    = Units.mp;      % Proton mass [km]
 qe    = Units.e;       % Elementary charge [C]
 
+h            = irf_plot(10,'newfigure');
+fig          = gcf;
+fig.Position = [1,1,1095,800];
+
 
 
 %===================================
 % Fill panel 1: B vector components
 %===================================
 if ~isempty(data.B)
-    irf_plot(h(1),data.B.tlim(Tint_24h),'linewidth',lwidth);
+    irf_plot(h(1),data.B.tlim(Tint_24h),'linewidth',LWIDTH);
     hold(h(1),'on');
-    irf_plot(h(1),data.B.abs.tlim(Tint_24h),'linewidth',lwidth);
+    irf_plot(h(1),data.B.abs.tlim(Tint_24h),'linewidth',LWIDTH);
 end
-irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',legsize);
-ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',fsize);
+irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
+ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 
@@ -79,19 +80,19 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 %=======================
 hold(h(2),'on');
 if ~isempty(data.Ne)
-    irf_plot(h(2),data.Ne.tlim(Tint_24h),'-','color',colors(1,:),'linewidth',lwidth);
+    irf_plot(h(2),data.Ne.tlim(Tint_24h),'-','color',COLORS(1,:),'linewidth',LWIDTH);
 end
 if ~isempty(data.Npas)
-    irf_plot(h(2),data.Npas.tlim(Tint_24h),'-','color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(2),data.Npas.tlim(Tint_24h),'-','color',COLORS(2,:),'linewidth',LWIDTH);
 end
-ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',fsize);
-h(2).ColorOrder=colors;
-irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',legsize);
+ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FSIZE);
+h(2).ColorOrder=COLORS;
+irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',LEG_SIZE);
 
 yyaxis(h(2),'right');
 if ~isempty(data.B)
     fci = qe*data.B.abs*10^-9/mp/(2*pi);
-    irf_plot(h(2),data.B.abs.tlim(Tint_24h),'color',colors(3,:),'linewidth',lwidth);
+    irf_plot(h(2),data.B.abs.tlim(Tint_24h),'color',COLORS(3,:),'linewidth',LWIDTH);
     %Bnan = rmmissing(data.B.abs.data);
     %if ~isempty(Bnan)
     %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
@@ -103,7 +104,7 @@ if ~isempty(data.B)
         irf_zoom(h(2),'y',[minAbsB-1, maxAbsB+1]);
     end
 end
-ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 h(2).YColor=[1,0,0];
 
 tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
@@ -157,7 +158,7 @@ if ~isempty(data.B) && SPECTRA_ENABLED
         % set(h(1),'ytick',[1e1 1e2 1e3]);
         % caxis(h(3),[-8 -1])
         hold(h(3),'on');
-        irf_plot(h(3),fci,'k','linewidth',lwidth);
+        irf_plot(h(3),fci,'k','linewidth',LWIDTH);
         text(h(3),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
         colormap(h(3),'jet');
 
@@ -171,7 +172,7 @@ if ~isempty(data.B) && SPECTRA_ENABLED
         % set(h(1),'ytick',[1e1 1e2 1e3]);
         caxis(h(4),[-1 1])
         hold(h(4),'on');
-        irf_plot(h(4),fci,'k','linewidth',lwidth);
+        irf_plot(h(4),fci,'k','linewidth',LWIDTH);
         text(h(4),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
 
         crr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
@@ -181,8 +182,8 @@ if ~isempty(data.B) && SPECTRA_ENABLED
         colormap(h(4),bgrcmap);
     end
 end
-ylabel(h(3),{'f';'(Hz)'},'fontsize',fsize);
-ylabel(h(4),{'f';'(Hz)'},'fontsize',fsize);
+ylabel(h(3),{'f';'(Hz)'},'fontsize',FSIZE);
+ylabel(h(4),{'f';'(Hz)'},'fontsize',FSIZE);
 tBeginSec = solo.qli.utils.log_time('End panel 3 & 4', tBeginSec);
 
 
@@ -191,10 +192,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 3 & 4', tBeginSec);
 % Fill panel 5: Ion temperature
 %===============================
 if ~isempty(data.Tpas)
-    irf_plot(h(5),data.Tpas.tlim(Tint_24h),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(5),data.Tpas.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 irf_zoom(h(5),'y');
-ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 
@@ -204,13 +205,13 @@ tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 % Fill panel 6: y,z PAS velocities
 %==================================
 if ~isempty(data.Vpas)
-    irf_plot(h(6),data.Vpas.y.tlim(Tint_24h),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(6),data.Vpas.y.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
     hold(h(6),'on');
-    irf_plot(h(6),data.Vpas.z.tlim(Tint_24h),'color',colors(3,:),'linewidth',lwidth);
+    irf_plot(h(6),data.Vpas.z.tlim(Tint_24h),'color',COLORS(3,:),'linewidth',LWIDTH);
 end
-irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',legsize);
+irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
 irf_zoom(h(6),'y');
-ylabel(h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 
@@ -221,14 +222,14 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 %=====================================
 hold(h(7),'on');
 if ~isempty(data.Vrpw)
-    irf_plot(h(7),-data.Vrpw,'o-','color',colors(1,:));
+    irf_plot(h(7),-data.Vrpw,'o-','color',COLORS(1,:));
 end
 if ~isempty(data.Vpas)
-    irf_plot(h(7),data.Vpas.x.tlim(Tint_24h),'color',colors(2,:),'linewidth',lwidth);
+    irf_plot(h(7),data.Vpas.x.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
-irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',legsize);
+irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',LEG_SIZE);
 irf_zoom(h(7),'y');
-ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
@@ -238,9 +239,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 % Fill panel 8: Electric field
 %==============================
 if ~isempty(data.E)
-    irf_plot(h(8),data.E.y,'color',colors(2,:),'linewidth',lwidth)
+    irf_plot(h(8),data.E.y,'color',COLORS(2,:),'linewidth',LWIDTH)
     hold(h(8),'on');
-    %irf_plot(h(8),data.E.z,'color',colors(3,:),'linewidth',lwidth)
+    %irf_plot(h(8),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
 
     minEy = min(rmmissing(data.E.y.data));
     maxEy = max(rmmissing(data.E.y.data));
@@ -248,8 +249,8 @@ if ~isempty(data.E)
         irf_zoom(h(8),'y',[minEy-5 maxEy+5]);
     end
 end
-irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',legsize);
-ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',fsize);
+irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',LEG_SIZE);
+ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
@@ -283,7 +284,7 @@ if ~isempty(data.ieflux)
 end
 set(h(9), 'YScale', 'log');
 colormap(h(9),jet)
-ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',FSIZE);
 tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 
 
@@ -308,7 +309,7 @@ if ~isempty(data.Etnr)
                 % Electron plasma frequency
                 wpe_sc = (sqrt(((data.Ne.tlim(Tint_24h)*1000000)*qe^2)/(Me*epso)));
                 fpe_sc = (wpe_sc/2/pi)/1000;
-                irf_plot(h(10),fpe_sc,'r','linewidth',lwidth);
+                irf_plot(h(10),fpe_sc,'r','linewidth',LWIDTH);
                 fpe_sc.units = 'kHz';
                 fpe_sc.name = 'f [kHz]';
             end
@@ -317,14 +318,14 @@ if ~isempty(data.Etnr)
             set(h(10), 'YScale', 'log');
             %set(h(10),'ColorScale','log')
             %caxis(h(10),[.01 1]*10^-12)
-            ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+            ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
             colormap(h(10),jet)
             yticks(h(10),[10^1 10^2]);
             irf_zoom(h(10),'y',[10^1 10^2])
         end
     end
 end
-ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
 yticks(h(10),[10^1 10^2]);
 irf_zoom(h(10),'y',[10^1 10^2])
 
@@ -333,9 +334,9 @@ if isempty(data.Vrpw) ...
         && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
         && isempty(data.Etnr)
     nanPlot = irf.ts_scalar(Tint_24h,ones(1,2)*NaN);
-    irf_plot(h(10),nanPlot);
+    irf_plot(h(10),nanPlot);    % No LWIDTH?
     grid(h(10),'off');
-    ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',fsize);
+    ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
 end
 
 tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
