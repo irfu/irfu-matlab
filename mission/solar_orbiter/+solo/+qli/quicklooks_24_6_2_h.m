@@ -292,7 +292,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 %=======================================
 % Fill panel 10: E-field spectrum (TNR)
 %=======================================
-if ~isempty(data.Etnr)
+if ~isempty(data.Etnr)    % && false
     try
         [TNR] = solo.read_TNR(Tint_24h);
     catch Exc
@@ -384,7 +384,7 @@ set(ha2,'handlevisibility','off','visible','off')
 str = solo.qli.utils.generate_data_source_info();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
-% Remove overlapping tics.
+% Remove overlapping ticks.
 solo.qli.utils.ensure_axes_data_tick_margins(h)
 
 yyaxis(h(2), 'left');
@@ -400,15 +400,20 @@ h(5).YScale = 'log';       % NOTE: Later changed to LIN.
 h(5).YTick  = [1, 10, 100];
 h(5).YLim   = [0.5, 300];
 
-% Plot complete. Print in 24h, 6h and 2h intervals.
+% Plot (almost) complete. Save plots for 24h, 6h and 2h intervals.
 fig=gcf;
 fig.PaperPositionMode='auto';
-
 
 
 %===========================
 % Save figure to file (24h)
 %===========================
+% PROPOSAL: Use modify_save_subinterval_plot() here?
+%   NOTE: Indirectly calls solo.qli.utils.ensure_axes_data_tick_margins() which
+%   thus should be disabled above.
+%   ==> Changing order of commands.
+%   ==> Calls to YScale, YTick above become superseded.
+%   ==> Unwanted change of behaviour.
 filename = solo.qli.utils.get_plot_filename(Tint_24h);
 path1    = fullfile(paths.path_24h, filename);
 print('-dpng',path1);
@@ -437,8 +442,10 @@ I_6H = 0:3;
 I_2H = 0:11;
 if ~ALL_PLOTS_ENABLED
     % For debugging/testing.
-    I_6H = 0:0;
-    I_2H = 0:0;
+    %I_6H = [0];
+    %I_2H = [0];
+    I_6H = [];
+    I_2H = [5];
 end
 
 %===========================
@@ -474,11 +481,11 @@ end
 % Presumes pre-existing figure with specific axes. Uses customized code to zoom
 % in on the sub-time interval and adjusts the y limits for that interval.
 function modify_save_subinterval_plot(hAxesArray, hCisText1, hCisText2, data, Tint, parentDirPath)
-    assert(isa(hAxesArray, 'matlab.graphics.axis.Axes'))
-    assert(isa(hCisText1, 'matlab.graphics.primitive.Text'))
-    assert(isa(hCisText2, 'matlab.graphics.primitive.Text'))
+    assert(isa(hAxesArray, 'matlab.graphics.axis.Axes') || length(hAxesArray) == 10)
+    assert(isa(hCisText1,  'matlab.graphics.primitive.Text'))
+    assert(isa(hCisText2,  'matlab.graphics.primitive.Text'))
     assert(isstruct(data))
-    assert(isa(Tint, 'EpochTT'))
+    assert(isa(Tint,       'EpochTT'))
 
     irf_zoom(hAxesArray(1:10), 'x', Tint);
 
@@ -509,8 +516,11 @@ end
 function adjust_panel_ylimits_N_B(hAxes, data, Tint)
     assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isstruct(data))
-    assert(isa(Tint, 'EpochTT'))
+    assert(isa(Tint,  'EpochTT'))
 
+    %=============
+    % Left Y axis
+    %=============
     Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(  Tint)) && ~all(isnan(data.Ne.tlim(Tint).data));
     Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint));
     if Neflag && Npasflag
@@ -527,6 +537,9 @@ function adjust_panel_ylimits_N_B(hAxes, data, Tint)
         hAxes.YLim=[floor(min(data.Npas.tlim(Tint).data)),ceil(max(data.Npas.tlim(Tint).data))];
     end
 
+    %==============
+    % Right Y axis
+    %==============
     if ~isempty(data.B) && ~isempty(data.B.tlim(Tint)) && ~all(isnan(data.B.abs.tlim(Tint).data))
         yyaxis(hAxes,'right');
         hAxes.YLim=[floor(min(data.B.abs.tlim(Tint).data)),ceil(max(data.B.abs.tlim(Tint).data))];
@@ -539,9 +552,9 @@ end
 function adjust_panel_ylimits_Ti(hAxes, TpasTSeries, Tint)
     Y_MARGIN = 2;
 
-    assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
+    assert(isa(hAxes,       'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isa(TpasTSeries, 'TSeries') || isempty(TpasTSeries))
-    assert(isa(Tint, 'EpochTT'))
+    assert(isa(Tint,        'EpochTT'))
 
     if ~isempty(TpasTSeries)
         minTi = min(rmmissing(TpasTSeries.tlim(Tint).abs.data));
@@ -560,9 +573,9 @@ end
 function adjust_panel_ylimits_VT_VN(hAxes, VpasTSeries, Tint)
     Y_MARGIN = 10;
 
-    assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
+    assert(isa(hAxes,       'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isa(VpasTSeries, 'TSeries') || isempty(VpasTSeries))
-    assert(isa(Tint, 'EpochTT'))
+    assert(isa(Tint,        'EpochTT'))
 
     if ~isempty(VpasTSeries)
         minVy = min(rmmissing(VpasTSeries.y.tlim(Tint).data));
@@ -584,9 +597,9 @@ end
 function adjust_panel_ylimits_ESRF(hAxes, ETSeries, Tint)
     Y_MARGIN = 5;
 
-    assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
+    assert(isa(hAxes,    'matlab.graphics.axis.Axes') && isscalar(hAxes))
     assert(isa(ETSeries, 'TSeries') || isempty(ETSeries))
-    assert(isa(Tint, 'EpochTT'))
+    assert(isa(Tint,     'EpochTT'))
 
     if ~isempty(ETSeries)
         minEy = min(rmmissing(ETSeries.y.tlim(Tint).data));

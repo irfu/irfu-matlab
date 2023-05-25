@@ -85,6 +85,8 @@
 %   NOTE: Would require argument for dimensions when empty.
 %   PRO: Could (probably) simplify plot code a lot.
 %
+% PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
+%
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()
 % ==========================================
@@ -256,6 +258,7 @@ end    % function
 function log_plot_function_time_interval(Tint)
     utcStr1 = Tint(1).utc;
     utcStr2 = Tint(2).utc;
+    % NOTE: Truncating subseconds (keeping accuracy down to seconds).
     utcStr1 = utcStr1(1:19);
     utcStr2 = utcStr2(1:19);
 
