@@ -5,7 +5,7 @@ function irf_zoom(varargin)
 %   IRF_ZOOM(AX,...) zooms in specified axes
 %
 %   IRF_ZOOM('x',xlim) zooms X axis
-%       X axis are usualy time. in this case xlim can be in different form
+%       X axis are usually time. in this case xlim can be in different form
 %       xlim=[tlim1 tlim2] - time interval specified in EPOCH
 %       xlim={[yyyy mm dd hh mm ss] [yyyy mm dd hh mm ss]}
 %           left side of vector can be skipped, then uses it from axes
@@ -226,7 +226,7 @@ for ih=1:numel(hlines)
   end
   ydlim=ydlim(isfinite(ydlim)); % remove NaN and Inf points
   if numel(ydlim)<2
-    ylimd=ylims; % dont change if zooming to 1 or less points
+    ylimd=ylims; % don't change if zooming to 1 or less points
   else
     ylimd=[min(ydlim) max(ydlim)];
   end
@@ -241,7 +241,7 @@ for ih=1:numel(hlines)
     end
   end
 end
-if isempty(ylims) % has been to few data points to estimate limits
+if isempty(ylims) % has been too few data points to estimate limits
   ylims=get(h,'ylim');
 end
 if isa(ylims, 'integer'), ylims = double(ylims); end
