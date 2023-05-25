@@ -365,13 +365,13 @@ classdef solo_local_file_db < solo_file_db
           case 'rpw-lfr-surv-asm'
             subDir = 'lfr_asm'; % ie combined 2nd "_" 4th
           case 'rpw-tds-surv-hist1d'
-            subDir = 'hist1d';  % ie 4th
+            subDir = 'tds_hist1d';  % ie 4th
           case 'rpw-tds-surv-hist2d'
-            subDir = 'hist2d';  % ie 4th
+            subDir = 'tds_hist2d';  % ie 4th
           case 'rpw-tds-surv-mamp'
-            subDir = 'mamp';    % ie 4th
+            subDir = 'tds_mamp';    % ie 4th
           case 'rpw-tds-surv-stat'
-            subDir = 'stat';    % ie 4th
+            subDir = 'tds_stat';    % ie 4th
           case {'rpw-lfr-surv-bp1', 'rpw-lfr-surv-bp2'}
             subDir = 'lfr_bp';    % ie combined 2nd "_" 4th (excl last digit, which is unique)
           case {'rpw-lfr-surv-cwf-b', 'rpw-lfr-surv-swf-b'}
