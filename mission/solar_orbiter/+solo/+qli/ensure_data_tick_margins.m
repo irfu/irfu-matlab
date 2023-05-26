@@ -1,47 +1,63 @@
 %
-% Given (1) the min/max ticks, and (2) min/max data value on some axis, derive
-% suggested plot min/max limits to use so that ticks are not at the plot min/max
-% limits. The algorithm largely assumes that the axis is logarithmic but it
-% should work well enough for linear axes too.
+% For a given axis (X/Y/Z): given
+%   (1) preexisting min/max ticks (min/max values at which there are ticks), and
+%   (2) min/max *data* values,
+% derive suggested plot min/max limits (e.g. YLim) which will ensure that there
+% is a margin between the (old) ticks and the returned plot min/max limits. The
+% returned min/max limits may be the same as the submitted ones.
 %
 % This is useful when stacking panels on top of/next to each other without any
-% space in between. It is however a crude method that assumes that MATLAB will
-% not add ticks in certain ways when changing the plot range.
+% space in between. Tick labels may overlap in such cases. It is however a crude
+% method that does not take font sizes into account and that may fail.
 %
-% Intended to simplify/replace sections "Remove overlapping Tics" in
-% quicklooks_24_6_2_h() and quicklooks_7days().
+% The function assumes that the user ensures that the same ticks are used before
+% and after the call to the function. This can be achieved using a command
+% h.YTickMode = 'manual' before calling the function.
 %
-% NOTE: Might not work for tick limits at zero. Is a special case.
+% NOTE: This function (intentionally) does not operate on (read from or write
+% to) any graphical objects. It only derives numerical values from other
+% numerical values. This is better for e.g. automated tests and modularization.
 %
 %
 % ARGUMENTS
 % =========
 % tickLimits
-%       Length 2 vector. Min & max value for ticks in plot on one axis.
+%       Length-2 vector. Min & max value for ticks in plot on the relevant axis.
+%       These will be inside the final returned plot limits.
 % dataLimits
-%       Length 2 vector. Min & max value for data in plot on one axis.
+%       Length-2 vector. Min & max value for data in plot on the relevant axis.
+% scale
+%       String constant. 'linear' or 'log'.
+%       NOTE: Same constants as in graphical object properties X/Y/ZScale.
 %
 %
 % RETURN VALUES
 % =============
 % plotLimits
-%       Length 2 row vector. Min & max value for plotted range in plot.
+%       Length-2 row vector. Suggested values for property X/Y/ZLim, i.e. min &
+%       max value for the range in plot.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits)
+function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits, scale)
     % PROPOSAL: Do not assume that data values use a logarithmic axis.
     %   Ex: Nonweekly plots, panel 2 = density is linear.
     %   PRO: Should work better for limit=zero.
     %   --
-    %   PROPOSAL: Argument for linear/log.
+    %   PROPOSAL: Argument for linear/log. -- IMPLEMENTED
     %       CON: Has to hardcode lin/log for every panel.
     %           CON: Caller can read it from axis properties.
     %       PROPOSAL: Linear: Add margins which are a multiple of the range of data
     %                 (max minus min).
     %       PROPOSAL: Assume logarithmic, except when one tick=0 and use
-    %                 assumption only for padding att tick=0. -- IMPLEMENTED
+    %                 assumption only for padding att tick=0.
+    %
+    % PROPOSAL: Use terminology/naming similar to property names:
+    %           plotLimits : X/Y/ZLim
+    %           scale      : X/Y/ZScale
+    %
+    % PROPOSAL: Arguments for internal constants, C_LINEAR_MARGIN etc.
 
     % NOTE: 2022-03-22, 24h plot, panel 8/E_SRF has bad y margins for
     % "e723101f Erik P G Johansson (2023-05-10 18:10:25 +0200) SolO QLI:
@@ -52,6 +68,14 @@ function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits)
     % replaced by this code on another branch in parallel, without the bugfix.
     % Need to check that this code fixes the same bug eventually.
     % /EJ 2023-05-11
+
+    % ~DESIGN BUG: Only has arguments for min/max ticks. However, there might be
+    %              multiple ticks outside the data range.
+    %   PROPOSAL: Argument for array of all ticks. Use the next larger/smaller
+    %             tick and make sure that no tick outside that is used/visible.
+    %       PROPOSAL: Return array of new ticks.
+    %           PRO: Can remove ticks outside the nearest smaller/larger tick,
+    %                but inside the tick+margin.
 
     C_LINEAR_MARGIN = 0.1;
 
@@ -66,19 +90,36 @@ function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits)
     assert(tickMin <= tickMax)
     assert(dataMin <= dataMax)
 
-    linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
+    %linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
+    linearMargin = (tickMax - tickMin) * C_LINEAR_MARGIN;
 
-    plotMax =  ensure_high_data_tick_margin( tickMax,  dataMax, linearMargin);
-    plotMin = -ensure_high_data_tick_margin(-tickMin, -dataMin, linearMargin);
+    if strcmp(scale, 'linear')
+        plotMax =  ensure_lin_max_margin( tickMax,  dataMax, linearMargin);
+        plotMin = -ensure_lin_max_margin(-tickMin, -dataMin, linearMargin);
+    elseif strcmp(scale, 'log')
+        plotMax =  ensure_log_max_margin( tickMax,  dataMax, linearMargin);
+        plotMin = -ensure_log_max_margin(-tickMin, -dataMin, linearMargin);
+    else
+        error('Illegal argument scale="%s"', scale)
+    end
 
     plotLimits = [plotMin; plotMax];
 end
 
 
 
-function plotMax = ensure_high_data_tick_margin(tickMax, dataMax, linearMargin)
+function plotMax = ensure_lin_max_margin(tickMax, dataMax, linearMargin)
+    plotMax = max(dataMax, tickMax + linearMargin);
+end
+
+
+
+% NOTE: Handles negative values for historical reasons.
+function plotMax = ensure_log_max_margin(tickMax, dataMax, linearMargin)
     C_DIMINISH = 0.9;
     C_MAGNIFY  = 1.1;
+    %C_DIMINISH = 0.8;
+    %C_MAGNIFY  = 1.25;
 
     assert(linearMargin >= 0)
 
