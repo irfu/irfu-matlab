@@ -16,7 +16,7 @@ see RCS ICD and RUM documents (see below).
 
 
 ###############################################
- Abbreviations, dictionary, naming Conventions
+ Abbreviations, dictionary, naming conventions
 ###############################################
 NOTE: This list also applies to comments and identifiers in the source code.
 Some source files also define abbreviations widely used in the source code.
@@ -169,6 +169,21 @@ UFV
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.
+
+
+####################
+ Naming conventions
+####################
+Variables are camelCase.
+Structs and objects use an uppercase initial, and other variables use a
+lowercase initial.
+Exception: Variables which are direct analogues to zVariables are named as the
+corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of the time.
+
+"b" refers to logical values (boolean) and logical indexing
+"i", "j" refers to indices into arrays.
+
+Unit tests (classes) have suffix "___UTEST".
 
 
 

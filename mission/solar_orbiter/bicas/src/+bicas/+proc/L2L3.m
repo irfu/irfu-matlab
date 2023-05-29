@@ -116,9 +116,11 @@ classdef L2L3
             
             
 
-            %=================================================================
-            % Call BICAS-external code to calculate (EFIELD, SCPOT) + DENSITY
-            %=================================================================
+            %=======================================
+            % Call BICAS-external code to calculate
+            % (1) EFIELD, SCPOT, and from that
+            % (2) DENSITY.
+            %=======================================
             % solo.vdccal()
             R = bicas.proc.L2L3.calc_EFIELD_SCPOT(InLfrCwf.Zv, SETTINGS);
             % solo.psp2ne()
@@ -187,9 +189,9 @@ classdef L2L3
                 BIN_LENGTH_WOLS_NS, ...
                 BIN_TIMESTAMP_POS_WOLS_NS, ...
                 L);
+            % NOTE: Not setting DWNS ".Ga"/global attributes here, since DWNS
+            % datasets later copy ".Ga" from the respective ORIS datasets.
             InitialDwns = struct('Zv', InitialDwnsZv);
-            % NOTE: Not setting DWNS .Ga/global attributes here, since DWNS
-            % datasets later copy .Ga from the respective ORIS datasets.
             
 
 
@@ -450,7 +452,7 @@ classdef L2L3
         %
         % Essentially a wrapper around solo.psp2ne().
         % 
-        % NOTE: Needs to be careful with the units, and incompatible updates to
+        % NOTE: One needs to be careful with units and incompatible updates to
         % solo.vdccal() without the knowledge of the BICAS author. Therefore
         % uses extra assertions to detect such changes.
         %
