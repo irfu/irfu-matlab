@@ -25,7 +25,12 @@ function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
 %   Ex: 24h plots, as of 2023-05-23:
 %      2023-02-05: Normal. Has one colorbar for "f (kHz)"
 %      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
-
+%
+% TODO-DEC: Panels 2 & 5 are logarithmic for 24h plots and linear for 6h & 2h?
+%           Should they be?
+% TODO-DEC: Panel 10 (log) used to be hardcoded to YLim~[10, 100] which does not
+%           cover the entire interval of data (there is ore at lower y). Should
+%           it be?
 
 
 tBeginSec = tic();
@@ -320,13 +325,14 @@ if ~isempty(data.Etnr)    % && false
             %caxis(h(10),[.01 1]*10^-12)
             ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
             colormap(h(10),jet)
-            yticks(h(10),[10^1 10^2]);
-            irf_zoom(h(10),'y',[10^1 10^2])
+            %yticks(h(10),[10^1 10^2]);
+            %irf_zoom(h(10),'y',[10^1 10^2])
         end
     end
 end
-ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
-yticks(h(10),[10^1 10^2]);
+ylabel(h(10), {'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
+yticks(h(10),      [10^1 10^2]);
+% Not set YLim.
 irf_zoom(h(10),'y',[10^1 10^2])
 
 if isempty(data.Vrpw) ...
@@ -346,7 +352,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
 %======================
 % Other, miscellaneous
 %======================
-irf_plot_axis_align(h(1:10));
+irf_plot_axis_align(h(1:10));  % Make panels ("data area") have the same length.
 irf_zoom(h(1:10),'x',Tint_24h);
 irf_zoom(h(1),'y');
 
@@ -390,10 +396,16 @@ solo.qli.utils.ensure_axes_data_tick_margins(h)
 yyaxis(h(2), 'left');
 h(2).YScale = 'log';       % NOTE: Later changed to LIN.
 h(2).YTick  = [1, 10, 100];
+
+% NOTE: Panel 2 YTick not auto-adjusted partly because
+% solo.qli.utils.ensure_axes_data_tick_margins() can not handle both left &
+% right yaxis.
 yyaxis(h(2), 'right');
 h(2).YScale = 'log';       % NOTE: Later changed to LIN.
 h(2).YTick  = [1, 10, 100];
 
+% NOTE: h(5).YLim are hardcoded and seem too broad/wide.
+% PROPOSAL: Not overwrite automatic YLim?
 oldlims5  = h(5).YLim;
 oldticks5 = h(5).YTick;
 h(5).YScale = 'log';       % NOTE: Later changed to LIN.
@@ -403,7 +415,6 @@ h(5).YLim   = [0.5, 300];
 % Plot (almost) complete. Save plots for 24h, 6h and 2h intervals.
 fig=gcf;
 fig.PaperPositionMode='auto';
-
 
 %===========================
 % Save figure to file (24h)
@@ -420,9 +431,9 @@ print('-dpng',path1);
 
 
 
-%=====================================================
-% Make "global" modifications, AFTER saving 24 h plot
-%=====================================================
+%=============================================
+% Modify panels 2 & 5, AFTER saving 24 h plot
+%=============================================
 % Change panel 2+5 y scales to "lin" (previously "log").
 % h(5): Keep old ylimits and ticks!
 yyaxis(h(2),'right');
@@ -481,13 +492,13 @@ end
 % Presumes pre-existing figure with specific axes. Uses customized code to zoom
 % in on the sub-time interval and adjusts the y limits for that interval.
 function modify_save_subinterval_plot(hAxesArray, hCisText1, hCisText2, data, Tint, parentDirPath)
-    assert(isa(hAxesArray, 'matlab.graphics.axis.Axes') || length(hAxesArray) == 10)
+    assert(isa(hAxesArray, 'matlab.graphics.axis.Axes') && length(hAxesArray) == 10)
     assert(isa(hCisText1,  'matlab.graphics.primitive.Text'))
     assert(isa(hCisText2,  'matlab.graphics.primitive.Text'))
     assert(isstruct(data))
-    assert(isa(Tint,       'EpochTT'))
+    assert(isa(Tint,       'EpochTT') && (length(Tint) == 2))
 
-    irf_zoom(hAxesArray(1:10), 'x', Tint);
+    irf_zoom(hAxesArray, 'x', Tint);
 
     %irf_zoom(hAxesArray(1), 'y');
     %adjust_panel_ylimits_N_B(  hAxesArray(2), data,      Tint)
@@ -501,23 +512,25 @@ function modify_save_subinterval_plot(hAxesArray, hCisText1, hCisText2, data, Ti
         % Automatically set y limits and ticks for selected axes.
         % Ensure that ticks are not at the min/max to avoid overlapping labels.
         %=======================================================================
+        % Axes for which to set YLim andYTick automatically.
         hAxesAutoArray   = hAxesArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        % Axes for which to set YLim, but not YTick, automatically.
         hAxesManualArray = hAxesArray([10]);
         % Set axes y range (YLim) to only cover the data (plus rounding outwards
         % to ticks).
         set(hAxesAutoArray, 'YLimMode', 'auto')
         % Auto-generate ticks (YTick; y values at which there should be ticks).
         set(hAxesAutoArray, 'YTickMode', 'auto')
-        %---------------------------------------------------------------------------
+        %-----------------------------------------------------------------------
         % IMPORTANT: Read YLim without using the return result ("do nothing")
-        % -------------------------------------------------------------------
+        % --------------------------------------------------------------------
         % IMPLEMENTATION NOTE: THIS COMMAND SHOULD THEORETICALLY NOT BE NEEDED,
         % BUT IS NEEDED FOR THE YLim VALUES TO BE SET PROPERLY. MATLAB BUG?!
         % This behaviour has been observed on Erik P G Johansson's laptop
         % "irony" (MATLAB R2019b, Ubuntu Linux) as of 2023-05-25.
         % Ex: (Re-)scaling of panel 5, 2022-02-23T10-12 (2h plot).
         get(hAxesAutoArray, 'YLim');
-        %---------------------------------------------------------------------------
+        %-----------------------------------------------------------------------
         % Prevent the setting of YLim (next command) from generating new ticks.
         set(hAxesAutoArray,   'YTickMode', 'manual')
 
@@ -527,12 +540,12 @@ function modify_save_subinterval_plot(hAxesArray, hCisText1, hCisText2, data, Ti
         set(hAxesManualArray, 'YLimMode',  'auto')
         %get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
     end
-    i = 10;
-    fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(hAxesArray(i).YLim))
-    fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(hAxesArray(i).YTick))
+    %i = 10;
+    %fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(hAxesArray(i).YLim))
+    %fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(hAxesArray(i).YTick))
     solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray)
-    fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(hAxesArray(i).YLim))
-    fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(hAxesArray(i).YTick))
+    %fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(hAxesArray(i).YLim))
+    %fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(hAxesArray(i).YTick))
 
     % Update text
     [hCisText1.String, hCisText2.String] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);

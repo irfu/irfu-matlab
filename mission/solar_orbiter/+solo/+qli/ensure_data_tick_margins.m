@@ -48,24 +48,12 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function plotLimits = ensure_data_tick_margins(ticks, dataLimits, scale)
-    % PROPOSAL: Do not assume that data values use a logarithmic axis.
-    %   Ex: Nonweekly plots, panel 2 = density is linear.
-    %   PRO: Should work better for limit=zero.
-    %   --
-    %   PROPOSAL: Argument for linear/log. -- IMPLEMENTED
-    %       CON: Has to hardcode lin/log for every panel.
-    %           CON: Caller can read it from axis properties.
-    %       PROPOSAL: Linear: Add margins which are a multiple of the range of data
-    %                 (max minus min).
-    %       PROPOSAL: Assume logarithmic, except when one tick=0 and use
-    %                 assumption only for padding att tick=0.
-    %
     % PROPOSAL: Use terminology/naming similar to property names:
     %           plotLimits : X/Y/ZLim
     %           scale      : X/Y/ZScale
     %
     % PROPOSAL: Arguments for internal constants, C_LINEAR_MARGIN etc.
-
+    %
     % NOTE: 2022-03-22, 24h plot, panel 8/E_SRF has bad y margins for
     % "e723101f Erik P G Johansson (2023-05-10 18:10:25 +0200) SolO QLI:
     % Aesthetics-fix: Panel 2, left y label: Constant position"

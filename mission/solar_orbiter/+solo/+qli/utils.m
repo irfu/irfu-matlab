@@ -31,6 +31,7 @@ classdef utils   % < handle
 
 
         % ~Utility function that removes duplicated code from plot functions.
+        % NOTE: Function can not simultaneously handle both yyaxis left & right.
         function ensure_axes_data_tick_margins(hAxesArray)
             assert(isa(hAxesArray, 'matlab.graphics.axis.Axes'))
 
@@ -46,8 +47,7 @@ classdef utils   % < handle
 
 
         function filename = get_plot_filename(Tint)
-            assert(isa(Tint, 'EpochTT'))
-            assert(length(Tint) == 2)
+            assert(isa(Tint, 'EpochTT') && (length(Tint) == 2))
 
             ett1 = Tint(1);
             utcStr1 = ett1.utc;

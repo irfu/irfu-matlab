@@ -263,7 +263,7 @@ function log_plot_function_time_interval(Tint)
     utcStr2 = utcStr2(1:19);
 
     % Not specifying which plot function is called (weekly, nonweekly plots).
-    fprintf('Calling plot function for %s--%s.', utcStr1, utcStr2);
+    fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
 end
 
 
