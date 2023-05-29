@@ -11,8 +11,15 @@
 % method that does not take font sizes into account and that may fail.
 %
 % The function assumes that the user ensures that the same ticks are used before
-% and after the call to the function. This can be achieved using a command
-% h.YTickMode = 'manual' before calling the function.
+% and after the call to the function. This can be achieved using e.g. command
+%   >> hAxes.YTickMode = 'manual'
+% before calling the function. It is the caller's responsibility to make sure
+% that there are enough ticks in the data range, e.g. by setting
+%   >> hAxes.YLimMode  = 'auto'
+%   >> hAxes.YTickMode = 'auto'
+% first, and afterwards setting as mentioned above.
+%   >> hAxes.YTickMode = 'manual'
+%
 %
 % NOTE: This function (intentionally) does not operate on (read from or write
 % to) any graphical objects. It only derives numerical values from other
@@ -21,9 +28,9 @@
 %
 % ARGUMENTS
 % =========
-% tickLimits
-%       Length-2 vector. Min & max value for ticks in plot on the relevant axis.
-%       These will be inside the final returned plot limits.
+% ticks
+%       Vector (or empty) with tick values on the relevant axis.
+%       Values may be inside and/or outside dataLimits.
 % dataLimits
 %       Length-2 vector. Min & max value for data in plot on the relevant axis.
 % scale
@@ -40,7 +47,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits, scale)
+function plotLimits = ensure_data_tick_margins(ticks, dataLimits, scale)
     % PROPOSAL: Do not assume that data values use a logarithmic axis.
     %   Ex: Nonweekly plots, panel 2 = density is linear.
     %   PRO: Should work better for limit=zero.
@@ -68,73 +75,152 @@ function plotLimits = ensure_data_tick_margins(tickLimits, dataLimits, scale)
     % replaced by this code on another branch in parallel, without the bugfix.
     % Need to check that this code fixes the same bug eventually.
     % /EJ 2023-05-11
+    %
 
-    % ~DESIGN BUG: Only has arguments for min/max ticks. However, there might be
-    %              multiple ticks outside the data range.
-    %   PROPOSAL: Argument for array of all ticks. Use the next larger/smaller
-    %             tick and make sure that no tick outside that is used/visible.
-    %       PROPOSAL: Return array of new ticks.
-    %           PRO: Can remove ticks outside the nearest smaller/larger tick,
-    %                but inside the tick+margin.
+    %C_LINEAR_MARGIN = 0.1;
+    C_LINEAR_MARGIN = 0.05;
 
-    C_LINEAR_MARGIN = 0.1;
-
-    assert(length(tickLimits) == 2)
+    assert((isvector(ticks) || isempty(ticks)) && issorted(ticks, 'ascend'))
+    %assert(length(tickLimits) == 2)
     assert(length(dataLimits) == 2)
 
-    tickMin = tickLimits(1);
-    tickMax = tickLimits(2);
+    %tickMin = tickLimits(1);
+    %tickMax = tickLimits(2);
     dataMin = dataLimits(1);
     dataMax = dataLimits(2);
 
-    assert(tickMin <= tickMax)
+    %assert(tickMin <= tickMax)
     assert(dataMin <= dataMax)
 
-    %linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
-    linearMargin = (tickMax - tickMin) * C_LINEAR_MARGIN;
+    linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
+    % IMPLEMENTATION NOTE: Does not want to derive linearMargin from ticks
+    % since:
+    % (1) there might be zero ticks,
+    % (2) ticks may be uncorrelated with dataMin/dataMax.
 
-    if strcmp(scale, 'linear')
-        plotMax =  ensure_lin_max_margin( tickMax,  dataMax, linearMargin);
-        plotMin = -ensure_lin_max_margin(-tickMin, -dataMin, linearMargin);
-    elseif strcmp(scale, 'log')
-        plotMax =  ensure_log_max_margin( tickMax,  dataMax, linearMargin);
-        plotMin = -ensure_log_max_margin(-tickMin, -dataMin, linearMargin);
-    else
-        error('Illegal argument scale="%s"', scale)
-    end
+%     if strcmp(scale, 'linear')
+%         plotMax =  ensure_lin_max_margin( tickMax,  dataMax, linearMargin);
+%         plotMin = -ensure_lin_max_margin(-tickMin, -dataMin, linearMargin);
+%     elseif strcmp(scale, 'log')
+%         plotMax =  ensure_log_max_margin( tickMax,  dataMax, linearMargin);
+%         plotMin = -ensure_log_max_margin(-tickMin, -dataMin, linearMargin);
+%     else
+%         error('Illegal argument scale="%s"', scale)
+%     end
+    plotMax =  ensure_max_margin( ticks,  dataMax, scale, linearMargin);
+    plotMin = -ensure_max_margin(-ticks, -dataMin, scale, linearMargin);
 
     plotLimits = [plotMin; plotMax];
 end
 
 
 
-function plotMax = ensure_lin_max_margin(tickMax, dataMax, linearMargin)
-    plotMax = max(dataMax, tickMax + linearMargin);
-end
+% Find plotMax (only).
+function plotMax = ensure_max_margin(ticks, dataMax, scale, linearMargin)
+    % PROPOSAL: Better way of deriving value "just below" higherBoundary.
+    %   PROPOSAL: Different methods depending on "scale".
+    %   PROPOSAL: higherBoundary-eps(higherBoundary)*C
 
-
-
-% NOTE: Handles negative values for historical reasons.
-function plotMax = ensure_log_max_margin(tickMax, dataMax, linearMargin)
+    EPSILON = 1e-10;
     C_DIMINISH = 0.9;
     C_MAGNIFY  = 1.1;
     %C_DIMINISH = 0.8;
     %C_MAGNIFY  = 1.25;
 
-    assert(linearMargin >= 0)
+    % Use ticks to define "boundaries" which additionally have values at the
+    % infinities. This ensures that there are always lower and higher boundaries
+    % which makes the rest of the algorithm simpler.
+    boundaries = [-inf; ticks(:); inf];
 
-    if tickMax > 0
-        minPlotMax = C_MAGNIFY  * tickMax;
-    elseif tickMax < 0
-        minPlotMax = C_DIMINISH * tickMax;
+    % Find nearest lower/equal boundary. Should always exist though can be -Inf.
+    lowerEqBoundary = max(boundaries(boundaries <= dataMax));
+    % Find nearest higher      boundary. Should always exist though can be +Inf.
+    higherBoundary  = min(boundaries(boundaries >  dataMax));
+
+    %===================================
+    % Adjust lowerEqBoundary for margin
+    %===================================
+    if strcmp(scale, 'linear')
+
+        lowerEqBoundary = lowerEqBoundary + linearMargin;
+
+    elseif strcmp(scale, 'log')
+
+        if lowerEqBoundary > 0
+            lowerEqBoundary = lowerEqBoundary * C_MAGNIFY;
+        elseif lowerEqBoundary < 0
+            lowerEqBoundary = lowerEqBoundary * C_DIMINISH;
+        else
+            error('Illegal tickLowerEq=%d', lowerEqBoundary)
+        end
+
     else
-        % CASE: tickMax == 0
-
-        % minPlotMax = dataMax;    % NOTE: Not tickMax. Bad?
-        minPlotMax = linearMargin;
+        error('Illegal argument scale="%s"', scale)
     end
-    plotMax = max(dataMax, minPlotMax);
+
+    assert(isscalar(lowerEqBoundary))
+    assert(isscalar(higherBoundary ))
+
+    % Use dataMax, but increase value if too low, i.e. to get a margin relative
+    % to the nearest lower tick (without considering higher ticks).
+    % NOTE: lowerEqBoundary may be -Inf.
+    plotMax = max(dataMax, lowerEqBoundary);
+
+    % If value is higher than the next higher tick, then decrease value to "just
+    % below" the next higher tick.
+    % NOTE: higherBoundary may be +Inf.
+    plotMax = min(plotMax, higherBoundary-EPSILON);
 end
+
+
+
+% function modify_by_factor(x, increase, f)
+%     assert(f > 1)
+%     assert(islogical(increase))
+%
+%     if ~increase
+%         f = 1/f;
+%     end
+%
+%     if x > 0
+%         x = x * f;
+%     elseif x < 0
+%         x = x / f;
+%     else
+%         error('Illegal =%d', x)
+%     end
+%
+% end
+
+
+
+% function plotMax = ensure_lin_max_margin(tickMax, dataMax, linearMargin)
+%     plotMax = max(dataMax, tickMax + linearMargin);
+% end
+%
+%
+%
+% % NOTE: Handles negative values for historical reasons.
+% function plotMax = ensure_log_max_margin(tickMax, dataMax, linearMargin)
+%     C_DIMINISH = 0.9;
+%     C_MAGNIFY  = 1.1;
+%     %C_DIMINISH = 0.8;
+%     %C_MAGNIFY  = 1.25;
+%
+%     assert(linearMargin >= 0)
+%
+%     if tickMax > 0
+%         minPlotMax = C_MAGNIFY  * tickMax;
+%     elseif tickMax < 0
+%         minPlotMax = C_DIMINISH * tickMax;
+%     else
+%         % CASE: tickMax == 0
+%
+%         % minPlotMax = dataMax;    % NOTE: Not tickMax. Bad?
+%         minPlotMax = linearMargin;
+%     end
+%     plotMax = max(dataMax, minPlotMax);
+% end
 
 
 
