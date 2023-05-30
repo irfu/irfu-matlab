@@ -15,6 +15,7 @@
 % NOTE: 7-day plots will only cover that largest sub-time interval that is
 %       composed of full 7-day periods. Note: 7-day periods begin with a
 %       hardcoded weekday (Wednesday as of 2023-05-09).
+% NOTE: Overwrites pre-existing plot files without warning.
 %
 %
 % ARGUMENTS
@@ -49,8 +50,6 @@
 % ==> Code fails for week Monday-to-Sunday.
 %     PROPOSAL: Additionally round start time up to start date.
 %
-% TODO-NI: Overwrites pre-existing plots?
-%
 % PROPOSAL: Better name: quicklooks_main?
 %       ~main, ~plot, ~generate
 %
@@ -75,8 +74,6 @@
 %       make_time_array()
 %       round_to_week()
 %
-% PROPOSAL: Log time period being plotted.
-%   PRO: Useful for identifying time period/day that causes crash.
 % PROPOSAL: Log time consumption for each call to plot functions.
 %   PROPOSAL: Use solo.qli.utils.log_time().
 %

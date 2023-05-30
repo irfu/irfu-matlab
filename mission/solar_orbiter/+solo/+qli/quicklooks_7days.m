@@ -181,6 +181,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 %======================================
 % Fill panel 9: E-field spectrum (TNR)
 %======================================
+% NOTE: Panel takes much more time than other panels.
 if ~isempty(data.Etnr)
     % Electron plasma frequency
     myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
@@ -192,6 +193,8 @@ if ~isempty(data.Etnr)
         tt = [myFile2(iii).start myFile2(iii).stop];
         [TNRp] =  solo.read_TNR(tt);
         if isa(TNRp,'struct')
+            % NOTE: MATLAB documentation (R2019b):
+            % "combine will be removed in a future release"
             TNR.t = combine(tp,TNRp.t);
             tp    = TNR.t;
             TNR.p = combine(pp,TNRp.p);

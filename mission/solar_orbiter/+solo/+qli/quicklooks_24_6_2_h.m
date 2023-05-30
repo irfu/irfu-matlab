@@ -26,11 +26,14 @@ function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
 %      2023-02-05: Normal. Has one colorbar for "f (kHz)"
 %      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
 %
-% TODO-DEC: Panels 2 & 5 are logarithmic for 24h plots and linear for 6h & 2h?
-%           Should they be?
-% TODO-DEC: Panel 10 (log) used to be hardcoded to YLim~[10, 100] which does not
-%           cover the entire interval of data (there is ore at lower y). Should
-%           it be?
+% TODO-NI: Panels 2 & 5 are logarithmic for 24h plots and linear for 6h & 2h?
+%          Should they be?
+% TODO-NI: Old panels 5 had a constant y axis range (YLim) for 24h, but dynamic
+%          (changing) for 6h & 2h. Was that intentional?
+% TODO-NI Panel 10 (log) is hardcoded to YLim~[10, 100] (because that is what
+%         it used to be). This does not cover the entire interval of data
+%         (there is more data at lower y). Should it be that way?
+
 
 
 tBeginSec = tic();
@@ -297,6 +300,11 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 %=======================================
 % Fill panel 10: E-field spectrum (TNR)
 %=======================================
+% BUG(?): PROBABLY WHAT HAPPENS: Does not create color bar (no call to
+% colormap()) when no data.
+% ==> The panel becomes wider.
+% ==> Other panels become wider.
+% ==> Moves the IRF logo to the right, and partially outside image.
 if ~isempty(data.Etnr)    % && false
     try
         [TNR] = solo.read_TNR(Tint_24h);
@@ -463,7 +471,7 @@ if ~ALL_PLOTS_ENABLED
     % For debugging/testing.
     %I_6H = [0];
     %I_2H = [0];
-    I_6H = [];
+    I_6H = [1];
     I_2H = [5];
 end
 
@@ -528,25 +536,28 @@ end
 
 
 
-% Set y limits and y tick positions.
-% Ensure that ticks are not at the min/max (YLim) to avoid overlapping labels.
+% Automatically set or adjust y limits and y tick positions.
+% "Always" ensures that ticks are not at the min/max (YLim) to avoid overlapping labels.
+% Can specify different behaviour for different axes.
 %
 % NOTE: Function can not simultaneously handle both yyaxis left & right.
 % NOTE: MATLAB's automatic setting of y ticks for log scale (and which is used)
-%       can be bad.
+%       can be bad. May therefore want to set y ticks for panels with log scale.
 %
 % ARGUMENTS
 % =========
 % hAxesAutoYLimYTickArray
-%   Axes for which to
-%   set YLim automatically (from data; with margins)
-%   set YTick automatically.
+%   Array of axes for which to
+%   (1) set YLim automatically (from data; with margins)
+%   (2) set YTick automatically.
 % hAxesAutoYLimArray
-%   Axes for which to
-%   set YLim automatically (from data; with margins),
-%   but keep YTick as is.
+%   Array of axes for which to
+%   (1) set YLim automatically (from data; with margins),
+%   (2) keep YTick as is.
 % hAxesMarginYLimArray
-%   Axes for which to add margins to pre-existing YLim, and keep YTick as is.
+%   Array of axes for which to
+%   (1) add margins to pre-existing YLim
+%   (2) keep YTick as is.
 %
 function set_YLim_YTick(hAxesAutoYLimYTickArray, hAxesAutoYLimArray, hAxesMarginYLimArray)
     % PROPOSAL: Automatically (not MATLAB) set YTick for logarithmic axis to
