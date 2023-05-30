@@ -15,7 +15,8 @@ function irf_zoom(varargin)
 %   IRF_ZOOM('y') zooms Y axis (avoiding labels at top and bottom)
 %       useful when having many subpanels
 %
-%   IRF_ZOOM('y',ylim) zooms Y axis (avoiding labels at top and bottom)
+%   IRF_ZOOM('y',ylim) zooms Y axis (avoiding labels at top and bottom by
+%       shrinking YLim by tiny amount)
 %
 
 % Old syntax
@@ -182,6 +183,10 @@ for hii=axis_handles
         interval_to_use=interval;
         set(h,'userdata',ud);
       end
+      %------------------------------------------------------
+      % Shrink interval_to_use by tiny amounts at both edges
+      %------------------------------------------------------
+      % Increase ~interval_to_use(1) slightly.
       if interval_to_use(1)>0
         interval_to_use(1)=interval_to_use(1)*(1+1e-9);
       elseif interval_to_use(1)==0
@@ -189,6 +194,7 @@ for hii=axis_handles
       else
         interval_to_use(1)=interval_to_use(1)*(1-1e-9);
       end
+      % Decrease ~interval_to_use(2) slightly.
       if interval_to_use(2)>0
         interval_to_use(2)=interval_to_use(2)*(1-1e-9);
       elseif interval_to_use(2)==0
@@ -196,6 +202,7 @@ for hii=axis_handles
       else
         interval_to_use(2)=interval_to_use(2)*(1+1e-9);
       end
+      % Make sure that interval_to_use(1) < interval_to_use(2)
       if interval_to_use(1) > interval_to_use(2) && interval_to_use(1) < 0
         interval_to_use(2)=interval_to_use(2)+.001;
       end
