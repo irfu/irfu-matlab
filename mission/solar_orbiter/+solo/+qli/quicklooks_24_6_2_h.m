@@ -416,7 +416,10 @@ h(5).YLim   = [0.5, 300];
 %solo.qli.utils.ensure_axes_data_tick_margins(h)
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
+yyaxis(h(2), 'right');
 set_YLim_YTick(h([1, 3:4, 6:9]), h([2, 5]), h(10))
+yyaxis(h(2), 'left');
+set_YLim_YTick(h([]), h([2]), h([]))
 
 
 
@@ -512,7 +515,10 @@ function modify_save_subinterval_plot(hAxesArray, hCisText1, hCisText2, data, Ti
     %irf_zoom(hAxesArray(7), 'y');
 
     % NOTE: Different from for 24h plots.
+    yyaxis(hAxesArray(2), 'right');
     set_YLim_YTick(hAxesArray(1:9), hAxesArray([]), hAxesArray([10]))
+    yyaxis(hAxesArray(2), 'left');
+    set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
 
     % Update text
     [hCisText1.String, hCisText2.String] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
