@@ -64,6 +64,16 @@ classdef utils   % < handle
 
 
 
+        function save_figure_to_file(parentDirPath, Tint)
+            % PROPOSAL: Include fig.PaperPositionMode='auto';
+
+            filename = solo.qli.utils.get_plot_filename(Tint);
+            filePath = fullfile(parentDirPath, filename);
+            print('-dpng', filePath);
+        end
+
+
+
         % Simple function for logging number of seconds from previous call.
         % For debugging speed.
         function tBeginSec = log_time(locationStr, tBeginSec)

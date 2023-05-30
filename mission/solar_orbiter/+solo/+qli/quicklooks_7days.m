@@ -287,9 +287,7 @@ fig.PaperPositionMode='auto';
 %=====================
 % Save figure to file
 %=====================
-filename = solo.qli.utils.get_plot_filename(Tint);
-path1    = fullfile(paths.path_1w, filename);
-print('-dpng',path1);
+solo.qli.utils.save_figure_to_file(paths.path_1w, Tint)
 % TODO-NI: Why are there any commands (except close()) after this?
 %          Did the code use to iterate over 24h, 6h, 2h plots too?
 
