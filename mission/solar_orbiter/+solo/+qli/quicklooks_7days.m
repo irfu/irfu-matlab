@@ -4,6 +4,12 @@ function quicklooks_7days(data,paths,Tint,logoPath)
 % solo.qli.quicklooks_main). Tint should be a 7-day time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-08T00:00:00.00Z');
 
+
+
+tBeginSec = tic();
+
+
+
 % Setup figure:
 LWIDTH   = 1.0;   % irf_plot() line width
 FSIZE    = 18;    % Font size
@@ -33,6 +39,8 @@ irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE)
 ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 irf_zoom(h(1),'y');
 
+tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
+
 
 
 %======================
@@ -46,6 +54,8 @@ ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 h(2).YScale='log';
 h(2).YTick=[10,100];
 %h(2).YLim=[0.1,200];
+
+tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 
 
 
@@ -65,6 +75,8 @@ h(3).YScale='log';
 h(3).YTick=[10,100];
 %h(3).YLim=[0.8,200];
 
+tBeginSec = solo.qli.utils.log_time('End panel 3', tBeginSec);
+
 
 
 %===============================
@@ -77,6 +89,8 @@ ylabel(h(4),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
 h(4).YScale='log';
 h(4).YTick=[1,10,100];
 h(4).YLim=[0.5,300];
+
+tBeginSec = solo.qli.utils.log_time('End panel 4', tBeginSec);
 
 
 
@@ -92,6 +106,8 @@ end
 irf_legend(h(5),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
 irf_zoom(h(5),'y');
 ylabel(h(5),{'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
+
+tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 
 
 
@@ -109,6 +125,8 @@ irf_legend(h(6),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',LEG_SIZE);
 %h(6).YLim=[150,950];
 ylabel(h(6),{'v_{R}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
+tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
+
 
 
 %==============
@@ -122,6 +140,8 @@ end
 irf_legend(h(7),{'','E_y'},[0.98 0.20],'Fontsize',LEG_SIZE);
 irf_zoom(h(7),'y');
 ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',FSIZE);
+
+tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
 
 
@@ -153,6 +173,8 @@ if ~isempty(data.ieflux)
     colormap(h(8),jet)
     ylabel(h(8),'[eV]')
 end
+
+tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
 
 
@@ -207,6 +229,8 @@ if ~isempty(data.Etnr)
         yticks(h(9),[10^1 10^2]);
     end
 end
+
+tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 
 
 
@@ -304,5 +328,7 @@ solo.qli.utils.save_figure_to_file(paths.path_1w, Tint)
 % h(5).YTick=oldticks5;
 
 close(fig);
+
+[~] = solo.qli.utils.log_time('End (7 days plot)', tBeginSec);
 
 end
