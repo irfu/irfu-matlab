@@ -34,10 +34,10 @@ classdef ensure_data_tick_margins___UTEST < matlab.unittest.TestCase
 
             test({[],     [2      4    ], 'linear'}, [   2;  4  ])
 
-            test({[1, 2, 3, 4, 5, 6], [3    4  ], 'linear'}, [2.9; 4.1])
-            test({[1, 2, 3, 4, 5, 6], [2.1  4.9], 'linear'}, [2.1; 4.9])
-            test({[1, 2, 3, 4, 5, 6], [7    8  ], 'linear'}, [7  ; 8  ])
-            test({[1, 2, 3, 4, 5, 6], [0    8  ], 'linear'}, [0  ; 8  ])
+            test({[1, 2, 3, 4, 5, 6], [3    4  ], 'linear'}, [2.95; 4.05])
+            test({[1, 2, 3, 4, 5, 6], [2.1  4.9], 'linear'}, [2.1;  4.9])
+            test({[1, 2, 3, 4, 5, 6], [7    8  ], 'linear'}, [7  ;  8  ])
+            test({[1, 2, 3, 4, 5, 6], [0    8  ], 'linear'}, [0  ;  8  ])
 
             %=============
             % scale = log
