@@ -417,7 +417,7 @@ h(5).YLim   = [0.5, 300];
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
 yyaxis(h(2), 'right');
-set_YLim_YTick(h([1, 3:4, 6:9]), h([2, 5]), h(10))
+set_YLim_YTick(h([1, 3:4, 6:9]), h([2]), h([5, 10]))
 yyaxis(h(2), 'left');
 set_YLim_YTick(h([]), h([2]), h([]))
 
