@@ -9,9 +9,15 @@ classdef solo_db < handle
   end
   
   methods
+
+
+
     function obj = solo_db()
       obj.databases = [];
     end
+
+
+
     function obj = add_db(obj,dbInp)
       if ~isa(dbInp,'solo_file_db')
         error('expecting SOLO_FILE_DB input')
@@ -25,7 +31,9 @@ classdef solo_db < handle
       obj.cache.enabled = false;
       obj.index.enabled = false;
     end
-    
+
+
+
     function fileList = list_files(obj,filePrefix,tint,varName)
       if nargin < 4, varName = ''; end
       fileList = [];
@@ -48,9 +56,12 @@ classdef solo_db < handle
         fileList = [fileList flTmp]; %#ok<AGROW>
       end
     end
-    
+
+
+
     function get_metakernel(obj, flown_or_predicted)
-      % loop through all databases (if mounted local irfu-data as well)
+      % Loop through all databases (if mounted local irfu-data as well).
+
       found = false;
       for iDb = 1:length(obj.databases)
         db = obj.databases(iDb);
@@ -69,7 +80,9 @@ classdef solo_db < handle
       end
       if ~found, irf.log('critical', 'Did not find any SPICE kernel paths, please try manually loading it using new function "load_mkernel(''solarorbiter'')"'); end
     end
-    
+
+
+
     function res = get_variable(obj,filePrefix,varName,tint)
       narginchk(4,4)
       res = [];
@@ -83,7 +96,12 @@ classdef solo_db < handle
         append_sci_var(loadedFiles{iFile})
       end
       
+      % ========================================================================
+
       function append_sci_var(sciData)
+        % Nested function
+        % Append data from "sciData" to "res".
+
         if isempty(sciData), return, end
         if ~isa(sciData,'dataobj')
           error('Expecting DATAOBJ input')
@@ -98,8 +116,20 @@ classdef solo_db < handle
         end
         
         if isempty(res), res = v; return, end
+
+        % NOTE: If "res" is a cell array, then always add next time series in
+        % cell array, without checking whether this or the immediately
+        % preceeding time series are "compatible" (have consistent metadata).
+        % Bug or feature? /EJ 2023-07-06
         if iscell(res), res = [res {v}]; return, end
-        if ~comp_struct(res,v), res = [{res}, {v}]; return, end
+        if ~comp_struct(res,v)
+            % CASE: zVariable data "v" appears to be/might be different from the
+            %       previous datasets.
+
+            % Switch from res=TSeries, to cell array of multiple TSeries.
+            res = [{res}, {v}];
+            return
+        end
         if res.variance(1)=='F' % not varying in time
           if isequal(res.data,v.data), return, end
           error('Static (variance=F/) variable changing between files')
@@ -150,26 +180,39 @@ classdef solo_db < handle
             res.(DEP_str).data(idxSort, :, :, :, :, :, :, :, :, :, :, :);
           end
         end
+
+        % ======================================================================
+
         function res = comp_struct(s1,s2)
-          % Compare structures
-          narginchk(2,2), res = false;
+          % Compare structures representing zVariable data, including zVariable
+          % attributes. Return whether corresponding zVariable attributes appear
+          % to be identical/the same or not.
+
+          narginchk(2,2)
+
+          % Default return value. Assume structs are different until (almost)
+          % proven to be equal.
+          res = false;
           
-          if ~isstruct(s1) ||  ~isstruct(s2), error('expecting STRUCT input'), end
+          if ~isstruct(s1) || ~isstruct(s2), error('expecting STRUCT input'), end
           if isempty(s1) && isempty(s2), res = true; return
           elseif xor(isempty(s1),isempty(s2)), return
           end
           
           fields1 = fields(s1); fields2 = fields(s2);
-          if ~comp_cell(fields1,fields2), return, end
+          if ~comp_cell(fields1,fields2)
+              return
+          end
           
+          % "data", nrec, and the global attributes (in GlobalAttributes) named
+          % Generation_date, Logical_file_id, Data_version, and Parents will
+          % almost always differ between files. Therefore not comparing those
+          % fields.
           ignoreFields = {'data','nrec','Generation_date',...
             'GlobalAttributes','Logical_file_id','Data_version','Parents', ...
             'SCALEMAX','SCALEMIN','VALIDMAX'};
           for iField=1:length(fields1)
             f = fields1{iField};
-            % data, nrec and the GlobalAttributes Generation_date,
-            % Logical_file_id and Data_version will almost always differ
-            % between files.
             if ~isempty(intersect(f,ignoreFields)), continue, end
             if isnumeric(s1.(f)) && all(isnan(s1.(f))) && all(isnan(s2.(f))), continue, end
             if isnumeric(s1.(f)) || ischar(s1.(f))
@@ -181,16 +224,27 @@ classdef solo_db < handle
             end
           end
           res = true;
-        end % COMP_STRUCT
+        end % function COMP_STRUCT
+
+        % ======================================================================
+
         function res = comp_cell(c1,c2)
-          %Compare cells
-          narginchk(2,2), res = false;
+          % Compare cell arrays of text.
+
+          narginchk(2,2)
+
+          % Default return value. Assume cells are different until (almost)
+          % proven to be equal.
+          res = false;
           
-          if ~iscell(c1) ||  ~iscell(c2), error('expecting CELL input'), end
+          if ~iscell(c1) || ~iscell(c2), error('expecting CELL input'), end
           if isempty(c1) && isempty(c2), res = true; return
           elseif xor(isempty(c1),isempty(c2)), return
           end
-          if ~all(size(c1)==size(c2)), return, end
+          if ~all(size(c1)==size(c2))
+            % CASE: Different number of zVariable attributes.
+            return
+          end
           
           [n,m] = size(c1);
           if(m==1), c1=sort(c1); c2=sort(c2); end
@@ -199,7 +253,10 @@ classdef solo_db < handle
               if ischar(c1{iN, iM}) && ischar(c2{iN,iM})
                 if ~strcmp(c1{iN, iM},c2{iN,iM}), return , end
               elseif iscell(c1{iN, iM}) && iscell(c2{iN,iM})
-                if ~comp_cell(c1{iN, iM},c2{iN,iM}), return , end
+                % NOTE: RECURSIVE CALL
+                if ~comp_cell(c1{iN, iM},c2{iN,iM})
+                    return
+                end
               else
                 irf.log('warning','can only compare chars')
                 res = true; return
@@ -208,10 +265,18 @@ classdef solo_db < handle
             end
           end
           res = true;
-        end % COMP_CELL
-      end % APPEND_SCI_VAR
-    end % GET_VARIABLE
-    
+        end % function COMP_CELL
+
+        % ======================================================================
+
+      end % function APPEND_SCI_VAR
+
+      % ========================================================================
+
+    end % function GET_VARIABLE
+
+
+
     function res = load_list(obj,fileList,mustHaveVar)
       narginchk(2,3), res = {};
       if isempty(fileList), return, end
@@ -239,14 +304,20 @@ classdef solo_db < handle
         end
         res = [res {dobjLoaded}]; %#ok<AGROW>
       end
-    end % load_list
-    
+    end % function load_list
+
+
+
     function res = get_db(obj,id)
       idx = arrayfun(@(x) strcmp(x.id,id),obj.databases);
       res = obj.databases(idx);
-    end % get_db
-    
+    end % function get_db
+
+
+
     function res = get_ts(obj,filePrefix,varName,tint)
+      % See solo.db_get_ts() (a wrapper around this method).
+
       narginchk(4,4)
       res = [];
       v = get_variable(obj,filePrefix,varName,tint);
@@ -261,6 +332,10 @@ classdef solo_db < handle
           res{iV} = resTmp.tlim(tint);
         end
       end
-    end % get_ts
-  end
+    end % function get_ts
+
+
+
+  end % methods
+
 end
