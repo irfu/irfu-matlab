@@ -25,7 +25,7 @@ function [NeScp, codeVerStr] = psp2ne(PSP)
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2023-04-28T11:38:00';
+codeVerStr = '2023-07-17T11:38:00';
 
 
 % Based on data from 2020-04-07
@@ -594,7 +594,7 @@ NeScp = PSP;
 NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
 
 
-timeOutsideInterval = irf_time('2022-03-31T23:59:59Z','utc>ttns');
+timeOutsideInterval = irf_time('2022-04-20T23:59:59Z','utc>ttns');
 NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
     
 
