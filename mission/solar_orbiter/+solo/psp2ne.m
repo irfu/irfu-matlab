@@ -565,6 +565,27 @@ CalEntry = irf.ts_vec_xy(...
   irf.tint('2022-03-13T00:00:00Z/2022-03-31T23:59:59Z'),...
   repmat([0.4049  4.0706],2,1)); 
 Cal = Cal.combine(CalEntry);
+
+%4~
+%======================2 fits=========================%
+CalEntry = irf.ts_vec_xy(...
+  irf.tint('2022-04-12T00:00:00Z/2022-04-20T23:59:59Z'),...
+  repmat([0.3460 + 3.0611i  0.1776 + 3.5813i],2,1)); 
+
+
+PSPintersection =3.0865; %Intersection between 2 fits
+checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+if ~isempty(checkInterval)
+    [CalEntry] = TwofitCalibration(checkInterval,PSPintersection,CalEntry);
+else
+    CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+    CalEntry.data(1:end,1) = real(CalEntry.x.data);
+end
+
+Cal = Cal.combine(CalEntry);
+%--------------------------------------------------------%
+
 %% calibrate
 CalR = Cal.resample(PSP);
 NeScp = PSP; 
