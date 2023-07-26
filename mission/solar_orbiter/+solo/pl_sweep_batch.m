@@ -22,7 +22,9 @@ end
 %% Plot
 h = irf_figure(93766,1,'reset');
 irf_plot(h,iPhoto/1000,'.-')
-Tint = irf.tint(sprintf('%d-%02d-01T00:00:00Z/%d-%02d-01T00:00:00Z',YY,MM(1),YY,MM(end)+1));
+YY2 = YY; MM2 = MM(end)+1;
+if MM2>12, YY2 = YY2+1; MM2 = MM2-12; end
+Tint = irf.tint(sprintf('%d-%02d-01T00:00:00Z/%d-%02d-01T00:00:00Z',YY,MM(1),YY2,MM2));
 irf_zoom(h,'x',Tint)
 
 ylabel(h,'I saturation [uA]')
