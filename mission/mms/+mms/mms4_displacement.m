@@ -161,7 +161,7 @@ if plotfig
   Tint = irf.tint(B1.time.start.utc,B1.time.stop.utc);
   irf_plot_axis_align(1,h(1:3))
   irf_zoom(h(1:3),'x',Tint);
-  
+  xtickangle(h,0)
 end
 
 end

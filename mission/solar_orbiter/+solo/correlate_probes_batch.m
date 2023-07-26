@@ -7,11 +7,11 @@
 discontTimes=EpochTT(solo.ProbePotDiscontinuities);
 
 % Specify output calibration file name
-strname = 'd23K123_20221206_test';
+strname = 'd23K123_20230707_test';
 
 % Select time interval. We take +/- 3 days as a margin to better match with the
 % old calibration file if we only do a partial update.
-calTint = irf.tint('2020-03-01T00:00:00Z/2022-12-01T23:59:59.99Z');
+calTint = irf.tint('2022-12-01T00:00:00Z/2023-05-28T23:59:59.99Z');
 margin = 3*24*60*60; %seconds.
 Tint=calTint+[-1,1]*margin;
 

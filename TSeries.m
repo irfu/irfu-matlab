@@ -513,7 +513,7 @@ classdef TSeries
       %            n - integer - cumsum over data dimension n
       
       if obj.tensorOrder~=0, error('Cumsum requires tensorOrder = 0'); end
-      if isempty(option)
+      if not(exist('option'))
         option = 1;
       end
       switch option
@@ -1308,6 +1308,8 @@ classdef TSeries
       % coordinateSystem and siConversion from "obj".
       if ~isa(obj1,'TSeries') || ~isa(obj,'TSeries')
         error('TSeries inputs are expected')
+      %elseif isa(obj1,'TSeries') && isempty(obj1)
+      %  Ts = 
       elseif obj.tensorOrder~=obj1.tensorOrder
         error('Inputs must have the same tensor order');
       elseif obj.tensorBasis_ ~= obj1.tensorBasis_
