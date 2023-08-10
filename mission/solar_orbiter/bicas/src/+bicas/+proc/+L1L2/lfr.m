@@ -235,7 +235,7 @@ classdef lfr
             PreDc.Zv.freqHz                  = zvFreqHz;
             PreDc.Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
             PreDc.Zv.BW                      = InSci.Zv.BW;
-            PreDc.Zv.useFillValues           = ~logical(InSci.Zv.BW);
+            PreDc.Zv.ufv                     = ~logical(InSci.Zv.BW);
             PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
             PreDc.Zv.iLsf                    = iLsfZv;
 

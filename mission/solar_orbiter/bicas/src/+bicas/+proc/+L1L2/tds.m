@@ -224,7 +224,7 @@ classdef tds
             PreDc.Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
             PreDc.Zv.MUX_SET                 = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
-            PreDc.Zv.useFillValues           = false(nRecords, 1);
+            PreDc.Zv.ufv                     = false(nRecords, 1);
             PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
 
