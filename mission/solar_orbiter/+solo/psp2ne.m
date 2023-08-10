@@ -1,17 +1,24 @@
-function [NeScp, codeVerStr] = psp2ne(PSP)
+function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 %SOLO.PSP2NE  Convert probe-to-spacecraft potential to electron density
 %
-% [NeScp,codeVerStr] = solo.psp2ne(PSP)
+% [NeScp, NeScpQualityBit, codeVerStr] = solo.psp2ne(PSP)
 %
 % Convert probe-to-spacecraft (PSP) potential to electron density (NeScp)
 %
 % The calibration is based on the RPW/QTN/Fpe data
 %
 % Outputs:
-%   NeScp      - Electron density
-%   codeVerStr - Version string. Used by BICAS.
+%   NeScp           - Electron density (derived from "SCP", hence the name).
+%   NeScpQualityBit - Binary value that specifies whether the density value
+%                     seems bad or not. 1=Bad, 0=Can not find any problem.
+%                     Must not be NaN. (Currently (2023-08-10) not sure if this
+%                     is strictly in agreement with conventions, but that is
+%                     what BIACS requires).
+%   codeVerStr      - Version string. Used by BICAS.
 %
 % NOTE: This function is used by BICAS for producing official datasets.
+% NOTE: 2023-08-10: NeScpQualityBit is not yet used by BICAS, but BICAS is
+%       requires it being set.
 %
 % Calibration using plasma line 
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
@@ -25,7 +32,7 @@ Cal = [];
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2023-07-18T17:38:00';
+codeVerStr = '2023-07-27T12:08:00';
 
 AddEntry('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z',[0.8889  3.4389]); % Based on data from 2020-04-07
 AddEntry('2020-05-18T04:05:55Z/2020-05-29T23:59:59Z',[0.8154  4.5562]);
@@ -113,6 +120,11 @@ AddEntry('2022-08-09T00:00:00Z/2022-09-06T09:59:59Z',... %51
 AddEntry('2022-09-06T10:00:00Z/2022-09-07T07:59:59Z',... %52
   [0.8065 + 1.6715i  0.5263 + 2.2597i],2.0973); 
 AddEntry('2022-09-07T08:00:00Z/2022-09-14T06:59:59Z',[0.6757 2.2607]); %53
+AddEntry('2022-09-14T07:00:00Z/2022-10-18T19:59:59Z',... %54
+  [0.8547 + 2.9232i  0.2128 + 3.8295i],1.7300); 
+AddEntry('2022-10-18T20:00:00Z/2022-11-03T23:59:59Z',[0.3968 3.1672]); %55
+AddEntry('2022-11-04T20:15:00Z/2022-11-25T23:39:59Z',... %56
+  [0.4405 + 2.4799i  0.2083 + 3.1489i],3.2500); 
 
 %% calibrate
 CalR = Cal.resample(PSP);
@@ -122,7 +134,7 @@ NeScp = PSP;
 NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
 
 
-timeOutsideInterval = irf_time('2022-09-14T23:59:59Z','utc>ttns');
+timeOutsideInterval = irf_time('2022-11-25T23:39:59Z','utc>ttns');
 NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
     
 
@@ -131,6 +143,12 @@ NeScp.name = 'NeScp';
 NeScp.units = 'cm^-3';
 NeScp.siConversion = 'cm^-3>1e6*m^-3';
 NeScp.userData = '';
+
+% NOTE: Setting temporary (but legal) return value for return variable that is
+% not yet used by BICAS (2023-08-10).
+% NOTE: Overwrite every value with zero in order to also overwrite Nan which
+% may otherwise inherited from NeScp.
+NeScpQualityBit = TSeries(NeScp.time, zeros(size(NeScp.data)));
 
 %%%%%%%%%%%%%%%%%%%%%%%% Help function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function AddEntry(TintS, calData, PSPintersection)
