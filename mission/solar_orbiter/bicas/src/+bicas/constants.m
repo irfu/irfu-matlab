@@ -87,7 +87,7 @@ classdef constants
         %
         % NOTE: help regexp: "\w    A word character [a-z_A-Z0-9]"
         %
-        SW_MODE_CLI_OPTION_REGEX = '[A-Za-z][\w-]+';
+        SWM_CLI_OPTION_REGEX = '[A-Za-z][\w-]+';
 
 
 
@@ -324,7 +324,7 @@ classdef constants
                 ' in a bug-free code that receives correct inputs.']);
             MAP('IllegalArgument')              = init_struct(1, ...
                 'An argument to an internal function had an illegal value.');
-            MAP('SWModeProcessing')             = init_struct(1, ...
+            MAP('SWMProcessing')             = init_struct(1, ...
                 'Error in s/w mode processing (processing datasets).');
             MAP('DatasetFormat')                = init_struct(1, ...
                 ['Error when interpreting (official CDF) input datasets,', ...

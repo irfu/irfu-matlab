@@ -8,7 +8,7 @@
 % ============
 % CliData : struct with fields:
 %   .functionalityMode          : String constant
-%   .swModeArg                  : String constant
+%   .swmArg                  : String constant
 %   .icdLogFile                 : Empty if argument not given.
 %   .matlabLogFile              : Empty if argument not given.
 %   .configFile                 : Empty if argument not given.
@@ -69,7 +69,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     % PROPOSAL: Include assertion for unique input and output dataset paths.
     %   NOTE: Assertion is presently in execute_SWM.
     
-    SW_MODE_CLI_OPTION_REGEX = bicas.constants.SW_MODE_CLI_OPTION_REGEX;
+    SWM_CLI_OPTION_REGEX = bicas.constants.SWM_CLI_OPTION_REGEX;
     
     %==================================================================================
     % Configure
@@ -83,7 +83,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     OPTIONS_CONFIG_MAP('identification_FM') = struct('optionHeaderRegexp', '--identification',       'occurrenceRequirement', '0-1',   'nValues', 0);
     OPTIONS_CONFIG_MAP('swdescriptor_FM')   = struct('optionHeaderRegexp', '--swdescriptor',         'occurrenceRequirement', '0-1',   'nValues', 0);
     OPTIONS_CONFIG_MAP('help_FM')           = struct('optionHeaderRegexp', '--help',                 'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('SW_mode')           = struct('optionHeaderRegexp', SW_MODE_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('SWM')           = struct('optionHeaderRegexp', SWM_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
     
     % NOTE: "specific_input_parameters" refers to the official RCS ICD term.
     % NOTE: ICD_log_file is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
@@ -142,7 +142,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
         ~isempty(OptionValuesMap('identification_FM')), 'identification'; ...
         ~isempty(OptionValuesMap('swdescriptor_FM')),   'S/W descriptor'; ...
         ~isempty(OptionValuesMap('help_FM')),           'help'; ...
-        ~isempty(OptionValuesMap('SW_mode')),           'S/W mode'};
+        ~isempty(OptionValuesMap('SWM')),           'S/W mode'};
     assert(...
         sum([tempTable{:,1}]) == 1, ...
         'BICAS:interpret_CLI_syntax:CLISyntax', ...
@@ -153,18 +153,18 @@ function CliData = interpret_CLI_args(cliArgumentList)
         
         case {'version', 'identification', 'S/W descriptor', 'help'}
             
-            CliData.swModeArg = [];
+            CliData.swmArg = [];
             assert(...
                 isempty(sipOptionValues), ...
                 'Specified illegal specific input parameters.')
             
         case 'S/W mode'
             
-            OptionValues = OptionValuesMap('SW_mode');
+            OptionValues = OptionValuesMap('SWM');
             
             % ASSERTION
             % NOTE: Somewhat of a hack, since can not read out from using
-            % bicas.utils.parse_CLI_options where the SW_mode option is located
+            % bicas.utils.parse_CLI_options where the SWM option is located
             % among the arguments. The code knows it should be somewhere.
             if numel(OptionValues) ~= 1
                 % Somewhat misleading error message. Hard to be accurate without
@@ -177,7 +177,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
                     ' a S/W mode as expected.'])
             end
             
-            CliData.swModeArg              = OptionValues.optionHeader;
+            CliData.swmArg              = OptionValues.optionHeader;
             
             CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(...
                 sipOptionValues);
@@ -204,7 +204,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     end
     
     irf.assert.struct(CliData, ...
-        {'functionalityMode', 'swModeArg', 'icdLogFile', 'matlabLogFile', ...
+        {'functionalityMode', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
         'configFile', 'SpecInputParametersMap', ...
         'ModifiedSettingsMap'}, {})
     

@@ -105,10 +105,16 @@ Non-Standard Operations (NSO) table thruster firings updated for until 2023-02-0
 Version X.Y.Z
 -------------
 Changed setting names:
-    SW_MODES.L2-L2_CWF-DWNS_ENABLED
---> SW_MODES.L2-L2_CWF-DSR_ENABLED
     PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN
 --> PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN
-Change name of s/w mode
+    SW_MODES.L2-L2_CWF-DWNS_ENABLED
+--> SWM.L2-L2_CWF-DSR_ENABLED
+    SW_MODES.L1-L2_ENABLED
+--> SWM.L1-L2_ENABLED
+    SW_MODES.L2-L2_CWF-DSR_ENABLED
+--> SWM.L2-L2_CWF-DSR_ENABLED
+    SW_MODES.L2-L3_ENABLED
+--> SWM.L2-L3_ENABLED
+Change name of s/w mode:
     LFR-SURV-CWF-E-DWNS
 --> LFR-SURV-CWF-E-DSR

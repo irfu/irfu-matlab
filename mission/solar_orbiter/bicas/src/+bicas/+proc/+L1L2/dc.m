@@ -459,7 +459,7 @@ classdef dc
                     curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
 
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:SWModeProcessing')
+                    anomalyDescrMsg, 'BICAS:SWMProcessing')
             end
 
 
@@ -533,7 +533,7 @@ classdef dc
                         bicas.default_anomaly_handling(L, ...
                             settingValue, settingKey, 'E+illegal', ...
                             anomalyDescriptionMsg, ...
-                            'BICAS:SWModeProcessing:DatasetFormat')
+                            'BICAS:SWMProcessing:DatasetFormat')
                 end
             end
 

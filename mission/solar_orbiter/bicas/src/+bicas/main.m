@@ -450,19 +450,19 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    SwModeDefs = bicas.SWM_defs(SETTINGS, L);
+    SwmDefs = bicas.SWM_defs(SETTINGS, L);
     
     
     
     switch(CliData.functionalityMode)
         case 'version'
-            print_version(SwModeDefs.List, SETTINGS)
+            print_version(SwmDefs.List, SETTINGS)
             
         case 'identification'
-            print_identification(SwModeDefs.List, SETTINGS)
+            print_identification(SwmDefs.List, SETTINGS)
             
         case 'S/W descriptor'
-            print_sw_descriptor(SwModeDefs.List, SETTINGS)
+            print_sw_descriptor(SwmDefs.List, SETTINGS)
             
         case 'help'
             print_help(SETTINGS)
@@ -472,14 +472,14 @@ function main_without_error_handling(cliArgumentsList, L)
             % CASE: Should be a S/W mode
             %============================
             try
-                SwModeInfo = SwModeDefs.get_sw_mode_info(CliData.swModeArg);
+                SwmInfo = SwmDefs.get_SWM_info(CliData.swmArg);
             catch Exception1
                 % NOTE: Misspelled "--version" etc. would be interpreted as S/W
                 % mode and produce error here too.
                 error('BICAS:CLISyntax', ...
                     ['Can not interpret first argument "%s" as a S/W mode', ...
                     ' (or any other legal first argument).'], ...
-                    CliData.swModeArg);
+                    CliData.swmArg);
             end
             
             
@@ -492,18 +492,18 @@ function main_without_error_handling(cliArgumentsList, L)
             % Extract INPUT dataset files from SIP arguments.
             InputFilesMap = extract_rename_Map_keys(...
                 CliData.SpecInputParametersMap, ...
-                {SwModeInfo.inputsList(:).cliOptionHeaderBody}, ...
-                {SwModeInfo.inputsList(:).prodFuncInputKey});
+                {SwmInfo.inputsList(:).cliOptionHeaderBody}, ...
+                {SwmInfo.inputsList(:).prodFuncInputKey});
             
             % Extract OUTPUT dataset files from SIP arguments.
             OutputFilesMap = extract_rename_Map_keys(...
                 CliData.SpecInputParametersMap, ...
-                {SwModeInfo.outputsList(:).cliOptionHeaderBody}, ...
-                {SwModeInfo.outputsList(:).prodFuncOutputKey});
+                {SwmInfo.outputsList(:).cliOptionHeaderBody}, ...
+                {SwmInfo.outputsList(:).prodFuncOutputKey});
             
             % ASSERTION: Assume correct number of arguments (the only thing not
             % implicitly checked by extract_rename_Map_keys above).
-            nSipExpected = numel(SwModeInfo.inputsList) + numel(SwModeInfo.outputsList);
+            nSipExpected = numel(SwmInfo.inputsList) + numel(SwmInfo.outputsList);
             nSipActual   = numel(CliData.SpecInputParametersMap.keys);
             if nSipExpected ~= nSipActual
                 error('BICAS:CLISyntax', ...
@@ -552,7 +552,7 @@ function main_without_error_handling(cliArgumentsList, L)
             % EXECUTE S/W MODE
             %==================
             bicas.execute_SWM(...
-                SwModeInfo, InputFilesMap, OutputFilesMap, ...
+                SwmInfo, InputFilesMap, OutputFilesMap, ...
                 masterCdfDir, rctDir, NsoTable, SETTINGS, L )
             
         otherwise
@@ -592,14 +592,14 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created <<2019-08-05
 %
-function print_version(SwModeDefsList, SETTINGS)
+function print_version(SwmDefsList, SETTINGS)
     
     % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor
     % rather than the in the BICAS constants since the RCS ICD specifies that it
     % should be that specific version. This is in principle inefficient but also
     % "precise".
     
-    JsonSwd = bicas.get_sw_descriptor(SwModeDefsList);
+    JsonSwd = bicas.get_sw_descriptor(SwmDefsList);
     
     JsonVersion = [];
     JsonVersion.version = JsonSwd.release.version;
@@ -613,12 +613,14 @@ end
 
 % Print the JSON S/W descriptor identification section.
 %
+% NOTE: Argument is *not* an instance of bicas.SWM_defs.
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
 %
-function print_identification(SwModesDefsList, SETTINGS)
+function print_identification(SwmDefsList, SETTINGS)
     
-    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList);
+    JsonSwd = bicas.get_sw_descriptor(SwmDefsList);
     strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
@@ -629,12 +631,14 @@ end
 
 % Print the JSON S/W descriptor.
 %
+% NOTE: Argument is *not* an instance of bicas.SWM_defs.
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24
 %
-function print_sw_descriptor(SwModesDefsList, SETTINGS)
+function print_sw_descriptor(SwmDefsList, SETTINGS)
     
-    JsonSwd = bicas.get_sw_descriptor(SwModesDefsList);
+    JsonSwd = bicas.get_sw_descriptor(SwmDefsList);
     strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);

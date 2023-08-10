@@ -45,7 +45,7 @@
 %     otherwise
 %         bicas.default_anomaly_handling(L, settingValue, settingKey, ...
 %           'E+illegal', ...
-%           anomalyDescrMsg, 'BICAS:SWModeProcessing')
+%           anomalyDescrMsg, 'BICAS:SWMProcessing')
 % end
 %
 %
@@ -55,7 +55,7 @@
 % [settingValue, settingKey] = SETTINGS.get_fv(...
 %     'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
 % bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-%     anomalyDescrMsg, 'BICAS:SWModeProcessing')
+%     anomalyDescrMsg, 'BICAS:SWMProcessing')
 %
 %
 % ARGUMENTS

@@ -5,7 +5,7 @@
 %
 % ARGUMENTS AND RETURN VALUES
 % ===========================
-% SwModeInfo
+% SwmInfo
 % InputFilePathMap  : containers.Map with
 %    key   = prodFuncInputKey
 %    value = Path to input file
@@ -24,7 +24,7 @@
 % First created 2016-06-09
 %
 function execute_SWM(...
-        SwModeInfo, InputFilePathMap, OutputFilePathMap, ...
+        SwmInfo, InputFilePathMap, OutputFilePathMap, ...
         masterCdfDir, rctDir, NsoTable, SETTINGS, L)
 
     % TODO-NI: How verify dataset ID and dataset version against constants?
@@ -72,8 +72,8 @@ function execute_SWM(...
     % Iterate over all INPUT CDFs
     %=============================
     InputDatasetsMap = containers.Map();
-    for i = 1:length(SwModeInfo.inputsList)
-        prodFuncInputKey = SwModeInfo.inputsList(i).prodFuncInputKey;
+    for i = 1:length(SwmInfo.inputsList)
+        prodFuncInputKey = SwmInfo.inputsList(i).prodFuncInputKey;
         inputFilePath    = InputFilePathMap(prodFuncInputKey);
 
         %=======================
@@ -100,7 +100,7 @@ function execute_SWM(...
         end
         cdfDatasetId = InputDataset.Ga.Dataset_ID{1};
 
-        if ~strcmp(cdfDatasetId, SwModeInfo.inputsList(i).datasetId)
+        if ~strcmp(cdfDatasetId, SwmInfo.inputsList(i).datasetId)
             [settingValue, settingKey] = SETTINGS.get_fv(...
                 'INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY');
             anomalyDescrMsg = sprintf(...
@@ -109,7 +109,7 @@ function execute_SWM(...
                 '    File: %s\n', ...
                 '    Global attribute InputDataset.Ga.Dataset_ID{1} : "%s"\n', ...
                 '    Expected value:                                : "%s"\n'], ...
-                inputFilePath, cdfDatasetId, SwModeInfo.inputsList(i).datasetId);
+                inputFilePath, cdfDatasetId, SwmInfo.inputsList(i).datasetId);
             bicas.default_anomaly_handling(L, ...
                 settingValue, settingKey, ...
                 'E+W+illegal', anomalyDescrMsg, 'BICAS:DatasetFormat')
@@ -128,7 +128,7 @@ function execute_SWM(...
         %==========================
         % CALL PRODUCTION FUNCTION
         %==========================
-        OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, rctDir, NsoTable);
+        OutputDatasetsMap = SwmInfo.prodFunc(InputDatasetsMap, rctDir, NsoTable);
     else
         L.logf('warning', ...
             'Disabled processing due to setting %s.', settingNpefKey)
@@ -136,7 +136,7 @@ function execute_SWM(...
         % IMPLEMENTATION NOTE: Needed for passing assertion. Maybe to be
         % considered a hack?!
         OutputDatasetsMap = struct(...
-            'keys', {{SwModeInfo.outputsList.prodFuncOutputKey}});
+            'keys', {{SwmInfo.outputsList.prodFuncOutputKey}});
     end
 
 
@@ -150,10 +150,10 @@ function execute_SWM(...
     % required by the s/w mode.
     irf.assert.castring_sets_equal(...
         OutputDatasetsMap.keys, ...
-        {SwModeInfo.outputsList.prodFuncOutputKey});
+        {SwmInfo.outputsList.prodFuncOutputKey});
     %
-    for iOutputCdf = 1:length(SwModeInfo.outputsList)
-        OutputInfo = SwModeInfo.outputsList(iOutputCdf);
+    for iOutputCdf = 1:length(SwmInfo.outputsList)
+        OutputInfo = SwmInfo.outputsList(iOutputCdf);
 
         prodFuncOutputKey = OutputInfo.prodFuncOutputKey;
         outputFilePath    = OutputFilePathMap(prodFuncOutputKey);
