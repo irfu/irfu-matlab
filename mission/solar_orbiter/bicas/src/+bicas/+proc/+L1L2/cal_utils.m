@@ -41,8 +41,8 @@ classdef cal_utils
         function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
             
             % ASSERTIONS
-            bicas.utils.assert_zv_Epoch(Epoch)
-            bicas.utils.assert_zv_Epoch(CalibEpochList)
+            bicas.utils.assert_ZV_Epoch(Epoch)
+            bicas.utils.assert_ZV_Epoch(CalibEpochList)
             % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty,
             % since discretize behaves differently for scalar second argument.
             assert(~isempty(CalibEpochList))

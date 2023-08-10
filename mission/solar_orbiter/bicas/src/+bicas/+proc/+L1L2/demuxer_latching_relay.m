@@ -36,7 +36,7 @@ function dlrUsing12 = demuxer_latching_relay(Epoch)
 % PROPOSAL: Use NSO list for setting value.
 % PROPOSAL: Use BIAS HK for setting value, if at all possible.
 
-    bicas.utils.assert_zv_Epoch(Epoch)
+    bicas.utils.assert_ZV_Epoch(Epoch)
     
     dlrUsing12 = ones(size(Epoch));
 end

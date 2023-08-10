@@ -24,9 +24,9 @@ classdef dsr___UTEST < matlab.unittest.TestCase
 
         
         
-        function test_downsample_sci_zVar(testCase)
+        function test_downsample_sci_ZV(testCase)
             
-            % function [zvMed, zvMstd] = downsample_sci_zVar(...
+            % function [zvMed, zvMstd] = downsample_sci_ZV(...
             %         zv, nMinReqRecords, iRecordsInBinCa, L)
 
             % Arbitrary number output variables.
@@ -34,7 +34,7 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
                 
-                [actOutputs{:}] = bicas.proc.dsr.downsample_sci_zVar(inputsCa{:});
+                [actOutputs{:}] = bicas.proc.dsr.downsample_sci_ZV(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
             end
             

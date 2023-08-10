@@ -334,8 +334,8 @@ function Do = validate_file(filePath)
     % Bin_location should probably be numbers.
     % Probably a deficiency in xlsx2skt.
     %===================================================================
-    EPOCH_zVariableName = 'Epoch';   % Prescribed by the ROC-TST-GSE-NTT-00017-LES, iss2rev0.
-    zVar_EPOCH_attributes = {...
+    EPOCH_ZV_NAME = 'Epoch';   % Prescribed by the ROC-TST-GSE-NTT-00017-LES, iss2rev0.
+    zv_EPOCH_attributes = {...
         'FIELDNAM',           'Epoch'; ...
         'CATDESC',            'Default time'; ...
         'FILLVAL',            '9999-12-31T23:59:59.999999999'; ...
@@ -354,12 +354,12 @@ function Do = validate_file(filePath)
         'Bin_location',       '0.5'; ...
         'VAR_NOTES',          'Primary time used as a reference in the file.'
     };
-    for i = 1:size(zVar_EPOCH_attributes,1)
-        validate_zv_attribute_value(...
+    for i = 1:size(zv_EPOCH_attributes,1)
+        validate_ZV_attribute_value(...
             Zmd, ...
-            EPOCH_zVariableName, ...
-            zVar_EPOCH_attributes{i,1}, ...
-            zVar_EPOCH_attributes{i,2})
+            EPOCH_ZV_NAME, ...
+            zv_EPOCH_attributes{i,1}, ...
+            zv_EPOCH_attributes{i,2})
     end
     
 
@@ -369,7 +369,7 @@ function Do = validate_file(filePath)
     %========================================
     NONEMPTY_ZV_NAMES = {'VDC_LABEL', 'EDC_LABEL', 'EAC_LABEL'};
     for i = 1:numel(NONEMPTY_ZV_NAMES)
-        validate_zv_presence(Do, NONEMPTY_ZV_NAMES{i}, 1)
+        validate_ZV_presence(Do, NONEMPTY_ZV_NAMES{i}, 1)
     end
 
 
@@ -413,7 +413,7 @@ function Do = validate_file(filePath)
     end
     
     % Validate DELTA_PLUS_MINUS:CATDESC value.
-    validate_zv_attribute_value(...
+    validate_ZV_attribute_value(...
         Zmd, 'DELTA_PLUS_MINUS', 'CATDESC', ...
         ['Time between sample timestamp and beginning/end of integration.', ...
         ' Total integration time is twice this value.'])
@@ -428,10 +428,10 @@ function Do = validate_file(filePath)
     for i = 1:length(ZV_FILLVAL_CHECK)
         
         zvName = ZV_FILLVAL_CHECK{i};
-        validate_zv_presence(Do, zvName, 0)
+        validate_ZV_presence(Do, zvName, 0)
         iZv = find(strcmp(Do.Variables(:,1), zvName));
         if numel(iZv) == 1
-            validate_zv_attribute_value(Zmd, zvName, 'FILLVAL', ZV_FILLVAL, 0.0000)
+            validate_ZV_attribute_value(Zmd, zvName, 'FILLVAL', ZV_FILLVAL, 0.0000)
         end
     end
     
@@ -451,7 +451,7 @@ end
 
 
 
-function validate_zv_attribute_value(ZvsMetadata, zvName, zvAttrName, comparisonValue, varargin)
+function validate_ZV_attribute_value(ZvsMetadata, zvName, zvAttrName, comparisonValue, varargin)
     % TODO-DEC: How handle comparing different data types (MATLAB classes)?
     %   PROPOSAL: Act differently depending zVar data type (TT2000 or not).
     
@@ -477,7 +477,7 @@ end
 %                    actual zVariable value.
 % validateNonempty : Whether to validate that zVar is nonempty.
 %
-function validate_zv_presence(Do, zvName, validateNonempty)
+function validate_ZV_presence(Do, zvName, validateNonempty)
     % PROPOSAL: Separate validate empty.
     %   PRO: Iterate over ZVs that should be present.
     
@@ -491,8 +491,8 @@ function validate_zv_presence(Do, zvName, validateNonempty)
     end
     
     % Checks one variable attribute as a proxy for all variable attributes.
-    zVarsWithAttribute = Do.VariableAttributes.FIELDNAM(:,1);
-    if ~any(strcmp(zVarsWithAttribute, zvName))
+    zvWithAttributeCa = Do.VariableAttributes.FIELDNAM(:,1);
+    if ~any(strcmp(zvWithAttributeCa, zvName))
         validation_warning('Can not find any FIELDNAM variable attribute for zVariable "%s".', zvName);
     end    
 end

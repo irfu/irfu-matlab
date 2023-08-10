@@ -62,7 +62,7 @@ classdef utils
         % varargin : Passed on to bicas.handle_struct_name_change as its
         %            varargin.
         %
-        function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
+        function handle_ZV_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
             anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
                 ['Input dataset DATASET_ID=%s uses an alternative', ...
                 ' but illegal(?) zVariable name "%s" instead of "%s".'], ...
@@ -279,7 +279,7 @@ classdef utils
         % tt2000 : NOTE: int64
         %
 
-            bicas.utils.assert_zv_ACQUISITION_TIME(ACQUISITION_TIME)
+            bicas.utils.assert_ZV_ACQUISITION_TIME(ACQUISITION_TIME)
 
             % at = ACQUISITION_TIME
             ACQUISITION_TIME = double(ACQUISITION_TIME);
@@ -308,7 +308,7 @@ classdef utils
         %
 
             % ASSERTIONS
-            bicas.utils.assert_zv_Epoch(tt2000)
+            bicas.utils.assert_ZV_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
             % AT = ACQUISITION_TIME

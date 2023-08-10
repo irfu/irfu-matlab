@@ -35,8 +35,8 @@ function [fillValue, padValue] = get_fill_pad_values(Do, zvName)
         fillValue = spdfparsett2000(fillValue);
     end
     
-    iZVariable = strcmp(Do.Variables(:,1), zvName);
-    padValue   = Do.Variables{iZVariable, 9};
+    iZv = strcmp(Do.Variables(:,1), zvName);
+    padValue   = Do.Variables{iZv, 9};
     % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad
     % values since the structure/array commented on should be identical.
 end

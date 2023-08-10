@@ -209,7 +209,7 @@ function DataObj = init_modif_dataobj(...
         
         
 
-        DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L);
+        DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L);
     end
     
     
@@ -244,7 +244,7 @@ function DataObj = init_modif_dataobj(...
         
         if isempty(DataObj.data.(zvName).data)
             
-            DataObj = handle_empty_zVar_anomaly(DataObj, zvName, ...
+            DataObj = handle_empty_ZV_anomaly(DataObj, zvName, ...
                 masterCdfPath, SETTINGS, L);
             
         end    % if isempty(DataObj.data.(zvName).data)
@@ -267,7 +267,7 @@ end    % init_modif_dataobj
 % ===========
 % ZVA = zVariable Attribute
 %
-function DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L)
+function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     
     % ASSERTION: Master CDF already contains the zVariable.
     if ~isfield(DataObj.data, zvName)
@@ -394,7 +394,7 @@ end
 % masterCdfPath
 %       NOTE: Only needed for anomaly description message.
 % 
-function DataObj = handle_empty_zVar_anomaly(...
+function DataObj = handle_empty_ZV_anomaly(...
         DataObj, zvName, masterCdfPath, SETTINGS, L)
     
     %==============================================================

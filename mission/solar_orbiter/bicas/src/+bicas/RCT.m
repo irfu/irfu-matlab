@@ -93,13 +93,13 @@ classdef RCT
                 % NOTE: Assumes 1 CDF record or many (time-dependent values).
                 % ==> Must handle that dataobj assigns differently for these two
                 %     cases.
-                epochL                    = bicas.RCT.norm_do_zv(Do.data.Epoch_L);
-                epochH                    = bicas.RCT.norm_do_zv(Do.data.Epoch_H);
-                biasCurrentOffsetsAAmpere = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
-                biasCurrentGainsAapt      = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
-                dcSingleOffsetsAVolt      = bicas.RCT.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
-                dcDiffOffsetsAVolt        = bicas.RCT.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
-                ftfCoeffs                 = bicas.RCT.norm_do_zv(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
+                epochL                    = bicas.RCT.normalize_dataobj_ZV(Do.data.Epoch_L);
+                epochH                    = bicas.RCT.normalize_dataobj_ZV(Do.data.Epoch_H);
+                biasCurrentOffsetsAAmpere = bicas.RCT.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
+                biasCurrentGainsAapt      = bicas.RCT.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
+                dcSingleOffsetsAVolt      = bicas.RCT.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
+                dcDiffOffsetsAVolt        = bicas.RCT.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
+                ftfCoeffs                 = bicas.RCT.normalize_dataobj_ZV(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
                 nEpochL = size(epochL, 1);
                 nEpochH = size(epochH, 1);
@@ -175,8 +175,8 @@ classdef RCT
                 % ASSERTIONS:
                 % All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %==============================================================
-                bicas.utils.assert_zv_Epoch(RctData.epochL)
-                bicas.utils.assert_zv_Epoch(RctData.epochH)
+                bicas.utils.assert_ZV_Epoch(RctData.epochL)
+                bicas.utils.assert_ZV_Epoch(RctData.epochH)
                 validateattributes(RctData.epochL, {'numeric'}, {'increasing'})
                 validateattributes(RctData.epochH, {'numeric'}, {'increasing'})
 
@@ -404,16 +404,15 @@ classdef RCT
         %
         % NOTE: Not well tested on different types of zvar array sizes.
         % 
-        function data = norm_do_zv(DataobjZVar)
+        function data = normalize_dataobj_ZV(DataobjZv)
             % PROPOSAL: Move to utils.
             % PROPOSAL: Shorter name:
-            %   norm_dataobj_zvar
-            %   norm_do_zv_data
+            %   norm_dataobj_zv
             %   norm_do_zv
             
-            data = DataobjZVar.data;            
+            data = DataobjZv.data;
             
-            if DataobjZVar.nrec == 1
+            if DataobjZv.nrec == 1
                 data = shiftdim(data, -1);
             end
         end

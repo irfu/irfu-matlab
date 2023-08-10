@@ -261,11 +261,11 @@ classdef dsr
             % ASSERTIONS
             % ----------
             % Does not assert monotonic increase.
-            bicas.utils.assert_zv_Epoch(zvAllTt2000)
+            bicas.utils.assert_ZV_Epoch(zvAllTt2000)
             % NOTE: Function algorithm assumes this monotonic increase.
             assert(issorted(zvAllTt2000, 'strictascend'))
             %
-            bicas.utils.assert_zv_Epoch(boundaryRefTt2000)
+            bicas.utils.assert_ZV_Epoch(boundaryRefTt2000)
             assert(isscalar(boundaryRefTt2000))
             assert(isscalar(binLengthWolsNs))
             assert(isa(binLengthWolsNs,       'int64'))
@@ -371,7 +371,7 @@ classdef dsr
         % zvMed  : (iBin, iChannel). Median.
         % zvMstd : (iBin, iChannel). Modified STandard Deviation (MSTD).
         %
-        function [zvMed, zvMstd] = downsample_sci_zVar(...
+        function [zvMed, zvMstd] = downsample_sci_ZV(...
                 zv, nMinReqRecords, iRecordsInBinCa, L)
             
             % PROPOSAL: Require nMinReqSamples >= 1? Code can handle 0, though it gives NaN.
@@ -441,13 +441,13 @@ classdef dsr
             
             
 %             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.downsample_sci_zVar', tTicToc, ...
+%                 'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
 %                 nRecordsOsr, 'OSR record')
 %             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.downsample_sci_zVar', tTicToc, ...
+%                 'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
 %                 nRecordsDsr,              'DSR record')
             
-        end    % downsample_sci_zVar
+        end    % downsample_sci_ZV
 
 
 

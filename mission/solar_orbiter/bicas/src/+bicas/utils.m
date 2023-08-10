@@ -23,7 +23,7 @@ classdef utils
         function utcStr = TT2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
             
-            bicas.utils.assert_zv_Epoch(zvTt2000)
+            bicas.utils.assert_ZV_Epoch(zvTt2000)
             
             utcStr = irf.cdf.TT2000_to_UTC_str(zvTt2000);
         end
@@ -124,7 +124,7 @@ classdef utils
         
         
         % Assert that variable is a "zVar Epoch-like" variable.
-        function assert_zv_Epoch(zvEpoch)
+        function assert_ZV_Epoch(zvEpoch)
             % NOTE: No check for monotonically increasing timestamps. Done in
             % other locations. Universally? Slow?
             
@@ -145,7 +145,7 @@ classdef utils
         
         
         % Assert that variable is a "zVar ACQUISITION_TIME-like" variable.
-        function assert_zv_ACQUISITION_TIME(ACQUISITION_TIME)
+        function assert_ZV_ACQUISITION_TIME(ACQUISITION_TIME)
         
             EMID = 'BICAS:Assertion:IllegalArgument';
         
@@ -264,7 +264,7 @@ classdef utils
 
                 case 'Epoch'
                     % ASSERTIONS
-                    bicas.utils.assert_zv_Epoch(varValue)
+                    bicas.utils.assert_ZV_Epoch(varValue)
                     
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
@@ -274,7 +274,7 @@ classdef utils
                         epochMaxStr = bicas.utils.TT2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
                     elseif nValues >= 1
-                        bicas.utils.assert_zv_Epoch(uniqueValues)
+                        bicas.utils.assert_ZV_Epoch(uniqueValues)
                         valueStrs = irf.cdf.TT2000_to_UTC_str_many(uniqueValues);
                         valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
                     else

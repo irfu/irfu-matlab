@@ -490,7 +490,7 @@ classdef L1L2
             %           outside (trivial).
             % PROPOSAL: Separate function for logging which records that should be removed.
 
-            bicas.utils.assert_zv_Epoch(zvEpoch)
+            bicas.utils.assert_ZV_Epoch(zvEpoch)
             assert(islogical(isLfr));
 
             %===============

@@ -94,7 +94,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
     
     ADD_DEBUG_RECORD_L = 0;
     ADD_DEBUG_RECORD_H = 0;
-    C.N_ZVAR_COEFF     = 8;
+    C.N_ZV_COEFF     = 8;
     
     %===================================================================
     % Create EMPTY (not zero-valued) variables representing zVariables.
@@ -102,7 +102,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
     RctZvL.Epoch_L                  = int64( zeros(0,1) );
     RctZvL.BIAS_CURRENT_OFFSET      = zeros(0, 3);
     RctZvL.BIAS_CURRENT_GAIN        = zeros(0, 3);
-    RctZvL.TRANSFER_FUNCTION_COEFFS = zeros(0, 2, C.N_ZVAR_COEFF, 4);
+    RctZvL.TRANSFER_FUNCTION_COEFFS = zeros(0, 2, C.N_ZV_COEFF, 4);
     
     RctZvH.Epoch_H  = int64( zeros(0,1) );
     RctZvH.E_OFFSET = zeros(0,3);
@@ -172,7 +172,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
         % Version used up until 2020-11-19, ~internally.
         RctZvL = add_RCT_ZVs_L(RctZvL, int64(0), ...
             [2.60316e-09, -4.74234e-08, -4.78828e-08]', [1.98008e-09, 1.97997e-09, 1.98021e-09]', ...
-            create_tfc_zv_record(C, ...
+            create_tfc_ZV_record(C, ...
             'DC_single', TF_DC_single_2017_12_13_SC, ...
             'DC_diff',   TF_DC_diff_2017_12_13_SC, ...
             'AC_lg',     TF_AC_LG_2017_12_13_SC, ...
@@ -191,7 +191,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
         
         RctZvL = add_RCT_ZVs_L(RctZvL, int64(0), ...
             [2.60316e-09, -4.74234e-08, -4.78828e-08]', [1.98008e-09, 1.97997e-09, 1.98021e-09]', ...
-            create_tfc_zv_record(C, ...
+            create_tfc_ZV_record(C, ...
                 'DC_single', TF_DC_single_2017_12_13_SC, ...
                 'DC_diff',   TF_DC_diff_2017_12_13_SC, ...
                 'AC_lg',     TF_AC_LG_2020_11_18, ...
@@ -274,23 +274,23 @@ end
 %                   NOTE: Unusual "syntax" for argument list. String constants
 %                   must be the same every time. Only there for safety.
 %
-function zVarRecord = create_tfc_zv_record(C, varargin)
+function zvRecord = create_tfc_ZV_record(C, varargin)
     % PROPOSAL: Convert varargin to struct directly.
     
-    zVarRecord = double(zeros(1, 2, C.N_ZVAR_COEFF, 4));
+    zvRecord = double(zeros(1, 2, C.N_ZV_COEFF, 4));
     INDEX_LABEL_LIST = {'DC_single', 'DC_diff', 'AC_lg', 'AC_hg'};
     for i=1:4
         if strcmp(varargin{2*i-1}, INDEX_LABEL_LIST{i})
-            zVarRecord(1,:,:,i) = ca2na(varargin{2*i});
+            zvRecord(1,:,:,i) = ca2na(varargin{2*i});
         else
             error('Illegal argument string constant.')
         end
     end
     
     % ASSERTIONS
-    assert(all(isfinite(zVarRecord), 'all'), ...
-        'create_RCT:Assertion', 'zVarRecord contains non-finite values.')
-    irf.assert.sizes(zVarRecord, [1, 2, C.N_ZVAR_COEFF, 4])
+    assert(all(isfinite(zvRecord), 'all'), ...
+        'create_RCT:Assertion', 'zvRecord contains non-finite values.')
+    irf.assert.sizes(zvRecord, [1, 2, C.N_ZV_COEFF, 4])
     
     %###########################################################################
     
@@ -310,13 +310,13 @@ function zVarRecord = create_tfc_zv_record(C, varargin)
         
         % Convert cell array to numeric array.
         na = [...
-            padarray(ca{1}, [0, C.N_ZVAR_COEFF-numel(ca{1})], 'post'); ...
-            padarray(ca{2}, [0, C.N_ZVAR_COEFF-numel(ca{2})], 'post') ...
-            ];    % 2 x N_ZVAR_COEFF
-        na = permute(na, [3,1,2]);    % 1 x 2 x N_ZVAR_COEFF
+            padarray(ca{1}, [0, C.N_ZV_COEFF-numel(ca{1})], 'post'); ...
+            padarray(ca{2}, [0, C.N_ZV_COEFF-numel(ca{2})], 'post') ...
+            ];    % 2 x N_ZV_COEFF
+        na = permute(na, [3,1,2]);    % 1 x 2 x N_ZV_COEFF
         
         % ASSERTIONS
-        irf.assert.sizes(na, [1, 2, C.N_ZVAR_COEFF])
+        irf.assert.sizes(na, [1, 2, C.N_ZV_COEFF])
     end
 end
 
