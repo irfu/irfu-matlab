@@ -30,19 +30,19 @@
 %
 function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)
 % PROPOSAL: Permit multiple units.
-%   Ex: Downsampled: Nbr of DWNS CDF records (bins), nbr of ORIS CDF records.
+%   Ex: Downsampled: Nbr of DSR CDF records (bins), nbr of ORIS CDF records.
 %   PROPOSAL: Cell array
 %       {iUnit}{1} = nUnits
 %       {iUnit}{2} = unitName
 %       TODO-DEC: Log format? Much data together with long row prefixes.
 %         Ex: 2021-05-20
 %         2021-05-20T18:10:08 -- DEBUG -- SPEED -- bicas.proc.dwns.get_downsampling_bins: 0.253965 [s], 7.23335e-07 [s/ORIS record], 351103 [ORIS records] (wall time)
-%         2021-05-20T18:10:08 -- DEBUG -- SPEED -- bicas.proc.dwns.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DWNS record], 361 [DWNS records] (wall time)
+%         2021-05-20T18:10:08 -- DEBUG -- SPEED -- bicas.proc.dwns.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DSR record], 361 [DSR records] (wall time)
 %         2021-05-20T18:10:09 -- DEBUG -- SPEED -- bicas.proc.L2L3.process_L2_to_L3: 0.461114 [s], 1.31333e-06 [s/ORIS record], 351103 [ORIS records] (wall time)
-%         2021-05-20T18:10:09 -- DEBUG -- SPEED -- bicas.proc.L2L3.process_L2_to_L3: 0.461797 [s], 0.00127922 [s/DWNS record], 361 [DWNS records] (wall time)
+%         2021-05-20T18:10:09 -- DEBUG -- SPEED -- bicas.proc.L2L3.process_L2_to_L3: 0.461797 [s], 0.00127922 [s/DSR record], 361 [DSR records] (wall time)
 %   PROPOSAL: One row per unit, repeat everything else.
 %         bicas.proc.dwns.get_downsampling_bins: 0.253965 [s], 7.23335e-07 [s/ORIS record], 351103 [ORIS records] (wall time)
-%         bicas.proc.dwns.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DWNS record], 361 [DWNS records] (wall time)
+%         bicas.proc.dwns.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DSR record], 361 [DSR records] (wall time)
 %       PRO: Rows searchable (grep).
 %       NOTE: Crude, but still improvement over status quo.
 

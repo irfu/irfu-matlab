@@ -32,9 +32,9 @@ classdef L2L2
         
         % IMPLEMENTATION NOTE: It is not obvious whether this processing should
         % be run as a part of a separate s/w mode
-        %   SOLO_L2_LFR-RPW-CWF-E --> DWNS,
+        %   SOLO_L2_LFR-RPW-CWF-E --> DSR,
         % or as part of the s/w mode
-        %   SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DWNS).
+        %   SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DSR).
         % The code is therefore designed so that it is easy to switch between
         % the two.
         %
@@ -48,7 +48,7 @@ classdef L2L2
         %     as opposed to process_L2_to_L3() which produces official datasets
         %     and might one day be "officially" run at ROC.
         %
-        function OutLfrCwfDwns = process_LFRCWF_to_DWNS(InLfrCwf, SETTINGS, L)
+        function OutLfrCwfDsr = process_LFRCWF_to_DSR(InLfrCwf, SETTINGS, L)
             %
             % PROBLEM: How handle leap seconds if bin size <= 1 s?
             %   NOTE: Positive leap seconds are not a problem.
@@ -57,7 +57,7 @@ classdef L2L2
             %
             % TODO-DEC: S/w mode?
             %   PROPOSAL: Separate mode
-            %             SOLO_L2_LFR-RPW-CWF-E --> DWNS
+            %             SOLO_L2_LFR-RPW-CWF-E --> DSR
             %       PRO: Can process files separately ==> faster.
             %       CON: Two separate modes require one SOLO_L2_LFR-RPW-CWF-E
             %            dataset.
@@ -67,10 +67,10 @@ classdef L2L2
             %           PRO?!!: Has consequences for batch processing code?
             %
             %   PROPOSAL: Merged L1/L1R-->L2 mode 
-            %             SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DWNS).
+            %             SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DSR).
             %       PRO: Fewer modes for batch processing code to handle.
             %            ==> Faster identification of files+modes.
-            %       PRO: More automatic synching of ORIS and DWNS versions.
+            %       PRO: More automatic synching of ORIS and DSR versions.
             
             tTicToc = tic();
 
@@ -86,7 +86,7 @@ classdef L2L2
 
             % 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data.
             QUALITY_FLAG_minForUse = SETTINGS.get_fv(...
-                'PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN');
+                'PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN');
 
 
             
@@ -102,10 +102,10 @@ classdef L2L2
                 BIN_LENGTH_WOLS_NS, ...
                 BIN_TIMESTAMP_POS_WOLS_NS, ...
                 L);
-            OutLfrCwfDwns = struct(...
+            OutLfrCwfDsr = struct(...
                 'Ga', Ga, ...
                 'Zv', Zv);
-            nRecordsDwns = numel(iRecordsInBinCa);
+            nRecordsDsr = numel(iRecordsInBinCa);
             
             
             
@@ -133,30 +133,30 @@ classdef L2L2
             % ----------
             % NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
             %===============================================
-            [OutLfrCwfDwns.Zv.VDC, ...
-             OutLfrCwfDwns.Zv.VDCSTD] = bicas.proc.dwns.downsample_sci_zVar(...
+            [OutLfrCwfDsr.Zv.VDC, ...
+             OutLfrCwfDsr.Zv.VDCSTD] = bicas.proc.dwns.downsample_sci_zVar(...
                 zv_VDC, ...
-                bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
+                bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
             
-            [OutLfrCwfDwns.Zv.EDC, ...
-             OutLfrCwfDwns.Zv.EDCSTD] = bicas.proc.dwns.downsample_sci_zVar(...
+            [OutLfrCwfDsr.Zv.EDC, ...
+             OutLfrCwfDsr.Zv.EDCSTD] = bicas.proc.dwns.downsample_sci_zVar(...
                 zv_EDC, ...
-                bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN, ...
+                bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
             
             
             
             bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L2.process_LFRCWF_to_DWNS', tTicToc, ...
+                'bicas.proc.L2L2.process_LFRCWF_to_DSR', tTicToc, ...
                 nRecordsOris, 'ORIS record')
             bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L2.process_LFRCWF_to_DWNS', tTicToc, ...
-                nRecordsDwns, 'DWNS record')
+                'bicas.proc.L2L2.process_LFRCWF_to_DSR', tTicToc, ...
+                nRecordsDsr, 'DSR record')
 
-        end    % process_LFRCWF_to_DWNS
+        end    % process_LFRCWF_to_DSR
 
 
 

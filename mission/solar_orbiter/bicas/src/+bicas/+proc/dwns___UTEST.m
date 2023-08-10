@@ -46,11 +46,11 @@ classdef dwns___UTEST < matlab.unittest.TestCase
             end
 
             % Create test with N BINS (i.e. an arbitrary call).
-            function test_N_bins(zv, nMinReqSamples, iRecordsDwnsCa, med, mstd)
-                assert(isrow(iRecordsDwnsCa))
-                bicas.proc.dwns___UTEST.assert_iRecordsDwnsCa(iRecordsDwnsCa, zv)
+            function test_N_bins(zv, nMinReqSamples, iRecordsDsrCa, med, mstd)
+                assert(isrow(iRecordsDsrCa))
+                bicas.proc.dwns___UTEST.assert_iRecordsDsrCa(iRecordsDsrCa, zv)
 
-                test({zv, nMinReqSamples, iRecordsDwnsCa', testCase.L}, ...
+                test({zv, nMinReqSamples, iRecordsDsrCa', testCase.L}, ...
                     {med, mstd});
             end
             %===================================================================
@@ -225,15 +225,15 @@ classdef dwns___UTEST < matlab.unittest.TestCase
         
         
         % Internal utility function
-        function assert_iRecordsDwnsCa(iRecordsDwnsCa, zv)
+        function assert_iRecordsDsrCa(iRecordsDsrCa, zv)
 
             % ~Normalize
-            iRecordsDwnsNormCa = arrayfun(...
+            iRecordsDsrNormCa = arrayfun(...
                 @(s) (s{1}(:)'), ...
-                iRecordsDwnsCa, ...
+                iRecordsDsrCa, ...
                 'UniformOutput', false);
 
-            iRecordsArray = [iRecordsDwnsNormCa{:}];
+            iRecordsArray = [iRecordsDsrNormCa{:}];
 
             assert(all(unique(iRecordsArray) == 1:size(zv, 1)))
         end

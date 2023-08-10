@@ -35,12 +35,12 @@ classdef dwns
         %
         % RETURN VALUES
         % =============
-        % InitialDwnsZv
+        % InitialDsrZv
         %       Struct with zVariables. 
         % iRecordsInBinCa
         %       Distribution of non-downsampled records in bins.
         %
-        function [InitialDwnsZv, iRecordsInBinCa] = init_shared_downsampled(...
+        function [InitialDsrZv, iRecordsInBinCa] = init_shared_downsampled(...
                 InLfrCwf, binLengthWolsNs, binTimestampPosWolsNs, L)
             
             tTicToc = tic();
@@ -65,7 +65,7 @@ classdef dwns
             %     and
             % (2) which (non-downsampled) records belong to which bins
             %     (=downsampled records).
-            [zvEpochDwns, iRecordsInBinCa, binSizeArrayNs] = ...
+            [zvEpochDsr, iRecordsInBinCa, binSizeArrayNs] = ...
                 bicas.proc.dwns.get_downsampling_bins(...
                     InLfrCwf.Zv.Epoch, ...
                     boundaryRefTt2000, ...
@@ -73,7 +73,7 @@ classdef dwns
                     binTimestampPosWolsNs, ...
                     L);
             nRecordsOris = numel(InLfrCwf.Zv.Epoch);
-            nRecordsDwns = numel(zvEpochDwns);
+            nRecordsDsr = numel(zvEpochDsr);
             
             
             
@@ -125,13 +125,13 @@ classdef dwns
             % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
             %====================================================================
             % Pre-allocate
-            QUALITY_FLAG_dwns       = zeros(nRecordsDwns, 1, 'uint8');
-            QUALITY_BITMASK_dwns    = zeros(nRecordsDwns, 1, 'uint16');
-            L2_QUALITY_BITMASK_dwns = zeros(nRecordsDwns, 1, 'uint16');
-            for iBin = 1:nRecordsDwns
+            QUALITY_FLAG_dsr       = zeros(nRecordsDsr, 1, 'uint8');
+            QUALITY_BITMASK_dsr    = zeros(nRecordsDsr, 1, 'uint16');
+            L2_QUALITY_BITMASK_dsr = zeros(nRecordsDsr, 1, 'uint16');
+            for iBin = 1:nRecordsDsr
                 k = iRecordsInBinCa{iBin};
 
-                QUALITY_FLAG_dwns(iBin) = ...
+                QUALITY_FLAG_dsr(iBin) = ...
                     bicas.proc.dwns.downsample_bin_QUALITY_FLAG(...
                         InLfrCwf.Zv.QUALITY_FLAG( k ), ...
                         InLfrCwf.ZvFv.QUALITY_FLAG);
@@ -146,12 +146,12 @@ classdef dwns
                 %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
                 %   (SKELETON_MODS: V12=Feb 2021)
                 % .
-                QUALITY_BITMASK_dwns(iBin)    = ...
+                QUALITY_BITMASK_dsr(iBin)    = ...
                     bicas.proc.dwns.downsample_bin_L12_QUALITY_BITMASK(...
                         uint16( InLfrCwf.Zv.QUALITY_BITMASK( k ) ), ...
                         InLfrCwf.ZvFv.QUALITY_BITMASK);
 
-                L2_QUALITY_BITMASK_dwns(iBin) = ...
+                L2_QUALITY_BITMASK_dsr(iBin) = ...
                     bicas.proc.dwns.downsample_bin_L12_QUALITY_BITMASK(...
                         InLfrCwf.Zv.L2_QUALITY_BITMASK( k ), ...
                         InLfrCwf.ZvFv.L2_QUALITY_BITMASK);
@@ -164,18 +164,18 @@ classdef dwns
             %
             % (Initial value for QUALITY_FLAG; might be modified later.)
             %============================================================
-            InitialDwnsZv = struct();
-            InitialDwnsZv.Epoch              = zvEpochDwns;
-            InitialDwnsZv.QUALITY_FLAG       = QUALITY_FLAG_dwns;
-            InitialDwnsZv.QUALITY_BITMASK    = QUALITY_BITMASK_dwns;
-            InitialDwnsZv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK_dwns;
+            InitialDsrZv = struct();
+            InitialDsrZv.Epoch              = zvEpochDsr;
+            InitialDsrZv.QUALITY_FLAG       = QUALITY_FLAG_dsr;
+            InitialDsrZv.QUALITY_BITMASK    = QUALITY_BITMASK_dsr;
+            InitialDsrZv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK_dsr;
             %
             % NOTE: Takes leap seconds into account.
             % NOTE/BUG: DELTA_PLUS_MINUS not perfect since the bin timestamp is
             % not centered for leap seconds. Epoch+-DELTA_PLUS_MINUS will thus
             % go outside/inside the bin boundaries for leap seconds. The same
             % problem exists for both positive and negative leap seconds.
-            InitialDwnsZv.DELTA_PLUS_MINUS   = double(binSizeArrayNs / 2);
+            InitialDsrZv.DELTA_PLUS_MINUS   = double(binSizeArrayNs / 2);
 
 
 
@@ -184,7 +184,7 @@ classdef dwns
 %                 nRecordsOris, 'ORIS record')
 %             bicas.log_speed_profiling(L, ...
 %                 'bicas.proc.dwns.init_shared_downsampled', tTicToc, ...
-%                 nRecordsDwns, 'DWNS record')
+%                 nRecordsDsr, 'DSR record')
         end
 
 
@@ -317,7 +317,7 @@ classdef dwns
             %===================================================================
             % Assign iRecordCa
             % ----------------
-            % For every DWNS record/bin, derive indices to the corresponding
+            % For every DSR record/bin, derive indices to the corresponding
             % ORIS CDF records.
             %===================================================================
             % NOTE: DERIVING iRecordsInBinCa IS A SUBSTANTIAL PART OF THE
@@ -332,7 +332,7 @@ classdef dwns
                 numel(zvAllTt2000), 'ORIS record')
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.dwns.get_downsampling_bins', tTicToc, ...
-                nBins,              'DWNS record')
+                nBins,              'DSR record')
         end
         
         
@@ -385,17 +385,17 @@ classdef dwns
             % ASSERTION
             assert(isfloat(zv))
             assert(nMinReqRecords >= 0)
-            [nRecordsOris, nRecordsDwns, nSpr] = irf.assert.sizes(...
+            [nRecordsOris, nRecordsDsr, nSpr] = irf.assert.sizes(...
                 zv,              [-1, -3], ...
                 iRecordsInBinCa, [-2]);
             
             
             
             % Pre-allocate
-            zvMed  = NaN(nRecordsDwns, nSpr);
-            zvMstd = NaN(nRecordsDwns, nSpr);
+            zvMed  = NaN(nRecordsDsr, nSpr);
+            zvMstd = NaN(nRecordsDsr, nSpr);
 
-            for iBin = 1:nRecordsDwns
+            for iBin = 1:nRecordsDsr
                 k           = iRecordsInBinCa{iBin};
                 
                 binZv       = zv(k, :);
@@ -445,7 +445,7 @@ classdef dwns
 %                 nRecordsOris, 'ORIS record')
 %             bicas.log_speed_profiling(L, ...
 %                 'bicas.proc.dwns.downsample_sci_zVar', tTicToc, ...
-%                 nRecordsDwns,              'DWNS record')
+%                 nRecordsDsr,              'DSR record')
             
         end    % downsample_sci_zVar
 

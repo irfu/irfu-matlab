@@ -29,14 +29,14 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % Partially NaN data
             % QUALITY_FLAG < min value
             % QUALITY_FLAG = fill value
-            % #samples < bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN
+            % #samples < bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN
             % 
             % NOTE: Makes no sense testing the actual output data, since it is
             % dependent on BICAS-external functions, except maybe whether it is
             % NaN or not.
 
             % Test(s) are designed for this value.
-            assert(bicas.constants.N_MIN_SAMPLES_PER_DWNS_BIN == 3)
+            assert(bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN == 3)
 
 
 
@@ -113,7 +113,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
                 ];
 
             %===========
-            % DWNS DATA
+            % DSR DATA
             %===========
             DATA2 = [...
                   0,   2,     7,    56; ...
@@ -141,14 +141,14 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
 
             ExpOris.Zv.QUALITY_FLAG       = uint8( DATA1(:, 3));
             %
-            ExpDwns.Zv.Epoch              = int64( DATA2(:, 1)*1e9) + BASE_TT2000;
-            ExpDwns.Zv.QUALITY_FLAG       = uint8( DATA2(:, 2));
-            ExpDwns.Zv.QUALITY_BITMASK    = uint16(DATA2(:, 3));
-            ExpDwns.Zv.L2_QUALITY_BITMASK = uint16(DATA2(:, 4));
+            ExpDsr.Zv.Epoch              = int64( DATA2(:, 1)*1e9) + BASE_TT2000;
+            ExpDsr.Zv.QUALITY_FLAG       = uint8( DATA2(:, 2));
+            ExpDsr.Zv.QUALITY_BITMASK    = uint16(DATA2(:, 3));
+            ExpDsr.Zv.L2_QUALITY_BITMASK = uint16(DATA2(:, 4));
 
-            [OutEfieldOris,  OutEfieldDwns, ...
-             OutScpotOris,   OutScpotDwns, ...
-             OutDensityOris, OutDensityDwns] ...
+            [OutEfieldOris,  OutEfieldDsr, ...
+             OutScpotOris,   OutScpotDsr, ...
+             OutDensityOris, OutDensityDsr] ...
             = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, SETTINGS, L);
 
             % ORIS
@@ -157,11 +157,11 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             testCase.verifyEqual(OutEfieldOris.Zv.QUALITY_BITMASK,    InLfrCwf.Zv.QUALITY_BITMASK)
             testCase.verifyEqual(OutEfieldOris.Zv.L2_QUALITY_BITMASK, InLfrCwf.Zv.L2_QUALITY_BITMASK)
 
-            % DWNS
-            testCase.verifyEqual(OutEfieldDwns.Zv.Epoch,              ExpDwns.Zv.Epoch)
-            testCase.verifyEqual(OutEfieldDwns.Zv.QUALITY_FLAG,       ExpDwns.Zv.QUALITY_FLAG)
-            testCase.verifyEqual(OutEfieldDwns.Zv.QUALITY_BITMASK,    ExpDwns.Zv.QUALITY_BITMASK)
-            testCase.verifyEqual(OutEfieldDwns.Zv.L2_QUALITY_BITMASK, ExpDwns.Zv.L2_QUALITY_BITMASK)
+            % DSR
+            testCase.verifyEqual(OutEfieldDsr.Zv.Epoch,              ExpDsr.Zv.Epoch)
+            testCase.verifyEqual(OutEfieldDsr.Zv.QUALITY_FLAG,       ExpDsr.Zv.QUALITY_FLAG)
+            testCase.verifyEqual(OutEfieldDsr.Zv.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
+            testCase.verifyEqual(OutEfieldDsr.Zv.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
         end
         
         

@@ -78,8 +78,8 @@ DLR
     of the demultiplexer. See the "BIAS specification".
 DSI
     DATASET_ID
-DWNS
-    Downsampled. Cf. ORIS.
+DSR
+    Downsampled/Decreased Sampling Rate. Cf. ORIS.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
@@ -117,7 +117,7 @@ Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
 ORIS
-    Original sampling (rate). Used in the context of downsampling. Cf DWNS.
+    Original sampling (rate). Used in the context of downsampling. Cf DSR.
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
 RCS ICD

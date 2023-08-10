@@ -17,7 +17,7 @@ classdef constants
     % PROPOSAL: Error category for bad input datasets (both science and HK).
     %   PRO: Has similar for RCTs.
     %
-    % PROPOSAL: Move N_MIN_SAMPLES_PER_DWNS_BIN to settings?
+    % PROPOSAL: Move N_MIN_SAMPLES_PER_DSR_BIN to settings?
     %
     % PROPOSAL: Log all constants.
     % PROPOSAL: Change name to "const".
@@ -131,7 +131,7 @@ classdef constants
         %
         % NOTE: Currently used for both L2 downsampled and L3 downsampled.
         % /2021-05-24
-        N_MIN_SAMPLES_PER_DWNS_BIN = 3;
+        N_MIN_SAMPLES_PER_DSR_BIN = 3;
 
 
 

@@ -100,3 +100,15 @@ Version 7.0.0
 -------------
 Using new L2 master CDFs with corrections for DELTA_PLUS/MINUS_VAR, APPLICABLE, Data_type.
 Non-Standard Operations (NSO) table thruster firings updated for until 2023-02-05.
+
+
+Version X.Y.Z
+-------------
+Changed setting names:
+    SW_MODES.L2-L2_CWF-DWNS_ENABLED
+--> SW_MODES.L2-L2_CWF-DSR_ENABLED
+    PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN
+--> PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN
+Change name of s/w mode
+    LFR-SURV-CWF-E-DWNS
+--> LFR-SURV-CWF-E-DSR

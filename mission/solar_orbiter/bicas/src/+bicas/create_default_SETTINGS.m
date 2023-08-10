@@ -148,7 +148,7 @@ function SETTINGS = create_default_SETTINGS()
     % opposed to L1 current datasets.
     S.define_setting('SW_MODES.L1-L2_ENABLED',          0);
     % Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
-    S.define_setting('SW_MODES.L2-L2_CWF-DWNS_ENABLED', 0);
+    S.define_setting('SW_MODES.L2-L2_CWF-DSR_ENABLED', 0);
     % Enable s/w mode for processing L2-->L3 datasets.
     S.define_setting('SW_MODES.L2-L3_ENABLED',          0);
 
@@ -399,13 +399,13 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')
 
     % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
-    % EFIELD, and SCPOT data; both ORIS and DWNS.
+    % EFIELD, and SCPOT data; both ORIS and DSR.
     S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',     2)
     % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
-    % L2 LFR-SURV-CWF-E-1-SECONDS.
+    % SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND data.
     % NOTE: This does not affect the corresponding ORIS dataset and is therefore
     % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
-    S.define_setting('PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN',  2)
+    S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
 
 
 

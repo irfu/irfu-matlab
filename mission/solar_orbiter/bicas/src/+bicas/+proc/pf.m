@@ -173,16 +173,16 @@ classdef pf
         
         
         
-        function [OutputDatasetsMap] = produce_L2_to_L2_CWF_DWNS(...
+        function [OutputDatasetsMap] = produce_L2_to_L2_CWF_DSR(...
                 InputDatasetsMap, ...
                 SETTINGS, L)
             
             InLfrCwf = InputDatasetsMap('ORIS_cdf');
             
-            OutLfrCwfDwns = bicas.proc.L2L2.process_LFRCWF_to_DWNS(InLfrCwf, SETTINGS, L);
+            OutLfrCwfDsr = bicas.proc.L2L2.process_LFRCWF_to_DSR(InLfrCwf, SETTINGS, L);
             
             OutputDatasetsMap = containers.Map();
-            OutputDatasetsMap('DWNS_cdf') = OutLfrCwfDwns;
+            OutputDatasetsMap('DSR_cdf') = OutLfrCwfDsr;
         end
         
         
@@ -196,18 +196,18 @@ classdef pf
             %==============
             % Process data
             %==============
-            [EfieldOrisCdf,  EfieldDwnsCdf, ...
-             ScpotOrisCdf,   ScpotDwnsCdf, ...
-             DensityOrisCdf, DensityDwnsCdf] = ...
+            [EfieldOrisCdf,  EfieldDsrCdf, ...
+             ScpotOrisCdf,   ScpotDsrCdf, ...
+             DensityOrisCdf, DensityDsrCdf] = ...
                 bicas.proc.L2L3.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('EFIELD_ORIS_cdf')  = EfieldOrisCdf;
-            OutputDatasetsMap('EFIELD_DWNS_cdf')  = EfieldDwnsCdf;
+            OutputDatasetsMap('EFIELD_DSR_cdf')  = EfieldDsrCdf;
             OutputDatasetsMap('SCPOT_ORIS_cdf')   = ScpotOrisCdf;
-            OutputDatasetsMap('SCPOT_DWNS_cdf')   = ScpotDwnsCdf;
+            OutputDatasetsMap('SCPOT_DSR_cdf')   = ScpotDsrCdf;
             OutputDatasetsMap('DENSITY_ORIS_cdf') = DensityOrisCdf;
-            OutputDatasetsMap('DENSITY_DWNS_cdf') = DensityDwnsCdf;
+            OutputDatasetsMap('DENSITY_DSR_cdf') = DensityDsrCdf;
         end
         
         
