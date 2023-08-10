@@ -73,6 +73,9 @@ for iSc = 1:4
       error('Unknown zphase');
     end
   end
+  % Maneuvers or Eclipses
+  [maneuvers, timeline, eclipse] = mms_maneuvers(tint, iSc);
+  eclipseOrManeuver = [eclipse; maneuvers];
   if(iSc==4 && tint.stop.ttns > EpochTT('2016-06-12T05:28:48.200Z').ttns)
     warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS4 p4 failed
   elseif(iSc==2 && tint.stop.ttns > EpochTT('2018-09-21T06:04:45.810Z').ttns)
@@ -82,7 +85,7 @@ for iSc = 1:4
   else
     warning('on','MATLAB:polyfit:PolyNotUnique');  % Other s/c (with working probes) should warn
   end
-  analyze_all(sObj, defatt); % Process the sweep data, with zphase from defatt
+  analyze_all(sObj, defatt, 0, eclipseOrManeuver); % Process the sweep data, with zphase from defatt if available, no extra debug messages, and eclipseOrManeuver information (if available).
   figure('units', 'normalized', 'outerposition', [0 0 1 1]); % maximized window
   for iSweep=1:sObj.nSweeps
     % Plot individual sweeps
@@ -107,6 +110,7 @@ for iSc = 1:4
   c_eval('S.p?_phase_ts=irf.ts_scalar(p?_time,mod([sObj.p?.phase],360));', 1:6); % TSeries of phase
   c_eval('S.p?_phase_knee_ts=irf.ts_scalar(p?_time,mod([sObj.p?.phase_knee],360));', 1:6); % TSeries of phase
   c_eval('S.p?_type_ts=irf.ts_vec_xy(p?_time, double(reshape([sObj.p?.type],2,length(sObj.p?))''));',1:6); % TSeries of type ('--' or '++' etc converted from ASCII char to double)
+  c_eval('S.p?_eclipseManeuver_ts=irf.ts_scalar(p?_time,[sObj.p?.eclipseManeuver]);', 1:6); % TSeries of eclipse and/or Maneuver time overlap with sweep
   %save(sprintf('%sobj/mms%i_%s_sweepTsObj.mat', sweepFolder, iSc, dayToRun), 'S');
   
   %% Load the combined data ("Sw") and combine with the data in "S".
