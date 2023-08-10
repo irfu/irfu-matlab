@@ -228,8 +228,7 @@ classdef dwns
         %
         % NAMING CONVENTIONS
         % ==================
-        % WOLS     = WithOut Leap Seconds
-        % TTW      = TT2000 WOLS
+        % See readme.txt
         % bin      = Time interval within which all corresponding CDF records
         %             should be condensed to one.
         % boundary = Edge of bin(s).

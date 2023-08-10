@@ -116,7 +116,7 @@ classdef constants
             'FULL_SATURATION',         'FULL_SATURATION', ...
             'THRUSTER_FIRING',         'THRUSTER_FIRING');
 
-        % Define the bits in L2_QUALITY_BITMASK (L2QBM).
+        % Define the bits in L2_QUALITY_BITMASK.
         % Intended for bit operations.
         L2QBM_PARTIAL_SATURATION = uint16(1);
         L2QBM_FULL_SATURATION    = uint16(2);

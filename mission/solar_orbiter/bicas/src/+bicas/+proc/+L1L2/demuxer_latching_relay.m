@@ -25,12 +25,6 @@
 %               compared to BIAS specification.
 %
 %
-% DEFINITIONS
-% ===========
-% DLR : Demultiplexer Latching Relay
-% See bicas.proc.L1L2.cal.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %

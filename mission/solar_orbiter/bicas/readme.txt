@@ -26,10 +26,11 @@ AA, aampere
 AAPT
     Antenna ampere/TM
 ASR, Antenna Signal Representation.
-    The "physical antenna signals" which BIAS-LFR/TDS is trying to measure, or a
-    measurement thereof. In reality, the terminology is:
-    ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF (DC
-                  diff, antenna 1-2)
+    (1) A reference to a particular "physical antenna signal"
+    (a "data channel") which BIAS-LFR/TDS is trying to measure, or
+    (2) a measurement of such thereof. In reality, the terminology is:
+    ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF
+                  (DC diff, antenna 1-2)
     ASR samples : Samples representing a specific ASR (as opposed to BLTS).
     NOTE: There are 9 ASRs, i.e. they can refer also to signals not represented
     by any single BLTS, given a chosen mux mode (and latching relay setting).
@@ -41,7 +42,7 @@ AVPIV
     Antenna volt/interface volt
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
-    Specification"
+    Specification".
 BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
     Defined in BIAS specifications document. Equal to the physical signal at the
     physical boundary between BIAS and LFR/TDS. Unit: Interface volt.
@@ -72,6 +73,9 @@ Dataset (data set)
     various RPW teams. All CDF files in the context of BICAS are datasets.
 Deg
     Degrees (angle). 1 revolution=360 degrees=2*pi radians.
+DLR
+    Demultiplexer Latching Relay. Relay (true/false) that is part of the state
+    of the demultiplexer. See the "BIAS specification".
 DSI
     DATASET_ID
 DWNS
@@ -95,13 +99,20 @@ IVPAV
     Interface volt/antenna volt
 IVPT
     Interface volt Per TM unit. IV/TM.
+L2QBM
+    zVar L2_QUALITY_BITMASK.
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
+NS
+    Nanoseconds
 NSO
     Non-Standard Operations. Functionality for making BICAS modify processed
     data based on manually compiled list of "events". Can e.g. set quality
     bits and remove data.
+NSOID
+    NSO ID. String constant that represents a specific type of NSO. Used in
+    NSO table.
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
@@ -137,7 +148,8 @@ RUM
 RV
     Return Value.
 sampere
-    "Set current ampere". Exactly proportional to bias current in TM.
+    "Set current ampere". Simplified calibration value (in ampere) that is
+    exactly proportional to bias current in TM.
 Sec
     Seconds
 SPR
@@ -163,12 +175,17 @@ TM
     instead of the term "count".
 TPIV
     TM/interface volt. TM per interface volt.
+TTW
+    TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
     Use Fill Values. Refers to CDF records which data should overwritten with
     fill values).
+WOLS
+    WithOut Leap Seconds
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.
+
 
 
 ####################
