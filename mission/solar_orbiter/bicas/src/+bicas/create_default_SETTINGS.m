@@ -397,9 +397,6 @@ function SETTINGS = create_default_SETTINGS()
     % If non-empty, then it overrides PROCESSING.RCS_NSO.FILE.RELATIVE_PATH.
     % Can be set to absolute path. Intended for testing.
     S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')
-%     % Whether to enable NSO IDs which are intended for test purposes only.
-%     NOTE: Preliminarily abolised functionality.
-%     S.define_setting('PROCESSING.RCS_NSO.TEST_IDS_ENABLED', 0)
 
     % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
     % EFIELD, and SCPOT data; both ORIS and DWNS.

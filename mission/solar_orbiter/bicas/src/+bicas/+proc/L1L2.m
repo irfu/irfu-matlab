@@ -260,11 +260,6 @@ classdef L1L2
             %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
             %   PROPOSAL: Keep as is. List as optional field in assert_PostDc
             %
-            % PROPOSAL: Abolish test functionality. -- IMPLEMENTED
-            %   PRO: Test functionality can lead to bugs.
-            %   PRO: Can use alternative NSO table (using NSO table path override
-            %        setting).
-            %
             % PROPOSAL: Generalize function to be used in L3.
             %   CON: Can not be done since this function is meant to have access
             %        to arbitrary L1/L1R and L2 data to make decisions, although
@@ -295,8 +290,6 @@ classdef L1L2
             %========================================
             % Take actions based on NSO events table
             %========================================
-            %testNsoIdsEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');
-
             % Variable naming convention:
             % CDF event    = NSO event that overlaps with CDF records.
             % Global event = NSO event in global NSO event table.
@@ -328,28 +321,6 @@ classdef L1L2
 
 
 
-                %==========================================================
-                % TEST FUNCTIONALITY
-                % ------------------
-                % Optionally translate (selected) TEST NSO IDs into actual
-                % NSO IDs.
-                %==========================================================
-%                 eventNsoIdTranslated = irf.utils.translate({...
-%                     {bicas.constants.NSOID.TEST_THRUSTER_FIRING}, ...
-%                      bicas.constants.NSOID.THRUSTER_FIRING}, ...
-%                     eventNsoId, eventNsoId);
-%                 if ~testNsoIdsEnabled && ~strcmp(eventNsoId, eventNsoIdTranslated)
-%                     % CASE:   (1) Not test mode
-%                     %       & (2) NSO ID was translated (changed).
-%                     % ==> Original NSO ID was a TEST NSO ID
-%                     % ==> NSO should be ignored.
-%                     eventNsoIdTranslated = 'nothing';   % Local constant.
-%                 end
-%                 eventNsoId = eventNsoIdTranslated;
-                %========================================================
-
-
-
                 %=================================
                 % Take action depending on NSO ID
                 %=================================
@@ -358,20 +329,6 @@ classdef L1L2
                 zv_L2_QUALITY_BITMASK = PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
 
                 switch(eventNsoId)
-
-                    %=====================================================
-                    % TEST FUNCTIONALITY
-                    % Can test the setting of QUALITY_FLAG and zvUfv.
-%                     case bicas.constants.NSOID.TEST_QF0
-%                         if testNsoIdsEnabled
-%                             zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 0, ...
-%                                 'includeNaN');
-%                         end
-%                     case bicas.constants.NSOID.TEST_UFV
-%                         if testNsoIdsEnabled
-%                             zvUfv = zvUfv | bCdfEventRecordsCa{kCdfEvent};
-%                         end
-                    %=====================================================
 
                     case bicas.constants.NSOID.PARTIAL_SATURATION
                         zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 1, 'includeNaN');
@@ -398,12 +355,6 @@ classdef L1L2
                         % Therefore(?) not setting any bit in
                         % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
                         % to be set.)
-
-%                     case 'nothing'
-%                         % CASE: Do nothing.
-%                         % This case is necessary so that test NSO IDs can be
-%                         % translated to something harmless when tests are
-%                         % disabled.
 
                     otherwise
                         % ASSERTION
