@@ -176,7 +176,7 @@ function generate_VHT_dataset(...
     
     %---------------------------------------------------------------------------
     % IMPORTANT NOTE: BICAS uses
-    % execute_sw_mode:derive_output_dataset_GlobalAttributes() to derive many
+    % execute_SWM:derive_output_dataset_GlobalAttributes() to derive many
     % global attributes.
     %   NOTE: OutGaSubset = derive_output_dataset_GlobalAttributes(...
     %       InputDatasetsMap, OutputDataset, outputFilename, SETTINGS, L)

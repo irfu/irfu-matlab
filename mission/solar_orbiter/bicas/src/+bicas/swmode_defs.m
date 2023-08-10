@@ -100,7 +100,7 @@ classdef swmode_defs
     %   NOTE: produce_L1R_to_L2_LFR/TDS() are used for multiple s/w modes with some
     %         arguments hard-coded differently for different s/w modes (input & output DATASET_IDs).
     %   NOTE: swmode_def/underlying production functions can receive argument values via
-    %       (1) swmode_def (constructor), or (2) the call in execute_sw_mode.
+    %       (1) swmode_def (constructor), or (2) the call in execute_SWM.
     %   PROPOSAL: All arguments which are known at the time swmode_defs
     %       constructor is called, should receive values there.
     %       ==> ~As many as possible.

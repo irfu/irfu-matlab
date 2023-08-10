@@ -23,7 +23,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24 as a separate file, by moving the function out from
-% bicas.executed_sw_mode().
+% other file.
 %
 function write_dataset_CDF(...
         ZvsSubset, GaSubset, outputFile, masterCdfPath, SETTINGS, L)
@@ -118,7 +118,7 @@ end
 % NOTE: Only uses global attribute values from
 %   (1) GaSubset, and
 %   (2) master CDF.
-% bicas.execute_sw_mode: derive_output_dataset_GlobalAttributes() which sets
+% bicas.execute_SWM: derive_output_dataset_GlobalAttributes() which sets
 % global attributes dynamically.
 %
 % NOTE: Assertions require that ZvsSubset contains records of data. Can not

@@ -418,7 +418,7 @@ classdef cal_utils
                 % MATLAB call stack:
                 %     row  969, calib.m,                    calib.log_ITF_Z
                 %     row  303, calib.m,                    calib.calib
-                %     row   68, execute_sw_mode.m,          execute_sw_mode
+                %     row   68, execute_SWM.m,          execute_SWM
                 %     row  455, main.m,                     main_without_error_handling
                 %     row  116, main.m,                     main
                 % --------------------------------------------------------------------------------------

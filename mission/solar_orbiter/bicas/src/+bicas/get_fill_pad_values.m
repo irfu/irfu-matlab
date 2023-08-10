@@ -14,7 +14,6 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2020-06-24 as a separate file, moved from bicas.executed_sw_mode.
 %
 function [fillValue, padValue] = get_fill_pad_values(Do, zvName)
     % NOTE: Uncertain how it handles the absence of a fill value. (Or is fill value mandatory?)

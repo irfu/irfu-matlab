@@ -23,7 +23,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-09
 %
-function execute_sw_mode(...
+function execute_SWM(...
         SwModeInfo, InputFilePathMap, OutputFilePathMap, ...
         masterCdfDir, rctDir, NsoTable, SETTINGS, L)
 
@@ -191,4 +191,4 @@ function execute_sw_mode(...
 
 
 
-end   % execute_sw_mode
+end   % execute_SWM

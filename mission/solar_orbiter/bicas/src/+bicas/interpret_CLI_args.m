@@ -67,7 +67,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     %       Ex: Flags for BICAS functionality modes.
     %
     % PROPOSAL: Include assertion for unique input and output dataset paths.
-    %   NOTE: Assertion is presently in execute_sw_mode.
+    %   NOTE: Assertion is presently in execute_SWM.
     
     SW_MODE_CLI_OPTION_REGEX = bicas.constants.SW_MODE_CLI_OPTION_REGEX;
     

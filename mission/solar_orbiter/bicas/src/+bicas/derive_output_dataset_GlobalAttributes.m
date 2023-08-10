@@ -48,7 +48,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-03-31, based on two functions broken out of
-% execute_sw_mode().
+% execute_SWM().
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
         InputDatasetsMap, OutputDataset, outputFilename, outputDatasetId, ...

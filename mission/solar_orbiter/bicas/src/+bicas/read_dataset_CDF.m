@@ -16,7 +16,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-17 as a separate file, by moving out the function from
-% bicas.executed_sw_mode.
+% other file.
 %
 function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     

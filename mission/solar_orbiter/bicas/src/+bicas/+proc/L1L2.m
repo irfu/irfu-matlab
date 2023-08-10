@@ -51,7 +51,7 @@ classdef L1L2
 %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
 %           to be bad).
 %
-% PROPOSAL: Return (to execute_sw_mode), global attributes.
+% PROPOSAL: Return (to execute_SWM), global attributes.
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
 %

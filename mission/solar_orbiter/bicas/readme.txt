@@ -159,11 +159,11 @@ SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
     very clearly. (Defined by the RCS ICD.)
-S/W mode
-    A "S/W mode" defines a set of required input CDF files and a set of output
-    CDF files derived from the input files. BICAS can execute only one such mode
-    on each run. Executing such modes is the primary purpose of an RCS. (Defined
-    by the RCS ICD.)
+SWM, S/W mode
+    A "S/W mode" defines a set of required input CDF files and a set
+    of output CDF files derived from the input files. BICAS can execute only
+    one such mode on each run. Executing such modes is the primary purpose of
+    an RCS. (Defined by the RCS ICD.)
 TBW
     To Bash Wrapper.
 TF
