@@ -50,9 +50,11 @@ if flagTs
   if le < 2 || lb < 3, error('E || B has not enough components'), end
   ed = [e.x.data e.y.data e.y.data*defaultValue];
   bd = [b.x.data b.y.data b.z.data];
-elseif size(b,1) ~= size(e,1)
-  irf.log('warn','E and B are not of the same length. Interpolating B.');
-  b = irf_resamp(b,e);
+else
+  if size(b,1) ~= size(e,1)
+    irf.log('warn','E and B are not of the same length. Interpolating B.');
+    b = irf_resamp(b,e);
+  end
   le = size(e,2); lb = size(b,2);
   if le < 2
     error('E has not enough components');

@@ -9,10 +9,13 @@
 %       lookup.
 % NOTE: Uses SPICE implicitly, and therefore relies on some path convention. Not
 %       sure which, but presumably it does at least find /data/solo/SPICE/.
+% NOTE: Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
+%       path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
 % NOTE: Creates subdirectories to the output directory if not pre-existing.
-% NOTE: There will only be plots that cover full 7-day periods. If the global
-%       time interval is not a multiple of 7 days, then end of that global time
-%       interval will not be covered by a 7-day plot.
+% NOTE: 7-day plots will only cover that largest sub-time interval that is
+%       composed of full 7-day periods. Note: 7-day periods begin with a
+%       hardcoded weekday (Wednesday as of 2023-05-09).
+% NOTE: Overwrites pre-existing plot files without warning.
 %
 %
 % ARGUMENTS
@@ -40,31 +43,15 @@
 %
  function quicklooks_main(...
         logoPath, vhtDataDir, outputDir, ...
-        runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
-%
-% TODO-NI: Overwrites pre-existing plots?
-%
-% PROPOSAL: Better name: quicklooks_main?
-%       ~main, ~plot, ~generate
-% PROPOSAL: Reorg to separate internal functions for non-weekly and weekly plots
-%           respectively.
-%   NOTE: Would need to have arguments for debugging constants like ENABLE_B etc.
-%   NOTE: make_tints(), wrapper function db_get_ts() would be used by both functions
-%         (nonweekly+weekly).
-%   TODO-DEC: Function names?
-%       PROPOSAL: quicklooks_24_6_2_h_loop()
-%                 quicklooks_7days_loop()
-%   PROPOSAL: Functions as external files.
-%   PROPOSAL: Change names of
-%       quicklooks_24_6_2_h
-%       quicklooks_7days
-%       PROPOSAL: plot_*
-%       PROPOSAL: 24_6_2_h
+        runNonweeklyPlots, runWeeklyPlots, utcBeginStr, utcEndStr)
 %
 % NOTE: Mission begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
 % ==> Code fails for week Monday-to-Sunday.
 %     PROPOSAL: Additionally round start time up to start date.
+%
+% PROPOSAL: Better name: quicklooks_main?
+%       ~main, ~plot, ~generate
 %
 % PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
 %           of via TimeIntervalNonWeeks and TimeIntervalWeeks.
@@ -76,12 +63,47 @@
 %   PRO: Useful for more easily determining for which time intervals the code
 %        (those two functions) crashes.
 %
-% PROPOSAL: Catch plot bugs?
 % PROPOSAL: Some way of handling disk access error?
 %   PROPOSAL: try-catch plot code once (weekly or non-weekly plot function).
 %             Then try without catch a second time, maybe after delay.
 %             If the first call fails due to disk access error, it might still
 %             trigger automount which makes the second attempt succeed.
+%
+% PROPOSAL: Refactor some functions into separate function files with test code.
+%   Ex: derive_TimeIntervalWeeks()
+%       make_time_array()
+%       round_to_week()
+%
+% PROPOSAL: Log time consumption for each call to plot functions.
+%   PROPOSAL: Use solo.qli.utils.log_time().
+%
+% PROPOSAL: Have local function db_get_ts() normalize data returned from
+%           solo.db_get_ts() to TSeries, also for absent data.
+%   NOTE: Would require argument for dimensions when empty.
+%   PRO: Could (probably) simplify plot code a lot.
+%
+% PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
+%
+%
+% quicklooks_24_6_2_h.m(), quicklooks_7day()
+% ==========================================
+% PROBLEM: Lots of cases of, and checks for data that may or may not be missing.
+% PROBLEM: Missing data can be represented as [] (0x0), rather than e.g. Nx0.
+%   Stems from solo.db_get_ts() (?) not finding any data for selected time
+%   interval. Can not know the dimensions of missing data if can not find any
+%   CDF at all.
+%
+%
+% Examples of missing data
+% ========================
+% POLICY: Incomplete list of examples of missing data that could be useful for
+%         testing(?).
+% POLICY: Not necessarily the entire data gaps. Only segments that trigger
+%         special handling or errors.
+% NOTE: SolO data gaps may be filled laters.
+% --
+% 2022-03-12T07:22:03.090373000Z -- 2022-03-13T00
+%   Missing data.Tpas
 
 
 %============
@@ -89,27 +111,37 @@
 %============
 % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
 % speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
-ENABLE_B = 1;
+% Should be enabled by default.
+ENABLE_B                      = 1;
+% Whether to catch plotting exceptions (and continue) in order to produce as
+% many plots as possible. Should be enabled by default.
+CATCH_PLOT_EXCEPTIONS_ENABLED = 1;
 
-% Specify subdirectories for saving the respective types of plots.
-PATHS.path_2h  = fullfile(outputDir, '2h' );
-PATHS.path_6h  = fullfile(outputDir, '6h' );
-PATHS.path_24h = fullfile(outputDir, '24h');
-PATHS.path_1w  = fullfile(outputDir, '1w' );
+
 
 % NOTE: Usually found on solo/data_yuri.
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
 VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 
 % Define boundary of weeks. Beginning of stated weekday.
+% ------------------------------------------------------
 % NOTE: First day of data (launch+2 days) is 2020-02-12, a Wednesday.
 % Therefore using Wednesday as beginning of "week" for weekly plots (until
 % someone complains).
 FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 
+% Specify subdirectories for saving the respective types of plots.
+Paths.path_2h  = fullfile(outputDir, '2h' );
+Paths.path_6h  = fullfile(outputDir, '6h' );
+Paths.path_24h = fullfile(outputDir, '24h');
+Paths.path_1w  = fullfile(outputDir, '1w' );
+
 
 
 tSec = tic();
+
+% Array of plotting exceptions caught.
+PlotExcArray = MException.empty(1, 0);
 
 
 
@@ -117,7 +149,7 @@ tSec = tic();
 % Specify time interval for plots
 %=================================
 % Non-weekly plots.
-TimeIntervalNonWeeks = irf.tint(utcBegin, utcEnd);
+TimeIntervalNonWeeks = irf.tint(utcBeginStr, utcEndStr);
 % Weekly plots: Indirectly sets weekly boundaries.
 TimeIntervalWeeks = derive_TimeIntervalWeeks(...
     TimeIntervalNonWeeks(1), TimeIntervalNonWeeks(2), FIRST_DAY_OF_WEEK);
@@ -127,11 +159,16 @@ TimeIntervalWeeks = derive_TimeIntervalWeeks(...
 %=======================
 % Create subdirectories
 %=======================
-for fnCa = fieldnames(PATHS)'
-    dirPath = PATHS.(fnCa{1});
+% NOTE: Creates subdirectories for all four plot types, regardless of whether
+%       they will actually be generated or not.
+%   NOTE: This simplifies bash wrapper scripts that copy content of
+%         sub-directories to analogous sub-directories, also when not all
+%         plot types are generated.
+for fnCa = fieldnames(Paths)'
+    dirPath = Paths.(fnCa{1});
     [parentDir, dirBasename, dirSuffix] = fileparts(dirPath);
     % NOTE: Works (without warnings) also if subdirectories pre-exist ("msg"
-    % contains warning which is enver printed.)
+    % contains warning which is never printed.)
     [success, msg] = mkdir(parentDir, [dirBasename, dirSuffix]);
     assert(success, 'Failed to create directory "%s". %s', dirPath, msg)
 end
@@ -142,21 +179,25 @@ end
 % Run the code for 2-, 6-, 24-hour quicklooks
 %=============================================
 if runNonweeklyPlots
-
-    times_1d = make_time_array(TimeIntervalNonWeeks, 1); % Daily time-intervals
+    % Daily time-intervals
+    Time1DayStepsArray = make_time_array(TimeIntervalNonWeeks, 1);
 
     % Load data
     % This is the .mat file containing RPW speeds at 1h resolution.
     % The file should be in the current path. This file can be found in
-    % /solo/data/data_yuri/.
+    % brain:/solo/data/data_yuri/.
     vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
 
-    for iTint=1:length(times_1d)-1
+    for iTint=1:length(Time1DayStepsArray)-1
         % Select time interval.
-        Tint=irf.tint(times_1d(iTint), times_1d(iTint+1));
-
-        quicklooks_24_6_2_h_local(Tint, vht1h, PATHS, logoPath, ENABLE_B)
-    end    % for
+        Tint = irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
+        try
+            quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, ENABLE_B)
+        catch Exc
+            PlotExcArray(end+1) = Exc;
+            handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
+        end
+    end
 end
 
 
@@ -166,19 +207,24 @@ end
 %===================================
 if runWeeklyPlots
 
-    times_7d = make_time_array(TimeIntervalWeeks, 7);% weekly time-intervals
+    % Weekly time-intervals
+    Time7DayStepsArray = make_time_array(TimeIntervalWeeks, 7);
 
     % Load data
     % This is the .mat file containing RPW speeds at 6h resolution.
     % The file should be in the same folder as this script (quicklook_main).
     vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
 
-    for iTint=1:length(times_7d)-1
+    for iTint=1:length(Time7DayStepsArray)-1
         % Select time interval.
-        Tint = irf.tint(times_7d(iTint), times_7d(iTint+1));
-
-        quicklooks_7days_local(Tint, vht6h, PATHS, logoPath)
-    end    % for
+        Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
+        try
+            quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+        catch Exc
+            PlotExcArray(end+1) = Exc;
+            handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
+        end
+    end
 end
 
 
@@ -192,11 +238,63 @@ plotsTimeDays = (TimeIntervalNonWeeks.tts(2) - TimeIntervalNonWeeks.tts(1)) / 86
 fprintf('Wall time used:                  %g [h] = %g [s]\n', wallTimeHours, wallTimeSec);
 fprintf('Wall time used per day of plots: %g [h/day]\n',      wallTimeHours / plotsTimeDays);
 
+
+
+if CATCH_PLOT_EXCEPTIONS_ENABLED && ~isempty(PlotExcArray)
+    fprintf(2, 'Caught %i plotting exceptions.\n', numel(PlotExcArray))
+    fprintf(2, 'Rethrowing old (last) exception.\n')
+    % NOTE: This does display (stderr) the stack trace for position
+    % of the *ORIGINAL* error.
+    rethrow(PlotExcArray(end))
+end
+
 end    % function
 
 
 
+function log_plot_function_time_interval(Tint)
+    utcStr1 = Tint(1).utc;
+    utcStr2 = Tint(2).utc;
+    % NOTE: Truncating subseconds (keeping accuracy down to seconds).
+    utcStr1 = utcStr1(1:19);
+    utcStr2 = utcStr2(1:19);
+
+    % Not specifying which plot function is called (weekly, nonweekly plots).
+    fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
+end
+
+
+
+% Handle *PLOTTING* exception.
+%
+% Historically, the plotting code has caused many exceptions. One may want
+% different behaviour depending on context.
+%
+% Production: Produce as many plots as possible.
+%             => Catch exception and continue.
+% Testing:    Crash on first exception so that it can be fixed.
+%             => Rethrow exception as soon as possible.
+function handle_plot_exception(catchExceptionEnabled, Exc)
+    if catchExceptionEnabled
+        % Print stack trace without rethrowing exception.
+        % One wants that in log.
+        % NOTE: fprintf(FID=2) => stderr
+        fprintf(2, 'Caught plotting error without rethrowing it.\n')
+        fprintf(2, 'Plot error/exception: "%s"\n', Exc.message)
+        for i = 1:numel(Exc.stack)
+            s = Exc.stack(i);
+            fprintf(2, '    Error in %s (line %i)\n', s.name, s.line)
+        end
+    else
+        rethrow(Exc)
+    end
+end
+
+
+
 function quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, enableB)
+    log_plot_function_time_interval(Tint)
+
     Data = [];
 
     Data.Vrpw = vht1h.V_RPW_1h.tlim(Tint);
@@ -222,31 +320,16 @@ function quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, enableB)
     % Ion spectrum
     Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
 
-    %TNR E-field
+    % TNR E-field
     Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
     % Solar Orbiter position
     % Note: solopos uses SPICE, but should be taken care of by
     % "solo.get_position".
-    % posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
-    % if ~isempty(posSolO)
-    %     [radius, lon, lat] = cspice_reclat(posSolO.data');
-    %     Data.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
-    % else
-    %     Data.solopos=posSolO;
-    % end
     Data.solopos = get_SolO_pos(Tint);
 
     % Earth position (also uses SPICE)
-    dt=60*60;
-    % et = Tint.start.tts:dt:Tint.stop.tts;
-    % posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
-    % if ~isempty(posEarth)
-    %     [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
-    %     Data.earthpos = [E_radius',E_lon',E_lat'];
-    % else
-    %     Data.earthpos=[];
-    % end
+    dt = 60*60;
     Data.earthpos = get_Earth_pos(Tint, dt);
 
     if ~enableB
@@ -260,6 +343,8 @@ end
 
 
 function quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+    log_plot_function_time_interval(Tint)
+
     Data = [];
 
     Data.Vrpw = vht6h.V_RPW.tlim(Tint);
@@ -285,40 +370,26 @@ function quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
     % Ion spectrum
     Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
 
-    %TNR E-field
+    % TNR E-field
     Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
     % Solar Orbiter position
     % Note: solopos uses SPICE, but should be taken care of by
     % "solo.get_position".
-    % posSolO = solo.get_position(Tint,'frame','ECLIPJ2000');
-    % if ~isempty(posSolO)
-    %     [radius, lon, lat] = cspice_reclat(posSolO.data');
-    %     Data2.solopos = irf.ts_vec_xyz(posSolO.time,[radius',lon',lat']);
-    % else
-    %     Data2.solopos=posSolO;
-    % end
     Data.solopos = get_SolO_pos(Tint);
 
     % Earth position (also uses SPICE)
-    dt=60*60;
-    Tlength=Tint(end)-Tint(1);
-    dTimes = 0:dt:Tlength;
-    Times = Tint(1)+dTimes;
-    % et = Tint.start.tts:dt:Tint.stop.tts;
-    % posEarth= cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
-    % if ~isempty(posEarth)
-    %     [E_radius, E_lon, E_lat] = cspice_reclat(posEarth);
-    %     Data2.earthpos = irf.ts_vec_xyz(Times,[E_radius',E_lon',E_lat']);
-    % else
-    %     Data2.earthpos=TSeries();
-    % end
-    earthPos = get_Earth_pos(Tint, dt);
-    if ~isempty(earthPos)
-        Data.earthpos = irf.ts_vec_xyz(Times, earthPos);
-    else
-        Data.earthpos = TSeries();
-    end
+    dt       = 60*60;
+%     Tlength  = Tint(end)-Tint(1);
+%     dTimes   = 0:dt:Tlength;
+%     Times    = Tint(1)+dTimes;
+    earthPosTSeries = get_Earth_pos(Tint, dt);
+%     if ~isempty(earthPos)
+%         Data.earthpos = irf.ts_vec_xyz(Times, earthPos);
+%     else
+%         Data.earthpos = TSeries();
+%     end
+    Data.earthpos = earthPosTSeries;
 
     % Plot data and save figure
     solo.qli.quicklooks_7days(Data, Paths, Tint, logoPath)
@@ -330,13 +401,15 @@ end
 %
 % NOTE: Uses SPICE and "solo.get_position()".
 function soloPos = get_SolO_pos(Tint)
+    assert(length(Tint) == 2)
+
     % IM = irfu-matlab (as opposed to SPICE).
     imSoloPos = solo.get_position(Tint,'frame','ECLIPJ2000');
 
     % BUG?!!: If solo.get_position() is non-empty, and presumably contains a
     %         value, THEN use SPICE value anyway?!! Note: This behaviour does
-    %         however mimick the behaviour of the original code (before
-    %         refactoring).
+    %         however mimick the behaviour of the original code by
+    %         Konrad Steinvall, IRF (before refactoring).
     if ~isempty(imSoloPos)
         [radius, lon, lat] = cspice_reclat(imSoloPos.data');
         soloPos = irf.ts_vec_xyz(imSoloPos.time,[radius',lon',lat']);
@@ -348,7 +421,7 @@ end
 
 
 % Use SPICE to get Earth's position.
-function earthPos = get_Earth_pos(Tint, dt)
+function earthPosTSeries = get_Earth_pos(Tint, dt)
     assert(length(Tint) == 2)
     assert(isnumeric(dt))
 
@@ -357,9 +430,15 @@ function earthPos = get_Earth_pos(Tint, dt)
     spiceEarthPos = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
     if ~isempty(spiceEarthPos)
         [E_radius, E_lon, E_lat] = cspice_reclat(spiceEarthPos);
-        earthPos = [E_radius',E_lon',E_lat'];
+        earthPos = [E_radius', E_lon', E_lat'];
+
+        Tlength  = Tint(end)-Tint(1);
+        dTimes   = 0:dt:Tlength;
+        Times    = Tint(1)+dTimes;
+        earthPosTSeries = irf.ts_vec_xyz(Times, earthPos);
     else
-        earthPos = [];
+        % earthPos = [];
+        earthPosTSeries = TSeries();
     end
 end
 
@@ -412,6 +491,7 @@ end
 % /Erik P G Johansson 2021-03-22
 %
 function Ts = db_get_ts(varargin)
+
     temp = solo.db_get_ts(varargin{:});
 
     % Normalize (TSeries or cell array) --> TSeries.
@@ -426,7 +506,6 @@ end
 
 % Takes a cell-array of TSeries and merges them to one TSeries.
 function OutputTs = cell_array_TS_to_TS(InputTs)
-
     assert(iscell(InputTs))
 
     nCells   = numel(InputTs);
@@ -437,7 +516,6 @@ function OutputTs = cell_array_TS_to_TS(InputTs)
             OutputTs = OutputTs.combine(InputTs{iCell});
         end
     end
-
 end
 
 
@@ -449,16 +527,15 @@ function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
     assert(isscalar(t1))
     assert(ismember(roundDir, [-1, 1]))
 
-
-
     dv1  = irf.cdf.TT2000_to_datevec(t1.ttns);
     dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
 
     % Round to midnight.
     dt1b = dateshift(dt1a, 'start', 'day');
     if (roundDir == 1) && (dt1a ~= dt1b)
-        % IMPLEMENTATION NOTE: dateshift(..., 'end', 'day') "rounds" to one day after if
-        % timestamp is already midnight. Therefore do not want use that.
+        % IMPLEMENTATION NOTE: dateshift(..., 'end', 'day') "rounds" to one day
+        % after if timestamp is already midnight. Therefore do not want use
+        % that.
         dt1b = dt1b + days(1);
     end
 

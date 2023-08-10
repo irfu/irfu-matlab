@@ -466,17 +466,26 @@ classdef L2L3
             %==========================
             % CALL BICAS-EXTERNAL CODE
             %==========================
-            [NeScpTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
+            [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
             %==========================
+            % NOTE: Ignoring return value NeScpQualityBit(Ts) for now except for
+            %       assertions on it. Value is expected to be used by BICAS
+            %       later.
             
             % ASSERTIONS
             irf.assert.sizes(...
-                PspTs.data,   [-1, 1], ...
-                NeScpTs.data, [-1, 1]);
+                PspTs.data,             [-1, 1], ...
+                NeScpTs.data,           [-1, 1], ...
+                NeScpQualityBitTs.data, [-1, 1] ...
+            );
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
             assert(strcmp(NeScpTs.units, 'cm^-3'))
-            
+            % NOTE: Not permitting NaN quality bit. Unsure if that is the
+            %       best behaviour.
+            assert(...
+                all(ismember(NeScpQualityBitTs.data, [0, 1])), ...
+                'solo.psp2ne() returned illegal NeScpTsQualityBitTs.')
         end
 
 

@@ -3,6 +3,12 @@ function out =  read_TNR(tint)
 %
 %     @author: Louis Richard
 %     Updated by: Jordi Boldu
+%
+%     NOTE: Relies on hardcoded file system path for finding CDFs and then
+%     reading them itself. Does not use irfu-matlab's solo.db_get_ts() for
+%     locating and obtaining CDF data due to one zVariable not being readable
+%     with it.
+%
 %     Parameters
 %     ----------
 %     path : str
@@ -48,7 +54,12 @@ if numel(dd)==1;dd=['0' dd];end
 
 sensor = 5;
 sensor2 = 4;
-path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
+%IMPLEMENTATION NOTE: solo.get_db_ts does not work to get the zVariable
+%TNR_BAND_FREQ from the TNR cdf file, therefore the dataobj(x) function
+%is used instead, which requires giving the full path of the file. 
+%The solo.get_db_ts function seems to fail to create the TSeries object
+%because the DEPEND_0 field is of diferent size from the data.
+path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];    
 
     data_l2 = rcdf(path, tint);
 
@@ -166,7 +177,7 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
     f100_ind = length(freq_tnr);
     vp = v_(1:f100_ind, 2:end)';
   
-  %==============Integration
+  %==============Integration %needs more testing
 %   for ii = 1:f100_ind
 %         itg(ii) = trapz(vp(:,ii))/length(vp(:,1));
 %   end
@@ -185,7 +196,9 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
    
     out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
     out.p_label={'dB'};
+
     
+%For ploting    
 %         h(10)=irf_panel('tnr');
 %         irf_spectrogram(h(10),out,'log','donotfitcolorbarlabel')
 %         %fpe_sc.units = 'kHz';
