@@ -8,7 +8,10 @@
 % pipeline and is not planned to be since the latching relay state is not
 % expected to be changed unless a hardware failure (probe failure) occurs
 % (2019-11-19). Therefore, the latching relay state is hard-coded until further
-% notice
+% notice.
+%
+% 2023-07-28: YK has asked ROC/Diane Berard who has asked SOC to change the DLR
+% value. "will likely take several weeks".
 %
 % NOTE: BIAS HK contains the value in HK_BIA_MODE_DIFF_PROBE (presumably). See
 % BIAS specification, section "3.4.4.14 MODE", "Data D3 = Diff probe 1&2(0),
@@ -30,9 +33,10 @@
 %
 function dlrUsing12 = demuxer_latching_relay(Epoch)
 % PROPOSAL: SETTING for overriding.
+% PROPOSAL: Use NSO list for setting value.
+% PROPOSAL: Use BIAS HK for setting value, if at all possible.
 
     bicas.utils.assert_zv_Epoch(Epoch)
     
     dlrUsing12 = ones(size(Epoch));
-    
 end

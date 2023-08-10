@@ -181,7 +181,7 @@ function DataObj = init_modif_dataobj(...
         
 
         % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
-        % /2021-04-08
+        % /2023-08-10
         if isfield(ZvsSubset, 'QUALITY_FLAG')
             fillValue = getfillval(DataObj, 'QUALITY_FLAG');
             %[fillValue, ~] = get_fill_pad_values(DataObj, 'QUALITY_FLAG');

@@ -1,5 +1,5 @@
 %
-% Store SolO NSO table and supply basic functionality.
+% Class for storing one SolO NSO table and supply basic functionality.
 %
 %
 % TERMINOLOGY

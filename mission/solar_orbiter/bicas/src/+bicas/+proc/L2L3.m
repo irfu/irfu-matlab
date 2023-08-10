@@ -69,13 +69,14 @@ classdef L2L3
             %               (QUALITY_FLAG, QUALITY_BITMASK, L2_QUALITY_BITMASK).
             %           DELTA_PLUS_MINUS_dwns
             %
-            % NOTE: ROC BUG:
-            %               https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/48
+            % NOTE: ROC BUG: https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/48
             %         L1 QUALITY_BITMASK seems to use the wrong value (255) as
-            %         fill value (FILLVAL=65535). ==> A bug fix would not fix
-            %         the entire issue.
+            %         fill value (FILLVAL=65535). ==> A BICAS bug fix would not
+            %         fix the entire issue.
             %   PROPOSAL: Use double also for CDF integer variables so NaN can
             %             represent fill value also for these.
+            %   PROPOSAL: Implement MATLAB equivalent of the JUICE pipeline's
+            %             FPA class.
             %
             % NOTE: L2 LFR-CWF-E skt previously had zVar
             %   QUALITY_BITMASK=CDF_UINT1, fill value=255 (wrong)
@@ -93,6 +94,7 @@ classdef L2L3
             INPUT_DATASET_ID          = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
             % Define length of bins, and relative position of corresponding
             % bin timestamps.
+            % NS = Nanoseconds
             BIN_LENGTH_WOLS_NS        = int64(10e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
             % Regular expression for the format of version strings from
@@ -457,8 +459,8 @@ classdef L2L3
         % uses extra assertions to detect such changes.
         %
         % NOTE: Empirically, some return values are NaN.
-        % NOTE: Shortening "SCP" comes from the return variable name in
-        % solo.psp2ne(). Do not know what it means (SpaceCraft Potential?).
+        % NOTE: Shortening "SCP" = SCPOT comes from the return variable name in
+        % solo.psp2ne().
         %
         % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
         % relies on PSP values for which this has already been done.

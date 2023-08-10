@@ -104,17 +104,17 @@ classdef constants
         %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can
         % simultaneously be used to
-        % ** compile a complete list of legal NSO IDs in NSO table file
-        % ** reference specific constants (fields) throughout BICAS without
-        %    hardcoding the actual NSO IDs in multiple places.
+        % (1) compile a complete list of legal NSO IDs in the NSO table file
+        % (2) reference specific constants (fields) throughout BICAS without
+        %     hardcoding the actual NSO IDs in multiple places.
         %
         % IMPLEMENTATION NOTE: One does not want to use the RCS NSO ID string
         % constants directly inside the code, in case of typos.
         %
         NSOID = struct(...
-            'PARTIAL_SATURATION',      'PARTIAL_SATURATION', ...
-            'FULL_SATURATION',         'FULL_SATURATION', ...
-            'THRUSTER_FIRING',         'THRUSTER_FIRING');
+            'PARTIAL_SATURATION', 'PARTIAL_SATURATION', ...
+            'FULL_SATURATION',    'FULL_SATURATION', ...
+            'THRUSTER_FIRING',    'THRUSTER_FIRING');
 
         % Define the bits in L2_QUALITY_BITMASK.
         % Intended for bit operations.

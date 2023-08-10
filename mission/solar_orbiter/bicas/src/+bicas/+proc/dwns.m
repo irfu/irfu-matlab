@@ -230,7 +230,7 @@ classdef dwns
         % ==================
         % See readme.txt
         % bin      = Time interval within which all corresponding CDF records
-        %             should be condensed to one.
+        %            should be condensed to one.
         % boundary = Edge of bin(s).
         %
         function [zvBinsTt2000, iRecordsInBinCa, binSizeArrayNs] = ...
@@ -309,7 +309,6 @@ classdef dwns
             
             boundariesTtw = (ttw1Floor + [0:nBins] * binLengthWolsNs)';
             zvBinsTtw     = boundariesTtw(1:end-1) + binTimestampPosWolsNs;
-            
             
             boundariesTt2000 = irf.cdf.time.TT2000WOLS_to_TT2000(boundariesTtw);
             zvBinsTt2000     = irf.cdf.time.TT2000WOLS_to_TT2000(zvBinsTtw);

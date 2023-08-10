@@ -387,7 +387,7 @@
             <startTimeUtc>2020-08-06T00:00:00</startTimeUtc>
             <stopTimeUtc> 2020-08-09T02:35:00</stopTimeUtc>
             <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
-            <description> Beginning of time period is set quite arbitrarily. /EJ</description>
+            <description>Beginning of time period is set quite arbitrarily. /EJ</description>
         </event>
 
 

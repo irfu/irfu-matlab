@@ -60,6 +60,13 @@ classdef L1L2
 %   PRO: Can abolish
 %       bicas.proc.L1L2.assert_PreDC
 %       bicas.proc.L1L2.assert_PostDC
+%   PROBLEM/TODO-DEC: How set the instance variables?
+%       PROPOSAL: Constructor.
+%           CON: Too many arguments since too many variables.
+%               CON: Not true since most variables are zVars colleted under .Zv.
+%       PROPOSAL: Set instance variables manually.
+%           CON: Can forget variables.
+%               PRO: Still better than current system.
 % PROPOSAL: Class for HkSciTime.
 % PROPOSAL: Class for DemuxerOutput.
 %
@@ -264,6 +271,9 @@ classdef L1L2
             %   CON: Can not be done since this function is meant to have access
             %        to arbitrary L1/L1R and L2 data to make decisions, although
             %        this is not much used yet.
+            %
+            % PROPOSAL: Automated test code.
+            % PROPOSAL: Only return the modified zVariables, not PreDc & PostDc.
 
             % ASSERTION
             bicas.proc.L1L2.assert_PreDC(PreDc)
@@ -272,7 +282,7 @@ classdef L1L2
 
 
 
-            % NOTE: Preallocates and adds zVar to PostDc.
+            % NOTE: Preallocates and ADDS zVar to PostDc.
             PostDc.Zv.L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
 
 
