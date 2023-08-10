@@ -1,11 +1,11 @@
 %
-% matlab.unittest automatic test code for bicas.proc.dwns.
+% matlab.unittest automatic test code for bicas.proc.dsr.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-10 from older test code.
 %
-classdef dwns___UTEST < matlab.unittest.TestCase
+classdef dsr___UTEST < matlab.unittest.TestCase
 
 
 
@@ -34,7 +34,7 @@ classdef dwns___UTEST < matlab.unittest.TestCase
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
                 
-                [actOutputs{:}] = bicas.proc.dwns.downsample_sci_zVar(inputsCa{:});
+                [actOutputs{:}] = bicas.proc.dsr.downsample_sci_zVar(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
             end
             
@@ -48,7 +48,7 @@ classdef dwns___UTEST < matlab.unittest.TestCase
             % Create test with N BINS (i.e. an arbitrary call).
             function test_N_bins(zv, nMinReqSamples, iRecordsDsrCa, med, mstd)
                 assert(isrow(iRecordsDsrCa))
-                bicas.proc.dwns___UTEST.assert_iRecordsDsrCa(iRecordsDsrCa, zv)
+                bicas.proc.dsr___UTEST.assert_iRecordsDsrCa(iRecordsDsrCa, zv)
 
                 test({zv, nMinReqSamples, iRecordsDsrCa', testCase.L}, ...
                     {med, mstd});
@@ -155,7 +155,7 @@ classdef dwns___UTEST < matlab.unittest.TestCase
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
                 
-                [actOutputs{:}] = bicas.proc.dwns.get_downsampling_bins(inputsCa{:});
+                [actOutputs{:}] = bicas.proc.dsr.get_downsampling_bins(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
                 
             end

@@ -36,13 +36,13 @@ function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)
 %       {iUnit}{2} = unitName
 %       TODO-DEC: Log format? Much data together with long row prefixes.
 %         Ex: 2021-05-20
-%         2021-05-20T18:10:08 -- DEBUG -- SPEED -- bicas.proc.dwns.get_downsampling_bins: 0.253965 [s], 7.23335e-07 [s/OSR record], 351103 [OSR records] (wall time)
-%         2021-05-20T18:10:08 -- DEBUG -- SPEED -- bicas.proc.dwns.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DSR record], 361 [DSR records] (wall time)
+%         2021-05-20T18:10:08 -- DEBUG -- SPEED -- bicas.proc.dsr.get_downsampling_bins: 0.253965 [s], 7.23335e-07 [s/OSR record], 351103 [OSR records] (wall time)
+%         2021-05-20T18:10:08 -- DEBUG -- SPEED -- bicas.proc.dsr.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DSR record], 361 [DSR records] (wall time)
 %         2021-05-20T18:10:09 -- DEBUG -- SPEED -- bicas.proc.L2L3.process_L2_to_L3: 0.461114 [s], 1.31333e-06 [s/OSR record], 351103 [OSR records] (wall time)
 %         2021-05-20T18:10:09 -- DEBUG -- SPEED -- bicas.proc.L2L3.process_L2_to_L3: 0.461797 [s], 0.00127922 [s/DSR record], 361 [DSR records] (wall time)
 %   PROPOSAL: One row per unit, repeat everything else.
-%         bicas.proc.dwns.get_downsampling_bins: 0.253965 [s], 7.23335e-07 [s/OSR record], 351103 [OSR records] (wall time)
-%         bicas.proc.dwns.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DSR record], 361 [DSR records] (wall time)
+%         bicas.proc.dsr.get_downsampling_bins: 0.253965 [s], 7.23335e-07 [s/OSR record], 351103 [OSR records] (wall time)
+%         bicas.proc.dsr.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DSR record], 361 [DSR records] (wall time)
 %       PRO: Rows searchable (grep).
 %       NOTE: Crude, but still improvement over status quo.
 
@@ -54,7 +54,7 @@ function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)
         % NOTE: Adds "s" after unit to get plural.
         % IMPLEMENTATION NOTE: nUnits might be an integer. Must convert to
         % double for division to work.
-        %   Ex: bicas.proc.dwns.get_downsampling_bins(): nBins
+        %   Ex: bicas.proc.dsr.get_downsampling_bins(): nBins
         infoStr = sprintf('%s: %g [s], %g [s/%s], %g [%ss]', ...
             codeName, ...
             wallTimeSec, wallTimeSec/double(nUnits), unitName, nUnits, unitName);

@@ -69,7 +69,7 @@ function iInBinCa = get_bin_indices(t, bb, nBbThreshold)
     %        (L2-->L2+L3).
     %        solo_L2_rpw-lfr-surv-cwf-e_20200704_V01.cdf (99 MiB).
     %
-    % PROPOSAL: Move to bicas.proc.dwns or bicas.proc.utils.
+    % PROPOSAL: Move to bicas.proc.dsr or bicas.proc.utils.
     %   CON: Potentially generic outside of BICAS.
     % --------------------------------------------------------------
     % Speed test for older implementation 2021-05-19, brain:
