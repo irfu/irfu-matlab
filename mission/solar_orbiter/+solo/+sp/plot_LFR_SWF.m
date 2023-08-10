@@ -95,12 +95,12 @@ function hAxesArray = plot_LFR_SWF(filePath)
     D = dataobj(filePath);
     
     zvEpoch       = D.data.Epoch.data;
-    zvSamplRateHz = get_CDF_zv_data(D, 'SAMPLING_RATE', 1);
-    zvDc1         = get_CDF_zv_data(D, 'VDC', 1);
-    zvDc12        = get_CDF_zv_data(D, 'EDC', 1);
-    zvDc23        = get_CDF_zv_data(D, 'EDC', 3);
-    zvAc12        = get_CDF_zv_data(D, 'EAC', 1);
-    zvAc23        = get_CDF_zv_data(D, 'EAC', 3);
+    zvSamplRateHz = get_CDF_ZV_data(D, 'SAMPLING_RATE', 1);
+    zvDc1         = get_CDF_ZV_data(D, 'VDC', 1);
+    zvDc12        = get_CDF_ZV_data(D, 'EDC', 1);
+    zvDc23        = get_CDF_ZV_data(D, 'EDC', 3);
+    zvAc12        = get_CDF_ZV_data(D, 'EAC', 1);
+    zvAc23        = get_CDF_ZV_data(D, 'EAC', 3);
     clear D
     
     hasDcDiffs = any(~isnan(zvDc12(:))) || any(~isnan(zvDc23(:)));
@@ -213,7 +213,7 @@ end
 
 
 
-function zv = get_CDF_zv_data(D, zvName, i3)
+function zv = get_CDF_ZV_data(D, zvName, i3)
     
     % TEMPORARY: For backward compatibility.
     if strcmp(zvName, 'SAMPLING_RATE') && isfield(D.data, 'F_SAMPLE')

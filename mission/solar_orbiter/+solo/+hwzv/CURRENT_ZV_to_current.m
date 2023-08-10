@@ -11,7 +11,7 @@
 % NOTE: Does not try to calibrate or convert units. The output bias is of the
 % same type as the bias input.
 % NOTE: Does not interpolate values to new timestamps.
-% NOTE: See CURRENT_zv_to_current_interpolate.
+% NOTE: See CURRENT_ZV_to_current_interpolate.
 %
 %
 % DUPLICATE BIAS ANOMALY
@@ -70,7 +70,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-23.
 %
-function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current(t1, zvIBIASx1)
+function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_ZV_to_current(t1, zvIBIASx1)
 
     % ASSERTIONS
     %assert(isvector(t1))
@@ -135,7 +135,7 @@ function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current(t1, zvIBIASx
         
         % ASSERTION: Epoch increases monotonically (after mitigation)
         assert(issorted(t1, 'strictascend'), ...
-            'CURRENT_zv_to_current:Assertion', ...
+            'CURRENT_ZV_to_current:Assertion', ...
             ['Bias current timestamps do not increase monotonically after', ...
             ' removing duplicate bias settings.'])
     else

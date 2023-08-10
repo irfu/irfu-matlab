@@ -402,7 +402,7 @@ classdef summary_plot < handle
         % ARGUMENTS
         % =========
         % D           : dataobj (sic!)
-        % zVarNamesCa : Length 3 cell array of zVar names.
+        % zvNamesCa : Length 3 cell array of zVar names.
         %
         function add_panel_time_series3_HK(obj, D, zvNamesCa)
             assert(numel(zvNamesCa) == 3)
@@ -917,7 +917,7 @@ classdef summary_plot < handle
             [nRecords, nSps] = irf.assert.sizes(...
                 zvEpoch, [-1], ...
                 zvData,  [-1, -2]);
-            bicas.utils.assert_zv_Epoch(zvEpoch)
+            bicas.utils.assert_ZV_Epoch(zvEpoch)
             
             assert(nSps >= 2)
             

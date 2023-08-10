@@ -32,7 +32,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager_old.m.
 %
-function [zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current_interpolate(t1, zvIBIASx1, t2)
+function [zvIBIASx2, duplicatesAnomaly] = CURRENT_ZV_to_current_interpolate(t1, zvIBIASx1, t2)
     % PROPOSAL: Accept all three antennas at the same time.
     %   PRO: Can verify format better.
     %       CON: Only that every record contains data for exactly one antenna.
@@ -43,7 +43,7 @@ function [zvIBIASx2, duplicatesAnomaly] = CURRENT_zv_to_current_interpolate(t1, 
     % NOTE: interp1 requires double.
     %t2 = double(t2);
     
-    [t1b, zvIBIASx1b, duplicatesAnomaly] = solo.hwzv.CURRENT_zv_to_current(t1, zvIBIASx1);
+    [t1b, zvIBIASx1b, duplicatesAnomaly] = solo.hwzv.CURRENT_ZV_to_current(t1, zvIBIASx1);
     
     % IMPLEMENTATION NOTE: Bias currents are set VERY RARELY. Must therefore use
     % interpolation method 'previous'.
