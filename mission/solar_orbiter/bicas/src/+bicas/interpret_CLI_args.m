@@ -79,21 +79,21 @@ function CliData = interpret_CLI_args(cliArgumentList)
     % NOTE: Exclude the argument for functionality mode itself.
     %==================================================================================
     OPTIONS_CONFIG_MAP = containers.Map();
-    OPTIONS_CONFIG_MAP('version_FM')        = struct('optionHeaderRegexp', '--version',              'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('identification_FM') = struct('optionHeaderRegexp', '--identification',       'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('swdescriptor_FM')   = struct('optionHeaderRegexp', '--swdescriptor',         'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('help_FM')           = struct('optionHeaderRegexp', '--help',                 'occurrenceRequirement', '0-1',   'nValues', 0);
-    OPTIONS_CONFIG_MAP('SWM')           = struct('optionHeaderRegexp', SWM_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('version_FM')        = struct('optionHeaderRegexp', '--version',          'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('identification_FM') = struct('optionHeaderRegexp', '--identification',   'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('SWD_FM')            = struct('optionHeaderRegexp', '--swdescriptor',     'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('help_FM')           = struct('optionHeaderRegexp', '--help',             'occurrenceRequirement', '0-1',   'nValues', 0);
+    OPTIONS_CONFIG_MAP('SWM')               = struct('optionHeaderRegexp', SWM_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
     
     % NOTE: "specific_input_parameters" refers to the official RCS ICD term.
     % NOTE: ICD_log_file is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
-    OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(..*)',          'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
-    OPTIONS_CONFIG_MAP('ICD_log_file')              = struct('optionHeaderRegexp', '--log',            'occurrenceRequirement', '0-1',   'nValues', 1);
-    OPTIONS_CONFIG_MAP('MATLAB_log_file')           = struct('optionHeaderRegexp', '--log-matlab',     'occurrenceRequirement', '0-1',   'nValues', 1);
-    OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',         'occurrenceRequirement', '0-1',   'nValues', 1);
+    OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(..*)',      'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
+    OPTIONS_CONFIG_MAP('ICD_log_file')              = struct('optionHeaderRegexp', '--log',        'occurrenceRequirement', '0-1',   'nValues', 1);
+    OPTIONS_CONFIG_MAP('MATLAB_log_file')           = struct('optionHeaderRegexp', '--log-matlab', 'occurrenceRequirement', '0-1',   'nValues', 1);
+    OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',     'occurrenceRequirement', '0-1',   'nValues', 1);
     
     % Unofficial arguments
-    OPTIONS_CONFIG_MAP('modified_settings')         = struct('optionHeaderRegexp', '--set',    'occurrenceRequirement', '0-inf', 'nValues', 2);
+    OPTIONS_CONFIG_MAP('modified_settings')         = struct('optionHeaderRegexp', '--set',        'occurrenceRequirement', '0-inf', 'nValues', 2);
     
     
     
@@ -140,7 +140,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     tempTable = {
         ~isempty(OptionValuesMap('version_FM')),        'version'; ...
         ~isempty(OptionValuesMap('identification_FM')), 'identification'; ...
-        ~isempty(OptionValuesMap('swdescriptor_FM')),   'S/W descriptor'; ...
+        ~isempty(OptionValuesMap('SWD_FM')),   'S/W descriptor'; ...
         ~isempty(OptionValuesMap('help_FM')),           'help'; ...
         ~isempty(OptionValuesMap('SWM')),           'S/W mode'};
     assert(...

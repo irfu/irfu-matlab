@@ -462,7 +462,7 @@ function main_without_error_handling(cliArgumentsList, L)
             print_identification(SwmDefs.List, SETTINGS)
             
         case 'S/W descriptor'
-            print_sw_descriptor(SwmDefs.List, SETTINGS)
+            print_SWD(SwmDefs.List, SETTINGS)
             
         case 'help'
             print_help(SETTINGS)
@@ -599,7 +599,7 @@ function print_version(SwmDefsList, SETTINGS)
     % should be that specific version. This is in principle inefficient but also
     % "precise".
     
-    JsonSwd = bicas.get_sw_descriptor(SwmDefsList);
+    JsonSwd = bicas.get_SWD(SwmDefsList);
     
     JsonVersion = [];
     JsonVersion.version = JsonSwd.release.version;
@@ -620,7 +620,7 @@ end
 %
 function print_identification(SwmDefsList, SETTINGS)
     
-    JsonSwd = bicas.get_sw_descriptor(SwmDefsList);
+    JsonSwd = bicas.get_SWD(SwmDefsList);
     strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
@@ -636,9 +636,9 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24
 %
-function print_sw_descriptor(SwmDefsList, SETTINGS)
+function print_SWD(SwmDefsList, SETTINGS)
     
-    JsonSwd = bicas.get_sw_descriptor(SwmDefsList);
+    JsonSwd = bicas.get_SWD(SwmDefsList);
     strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
