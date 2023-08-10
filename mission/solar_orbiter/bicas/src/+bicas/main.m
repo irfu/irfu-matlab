@@ -450,7 +450,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    SwModeDefs = bicas.swmode_defs(SETTINGS, L);
+    SwModeDefs = bicas.SWM_defs(SETTINGS, L);
     
     
     
