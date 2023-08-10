@@ -70,7 +70,7 @@ classdef L2L2
             %             SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DSR).
             %       PRO: Fewer modes for batch processing code to handle.
             %            ==> Faster identification of files+modes.
-            %       PRO: More automatic synching of ORIS and DSR versions.
+            %       PRO: More automatic synching of OSR and DSR versions.
             
             tTicToc = tic();
 
@@ -111,7 +111,7 @@ classdef L2L2
             
             zv_VDC = InLfrCwf.Zv.VDC;
             zv_EDC = InLfrCwf.Zv.EDC;
-            nRecordsOris = numel(InLfrCwf.Zv.Epoch);
+            nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
             
             
             
@@ -151,7 +151,7 @@ classdef L2L2
             
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L2.process_LFRCWF_to_DSR', tTicToc, ...
-                nRecordsOris, 'ORIS record')
+                nRecordsOsr, 'OSR record')
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L2.process_LFRCWF_to_DSR', tTicToc, ...
                 nRecordsDsr, 'DSR record')

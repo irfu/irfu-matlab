@@ -72,7 +72,7 @@ classdef dwns
                     binLengthWolsNs, ...
                     binTimestampPosWolsNs, ...
                     L);
-            nRecordsOris = numel(InLfrCwf.Zv.Epoch);
+            nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
             nRecordsDsr = numel(zvEpochDsr);
             
             
@@ -181,7 +181,7 @@ classdef dwns
 
 %             bicas.log_speed_profiling(L, ...
 %                 'bicas.proc.dwns.init_shared_downsampled', tTicToc, ...
-%                 nRecordsOris, 'ORIS record')
+%                 nRecordsOsr, 'OSR record')
 %             bicas.log_speed_profiling(L, ...
 %                 'bicas.proc.dwns.init_shared_downsampled', tTicToc, ...
 %                 nRecordsDsr, 'DSR record')
@@ -318,7 +318,7 @@ classdef dwns
             % Assign iRecordCa
             % ----------------
             % For every DSR record/bin, derive indices to the corresponding
-            % ORIS CDF records.
+            % OSR CDF records.
             %===================================================================
             % NOTE: DERIVING iRecordsInBinCa IS A SUBSTANTIAL PART OF THE
             % PROCESSING TIME (ESPECIALLY FOR LARGER DATASETS).
@@ -329,7 +329,7 @@ classdef dwns
 
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.dwns.get_downsampling_bins', tTicToc, ...
-                numel(zvAllTt2000), 'ORIS record')
+                numel(zvAllTt2000), 'OSR record')
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.dwns.get_downsampling_bins', tTicToc, ...
                 nBins,              'DSR record')
@@ -385,7 +385,7 @@ classdef dwns
             % ASSERTION
             assert(isfloat(zv))
             assert(nMinReqRecords >= 0)
-            [nRecordsOris, nRecordsDsr, nSpr] = irf.assert.sizes(...
+            [nRecordsOsr, nRecordsDsr, nSpr] = irf.assert.sizes(...
                 zv,              [-1, -3], ...
                 iRecordsInBinCa, [-2]);
             
@@ -399,7 +399,7 @@ classdef dwns
                 k           = iRecordsInBinCa{iBin};
                 
                 binZv       = zv(k, :);
-                % Number of ORIS records in bin.
+                % Number of OSR records in bin.
                 nBinRecords = size(binZv, 1);
 
                 % (1) Pre-allocate (e.g. in case of zero samples/record).
@@ -442,7 +442,7 @@ classdef dwns
             
 %             bicas.log_speed_profiling(L, ...
 %                 'bicas.proc.dwns.downsample_sci_zVar', tTicToc, ...
-%                 nRecordsOris, 'ORIS record')
+%                 nRecordsOsr, 'OSR record')
 %             bicas.log_speed_profiling(L, ...
 %                 'bicas.proc.dwns.downsample_sci_zVar', tTicToc, ...
 %                 nRecordsDsr,              'DSR record')

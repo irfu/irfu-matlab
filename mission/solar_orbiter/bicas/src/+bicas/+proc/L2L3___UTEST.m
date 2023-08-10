@@ -55,14 +55,14 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             InLfrCwf.Ga.SOOP_TYPE = {' '};
 
             %===================================================================
-            % ORIS DATA: Input+expected output
+            % OSR DATA: Input+expected output
             % --------------------------------
             % Defines bins representing different special cases.
             %
             % NOTE: No consistent relationship between VDC and EDC values, since
             % that is not needed for testing.
             %===================================================================
-            % Columns: Epoch [s], QUALITY_FLAG_in, QUALITY_FLAG_ORIS_out, ...
+            % Columns: Epoch [s], QUALITY_FLAG_in, QUALITY_FLAG_OSR_out, ...
             DATA1 = [...
                 % Normal bin
                 % Test merging QUALITY_BITMASK bits.
@@ -139,23 +139,23 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             InLfrCwf.Zv.VDC = single(DATA1(:, 6: 8));
             InLfrCwf.Zv.EDC = single(DATA1(:, 9:11));
 
-            ExpOris.Zv.QUALITY_FLAG       = uint8( DATA1(:, 3));
+            ExpOsr.Zv.QUALITY_FLAG       = uint8( DATA1(:, 3));
             %
             ExpDsr.Zv.Epoch              = int64( DATA2(:, 1)*1e9) + BASE_TT2000;
             ExpDsr.Zv.QUALITY_FLAG       = uint8( DATA2(:, 2));
             ExpDsr.Zv.QUALITY_BITMASK    = uint16(DATA2(:, 3));
             ExpDsr.Zv.L2_QUALITY_BITMASK = uint16(DATA2(:, 4));
 
-            [OutEfieldOris,  OutEfieldDsr, ...
-             OutScpotOris,   OutScpotDsr, ...
-             OutDensityOris, OutDensityDsr] ...
+            [OutEfieldOsr,  OutEfieldDsr, ...
+             OutScpotOsr,   OutScpotDsr, ...
+             OutDensityOsr, OutDensityDsr] ...
             = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, SETTINGS, L);
 
-            % ORIS
-            testCase.verifyEqual(OutEfieldOris.Zv.Epoch,              InLfrCwf.Zv.Epoch)
-            testCase.verifyEqual(OutEfieldOris.Zv.QUALITY_FLAG,       ExpOris.Zv.QUALITY_FLAG)
-            testCase.verifyEqual(OutEfieldOris.Zv.QUALITY_BITMASK,    InLfrCwf.Zv.QUALITY_BITMASK)
-            testCase.verifyEqual(OutEfieldOris.Zv.L2_QUALITY_BITMASK, InLfrCwf.Zv.L2_QUALITY_BITMASK)
+            % OSR
+            testCase.verifyEqual(OutEfieldOsr.Zv.Epoch,              InLfrCwf.Zv.Epoch)
+            testCase.verifyEqual(OutEfieldOsr.Zv.QUALITY_FLAG,       ExpOsr.Zv.QUALITY_FLAG)
+            testCase.verifyEqual(OutEfieldOsr.Zv.QUALITY_BITMASK,    InLfrCwf.Zv.QUALITY_BITMASK)
+            testCase.verifyEqual(OutEfieldOsr.Zv.L2_QUALITY_BITMASK, InLfrCwf.Zv.L2_QUALITY_BITMASK)
 
             % DSR
             testCase.verifyEqual(OutEfieldDsr.Zv.Epoch,              ExpDsr.Zv.Epoch)

@@ -45,12 +45,12 @@ classdef L2L3
         % opposed to QUALITY_FLAG < threshold.
         %
         % NOTE: Sets QUALITY_FLAG==fill value when ALL data in record is NaN.
-        % Both ORIS and DSR. The same is not(?) enforced in L2 processing, but
+        % Both OSR and DSR. The same is not(?) enforced in L2 processing, but
         % should maybe be. /EJ 2021-05-12
         %
-        function [OutEfieldOris,  OutEfieldDsr, ...
-                  OutScpotOris,   OutScpotDsr, ...
-                  OutDensityOris, OutDensityDsr] ...
+        function [OutEfieldOsr,  OutEfieldDsr, ...
+                  OutScpotOsr,   OutScpotDsr, ...
+                  OutDensityOsr, OutDensityDsr] ...
                 = process_L2_to_L3(InLfrCwf, SETTINGS, L)
 
             % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
@@ -133,7 +133,7 @@ classdef L2L3
             %===================================================================
             % ~HACK: MODIFY INPUT ARGUMENT InLfrCwf
             % -------------------------------------
-            % IMPLEMENTATION NOTE: This is to modify QUALITY_FLAG for both ORIS
+            % IMPLEMENTATION NOTE: This is to modify QUALITY_FLAG for both OSR
             % and DSR datasets. In principle, this is to keep the interface to
             % init_shared_downsampled() simple.
             %===================================================================
@@ -170,21 +170,21 @@ classdef L2L3
             %=========================================
             % Misc. variables shared between datasets
             %=========================================
-            % Global attributes -- shared between all ORIS+DSR datasets.
+            % Global attributes -- shared between all OSR+DSR datasets.
             InitialGa = struct();
             InitialGa.OBS_ID                 = InLfrCwf.Ga.OBS_ID;
             InitialGa.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
-            % zVariables -- shared between all ORIS datasets.
-            InitialOrisZv = struct();
-            InitialOrisZv.Epoch              = InLfrCwf.Zv.Epoch;
-            InitialOrisZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
-            InitialOrisZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
-            InitialOrisZv.QUALITY_FLAG       = InLfrCwf.Zv.QUALITY_FLAG;
-            InitialOrisZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
+            % zVariables -- shared between all OSR datasets.
+            InitialOsrZv = struct();
+            InitialOsrZv.Epoch              = InLfrCwf.Zv.Epoch;
+            InitialOsrZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
+            InitialOsrZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
+            InitialOsrZv.QUALITY_FLAG       = InLfrCwf.Zv.QUALITY_FLAG;
+            InitialOsrZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
             %
-            InitialOris = struct(...
+            InitialOsr = struct(...
                 'Ga', InitialGa, ...
-                'Zv', InitialOrisZv);
+                'Zv', InitialOsrZv);
             %
             [InitialDsrZv, iRecordsInBinCa] = bicas.proc.dwns.init_shared_downsampled(...
                 InLfrCwf, ...
@@ -192,49 +192,49 @@ classdef L2L3
                 BIN_TIMESTAMP_POS_WOLS_NS, ...
                 L);
             % NOTE: Not setting DSR ".Ga"/global attributes here, since DSR
-            % datasets later copy ".Ga" from the respective ORIS datasets.
+            % datasets later copy ".Ga" from the respective OSR datasets.
             InitialDsr = struct('Zv', InitialDsrZv);
             
 
 
             %=======================
-            % zVars for EFIELD ORIS
+            % zVars for EFIELD OSR
             %=======================
-            OutEfieldOris = InitialOris;
-            OutEfieldOris.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutEfieldOsr = InitialOsr;
+            OutEfieldOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutEfieldOris.Zv.EDC_SRF                   = R.zvEdcMvpm;
+            OutEfieldOsr.Zv.EDC_SRF                   = R.zvEdcMvpm;
             %
-            b = all(isnan(OutEfieldOris.Zv.EDC_SRF), 2);
-            OutEfieldOris.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            b = all(isnan(OutEfieldOsr.Zv.EDC_SRF), 2);
+            OutEfieldOsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
         
 
 
             %======================
-            % zVars for SCPOT ORIS
+            % zVars for SCPOT OSR
             %======================
-            OutScpotOris = InitialOris;
-            OutScpotOris.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+            OutScpotOsr = InitialOsr;
+            OutScpotOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutScpotOris.Zv.SCPOT                     = R.ScpotTs.data;
-            OutScpotOris.Zv.PSP                       = R.PspTs.data;
+            OutScpotOsr.Zv.SCPOT                     = R.ScpotTs.data;
+            OutScpotOsr.Zv.PSP                       = R.PspTs.data;
             %
-            b = isnan(OutScpotOris.Zv.SCPOT) & ...
-                isnan(OutScpotOris.Zv.PSP);
-            OutScpotOris.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            b = isnan(OutScpotOsr.Zv.SCPOT) & ...
+                isnan(OutScpotOsr.Zv.PSP);
+            OutScpotOsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
 
 
             %========================
-            % zVars for DENSITY ORIS
+            % zVars for DENSITY OSR
             %========================
-            OutDensityOris = InitialOris;
-            OutDensityOris.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
+            OutDensityOsr = InitialOsr;
+            OutDensityOsr.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
             %
-            OutDensityOris.Zv.DENSITY                   = NeScpTs.data;
+            OutDensityOsr.Zv.DENSITY                   = NeScpTs.data;
             %
-            b = isnan(OutDensityOris.Zv.DENSITY);
-            OutDensityOris.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            b = isnan(OutDensityOsr.Zv.DENSITY);
+            OutDensityOsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
 
 
@@ -242,11 +242,11 @@ classdef L2L3
             % zVars for EFIELD DOWNSAMPLED
             %==============================
             OutEfieldDsr    = InitialDsr;
-            OutEfieldDsr.Ga = OutEfieldOris.Ga;
+            OutEfieldDsr.Ga = OutEfieldOsr.Ga;
             %
             [OutEfieldDsr.Zv.EDC_SRF, ...
              OutEfieldDsr.Zv.EDCSTD_SRF] = bicas.proc.dwns.downsample_sci_zVar(...
-                OutEfieldOris.Zv.EDC_SRF, ...
+                OutEfieldOsr.Zv.EDC_SRF, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
@@ -261,18 +261,18 @@ classdef L2L3
             % zVars for SCPOT DOWNSAMPLED
             %=============================
             OutScpotDsr    = InitialDsr;
-            OutScpotDsr.Ga = OutScpotOris.Ga;
+            OutScpotDsr.Ga = OutScpotOsr.Ga;
             %
             [OutScpotDsr.Zv.SCPOT, ...
              OutScpotDsr.Zv.SCPOTSTD] = bicas.proc.dwns.downsample_sci_zVar(...
-                OutScpotOris.Zv.SCPOT, ...
+                OutScpotOsr.Zv.SCPOT, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
             %
             [OutScpotDsr.Zv.PSP, ...
              OutScpotDsr.Zv.PSPSTD] = bicas.proc.dwns.downsample_sci_zVar(...
-                OutScpotOris.Zv.PSP, ...
+                OutScpotOsr.Zv.PSP, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
@@ -287,11 +287,11 @@ classdef L2L3
             % zVars for DENSITY DOWNSAMPLED
             %===============================
             OutDensityDsr    = InitialDsr;
-            OutDensityDsr.Ga = OutDensityOris.Ga;
+            OutDensityDsr.Ga = OutDensityOsr.Ga;
             %
             [OutDensityDsr.Zv.DENSITY, ...
              OutDensityDsr.Zv.DENSITYSTD] = bicas.proc.dwns.downsample_sci_zVar(...
-                OutDensityOris.Zv.DENSITY, ...
+                OutDensityOsr.Zv.DENSITY, ...
                 bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
@@ -301,11 +301,11 @@ classdef L2L3
 
 
 
-            nRecordsOris = size(InLfrCwf.Zv.Epoch,    1);
+            nRecordsOsr = size(InLfrCwf.Zv.Epoch,    1);
             nRecordsDsr = size(InitialDsr.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L3.process_L2_to_L3', tTicToc, ...
-                nRecordsOris, 'ORIS record')
+                nRecordsOsr, 'OSR record')
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L3.process_L2_to_L3', tTicToc, ...
                 nRecordsDsr, 'DSR record')

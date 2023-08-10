@@ -79,7 +79,7 @@ DLR
 DSI
     DATASET_ID
 DSR
-    Downsampled/Decreased Sampling Rate. Cf. ORIS.
+    Downsampled/Decreased Sampling Rate. Cf. OSR.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
@@ -116,7 +116,7 @@ NSOID
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
-ORIS
+OSR
     Original sampling (rate). Used in the context of downsampling. Cf DSR.
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
