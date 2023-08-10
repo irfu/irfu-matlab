@@ -58,7 +58,7 @@ classdef L2L3
             %   CON: Slows down overall processing.
             %       PRO: Must read same L2 dataset multiple times.
             %       PRO: Must read L3 SCPOT dataset to produce L3 DENSITY dataset.
-            %   CON: There is much shared functionality for 3 quality zVars.
+            %   CON: There is much shared functionality for 3 quality ZVs.
             %       PRO: Same ~constants
             %           Ex: INPUT_DATASET_ID, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
             %       PRO: Read setting QUALITY_FLAG_MIN_FOR_USE
@@ -198,7 +198,7 @@ classdef L2L3
 
 
             %=======================
-            % zVars for EFIELD OSR
+            % ZVs for EFIELD OSR
             %=======================
             OutEfieldOsr = InitialOsr;
             OutEfieldOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
@@ -211,7 +211,7 @@ classdef L2L3
 
 
             %======================
-            % zVars for SCPOT OSR
+            % ZVs for SCPOT OSR
             %======================
             OutScpotOsr = InitialOsr;
             OutScpotOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
@@ -226,7 +226,7 @@ classdef L2L3
 
 
             %========================
-            % zVars for DENSITY OSR
+            % ZVs for DENSITY OSR
             %========================
             OutDensityOsr = InitialOsr;
             OutDensityOsr.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
@@ -239,7 +239,7 @@ classdef L2L3
 
 
             %==============================
-            % zVars for EFIELD DOWNSAMPLED
+            % ZVs for EFIELD DOWNSAMPLED
             %==============================
             OutEfieldDsr    = InitialDsr;
             OutEfieldDsr.Ga = OutEfieldOsr.Ga;
@@ -258,7 +258,7 @@ classdef L2L3
             
 
             %=============================
-            % zVars for SCPOT DOWNSAMPLED
+            % ZVs for SCPOT DOWNSAMPLED
             %=============================
             OutScpotDsr    = InitialDsr;
             OutScpotDsr.Ga = OutScpotOsr.Ga;
@@ -284,7 +284,7 @@ classdef L2L3
 
 
             %===============================
-            % zVars for DENSITY DOWNSAMPLED
+            % ZVs for DENSITY DOWNSAMPLED
             %===============================
             OutDensityDsr    = InitialDsr;
             OutDensityDsr.Ga = OutDensityOsr.Ga;

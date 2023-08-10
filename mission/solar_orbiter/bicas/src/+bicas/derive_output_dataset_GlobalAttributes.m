@@ -23,7 +23,7 @@
 % =========
 % InputDatasetsMap
 %       NOTE: This function does not really need all of InputDatasetsMap as
-%       input (contains zVars) but the function uses that input argument since
+%       input (contains ZVs) but the function uses that input argument since
 %       it is easily accessible where this function is called.
 % OutputDataset
 %       Struct from processing with fields

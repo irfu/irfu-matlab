@@ -61,7 +61,7 @@ function iInBinCa = get_bin_indices(t, bb, nBbThreshold)
     %        that the last bin includes the last edge/boundary (special
     %        behaviour)?
     %   CON: Has tried using discretize() and then either use find(), or not
-    %        use find() but use index zVars (quality variables only?) using logical
+    %        use find() but use index ZVs (quality variables only?) using logical
     %        indexing instead. Seems to take as much time again.
     %
     % PROPOSAL: Use parfor on "raw" implementation.

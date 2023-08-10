@@ -35,7 +35,7 @@ function SETTINGS = create_default_SETTINGS()
 %                                                            Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
 %
-% PROPOSAL: Setting keys should use cased version of zVars and glob.attrs..
+% PROPOSAL: Setting keys should use cased version of ZVs and glob.attrs..
 %   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
 %
 % PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
@@ -210,7 +210,7 @@ function SETTINGS = create_default_SETTINGS()
     S.define_setting('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED',       1)            % 0/false, 1/true.
 
     % List of zVar names for which alternate fill value should be used when the
-    % zVars are loaded and interpreted.
+    % ZVs are loaded and interpreted.
     %S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {'IBIAS_1', 'IBIAS_2', 'IBIAS_3'})
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     cell(0,1))
     % Alternate fill value to use.
@@ -275,7 +275,7 @@ function SETTINGS = create_default_SETTINGS()
     % with the master CDF's size per record. Disabling is useful if the master
     % CDF has not been updated in this regard only.
     %
-    % 2020-10-22: Disabled due to L2 zVars IBIAS1/2/3 mismatch between
+    % 2020-10-22: Disabled due to L2 ZVs IBIAS1/2/3 mismatch between
     % master CDFs and BICAS code. Thus only affects SWF/RSWF, not CWF.
     %   Master CDFs: Multiple samples/snapshot.
     %   BICAS code:  1 sample/snapshot.
@@ -330,7 +330,7 @@ function SETTINGS = create_default_SETTINGS()
     % datasets. Abolish?
     S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY', 'ERROR')   % WARNING, ERROR, CORRECT
 
-    % Mitigation: How to handle that LFR zVars QUALITY_FLAG QUALITY_BITMASK are
+    % Mitigation: How to handle that LFR ZVs QUALITY_FLAG QUALITY_BITMASK are
     % empty.
     % Needed for test files
     %   ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf

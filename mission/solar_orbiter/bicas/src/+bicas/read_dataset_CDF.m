@@ -9,7 +9,7 @@
 %       Instance of bicas.InputDataset
 %
 %
-% NOTE: Fill & pad values are replaced with NaN for float zVars.
+% NOTE: Fill & pad values are replaced with NaN for float ZVs.
 %       Other CDF data (attributes) are ignored.
 % NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
 %
@@ -83,7 +83,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     % Log data read from CDF file
-    bicas.utils.log_zVars(ZvsLog, SETTINGS, L)
+    bicas.utils.log_ZVs(ZvsLog, SETTINGS, L)
     
     
     
@@ -214,7 +214,7 @@ end
 function Zvs = select_ZVS_indices(Zvs, iArray)
     % NOTE: Can not use
     % bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S); since want
-    % to ignore but permit fields/zVars with other number of records.
+    % to ignore but permit fields/ZVs with other number of records.
     
     fnList = fieldnames(Zvs);
     

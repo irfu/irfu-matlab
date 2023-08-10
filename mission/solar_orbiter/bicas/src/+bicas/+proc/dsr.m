@@ -12,7 +12,7 @@ classdef dsr
     %   Ex: bicas.proc.dsr.downsample_bin_QUALITY_FLAG()        -- Too trivial?
     %   --
     %   PRO: Can verify now uncertain edge cases.
-    %           Ex: Quality zVars when science data=fill values.
+    %           Ex: Quality ZVs when science data=fill values.
     %       PRO: Can verify bugfix for integer quality zVar=fill value when
     %            there is no science data.
     %

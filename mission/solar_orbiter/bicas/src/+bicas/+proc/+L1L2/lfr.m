@@ -68,7 +68,7 @@ classdef lfr
 
             elseif has_SYNCHRO_FLAG && has_TIME_SYNCHRO_FLAG
 
-                % CASE: Input CDF has two zVars: one with correct name, one with
+                % CASE: Input CDF has two ZVs: one with correct name, one with
                 % incorrect name
 
                 %------------------------

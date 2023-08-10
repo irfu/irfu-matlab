@@ -49,13 +49,13 @@ function hAxesArray = plot_HK(filePath)
     % HK_BIA_CUR_SELECTED_PAGE  CDF_UINT1/1       0:[]    T/   var?  "HK_BIA_CUR_SELECTED_PAGE
     % HK_BIA_DUMMY              CDF_UINT2/1       0:[]    T/   var   "Last written value to serial link."
     % PA_RPW_HK_SPARE8_1        CDF_UINT1/1       0:[]    T/   var?  "Unused."
-    % ==> 38 zVars
+    % ==> 38 ZVs
     %
     % PROPOSAL: New name: plot_BIAS_HK
     %
-    % PROBLEM: How handle triplets of scalar/bit zVars (as list of zVars)?
-    %   PROPOSAL: Put in lists as one string=3 zVars?
-    %   PROPOSAL: Put in lists as three recursively grouped zVars (cell array in cell array).
+    % PROBLEM: How handle triplets of scalar/bit ZVs (as list of ZVs)?
+    %   PROPOSAL: Put in lists as one string=3 ZVs?
+    %   PROPOSAL: Put in lists as three recursively grouped ZVs (cell array in cell array).
     %
     % TODO-DEC: How plot bits?
     %   PROPOSAL: Combine triplets of bit series, somehow.
@@ -144,7 +144,7 @@ function hAxesArray = plot_HK(filePath)
         numel(ZVAR_SINGLE_SCALAR_LIST) + ...
         numel(unpack(ZVAR_TRIPLET_SCALAR_LIST)) + ...
         numel(ZVAR_BIT_FLAG_LIST), ...
-        'Separate sets of specified zVars overlap.')
+        'Separate sets of specified ZVs overlap.')
     
     D = dataobj(filePath);
     Epoch = D.data.Epoch.data;
@@ -156,7 +156,7 @@ function hAxesArray = plot_HK(filePath)
     
     
     %=====================================
-    % Add panels for scalar numeric zVars
+    % Add panels for scalar numeric ZVs
     %=====================================
     for i = 1:numel(ZVAR_SINGLE_SCALAR_LIST)
         lineWidth = 0.5;  % Default.
@@ -174,14 +174,14 @@ function hAxesArray = plot_HK(filePath)
     end
     
     %==================================================================
-    % Add panels for triplets of numeric zVars (one zVar per antenna).
+    % Add panels for triplets of numeric ZVs (one zVar per antenna).
     %==================================================================
     for i = 1:numel(ZVAR_TRIPLET_SCALAR_LIST)
         Sp.add_panel_time_series3_HK(D, ZVAR_TRIPLET_SCALAR_LIST{i});
     end
 
     %==================================================================
-    % Add panels for bit-valued zVars.
+    % Add panels for bit-valued ZVs.
     %==================================================================
 %     hBitArray = [];
     for i = 1:numel(ZVAR_BIT_FLAG_LIST)

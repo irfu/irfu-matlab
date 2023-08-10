@@ -31,7 +31,7 @@ classdef utils
 
 
         % Log human readable summary of a set of zVar-like variables.
-        % NOTE: Ignores string zVars.
+        % NOTE: Ignores string ZVs.
         % 
         %
         % ARGUMENTS
@@ -40,7 +40,7 @@ classdef utils
         %       NOTE: Uses field name to determine whether field is Epoch-like
         %             or not.
         %
-        function log_zVars(Zvs, SETTINGS, L)
+        function log_ZVs(Zvs, SETTINGS, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
             %   Ex: process_HK_CDF_to_HK_on_SCI_TIME: Print different versions
@@ -207,7 +207,7 @@ classdef utils
             
             % PROPOSAL: Handle fill/pad value?
             % PROPOSAL: Move to +utils.
-            % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
+            % PROPOSAL: Special log function for ZVs. Can print CDF type (implicitly range).
             % PROPOSAL: Print MATLAB class (implicitly range).
             % PROPOSAL: Better function name. Should imply that it generates strings for logging, not the logging
             %           itself.

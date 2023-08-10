@@ -15,8 +15,8 @@ classdef dc
     %
     % PROPOSAL:   process_calibrate_demux()
     %           & calibrate_demux_voltages()
-    %           should only accept the needed zVars and variables.
-    %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
+    %           should only accept the needed ZVs and variables.
+    %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
     %         from struct.
     %
     % PROPOSAL: Make AsrSamplesAVolt a class.

@@ -13,8 +13,8 @@
 % ARGUMENTS
 % =========
 % ZvsSubset
-%       Struct with those zVars which should be written to CDF. "Subset" since
-%       it excludes those zVars in the master file, and which should NOT be
+%       Struct with those ZVs which should be written to CDF. "Subset" since
+%       it excludes those ZVs in the master file, and which should NOT be
 %       overwritten.
 % GaSubset
 %       Struct with fields representing a subset of the CDF global attributes. A
@@ -151,7 +151,7 @@ function DataObj = init_modif_dataobj(...
     
     
     
-    ZvsLog  = struct();   % zVars for logging.
+    ZvsLog  = struct();   % ZVs for logging.
     
     
     
@@ -167,7 +167,7 @@ function DataObj = init_modif_dataobj(...
     % Iterate over all OUTPUT PD field names
     % Set corresponding dataobj zVariables
     % --------------------------------------
-    % NOTE: ~zVariables from processing, i.e. not zVars in master CDF.
+    % NOTE: ~zVariables from processing, i.e. not ZVs in master CDF.
     %==================================================================
     % NOTE: Only sets a SUBSET of the zVariables in master CDF.
     L.log('info', 'Converting PDV to dataobj (CDF data structure)')
@@ -215,7 +215,7 @@ function DataObj = init_modif_dataobj(...
     
     
     % Log data to be written to CDF file.
-    bicas.utils.log_zVars(ZvsLog, SETTINGS, L)
+    bicas.utils.log_ZVs(ZvsLog, SETTINGS, L)
 
 
     
@@ -254,8 +254,8 @@ end    % init_modif_dataobj
 
 
 
-% Function used by init_modif_dataobj() for using zVars from processing, to
-% overwrite zVars in dataobj (from master CDF).
+% Function used by init_modif_dataobj() for using ZVs from processing, to
+% overwrite ZVs in dataobj (from master CDF).
 % 
 % ARGUMENTS
 % =========
@@ -303,9 +303,9 @@ function DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L)
     % ---------------------------------------------------------
     % NOTE: Must handle fill values when deriving min & max.
     %   NOTE: For floats: Use zvValuePd (not cvValueCdf).
-    %   NOTE: Must handle zVars with ONLY fill values.
+    %   NOTE: Must handle ZVs with ONLY fill values.
     %
-    % TODO-DEC: How handle zVars with only fill value/NaN?
+    % TODO-DEC: How handle ZVs with only fill value/NaN?
     %       Ex: EAC when no AC diff data
     %       Ex: BW=0
     %           Ex: SBM1, SBM2 test data
@@ -314,9 +314,9 @@ function DataObj = overwrite_dataobj_zVar(DataObj, zvName, zvValuePd, L)
     %   PROPOSAL: Set to fill value.
     %       CON: Legal?
     %
-    % NOTE: For some zVars, SCALEMIN & SCALEMAX will not be wrong, but may also
+    % NOTE: For some ZVs, SCALEMIN & SCALEMAX will not be wrong, but may also
     % not be very meaningful.
-    % NOTE: Some zVars might not change, i.e. min=max.
+    % NOTE: Some ZVs might not change, i.e. min=max.
     %   Ex: IBIAS1/2/3, SYNCHRO_FLAG
     %
     % NOTE: Implementation seems to work for floats.

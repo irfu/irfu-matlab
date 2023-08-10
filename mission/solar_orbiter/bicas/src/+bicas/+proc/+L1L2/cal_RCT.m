@@ -116,7 +116,7 @@ classdef cal_RCT
 
 
         % Load non-BIAS RCT(s) of ONE type (rctTypeId) using CDF global
-        % attribute CALIBRATION_TABLE and zVars CALIBRATION_TABLE_INDEX and BW.
+        % attribute CALIBRATION_TABLE and ZVs CALIBRATION_TABLE_INDEX and BW.
         %
         % IMPLEMENTATION NOTE
         % ===================

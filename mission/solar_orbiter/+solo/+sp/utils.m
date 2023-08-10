@@ -17,7 +17,7 @@ classdef utils
         
         
         
-        % Merge two ~zVars, with identical timestamps, but with non-overlapping
+        % Merge two ~ZVs, with identical timestamps, but with non-overlapping
         % regions of non-NaN indices.
         function zv = merge_zvs(zv1, zv2)
             irf.assert.sizes(...

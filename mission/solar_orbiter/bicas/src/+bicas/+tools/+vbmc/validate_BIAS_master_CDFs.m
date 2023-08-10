@@ -11,7 +11,7 @@
 % IMPLEMENTATION NOTE: Uses whitelists for global attributes, zVariable names,
 % and zVariable attributes. This is useful for making sure there are no
 % obsoleted names, misspellings, or inconsistent spelling (between datasets or
-% zVars).
+% ZVs).
 %
 %
 % NOTE 2020-11-10: Code has not been used in a long time (years). Idea still
@@ -71,9 +71,9 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %   NOTE: Not sure if all have FILLVAL.
     %
     % PROPOSAL: Somehow select which checks should be made for which datasets, on which parts.
-    %   (1) Checks on all zVars in all datasets.
+    %   (1) Checks on all ZVs in all datasets.
     %       ISTP, SolO metadata standard, ROC/RPW standards(?)
-    %   (2) Checks on some zVars (glob.attr.) in some datasets.
+    %   (2) Checks on some ZVs (glob.attr.) in some datasets.
     %       	(2a) Checks on a specific level
     %
     % PROPOSAL: Check that no duplicate global attributes, if ignoring case.
@@ -166,7 +166,7 @@ function Do = validate_file(filePath)
 %    NOTE: Need list of zVariables which change with sample/snapshot per record: VDC, EDC, EAC, BIAS1/2/3.
 %    PROPOSAL: Check that zVariables use the right dimension for snapshots.
 %
-% PROPOSAL: Check that sets of zVars are analogous/almost identical (within a dataset).
+% PROPOSAL: Check that sets of ZVs are analogous/almost identical (within a dataset).
 %   Ex: IBIAS1-3
 %   Ex: VDC, EDC, EAC
 %   Ex: VDC/EDC/EAC_LABEL
@@ -479,7 +479,7 @@ end
 %
 function validate_zv_presence(Do, zvName, validateNonempty)
     % PROPOSAL: Separate validate empty.
-    %   PRO: Iterate over zVars that should be present.
+    %   PRO: Iterate over ZVs that should be present.
     
     if ~any(strcmp(Do.Variables(:,1), zvName))
         validation_warning('Can not find zVariable "%s".', zvName);

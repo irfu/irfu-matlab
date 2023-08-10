@@ -504,7 +504,7 @@ classdef cal < handle
 
 
         % Convert/calibrate diagnostic HK TM bias current values to physical
-        % units. Refers to BIAS HK zVars HK_BIA_BIAS1/2/3.
+        % units. Refers to BIAS HK ZVs HK_BIA_BIAS1/2/3.
         %
         %
         % NOTES

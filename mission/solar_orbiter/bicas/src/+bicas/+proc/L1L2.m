@@ -63,7 +63,7 @@ classdef L1L2
 %   PROBLEM/TODO-DEC: How set the instance variables?
 %       PROPOSAL: Constructor.
 %           CON: Too many arguments since too many variables.
-%               CON: Not true since most variables are zVars colleted under .Zv.
+%               CON: Not true since most variables are ZVs colleted under .Zv.
 %       PROPOSAL: Set instance variables manually.
 %           CON: Can forget variables.
 %               PRO: Still better than current system.
@@ -84,7 +84,7 @@ classdef L1L2
 
         % Processing function
         %
-        % NOTE: Only converts relevant HK zVars to be on SCI Epoch. Later
+        % NOTE: Only converts relevant HK ZVs to be on SCI Epoch. Later
         % (other) code decides whether to use it (mux mode).
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
             % PROPOSAL: Separate function for the actual interpolation of data
@@ -139,7 +139,7 @@ classdef L1L2
                     bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
-            bicas.utils.log_zVars(TimeVars, SETTINGS, L);
+            bicas.utils.log_ZVs(TimeVars, SETTINGS, L);
 
 
 

@@ -47,7 +47,7 @@ classdef tds
             %===========================================================
             % Normalize zVar name SYNCHRO_FLAG
             % --------------------------------
-            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input
+            % Both ZVs TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input
             % datasets. Unknown why. "DEFINITION BUG" in definition of
             % datasets/skeleton? /2020-01-05
             % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
@@ -420,7 +420,7 @@ classdef tds
 
             % ASSERTION
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
-            % NOTE: Not really necessary since the list of zVars will be checked
+            % NOTE: Not really necessary since the list of ZVs will be checked
             % against the master CDF?
             irf.assert.struct(OutSci.Zv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
