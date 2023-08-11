@@ -1,7 +1,7 @@
 function varargout = tt_browse(varargin)
 % IRF.TT_BROWSE browse time table
 %	IRF.TT_BROWSE(TT) browse time table TT
-%		time table shoud be in irf.TimeTable format
+%		time table should be in irf.TimeTable format
 %
 % 	IRF.TT_BROWSE(TT,'plotfile') browse and make figure defined in plotfile
 %

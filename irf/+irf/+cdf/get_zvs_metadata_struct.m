@@ -278,7 +278,7 @@ function S = get_zvs_metadata_struct(Variables, VariableAttributes)
             zvAttrValue = zvAttrTable{jZv, 2};
             
             % ASSERTION: Sub-struct for zVar already exists.
-            % "VariableAttributes" shoud contain a subset of the zVars in
+            % "VariableAttributes" should contain a subset of the zVars in
             % "Variables". Do not want to just assume this, but assert it so as
             % to not mistakenly create more sub-structs.
             if ~isfield(S, zvName)

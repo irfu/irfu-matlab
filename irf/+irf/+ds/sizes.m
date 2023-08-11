@@ -16,7 +16,7 @@
 % =========
 % This function is intended for implementing assertions. It is not an assertion
 % function by itself since there are rare situations where one wants to
-% customize the error behaviour. See irf.assert, method sizes().
+% customize the error behaviour. See irf.assert.sizes().
 %
 %
 % ARGUMENTS
@@ -25,16 +25,16 @@
 %       Arbitrary number of argument pairs below:
 %       varargin{2*n+1}
 %           Variable value which size will be tested.
-%       varargin{2*n+1} == sizeConstraint
+%       varargin{2*n+2} == sizeConstraint
 %           1D vector with integers specifying the size of the corresponding
-%           argument variable. Values for each dimensino have different meanings
+%           argument variable. Values for each dimension have different meanings
 %           as below:
 %               Nonnegative integer
 %                   Explicit required size.
 %               Negative integer
-%                   Arbitrary dimension size which must match between all
-%                   variable arguments.
-%                   Must be numbered -1, -2, ... , -N
+%                   Arbitrary dimension size which must match between all other
+%                   dimensions specified with the same negative number.
+%                   Must be numbered -1, -2, ... , -N.
 %               NaN
 %                   Arbitrary dimension size is independent of other dimensions.
 %                   No corresponding return value.
