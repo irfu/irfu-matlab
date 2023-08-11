@@ -88,6 +88,8 @@ EMIDP
 FTF
     Forward Transfer Function = TF that describes the conversion of physical
     INPUT to OUTPUT (not the reverse). Cf. ITF.
+GA
+    CDF Global Attributes
 ICD
     Interface Control Document
 ITF
@@ -175,6 +177,8 @@ TM
     instead of the term "count".
 TPIV
     TM/interface volt. TM per interface volt.
+TS
+    irfu-matlab's TSeries object/class.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV

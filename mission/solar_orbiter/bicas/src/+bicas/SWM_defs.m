@@ -39,7 +39,7 @@
 % =========
 % -- Should decrease the amount of overlapping hard-coded information to e.g.
 %    reduce risk of mistakes, reduce manual work when verifying updates.
-% -- Having one big, albit somewhat redundant data structure should make the
+% -- Having one big, albeit somewhat redundant data structure should make the
 %    interface to the rest of BICAS relatively future-proof, in the face of
 %    future updates.
 % -- Useful for expected future bias current datasets.
@@ -63,11 +63,6 @@
 classdef SWM_defs
     % PROPOSAL: Pick SWD name/descriptions from master CDFs.
     % PROPOSAL: Obtain output dataset level from production function metadata?!!
-    % PROPOSAL: Include output dataset version.
-    %   PRO: Can deduce name of master CDF.
-    %       PRO: Needed for SWD.
-    %       PRO: Needed for deriving master-CDF filename.
-    %   PRO: Needed for verifying conformance with production function.
     %
     % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L1),
     %           then filter out the undesired ones using internal metadata for
@@ -79,19 +74,11 @@ classdef SWM_defs
     %   PRO: Can handle old datasets with ROG-SGSE DATASET_IDs, and otherwise
     %        only use RODP DATASET_IDs.
     %
-    % PROPOSAL: Use classes instead of structs.
-    %   PROPOSAL: Use sub-package for classes.
-    %   PROPOSAL: Class for s/w mode definition.
-    %       PROPOSAL: Name swmode_def
-    %           CON: Too similar to bicas.SWM_defs.
-    %   PROPOSAL: Class for input datasets.
-    %   PROPOSAL: Class for output datasets.
-    %
     % PROPOSAL: Fieldname change
     %   inputsList  --> inputsArray
     %   outputsList --> outputsArray
     %   NOTE: Likely influences BICAS testing code and pipeline.
-    %         Shoud only be implemented at the right time.
+    %         Should only be implemented at the right time.
     %
     % TODO-DEC: Which arguments should SWM production functions (function handles in
     %           an instance of bicas.SWM_defs) have?
@@ -109,6 +96,34 @@ classdef SWM_defs
     %   PROPOSAL: All arguments which are different for different (underlying) production
     %             functions. ==> As few as possible.
     %   Ex: SETTINGS, L, rctDir, NsoTable
+    %
+    % PROPOSAL: Refactor to separate the hardcoded SWMs from the class.
+    %   PRO: Good for testing.
+    %   PRO: Good for separating hardcoding/"constants".
+    %
+    % PROPOSAL: Use classes instead of structs.
+    %   PROPOSAL: Use sub-package for classes.
+    %   PROPOSAL: Class for s/w mode definition.
+    %       PROPOSAL: Name SWM
+    %           CON: Too similar to bicas.SWM_defs.
+    %   PROPOSAL: Class for input datasets.
+    %   PROPOSAL: Class for output datasets.
+    %
+    % PROPOSAL: Refactor to
+    %   Redefine and rename as class SWML = SWM List
+    %   Class for single SWM.
+    %   Function for hardcoding that initializes SWML.
+    %   Create package swm.* including swm.swml, swm.hardcoding, swm.swm (class
+    %   for single SWM), etc.
+    %   get_SWM_info --> get_SWM
+    %   PROPOSAL: Abolish this class. Only need SWM class + object array/list.
+    %   PROPOSAL:
+    %       bicas.swm.swm
+    %       bicas.swm.swml
+    %       bicas.swm.InputDataset    ?
+    %       bicas.swm.OutputDataset   ?
+    %       bicas.swm.utils  ?
+    %       bicas.swm.get_SWML (function)
 
 
 
@@ -508,7 +523,7 @@ classdef SWM_defs
             Def.datasetId           = datasetId;
             Def.datasetLevel        = datasetLevel;
             
-            Def.prodFuncOutputKey   = prodFuncOutputKey;   % 'SCI_cdf';
+            Def.prodFuncOutputKey   = prodFuncOutputKey;   % Ex: 'SCI_cdf';
             Def.swdName             = swdName;
             Def.swdDescription      = swdDescription;
             Def.skeletonVersion     = skeletonVersion;
@@ -517,8 +532,8 @@ classdef SWM_defs
             bicas.SWM_defs.assert_text(              Def.swdName)
             bicas.SWM_defs.assert_text(              Def.swdDescription)
             bicas.SWM_defs.assert_DATASET_ID(        Def.datasetId)
-            solo.adm.assert_dataset_level(              Def.datasetLevel)
-            bicas.assert_skeleton_version(              Def.skeletonVersion)
+            solo.adm.assert_dataset_level(           Def.datasetLevel)
+            bicas.assert_skeleton_version(           Def.skeletonVersion)
         end
 
 

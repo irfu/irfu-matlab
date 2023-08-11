@@ -10,8 +10,6 @@
 %
 % NAMING CONVENTIONS
 % ==================
-% ZV  : zVariable
-% GA  : Global Attribute (in CDF file)
 % CUR : CURRENT (type of data, dataset)
 % ENABLE(D)/DISABLE(D) always at the end of a setting key.
 %

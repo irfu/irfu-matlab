@@ -50,8 +50,6 @@
 %       Whether BICAS is launched with --version, --help, --identification,
 %       --descriptor, or a s/w mode. (These alternatives are mutually
 %       exclusive.)
-% S/W mode
-%       Which dataset processing is to be performed.
 % SIP   
 %       Specific Input Parameters. The phrase is an RCS ICD term.
 %
