@@ -450,7 +450,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    SwmDefs = bicas.SWM_defs(SETTINGS, L);
+    SwmDefs = bicas.swm.SWML(SETTINGS, L);
     
     
     
@@ -613,7 +613,7 @@ end
 
 % Print the JSON S/W descriptor identification section.
 %
-% NOTE: Argument is *not* an instance of bicas.SWM_defs.
+% NOTE: Argument is *not* an instance of bicas.swm.SWML.
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
@@ -631,7 +631,7 @@ end
 
 % Print the JSON S/W descriptor.
 %
-% NOTE: Argument is *not* an instance of bicas.SWM_defs.
+% NOTE: Argument is *not* an instance of bicas.swm.SWML.
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24

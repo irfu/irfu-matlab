@@ -14,13 +14,13 @@
 % InputsMap
 %       containers.Map with
 %       <keys>   : String defining a name of an input ("prodFuncInputKey" in
-%                  bicas.SWM_defs).
+%                  bicas.swm.SWML).
 %       <values> : A struct with data corresponding to a CDF file
 %                  (zVariables+global attributes).
 % OutputsMap
 %       containers.Map with
 %       <keys>   : String defining a name of an output ("prodFuncOutputKey" in
-%                  bicas.SWM_defs).
+%                  bicas.swm.SWML).
 %       <values> : A struct with data corresponding to a CDF file (zVariables).
 % --
 % NOTE: In practice, anonymous functions with the correct interface are used to
