@@ -213,24 +213,24 @@ classdef tds
 
 
 
-            PreDc = [];
+            Zv = [];
 
-            PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
-            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
+            Zv.Epoch                   = InSci.Zv.Epoch;
+            Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
                 freqHzZv, nCdfSamplesPerRecord);
-            PreDc.Zv.freqHz                  = freqHzZv;
-            PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
-            PreDc.Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
-            PreDc.Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
-            PreDc.Zv.MUX_SET                 = HkSciTime.MUX_SET;
-            PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
-            PreDc.Zv.ufv                     = false(nRecords, 1);
-            PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
+            Zv.freqHz                  = freqHzZv;
+            Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
+            Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
+            Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
+            Zv.MUX_SET                 = HkSciTime.MUX_SET;
+            Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
+            Zv.ufv                     = false(nRecords, 1);
+            Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
 
 
             %=====================================
-            % Set PreDc.Zv.nValidSamplesPerRecord
+            % Set Zv.nValidSamplesPerRecord
             %=====================================
             if C.isTdsRswf
                 %================================================================
@@ -248,50 +248,49 @@ classdef tds
                 % Converting to double because code did so before code
                 % reorganization. Reason unknown. Needed to avoid precision
                 % problems when doing math with other variables?
-                PreDc.Zv.nValidSamplesPerRecord = double(InSci.Zv.SAMPS_PER_CH);
+                Zv.nValidSamplesPerRecord = double(InSci.Zv.SAMPS_PER_CH);
             else
-                PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
+                Zv.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
             end
-            assert(all(PreDc.Zv.nValidSamplesPerRecord <= nCdfSamplesPerRecord), ...
+            assert(all(Zv.nValidSamplesPerRecord <= nCdfSamplesPerRecord), ...
                 'BICAS:Assertion:DatasetFormat', ...
                 ['Dataset indicates that the number of valid samples per CDF', ...
-                ' record (max(PreDc.Zv.nValidSamplesPerRecord)=%i) is', ...
+                ' record (max(Zv.nValidSamplesPerRecord)=%i) is', ...
                 ' NOT fewer than the number of indices per CDF record', ...
                 ' (nCdfMaxSamplesPerSnapshot=%i).'], ...
-                max(PreDc.Zv.nValidSamplesPerRecord), ...
+                max(Zv.nValidSamplesPerRecord), ...
                 nCdfSamplesPerRecord)
 
 
 
             %==========================
-            % Set PreDc.Zv.samplesCaTm
+            % Set Zv.samplesCaTm
             %==========================
             modif_WAVEFORM_DATA = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
 
-            PreDc.Zv.samplesCaTm    = cell(5,1);
-            PreDc.Zv.samplesCaTm{1} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.Zv.nValidSamplesPerRecord );
-            PreDc.Zv.samplesCaTm{2} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.Zv.nValidSamplesPerRecord );
-            PreDc.Zv.samplesCaTm{3} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.Zv.nValidSamplesPerRecord );
-            PreDc.Zv.samplesCaTm{4} = nan(nRecords, nCdfSamplesPerRecord);
-            PreDc.Zv.samplesCaTm{5} = nan(nRecords, nCdfSamplesPerRecord);
+            Zv.samplesCaTm    = cell(5,1);
+            Zv.samplesCaTm{1} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), Zv.nValidSamplesPerRecord );
+            Zv.samplesCaTm{2} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), Zv.nValidSamplesPerRecord );
+            Zv.samplesCaTm{3} = bicas.proc.utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), Zv.nValidSamplesPerRecord );
+            Zv.samplesCaTm{4} = nan(nRecords, nCdfSamplesPerRecord);
+            Zv.samplesCaTm{5} = nan(nRecords, nCdfSamplesPerRecord);
 
 
 
-            PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
-            PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
-
-            PreDc.isLfr             = false;
-            PreDc.isTdsCwf          = C.isTdsCwf;
-            PreDc.hasSnapshotFormat = C.isTdsRswf;
+            Ga = [];
+            Ga.OBS_ID         = InSci.Ga.OBS_ID;
+            Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
 
             % Only set because the code shared with LFR requires it.
-            PreDc.Zv.iLsf           = nan(nRecords, 1);
-            PreDc.Zv.lfrRx          = ones(nRecords, 1);
+            Zv.iLsf           = nan(nRecords, 1);
+            Zv.lfrRx          = ones(nRecords, 1);
+            
+            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isTdsRswf, false, C.isTdsCwf);
 
 
 
             % ASSERTIONS
-            bicas.proc.L1L2.assert_PreDC(PreDc)
+            assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'))
 
         end    % process_CDF_to_PreDC
 

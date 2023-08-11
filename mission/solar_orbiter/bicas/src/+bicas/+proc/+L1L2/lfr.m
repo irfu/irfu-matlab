@@ -219,33 +219,34 @@ classdef lfr
 
 
 
-            PreDc = [];
+            Zv = [];
 
-            PreDc.Zv.samplesCaTm    = cell(5,1);
-            PreDc.Zv.samplesCaTm{1} = single(InSci.Zv.V);
+            Zv.samplesCaTm    = cell(5,1);
+            Zv.samplesCaTm{1} = single(InSci.Zv.V);
             % Copy values, except when zvRx==0 (==>NaN).
-            PreDc.Zv.samplesCaTm{2} = bicas.proc.utils.filter_rows( E(:,:,1), zvRx==0 );
-            PreDc.Zv.samplesCaTm{3} = bicas.proc.utils.filter_rows( E(:,:,2), zvRx==0 );
-            PreDc.Zv.samplesCaTm{4} = bicas.proc.utils.filter_rows( E(:,:,1), zvRx==1 );
-            PreDc.Zv.samplesCaTm{5} = bicas.proc.utils.filter_rows( E(:,:,2), zvRx==1 );
+            Zv.samplesCaTm{2} = bicas.proc.utils.filter_rows( E(:,:,1), zvRx==0 );
+            Zv.samplesCaTm{3} = bicas.proc.utils.filter_rows( E(:,:,2), zvRx==0 );
+            Zv.samplesCaTm{4} = bicas.proc.utils.filter_rows( E(:,:,1), zvRx==1 );
+            Zv.samplesCaTm{5} = bicas.proc.utils.filter_rows( E(:,:,2), zvRx==1 );
 
-            PreDc.Zv.Epoch                   = InSci.Zv.Epoch;
-            PreDc.Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
+            Zv.Epoch                   = InSci.Zv.Epoch;
+            Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
                 zvFreqHz, nCdfSamplesPerRecord);
-            PreDc.Zv.freqHz                  = zvFreqHz;
-            PreDc.Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
-            PreDc.Zv.BW                      = InSci.Zv.BW;
-            PreDc.Zv.ufv                     = ~logical(InSci.Zv.BW);
-            PreDc.Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
-            PreDc.Zv.iLsf                    = iLsfZv;
+            Zv.freqHz                  = zvFreqHz;
+            Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
+            Zv.BW                      = InSci.Zv.BW;
+            Zv.ufv                     = ~logical(InSci.Zv.BW);
+            Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
+            Zv.iLsf                    = iLsfZv;
 
-            PreDc.Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
-            PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
+            Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
+            Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
-            PreDc.Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
-            PreDc.Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
+            Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
+            Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
 
-            PreDc.Zv.lfrRx = zvRx;
+            Zv.lfrRx                   = zvRx;
+
 
 
             %==========================================
@@ -281,21 +282,15 @@ classdef lfr
                     error('BICAS:ConfigurationBug', ...
                         'Illegal settings value %s="%s"', key, value)
             end
-            PreDc.Zv.MUX_SET = MUX_SET;
+            Zv.MUX_SET   = MUX_SET;
 
 
 
-            PreDc.Ga.OBS_ID         = InSci.Ga.OBS_ID;
-            PreDc.Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
-
-            PreDc.hasSnapshotFormat = C.isLfrSurvSwf;
-            PreDc.isLfr             = true;
-            PreDc.isTdsCwf          = false;
-
-
-
-            % ASSERTIONS
-            bicas.proc.L1L2.assert_PreDC(PreDc)
+            Ga = [];
+            Ga.OBS_ID    = InSci.Ga.OBS_ID;
+            Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
+            
+            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isLfrSurvSwf, true, false);
 
         end    % process_CDF_to_PreDC
 

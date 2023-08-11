@@ -44,7 +44,7 @@ classdef dc
             tTicToc = tic();
 
             % ASSERTION
-            bicas.proc.L1L2.assert_PreDC(PreDc);
+            assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'));
 
 
 

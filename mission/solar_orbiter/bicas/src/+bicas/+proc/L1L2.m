@@ -41,7 +41,6 @@ classdef L1L2
 %         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
 %         function [PreDc, PostDc] = process_quality_filter_L2(...
 %         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
-%         function assert_PreDC(PreDc)
 %         function assert_PostDC(PostDc)
 %         function zvUfv = get_UFV_records_from_settings(...
 %         function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
@@ -55,10 +54,9 @@ classdef L1L2
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
 %
-% PROPOSAL: Classes for PreDc, PostDc, PreDc.Zv, PostDc.Zv.
+% PROPOSAL: Classes for PostDc, PreDc.Zv, PostDc.Zv.
 %   PRO: Better documentation of formats.
 %   PRO: Can abolish
-%       bicas.proc.L1L2.assert_PreDC
 %       bicas.proc.L1L2.assert_PostDC
 %   PROBLEM/TODO-DEC: How set the instance variables?
 %       PROPOSAL: Constructor.
@@ -301,7 +299,7 @@ classdef L1L2
             % PROPOSAL: Separate function for handling UFV.
 
             % ASSERTION
-            bicas.proc.L1L2.assert_PreDC(PreDc)
+            assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'))
             bicas.proc.L1L2.assert_PostDC(PostDc)
             nRecords = irf.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
@@ -405,6 +403,16 @@ classdef L1L2
                 PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK;
 
             end    % for
+            
+            % IMPLEMENTATION NOTE: Reminder that bicas.proc.L1L2.PreDc can be
+            % modified by code (depending on NSO table), despite that
+            % bicas.proc.L1L2.PreDc should ideally be immutable but can
+            % currently not be. Since modification only happens for NSO events,
+            % this modification might not be run, depending on the time
+            % interval. Therefore always running this "null modification" to
+            % make sure that a mistakenly immutable bicas.proc.L1L2.PreDc always
+            % triggers error.
+            PreDc.Zv.QUALITY_FLAG = PreDc.Zv.QUALITY_FLAG;
 
 
 
@@ -427,7 +435,7 @@ classdef L1L2
 
 
             % ASSERTION
-            bicas.proc.L1L2.assert_PreDC(PreDc)
+            assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'))
             bicas.proc.L1L2.assert_PostDC(PostDc)
 
         end    % process_quality_filter_L2
@@ -455,25 +463,6 @@ classdef L1L2
             end
 
             irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
-        end
-
-
-
-        function assert_PreDC(PreDc)
-            irf.assert.struct(PreDc, ...
-                {'Zv', 'Ga', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
-
-            irf.assert.struct(PreDc.Zv, ...
-                {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', ...
-                'iLsf', 'DIFF_GAIN', ...
-                'MUX_SET', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
-                'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', ...
-                'ufv', 'lfrRx'}, ...
-                {'BW'});
-
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
-
-            assert(isa(PreDc.Zv.freqHz, 'double'))
         end
 
 
