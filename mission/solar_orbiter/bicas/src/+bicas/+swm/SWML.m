@@ -124,6 +124,12 @@ classdef SWML
     %       bicas.swm.OutputDataset   ?
     %       bicas.swm.utils  ?
     %       bicas.swm.get_SWML (function)
+    %
+    % PROPOSAL: Better class name
+    %   PROPOSAL: SwmSet
+    %       PRO: There is no inherent ordering of SWMs.
+    %   PROPOSAL: SwmList
+    %       CON: List implies ordering.
 
 
 
@@ -236,9 +242,7 @@ classdef SWML
             
             
 
-            SwmList = irf.ds.empty_struct([0,1], ...
-                'prodFunc', 'cliOption', 'swdPurpose', ...
-                'inputsList', 'outputsList');
+            SwmList = bicas.swm.SWM.empty(0, 1);
             % Iterate over [L1R] (one component), or [L1, L1R]...
             for iInputLevel = 1:numel(inputDatasetLevelList)
                 
@@ -269,7 +273,7 @@ classdef SWML
                             ' time-tagged']), ...
                         LFR_SWM_DATA(iSwm).outputSkeletonVersion);
 
-                    SwmList(end+1) = bicas.swm.SWML.def_SWM(...
+                    SwmList(end+1) = bicas.swm.SWM(...
                         @(InputDatasetsMap, rctDir, NsoTable) bicas.proc.pf.produce_L1R_to_L2_LFR(...
                             InputDatasetsMap, ...
                             rctDir, ...
@@ -310,7 +314,7 @@ classdef SWML
                             ' difference) data in LF mode, time-tagged']), ...
                         TDS_SWM_DATA(iSwm).outputSkeletonVersion);
 
-                    SwmList(end+1) = bicas.swm.SWML.def_SWM(...
+                    SwmList(end+1) = bicas.swm.SWM(...
                         @(InputDatasetsMap, rctDir, NsoTable) bicas.proc.pf.produce_L1R_to_L2_TDS(...
                             InputDatasetsMap, ...
                             rctDir, ...
@@ -347,7 +351,7 @@ classdef SWML
                 
                 % NOTE: Function handle: Argument rctDir is not used, but is
                 % needed for the interface.
-                SwmList(end+1) = bicas.swm.SWML.def_SWM(...
+                SwmList(end+1) = bicas.swm.SWM(...
                     @(InputDatasetsMap, rctDir, NsoTable) bicas.proc.pf.produce_L2_to_L2_CWF_DSR(...
                         InputDatasetsMap, SETTINGS, L), ...
                     'LFR-SURV-CWF-E-DSR', ...
@@ -420,7 +424,7 @@ classdef SWML
 
                 % NOTE: Function handle: Arguments rctDir, NsoTable are not
                 % used, but are needed for the interface.
-                SwmList(end+1) = bicas.swm.SWML.def_SWM(...
+                SwmList(end+1) = bicas.swm.SWM(...
                     @(InputDatasetsMap, rctDir, NsoTable) (bicas.proc.pf.produce_L2_to_L3(...
                         InputDatasetsMap, ...
                         SETTINGS, L)), ...
@@ -459,45 +463,34 @@ classdef SWML
 
 
     
-    methods(Static, Access=private)
-        
-        
-        
-        % NOTE: Name dangerously similar to "bicas.swm.SWML".
-        function Def = def_SWM(...
-                prodFunc, cliOption, swdPurpose, ...
-                inputsList, outputsList)
-            
-            Def.prodFunc    = prodFunc;
-            % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by
-            % e.g. "--". Variable therefore NOT named *Body.
-            Def.cliOption   = cliOption;   
-            Def.swdPurpose  = swdPurpose;
-            Def.inputsList  = inputsList;
-            Def.outputsList = outputsList;
-            
-            
-            
-            %============
-            % ASSERTIONS
-            %============
-            bicas.swm.SWML.assert_SWM_CLI_option(Def.cliOption)
-            bicas.swm.SWML.assert_text(              Def.swdPurpose)
-            
-            % Important. Check uniqueness of SIP options.
-            irf.assert.castring_set( {...
-                Def.inputsList( :).cliOptionHeaderBody, ...
-                Def.outputsList(:).cliOptionHeaderBody })
-            
-            assert(isstruct(Def.inputsList ))
-            assert(isstruct(Def.outputsList))
-            
-            irf.assert.castring_set( { Def.inputsList(:).prodFuncInputKey   })
-            irf.assert.castring_set( { Def.outputsList(:).prodFuncOutputKey })
+    methods(Static, Access=public)
+
+
+
+        % Assert that string contains human-readable text.
+        function assert_text(str)
+            irf.assert.castring_regexp(str, '.* .*')
+            irf.assert.castring_regexp(str, '[^<>]*')
         end
 
-        
-        
+
+
+        function assert_SWM_CLI_option(swmCliOption)
+            irf.assert.castring_regexp(...
+                swmCliOption, ...
+                bicas.constants.SWM_CLI_OPTION_REGEX)
+        end
+
+
+
+    end    % methods(Static, Access=public)
+
+
+
+    methods(Static, Access=private)
+
+
+
         function Def = def_input_dataset(...
                 cliOptionHeaderBody, datasetId, prodFuncInputKey)
             
@@ -547,22 +540,6 @@ classdef SWML
             assert(strcmp(sourceName, 'SOLO'))
         end
         
-
-
-        % Assert that string contains human-readable text.
-        function assert_text(str)
-            irf.assert.castring_regexp(str, '.* .*')
-            irf.assert.castring_regexp(str, '[^<>]*')
-        end
-        
-        
-        
-        function assert_SWM_CLI_option(swmCliOption)
-            irf.assert.castring_regexp(...
-                swmCliOption, ...
-                bicas.constants.SWM_CLI_OPTION_REGEX)
-        end
-
 
 
         % NOTE: Really refers to "option body".
