@@ -43,8 +43,8 @@ classdef SWM   % < handle
             %============
             % ASSERTIONS
             %============
-            bicas.swm.SWML.assert_SWM_CLI_option(obj.cliOption)
-            bicas.swm.SWML.assert_text(          obj.swdPurpose)
+            bicas.swm.utils.assert_SWM_CLI_option(obj.cliOption)
+            bicas.swm.utils.assert_text(          obj.swdPurpose)
 
             % Important. Check uniqueness of SIP options.
             irf.assert.castring_set( {...

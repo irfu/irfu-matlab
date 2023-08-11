@@ -34,9 +34,9 @@ classdef InputDataset
             obj.prodFuncInputKey    = prodFuncInputKey;
             obj.datasetId           = datasetId;
 
-            bicas.swm.SWML.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
+            bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
             % NOTE: Using the INTERNAL assertion function, not the global one.
-            bicas.swm.SWML.assert_DATASET_ID(    obj.datasetId)
+            bicas.swm.utils.assert_DATASET_ID(    obj.datasetId)
         end
 
     end
