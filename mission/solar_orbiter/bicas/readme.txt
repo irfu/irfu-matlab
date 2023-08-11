@@ -78,6 +78,7 @@ DLR
     of the demultiplexer. See the "BIAS specification".
 DSI
     DATASET_ID. String constant that uniquely identifies each type of dataset.
+    NOTE: Variable names which refer to the GA "Dataset_ID" (and historical variants thereof) are not abbreviated "DSI", but to the GA name, in analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
 EMIDP

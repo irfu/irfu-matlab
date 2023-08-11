@@ -93,7 +93,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     % NOTE: At least the test files
     % solo_L1R_rpw-tds-lfm-cwf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
     % solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-    % do not contain "DATASET_ID", only "Dataset_ID".
+    % do not contain GA "DATASET_ID", only "Dataset_ID".
     %
     % NOTE: Has not found document that specifies the global attribute. /2020-01-16
     % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/7#note_11016

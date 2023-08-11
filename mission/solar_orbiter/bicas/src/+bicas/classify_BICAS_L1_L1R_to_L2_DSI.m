@@ -1,12 +1,12 @@
 %
-% Classify DATASET_ID for any BICAS L1/L1R-->L2 input/output dataset.
+% Classify DSI for any BICAS L1/L1R-->L2 input/output dataset.
 %
 %
 % ARGUMENTS
 % =========
-% datasetId
-%       DATASET_ID for any BICAS processing L1/L1R-->L2 datasets.
-%       Assertion error if other DATASET_ID.
+% dsi
+%       DSI for any BICAS processing L1/L1R-->L2 datasets.
+%       Assertion error if other DSI.
 %       NOTE: Excludes CURRENT, SWEEP, HK, L3 datasets.
 %
 %
@@ -19,11 +19,11 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-29.
 %
-function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
+function C = classify_BICAS_L1_L1R_to_L2_DSI(dsi)
     % PROPOSAL: Automatic test code.
     
     [~, datasetLevel, descriptor] = ...
-        solo.adm.disassemble_DATASET_ID(datasetId);
+        solo.adm.disassemble_DATASET_ID(dsi);
     
     C.isL1  = false;
     C.isL1r = false;
@@ -53,8 +53,8 @@ function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
             
         otherwise
             error(...
-                'datasetId="%s" is not a legal BICAS L1/L1R input DATASET_ID.', ...
-                datasetId)
+                'dsi="%s" is not a legal BICAS L1/L1R input DSI.', ...
+                dsi)
     end
     
     switch(descriptorNormalized)
@@ -66,8 +66,8 @@ function C = classify_BICAS_L1_L1R_to_L2_DATASET_ID(datasetId)
         case 'RPW-TDS-LFM-RSWF' ; C.isTdsRswf    = true;
         otherwise
             error(...
-                'datasetId="%s" is not a legal BICAS L1/L1R input DATASET_ID.', ...
-                datasetId)
+                'dsi="%s" is not a legal BICAS L1/L1R input DSI.', ...
+                dsi)
     end
     
     %================================================

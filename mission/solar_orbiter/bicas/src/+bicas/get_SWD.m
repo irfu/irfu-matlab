@@ -108,7 +108,7 @@ function JsonSwdMode = generate_SWD_mode(Swm)
         InputDataset = Swm.inputsList(i);
         
         JsonInput = [];
-        JsonInput.identifier = InputDataset.datasetId;
+        JsonInput.identifier = InputDataset.dsi;
         JsonSwdMode.inputs.(InputDataset.cliOptionHeaderBody) = JsonInput;
     end
     
@@ -117,12 +117,12 @@ function JsonSwdMode = generate_SWD_mode(Swm)
         OutputDataset = Swm.outputsList(i);
         
         JsonOutput = [];
-        JsonOutput.identifier  = OutputDataset.datasetId;
+        JsonOutput.identifier  = OutputDataset.dsi;
         JsonOutput.name        = OutputDataset.swdName;
         JsonOutput.description = OutputDataset.swdDescription;
         JsonOutput.level       = OutputDataset.datasetLevel;
         JsonOutput.template    = bicas.get_master_CDF_filename(...
-            OutputDataset.datasetId, ...
+            OutputDataset.dsi, ...
             OutputDataset.skeletonVersion);    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
         JsonSwdMode.outputs.(OutputDataset.cliOptionHeaderBody) = JsonOutput;
     end

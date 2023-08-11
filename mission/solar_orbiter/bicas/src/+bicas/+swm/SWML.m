@@ -69,17 +69,17 @@ classdef SWML
     %           every S/W mode.
     %
     % PROPOSAL: Use PF = prodFunc, production function
-    % PROPOSAL: Same input CDF can have multiple DATASET_IDs, but only one is
+    % PROPOSAL: Same input CDF can have multiple DSIs, but only one is
     %           shown in the s/w descriptor.
-    %   PRO: Can handle old datasets with ROG-SGSE DATASET_IDs, and otherwise
-    %        only use RODP DATASET_IDs.
+    %   PRO: Can handle old datasets with ROG-SGSE DSIs, and otherwise
+    %        only use RODP DSIs.
     %
     % TODO-DEC: Which arguments should SWML production functions (function handles in
     %           an instance of bicas.swm.SWML) have?
     %   NOTE: The arguments needed by the underlying production functions
     %         varies, but the arguments returned by bicas.swm.SWML must be the same.
     %   NOTE: produce_L1R_to_L2_LFR/TDS() are used for multiple s/w modes with some
-    %         arguments hard-coded differently for different s/w modes (input & output DATASET_IDs).
+    %         arguments hard-coded differently for different s/w modes (input & output DSIs).
     %   NOTE: SWM/underlying production functions can receive argument values via
     %       (1) bicas.swm.SWML (constructor), or (2) the call in execute_SWM.
     %   PROPOSAL: All arguments which are known at the time bicas.swm.SWML

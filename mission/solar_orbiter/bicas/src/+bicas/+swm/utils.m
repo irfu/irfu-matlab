@@ -39,11 +39,11 @@ classdef utils
 
 
         % NOTE: Wrapper around global counterpart.
-        function assert_DATASET_ID(datasetId)
-            bicas.assert_BICAS_DATASET_ID(datasetId)
+        function assert_DSI(dsi)
+            bicas.assert_BICAS_DSI(dsi)
 
-            % ASSERTION: Only using SOLO_* DATASET_IDs.
-            [sourceName, ~, ~] = solo.adm.disassemble_DATASET_ID(datasetId);
+            % ASSERTION: Only using SOLO_* DSIs.
+            [sourceName, ~, ~] = solo.adm.disassemble_DATASET_ID(dsi);
             assert(strcmp(sourceName, 'SOLO'))
         end
 

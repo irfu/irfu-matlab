@@ -442,7 +442,7 @@ classdef L1L2
         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
                 ZvStruct, nRecords, inputDsi)
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputDsi);
 
             if C.isL1r
                 CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
@@ -451,7 +451,7 @@ classdef L1L2
             else
                 error(...
                     ['Can not normalize CALIBRATION_TABLE_INDEX', ...
-                    ' for this DATASET_ID classification.'])
+                    ' for this DSI classification.'])
             end
 
             irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])

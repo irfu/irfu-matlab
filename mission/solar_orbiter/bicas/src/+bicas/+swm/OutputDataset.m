@@ -13,7 +13,7 @@ classdef OutputDataset
     %#####################
     properties(SetAccess=immutable)
         cliOptionHeaderBody
-        datasetId
+        dsi
         datasetLevel
         prodFuncOutputKey
         swdName
@@ -31,13 +31,13 @@ classdef OutputDataset
     methods(Access=public)
 
         function obj = OutputDataset(...
-                cliOptionHeaderBody, datasetId, prodFuncOutputKey, ...
+                cliOptionHeaderBody, dsi, prodFuncOutputKey, ...
                 swdName, swdDescription, skeletonVersion)
 
-            [~, datasetLevel, ~] = solo.adm.disassemble_DATASET_ID(datasetId);
+            [~, datasetLevel, ~] = solo.adm.disassemble_DATASET_ID(dsi);
 
             obj.cliOptionHeaderBody = cliOptionHeaderBody;
-            obj.datasetId           = datasetId;
+            obj.dsi           = dsi;
             obj.datasetLevel        = datasetLevel;
 
             obj.prodFuncOutputKey   = prodFuncOutputKey;   % Ex: 'SCI_cdf';
@@ -48,7 +48,7 @@ classdef OutputDataset
             bicas.swm.utils.assert_SWM_CLI_option(obj.cliOptionHeaderBody)
             bicas.swm.utils.assert_text(              obj.swdName)
             bicas.swm.utils.assert_text(              obj.swdDescription)
-            bicas.swm.utils.assert_DATASET_ID(        obj.datasetId)
+            bicas.swm.utils.assert_DSI(        obj.dsi)
             solo.adm.assert_dataset_level(           obj.datasetLevel)
             bicas.assert_skeleton_version(           obj.skeletonVersion)
         end

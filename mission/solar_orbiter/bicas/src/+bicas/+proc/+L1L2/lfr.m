@@ -166,7 +166,7 @@ classdef lfr
 
 
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
 
 
 

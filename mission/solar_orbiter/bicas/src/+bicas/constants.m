@@ -384,7 +384,7 @@ classdef constants
             % PROPOSAL: DSI lists as public constants.
             %   PROPOSAL: solo.hwzv.const.
             %   PRO: Could be used by functions for classifying DSIs.
-            %       Ex: bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID().
+            %       Ex: bicas.classify_BICAS_L1_L1R_to_L2_DSI().
             %       CON: Not if want to be really general, e.g. accounting for
             %            ROC-SGSE/SOLO distinctions.
             % PROPOSAL: Setting L2 and L3 in separate (sub)functions.
@@ -392,7 +392,7 @@ classdef constants
             % PROPOSAL: Move to code to bicas.gamods.*.
 
             %====================================================
-            % Lists of commonly used GROUPS of DATASET_IDs (DSI)
+            % Lists of commonly used GROUPS of DSIs (DSI)
             % --------------------------------------------------
             % NOTE: Groups are allowed to overlap.
             %====================================================
@@ -437,7 +437,7 @@ classdef constants
             
             
             %##############################################################
-            % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DATASET_IDs
+            % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DSIs
             %##############################################################
 
             %===================================================================

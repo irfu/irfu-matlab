@@ -60,7 +60,7 @@ classdef L2L3
             %       PRO: Must read L3 SCPOT dataset to produce L3 DENSITY dataset.
             %   CON: There is much shared functionality for 3 quality ZVs.
             %       PRO: Same ~constants
-            %           Ex: INPUT_DATASET_ID, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
+            %           Ex: INPUT_DSI, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
             %       PRO: Read setting QUALITY_FLAG_MIN_FOR_USE
             %       PRO: Normalizing CWF zVar names.
             %       PRO: Preparations for downsampled.
@@ -90,8 +90,8 @@ classdef L2L3
             %===========
             % Constants
             %===========
-            % The only acceptable input DATASET_ID.
-            INPUT_DATASET_ID          = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
+            % The only acceptable input DSI.
+            INPUT_DSI          = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
             % Define length of bins, and relative position of corresponding
             % bin timestamps.
             % NS = Nanoseconds
@@ -113,7 +113,7 @@ classdef L2L3
                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
 
             bicas.proc.utils.handle_ZV_name_change(...
-                fnChangeList, INPUT_DATASET_ID, SETTINGS, L, 'VDC', ...
+                fnChangeList, INPUT_DSI, SETTINGS, L, 'VDC', ...
                 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
             
             

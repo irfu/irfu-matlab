@@ -50,7 +50,7 @@ function generate_VHT_dataset(...
 %
 % PROPOSAL: Write code so that it can be transplanted/moved to BICAS proper.
 %   CON: Can not be done since it requires multiple input datasets of same
-%        DATASET_ID.
+%        DSI.
 %
 % TODO-DEC: How specify month?
 %   PROPOSAL: Year+month array, explicitly
@@ -68,7 +68,7 @@ function generate_VHT_dataset(...
 % TEST CALL:
 % bicas.vht.generate_VHT_dataset('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty')
     
-%     DATASET_ID                  = 'SOLO_L3_RPW-BIA-VHT';
+%     DSI                  = 'SOLO_L3_RPW-BIA-VHT';
 %     MASTER_CDF_VERSION_STR      = '01';
     EXPECTED_SAMPLE_INTERVAL_NS = int64(10*60*1e9);    % For assertion.
     DELTA_PLUS_MINUS_NS         = int64(1800*1e9);

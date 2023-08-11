@@ -186,9 +186,9 @@ function SETTINGS = create_default_SETTINGS()
 
     S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
 
-    % Require input CDF Global Attribute "DATASET_ID" to match the expected
+    % Require input CDF Global Attribute "DSI" to match the expected
     % value.
-    S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY', 'WARNING')    % ERROR, WARNING
+    S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY', 'WARNING')    % ERROR, WARNING
     S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
     % NOTE: This modification applies BEFORE

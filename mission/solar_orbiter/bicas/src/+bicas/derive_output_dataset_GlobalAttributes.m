@@ -34,7 +34,7 @@
 % outputFilename
 %       Output dataset filename. Could potentially be used for deriving
 %       Glob.attrs. Datetime (time interval string), Data_version,
-%       (DATASET_ID).
+%       (DSI).
 %
 %
 % RETURN VALUE
@@ -51,7 +51,7 @@
 % execute_SWM().
 %
 function OutGaSubset = derive_output_dataset_GlobalAttributes(...
-        InputDatasetsMap, OutputDataset, outputFilename, outputDatasetId, ...
+        InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
         SETTINGS, L)
 
     % PROPOSAL: Automatic test code.
@@ -176,12 +176,12 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
     % Logical_source:
     % NOTE: Overwrites skeleton value. Can otherwise not handle -cdag.
     % NOTE: Could in principle be set by assuming
-    %       lowercase(DATASET_ID) = Logical_source if not for -cdag and.
+    %       lowercase(ga_DATASET_ID) = ga_Logical_source if not for -cdag and.
     % Ex: Logical_source="solo_L1_rpw-tds-surv-hist2d"
     OutGaSubset.Logical_source   = logicalSource;   % Override skeleton.
     OutGaSubset.Data_version     = dataVersionStr;
     OutGaSubset.Datetime         = timeIntervalStr;
-    % OutGaSubset.Dataset_ID       = outputDatasetId; % Override skeleton. Wise?
+    % OutGaSubset.Dataset_ID       = outputDsi; % Override skeleton. Wise?
     % IMPLEMENTATION NOTE: Unclear if it is wise to overwrite GA Dataset_ID and
     % Logical_source. In principle, the skeletons should contain the correct
     % values. In principle, the ideal solution is to assert that GA Dataset_ID
@@ -242,7 +242,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
 
     enableMods = SETTINGS.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
     if enableMods
-        MODS = bicas.constants.GA_MODS_DB.get_MODS_strings_CA(outputDatasetId);
+        MODS = bicas.constants.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
         OutGaSubset.MODS = MODS;
     end
     

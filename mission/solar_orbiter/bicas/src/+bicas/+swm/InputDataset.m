@@ -14,7 +14,7 @@ classdef InputDataset
     properties(SetAccess=immutable)
         cliOptionHeaderBody
         prodFuncInputKey
-        datasetId
+        dsi
     end
 
 
@@ -27,16 +27,16 @@ classdef InputDataset
     methods(Access=public)
 
         function obj = InputDataset(...
-                cliOptionHeaderBody, datasetId, prodFuncInputKey)
+                cliOptionHeaderBody, dsi, prodFuncInputKey)
 
             % NOTE: No dataset/skeleton version.
             obj.cliOptionHeaderBody = cliOptionHeaderBody;
             obj.prodFuncInputKey    = prodFuncInputKey;
-            obj.datasetId           = datasetId;
+            obj.dsi           = dsi;
 
             bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
             % NOTE: Using the INTERNAL assertion function, not the global one.
-            bicas.swm.utils.assert_DATASET_ID(    obj.datasetId)
+            bicas.swm.utils.assert_DSI(    obj.dsi)
         end
 
     end

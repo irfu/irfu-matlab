@@ -53,7 +53,7 @@ classdef pf
         % =========
         % inputSciDsi
         %       The science input dataset will be interpreted as having this
-        %       DATASET_ID.
+        %       DSI.
         %       RATIONALE: InputDatasetsMap should contain the same as a CDF
         %       global attribute but
         %       (1) it could be missing, or
@@ -73,7 +73,7 @@ classdef pf
             %======================================
             % Configure bicas.proc.L1L2.cal object
             %======================================
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
             useCtRcts = C.isL1r && SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
             useCti2   = C.isL1r && SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
             
@@ -125,7 +125,7 @@ classdef pf
             % Configure bicas.proc.L1L2.cal object
             %======================================
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
             if C.isTdsCwf
                 settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 tdsRctTypeId = 'TDS-CWF';

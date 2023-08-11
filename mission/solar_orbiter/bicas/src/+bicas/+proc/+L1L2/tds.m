@@ -33,7 +33,7 @@ classdef tds
 
             nRecords = irf.assert.sizes(InSci.Zv.Epoch, [-1]);
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
 
 
             %===================================
@@ -181,7 +181,7 @@ classdef tds
             assert(isa(InSci, 'bicas.InputDataset'))
             irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inSciDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
 
 
 
@@ -338,7 +338,7 @@ classdef tds
 
 
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(outputDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(outputDsi);
 
             % NOTE: The two cases are different in the indexes they use for
             % OutSciZv.
@@ -382,7 +382,7 @@ classdef tds
                 else
                     error(...
                         'BICAS:Assertion', ...
-                        'Illegal DATASET_ID classification.')
+                        'Illegal DSI classification.')
                 end
 
                 % ASSERTION
