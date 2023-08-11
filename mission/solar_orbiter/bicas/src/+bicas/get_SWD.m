@@ -35,7 +35,7 @@
 % (6) It is easier to add automatic checks on the S/W descriptor in the code
 %     that derives it.
 %
-function JsonSwd = get_SWD(SwmDefsList)
+function JsonSwd = get_SWD(SwmList)
     %
     % PROPOSAL: Have this function add the prefix "input_" to all modes[].inputs[].input (in SWD)
     % and only store the "CLI_PARAMETER_suffix" in the BICAS constants structure instead.
@@ -56,7 +56,8 @@ function JsonSwd = get_SWD(SwmDefsList)
     %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if
     %         the S/W as a whole is (by default).
     
-    
+    assert(isvector(SwmList))
+    assert(isa(SwmList, 'bicas.swm.SWM'))
     
     % Variable naming convention:
     % ---------------------------
@@ -88,41 +89,42 @@ function JsonSwd = get_SWD(SwmDefsList)
     JsonSwd.environment.configuration  = bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;
     
     JsonSwd.modes = {};
-    for i = 1:length(SwmDefsList)
-        JsonSwd.modes{end+1} = generate_SWD_mode(SwmDefsList(i));
+    for i = 1:length(SwmList)
+        JsonSwd.modes{end+1} = generate_SWD_mode(SwmList(i));
     end
     
 end
 
 
 
-function JsonSwdMode = generate_SWD_mode(SwmDef)
+function JsonSwdMode = generate_SWD_mode(Swm)
+    assert(isa(Swm, 'bicas.swm.SWM'))
     
-    JsonSwdMode.name    = SwmDef.cliOption;
-    JsonSwdMode.purpose = SwmDef.swdPurpose;
-    
+    JsonSwdMode.name    = Swm.cliOption;
+    JsonSwdMode.purpose = Swm.swdPurpose;
+
     JsonSwdMode.inputs = [];
-    for i = 1:length(SwmDef.inputsList)
-        InputDef = SwmDef.inputsList(i);
+    for i = 1:length(Swm.inputsList)
+        InputDataset = Swm.inputsList(i);
         
         JsonInput = [];
-        JsonInput.identifier = InputDef.datasetId;
-        JsonSwdMode.inputs.(InputDef.cliOptionHeaderBody) = JsonInput;
+        JsonInput.identifier = InputDataset.datasetId;
+        JsonSwdMode.inputs.(InputDataset.cliOptionHeaderBody) = JsonInput;
     end
     
     JsonSwdMode.outputs = {};
-    for i = 1:length(SwmDef.outputsList)
-        OutputDef = SwmDef.outputsList(i);
+    for i = 1:length(Swm.outputsList)
+        OutputDataset = Swm.outputsList(i);
         
         JsonOutput = [];
-        JsonOutput.identifier  = OutputDef.datasetId;
-        JsonOutput.name        = OutputDef.swdName;
-        JsonOutput.description = OutputDef.swdDescription;
-        JsonOutput.level       = OutputDef.datasetLevel;
+        JsonOutput.identifier  = OutputDataset.datasetId;
+        JsonOutput.name        = OutputDataset.swdName;
+        JsonOutput.description = OutputDataset.swdDescription;
+        JsonOutput.level       = OutputDataset.datasetLevel;
         JsonOutput.template    = bicas.get_master_CDF_filename(...
-            OutputDef.datasetId, ...
-            OutputDef.skeletonVersion);    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
-        JsonSwdMode.outputs.(OutputDef.cliOptionHeaderBody) = JsonOutput;
+            OutputDataset.datasetId, ...
+            OutputDataset.skeletonVersion);    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+        JsonSwdMode.outputs.(OutputDataset.cliOptionHeaderBody) = JsonOutput;
     end
     
 end

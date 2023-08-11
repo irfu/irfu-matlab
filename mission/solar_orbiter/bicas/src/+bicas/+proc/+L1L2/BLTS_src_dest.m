@@ -25,7 +25,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-19
 %
-classdef BLTS_src_dest %< handle
+classdef BLTS_src_dest
     % NOTE: Only(?) the demultiplexer creates its own instances.
     % PROPOSAL: Make publically un-instantiable. Define a fixed set of legal instances accessible via constants.
     %   PRO: Limiting the number of instantiations speeds up the code. Having assertions is then no downside.

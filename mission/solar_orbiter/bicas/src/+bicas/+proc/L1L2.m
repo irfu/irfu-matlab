@@ -67,6 +67,7 @@ classdef L1L2
 %       PROPOSAL: Set instance variables manually.
 %           CON: Can forget variables.
 %               PRO: Still better than current system.
+%       PROPOSAL: Use structs for naming arguments.
 % PROPOSAL: Class for HkSciTime.
 % PROPOSAL: Class for DemuxerOutput.
 %
@@ -265,7 +266,6 @@ classdef L1L2
             %   NOTE: Also overwrites voltage with fill values.
             %   PROPOSAL: Treat output PostDc as another format?
             %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
-            %   PROPOSAL: Keep as is. List as optional field in assert_PostDc
             %
             % PROPOSAL: Generalize function to be used in L3.
             %   CON: Can not be done since this function is meant to have access
@@ -274,6 +274,31 @@ classdef L1L2
             %
             % PROPOSAL: Automated test code.
             % PROPOSAL: Only return the modified zVariables, not PreDc & PostDc.
+            %   Current (2023-08-11) effective input:
+            %       PreDc.isLfr
+            %       PreDc.Zv.Epoch
+            %       PreDc.Zv.MUX_SET
+            %       PreDc.Zv.ufv
+            %       PreDc.Zv.QUALITY_FLAG
+            %       PostDc.Zv.L2_QUALITY_BITMASK
+            %   Current (2023-08-11) effective output:
+            %       PreDc.Zv.QUALITY_FLAG
+            %       PostDc.Zv.L2_QUALITY_BITMASK
+            %       PostDc.Zv.DemuxerOutput
+            %       PostDc.Zv.currentAAmpere
+            %   --
+            %   PRO: Makes modifications/output clearer.
+            %   PROPOSAL: Only have arguments for the required variables.
+            %       PRO: Makes dependence clearer.
+            %
+            % PROPOSAL: Call function from
+            %       bicas.proc.L1L2.dc.process_calibrate_demux() (and redefine that
+            %       function to include quality calculations.
+            %   PRO: Can return modified values to caller which sets PostDc.
+            %       PRO: Can avoid modifying PreDc.
+            %       PRO: Can avoid modifying PostDc.
+            %
+            % PROPOSAL: Separate function for handling UFV.
 
             % ASSERTION
             bicas.proc.L1L2.assert_PreDC(PreDc)
@@ -481,6 +506,11 @@ classdef L1L2
         % since MUX mode is data).
         %
         % Ex: Sweeps
+        %
+        % ARGUMENTS
+        % ---------
+        % zv_MUX_SET
+        %   Demultiplexer data, from BIAS HK or LFR.
         %
         function zvUfv = get_UFV_records_from_settings(...
                 zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)

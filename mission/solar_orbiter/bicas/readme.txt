@@ -77,7 +77,7 @@ DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
     of the demultiplexer. See the "BIAS specification".
 DSI
-    DATASET_ID
+    DATASET_ID. String constant that uniquely identifies each type of dataset.
 DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
 EMIDP

@@ -36,7 +36,8 @@
 %
 % RETURN VALUE
 % ============
-% errorCode : The error code that is to be passed on to the OS/shell.
+% errorCode
+%       The error code that is to be passed on to the OS/shell.
 %
 %
 % NOTES
@@ -94,7 +95,6 @@ function errorCode = main( varargin )
     %
     % PROPOSAL: Use irf.str.assist_print_table more.
     %   Ex: Logging settings, CLI arguments(?), error codes & messages(?)
-    
     
     try
         
@@ -450,19 +450,19 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    SwmDefs = bicas.swm.get_SWML(SETTINGS, L);
+    Swml = bicas.swm.get_SWML(SETTINGS, L);
     
     
     
     switch(CliData.functionalityMode)
         case 'version'
-            print_version(SwmDefs.List, SETTINGS)
+            print_version(Swml, SETTINGS)
             
         case 'identification'
-            print_identification(SwmDefs.List, SETTINGS)
+            print_identification(Swml, SETTINGS)
             
         case 'S/W descriptor'
-            print_SWD(SwmDefs.List, SETTINGS)
+            print_SWD(Swml, SETTINGS)
             
         case 'help'
             print_help(SETTINGS)
@@ -472,7 +472,7 @@ function main_without_error_handling(cliArgumentsList, L)
             % CASE: Should be a S/W mode
             %============================
             try
-                SwmInfo = SwmDefs.get_SWM(CliData.swmArg);
+                Swm = Swml.get_SWM(CliData.swmArg);
             catch Exception1
                 % NOTE: Misspelled "--version" etc. would be interpreted as S/W
                 % mode and produce error here too.
@@ -492,18 +492,18 @@ function main_without_error_handling(cliArgumentsList, L)
             % Extract INPUT dataset files from SIP arguments.
             InputFilesMap = extract_rename_Map_keys(...
                 CliData.SpecInputParametersMap, ...
-                {SwmInfo.inputsList(:).cliOptionHeaderBody}, ...
-                {SwmInfo.inputsList(:).prodFuncInputKey});
+                {Swm.inputsList(:).cliOptionHeaderBody}, ...
+                {Swm.inputsList(:).prodFuncInputKey});
             
             % Extract OUTPUT dataset files from SIP arguments.
             OutputFilesMap = extract_rename_Map_keys(...
                 CliData.SpecInputParametersMap, ...
-                {SwmInfo.outputsList(:).cliOptionHeaderBody}, ...
-                {SwmInfo.outputsList(:).prodFuncOutputKey});
+                {Swm.outputsList(:).cliOptionHeaderBody}, ...
+                {Swm.outputsList(:).prodFuncOutputKey});
             
             % ASSERTION: Assume correct number of arguments (the only thing not
             % implicitly checked by extract_rename_Map_keys above).
-            nSipExpected = numel(SwmInfo.inputsList) + numel(SwmInfo.outputsList);
+            nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
             nSipActual   = numel(CliData.SpecInputParametersMap.keys);
             if nSipExpected ~= nSipActual
                 error('BICAS:CLISyntax', ...
@@ -552,7 +552,7 @@ function main_without_error_handling(cliArgumentsList, L)
             % EXECUTE S/W MODE
             %==================
             bicas.execute_SWM(...
-                SwmInfo, InputFilesMap, OutputFilesMap, ...
+                Swm, InputFilesMap, OutputFilesMap, ...
                 masterCdfDir, rctDir, NsoTable, SETTINGS, L )
             
         otherwise
@@ -592,14 +592,14 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created <<2019-08-05
 %
-function print_version(SwmDefsList, SETTINGS)
+function print_version(Swml, SETTINGS)
     
     % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor
     % rather than the in the BICAS constants since the RCS ICD specifies that it
     % should be that specific version. This is in principle inefficient but also
     % "precise".
     
-    JsonSwd = bicas.get_SWD(SwmDefsList);
+    JsonSwd = bicas.get_SWD(Swml.List);
     
     JsonVersion = [];
     JsonVersion.version = JsonSwd.release.version;
@@ -618,9 +618,9 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
 %
-function print_identification(SwmDefsList, SETTINGS)
+function print_identification(Swml, SETTINGS)
     
-    JsonSwd = bicas.get_SWD(SwmDefsList);
+    JsonSwd = bicas.get_SWD(Swml.List);
     strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
@@ -636,9 +636,9 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24
 %
-function print_SWD(SwmDefsList, SETTINGS)
+function print_SWD(Swml, SETTINGS)
     
-    JsonSwd = bicas.get_SWD(SwmDefsList);
+    JsonSwd = bicas.get_SWD(Swml.List);
     strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
         SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
@@ -738,7 +738,7 @@ function s = sprint_constants()
     for i = 1:nKeys
         valuesCa{i, 1} = bicas.constants.SWD_METADATA(keysCa{i});
     end
-    [~, dataCa, columnWidths] = irf.str.assist_print_table(...
+    [~, dataCa, ~] = irf.str.assist_print_table(...
         {'Constant', 'Value'}, [keysCa, valuesCa], {'left', 'left'});
     
     for iRow = 1:size(dataCa, 1)

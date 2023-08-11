@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef utils   % < handle
+classdef utils
 
     %#######################
     %#######################

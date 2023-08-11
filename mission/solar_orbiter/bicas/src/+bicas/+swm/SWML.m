@@ -74,12 +74,6 @@ classdef SWML
     %   PRO: Can handle old datasets with ROG-SGSE DATASET_IDs, and otherwise
     %        only use RODP DATASET_IDs.
     %
-    % PROPOSAL: Fieldname change
-    %   inputsList  --> inputsArray
-    %   outputsList --> outputsArray
-    %   NOTE: Likely influences BICAS testing code and pipeline.
-    %         Should only be implemented at the right time.
-    %
     % TODO-DEC: Which arguments should SWML production functions (function handles in
     %           an instance of bicas.swm.SWML) have?
     %   NOTE: The arguments needed by the underlying production functions
@@ -97,50 +91,16 @@ classdef SWML
     %             functions. ==> As few as possible.
     %   Ex: SETTINGS, L, rctDir, NsoTable
     %
-    % PROPOSAL: Refactor to separate the hardcoded SWMs from the class.
-    %   PRO: Good for testing.
-    %   PRO: Good for separating hardcoding/"constants".
-    %
-    % PROPOSAL: Use classes instead of structs.
-    %   PROPOSAL: Use sub-package for classes.
-    %   PROPOSAL: Class for s/w mode definition.
-    %       PROPOSAL: Name SWM
-    %           CON: Too similar to bicas.swm.SWML.
-    %   PROPOSAL: Class for input datasets.
-    %   PROPOSAL: Class for output datasets.
-    %
-    % PROPOSAL: Refactor to
-    %   Redefine and rename as class SWML = SWM List
-    %   Class for single SWM.
-    %   Function for hardcoding that initializes SWML.
-    %   Create package swm.* including swm.swml, swm.hardcoding, swm.swm (class
-    %   for single SWM), etc.
-    %   get_SWM_info --> get_SWM
-    %   PROPOSAL: Abolish this class. Only need SWM class + object array/list.
-    %   PROPOSAL:
-    %       bicas.swm.swm           -- IMPLEMENTED
-    %       bicas.swm.swml          -- IMPLEMENTED
-    %       bicas.swm.InputDataset  -- IMPLEMENTED
-    %       bicas.swm.OutputDataset -- IMPLEMENTED
-    %       bicas.swm.utils  ?
-    %       bicas.swm.get_SWML (function)
-    %
+    % PROPOSAL: Abolish this class. Only need SWM class + object array/list.
     % PROPOSAL: Better class name
     %   PROPOSAL: SwmSet
     %       PRO: There is no inherent ordering of SWMs.
     %   PROPOSAL: SwmList
     %       CON: List implies ordering.
+    %       CON: Conflicts with variable naming for plain list of SWM objects.
 
 
 
-    % PRIVATE, STATIC, CONSTANTS
-%     properties(Constant, GetAccess=private)
-%
-%         SWM_PURPOSE_AMENDMENT = ' UNOFFICIAL wrt. ROC.';
-%     end
-
-    
-    
     % PUBLIC, IMMUTABLE
     properties(SetAccess=immutable)
         
@@ -176,10 +136,10 @@ classdef SWML
 
 
 
-        function swmInfo = get_SWM(obj, swmCliOption)
+        function swm = get_SWM(obj, swmCliOption)
             i = find(strcmp(swmCliOption, {obj.List(:).cliOption}));
             irf.assert.scalar(i)
-            swmInfo = obj.List(i);
+            swm = obj.List(i);
         end
         
         

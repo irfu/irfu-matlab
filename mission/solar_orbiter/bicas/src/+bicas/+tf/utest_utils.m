@@ -6,7 +6,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-09-23
 %
-classdef utest_utils   % < handle
+classdef utest_utils
     % PROPOSAL: Shorter name.
     
     %#######################

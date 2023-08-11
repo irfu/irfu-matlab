@@ -1,10 +1,10 @@
 %
-% Miscellaneous utility functions.
+% Miscellaneous utility functions in the form of static methods.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef utils   % < handle
+classdef utils
 
     %#######################
     %#######################

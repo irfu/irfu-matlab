@@ -8,7 +8,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef VersionEntry   % < handle
+classdef VersionEntry
 
     
     

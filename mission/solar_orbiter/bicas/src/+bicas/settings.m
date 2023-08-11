@@ -112,6 +112,11 @@ classdef settings < handle
 
 
 
+    %#####################
+    %#####################
+    % INSTANCE PROPERTIES
+    %#####################
+    %#####################
     properties(Access=private)
         % Whether defining new keys is disallowed or not. Always true if
         % readOnlyForever==true.
@@ -126,10 +131,11 @@ classdef settings < handle
 
 
 
-    %###########################################################################
-
-        
-    
+    %#########################
+    %#########################
+    % PUBLIC INSTANCE METHODS
+    %#########################
+    %#########################
     methods(Access=public)
 
 
@@ -362,6 +368,11 @@ classdef settings < handle
     
     
     
+    %##########################
+    %##########################
+    % PRIVATE INSTANCE METHODS
+    %##########################
+    %##########################
     methods(Access=private)
         
         
@@ -386,6 +397,11 @@ classdef settings < handle
     
     
     
+    %########################
+    %########################
+    % PRIVATE STATIC METHODS
+    %########################
+    %########################
     methods(Access=private, Static)
         
         

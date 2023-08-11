@@ -4,7 +4,13 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef SWM   % < handle
+classdef SWM
+    % PROPOSAL: Fieldname change
+    %   inputsList  --> inputsArray
+    %   outputsList --> outputsArray
+    %   NOTE: Likely influences BICAS testing code and pipeline.
+    %         Should only be implemented at the right time.
+    %
 
     %#####################
     %#####################
