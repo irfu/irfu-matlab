@@ -51,7 +51,7 @@ classdef SWM   % < handle
                 obj.inputsList( :).cliOptionHeaderBody, ...
                 obj.outputsList(:).cliOptionHeaderBody })
 
-            assert(isstruct(obj.inputsList ))
+            assert(isa(obj.inputsList, 'bicas.swm.InputDataset'))
             assert(isstruct(obj.outputsList))
 
             irf.assert.castring_set( { obj.inputsList(:).prodFuncInputKey   })

@@ -217,9 +217,9 @@ classdef SWML
                 '<SWM purpose amendm>', swmPurposeAmendmList{iInputLevel});
 
             % Input definitions that are reused multiple times.
-            HK_INPUT_DEF = bicas.swm.SWML.def_input_dataset(...
+            HK_INPUT_DEF = bicas.swm.InputDataset(...
                 'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
-            CUR_INPUT_DEF = bicas.swm.SWML.def_input_dataset(...
+            CUR_INPUT_DEF = bicas.swm.InputDataset(...
                 'in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
             
             
@@ -257,7 +257,7 @@ classdef SWML
                         '<C/SWF>',      LFR_SWM_DATA(iSwm).CWF_SWF, ...
                         '<mode str>',   LFR_SWM_DATA(iSwm).modeStr);
 
-                    SciInputDef = bicas.swm.SWML.def_input_dataset(...
+                    SciInputDef = bicas.swm.InputDataset(...
                         'in_sci', ...
                         strmod('SOLO_<InLvl>_RPW-LFR-<SBMx/SURV>-<C/SWF><I-E>'), ...
                         'SCI_cdf');
@@ -299,7 +299,7 @@ classdef SWML
                     strmod = @(s) strrep(strmodg(s, iInputLevel), ...
                         '<C/RSWF>', TDS_SWM_DATA(iSwm).CWF_RSWF);
 
-                    SciInputDef = bicas.swm.SWML.def_input_dataset(...
+                    SciInputDef = bicas.swm.InputDataset(...
                         'in_sci', ...
                         strmod('SOLO_<InLvl>_RPW-TDS-LFM-<C/RSWF><I-E>'), ...
                         'SCI_cdf');
@@ -335,7 +335,7 @@ classdef SWML
             
             
             if SETTINGS.get_fv('SWM.L2-L2_CWF-DSR_ENABLED')
-                SciInputDef = bicas.swm.SWML.def_input_dataset(...
+                SciInputDef = bicas.swm.InputDataset(...
                     'in_sci', ...
                     'SOLO_L2_RPW-LFR-SURV-CWF-E', ...
                     'OSR_cdf');
@@ -366,7 +366,7 @@ classdef SWML
             
             
             if SETTINGS.get_fv('SWM.L2-L3_ENABLED')
-                SciInputDef = bicas.swm.SWML.def_input_dataset(...
+                SciInputDef = bicas.swm.InputDataset(...
                     'in_sci', ...
                     'SOLO_L2_RPW-LFR-SURV-CWF-E', ...
                     'LFR-SURV-CWF-E_cdf');
@@ -483,6 +483,26 @@ classdef SWML
 
 
 
+        % NOTE: Really refers to "option body".
+        function assert_SIP_CLI_option(sipCliOptionBody)
+            irf.assert.castring_regexp(...
+                sipCliOptionBody, ...
+                bicas.constants.SIP_CLI_OPTION_BODY_REGEX)
+        end
+
+
+
+        % NOTE: Wrapper around global counterpart.
+        function assert_DATASET_ID(datasetId)
+            bicas.assert_BICAS_DATASET_ID(datasetId)
+            
+            % ASSERTION: Only using SOLO_* DATASET_IDs.
+            [sourceName, ~, ~] = solo.adm.disassemble_DATASET_ID(datasetId);
+            assert(strcmp(sourceName, 'SOLO'))
+        end
+        
+
+
     end    % methods(Static, Access=public)
 
 
@@ -491,21 +511,6 @@ classdef SWML
 
 
 
-        function Def = def_input_dataset(...
-                cliOptionHeaderBody, datasetId, prodFuncInputKey)
-            
-            % NOTE: No dataset/skeleton version.
-            Def.cliOptionHeaderBody = cliOptionHeaderBody;
-            Def.prodFuncInputKey    = prodFuncInputKey;
-            Def.datasetId           = datasetId;
-            
-            bicas.swm.SWML.assert_SIP_CLI_option(Def.cliOptionHeaderBody)
-            % NOTE: Using the INTERNAL assertion function, not the global one.
-            bicas.swm.SWML.assert_DATASET_ID(    Def.datasetId)
-        end
-
-        
-        
         function Def = def_output_dataset(...
                 cliOptionHeaderBody, datasetId, prodFuncOutputKey, ...
                 swdName, swdDescription, skeletonVersion)
@@ -527,26 +532,6 @@ classdef SWML
             bicas.swm.SWML.assert_DATASET_ID(        Def.datasetId)
             solo.adm.assert_dataset_level(           Def.datasetLevel)
             bicas.assert_skeleton_version(           Def.skeletonVersion)
-        end
-
-
-
-        % NOTE: Wrapper around global counterpart.
-        function assert_DATASET_ID(datasetId)
-            bicas.assert_BICAS_DATASET_ID(datasetId)
-            
-            % ASSERTION: Only using SOLO_* DATASET_IDs.
-            [sourceName, ~, ~] = solo.adm.disassemble_DATASET_ID(datasetId);
-            assert(strcmp(sourceName, 'SOLO'))
-        end
-        
-
-
-        % NOTE: Really refers to "option body".
-        function assert_SIP_CLI_option(sipCliOptionBody)
-            irf.assert.castring_regexp(...
-                sipCliOptionBody, ...
-                bicas.constants.SIP_CLI_OPTION_BODY_REGEX)
         end
 
 
