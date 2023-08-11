@@ -450,7 +450,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    SwmDefs = bicas.swm.SWML(SETTINGS, L);
+    SwmDefs = bicas.swm.get_SWML(SETTINGS, L);
     
     
     
@@ -472,7 +472,7 @@ function main_without_error_handling(cliArgumentsList, L)
             % CASE: Should be a S/W mode
             %============================
             try
-                SwmInfo = SwmDefs.get_SWM_info(CliData.swmArg);
+                SwmInfo = SwmDefs.get_SWM(CliData.swmArg);
             catch Exception1
                 % NOTE: Misspelled "--version" etc. would be interpreted as S/W
                 % mode and produce error here too.
