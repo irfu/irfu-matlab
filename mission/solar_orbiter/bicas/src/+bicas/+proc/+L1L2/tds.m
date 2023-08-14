@@ -310,7 +310,8 @@ classdef tds
             %   TODO-DEC: Put in which future file?
 
             % ASSERTIONS
-            bicas.proc.L1L2.assert_PostDC(SciPostDc)
+            assert(isa(SciPreDc,  'bicas.proc.L1L2.PreDc'))
+            assert(isa(SciPostDc, 'bicas.proc.L1L2.PostDc'))
 
 
 

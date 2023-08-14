@@ -37,11 +37,10 @@ classdef L1L2
 % PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets. -- ABANDONED?
 %
 % PROPOSAL: Split into smaller files.
-%   NOTE: All functions 2021-05-25:
+%   NOTE: All functions 2023-08-14(?):
 %         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
 %         function [PreDc, PostDc] = process_quality_filter_L2(...
 %         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
-%         function assert_PostDC(PostDc)
 %         function zvUfv = get_UFV_records_from_settings(...
 %         function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
 %
@@ -54,18 +53,6 @@ classdef L1L2
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
 %
-% PROPOSAL: Classes for PostDc, PreDc.Zv, PostDc.Zv.
-%   PRO: Better documentation of formats.
-%   PRO: Can abolish
-%       bicas.proc.L1L2.assert_PostDC
-%   PROBLEM/TODO-DEC: How set the instance variables?
-%       PROPOSAL: Constructor.
-%           CON: Too many arguments since too many variables.
-%               CON: Not true since most variables are ZVs colleted under .Zv.
-%       PROPOSAL: Set instance variables manually.
-%           CON: Can forget variables.
-%               PRO: Still better than current system.
-%       PROPOSAL: Use structs for naming arguments.
 % PROPOSAL: Class for HkSciTime.
 % PROPOSAL: Class for DemuxerOutput.
 %
@@ -303,7 +290,7 @@ classdef L1L2
 
             % ASSERTION
             assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'))
-            bicas.proc.L1L2.assert_PostDC(PostDc)
+            assert(isa(PostDc, 'bicas.proc.L1L2.PostDc'))
             nRecords = irf.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
 
@@ -438,8 +425,8 @@ classdef L1L2
 
 
             % ASSERTION
-            assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'))
-            bicas.proc.L1L2.assert_PostDC(PostDc)
+            assert(isa(PreDc,  'bicas.proc.L1L2.PreDc'))
+            assert(isa(PostDc, 'bicas.proc.L1L2.PostDc'))
 
         end    % process_quality_filter_L2
 
@@ -466,18 +453,6 @@ classdef L1L2
             end
 
             irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
-        end
-
-
-
-        function assert_PostDC(PostDc)
-            irf.assert.struct(PostDc, ...
-                {'Zv'}, {});
-
-            irf.assert.struct(PostDc.Zv, ...
-                {'DemuxerOutput', 'currentAAmpere'}, {'L2_QUALITY_BITMASK'});
-
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
 
 

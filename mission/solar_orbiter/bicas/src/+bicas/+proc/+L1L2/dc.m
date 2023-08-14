@@ -51,14 +51,14 @@ classdef dc
             % IMPLEMENTATION NOTE: Only copy fields PreDc-->PostDc which are
             % known to be needed in order to conserve memory (not sure if
             % meaningful).
-            PostDc = [];
+            Zv = [];
 
 
 
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
-            PostDc.Zv.DemuxerOutput = ...
+            Zv.DemuxerOutput = ...
                 bicas.proc.L1L2.dc.calibrate_demux_voltages(PreDc, Cal, L);
 
 
@@ -95,12 +95,14 @@ classdef dc
                         currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
                 end
             end
-            PostDc.Zv.currentAAmpere = currentAAmpere;
+            Zv.currentAAmpere = currentAAmpere;
 
 
 
-            % ASSERTION
-            bicas.proc.L1L2.assert_PostDC(PostDc)
+            PostDc = bicas.proc.L1L2.PostDc(Zv);
+            
+
+
 
             nRecords = size(PreDc.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
