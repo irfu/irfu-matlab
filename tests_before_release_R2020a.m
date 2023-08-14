@@ -1,8 +1,16 @@
-function tests_before_release_R2019b
-% Function that runs multiple tests (matlab.unittest) under MATLAB R2019b
-% specifically. The primary example of this is BICAS (SolO/RPW/BIAS calibration
-% code) which requires MATLAB R2019b per agreement with LESIA/ROC, but there
-% could be other cases too.
+function tests_before_release_R2020a
+% Function that runs multiple tests (matlab.unittest) under MATLAB R2020a
+% specifically.
+%
+% RATIONALE
+% ---------
+% The primary use case for this file is BICAS (SolO/RPW/BIAS calibration code)
+% which requires MATLAB R2019b (sic!) per agreement with LESIA/ROC which runs
+% it. However, it is not possible to run tests under R2019b since MATLAB's
+% "Action for Setting Up MATLAB on GitHub-Hosted Runner"
+% (https://github.com/matlab-actions/setup-matlab/) only supports MATLAB R2020a
+% and later. Therefore running BICAS tests on GitHub under MATLAB R2020a,
+% despite it being suboptimal.
 
 % Setup paths etc.
 irf;
