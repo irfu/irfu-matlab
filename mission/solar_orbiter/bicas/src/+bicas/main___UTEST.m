@@ -22,6 +22,8 @@ classdef main___UTEST < matlab.unittest.TestCase
 %   PROPOSAL: Tests move a pre-existing default path config file out of the way,
 %             and move it back after the tests.
 %       CON: Dangerous w.r.t. bugs and failed tests(!).
+%           PROPOSAL: Backup default config file.
+%               CON: Pollutes local file system.
 
 
 
@@ -110,9 +112,7 @@ classdef main___UTEST < matlab.unittest.TestCase
 
 
         function configFileAPath = setup_default_config_file()
-            [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-            bicasRootPath         = irf.fs.get_abs_path(...
-                fullfile(matlabSrcPath, '..', '..'));
+            bicasRootPath = bicas.utils.get_BICAS_root_path();
             configFileAPath = fullfile(bicasRootPath, 'config', 'bicas.conf');
 
             % ASSERT: Default path config file does not pre-exists.

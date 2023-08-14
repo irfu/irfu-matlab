@@ -335,11 +335,7 @@ function main_without_error_handling(cliArgumentsList, L)
     %===============================
     % Derive BICAS's directory root
     %===============================
-    % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
-    % Use path of the current MATLAB file.
-    [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-    bicasRootPath         = irf.fs.get_abs_path(...
-        fullfile(matlabSrcPath, '..', '..'));
+    bicasRootPath = bicas.utils.get_BICAS_root_path();
     
     
     

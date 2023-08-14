@@ -6,7 +6,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-27, with moved from bicas.proc.utils.
 %
-classdef utils    
+classdef utils
     % PROPOSAL: Automatic test code.
 
 
@@ -18,13 +18,23 @@ classdef utils
     %#######################
     methods(Static)
 
-        
-        
+
+        % Get path to the root of the BICAS directory structure.
+        function bicasRootPath = get_BICAS_root_path()
+            % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
+            % Use path of the current MATLAB file.
+            [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
+            bicasRootPath         = irf.fs.get_abs_path(...
+                fullfile(matlabSrcPath, '..', '..'));
+        end
+
+
+
         function utcStr = TT2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
-            
+
             bicas.utils.assert_ZV_Epoch(zvTt2000)
-            
+
             utcStr = irf.cdf.TT2000_to_UTC_str(zvTt2000);
         end
 
@@ -32,7 +42,7 @@ classdef utils
 
         % Log human readable summary of a set of zVar-like variables.
         % NOTE: Ignores string ZVs.
-        % 
+        %
         %
         % ARGUMENTS
         % =========
@@ -51,44 +61,44 @@ classdef utils
             %       TODO-DEC: How print time difference?
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13:02:34
             %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13h02m34s
-            
+
             LL = 'debug';
 
             fnList     = fieldnames(Zvs);
             ColumnStrs = irf.ds.empty_struct([0,1], ...
                 'name', 'size', 'nNan', 'percentageNan', ...
                 'nUniqueValues', 'values');
-            
+
             for iFn = 1:numel(fnList)
                 zvName  = fnList{iFn};
                 zvValue = Zvs.(zvName);
-                
+
                 if iscolumn(zvValue) && isa(zvValue, 'int64') ...
                         && any(irf.str.regexpf(...
                         zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
-                    
+
                     ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
                         zvName, zvValue, 'Epoch', SETTINGS);
-                    
+
                 elseif isnumeric(zvValue)
                     % CASE: Non-Epoch-like numeric variable.
-                    
+
                     ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
                         zvName, zvValue, 'numeric', SETTINGS);
-                    
+
                 elseif ischar(zvValue)
-                    
+
                     % Example of string valued (but irrelevant) CDF zVariables:
                     % ACQUISITION_TIME_LABEL
                     % Ignore. Do nothing.
-                    
+
                 else
                     error('BICAS:Assertion', ...
                         'Can not handle zVar "%s".', zvName)
                 end
             end
-            
+
             HEADER_STRS = {'Name', 'Size', '#NaN', '%NaN', '#Uniq', 'Values'};
             dataStrs = {};
             dataStrs(:,1) = {ColumnStrs(:).name}';
@@ -114,20 +124,20 @@ classdef utils
                 '    Mm = min-max\n', ...
                 '    Us = Unique values (explicitly listed)\n'])
         end
-        
-        
-        
+
+
+
         %############
         % ASSERTIONS
         %############
-        
-        
-        
+
+
+
         % Assert that variable is a "zVar Epoch-like" variable.
         function assert_ZV_Epoch(zvEpoch)
             % NOTE: No check for monotonically increasing timestamps. Done in
             % other locations. Universally? Slow?
-            
+
             % PROPOSAL: Move to irf.
             %   PRO: Used by solo.sp.summary_plot.
 
@@ -141,14 +151,14 @@ classdef utils
             % Use?!!! Too processing heavy?!
             %validateattributes(Epoch, {'numeric'}, {'increasing'})
         end
-        
-        
-        
+
+
+
         % Assert that variable is a "zVar ACQUISITION_TIME-like" variable.
         function assert_ZV_ACQUISITION_TIME(ACQUISITION_TIME)
-        
+
             EMID = 'BICAS:Assertion:IllegalArgument';
-        
+
             assert(isa(  ACQUISITION_TIME, 'uint32'), ...
                 EMID, 'ACQUISITION_TIME is not uint32.')
             irf.assert.sizes(ACQUISITION_TIME, [NaN, 2])
@@ -160,19 +170,19 @@ classdef utils
                 EMID, 'ACQUISITION_TIME subseconds out of range.')
         end
 
-        
-        
+
+
     end    % methods(Static)
-    
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         function ColumnStrs = get_array_statistics_strings(...
                 varName, varValue, varType, SETTINGS)
         %
@@ -204,21 +214,21 @@ classdef utils
         %       Struct with fields corresponding to different column values for
         %       one row in a table.
         %
-            
+
             % PROPOSAL: Handle fill/pad value?
             % PROPOSAL: Move to +utils.
             % PROPOSAL: Special log function for ZVs. Can print CDF type (implicitly range).
             % PROPOSAL: Print MATLAB class (implicitly range).
             % PROPOSAL: Better function name. Should imply that it generates strings for logging, not the logging
             %           itself.
-            
+
             % ASSERTION
             assert(isnumeric(varValue))
-            
+
             uniqueValues  = bicas.utils.unique_values_NaN(varValue);
             nUniqueValues = numel(uniqueValues);
             nValues       = numel(varValue);
-            
+
             %=================================
             % Construct string: variable size
             %=================================
@@ -226,9 +236,9 @@ classdef utils
             sizeStr = strjoin(arrayfun(...
                 @(n) num2str(n), size(varValue), 'UniformOutput', 0),',');
             sizeStr = sprintf('(%s)', sizeStr);
-            
+
             switch(varType)
-                
+
                 case 'numeric'
                     % ASSERTION
                     assert(ndims(varValue) <= 3, ...
@@ -239,21 +249,21 @@ classdef utils
                     nNanStr          = num2str(nNan);
                     if nValues == 0
                         percentageNanStr = '-';
-                    else                        
+                    else
                         percentageNan    = round((nNan/nValues)*100);
                         percentageNanStr = sprintf('%i%%', percentageNan);
                     end
-                    
+
                     %===================================
                     % Construct string: range of values
                     %===================================
                     if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED')
                         vMin = min(min(min(varValue)));
                         vMax = max(max(max(varValue)));
-                        
+
                         % IMPLEMENTATION NOTE: Space around "--" to make it
                         % easier to spot minus sign in a negative max number.
-                        valuesStr = sprintf('Mm: %d -- %d', vMin, vMax);    
+                        valuesStr = sprintf('Mm: %d -- %d', vMin, vMax);
                     else
                         if nUniqueValues == 0
                             valuesStr = '';
@@ -265,10 +275,10 @@ classdef utils
                 case 'Epoch'
                     % ASSERTIONS
                     bicas.utils.assert_ZV_Epoch(varValue)
-                    
+
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
-                    
+
                     if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
                         epochMinStr = bicas.utils.TT2000_to_UTC_str(min(varValue));
                         epochMaxStr = bicas.utils.TT2000_to_UTC_str(max(varValue));
@@ -280,12 +290,12 @@ classdef utils
                     else
                         valuesStr = '-';
                     end
-                    
+
                 otherwise
                     error('BICAS:Assertion', ...
                         'Illegal argument varType="%s"', varType)
             end
-            
+
             % Assemble the final strings.
             ColumnStrs.name             = varName;
             ColumnStrs.size             = sizeStr;

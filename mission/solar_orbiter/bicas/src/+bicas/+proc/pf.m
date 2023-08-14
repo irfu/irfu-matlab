@@ -41,8 +41,9 @@ classdef pf
     % PROPOSAL: One class per production function.
     %   PRO: Can associate metadata used by SWM data structure.
     %       PRO: Metadata located with code.
+    %       CON: Metadata is spread out in multiple (class) files.
     % PROPOSAL: One class per SWM, with production function as a method.
-    
+
     
     
     methods(Static, Access=public)

@@ -89,7 +89,6 @@ classdef utils
 
 
 
-        function S = set_struct_field_rows(S, SNew, iRowsArray)
         % Generic utility function.
         % Overwrite struct fields at specific field rows using other struct
         % fields.
@@ -106,6 +105,7 @@ classdef utils
         % iRowsArray
         %       1D array. Same length as number of rows in SNew fields.
         %       Specifies the rows (in fields in S) that shall be assigned.
+        function S = set_struct_field_rows(S, SNew, iRowsArray)
 
             % ASSERTIONS
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S);
@@ -424,6 +424,8 @@ classdef utils
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
         % PROPOSAL: Implement using new features in irf.assert.sizes().
+        % TODO-NI: Function only used for cases where ALL fields should have
+        %          same number of rows? (Due to previous refactoring.)
 
             fieldNamesList1 = fieldnames(S);
             nRowsArray = [];

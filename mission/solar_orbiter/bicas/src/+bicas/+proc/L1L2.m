@@ -286,8 +286,11 @@ classdef L1L2
             %       PostDc.Zv.currentAAmpere
             %   --
             %   PRO: Makes modifications/output clearer.
+            %   PRO: Simpler test code.
             %   PROPOSAL: Only have arguments for the required variables.
             %       PRO: Makes dependence clearer.
+            %   PROPOSAL: Split up into two functions: (1) Set QUALITY_FLAG,
+            %             L2_QUALITY_BITMASK, and (2) UFV.
             %
             % PROPOSAL: Call function from
             %       bicas.proc.L1L2.dc.process_calibrate_demux() (and redefine that
