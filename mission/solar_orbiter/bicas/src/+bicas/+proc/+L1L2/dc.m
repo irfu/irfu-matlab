@@ -9,6 +9,10 @@
 % First created 2021-05-25
 %
 classdef dc
+    % PROPOSAL: Better name.
+    %   PRO: Processing includes quality "processing" which is not in "DC".
+    %   PROPOSAL: dcq = Demux, Calibrate, Quality
+    
     % PROPOSAL: Automatic test code.
     % PROPOSAL: Include bicas.proc.L1L2.demuxer.
     %   CON: Too much code.
@@ -39,7 +43,7 @@ classdef dc
         % NOTE: Public function as opposed to the other demuxing/calibration
         % functions.
         %
-        function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, SETTINGS, L)
+        function [PreDc, PostDc] = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, SETTINGS, L)
 
             tTicToc = tic();
 
@@ -100,7 +104,8 @@ classdef dc
 
 
             PostDc = bicas.proc.L1L2.PostDc(Zv);
-            
+
+            [PreDc, PostDc] = bicas.proc.L1L2.qual.modify_quality_filter(PreDc, PostDc, NsoTable, SETTINGS, L);
 
 
 
