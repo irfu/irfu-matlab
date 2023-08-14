@@ -16,7 +16,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # Job called "matlab" which runs tests for the latest version of MATLAB.
+  # Job called "matlab" which runs selected tests for the latest version of MATLAB.
   matlab:
     # Runs Matlab
     #runs-on: ubuntu-latest
@@ -37,26 +37,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install libgfortran4
 
-      # setup irfu-matlab and run tests_before_release
+      # Run MATLAB code
       - name: Run commands
         uses: matlab-actions/run-command@v1
         with:
           command: tests_before_release;
 
-      # upload artifact (pdf report with plots, etc.)
+      # Upload artifact (pdf report with plots, etc.)
       - uses: actions/upload-artifact@v3
         with:
           name: test_report.pdf
           path: ciPath/report.pdf
           retention-days: 1
 
-  # Job called "matlab" which runs tests for MATLAB R2020a.
+  # Job which runs selected tests for MATLAB R2020a.
   matlab_R2020a:
     # Runs Matlab
     #runs-on: ubuntu-latest
     ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
     # which does not appear to have "libgfortran4" (used for tests of +whamp/) in its repo.
     runs-on: ubuntu-20.04
+    
+    # Only run job on SOdevel to reduce amount of run time at GitHub (limited resource).
+    if: github.ref == 'refs/heads/SOdevel'
     steps:
       # Check-out repository
       - uses: actions/checkout@v3
@@ -67,19 +70,13 @@ jobs:
         with:
           release: R2020a
 
-      # Install required runtime lib for Fortan (whamp mex file)
-      - name: Install libgfortran4
-        run: |
-          sudo apt-get update
-          sudo apt-get install libgfortran4
-
-      # setup irfu-matlab and run tests_before_release
+      # Run MATLAB code
       - name: Run commands
         uses: matlab-actions/run-command@v1
         with:
           command: tests_before_release_R2020a;
 
-      # upload artifact (pdf report with plots, etc.)
+      # Upload artifact (pdf report with plots, etc.)
       - uses: actions/upload-artifact@v3
         with:
           name: test_report_R2020a.pdf
