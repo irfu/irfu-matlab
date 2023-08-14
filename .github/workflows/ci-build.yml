@@ -2,7 +2,7 @@
 
 name: ci-build
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers this workflow on push to master, devel, MMSdevel or SOdevel. Or pull requests to devel.
   push:
@@ -57,7 +57,7 @@ jobs:
     ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
     # which does not appear to have "libgfortran4" (used for tests of +whamp/) in its repo.
     runs-on: ubuntu-20.04
-    
+
     # Only run job on SOdevel to reduce amount of run time at GitHub (limited resource).
     if: github.ref == 'refs/heads/SOdevel'
     steps:

@@ -39,10 +39,6 @@ runner.addPlugin(TestReportPlugin.producingPDF(...
 ));
 
 % RUN TESTS
-% ---------
-% NOTE: Can not run assertSuccess() since it is not supported on MATLAB R2019b.
-% Below assertion should implement the same function.
-TestResultArray = runner.run(suite);
-assert(all([TestResultArray(:).Passed]))
+assertSuccess(runner.run(suite));
 
 end
