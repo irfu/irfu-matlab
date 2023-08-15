@@ -323,7 +323,7 @@ classdef tds
             OutSci.Zv.Epoch              = SciPreDc.Zv.Epoch;
             OutSci.Zv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
             OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
-            OutSci.Zv.QUALITY_FLAG       = SciPreDc.Zv.QUALITY_FLAG;
+            OutSci.Zv.QUALITY_FLAG       = SciPostDc.Zv.QUALITY_FLAG;
             OutSci.Zv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
             OutSci.Zv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
             OutSci.Zv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;

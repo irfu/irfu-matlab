@@ -15,101 +15,72 @@ classdef qual   % < handle
     %#######################
     %#######################
     methods(Static)
+        % Set quality zVariables.
         % Overwrite selected data in selected CDF records with fill values/NaN.
-        % Modify quality zVariables.
         %
-        % NOTE: Almost does not modify PreDc.
-        %   Exception: Modifies PreDc.Zv.QUALITY_FLAG
-        %
-        % Sets
-        %   PreDc.Zv.QUALITY_FLAG (modifies)
-        %   PostDc.Zv.L2_QUALITY_BITMASK
-        %   PostDc.Zv.DemuxerOutput
-        %   PostDc.Zv.currentAAmpere
-        %
-        %
-        % RATIONALE
-        % =========
-        % Does NOT want to operate on structs that mimic the input or output
-        % datasets, but on struct that are as similiar as possible for all forms
-        % of L1R-->L2 processing.
-        %
-        function [PreDc, PostDc] = modify_quality_filter(...
-                PreDc, PostDc, NsoTable, SETTINGS, L)
-
-            % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the PostDc format.
-            %   NOTE: Also overwrites voltage with fill values.
-            %   PROPOSAL: Treat output PostDc as another format?
-            %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
-            %
-            % PROPOSAL: Generalize function to be used in L3.
-            %   CON: Can not be done since this function is meant to have access
-            %        to arbitrary L1/L1R and L2 data to make decisions, although
-            %        this is not much used yet.
-            %
+        function ZvOut = modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L)
             % PROPOSAL: Automated test code.
-            % PROPOSAL: Only return the modified zVariables, not PreDc & PostDc.
-            %   Current (2023-08-11) effective input:
-            %       PreDc.isLfr
-            %       PreDc.Zv.Epoch
-            %       PreDc.Zv.MUX_SET
-            %       PreDc.Zv.ufv
-            %       PreDc.Zv.QUALITY_FLAG
-            %       PostDc.Zv.L2_QUALITY_BITMASK
-            %   Current (2023-08-11) effective output:
-            %       PreDc.Zv.QUALITY_FLAG
-            %       PostDc.Zv.L2_QUALITY_BITMASK
-            %       PostDc.Zv.DemuxerOutput
-            %       PostDc.Zv.currentAAmpere
-            %   --
-            %   PRO: Makes modifications/output clearer.
-            %   PRO: Simpler test code.
-            %   PROPOSAL: Only have arguments for the required variables.
-            %       PRO: Makes dependence clearer.
-            %   PROPOSAL: Split up into two functions: (1) Set QUALITY_FLAG,
-            %             L2_QUALITY_BITMASK, and (2) UFV.
-            %
-            % PROPOSAL: Call function from
-            %       bicas.proc.L1L2.dc.process_calibrate_demux() (and redefine that
-            %       function to include quality calculations.
-            %   PRO: Can return modified values to caller which sets PostDc.
-            %       PRO: Can avoid modifying PreDc.
-            %       PRO: Can avoid modifying PostDc.
+            % PROPOSAL: Split up into two functions:
+            %           (1) Set QUALITY_FLAG, L2_QUALITY_BITMASK, and
+            %           (2) UFV.
             %
             % PROPOSAL: Separate function for handling UFV.
+            %   CON: Other quality variable processing might want to read or
+            %        modify the UFV.
+            % PROPOSAL: Separate function for modifying voltage & current using
+            %           UFV, not for deriving it. Function called outside. This
+            %           function return ZV UFV.
+            %
+            % PROPOSAL: Structs for arguments & return values. -- IMPLEMENTED
+            %   PRO: Safer w.r.t. confusing variables.
+            %   CON: Can not as easily see in function which are the arguments & return values.
+            %       CON: Easier to see arguments & return values when calling
+            %            function, assuming that caller unpacks the return struct.
+            %           CON: Caller may forget to unpack field in return value.
+            %       CON-PROPOSAL: Explicitly convert between struct fields and
+            %                     variables at beginning and end of function.
+            %           CON: Longer code.
+            %           PRO: Implementation is clear on what goes in and out of function.
+            
+            zv_Epoch         = ZvIn.Epoch;
+            zv_MUX_SET       = ZvIn.MUX_SET;
+            zv_QUALITY_FLAG  = ZvIn.QUALITY_FLAG;
+            zvDemuxerOutput  = ZvIn.DemuxerOutput;
+            zvCurrentAAmpere = ZvIn.currentAAmpere;
+            zvUfv            = ZvIn.ufv;
+            clear ZvIn
+            
+            % ASSERTIONS
+            assert(isscalar(isLfr) && islogical(isLfr))
+            nRecords = irf.assert.sizes( ...
+                zv_Epoch,        [-1], ...
+                zv_MUX_SET,      [-1], ...
+                zv_QUALITY_FLAG, [-1], ...
+                zvUfv,           [-1]);
 
-            % ASSERTION
-            assert(isa(PreDc,  'bicas.proc.L1L2.PreDc'))
-            assert(isa(PostDc, 'bicas.proc.L1L2.PostDc'))
-            nRecords = irf.assert.sizes(PreDc.Zv.Epoch, [-1]);
 
 
-
-            % NOTE: Preallocates and ADDS zVar to PostDc.
-            PostDc.Zv.L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
-
-
-
-            %============================================
-            % Find CDF records to remove due to settings
-            %============================================
+            %============================================================
+            % Find CDF records to remove due to settings and LFR ZV "BW"
+            %============================================================
             zvUfvSettings = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
-                PreDc.Zv.Epoch, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
+                zv_Epoch, zv_MUX_SET, isLfr, SETTINGS, L);
 
-            zvUfv = PreDc.Zv.ufv | zvUfvSettings;
+            zvUfv = zvUfv | zvUfvSettings;
 
 
 
             %========================================
             % Take actions based on NSO events table
             %========================================
-            % Variable naming convention:
+            % Variable naming conventions:
             % CDF event    = NSO event that overlaps with CDF records.
             % Global event = NSO event in global NSO event table.
-
+            % NA           = Numeric Array
+            
             % NOTE: iCdfEventNa = CDF events as indices to global events.
             [bCdfEventRecordsCa, cdfEventNsoIdCa, iCdfEventNa] = ...
-                NsoTable.get_NSO_timestamps(PreDc.Zv.Epoch);
+                NsoTable.get_NSO_timestamps(zv_Epoch);
             nCdfEvents    = numel(cdfEventNsoIdCa);
             nGlobalEvents = numel(NsoTable.evtNsoIdCa);
             L.logf('info', ...
@@ -117,7 +88,9 @@ classdef qual   % < handle
                 ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
                 nCdfEvents, nGlobalEvents);
 
-            % Index into LOCAL/CDF NSO events table.
+            zv_L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
+
+            % Iterate over index into LOCAL/CDF NSO events table.
             for kCdfEvent = 1:nCdfEvents
 
                 % Index into GLOBAL NSO events table.
@@ -138,30 +111,30 @@ classdef qual   % < handle
                 % Take action depending on NSO ID
                 %=================================
                 % Temporary shorter variable name.
-                zv_QUALITY_FLAG       = PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent});
-                zv_L2_QUALITY_BITMASK = PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
+                zv_QUALITY_FLAG_cdfEvent       = zv_QUALITY_FLAG      (bCdfEventRecordsCa{kCdfEvent});
+                zv_L2_QUALITY_BITMASK_cdfEvent = zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
 
                 switch(eventNsoId)
 
                     case bicas.constants.NSOID.PARTIAL_SATURATION
-                        zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 1, 'includeNaN');
-                        zv_L2_QUALITY_BITMASK = bitor(...
-                            zv_L2_QUALITY_BITMASK, ...
+                        zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
+                        zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
+                            zv_L2_QUALITY_BITMASK_cdfEvent, ...
                             bicas.constants.L2QBM_PARTIAL_SATURATION);
 
                     case bicas.constants.NSOID.FULL_SATURATION
-                        zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 0, 'includeNaN');
-                        zv_L2_QUALITY_BITMASK = bitor(...
-                            zv_L2_QUALITY_BITMASK, ...
+                        zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 0, 'includeNaN');
+                        zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
+                            zv_L2_QUALITY_BITMASK_cdfEvent, ...
                             bicas.constants.L2QBM_FULL_SATURATION);
-                        zv_L2_QUALITY_BITMASK = bitor(...
-                            zv_L2_QUALITY_BITMASK, ...
+                        zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
+                            zv_L2_QUALITY_BITMASK_cdfEvent, ...
                             bicas.constants.L2QBM_PARTIAL_SATURATION);
                         % NOTE: Also set PARTIAL saturation bit when FULL
                         % saturation. /YK 2020-10-02.
 
                     case bicas.constants.NSOID.THRUSTER_FIRING
-                        zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 1, 'includeNaN');
+                        zv_QUALITY_FLAG_cdfEvent = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
                         % NOTE: There will be an L1 QUALITY_BITMASK bit for
                         % thruster firings eventually according to
                         % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
@@ -179,44 +152,24 @@ classdef qual   % < handle
                             cdfEventNsoIdCa{kCdfEvent})
 
                 end
-                PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG;
-                PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK;
+                zv_QUALITY_FLAG      (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG_cdfEvent;
+                zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK_cdfEvent;
 
             end    % for
-            
-            % IMPLEMENTATION NOTE: Reminder that bicas.proc.L1L2.PreDc can be
-            % modified by code (depending on NSO table), despite that
-            % bicas.proc.L1L2.PreDc should ideally be immutable but can
-            % currently not be. Since modification only happens for NSO events,
-            % this modification might not be run, depending on the time
-            % interval. Therefore always running this "null modification" to
-            % make sure that a mistakenly immutable bicas.proc.L1L2.PreDc always
-            % triggers error.
-            PreDc.Zv.QUALITY_FLAG = PreDc.Zv.QUALITY_FLAG;
 
 
 
             %=================================================================
             % Set zVariables for CURRENTS and VOLTAGES to NaN based on zvUfv.
             %=================================================================
-            % Log
-            logHeaderStr = sprintf(...
-                ['All interval(s) of CDF records for which data should be set', ...
-                ' to fill values (i.e. removed), regardless of reason.\n']);
-            bicas.proc.L1L2.qual.log_UFV_records(PreDc.Zv.Epoch, zvUfv, logHeaderStr, L)
-            %
-            PostDc.Zv.currentAAmpere(zvUfv, :) = NaN;
-            %
-            fnCa = fieldnames(PostDc.Zv.DemuxerOutput);
-            for iFn = 1:numel(fnCa)
-                PostDc.Zv.DemuxerOutput.(fnCa{iFn})(zvUfv, :, :) = NaN;
-            end
+            [zvDemuxerOutput, zvCurrentAAmpere] = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
+                zv_Epoch, zvDemuxerOutput, zvCurrentAAmpere, zvUfv, L);
 
-
-
-            % ASSERTION
-            assert(isa(PreDc,  'bicas.proc.L1L2.PreDc'))
-            assert(isa(PostDc, 'bicas.proc.L1L2.PostDc'))
+            ZvOut = struct();
+            ZvOut.DemuxerOutput      = zvDemuxerOutput;
+            ZvOut.currentAAmpere     = zvCurrentAAmpere;
+            ZvOut.QUALITY_FLAG       = zv_QUALITY_FLAG;
+            ZvOut.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK;
 
         end    % modify_quality_filter
 
@@ -235,6 +188,28 @@ classdef qual   % < handle
 
 
 
+        % Overwrite selected records of voltage & current with fill values.
+        function [zvDemuxerOutput, zvCurrentAAmpere] = set_voltage_current_fill_value(...
+                zv_Epoch, zvDemuxerOutput, zvCurrentAAmpere, zvUfv, L)
+
+            % Log
+            logHeaderStr = sprintf(...
+                ['Interval(s) of CDF records for which data should be set', ...
+                ' to fill values (i.e. removed), regardless of reason.\n']);
+            bicas.proc.L1L2.qual.log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
+
+            % Set current values to fill value/NaN.
+            zvCurrentAAmpere(zvUfv, :) = NaN;
+
+            % Set voltage values to fill value/NaN.
+            fnCa = fieldnames(zvDemuxerOutput);
+            for iFn = 1:numel(fnCa)
+                zvDemuxerOutput.(fnCa{iFn})(zvUfv, :, :) = NaN;
+            end
+        end
+
+
+
         % Find CDF records to remove based on settings (not data itself, almost,
         % since MUX mode is data).
         %
@@ -246,14 +221,14 @@ classdef qual   % < handle
         %   Demultiplexer data, from BIAS HK or LFR.
         %
         function zvUfv = get_UFV_records_from_settings(...
-                zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
+                zv_Epoch, zv_MUX_SET, isLfr, SETTINGS, L)
             % PROPOSAL: Only derive UFV records based on settings. Not take
             %           previously found UFV records (BW) into account. Merging UFV
             %           records from settings and BW respectively can be done
             %           outside (trivial).
             % PROPOSAL: Separate function for logging which records that should be removed.
 
-            bicas.utils.assert_ZV_Epoch(zvEpoch)
+            bicas.utils.assert_ZV_Epoch(zv_Epoch)
             assert(islogical(isLfr));
 
             %===============
@@ -270,7 +245,7 @@ classdef qual   % < handle
             % Find exact indices/CDF records to remove
             %==========================================
             zvUfv = irf.utils.true_with_margin(...
-                zvEpoch, ...
+                zv_Epoch, ...
                 ismember(zv_MUX_SET, muxModesRemove), ...
                 removeMarginSec * 1e9);
 
@@ -287,7 +262,7 @@ classdef qual   % < handle
                 strjoin(irf.str.sprintf_many('%g', muxModesRemove), ', '), ...
                 settingMarginKey, ...
                 removeMarginSec);
-            bicas.proc.L1L2.qual.log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
+            bicas.proc.L1L2.qual.log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
         end
 
 
@@ -295,7 +270,7 @@ classdef qual   % < handle
         % Log UFV records
         %
         % NOTE: Only logs (including header) if there are records to remove.
-        function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
+        function log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
             LL = 'info';    % LL = Log Level
 
             [i1Array, i2Array] = irf.utils.split_by_false(zvUfv);
@@ -313,8 +288,8 @@ classdef qual   % < handle
                 for iRi = 1:nUfvIntervals
                     iCdfRecord1 = i1Array(iRi);
                     iCdfRecord2 = i2Array(iRi);
-                    utc1  = irf.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord1));
-                    utc2  = irf.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord2));
+                    utc1  = irf.cdf.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1));
+                    utc2  = irf.cdf.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2));
                     L.logf(LL, '    Records %7i-%7i, %s -- %s', ...
                         iCdfRecord1, iCdfRecord2, utc1, utc2);
                 end

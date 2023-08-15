@@ -36,14 +36,13 @@ classdef dc
         
         
         
-        % Processing function. Derive PostDC from PreDc, i.e. demux and
-        % calibrate data. Function is in large part a wrapper around
-        % "calibrate_demux_voltages".
+        % Processing function. Derive PostDC from PreDc, i.e. demux, calibrate
+        % dat, and set quality variables.
         %
         % NOTE: Public function as opposed to the other demuxing/calibration
         % functions.
         %
-        function [PreDc, PostDc] = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, SETTINGS, L)
+        function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, SETTINGS, L)
 
             tTicToc = tic();
 
@@ -52,17 +51,10 @@ classdef dc
 
 
 
-            % IMPLEMENTATION NOTE: Only copy fields PreDc-->PostDc which are
-            % known to be needed in order to conserve memory (not sure if
-            % meaningful).
-            Zv = [];
-
-
-
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
-            Zv.DemuxerOutput = ...
+            DemuxerOutput = ...
                 bicas.proc.L1L2.dc.calibrate_demux_voltages(PreDc, Cal, L);
 
 
@@ -89,7 +81,7 @@ classdef dc
                 L.logf('info', 'Records %7i-%7i : %s -- %s', ...
                     iFirst, iLast, ...
                     bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
+                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast )))
 
                 for iAnt = 1:3
                     %--------------------
@@ -99,15 +91,32 @@ classdef dc
                         currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
                 end
             end
-            Zv.currentAAmpere = currentAAmpere;
 
 
 
+            % ####################################
+            % Set quality variables, and apply UFV
+            % ####################################
+            ZvIn = struct(...
+                'Epoch',          PreDc.Zv.Epoch, ...
+                'MUX_SET',        PreDc.Zv.MUX_SET, ...
+                'DemuxerOutput',  DemuxerOutput, ...
+                'currentAAmpere', currentAAmpere, ...
+                'QUALITY_FLAG',   PreDc.Zv.QUALITY_FLAG, ...
+                'ufv',            PreDc.Zv.ufv);
+            [ZvOut] = bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);            
+            Zv = [];
+            Zv.DemuxerOutput      = ZvOut.DemuxerOutput;
+            Zv.currentAAmpere     = ZvOut.currentAAmpere;
+            Zv.QUALITY_FLAG       = ZvOut.QUALITY_FLAG;
+            Zv.L2_QUALITY_BITMASK = ZvOut.L2_QUALITY_BITMASK;
+            
+
+            
+            % ############
+            % END FUNCTION
+            % ############
             PostDc = bicas.proc.L1L2.PostDc(Zv);
-
-            [PreDc, PostDc] = bicas.proc.L1L2.qual.modify_quality_filter(PreDc, PostDc, NsoTable, SETTINGS, L);
-
-
 
             nRecords = size(PreDc.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...

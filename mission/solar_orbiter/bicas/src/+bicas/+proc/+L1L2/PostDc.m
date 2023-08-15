@@ -16,9 +16,7 @@ classdef PostDc
     % INSTANCE PROPERTIES
     %#####################
     %#####################
-    % IMPLEMENTATION NOTE: Can not be immutable(!) since
-    % bicas.proc.L1L2.process_quality_filter_L2() modifies it!
-    properties   % (SetAccess=immutable)
+    properties(SetAccess=immutable)
         Zv
     end
 
@@ -33,7 +31,7 @@ classdef PostDc
 
         function obj = PostDc(Zv)
             irf.assert.struct(Zv, ...
-                {'DemuxerOutput', 'currentAAmpere'}, {'L2_QUALITY_BITMASK'});
+                {'DemuxerOutput', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
             
             obj.Zv = Zv;
 

@@ -12,9 +12,7 @@ classdef PreDc
     % INSTANCE PROPERTIES
     %#####################
     %#####################
-    % IMPLEMENTATION NOTE: Can not be immutable(!) since
-    % bicas.proc.L1L2.process_quality_filter_L2() modifies it!
-    properties  %(SetAccess=immutable)
+    properties(SetAccess=immutable)
         Zv
         Ga
         hasSnapshotFormat
