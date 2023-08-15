@@ -1,16 +1,11 @@
-
 *~
-
-solo_ns_ops_TEST.xml
-solo_ns_ops_TEST.xml.DISABLED
-
-
 
 # Ignore the default BICAS configuration file, so that the user can configure his/her own version.
 #
 # Specifically, this is useful when delivering BICAS via the dedicated ROC/BICAS git repo (not irfu-matlab) so that
 # ROC's config/bicas.con is not overwritten.
 config/bicas.conf
+config/bicas.conf___BACKUP*
 
 # Requested by ROC 2019-09-25 for the BICAS ROC git repo.
 *.DS_Store*
