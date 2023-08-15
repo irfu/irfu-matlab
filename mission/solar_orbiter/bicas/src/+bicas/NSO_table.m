@@ -14,7 +14,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-22
 %
-classdef NSO_table    
+classdef NSO_table
     % PROPOSAL: New name
     %   PROPOSAL: ~events
     %   PROPOSAL: ~list
@@ -22,6 +22,7 @@ classdef NSO_table
     %            List implies ~1D (or even ~set).
     %       NOTE: solo_ns_ops.xml.html:
     %             Title "Non-Standard Operations (NSO) List"
+    %       PROPOSAL: NsoList
     %
     % PROPOSAL: Terminology similar to MMS, mission/mms/mms_ns_ops.xml, i.e.
     %           event = one time interval in NSO table.
@@ -30,11 +31,6 @@ classdef NSO_table
     %           operation = one time interval in NSO table.
     %   PRO: Cluster table has been used more than MMS table.
     %
-    % PROPOSAL: Some kind of feature for being able to trigger real NSO ID
-    %           behaviour just for testing, but only with proper setting.
-    %   PROPOSAL: process_quality_filter_L2: Translate test NSO ID to proper NSO
-    %   ID, but only with proper setting.
-    %
     % PROPOSAL: Automatic test code for get_NSO_timestamps().
     %   NOTE: Implies separating file reading from initializing object.
     %
@@ -42,11 +38,21 @@ classdef NSO_table
     %   PRO: Easier to change pre-existing margins than to modify the XML file.
     %       CON: Harder for outsiders to interpret (& edit) the XML file.
     %   Ex: thruster_firings.
+    %
+    % TODO-DEC: Where put assertions? Assertions on file content which are not
+    %           strictly necessary?
+    %   PROPOSAL:
+    %       (1) Strictly necessary assertions in constructor.
+    %       (2) Assertions on file content only in read_file(), but after
+    %           invoking constructor.
+    %       (3) No assertions (besides valid XML file) in read_file_raw().
     
     
     
     properties(SetAccess=immutable, GetAccess=public)
         % NOTE: Same RCS NSO ID may occur multiple times. Not unique.
+        % NOTE: All fields are Nx1 vectors.
+        
         evtStartTt2000Array
         evtStopTt2000Array
         evtNsoIdCa
@@ -76,9 +82,17 @@ classdef NSO_table
                 evtStopTt2000Array,  [-1], ...
                 evtNsoIdCa,          [-1]);
             
+            assert(isa(evtStartTt2000Array, 'int64'))
+            assert(isa(evtStopTt2000Array,  'int64'))
+            assert(isa(evtNsoIdCa,          'cell' ))
+            
+            %-------------------------
+            % ASSERTION: Time sorting
+            %-------------------------
             % IMPLEMENTATION NOTE: Can not assume that both start & stop
             % timestaps are sorted. One event may entirely contain another
-            % event (with different NSO ID).
+            % event (with different NSO ID) in time. Therefore enforcing only
+            % sorted start values, but not stop values.
             % IMPLEMENTATION NOTE: Can not assume "strictly ascending" values,
             % since events with separate NSO IDs may begin at the exact same
             % instant.
@@ -170,23 +184,31 @@ classdef NSO_table
         %
         function [bEvtArraysCa, evtNsoIdCa, iGlobalEventsArray] = get_NSO_timestamps(obj, tt2000Array)
             % PROPOSAL: Automatic tests.
-            % PROPOSAL: Static method.
-            %   PRO: More natural to have explicit table argument for automatic testing.
             % PROPOSAL: Return list to every event, not unique NSO IDs.
-            %   PRO: Can return iStart, iStop instad of bArray.
+            %   PRO: Can return iStart, iStop instead of bArray.
             %       PRO: Uses less memory than in particular logical indexing.
             %       CON: Less practical. Want to use logical expressions separately record-by-record.
             %           CON-PROPOSAL: Should have function for turning i1:i2
             %                         into bArray.
             %   PRO: Can log every instance in NSO table.
             
-            bEvents = irf.utils.intervals_intersect(...
-                obj.evtStartTt2000Array, ...
-                obj.evtStopTt2000Array, ...            
-                min(tt2000Array), ...
-                max(tt2000Array), ...
-                'closed intervals');
+            assert(isa(tt2000Array, 'int64') && iscolumn(tt2000Array), ...
+                'tt2000Array is not an int64 column vector.')
+            
+            if isempty(tt2000Array)
+                bEvents = false(0, 1);
+            else
+                bEvents = irf.utils.intervals_intersect(...
+                    obj.evtStartTt2000Array, ...
+                    obj.evtStopTt2000Array, ...            
+                    min(tt2000Array), ...
+                    max(tt2000Array), ...
+                    'closed intervals');
+            end
 
+            % =====================================
+            % Assign evtNsoIdCa, iGlobalEventsArray
+            % =====================================
             % IMPLEMENTATION NOTE: Obtain SUBSET of NSO table EVENTS which
             % overlap with timestamps in tt2000Array. Indirectly also removes
             % irrelevant RCS NSO IDs (not just events) for the code after.
@@ -195,23 +217,45 @@ classdef NSO_table
             evtNsoIdCa          = obj.evtNsoIdCa(bEvents);
             
             iGlobalEventsArray  = find(bEvents);
+            
+            % Normalize 0x0 to 0x1
+            % --------------------
+            % IMPLEMENTATION NOTE: Must normalize empty vectors due to
+            % inconsistent MATLAB behaviour. Otherwise column vectors become
+            % non-column vectors.
+            % Ex: 
+            %     a = [3, 4, 5]';  size(a(false(3,1)))  == [0, 1]
+            %     a = [3];         size(a(false))       == [0, 0]    # NOTE!
+            %     a = zeros(0, 1); size(a(false(0, 1))) == [0, 1]
+            evtStartTt2000Array = evtStartTt2000Array(:);
+            evtStopTt2000Array  = evtStopTt2000Array(:);
+            evtNsoIdCa          = evtNsoIdCa(:);
+            % Ex:
+            %     size(find(false(0, 1))) == [0, 1]
+            %     size(find(false(1, 1))) == [0, 0]    # NOTE!
+            %     size(find(false(3, 1))) == [0, 1]
+            iGlobalEventsArray  = iGlobalEventsArray(:);
 
 
-
-            % IMPLEMENTATION NOTE: evtNsoIdCa is NOT a list of unique NSO IDs.
-            % The return value must be a list of unique NSO IDs.
-            % Must distinguish between these two.
+            
+            % ===================
+            % Assign bEvtArraysCa
+            % ===================
+            % IMPLEMENTATION NOTE: obj.evtNsoIdCa is NOT a list of unique NSO
+            % IDs, but the return value "evtNsoIdCa" must be a list of unique
+            % NSO IDs. One must distinguish between these two.
             nEvents      = numel(evtNsoIdCa);
             bEvtArraysCa = cell(nEvents, 1);
-            for iEvent = 1:nEvents
+            for iEvent = 1:nEvents    % Matching events (not global).
                 
                 tt2000_1 = evtStartTt2000Array(iEvent);
                 tt2000_2 = evtStopTt2000Array(iEvent);
                 
-                b = false(size(tt2000Array));
-                b((tt2000_1 <= tt2000Array) & (tt2000Array <= tt2000_2)) = true;
+                bMatch = (tt2000_1 <= tt2000Array) & (tt2000Array <= tt2000_2);
+                bEvtArray = false(size(tt2000Array));
+                bEvtArray(bMatch) = true;
                 
-                bEvtArraysCa{iEvent, 1} = b;
+                bEvtArraysCa{iEvent, 1} = bEvtArray;
             end
 
             
@@ -234,6 +278,18 @@ classdef NSO_table
     methods(Static, Access=public)
     %#############################
     %#############################
+    
+    
+    
+        % Read SolO non-standard operations (NSO) XML file and return the
+        % content as an instance of bicas.NSO_table.
+        function NsoTable = read_file(filePath)
+            [evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa] = ...
+                bicas.NSO_table.read_file_raw(filePath);
+            
+            NsoTable = bicas.NSO_table(...
+                evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa);
+        end
     
     
     
@@ -315,18 +371,6 @@ classdef NSO_table
 
 
 
-        % Read SolO non-standard operations (NSO) XML file and return the
-        % content as an instance of bicas.NSO_table.
-        function NsoTable = read_file(filePath)
-            [evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa] = ...
-                bicas.NSO_table.read_file_raw(filePath);
-            
-            NsoTable = bicas.NSO_table(...
-                evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa);
-        end
-    
-    
-    
      end    % methods(Static, Access=public)
 
     
@@ -378,9 +422,9 @@ classdef NSO_table
             ChildXmlElem = bicas.NSO_table.getXmlUniqChildElem(XmlElem, childTagName);
             s            = bicas.NSO_table.getXmlElemStr(ChildXmlElem);
         end
-        
-        
-        
+
+
+
     end    % methods(Static, Access=private)
 
 
