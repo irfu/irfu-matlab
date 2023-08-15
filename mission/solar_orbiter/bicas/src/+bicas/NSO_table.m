@@ -62,10 +62,7 @@ classdef NSO_table
 
 
 
-        function obj = NSO_table(xmlFilePath)
-            NsoTable = bicas.NSO_table.read_file(xmlFilePath);
-
-
+        function obj = NSO_table(evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa)
 
             %============
             % ASSERTIONS
@@ -74,11 +71,10 @@ classdef NSO_table
             % PROPOSAL: Collect ~all assertions, in constructor (here) and in
             %           bicas.NSO_table.read_file ?
             % PROPOSAL: Check that FULL_SATURATION and PARTIAL SATURATION do not overlap.
-            
             irf.assert.sizes(...
-                NsoTable.evtStartTt2000Array, [-1], ...
-                NsoTable.evtStopTt2000Array,  [-1], ...
-                NsoTable.evtNsoIdCa,          [-1]);
+                evtStartTt2000Array, [-1], ...
+                evtStopTt2000Array,  [-1], ...
+                evtNsoIdCa,          [-1]);
             
             % IMPLEMENTATION NOTE: Can not assume that both start & stop
             % timestaps are sorted. One event may entirely contain another
@@ -86,12 +82,12 @@ classdef NSO_table
             % IMPLEMENTATION NOTE: Can not assume "strictly ascending" values,
             % since events with separate NSO IDs may begin at the exact same
             % instant.
-            if ~issorted(NsoTable.evtStartTt2000Array)
-                iEvt = find(diff(NsoTable.evtStartTt2000Array) < 0) + 1;
+            if ~issorted(evtStartTt2000Array)
+                iEvt = find(diff(evtStartTt2000Array) < 0) + 1;
                 assert(~isempty(iEvt));
                 
                 utcCa = irf.cdf.TT2000_to_UTC_str_many(...
-                    NsoTable.evtStartTt2000Array(iEvt));
+                    evtStartTt2000Array(iEvt));
                 
                 sCa = irf.str.sprintf_many('    %s\n', utcCa);
                 timestampsListStr = strjoin(sCa);
@@ -107,21 +103,20 @@ classdef NSO_table
             % ASSERTION: Events with the same NSO ID do not overlap (and are
             % time sorted)
             %----------------------------------------------------------------
-            uniqueEvtNsoIdCa = unique(NsoTable.evtNsoIdCa);
+            uniqueEvtNsoIdCa = unique(evtNsoIdCa);
             for i = 1:numel(uniqueEvtNsoIdCa)
                 nsoId = uniqueEvtNsoIdCa{i};
-                b = strcmp(nsoId, NsoTable.evtNsoIdCa);
+                b = strcmp(nsoId, evtNsoIdCa);
                 
-                % Sorted (earlier assertion), but not monotonically.
-                evtStartTt2000Array = NsoTable.evtStartTt2000Array(b);
-                % Can not be assumed to be sorted (no earlier assertion).
-                evtStopTt2000Array  = NsoTable.evtStopTt2000Array(b);
+                % CASE:
+                %   evtStartTt2000Array: Sorted (earlier assertion), but not monotonically.
+                %   evtStopTt2000Array:  Can not be assumed to be sorted (no earlier assertion).
                 
                 % NOTE: This will catch some overlaps, but not all.
-                assert(issorted(evtStartTt2000Array, 'strictascend'), ...
+                assert(issorted(evtStartTt2000Array(b), 'strictascend'), ...
                     ['evtStartTt2000Array for nsoId="%s" is not time-sorted. ', ...
                     'At least two events with that NSO ID overlap.'], nsoId)
-                assert(issorted(evtStopTt2000Array, 'strictascend'), ...
+                assert(issorted(evtStopTt2000Array(b), 'strictascend'), ...
                     ['evtStopTt2000Array for nsoId="%s" is not time-sorted. ', ...
                     'At least two events with that NSO ID overlap.'], nsoId)
             
@@ -131,19 +126,22 @@ classdef NSO_table
                 % NOTE: Transposing before 2D-->1D vector.
                 % NOTE: 'strictascend' excludes ~adjacent events.
                 temp = [...
-                    NsoTable.evtStartTt2000Array(b), ...
-                    NsoTable.evtStopTt2000Array(b)]';
+                    evtStartTt2000Array(b), ...
+                    evtStopTt2000Array(b)]';
                 tt2000Array = temp(:);
                 assert(issorted(tt2000Array, 'strictascend'), ...
                     ['At least two events for nsoId="%s"', ...
                     ' seem to overlap with each other.'], nsoId)
             end
             
+            % CASE: Data seems OK.
             
-
-            obj.evtStartTt2000Array = NsoTable.evtStartTt2000Array;
-            obj.evtStopTt2000Array  = NsoTable.evtStopTt2000Array;
-            obj.evtNsoIdCa          = NsoTable.evtNsoIdCa;
+            % ===================
+            % Store data in class
+            % ===================
+            obj.evtStartTt2000Array = evtStartTt2000Array;
+            obj.evtStopTt2000Array  = evtStopTt2000Array;
+            obj.evtNsoIdCa          = evtNsoIdCa;
         end
         
         
@@ -239,7 +237,8 @@ classdef NSO_table
     
     
     
-        % Read SolO non-standard operations (NSO) XML file.
+        % Read SolO non-standard operations (NSO) XML file and return "raw
+        % content" (without all checks) as variables.
         %
         % IMPLEMENTATION NOTE: Separate static method only for testing purposes.
         %
@@ -251,13 +250,17 @@ classdef NSO_table
         %
         % RETURN VALUES
         % =============
-        % NsoTable : Struct of arrays representing file content. Not class.
+        % Same fields as in class bicas.NSO_table.
+        % evtStartTt2000Array
+        % evtStopTt2000Array
+        % evtNsoIdCa
         %
         %
         % Author: Erik P G Johansson, IRF, Uppsala, Sweden
         % First created 2020-09-21.
         %
-        function NsoTable = read_file(filePath)
+        function [evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa] = ...
+                read_file_raw(filePath)
             % TODO-DEC: Time format? String? TT2000? Numeric?
             %   NOTE: Want to assert t1<t2.
             % PROPOSAL: Permit multiple forms of XML time input: (t1, t2), (t1,dt), (dt, t2)
@@ -308,17 +311,23 @@ classdef NSO_table
                 evtStopTt2000Array(i, 1)  = stopTt2000;
                 evtNsoIdCa{i, 1}          = nsoId;
             end
-            
-            NsoTable = struct(...
-                'evtStartTt2000Array', {evtStartTt2000Array}, ...
-                'evtStopTt2000Array',  {evtStopTt2000Array}, ...
-                'evtNsoIdCa',          {evtNsoIdCa});
-            
         end
-        
-    
 
-    end    % methods(Static, Access=public)
+
+
+        % Read SolO non-standard operations (NSO) XML file and return the
+        % content as an instance of bicas.NSO_table.
+        function NsoTable = read_file(filePath)
+            [evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa] = ...
+                bicas.NSO_table.read_file_raw(filePath);
+            
+            NsoTable = bicas.NSO_table(...
+                evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa);
+        end
+    
+    
+    
+     end    % methods(Static, Access=public)
 
     
     
