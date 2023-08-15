@@ -143,20 +143,20 @@ for iSc = 1:4
   %% Plot all combined data
   % Moving median, Matlab built in uneven sampling time taken into account...
   c_eval('t?=datetime(Sw.p?_iPh_ts.time.utc(''yyyy-mm-ddTHH:MM:SS.mmmZ''),''InputFormat'',''uuuu-MM-dd''''T''''HH:mm:ss.SSS''''Z'''''',''TimeZone'',''UTCLeapSeconds'');', 1:6);
-  
+  c_eval('indEclipse?=Sw.p?_eclipseManeuver_ts.data==1;', 1:6);
   % iPh vs time
   %c_eval('iPh_movm?=movmean(Sw.p?_iPh_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);')
-  c_eval('iPh_movm?=movmedian(Sw.p?_iPh_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);', 1:6);
-  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_iPh_ts, irf.ts_scalar(Sw.p?_iPh_ts.time, iPh_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
+  c_eval('iPh_movm?=movmedian(Sw.p?_iPh_ts.data(~indEclipse?), days(15), ''omitnan'', ''SamplePoints'', t?(~indEclipse?));', 1:6);
+  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_iPh_ts(~indEclipse?), irf.ts_scalar(Sw.p?_iPh_ts.time(~indEclipse?), iPh_movm?), Sw.p?_iPh_ts(indEclipse?)},''comp'',''linestyle'',{lineStyle{?},''-black'', ''O''});', 1:6);
   c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph} vs time from sweep on probe ?.'']);', 1:6);
   c_eval('ylabel(h?,{''I_{ph}'',''[nA]''});', 1:6);
   c_eval('ylim(h?,[-55 555]);', 1:6);
   if (plotDAC)
     c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
-    c_eval('legend(h?,''I_{ph}, sweep p?'', ''15 days moving median'', ''Commanded DAC current'');', 1:6);
+    c_eval('legend(h?,''I_{ph}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC current'');', 1:6);
     c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
   else
-    c_eval('legend(h?,''I_{ph}, sweep p?'', ''15 days moving median'');', 1:6);
+    c_eval('legend(h?,''I_{ph}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}, sweep p? (only eclipse and/or maneuvers)'');', 1:6);
   end
   c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhVsTime_mms'',scStr,''_p?.png'']);', 1:4);
@@ -164,17 +164,17 @@ for iSc = 1:4
   close all % close plots
   
   % Iph_knee vs time
-  c_eval('iPh_knee_movm?=movmedian(Sw.p?_iPh_knee_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);', 1:6);
-  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_iPh_knee_ts, irf.ts_scalar(Sw.p?_iPh_knee_ts.time, iPh_knee_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
+  c_eval('iPh_knee_movm?=movmedian(Sw.p?_iPh_knee_ts.data(~indEclipse?), days(15), ''omitnan'', ''SamplePoints'', t?(~indEclipse?));', 1:6);
+  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_iPh_knee_ts(~indEclipse?), irf.ts_scalar(Sw.p?_iPh_knee_ts.time(~indEclipse?), iPh_knee_movm?), Sw.p?_iPh_knee_ts(indEclipse?)},''comp'',''linestyle'',{lineStyle{?},''-black'', ''O''});', 1:6);
   c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph}_{,}_{knee} vs time from sweep on probe ?.'']);', 1:6);
   c_eval('ylabel(h?,{''I_{ph}_{,}_{knee}'',''[nA]''});', 1:6);
   c_eval('ylim(h?,[-55 555]);', 1:6);
   if (plotDAC)
     c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
-    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p?'', ''15 days moving median'', ''Commanded DAC currents'');', 1:6);
+    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}_{,}_{knee}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC currents'');', 1:6);
     c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
   else
-    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p?'', ''15 days moving median'');', 1:6);
+    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}_{,}_{knee}, sweep p? (only eclipse and/or maneuvers)'');', 1:6);
   end
   c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 1:4);
@@ -182,17 +182,17 @@ for iSc = 1:4
   close all % close plots
 
   % "Optimal_bias" vs time
-  c_eval('iPh_optimalBias_movm?=movmedian(Sw.p?_optimal_bias_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);', 1:6);
-  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_optimal_bias_ts, irf.ts_scalar(Sw.p?_optimal_bias_ts.time, iPh_optimalBias_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
+  c_eval('iPh_optimalBias_movm?=movmedian(Sw.p?_optimal_bias_ts.data(~indEclipse?), days(15), ''omitnan'', ''SamplePoints'', t?(~indEclipse?));', 1:6);
+  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_optimal_bias_ts(~indEclipse?), irf.ts_scalar(Sw.p?_optimal_bias_ts.time(~indEclipse?), iPh_optimalBias_movm?), Sw.p?_optimal_bias_ts(indEclipse?)},''comp'',''linestyle'',{lineStyle{?},''-black'', ''O''});', 1:6);
   c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' I_{optimal bias} vs time from sweep on probe ?.'']);', 1:6);
   c_eval('ylabel(h?,{''I_optimal_bias'',''[nA]''});', 1:6);
   c_eval('ylim(h?,[-55 555]);', 1:6);
   if (plotDAC)
     c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
-    c_eval('legend(h?,''I_{optimal bias}, sweep p?'', ''15 days moving median'', ''Commanded DAC currents'');', 1:6);
+    c_eval('legend(h?,''I_{optimal bias}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{optimal bias}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC currents'');', 1:6);
     c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
   else
-    c_eval('legend(h?,''I_{optimal bias}, sweep p?'', ''15 days moving median'');', 1:6);
+    c_eval('legend(h?,''I_{optimal bias}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{optimal bias}, sweep p? (only eclipse and/or maneuvers)'');', 1:6);
   end
   c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iOptimalVsTime_mms'',scStr,''_p?.png'']);', 1:4);
@@ -200,11 +200,11 @@ for iSc = 1:4
   close all % close plots
 
   % impedance vs time
-  c_eval('imp_movm?=movmedian(Sw.p?_impedance_ts.data, days(15),''omitnan'',''SamplePoints'',t?);', 1:6);
-  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_impedance_ts, irf.ts_scalar(Sw.p?_iPh_ts.time, imp_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
+  c_eval('imp_movm?=movmedian(Sw.p?_impedance_ts.data(~indEclipse?), days(15),''omitnan'',''SamplePoints'',t?(~indEclipse?));', 1:6);
+  c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_impedance_ts(~indEclipse?), irf.ts_scalar(Sw.p?_iPh_ts.time(~indEclipse?), imp_movm?), Sw.p?_impedance_ts(indEclipse?)},''comp'',''linestyle'',{lineStyle{?},''-black'', ''O''});', 1:6);
   c_eval('ylabel(h?,{''Impedance'',''[MOhm]''});', 1:6);
   c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' impedance vs time from sweep on probe ?.'']);', 1:6);
-  c_eval('legend(h?,''impedance from P? Sweep'',''15 days moving median'');', 1:6);
+  c_eval('legend(h?,''impedance from P? Sweep (excl. eclipse and/or maneuvers)'',''15 days moving median (excl. eclipse and/or maneuvers)'',''impedance from P? Sweep (only eclipse and/or maneuvers)'');', 1:6);
   c_eval('ylim(h?,[-5 55]);', 1:6);
   c_eval('set(h?.Children(1),''LineWidth'',2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 1:4);
