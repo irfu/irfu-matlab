@@ -39,11 +39,19 @@ classdef NSO_table
     %       CON: Harder for outsiders to interpret (& edit) the XML file.
     %   Ex: thruster_firings.
     %
-    % TODO-DEC: Where put assertions? Assertions on file content which are not
-    %           strictly necessary?
+    % TODO-DEC: Where put requirements/assertions on NSO table content?
+    %   PROPOSAL: Distinguish between assertions which are specific for
+    %       (1) BICAS (not tests),
+    %       (2) file format,
+    %       (3) NsoTable
+    %   NOTE: Assertions:
+    %       t_start <= t_stop           : NsoTable
+    %       t_start sorted globally.    : NsoTable? File format?
+    %       Events do not overlap.      : NsoTable
+    %       Only using official NSOIDs. : BICAS
     %   PROPOSAL:
     %       (1) Strictly necessary assertions in constructor.
-    %       (2) Assertions on file content only in read_file(), but after
+    %       (2) Assertions on file content only in read_file_raw(), but after
     %           invoking constructor.
     %       (3) No assertions (besides valid XML file) in read_file_raw().
     
@@ -73,9 +81,9 @@ classdef NSO_table
             %============
             % ASSERTIONS
             %============
-            % PROPOSAL: Move ~all assertions to bicas.NSO_table.read_file ?
+            % PROPOSAL: Move ~all assertions to bicas.NSO_table.read_file_BICAS ?
             % PROPOSAL: Collect ~all assertions, in constructor (here) and in
-            %           bicas.NSO_table.read_file ?
+            %           bicas.NSO_table.read_file_BICAS ?
             % PROPOSAL: Check that FULL_SATURATION and PARTIAL SATURATION do not overlap.
             irf.assert.sizes(...
                 evtStartTt2000Array, [-1], ...
@@ -86,9 +94,13 @@ classdef NSO_table
             assert(isa(evtStopTt2000Array,  'int64'))
             assert(isa(evtNsoIdCa,          'cell' ))
             
-            %-------------------------
-            % ASSERTION: Time sorting
-            %-------------------------
+            % ASSERTION: All events have non-negative length.
+            assert(all(evtStartTt2000Array <= evtStopTt2000Array), ...
+                'Not all events have non-negative length.')
+            
+            %--------------------------------------------------
+            % ASSERTION: Event start times are sorted globally
+            %--------------------------------------------------
             % IMPLEMENTATION NOTE: Can not assume that both start & stop
             % timestaps are sorted. One event may entirely contain another
             % event (with different NSO ID) in time. Therefore enforcing only
@@ -122,20 +134,6 @@ classdef NSO_table
                 nsoId = uniqueEvtNsoIdCa{i};
                 b = strcmp(nsoId, evtNsoIdCa);
                 
-                % CASE:
-                %   evtStartTt2000Array: Sorted (earlier assertion), but not monotonically.
-                %   evtStopTt2000Array:  Can not be assumed to be sorted (no earlier assertion).
-                
-                % NOTE: This will catch some overlaps, but not all.
-                assert(issorted(evtStartTt2000Array(b), 'strictascend'), ...
-                    ['evtStartTt2000Array for nsoId="%s" is not time-sorted. ', ...
-                    'At least two events with that NSO ID overlap.'], nsoId)
-                assert(issorted(evtStopTt2000Array(b), 'strictascend'), ...
-                    ['evtStopTt2000Array for nsoId="%s" is not time-sorted. ', ...
-                    'At least two events with that NSO ID overlap.'], nsoId)
-            
-                % ASSERTION: Events do not overlap
-                % --------------------------------
                 % NOTE: ASSUMPTION: Start timestamps are already time-sorted.
                 % NOTE: Transposing before 2D-->1D vector.
                 % NOTE: 'strictascend' excludes ~adjacent events.
@@ -281,11 +279,21 @@ classdef NSO_table
     
     
     
-        % Read SolO non-standard operations (NSO) XML file and return the
-        % content as an instance of bicas.NSO_table.
-        function NsoTable = read_file(filePath)
+        % Read SolO non-standard operations (NSO) XML file for *BICAS* and
+        % return the content as an instance of bicas.NSO_table.
+        function NsoTable = read_file_BICAS(filePath)
             [evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa] = ...
                 bicas.NSO_table.read_file_raw(filePath);
+
+            % ASSERTION: No non-BICAS NSOIDs
+            % ------------------------------
+            % List of all legal NSO IDs.
+            LEGAL_NSOID_CA = struct2cell(bicas.constants.NSOID);
+            irf.assert.castring_set(LEGAL_NSOID_CA)
+            illegalEvtNsoidSet = setdiff(evtNsoIdCa, LEGAL_NSOID_CA);
+            assert(isempty(illegalEvtNsoidSet), ...
+                'NSO table file contains illegal NSO ID(s): %s.',  ...
+                ['"', strjoin(illegalEvtNsoidSet, '", "'), '"'])
             
             NsoTable = bicas.NSO_table(...
                 evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa);
@@ -317,16 +325,6 @@ classdef NSO_table
         %
         function [evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa] = ...
                 read_file_raw(filePath)
-            % TODO-DEC: Time format? String? TT2000? Numeric?
-            %   NOTE: Want to assert t1<t2.
-            % PROPOSAL: Permit multiple forms of XML time input: (t1, t2), (t1,dt), (dt, t2)
-            %   CON: Might not be able to convert XML to HTML using CSS.
-            
-            % List of all legal NSO IDs.
-            LEGAL_NSOID_CA = struct2cell(bicas.constants.NSOID);
-            irf.assert.castring_set(LEGAL_NSOID_CA)
-            
-            
             
             RootXmlElem      = xmlread(filePath);
             MainXmlElem      = bicas.NSO_table.getXmlUniqChildElem(RootXmlElem, 'main');
@@ -347,21 +345,8 @@ classdef NSO_table
                 stopUtc  = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'stopTimeUtc');
                 nsoId    = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'rcsNsoId');
                 
-                
-                
                 startTt2000 = spdfparsett2000(startUtc);
                 stopTt2000  = spdfparsett2000(stopUtc);
-                
-                % ASSERTIONS
-                assert(ismember(nsoId, LEGAL_NSOID_CA), ...
-                    'NSO table file contains illegal NSO ID="%s".', nsoId)
-                % IMPLEMENTATION NOTE: This assertion requires converting the
-                % UTC strings to a numerical format.
-                assert(startTt2000 < stopTt2000, ...
-                    'BICAS:FailedToReadInterpretNsOps', ...
-                    ['Start time does not precede stop time for', ...
-                    ' NSO table event stated to begin at UTC "%s".'], ...
-                    startUtc)
                 
                 evtStartTt2000Array(i, 1) = startTt2000;
                 evtStopTt2000Array(i, 1)  = stopTt2000;

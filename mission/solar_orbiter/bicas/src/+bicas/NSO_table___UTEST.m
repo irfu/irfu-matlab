@@ -117,8 +117,8 @@ classdef NSO_table___UTEST < matlab.unittest.TestCase
 
 
 
-        % Read BICAS's own default file (in BICAS's git repo).
-        function test_read_file_default_NSO_file(testCase)
+        function test_read_file_BICAS(testCase)
+            % NOTE: Only read BICAS's own default file (in BICAS's git repo).
             bicasRootPath = bicas.utils.get_BICAS_root_path();
 
             SETTINGS = bicas.create_default_SETTINGS();
@@ -128,7 +128,7 @@ classdef NSO_table___UTEST < matlab.unittest.TestCase
             nsoFilePath = fullfile(bicasRootPath, rcsNsoRelativePath);
 
             % TEST
-            NsoTable = bicas.NSO_table.read_file(nsoFilePath);
+            NsoTable = bicas.NSO_table.read_file_BICAS(nsoFilePath);
             testCase.verifyTrue(isa(NsoTable, 'bicas.NSO_table'))
 
             nEvents = irf.assert.sizes( ...
