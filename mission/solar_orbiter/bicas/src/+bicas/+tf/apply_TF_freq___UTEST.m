@@ -82,7 +82,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         function test1(testCase, N, nDelaySmpls)
             dt    = 0.1;
 
-            tf     = bicas.tf.utest_utils.get_tf_delay(nDelaySmpls*dt);
+            tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
             t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
             y1     = 0.5*(t-3).^2 + 5;
@@ -101,7 +101,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         function test2(testCase, N)
             dt     = 0.1;
 
-            tf     = bicas.tf.utest_utils.get_tf_constant(2, 2);
+            tf     = bicas.tf.utest_utils.get_TF_constant(2, 2);
 
             t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
             y1     = 1 * ones(size(t));
@@ -126,8 +126,8 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             dt     = 2*pi/N;
             omega0 = 1;    % Fits time interval perfectly. Perfectly periodic.
 
-            tfTemp = bicas.tf.utest_utils.get_tf_delay(nDelaySmpls * dt);
-            tf     = bicas.tf.utest_utils.get_tf_constant(...
+            tfTemp = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls * dt);
+            tf     = bicas.tf.utest_utils.get_TF_constant(...
                 1, ...
                 tfTemp(omega0));
             clear tfTemp
@@ -149,7 +149,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         function test4(testCase, N, nDelaySmpls)
             dt    = 0.1;
 
-            tf = bicas.tf.utest_utils.get_tf_delay(nDelaySmpls*dt);
+            tf = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
             % Exact DFT frequency.  ==> Good match
             omega0 = 2*pi * 5/(N*dt);
@@ -176,7 +176,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         function test5(testCase, N, nDelaySmpls)
             dt     = 0.01;
             
-            tf     = bicas.tf.utest_utils.get_tf_delay(nDelaySmpls*dt);
+            tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
             t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
             y1     = exp(t);
@@ -195,7 +195,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         function test6(testCase, N, nDelaySmpls)
             dt     = 1 / (N-1);
             
-            tf     = bicas.tf.utest_utils.get_tf_delay(nDelaySmpls*dt);
+            tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
             t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
             y1     = (t-5).^3 - 20*t + 25;
@@ -215,7 +215,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
             dt     = 1 / (N-1);
             z0     = -2;
 
-            tf     = bicas.tf.utest_utils.get_tf_constant(z0, 0);
+            tf     = bicas.tf.utest_utils.get_TF_constant(z0, 0);
 
             t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
             y1     = 10 * ones(size(t)) + 5 * sin(10*t.^3);            

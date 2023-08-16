@@ -54,7 +54,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
             dt          = 0.1;
             N           = 100;
             nDelaySmpls = 10;
-            tf = bicas.tf.utest_utils.get_tf_delay(nDelaySmpls*dt);
+            tf = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
             
             t  = [0:N-1]' * dt;
             y1 = 3 + 2*t - exp(-t);    % Arbitrary input signal.
@@ -122,7 +122,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
                         hwFactor = 0.5 * (1 + cos(xHw*2*pi));
                     end
                     
-                    tf = bicas.tf.utest_utils.get_tf_delay(nDelaySmpls*dt);                    
+                    tf = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);                    
 
                     %=====================
                     % edgePolicy == ZEROS

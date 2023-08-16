@@ -21,7 +21,7 @@ classdef utest_utils
         % Return TF (function handle) that delays function, i.e. it is moved in
         % the t+ direction (time domain), i.e. the same time delay (in time
         % units) for all frequencies.
-        function tf = get_tf_delay(delaySec)
+        function tf = get_TF_delay(delaySec)
             assert(isscalar(delaySec))
         
             tf = @(omegaRps) (exp(1i*omegaRps*(-delaySec)));            
@@ -45,7 +45,7 @@ classdef utest_utils
         % NOTE: z0 should be real to maintain that real input signal ==> real
         % output signal.
         %
-        function tf = get_tf_constant(z0, z1)
+        function tf = get_TF_constant(z0, z1)
             assert(isscalar(z0) & isreal(z0))
             assert(isscalar(z1))
             
