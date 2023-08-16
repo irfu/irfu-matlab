@@ -57,7 +57,7 @@ function JsonSwd = get_SWD(SwmList)
     %         the S/W as a whole is (by default).
     
     assert(isvector(SwmList))
-    assert(isa(SwmList, 'bicas.swm.SWM'))
+    assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
     
     % Variable naming convention:
     % ---------------------------
@@ -98,7 +98,7 @@ end
 
 
 function JsonSwdMode = generate_SWD_mode(Swm)
-    assert(isa(Swm, 'bicas.swm.SWM'))
+    assert(isa(Swm, 'bicas.swm.SoftwareMode'))
     
     JsonSwdMode.name    = Swm.cliOption;
     JsonSwdMode.purpose = Swm.swdPurpose;

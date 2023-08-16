@@ -128,7 +128,7 @@ classdef SoftwareModeList
         % 
         function obj = SoftwareModeList(SwmList)
             assert(isvector(SwmList))
-            assert(isa(SwmList, 'bicas.swm.SWM'))
+            assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
             irf.assert.castring_set({SwmList(:).cliOption})
             
             obj.List = SwmList;

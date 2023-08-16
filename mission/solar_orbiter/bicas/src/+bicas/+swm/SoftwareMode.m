@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef SWM
+classdef SoftwareMode
     % PROPOSAL: Fieldname change
     %   inputsList  --> inputsArray
     %   outputsList --> outputsArray
@@ -34,7 +34,7 @@ classdef SWM
     %#########################
     methods(Access=public)
 
-        function obj = SWM(...
+        function obj = SoftwareMode(...
                 prodFunc, cliOption, swdPurpose, ...
                 inputsList, outputsList)
 
