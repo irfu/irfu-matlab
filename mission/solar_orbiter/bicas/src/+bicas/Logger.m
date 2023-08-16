@@ -67,7 +67,7 @@ classdef Logger < handle
         % Needed for early initialization and error handling (try-catch).
         %LOG_PREFIX = 'LOG FILE: ';
         
-        LINE_FEED  = char(10);
+        LINE_FEED      = newline;
         
         stdoutOption   = 'none';
         
@@ -377,4 +377,4 @@ classdef Logger < handle
     
     
     
-end    % classdef logger
+end

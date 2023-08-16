@@ -1,12 +1,16 @@
 %
-% Functions (static methods) associated with bicas.proc.L1L2.Cal finding and
-% reading (and logging) RCTs so that bicas.proc.L1L2.Cal does not need to.
+% Functions (static methods) associated with bicas.proc.L1L2.Cal finding,
+% reading, and logging RCTs so that bicas.proc.L1L2.Cal does not need to.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16, by moving out functions from bicas.proc.L1L2.Cal.
 %
 classdef cal_RCT    
+    % PROPOSAL: Rename.
+    %   CON: Does not conform to naming conventions.
+    %   NOTE: Mostly about finding paths to RCTs to load. The exception is 
+    %         function for actually loading an RCT.
     %
     % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,
     %           zv_CALIBRATION_TABLE_INDEX for L1.
@@ -62,7 +66,8 @@ classdef cal_RCT
 
 
 
-        % Load all non-BIAS RCTs (all types) using assumptions on filenames.
+        % Load one RCT per selected RCT type using assumptions on filenames.
+        %
         %
         % NOTES
         % =====
@@ -115,8 +120,11 @@ classdef cal_RCT
 
 
 
-        % Load non-BIAS RCT(s) of ONE type (rctTypeId) using CDF global
-        % attribute CALIBRATION_TABLE and ZVs CALIBRATION_TABLE_INDEX and BW.
+        % (1) Load one BIAS RCT by regular expression.
+        % (2) Load one or multiple non-BIAS RCT(s) of the selected type
+        % (rctTypeId) using CDF global attribute CALIBRATION_TABLE and ZVs
+        % CALIBRATION_TABLE_INDEX and BW.
+        %
         %
         % IMPLEMENTATION NOTE
         % ===================
@@ -182,8 +190,8 @@ classdef cal_RCT
         % ====================
         % Useful to have this as separate functionality so that the chosen RCT
         % to use can be explicitly overridden via e.g. settings.
-        % Method only meant for internal use. Only public due to automatic
-        % testing.
+        % --
+        % NOTE: Only public due to automatic testing.
         %
         function path = find_RCT_regexp(rctDir, filenameRegexp, L)
 

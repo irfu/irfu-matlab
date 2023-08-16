@@ -15,11 +15,27 @@ see RCS ICD and RUM documents (see below).
 
 
 
-###############################################
- Abbreviations, dictionary, naming conventions
-###############################################
+####################
+ Naming conventions
+####################
+The naming conventions are partly inconsistent for historical reasons.
+The code should however converge on the following.
+- Use the defined abbreviations in identifiers.
+- Variable names should use camelCase. Initial in lowercase.
+- Classes:
+  - Class names for classes which are actually instantiated (which are not
+    merely a collection of static methods) should be CamelCase. Initial in
+    uppercase.
+  - Classes which are not instantiated should be named
+    using snake_case, but preferably without underscore and short. Abbreviations in uppercase?
+- Functions should be named using snake_case. Abbreviations in uppercase.
+
+
+
+###########################
+ Abbreviations, dictionary
+###########################
 NOTE: This list also applies to comments and identifiers in the source code.
-Some source files also define abbreviations widely used in the source code.
 --
 AA, aampere
     Antenna ampere. Calibrated ampere at the antenna.
@@ -78,7 +94,9 @@ DLR
     of the demultiplexer. See the "BIAS specification".
 DSI
     DATASET_ID. String constant that uniquely identifies each type of dataset.
-    NOTE: Variable names which refer to the GA "Dataset_ID" (and historical variants thereof) are not abbreviated "DSI", but to the GA name, in analogy with other variables named after GAs.
+    NOTE: Variable names which refer to the GA "Dataset_ID" (and historical
+    variants thereof) are not abbreviated "DSI", but to the GA name, in
+    analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
 EMIDP

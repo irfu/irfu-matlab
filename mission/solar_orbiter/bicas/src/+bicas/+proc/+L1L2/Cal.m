@@ -45,6 +45,7 @@
 %   """"Filename of the calibration table(s).""""
 %   """"There must as many as entries than the number of calibration table files
 %   associated to the L1R file.""""
+%
 % CALIBRATION_TABLE_INDEX : CDF L1R zVariable
 %   """"Index of the calibration table(s) value required to generate L2 data
 %   files.""""
@@ -52,6 +53,7 @@
 %   the index of the associated CALIBRATION_TABLE entry (i.e., 0 for the first
 %   entry, 1 for the second, etc.). The second element must refer to the index
 %   of the value to be used inside the calibration table file.""""
+%
 % NOTE: Neither exist in L1 datasets.
 %
 % Source: ROC-PRO-DAT-NTT-00006-LES_Iss01_Rev02(ROC_Data_Products).Draft2020-04-06.pdf

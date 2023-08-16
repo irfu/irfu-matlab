@@ -18,6 +18,10 @@
 %
 classdef cal_RCT_types    
     % PROPOSAL: Class for init_RCT_TYPES_MAP:"Entry" structs.
+    % PROPOSAL: Rename.
+    %   CON: Does not conform to naming conventions.
+    %   PRO: All code is about modifying loaded RCT data.
+    % PROPOSAL: Merge with bicas.RCT.
 
 
 
@@ -102,6 +106,7 @@ classdef cal_RCT_types
                     'modifyRctFunc',            modifyRctFunc, ...    
                     ... % Pointer to function that logs data for one RCT.
                     'logRctFunc',               logRctFunc, ... 
+                    ... % Setting key to setting containing regex. for filename.
                     'filenameRegexpSettingKey', filenameRegexpSettingKey);
             end
             %###################################################################
