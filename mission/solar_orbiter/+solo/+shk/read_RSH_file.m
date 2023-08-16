@@ -173,7 +173,7 @@ end
 %   with the specified tag name.
 %
 function ChildXmlElem = getXmlUniqChildElem(XmlElem, childTagName)
-    % NOTE: Exact same function as in bicas.NSO_table.
+    % NOTE: Exact same function as in bicas.NsoTable.
     % PROPOSAL: Turn into separate generic function?
 
     ChildXmlElemList = XmlElem.getElementsByTagName(childTagName);

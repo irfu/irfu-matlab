@@ -540,7 +540,7 @@ function main_without_error_handling(cliArgumentsList, L)
             
             %L.logf('info', 'rcsNsoPath = "%s"', rcsNsoPath);
             L.logf('info', 'Loading RCS NSO table XML file "%s"', rcsNsoPath)
-            NsoTable = bicas.NSO_table.read_file_BICAS(rcsNsoPath);
+            NsoTable = bicas.NsoTable.read_file_BICAS(rcsNsoPath);
 
 
 

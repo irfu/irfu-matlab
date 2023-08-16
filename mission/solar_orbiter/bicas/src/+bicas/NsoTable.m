@@ -7,14 +7,14 @@
 % NSO       : Non-Standard Operations
 % NSO event : One continuous time interval with exactly one NSOID attached to
 %             it.
-% NSOID    : Unique string that identifies the actions BICAS should take.
+% NSOID     : Unique string that identifies the actions BICAS should take.
 %             Multiple NSO events may have the same NSOID.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-22
 %
-classdef NSO_table
+classdef NsoTable
     % PROPOSAL: New name
     %   PROPOSAL: ~table
     %   PROPOSAL: ~events
@@ -24,7 +24,6 @@ classdef NSO_table
     %       NOTE: solo_ns_ops.xml.html:
     %             Title "Non-Standard Operations (NSO) List"
     %   PROPOSAL: NsoList
-    %   PROPOSAL: NsoTable
     %
     % PROPOSAL: Terminology similar to MMS, mission/mms/mms_ns_ops.xml, i.e.
     %           event = one time interval in NSO table.
@@ -85,14 +84,14 @@ classdef NSO_table
         % evtNsoidCa
         %       Column cell array of NSOIDs.
         %       NOTE: Same RCS NSOID may occur multiple times. Not unique.
-        function obj = NSO_table(evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa)
+        function obj = NsoTable(evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa)
 
             %============
             % ASSERTIONS
             %============
-            % PROPOSAL: Move ~all assertions to bicas.NSO_table.read_file_BICAS ?
+            % PROPOSAL: Move ~all assertions to bicas.NsoTable.read_file_BICAS ?
             % PROPOSAL: Collect ~all assertions, in constructor (here) and in
-            %           bicas.NSO_table.read_file_BICAS ?
+            %           bicas.NsoTable.read_file_BICAS ?
             % PROPOSAL: Check that FULL_SATURATION and PARTIAL SATURATION do not overlap.
             irf.assert.sizes(...
                 evtStartTt2000Array, [-1], ...
@@ -297,10 +296,10 @@ classdef NSO_table
     
     
         % Read SolO non-standard operations (NSO) XML file for *BICAS* and
-        % return the content as an instance of bicas.NSO_table.
+        % return the content as an instance of bicas.NsoTable.
         function NsoTable = read_file_BICAS(filePath)
             [evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa] = ...
-                bicas.NSO_table.read_file_raw(filePath);
+                bicas.NsoTable.read_file_raw(filePath);
 
             % ASSERTION: No non-BICAS NSOIDs
             % ------------------------------
@@ -312,7 +311,7 @@ classdef NSO_table
                 'NSO table file contains illegal NSOID(s): %s.',  ...
                 ['"', strjoin(illegalEvtNsoidSet, '", "'), '"'])
             
-            NsoTable = bicas.NSO_table(...
+            NsoTable = bicas.NsoTable(...
                 evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa);
         end
     
@@ -331,7 +330,7 @@ classdef NSO_table
         %
         % RETURN VALUES
         % =============
-        % Same fields as in class bicas.NSO_table.
+        % Same fields as in class bicas.NsoTable.
         % evtStartTt2000Array
         % evtStopTt2000Array
         % evtNsoidCa
@@ -344,8 +343,8 @@ classdef NSO_table
                 read_file_raw(filePath)
             
             RootXmlElem      = xmlread(filePath);
-            MainXmlElem      = bicas.NSO_table.getXmlUniqChildElem(RootXmlElem, 'main');
-            TablesXmlElem    = bicas.NSO_table.getXmlUniqChildElem(MainXmlElem, 'eventsTable');
+            MainXmlElem      = bicas.NsoTable.getXmlUniqChildElem(RootXmlElem, 'main');
+            TablesXmlElem    = bicas.NsoTable.getXmlUniqChildElem(MainXmlElem, 'eventsTable');
             EventXmlElemList = TablesXmlElem.getElementsByTagName('event');
             
             nEvents = EventXmlElemList.getLength;
@@ -358,9 +357,9 @@ classdef NSO_table
                 % NOTE: Subtract by one.
                 EventXmlElem = EventXmlElemList.item(i-1);
                 
-                startUtc = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'startTimeUtc');
-                stopUtc  = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'stopTimeUtc');
-                nsoid    = bicas.NSO_table.getXmlChildElemStr(EventXmlElem, 'rcsNsoId');
+                startUtc = bicas.NsoTable.getXmlChildElemStr(EventXmlElem, 'startTimeUtc');
+                stopUtc  = bicas.NsoTable.getXmlChildElemStr(EventXmlElem, 'stopTimeUtc');
+                nsoid    = bicas.NsoTable.getXmlChildElemStr(EventXmlElem, 'rcsNsoId');
                 % NOTE: NSO XML file contains string "rcsNsoId" which is
                 % technically against the naming convention (w.r.t.
                 % capitalization) used in the source code. Keeping the old
@@ -425,8 +424,8 @@ classdef NSO_table
         
         
         function s = getXmlChildElemStr(XmlElem, childTagName)
-            ChildXmlElem = bicas.NSO_table.getXmlUniqChildElem(XmlElem, childTagName);
-            s            = bicas.NSO_table.getXmlElemStr(ChildXmlElem);
+            ChildXmlElem = bicas.NsoTable.getXmlUniqChildElem(XmlElem, childTagName);
+            s            = bicas.NsoTable.getXmlElemStr(ChildXmlElem);
         end
 
 

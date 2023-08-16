@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bicas.NSO_table.
+% matlab.unittest automatic test code for bicas.NsoTable.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef NSO_table___UTEST < matlab.unittest.TestCase
+classdef NsoTable___UTEST < matlab.unittest.TestCase
     % PROPOSAL: Extend with more tests.
     %   PROPOSAL: Empty (legal) NSO file?
     %       NOTE: Already test-loading default NSO XML file.
@@ -22,13 +22,13 @@ classdef NSO_table___UTEST < matlab.unittest.TestCase
 
         % % Test constructor.
         % % NOTE: test_get_NSO_timestamps() indirectly tests the constructor.
-        % function test_NSO_table(testCase)
+        % function test_NsoTable(testCase)
         % end
 
 
 
-        % Test method bicas.NSO_table.get_NSO_timestamps(), but indirectly
-        % uses/tests bicas.NSO_table() (constructor) by its nature.
+        % Test method bicas.NsoTable.get_NSO_timestamps(), but indirectly
+        % uses/tests bicas.NsoTable() (constructor) by its nature.
         function test_get_NSO_timestamps(testCase)
             % PROBLEM: How handle that return value may change the order of
             %          events depending on implementation?
@@ -47,7 +47,7 @@ classdef NSO_table___UTEST < matlab.unittest.TestCase
                 expEvtNsoidCa         = expEvtNsoidCa(:);
                 expIGlobalEventsArray = expIGlobalEventsArray(:);
 
-                NsoTable = bicas.NSO_table(evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa);
+                NsoTable = bicas.NsoTable(evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa);
 
                 [actBEvtArraysCa, actEvtNsoidCa, actIGlobalEventsArray] = NsoTable.get_NSO_timestamps(tt2000Array);
                 testCase.verifyEqual(actBEvtArraysCa,       expBEvtArraysCa)
@@ -128,8 +128,8 @@ classdef NSO_table___UTEST < matlab.unittest.TestCase
             nsoFilePath = fullfile(bicasRootPath, rcsNsoRelativePath);
 
             % TEST
-            NsoTable = bicas.NSO_table.read_file_BICAS(nsoFilePath);
-            testCase.verifyTrue(isa(NsoTable, 'bicas.NSO_table'))
+            NsoTable = bicas.NsoTable.read_file_BICAS(nsoFilePath);
+            testCase.verifyTrue(isa(NsoTable, 'bicas.NsoTable'))
 
             nEvents = irf.assert.sizes( ...
                 NsoTable.evtStartTt2000Array, [-1, 1], ...
