@@ -175,22 +175,10 @@ classdef qual   % < handle
 
 
 
-    end    % methods(Static)
-
-
-
-    %########################
-    %########################
-    % PRIVATE STATIC METHODS
-    %########################
-    %########################
-    methods(Static, Access=private)
-
-
-
         % Overwrite selected records of voltage & current with fill values.
         function [zvDemuxerOutput, zvCurrentAAmpere] = set_voltage_current_fill_value(...
                 zv_Epoch, zvDemuxerOutput, zvCurrentAAmpere, zvUfv, L)
+            assert(islogical(zvUfv))
 
             % Log
             logHeaderStr = sprintf(...
@@ -236,6 +224,7 @@ classdef qual   % < handle
             %===============
             [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv(...
                 'PROCESSING.L2.REMOVE_DATA.MUX_MODES');
+            muxModesRemove = muxModesRemove(:);
             if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
             end
@@ -264,6 +253,19 @@ classdef qual   % < handle
                 removeMarginSec);
             bicas.proc.L1L2.qual.log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
         end
+
+
+
+    end    % methods(Static)
+
+
+
+    %########################
+    %########################
+    % PRIVATE STATIC METHODS
+    %########################
+    %########################
+    methods(Static, Access=private)
 
 
 
