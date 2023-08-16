@@ -25,7 +25,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-19
 %
-classdef BLTS_src_dest
+classdef PhysicalSignalSrcDest
     % NOTE: Only(?) the demultiplexer creates its own instances.
     % PROPOSAL: Make publically un-instantiable. Define a fixed set of legal instances accessible via constants.
     %   PRO: Limiting the number of instantiations speeds up the code. Having assertions is then no downside.
@@ -33,7 +33,7 @@ classdef BLTS_src_dest
     %   CON-PROPOSAL: Have the bicas.proc.L1L2.demuxer.main use its own pre-defined constants.
     %       NOTE/CON: Slightly impractical for routings which depend on the latching relay.
     %
-    % PROPOSAL: Other name that does not reference BLTS.
+    % PROPOSAL: Other name that does not reference BLTS. -- IMPLEMENTED
     %   See bicas.proc.L1L2.cal BOGIQ.
     %   PRO: Reference to BLTS is confusing.
     %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
@@ -63,7 +63,7 @@ classdef BLTS_src_dest
         
         
         % Constructor
-        function obj = BLTS_src_dest(category, antennas)
+        function obj = PhysicalSignalSrcDest(category, antennas)
             
             % ASSERTIONS: antenna
             assert(isnumeric(antennas))
@@ -88,7 +88,7 @@ classdef BLTS_src_dest
             else
                 error(...
                     'BICAS:Assertion:IllegalArgument', ...
-                    'Trying to define illegal BLTS_src_dest.')
+                    'Trying to define illegal PhysicalSignalSrcDest.')
             end
             
             % ASSERTION: category

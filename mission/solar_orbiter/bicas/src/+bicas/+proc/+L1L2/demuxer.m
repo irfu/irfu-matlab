@@ -2,7 +2,7 @@
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
 %   bicas.proc.L1L2.demuxer.main(), and
-%   bicas.proc.L1L2.BLTS_src_dest
+%   bicas.proc.L1L2.PhysicalSignalSrcDest
 %
 %
 % NOTE
@@ -39,30 +39,30 @@ classdef demuxer
     properties(Access=private, Constant)
         
         % IMPLEMENTATION NOTE: Reasons to pre-define
-        %   (1) bicas.proc.L1L2.BLTS_src_dest objects, and
+        %   (1) bicas.proc.L1L2.PhysicalSignalSrcDest objects, and
         %   (2) structs created by
         % bicas.proc.L1L2.demuxer.routing (consisting of
-        % bicas.proc.L1L2.BLTS_src_dest objects):
+        % bicas.proc.L1L2.PhysicalSignalSrcDest objects):
         % ** Only makes constructor calls when bicas.proc.L1L2.demuxer is
         %    (statically) initialized, not every time the
         %    bicas.proc.L1L2.demuxer.main function is called.
         %    ==> Faster
-        % ** Makes all necessary calls bicas.proc.L1L2.BLTS_src_dest constructor
+        % ** Makes all necessary calls bicas.proc.L1L2.PhysicalSignalSrcDest constructor
         %    immediately, regardless of for which arguments the
         %    bicas.proc.L1L2.demuxer.main function is called (in particular mux
         %    mode).
         %    ==> Tests more code immediately.
         %    ==> Finds routing bugs faster.
         
-        SRC_DC_V1  = bicas.proc.L1L2.BLTS_src_dest('DC single', [1]);
-        SRC_DC_V2  = bicas.proc.L1L2.BLTS_src_dest('DC single', [2]);
-        SRC_DC_V3  = bicas.proc.L1L2.BLTS_src_dest('DC single', [3]);
-        SRC_DC_V12 = bicas.proc.L1L2.BLTS_src_dest('DC diff',   [1,2]);
-        SRC_DC_V13 = bicas.proc.L1L2.BLTS_src_dest('DC diff',   [1,3]);
-        SRC_DC_V23 = bicas.proc.L1L2.BLTS_src_dest('DC diff',   [2,3]);
-        SRC_AC_V12 = bicas.proc.L1L2.BLTS_src_dest('AC diff',   [1,2]);
-        SRC_AC_V13 = bicas.proc.L1L2.BLTS_src_dest('AC diff',   [1,3]);
-        SRC_AC_V23 = bicas.proc.L1L2.BLTS_src_dest('AC diff',   [2,3]);
+        SRC_DC_V1  = bicas.proc.L1L2.PhysicalSignalSrcDest('DC single', [1]);
+        SRC_DC_V2  = bicas.proc.L1L2.PhysicalSignalSrcDest('DC single', [2]);
+        SRC_DC_V3  = bicas.proc.L1L2.PhysicalSignalSrcDest('DC single', [3]);
+        SRC_DC_V12 = bicas.proc.L1L2.PhysicalSignalSrcDest('DC diff',   [1,2]);
+        SRC_DC_V13 = bicas.proc.L1L2.PhysicalSignalSrcDest('DC diff',   [1,3]);
+        SRC_DC_V23 = bicas.proc.L1L2.PhysicalSignalSrcDest('DC diff',   [2,3]);
+        SRC_AC_V12 = bicas.proc.L1L2.PhysicalSignalSrcDest('AC diff',   [1,2]);
+        SRC_AC_V13 = bicas.proc.L1L2.PhysicalSignalSrcDest('AC diff',   [1,3]);
+        SRC_AC_V23 = bicas.proc.L1L2.PhysicalSignalSrcDest('AC diff',   [2,3]);
 
         % Define constants, each one representing different routings.
         ROUTING_DC_V1  = bicas.proc.L1L2.demuxer.routing('DC single', [1]);
@@ -175,7 +175,7 @@ classdef demuxer
         %
         % RETURN VALUES
         % =============
-        % BltsSrcArray   : Array of bicas.proc.L1L2.BLTS_src_dest objects.
+        % BltsSrcArray   : Array of bicas.proc.L1L2.PhysicalSignalSrcDest objects.
         %                  (iBlts) = Represents the origin of the corresponding
         %                  BLTS.
         % AsrSamplesVolt : Samples for all ASRs (singles, diffs) which can
@@ -469,15 +469,15 @@ classdef demuxer
         % ARGUMENTS
         % =========
         % srcCategory, srcAntennas : Used to initialize .src
-        %                            bicas.proc.L1L2.BLTS_src_dest.
+        %                            bicas.proc.L1L2.PhysicalSignalSrcDest.
         % varargin                 : 0 or 2 arguments.
         %                            Used to initialize .dest
-        %                            bicas.proc.L1L2.BLTS_src_dest.
+        %                            bicas.proc.L1L2.PhysicalSignalSrcDest.
         %
         %
         % RETURN VALUE
         % ============
-        % R : Struct. Fields are bicas.proc.L1L2.BLTS_src_dest.
+        % R : Struct. Fields are bicas.proc.L1L2.PhysicalSignalSrcDest.
         %   .src  : Where the physical signal in BLTS ultimately comes from.
         %           This is used to determine how the signal should be
         %           calibrated.
@@ -488,12 +488,12 @@ classdef demuxer
             % PROPOSAL: Turn return value into class.
             
             R     = struct();
-            R.src = bicas.proc.L1L2.BLTS_src_dest(srcCategory, srcAntennas);
+            R.src = bicas.proc.L1L2.PhysicalSignalSrcDest(srcCategory, srcAntennas);
             
             if numel(varargin) == 0
                 R.dest = R.src;
             elseif numel(varargin) == 2
-                R.dest = bicas.proc.L1L2.BLTS_src_dest(varargin{1}, varargin{2});
+                R.dest = bicas.proc.L1L2.PhysicalSignalSrcDest(varargin{1}, varargin{2});
             else
                 error('BICAS:Assertion:IllegalArgument', ...
                     'Illegal number of extra arguments.')
@@ -522,7 +522,7 @@ classdef demuxer
         
         
         
-        % Convert a BLTS_src_dest (representing an ASR) to a corresponding
+        % Convert a PhysicalSignalSrcDest (representing an ASR) to a corresponding
         % struct fieldname.
         function fn = get_ASR_fieldname(BltsDest)
             % PROPOSAL: New name implying "destination".
