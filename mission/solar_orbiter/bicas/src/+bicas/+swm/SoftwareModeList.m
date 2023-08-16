@@ -60,7 +60,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-31
 %
-classdef SWML
+classdef SoftwareModeList
     % PROPOSAL: Pick SWD name/descriptions from master CDFs.
     % PROPOSAL: Obtain output dataset level from production function metadata?!!
     %
@@ -75,18 +75,18 @@ classdef SWML
     %        only use RODP DSIs.
     %
     % TODO-DEC: Which arguments should SWML production functions (function handles in
-    %           an instance of bicas.swm.SWML) have?
+    %           an instance of bicas.swm.SoftwareModeList) have?
     %   NOTE: The arguments needed by the underlying production functions
-    %         varies, but the arguments returned by bicas.swm.SWML must be the same.
+    %         varies, but the arguments returned by bicas.swm.SoftwareModeList must be the same.
     %   NOTE: produce_L1R_to_L2_LFR/TDS() are used for multiple s/w modes with some
     %         arguments hard-coded differently for different s/w modes (input & output DSIs).
     %   NOTE: SWM/underlying production functions can receive argument values via
-    %       (1) bicas.swm.SWML (constructor), or (2) the call in execute_SWM.
-    %   PROPOSAL: All arguments which are known at the time bicas.swm.SWML
+    %       (1) bicas.swm.SoftwareModeList (constructor), or (2) the call in execute_SWM.
+    %   PROPOSAL: All arguments which are known at the time bicas.swm.SoftwareModeList
     %       constructor is called, should receive values there.
     %       ==> ~As many as possible.
-    %       CON: bicas.swm.SWML not really meant to set production function arguments.
-    %       CON: Makes bicas.swm.SWML harder to initialize (outside of BICAS).
+    %       CON: bicas.swm.SoftwareModeList not really meant to set production function arguments.
+    %       CON: Makes bicas.swm.SoftwareModeList harder to initialize (outside of BICAS).
     %   PROPOSAL: All arguments which are different for different (underlying) production
     %             functions. ==> As few as possible.
     %   Ex: SETTINGS, L, rctDir, NsoTable
@@ -126,7 +126,7 @@ classdef SWML
         % the implementation has not been entirely updated to take advantage of
         % this (not simplified of this).
         % 
-        function obj = SWML(SwmList)
+        function obj = SoftwareModeList(SwmList)
             assert(isvector(SwmList))
             assert(isa(SwmList, 'bicas.swm.SWM'))
             irf.assert.castring_set({SwmList(:).cliOption})

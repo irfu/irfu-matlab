@@ -609,7 +609,7 @@ end
 
 % Print the JSON S/W descriptor identification section.
 %
-% NOTE: Argument is *not* an instance of bicas.swm.SWML.
+% NOTE: Argument is *not* an instance of bicas.swm.SoftwareModeList.
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
@@ -627,7 +627,7 @@ end
 
 % Print the JSON S/W descriptor.
 %
-% NOTE: Argument is *not* an instance of bicas.swm.SWML.
+% NOTE: Argument is *not* an instance of bicas.swm.SoftwareModeList.
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24

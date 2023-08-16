@@ -27,7 +27,7 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
                 Swml = bicas.swm.get_SWML(SETTINGS, L);
 
-                testCase.verifyClass(Swml, 'bicas.swm.SWML')
+                testCase.verifyClass(Swml, 'bicas.swm.SoftwareModeList')
             end
 
             %===================================================================

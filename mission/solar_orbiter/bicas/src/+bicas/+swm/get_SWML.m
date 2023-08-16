@@ -7,7 +7,7 @@
 %
 % RETURN VALUES
 % =============
-% Official bicas.swm.SWML object (singleton) that is actually used by BICAS.
+% Official bicas.swm.SoftwareModeList object (singleton) that is actually used by BICAS.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -291,6 +291,6 @@ function Swml = get_SWML(SETTINGS, L)
              DensityDsrOutputDataset]);
     end
 
-    Swml = bicas.swm.SWML(SwmList);
+    Swml = bicas.swm.SoftwareModeList(SwmList);
 
 end
