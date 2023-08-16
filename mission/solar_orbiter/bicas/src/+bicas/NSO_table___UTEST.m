@@ -34,24 +34,24 @@ classdef NSO_table___UTEST < matlab.unittest.TestCase
             %          events depending on implementation?
 
             function test(...
-                    evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa, tt2000Array, ...
-                    expBEvtArraysCa, expEvtNsoIdCa, expIGlobalEventsArray)
+                    evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa, tt2000Array, ...
+                    expBEvtArraysCa, expEvtNsoidCa, expIGlobalEventsArray)
 
                 % Normalize input
                 evtStartTt2000Array = int64(evtStartTt2000Array(:));
                 evtStopTt2000Array  = int64(evtStopTt2000Array(:));
-                evtNsoIdCa          = evtNsoIdCa(:);
+                evtNsoidCa          = evtNsoidCa(:);
                 tt2000Array         = int64(tt2000Array(:));
                 % Normalize output
                 expBEvtArraysCa       = expBEvtArraysCa(:);
-                expEvtNsoIdCa         = expEvtNsoIdCa(:);
+                expEvtNsoidCa         = expEvtNsoidCa(:);
                 expIGlobalEventsArray = expIGlobalEventsArray(:);
 
-                NsoTable = bicas.NSO_table(evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa);
+                NsoTable = bicas.NSO_table(evtStartTt2000Array, evtStopTt2000Array, evtNsoidCa);
 
-                [actBEvtArraysCa, actEvtNsoIdCa, actIGlobalEventsArray] = NsoTable.get_NSO_timestamps(tt2000Array);
+                [actBEvtArraysCa, actEvtNsoidCa, actIGlobalEventsArray] = NsoTable.get_NSO_timestamps(tt2000Array);
                 testCase.verifyEqual(actBEvtArraysCa,       expBEvtArraysCa)
-                testCase.verifyEqual(actEvtNsoIdCa,         expEvtNsoIdCa)
+                testCase.verifyEqual(actEvtNsoidCa,         expEvtNsoidCa)
                 testCase.verifyEqual(actIGlobalEventsArray, expIGlobalEventsArray)
             end
 
@@ -134,7 +134,7 @@ classdef NSO_table___UTEST < matlab.unittest.TestCase
             nEvents = irf.assert.sizes( ...
                 NsoTable.evtStartTt2000Array, [-1, 1], ...
                 NsoTable.evtStopTt2000Array,  [-1, 1], ...
-                NsoTable.evtNsoIdCa,          [-1, 1]);
+                NsoTable.evtNsoidCa,          [-1, 1]);
             testCase.verifyTrue(nEvents > 300)
         end
 

@@ -80,10 +80,10 @@ classdef qual
             % NA           = Numeric Array
             
             % NOTE: iCdfEventNa = CDF events as indices to global events.
-            [bCdfEventRecordsCa, cdfEventNsoIdCa, iCdfEventNa] = ...
+            [bCdfEventRecordsCa, cdfEventNsoidCa, iCdfEventNa] = ...
                 NsoTable.get_NSO_timestamps(zv_Epoch);
-            nCdfEvents    = numel(cdfEventNsoIdCa);
-            nGlobalEvents = numel(NsoTable.evtNsoIdCa);
+            nCdfEvents    = numel(cdfEventNsoidCa);
+            nGlobalEvents = numel(NsoTable.evtNsoidCa);
             L.logf('info', ...
                 ['Searched non-standard operations (NSO) table.', ...
                 ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
@@ -96,7 +96,7 @@ classdef qual
 
                 % Index into GLOBAL NSO events table.
                 iGlobalEvent = iCdfEventNa(kCdfEvent);
-                eventNsoId   = cdfEventNsoIdCa{kCdfEvent};
+                eventNsoid   = cdfEventNsoidCa{kCdfEvent};
 
                 %===========================================================
                 % Log the relevant NSO event in the GLOBAL NSO events table
@@ -104,18 +104,18 @@ classdef qual
                 L.logf('info', '    %s -- %s %s', ...
                     irf.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
                     irf.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGlobalEvent)), ...
-                    eventNsoId);
+                    eventNsoid);
 
 
 
                 %=================================
-                % Take action depending on NSO ID
+                % Take action depending on NSOID
                 %=================================
                 % Temporary shorter variable name.
                 zv_QUALITY_FLAG_cdfEvent       = zv_QUALITY_FLAG      (bCdfEventRecordsCa{kCdfEvent});
                 zv_L2_QUALITY_BITMASK_cdfEvent = zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
 
-                switch(eventNsoId)
+                switch(eventNsoid)
 
                     case bicas.constants.NSOID.PARTIAL_SATURATION
                         zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
@@ -145,12 +145,12 @@ classdef qual
 
                     otherwise
                         % ASSERTION
-                        % NOTE: Not perfect assertion on legal NSO IDs since
+                        % NOTE: Not perfect assertion on legal NSOIDs since
                         % code only checks those relevant for the data (time
                         % interval) currently processed. (Therefore also checks
-                        % all NSO IDs when reads NSO table.)
-                        error('Can not interpret RCS NSO ID "%s".', ...
-                            cdfEventNsoIdCa{kCdfEvent})
+                        % all NSOIDs when reads NSO table.)
+                        error('Can not interpret RCS NSOID "%s".', ...
+                            cdfEventNsoidCa{kCdfEvent})
 
                 end
                 zv_QUALITY_FLAG      (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG_cdfEvent;

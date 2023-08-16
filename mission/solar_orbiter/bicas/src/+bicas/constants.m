@@ -102,16 +102,16 @@ classdef constants
 
 
 
-        % Field values = Legal RCS NSO IDs used in the RCS NSO XML file.
+        % Field values = Legal RCS NSOIDs used in the RCS NSO XML file.
         % Field names can be used as constants for those strings inside BICAS.
         %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can
         % simultaneously be used to
-        % (1) compile a complete list of legal NSO IDs in the NSO table file
+        % (1) compile a complete list of legal NSOIDs in the NSO table file
         % (2) reference specific constants (fields) throughout BICAS without
-        %     hardcoding the actual NSO IDs in multiple places.
+        %     hardcoding the actual NSOIDs in multiple places.
         %
-        % IMPLEMENTATION NOTE: One does not want to use the RCS NSO ID string
+        % IMPLEMENTATION NOTE: One does not want to use the RCS NSOID string
         % constants directly inside the code, in case of typos.
         %
         NSOID = struct(...
