@@ -39,9 +39,9 @@ classdef InputDataset
         filePath
         
     end    % properties(SetAccess=immutable)
-    
-    
-    
+
+
+
     %#########################
     %#########################
     % PUBLIC INSTANCE METHODS

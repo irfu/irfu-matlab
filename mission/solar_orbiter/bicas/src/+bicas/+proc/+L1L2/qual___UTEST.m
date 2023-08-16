@@ -69,6 +69,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
             if 1
                 % Complex test
                 % Test (1) UFV set by mux modes and (2) thruster firings.
+                % LFR
                 NsoTable = bicas.NSO_table(int64(7e9), int64(8e9), {bicas.constants.NSOID.THRUSTER_FIRING});
                 Settings = struct(...
                     'rmMuxModesArray',     [1, 2], ...
@@ -122,6 +123,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 testCase.verifyEqual(actZvDemuxerOutput,  expZvDemuxerOutput)
                 testCase.verifyEqual(actZvCurrentAAmpere, expZvCurrentAAmpere)
             end
+            
             %===================================================================
 
             % Empty data.

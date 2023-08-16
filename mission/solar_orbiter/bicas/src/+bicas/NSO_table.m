@@ -16,13 +16,15 @@
 %
 classdef NSO_table
     % PROPOSAL: New name
+    %   PROPOSAL: ~table
     %   PROPOSAL: ~events
     %   PROPOSAL: ~list
-    %       PRO: Table implies multiple dimensions more than list.
+    %       CON: Table implies multiple dimensions more than list.
     %            List implies ~1D (or even ~set).
     %       NOTE: solo_ns_ops.xml.html:
     %             Title "Non-Standard Operations (NSO) List"
-    %       PROPOSAL: NsoList
+    %   PROPOSAL: NsoList
+    %   PROPOSAL: NsoTable
     %
     % PROPOSAL: Terminology similar to MMS, mission/mms/mms_ns_ops.xml, i.e.
     %           event = one time interval in NSO table.
@@ -30,9 +32,6 @@ classdef NSO_table
     % PROPOSAL: Terminology similar to Cluster, mission/cluster/caa/caa-control/ns_ops.xml, i.e.
     %           operation = one time interval in NSO table.
     %   PRO: Cluster table has been used more than MMS table.
-    %
-    % PROPOSAL: Automatic test code for get_NSO_timestamps().
-    %   NOTE: Implies separating file reading from initializing object.
     %
     % PROPOSAL: Ability to add time margins for selected NSOIDs.
     %   PRO: Easier to change pre-existing margins than to modify the XML file.
@@ -54,11 +53,11 @@ classdef NSO_table
     %       (2) Assertions on file content only in read_file_raw(), but after
     %           invoking constructor.
     %       (3) No assertions (besides valid XML file) in read_file_raw().
-    
+
     
     
     properties(SetAccess=immutable, GetAccess=public)
-        % NOTE: Same RCS NSO ID may occur multiple times. Not unique.
+        % See constructor.
         % NOTE: All fields are Nx1 vectors.
         
         evtStartTt2000Array
@@ -75,7 +74,17 @@ classdef NSO_table
     %#####################
 
 
-
+        % ARGUMENTS
+        % =========
+        % evtStartTt2000Array
+        %       Column array of timestamps that represent the beginning of
+        %       events.
+        %       NOTE: Must increment.
+        % evtStopTt2000Array
+        %       Column array of timestamps that represent the end of events.
+        % evtNsoIdCa
+        %       Column cell array of NSOIDs.
+        %       NOTE: Same RCS NSOID may occur multiple times. Not unique.
         function obj = NSO_table(evtStartTt2000Array, evtStopTt2000Array, evtNsoIdCa)
 
             %============
@@ -127,7 +136,7 @@ classdef NSO_table
             
             %----------------------------------------------------------------
             % ASSERTION: Events with the same NSO ID do not overlap (and are
-            % time sorted)
+            % time sorted).
             %----------------------------------------------------------------
             uniqueEvtNsoIdCa = unique(evtNsoIdCa);
             for i = 1:numel(uniqueEvtNsoIdCa)
@@ -148,9 +157,9 @@ classdef NSO_table
             
             % CASE: Data seems OK.
             
-            % ===================
+            %=====================
             % Store data in class
-            % ===================
+            %=====================
             obj.evtStartTt2000Array = evtStartTt2000Array;
             obj.evtStopTt2000Array  = evtStopTt2000Array;
             obj.evtNsoIdCa          = evtNsoIdCa;
@@ -164,31 +173,40 @@ classdef NSO_table
         %
         % ARGUMENTS
         % =========
-        % tt2000Array : Column array of TT2000 timestamps. Meant to be zVar
-        %               Epoch.
+        % tt2000Array
+        %       Column array of TT2000 timestamps. Intended to be zVar Epoch.
         %
         %
         % RETURN VALUES
         % =============
         % bEvtArraysCa
         %       Cell array of arrays of logical indices into tt2000Array.
-        %       {iEvent}(iTimestamp)
+        %       {iMatchingEvent}(iTimestamp) = logical
         % evtNsoIdCa
-        %       List of NSO IDs. {iEvent}
+        %       List of NSO IDs. {iMatchingEvent} = nsoid
         % iGlobalEventsArray
         %       1D array of indices into NSO event list. Can be used for logging
         %       the tabulated (global) NSO events that affect e.g. a particular
         %       CDF.
+        %       (iMatchingEvent) = iGlobalEvt
+        %       NOTE: Useful for identifying event in NSO table, and hence the
+        %             begin & end timestamps for logging.
         %
         function [bEvtArraysCa, evtNsoIdCa, iGlobalEventsArray] = get_NSO_timestamps(obj, tt2000Array)
-            % PROPOSAL: Automatic tests.
-            % PROPOSAL: Return list to every event, not unique NSO IDs.
-            %   PRO: Can return iStart, iStop instead of bArray.
-            %       PRO: Uses less memory than in particular logical indexing.
-            %       CON: Less practical. Want to use logical expressions separately record-by-record.
-            %           CON-PROPOSAL: Should have function for turning i1:i2
-            %                         into bArray.
-            %   PRO: Can log every instance in NSO table.
+            % PROPOSAL: Sort return data by NSOID, i.e. all return values have a
+            %           top-level index iNsoid.
+            %   PRO: Quality algorithms should only operate on a per-sample and
+            %   per-NSOID basis basis and do not need to be aware of separate.
+            %   CON: Too complicated data structure.
+            %       CON-PROPOSAL: Use struct array.
+            %           MatchArray(iNsoid)
+            %               .bMatch
+            %               .nsoid
+            %               .iNso
+            %   PROPOSAL:
+            %       bEvtArraysCa{iNsoid}(iTimestamp)
+            %       evtNsoIdCa{iNsoid}
+            %       iGlobalEventsCa{iNsoid}(iEvt)
             
             assert(isa(tt2000Array, 'int64') && iscolumn(tt2000Array), ...
                 'tt2000Array is not an int64 column vector.')
@@ -213,7 +231,6 @@ classdef NSO_table
             evtStartTt2000Array = obj.evtStartTt2000Array(bEvents);
             evtStopTt2000Array  = obj.evtStopTt2000Array(bEvents);
             evtNsoIdCa          = obj.evtNsoIdCa(bEvents);
-            
             iGlobalEventsArray  = find(bEvents);
             
             % Normalize 0x0 to 0x1

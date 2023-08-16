@@ -4,8 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual   % < handle
-    % PROPOSAL: Automatic test code.
+classdef qual
 
 
 
@@ -15,21 +14,23 @@ classdef qual   % < handle
     %#######################
     %#######################
     methods(Static)
+        
+        
+        
         % Set quality zVariables.
         % Overwrite selected data in selected CDF records with fill values/NaN.
         %
+        % NOTE: Does not handle PROCESSING.ZV_QUALITY_FLAG_MAX. That is handled
+        %       by bicas.write_dataset_CDF().
         function ZvOut = modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L)
-            % PROPOSAL: Automated test code.
-            % PROPOSAL: Split up into two functions:
-            %           (1) Set QUALITY_FLAG, L2_QUALITY_BITMASK, and
-            %           (2) UFV.
-            %
             % PROPOSAL: Separate function for handling UFV.
             %   CON: Other quality variable processing might want to read or
             %        modify the UFV.
             % PROPOSAL: Separate function for modifying voltage & current using
             %           UFV, not for deriving it. Function called outside. This
-            %           function return ZV UFV.
+            %           function (modify_quality_filter) only returns ZV UFV.
+            %   PRO: Good for testing.
+            %       PRO: Fewer variables in & out of function when testing.
             %
             % PROPOSAL: Structs for arguments & return values. -- IMPLEMENTED
             %   PRO: Safer w.r.t. confusing variables.
@@ -41,7 +42,7 @@ classdef qual   % < handle
             %                     variables at beginning and end of function.
             %           CON: Longer code.
             %           PRO: Implementation is clear on what goes in and out of function.
-            
+
             zv_Epoch         = ZvIn.Epoch;
             zv_MUX_SET       = ZvIn.MUX_SET;
             zv_QUALITY_FLAG  = ZvIn.QUALITY_FLAG;
@@ -49,7 +50,7 @@ classdef qual   % < handle
             zvCurrentAAmpere = ZvIn.currentAAmpere;
             zvUfv            = ZvIn.ufv;
             clear ZvIn
-            
+
             % ASSERTIONS
             assert(isscalar(isLfr) && islogical(isLfr))
             nRecords = irf.assert.sizes( ...
@@ -176,6 +177,11 @@ classdef qual   % < handle
 
 
         % Overwrite selected records of voltage & current with fill values.
+        %
+        % ARGUMENTS
+        % =========
+        % zv_Epoch
+        %       NOTE: Only needed for logging.
         function [zvDemuxerOutput, zvCurrentAAmpere] = set_voltage_current_fill_value(...
                 zv_Epoch, zvDemuxerOutput, zvCurrentAAmpere, zvUfv, L)
             assert(islogical(zvUfv))

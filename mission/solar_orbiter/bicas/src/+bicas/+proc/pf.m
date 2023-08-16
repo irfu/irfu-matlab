@@ -37,7 +37,6 @@
 classdef pf
 
     % PROPOSAL: Function for constructing RctDataMap.
-    % PROPOSAL: Merge functions produce_L1R_to_L2_LFR/TDS().
     % PROPOSAL: One class per production function.
     %   PRO: Can associate metadata used by SWM data structure.
     %       PRO: Metadata located with code.
