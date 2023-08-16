@@ -68,7 +68,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-15
 %
-classdef cal < handle
+classdef Cal < handle
 
 % BOGIQ:
 % ------
@@ -210,10 +210,10 @@ classdef cal < handle
 %           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
 %               CON: Relies on the implementation of what is being tested.
 %       NOTE: (1) As a function/code module,
-%                   bicas.proc.L1L2.cal encloses/contains/"secretly uses"
+%                   bicas.proc.L1L2.Cal encloses/contains/"secretly uses"
 %                   bicas.tf.apply_TF_freq().
 %             (2) For testing, one wants to verify the path (both ways) between
-%                   bicas.proc.L1L2.cal and
+%                   bicas.proc.L1L2.Cal and
 %                   bicas.tf.apply_TF_freq().
 %             ==> One wants to test one unit of code at a time, but what a
 %                "unit" is ambiguous:
@@ -391,10 +391,10 @@ classdef cal < handle
         %    from the class (better modularization, better for automatic test
         %    code).
         % ** it makes it possible to inspect & modify the RCT content before
-        %    submitting it to bicas.proc.L1L2.cal
+        %    submitting it to bicas.proc.L1L2.Cal
         % ** it simplifies the constructor.
         %
-        function obj = cal(...
+        function obj = Cal(...
                 RctDataMap, ...
                 use_CALIBRATION_TABLE_rcts, ...
                 use_CALIBRATION_TABLE_INDEX2, ...
@@ -971,7 +971,7 @@ classdef cal < handle
                         offsetAVolt  = 0;
                     elseif isnan(biasHighGain)
                         % CASE: GAIN unknown when it is NEEDED for calibration.
-                        biasItfAvpiv = bicas.proc.L1L2.cal.NAN_TF;
+                        biasItfAvpiv = bicas.proc.L1L2.Cal.NAN_TF;
                         kFtfIvpav    = NaN;
                         offsetAVolt  = NaN;
                     else
@@ -1021,7 +1021,7 @@ classdef cal < handle
 
                 % NOTE: There is no tabulated LFR TF and no such combination
                 % signal route, so the TF can not be returned even in principle.
-                lfrItfIvpt = bicas.proc.L1L2.cal.NAN_TF;
+                lfrItfIvpt = bicas.proc.L1L2.Cal.NAN_TF;
             else
                 RctDataList = obj.RctDataMap('LFR');
 

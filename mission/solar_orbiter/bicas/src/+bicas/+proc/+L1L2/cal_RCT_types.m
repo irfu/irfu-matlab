@@ -8,7 +8,7 @@
 % DESIGN INTENT
 % =============
 % This class handles the in-memory modification of calibration data read from
-% RCTs (e.g. inverting FTFs) that bicas.proc.L1L2.cal needs so that generic
+% RCTs (e.g. inverting FTFs) that bicas.proc.L1L2.Cal needs so that generic
 % RCT-reading code (bicas.RCT) does not need to.
 %
 %

@@ -44,7 +44,7 @@ classdef RCT
 % PROPOSAL: Move bicas.RCT
 %   CON: Contains generic RCT functionality. Not directly processing related.
 %     --> bicas.proc.L1L2.RCT ?
-%     --> bicas.proc.L1L2.cal.RCT ?
+%     --> bicas.proc.L1L2.Cal.RCT ?
 %     --> bicas.proc.L1L2*.RCT_read ?
 %     --> bicas.RCT_read ?
 %     --> bicas.read_RCT ?

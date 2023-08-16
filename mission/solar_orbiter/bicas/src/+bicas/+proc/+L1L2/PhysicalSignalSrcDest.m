@@ -19,7 +19,7 @@
 %
 % DEFINITIONS
 % ===========
-% See bicas.proc.L1L2.cal.
+% See bicas.proc.L1L2.Cal.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -34,7 +34,7 @@ classdef PhysicalSignalSrcDest
     %       NOTE/CON: Slightly impractical for routings which depend on the latching relay.
     %
     % PROPOSAL: Other name that does not reference BLTS. -- IMPLEMENTED
-    %   See bicas.proc.L1L2.cal BOGIQ.
+    %   See bicas.proc.L1L2.Cal BOGIQ.
     %   PRO: Reference to BLTS is confusing.
     %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
     %
