@@ -48,7 +48,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-22
 %
-classdef settings < handle
+classdef Settings < handle
 % BOGIQ: 
 % ------
 % PROPOSAL: Add extra information for every setting (key-value pair).
@@ -141,7 +141,7 @@ classdef settings < handle
 
 
         % Constructor
-        function obj = settings()
+        function obj = Settings()
             % IMPLEMENTATION NOTE: "DataMap" reset here since empirically it is
             % not reset every time an instance is created if it is only reset in
             % the "properties" section. Otherwise the value from the previous
@@ -180,7 +180,7 @@ classdef settings < handle
                 error('BICAS:Assertion:ConfigurationBug', ...
                     'Trying to define pre-existing settings key.')
             end
-            bicas.settings.assert_legal_value(defaultValue)
+            bicas.Settings.assert_legal_value(defaultValue)
             
             
             
@@ -215,7 +215,7 @@ classdef settings < handle
             
             % ASSERTION
             if ~strcmp(...
-                    bicas.settings.get_value_type(newValue), ...
+                    bicas.Settings.get_value_type(newValue), ...
                     obj.get_setting_value_type(key))
                 
                 error('BICAS:Assertion:IllegalArgument', ...
@@ -273,7 +273,7 @@ classdef settings < handle
                 %==================================================
                 % Convert string value to appropriate MATLAB class.
                 %==================================================
-                newValue = bicas.settings.convert_str_to_value(...
+                newValue = bicas.Settings.convert_str_to_value(...
                     obj.get_setting_value_type(key), newValueAsString);
 
                 % Overwrite old setting.
@@ -358,7 +358,7 @@ classdef settings < handle
             valueArrayStruct = obj.get_value_array_struct(key);            
             
             % NOTE: Always use default/first value.
-            valueType        = bicas.settings.get_value_type(...
+            valueType        = bicas.Settings.get_value_type(...
                 valueArrayStruct(1).value);
         end
 
@@ -462,7 +462,7 @@ classdef settings < handle
                         valueAsString)
             end
             
-            bicas.settings.assert_legal_value(value)
+            bicas.Settings.assert_legal_value(value)
         end
         
         

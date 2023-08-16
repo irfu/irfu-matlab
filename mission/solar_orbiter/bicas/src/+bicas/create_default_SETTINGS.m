@@ -111,7 +111,7 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    S = bicas.settings();
+    S = bicas.Settings();
 
     % The MATLAB command (e.g. path) to use to launch MATLAB for BICAS.
     % NOTE: Only the value in the BICAS config file is actually used. The normal
