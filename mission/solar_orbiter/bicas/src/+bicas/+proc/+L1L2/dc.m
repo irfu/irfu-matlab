@@ -102,12 +102,8 @@ classdef dc
                 'ufv',            PreDc.Zv.ufv, ...
                 'MUX_SET',        PreDc.Zv.MUX_SET, ...
                 'QUALITY_FLAG',   PreDc.Zv.QUALITY_FLAG);
-            [ZvOut] = bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);            
-            Zv = [];
-            zvUfv                 = ZvOut.ufv;
-            Zv.QUALITY_FLAG       = ZvOut.QUALITY_FLAG;
-            Zv.L2_QUALITY_BITMASK = ZvOut.L2_QUALITY_BITMASK;
-            clear ZvIn ZvOut
+            [zvUfv, Zv.QUALITY_FLAG, Zv.L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);            
+            clear ZvIn
             %
             [Zv.DemuxerOutput, Zv.currentAAmpere] = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
                 PreDc.Zv.Epoch, DemuxerOutput, currentAAmpere, zvUfv, L);

@@ -22,7 +22,7 @@ classdef qual
         %
         % NOTE: Does not handle PROCESSING.ZV_QUALITY_FLAG_MAX. That is handled
         %       by bicas.write_dataset_CDF().
-        function ZvOut = modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L)
+        function [zvUfv, zv_QUALITY_FLAG, zv_L2_QUALITY_BITMASK] = modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L)
             % PROPOSAL: Separate function for handling UFV.
             %   CON: Other quality variable processing might want to read or
             %        modify the UFV.
@@ -157,13 +157,6 @@ classdef qual
                 zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK_cdfEvent;
 
             end    % for
-
-
-
-            ZvOut = struct();
-            ZvOut.ufv                = zvUfv;
-            ZvOut.QUALITY_FLAG       = zv_QUALITY_FLAG;
-            ZvOut.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK;
 
         end    % modify_quality_filter
 

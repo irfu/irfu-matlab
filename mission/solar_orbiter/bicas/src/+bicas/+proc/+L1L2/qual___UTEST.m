@@ -1,6 +1,4 @@
 %
-% UNFINISHED
-%
 % matlab.unittest automatic test code for bicas.proc.L1L2.qual.
 %
 %
@@ -20,6 +18,9 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
         function test_modify_quality_filter(testCase)
+            % PROPOSAL: Test for specific sets of NSOs (one or multiple) in one timestamp/sample.
+            %   PRO: Can simplify a lot using helper function.
+            %   PRO: More useful if having many NSOIDs.
 
             % One output variable.
             function test(ZvIn, isLfr, NsoTable, S, expZvOut)
@@ -32,41 +33,57 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 SETTINGS.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', S.tdsMuxModeMarginSec, 'test')
                 SETTINGS.make_read_only()
 
-                L = bicas.Logger('none', false);
-                actZvOut = bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L);
-                testCase.verifyEqual(actZvOut, expZvOut)
+                L = bicas.Logger('human-readable', false);
+                [actZvUfv, actZv_QUALITY_FLAG, actZv_L2_QUALITY_BITMASK] = ...
+                    bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L);
+                testCase.verifyEqual(actZvUfv,                 expZvOut.ufv)
+                testCase.verifyEqual(actZv_QUALITY_FLAG,       expZvOut.QUALITY_FLAG)
+                testCase.verifyEqual(actZv_L2_QUALITY_BITMASK, expZvOut.L2_QUALITY_BITMASK)
             end
 
             %===================================================================
 
             ENA = zeros(0, 1);
             ECA = cell(0, 1);
-            EmptyNsoTable = bicas.NSO_table(int64(ENA), int64(ENA), ECA);
+            EmptyNsoTable    = bicas.NSO_table(int64(ENA), int64(ENA), ECA);
+            NonemptyNsoTable = bicas.NSO_table(...
+                int64([1, 2]'*1e9), ...
+                int64([2, 3]'*1e9), ...
+                {bicas.constants.NSOID.PARTIAL_SATURATION, ...
+                 bicas.constants.NSOID.FULL_SATURATION}');
 
             for isLfr = [false, true]
-                if 1
-                    % Empty data
-                    Settings = struct(...
-                        'rmMuxModesArray',     [1, 2], ...
-                        'lfrMuxModeMarginSec', 1.5, ...
-                        'tdsMuxModeMarginSec', 2.5);
-                    ZvIn = struct(...
-                        'Epoch',               int64(ENA), ...
-                        'MUX_SET',             ENA, ...
-                        'QUALITY_FLAG',        ENA, ...
-                        'ufv',                 logical(ENA));
-                    expZvOut = struct(...
-                        'QUALITY_FLAG',        ENA, ...
-                        'L2_QUALITY_BITMASK',  uint16(ENA), ...
-                        'ufv',                 false(0, 1));
-                    test(ZvIn, isLfr, EmptyNsoTable, Settings, expZvOut);
+                for NsoTable = [EmptyNsoTable, NonemptyNsoTable]
+                    if 1
+                        %===============
+                        % "Simple test"
+                        %===============
+                        % Empty data
+                        % LFR/TDS, empty/nont empty NSO table
+                        Settings = struct(...
+                            'rmMuxModesArray',     [1, 2], ...
+                            'lfrMuxModeMarginSec', 1.5, ...
+                            'tdsMuxModeMarginSec', 2.5);
+                        ZvIn = struct(...
+                            'Epoch',               int64(ENA), ...
+                            'MUX_SET',             ENA, ...
+                            'QUALITY_FLAG',        ENA, ...
+                            'ufv',                 logical(ENA));
+                        expZvOut = struct(...
+                            'QUALITY_FLAG',        ENA, ...
+                            'L2_QUALITY_BITMASK',  uint16(ENA), ...
+                            'ufv',                 false(0, 1));
+                        test(ZvIn, isLfr, NsoTable, Settings, expZvOut);
+                    end
                 end
             end
 
             if 1
-                % Complex test
-                % Test (1) UFV set by mux modes and (2) thruster firings.
-                % LFR
+                %================
+                % "Complex test"
+                %================
+                % (1) UFV set by mux modes (LFR)
+                % (2) thruster firings.
                 NsoTable = bicas.NSO_table(int64(7e9), int64(8e9), {bicas.constants.NSOID.THRUSTER_FIRING});
                 Settings = struct(...
                     'rmMuxModesArray',     [1, 2], ...
@@ -83,6 +100,41 @@ classdef qual___UTEST < matlab.unittest.TestCase
                     'ufv',                 logical([0, 1, 1, 1, 1, 0, 0, 0, 0, 0]'));
                 test(ZvIn, true, NsoTable, Settings, expZvOut);
             end
+            
+            
+            if 1
+                %================
+                % "Complex test"
+                %================
+                % (1) PARTIAL_SATURATION
+                % (2) FULL_SATURATION with
+                % (3) time overlap between NSO events.
+                % (LFR)
+                % Bit constants.
+                PS = bicas.constants.L2QBM_PARTIAL_SATURATION;
+                FS = bicas.constants.L2QBM_FULL_SATURATION;
+                
+                NsoTable = bicas.NSO_table(...
+                    int64([1, 2]'*1e9), ...
+                    int64([2, 3]'*1e9), ...
+                    {bicas.constants.NSOID.PARTIAL_SATURATION, ...
+                     bicas.constants.NSOID.FULL_SATURATION}');
+                Settings = struct(...
+                    'rmMuxModesArray',     [1, 2], ...
+                    'lfrMuxModeMarginSec', 1.5, ...
+                    'tdsMuxModeMarginSec', 2.5);
+                ZvIn = struct(...
+                    'Epoch',               int64([0:4]'*1e9), ...
+                    'MUX_SET',                     [0, 0,  0,     0,     0]', ...
+                    'QUALITY_FLAG',                [3, 3,  3,     3,     3]', ...
+                    'ufv',                 logical([0, 0,  0,     0,     0]'));
+                expZvOut = struct(...
+                    'QUALITY_FLAG',                [3, 1,  0,     0,     3]', ...
+                    'L2_QUALITY_BITMASK',  uint16( [0, PS, PS+FS, PS+FS, 0]'), ...
+                    'ufv',                 logical([0, 0,  0,     0,     0]'));
+                test(ZvIn, true, NsoTable, Settings, expZvOut);
+            end
+
         end
 
 
