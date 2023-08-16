@@ -29,6 +29,7 @@ classdef qual
             % PROPOSAL: Separate function for modifying voltage & current using
             %           UFV, not for deriving it. Function called outside. This
             %           function (modify_quality_filter) only returns ZV UFV.
+            %           -- IMPLEMENTED
             %   PRO: Good for testing.
             %       PRO: Fewer variables in & out of function when testing.
             %
@@ -42,13 +43,12 @@ classdef qual
             %                     variables at beginning and end of function.
             %           CON: Longer code.
             %           PRO: Implementation is clear on what goes in and out of function.
+            %   PROPOSAL: Abolish
 
             zv_Epoch         = ZvIn.Epoch;
+            zvUfv            = ZvIn.ufv;
             zv_MUX_SET       = ZvIn.MUX_SET;
             zv_QUALITY_FLAG  = ZvIn.QUALITY_FLAG;
-            zvDemuxerOutput  = ZvIn.DemuxerOutput;
-            zvCurrentAAmpere = ZvIn.currentAAmpere;
-            zvUfv            = ZvIn.ufv;
             clear ZvIn
 
             % ASSERTIONS
@@ -160,15 +160,8 @@ classdef qual
 
 
 
-            %=================================================================
-            % Set zVariables for CURRENTS and VOLTAGES to NaN based on zvUfv.
-            %=================================================================
-            [zvDemuxerOutput, zvCurrentAAmpere] = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
-                zv_Epoch, zvDemuxerOutput, zvCurrentAAmpere, zvUfv, L);
-
             ZvOut = struct();
-            ZvOut.DemuxerOutput      = zvDemuxerOutput;
-            ZvOut.currentAAmpere     = zvCurrentAAmpere;
+            ZvOut.ufv                = zvUfv;
             ZvOut.QUALITY_FLAG       = zv_QUALITY_FLAG;
             ZvOut.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK;
 
