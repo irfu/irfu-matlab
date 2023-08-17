@@ -1,4 +1,4 @@
-function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_inp, EDC_inp, calfile_name)
+function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_inp, EDC_inp, calFilename)
 %SOLO.VDCCAL  Calibrate VDC to get DC E and PSP
 %
 %    [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = solo.vdccal(VDC,EDC,calfilename)
@@ -8,7 +8,7 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_in
 % =========
 % VDC_inp, EDC_inp
 %       TSeries objects with data from L2 CWF file(s).
-% calfile_name
+% calFilename
 %       The name of the calibration file (.mat) one wishes to
 %       use. If empty, then code will use BICAS's official calibration file
 %       produced by solo.correlate_probes_batch (script) (?) and that is used
@@ -40,23 +40,24 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_in
 % NOTE: Calibration .mat file only has a certain time coverage and therefore
 %       needs to be updated before processing new data outside the already
 %       covered time interval.
-% NOTE: This function is used by BICAS for producing official L3 datasets.
+% NOTE: This function is used by BICAS for producing official L3 datasets. It
+%       must therefore have an interface that is compatible with BICAS.
 
 
 
 % Act depending on whether a calibration file is specified or not.
-if isempty(calfile_name)
+if isempty(calFilename)
     % Caller did not specify calibration file.
     % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
     % OFFICIAL DATASETS.
-    calfile_name = 'd23K123_20230707.mat'; % parameters up to end of 2023-05-27
+    calFilename = 'd23K123_20230707.mat'; % parameters up to end of 2023-05-27
 else
     % Caller specified calibration file. Useful for debugging/testing new
     % calibrations.
 
     % (Do nothing.)
 end
-a = load(calfile_name);
+a = load(calFilename);
 
 
 
@@ -70,7 +71,7 @@ codeVerStr = '2022-12-06T13:23:14';
 % Version of the .mat file. Using filename, or at least for now.
 % This string is used by BICAS to set a CDF global attribute in official
 % datasets for traceability.
-[~, basename, suffix] = fileparts(calfile_name);
+[~, basename, suffix] = fileparts(calFilename);
 matVerStr  = [basename, suffix];   % Only use filename, not entire path.
 
 %=============================================================================
@@ -102,12 +103,12 @@ ScPot_out   = irf.ts_scalar(EpochTT([]),[]);
 % Perform calibration on each subinterval separately (if any probe-to-spacecraft
 % potential discontinuities are present).
 
-for isub=1:length(sub_int_times)-1
+for iSub = 1:length(sub_int_times)-1
 
-    tempTint = sub_int_times(isub:isub+1);
+    subTint = sub_int_times(iSub:iSub+1);
     % Find the closest discontinuities.
-    prev_discont = EpochTT(max(discontTimes.epoch(tempTint(1).epoch   >= discontTimes.epoch)));
-    next_discont = EpochTT(min(discontTimes.epoch(tempTint(end).epoch <= discontTimes.epoch)));
+    prev_discont = EpochTT(max(discontTimes.epoch(subTint(1).epoch   >= discontTimes.epoch)));
+    next_discont = EpochTT(min(discontTimes.epoch(subTint(end).epoch <= discontTimes.epoch)));
 
     % ======================================
     % Optionally modify the time subinterval
@@ -119,11 +120,11 @@ for isub=1:length(sub_int_times)-1
     elseif isempty(prev_discont)
         % If there are no discontinuities BEFORE the specified time,
         % increase interval by 2 days before.
-        subTint = irf.tint(tempTint(1)+(-2*24*60*60), next_discont);
+        subTint = irf.tint(subTint(1)+(-2*24*60*60), next_discont);
     elseif isempty(next_discont)
         % If there are no discontinuities AFTER the specified time,
         % increase interval by 2 days after.
-        subTint = irf.tint(prev_discont, tempTint(end)+(2*24*60*60));
+        subTint = irf.tint(prev_discont, subTint(end)+(2*24*60*60));
     end
 
     %%
@@ -132,6 +133,7 @@ for isub=1:length(sub_int_times)-1
     % =======================
     VDC = VDC_inp.tlim(subTint);
 
+    % Indices/samples for which which should be treated as single probe.
     bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
 
     % Resample calibration parameters
@@ -152,8 +154,9 @@ for isub=1:length(sub_int_times)-1
 
     V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); % Correcting V23 to V1.
 
-    PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2); % Compute PSP from corrected quantities.
-    % Use alternate, simpler "calculation" for single-probe data.
+    % Assume all probe data available: Compute PSP from corrected quantities.
+    PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2);
+    % Single-probe data: Use alternate, simpler "calculation".
     PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
     PSP.units = 'V';
     PSP_out   = PSP_out.combine(PSP);
@@ -184,10 +187,17 @@ for isub=1:length(sub_int_times)-1
 
 end % for
 
-% Specify units and coordinate system
+% Specify units and coordinate system for the variables that are actually
+% returned from the function.
+% -----------------------------------------------------------------------
+% NOTE: Set .units and .coordinateSystem explicitly since
+% (1) TSeries.combine(), which fill the objects with science data, will not
+%     copy those values, and
+% (2) they can not be copied from PSP, ScPot, DCE_SRF since they will not be set
+%     if there are zero sub-time intervals (zero loop iterations).
 DCE_SRF_out.units            = 'mV/m';
 DCE_SRF_out.coordinateSystem = 'SRF';
 PSP_out.units                = 'V';
-ScPot_out.units              = PSP_out.units;
+ScPot_out.units              = 'V';
 
 end %function
