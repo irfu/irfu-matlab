@@ -1,7 +1,7 @@
 %
-% Functions (static methods) associated with bicas.proc.L1L2.cal_RCT using
+% Functions (static methods) associated with bicas.proc.L1L2.cal.rct.findread using
 % different types of RCTs (except for generic reading of RCTs), so that
-% bicas.proc.L1L2.cal_RCT does not need to deal with them as special cases
+% bicas.proc.L1L2.cal.rct.findread does not need to deal with them as special cases
 % (almost).
 %
 %
@@ -14,7 +14,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-19, by moving out functions from
-% bicas.proc.L1L2.cal_RCT.
+% bicas.proc.L1L2.cal.rct.findread.
 %
 classdef typeproc
     % PROPOSAL: Class for init_RCT_TYPES_MAP:"Entry" structs.

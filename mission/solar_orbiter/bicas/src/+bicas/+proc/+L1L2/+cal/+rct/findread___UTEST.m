@@ -1,8 +1,8 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L1L2.cal_RCT.
+% matlab.unittest automatic test code for bicas.proc.L1L2.cal.rct.findread.
 %
 % NOTE: Only tests one function.
-% NOTE: Tests for "bicas.proc.L1L2.cal_RCT.find_RCT_regexp()" has partly been
+% NOTE: Tests for "bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp()" has partly been
 % written in order to try out functionality for testing code with file
 % operations.
 % NOTE: Creates temporary directory and files for every test, separately.
@@ -11,8 +11,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16
 %
-classdef cal_RCT___UTEST < matlab.unittest.TestCase
-    % PROPOSAL: Tests for bicas.proc.L1L2.cal_RCT.read_RCT_modify_log() for BIAS
+classdef findread___UTEST < matlab.unittest.TestCase
+    % PROPOSAL: Tests for bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log() for BIAS
     %           RCT. Creates BIAS RCT using bicas.tools.create_RCT() as part of
     %           the test.
     %
@@ -35,10 +35,10 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         
         
         function test_find_RCT_regexp_empty(testCase)
-            [tempDir, L] = bicas.proc.L1L2.cal_RCT___UTEST.setup_files(testCase, {});
+            [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(testCase, {});
             
             testCase.verifyError(...
-                @() bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
+                @() bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L), ...
                 'BICAS:CannotFindRegexMatchingRCT')            
             
@@ -47,11 +47,11 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         
         
         function test_find_RCT_regexp_no_match(testCase)
-            [tempDir, L] = bicas.proc.L1L2.cal_RCT___UTEST.setup_files(...
+            [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {'20201.cdf', '2020.CDF'});
             
             testCase.verifyError(...
-                @() bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
+                @() bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L), ...
                 'BICAS:CannotFindRegexMatchingRCT')
         end
@@ -59,10 +59,10 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         
         
         function test_find_RCT_regexp_1_match(testCase)
-            [tempDir, L] = bicas.proc.L1L2.cal_RCT___UTEST.setup_files(...
+            [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {'2020.cdf', 'asdsf'});
             
-            path = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
+            path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L);
             
             testCase.verifyEqual(...
@@ -73,10 +73,10 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
         
         
         function test_find_RCT_regexp_2_match(testCase)
-            [tempDir, L] = bicas.proc.L1L2.cal_RCT___UTEST.setup_files(...
+            [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {'2020.cdf', '2021.cdf'});
             
-            path = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
+            path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L);
             
             testCase.verifyEqual(...
@@ -90,10 +90,10 @@ classdef cal_RCT___UTEST < matlab.unittest.TestCase
             FN_1 = 'SOLO_CAL_RPW-BIAS_V202111191204.cdf';
             FN_2 = 'SOLO_CAL_RPW-BIAS_V202011191204.cdf';
             
-            [tempDir, L] = bicas.proc.L1L2.cal_RCT___UTEST.setup_files(...
+            [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {FN_1, FN_2});
             
-            path = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
+            path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, 'SOLO_CAL_RPW-BIAS_V20[0-9]{10,10}.cdf', L);
             
             testCase.verifyEqual(...

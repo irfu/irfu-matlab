@@ -375,9 +375,9 @@ classdef Cal < handle
         % The nominal use is that the caller first initializes (argument)
         % RctDataMap
         % (1) by loading all RCTs using
-        %     bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp(),
+        %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(),
         % (2) by loading relevant RCT(s) using
-        %     bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE()
+        %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE()
         % or
         % (3) manually (for manual debugging/analysis/testing).
         %

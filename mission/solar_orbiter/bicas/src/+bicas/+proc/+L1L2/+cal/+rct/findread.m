@@ -6,12 +6,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16, by moving out functions from bicas.proc.L1L2.cal.Cal.
 %
-classdef cal_RCT    
-    % PROPOSAL: Rename.
-    %   CON: Does not conform to naming conventions.
-    %   NOTE: Mostly about finding paths to RCTs to load. The exception is 
-    %         function for actually loading an RCT.
-    %
+classdef findread
     % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,
     %           zv_CALIBRATION_TABLE_INDEX for L1.
     %   PRO: Can eliminate internal special cases in bicas.proc.L1L2.cal.Cal.
@@ -106,9 +101,9 @@ classdef cal_RCT
                 settingKey     = bicas.proc.L1L2.cal.rct.typeproc.RCT_TYPES_MAP(...
                     rctTypeId).filenameRegexpSettingKey;
                 filenameRegexp = SETTINGS.get_fv(settingKey);
-                filePath       = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
+                filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                     rctDir, filenameRegexp, L);
-                RctDataList    = {bicas.proc.L1L2.cal_RCT.read_RCT_modify_log(...
+                RctDataList    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
                     rctTypeId, filePath, L)};
                 
                 % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so
@@ -164,10 +159,10 @@ classdef cal_RCT
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, SETTINGS, L)            
             
-            BiasRctDataMap = bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_regexp(...
+            BiasRctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
                 {'BIAS'}, rctDir, SETTINGS, L);
             
-            RctDataList = bicas.proc.L1L2.cal_RCT.find_read_RCTs_by_CALIBRATION_TABLE(...
+            RctDataList = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
                 nonBiasRctTypeId, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
@@ -292,7 +287,7 @@ classdef cal_RCT
                 % NOTE: Cell array index is one greater than the stored value.
                 j              = iCtArray(i) + 1;
                 filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
-                RctDataList{j} = bicas.proc.L1L2.cal_RCT.read_RCT_modify_log(...
+                RctDataList{j} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
                     nonBiasRctTypeId, filePath, L);
             end
             
@@ -325,7 +320,7 @@ classdef cal_RCT
         %
         function RctData = read_RCT_modify_log(rctTypeId, filePath, L)
             
-            L.logf(bicas.proc.L1L2.cal_RCT.READING_RCT_PATH_LL, ...
+            L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
                 'Reading RCT (rctTypeId=%s): "%s"', rctTypeId, filePath)
             
             RCT_TYPES_MAP = bicas.proc.L1L2.cal.rct.typeproc.RCT_TYPES_MAP;
