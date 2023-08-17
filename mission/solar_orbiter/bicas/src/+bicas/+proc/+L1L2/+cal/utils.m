@@ -8,7 +8,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-11-05.
 %
-classdef cal_utils
+classdef utils
     % PROPOSAL: More automatic test code.
     %
     % PROPOSAL: Make functions that are only used internally private.
@@ -210,7 +210,7 @@ classdef cal_utils
         
         
         
-        % Manual test code for bicas.proc.L1L2.cal_utils.interpolate_TF().
+        % Manual test code for bicas.proc.L1L2.cal.utils.interpolate_TF().
         %
 %         function interpolate_TF___MTEST()
 %             % IMPORTANT NOTE: Tranposing with apostrophe in MATLAB also complex
@@ -231,7 +231,7 @@ classdef cal_utils
 %             
 %             
 %             
-%             Zp = bicas.proc.L1L2.cal_utils.interpolate_TF(omega, Z, omegaP);
+%             Zp = bicas.proc.L1L2.cal.utils.interpolate_TF(omega, Z, omegaP);
 %             
 %             %=====================
 %             % Plot input & output
@@ -353,7 +353,7 @@ classdef cal_utils
                 
                 zLimit = itf(acConstGainLowFreqRps);
 
-                itf = @(omegaRps) (bicas.proc.L1L2.cal_utils.TF_LF_constant_abs_Z(...
+                itf = @(omegaRps) (bicas.proc.L1L2.cal.utils.TF_LF_constant_abs_Z(...
                     itf, omegaRps, acConstGainLowFreqRps, zLimit));
             end
             
@@ -485,4 +485,4 @@ classdef cal_utils
     
     
     
-end    % classdef cal_utils
+end    % classdef utils

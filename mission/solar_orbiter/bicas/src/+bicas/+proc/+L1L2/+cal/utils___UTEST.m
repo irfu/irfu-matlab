@@ -1,11 +1,11 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L1L2.cal_utils.
+% matlab.unittest automatic test code for bicas.proc.L1L2.cal.utils.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16
 %
-classdef cal_utils___UTEST < matlab.unittest.TestCase
+classdef utils___UTEST < matlab.unittest.TestCase
     
     
     
@@ -22,7 +22,7 @@ classdef cal_utils___UTEST < matlab.unittest.TestCase
             
             function test(Epoch, CalibEpochList, expOutput)
                 % NOTE: Converting arguments to int64, transposing.
-                actOutput = bicas.proc.L1L2.cal_utils.get_calibration_time(...
+                actOutput = bicas.proc.L1L2.cal.utils.get_calibration_time(...
                         int64(Epoch)', ...
                         int64(CalibEpochList)');
                     
@@ -32,7 +32,7 @@ classdef cal_utils___UTEST < matlab.unittest.TestCase
             end
             
             function test_exc(Epoch, CalibEpochList)
-                f = @() bicas.proc.L1L2.cal_utils.get_calibration_time(...
+                f = @() bicas.proc.L1L2.cal.utils.get_calibration_time(...
                         int64(Epoch)', int64(CalibEpochList)');
                     
                 testCase.verifyError(...

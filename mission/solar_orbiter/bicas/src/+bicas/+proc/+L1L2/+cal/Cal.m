@@ -722,7 +722,7 @@ classdef Cal < handle
             irf.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
-            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
+            bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.PhysicalSignalSrcDest'))
             assert(iNonBiasRct >= 1)
 
@@ -816,7 +816,7 @@ classdef Cal < handle
             irf.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
-            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
+            bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.PhysicalSignalSrcDest'))
             assert(iNonBiasRct >= 1)
 
@@ -890,7 +890,7 @@ classdef Cal < handle
         function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
             BiasRctDataCa = obj.RctDataMap('BIAS');
 
-            iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
+            iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
                 Epoch, BiasRctDataCa{1}.epochL);
         end
 
@@ -899,7 +899,7 @@ classdef Cal < handle
         function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
             BiasRctDataCa = obj.RctDataMap('BIAS');
 
-            iCalib = bicas.proc.L1L2.cal_utils.get_calibration_time(...
+            iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
                 Epoch, BiasRctDataCa{1}.epochH);
         end
 
@@ -1015,8 +1015,8 @@ classdef Cal < handle
         function lfrItfIvpt = get_LFR_ITF(obj, iNonBiasRct, iBlts, iLsf)
             % ASSERTIONS
             assert(iNonBiasRct >= 1)
-            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
-            bicas.proc.L1L2.cal_utils.assert_iLsf(iLsf)
+            bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
+            bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
 
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 % CASE: F3 and BLTS={4,5}
@@ -1081,9 +1081,9 @@ classdef Cal < handle
             iLsf         = CalSettings.iLsf;
 
             % ASSERTIONS
-            bicas.proc.L1L2.cal_utils.assert_iBlts(iBlts)
+            bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(BltsSrc, 'bicas.proc.L1L2.PhysicalSignalSrcDest'))
-            bicas.proc.L1L2.cal_utils.assert_iLsf(iLsf)
+            bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
             assert(isscalar(iNonBiasRct))
             assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
             % No assertion on cti2 unless used (determined later).
@@ -1153,7 +1153,7 @@ classdef Cal < handle
             %======================================
             % Create combined ITF for LFR and BIAS
             %======================================
-            CalData.itfAvpt = bicas.proc.L1L2.cal_utils.create_LFR_BIAS_ITF(...
+            CalData.itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
                 CalData.lfrItfIvpt, ...
                 CalData.BiasCalibData.itfAvpiv, ...
                 BltsSrc.is_AC(), ...

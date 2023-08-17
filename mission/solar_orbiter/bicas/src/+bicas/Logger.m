@@ -48,7 +48,7 @@ classdef Logger < handle
 %   PROPOSAL: Simultaneously assert not trailing CR+LF.
 %
 % TODO-DEC: Should special, extra logging functionality be in this class or outside of it?
-%   Ex: bicas.proc.L1L2.cal_utils.log_TF_function_handle
+%   Ex: bicas.proc.L1L2.cal.utils.log_TF_function_handle
 %   Ex: Logging for speed tests.
 %   PRO: Shorter call. Can use L.method(...) instead of bicas.logfunc(L, ...)
 %
