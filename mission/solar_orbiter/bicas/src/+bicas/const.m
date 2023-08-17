@@ -72,7 +72,7 @@ classdef const
 
 
 
-        SWD_METADATA = bicas.const.init_swd_metadata();
+        SWD_METADATA = bicas.const.init_SWD_metadata();
 
 
 
@@ -154,7 +154,7 @@ classdef const
         % specific outputs)
         % ----------------------------------------------------------------------
         %
-        function MAP = init_swd_metadata()
+        function MAP = init_SWD_metadata()
             MAP = containers.Map();
 
             IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';

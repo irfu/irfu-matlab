@@ -46,6 +46,22 @@ classdef utils
 %    PROPOSAL: First convert column data to 2D data (with separate functions),
 %              then reshape to 1D with one common function.
 %       CON: Does not work for ACQUISITION_TIME since two columns.
+%
+% PROPOSAL: Replace functions
+%           set_struct_field_rows()
+%           set_struct_field_rows()
+%           assert_struct_num_fields_have_same_N_rows()
+%       with new class that has a map from arbitrary value to arrays and/or
+%       instances of same class (recursive).
+%   PRO: Can enforce same number of rows.
+%   PRO: Can simultaneously (1) iterate over fields, and (2) identify fields
+%        using non-number, e.g. strings.
+%   PROPOSAL: Permit cell arrays. Replace functions
+%           select_row_range_from_cell_comps()
+%           convert_matrix_to_cell_array_of_vectors()
+%           convert_cell_array_of_vectors_to_matrix()
+%           assert_cell_array_comps_have_same_N_rows()
+%       with methods.
 
 
 
@@ -132,13 +148,17 @@ classdef utils
         %
         % ARGUMENTS
         % =========
-        % M                    : 2D matrix
-        % nCopyColsPerRowArray : 1D column vector. Numeric.
-        %                        {i}=Number of elements to copy from M{i,:}.
+        % M
+        %       2D matrix
+        % nCopyColsPerRowArray
+        %       1D column vector. Numeric.
+        %       (i) = Number of elements to copy from M(i,:).
         %
         % RETURN VALUE
         % ============
-        % ca                   : Column cell array of 1D vectors.
+        % ca
+        %       Column cell array of 1D vectors.
+        %       ca{i}(j). j = 1:nCopyColsPerRowArray(i)
         %
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
 
@@ -148,9 +168,8 @@ classdef utils
                 M,                    [-1, NaN], ...
                 nCopyColsPerRowArray, [-1, 1]);
 
-
-
-            ca = cell(size(M, 1), 1);
+            % Create "ca".
+            ca = cell(nRows, 1);
             for iRow = 1:nRows
                 ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
             end
@@ -441,16 +460,20 @@ classdef utils
                 fieldValue = S.(fieldNamesList1{iFn1});
 
                 if isnumeric(fieldValue) || islogical(fieldValue)
+                    % CASE: Numeric & logical field.
 
                     nRowsArray(end+1) = size(fieldValue, 1);
 
                 elseif iscell(fieldValue)
+                    % CASE: Cell array
 
                     for iCc = 1:numel(fieldValue)
                         nRowsArray(end+1) = size(fieldValue{iCc}, 1);
                     end
 
                 elseif isstruct(fieldValue)
+                    % CASE: Struct
+                    % Check number of rows in every field (regardless of type).
 
                     fieldNamesList2 = fieldnames(fieldValue);
                     for iFn2 = 1:length(fieldNamesList2)
@@ -460,10 +483,9 @@ classdef utils
                     end
 
                 else
-
+                    % CASE: Other field value type.
                     error('BICAS:Assertion', ...
                         'Can not handle this type of struct field.')
-
                 end
             end
 
