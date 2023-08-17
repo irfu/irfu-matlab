@@ -71,9 +71,6 @@
 % First created 2017-02-15
 %
 classdef Cal < handle
-
-% BOGIQ:
-% ------
 % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
 % TODO-NI: What parasitic capacitance value(s) should one use?
 % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
@@ -90,13 +87,12 @@ classdef Cal < handle
 %           PROPOSAL: PSSR = Physical Signal Source or Representation
 %           PROPOSAL: PSSR = Physical Signal Source or Dataset Representation
 %
-% PROPOSAL: Other name for bicas.proc.L1L2.PhysicalSignalSrcDest that does not reference BLTS.
-%   PRO: Reference to BLTS is confusing.
-%   PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR.
-%   PROPOSAL: Have different classes and acronyms for
-%             (1) physical signal sources, and
-%             (2) dataset representation
-%             ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
+% PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR.
+% PROPOSAL: Replace PSSD=bicas.proc.L1L2.PhysicalSignalSrcDestHave with different
+%           classes and acronyms for
+%           (1) physical signal sources, and
+%           (2) dataset representation
+%           where (2) is in practice a kind of subset of (1).
 %
 % PROPOSAL: Assertion function for CalSettings.
 %   TODO-NI: Same struct, with same fields in all cases?
@@ -264,8 +260,6 @@ classdef Cal < handle
 %       ~cal_curr
 %   PROPOSAL: Rename remaining class: Only about voltage calibration.
 %       ~cal_volt
-%
-% PROPOSAL: bicas.proc.L1L2.cal_* --> Package bicas.proc.L1L2.cal.*
 %
 % PROPOSAL: Move shared definitions and naming conventions to a
 %           ~MISC_NAMING_CONVENTIONS.md file analogous with for

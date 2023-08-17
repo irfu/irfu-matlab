@@ -4,7 +4,7 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-08-16, by moving out functions from bicas.proc.L1L2.cal.Cal.
+% First created 2021-08-16.
 %
 classdef findread
     % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,

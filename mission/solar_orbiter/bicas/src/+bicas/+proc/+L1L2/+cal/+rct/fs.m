@@ -1,6 +1,7 @@
 %
 % Class that collects generic functions related to reading different kinds of
 % RCTs (files) into corresponding data structures without any real modification.
+% FS = File System
 %
 %
 % DESIGN INTENT
@@ -22,45 +23,32 @@
 % First created 2019-11-15
 %
 classdef fs
-% PROPOSAL: Rename.
-%   CON: Does not conform to naming conventions.
-%   PRO: Only contains functions for reading RCTs (but not modifying).
-%        Cf bicas.proc.L1L2.cal.rct.typeproc.
-%       CON: Irrelevant. All RCT-code is about reading RCTs, kind of.
-%   PROPOSAL: rctread
-%
 % PROPOSAL: Merge with bicas.proc.L1L2.cal.rct.typeproc.
+%
 % PROPOSAL: Class for each type of RCT. Common superclass. Can contain 
 %   (1) methods read_*_RCT()
 %   (2) methods modify_*_data()
 %   (3) methods log_*_RCTs()
 %   (4) filenameRegexpSettingKey
-%   PRO: Can replace
-%       (1) Structs created by
-%           bicas.proc.L1L2.cal.rct.typeproc.init_RCT_TYPES_MAP.entry().
-%       (2) Bulk of bicas.proc.L1L2.cal.rct.fs, bicas.proc.L1L2.cal.rct.typeproc
-%       (3) RctData structs returned by read_*_RCT() and modify_*_data().
+%   PRO: Can replace bulk of
+%        bicas.proc.L1L2.cal.rct.fs,
+%        bicas.proc.L1L2.cal.rct.typeproc.
+%   PRO: Can replace structs created by
+%        bicas.proc.L1L2.cal.rct.typeproc.init_RCT_TYPES_MAP.entry().
+%       CON: Still one class for two data structures (per RCT type).
+%           CON-PROPOSAL: Store both raw AND modified RCT data in class.
+%           CON-PROPOSAL: Store only raw OR  modified RCT data in class.
+%   PRO: Can replace bulk of RctData structs returned by
+%        read_*_RCT() and modify_*_data().
 %       CON: Might use shared private functions that need to live in some other
 %            file.
-%       CON: There is a need to be able to load the "plain" content of RCTs,
-%            without modification.
-%           Ex: Best practice w.r.t. modularization. Reusability.
-%           Ex: Loading and analyzing RCTs outside of BICAS.
-%           PROPOSAL: Can still have separate methods for (1) reading raw RCT, and (2)
-%                     modifying the raw RCT data.
-%               CON: Still one class for two datastructures (per RCT type).
-%                   CON-PROPOSAL: Store both raw AND modified RCT data in class.
-%                   CON-PROPOSAL: Store only raw OR  modified RCT data in class.
+%   NEED: There is a need to be able to load the "plain" content of RCTs,
+%         without modification.
+%       Ex: Best practice w.r.t. modularization. Reusability.
+%       Ex: Loading and analyzing RCTs outside of BICAS.
+%       PROPOSAL: Can still have separate methods for (1) reading raw RCT, and
+%                 (2) modifying the raw RCT data.
 %
-% PROPOSAL: Move bicas.proc.L1L2.cal.rct.fs
-%   CON: Contains generic RCT functionality. Not directly processing related.
-%     --> bicas.proc.L1L2.RCT ?
-%     --> bicas.proc.L1L2.cal.RCT ?
-%     --> bicas.proc.L1L2*.RCT_read ?
-%     --> bicas.RCT_read ?
-%     --> bicas.read_RCT ?
-%   PRO: RCTs are specific to L1/L1R-->L2 processing.
-%    
 % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
 % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
 % PROPOSAL: Assert CDF skeleton/master version number.

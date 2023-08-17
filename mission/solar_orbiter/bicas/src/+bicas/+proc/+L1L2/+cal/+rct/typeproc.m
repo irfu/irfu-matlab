@@ -13,15 +13,10 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-08-19, by moving out functions from
-% bicas.proc.L1L2.cal.rct.findread.
+% First created 2021-08-19.
 %
 classdef typeproc
     % PROPOSAL: Class for init_RCT_TYPES_MAP:"Entry" structs.
-    % PROPOSAL: Rename.
-    %   CON: Does not conform to naming conventions.
-    %   PRO: All code is about modifying loaded RCT data.
-    % PROPOSAL: Merge with bicas.proc.L1L2.cal.rct.fs.
 
 
 
