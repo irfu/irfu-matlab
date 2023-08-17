@@ -21,7 +21,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-15
 %
-classdef RCT
+classdef fs
 % PROPOSAL: Rename.
 %   CON: Does not conform to naming conventions.
 %   PRO: Only contains functions for reading RCTs (but not modifying).
@@ -38,7 +38,7 @@ classdef RCT
 %   PRO: Can replace
 %       (1) Structs created by
 %           bicas.proc.L1L2.cal.rct.typeproc.init_RCT_TYPES_MAP.entry().
-%       (2) Bulk of bicas.RCT, bicas.proc.L1L2.cal.rct.typeproc
+%       (2) Bulk of bicas.proc.L1L2.cal.rct.fs, bicas.proc.L1L2.cal.rct.typeproc
 %       (3) RctData structs returned by read_*_RCT() and modify_*_data().
 %       CON: Might use shared private functions that need to live in some other
 %            file.
@@ -52,7 +52,7 @@ classdef RCT
 %                   CON-PROPOSAL: Store both raw AND modified RCT data in class.
 %                   CON-PROPOSAL: Store only raw OR  modified RCT data in class.
 %
-% PROPOSAL: Move bicas.RCT
+% PROPOSAL: Move bicas.proc.L1L2.cal.rct.fs
 %   CON: Contains generic RCT functionality. Not directly processing related.
 %     --> bicas.proc.L1L2.RCT ?
 %     --> bicas.proc.L1L2.cal.RCT ?
@@ -124,13 +124,13 @@ classdef RCT
                 % NOTE: Assumes 1 CDF record or many (time-dependent values).
                 % ==> Must handle that dataobj assigns differently for these two
                 %     cases.
-                epochL                    = bicas.RCT.normalize_dataobj_ZV(Do.data.Epoch_L);
-                epochH                    = bicas.RCT.normalize_dataobj_ZV(Do.data.Epoch_H);
-                biasCurrentOffsetsAAmpere = bicas.RCT.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
-                biasCurrentGainsAapt      = bicas.RCT.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
-                dcSingleOffsetsAVolt      = bicas.RCT.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
-                dcDiffOffsetsAVolt        = bicas.RCT.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
-                ftfCoeffs                 = bicas.RCT.normalize_dataobj_ZV(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
+                epochL                    = bicas.proc.L1L2.cal.rct.fs.normalize_dataobj_ZV(Do.data.Epoch_L);
+                epochH                    = bicas.proc.L1L2.cal.rct.fs.normalize_dataobj_ZV(Do.data.Epoch_H);
+                biasCurrentOffsetsAAmpere = bicas.proc.L1L2.cal.rct.fs.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
+                biasCurrentGainsAapt      = bicas.proc.L1L2.cal.rct.fs.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
+                dcSingleOffsetsAVolt      = bicas.proc.L1L2.cal.rct.fs.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
+                dcDiffOffsetsAVolt        = bicas.proc.L1L2.cal.rct.fs.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
+                ftfCoeffs                 = bicas.proc.L1L2.cal.rct.fs.normalize_dataobj_ZV(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
                 nEpochL = size(epochL, 1);
                 nEpochH = size(epochH, 1);
@@ -153,7 +153,7 @@ classdef RCT
                 %=======================================================
                 % ND = Numerator Denominator
                 nNdCoeffs = irf.assert.sizes(ftfCoeffs, [nEpochL, -1, 2, 4]);
-                assert(nNdCoeffs >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
+                assert(nNdCoeffs >= bicas.proc.L1L2.cal.rct.fs.N_MIN_TF_NUMER_DENOM_COEFFS)
 
                 %================================
                 % Assign struct that is returned
@@ -170,19 +170,19 @@ classdef RCT
 
                 % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural).
                 % (List, Table would be wrong? Use "FtfTable"?)
-                RctData.FtfSet.DcSingleAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.DcSingleAvpiv = bicas.proc.L1L2.cal.rct.fs.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_DC_SINGLE), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_DC_SINGLE));
 
-                RctData.FtfSet.DcDiffAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.DcDiffAvpiv = bicas.proc.L1L2.cal.rct.fs.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_DC_DIFF), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_DC_DIFF));
 
-                RctData.FtfSet.AcLowGainAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.AcLowGainAvpiv = bicas.proc.L1L2.cal.rct.fs.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_AC_LG), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_LG));
 
-                RctData.FtfSet.AcHighGainAvpiv = bicas.RCT.create_TF_sequence(...
+                RctData.FtfSet.AcHighGainAvpiv = bicas.proc.L1L2.cal.rct.fs.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_AC_HG), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
                 
@@ -282,7 +282,7 @@ classdef RCT
                         lsfFreqTableHz,   [-1,       1 ], ...
                         lsfAmplTableTpiv, [-1, nBlts], ...
                         lsfPhaseTableDeg, [-1, nBlts]);
-                    assert(nFreqs >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                    assert(nFreqs >= bicas.proc.L1L2.cal.rct.fs.TF_TABLE_MIN_LENGTH)
 
                     for iBlts = 1:nBlts
                         
@@ -378,7 +378,7 @@ classdef RCT
                     freqsHz,  [-1,  1], ...
                     amplIvpt, [ 3, -1], ...
                     phaseDeg, [ 3, -1]);
-                assert(nFreqs >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                assert(nFreqs >= bicas.proc.L1L2.cal.rct.fs.TF_TABLE_MIN_LENGTH)
 
                 for iBlts = 1:3
                     % NOTE: RCT contains ITF, not FTF.
