@@ -25,11 +25,11 @@ classdef RCT
 % PROPOSAL: Rename.
 %   CON: Does not conform to naming conventions.
 %   PRO: Only contains functions for reading RCTs (but not modifying).
-%        Cf bicas.proc.L1L2.cal_RCT_types.
+%        Cf bicas.proc.L1L2.cal.rct.typeproc.
 %       CON: Irrelevant. All RCT-code is about reading RCTs, kind of.
 %   PROPOSAL: rctread
 %
-% PROPOSAL: Merge with bicas.proc.L1L2.cal_RCT_types.
+% PROPOSAL: Merge with bicas.proc.L1L2.cal.rct.typeproc.
 % PROPOSAL: Class for each type of RCT. Common superclass. Can contain 
 %   (1) methods read_*_RCT()
 %   (2) methods modify_*_data()
@@ -37,8 +37,8 @@ classdef RCT
 %   (4) filenameRegexpSettingKey
 %   PRO: Can replace
 %       (1) Structs created by
-%           bicas.proc.L1L2.cal_RCT_types.init_RCT_TYPES_MAP.entry().
-%       (2) Bulk of bicas.RCT, bicas.proc.L1L2.cal_RCT_types
+%           bicas.proc.L1L2.cal.rct.typeproc.init_RCT_TYPES_MAP.entry().
+%       (2) Bulk of bicas.RCT, bicas.proc.L1L2.cal.rct.typeproc
 %       (3) RctData structs returned by read_*_RCT() and modify_*_data().
 %       CON: Might use shared private functions that need to live in some other
 %            file.

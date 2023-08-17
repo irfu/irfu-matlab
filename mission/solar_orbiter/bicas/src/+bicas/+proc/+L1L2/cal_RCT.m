@@ -103,7 +103,7 @@ classdef cal_RCT
             for i = 1:numel(rctTypeIdCa)
                 rctTypeId = rctTypeIdCa{i};
                 
-                settingKey     = bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP(...
+                settingKey     = bicas.proc.L1L2.cal.rct.typeproc.RCT_TYPES_MAP(...
                     rctTypeId).filenameRegexpSettingKey;
                 filenameRegexp = SETTINGS.get_fv(settingKey);
                 filePath       = bicas.proc.L1L2.cal_RCT.find_RCT_regexp(...
@@ -328,7 +328,7 @@ classdef cal_RCT
             L.logf(bicas.proc.L1L2.cal_RCT.READING_RCT_PATH_LL, ...
                 'Reading RCT (rctTypeId=%s): "%s"', rctTypeId, filePath)
             
-            RCT_TYPES_MAP = bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP;
+            RCT_TYPES_MAP = bicas.proc.L1L2.cal.rct.typeproc.RCT_TYPES_MAP;
             
             readRctFunc   = RCT_TYPES_MAP(rctTypeId).readRctFunc;
             modifyRctFunc = RCT_TYPES_MAP(rctTypeId).modifyRctFunc;

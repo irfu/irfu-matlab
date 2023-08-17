@@ -406,7 +406,7 @@ classdef Cal < handle
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
             irf.assert.subset(...
                 RctDataMap.keys, ...
-                bicas.proc.L1L2.cal_RCT_types.RCT_TYPES_MAP.keys)
+                bicas.proc.L1L2.cal.rct.typeproc.RCT_TYPES_MAP.keys)
             assert(isscalar(RctDataMap('BIAS')))
 
 
