@@ -5,8 +5,8 @@
 BICAS = BIAS Calibration Software
 
 This software, BICAS, is created for the calibration of the BIAS subsystem in
-the RPW instrument on the Solar Orbiter spacecraft. The principle author of this
-software is Erik P G Johansson, Swedish Institute of Space Physics (IRF),
+the RPW instrument on the Solar Orbiter spacecraft. The principle author of
+this software is Erik P G Johansson, Swedish Institute of Space Physics (IRF),
 Uppsala, Sweden. Software development began 2016-03-xx (March 2016).
 
 IMPORTANT NOTE: BICAS is designed to comply with the RCS ICD. Much documentation
@@ -26,8 +26,8 @@ The code should however converge on the following.
   - Class names for classes which are actually instantiated (which are not
     merely a collection of static methods) should be CamelCase. Initial in
     uppercase.
-  - Classes which are not instantiated should be named
-    using snake_case, but preferably without underscore and short. Abbreviations in uppercase?
+  - Classes which are not instantiated should be named using lowercase without
+    underscore.
 - Functions should be named using snake_case. Abbreviations in uppercase.
 
 
@@ -51,22 +51,22 @@ ASR, Antenna Signal Representation.
     NOTE: There are 9 ASRs, i.e. they can refer also to signals not represented
     by any single BLTS, given a chosen mux mode (and latching relay setting).
 AV, avolt, Antenna Volt
-    Calibrated volt at the antennas, i.e. the final calibrated (measured) value,
-    including for reconstructed signals (e.g. diffs calculated from singles).
-    May also refer to offsets and values without offsets.
+    Calibrated volt at the antennas, i.e. the final calibrated (measured)
+    value, including for reconstructed signals (e.g. diffs calculated from
+    singles). May also refer to offsets and values without offsets.
 AVPIV
     Antenna volt/interface volt
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".
 BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
-    Defined in BIAS specifications document. Equal to the physical signal at the
-    physical boundary between BIAS and LFR/TDS. Unit: Interface volt.
+    Defined in BIAS specifications document. Equal to the physical signal at
+    the physical boundary between BIAS and LFR/TDS. Unit: Interface volt.
     Mostly replaced by BLTS+specified unit in the implementation.
 BLTS = BIAS-LFR/TDS SIGNAL
     Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the
-    BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5, but
-    includes various stages of calibration/non-calibration, including in
+    BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5,
+    but includes various stages of calibration/non-calibration, including in
     particular
       - TM units (inside LFR/TDS),
       - Interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
@@ -146,9 +146,9 @@ RCS ICD
     "RPW Calibration Software ICD Documentation",
     which was later superseded by ROC-PRO-PIP-ICD-00037-LES,
     "RPW Calibration Software Interface Document".
-    NOTE: "RCS ICD" does not at this time (2019-07-24) distinguish between these
-    two which gives room for confusion since a later rev/iss for the old RCS
-    ICD may thus be superseded by a lower rev/iss for the newer RCS ICD.
+    NOTE: "RCS ICD" does not at this time (2019-07-24) distinguish between
+    these two which gives room for confusion since a later rev/iss for the old
+    RCS ICD may thus be superseded by a lower rev/iss for the newer RCS ICD.
 RCT
     RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
 RCTS
