@@ -57,9 +57,10 @@ runner.addPlugin(TestReportPlugin.producingPDF(...
 
 % RUN TESTS
 % ---------
-% CHECK output, if any problems do not release new version of irfu-matlab!
+% CHECK output. If there are any problems do not release new version of irfu-matlab!
 % assertSuccess should allow CI/CD Matlab Actions to report error if any
 % test failed.
+% NOTE: assertSuccess() only exists in MATLAB R2020a and later.
 assertSuccess(runner.run(suite));
 
 end

@@ -3,9 +3,23 @@ function res = db_get_ts(filePrefix,varName,tint)
 %
 % res = solo.db_get_ts(filePrefix,varName,tint)
 %
+% ARGUMENTS
+% ---------
+% filePrefix
+%     Beginning of file name for the datasets that shall be searched, up until
+%     (but excluding) the third underscore.
+%     Note: Should include "-cdag" when present.
+%     Ex: solo_L1_rpw-hfr-surv-cdag_20230101_V06.cdf
+%         ==> solo_L1_rpw-hfr-surv-cdag
+% varName
+%     zVariable name
+% tint
+%     Time interval for which data shall be retrieved.
+%
 % RETURN VALUE
 % ------------
 % (1) TSeries (nominally), or
+% (2) Empty array (double), if there is no data, or
 % (2) 1D cell array of multiple TSeries, if the zVariables with the same name
 %     in the underlying datasets (data files) appear to be *not* equivalent e.g.
 %     due to having different zVariable attributes.

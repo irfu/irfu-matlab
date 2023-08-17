@@ -46,7 +46,7 @@ function b2 = true_with_margin(x, b1, xMargin)
     
     irf.assert.vector(x)
     irf.assert.vector(b1)
-    assert(numel(x) == numel(b1))
+    assert(numel(x) == numel(b1), 'Arguments x and b1 do not have the same number of columns.')
     
     assert(all(isfinite(x)))
     assert(islogical(b1))

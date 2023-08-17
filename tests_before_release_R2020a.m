@@ -5,11 +5,11 @@ function tests_before_release_R2020a
 % RATIONALE
 % ---------
 % The primary use case for this file is BICAS (SolO/RPW/BIAS calibration code)
-% which requires MATLAB R2019b (sic!) per agreement with LESIA/ROC which runs
-% it. However, it is not possible to run tests under R2019b since MATLAB's
-% "Action for Setting Up MATLAB on GitHub-Hosted Runner"
-% (https://github.com/matlab-actions/setup-matlab/) only supports MATLAB R2020a
-% and later. Therefore running BICAS tests on GitHub under MATLAB R2020a,
+% which must be able to run on MATLAB R2019b (sic!) per agreement with LESIA/ROC
+% which runs it. However, MATLAB's "Action for Setting Up MATLAB on
+% GitHub-Hosted Runner" (https://github.com/matlab-actions/setup-matlab/) only
+% supports MATLAB R2020a and later. Therefore, it is not possible to run CI test
+% under R2019b. Therefore running BICAS tests on GitHub under MATLAB R2020a,
 % despite it being suboptimal.
 
 % Setup paths etc.
