@@ -24,7 +24,7 @@ classdef utils
         function assert_SWM_CLI_option(swmCliOption)
             irf.assert.castring_regexp(...
                 swmCliOption, ...
-                bicas.constants.SWM_CLI_OPTION_REGEX)
+                bicas.const.SWM_CLI_OPTION_REGEX)
         end
 
 
@@ -33,7 +33,7 @@ classdef utils
         function assert_SIP_CLI_option(sipCliOptionBody)
             irf.assert.castring_regexp(...
                 sipCliOptionBody, ...
-                bicas.constants.SIP_CLI_OPTION_BODY_REGEX)
+                bicas.const.SIP_CLI_OPTION_BODY_REGEX)
         end
 
 

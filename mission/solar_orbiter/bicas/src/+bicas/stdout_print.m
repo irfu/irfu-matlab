@@ -20,7 +20,7 @@
 function stdout_print(msgStr)
     
     printStr = irf.str.add_prefix_on_every_row(...
-        msgStr, bicas.constants.STDOUT_PREFIX_TBW);
+        msgStr, bicas.const.STDOUT_PREFIX_TBW);
     
     % NOTE: Must print using function that reacts to trailing line feed.
     fwrite(1, printStr);

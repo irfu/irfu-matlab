@@ -236,7 +236,7 @@ classdef Logger < handle
                     % as stdout.
                     bashWrapperRecipientStr = irf.str.add_prefix_on_every_row(...
                         rcsIcdLogMsg, ...
-                        bicas.constants.LOG_FILE_PREFIX_TBW);
+                        bicas.const.LOG_FILE_PREFIX_TBW);
                     
                     obj.write_to_stdout(bashWrapperRecipientStr)
                     
@@ -337,10 +337,10 @@ classdef Logger < handle
         % NOTE: RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3 speaks
         %       of a "debug mode" not implemented here. Function always prints
         %       debug-level messages.
-        % NOTE: Does NOT add bicas.constants.LOG_FILE_PREFIX_TBW required for
+        % NOTE: Does NOT add bicas.const.LOG_FILE_PREFIX_TBW required for
         %       wrapper script to recognize log file messages in stdout. This is
         %       intentional since one may want both log message version with and
-        %       without bicas.constants.LOG_FILE_PREFIX_TBW.
+        %       without bicas.const.LOG_FILE_PREFIX_TBW.
         % NOTE: Current implementation could be a static method, but should
         %       probably remain an instance method as future changes might
         %       require it.

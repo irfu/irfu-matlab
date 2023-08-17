@@ -29,14 +29,14 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % Partially NaN data
             % QUALITY_FLAG < min value
             % QUALITY_FLAG = fill value
-            % #samples < bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN
+            % #samples < bicas.const.N_MIN_SAMPLES_PER_DSR_BIN
             % 
             % NOTE: Makes no sense testing the actual output data, since it is
             % dependent on BICAS-external functions, except maybe whether it is
             % NaN or not.
 
             % Test(s) are designed for this value.
-            assert(bicas.constants.N_MIN_SAMPLES_PER_DSR_BIN == 3)
+            assert(bicas.const.N_MIN_SAMPLES_PER_DSR_BIN == 3)
 
 
 

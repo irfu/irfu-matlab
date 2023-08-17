@@ -57,8 +57,8 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
             %===================================================================
 
-            NSOID_1 = bicas.constants.NSOID.FULL_SATURATION;
-            NSOID_2 = bicas.constants.NSOID.PARTIAL_SATURATION;
+            NSOID_1 = bicas.const.NSOID.FULL_SATURATION;
+            NSOID_2 = bicas.const.NSOID.PARTIAL_SATURATION;
 
             ENA = zeros(0, 1);   % Empty Numeric Array
             ECA = cell(0, 1);    % Empty Cell    Array

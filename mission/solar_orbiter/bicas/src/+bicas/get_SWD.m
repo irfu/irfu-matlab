@@ -66,7 +66,7 @@ function JsonSwd = get_SWD(SwmList)
     %   (SWD) JSON object string. Its fields (field names) should NOT follow
     %   variable naming conventions since they determine the JSON object string
     %   which must follow the RCS ICD.
-    SwdMetadataMap = bicas.constants.SWD_METADATA;
+    SwdMetadataMap = bicas.const.SWD_METADATA;
     
     JsonSwd = [];
     JsonSwd.identification.project     = SwdMetadataMap('SWD.identification.project');
@@ -86,7 +86,7 @@ function JsonSwd = get_SWD(SwmList)
     
     JsonSwd.environment.executable     = SwdMetadataMap('SWD.environment.executable');
     % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
-    JsonSwd.environment.configuration  = bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH;
+    JsonSwd.environment.configuration  = bicas.const.DEFAULT_CONFIG_FILE_RELATIVE_PATH;
     
     JsonSwd.modes = {};
     for i = 1:length(SwmList)

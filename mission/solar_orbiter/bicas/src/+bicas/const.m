@@ -13,16 +13,13 @@
 % First created 2020-07-09, as a replacement for the FUNCTION
 % error_safe_constant created 2016-06-02.
 %
-classdef constants
+classdef const
     % PROPOSAL: Error category for bad input datasets (both science and HK).
     %   PRO: Has similar for RCTs.
     %
     % PROPOSAL: Move N_MIN_SAMPLES_PER_DSR_BIN to settings?
     %
     % PROPOSAL: Log all constants.
-    % PROPOSAL: Change name to "const".
-    %   PRO: Shorter
-    %   PRO: More ~standard.
 
 
 
@@ -71,11 +68,11 @@ classdef constants
         %           defines what kinds of errors this error code should cover.
         %
         %
-        EMIDP_2_INFO = bicas.constants.init_EMIDP_2_INFO;
+        EMIDP_2_INFO = bicas.const.init_EMIDP_2_INFO;
 
 
 
-        SWD_METADATA = bicas.constants.init_swd_metadata();
+        SWD_METADATA = bicas.const.init_swd_metadata();
 
 
 
@@ -138,7 +135,7 @@ classdef constants
 
 
 
-        GA_MODS_DB = bicas.constants.init_GA_MODS_DB();
+        GA_MODS_DB = bicas.const.init_GA_MODS_DB();
 
     end    % properties(Constant)
 

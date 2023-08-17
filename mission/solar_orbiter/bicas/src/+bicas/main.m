@@ -154,7 +154,7 @@ function errorCode = main( varargin )
 
 
         % Default error code (i.e. no error).
-        errorCode = bicas.constants.EMIDP_2_INFO('NoError').errorCode;
+        errorCode = bicas.const.EMIDP_2_INFO('NoError').errorCode;
         main_without_error_handling(varargin, L);
         
     catch Exception1
@@ -226,7 +226,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     %=========================================================================
     msgIdentifierParts = strsplit(Exception.identifier, ':');
     % Cell array of message identifier parts (strings) only.
-    emidpList = msgIdentifierParts(bicas.constants.EMIDP_2_INFO.isKey(msgIdentifierParts));
+    emidpList = msgIdentifierParts(bicas.const.EMIDP_2_INFO.isKey(msgIdentifierParts));
     if isempty(emidpList)
         emidpList = {'UntranslatableErrorMsgId'};
     end
@@ -240,11 +240,11 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     for i = 1:numel(emidpList)
         emidp = emidpList{i};
         msg  = [msg, sprintf('    %-23s : %s\n', ...
-            emidp, bicas.constants.EMIDP_2_INFO(emidp).description)];
+            emidp, bicas.const.EMIDP_2_INFO(emidp).description)];
     end
     % NOTE: Choice - Uses the last part of the message ID for determining error
     % code to return.
-    errorCode = bicas.constants.EMIDP_2_INFO(emidpList{end}).errorCode;
+    errorCode = bicas.const.EMIDP_2_INFO(emidpList{end}).errorCode;
     
     %======================
     % Print the call stack
@@ -294,12 +294,12 @@ function main_without_error_handling(cliArgumentsList, L)
     % ~ASSERTION: Check MATLAB version
     %==================================
     matlabVersionString = version('-release');
-    if ~ismember(matlabVersionString, bicas.constants.PERMITTED_MATLAB_VERSIONS)
+    if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS)
         error('BICAS:BadMatlabVersion', ...
             ['Using bad MATLAB version. Found version "%s".', ...
             ' BICAS requires any of the following MATLAB versions: %s.\n'], ...
             matlabVersionString, ...
-        strjoin(bicas.constants.PERMITTED_MATLAB_VERSIONS, ', '))
+        strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS, ', '))
     end
     L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
     
@@ -413,7 +413,7 @@ function main_without_error_handling(cliArgumentsList, L)
     else
         configFile = fullfile(...
             bicasRootPath, ...
-            bicas.constants.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
+            bicas.const.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
     end
     L.logf('info', 'configFile = "%s"', configFile)
     L.log('info', 'Overriding subset of in-memory settings using config file.')
@@ -441,7 +441,7 @@ function main_without_error_handling(cliArgumentsList, L)
     % Print/log the content of SETTINGS.
     L.log('info', bicas.sprint_SETTINGS(SETTINGS))
     
-    % Print/log selected parts of bicas.constants.
+    % Print/log selected parts of bicas.const.
     L.log('info', sprint_constants())
     
     
@@ -662,10 +662,10 @@ function print_help(SETTINGS)
     % Print error codes & types
     %==========================
     % Array of (unsorted) error codes.
-    errorCodesList = cellfun(@(x) (x.errorCode), bicas.constants.EMIDP_2_INFO.values);
+    errorCodesList = cellfun(@(x) (x.errorCode), bicas.const.EMIDP_2_INFO.values);
     [~, iSort] = sort(errorCodesList);
-    empidList          = bicas.constants.EMIDP_2_INFO.keys;
-    errorTypesInfoList = bicas.constants.EMIDP_2_INFO.values;   % Cell array of structs (unsorted).
+    empidList          = bicas.const.EMIDP_2_INFO.keys;
+    errorTypesInfoList = bicas.const.EMIDP_2_INFO.values;   % Cell array of structs (unsorted).
     empidList          = empidList(iSort);
     errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
     bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')
@@ -718,7 +718,7 @@ end
 %
 function s = sprint_constants()
     %
-    % NOTE: Does not print error codes (bicas.constants), but print_help() does.
+    % NOTE: Does not print error codes (bicas.const), but print_help() does.
     % PROPOSAL: PERMITTED_MATLAB_VERSIONS
     
     s = sprintf([...
@@ -726,13 +726,13 @@ function s = sprint_constants()
         'SELECTED (HARD-CODED) INTERNAL BICAS CONSTANTS\n', ...
         '==============================================\n']);
     
-    keysCa = bicas.constants.SWD_METADATA.keys;   % Always row vector.
+    keysCa = bicas.const.SWD_METADATA.keys;   % Always row vector.
     keysCa = sort(keysCa)';   % Column vector.
     nKeys  = numel(keysCa);
     
     valuesCa = cell(nKeys, 1);
     for i = 1:nKeys
-        valuesCa{i, 1} = bicas.constants.SWD_METADATA(keysCa{i});
+        valuesCa{i, 1} = bicas.const.SWD_METADATA(keysCa{i});
     end
     [~, dataCa, ~] = irf.str.assist_print_table(...
         {'Constant', 'Value'}, [keysCa, valuesCa], {'left', 'left'});

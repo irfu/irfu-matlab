@@ -117,22 +117,22 @@ classdef qual
 
                 switch(eventNsoid)
 
-                    case bicas.constants.NSOID.PARTIAL_SATURATION
+                    case bicas.const.NSOID.PARTIAL_SATURATION
                         zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
                         zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
                             zv_L2_QUALITY_BITMASK_cdfEvent, ...
-                            bicas.constants.L2QBM_PARTIAL_SATURATION);
+                            bicas.const.L2QBM_PARTIAL_SATURATION);
 
-                    case bicas.constants.NSOID.FULL_SATURATION
+                    case bicas.const.NSOID.FULL_SATURATION
                         zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 0, 'includeNaN');
                         % NOTE: Also set PARTIAL saturation bit when FULL
                         % saturation. /YK 2020-10-02.
                         zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
                             zv_L2_QUALITY_BITMASK_cdfEvent, ...
-                            bicas.constants.L2QBM_FULL_SATURATION + ...
-                            bicas.constants.L2QBM_PARTIAL_SATURATION);
+                            bicas.const.L2QBM_FULL_SATURATION + ...
+                            bicas.const.L2QBM_PARTIAL_SATURATION);
 
-                    case bicas.constants.NSOID.THRUSTER_FIRING
+                    case bicas.const.NSOID.THRUSTER_FIRING
                         zv_QUALITY_FLAG_cdfEvent = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
                         % NOTE: There will be an L1 QUALITY_BITMASK bit for
                         % thruster firings eventually according to

@@ -162,8 +162,8 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
 
 
 
-    OutGaSubset.Software_name    = bicas.constants.SWD_METADATA('SWD.identification.name');
-    OutGaSubset.Software_version = bicas.constants.SWD_METADATA('SWD.release.version');
+    OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.name');
+    OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
     
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
     OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
@@ -242,7 +242,7 @@ function OutGaSubset = derive_output_dataset_GlobalAttributes(...
 
     enableMods = SETTINGS.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
     if enableMods
-        MODS = bicas.constants.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
+        MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
         OutGaSubset.MODS = MODS;
     end
     

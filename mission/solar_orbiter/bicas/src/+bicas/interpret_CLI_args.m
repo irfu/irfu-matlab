@@ -67,7 +67,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
     % PROPOSAL: Include assertion for unique input and output dataset paths.
     %   NOTE: Assertion is presently in execute_SWM.
     
-    SWM_CLI_OPTION_REGEX = bicas.constants.SWM_CLI_OPTION_REGEX;
+    SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
     
     %==================================================================================
     % Configure

@@ -304,7 +304,7 @@ classdef NsoTable
             % ASSERTION: No non-BICAS NSOIDs
             % ------------------------------
             % List of all legal NSOIDs.
-            LEGAL_NSOID_CA = struct2cell(bicas.constants.NSOID);
+            LEGAL_NSOID_CA = struct2cell(bicas.const.NSOID);
             irf.assert.castring_set(LEGAL_NSOID_CA)
             illegalEvtNsoidSet = setdiff(evtNsoidCa, LEGAL_NSOID_CA);
             assert(isempty(illegalEvtNsoidSet), ...
