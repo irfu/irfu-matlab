@@ -127,10 +127,10 @@ classdef pf
             C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
             if C.isTdsCwf
                 settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                tdsRctTypeId = 'TDS-CWF';
+                tdsRctid = 'TDS-CWF';
             else
                 settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-                tdsRctTypeId = 'TDS-RSWF';
+                tdsRctid = 'TDS-RSWF';
             end
             useCtRcts = C.isL1r && SETTINGS.get_fv(settingUseCt);
             useCti2   = false;    % Always false for TDS.
@@ -144,14 +144,14 @@ classdef pf
                     1));
                 
                 RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
-                    tdsRctTypeId, rctDir, ...
+                    tdsRctid, rctDir, ...
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
                     InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     zv_BW, ...
                     SETTINGS, L);
             else
                 RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
-                    {'BIAS', tdsRctTypeId}, rctDir, SETTINGS, L);
+                    {'BIAS', tdsRctid}, rctDir, SETTINGS, L);
             end
             
             Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
