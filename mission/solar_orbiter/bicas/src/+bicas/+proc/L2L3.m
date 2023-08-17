@@ -398,7 +398,7 @@ classdef L2L3
             
             
             
-            % ASSERTIONS
+            % ASSERTIONS: Check solo.vdccal() return values.
             irf.assert.sizes(...
                 zv_Epoch,      [-1, 1], ...
                 EdcSrfTs.data, [-1, 3], ...
@@ -408,7 +408,10 @@ classdef L2L3
             assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF'))
             assert(strcmp(PspTs.units,               'V'))
             assert(strcmp(ScpotTs.units,             'V'))
-            
+            assert(all(zv_Epoch == EdcSrfTs.time.ttns))
+            assert(all(zv_Epoch ==    PspTs.time.ttns))
+            assert(all(zv_Epoch ==  ScpotTs.time.ttns))
+
             
             
             %===================================================================
@@ -476,12 +479,17 @@ classdef L2L3
             %       assertions on it. Value is expected to be used by BICAS
             %       later.
             
-            % ASSERTIONS
+
+
+            % ASSERTIONS: Check solo.psp2ne() return values
             irf.assert.sizes(...
                 PspTs.data,             [-1, 1], ...
                 NeScpTs.data,           [-1, 1], ...
                 NeScpQualityBitTs.data, [-1, 1] ...
             );
+            assert(strcmp(NeScpTs.units, 'cm^-3'))
+            assert(all(PspTs.time == NeScpTs.time          ))
+            assert(all(PspTs.time == NeScpQualityBitTs.time))
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
             assert(strcmp(NeScpTs.units, 'cm^-3'))
