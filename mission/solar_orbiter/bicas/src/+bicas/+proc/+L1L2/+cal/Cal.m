@@ -212,10 +212,10 @@ classdef Cal < handle
 %           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
 %               CON: Relies on the implementation of what is being tested.
 %       NOTE: (1) As a function/code module,
-%                   bicas.proc.L1L2.Cal encloses/contains/"secretly uses"
+%                   bicas.proc.L1L2.cal.Cal encloses/contains/"secretly uses"
 %                   bicas.tf.apply_TF_freq().
 %             (2) For testing, one wants to verify the path (both ways) between
-%                   bicas.proc.L1L2.Cal and
+%                   bicas.proc.L1L2.cal.Cal and
 %                   bicas.tf.apply_TF_freq().
 %             ==> One wants to test one unit of code at a time, but what a
 %                "unit" is ambiguous:
@@ -393,7 +393,7 @@ classdef Cal < handle
         %    from the class (better modularization, better for automatic test
         %    code).
         % ** it makes it possible to inspect & modify the RCT content before
-        %    submitting it to bicas.proc.L1L2.Cal
+        %    submitting it to bicas.proc.L1L2.cal.Cal
         % ** it simplifies the constructor.
         %
         function obj = Cal(...
@@ -973,7 +973,7 @@ classdef Cal < handle
                         offsetAVolt  = 0;
                     elseif isnan(biasHighGain)
                         % CASE: GAIN unknown when it is NEEDED for calibration.
-                        biasItfAvpiv = bicas.proc.L1L2.Cal.NAN_TF;
+                        biasItfAvpiv = bicas.proc.L1L2.cal.Cal.NAN_TF;
                         kFtfIvpav    = NaN;
                         offsetAVolt  = NaN;
                     else
@@ -1023,7 +1023,7 @@ classdef Cal < handle
 
                 % NOTE: There is no tabulated LFR TF and no such combination
                 % signal route, so the TF can not be returned even in principle.
-                lfrItfIvpt = bicas.proc.L1L2.Cal.NAN_TF;
+                lfrItfIvpt = bicas.proc.L1L2.cal.Cal.NAN_TF;
             else
                 RctDataList = obj.RctDataMap('LFR');
 

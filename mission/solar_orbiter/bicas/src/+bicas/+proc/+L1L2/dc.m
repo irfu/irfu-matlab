@@ -64,7 +64,7 @@ classdef dc
             %#########################
             currentSAmpere = bicas.proc.L1L2.dc.convert_CUR_to_CUR_on_SCI_TIME(...
                 PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
-            currentTm      = bicas.proc.L1L2.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
+            currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);

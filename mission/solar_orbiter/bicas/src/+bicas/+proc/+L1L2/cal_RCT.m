@@ -1,10 +1,10 @@
 %
-% Functions (static methods) associated with bicas.proc.L1L2.Cal finding,
-% reading, and logging RCTs so that bicas.proc.L1L2.Cal does not need to.
+% Functions (static methods) associated with bicas.proc.L1L2.cal.Cal finding,
+% reading, and logging RCTs so that bicas.proc.L1L2.cal.Cal does not need to.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-08-16, by moving out functions from bicas.proc.L1L2.Cal.
+% First created 2021-08-16, by moving out functions from bicas.proc.L1L2.cal.Cal.
 %
 classdef cal_RCT    
     % PROPOSAL: Rename.
@@ -14,7 +14,7 @@ classdef cal_RCT
     %
     % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,
     %           zv_CALIBRATION_TABLE_INDEX for L1.
-    %   PRO: Can eliminate internal special cases in bicas.proc.L1L2.Cal.
+    %   PRO: Can eliminate internal special cases in bicas.proc.L1L2.cal.Cal.
     %   NOTE: There is a function
     %         bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX() used by
     %         bicas.proc.L1L2.lfr.process_normalize_CDF() to produce NaN-valued
@@ -25,14 +25,14 @@ classdef cal_RCT
     %            values (not NaN) corresponding to the actual values used wrt.
     %            RCTs (:,1) and maybe also index (:,2).
     %            produce_L1R_to_L2_LFR/TDS() then reads the values AFTER those
-    %            functions and use them to initialize bicas.proc.L1L2.Cal
+    %            functions and use them to initialize bicas.proc.L1L2.cal.Cal
     %            object.
     %       CON: Does not enable that much simplification. The only code that
     %            can be simplified is:
-    %                (1) bicas.proc.L1L2.Cal.calibrate_voltage_all()
+    %                (1) bicas.proc.L1L2.cal.Cal.calibrate_voltage_all()
     %                       selects between the CALIBRATION_TABLE_INDEX(:,1) and 0 depending on setting.
     %                (2) bicas.proc.pf.produce_L1R_to_L2_LFR/DS()
-    %                       constructs bicas.proc.L1L2.Cal object.
+    %                       constructs bicas.proc.L1L2.cal.Cal object.
     %           NOTE: There is also some code associated with the settings:
     %               PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
     %               PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
@@ -80,7 +80,7 @@ classdef cal_RCT
         %       requires user to not use CALIBRATION_TABLE_INDEX.
         %
         % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time.
-        % However, it is useful to be able to initialize bicas.proc.L1L2.Cal so
+        % However, it is useful to be able to initialize bicas.proc.L1L2.cal.Cal so
         % that it can simultanteously calibrate all kinds of data for debugging
         % purposes. Therefore loads ALL non-BIAS RCT types.
         %
@@ -88,7 +88,7 @@ classdef cal_RCT
         % RETURN VALUE
         % ============
         % RctDataMap
-        %       containers.Map. Can be used for bicas.proc.L1L2.Cal
+        %       containers.Map. Can be used for bicas.proc.L1L2.cal.Cal
         %       constructor even if there is no zVar CALIBRATION_TABLE.
         %       One key per specified RCT type ID in argument rctTypeIdCa.
         %       Exactly one RCT per RCT type.
@@ -155,7 +155,7 @@ classdef cal_RCT
         % RETURN VALUE
         % ============
         % RctDataMap
-        %       Returns containers.Map that can be used for bicas.proc.L1L2.Cal
+        %       Returns containers.Map that can be used for bicas.proc.L1L2.cal.Cal
         %       constructor.
         %
         function RctDataMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...

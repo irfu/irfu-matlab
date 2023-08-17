@@ -71,7 +71,7 @@ classdef pf
             
             
             %======================================
-            % Configure bicas.proc.L1L2.Cal object
+            % Configure bicas.proc.L1L2.cal.Cal object
             %======================================
             C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
             useCtRcts = C.isL1r && SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
@@ -89,7 +89,7 @@ classdef pf
                     {'BIAS', 'LFR'}, rctDir, SETTINGS, L);
             end
             
-            Cal = bicas.proc.L1L2.Cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
+            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
             
             
             
@@ -121,7 +121,7 @@ classdef pf
             
             
             %======================================
-            % Configure bicas.proc.L1L2.Cal object
+            % Configure bicas.proc.L1L2.cal.Cal object
             %======================================
             % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
             C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
@@ -154,7 +154,7 @@ classdef pf
                     {'BIAS', tdsRctTypeId}, rctDir, SETTINGS, L);
             end
             
-            Cal = bicas.proc.L1L2.Cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
+            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
             
             
             

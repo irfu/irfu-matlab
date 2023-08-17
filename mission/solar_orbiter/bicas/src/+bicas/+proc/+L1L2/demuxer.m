@@ -21,7 +21,7 @@
 %
 % DEFINITIONS
 % ===========
-% See bicas.proc.L1L2.Cal, bicas.proc.L1L2.demuxer_latching_relay.
+% See bicas.proc.L1L2.cal.Cal, bicas.proc.L1L2.demuxer_latching_relay.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
