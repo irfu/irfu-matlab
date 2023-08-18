@@ -224,10 +224,10 @@ classdef lfr
             Zv.samplesCaTm    = cell(5,1);
             Zv.samplesCaTm{1} = single(InSci.Zv.V);
             % Copy values, except when zvRx==0 (==>NaN).
-            Zv.samplesCaTm{2} = bicas.proc.utils.set_rows_NaN( E(:,:,1), zvRx==0 );
-            Zv.samplesCaTm{3} = bicas.proc.utils.set_rows_NaN( E(:,:,2), zvRx==0 );
-            Zv.samplesCaTm{4} = bicas.proc.utils.set_rows_NaN( E(:,:,1), zvRx==1 );
-            Zv.samplesCaTm{5} = bicas.proc.utils.set_rows_NaN( E(:,:,2), zvRx==1 );
+            Zv.samplesCaTm{2} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==0 );
+            Zv.samplesCaTm{3} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==0 );
+            Zv.samplesCaTm{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
+            Zv.samplesCaTm{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==1 );
 
             Zv.Epoch                   = InSci.Zv.Epoch;
             Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...

@@ -23,8 +23,8 @@ classdef utils
 %           (L1L2, L2L2, L2L3) to their respective group.
 %       Ex: L1L2
 %           Ex: lfr.m, dts.m: derive_DELTA_PLUS_MINUS
-%           Ex: lfr.m:        bicas.proc.utils.set_rows_NaN
-%           Ex: tds.m:        set_NaN_after_snapshots_end
+%           Ex: lfr.m:        bicas.proc.utils.set_NaN_rows
+%           Ex: tds.m:        set_NaN_end_of_rows
 %           Ex: dc.m:
 %                   select_row_range_from_cell_comps
 %                   assert_cell_array_comps_have_same_N_rows (used by select_row_range_from_cell_comps)
@@ -131,7 +131,7 @@ classdef utils
 
 
 
-        function zv = set_rows_NaN(zv, bRowFilter)
+        function zv = set_NaN_rows(zv, bRowFilter)
         % Function intended for filtering out data from a zVariable by setting
         % parts of it to NaN. Also useful for constructing aonymous functions.
         %
@@ -173,7 +173,7 @@ classdef utils
 
 
 
-        function zv = set_NaN_after_snapshots_end(zv, snapshotLengths)
+        function zv = set_NaN_end_of_rows(zv, snapshotLengths)
             % ASSERTIONS
             [nRecords, snapshotMaxLength] = irf.assert.sizes(...
                 zv,              [-1, -2], ...

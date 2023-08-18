@@ -269,9 +269,9 @@ classdef tds
             zv_WAVEFORM_DATA_modif = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
 
             Zv.samplesCaTm    = cell(5,1);
-            Zv.samplesCaTm{1} = bicas.proc.utils.set_NaN_after_snapshots_end( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
-            Zv.samplesCaTm{2} = bicas.proc.utils.set_NaN_after_snapshots_end( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
-            Zv.samplesCaTm{3} = bicas.proc.utils.set_NaN_after_snapshots_end( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
+            Zv.samplesCaTm{1} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
+            Zv.samplesCaTm{2} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
+            Zv.samplesCaTm{3} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
             Zv.samplesCaTm{4} = nan(nRecords, nCdfSamplesPerRecord);
             Zv.samplesCaTm{5} = nan(nRecords, nCdfSamplesPerRecord);
 

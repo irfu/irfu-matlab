@@ -77,13 +77,13 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-        function test_set_NaN_after_snapshots_end(testCase)
+        function test_set_NaN_end_of_rows(testCase)
 
             function test(inputsCa, expOutputsCa)
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
 
-                [actOutputs{:}] = bicas.proc.utils.set_NaN_after_snapshots_end(inputsCa{:});
+                [actOutputs{:}] = bicas.proc.utils.set_NaN_end_of_rows(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
             end
             %===================================================================
