@@ -36,7 +36,7 @@ classdef utils
 %       TODO-DEC: Move to subfile if only used there instead?
 %           Ex: Move function to lfr.m instead of L1L2.m?
 %
-% PROPOSAL: Test code.
+% PROPOSAL: More test code.
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_TT2000 and its inversion.
 %
 % N-->1 sample/record
@@ -48,9 +48,8 @@ classdef utils
 %       CON: Does not work for ACQUISITION_TIME since two columns.
 %
 % PROPOSAL: Replace functions
-%           set_struct_field_rows()
-%           set_struct_field_rows()
-%           assert_struct_num_fields_have_same_N_rows()
+%               set_struct_field_rows()
+%               assert_struct_num_fields_have_same_N_rows()
 %       with new class that has a map from arbitrary value to arrays and/or
 %       instances of same class (recursive).
 %   PRO: Can enforce same number of rows.
@@ -131,7 +130,6 @@ classdef utils
 
 
 
-        function zv = set_NaN_rows(zv, bRowFilter)
         % Function intended for filtering out data from a zVariable by setting
         % parts of it to NaN. Also useful for constructing aonymous functions.
         %
@@ -149,6 +147,10 @@ classdef utils
         % zv :
         %       Array of the same size as argument "zv", such that
         %       zv(i,:,:) == NaN for bRowFilter(i)==true.
+        function zv = set_NaN_rows(zv, bRowFilter)
+        % PROPOSAL: Implement using set_NaN_end_of_rows().
+        %   Ex: zv = set_NaN_after_snapshots_end(zv, size(zv, 2) .*  bRowFilter)
+        %   CON: That function can not handle an arbitrary number of dimensions.
 
             % ASSERTIONS
             assert(isfloat(zv), ...
@@ -173,14 +175,27 @@ classdef utils
 
 
 
+        % ARGUMENTS
+        % =========
+        % zv
+        %       2-D floating-point array.
+        % snapshotLengths
+        %       1-D numeric array.
+        %
+        % RETURN VALUE
+        % ============
+        % zv
+        %       2-D floating-point array copied from input argument, except that
+        %       zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
         function zv = set_NaN_end_of_rows(zv, snapshotLengths)
             % ASSERTIONS
+            assert(isfloat(zv))
             [nRecords, snapshotMaxLength] = irf.assert.sizes(...
                 zv,              [-1, -2], ...
                 snapshotLengths, [-1]);
+            % IMPLEMENTATION NOTE: Add zero to vector (sent to max()) so that
+            % max() gives a sensible value for empty snapshotLengths.
             assert(snapshotMaxLength >= max([snapshotLengths; 0]))
-            % Add zero to vector so that max gives sensible value for empty
-            % snapshotLengths.
 
             % IMPLEMENTATION
             for iRecord = 1:nRecords

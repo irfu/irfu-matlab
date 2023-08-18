@@ -1,10 +1,12 @@
 %
-% Collection of code relating to quality variables.
+% Collection of code relating to quality variables for L1/L1R to L2 processing.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual
+    % PROPOSAL: Redefine as applying to quality variables for all processing
+    %           (between any archiving levels).
 
 
 
@@ -14,9 +16,9 @@ classdef qual
     %#######################
     %#######################
     methods(Static)
-        
-        
-        
+
+
+
         % Set quality zVariables.
         % Overwrite selected data in selected CDF records with fill values/NaN.
         %
@@ -78,7 +80,7 @@ classdef qual
             % CDF event    = NSO event that overlaps with CDF records.
             % Global event = NSO event in global NSO event table.
             % NA           = Numeric Array
-            
+
             % NOTE: iCdfEventNa = CDF events as indices to global events.
             [bCdfEventRecordsCa, cdfEventNsoidCa, iCdfEventNa] = ...
                 NsoTable.get_NSO_timestamps(zv_Epoch);

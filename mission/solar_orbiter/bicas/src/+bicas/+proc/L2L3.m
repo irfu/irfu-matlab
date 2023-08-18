@@ -91,7 +91,7 @@ classdef L2L3
             % Constants
             %===========
             % The only acceptable input DSI.
-            INPUT_DSI          = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
+            INPUT_DSI                 = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
             % Define length of bins, and relative position of corresponding
             % bin timestamps.
             % NS = Nanoseconds
@@ -481,7 +481,7 @@ classdef L2L3
             
 
 
-            % ASSERTIONS: Check solo.psp2ne() return values
+            % ASSERTIONS: Check solo.psp2ne() return values.
             irf.assert.sizes(...
                 PspTs.data,             [-1, 1], ...
                 NeScpTs.data,           [-1, 1], ...

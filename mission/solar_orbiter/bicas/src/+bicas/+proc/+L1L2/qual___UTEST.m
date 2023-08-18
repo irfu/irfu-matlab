@@ -100,8 +100,8 @@ classdef qual___UTEST < matlab.unittest.TestCase
                     'ufv',                 logical([0, 1, 1, 1, 1, 0, 0, 0, 0, 0]'));
                 test(ZvIn, true, NsoTable, Settings, expZvOut);
             end
-            
-            
+
+
             if 1
                 %================
                 % "Complex test"
@@ -113,7 +113,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 % Bit constants.
                 PS = bicas.const.L2QBM_PARTIAL_SATURATION;
                 FS = bicas.const.L2QBM_FULL_SATURATION;
-                
+
                 NsoTable = bicas.NsoTable(...
                     int64([1, 2]'*1e9), ...
                     int64([2, 3]'*1e9), ...
@@ -156,7 +156,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 testCase.verifyEqual(actZvDemuxerOutput,  expZvDemuxerOutput)
                 testCase.verifyEqual(actZvCurrentAAmpere, expZvCurrentAAmpere)
             end
-            
+
             %===================================================================
 
             % Empty data.

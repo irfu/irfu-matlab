@@ -72,7 +72,7 @@ classdef dsr
                     binLengthWolsNs, ...
                     binTimestampPosWolsNs, ...
                     L);
-            nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
+            % nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
             nRecordsDsr = numel(zvEpochDsr);
             
             
@@ -358,7 +358,7 @@ classdef dsr
         % ARGUMENTS
         % =========
         % zv
-        %       (iCdfRecord, iChannel).
+        %       (iCdfRecord, iChannel). Float.
         % nMinReqSamples
         %       Minimum number of samples (fill value or not) for not returning
         %       fill value.
@@ -473,6 +473,7 @@ classdef dsr
         %
         function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(...
                 zv_QUALITY_FLAG_bin, fillValue)
+            % TODO: Automated tests.
 
             % Remove records with fill values.
             bUse = (zv_QUALITY_FLAG_bin ~= fillValue);
@@ -501,6 +502,7 @@ classdef dsr
         %
         function L12_QUALITY_BITMASK = downsample_bin_L12_QUALITY_BITMASK(...
                 zv_L12_QUALITY_BITMASK_bin, fillValue)
+            % TODO: Automated tests.
 
             % IMPLEMENTATION NOTE: 2020-11-23: L2 zVar "QUALITY_BITMASK" is
             % mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.

@@ -10,12 +10,15 @@
 % (2019-11-19). Therefore, the latching relay state is hard-coded until further
 % notice.
 %
-% 2023-07-28: YK has asked ROC/Diane Berard who has asked SOC to change the DLR
-% value. "will likely take several weeks".
-%
 % NOTE: BIAS HK contains the value in HK_BIA_MODE_DIFF_PROBE (presumably). See
 % BIAS specification, section "3.4.4.14 MODE", "Data D3 = Diff probe 1&2(0),
 % Diff probe 1&3(1)"
+%
+% 2023-07-28: YK has asked ROC/Diane Berard who has asked SOC to change the DLR
+% value. "will likely take several weeks".
+% Diane Berard e-mail 2023-08-29: The latching relay did change on "August 21st
+% at 12:03:04 in flight". HK_BIA_MODE_DIFF_PROBE should indeed 8very likely) be
+% the latching relay.
 %
 %
 % ARGUMENTS AND RETURN VALUE
@@ -32,9 +35,7 @@
 % First created 2019-11-18
 %
 function dlrUsing12 = demuxer_latching_relay(Epoch)
-% PROPOSAL: SETTING for overriding.
-% PROPOSAL: Use NSO list for setting value.
-% PROPOSAL: Use BIAS HK for setting value, if at all possible.
+% PROPOSAL: Use BIAS HK for setting value.
 
     bicas.utils.assert_ZV_Epoch(Epoch)
     
