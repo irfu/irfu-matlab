@@ -18,6 +18,39 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
+        function test_assert_increasing(testCase)
+            function test(array, isMonotonic)
+                errorId = 'test:Error';
+                msg = '<Error message>';
+
+                % Test both with and without transposition.
+                bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg);
+                bicas.proc.utils.assert_increasing(array', isMonotonic, errorId, msg);
+            end
+
+            function test_exc(array, isMonotonic)
+                errorId = 'test:Error';
+                msg = '<Error message>';
+                testCase.verifyError(...
+                    @() bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg), ...
+                    ?MException)
+            end
+            %===================================================================
+
+            for isMonotonic = [false, true]
+                test(zeros(0, 1), isMonotonic)
+                test([3], isMonotonic)
+                test([1,2,3,4,5], isMonotonic)
+
+                test_exc([5,4,6,7,8], isMonotonic)
+            end
+
+            test([1,2,3,3,4], false)
+            test_exc([1,2,3,3,4], true)
+        end
+
+
+
         function test_set_struct_field_rows(testCase)
 
             function test(inputsCa, expOutputsCa)
@@ -44,10 +77,27 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-        function test_convert_matrix_to_cell_array_of_vectors(testCase)
+        function test_set_NaN_after_snapshots_end(testCase)
 
             function test(inputsCa, expOutputsCa)
                 % Pre-allocate correct size for later assignment via function
+                actOutputs = cell(size(expOutputsCa));
+
+                [actOutputs{:}] = bicas.proc.utils.set_NaN_after_snapshots_end(inputsCa{:});
+                testCase.verifyEqual(actOutputs, expOutputsCa)
+            end
+            %===================================================================
+            test({ones(0,4),              ones(0,1)},   {ones(0,4)});
+            test({[0,1,2],                [3]},   {[0,1,2]});
+            test({[0,1,2,3,4; 5,6,7,8,9], [2;4]}, {[0,1,NaN,NaN,NaN; 5,6,7,8,NaN]});
+        end
+
+
+
+        function test_convert_matrix_to_cell_array_of_vectors(testCase)
+
+            function test(inputsCa, expOutputsCa)
+                % Pre-allocate correct size for later assignment via function.
                 actOutputs = cell(size(expOutputsCa));
 
                 [actOutputs{:}] = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(inputsCa{:});
@@ -95,56 +145,6 @@ classdef utils___UTEST < matlab.unittest.TestCase
                 {[1, 2, 3]; [11, 12]; []}, 3, ...
                 [1,2,3; 11,12,nan; nan,nan,nan], [3; 2; 0] ...
             )
-        end
-
-
-
-        function test_set_NaN_after_snapshots_end(testCase)
-
-            function test(inputsCa, expOutputsCa)
-                % Pre-allocate correct size for later assignment via function
-                actOutputs = cell(size(expOutputsCa));
-
-                [actOutputs{:}] = bicas.proc.utils.set_NaN_after_snapshots_end(inputsCa{:});
-                testCase.verifyEqual(actOutputs, expOutputsCa)
-            end
-            %===================================================================
-            test({ones(0,4),              ones(0,1)},   {ones(0,4)});
-            test({[0,1,2],                [3]},   {[0,1,2]});
-            test({[0,1,2,3,4; 5,6,7,8,9], [2;4]}, {[0,1,NaN,NaN,NaN; 5,6,7,8,NaN]});
-        end
-
-
-
-        function test_assert_increasing(testCase)
-            function test(array, isMonotonic)
-                errorId = 'test:Error';
-                msg = '<Error message>';
-
-                % Test both with and without transposition.
-                bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg);
-                bicas.proc.utils.assert_increasing(array', isMonotonic, errorId, msg);
-            end
-
-            function test_exc(array, isMonotonic)
-                errorId = 'test:Error';
-                msg = '<Error message>';
-                testCase.verifyError(...
-                    @() bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg), ...
-                    ?MException)
-            end
-            %===================================================================
-
-            for isMonotonic = [false, true]
-                test(zeros(0, 1), isMonotonic)
-                test([3], isMonotonic)
-                test([1,2,3,4,5], isMonotonic)
-
-                test_exc([5,4,6,7,8], isMonotonic)
-            end
-
-            test([1,2,3,3,4], false)
-            test_exc([1,2,3,3,4], true)
         end
 
 
