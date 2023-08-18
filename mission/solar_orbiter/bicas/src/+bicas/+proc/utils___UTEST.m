@@ -63,18 +63,38 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
         function test_convert_cell_array_of_vectors_to_matrix(testCase)
 
-            function test(inputsCa, expOutputsCa)
-                % Pre-allocate correct size for later assignment via function
-                actOutputs = cell(size(expOutputsCa));
+            function test(ca, nMatrixColumns, expM, expNCopyColsPerRowVec)
 
-                [actOutputs{:}] = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(inputsCa{:});
-                testCase.verifyEqual(actOutputs, expOutputsCa)
+                [actM, actNCopyColsPerRowVec] = ...
+                    bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
+                        ca, nMatrixColumns);
+                testCase.verifyEqual(expM,                  actM)
+                testCase.verifyEqual(expNCopyColsPerRowVec, actNCopyColsPerRowVec)
             end
             %===================================================================
-            test({zeros(0,1), zeros(0,1)}, {cell(0,1)});
-            test({[1,2,3,4,5], [3]}, {{[1,2,3]}});
-            test({[1,2,3,4,5; 6,7,8,9,0], [3; 2]}, {{[1,2,3]; [6,7]}});
+            % zero rows
+            for nCols = [0, 10]
+                test(...
+                    cell(0, 1), nCols, ...
+                    zeros(0, nCols), zeros(0, 1) ...
+                )
+            end
 
+            % One row
+            test(...
+                {[]}, 5, ...
+                [nan, nan, nan, nan, nan], [0] ...
+            )
+            test(...
+                {[1, 2, 3]}, 5, ...
+                [1, 2, 3, nan, nan], [3] ...
+            )
+
+            % >1 rows
+            test(...
+                {[1, 2, 3]; [11, 12]; []}, 3, ...
+                [1,2,3; 11,12,nan; nan,nan,nan], [3; 2; 0] ...
+            )
         end
 
 
