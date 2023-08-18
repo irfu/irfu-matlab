@@ -23,7 +23,7 @@ classdef utils
 %           (L1L2, L2L2, L2L3) to their respective group.
 %       Ex: L1L2
 %           Ex: lfr.m, dts.m: derive_DELTA_PLUS_MINUS
-%           Ex: lfr.m:        bicas.proc.utils.filter_rows
+%           Ex: lfr.m:        bicas.proc.utils.set_rows_NaN
 %           Ex: tds.m:        set_NaN_after_snapshots_end
 %           Ex: dc.m:
 %                   select_row_range_from_cell_comps
@@ -209,14 +209,14 @@ classdef utils
 
 
 
-        function zvData = filter_rows(zvData, bRowFilter)
+        function zv = set_rows_NaN(zv, bRowFilter)
         % Function intended for filtering out data from a zVariable by setting
         % parts of it to NaN. Also useful for constructing aonymous functions.
         %
         %
         % ARGUMENTS
         % =========
-        % zvData
+        % zv
         %       Numeric array with N rows.
         % bRowFilter
         %       Numeric/logical column vector with N rows.
@@ -224,37 +224,29 @@ classdef utils
         %
         % RETURN VALUE
         % ============
-        % zvData :
-        %       Array of the same size as "data", such that
-        %       zvData(i,:,:) == NaN,         for bRowFilter(i)==0.
-        %       zvData(i,:,:) == data(i,:,:), for bRowFilter(i)~=0.
-
-        % PROPOSAL: Better name? ~set_records_NaN
-        % BUG/PROBLEM: Function name/documentation unclear on meaning of
-        %              bRowFilter: Does true mean REMOVE or KEEP data?
-        %              Currently: true <=> REMOVE data
+        % zv :
+        %       Array of the same size as argument "zv", such that
+        %       zv(i,:,:) == NaN for bRowFilter(i)==true.
 
             % ASSERTIONS
-            % Mostly to make sure the caller knows that it represents true/false.
-            assert(islogical(bRowFilter))
-            assert(isfloat(zvData), ...
+            assert(isfloat(zv), ...
                 'BICAS:Assertion:IllegalArgument', ...
-                ['Argument "data" is not a floating-point class (can', ...
+                ['Argument "zv" is not a floating-point class (can', ...
                 ' therefore not represent NaN).'])
+            assert(islogical(bRowFilter))
             % Not really necessary to require row vector, only 1D vector.
             irf.assert.sizes(...
-                zvData,     [-1, NaN, NaN], ...
+                zv,         [-1, NaN, NaN], ...
                 bRowFilter, [-1])
 
-            % Overwrite data with NaN
-            % -----------------------
-            % IMPLEMENTATION NOTE: Command works empirically for zvData
-            % having any number of dimensions. However, if rowFilter and
-            % zvData have different numbers of rows, then the final array
-            % may get the wrong dimensions (without triggering error!) since new
-            % array components (indices) are assigned. ==> Having a
-            % corresponding ASSERTION is important!
-            zvData(bRowFilter, :) = NaN;
+            % Overwrite selected rows with NaN
+            % --------------------------------
+            % IMPLEMENTATION NOTE: Command works empirically for zv having any
+            % number of dimensions. However, if rowFilter and zv have different
+            % numbers of rows, then the final array may get the wrong dimensions
+            % (without triggering error!) since new array components (indices)
+            % are assigned. ==> Having a corresponding ASSERTION is important!
+            zv(bRowFilter, :) = NaN;
         end
 
 
