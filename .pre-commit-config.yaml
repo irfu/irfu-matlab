@@ -1,14 +1,14 @@
-repos:
+# https://pre-commit.ci/ help keep this .pre-commit-config.yaml
+# automatically updated, and enforce clean runs on Pull Requests
+# (try to automatically fix any code as well). Run against "devel" branch.
+ci:
+    autofix_prs: true
+    autoupdate_branch: 'devel'
+    autoupdate_schedule: weekly
+    skip: []
+    submodules: false
 
-  ## Disabled autoupdate due to being slow.
-  #  - repo: local
-  #    # This hook helps keep all pre-commit updated.
-  #    hooks:
-  #      - id: pre-commit-autoupdate
-  #        name: Check for new versions with pre-commit autoupdate
-  #        entry: "pre-commit autoupdate"
-  #        language: system
-  #        pass_filenames: false
+repos:
 
   ## Some pre-commit out-of-the-box hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
