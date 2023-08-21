@@ -60,7 +60,7 @@ if ~ischar(par), error('PAR must be a string'), end
 nret = 0;
 while nret<MAXNRET
   nret = nret + 1;
-  
+
   openAttempts=1;
   while (openAttempts ~= 0)
     try
@@ -74,7 +74,7 @@ while nret<MAXNRET
       pause(0.01*openAttempts);
     end
   end
-  
+
   if ~isempty(units)
     [t, d, iserr] = isGetDataLite(dbase, st, dt, ...
       'Cluster',num2str(cli),ins,sig,sen,cha,par,units);
@@ -82,10 +82,10 @@ while nret<MAXNRET
     [t, d, iserr] = isGetDataLite(dbase, st, dt, ...
       'Cluster',num2str(cli),ins,sig,sen,cha,par);
   end
-  
+
   Mat_DbClose(dbase);
   d = double(d);
-  
+
   % If we got DbBAD_INTERNAL we suppose it was cause by the server crash,
   % so we sleep for SLEEPINT sec and try again
   if iserr ~= 15, break, end

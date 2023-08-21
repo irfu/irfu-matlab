@@ -22,7 +22,7 @@ switch lower(action)
       hmcp = uimenu(hmc,'Label','satellite position','Callback','irf_figmenu(''c_position'')');
       hmct = uimenu(hmc,'Label','4 s/c timing','Callback','irf_figmenu(''c_timing'')');
       hmcm = uimenu(hmc,'Label','MVA','Callback','irf_figmenu(''mva'')');
-      
+
       hmenu_zoom=uimenu(hfigmenu,'Label','Zoom all panels OFF','Callback','irf_figmenu(''zoomall'')');
       hmenu_zoom=uimenu(hfigmenu,'Label','Zoom &back','Callback','irf_figmenu(''zoomback'')');
       hmenu_zoom=uimenu(hfigmenu,'Label','Zoom &whole interval','Callback','irf_figmenu(''zoom_whole_interval'')');
@@ -32,7 +32,7 @@ switch lower(action)
       user_data = get(gcf,'userdata');
       user_data.irf_figmenu=1;
       user_data.hmenu_zoom=hmenu_zoom;
-      
+
       fileTypes = {'eps','png'};
       hmenu_print2 = gobjects(size(fileTypes));
       for i = 1:length(fileTypes)
@@ -40,7 +40,7 @@ switch lower(action)
       end
       set(hmenu_print2(1),'Callback','irf_figmenu(''print_fig'',''eps'')')
       set(hmenu_print2(2),'Callback','irf_figmenu(''print_fig'',''png'')')
-      
+
       set(gcf,'userdata',user_data);
     end
     % reset zoomStack

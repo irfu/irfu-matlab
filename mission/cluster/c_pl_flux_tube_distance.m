@@ -78,7 +78,7 @@ if flag_distance_along_B==1
   h=plot(b1(:,1),zd2d1,'-ko','MarkerFaceColor','r','MarkerSize',2);
   title('Distance between spacecraft along B');
   ylabel('R_a(dots)-R_B(line) [km]');
-  
+
   grid on
   hold on
   for ic1=1:4
@@ -87,7 +87,7 @@ if flag_distance_along_B==1
     end
   end
   irf_timeaxis(gca,'date');
-  
+
 end
 
 

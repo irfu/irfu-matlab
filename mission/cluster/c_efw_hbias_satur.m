@@ -94,7 +94,7 @@ for in = 1:n_spins
     te = phase_2(i360(end),1);
     empty = 0;
   end
-  
+
   ttime(:,in) = (ts + (0:1:360) *(te-ts)/360.0)';
   if empty, tt(:,in) = NaN;
   else
@@ -137,7 +137,7 @@ for in = 1:n_spins
       tt(:,in) = dtmp(:,2);
       clear dtmp
     end
-    
+
     iok = [iok in];
   end
 end
@@ -161,20 +161,20 @@ for in = iok
     plot_i = 0;
   else, plotflag_now = 0;
   end
-  
+
   wakedesc(in,1) = ttime(1,in);
-  
+
   if any(isnan(tt(:,in)))
     if DEBUG, disp(['gap at spin # ' num2str(in)]), end %#ok<UNRCH>
     continue
   end
-  
+
   [min1,imin1,wmin1,max1,imax1,wmax1,min2,max2] = find4minmax(tt(:, in));
   if abs(min1)>abs(max1), w = wmin1; im = imin1;
   else, w = wmax1; im = imax1;
   end
   mm = max(abs(min1),abs(max1));
-  
+
   if plotflag_now
     clf
     ts = ttime(1,in);
@@ -185,15 +185,15 @@ for in = iok
       ttime(imax1,in)*[1 1]-ts, mm*[-1 1], 'r',...
       e_tmp(:,1)-ts,e_tmp(:,2),'g');
     ylabel('E12 [mV/m]');
-    
+
     ticks = (0:8)*45;
-    
+
     % Fix wake position
     set(gca,'XTick',ttime(ticks+1,in)-ts,'XTickLabel',ticks+da-90)
     title(epoch2iso(ts,1))
     xlabel('angle to the Sun [deg]')
   end
-  
+
   if DEBUG
     if isempty(min2) %#ok<UNRCH>
       disp('No secondary peaks')
@@ -202,7 +202,7 @@ for in = iok
         mm,mm/max(abs(min2),abs(max2)), w))
     end
   end
-  
+
   if (mm > WAKE_MAX_AMPLITUDE) || (mm > WAKE_INT_AMPLITUDE && w >=WAKE_MIN_WIDTH)
     if DEBUG, disp('Matches'), end %#ok<UNRCH>
     wakedesc(in,2) = mm;
@@ -270,9 +270,9 @@ st = []; et = [];
 for in = iok
   if isempty(st)
     if isnan(wakedesc(in,1)) || isnan(wakedesc(in,2)), continue, end
-    
+
     st = wakedesc(in,1) - 4;
-    
+
     % Check if the prev dirty interval is only one spin away
     if ~isempty(HBIASSA) && HBIASSA(end,2) > st -6 % 6 sec is for security
       st = HBIASSA(end,1);
@@ -288,13 +288,13 @@ for in = iok
       end
     end
   end
-  
+
   if in == iok(end)
     et = wakedesc(in,1) + 8;
     HBIASSA = [HBIASSA; st et];
     continue
   end
-  
+
   if isnan(wakedesc(in+1,2))
     if isempty(et)
       et = wakedesc(in,1) + 4;
@@ -373,7 +373,7 @@ imax2 = find(data == max2);
 
 if PLOT_FLAG
   plot(imin2,data(imin2),'o',imax2,data(imax2),'o') %#ok<UNRCH>
-  
+
   disp(sprintf('Max 1: %.1f (%d points)  Max 2: %.1f  Min1/Min2: %.1f',...
     max1,wmax1,max2,max1/max2))
   disp(sprintf('Min 1: %.1f (%d points)  Min 2: %.1f  Max1/Max2: %.1f',...

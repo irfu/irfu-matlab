@@ -92,7 +92,7 @@ if strcmp(upper(instrument), 'FEEPS')
     efeeps_omni_spec.f_label = {'Energy'};
     efeeps_omni_spec.f = double(eenergy);
   end
-  
+
   if iflag
     % 2.3. FEEPS ions
     c_eval('ifile? = mms.get_filepath([''mms?_feeps_'' srvy_brst ''_l2_ion''], tint);', ic);
@@ -105,7 +105,7 @@ if strcmp(upper(instrument), 'FEEPS')
     c_eval('iBit6 = get_ts(iobj?, [''mms?_epd_feeps_'' srvy_brst ''_l2_ion_bottom_intensity_sensorid_6'']);', ic);
     c_eval('iBit7 = get_ts(iobj?, [''mms?_epd_feeps_'' srvy_brst ''_l2_ion_bottom_intensity_sensorid_7'']);', ic);
     c_eval('iBit8 = get_ts(iobj?, [''mms?_epd_feeps_'' srvy_brst ''_l2_ion_bottom_intensity_sensorid_8'']);', ic);
-    
+
     % 2.4. make ion omni flux
     ienergy = (iElow.data + iEupp.data)/2.;
     c_eval('iTit?.data(iTit?.data<0) = 0;', 6:8);          % needs to be updated --> NaN

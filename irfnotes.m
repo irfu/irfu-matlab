@@ -137,16 +137,16 @@ if 1 % read the data
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %  ADD READ DATA COMMANDS BELOW, see next cells for examples
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
-  
+
+
 end
 if 1 % plot figures panels
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %  ADD YOUR PANELS BELOW, see next cells for examples
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
-  
-  
+
+
+
 end
 if 1 % general commands on all figure
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -214,7 +214,7 @@ if 0 % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux prod
     phi_factor=repmat((cos(PEACE_phi_min*pi/180)-cos(PEACE_phi_max*pi/180))',1,length(ii_energy));
     en_factor=repmat(1e-3*(en_dplus(ii_energy)+en_dminus(ii_energy))./sqrt(1e-3*PEACE_energy_channels(ii_energy)),length(phi_dplus),1);
     ncoef=ncoef*0.2284e-7*sqrt(1/1836)*2*pi.*phi_factor.*en_factor;
-    
+
     nPEACE=[varmat.t(:) varmat.t(:)*0];
     varmat.data(isnan(varmat.data))=0;
     for jj=1:size(nPEACE,1)
@@ -242,7 +242,7 @@ if 0 % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux prod
     PEACE_phi_min=phi.data(1,:)-phi_dminus;
     PEACE_phi_max=phi.data(1,:)+phi_dplus;
     phi_factor=repmat((cos(PEACE_phi_min*pi/180)-cos(PEACE_phi_max*pi/180))',1,length(PEACE_energy_channels));
-    
+
     nPEACE=[varmat.t(:) varmat.t(:)*0];
     varmat.data(isnan(varmat.data))=0;
     for jj=1:size(nPEACE,1)
@@ -280,7 +280,7 @@ if 0 % PEACE calculate pressure P_PEACE1..P_PEACE4 [nPa] from PITCH_SPIN_DPFlux 
     phi_factor=repmat((cos(PEACE_phi_min*pi/180)-cos(PEACE_phi_max*pi/180))',1,length(ii_energy));
     en_factor=repmat(1e-3*(en_dplus(ii_energy)+en_dminus(ii_energy)).*sqrt(1e-3*PEACE_energy_channels(ii_energy)),length(phi_dplus),1);
     Pcoef=Pcoef*2/3*0.731026e-8*sqrt(1/1836)*2*pi.*phi_factor.*en_factor;
-    
+
     P_PEACE=[varmat.t(:) varmat.t(:)*0];
     varmat.data(isnan(varmat.data))=0;
     for jj=1:size(P_PEACE,1)
@@ -288,7 +288,7 @@ if 0 % PEACE calculate pressure P_PEACE1..P_PEACE4 [nPa] from PITCH_SPIN_DPFlux 
     end
     c_eval('P_PEACE?=P_PEACE;',ic);
   end
-  
+
 end
 if 0 % PEACE calculate temperature T_PEACE1..T_PEACE4 [keV] from from nPEACE1..4 and P_PEACE1..4
   for ic=1:4
@@ -501,7 +501,7 @@ if 0   % PANEL: C1..C4   EFW satellite potential
   irf_plot(hca,'Spacecraft_potential__C2_CP_EFW_L3_P','color','r');
   irf_plot(hca,'Spacecraft_potential__C3_CP_EFW_L3_P','color',[0 0.5 0]);
   irf_plot(hca,'Spacecraft_potential__C4_CP_EFW_L3_P','color','b');
-  
+
   irf_zoom(hca,'y',[-50 -10]);
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
   ylabel(hca,'Sat pot [V]');
@@ -621,18 +621,18 @@ if 0   % PANEL: RAPID spectrogram anisotropy
   l3dd_energies=eval(['getv(' dobjname ',''' l3dd_caa.DEPEND_1 ''')']);
   disp(['PANEL: C' num2str(ic) ' RAPID anisotropy']);
   disp(['dobj:' dobjname ]);disp([' var:' varname]);
-  
+
   % Fix for data gaps in one of the channels
   rap_0deg = double(l3dd.data(:,:,1));
   rap_perp = double(l3dd.data(:,:,5));
   rap_180deg = double(l3dd.data(:,:,9));
-  
+
   rap_par = 0.5 * (rap_0deg + rap_180deg);
   rap_par(rap_0deg==0) = rap_par(rap_0deg==0)*2;
   rap_par(rap_180deg==0) = rap_par(rap_180deg==0)*2;
-  
+
   rap_par(rap_par==0) = NaN;
-  
+
   rap_an = rap_perp./rap_par; rap_an = rap_an - 1;
   % check if DELTA_PLUS and  DELTA_MINUS are given
   if isfield(l3dd_energies,'DELTA_PLUS') && isfield(l3dd_energies,'DELTA_MINUS')
@@ -645,7 +645,7 @@ if 0   % PANEL: RAPID spectrogram anisotropy
     end
   else, specrec.df=[];
   end
-  
+
   specrec.t=l3dd.t;
   specrec.f=l3dd_energies.data(1,:);
   specrec.p={rap_an};
@@ -1010,7 +1010,7 @@ if 0   % PANEL: CIS CODIF high res energy C4
   h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);hca=h(i_subplot);i_subplot=i_subplot+1;
   res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_CODIF_HS_H1_PSD',ic));
   %res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_HIA_HS_MAG_IONS_PSD',ic));
-  
+
   [delmett,ind]=irf_tlim(res.tt,tint);
   specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [' res.dataunits ']']);
   if 0 % energy spectorgram (integrated over pitch angles)
@@ -1040,7 +1040,7 @@ if 1   % PANEL: CIS HIA/CODIF high res energy C3
   ic=3;
   %res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_CODIF_HS_H1_PSD',ic));
   res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_HIA_HS_MAG_IONS_PEF',ic));
-  
+
   [~,ind]=irf_tlim(res.tt,tint);
   specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PEF \newline [' res.dataunits ']']);
   if 1 % energy spectorgram (integrated over pitch angles)
@@ -1069,7 +1069,7 @@ if 1   % PANEL: CIS HIA/CODIF high res energy C4
   hca=irf_panel('CIS CODIF high res pitch angle');
   %res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_CODIF_HS_H1_PSD',ic));
   res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_HIA_HS_MAG_IONS_PEF',ic));
-  
+
   [~,ind]=irf_tlim(res.tt,tint);
   specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PEF  \newline [' res.dataunits ']']);
   if 0 % energy spectorgram (integrated over pitch angles)

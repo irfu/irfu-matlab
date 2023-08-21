@@ -55,7 +55,7 @@ else
     otherwise
       error('Unknown default level.')
   end
-  
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -136,7 +136,7 @@ end
 data = [];
 for k=1:length(st)
   st_a = fromepoch(st(k));
-  
+
   data_subdir = [inst '_' lev '/' num2str(st_a(1))];
   if iscell(var_s)
     data_tmp = irf_cdf_read([data_path '/' sc_id '/' data_subdir '/' file_mask{k} '*'], ...
@@ -151,7 +151,7 @@ for k=1:length(st)
     data_tmp = irf_cdf_read([data_path '/' sc_id '/' data_subdir '/' file_mask{k} '*'], ...
       var_s,'latest');
   end
-  
+
   if ~isempty(data_tmp)
     if dt(k) > 0, if k==1 || k==length(st), data_tmp = irf_tlim(data_tmp,st(k) + [0 dt(k)]); end, end
     if ~isempty(data), data = [data; data_tmp];

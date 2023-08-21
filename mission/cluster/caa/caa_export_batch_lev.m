@@ -99,7 +99,7 @@ for kk = 1:length(dirs)
     continue
   end
   disp(['----- Running directory:   ' cur_dir])
-  
+
   ind = regexp(d, '_');   % Find divider between date and time in dirname.
   if isempty(ind), disp(['Invalid dir: ' d]), continue, end
   YYYY  = str2num(d(ind-8:ind-5));
@@ -109,15 +109,15 @@ for kk = 1:length(dirs)
   %   mm = str2num(d(ind+3:ind+4));
   if hh ~= 0, disp(['----- Skipping directory:   ' cur_dir]), continue, end
   start_time = toepoch([YYYY MM DD 00 00 00]);
-  
+
   ind = regexp(d, 'C[1-4]'); % Find Cluster ID in dirname.
   if isempty(ind), disp(['Invalid dir: ' d]), continue, end
   cl_id = str2num(d(ind+1));
-  
+
   sp = dir([cur_dir '/*_*']);
-  
+
   %   keyboard
-  
+
   ii = find(lev_list==1);
   if ~isempty(ii)
     % L1
@@ -149,7 +149,7 @@ for kk = 1:length(dirs)
   end
   %   if isempty(lev_list), cd(sp), return, end
   %   if isempty(lev_list), cd(old_pwd), return, end
-  
+
   ii = find(lev_list==2);
   if ~isempty(ii)
     lev = 2;
@@ -195,7 +195,7 @@ for kk = 1:length(dirs)
   end
   %   if isempty(lev_list), cd(sp), return, end
   %   if isempty(lev_list), cd(old_pwd), return, end
-  
+
   ii = find(lev_list==3);
   if ~isempty(ii)
     lev = 3;
@@ -251,7 +251,7 @@ for kk = 1:length(dirs)
       end
     end
   end   % lev == 3
-  
+
   if numErrors == 0
     logfid = fopen(logfile, 'a');
     if logfid < 0, warning(['Cannot open log file: ' logfile '. Proceeding without logging.']), end

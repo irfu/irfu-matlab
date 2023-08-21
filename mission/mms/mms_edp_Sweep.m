@@ -7,7 +7,7 @@ classdef mms_edp_Sweep < handle
   %
   %   where fileName is a L1b sweep CDF file name
   %   and printStatus indicates whether to print (1) or not print (0) status for each sweep
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -15,8 +15,8 @@ classdef mms_edp_Sweep < handle
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
-  
+
+
   properties (SetAccess = immutable)
     sweep
     scId
@@ -31,9 +31,9 @@ classdef mms_edp_Sweep < handle
     p5
     p6
   end
-  
+
   methods
-    
+
     function obj = mms_edp_Sweep(fileName,printStatus)
       if nargin==0
         obj.nSweeps = []; obj.sweep = []; obj.scId = ''; return
@@ -141,7 +141,7 @@ classdef mms_edp_Sweep < handle
         obj.(p_2) = [ obj.(p_2) tmp ];
       end
     end % CONSTRUCTOR
-    
+
     function analyze(obj,iSweep,sps)
       % Analyze sweep
       %
@@ -274,7 +274,7 @@ classdef mms_edp_Sweep < handle
       obj.(p_2)(obj.pTable(2,iSweep)).optimal_gradient = tmp2.optimal_gradient;
       obj.(p_1)(obj.pTable(2,iSweep)).optimal_bias = tmp1.optimal_bias;
       obj.(p_2)(obj.pTable(2,iSweep)).optimal_bias = tmp2.optimal_bias;
-      
+
       if ismember(type, {'+-', '-+'})
         obj.(p_1)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp1{1}+angle1+90,360)-90, mod(ph_knee_tmp1{2}+angle1+90,360)-90};
         obj.(p_2)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp2{1}+angle2+90,360)-90, mod(ph_knee_tmp2{2}+angle2+90,360)-90};
@@ -290,7 +290,7 @@ classdef mms_edp_Sweep < handle
       obj.(p_1)(obj.pTable(2,iSweep)).iPh_knee = tmp1.iPh_knee;
       obj.(p_2)(obj.pTable(2,iSweep)).iPh_knee = tmp2.iPh_knee;
       return
-      
+
       % Help function
       function tmp = compute_IPh_Impedance(voltage, v0, biasRes, type, sweepTime)
         % Compute photoemission iPh, iPh_knee (and its timestamp) and impedance dV/dI
@@ -314,7 +314,7 @@ classdef mms_edp_Sweep < handle
           tmp.iPh_knee_time = NaN;
           tmp.iPh_time = NaN;
         end
-        
+
         %% Find settling time (with fallback max 10% of sweep) based on
         % voltage response ("--" sweep should have negative gradient "++"
         % sweep should have positive gradient of voltage, so discard the
@@ -389,7 +389,7 @@ classdef mms_edp_Sweep < handle
             % method as a fallback
             oldFallback = true;
         end
-        
+
         %% Old method
         if ismember(type, {'+-', '-+'})
           % Split upward and downward part (was not done in the original
@@ -408,7 +408,7 @@ classdef mms_edp_Sweep < handle
           % second half
           biasSecond = biasResSegm(splitInd+1:end);
           voltSecond = voltageSegm(splitInd+1:end);
-          [~, old_indIph] = min(abs(voltSecond-(2*v0+vmin)/3));         
+          [~, old_indIph] = min(abs(voltSecond-(2*v0+vmin)/3));
           tmp.iPh{2} = -biasSecond(old_indIph);
           tmp.iPh_time{2} = timeArray(splitInd + old_indIph);
         else
@@ -471,9 +471,9 @@ classdef mms_edp_Sweep < handle
             tmp.impedance = 1000*p(1);
           end
         end
-        
+
       end
-      
+
       function [iPhKnee, optimalGradient, optimalBias] = compute_IPh_knee(voltage, bias, type)
         % Help function to compute iPh_knee, a value which nominal
         % operating point wants to avoid..
@@ -536,7 +536,7 @@ classdef mms_edp_Sweep < handle
         end % all data saturated? & supported type?
       end
     end % analyze
-    
+
     function analyze_all(obj,sps,printStatus)
       % Analyze sweeps
       %
@@ -567,7 +567,7 @@ classdef mms_edp_Sweep < handle
       end
       return
     end % analyze_all
-    
+
     function [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         eVolt, eBias, v01, v02]...
         = debug(obj,iSweep)
@@ -596,7 +596,7 @@ classdef mms_edp_Sweep < handle
         eVolt, eBias, v01, v02] = getSweep(obj, iSweep);
       return
     end
-    
+
     function list(obj, iSweep)
       % List sweep
       %
@@ -625,7 +625,7 @@ classdef mms_edp_Sweep < handle
           ' ', num2str((eVolt(i)-sweepTime.start)*1e3) ]);
       end
     end % list
-    
+
     function hout = plot(obj,h,iSweep)
       % Plot sweep
       %
@@ -773,7 +773,7 @@ classdef mms_edp_Sweep < handle
       grid(h, 'on')
       if nargout, hout = h; end
     end % PLOT
-    
+
     function hout = plot_time(obj, h, iSweep, sps, evfile)
       % Plot sweep
       %
@@ -988,11 +988,11 @@ classdef mms_edp_Sweep < handle
       end
       if nargout, hout = h1; end
     end % PLOT_TIME
-    
+
   end % methods
-  
+
   methods(Access=private)
-    
+
     function [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         Epoch, eBias, v01, v02]...
         = getSweep(obj, iSweep)
@@ -1064,7 +1064,7 @@ classdef mms_edp_Sweep < handle
         biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i);
       end
     end % getSweep
-    
+
   end % methods(Access=private)
-  
+
 end

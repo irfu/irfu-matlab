@@ -35,20 +35,20 @@ fclose(fid);
 if data2(129)~=178 % Check that it is burst data
   OUT=[NaN;NaN;NaN];
 else
-  
+
   % The playback time according to EFW [s]
-  
+
   playbackEFWclock=data1(1)+data1(2)/1000000000;
-  
+
   % The playback time according to the spacecraft clock (epoch)
-  
+
   playbackSATclock=data1(3)+data1(4)/1000000000;
-  
+
   % The starting time for data collecting according to EFW [s]
-  
+
   starttimeEFWclock=((((((data2(143)*256)+data2(142))*256)+data2(141))*256+data2(140))*256+data2(139))/1000+11/450;
-  
+
   OUT = [playbackEFWclock;playbackSATclock;starttimeEFWclock];
-  
+
 end
 

@@ -29,7 +29,7 @@
 %       noStructs,
 %       aIsStruct,
 %       bIsStruct,
-%       abAreStructs : 
+%       abAreStructs :
 %           Above settings are string constants. They represent how to react for
 %           different cases of duplicate fields, depending on which of the two
 %           fields are structs themselves. Each field in this argument is a
@@ -92,85 +92,85 @@ function A = add_struct_to_struct(A, B, varargin)
 
 
 
-    % DFB = Duplicate Field Policy.
-    DEFAULT_SETTINGS = struct(...
-        'noStructs',    'Error', ...
-        'aIsStruct',    'Error', ...
-        'bIsStruct',    'Error', ...
-        'abAreStructs', 'Error', ...
-        'onlyBField',   'Copy');
-    Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-    irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
-    
-    % ASSERTIONS
-    assert(isstruct(A),               'A is not a structure.')
-    assert(isstruct(B),               'B is not a structure.')
-    assert(isstruct(Settings),        'Settings is not a struct.')
+% DFB = Duplicate Field Policy.
+DEFAULT_SETTINGS = struct(...
+  'noStructs',    'Error', ...
+  'aIsStruct',    'Error', ...
+  'bIsStruct',    'Error', ...
+  'abAreStructs', 'Error', ...
+  'onlyBField',   'Copy');
+Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+
+% ASSERTIONS
+assert(isstruct(A),               'A is not a structure.')
+assert(isstruct(B),               'B is not a structure.')
+assert(isstruct(Settings),        'Settings is not a struct.')
 %     assert(isscalar(A),               'A is not scalar.')
 %     assert(isscalar(B),               'B is not scalar.')
-    assert(all(size(A) == size(B)))
-    %assert(isequal(size(A), size(B)), 'A and B have different array sizes.')
-    
-    %===========================
-    % Iterate over fields in B.
-    %===========================
-    bFieldNamesList = fieldnames(B);
-    for i = 1:length(bFieldNamesList)
-        fieldName = bFieldNamesList{i};
+assert(all(size(A) == size(B)))
+%assert(isequal(size(A), size(B)), 'A and B have different array sizes.')
 
-        if isfield(A, fieldName)
-            %===========================================================
-            % CASE: Duplicate fields (field exists in both structures).
-            %===========================================================            
-            afv = A.(fieldName);
-            bfv = B.(fieldName);
+%===========================
+% Iterate over fields in B.
+%===========================
+bFieldNamesList = fieldnames(B);
+for i = 1:length(bFieldNamesList)
+  fieldName = bFieldNamesList{i};
 
-            abAreStructs = false;
-            if ~isstruct(afv) && ~isstruct(bfv)
-                behaviour = Settings.noStructs;
-                
-            elseif isstruct(afv) && ~isstruct(bfv)
-                behaviour = Settings.aIsStruct;
-                
-            elseif ~isstruct(afv) && isstruct(bfv)
-                behaviour = Settings.bIsStruct;
-                
-            else
-                behaviour = Settings.abAreStructs;
-                abAreStructs = true;
-            end
+  if isfield(A, fieldName)
+    %===========================================================
+    % CASE: Duplicate fields (field exists in both structures).
+    %===========================================================
+    afv = A.(fieldName);
+    bfv = B.(fieldName);
 
-            if     strcmp(behaviour, 'Error')
-                error('Structures share identically named fields "%s".', ...
-                    fieldName)
-            elseif strcmp(behaviour, 'Overwrite')
-                A.(fieldName) = B.(fieldName);
-            elseif strcmp(behaviour, 'Do nothing')
-                % Do nothing.
-            elseif strcmp(behaviour, 'Recurse') && (abAreStructs)
-                %====================================================
-                % NOTE: RECURSIVE CALL. Needs the original Settings.
-                %====================================================
-                A.(fieldName) = irf.ds.add_struct_to_struct(...
-                    A.(fieldName), B.(fieldName), Settings);
-            else
-                error(['Can not interpret string value behaviour="%s" for', ...
-                    ' this combination of field values.'], behaviour)
-            end
-        else
-            %===========================================
-            % CASE: Field exists in "B", but not in "A"
-            %===========================================
-            switch(Settings.onlyBField)
-                case 'Copy'
-                    % NOTE: Not overwrite field, but create new field in A.
-                    [A.(fieldName)] = deal(B.(fieldName));
-                case 'Error'
-                    error('Field B.%s exists but not A.%s.', fieldName, fieldName)
-                otherwise
-                    error('Illegal setting onlyBField=%s', Settings.onlyBField)
-            end
-            
-        end
+    abAreStructs = false;
+    if ~isstruct(afv) && ~isstruct(bfv)
+      behaviour = Settings.noStructs;
+
+    elseif isstruct(afv) && ~isstruct(bfv)
+      behaviour = Settings.aIsStruct;
+
+    elseif ~isstruct(afv) && isstruct(bfv)
+      behaviour = Settings.bIsStruct;
+
+    else
+      behaviour = Settings.abAreStructs;
+      abAreStructs = true;
     end
+
+    if     strcmp(behaviour, 'Error')
+      error('Structures share identically named fields "%s".', ...
+        fieldName)
+    elseif strcmp(behaviour, 'Overwrite')
+      A.(fieldName) = B.(fieldName);
+    elseif strcmp(behaviour, 'Do nothing')
+      % Do nothing.
+    elseif strcmp(behaviour, 'Recurse') && (abAreStructs)
+      %====================================================
+      % NOTE: RECURSIVE CALL. Needs the original Settings.
+      %====================================================
+      A.(fieldName) = irf.ds.add_struct_to_struct(...
+        A.(fieldName), B.(fieldName), Settings);
+    else
+      error(['Can not interpret string value behaviour="%s" for', ...
+        ' this combination of field values.'], behaviour)
+    end
+  else
+    %===========================================
+    % CASE: Field exists in "B", but not in "A"
+    %===========================================
+    switch(Settings.onlyBField)
+      case 'Copy'
+        % NOTE: Not overwrite field, but create new field in A.
+        [A.(fieldName)] = deal(B.(fieldName));
+      case 'Error'
+        error('Field B.%s exists but not A.%s.', fieldName, fieldName)
+      otherwise
+        error('Illegal setting onlyBField=%s', Settings.onlyBField)
+    end
+
+  end
+end
 end

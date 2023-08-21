@@ -34,7 +34,7 @@ for cl_id=1
     disp(['  ' num2str(iEvent) '. event']);
     disp(irf_time(tint,'tint>utc'));
     disp('=================================');
-    
+
     dirName=[sprintf('maarble_emic_',iEvent) irf_time(tint(1),'epoch>utc')];
     emic.dirName{iEvent}=dirName;
     if(~exist(dirName,'dir'))
@@ -58,7 +58,7 @@ for cl_id=1
     %figure(255+iEvent+cl_id*6), clf
     hf=figure(386+j), clf
     set(hf,'Position',[0 0 680 800]);
-    
+
     %[timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,...
     %    EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
     %    k_thphSVD_fac,polarization,ellipticity]...

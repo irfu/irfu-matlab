@@ -53,7 +53,7 @@ if min(result(2:end,1)-result(1:end-1,1)) < 0
   irf_log('proc','***** WARNING: Non-monotonic times detected. *****')
   data_time_lower = result(:, 1) - delta_time;
   data_time_upper = result(:, 1) + delta_time;
-  
+
   for num = 1:size(time_int, 1)    % Set for each time interval in turn.
     % Get the row indices for the interval in which to set bitmask and quality factor.
     % The first column of time_int holds 'start_time' and second column 'end_time', for
@@ -70,17 +70,17 @@ if min(result(2:end,1)-result(1:end-1,1)) < 0
     row_index = (problem_start >= data_time_lower & problem_start < data_time_upper) | ...
       (problem_stop  >  data_time_lower & problem_stop <= data_time_upper) | ...
       (problem_start <= data_time_lower & problem_stop >= data_time_upper);
-    
-    
+
+
     % Mask the bits together, keeping any previously set bits.
     result(row_index, bitmask_col) = bitor(result(row_index, bitmask_col), bitmask);
-    
+
     % Set the quality factor; given quality is maximum possible for region, so
     % set to the minimum of current and any previous.
     result(row_index, quality_col) = min(result(row_index, quality_col), quality);
-    
+
   end
-  
+
   return
 end
 
@@ -91,7 +91,7 @@ for num = 1:size(time_int, 1)    % Set for each time interval in turn.
     irf_log('proc','***** WARNING: NaNs in the problem interval log. *****')
     continue
   end
-  
+
   % Get the row indices for the interval in which to set bitmask and quality factor.
   % The first column of time_int holds 'start_time' and second column 'end_time', for
   % each interval.
@@ -101,18 +101,18 @@ for num = 1:size(time_int, 1)    % Set for each time interval in turn.
   if upper < length(result(:,1))
     if time_int(num, 2) >= (result(upper+1,1)-delta_time) , upper=upper+1; end
   end
-  
+
   if (upper-lower)==0
     if time_int(num, 1) > (result(lower,1)+delta_time), continue, end
     if time_int(num, 2) < (result(lower,1)-delta_time), continue, end
   end
-  
+
   % Mask the bits together, keeping any previously set bits.
   result(lower:upper, bitmask_col) = bitor(result(lower:upper, bitmask_col), bitmask);
-  
+
   % Set the quality factor; given quality is maximum possible for region, so
   % set to the minimum of current and any previous.
   result(lower:upper, quality_col) = min(result(lower:upper, quality_col), quality);
-  
-  
+
+
 end

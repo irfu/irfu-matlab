@@ -55,7 +55,7 @@ switch lower(action)
     end
     irf_widget_omni('read_data');
     irf_widget_omni('plot');
-    
+
   case 'read_data'
     data=get(gcf,'userdata');
     tint=[data.t data.t+data.dt];
@@ -70,14 +70,14 @@ switch lower(action)
     data.ff=ff;
     data.omni2=omni2;
     set(gcf,'userdata',data);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%% action plot %%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
   case 'plot'
     data=get(gcf,'userdata');
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
     h=data.subplot_handles;
     ff=data.ff;
@@ -94,19 +94,19 @@ switch lower(action)
     ylabel(hca,'B [nT] GSM');
     irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.05]);
     title(hca,'OMNI solar wind parameters');
-    
+
     %%%%%%%%%%%%
     % Velocity
     hca=h(2);
     irf_plot(hca,ff(:,[1 8]));
     ylabel(hca,'V [km/s]');
-    
+
     %%%%%%%%%%%%
     % Density
     hca=h(3);
     irf_plot(hca,ff(:,[1 7]));
     ylabel(hca,'density [cc]');
-    
+
     %%%%%%%%%%%%
     % Proton temperature
     hca=h(4);
@@ -114,24 +114,24 @@ switch lower(action)
     Tp(:,2)=Tp(:,2)*Units.kB/Units.e;
     irf_plot(hca,Tp);
     ylabel(hca,'T proton [eV]');
-    
+
     %%%%%%%%%%%%
     % Pressure
     hca=h(5);
     irf_plot(hca,ff(:,[1 9]));
     ylabel(hca,'pressure [nPa]');
-    
+
     %%%%%%%%%%%%
     % A indices
     hca=h(6);
     irf_plot(hca,ff(:,[1 12 13 14]));
     ylabel(hca,'AE,AL,AU [nT]');
     irf_legend(hca,{'AE','AL','AU'},[0.02 0.05]);
-    
+
     irf_zoom(h,'x',tint);
     irf_zoom(h,'y');
     irf_timeaxis(h);
-    
+
   case 'new_start_time'
     data=get(gcf,'userdata');
     xx=inputdlg('Enter new start time. [yyyy mm dd hh mm ss]','**',1,{mat2str(irf_time(data.t,'vector'),4)});

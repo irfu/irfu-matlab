@@ -140,9 +140,9 @@ end
 % If H is specified, but is shorter than NCOMP, we plot just first
 % length(H) spectra
 for comp=1:min(length(h),ncomp)
-  
+
   specrec.p{comp}(isnan(specrec.p{comp})) = NaN; % WHY is this done? NaN = NaN already.
-  
+
   ud = get(gcf,'userdata');
   ii = find(~isnan(specrec.t));
   if isfield(ud,'t_start_epoch')
@@ -156,7 +156,7 @@ for comp=1:min(length(h),ncomp)
   else
     t_start_epoch = double(0);
   end
-  
+
   % Special case when we have only one spectrum
   % We duplicate it
   if ndata==1
@@ -176,7 +176,7 @@ for comp=1:min(length(h),ncomp)
       specrec.f_label=['f [' specrec.f_unit ']'];
     end
   end
-  
+
   if min(size(specrec.f))==1, ff=double(specrec.f(:))';
   else
     ff=double(specrec.f);
@@ -249,7 +249,7 @@ for comp=1:min(length(h),ncomp)
     ttnew(2:2:end-1)=0.5*(tt(1:end-1)+tt(2:end));
     ttnew(3:2:end-1)=0.5*(tt(1:end-1)+tt(2:end));
     tt=ttnew;
-    
+
   end
   ppnew=[pp;pp];
   ppnew(1:2:end,:)=pp;
@@ -261,7 +261,7 @@ for comp=1:min(length(h),ncomp)
     ffnew(2:2:end,:)=ff;
     ff=ffnew;
   end
-  
+
   tag=get(h(comp),'tag'); % keep tag during plotting
   ud=get(h(comp),'userdata'); % keep tag during plotting
   if min(size(ff))==1 % frequency is vector
@@ -281,7 +281,7 @@ for comp=1:min(length(h),ncomp)
   set(h(comp),'tag',tag);
   set(h(comp),'userdata',ud);
   zoom_in_if_necessary(h(comp)); %
-  
+
   shading(h(comp),'flat')
   set(h(comp),'TickDir','out')
   %check ylabel
@@ -292,7 +292,7 @@ for comp=1:min(length(h),ncomp)
     specrec.f_label=['[' specrec.f_unit ']'];
   end
   ylabel(h(comp),specrec.f_label)
-  
+
   if showColorbar
     if isfield(specrec,'p_label')
       if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2

@@ -20,7 +20,7 @@ if 1 % parameters
   title_text=[title_text 'HFAC_{ant}=' num2str(HFA_probe.capacitance/1e-12) ' pF, '];
   A_antenna=HFA_probe.Area.total; % antenna area in m2
   title_text=[title_text 'HFAA_{ant}=' num2str(HFA_probe.Area.total,'%5.2f') ' m^2, '];
-  
+
   % HFA-D
   HFD_antenna_eff_length=2/2; % efficient distance between antennas % 2m-long dipole
   HFD_R_plasma_nobias=30e6;HFD_R_plasma_bias=10e6;
@@ -29,7 +29,7 @@ if 1 % parameters
   title_text=[title_text 'HFDC_{ant}=' num2str(HFD_probe.capacitance/1e-12) ' pF, '];
   A_antenna=HFD_probe.Area.total; % antenna area in m2
   title_text=[title_text 'HFDA_{ant}=' num2str(HFD_probe.Area.total,'%5.2f') ' m^2, '];
-  
+
   % SDP
   SDP_antenna_eff_length=50; % efficient distance between antennas
   SDP_R_plasma_nobias=916e6;SDP_R_plasma_bias=25e6; SDP_R_plasma_bias_low=10e6;
@@ -38,7 +38,7 @@ if 1 % parameters
   title_text=[title_text 'SDPC_{ant}=' num2str(SDP_probe.capacitance/1e-12) ' pF, '];
   A_antenna=HFA_probe.Area.total; % antenna area in m2
   title_text=[title_text 'SDPA_{ant}=' num2str(SDP_probe.Area.total,'%5.2f') ' m^2, '];
-  
+
 end
 if 1 % read Alexandrova et al. 2009 spectra
   %file reading
@@ -185,7 +185,7 @@ if 1 % instrument noise calculations HFA
     %SOFI_shot_noise_nobias=[f 2*Units.e^2*nu*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
     % SOFI_shot_noise_photoelectron
     HFA_I=lp.current(HFA_probe,-1,Rsolo,UV,[]);
-    
+
     HFA_shot_noise_photoelectron_bias=[f 2*Units.e*abs(HFA_I.photo)*(HFA_R_plasma_bias^2./(1+(2*pi*f).^2*HFA_R_plasma_bias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
     HFA_shot_noise_photoelectron_nobias=[f 2*Units.e*abs(HFA_I.photo)*(HFA_R_plasma_nobias^2./(1+(2*pi*f).^2*HFA_R_plasma_nobias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
   end
@@ -224,7 +224,7 @@ if 1 % instrument noise calculations HFA-D
     %SOFI_shot_noise_nobias=[f 2*Units.e^2*nu*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
     % SOFI_shot_noise_photoelectron
     HFD_I=lp.current(HFD_probe,-1,Rsolo,UV,[]);
-    
+
     HFD_shot_noise_photoelectron_bias=[f 2*Units.e*abs(HFD_I.photo)*(HFD_R_plasma_bias^2./(1+(2*pi*f).^2*HFD_R_plasma_bias^2*HFD_C_antenna^2))/HFD_antenna_eff_length^2];
     HFD_shot_noise_photoelectron_nobias=[f 2*Units.e*abs(HFD_I.photo)*(HFD_R_plasma_nobias^2./(1+(2*pi*f).^2*HFD_R_plasma_nobias^2*HFD_C_antenna^2))/HFD_antenna_eff_length^2];
   end
@@ -263,7 +263,7 @@ if 1 % instrument noise calculations SDP
     %SOFI_shot_noise_nobias=[f 2*Units.e^2*nu*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
     % SOFI_shot_noise_photoelectron
     SDP_I=lp.current(SDP_probe,-1,Rsolo,UV,[]);
-    
+
     SDP_shot_noise_photoelectron_bias=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_bias^2./(1+(2*pi*f).^2*SDP_R_plasma_bias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
     SDP_shot_noise_photoelectron_bias_low=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_bias_low^2./(1+(2*pi*f).^2*SDP_R_plasma_bias_low^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
   end
@@ -289,7 +289,7 @@ if 1 % calculate spectra 1AU
   SP.Epower(1)=SP.power(1)*1e-12*VA^2;
   SP.EpowerVf(1)=SP.power(1)*1e-12*Vf^2;
   SP.R_AU=1; % distance in AU
-  
+
   f_dop_ion=Vf/(2*pi*(100*sqrt(2*T)/B));
   f_dop_electron=Vf/(2*pi*(sqrt(10*T)/B));
   SP.R_RS=1/0.00465; % distance in AU
@@ -314,7 +314,7 @@ end
 if 1 % EMC requirements
   HFA_EMC.f =      [10    1e2   1e3   1e4   1e5   2e5];
   HFA_EMC.Epower = [2e-11 5e-13 5e-13 3e-14 3e-14 5e-13]; % (V/m)^2/Hz
-  
+
   SDP_EMC.f =      [0.1 30    1e2   1e3   1e4   1e5   2e5];
   SDP_EMC.Epower =     [1e-10 1e-15 1e-15 1e-16 1e-17 1e-17 1e-15];
   SDP_EMC_OLD.f =      [0.1 1 10    1e2   1e3   1e4   1e5   2e5];
@@ -351,15 +351,15 @@ if 1 % electric field example spectra
   hca=h(1);
   hold(hca,'on');
 
-  
-  
+
+
   % MMS hmfe SW Langmuir waves
   loglog(SW_example_Espectra_MMS4hmfe(2048:end,1), SW_example_Espectra_MMS4hmfe(2048:end,2),'color',[0.5 0.5 0],'linewidth',1);
   text(1e4,2e-10,'MMS-SW-LWs','fontsize',10,'color',[0.5 0.5 0],'units','data','horizontalalignment','left','verticalalignment','bottom');
 
   % Cluster example solar wind spectrum from CalibrationReport
   %loglog(SW_example_Espectra_Cluster4(:,1), SW_example_Espectra_Cluster4(:,2),'color',[.49 .18 .56],'linewidth',1);
-  %text(3,3e-10,'Cluster-sw','fontsize',10,'color',[.49 .18 .56],'units','data','horizontalalignment','left','verticalalignment','bottom'); 
+  %text(3,3e-10,'Cluster-sw','fontsize',10,'color',[.49 .18 .56],'units','data','horizontalalignment','left','verticalalignment','bottom');
 end
 if 1 % electric field plot
   hca=h(1); hold(hca,'on');set(hca,'XScale','log','YScale','log')
@@ -370,16 +370,16 @@ if 1 % electric field plot
   grid(hca,'on');
   set(hca,'xminorgrid','off');
   set(hca,'yminorgrid','off');
-  
+
   ylabel(hca,'S_E [(V/m)^2/Hz]');
   xlabel(hca,'frequency [Hz]');
-  
+
   %title(hca,'Expected electric field spectra and HFA noise levels')
   title(hca,'Expected HFA noise levels')
 end
 
 if 1 % plot electric field noises
-  
+
   if 0 % HFA
     HFA_color = [0.8 0.5 0.5];
     loglog(HFA_total_noise_bias,HFA_total_noise_bias(:,2),'color',HFA_color);hold(hca,'on');
@@ -439,7 +439,7 @@ if 1 % electric field plot
   loglog(hca,SP1AU.f,SP1AU.Epower,'b--','markersize',20);
   hold(hca,'on');
   %loglog(hca,SP1AU.f(1:4),SP1AU.EpowerVf,'r.-','markersize',20);
-  
+
   %set(hca,'xlim',f_range)
   set(hca,'xlim',[9e-2 5e5])
   set(hca,'ylim',PE_range)
@@ -448,13 +448,13 @@ if 1 % electric field plot
   grid(hca,'on');
   set(hca,'xminorgrid','off');
   set(hca,'yminorgrid','off');
-  
+
   ylabel(hca,'S_E [(V/m)^2/Hz]');
   xlabel(hca,'frequency [Hz]');
-  
+
   text(0.97,0.85,'S_{E} - Expected SW-frame spectrum','fontsize',12,'fontweight','demi','color','b','units','normalized','horizontalalignment','right','parent',hca);
   %text(0.97,0.8,'S_{ExB} - Expected spectrum of V_{SW}xB','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
-  
+
   %text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
   title(hca,['Predicted E-field spectra and SDP noise levels in SW\newline' ...
     'S_{E} =V_A^2*S_B (inertial rng), V_A=' num2str(VA,'%.1f') ' km/s, S_{E} \sim k^2 S_B (kinetic rng)  \newline'...
@@ -464,33 +464,33 @@ end
 if 1 % electric field example spectra
   %loglog(SW_example_Espectra_THEMIS(:,1), SW_example_Espectra_THEMIS(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
   %text(29,1.2e-13,'THEMIS','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-  
+
   % Cluster example solar wind spectrum from CalibrationReport
   loglog(SW_example_Espectra_Cluster4(:,1), SW_example_Espectra_Cluster4(:,2),'color',[.49 .18 .56],'linewidth',1);
   text(3,3e-10,'Cluster','fontsize',10,'color',[.49 .18 .56],'units','data','horizontalalignment','left','verticalalignment','bottom');
-  
-  
+
+
   % Cluster example solar wind spectrum from CalibrationReport
   %loglog(SW_example_Espectra_MMS4fast(:,1), SW_example_Espectra_MMS4fast(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
   %text(.3,3e-9,'MMS-fast','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-  
+
   % MMS Solar wind example fast data
   loglog(SWsc_example_Espectra_MMS4fast(:,1), SWsc_example_Espectra_MMS4fast(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
   text(20,1e-12,'MMS-fast','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-  
+
   % MMS example solar wind burst data
   loglog(SW_example_Espectra_MMS4brst(:,1), SW_example_Espectra_MMS4brst(:,2),'color',[0 0 0],'linewidth',1);
   text(129,1.2e-13,'MMS-burst','fontsize',10,'color',[0 0 0],'units','data','horizontalalignment','left','verticalalignment','bottom');
-  
+
   % Cluster solar wind frame
   %loglog(SW_example_Espectra_Cluster4SW(:,1), SW_example_Espectra_Cluster4SW(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
   %text(3,3e-10,'Cluster-plasma frame','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-  
-  
+
+
   % the power is based on electric field Cluster spectra from Sahraoui et al 2009.
   %loglog(sahraoui2009_Espectra(:,1),sahraoui2009_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
   %text(2,3e-4,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-  
+
   % electric field Cluster spectra for interval Sahraoui et al 2009.
   %loglog(Cluster_Espectra(:,1),Cluster_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
   %text(3,3e-10,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
@@ -505,7 +505,7 @@ if 1 % plot electric field noises
     text(100*f_range(1)*6,PE_range(1)*3,['biased SDP, R=' num2str(SDP_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
     loglog(100*f_range(1)*[1 5],PE_range(1)*15*[1 1],'color',SDP_color,'linestyle',':');
     text(100*f_range(1)*6,PE_range(1)*15,['biased SDP, R=' num2str(SDP_R_plasma_bias_low/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
-    
+
     loglog(SDP_instr_noise(:,1), SDP_instr_noise(:,2),'k');
     text(SDP_instr_noise(2,1)*2,SDP_instr_noise(end,2)*0.9,'preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
     %loglog(hca,SDP_EMC_OLD.f,SDP_EMC_OLD.Epower,'o-','markersize',10,'color',[0 0.7 0.7]);
@@ -515,7 +515,7 @@ if 1 % plot electric field noises
     loglog(hca,SDP_EMC_OLD.f,SDP_EMC_OLD.Epower,'o-','markersize',10,'color',[0 0.8 0]);
     text(0.97,0.45,'EMC req','fontsize',12,'fontweight','demi','color',[0 0.8 0],'units','normalized','horizontalalignment','right','parent',hca);
     text(0.97,0.40,'goal - -','fontsize',12,'fontweight','demi','color',[0 0.5 0],'units','normalized','horizontalalignment','right','parent',hca);
-    
+
   end
   %irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
 end
@@ -534,7 +534,7 @@ if 1
   EMCR.bw = sort([EMCR.bw, EMCR.bw]);
   EMCR.Efield = sqrt(EMCR.EEpower.*EMCR.bw);
   HFA_EMC = EMCR;
-  
+
   if 1 % initialize figure - HFA
     figure(14);clf
     h=irf_plot(1);
@@ -546,7 +546,7 @@ if 1
     set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
     set(gcf,'Position',[10 10 xSize*50 ySize*50])
   end
-  
+
   semilogx(EMCR.ff,10*log10(1e6*EMCR.Efield),'r'), hold on
   semilogx(EMCR.ff,30+10*log10(1e6*EMCR.Efield),'b')
   set(gca,'xLim',EMCR.ff([1 end]))
@@ -569,7 +569,7 @@ if 1
   EMCR.bw = sort([EMCR.bw, EMCR.bw]);
   EMCR.Efield = sqrt(EMCR.EEpower.*EMCR.bw);
   SDP_EMC_OLD = EMCR;
-  
+
   if 1 % initialize figure - SDP
     figure(15);clf
     h=irf_plot(1);
@@ -581,11 +581,11 @@ if 1
     set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
     set(gcf,'Position',[10 10 xSize*50 ySize*50])
   end
-  
+
   semilogx(EMCR.ff,10*log10(1e6*EMCR.Efield),'r'), hold on
   semilogx(EMCR.ff,30+10*log10(1e6*EMCR.Efield),'b')
   set(gca,'xLim',EMCR.ff([1 end]))
-  
+
   if 1 % GOAL
     SDP_EMC.f =      [0.1 1 10 30    1e2   1e3   1e4   1e5   2e5];
     SDP_EMC.Epower =     [1e-10 1e-12 1e-14 1e-15 1e-15 1e-16 1e-17 1e-17 1e-15];
@@ -601,8 +601,8 @@ if 1
     semilogx(SDP_EMC.ff,10*log10(1e6*SDP_EMC.Efield),'r--')
     semilogx(SDP_EMC.ff,30+10*log10(1e6*SDP_EMC.Efield),'b--')
   end
-  
-  
+
+
   grid on, set(gca,'xminorgrid','off'), set(gca,'yminorgrid','off')
   title(['EFI-' ant ' requirement'])
   ylabel('E-field [ dB ({\mu}V/m) ]'), xlabel('frequency [Hz]')

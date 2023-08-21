@@ -41,25 +41,25 @@ for i = startposition:B_length
   B_start = Btdt(i,1);
   B_dt = Btdt(i,2);
   B_end = B_start + B_dt;
-  
+
   if i ~= B_length
     B_n = Btdt(i+1,1);
   else
     B_end = end_time +1;
   end
-  
-  
+
+
   %finds the start row
   if (start_time <= B_start && start_row == -1 && B_start < end_time) || (start_time >= B_start && start_time < B_end)
     start_row = i;
   end
-  
+
   %finds the end row
   if (end_time <= B_end && end_row == -1 && start_row ~= -1) || (B_end < end_time && end_time < B_n && start_row ~= -1)
     end_row = i;
     return
   end
-  
+
 end % for-loop
 
 %if the end of the passing_MP is outside the possible data

@@ -45,16 +45,16 @@ if 0
   E = ones(ndata,nkomp)*value; %#ok<UNRCH>
   E(ind,:) = data(:,2:end);
   E( E(:,1)==value ,:) = NaN;
-  
+
   ttt = ones(nw2,nkomp)*NaN;
   E_tmp = [ttt; E; ttt];
   clear ttt
-  
+
   n_start = 1;
   if ndata>MAXDATA; n_end = MAXDATA;
   else, n_end = ndata;
   end
-  
+
   EE = zeros(n_end,2*nw2+1);
   while n_start<=ndata
     for komp = 1:nkomp
@@ -75,29 +75,29 @@ else
   E(:,1) = linspace(data(1,1),data(1,1)+(ndata-1)/sf,ndata)';
   E(ind,2:end) = data(:,2:end);
   E( E(:,2)==value ,2:end) = NaN;
-  
+
   ttt = E(:,2);
   ttt(~isnan(ttt)) = 1;
   ttt(isnan(ttt)) = 0;
   ii = irf_find_diff(ttt);
-  
+
   if isempty(ii) && ttt(1)==0
     irf_log('proc','data is NaN')
     res = [];
     return
   end
-  
+
   if isempty(ii)
     % No gaps
     clear E
     res = irf_filt(data,1/wind,0,sf,3);
     return
   end
-  
+
   if ttt(ii(1))==0, ii = [1; ii]; end
   if ttt(ii(end))==1, ii = [ii; length(ttt)]; end
   clear ttt
-  
+
   for in=1:length(ii)-1
     if (ii(in+1)-1 - ii(in))/sf<wind, E(ii(in):ii(in+1)-1,2:end) = NaN;
     else

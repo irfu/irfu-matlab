@@ -64,7 +64,7 @@ if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
   end
 else % guessing for Non-CAA data
   tensorOrder = length(data.variance(3:end));
-  
+
   switch tensorOrder
     case 0 % scalar
     case 1 % vector

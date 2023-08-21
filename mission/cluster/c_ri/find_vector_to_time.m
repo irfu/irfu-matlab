@@ -29,33 +29,33 @@ function [B_vector, position] = find_vector_to_time(B, n, t, dt)
 
 %to avoid reading outside the matrix, if matrix size is bigger than n, it is ok for n+1
 if max(size(B)) > n
-  
+
   % in range of time window
   if (B(n+1,1) > t - dt / 2) && ( B(n+1,1) < t + dt /2)
     B_vector = B(n+1,2:4);
     position = n+1;
-    
+
     %out of range in time window
   else
     % sets default values
     B_vector = [0 0 0];
     position= n;
-    
+
     %searching forward in time
     k = 0;
     % to
     while B(n + k,1) < t - dt /2  &&  max(size(B)) >= n + k + 1
       k = k + 1;
-      
+
       % if position found within time frame
       if (B(n + k,1) > t - dt /2) && ( B(n+1,1) < t + dt /2)
         B_vector = B(n+k,2:4);
         position = n+k;
       end
-      
+
     end
   end
-  
+
   %if the end of a matrix i reached then the zero-vector and the end-position is sent.
 else
   B_vector = [0 0 0];

@@ -51,91 +51,91 @@ if nargin == 4 && isnumeric(flag) % specified photemission
 end
 switch lower(flag)
   case 'photoemission given'
-    
+
     jPhoto         = zeros(size(U)); % initialize
     jPhoto(:)      = photoemission*iluminatedArea/distanceSunAU^2; % initialize to current valid for negative potentials
     jPhoto(U >= 0) = photoemission*(iluminatedArea/distanceSunAU^2) .* ...
       ( 5.0e-5/5.6e-5 .* exp( - U(U>=0) ./ 2.74 ) ...
       + 1.2e-5/5.6e-5 .* exp( - (U(U>=0) + 10.0) ./ 14.427 ) );
-    
+
   case 'default'
     % The Photo-current emitted depends on if the potential of the body is
     % positive or negative. Reference needed TODO
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     jPhoto         = zeros(size(U)); % initialize
     jPhoto(:)      = 5.6e-5*iluminatedArea/distanceSunAU^2; % initialize to current valid for negative potentials
     jPhoto(U >= 0) = (iluminatedArea/distanceSunAU^2) .* ...
       ( 5.0e-5 .* exp( - U(U>=0) ./ 2.74 ) ...
       + 1.2e-5 .* exp( - (U(U>=0) + 10.0) ./ 14.427 ) );
-    
+
   case '1ev'
-    
+
     jPhoto         = zeros(size(U));
     jPhoto(:)      = 5.0e-5*iluminatedArea/distanceSunAU^2; % initialize to current valid for negative potentials
     jPhoto(U >= 0) = (iluminatedArea/distanceSunAU^2) .* ...
       ( 5.0e-5 .* exp( - U(U>=0) ) );
-    
+
   case 'themis'
     refU      = [.1 1   5  10  50];
     refJPhoto = [50 27 10   5   .5]*1e-6;
     logU      = log(refU);
     logJ      = log(refJPhoto);
-    
+
     jPhoto     = ones(size(U)); %
     jPhoto     = jPhoto*refJPhoto(1)*iluminatedArea/distanceSunAU^2; % negative potentials
     ii         = find( U >= refU(1) );
     jPhoto(ii) = exp(interp1(logU,logJ,log(U(ii)),'pchip','extrap'))*iluminatedArea/distanceSunAU^2;
-    
+
   case {'cassini','tin'}
     jZero       = 25e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   case 'cluster'
     % Cluster is like aquadag but closer to alluminium, we take 25 uA/m2 at 1AU
     jZero       = 25e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   case 'aluminium'
     %aluminium is 30 uA/m2 at 1AU (roughly from Erik Winkler exjobb)
     jZero       = 30e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   case 'aquadag'
     jZero       = 18e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   case 'gold'
     jZero       = 29e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   case 'graphite'
     jZero       = 7.2e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   case {'solar cells','solar cell'}
     jZero       = 20e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   case 'elgiloy'
     jZero       = 30e-6;
     jZeroThemis = lp.photocurrent(1,0,1,'themis');
     jPhoto      = jZero/jZeroThemis ...
       * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
-    
+
   otherwise
 end

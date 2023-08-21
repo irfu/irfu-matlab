@@ -188,7 +188,7 @@ if plotfigure
   ud.subplot_handles=h;
   set(fn,'userdata',ud);
   set(fn,'defaultLineLineWidth',2);
-  
+
   h(1)=irf_panel('phi');
   irf_plot(h(1),phiEB);
   ylabel(h(1),'\phi (V)','Interpreter','tex','fontsize',14);
@@ -211,7 +211,7 @@ if plotfigure
   irf_legend(h(1),['|\phi_E|_{max} = ' num2str(round(phiEmax,1))],[0.90 0.98],'color','k','fontsize',14)
   irf_legend(h(1),['|\phi_B|_{max} = ' num2str(round(phiBmax,1))],[0.90 0.90],'color','k','fontsize',14)
   irf_zoom(h(1),'x',tints);
-  
+
   plot(h(2),thetas,corrs);
   [maxcorr,ind] = max(corrs);
   hold(h(2),'on')
@@ -222,7 +222,7 @@ if plotfigure
   axis(h(2),[0 360 -1 1]);
   irf_legend(h(2),['C_{\phi max} = ' num2str(round(maxcorr,2))],[0.95 0.06],'color','k','fontsize',14)
   irf_legend(h(2),'(b)',[0.99 0.98],'color','k','fontsize',14)
-  
+
   set(h(1:2),'fontsize',14);
   set(gcf,'color','w');
   xtickangle(h,0)

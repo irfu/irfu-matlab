@@ -115,7 +115,7 @@ end
 if flag_plot
   wd=2^14; % window size
   h=spectrum.welch('Hann',wd,75);
-  
+
   compS = 'xyz';
   figure(13), hpl = gobjects(3);
   for k=2:4

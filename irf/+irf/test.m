@@ -89,7 +89,7 @@ try
   ntests=1e5;
   disp('Testing ISDAT epoch conversion tools.')
   disp([' Using ' num2str(ntests) ' times for random tests'])
-  
+
   %% SUBTEST: roundoff error
   okSubtest	= true; % default for subtest
   tol=iso2epoch('2020-01-01T00:00:00Z')*eps;
@@ -109,7 +109,7 @@ try
   end
   plusminus(okSubtest); disp('random roundoff errors');
   okTest = okTest * okSubtest;
-  
+
   %% SUBTEST: roundoff errors from times near second boundaries
   okSubtest	= true; % default for subtest
   t=rand(1,ntests)*iso2epoch('2020-01-01T00:00:00Z');
@@ -150,7 +150,7 @@ try
       end
     end
   end
-  
+
   %% SUBTEST: leap seconds
   okSubtest	= true; % default for subtest
   stepdates = [...
@@ -177,7 +177,7 @@ try
     if strcmp(ISOtime(1,18:19),'60')
       okSubtest = false;
       leap_s=1;
-      
+
       break;
     end
   end
@@ -185,8 +185,8 @@ try
   okTest = okTest * okSubtest;
   if leap_s==0,disp('  Neither Matlab nor ISDAT uses leap seconds.'),end
   if leap_s==1 && ~okSubtest, disp('ISDAT does not use leap seconds.'); end
-  
-  
+
+
 catch
   okTest = false;
 end
@@ -234,7 +234,7 @@ function okTest = template_test
 try
   okTest		= true; % default for all test
   okSubtest	= true; % default for subtest
-  
+
   %% SUBTEST: description of subtest1
   okSubtest	= true; % default for subtest
   %
@@ -249,7 +249,7 @@ try
   %
   plusminus(okSubtest); disp('subtest2 text');
   okTest = okTest * okSubtest;
-  
+
 catch
   okTest = false;
 end

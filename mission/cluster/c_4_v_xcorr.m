@@ -53,10 +53,10 @@ for cli1 = 1:3
     pos = pos + 1;
     %sprintf('(%d) - > (%d)',cli1,cli2)
     c_eval('data1=b?(:,2:4); data2=b!(:,2:4); dt=b?(1,1)-b!(1,1);',cli1,cli2);
-    
+
     t0(pos) = mycorr( data1, data2, fs );
     t0(pos) = t0(pos) + dt; % Correct for time shift between the timelines
-    
+
     eval(irf_ssub('dR12(pos,:) = r? - r!;',cli1,cli2))
     R = R + dR12(pos,:)'*dR12(pos,:);
   end

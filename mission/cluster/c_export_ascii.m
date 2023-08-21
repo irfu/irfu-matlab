@@ -95,7 +95,7 @@ com = '';
 % P
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if regexp(vs,'^P[1-4]$')==1
-  
+
   cl_id = vs(2);
   inst = 'EFW';
   sig = 'P';
@@ -141,12 +141,12 @@ elseif regexp(vs,'^P32kHz[1-4]p[1-4]$')==1
   var_units =  {'V'};
   frame = 'sc';
   var_labels = {['P' sen]};
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % raw E p12 and p34
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^wE[1-4]p(12|32|34|24)')==1
-  
+
   cl_id = vs(3);
   inst = 'EFW';
   sig = 'E';
@@ -169,13 +169,13 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34|24)')==1
     frame = 'sc';
     var_labels = {['E' sen]};
   end
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % spin fits E p12 and p34
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
-  
-  
+
+
   cl_id = vs(5);
   inst = 'EFW';
   sig = 'E';
@@ -203,18 +203,18 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
     var_labels = {'Ex','Ey','Ez'};
     var_units =  {'mV/m','mV/m','mV/m'};
   end
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % despun full resolution E
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^di(b)?E[1-4]p1234')==1
-  
+
   desc = c_desc(vs);
   cl_id = desc.cl_id;
   inst = desc.inst;
   sig = desc.sig;
   sen = desc.sen;
-  
+
   if CEF
     var_units =  {'mV/m'};
     if CAA
@@ -237,7 +237,7 @@ elseif regexp(vs,'^di(b)?E[1-4]p1234')==1
     var_labels = {'Ex','Ey','Ez'};
     var_units =  {'mV/m','mV/m','mV/m'};
   end
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % despun full resolution E with assumption E.B = 0
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -249,7 +249,7 @@ elseif regexp(vs,'^(i)?(diE[1-4]|diEs[1-4])$')==1
   else
     frame = 'DSI,  Ez is computed from E.B=0';
   end
-  
+
   cl_id = vs(end);
   inst = 'EFW';
   sig = 'E';
@@ -285,17 +285,17 @@ elseif regexp(vs,'^(i)?(diE[1-4]|diEs[1-4])$')==1
     com = com_Ez;
   end
   vs = vs_old;
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % B from FGM
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(di)?B(r)?[1-4]$')==1
-  
+
   if CAA
     irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
     CAA = 0;
   end
-  
+
   cl_id = vs(end);
   inst = 'FGM';
   sig = 'B';
@@ -308,12 +308,12 @@ elseif regexp(vs,'^(di)?B(r)?[1-4]$')==1
   if vs(2)=='r' || (length(vs)>3 && vs(4)=='r')
     com = 'B data is interpolated to E';
   end
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % full resolution E in GSE coordinates
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?(E[1-4]|Es[1-4])$')==1
-  
+
   vs_old = vs;
   if vs(1)=='i'
     frame = 'GSE (inertial frame)';
@@ -321,7 +321,7 @@ elseif regexp(vs,'^(i)?(E[1-4]|Es[1-4])$')==1
   else
     frame = 'GSE';
   end
-  
+
   if CAA
     irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
     CAA = 0;
@@ -361,12 +361,12 @@ elseif regexp(vs,'^(i)?(E[1-4]|Es[1-4])$')==1
     com = com_Ez;
   end
   vs = vs_old;
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % ExB
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(diVExB(s)?[1-4]|VExB(s)?[1-4])$')==1
-  
+
   cl_id = vs(end);
   inst = 'EFW';
   sig = 'V=ExB';
@@ -407,12 +407,12 @@ elseif regexp(vs,'^(diVExB(s)?[1-4]|VExB(s)?[1-4])$')==1
     var_units =  {'km/s','km/s','km/s','deg'};
     com = com_Ez;
   end
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % full/4 sec resolution satellite potential
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^P(s)?[1-4]$')==1
-  
+
   desc = c_desc(vs);
   cl_id = desc.cl_id;
   inst = desc.inst;
@@ -422,12 +422,12 @@ elseif regexp(vs,'^P(s)?[1-4]$')==1
   var_labels = desc.labels;
   var_units =  desc.units;
   com = desc.com;
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % full resolution satellite potential and derived density
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(b)?NVps[1-4]$')==1
-  
+
   desc = c_desc(vs);
   cl_id = desc.cl_id;
   inst = desc.inst;
@@ -437,12 +437,12 @@ elseif regexp(vs,'^(b)?NVps[1-4]$')==1
   var_labels = desc.labels;
   var_units =  desc.units;
   com = desc.com;
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % phase
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^A(two)?[1-4]$')
-  
+
   if CAA
     irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
     CAA = 0;
@@ -458,12 +458,12 @@ elseif regexp(vs,'^A(two)?[1-4]$')
   frame = 'SC';
   var_labels = {'phase'};
   var_units =  {'deg'};
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % CIS V PP
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^NC(h|p)[1-4]$')
-  
+
   if CAA
     irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
     CAA = 0;
@@ -485,12 +485,12 @@ elseif regexp(vs,'^NC(h|p)[1-4]$')
   var_labels = {'N'};
   var_units =  {'cc'};
   com = 'This data is CSDS PP';
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % CIS N PP
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^VC(h|p)[1-4]')
-  
+
   if CAA
     irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
     CAA = 0;
@@ -512,12 +512,12 @@ elseif regexp(vs,'^VC(h|p)[1-4]')
   var_labels = {'Vx','Vy','Vz'};
   var_units =  {'km/s','km/s','km/s'};
   com = 'This data is CSDS PP';
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % R
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^R?[1-4]$')==1
-  
+
   cl_id = vs(end);
   inst = 'EPHEMERIS';
   sig = 'R';
@@ -525,7 +525,7 @@ elseif regexp(vs,'^R?[1-4]$')==1
   frame = 'GSE';
   var_labels = {'Rx','Ry','Rz'};
   var_units =  {'km','km','km'};
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % dump without headers
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -634,7 +634,7 @@ if CEF
   fprintf(fid,'  LABLAXIS        = "UT"\n');
   fprintf(fid,'  FIELDNAM        = "Universal Time"\n');
   fprintf(fid,'END_VARIABLE      = time_tags\n\n');
-  
+
   for j=1:length(var_size)
     fprintf(fid,['START_VARIABLE    = ' var_name{j} '\n']);
     if var_size(j) > 1

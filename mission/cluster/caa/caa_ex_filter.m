@@ -17,18 +17,18 @@ h = irf_plot(4);
 %%load data
 for ic = cl_id
   result = [];
-  
+
   dirs = caa_get_subdirs(iso_st, dt, ic);
   for dd = 1:length(dirs)
     d = dirs{dd};
     cd(d);
-    
+
     irf_log('proc',sprintf('Processing C%d : %s',ic,d(end-12:end)))
-    
+
     [sfit_probe,flag_lx,probeS] = caa_sfit_probe(ic);
     if flag_lx, tS = '(LX)'; else, tS = ''; end
     irf_log('proc',sprintf('L3_E probe pair : %s%s',probeS(1:2),tS))
-    
+
     probe_numeric = sfit_probe;
     switch sfit_probe
       case 120, sfit_probe = 12;
@@ -37,16 +37,16 @@ for ic = cl_id
       case 420, sfit_probe = 42;
       otherwise
     end
-    
+
     if flag_lx, vs = irf_ssub('diELXs?p!',ic,sfit_probe);
     else, vs = irf_ssub('diEs?p!',ic,sfit_probe);
     end
-    
+
     [ok,data] = c_load(vs);
     if ~ok, irf_log('load',['Failed to load ' vs]); continue, end
-    
+
     data = data(:,1:2);
-    
+
     if 0 % this does double job, skip this
       % Remove saturation due to too high bias current
       [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',ic,sfit_probe));
@@ -63,7 +63,7 @@ for ic = cl_id
       end
       clear ok hbias msg
     end
-    
+
     % Remove saturation
     if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
     else, probepair_list=[1 2 3 4];end
@@ -78,7 +78,7 @@ for ic = cl_id
       end
       clear ok hbias msg
     end
-    
+
     % Remove whisper pulses
     [ok,whip,msg] = c_load('WHIP?',ic);
     if ok
@@ -89,7 +89,7 @@ for ic = cl_id
     else, irf_log('load',msg)
     end
     clear ok whip msg
-    
+
     % Remove ns_ops intervals
     ns_ops = c_ctl('get', ic, 'ns_ops');
     if isempty(ns_ops)
@@ -108,13 +108,13 @@ for ic = cl_id
       end
       clear ns_ops ns_ops_intervals
     end
-    
+
     if isempty(result), result = data;
     else
       if ~isempty(data)
         t = result(:,1);
         tapp = data(:,1);
-        
+
         if tapp(1) <= t(end)
           if tapp(1) < t(end)
             irf_log('proc',sprintf('Last point in data is %f seconds before first point in appended data',t(end)-tapp(1)))
@@ -127,17 +127,17 @@ for ic = cl_id
           irf_log('proc',sprintf('   Attempt to append interval %s to %s',epoch2iso(tapp(1)),epoch2iso(tapp(end))))
         end
       end
-      
+
       if ~isempty(data)
         result = [result; data]; %#ok<AGROW>
       end
     end
-    
+
   end % for dirs
   irf_log('proc',sprintf('Loaded C%d',ic))
   if isempty(result), continue, end
   %c_eval('Es? = result;',ic)
-  
+
   %create evenly sampled data and fill gaps with moving median
   tNew = (result(1,1):4:result(end,1))';
   newData = NaN(length(tNew),2);
@@ -150,7 +150,7 @@ for ic = cl_id
   newData(:,1) = tNew;
   resultSave = result;
   result = newData;
-  
+
   %% find Ex<threhsold
   EX_MAX = 15; % repeated points above this value
   EX_MAXXX = 30; % all points above this value
@@ -164,10 +164,10 @@ for ic = cl_id
   irf_plot(h(ic),[resultSave(:,1), resultSave(:,2)+2],'g.')
   irf_plot(h(ic),result(idxBad,:),'mo')
   ylabel(h(ic),sprintf('Ex C%d [mV/m]',ic))
-  
+
   if ~isempty(idxBad)
     dbad = diff(idxBad); ii = find(dbad>1);
-    
+
     a = sort([idxBad(1); idxBad(ii);  idxBad(ii+1); idxBad(end)]);
     a = result(a,1);
     a = reshape(a',2,length(a)/2)';

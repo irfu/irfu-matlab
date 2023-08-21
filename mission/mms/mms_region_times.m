@@ -254,7 +254,7 @@ if plotfig
   %h=irf_figure(540+ic,8);
   xSize=750; ySize=750;
   set(gcf,'Position',[10 10 xSize ySize]);
-  
+
   xwidth = 0.86;
   ywidth = 0.115;
   set(h(1),'position',[0.10 0.99-ywidth xwidth ywidth]);
@@ -265,20 +265,20 @@ if plotfig
   set(h(6),'position',[0.10 0.99-6*ywidth xwidth ywidth]);
   set(h(7),'position',[0.10 0.99-7*ywidth xwidth ywidth]);
   set(h(8),'position',[0.10 0.99-8*ywidth xwidth ywidth]);
-  
+
   Ball = irf.ts_scalar(B.time,[B.data B.abs.data]);
   h(1)=irf_panel('B');
   irf_plot(h(1),Ball);
   ylabel(h(1),'B (nT)','Interpreter','tex');
   irf_legend(h(1),{'B_{x}','B_{y}','B_{z}','|B|'},[0.1 0.12])
   irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   h(2)=irf_panel('V');
   irf_plot(h(2),Vifpi);
   ylabel(h(2),'V_{i} (km s^{-1})','Interpreter','tex');
   irf_legend(h(2),{'V_{x}','V_{y}','V_{z}'},[0.1 0.12])
   irf_legend(h(2),'(b)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   h(3)=irf_panel('N');
   irf_plot(h(3),Nifpi);
   hold(h(3),'on')
@@ -287,34 +287,34 @@ if plotfig
   ylabel(h(3),'n (cm^{-3})','Interpreter','tex');
   irf_legend(h(3),{'n_i','n_e'},[0.1 0.12])
   irf_legend(h(3),'(c)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   h(4)=irf_panel('Ti');
   irf_plot(h(4),Tifpi);
   ylabel(h(4),'T_{i} (eV)','Interpreter','tex');
   irf_legend(h(4),'(d)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   h(5)=irf_panel('Te');
   irf_plot(h(5),Tefpi);
   ylabel(h(5),'T_{e} (eV)','Interpreter','tex');
   irf_legend(h(5),'(e)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   h(6)=irf_panel('Ex');
   irf_plot(h(6),Ex);
   ylabel(h(6),'E_x (mV m^{-1})','Interpreter','tex');
   irf_legend(h(6),'(f)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   h(7)=irf_panel('SWF1');
   irf_plot(h(7),idxSWint);
   irf_zoom(h(7),'y',[0 5.5]);
   ylabel(h(7),'SW flag1','Interpreter','tex');
   irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   %h(7)=irf_panel('SWF2');
   %irf_plot(h(7),idxSWf);
   %irf_zoom(h(7),'y',[0 1.2]);
   %ylabel(h(7),'SW flag2','Interpreter','tex');
   %irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
-  
+
   h(8)=irf_panel('idxfinal');
   irf_plot(h(8),idxfinal);
   hold(h(8),'on')
@@ -324,7 +324,7 @@ if plotfig
   ylabel(h(8),'Flag','Interpreter','tex');
   irf_legend(h(8),'(h)',[0.99 0.98],'color','k','fontsize',12)
   irf_legend(h(8),'0 - other, 1 - SW, 2 - MSH',[0.5 0.1],'color','k','fontsize',12)
-  
+
   irf_plot_axis_align(h(1:8));
   irf_zoom(h(1:8),'x',Tint);
   set(h(1:8),'fontsize',12);

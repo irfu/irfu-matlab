@@ -83,7 +83,7 @@ else
 end
 for ii=ii_start:size(xx,2) % cycle over the columns of x
   x=xx(:,ii);
-  
+
   % compute PSD
   window = window(:);
   n = length(x);		% Number of data points
@@ -91,14 +91,14 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
   if n < nwind    % zero-pad x if it has length less than the window length
     x(nwind,1:end)=0;  n=nwind;
   end
-  
+
   k = fix((n-noverlap)/(nwind-noverlap));	% Number of windows
   % (k = fix(n/nwind) for noverlap=0)
-  
+
   index = 1:nwind;
   KMU = k*norm(window)^2;	% Normalizing scale factor ==> asymptotically unbiased
   % KMU = k*sum(window)^2;% alt. Nrmlzng scale factor ==> peaks are about right
-  
+
   Spec = zeros(nfft,1);
   for i=1:k
     if strcmp(dflag,'none')
@@ -112,7 +112,7 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
     Xx = abs(fft(xw,nfft)).^2;
     Spec = Spec + Xx;
   end
-  
+
   % Select first half
   if ~any(any(imag(x)~=0))   % if x is not complex
     if rem(nfft,2)    % nfft odd
@@ -125,7 +125,7 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
     select = (1:nfft)';
   end
   freq_vector = (select - 1)*Fs/nfft;
-  
+
   % find confidence interval if needed
   if (nargout == 3) || ((nargout == 0) && ~isempty(p))
     if isempty(p)
@@ -134,19 +134,19 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
     % Confidence interval from Kay, p. 76, eqn 4.16:
     % (first column is lower edge of conf int., 2nd col is upper edge)
     confid = Spec*chi2conf(p,k)/KMU;
-    
+
     if noverlap > 0
       disp('Warning: confidence intervals inaccurate for NOVERLAP > 0.')
     end
   end
-  
+
   % I hate decibells, added to make correct units - AV 97.12.20
   Spec=Spec/Fs*2;
   %confid=confid/Fs*2;
   %
   % original line
   Spec = Spec*(1/KMU);   % normalize
-  
+
   % set up output parameters
   if (nargout == 3)
     Pxx = Spec;

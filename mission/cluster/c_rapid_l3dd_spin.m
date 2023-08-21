@@ -78,34 +78,34 @@ minval=zeros(1,nrow*ncol); maxval=zeros(1,nrow*ncol);
 
 for i_subplot=1:(nrow*ncol)
   h(i_subplot)=irf_subplot(nrow,ncol,-i_subplot);
-  
+
   T_eve=Time_lab(i_flux);
   Flux=Flux_l3dd(i_flux,E_channel,:,:);
   Flux=double(squeeze(Flux));
   Flux=transpose(log10(Flux));
   Flux(Flux==-Inf)=NaN;
-  
+
   minval(i_subplot)=min(Flux(:));
   maxval(i_subplot)=max(Flux(:));
-  
+
   specFlux=pcolor(Flux);
   set(specFlux,'EdgeColor','none');
   hold on;
-  
+
   %---rotation matrix from SC to GSE
   Rot=Rot_sc2gse;
   %---from GSE to SC
   Rot=transpose(Rot);
-  
+
   ind_fgm=find(Tfgm>T_eve);
   i_fgm=ind_fgm(1);
   B_vec=B_gse(i_fgm,:,:,:);
   Bgse=B_vec(2:4);
-  
+
   Bsc(1)=Rot(1,1)*Bgse(1)+Rot(1,2)*Bgse(2)+Rot(1,3)*Bgse(3);
   Bsc(2)=Rot(2,1)*Bgse(1)+Rot(2,2)*Bgse(2)+Rot(2,3)*Bgse(3);
   Bsc(3)=Rot(3,1)*Bgse(1)+Rot(3,2)*Bgse(2)+Rot(3,3)*Bgse(3);
-  
+
   pit_ang=zeros(length(Yaxis),length(Xaxis));
   for ix=1:length(Xaxis)
     for iy=1:length(Yaxis)
@@ -117,19 +117,19 @@ for i_subplot=1:(nrow*ncol)
       pit_ang(iy,ix)=acosd(dot(v1,v2)/(norm(v1)*norm(v2)));
     end
   end
-  
+
   [C, PAcontour]=contour(pit_ang,[7 20 60 90 120 160 173]);
   clabel(C, PAcontour, [7 60 90 120 173], 'Rotation',0);
   hold off;
-  
+
   set(gca,'yscale','lin');
   set(gca,'xtick', 1:2:16, 'ytick', 1:8);
   set(gca,'YDir','reverse');
   ylabel(gca,'Polar ang');
   Time=epoch2iso(T_eve); tlab=Time(12:23);
   text(4.0,8.6, [tlab ' UT']);%title(epoch2iso(T_eve));
-  
-  
+
+
   i_flux=i_flux+1;
 end
 

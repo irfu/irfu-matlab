@@ -86,39 +86,39 @@ else
   %Removes 1.5 mV/m offset from Ex for all spacecraft
   c_eval('E?.data(:,1) = E?.data(:,1)-1.5;',1:4);
   c_eval('E? = E?.resample(B1);',1:4); %Resampling to B-field due to the index searching later to make smaller filesizes.
-  
+
   % Average E-field for EdotJ
   disp('Calculates average E-fields')
   Eav = (E1.data+E2.data+E3.data+E4.data)/4;
   Eav=[E1.time.epochUnix double(Eav)];
-  
+
   %Special satellite
   c_eval('Efield=E?;',ic);
   Efield=[Efield.time.epochUnix double(Efield.data)];
   c_eval('Bfield=B?;',ic);
   Bfield=[Bfield.time.epochUnix double(Bfield.data)];
-  
+
   %ExB
   Bmag = irf_abs(Bfield,1);
-  
+
   ExB = cross(Efield(:,2:4), Bfield(:,2:4));
   % EXB/B^2 is the convection velocity (Comes from Ohm's law l.h.s E+VXB=0 => ExB/B^2 =V)
   ExB = 1e3 *ExB./[Bmag.^2 Bmag.^2 Bmag.^2]; %1E6=1E9/1E3 (m/s) => (km/s) 1E6/1E3=1E3
   ExBav = [Bfield(:,1) ExB];
-  
-  
+
+
   disp(['Loads density from spacecraft',num2str(ic)])
   %Density from spacecraft ic for Hall field calculation
   c_eval('ni=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);',ic);
   ni = TSeries(ni.time,ni.data,'to',1);
   ni = ni.resample(B1);
   ni=[ni.time.epochUnix double(ni.data)];
-  
+
   disp('Calculates current')
   % Assuming GSE and DMPA are the same coordinate system calculates j and jXB.
   [j,~,~,jxB,~,~] = c_4_j('R?','B?');
-  
-  
+
+
   j=[j.time.epochUnix double(j.data)];
   j(:,2:4) = j(:,2:4).*1e9;
   jxB=[jxB.time.epochUnix double(jxB.data)];
@@ -129,7 +129,7 @@ else
   % Calculates EdotJ
   EdotJ = dot(Eav(:,2:4),j(:,2:4),2)./1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
   EdotJ = [Eav(:,1) EdotJ];
-  
+
 end
 
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)
@@ -154,46 +154,46 @@ if isempty(Nulls.t)
   error('Could not plot because no nulls have been found')
 else
   h = irf_plot(6,'newfigure');
-  
+
   hca = irf_panel('BMMSav');
   irf_plot(hca,Bav);
   ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
   irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10],'Interpreter','tex')
   %irf_legend(hca,'(a)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('J');
   irf_plot(hca,j);
   ylabel(hca,{'J_{DMPA}','(nA m^{-2})'},'Interpreter','tex');
   irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10],'Interpreter','tex')
   %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('ExB');
   irf_plot(hca,ExBav);
   ylabel(hca,{'ExB', '(km s^{-1})'},'Interpreter','tex');
   %irf_legend(hca,'(e)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('EMMSav');
   irf_plot(hca,Eav);
   ylabel(hca,{'E_{DSL}','(mV m^{-1})'},'Interpreter','tex');
   irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10],'Interpreter','tex')
   %irf_legend(hca,'(b)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('jxB');
   irf_plot(hca,jxB);
   ylabel(hca,{'J \times B/n_{e} q_{e}','(mV m^{-1})'},'Interpreter','tex');
   %irf_legend(hca,'(f)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('jdotE');
   irf_plot(hca,EdotJ);
   ylabel(hca,{'E . J','(nW m^{-3})'},'Interpreter','tex');
   %irf_legend(hca,'(g)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   title(h(1),strcat('MMS averaged - Current density and fields'));
   tmarks=Nulls.t; %Makes tmarks for all null data points.
   irf_plot_axis_align(1,h);
@@ -208,46 +208,46 @@ if isempty(Nulls.t)
   error('Could not plot because no nulls have been found')
 else
   h = irf_plot(6,'newfigure');
-  
+
   hca = irf_panel('BMMS');
   irf_plot(hca,Bfield);
   ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
   irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10],'Interpreter','tex')
   %irf_legend(hca,'(a)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('J');
   irf_plot(hca,j);
   ylabel(hca,{'J_{DMPA}','(nA m^{-2})'},'Interpreter','tex');
   irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10],'Interpreter','tex')
   %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('ExB');
   irf_plot(hca,ExBav);
   ylabel(hca,{'ExB', '(km s^{-1})'},'Interpreter','tex');
   %irf_legend(hca,'(e)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('EMMS');
   irf_plot(hca,Efield);
   ylabel(hca,{'E_{DSL}','(mV m^{-1})'},'Interpreter','tex');
   irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10],'Interpreter','tex')
   %irf_legend(hca,'(b)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('jxB');
   irf_plot(hca,jxB);
   ylabel(hca,{'J \times B/n_{e} q_{e}','(mV m^{-1})'},'Interpreter','tex');
   %irf_legend(hca,'(f)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   hca = irf_panel('jdotE');
   irf_plot(hca,EdotJ);
   ylabel(hca,{'E . J','(nW m^{-3})'},'Interpreter','tex');
   %irf_legend(hca,'(g)',[0.99 0.98],'color','k')
   grid(hca,'off');
-  
+
   title(h(1),strcat(['MMS', num2str(ic)]));
   tmarks=Nulls.t; %Makes tmarks for all null data points.
   irf_plot_axis_align(1,h);

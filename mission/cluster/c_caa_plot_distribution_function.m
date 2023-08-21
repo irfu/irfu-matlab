@@ -159,7 +159,7 @@ switch plot_type
       % Pitch angles, turn so that pitch angle 0 is on top
       theta{k} = double(to_plot{k}.f_pol)+90;
     end
-    
+
     % Take away all values below emin
     if isempty(emin) % then set to lowest energy bin
       emin=min([rlog{1};rlog{1}]);
@@ -174,18 +174,18 @@ switch plot_type
     else
       r0log = log10(emin_scale);
     end
-    
+
     for k=1:2 % find all values > emin
       ind_r{k}=find(log10(double(to_plot{k}.en_cs))>=emin);
     end
-    
+
     for k=1:2 % Create surf grids
       r{k} = tocolumn(rlog{k}(ind_r{k})-r0log);
       X{k} = r{k}*cosd(theta{k});
       Y{k} = r{k}*sind(theta{k});
       C{k} = squeeze(log10(irf.nanmean(to_plot{k}.p(ind_t{k},:,ind_r{k}),1)))';
     end
-    
+
     % Plot data
     surf(ax,X{1},Y{1},X{1}*0,C{1}); hold(ax,'on');
     surf(ax,-flipdim(X{2},2),Y{2},X{2}*0,C{2});
@@ -197,7 +197,7 @@ switch plot_type
     else, cb = colorbar('peer',ax);
     end
     ylabel(cb,to_plot{1}.p_label)
-    
+
     if 1 % Energy ticks
       xticks=log10([1e-1 1e0 1e1 1e2 1e3 1e4 1e5 1e6 1e7]*1e-3)-r0log;
       xticks=xticks(xticks>0);
@@ -221,17 +221,17 @@ switch plot_type
       text(-0.2-rmax+0.5,0,0,'90^o')
       text(-0.2+rmax-0.5,0,0,'90^o')
     end
-    
+
   case 'cross-section'
     k=1; % only one product supported
     % Pick out angles
     n_pa=length(pitch_angles);
-    
+
     if isempty(emin)
       emin=min(to_plot{k}.en_cs);
     end
     ind_r{k}=find(to_plot{k}.en_cs>emin);
-    
+
     for p=1:n_pa
       diff_pa=abs(to_plot{k}.f_cs-pitch_angles(p));
       ind_pa{k,p}=find(diff_pa==min(diff_pa));
@@ -245,20 +245,20 @@ switch plot_type
       PAbg=NaN(size(to_plot{k}.en_cs));
     end
     pa_legends{end+1}='Bg';
-    
+
     % Plotting data, making string to adapt to varying # of pitch angles
     plt_str='loglog(ax';
     for p=1:n_pa; eval(['plt_str=[plt_str,'',to_plot{1}.en_cs(ind_r{k}),pa_toplot{',num2str(p),'}''];']); end
     plt_str=[plt_str,',to_plot{1}.en_cs(ind_r{k}),PAbg,''--'');'];
     eval(plt_str);
-    
+
     if ~isempty(emin_scale)
       xlim(1)=emin_scale;
     else
       xlim(1)=to_plot{1}.en_cs(1)*0.8;
     end
     xlim(2)=to_plot{1}.en_cs(end)*1.2;
-    
+
     set(ax,'xlim',xlim);%[to_plot{1}.en_cs(1)*0.8 to_plot{1}.en_cs(end)*1.2])
     % irf_legend(ax,{'0','90','180','-- Zero count'},[0.94 0.94])
     % irf_legend gets too big for box if box is small

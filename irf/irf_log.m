@@ -126,7 +126,7 @@ if log_ok
     log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
     clear sta curr
   end
-  
+
   if isempty(d_out) || ~strcmp(d_out_prev,IRF_LOG_OUT)
     d_out_prev = IRF_LOG_OUT;
     d_out = 'screen';

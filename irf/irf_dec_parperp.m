@@ -43,12 +43,12 @@ end
 
 if nargin<3 || flagspinplane==0
   btot = irf_abs(b0,1);
-  
+
   ii = find(btot<1e-3);
   if ~isempty(ii), btot(ii) = ones(size(ii))*1e-3; end
   normb = [b0(:,1) b0(:,2)./btot b0(:,3)./btot b0(:,4)./btot];
   normb = irf_resamp(normb,a);
-  
+
   apar = irf_dot(normb,a);
   aperp = a;
   aperp(:,2:4) = a(:,2:4) - normb(:,2:4).*(apar(:,2)*[1 1 1]);

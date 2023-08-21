@@ -121,10 +121,10 @@ end
 for out = 1:varsbsize
   [field,sen,filter] = get_ib_props(varsb{out});
   instrument = 'efw';
-  
+
   [t,data] = caa_is_get(DB,st-B_DELTA,B_DT,cl_id,instrument,field,...
     sen,filter,'burst','tm');
-  
+
   if (out==1) % Create data matrix for t and all 8 possible variables
     if size(t,1)<3 || size(data,1)<3 % sanity check
       irf_log('proc','No usable burst data');
@@ -132,7 +132,7 @@ for out = 1:varsbsize
       return;
     end
     data8 = NaN(size(data,1),9);
-    
+
     start_satt = c_efw_burst_chkt(DB,[DP '/burst/' filename]);
     if isempty(start_satt)
       irf_log('dsrc','burst start time was not corrected')
@@ -173,7 +173,7 @@ if varsbsize>=2
       irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
     can_check_order = 0;
   end
-  
+
   if can_check_order
     % See which single-ended probes we got in the burst, e.g. V1H, V2H...
     probes = [];
@@ -187,7 +187,7 @@ if varsbsize>=2
       irf_log('proc','Cannot check burst order: no single-ended probes')
     end
   end
-  
+
   if can_check_order
     % See which NM data we may use
     probep = [];
@@ -199,7 +199,7 @@ if varsbsize>=2
       irf_log('proc','Cannot check burst order: no useful probe pairs')
     end
   end
-  
+
   if can_check_order
     % Load NM data
     for i=1:length(probep)
@@ -215,7 +215,7 @@ if varsbsize>=2
       irf_log('proc','Cannot check burst order: no reference NM data')
     end
   end
-  
+
   if can_check_order
     data8ord = c_efw_burst_order_signals(data8, varsb, nmdata, pha, ref_probep);
   else
@@ -301,7 +301,7 @@ for i=1:varsbsize
     continue
   end
   [~,~,filter,probe] = get_ib_props(varsb{i});
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
   start_time = data8ordfc(1,1);
   switch cl_id
@@ -389,7 +389,7 @@ for i=1:varsbsize
       end
   end
   %%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
-  
+
   data=data8ordfc(:,[1 i+1]);
   if length(probe)>1
     % Invert the sign to match the HX data
@@ -425,7 +425,7 @@ clear tinter ii mem sz
 
 if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
   irf_log('save',[save_list ' -> ' save_file])
-  
+
   if exist(save_file,'file')
     eval(['save -append ' save_file ' ' save_list]);
   else
@@ -453,14 +453,14 @@ if plot_flag
   if ~flag_local
     getData(ClusterDB(DB,DP,'.'),st-B_DELTA,B_DT,cl_id,'bfgm');
   end
-  
+
   clf;
   dt2=5;
   st_int=st-dt2;
   st_int2=sp-st+2*dt2;
-  
+
   summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',char([fnshort varsb]));
-  
+
   if plot_save
     orient landscape
     irf_print_fig(fname,'pdf')

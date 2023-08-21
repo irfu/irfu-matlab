@@ -193,7 +193,7 @@ for i=label_order % start with first label first
       tmp_ref_ext_y = tmp_ref_ext_y-ht(i).Extent(4);
     end
   end
-  
+
 end
 
 if nargout==0, clear ht; end

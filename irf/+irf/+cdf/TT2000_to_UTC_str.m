@@ -17,13 +17,13 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-04-03.
 %
-function utcStr = TT2000_to_UTC_str(tt2000)    
-    % TODO-DEC: How handle various needs for formats? Rounding, truncation?
-    % PROPOSAL: Assertions on argument being int64 as they are in CDF?
-    % NOTE: Should be analogous to any inverted conversion function.
-    
-    assert(isscalar(tt2000), 'Illegal argument tt2000. Must be scalar.')
-    
-    utcStrCa = irf.cdf.TT2000_to_UTC_str_many(tt2000);
-    utcStr = utcStrCa{1};
+function utcStr = TT2000_to_UTC_str(tt2000)
+% TODO-DEC: How handle various needs for formats? Rounding, truncation?
+% PROPOSAL: Assertions on argument being int64 as they are in CDF?
+% NOTE: Should be analogous to any inverted conversion function.
+
+assert(isscalar(tt2000), 'Illegal argument tt2000. Must be scalar.')
+
+utcStrCa = irf.cdf.TT2000_to_UTC_str_many(tt2000);
+utcStr = utcStrCa{1};
 end

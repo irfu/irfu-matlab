@@ -191,7 +191,7 @@ if mask_type~=4
   % Mark bad bias from bias current indication
   for probe_id = probe_list
     if isnan(probe_id) % commissioning NaN probes handling
-        return
+      return
     end
     [ok, problem_intervals] = c_load(irf_ssub('BADBIAS?p!', spacecraft_id, probe_id));
     if ok
@@ -203,7 +203,7 @@ if mask_type~=4
     end
     clear ok problem_intervals msg
   end
-  
+
   % Mark bad bias and high bias saturation from NS_OPS
   ns_ops = c_ctl('get', spacecraft_id, 'ns_ops');
   if isempty(ns_ops)
@@ -269,7 +269,7 @@ if ~sc_potential
   if ~isempty(ns_ops)
     ns_ops_intervals = [caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'bad_data')' ...
       caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'bad_tm')']';
-    
+
     if ~isempty(ns_ops_intervals), irf_log('proc', 'marking NS_OPS'), end
     for k = 1:size(ns_ops_intervals, 1)
       result = caa_fill_ns_ops(result, ns_ops_intervals(k, :));   % Recreate time interval and fill this data with NaN.
@@ -278,7 +278,7 @@ if ~sc_potential
     end
     clear ns_ops ns_ops_intervals
   end
-  
+
   % Mark data from manual intervals
   man_int = c_ctl('get', spacecraft_id, 'man_int');
   if isempty(man_int)
@@ -287,7 +287,7 @@ if ~sc_potential
   end
   if ~isempty(man_int)
     [manual_intervals, qualities] = caa_get_manual_int(data_start_time, data_time_span, man_int);
-    
+
     if ~isempty(manual_intervals), irf_log('proc', 'marking manual intervals'), end
     for k = 1:size(manual_intervals, 1)
       result = caa_set_bitmask_and_quality(result, manual_intervals(k, 1:2), ...
@@ -296,7 +296,7 @@ if ~sc_potential
     clear manual_intervals qualities
   end
   clear man_int
-  
+
   % Mark sweeps
   [ok, problem_intervals] = c_load('SWEEP?', spacecraft_id);
   if ok
@@ -308,14 +308,14 @@ if ~sc_potential
     end
   end
   clear ok problem_intervals msg
-  
+
   % Mark single probe pair data
   if (data_level == 2 && ~isempty(regexp(probe, '^(12|32|34)$', 'once')))
     irf_log('proc', 'marking single probe pair data')
     result(:, bitmask_column) = bitor(result(:, bitmask_column), BITMASK_SINGLE_PROBE_PAIR);
     result(:, quality_column) = min(result(:, quality_column), QUALITY_SINGLE_PROBE_PAIR);
   end
-  
+
   % Mark plasmasphere wakes
   for probe_id = probe_pair_list
     [ok, problem_intervals] = c_load(irf_ssub('PSWAKE?p!', spacecraft_id, probe_id));
@@ -329,7 +329,7 @@ if ~sc_potential
     end
   end
   clear ok problem_intervals msg
-  
+
   % Mark lobe wakes
   for probe_id = probe_pair_list
     [ok, problem_intervals] = c_load(irf_ssub('LOWAKE?p!', spacecraft_id, probe_id));
@@ -343,7 +343,7 @@ if ~sc_potential
     end
   end
   clear ok problem_intervals msg
-  
+
   % Mark nonsinusoidal wakes
   for probe_id = probe_pair_list
     [ok, problem_intervals] = c_load(irf_ssub('NONSINWAKE?p!', spacecraft_id, probe_id));
@@ -356,7 +356,7 @@ if ~sc_potential
       end
     end
   end
-  
+
   clear ok problem_intervals msg
 end
 
@@ -391,7 +391,7 @@ if ~sc_potential
     end
   end
   clear ok problem_intervals msg qTmp
-  
+
   % Mark data from asymmetric mode
   if ( data_level == 2 && strcmp(probe, '3234') )
     % Asymmetric mode, p32 and p34 present
@@ -399,7 +399,7 @@ if ~sc_potential
     result(:, bitmask_column) = bitor(result(:, bitmask_column), BITMASK_ASYMMETRIC_MODE);
     result(:, quality_column) = min(result(:, quality_column), QUALITY_ASYMMETRIC_MODE);
   end
-  
+
   % Mark data with suspected bad DAC settings
   if data_level == 2
     for probe_loop={'12' '32' '34'}
@@ -412,7 +412,7 @@ if ~sc_potential
     end
     clear ok problem_intervals
   end
-  
+
   % Mark data from solar wind wake
   for probe_id = probe_pair_list
     [ok, wake_info] = c_load(irf_ssub('WAKE?p!', spacecraft_id, probe_id));

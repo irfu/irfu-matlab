@@ -118,19 +118,19 @@ for idx = idx0
   % wakedesc first column is the time stamp of wake.
   wakedesc(find(idx==idx0,1,'first'), 1) = ts;
   tStUTC = irf_time(ts,'ttns>utc');
-  
+
   pha5spins = reshape(fixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
   %epoch5spins = reshape(epochFixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
   d5spins = reshape(dataFixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
   %xxx = fft(d5spins); xxx(5:end-1) = 0;
   %d5spinsAC = d5spins -ifft(xxx, 'symmetric');
-  
+
   idxSpin = (idx:idx+NPOINTS-1) + NPOINTS*2;
   idx1=1:(NPOINTS/2); idx2=(NPOINTS/2+1):NPOINTS;
   idxSpin1 = idxSpin(1) -1 + idx1;
   idxSpin2 = idxSpin(1) -1 + idx2;
   flagSWSpin = isSW(idxSpin);
-  
+
   % Spin in the middle has maximum weigth
   Ki = [.1, .25, .3, .25, .1];
   Ni = Ki;
@@ -142,16 +142,16 @@ for idx = idx0
       (sum(Ki([1 2 4 5])./Wi([1 2 4 5]))/(1-Ki(3)));
   end
   av12 = sum(d5spins .* repmat(Ni, NPOINTS, 1), 2);
-  
+
   [wakeProxy,ind1,ind2] = getProxyWake();
   if isempty(wakeProxy), continue, end
-  
+
   flagSWSpin1 = isSW(idxSpin1); flagSWSpin2 = isSW(idxSpin2);
   [wake1,wake2, wakeDescIdx1, d12, d12Plot] = getFinalWake();
   if isempty(wake1) && isempty(wake2), continue, end
   wakeDescIdx1(1) = wakeDescIdx1(1)-expPhase; % probe phase of max wake
   wakedesc(find(idx==idx0,1,'first'), 2:4) = wakeDescIdx1;
-  
+
   wake = wakeModel(idxSpin);
   wExprap = imag(wake); wake = real(wake);
   if ~isempty(wake1)
@@ -166,7 +166,7 @@ for idx = idx0
   end
   wakeModel(idxSpin) = wake + 1i*wExprap;
   n_corrected = n_corrected + 1;
-  
+
   % Preliminary apply to the next spin, which can be owerwitten on next step
   wakeModel(idxSpin+NPOINTS) =  real(wake)*1i;
   % Preliminary apply to the spin after the next one, if Solar Wind
@@ -185,14 +185,14 @@ for idx = idx0
   %if isSW(idx2minus) && ~any(abs(wakeModel(idx2minus))>WAMP_THRESHOLD)
   %  wakeModel(idx2minus) =  real(wake(idx1))*1i;
   %end
-  
+
   % If no wake1, but ok wake2 from the current and prev spin, copy
   % extrapolated (imaginary) wake1 to next spin
   if ~isempty(wake2) && isempty(wake1) && ...
       any(abs(real(wakeModel(idxSpin2 -NPOINTS)))>WAMP_THRESHOLD) % prev wake2 was good
     wakeModel(idxSpin1 +NPOINTS) = wakeModel(idxSpin1);
   end
-  
+
   plotNow()
   if plotflag_now && idx~=idx0(end)
     plot_step = irf_ask('Step? (0-continue, -1 return) [%]>','plot_step',1);
@@ -200,7 +200,7 @@ for idx = idx0
     elseif plot_step<0, return
     end
   end
-  
+
   % Fist spins of the segment
   if idx2deg(idx)<360
     wakeModel(idxSpin-NPOINTS) = wake;
@@ -243,7 +243,7 @@ return
     else, plotflag_now = false;
     end
     if ~plotflag_now, return, end
-    
+
     h = irf_plot(4,'reset');
     phaPlot = unwrap(pha5spins(:,3)*pi/180)*180/pi - expPhase;
     off = median(d5spins(:,3));
@@ -259,14 +259,14 @@ return
     ylabel(h(1),[pair ' [mV/m]']);
     title(h(1),tStUTC)
     set(h(1),'XAxisLocation','top')
-    
+
     plot(h(2),phaPlot,d12Plot,'g',phaPlot, d12,'b');
     ylabel(h(2),['D2(' num2str(pair) ') [mV/m]']);
-    
+
     plot(h(3),phaPlot, wake)
     ylabel(h(3),'Wake [mV/m]');
     set(h(1:3),'XLim',phaPlot([1 end]),'XTick',-360:45:360*2)
-    
+
     wakeModelTmp = zeros(length(idxSpin),5);
     for i=1:5
       ii = idxSpin + (i-3)*NPOINTS;
@@ -281,7 +281,7 @@ return
       plot(h(4),phaPlot+360*(i-3), d5spins(:,i), 'k', ...
         phaPlot+360*(i-3), d5spins(:,i)-wakeModelTmp(:,i),'b')
     end
-    
+
     set(h(4),'XLim',phaPlot([1 end])+[-720; 720]), set(h(2:3),'XTickLabel',[])
     set(h(4),'XTick',-360*3:90:360*4)
     set(h(4),'XTickLabel',mod(get(h(4),'XTick'),360))
@@ -290,21 +290,21 @@ return
   function [wake,ind1,ind2]  = getProxyWake()
     % First find a proxy wake fit
     % Identify wakes by max second derivative
-    
+
     if isempty(flagSWSpin), FACTOR_SW_AMP = 1; FACTOR_SW_ANG = 1;
     elseif flagSWSpin, FACTOR_SW_AMP = 1.3; FACTOR_SW_ANG = 1.3;
     else, FACTOR_SW_AMP = 0.8; FACTOR_SW_ANG = 0.8;
     end
-    
+
     wake = [];
     d12 = [av12(1)-av12(end); diff(av12)];
     d12 = [d12(1)-d12(end); diff(d12)];
     % Average with 7 points to minimize danger of detecting a wrong maximum
     d12 = w_ave(d12, 7, NPOINTS);
-    
+
     % Ensure wake is symmetrical (with 180 +/-5 deg difference) between the
     % two probes.
-    
+
     if fixedPha(idx) == 0
       ind1 = find(d12 == max(d12(expPhaseIdx))) -1;
       ind2 = find(d12 == min(d12(expPhaseIdx+deg2idx(180)))) -1;
@@ -321,18 +321,18 @@ return
         num2str(abs(idx2deg(ind2-ind1)-180)') ' deg at ' tStUTC]);
       return
     end
-    
+
     % The proxy wake is naroow (1/2 of the final fit)
     wake_width = deg2idx(WAKE_MAX_HALFWIDTH/2);
     i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
     i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-    
+
     % The proxy wake is symmetric
     dav = (d12(i1)-d12(i2))/2;
     cdav = cumsum(dav);
     cdav = cdav - mean(cdav);
     ccdav = cumsum(cdav);
-    
+
     % Wake half-width
     iiTmp = find(abs(ccdav)<max(abs(ccdav))/2);
     wampl = min(iiTmp(iiTmp>23))-max(iiTmp(iiTmp<23)); % XXX: what are these 23s??
@@ -340,7 +340,7 @@ return
       irf.log('debug', ['Proxy wake is too small at ' tStUTC]);
       return
     end
-    
+
     wake = zeros(NPOINTS,1);
     wake( i1 ) = ccdav;
     wake( i2 ) = -ccdav;
@@ -348,43 +348,43 @@ return
 
   function [wake1,wake2,wakedesc1,d12,d12Plot] = getFinalWake()
     % Find final wake shape
-    
+
     % Correct for the proxy wake
     av12_corr = av12 - wakeProxy;
-    
+
     % Find the ground tone and remove it from the data
     x = fft(av12_corr);
     x(3:end-1) = 0;
     av12_corr = av12 -ifft(x, 'symmetric');
-    
+
     % Now find the final fit
     d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
     d12 = [d12(1)-d12(end); diff(d12)];
     d12Plot = d12; % save for plotting
     % Average with only 5 points to get a more fine fit
     d12 = w_ave(d12, 5, NPOINTS);
-    
+
     wake_width = deg2idx(WAKE_MAX_HALFWIDTH);
     i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
     i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-    
+
     if fixedPha(idx) == 0, w1 = 'min'; w2 = 'max';
     elseif fixedPha(idx) == 180, w1 = 'max';  w2 = 'min';
     end
-    
+
     [wake1, wakedesc1] = getOneWake(i1,w1,flagSWSpin1);
     wake2 = getOneWake(i2,w2,flagSWSpin2);
-    
+
     function [wake, wakeDesc] = getOneWake(idx,wMode,flag_solar_wind)
       wake = [];
       wakeDesc = NaN(1,3); % to store [phase, amplitude, half width]
       if nargin<2, flag_solar_wind = []; end
-      
+
       if isempty(flag_solar_wind), FACTOR_SW_AMP = 1; FACTOR_SW_SHAPE = 1;
       elseif flag_solar_wind, FACTOR_SW_AMP = 1.3; FACTOR_SW_SHAPE = 1.3;
       else, FACTOR_SW_AMP = .8; FACTOR_SW_SHAPE = 0.8;
       end
-      
+
       % Allow the final fit to be asymmetric
       cdav = cumsum(d12(idx));
       cdav = cdav - mean(cdav);
@@ -404,12 +404,12 @@ return
           wakeDesc(2), tStUTC));
         return
       end
-      
+
       if ~isGoodShape(ccdav,FACTOR_SW_SHAPE)
         irf.log('debug', ['Wrong wake shape at ' tStUTC]);
         return
       end
-      
+
       % Wake half-width
       ii =    find( abs(ccdav) <  max(abs(ccdav))/2 );
       iimax = find( abs(ccdav) == max(abs(ccdav))   );
@@ -442,20 +442,20 @@ return
     % Use spline interpoltion to reach smooth transition to the zero level
     % outside. If lobes are not located or too close to the beggining or
     % end of the wake segment it is returned unaltered.
-    
+
     %DEBUG=false;
     AMP_FRAC = 0.1; % fraction of amplitude below which we neew to crop
     GAP_WIDTH = round(4*NPOINTS/360); % number of points ower which the wake is required to reach zero
     lenWake = length(wake);
-    
+
     idxx = (1:lenWake)';
     imax = find(abs(wake)==max(abs(wake)));
     wamp = wake(imax);
-    
+
     if wamp<0, iout = wake>wamp*AMP_FRAC;
     else, iout = wake<wamp*AMP_FRAC;
     end
-    
+
     ist = find(((idxx<imax) & iout),1,'last');
     ien = find(((idxx>imax) & iout),1,'first');
     if isempty(ist) || isempty(ien)
@@ -471,15 +471,15 @@ return
     %  plot(idx, wake, '-black', imax, wamp, '-rO');
     %end
     wake(idxx>=ien+GAP_WIDTH+1 | idxx<=ist-GAP_WIDTH-1) = 0;
-    
+
     iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
     itmp = setxor(idxx,iexcl);
-    
+
     % Pad with zeros at the edges before interpolating
     wakeTmp = interp1([-1; 0; itmp; lenWake+1; lenWake+2],[0; 0; wake(itmp); 0; 0],...
       [-1; 0; idxx; lenWake+1; lenWake+2],'spline');
     wake = wakeTmp(3:end-2);
-    
+
     %if DEBUG
     %  subplot(2,1,1);
     %  hold on;

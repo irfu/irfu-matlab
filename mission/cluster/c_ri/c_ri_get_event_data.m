@@ -89,7 +89,7 @@ for i_event=1:size(events,1)
   end
   if isempty(sc_mode), disp('do not know which mode satellites are running, assuming normal!');sc_mode='n';end
   if debug, disp(['sc_mode=' sc_mode]);end
-  
+
   for i_data=1:length(data_list)
     switch data_list{i_data}
       case 'EPH' % get ephemeris R,V,A,ILAT,MLT, + (not implemented but necessary) satellite axis orientation
@@ -111,7 +111,7 @@ for i_event=1:size(events,1)
           save(file_name,['A' stric],['L' stric],['LT' stric],['MLT' stric],['ILAT' stric],['R' stric],['V' stric],flag_append);
           if debug, disp(['saving ephemeris for sc' num2str(ic)]);end
         end
-        
+
       case 'FGM'
         file_prefix='F';
         file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
@@ -120,7 +120,7 @@ for i_event=1:size(events,1)
         if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
         save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
         if debug, disp('saving B1 B2 B3 B4');end
-        
+
       case 'EFW_P'
         file_prefix='F';
         file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
@@ -128,7 +128,7 @@ for i_event=1:size(events,1)
         P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
         if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
         save(file_name,'P1','P2','P3','P4',flag_append);        if debug, disp(['saving ' flag_append ' P1,P2,P3,P4 ->' file_name]);end
-        
+
       case 'EFW_E'
         file_prefix='F';
         file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];

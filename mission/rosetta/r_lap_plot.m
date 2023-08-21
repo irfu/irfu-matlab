@@ -30,20 +30,20 @@ end
 fName = data.name;
 
 if length(fName) == 28
-  
+
   error('Geometry files not handled')
-  
+
 else % go on
-  
+
   flagIV = fName(end-6);
-  
+
   switch fName((end-10):(end-8))
     case 'PSD'
       mesType = 'P';
     otherwise
       flagPs = fName(end-5);
       mesType = fName(end-4);
-      
+
       switch flagIV
         case {'I','V','B','A','U','P','E','N'}
         otherwise, error('unrecognized IV')
@@ -62,7 +62,7 @@ else % go on
         otherwise, error('unrecognized Measurement Type')
       end
   end
-  
+
   switch mesType
     case {'L','H','D','W','C','O','P'}
       f = fieldnames(data);
@@ -75,7 +75,7 @@ else % go on
       end
       fields = [fields; {'g'}];  % Adds qflag as last panel
       nPanels = length(fields);
-      
+
       h = irf_plot(nPanels);
       for i=1:nPanels
         hca = irf_panel(fields{i});
@@ -140,7 +140,7 @@ else % go on
           [hca,~] = irf_spectrogram(hca,data);
           title(hca,data.name,'interpreter','none')
           p = get(hca,'Position');
-          
+
           hca = irf_panel('quality');
           pp = get(hca,'Position');
           set(hca,'Position',[pp(1),pp(2),p(3),pp(4)])
@@ -149,5 +149,5 @@ else % go on
           irf_zoom(h,'x',[data.t(1) data.t(end)])
       end
   end
-  
+
 end

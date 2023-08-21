@@ -132,13 +132,13 @@ if plotfig
   h = irf_plot(3,'newfigure');
   xSize=750; ySize=700;
   set(gcf,'Position',[10 10 xSize ySize]);
-  
+
   xwidth = 0.88;
   ywidth = 0.30;
   set(h(1),'position',[0.10 0.95-ywidth xwidth ywidth]);
   set(h(2),'position',[0.10 0.95-2*ywidth xwidth ywidth]);
   set(h(3),'position',[0.10 0.95-3*ywidth xwidth ywidth]);
-  
+
   h(1)=irf_panel('PosBpar');
   irf_plot(h(1),Rpar);
   irf_legend(h(1),{'12','13','14','23','24','34'},[1.0 1.0])
@@ -149,15 +149,15 @@ if plotfig
     ', |R_{23}| = ' num2str(round(absR23,1,'decimals')) ...
     ', |R_{24}| = ' num2str(round(absR24,1,'decimals')) ...
     ', |R_{34}| = ' num2str(round(absR34,1,'decimals')) ' km']);
-  
+
   h(2)=irf_panel('PosBperp');
   irf_plot(h(2),Rperp);
   ylabel(h(2),{'|\delta R_{\perp}| (km)'},'Interpreter','tex');
-  
+
   h(3)=irf_panel('ThetaBR');
   irf_plot(h(3),thetaBR);
   ylabel(h(3),{'\theta_{BR} (^{o})'},'Interpreter','tex');
-  
+
   Tint = irf.tint(B1.time.start.utc,B1.time.stop.utc);
   irf_plot_axis_align(1,h(1:3))
   irf_zoom(h(1:3),'x',Tint);

@@ -61,7 +61,7 @@ try
       % Load the txt file
       list = list(end);
       [~, off.calFile, ~] = fileparts(list.name);
-      
+
       verStr = regexp(off.calFile, ['mms[1-4]_edp_sdp_', calStr, '_\d{8,8}_v(?<VERSION>\d{1,}.\d{1,}.\d{1,})'],'tokens');
       if is_version_geq(verStr{1}{1}, '1.0.0')
         % NEW format of Calibration files
@@ -126,7 +126,7 @@ try
         % ultimate offset value.) Add one extra point one year after the last.
         time_end(1) = time_start(end) + int64(365*86400e9);
         timeComb = unique(sort([time_start, time_end]));
-        
+
       else
         % OLD format of Calibration files
         fmt = '%s\t%f\t%f';
@@ -161,16 +161,16 @@ try
         % as a static value and not a linear trend between the penultimate and
         % ultimate offset value.) Add one extra point one year after the last.
         time2(end+1) = time2(end) + int64(365*86400e9);
-        
+
         data3 = [C{2}, C{3}; ...
           C{2}, C{3}]; % Repeated data
         [timeSort, indSort] = sort([time1(:); time2(:)]); % Almost repeated time (5 us diff), then sorted
         [timeComb, indUniq] = unique(timeSort); % Ensure no duplicated values
         dataSort = data3(indSort, :); % Sorted data (based on time)
         dataOff = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
-        
+
       end
-      
+
       % Covert time and timeComb to double after subtracting the start time
       % (2015/01/01) from both to ensure interp1 works as expected.
       timeReq = double(time - timeComb(1));
@@ -178,8 +178,8 @@ try
       % Interpolate offsets with linear and extrapolation to the requested
       % time
       offIntrp = interp1(timeOff, dataOff, timeReq, 'linear', 'extrap');
-      
-      
+
+
       switch procId
         case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
           off.ex = offIntrp(:,1);
@@ -296,20 +296,20 @@ end
         errStr = 'Unexpected scId';
         irf.log('critical',errStr); error(errStr);
     end
-    
+
     f = a - b/abs(V0 - c) + d/abs(V0 + e)^4;
-    
+
     dEx = zeros(size(Epoch20s));
     dEy = zeros(size(Epoch20s));
     idx1 = Vpsp20s.data <= V0;
     idx2 = Vpsp20s.data > V0;
-    
+
     dEx(idx1) = a-b./abs(Vpsp20s.data(idx1) - c);
     dEx(idx2) = f-d./abs(Vpsp20s.data(idx2) + e).^4;
-    
+
     dE = irf.ts_vec_xy(Epoch20s,[dEx dEy]);
     dEslow = dE.resample(timeTS);
-    
+
     off.ex = dEslow.data(:,1);
     off.ey = dEslow.data(:,2);
     off.calFile = 'SCPOT dependent with 20200302 static coef.'; % Date, YYYYMMDD, of when coef. above was last changed

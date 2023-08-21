@@ -161,7 +161,7 @@ F = f1Dn.data'; % filtered phase-space density matrix (transposed for some reaso
 
 %%%% Contour-based method %%%%
 if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
-  
+
   %%% arrange data to [t Vn M]
   data = ones(length(t)*length(Vn),3)*nan;    % pre-allocate
   c=0;
@@ -172,38 +172,38 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
     end
   end
   clear c
-  
+
   %%% Make data to grid format - filtered data (inefficient)
   %   xv    = linspace(min(data(:,1)), max(data(:,1)), 2000);     % t values
   %   yv    = linspace(min(data(:,2)), max(data(:,2)), 2000);     % Vn values
   %   [X,Y] = meshgrid(xv, yv);                                   % grid of t-Vn
   %   Z     = griddata(data(:,1),data(:,2),data(:,3),X,Y);        % find M-grid
-  
+
   % Optimized
   [X,Y] = meshgrid(t, Vn);
   Z = F;
-  
+
   %%% Map the contours of the filtered distribution
   [~, cm] = contourf(X, Y, Z,cl,'edgecolor','k');         % make a contour plot
   CA      = irf_extract_contour_lines(cm);                % extract the contour lines
-  
-  
+
+
   for k=1:length(CA) % run for each contour line
-    
+
     CSS = [CA{k}(1,1),CA{k}(1,2);CA{k}(end,1),CA{k}(end,2)];        % start and end point of the contour line
-    
+
     if range(CA{1,k}(:,1))<30 % only do this if contour is <30 seconds wide, saves time
       pinc = inpolygon(data(:,1),data(:,2),CA{k}(:,1),CA{k}(:,2));    % index of points inside the contour from raw data
-      
+
       clevel = mean(interp2(X,Y,Z,(CA{k}(:,1)),(CA{k}(:,2))));        % the level/edge of the contour
-      
+
       if length(find(pinc))<2 % if contour is small and not enough points inside, threshold set at 2 points
         min_val = double(interp2(X,Y,Z,mean(CA{k}(:,1)),mean(CA{k}(:,2)))); % value at contour center
         min_yes = double(min_val<clevel); % value at contour center is less than the contour level (for small contours)
       else
         min_yes =  double(100*length(find(data(pinc,3)<clevel))/length(find(pinc))>60); % over 60% of points are below the contour level
       end
-      
+
       CSinfo(k,:) = [...                                  % information about the specific contour
         sum(diff(CSS,1)),...                            % if 0 then the contour is closed
         range(CA{1,k}(:,1)),...                         % width of the contour
@@ -211,24 +211,24 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
         mean(CA{1,k}(:,1)),mean(CA{1,k}(:,2)),...       % center point of the contour
         min_yes,...                                     % if 1, then we classify the contour as a minima
         ];
-      
+
     end
-    
+
   end
-  
-  
+
+
   %%% find how many center points like within a contour
   rr = ones(length(CA),1);
   for k = 1:length(CA)
     rr(k,1) = length(find(inpolygon(CSinfo(:,4),CSinfo(:,5),CA{k}(:,1),CA{k}(:,2))));
   end
   CSinfo = [CSinfo,rr]; % add this information to the CSinfo matrix
-  
-  
+
+
   %%%% now we can start to remove some contours
   CA2 = CA; %%% we will gradually eliminate contours from CA2
-  
-  
+
+
   %%%% remove the open contours
   CA2(CSinfo(:,1)~=0)       = [];
   CSinfo(CSinfo(:,1)~=0,:)  = [];
@@ -243,7 +243,7 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
   %%%%     - based on outliers of >100 test events
   CA2(CSinfo(:,2)>10)      = [];
   CSinfo(CSinfo(:,2)>10,:) = [];
-  
+
   % find if centre points are not within the contour
   for k=1:length(CA2)
     outcen(k) = ~inpolygon(CSinfo(k,4),CSinfo(k,5),CA2{k}(:,1),CA2{k}(:,2));
@@ -255,12 +255,12 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
   % %%%% remove the contours that have <2 points inside (this is the rr we added)
   CA2(CSinfo(:,7)<=2)      = [];
   CSinfo(CSinfo(:,7)<=2,:) = [];
-  
-  
-  
-  
+
+
+
+
   if ~isempty(CA2) % we only continue if we have contours left
-    
+
     % here we select the larest contour around the center clusters
     for k=1:length(CSinfo(:,1))
       for kk=1:length(CSinfo(:,1))
@@ -271,38 +271,38 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
       [~, bb] = max(CSinfo(outcen2,3));       % we take the contours that have the largest number of centre points
       cc(k)   = ci(bb);
     end
-    
+
     %%%% Now we do the final selection, which corresponds to the
     %%%% phase-space holes
     CSinfo_final = CSinfo(unique(cc),:);
     CA_final     = CA2(unique(cc));
-    
+
   else
-    
+
     CSinfo_final = [];
     CA_final     = [];
-    
-    
+
+
   end
-  
-  
+
+
   %%%% If we have found phase-space holes, then we compute some parameters
   if ~isempty(CSinfo_final)
-    
+
     for ll=1:length(CA_final) % run for each hole contour
-      
+
       %%%% indices of points in each hole contour
       pinc   = inpolygon(data(:,1),data(:,2),CA_final{1,ll}(:,1),CA_final{1,ll}(:,2));
       %%%% level of the hole contour / edge value
       clevel = mean(interp2(X,Y,Z,(CA_final{1,ll}(:,1)),(CA_final{1,ll}(:,2))));
-      
+
       %%%% compute the ratio between the edge and the minimum.
       if length(find(pinc))<5
         min_val = double(interp2(X,Y,Z,mean(CA_final{ll}(:,1)),mean(CA_final{ll}(:,2))));
       else
         min_val = min(data(pinc,3));
       end
-      
+
       hole_stats(ll,:) = [
         mean(double(CA_final{ll}(:,1))),double(mean(CA_final{ll}(:,2))),...   % xy center (based on mean)
         clevel/min_val,...                                                    % level/minima ratio
@@ -310,12 +310,12 @@ if strcmpi(pshMethod,'contour') || strcmpi(pshMethod,'both')
         range(CA_final{ll}(:,2))];                                            % height [km/s];
     end
   else
-    
+
     hole_stats = [];
-    
+
   end
   close(gcf)
-  
+
   %%%% Save the data into a structure PSH
   PSH.CN          = numel(CA_final); % number of holes
   PSH.Cxy         = CA_final;
@@ -332,38 +332,38 @@ end
 
 %%%% Boundary-based method %%%%
 if strcmp(pshMethod,'boundary') || strcmp(pshMethod,'both')
-  
+
   % First thing to do is to un-transpose F (funny quib here)
   F = F';
-  
+
   % then find all minima points (can be lots of 'em)
   % find the minimas in x and y
   % check other directions later
   [idmT,idmV] = findmin_mat(F);
-  
+
   % next find the minimas that are phase space holes
   [rB,FB,phi,~] = boundary_get_psholes(F,idmT,idmV,36); % 36 gives 10 deg intervals
-  
+
   % finally select only those PSHs that meet the criteria
   [idht,idhv,xB,yB,nholes] = select_psholes(...
     rB,FB,phi,F,idmT,idmV,BoundaryCriteria);
-  
+
   PSH.BN = nholes;
   PSH.Bxy = cell(1,nholes);
-  
+
   for ii = 1:nholes
     % convert to unix time and km/s
     tB = interp1(1:length(f1Dn),f1Dn.time.epochUnix,xB(ii,:));
     vB = interp1(1:length(Vn),Vn,yB(ii,:));
-    
+
     PSH.Bxy{ii} = [tB',vB'];
   end
   % PSH.Bparam      = [];
   % PSH.CTint       = [];
-  
+
   % probably there are some other parameters to include such as the
   % ratios you use to find the boundaries
-  
+
 end
 
 PSH.filter_params = filter_params;
@@ -430,12 +430,12 @@ for ii = 1:n1
   id1 = ii-w1:ii+w1;
   if id1(1)<1; id1(id1<1) = []; end
   if id1(end)>n1; id1(id1>n1) = []; end
-  
+
   for jj = 1:n2
     id2 = jj-w2:jj+w2;
     if id2(1)<1; id2(id2<1) = []; end
     if id2(end)>n2; id2(id2>n2) = []; end
-    
+
     Ff(ii,jj) = mean(mean(F(id1,id2)));
   end
 end
@@ -474,13 +474,13 @@ function [idMin1,idMin2] = findmin_mat(F)
 % should preallocate idMin1 and 1dMin2 (TODO)
 count = 1;
 for ii = 1:n1
-  
+
   % findpeaks is a great function that finds local maxima
   [~,id1] = findpeaks(-F(ii,:)); % in "x"
-  
+
   for jj = 1:length(id1)
     [~,id2] = findpeaks(-F(:,id1(jj))); % in "y"
-    
+
     if ismember(ii,id2) % check if mimima in both x and y
       idMin1(count) = ii;
       idMin2(count) = id1(jj);
@@ -522,14 +522,14 @@ rB = zeros(nmin,nphi);
 FB = zeros(nmin,nphi);
 
 for ii = 1:nmin
-  
+
   for jj = 1:length(phi)
     x1 = idm1(ii)+r*cosd(phi(jj));
     x2 = idm2(ii)+r*sind(phi(jj));
-    
+
     % interpolate
     ft = interp2(X1,X2,F',x1,x2);
-    
+
     % set the boundary as the first peak (somtimes finds "false" peaks)
     [~,idpeak] = findpeaks(ft);
     if ~isempty(idpeak)
@@ -599,14 +599,14 @@ end
 % get rid of holes belonging to a minima inside another hole (must be last)
 for ii = 1:nmin
   for jj = 1:nmin
-    
+
     if ii == jj
       continue;
     end
-    
+
     % magic function
     inpol = inpolygon(idm1(jj),idm2(jj),xpeak(ii,:),ypeak(ii,:));
-    
+
     if inpol && ~isnan(rB(jj,1)) % conflict between ii and jj
       % check which hole is deeper and keep that
       hole_ii_depth = mean(FB(ii,:))/F(idm1(ii),idm2(ii));
@@ -617,7 +617,7 @@ for ii = 1:nmin
         rB(jj,:) = nan;
       end
     end
-    
+
   end
 end
 

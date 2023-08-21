@@ -95,17 +95,17 @@ switch action
     irf_figmenu;
     set(gcf,'color','white'); % white background for figures (default is grey)
     set(gcf,'userdata',ud); % because irf_pl_tx can also changed userdata)
-    
+
     h(1)=subplot(3,1,1);
     irf_pl_tx(h(1),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(h(1),'on');
     ylabel(h(1),var_label(ud.variable_str,ud.var_col));
-    
+
     h(2)=subplot(3,1,2);
     irf_pl_tx(h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);
     ylabel(h(2),var_label(ud.variable_str,ud.var_col));
-    
+
     ud=get(gcf,'userdata');
-    
+
     irf_legend(0,['c\_4\_v\_int() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0.01 0.99],'fontsize',7); % add information to the plot
     irf_legend(h(1),{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
     hh=h(1,1);  % use the first subplot to estimate available time interval
@@ -114,14 +114,14 @@ switch action
     xd=get(hc(end),'XData');
     avail=[min([xl xd]) max([xl xd])];
     presel=xl;
-    
+
     dt = 0.02*diff(avail);
     xlim = [avail(1)-dt avail(2)+dt];
     ttics = timeaxis(xlim);
-    
+
     ud.tlim = avail;
     ud.h=h;
-    
+
     xp=0.05;yp=0.25;
     uicontrol('style', 'text', 'string', '[dt1 dt2 dt3 dt4] =','units','normalized','position', [xp yp 0.15 0.03]);
     ud.dt_input = uicontrol('style', 'edit', ...
@@ -129,34 +129,34 @@ switch action
       'callback', 'c_4_v_gui(''dt'')', ...
       'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
     ud.dt=[0 0 0 0]; % default values
-    
+
     xp=0.05;yp=0.2;
     uicontrol('style', 'text', 'string', '[vx vy vz] km/s =','units','normalized','position', [xp yp 0.15 0.03]);
     ud.v = uicontrol('style', 'edit', ...
       'string', '0*[0 0 0]', ...
       'callback', 'c_4_v_gui(''v'')', ...
       'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
-    
+
     xp=0.05;yp=0.15;
     uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.15 0.03]);
     ud.filter = uicontrol('style', 'edit', ...
       'string', '1', ...
       'callback', 'c_4_v_gui(''dt'')', ...
       'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.1 0.05]);
-    
+
     xp=0.05;yp=0.10;
     ud.coord_sys = uicontrol('style', 'checkbox', ...
       'string', 'velocity in GSM', ...
       'callback', 'c_4_v_gui(''dt'')', ...
       'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.3 0.05]);
-    
+
     xp=0.05;yp=0.05;
     uicontrol('style', 'text', 'string', 'Reference satellite ','units','normalized','position', [xp yp 0.15 0.03]);
     ud.ref_satellite = uicontrol('style', 'edit', ...
       'string', '1', ...
       'callback', 'c_4_v_gui(''v'')', ...
       'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.1 0.05]);
-    
+
     uimenu('label','Auto &YLim','accelerator','y','callback','c_4_v_gui(''autoY'')');
     uimenu('label','&Distance','accelerator','d','callback','c_4_v_gui(''distance'')');
     uimenu('label','Click&Times','accelerator','t','callback','c_4_v_gui(''click_times'')');

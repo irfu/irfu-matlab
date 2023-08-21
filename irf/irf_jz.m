@@ -72,12 +72,12 @@ switch method
     dtBnj=irf_cross(dtB,nb);
     dtBnb=irf_dot(dtB,nb);
     nj=irf_norm(dtBnj); % current sheet plane normal
-    
+
     vnj=irf_dot(vb,nj); % v component in the direction normal to current sheet
     vp=irf_cross(nb,irf_cross(vb,nb)); % velocity perp to B
     sin_angle=irf_dot(irf_cross(irf_norm(vp),nj),nb);xxx=irf_dot(vp,nj);ind=find(xxx(:,2)<0);sin_angle(ind,2)=-sin_angle(ind,2);
     angle=[dtB(:,1) -asin(sin_angle(:,2))*180/pi];
-    
+
     absvp=irf_abs(vp,1); absvb=irf_abs(vb,1);absvnj=abs(vnj(:,2));
     indnan_z=find(absvp < absvb*sin(pi/180*deg_z));
     indnan_p=find(absvnj < absvp*sin(pi/180*deg_p));

@@ -76,7 +76,7 @@ if EBflag==1 || EBflag==3
     dataB(1,:,:)=dataBx;
     dataB(2,:,:)=dataBy;
     dataB(3,:,:)=dataBz;
-    
+
   end
 end
 

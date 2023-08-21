@@ -35,7 +35,7 @@ for t=t0:SPLIT_INT*3600:t1
   y = fromepoch(t);
   main_int = [BASE_DIR '/' num2str(y(1)) '/' irf_fname(t) '/C' num2str(cl_id)];
   if ~exist(main_int,'dir'), continue, end
-  
+
   cd(main_int)
   d = dir('*_*');
   if isempty(d), continue, end

@@ -1,6 +1,6 @@
 % Script to plot a few data from interplanetary shocks observed by MMS.
 % The user is asked to select which event and which reference frame to plot
-% the data in. 
+% the data in.
 %
 % The ambition is to have a complete list of MMS IP shock crossings with
 % burst or fast mode data available. Add more events here as they happen.
@@ -68,7 +68,7 @@ switch eventNum
   case 4
     % Not selected by SITL
     % Actually not 100% sure this is a shock
-    
+
     tint = irf.tint('2022-01-18T23:30:00/2022-01-18T23:43:00');
     % tintu and tintd is left as a exercise for the user
 
@@ -131,7 +131,7 @@ nMC = 2e2;
 
 
 %% Get data (needs a database initialized)
- 
+
 % read fast or burst data
 switch dataMode
   case 'brst'
@@ -170,7 +170,7 @@ end
 % sc position (if irfu NAS24 is mounted)
 % R = mms.get_data('R_gse',tint);
 % c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?(:,1:3));')
-% 
+%
 % % otherwise replace with
 % %c_eval('R? = mms.db_get_ts(''mms?_mec_srvy_l2_epht89q'',''mms?_mec_r_gse'',tint);')
 

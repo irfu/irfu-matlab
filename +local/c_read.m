@@ -218,7 +218,7 @@ end
     istart=find(index.tend>tint(1),1);
     iend=find(index.tstart<tint(2),1,'last');
     irf.log('notice',['Dataset: ' dataset '. Index files: ' num2str(istart) '-' num2str(iend)]);
-    
+
     if isempty(istart) || isempty(iend) || istart > iend
       return
     end

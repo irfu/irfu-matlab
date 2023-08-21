@@ -14,9 +14,9 @@ vecDist = zeros(nTints,numel(edgesData)-1);
 
 for iTint = 1:nTints
   tmpTint = edgesTime(iTint+[0 1]); % time between two perigee
-  
+
   tmpData = tsData.tlim(tmpTint);
-  
+
   % sample into bins
   if edgesData(end) > edgesData(1) % increasing edges
     nDist = histcounts(tmpData.data,edgesData);

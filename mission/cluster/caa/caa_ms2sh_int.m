@@ -26,10 +26,10 @@ old_pwd = pwd;
 for cl_id=sc_list
   cdir = [old_pwd '/C' num2str(cl_id)];
   if ~exist(cdir, 'dir'), continue, end
-  
+
   d = dir([cdir '/2*_*']);
   if isempty(d), continue, end
-  
+
   for jj=1:length(d)
     curdir = [cdir '/' d(jj).name];
     if ~exist([curdir '/.interval'],'file') || ...
@@ -38,9 +38,9 @@ for cl_id=sc_list
       continue
     end
     cd(curdir)
-    
+
     irf_log('proc',[ '-- GETTING -- : C' num2str(cl_id) '/' d(jj).name]);
-    
+
     getData(ClusterProc(pwd),cl_id,'ec','correct_sw_wake');
     getData(ClusterProc(pwd),cl_id,'rawspec');
     getData(ClusterProc(pwd),cl_id,'dies');
@@ -48,7 +48,7 @@ for cl_id=sc_list
     if exist('./mEDSIf.mat','file')
       getData(ClusterProc(pwd),cl_id,'die');
     end
-    
+
     % Take care of WAKES
     for pp=[12 34]
       for wa={'LO','PS'}
@@ -60,9 +60,9 @@ for cl_id=sc_list
         end
       end
     end
-    
+
     !rm .caa_ms_interval
-    
+
     % Create .caa_sh_interval
     fid = fopen('.caa_sh_interval','w');
     if fid<0
@@ -74,7 +74,7 @@ for cl_id=sc_list
       irf_log('save','problem writing to .caa_sh_interval')
       cd(old_pwd), return
     end
-    
+
     cd(old_pwd)
   end
 end

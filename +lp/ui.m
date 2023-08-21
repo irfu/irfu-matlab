@@ -56,7 +56,7 @@ classdef ui < handle
       for j = 2:numel(obj.ProbeSurfacePhotoemission)
         obj.ProbeSurfacePhotoemission(j) = lp.photocurrent(1,0,1,obj.ProbeSurfaceList{j});
       end
-      
+
       %% Initialize IDE
       obj.new_ide();
       obj.spacecraftUsed = 2;
@@ -89,7 +89,7 @@ classdef ui < handle
       obj.Axes.bottom = axes('position',[0.1 0.3 0.5 0.3]); % [x y dx dy]
       obj.Axes.top    = axes('position',[0.1 0.67 0.5 0.3]); % [x y dx dy]
       linkaxes([obj.Axes.top obj.Axes.bottom],'x');
-      
+
       obj.Axes.infotext = axes('position',[0.1 0.0 0.5 0.13]); % [x y dx dy]
       axis(obj.Axes.infotext,'off');
       obj.Axes.infoTextHandle = text(0,1,'','parent',obj.Axes.infotext);
@@ -176,9 +176,9 @@ classdef ui < handle
       ud.inp            = inp;
       obj.figHandle     = figH;
       obj.UserData      = ud;
-      
+
     end
-    
+
     function set_plasma_model(obj,varargin)
       if nargin == 2 && any(strcmpi('user defined',varargin{1}))  %set_plasma_model(obj,'user defined')
         obj.plasmaUsed = 1;
@@ -233,7 +233,7 @@ classdef ui < handle
       v = eval(['[' vStr ']'])*1e3; % [km/s] > [m/s]
       obj.set_user_defined_if_plasma_changes('v',v)
     end
-    
+
     function set_sc_model(obj,varargin)
       if nargin == 2 && any(strcmpi('user defined',varargin{1}))  %set_sc_model(obj,'user defined')
         obj.spacecraftUsed = 1;
@@ -298,7 +298,7 @@ classdef ui < handle
         obj.InputParameters.vectorUonlyMinMaxGiven = true;
       end
     end
-    
+
     function set_probe_model(obj,varargin)
       if nargin == 2 && any(strcmpi('user defined',varargin{1}))  %set_probe_model(obj,'user defined')
         idProbe = 1;
@@ -386,7 +386,7 @@ classdef ui < handle
       set(obj.UserData.inp.probe.areaTotalVsSunlit.value,...
         'String',num2str(obj.ProbeList(obj.probeUsed).Area.totalVsSunlit,3));
     end
-    
+
     function calculate_ui(obj)
       doModelSpacecraft = obj.UserData.inp.doModelSc.Value;
       if doModelSpacecraft
@@ -463,7 +463,7 @@ classdef ui < handle
       % not change more than 10% between points
       Ibias = jProbe; % bias current to probe measured with respect to sc
       Ubias = Upot;
-      
+
       %
       Probe = obj.ProbeList(obj.probeUsed);
       Sc    = obj.SpacecraftList(obj.spacecraftUsed);
@@ -510,7 +510,7 @@ classdef ui < handle
         Uprobe2plasma(ii)=uprobe;
         Uproberefsweep(ii)=refpot;
       end
-      
+
       obj.Output.UI.Jprobephotoreturn= Jprobephotoreturn;
       obj.Output.UI.Ubias            = Ubias;
       obj.Output.UI.Usatsweep        = Usatsweep;
@@ -528,7 +528,7 @@ classdef ui < handle
     function plot_ui(obj)
       % Bottom axes
       obj.plot_UI_probe;
-      
+
       %Top axes
       toppanelPlotType = get(obj.UserData.inp.toppanel.plot,'Value');
       switch toppanelPlotType
@@ -538,7 +538,7 @@ classdef ui < handle
           obj.plot_resistance;
           linkaxes([obj.Axes.bottom, obj.Axes.top],'x');
       end
-      
+
       % Information panel
       obj.plot_UI_information_panel;
     end
@@ -574,13 +574,13 @@ classdef ui < handle
       biasCurrentA = obj.InputParameters.biasCurrent;
       biasCurrentMicroA = 1e6*biasCurrentA;
       flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.total) && -biasCurrentA<max(J.total);
-      
+
       plot(h,vecU, J.total*1e6,'k');
       set(h,'xlim',[min(vecU) max(vecU)]);
       grid(h,'on');
       xlabel(h,'U [V]');
       ylabel(h,'I [\mu A]');
-      
+
       % Add photoelectron current
       hold(h,'on');
       if doModelSpacecraft
@@ -615,11 +615,11 @@ classdef ui < handle
         end
       end
       hold(h,'off');
-      
+
     end
     function plot_UI_information_panel(obj)
       % prepare informationa panel
-      
+
       % Calculate all required values
       dUdI = obj.Output.dUdI;
       U__dUdI = obj.Output.U__dUdI;
@@ -630,7 +630,7 @@ classdef ui < handle
       flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.total) && -biasCurrentA<max(J.total);
       doModelSpacecraft = obj.UserData.inp.doModelSc.Value;
       probe = obj.ProbeList(obj.probeUsed);
-      
+
       Rmin = min(abs(dUdI)); % minimum resistance
       fcr=1/2/pi/Rmin/probe.capacitance;
       disp(['Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.']);
@@ -644,7 +644,7 @@ classdef ui < handle
           ' C =' num2str(probe.capacitance*1e12,3) 'pF,' ...
           ' fcr =' num2str(fcr,3) 'Hz.'];
       end
-      
+
       if min(J.total)<0 && max(J.total)>0 % display information on Ufloat
         Ufloat=interp1(J.total,vecU,0);    % floating potential
         ii=isfinite(U__dUdI);
@@ -698,7 +698,7 @@ classdef ui < handle
           end
         end
       end
-      
+
       % Write out all required output
       fieldsInfo = fieldnames(InfoTxt);
       infoText = '';

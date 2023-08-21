@@ -63,27 +63,27 @@ for i =1:nr_crossings
   [B2, dl2] = download_B_4_cl(passing_MP(i,:),2, B_t_dt2);
   [B3, dl3] = download_B_4_cl(passing_MP(i,:),3, B_t_dt3);
   [B4, dl4] = download_B_4_cl(passing_MP(i,:),4, B_t_dt4);
-  
+
   s_fq1 = get_sample_fq_for_period(dl1,B1);
   s_fq2 = get_sample_fq_for_period(dl2,B2);
   s_fq3 = get_sample_fq_for_period(dl3,B3);
   s_fq4 = get_sample_fq_for_period(dl4,B4);
-  
+
   disp( ' ')
   disp(['size of B-fields: B1 = ' num2str(size(B1)) ' B2 = ' num2str(size(B2)) ' B3 = ' num2str(size(B3)) ' B4 = ' num2str(size(B4)) ])
-  
+
   date1=R_datestring(fromepoch(passing_MP(i,1)));
   date2=R_datestring(fromepoch(passing_MP(i,2)));
   n_filename = sprintf('/share/robert/B_data/B_%s_to_%s',date1,date2);
-  
+
   disp( ' ')
   disp(['saving as: ' n_filename])
-  
+
   save(n_filename, 'B1','B2','B3','B4', 'dl1', 'dl2', 'dl3', 'dl4', 's_fq1' , 's_fq2', 's_fq3', 's_fq4');
-  
+
   %to avoid memory crasch
   clear B1 B2 B3 B4
-  
+
 end
 
 figure

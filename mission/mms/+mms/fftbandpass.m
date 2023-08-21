@@ -63,10 +63,10 @@ f = (-fN:df:fN-df);
 for nn=1:numfields
   fieldtemp = fft(tmpfields(:,nn));
   fieldtemp = fftshift(fieldtemp);
-  
+
   fieldtemp(find(abs(f) < fmin)) = 0;
   fieldtemp(find(abs(f) > fmax)) = 0;
-  
+
   fieldtemp = ifftshift(fieldtemp);
   tmpfields(:,nn) = ifft(fieldtemp);
 end

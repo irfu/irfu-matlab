@@ -54,17 +54,17 @@ for i=1:length(currentIntervals(:,1))
   else
     c_eval('R? = R?.resample(B1);',1:4);
   end
-  
+
   %% Average calculations. Loads electric fields, density and calculates J and JxB with curlometer method
-  
-  
+
+
   disp('Loads Electric fields')
   % Electric field
   c_eval('Efield=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
   %Removes 1.5 mV/m offset from Ex
   Efield.data(:,1) = Efield.data(:,1)-1.5;
   c_eval('Bfield=B?;',ic);
-  
+
   disp('Load electron fpi data')
   c_eval('eEnSp_pX=mms.db_get_variable(''mms?_fpi_fast_sitl'',''mms?_fpi_eEnergySpectr_pX'',Tint);',ic);%positiveX
   c_eval('eEnSp_pY=mms.db_get_variable(''mms?_fpi_fast_sitl'',''mms?_fpi_eEnergySpectr_pY'',Tint);',ic);
@@ -92,7 +92,7 @@ for i=1:length(currentIntervals(:,1))
     speciEnSp.p_label={'log'};
     speciEnSp.f_label = {'Energy (eV)'};
     speciEnSp.f = single(energy);
-    
+
     disp('Makes electron energy omni directional')
     tmp2 = (eEnSp_pX.data + eEnSp_pY.data + eEnSp_pZ.data + eEnSp_mX.data + eEnSp_mY.data + eEnSp_mZ.data); %/6;
     [~,energy] = hist([log10(10),log10(30e3)],32);
@@ -109,15 +109,15 @@ for i=1:length(currentIntervals(:,1))
   c_eval('B.C? = B?;',1:4);
   curlB = c_4_grad(R,B,'curl');
   j     = curlB.data./1.0e3.*1e-9./(4*pi*1e-7); %A/m^2 if B in nT and R in km
-  
+
   j=[B1.time.epochUnix j];
   j(:,2:4) = j(:,2:4).*1e9; %nA/m^2
-  
-  
+
+
   %% Plot data should only be used if nulls are found. Plots are only focused around the intervals of nulls found because of above segment.
   disp('Plotting figure')
   h = irf_plot(5,'newfigure');
-  
+
   hca = irf_panel('BMMSav');
   irf_plot(hca,Bfield);
   ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
@@ -125,7 +125,7 @@ for i=1:length(currentIntervals(:,1))
   %irf_legend(hca,'(a)',[0.99 0.98],'color','k')
   grid(hca,'off');
   set(hca,'xticklabel',[]);
-  
+
   hca = irf_panel('J');
   irf_plot(hca,j);
   ylabel(hca,{'J_{DMPA}','(nA m^{-2})'},'Interpreter','tex');
@@ -133,7 +133,7 @@ for i=1:length(currentIntervals(:,1))
   %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
   grid(hca,'off');
   set(hca,'xticklabel',[]);
-  
+
   hca = irf_panel('EMMS');
   irf_plot(hca,Efield);
   ylabel(hca,{'E_{DSL}','(mV m^{-1})'},'Interpreter','tex');
@@ -141,7 +141,7 @@ for i=1:length(currentIntervals(:,1))
   %irf_legend(hca,'(b)',[0.99 0.98],'color','k')
   grid(hca,'off');
   set(hca,'xticklabel',[]);
-  
+
   hca=irf_panel('iEnSp');
   irf_spectrogram(hca, speciEnSp, 'log', 'donotfitcolorbarlabel');
   colormap(hca,jet)
@@ -149,7 +149,7 @@ for i=1:length(currentIntervals(:,1))
   set(hca,'ytick',[1e1 1e2 1e3 1e4]);
   %scaxis(hca,[-1, 2])
   ylabel(hca,{'E_{i} (eV)'},'Interpreter','tex');
-  
+
   hca=irf_panel('eEnSp');
   irf_spectrogram(hca, speceEnSp, 'log', 'donotfitcolorbarlabel');
   colormap(hca,jet)
@@ -157,13 +157,13 @@ for i=1:length(currentIntervals(:,1))
   set(hca,'ytick',[1e1 1e2 1e3 1e4]);
   %scaxis(hca,[-1, 2])
   ylabel(hca,{'E_{e} (eV)'},'Interpreter','tex');
-  
+
   title(h(1),strcat(['MMS', num2str(ic)]));
   irf_plot_axis_align(h);
   irf_pl_number_subplots(h,[0.99, 0.95]);
   irf_zoom(h,'x',Tint);
-  
-  
+
+
   %export figure as eps picture with name filename.
   filename=['MMS',num2str(ic),'_CurrentOverview_', num2str(i)];
   irf_print_fig(h,filename,'png')

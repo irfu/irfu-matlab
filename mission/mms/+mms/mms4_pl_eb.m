@@ -33,7 +33,7 @@ for mmsId = 1:4
     irf.log('warning','loading QL DCE')
     E_dsl_edp = mms.get_data(['E_dsl_edp_' dMode '_ql'],Tint,mmsId); %#ok<NASGU>
   end
-  
+
   %{
   E2d_dsl_edp = mms.get_data(['E2d_dsl_edp_' dMode '_l2pre'],Tint,mmsId);
   if isempty(E2d_dsl_edp)
@@ -41,15 +41,15 @@ for mmsId = 1:4
     E2d_dsl_edp = mms.get_data(['E2d_dsl_edp_' dMode '_ql'],Tint,mmsId); %#ok<NASGU>
   end
   %}
-  
+
   V_edp = mms.get_data(['V_edp_' dMode '_l2'],Tint,mmsId);
   if isempty(V_edp)
     irf.log('warning','loading SITL DCV')
     V_edp = mms.get_data('V_edp_fast_sitl',Tint,mmsId); %#ok<NASGU>
   end
-  
+
   R_gse = mms.get_data('R_gse',Tint,mmsId); %#ok<NASGU>
-  
+
   c_eval([...
     'E? = E_dsl_edp;'...
     'P? = V_edp;'...
@@ -80,11 +80,11 @@ if 1
   irf_pl_tx(hca,'abs(B?)',1)
   ylabel(hca,'|B| [nT]')
   irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
-  
+
   hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
   irf_pl_tx(hca,'B?',1)
   ylabel(hca,'Bx [nT]')
-  
+
   hca = irf_panel('By'); set(hca,'ColorOrder',mmsColors)
   irf_pl_tx(hca,'B?',2)
   ylabel(hca,'By [nT]')

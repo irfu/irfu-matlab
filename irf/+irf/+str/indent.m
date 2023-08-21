@@ -9,10 +9,10 @@
 % First created 2020-03-09.
 %
 function s = indent(s, nWhitespace)
-    % NOTE: "repmat" accepts negative sizes. Therefore wants to assert
-    % nonnegative size.
-    assert(nWhitespace >= 0, 'nWhitespace must be nonnegative.')
-    
-    indentationStr = repmat(' ', 1, nWhitespace);
-    s = irf.str.add_prefix_on_every_row(s, indentationStr);
+% NOTE: "repmat" accepts negative sizes. Therefore wants to assert
+% nonnegative size.
+assert(nWhitespace >= 0, 'nWhitespace must be nonnegative.')
+
+indentationStr = repmat(' ', 1, nWhitespace);
+s = irf.str.add_prefix_on_every_row(s, indentationStr);
 end

@@ -46,7 +46,7 @@ if length(data(:,1))==1
     da = da(~isnan(da(:,2)),:);
     dof = interp1(da(:,1),da(:,2:3),t,'spline');
   end
-  
+
   % This is a hack. It seems here that p34 is drifting away as p12
   % correlates much better with the other SC.
   if cl_id==2 && t>=toepoch([2003 9 1 0 0 0]) && t<toepoch([2003 12 1 0 0 0])

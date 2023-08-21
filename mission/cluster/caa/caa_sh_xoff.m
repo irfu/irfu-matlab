@@ -47,7 +47,7 @@ for cli=1:4
   old_pwd = pwd;
   dirList = get_dir_list(st,dt,cli);
   if isempty(dirList), cd(old_pwd), continue, end
-  
+
   % Concatenate intervals
   [~,ii] = sort([dirList.st]);
   es_tmp = [];
@@ -57,7 +57,7 @@ for cli=1:4
     if isempty(spinFits), continue, end
     es_tmp = [es_tmp; spinFits.diEs]; %#ok<AGROW>
   end
-  
+
   if ~isempty(es_tmp)
     es_tmp(isnan(es_tmp(:,2)),:) = []; %#ok<AGROW>
     es_tmp = irf_resamp(es_tmp,t); %#ok<NASGU>
@@ -240,7 +240,7 @@ if ~isempty(Eref)
       else, dAmp1 = DAMP_DEF;
       end
       dE1 = mean(dAmp1*E1(ii,2)-Eref(ii,2))/dAmp1;
-      
+
       irf_plot(hcx, [E1(:,1) dAmp1*E1(:,2)-dE1],'k')
       irf_plot(hcy, [E1(:,1) dAmp1*E1(:,3)],'k')
       legx = num2str(dE1,'dEx1 = %.2f');
@@ -320,9 +320,9 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
 
   function spinFits = get_spin_fits()
     spinFits = caa_sfit_load(cli);
-    
+
     if ~isempty(spinFits)
-      
+
       if spinFits.flagLX
         probe_numeric = spinFits.probePair;
       else
@@ -333,13 +333,13 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
         else, probe_numeric=str2double(E_info.probe);
         end
       end
-      
+
       % Remove saturation due to too high bias current and ns_ops intervals
       [ok,nsops,msg] = c_load('NSOPS?',cli);
       if ~ok, irf_log('load',msg), end
       clear ok msg
       nsops_errlist = [];
-      
+
       if probe_numeric<50, probepair_list=probe_numeric;
       else, probepair_list=[12 32 34];end
       for probepair=probepair_list
@@ -356,15 +356,15 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
         else, irf_log('load',msg)
         end
         clear ok hbias msg
-        
-        
+
+
         if ~isempty(nsops)
           idx = nsops(:,3)==caa_str2errid('high_bias');
           if any(idx)
             irf_log('proc','blanking HB saturation (NS_OPS)')
             spinFits.diEs = caa_rm_blankt(spinFits.diEs,nsops(idx,1:2));
           end
-          
+
           for j=1:length(nsops(:,3))
             opcode=nsops(j,3);
             % If nsops_errlist is present, only match on those
@@ -375,9 +375,9 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
             end
           end
         end
-        
+
       end % for probepair=probepair_list
-      
+
       % Remove saturation
       if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
       else, probepair_list=[1 2 3 4];end
@@ -392,7 +392,7 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
         end
         clear ok hbias msg
       end
-      
+
       % Remove whisper pulses
       [ok,whip,msg] = c_load('WHIP?',cli);
       if ok
@@ -403,7 +403,7 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
       else, irf_log('load',msg)
       end
       clear ok whip msg
-      
+
       % Remove ns_ops intervals
       ns_ops = c_ctl('get', cli, 'ns_ops');
       if isempty(ns_ops)
@@ -421,7 +421,7 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
         end
         clear ns_ops ns_ops_intervals
       end
-      
+
       % Delta offsets
       Del_caa = c_efw_delta_off(spinFits.diEs(1,1),cli);
       if ~isempty(Del_caa)
@@ -452,7 +452,7 @@ for t=t0:SPLIT_INT*3600:t1
   y = fromepoch(t);
   main_int = [DP '/' num2str(y(1)) '/' irf_fname(t) '/C' num2str(cl_id)];
   if ~exist(main_int,'dir'), continue, end
-  
+
   cd(main_int)
   d = dir('*_*');
   if isempty(d), continue, end
@@ -462,7 +462,7 @@ for t=t0:SPLIT_INT*3600:t1
     if caa_is_valid_dirname(d(j).name), good_dir = [good_dir {d(j).name}]; end %#ok<AGROW>
   end
   if isempty(good_dir), continue, end
-  
+
   for j=1:length(good_dir)
     subdir = [main_int '/' good_dir{j}];
     cd(subdir)

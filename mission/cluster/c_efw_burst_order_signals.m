@@ -58,14 +58,14 @@ for di=1:2:nv
     varsb{mod(vidx,nv)},varsb{vidx+1}))
   p1(:,1:2)=data8(:,[1 vidx+1]);
   p2(:,1:2)=data8(:,[1 vidx+2]);
-  
+
   % First, check medians
   mp1 = median(p1(:,2)); mp2 = median(p2(:,2));
   if abs(mp1-mp2)/abs(mp1+mp2) > 1
     irf_log('proc','Medians dismatch')
     continue
   end
-  
+
   if ref_probep==32, distance = 62; else, distance = 88;end
   eburst=1000*0.00212*(p2(:,2)-p1(:,2))/distance; % Burst electric field in mV/m
   bsfit=c_efw_sfit(ref_probep,3,10,20,p2(:,1),eburst,bpha(:,1),bpha(:,2),1,'ib');
@@ -79,7 +79,7 @@ for di=1:2:nv
   y(isnan(y)) = [];
   nbad =  - sum((25<y & y<155) | (205<y & y<335));
   ngood = length(y) - nbad;
-  
+
   if (ngood>bestguess(1) && nbad==0)
     bestguess=[ngood nbad di];
     irf_log('proc','Data match')

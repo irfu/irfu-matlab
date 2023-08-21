@@ -34,7 +34,7 @@ for ievent=1:numel(TT)
   flagSkipPC12 = false; flagSkipPC35 = false;
   if upperFreqBound<=0.1, flagSkipPC12 = true; end
   if lowerFreqBound>=0.1, flagSkipPC35 = true; end
-  
+
   tint = TT.TimeInterval(ievent,:);
   tintDl = tint + 300*[-1 1]; %5 minutes are included in the timetable on either side of the EMIC wave
   if isempty(th_s) % Cluster
@@ -47,15 +47,15 @@ for ievent=1:numel(TT)
   else % THEMIS
     gseR = irf_tlim(Rth.(['Rth' lower(th_s)]),tintDl);
   end
-  
+
   if flagSkipPC35, ebspPC35 = []; else, ebspPC35 = get_ebsp('PC35'); end
   if flagSkipPC12, ebspPC12 = []; else, ebspPC12 = get_ebsp('PC12'); end
-  
+
   if isempty(ebspPC35) && isempty(ebspPC12)
     irf.log('warning','No data')
     continue
   end
-  
+
   %% Combine PC12  &  PC35
   % Frequency limits
   if flagSkipPC35, freq = tocolumn(ebspPC12.f.data);
@@ -66,7 +66,7 @@ for ievent=1:numel(TT)
   loweridx = find(abs(freq-lowerFreqBound)<.001);
   upperidx = find(abs(freq-upperFreqBound)<.001);
   idxFreq = loweridx:upperidx;
-  
+
   if flagSkipPC35
     tint1min = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
     outTime = ((tint1min(1)):60:(tint1min(end)))';
@@ -101,14 +101,14 @@ for ievent=1:numel(TT)
   ellPeak = ell(idxPeak);
   thK=thK(:,idxFreq)'; % transpose to get the idx right
   thKpeak=thK(idxPeak);
-  
+
   % Mag coordinates
   gseR = irf_resamp(gseR,outTime);
   smR = irf.geocentric_coordinate_transformation(gseR,'gse>sm');
   [azimuth,elevation,~] = cart2sph(smR(:,2),smR(:,3),smR(:,4));
   mLat = elevation*180/pi;
   mlt = mod(azimuth*180/pi+180,360)/360*24;
-  
+
   % Save output
   Out.time = [Out.time; outTime];
   Out.fPeak = [Out.fPeak; fPeak];
@@ -142,13 +142,13 @@ cd (oldPwd)
     fname = find_file();
     if isempty(fname), return, end
     dobj=dataobj(fname);
-    
+
     res = struct('t',[],'f',[],'flagFac',1,...
       'bb_xxyyzzss',[],'ee_xxyyzzss',[],'ee_ss',[],...
       'pf_xyz',[],'pf_rtp',[],...
       'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k_tp',[],...
       'fullB',[],'B0',[],'r',[]);
-    
+
     fields = {{'t','Time'},...
       {'f','Frequency'},...
       {'df','Frequency_BHW'},...
@@ -161,10 +161,10 @@ cd (oldPwd)
       {'pf_rtp','PV_fac'},...
       {'B0','BMAG'}
       };
-    
+
     iSep=strfind(fname,'__');
     productName = fname(1:iSep-1);
-    
+
     for iField = 1:length(fields)
       fieldName = fields{iField}{1}; varName = fields{iField}{2};
       tmpVar = get_variable(dobj,[varName '__' productName]);

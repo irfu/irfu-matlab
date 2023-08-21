@@ -81,7 +81,7 @@ switch lower(action)
     h(4)=subplot(2,2,4);axis off;
     data.h=h;
     set(figNumber,'userdata',data);
-    
+
     %====================================
     % The vector 1 entering
     labelStr='0';
@@ -232,7 +232,7 @@ switch lower(action)
     data.flag_v1=get(data.vec1flag, 'value');
     data.flag_v2=get(data.vec2flag, 'value');
     data.flag_b=get(data.bflag, 'value');
-    
+
     if data.flag_v1==1
       data.v1=eval(['[' get(data.vec1Hndl,'string') ']']);
       if length(data.v1)==1, data.flag_v1=0;end
@@ -256,14 +256,14 @@ switch lower(action)
     rb1=[20*cos(phase_b1) 20*sin(phase_b1) 0];
     rb2=[20*cos(phase_b2) 20*sin(phase_b2) 0];
     scoctogon = (data.phase+22.5+single(0:45:360))/180*pi;
-    
+
     for ip=1:4
       c_eval('rp?ts = irf.ts_vec_xyz(irf_time(data.t,''epoch>epochTT''),rp?);',ip);
       c_eval('rp?_gse=mms_dsl2gse(rp?ts,data.defatt);',ip);
       c_eval('rp?_gse=rp?_gse.data;',ip);
     end
-    
-    
+
+
     if data.flag_b==1
       bfield=irf_resamp(data.b,data.t);
       bgsefield=irf_resamp(data.bgse,data.t);
@@ -290,9 +290,9 @@ switch lower(action)
       vn2_ds = vn2_ds.data;
       vn2_elevation=-asin(vn2_ds(3))*180/pi;
     end
-    
+
     aa=0:.1:2*pi;x_circle=cos(aa);y_circle=sin(aa);
-    
+
     axes(h(1));cla
     text(0,70,'dawn','verticalalignment','top','horizontalalignment','center','fontweight','demi');
     text(70,0,'sun','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
@@ -306,7 +306,7 @@ switch lower(action)
     %text(50,45,'LEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','g');
     %text(50,40,'HEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','b');
     %text(50,35,'Rapid','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','k');
-    
+
     if data.flag_b==1
       bnproj=[0 bn(2)/norm(bn(2:3)) bn(3)/norm(bn(2:3))];
       hl=line([0 bnproj(2)*25],[0 bnproj(3)*25]);set(hl,'color','red','linewidth',.4);       % B direction
@@ -328,7 +328,7 @@ switch lower(action)
       text(30*vn2proj(3),30*vn2proj(2),'V');           % label
       text(-49,38,['V2 elevation=' num2str(vn2_elevation,2) ' deg'],'fontsize',8);           % label
     end
-    
+
     for aa=0:pi/12:2*pi % plot grid
       hl=line([0 100*cos(aa)],[0 100*sin(aa)]);
       set(hl,'linestyle',':','color','green','linewidth',.2);
@@ -344,7 +344,7 @@ switch lower(action)
       c_eval('patch(rp?(1)+x_circle*0.4,rp?(2)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
       c_eval('text(rp?(1)*.9,rp?(2)*.9,num2str(?),''fontweight'',''bold'');',ip);
     end
-    
+
     axes(h(3));cla
     text(0,70,'Z_{GSE}','verticalalignment','top','horizontalalignment','center','fontweight','demi');
     text(70,0,'-Y_{GSE}','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
@@ -368,7 +368,7 @@ switch lower(action)
       hl=line([0 -vn2_gse(2)*25],[0 vn2_gse(3)*25]);set(hl,'color','b','linewidth',2);       % V direction
       text(-30*vn2proj(3),30*vn2proj(4),'V');           % label
     end
-    
+
     for aa=0:pi/12:pi/2
       hl=line(x_circle*60*sin(aa),y_circle*60*sin(aa));
       set(hl,'linestyle',':','color','green','linewidth',.2);
@@ -378,7 +378,7 @@ switch lower(action)
       c_eval('patch(-rp?_gse(2)+x_circle*0.4,rp?_gse(3)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
       c_eval('text(-rp?_gse(2)*.8,rp?_gse(3)*.8,num2str(?));',ip);
     end
-    
+
     axes(h(2));cla
     text(0,70,'(BxS)xS','verticalalignment','top','horizontalalignment','center','fontweight','demi');
     text(70,0,'BxS','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
@@ -395,7 +395,7 @@ switch lower(action)
         c_eval('text(rp?_b(1)*.8,rp?_b(2)*.8,num2str(?));',ip);
       end
     end
-    
+
     % add text
     cla(h(4))
     irf_legend(h(4),['mms.sc_orient() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0,1],'fontsize',8,'interpreter','none','color',[0.5 0.5 0.5]);

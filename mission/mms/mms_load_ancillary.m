@@ -60,7 +60,7 @@ switch lower(dataType)
     % (where doy is day of year and mmm is miliseconds.
     % Column 3 is Quality factor, column 4 is scale.
     formatSpec='%f-%f%s %*f %f %f %*[^\n]';
-    
+
   otherwise
     errStr = ['Unknown dataType: ',dataType,' for ancillary data. ', ...
       'Valid values are "defatt" and "defeph".'];
@@ -115,7 +115,7 @@ switch lower(dataType)
     idxBad = diff(dataIN.time)==0; % Identify first duplicate
     fs = fields(dataIN);
     for idxFs=1:length(fs), dataIN.(fs{idxFs})(idxBad) = []; end
-    
+
   case 'defeph'
     % Convert time to fromat TT2000 using the irf_time function by first
     % converting [yyyy, doy] to a 'yyyy-mm-dd' string, then add the
@@ -135,6 +135,6 @@ switch lower(dataType)
       tmpStr(:,2:end)], 'utc>ttns');
     dataIN.quality = tmpData{1,4};
     dataIN.scale   = tmpData{1,5};
-    
+
   otherwise
 end

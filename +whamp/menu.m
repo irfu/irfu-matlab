@@ -124,7 +124,7 @@ while(k~=0)  % ==== MAIN LOOP ====
       if q3==0, cc(1)=-min(abs(cc));cc(2)=min(abs(cc));end
       if q3==1, cc(1)=-max(abs(cc));cc(2)=max(abs(cc));end
       caxis(cc);
-      
+
       cm = cc(1):(cc(2)-cc(1))/100:cc(2);
       cm = rot90(cm,-1);
       xcm = ones(length(cm),3);	% colormap matrice

@@ -96,7 +96,7 @@ for iSc = 1:4
     print(gcf, '-dpng', fName);
     clf('reset')
   end % for iSweep=1:sObj.nSweeps
-  
+
   %% CREATE TSeries
   c_eval('p?_time=[sObj.p?.time];p?_time=p?_time(1:2:end);', 1:6); % Create time array keeping only the start time
   c_eval('S.p?_impedance_ts=irf.ts_scalar(p?_time,[sObj.p?.impedance]);', 1:6); % TSeries of impedance
@@ -108,7 +108,7 @@ for iSc = 1:4
   c_eval('S.p?_phase_knee_ts=irf.ts_scalar(p?_time,mod([sObj.p?.phase_knee],360));', 1:6); % TSeries of phase
   c_eval('S.p?_type_ts=irf.ts_vec_xy(p?_time, double(reshape([sObj.p?.type],2,length(sObj.p?))''));',1:6); % TSeries of type ('--' or '++' etc converted from ASCII char to double)
   %save(sprintf('%sobj/mms%i_%s_sweepTsObj.mat', sweepFolder, iSc, dayToRun), 'S');
-  
+
   %% Load the combined data ("Sw") and combine with the data in "S".
   savedSweepTS = fullfile(sweepFolder, 'obj', ['mms', scStr, '_SweepTsCombined.mat']);
   if exist(savedSweepTS ,'file')
@@ -139,7 +139,7 @@ for iSc = 1:4
   %% Plot all combined data
   % Moving median, Matlab built in uneven sampling time taken into account...
   c_eval('t?=datetime(Sw.p?_iPh_ts.time.utc(''yyyy-mm-ddTHH:MM:SS.mmmZ''),''InputFormat'',''uuuu-MM-dd''''T''''HH:mm:ss.SSS''''Z'''''',''TimeZone'',''UTCLeapSeconds'');', 1:6);
-  
+
   % iPh vs time
   %c_eval('iPh_movm?=movmean(Sw.p?_iPh_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);')
   c_eval('iPh_movm?=movmedian(Sw.p?_iPh_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);', 1:6);
@@ -158,7 +158,7 @@ for iSc = 1:4
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhVsTime_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhVsTime_mms'',scStr,''_p?.png'']);', 5:6);
   close all % close plots
-  
+
   % Iph_knee vs time
   c_eval('iPh_knee_movm?=movmedian(Sw.p?_iPh_knee_ts.data, days(15), ''omitnan'', ''SamplePoints'', t?);', 1:6);
   c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_iPh_knee_ts, irf.ts_scalar(Sw.p?_iPh_knee_ts.time, iPh_knee_movm?)},''comp'',''linestyle'',{lineStyle{?},''-black''});', 1:6);
@@ -206,7 +206,7 @@ for iSc = 1:4
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 5:6);
   close all % close plots
-  
+
   % phase vs time
   figure('units','normalized','outerposition', [0 0 1 1]);
   h=irf_plot({Sw.p1_phase_ts, Sw.p2_phase_ts, Sw.p3_phase_ts, Sw.p4_phase_ts}, ...
@@ -241,7 +241,7 @@ for iSc = 1:4
   legend(h, 'p5', 'p6');
   print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseKneeVsTime_mms',scStr,'_p56.png']);
   close all % close plots
-  
+
   % Do not use probes after probe failure when computing how the photo
   % current or impedance depends on phase (or how it did depend on phase
   % before the probe failure). Keeping the values up to this point helps
@@ -285,7 +285,7 @@ for iSc = 1:4
   c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhKneeVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhKneeVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
   close all % close plots
-  
+
   % impedance vs phase
   c_eval('ind?=Sw.p?_impedance_ts.data>0;', 1:6);
   nPhaseSegm = 360 / 5; % Number of phase segments
@@ -296,7 +296,7 @@ for iSc = 1:4
   c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
   c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
   close all % close plots
-  
+
   %    % iPh vs F10.7
   %    % Resample F10.7 cm flux to time of the sweeps
   %    c_eval('f107_resamp?_ts=resample(f107_ts,Sw.p?_impedance_ts,''linear'');', 1:4);
@@ -312,6 +312,6 @@ for iSc = 1:4
   %    title(h,['Plot created: ',nowStr,'. MMS',scStr,' I_{ph} vs F10.7 flux.']);
   %    print(fig, '-dpng', [sweepFolder,'summary_plots/iPhVsF107_mms',scStr,'.png']);
   %    close all % close plots
-  
+
 end % for iSc
 end

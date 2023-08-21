@@ -571,7 +571,7 @@ elseif regexp(vs,'^IB[1-4]$')==1
   v.valtype = {'INT','INT','INT','INT','INT','INT','INT','INT'};
   v.sigdig = [6 6 6 6 6 6 6 6];
   v.ent = {'Instrument'};
-  
+
   v.com = ''; % Set in caa_export_new()
   v.lev = 1;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -579,7 +579,7 @@ elseif regexp(vs,'^IB[1-4]$')==1
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^w2W[1-4]p32$')==1
   v.data = 1;
-  
+
   v.frame = 'sc';
   v.file = 'mEDSI';
   v.quant = 'dies';
@@ -1556,7 +1556,7 @@ elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
     v.lev = 1;
     v.file = 'mEDI';
   end
-  
+
   v.cl_id = vs(end);
   v.inst = 'EDI';
   v.sig = 'E';
@@ -1883,7 +1883,7 @@ else
   else
     disp('getData     : manual processing');
   end
-  
+
   if v.data
     disp(['Size        : ' num2str(v.size) ]);
     for j=1:length(v.size)

@@ -41,7 +41,7 @@ else
   else
     pp = c_ctl(cl_id,'probe_p');
   end
-  
+
   if nargout>0
     if pp>100
       flag_lx = 1;

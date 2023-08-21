@@ -36,30 +36,30 @@
 % First created 2020-08-13.
 %
 function [i1Array, i2Array, n] = split_by_change(varargin)
-    % NOTE: In principle, one might not want to split by every change.
-    %   Ex: BICAS UFV=1 ==> voltageNaN=true ==> One block, regardless of other
-    %       arguments.
-    
-    % ASSERTION
-    % Require at least one argument, since size of return values is ~undefined
-    % (?!!) otherwise.
-    assert(numel(varargin) >= 1, 'Must have at least one argument.')
-    % NOTE: irf.utils.find_equalities checks that the arguments have the
-    % same number of rows.
+% NOTE: In principle, one might not want to split by every change.
+%   Ex: BICAS UFV=1 ==> voltageNaN=true ==> One block, regardless of other
+%       arguments.
+
+% ASSERTION
+% Require at least one argument, since size of return values is ~undefined
+% (?!!) otherwise.
+assert(numel(varargin) >= 1, 'Must have at least one argument.')
+% NOTE: irf.utils.find_equalities checks that the arguments have the
+% same number of rows.
 
 
 
-    fhArray = irf.utils.find_equalities(1, varargin{:});
-    
-    if isempty(fhArray)
-        i1Array = zeros(0,1);
-        i2Array = zeros(0,1);
-    else
-        bChange = ( fhArray(1:end-1) ~= fhArray(2:end) );
-        iChange = find(bChange);
-        i1Array = [1;       iChange+1     ];
-        i2Array = [iChange; numel(fhArray)];
-    end
-    
-    n = numel(i1Array);
+fhArray = irf.utils.find_equalities(1, varargin{:});
+
+if isempty(fhArray)
+  i1Array = zeros(0,1);
+  i2Array = zeros(0,1);
+else
+  bChange = ( fhArray(1:end-1) ~= fhArray(2:end) );
+  iChange = find(bChange);
+  i1Array = [1;       iChange+1     ];
+  i2Array = [iChange; numel(fhArray)];
+end
+
+n = numel(i1Array);
 end

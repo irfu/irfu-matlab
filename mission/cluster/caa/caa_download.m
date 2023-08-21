@@ -539,7 +539,7 @@ if status == 0 && exist(downloadedFile,'file')
   end
   fclose(fid);
   delete(downloadedFile);
-  
+
   if exist('downloadFile','var')
     irf.log('warning',['Request put in queue    : ' urlLine]);
     irf.log('warning',['When ready download from: ' downloadFile]);
@@ -574,7 +574,7 @@ end
     % download data file, if success status=1 and file is uncompressed and moved
     % to data directory, downloadedFile is set to empty. If there is no
     % gz- data file , status=0 and downloadedFile is set to the downloaded file.
-    
+
     status = 0; % default
     downloadedFile = [];
     if doDataStreaming
@@ -625,9 +625,9 @@ end
         fileNameCefGz = gzip(cefFile); % Re-gzip file only (without subdirs)
         [pathCef, fileNameCef, fileNameCefExt] = fileparts(fileNameCefGz);
         if iscell(fileNameCef)
-            movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef{1}, fileNameCefExt{1}]);
+          movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef{1}, fileNameCefExt{1}]);
         else
-            movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef, fileNameCefExt]);
+          movefile(fileNameCefGz{1}, [datasetDirName, fileNameCef, fileNameCefExt]);
         end
         delete(tempFilePath); % remove gunzipped tar file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
         delete(tempFilePathGz); % remove gzipped tar file which was first downloaded
@@ -656,7 +656,7 @@ end
       end
       return;
     end
-    
+
     downloadedFile = [tempname '.gz'];
     [urlLink, tmpGetRequest] = splitUrlLink(urlLink);
     if(isempty(tmpGetRequest))
@@ -687,7 +687,7 @@ end
         end
       end
     end
-    
+
     if isZipFileReady %
       irf.log('notice',['Downloaded: ' urlLink]);
       irf.log('notice',['into ->' downloadedFile]);
@@ -726,7 +726,7 @@ end
         else
           filelist = untar(downloadedFile, tempDirectory);
         end
-        
+
         if isempty(filelist)
           irf.log('warning','Returned gz file is empty');
           caa_log('gz file empty.');

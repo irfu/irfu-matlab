@@ -60,7 +60,7 @@ if(false) %% Very quickly examine data, compare EDI with closest, in time, EDP d
   edp_t_norm = double(edp_l2pre_ts.time.ttns - edp_l2pre_ts.time.start.ttns);%#ok<UNRCH>
   edi_t_norm = double(edi_e_dsl_ts.time.ttns - edp_l2pre_ts.time.start.ttns);
   edp_l2pre_tmp = interp1(edp_t_norm, edp_l2pre_ts.data, edi_t_norm, 'nearest');
-  
+
   % Scatter plot to locate differances
   figure;
   % Note: Only DSL X for now...
@@ -71,7 +71,7 @@ if(false) %% Very quickly examine data, compare EDI with closest, in time, EDP d
   hold on; plot([-10 10],[-10 10],'--black'); % What would be perfect aligned data
   plot( [-10 10]-limit.outlier, [-10 10], '--red', ...
     [-10 10]+limit.outlier, [-10 10], '--red'); % Outlier limits (for abs(EDP-EDI)>limit).
-  
+
   if(false) %% Plot heat map.
     figure;
     xb = linspace(-15, 15, 50);
@@ -87,27 +87,27 @@ if(false) %% Very quickly examine data, compare EDI with closest, in time, EDP d
     plot( [-10 10]-limit.outlier, [-10 10], '--red', ...
       [-10 10]+limit.outlier, [-10 10], '--red'); % Outlier limits (for abs(EDP-EDI)>limit).
   end
-  
+
   % Find index of outliers
   % ind = abs(edp_l2pre_tmp(:,1) - edi_e_dsl_ts.data(:,1)) > limit.outlier;
   % Plot only outliers (making sure it was as expected).
   %figure;
   %h2 = scatter(edp_l2pre_ts.data(ind,1),edi_resamp.data(ind,1));
-  
+
   % Timestamps of outliers
   %time = edi_e_dsl_ts.time(ind)
-  
+
   % Plot timeseries of outliers (to identify regions with a lot almost
   % continuous outliers)
   %figure; irf_plot(irf.ts_scalar(time, ones(size(time))),'*');
   %
   % outlier_ts = edi_e_dsl_ts(ind);
-  
+
   % Plot both data and manually zoom in to the intervals with a lot of
   % outliers identified before..
   % Note: this takes a while...
   %figure; irf_plot({edp_l2pre_ts, edi_e_dsl_ts, outlier_ts}, 'comp', 'linestyle',{'-b','-r*','go'});
-  
+
   % ind2 = ind & (edp_l2pre_tmp(:,1) > limit.edp_edi_zero1);
   % ind2 = ind2 & (abs(edi_e_dsl_ts.data(:,1)) < limit.edp_edi_zero2);
   %
@@ -117,7 +117,7 @@ if(false) %% Very quickly examine data, compare EDI with closest, in time, EDP d
   %
   % figure;
   % h=irf_plot({edp_l2pre_ts, edi_e_dsl_ts, outlier_ts, outliers_zero_ts}, 'comp', 'linestyle',{'-b','-r*','go','blacko'});
-  
+
 end
 
 % Compute EDP mean values

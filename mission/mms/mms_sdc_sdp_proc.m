@@ -89,7 +89,7 @@ switch procId
         update_header(src_fileData); % Update header with file info.
       end
     end
-    
+
     %% PHASE and ASPOC information, somewhat special case.
     % Begin by loading the DCE file in order to get time interval of
     % interest, then if no DEFATT was sent go looking for it. If no DEFATT
@@ -168,7 +168,7 @@ switch procId
         update_header(src_fileData) % Update header with file info.
       end
     end
-    
+
     %% Second type of special case, brst QL or L2A (use L2A from previously processed Fast).
     if(regexpi(DCE_File,'_brst_') )
       if( procId==MMS_CONST.SDCProc.ql || procId==MMS_CONST.SDCProc.l2a)
@@ -192,7 +192,7 @@ switch procId
         end
       end % If QL or L2A
     end % If running Brst dce
-    
+
     %% Third type of special case, Slow mode is now dependent in radius found in DEFEPH
     if( procId==MMS_CONST.SDCProc.l2a )
       if(isempty(DEFEPH_File))
@@ -223,23 +223,23 @@ switch procId
         end
       end % DEFEPH special case
     end % If running L2a processing (check for DefEph).
-    
+
     % Go on with the DCE file.
     Dmgr.set_param('dce',dce_obj);
-    
+
     if ~isempty(DCV_File)
       % Separate DCV file (during commissioning)
       irf.log('notice', [procName ' proc using: ' DCV_File]);
       src_fileData = load_file(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
     end
-    
+
   case {MMS_CONST.SDCProc.l2pre}
     % L2Pre process with L2A Fast/Slow file and DFG L2Pre as input. Or if
     % processing Brst segments then inputs are/should be DCE_File (brst),
     % L2A_File (fast), HK105_File, HK10E_File, HK101_File, DEFATT, ASPOC,
     % and the corresponding DFG L2Pre file(-s).
-    
+
     % DFG is required for both Fast/Slow L2a->L2Pre and Brst L1b->L2Pre,
     % Mark, in e-mail dated 2020/04/18, noted that MMS2 DFG was powered off
     % for a period this week, as a result no data is available from DFG but
@@ -268,7 +268,7 @@ switch procId
         update_header(src_fileData) % Update header with file info.
       end
     end % DFG
-    
+
     if(~isempty(DCE_File))
       % L1b brst -> L2Pre
       if(~isempty(HK_10E_File))
@@ -448,11 +448,11 @@ switch procId
       Dmgr.process_l2a_to_l2pre(MMS_CONST);
       update_header(src_fileData) % Update header with file info.
     end % Empty L1B DCE_File
-    
+
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
-    
+
 end
 
 % Write the output
@@ -486,7 +486,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
     end
     procName = upper(procName);
     irf.log('notice', ['Starting process: ', procName]);
-    
+
     %% Identify each input argument
     for j=1:nargin-1
       if isempty(varargin{j}), continue, end
@@ -497,7 +497,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
           varargin{j}, j);
         irf.log('critical', errStr); error(errStr);
       end
-      
+
       if j==1
         % Setup environment.
         HdrInfo.scIdStr = fileIn(4);
@@ -512,7 +512,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
           'previous s/c ',varargin{j-1},'. Aborting with error.']);
         error(errStr);
       end
-      
+
       if regexpi(fileIn,'_dce')
         if( (procId == MMS_CONST.SDCProc.l2pre || procId == MMS_CONST.SDCProc.ql) ...
             && ~isempty(regexpi(fileIn,'_l2(a|pre)_')) && any(cell2mat(regexp(varargin(:),'_brst_'))) )
@@ -593,7 +593,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
           end
         end
       end
-      
+
       if regexpi(fileIn, '_101_') % 101, mmsX_fields_hk_l1b_101_20150410_v0.0.1.cdf
         if ~isempty(HK_101_File)
           errStr = ['Multiple HK_101 files in input (',HK_101_File,' and ',varargin{j},')'];

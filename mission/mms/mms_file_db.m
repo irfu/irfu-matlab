@@ -1,15 +1,15 @@
 classdef (Abstract) mms_file_db
   %MMS_FILE_DB  Interface class for MMS file databses
-  
+
   properties (SetAccess = immutable)
     id
   end
-  
+
   properties
     cache
     index
   end
-  
+
   methods
     function obj = mms_file_db(id)
       obj.id = id;
@@ -27,6 +27,6 @@ classdef (Abstract) mms_file_db
     fileList = list_files(obj,filePrefix,tint)
     dataObj = load_file(obj,fileName)
   end
-  
+
 end
 

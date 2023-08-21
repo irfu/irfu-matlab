@@ -28,16 +28,16 @@ x(nans) = 0;
 
 if nargin == 1
   % Let "sum" deal with figuring out which dimension to use
-  
+
   n = sum(~nans);   % Count non-NaNs.
   n(n==0) = NaN;    % Prevent divideByZero warnings
-  
+
   % Sum up non-NaNs, and divide by the number of non-NaNs.
   m = sum(x) ./ n;
 else   % nargin == 2 or 3
   n = sum(~nans,dim);  % Count non-NaNs.
   n(n==0) = NaN;       % Prevent divideByZero warnings
-  
+
   % Sum up non-NaNs, and divide by the number of non-NaNs.
   m = sum(x,dim) ./ n;
   m(n < size(x,dim)*minDataFrac) = NaN;
