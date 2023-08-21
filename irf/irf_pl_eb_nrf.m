@@ -51,14 +51,14 @@ for ic=sc_list % which satellite
   evxb=irf_tappl(irf_cross(be,vn),'*1e-3*(-1)');
   ebv=irf_add(1,eb,1,evxb);
   ev=irf_add(1,e,1,evxb);
-  
+
   ev_lmn=irf_eb_nrf(ev,be,vn,flag);
   eb_lmn=irf_eb_nrf(eb,be,vn,flag);
   ebv_lmn=irf_eb_nrf(ebv,be,vn,flag);
   evxb_lmn=irf_eb_nrf(evxb,be,vn,flag);
   b_lmn=irf_eb_nrf(b,be,vn,flag);
   enml=ebv_lmn;
-  
+
   figure(ic);clf
   npl=7;ipl=1;
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
@@ -66,31 +66,31 @@ for ic=sc_list % which satellite
   title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
   ylabel('Vps [V]');
   irf_pl_info(['c\_e\_mp() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
-  
+
   irf_zoom([-35 -2],'y');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(b_lmn);grid on;hold on;
   ylabel('B [nT] LMN');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(eb);grid on;irf_zoom([-15 15],'y'); ylabel('E [mV/m] DSI');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(evxb_lmn);irf_zoom([-10 10],'y');grid on; ylabel('Vn x B [mV/m]');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(ev_lmn);grid on; irf_zoom([-15 15],'y');ylabel('E+vxB [mV/m]');
   %legend('E_l','E_m','E_n');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(ebv_lmn);grid on; irf_zoom([-15 15],'y');ylabel('E_{E.B=0}+vxB [mV/m]');
   %legend('E_l','E_m','E_n');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,ipl);ipl=ipl+1;
   irf_plot(b_angle);grid on;irf_zoom([-90 90],'y');title('B elevation angle. +-5 deg limits marked.');ylabel('[degrees]');
   ll=line(b_angle([1 end end 1],1),[5 5 -5 -5],'Color',[.8 .8 .8]);
-  
+
 end
 
 irf_zoom(tint,'x',h(sc_list,:));

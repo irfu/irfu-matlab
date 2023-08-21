@@ -38,14 +38,14 @@ switch action
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'init'
     %inprog_mtx = 0;
-    
+
     % Create figure
     h0 = figure(main_fig_id);
     clf
     set(main_fig_id,'Name', main_fig_title)
-    
+
     hnd = guihandles(h0);
-    
+
     hnd.BSCData = [];
     hnd.BSCDataAppend = [];
     hnd.diB = [];
@@ -53,7 +53,7 @@ switch action
     hnd.pha = [];
     hnd.ts_marker = [];
     hnd.cl_id = [];
-    
+
     %Load data
     for cl_id = 1:4
       [ok, data] = c_load('wBSC?',cl_id);
@@ -64,10 +64,10 @@ switch action
       else
         disp(['Load: No data for Cluster ' num2str(cl_id)])
       end
-      
+
     end
     if isempty(hnd.BSCData), error('no BSC data to load'), end
-    
+
     [iso_st,dt] = caa_read_interval;
     if isempty(iso_st)
       hnd.tint = [hnd.BSCData(1,1) hnd.BSCData(1,1)];
@@ -75,7 +75,7 @@ switch action
       hnd.tint = iso2epoch(iso_st) + [0 dt];
     end
     hnd.ts_marker.t = hnd.tint(1);
-    
+
     % Menu
     hnd.menu_sc = uimenu(h0,'Label','&sc');
     hnd.menu_c1 = uimenu(hnd.menu_sc,'Label','&1',...
@@ -91,7 +91,7 @@ switch action
       'Callback','c_bsc_gui(''select_c4'')',...
       'Accelerator','4');
     c_eval('set(hnd.menu_c?,''Enable'',''off'')',hnd.cl_id)
-    
+
     hnd.menu_b_sc = uimenu(h0,'Label','&B-SC');
     hnd.menu_get_data = uimenu(hnd.menu_b_sc,'Label','&Get data',...
       'Callback','c_bsc_gui(''get_data'')',...
@@ -106,14 +106,14 @@ switch action
       'Callback','c_bsc_gui(''save_data'')',...
       'Accelerator','d',...
       'Enable','off');
-    
+
     % Create Data Axes
     hnd.Xaxes = irf_subplot(3,1,-1);
     hnd.Yaxes = irf_subplot(3,1,-2);
     hnd.Zaxes = irf_subplot(3,1,-3);
-    
+
     guidata(h0,hnd);
-    
+
     c_bsc_gui('replot_all')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% replot_all
@@ -122,7 +122,7 @@ switch action
     % Replot all data
     hnd = guidata(h0);
     h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes];
-    
+
     leg='xyz';
     for comp=1:3
       plot(h(comp),hnd.BSCData(:,1),hnd.BSCData(:,comp+1));
@@ -135,44 +135,44 @@ switch action
       end
       ylabel(h(comp),['B_' leg(comp) ' [nT]'])
     end
-    
+
     % Time span
     irf_timeaxis(h(3))
     irf_zoom(h,'x',hnd.tint);
-    
+
     update_title(hnd)
-    
+
     hnd.ts_marker = replot_t_marker(hnd,hnd.ts_marker);
-    
+
     set(hnd.Xaxes,'Tag','Xaxes',...
       'ButtonDownFcn','c_bsc_gui(''click_Xaxes'')');
     set(hnd.Yaxes,'Tag','Yaxes',...
       'ButtonDownFcn','c_bsc_gui(''click_Yaxes'')');
     set(hnd.Zaxes,'Tag','Zaxes',...
       'ButtonDownFcn','c_bsc_gui(''click_Zaxes'')');
-    
+
     guidata(h0,hnd);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% click_axes
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'click_axes'
     hnd = guidata(h0);
-    
+
     t = get(eval(['hnd.' curr_ax 'axes']),'CurrentPoint');
     t = t(1);
-    
+
     hnd.ts_marker.t = t;
     hnd.ts_marker = replot_t_marker(hnd,hnd.ts_marker);
-    
+
     update_title(hnd)
-    
+
     guidata(h0,hnd);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% update_sc
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'update_sc'
     hnd = guidata(h0);
-    
+
     [ok, data] = c_load('wBSC?',curr_sc);
     if ok && ~isempty(data)
       hnd.BSCData = data;
@@ -185,7 +185,7 @@ switch action
       hnd.cl_id = curr_sc;
       c_eval('set(hnd.menu_c?,''Enable'',''off'')',hnd.cl_id)
       set(hnd.menu_save_data,'Enable','off')
-      
+
       guidata(h0,hnd);
       c_bsc_gui('replot_all')
     else
@@ -196,19 +196,19 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'get_data'
     hnd = guidata(h0);
-    
+
     DT_OFF = 120;
-    
+
     data = getData(...
       ClusterDB(c_ctl(0,'isdat_db'), c_ctl(0,'data_path'), '.'), ...
       hnd.ts_marker.t-DT_OFF,...
       hnd.tint(2) - hnd.ts_marker.t + 2*DT_OFF,...
       hnd.cl_id, 'bsc','nosave');
-    
+
     if ~isempty(data)
       hnd.BSCDataAppend = irf_tlim(data{2},hnd.ts_marker.t,hnd.tint(2));
       set(hnd.menu_save_data,'Enable','on')
-      
+
       guidata(h0,hnd);
       c_bsc_gui('replot_all')
     else
@@ -221,31 +221,31 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'get_data_auto'
     hnd = guidata(h0);
-    
+
     fsamp = c_efw_fsample(hnd.BSCData);
     FFTW = 65536; % 2^16
     DT_OFF = 0.05*FFTW/fsamp;
     request_dt = min(1.01*FFTW/fsamp, hnd.tint(2) - hnd.ts_marker.t + 2*DT_OFF);
     DT_OFF = request_dt*0.05;
     DT = DT_OFF*3/4;
-    
+
     hnd.BSCDataAppend = [];
     set(hnd.menu_save_data,'Enable','off')
-    
+
     h_wbar = waitbar(0,[main_fig_title ' : Fetching data in '...
       num2str(request_dt/60,'%.1f') ' min chunks...']);
     steps = ceil( (hnd.tint(2) - hnd.ts_marker.t)/DT_OFF)+1;
     step = 0;
-    
+
     st = hnd.ts_marker.t;
     while st < hnd.tint(2)
-      
+
       data = getData(...
         ClusterDB(c_ctl(0,'isdat_db'), c_ctl(0,'data_path'), '.'), ...
         st - DT_OFF,...
         request_dt,...
         hnd.cl_id, 'bsc','nosave');
-      
+
       if ~isempty(data)
         data = irf_tlim(data{2},st,hnd.tint(2));
         if ~isempty(hnd.BSCDataAppend)
@@ -268,13 +268,13 @@ switch action
         end
         hnd.BSCDataAppend = [hnd.BSCDataAppend; data];
       end
-      
+
       st = st + DT;
       step = step + 1;
       waitbar(step / steps, h_wbar)
     end
     close(h_wbar)
-    
+
     if ~isempty(hnd.BSCDataAppend)
       % Remove the spin offset introduces by the matching
       if (hnd.BSCDataAppend(end,1)-hnd.BSCDataAppend(1,1)) > 40
@@ -298,7 +298,7 @@ switch action
         end
       end
       set(hnd.menu_save_data,'Enable','on')
-      
+
       guidata(h0,hnd);
       c_bsc_gui('replot_all')
     else
@@ -311,7 +311,7 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'save_data'
     hnd = guidata(h0);
-    
+
     if hnd.BSCData(1,1) < hnd.BSCDataAppend(1,1)
       hnd.BSCData = irf_tlim(hnd.BSCData,...
         hnd.BSCData(1,1),hnd.BSCDataAppend(1,1));
@@ -321,12 +321,12 @@ switch action
     end
     hnd.BSCDataAppend = [];
     hnd.diBSC =[];
-    
+
     set(hnd.menu_save_data,'Enable','off')
-    
+
     c_eval('wBSC?=hnd.BSCData; save mBSCR.mat wBSC? -append',hnd.cl_id)
     getData(ClusterProc,hnd.cl_id,'dibsc')
-    
+
     guidata(h0,hnd);
     c_bsc_gui('replot_all')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -334,7 +334,7 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'compare_fgm'
     hnd = guidata(h0);
-    
+
     if isempty(hnd.pha)
       [ok,hnd.pha, msg] = c_load('Atwo?',hnd.cl_id);
       if ~ok || isempty(hnd.pha)
@@ -342,7 +342,7 @@ switch action
         return
       end
     end
-    
+
     if isempty(hnd.diBSC)
       aa = c_phase(hnd.BSCData(:,1),hnd.pha);
       diBSC = c_efw_despin(hnd.BSCData,aa);
@@ -352,7 +352,7 @@ switch action
       hnd.diBSC = diBSC;
       clear diBSC aa
     end
-    
+
     if ~isempty(hnd.BSCDataAppend)
       aa = c_phase(hnd.BSCDataAppend(:,1),hnd.pha);
       diBSCAppend = c_efw_despin(hnd.BSCDataAppend,aa);
@@ -363,7 +363,7 @@ switch action
     else
       diBSCAppend = [];
     end
-    
+
     if isempty(hnd.diB)
       [ok, hnd.diB, msg] = c_load('diB?',hnd.cl_id);
       if ~ok || isempty(hnd.diB)
@@ -371,11 +371,11 @@ switch action
         hnd.diB = [];
       end
     end
-    
+
     figure(main_fig_id+1), clf
     h = irf_plot({hnd.diBSC,diBSCAppend,hnd.diB},'comp');
     irf_zoom(h,'x',hnd.tint);
-    
+
     leg='xyz';
     for comp = 1:3
       ylabel(h(comp),['B_' leg(comp) ' [nT]'])
@@ -384,7 +384,7 @@ switch action
     if isempty(hnd.BSCDataAppend), legend(h(3),{'orig','fgm'})
     else, legend(h(3),{'orig','new','fgm'})
     end
-    
+
     guidata(h0,hnd);
 end
 

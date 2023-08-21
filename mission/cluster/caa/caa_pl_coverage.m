@@ -34,9 +34,9 @@ if plotflag
     if oo(io(end),2)==1
       if io(end)<length(oo(:,1)), io=[io; io(end)+1]; end
     end
-    
+
     ic = find(co(:,2)>=tint(1) & co(:,1)<=tint(2));
-    
+
     for j=1:2:length(io)-1
       irf_plot([[oo(io(j),1) oo(io(j+1),1)]; (5-cl_id)*[1 1]]','g-x')
     end
@@ -47,7 +47,7 @@ if plotflag
         irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]')
       end
     end
-    
+
   end
   hold off
   set(gca,'YTick',[1 2 3 4],'YTickLabel',['C4'; 'C3'; 'C2'; 'C1'])
@@ -60,7 +60,7 @@ for cl_id=1:4
   co = cover{cl_id};
   ii = find(co(:,1)>=tint(1) & co(:,2)<=tint(2));
   co = co(ii,:);
-  
+
   % Remove all NM intervals which are shorter than 10 min
   ii = find(co(:,2)-co(:,1)<600 & co(:,3)==0);
   if ~isempty(ii)
@@ -193,7 +193,7 @@ if ~isempty(plan)
 end
 if ~isempty(plan_ind)
   plan_ind = sortrows(sortrows(plan_ind,1),3);
-  
+
   % remove individual intervals which are already a part of
   % one of the common intervals
   for j=length(plan_ind(:,1)):-1:1
@@ -231,7 +231,7 @@ if ~isempty(plan_ind)
       plan_ind(j,:) = [];
     end
   end
-  
+
   if plotflag
     hold on
     for cl_id=1:4

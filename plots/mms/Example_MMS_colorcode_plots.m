@@ -134,7 +134,7 @@ for ii=1:length(newTS)
   end
 end
 for itest=3:2:length(charvec)-2
-  
+
   charvec{itest}='';
 end
 ax=h(1);
@@ -177,7 +177,7 @@ for ii=1:length(newTS)
   end
 end
 for itest=3:2:length(charvec)-2
-  
+
   charvec{itest}='';
 end
 ax=h(1);

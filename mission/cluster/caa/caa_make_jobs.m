@@ -74,7 +74,7 @@ for part=1:6
   if isempty(ints), continue, end
   regs = regions(find( regions(:,2)>=ts_tmp & regions(:,1)<=te_tmp),:);
   if isempty(ints), continue, end
-  
+
   for j=1:length(regs(:,1))
     ii = find( (ints(:,1)>=regs(j,1) & ints(:,1)<regs(j,2)) | ...
       (ints(:,2)>regs(j,1) & ints(:,2)<=regs(j,2)));
@@ -107,7 +107,7 @@ for part=1:6
       fprintf(fid,'%s %d\n',epoch2iso(job(j,1),1),job(j,2));
     end
     fclose(fid);
-    
+
     pl_cov(onoff,cover,[ts_tmp te_tmp])
     hold on
     for j=1:length(job(:,1))
@@ -146,9 +146,9 @@ for cl_id=1:4
   if oo(io(end),2)==1
     if io(end)<length(oo(:,1)), io=[io; io(end)+1]; end
   end
-  
+
   ic = find(co(:,2)>=tint(1) & co(:,1)<=tint(2));
-  
+
   for j=1:2:length(io)-1
     irf_plot([[oo(io(j),1) oo(io(j+1),1)]; (5-cl_id)*[1 1]]','g-x')
   end
@@ -159,7 +159,7 @@ for cl_id=1:4
       irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]')
     end
   end
-  
+
 end
 hold off
 set(gca,'YTick',[1 2 3 4],'YTickLabel',['C4'; 'C3'; 'C2'; 'C1'])

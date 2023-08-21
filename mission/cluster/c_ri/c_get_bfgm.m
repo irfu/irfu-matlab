@@ -9,7 +9,7 @@ c_eval('B?=[];',sc_list)
 for j=1:length(sc_list)
   ic=sc_list(j);
   [b_table, n_table] = create_timetable(tint(1),tint(2),ic);
-  
+
   if b_table ~= 0
     [b_s, col] = size(b_table);
     for k = 1:b_s
@@ -19,7 +19,7 @@ for j=1:length(sc_list)
       end
     end
   end
-  
+
   if n_table ~= 0
     [n_s, col] = size(n_table);
     for i = 1:2:n_s

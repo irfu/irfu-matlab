@@ -15,16 +15,16 @@ c_eval('times = desDist?.tlim(tint).time;',ic)
 % Make one plot for each time or time interval
 for ii = 1:times.length
   tint = times(ii);
-  
+
   % Mark the time in the time panels
   if exist('hTimeMark','var'); delete(hTimeMark); end % take away mark if plotted before
   hTimeMark = irf_pl_mark(h1,tint.epochUnix','black');
-  
+
   % Plot same plot for the four spacecraft
   for ic = 1:4
     % Plot pitchangles/projection/skymap using handles h2
   end
-  
+
   pause(1)
   % Print ...
 end
@@ -80,22 +80,22 @@ for ii = 1:times.length
   projclim = [0 4.5];
   palim = [1e-3 1e6];
   skymapEnergy = [65 278];
-  
+
   for ic = 1:4
     c_eval('dist = desDist?;',ic)
-    
+
     c_eval('Ve0 = mean(ve?brst.resample(dslE?brst.tlim(tint+[-0.01 0.01]).time).data);',ic);
     hatVe0 = double(irf_norm(Ve0));
-    
+
     % Get mean magnetic field direction
     c_eval('B0 = mean(gseB?l2pre.resample(dslE?brst.tlim(tint).time).data);',ic);
     hatB0 = double(irf_norm(B0));
     c_eval('E0 = mean(dslE?brst.tlim(tint).data);',ic);
     hatE0 = double(irf_norm(E0));
     hatExB0 = cross(hatE0,hatB0);
-    
+
     vectors = {hatB0,'B';hatE0,'E';hatVe0,'V_e'};%0;hatVe0,'V_e'};
-    
+
     % Projection coordinate system
     if 1
       x = hatB0;
@@ -106,11 +106,11 @@ for ii = 1:times.length
       y = [0 1 0];
       z = [0 0 1];
     end
-    
-    
-    
+
+
+
     isub = ic;
-    
+
     if 0 % Plot psd 0 90 180
       hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
       psdtint = tint;%+[-1 1]*0.03;
@@ -120,18 +120,18 @@ for ii = 1:times.length
       %hca.Title.String = irf_ssub('C?',ic);
       hca.Title.String = TitleStr;
     end
-    
+
     if 0 % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
-      
+
       % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(2),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
     end
-    
+
     % Plot project ion onto a plane
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
@@ -139,13 +139,13 @@ for ii = 1:times.length
       hca.Title.String = '';
       colormap(hca,strCMap)
     end
-    
+
     hca = h2(isub); %isub = isub + 1;
     mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[z;x;y],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
     titleStr = {irf_ssub('MMS ?',ic),[irf_time(tint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s']};
     hca.Title.String = titleStr;
     colormap(hca,strCMap)
-    
+
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
@@ -182,7 +182,7 @@ switch coordSystem
     gseM = irf.ts_vec_xyz(gseVec14.time,M);
     gseNorm14 = gseVec14.cross(gseM);
     gseNormalMSH = gseNorm14/gseNorm14.abs;
-    
+
     N = -gseNormalMSH.data;
     M = M;
     L = cross(mshM,mshN);
@@ -191,7 +191,7 @@ switch coordSystem
     gseM = irf.ts_vec_xyz(gseVec34.time,M);
     gseNorm34 = gseVec34.cross(gseM);
     gseNormalMSP = gseNorm34/gseNorm34.abs;
-    
+
     N = -gseNormalMSP.data;
     M = M;
     L = cross(mspM,mspN);
@@ -571,14 +571,14 @@ for it = 119;1:times.length  % 644 - ring distributions
   time = times(it);
   tint = time;
   tt = time;
-  
-  
+
+
   if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tt.epochUnix','green');
-  
+
   vectors = {'B',{mvaB1.resample(tt(1)),mvaB2.resample(tt(1)),mvaB3.resample(tt(1)),mvaB4.resample(tt(1))},2;...
     'Ve',{mvaVe1.resample(tt(1)),mvaVe2.resample(tt(1)),mvaVe3.resample(tt(1)),mvaVe4.resample(tt(1))},70};
-  
+
   isub = 1;
   hca = h2(isub); isub = isub + 1;
   lim = 12; xlims = lim*[-1 1]; ylims = lim*[-1 1]; zlims = lim*[-1 1];
@@ -586,13 +586,13 @@ for it = 119;1:times.length  % 644 - ring distributions
   hca.XLim = xlims; hca.YLim = ylims; hca.ZLim = zlims;
   view(hca,[0 -1 0])
   axis(hca,'square')
-  
+
   hca = h2(isub); isub = isub + 1;
   plot_lmn3D(hca,mvaR1,mvaR2,mvaR3,mvaR4,[0 0 1;0 -1 0;1 0 0],{'N','-M','L'},'vectors',vectors)
   hca.XLim = xlims; hca.YLim = ylims; hca.ZLim = zlims;
   view(hca,[0 0 1])
   axis(hca,'square')
-  
+
   %for ic = 1:4;
   %hca = h2(isub); isub = isub + 1;
   %mms.plot_projection(hca,desDist,'tint',times(ii),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
@@ -603,23 +603,23 @@ for it = 119;1:times.length  % 644 - ring distributions
   projclim = [0 4.5];
   palim = [1e-3 1e6];
   skymapEnergy = [65 278];
-  
-  
+
+
   for ic = 1:4
     c_eval('dist = desDist?;',ic)
-    
+
     c_eval('Ve0 = gseVe?.resample(time).data;',ic);
     hatVe0 = double(irf_norm(Ve0));
-    
+
     % Get mean magnetic field direction
     c_eval('B0 = gseB?.resample(time).data;',ic);
     hatB0 = double(irf_norm(B0));
     c_eval('E0 = gseE?.resample(time).data;',ic);
     hatE0 = double(irf_norm(E0));
     hatExB0 = cross(hatE0,hatB0);
-    
+
     vectors = {hatB0,'B';hatE0,'E';hatVe0,'V_e';L,'L';M,'M';N,'N'};%0;hatVe0,'V_e'};
-    
+
     % Projection coordinate system
     if 1
       x = hatB0;
@@ -630,11 +630,11 @@ for it = 119;1:times.length  % 644 - ring distributions
       y = [0 1 0];
       z = [0 0 1];
     end
-    
-    
-    
+
+
+
     %isub = ic;
-    
+
     if 0 % Plot psd 0 90 180
       hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
       psdtint = tint;%+[-1 1]*0.03;
@@ -644,18 +644,18 @@ for it = 119;1:times.length  % 644 - ring distributions
       %hca.Title.String = irf_ssub('C?',ic);
       hca.Title.String = TitleStr;
     end
-    
+
     if 0 % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;      %#ok<UNRCH>
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
-      
+
       % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(2),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
     end
-    
+
     % Plot project ion onto a plane
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
@@ -663,13 +663,13 @@ for it = 119;1:times.length  % 644 - ring distributions
       hca.Title.String = '';
       colormap(hca,strCMap)
     end
-    
+
     hca = h2(isub); isub = isub + 1;
     mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
     titleStr = {irf_ssub('MMS ?',ic),[irf_time(tint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s']};
     hca.Title.String = titleStr;
     colormap(hca,strCMap)
-    
+
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
@@ -695,7 +695,7 @@ if 0
   hca.XLabel.String = 'N';
   hca.YLabel.String = '-M';
   hca.ZLabel.String = 'L';
-  
+
   hca = h2(4);
   tintQuiver = irf.tint('2015-10-16T10:33:25.00Z/2015-10-16T10:33:31.00Z');
   mvaR0 = (mvaR1+mvaR2.resample(mvaR1)+mvaR3.resample(mvaR1)+mvaR4.resample(mvaR1))/4;
@@ -725,14 +725,14 @@ for it = 1:times.length
   time = times(it);
   tint = time;
   tt = time;
-  
-  
+
+
   if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tt.epochUnix','green');
-  
+
   vectors = {'B',{mvaB1.resample(tt(1)),mvaB2.resample(tt(1)),mvaB3.resample(tt(1)),mvaB4.resample(tt(1))},2;...
     'Vi',{mvaVi1.resample(tt(1)),mvaVi2.resample(tt(1)),mvaVi3.resample(tt(1)),mvaVi4.resample(tt(1))},70};
-  
+
   isub = 1;
   hca = h2(isub); isub = isub + 1;
   lim = 12; xlims = lim*[-1 1]; ylims = lim*[-1 1]; zlims = lim*[-1 1];
@@ -740,13 +740,13 @@ for it = 1:times.length
   hca.XLim = xlims; hca.YLim = ylims; hca.ZLim = zlims;
   view(hca,[0 -1 0])
   axis(hca,'square')
-  
+
   hca = h2(isub); isub = isub + 1;
   plot_lmn3D(hca,mvaR1,mvaR2,mvaR3,mvaR4,[0 0 1;0 -1 0;1 0 0],{'N','-M','L'},'vectors',vectors)
   hca.XLim = xlims; hca.YLim = ylims; hca.ZLim = zlims;
   view(hca,[0 0 1])
   axis(hca,'square')
-  
+
   %for ic = 1:4;
   %hca = h2(isub); isub = isub + 1;
   %mms.plot_projection(hca,desDist,'tint',times(ii),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
@@ -757,25 +757,25 @@ for it = 1:times.length
   projclim = [3 9];
   palim = [1e-3 1e6];
   skymapEnergy = [65 278];
-  
-  
+
+
   for ic = 1:4
     c_eval('dist = disDist?;',ic)
-    
+
     c_eval('Ve0 = gseVe?.resample(time).data;',ic);
     hatVe0 = double(irf_norm(Ve0));
     c_eval('Vi0 = gseVi?.resample(time).data;',ic);
     hatVi0 = double(irf_norm(Vi0));
-    
+
     % Get mean magnetic field direction
     c_eval('B0 = gseB?.resample(time).data;',ic);
     hatB0 = double(irf_norm(B0));
     c_eval('E0 = gseE?.resample(time).data;',ic);
     hatE0 = double(irf_norm(E0));
     hatExB0 = cross(hatE0,hatB0);
-    
+
     vectors = {hatB0,'B';hatE0,'E';hatVi0,'V_i';L,'L';M,'M';N,'N'};%0;hatVe0,'V_e'};
-    
+
     % Projection coordinate system
     if 0
       x = hatB0; %#ok<UNRCH>
@@ -790,11 +790,11 @@ for it = 1:times.length
       y = L;
       z = -M;
     end
-    
-    
-    
+
+
+
     %isub = ic;
-    
+
     if 0 % Plot psd 0 90 180
       hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
       psdtint = tint;%+[-1 1]*0.03;
@@ -804,18 +804,18 @@ for it = 1:times.length
       %hca.Title.String = irf_ssub('C?',ic);
       hca.Title.String = TitleStr;
     end
-    
+
     if 0 % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
-      
+
       % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(2),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
     end
-    
+
     % Plot project ion onto a plane
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
@@ -823,15 +823,15 @@ for it = 1:times.length
       hca.Title.String = '';
       colormap(hca,strCMap)
     end
-    
+
     hca = h2(isub); isub = isub + 1;
-    
+
     vlabel = {'-N','L','M'};
     mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[x;y;z],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim,'vlabel',vlabel);
     titleStr = {irf_ssub('MMS ?',ic),[irf_time(tint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s']};
     hca.Title.String = titleStr;
     colormap(hca,strCMap)
-    
+
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
@@ -857,7 +857,7 @@ if 0
   hca.XLabel.String = 'N';
   hca.YLabel.String = '-M';
   hca.ZLabel.String = 'L';
-  
+
   hca = h2(4);
   tintQuiver = irf.tint('2015-10-16T10:33:25.00Z/2015-10-16T10:33:31.00Z');
   mvaR0 = (mvaR1+mvaR2.resample(mvaR1)+mvaR3.resample(mvaR1)+mvaR4.resample(mvaR1))/4;
@@ -889,22 +889,22 @@ for ii = 100;1:times.length;
   projclim = [0 4.5];
   palim = [1e-3 1e6];
   skymapEnergy = [65 278];
-  
+
   for ic = 1:4
     c_eval('dist = disDist?;',ic)
-    
+
     c_eval('Ve0 = mean(ve?brst.resample(dslE?brst.tlim(tint+[-0.01 0.01]).time).data);',ic);
     hatVe0 = double(irf_norm(Ve0));
-    
+
     % Get mean magnetic field direction
     c_eval('B0 = mean(gseB?l2pre.resample(dslE?brst.tlim(tint).time).data);',ic);
     hatB0 = double(irf_norm(B0));
     c_eval('E0 = mean(dslE?brst.tlim(tint).data);',ic);
     hatE0 = double(irf_norm(E0));
     hatExB0 = cross(hatE0,hatB0);
-    
+
     vectors = {hatB0,'B';hatE0,'E';hatVe0,'V_e'};%0;hatVe0,'V_e'};
-    
+
     % Projection coordinate system
     if 1
       x = hatB0;
@@ -915,11 +915,11 @@ for ii = 100;1:times.length;
       y = [0 1 0];
       z = [0 0 1];
     end
-    
-    
-    
+
+
+
     isub = ic;
-    
+
     if 0 % Plot psd 0 90 180
       hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
       psdtint = tint;%+[-1 1]*0.03;
@@ -929,18 +929,18 @@ for ii = 100;1:times.length;
       %hca.Title.String = irf_ssub('C?',ic);
       hca.Title.String = TitleStr;
     end
-    
+
     if 0 % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
-      
+
       % Plot skymap for a given energy
       hca = h2(isub); isub = isub + 1;
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(2),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
     end
-    
+
     % Plot project ion onto a plane
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
@@ -948,13 +948,13 @@ for ii = 100;1:times.length;
       hca.Title.String = '';
       colormap(hca,strCMap)
     end
-    
+
     hca = h2(isub); %isub = isub + 1;
     mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[z;x;y],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
     titleStr = {irf_ssub('MMS ?',ic),[irf_time(tint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s']};
     hca.Title.String = titleStr;
     colormap(hca,strCMap)
-    
+
     if 0
       hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
@@ -1098,14 +1098,14 @@ if 0 % J, comparing with curl and 4 sc av, 3 panels
   hca.YLabel.String = {'J_L','(nA/m^2)'};
   set(hca,'ColorOrder',mms_colors('1234ab'))
   irf_legend(hca,{irf_ssub('J_?',ic),'J_{av,fpi}','J_{curl}'},[0.02 0.9],'fontsize',12);
-  
+
   hca = irf_panel('JM');
   set(hca,'ColorOrder',mms_colors('1234ab'))
   c_eval('lines = irf_plot(hca,{mvaJ?.y,mvaAvJ.y,mvaJcurl.y},''comp'');',ic)
   hca.YLabel.String = {'J','(nA/m^2)'};
   set(hca,'ColorOrder',mms_colors('1234ab'))
   irf_legend(hca,{irf_ssub('J_?',ic),'J_{av,fpi}','J_{curl}'},[0.02 0.9],'fontsize',12);
-  
+
   hca = irf_panel('JN');
   set(hca,'ColorOrder',mms_colors('1234ab'))
   c_eval('lines = irf_plot(hca,{mvaJ?.z,mvaAvJ.z,mvaJcurl.z},''comp'');',ic)
@@ -1177,13 +1177,13 @@ for ii = 1%:tint.length;
   %tint = times(ii)+[-1 1]*0.5*0.03*0.5;
   if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');
-  
+
   isub = 1;
   hca = h2(isub); isub = isub + 1;
   c_eval('PA = squeeze(mean(disDistPA?.tlim(tint).data,1))*1e30;',ic)
   c_eval('energy = mean(iEnergyPA?(1:2,:),1);',ic)
   loglog(hca,energy,mean(PA(:,1:2),2),energy,mean(PA(:,6:7),2),energy,mean(PA(:,11:12),2))
-  
+
   if 1 % Plot psd 0 90 180
     hca = h2(isub); isub = isub + 1;
     psdtint = tint;
@@ -1197,7 +1197,7 @@ for ii = 1%:tint.length;
     hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
     c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
     %hca.Title.String = hca.Title.String{2};
-    
+
     % Plot skymap for a given energy
     hca = h2(isub); isub = isub + 1;
     c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(2),''vectors'',vectors,''flat'');',ic)
@@ -1209,12 +1209,12 @@ for ii = 1%:tint.length;
     hca.Title.String = '';
     colormap(hca,strCMap)
   end
-  
-  
+
+
   titleStr = {irf_ssub('MMS ?',ic),[irf_time(tint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s']};
   hca.Title.String = titleStr;
   colormap(hca,strCMap)
-  
+
 end
 pause(1)
 %cn.print([irf_ssub('BvnP_1proj_mms1234_gseish',1) irf_time(times(ii),'epochtt>utc_yyyymmddTHHMMSS.mmm')]);

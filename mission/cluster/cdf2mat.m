@@ -28,7 +28,7 @@ for i_file=1:n_cdf_files
   cdf_file_info=spdfcdfinfo(cdf_file{i_file});
   variable_names=cdf_file_info.Variables(:,1);
   % keep only variables that have time axis
-  
+
   for j=1:size(variable_names,1)
     if strfind(variable_names{j,1},'Epoch')
       epoch_variable=variable_names(j,1);
@@ -44,13 +44,13 @@ for i_file=1:n_cdf_files
       irf_log('proc',['variable: ' variable_names{j,1}]);
     end
   end
-  
+
   [DATA, INFO] = spdfcdfread(cdf_file{i_file}, 'VARIABLES', variables_time_vectors);
-  
+
   temp=struct([DATA{:,1}]);
   t=[temp.date];t=t(:);
   t=(t-62167219200000)/1000;
-  
+
   variable_list='';
   for k=2:prod(size(variables_time_vectors))
     clear var;

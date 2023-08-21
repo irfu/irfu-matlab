@@ -32,7 +32,7 @@ switch timetableToGenerate
     end
     disp('Loading Cluster 1 min positions');
     load(clusterPositionFileGSE); % load Cluster positions 1min resolution
-    
+
     disp('Preparing data');
     tStep=median(diff(R1(:,1))); %#ok<NASGU> % time step
     tailBoxX=-5; % tailbox is at X less than this value, in REdd
@@ -44,7 +44,7 @@ switch timetableToGenerate
     c_eval('R?=irf_abs(R?);',sclist);
     c_eval('R?=irf_gse2gsm(R?);',sclist);
     c_eval('RRE?=irf_tappl(R?,''*Units.km/Units.RE'');clear R?;',sclist);
-    
+
     % tailbox definition
     conditionString = ['X<' num2str(tailBoxX) 'RE,|Z|<' num2str(tailBoxDZ) 'RE,|Y|<|X|^' num2str(tailBoxS) ' RE GSM'];
     disp(['Finding when Cluster is in tailbox, ' conditionString]);
@@ -62,7 +62,7 @@ switch timetableToGenerate
     % make it possible to access time tables from workspace
     c_eval('disp([''Access from workspace time table: tt_C?_in_'' ttLabel]);',sclist);
     c_eval(['assignin(''base'',''tt_C?_in_' ttLabel ''',tt_C?_in_' ttLabel ');'],sclist);
-    
+
     % if satisfied with result should be possible to upload to IRF time
     % table repository
     answerToSave = irf_ask('Upload time tables to IRF disk? y/n [%]>','answerToSave','n');
@@ -70,7 +70,7 @@ switch timetableToGenerate
       c_eval(['irf.tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'],sclist)
     end
     % to download data, see aagetdata.m under spis:data/cluster/tailbox
-    
+
   otherwise
     errStr = ['local.timetable_cluster() unknown timetable:' timetableToGenerate];
     irf.log('critical',errStr);

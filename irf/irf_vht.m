@@ -31,22 +31,22 @@ if isa(e,'TSeries') && isa(b,'TSeries')
   ex = e.x.data;
   ey = e.y.data;
   ez = e.z.data;
-  
+
   p(1)=sum(bx .* bx)/nSamples; % Bx*Bx
   p(2)=sum(bx .* by)/nSamples; % Bx*By
   p(3)=sum(bx .* bz)/nSamples; % Bx*Bz
   p(4)=sum(by .* by)/nSamples; % By*By
   p(5)=sum(by .* bz)/nSamples; % By*Bz
   p(6)=sum(bz .* bz)/nSamples; % Bz*Bz
-  
-  
+
+
   if (nargin > 2) && (flag == 2) % assume only Ex and Ey
     z=0; % put z component to 0 when using only Ex and Ey
     K=[[p(6) 0 -p(3)];[0 p(6) -p(5)];[-p(3) -p(5) p(1)+p(4)]];
     comm= 'De Hoffmann-Teller frame is calculated using 2 components of E=(Ex,Ey,0)';
   elseif (nargin > 2) && (flag == 1)
     x=0; z=0;
-    
+
     K=[p(6),-p(3);-p(3),p(1)];
     comm= {'De Hoffmann-Teller frame is calculated using 1 component of E=(0,Ey,0)';'Output velocities [vx, vz], as vy cannot be calculated (assumed = 0)'};
   else
@@ -61,7 +61,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
   if (nargin > 2) && (flag == 1)
     averExB(:,2)=[];
   end
-  
+
   % averExB=sum(ExB(indData).data,1)/nSamples;
   %   end revise.
   VHT=K\ averExB'.*1e3; % 9.12 in ISSI book
@@ -69,8 +69,8 @@ if isa(e,'TSeries') && isa(b,'TSeries')
   strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] =[' num2str(vht,' %5.2f') '] km/s'];
   disp(comm)
   disp(strvht);
-  
-  
+
+
   %
   % Calculate the goodness of the Hofmann Teller frame
   %
@@ -78,7 +78,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
     vht=[vht(1),0,vht(2)];
   end
   eht=irf_e_vxb(vht,b);
-  
+
   if flag == 2
     ep=e(indData);
     ehtp=eht(indData);
@@ -94,23 +94,23 @@ if isa(e,'TSeries') && isa(b,'TSeries')
     ep.data(:,3)=0;
     ehtp.data(:,1)=0;
     ehtp.data(:,3)=0;
-    
+
     deltaE=ep.data -ehtp.data;
     [p,s]=polyfit( ehtp.y.data,ep.y.data,1);
     cc=corrcoef(ep.y.data,ehtp.y.data);
-    
+
   else
     ep=e(indData);
     ehtp=eht(indData);
-    
+
     deltaE=ep.data -ehtp.data;
     [p,s]=polyfit( ehtp.data,ep.data,1);
     cc=corrcoef(ep.data,ehtp.data);
   end
-  
+
   disp(['slope=' num2str(p(1),3) '  offs=' num2str(p(2),2)]);
   disp(['cc=' num2str(cc(1,2),3)]);
-  
+
   %
   % Calculate error in velocity estimate
   %
@@ -122,7 +122,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
     dvht(1)=sqrt([1 0]*S*[1;0])*1e3;
     dvht(2)=sqrt([0 1]*S*[0;1])*1e3;
     strdvht=['\delta V_{HT}=' num2str(irf_abs(dvht,1),3) ' [ ' num2str(irf_norm(dvht),' %5.2f') '] =[' num2str(dvht,' %5.2f') '] km/s'];
-    
+
   else
     dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
     dvht(2)=sqrt([0 1 0]*S*[0;1;0])*1e3;

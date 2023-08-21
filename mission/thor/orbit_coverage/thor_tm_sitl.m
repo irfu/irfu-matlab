@@ -30,12 +30,12 @@ for iOrbit = 1:(nOrbits-1)
   % Data that has no assigned FOM yet...
   downlinkDelay = tsDownlinkDelay(iOrbit).data;
   memorySaved = memorySaved_ - tsAvTM(iOrbit).data;
-  
+
   indDelay = 0;
   if iOrbit > (downlinkDelay-1)
     indDelay = downlinkDelay-1;
   end
-  
+
   % Download highest FOM data from the memorySaved
   if iOrbit > 1
     lastSavedData = savedData(iOrbit,:);
@@ -54,7 +54,7 @@ for iOrbit = 1:(nOrbits-1)
       end
     end
   end
-  
+
   % Add new data to memory and check what is discarded
   discData = data.data(iOrbit-indDelay,:)+newSavedData; % default all
   newSavedData = discData*0;

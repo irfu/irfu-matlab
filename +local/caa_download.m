@@ -274,7 +274,7 @@ if exist(dataSetDir,'dir')
   if numel(TTindex)>0
     irf.log('warning','Previous data exist, merging...');
     TTindex=sort(TTindex);
-    
+
     % obtain file list that are ingested since the last data file
     TTfileList=caa_download(['fileinventory:' dataSet]);
     indNewFiles = false(1,numel(TTfileList));
@@ -287,12 +287,12 @@ if exist(dataSetDir,'dir')
       end
     end
     TTfileList = select(TTfileList,find(indNewFiles));
-    
+
     % find TTRequest intervals with new files in them
     [~,ii]=overlap(TTRequest,TTfileList);
     indNewIntervals(:)  = false;
     indNewIntervals(ii) = true;
-    
+
     % check which old intervals to be removed/updated
     tintInd = TTindex.TimeInterval;
     tintReq = TTRequest.TimeInterval;
@@ -390,7 +390,7 @@ while 1
       tint=TTRequest.TimeInterval(iRequest,:);
       tint(2) = tint(2) - 1e-5; % the end is an upper boundary, to avoid the data point being in two intervals as the start and the end point we remove 10^-5 from the end time
       dataSet = TTRequest.UserData(iRequest).dataset;
-      
+
       irf.log('warning',['Requesting ' dataSet ' interval #' num2str(iRequest) ...
         '(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' ...
         irf_time(tint,'tint>utc')]);
@@ -406,7 +406,7 @@ while 1
         download_status = -1; % something wrong with internet
         irf.log('notice','**** caa_download() DID NOT SUCCEED! ****');
       end
-      
+
       if download_status == 0 % scheduling succeeded
         TTRequest.UserData(iRequest).Status=0;
         TTRequest.UserData(iRequest).Downloadfile=downloadfile;

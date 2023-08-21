@@ -81,7 +81,7 @@ switch lower(data_source)
         res.Z=C{9};
         res.F=C{10};
     end
-    
+
   otherwise
     disp('Data source not recognized');
     disp('Reading assuming first row is variable, second units and then comes data');

@@ -46,13 +46,13 @@ function intervalsIntersect = intervals_intersect(u1, u2, v1, v2, edgePolicy)
 % PROPOSAL: Forbid negativ length interval. (zero-length OK).
 %   NOTE: Mathematical expressions work also for negative length intervals.
 
-    switch(edgePolicy)
-        case 'closed intervals'
-            intervalsIntersect = (u1 <= v2) & (v1 <= u2);
-        case 'open intervals'
-            intervalsIntersect = (u1 < v2) & (v1 < u2);
-        otherwise
-            error('Illegal argument edgePolicy="%s".', edgePolicy)
-    end
-    
+switch(edgePolicy)
+  case 'closed intervals'
+    intervalsIntersect = (u1 <= v2) & (v1 <= u2);
+  case 'open intervals'
+    intervalsIntersect = (u1 < v2) & (v1 < u2);
+  otherwise
+    error('Illegal argument edgePolicy="%s".', edgePolicy)
+end
+
 end

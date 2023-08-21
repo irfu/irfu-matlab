@@ -107,7 +107,7 @@ if isa(B1,'TSeries') || isa(R1,'TSeries')
   for i=1:4
     if isa(idR{i},'TSeries')
       idR{i} = [idR{i}.time.epochUnix double(idR{i}.data)];
-      
+
     end
     if isa(idB{i},'TSeries')
       idB{i} =  [idB{i}.time.epochUnix double(idB{i}.data)];
@@ -148,7 +148,7 @@ else
   % isn't even then give error
   if length(varargin)==1
     error('Unapproved combination of arguments. See usage: help c_4_null')
-    
+
   elseif length(varargin)==3
     error('Unapproved combination of arguments. See usage: help c_4_null')
   elseif length(varargin)==5
@@ -169,7 +169,7 @@ else
           end
           %Case 'threshold'
         elseif strcmp(varargin(i),'threshold')
-          
+
           if isnumeric(cell2mat(varargin(i+1)))
             threshold=cell2mat(varargin(i+1));
           else
@@ -177,7 +177,7 @@ else
           end
           %Case 'boxLim'
         elseif strcmp(varargin(i),'boxLim')
-          
+
           if isnumeric(cell2mat(varargin(i+1)))
             noBox=false;
             boxLim=cell2mat(varargin(i+1));

@@ -95,7 +95,7 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
     irf.log('critical','Did not succeed downloading file');
     return;
   end
-  
+
   % Create structures with all the metadata
   irf.log('warning','Creating structures');
   d = dir;
@@ -124,7 +124,7 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
     end
     meta.(nameDataset) = s;  %#ok<STRNU>
   end
-  
+
   % Remove temporary directory, save metadata structure, display
   % information
   cd ..;
@@ -232,7 +232,7 @@ else % dataset
       cellfun(@(x) fprintf('%s\n',x),vertcat(mat_output(datasetNames(iSelected),1)), 'UniformOutput',false);
       return;
     end
-    
+
   end
 end
 end

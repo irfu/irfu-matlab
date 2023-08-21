@@ -135,7 +135,7 @@ if strcmp(flag, 'v_from_t')
   vn = irf_norm(v);
   fprintf('dt=[%5.2f, %5.2f, %5.2f, %5.2f] s. dt=[t1-t1, t2-t1, ...]\n', R.dt);
   fprintf('V=%3.2f [%5.2f %5.2f %5.2f] km/s %s\n', irf_abs(v,1), vn(end-2:end), coord_sys);
-  
+
 elseif strcmp(flag, 'dt_from_v')
   for ic='1234'
     i = ic-'0';

@@ -207,7 +207,7 @@ end
 if dim == 0
   plot_data = {double(data.data)};
   flag_lineplot = 1;
-  
+
 elseif dim == 1
   if use_comp
     plot_data = cell(size(comp));
@@ -241,7 +241,7 @@ elseif dim == 1
       end
     end
   end
-  
+
 elseif dim == 2
   if sum_dim > 0
     if flagPitchAngleAverage
@@ -256,7 +256,7 @@ elseif dim == 2
     else, comp_dim = 1;
     end
   end
-  
+
   if sum_dim > 0 && isfield(data,'DEPEND_1') && ~use_comp
     plot_data = {squeeze(data.data)};
     ydim = comp_dim;
@@ -276,7 +276,7 @@ elseif dim == 2
     end
     if comp_dim == 2, ydim =1; else, ydim = 2; end
   end
-  
+
   plot_f = 2;
   if ~isfield(data,'DEPEND_1'), plot_f = plot_f-1; end
   if sum_dim > 0, plot_f = plot_f-1; end
@@ -286,7 +286,7 @@ elseif dim == 2
   else
     flag_lineplot = 1;
   end
-  
+
 elseif dim == 3
   if use_comp == 0 && sum_dim == 0
     if comp_dim==2
@@ -295,10 +295,10 @@ elseif dim == 3
       sum_dim = 2;
     end
   end
-  
+
   % ignore NaNs when averaging
   data.data = irf.nanmean(double(data.data),sum_dim+1);
-  
+
   ndim = data.dim(comp_dim);
   if ~use_comp, comp=1:ndim; end
   if ndim == 1
@@ -358,7 +358,7 @@ if flag_lineplot
     end
   end
   ylabel(ax,sprintf('%s%s [%s]', flab, lab_1, units))
-  
+
   if isfield(dobj.GlobalAttributes,'OBSERVATORY')
     text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > '];
   elseif isfield(dobj.GlobalAttributes,'Source_name')
@@ -377,10 +377,10 @@ if flag_lineplot
   if flag_labels_is_on
     add_text(ax,text_s);
   end
-  
+
 elseif flag_spectrogram
   %% PLOT -- SPECTROGRAM
-  
+
   dep_x=cell(size(dep.DEPEND_X,1));
   for d = 1:length(dep_x)
     dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
@@ -407,7 +407,7 @@ elseif flag_spectrogram
     else, dep_x{d}.df=[];
     end
   end
-  
+
   % Obtain time DELTA_PLUS and  DELTA_MINUS if given
   % Also do necessary tome conversion if needed
   if strcmpi(dep.DEPEND_O.type,'tt2000')
@@ -458,7 +458,7 @@ elseif flag_spectrogram
       error('BAD type for DEPEND_X')
     end
   end
-  
+
   if isfield(dobj.GlobalAttributes,'OBSERVATORY')
     text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > '];
   elseif isfield(dobj.GlobalAttributes,'Source_name')
@@ -474,19 +474,19 @@ elseif flag_spectrogram
   end
   text_s = [text_s fieldnam];
   if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
-  
+
   if isempty(comp), comp = 1; end
   ncomp = length(comp);
   h = gobjects(1,ncomp);
   if create_axes, ax = gobjects(1, ncomp); end
-  
-  
+
+
   if ydim > 1
     specrec.f = dep_x{ydim}.data;
     specrec.f_unit = dep_x{ydim}.units;
     specrec.df = dep_x{ydim}.df;
   end
-  
+
   % special case for degrees
   ytick = [];
   if strcmpi(dep_x{ydim}.units,'degrees') || strcmpi(dep_x{ydim}.units,'deg')
@@ -501,7 +501,7 @@ elseif flag_spectrogram
       ytick = ytick*da;
     end
   end
-  
+
   for i=1:ncomp
     specrec.p = plot_data(i);
     if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end
@@ -568,7 +568,7 @@ elseif flag_spectrogram
   end
   set(ax(1:ncomp-1),'XTickLabel',[]);
   for i=1:1:ncomp-1, xlabel(ax(i),'');end
-  
+
 end
 
 if nargout > 0, res = h; end

@@ -46,7 +46,7 @@ if flagTs
     b = b.resample(e.time);
   end
   le = size(e.data,2); lb = size(b.data,2);
-  
+
   if le < 2 || lb < 3, error('E || B has not enough components'), end
   ed = [e.x.data e.y.data e.y.data*defaultValue];
   bd = [b.x.data b.y.data b.z.data];
@@ -65,7 +65,7 @@ else
   else
     ed=[e(:,2) e(:,3) e(:,1)*defaultValue];
   end
-  
+
   if lb == 2
     error('B has not enough components');
   elseif lb == 3
@@ -79,46 +79,46 @@ switch lower(flag_method)
   case 'ex=0' % Solar Orbiter
     d=atan2d(bd(:,3),bd(:,2));
     ind=find(abs(d)>angle_lim);
-    
+
     ed(:,3) = ed(:,3)*NaN;
     if ~isempty(ind)
       ed(ind,3)=-(ed(ind,2).*bd(ind,2))./bd(ind,3);
     end
-    
+
     irf.log('notice',sprintf(...
       'E.B=0 (Ex=0) was used for %0.0f from %0.0f data points',...
       length(ind),length(d)));
-    
+
   case 'e.b=0'
     % Calculate using assumption E.B=0
-    
+
     d=atan2(bd(:,3),sqrt(bd(:,1).^2+bd(:,2).^2))*180/pi;
     ind=find(abs(d)>angle_lim);
-    
+
     if ~isempty(ind)
       ed(ind,3)=-(ed(ind,1).*bd(ind,1)+ed(ind,2).*bd(ind,2))./bd(ind,3);
     end
-    
+
     irf.log('notice',sprintf(...
       'E.B=0 was used for %0.0f from %0.0f data points',...
       length(ind),length(d)));
-    
+
   case 'epar'
     % Calculate using assumption that E field along the B projection is
     % coming from parallel electric field
     % Ez=(Ex bx + Ey by)*bz/(bx^2+by^2)
     d=atan2(bd(:,3),sqrt(bd(:,1).^2+bd(:,2).^2))*180/pi;
     ind=find(abs(d)<angle_lim);
-    
+
     if ~isempty(ind)
       ed(ind,3)=(ed(ind,1).*bd(ind,1)+ed(ind,2).*bd(ind,2));
       ed(ind,3)=ed(ind,3).*bd(ind,3)./(bd(ind,1).^2+bd(ind,2).^2);
     end
-    
+
     irf.log('notice',...
       'E.B=Emeasured.Bproj_to_spin_plane was used for %0.0f from %0.0f data points',...
       length(ind),length(d));
-    
+
   otherwise
     error('called with unknown input');
 end

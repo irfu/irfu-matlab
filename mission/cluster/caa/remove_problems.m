@@ -29,7 +29,7 @@ end
 
 param = tokenize(problems,'|');
 for i=1:length(param)
-  
+
   switch lower(param{i})
     case 'reset'
       % Remove bad bias around EFW reset
@@ -42,7 +42,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok bbias msg
-      
+
     case 'bbias'
       % Remove bad bias from bias current indication
       for kk = p_list
@@ -56,7 +56,7 @@ for i=1:length(param)
         end
         clear ok bbias msg
       end
-      
+
     case 'hbiassa'
       % Remove saturation due to too high bias current
       [ok,wake,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,probe));
@@ -82,7 +82,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok nsops msg
-      
+
     case 'saasa'
       % Remove probe saturation due to SAA
       if probe>10
@@ -100,7 +100,7 @@ for i=1:length(param)
           res = caa_rm_blankt(res,saasa);
         end
       end
-      
+
     case 'probesa'
       % Remove probe saturation
       for kk = p_list
@@ -114,7 +114,7 @@ for i=1:length(param)
         end
         clear ok sa msg
       end
-      
+
     case 'probeld'
       % Remove probe saturation due to low density
       for kk = p_list
@@ -129,7 +129,7 @@ for i=1:length(param)
         end
         clear ok sa msg
       end
-      
+
     case 'whip'
       % Remove whisper pulses
       [ok,whip,msg] = c_load('WHIP?',cl_id);
@@ -141,7 +141,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok whip msg
-      
+
     case 'sweep'
       % Remove sweeps
       [ok,sweep,msg] = c_load('SWEEP?',cl_id);
@@ -154,7 +154,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok sweep msg
-      
+
     case 'spike'
       % Remove spike
       [ok,spike,msg] = c_load('SPIKE?',cl_id);
@@ -167,7 +167,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok spike msg
-      
+
     case 'bdump'
       % Remove burst dumps
       [ok,bdump,msg] = c_load('BDUMP?',cl_id);
@@ -180,7 +180,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok bdump msg
-      
+
     case 'nsops'
       % Remove nonstandard operations intervals
       [ok,nsops,msg] = c_load('NSOPS?',cl_id);
@@ -200,7 +200,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok nsops msg opcode
-      
+
     case 'wake'
       % Remove wakes
       [ok,wake,msg] = c_load(irf_ssub('PSWAKE?p!',cl_id,probe));
@@ -213,7 +213,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok wake msg
-      
+
       [ok,wake,msg] = c_load(irf_ssub('LOWAKE?p!',cl_id,probe));
       if ok
         if ~isempty(wake)
@@ -224,7 +224,7 @@ for i=1:length(param)
       else, irf_log('load',msg)
       end
       clear ok wake msg
-      
+
     otherwise
       error('Unknown parameter')
   end

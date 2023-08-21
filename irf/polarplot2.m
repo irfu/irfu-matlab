@@ -142,7 +142,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   %
   temp1=find(coh1<threshold);phase_all1=phase1;phase1(temp1)=NaN;
   temp2=find(coh2<threshold);phase_all2=phase2;phase2(temp2)=NaN;
-  
+
   clf;
   h(1)=irf_subplot(5,1,-1);
   plot(t-t0,Ex1,t-t0,Ex2);colorbar;axpos=get(gca,'position');
@@ -154,7 +154,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   ht=irf_pl_info(['polarplot2() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],gca,[0,1 ]); set(ht,'interpreter','none');
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
-  
+
   h(2)=irf_subplot(5,1,-2);
   pcolor(T-t0,freq,log10(2*n*Imean1/sampl))
   shading flat
@@ -164,7 +164,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   %    title('Power spectral density')
   %    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
-  
+
   h(3)=irf_subplot(5,1,-3);
   pcolor(T-t0,freq,coh1)
   shading flat
@@ -175,7 +175,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   ht=text(0,0,'Coherence');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
-  
+
   h(4)=irf_subplot(5,1,-4);
   hp=pcolor(T-t0,freq,phase1);
   shading flat
@@ -187,7 +187,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
   set(hp,    'buttondownfcn', 'polarplot2_manager(''ja'')');
-  
+
   h(5)=irf_subplot(5,1,-5);
   hp=pcolor(T-t0,freq,phase2);
   shading flat
@@ -200,12 +200,12 @@ if plotflag == 1 %%% The case with phase difference and coherence
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
   set(hp,    'buttondownfcn', 'polarplot2_manager(''ja'')');
-  
+
 else %%% The standard case
   temp=find(p<threshold);
   vp(temp)=NaN;
   phi(temp)=NaN;
-  
+
   h(1)=subplot(4,1,1);
   pcolor(T-t0,freq,log10(Imean))
   shading flat
@@ -214,7 +214,7 @@ else %%% The standard case
   title('Spectral intensity')
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
-  
+
   h(2)=subplot(4,1,2);
   pcolor(T-t0,freq,p)
   shading flat
@@ -224,7 +224,7 @@ else %%% The standard case
   title('Degree of polarisation')
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
-  
+
   h(3)=subplot(4,1,3);
   pcolor(T-t0,freq,vp)
   shading flat
@@ -234,7 +234,7 @@ else %%% The standard case
   title('Ellipticity')
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
-  
+
   h(4)=subplot(4,1,4);
   pcolor(T-t0,freq,phi)
   shading flat

@@ -9,11 +9,11 @@ particleSpecies = irf_ask('Which particle species? (1: electrons, 2: ions) [%] >
 
 switch particleSpecies
   case 1
-% time interval (short)
-% butterfly distribution from (Zhang et al., 2021, 10.1029/2021GL096056)
-tint = irf.tint('2015-10-14T06:15:25.75/2015-10-14T06:15:26.25');
-% time of distribution (nearest)
-t = irf.time_array('2015-10-14T06:15:26.0',0);
+    % time interval (short)
+    % butterfly distribution from (Zhang et al., 2021, 10.1029/2021GL096056)
+    tint = irf.tint('2015-10-14T06:15:25.75/2015-10-14T06:15:26.25');
+    % time of distribution (nearest)
+    t = irf.time_array('2015-10-14T06:15:26.0',0);
 
   case 2
     % qperp shock
@@ -85,7 +85,7 @@ switch particleSpecies
     fsurf = 1e-12;
     v_SI_conv = 1e-3;
     vzString = '$v_z$ [km\,s$^{-1}$]';
-    
+
 end
 
 B0 = Bdmpa.resample(PDist.time(it)).data;

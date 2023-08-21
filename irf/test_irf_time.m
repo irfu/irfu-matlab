@@ -1,13 +1,13 @@
 classdef test_irf_time < matlab.unittest.TestCase
   %TEST_IRF_TIME
-  
+
   properties
   end
-  
+
   methods (Test)
     function test_UTC_to_TTns_to_UTC(testCase)
       % 1000 random utc>ttns>utc
-      
+
       %generate vector with 10000 times during last 300 years
       tDateArray = now - 365*300*rand(1000,1);
       s1=irf_time(tDateArray,'date>utc');

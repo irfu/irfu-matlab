@@ -32,26 +32,26 @@ switch flag
   case 'v_from_t'
     % Time input, velocity output
     t = x;
-    
+
     dR = get_vol_ten(r1,r2,r3,r4,t);
     dt = [t(2),t(3),t(4)]-t(1);
     m = dR\dt'; % "1/v vector"
-    
+
     V = m/norm(m)^2;
     out = V';
-    
+
   case 'dt_from_v'
     % Time and velocity input, time output
     tc = x(1); % Center time
     v = x(2:4); % Input velocity
-    
+
     m = v/norm(v)^2; % "1/v vector"
     if size(m,2) == 3
       m = m';
     end
-    
+
     dR = get_vol_ten(r1,r2,r3,r4,tc);
-    
+
     dt = dR*m;
     out = [0,dt'];
 end

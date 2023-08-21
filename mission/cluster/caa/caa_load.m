@@ -118,7 +118,7 @@ for j = 1:numel(dirs)
         shouldLoadVariable = true;
       end
     end
-    
+
     if shouldLoadVariable
       try
         if shouldReadAllData && ~shouldLoadFromFile && evalin('caller',['exist(''' datasetName ''',''var'')'])

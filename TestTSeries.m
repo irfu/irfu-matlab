@@ -39,7 +39,7 @@ classdef TestTSeries < matlab.unittest.TestCase
       testCase.verifyEqual(resultTS.time, expectedTime);
       testCase.verifyEqual(resultTS.data, expectedData);
     end
-    
+
     function testAbsoluteTS(testCase)
       % test absolute value
       % Positive data, should remain positve and equal.
@@ -54,6 +54,6 @@ classdef TestTSeries < matlab.unittest.TestCase
       expectedTime = testCase.time2;
       testCase.verifyEqual(resultTS.time, expectedTime);
     end
-    
+
   end
 end

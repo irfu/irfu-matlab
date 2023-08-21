@@ -101,7 +101,7 @@ switch scId
     dac.max(16) = -10; dac.min(16) = -200;
     og.max(16)  = -3.9; og.min(16) = -4.1;
     ig.max(16)  = -7.9; ig.min(16) = -8.1;
-    
+
   case 2
     % Define new limits for good bias setting on MMS 2
     % Rationale for changing:
@@ -164,7 +164,7 @@ switch scId
     dac.max(14) = -10; dac.min(14) = -200;
     og.max(14)  = -3.9; og.min(14) = -4.1;
     ig.max(14)  = -7.9; ig.min(14) = -8.1;
-    
+
   case 3
     % Define new limits for good bias setting on MMS 3
     % Rationale for changing:
@@ -229,7 +229,7 @@ switch scId
     dac.max(14) = -10; dac.min(14) = -200;
     og.max(14)  = -3.9; og.min(14) = -4.1;
     ig.max(14)  = -7.9; ig.min(14) = -8.1;
-    
+
   case 4
     % Define new limits for good bias setting on MMS 4
     % Rationale for changing:
@@ -274,7 +274,7 @@ switch scId
     dac.max(10) = -10; dac.min(10) = -200;
     og.max(10)  = -3.9;  og.min(10) = -4.1;
     ig.max(10)  = -7.9;  ig.min(10) = -8.1;
-    
+
   otherwise
     errStr = 'Invalid scId, only numerical 1, 2, 3 or 4 allowed.';
     irf.log('critical',errStr); error(errStr);

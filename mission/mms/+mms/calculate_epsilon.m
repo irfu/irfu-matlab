@@ -62,7 +62,7 @@ end
 intenergies = 1:size(energy,2);
 
 if isfield(PDist.ancillary,'energy0') && isfield(PDist.ancillary,'energy1') && isfield(PDist.ancillary,'esteptable')
-	if sum(abs(PDist.ancillary.energy0-PDist.ancillary.energy1)) < 0.0001
+  if sum(abs(PDist.ancillary.energy0-PDist.ancillary.energy1)) < 0.0001
     flag_same_e = 1;
   end
 end
@@ -129,13 +129,13 @@ else
 end
 
 % Calculate angle differences
-if isfield(PDist.ancillary,'delta_phi_minus') && isfield(PDist.ancillary,'delta_phi_plus') 
+if isfield(PDist.ancillary,'delta_phi_minus') && isfield(PDist.ancillary,'delta_phi_plus')
   deltaphi = PDist.ancillary.delta_phi_plus+PDist.ancillary.delta_phi_minus;
   flag_dphi = 1;
 else
   deltaphi = median(diff(PDist.depend{2}(1,:)));
 end
-if isfield(PDist.ancillary,'delta_theta_minus') && isfield(PDist.ancillary,'delta_theta_plus') 
+if isfield(PDist.ancillary,'delta_theta_minus') && isfield(PDist.ancillary,'delta_theta_plus')
   deltatheta = PDist.ancillary.delta_theta_plus+PDist.ancillary.delta_theta_minus;
   flag_dtheta = 1;
 else
@@ -181,7 +181,7 @@ elseif flag_same_e && ~flag_dE
   vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
   vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 elseif ~flag_same_e && flag_dE
-	energyupper = energy + energy_plus;
+  energyupper = energy + energy_plus;
   energylower = energy - energy_minus;
   vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
   vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);

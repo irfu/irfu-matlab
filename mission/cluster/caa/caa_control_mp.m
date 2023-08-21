@@ -59,7 +59,7 @@ for o = 1:length(ORB)
   mp_out = mp_out/cnt;
   irf_log('proc',['Mp OUT: ' epoch2iso(mp_out,1)...
     ' IN:' epoch2iso(mp_in,1)])
-  
+
   figure(162), clf
   set(gcf,'Position',[520   224   787   876])
   pp = 0;
@@ -81,8 +81,8 @@ for o = 1:length(ORB)
     ylabel(irf_ssub('Cluster ?',cl_id))
     if cl_id==1, title('OUT'), end
     if cl_id~=4, xlabel(''), set(gca,'XTickLabel',[]), end
-    
-    
+
+
     subplot(4,2,cl_id*2)
     p = get(gca, 'Position');
     set(gca, 'Position', [p(1) p1(2) p(3) pp]);

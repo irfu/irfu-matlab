@@ -52,8 +52,8 @@ for calId = 1:length(calTypes)
             warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
             calOk = false;
           end
-          
-          
+
+
         else
           % OLD format of Calibration files
           fID = fopen([calPath, filesep, list.name]);
@@ -72,7 +72,7 @@ for calId = 1:length(calTypes)
         offTime = EpochTT(cell2mat(C{1}));
         % Offset start time (based on ROI).
         time1 = offTime.ttns;
-        
+
         %% Verify Time is monotone increasing
         [ind, ~] = find(diff(time1)<=0);
         if any(ind)
@@ -80,7 +80,7 @@ for calId = 1:length(calTypes)
           warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
-        
+
         %% Verify Time (with "-/+dt") is also monotone increasing
         if is_version_geq(verStr{1}{1}, '1.0.0')
           t_start = time1 + int64(C{4}*10^9); % t -dt
@@ -95,7 +95,7 @@ for calId = 1:length(calTypes)
             calOk = false;
           end
         end
-        
+
         %% Verify no NaN values in the offsets
         if(~strcmp(calStr, 'regions'))
           dataOff = [C{2}, C{3}];
@@ -110,7 +110,7 @@ for calId = 1:length(calTypes)
           warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
-        
+
         %% Verify no Inf values in the offsets
         [ind, ~] = find(isinf(dataOff));
         if any(ind)
@@ -119,7 +119,7 @@ for calId = 1:length(calTypes)
           warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
-        
+
         %% Verify end value (of region files) is not S/W
         % as we should not have it be active for all time (until next
         % region file is ready for production)
@@ -129,7 +129,7 @@ for calId = 1:length(calTypes)
             calOk = false;
           end
         end
-        
+
       else
         warning('Failed to locate %s calibration file for scId: %i', calStr, scId);
         calOk = false;

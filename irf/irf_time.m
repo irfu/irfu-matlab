@@ -212,7 +212,7 @@ switch lower(flag)
     ttBreak = spdfbreakdowntt2000(tInput);
     % Assume 0 picoseconds.
     tOutput = spdfcomputeepoch16([ttBreak zeros(size(ttBreak,1),1)]);
-    
+
   case 'ttns>epochtt'
     tOutput = EpochTT(tInput);
   case 'epochtt>ttns'
@@ -220,13 +220,13 @@ switch lower(flag)
     %
     % Time interval conversions
     %
-    
+
   case {'tint>utc','tint>iso'}
     if any(strfind(flag,'iso'))
       irf.log('warning','irf_time(..,''tint>iso'') is deprecated and will be removed, please use irf_time(..,''tint>utc'').');
     end
     tOutput = irf_time(tInput,'tint>utc_'); % fmt = []
-    
+
   case {'utc>tint','iso>tint'}
     if any(strfind(flag,'iso'))
       irf.log('warning','irf_time(..,''iso>tint'') is deprecated and will be removed, please use irf_time(..,''utc>tint'').');
@@ -240,10 +240,10 @@ switch lower(flag)
     else
       tOutput=[t1 t2];
     end
-    
+
   case 'tint>isoshort'
     tOutput = irf_time(tInput,'tint>utc_yyyy-mm-ddTHH:MM:SS.mmmZ');
-    
+
   otherwise
     if numel(flag)>=9 && strcmp(flag(1:9),'tint>utc_')
       fmt = flag(10:end);

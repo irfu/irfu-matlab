@@ -20,7 +20,7 @@ if isa(x,'TSeries') % Time series
   end
 else
   lx = size(x,2); % the number of vector components
-  
+
   y=[x x(:,1)*0];
   if lx == 2
     y(:,lx+1)=sqrt(x(:,1).^2+x(:,2).^2);
@@ -31,7 +31,7 @@ else
   else
     disp('Not enough vector components in irf_abs()')
   end
-  
+
   % if flag=1 only abs(y) should be returned
   if nargin == 2
     if flag == 1

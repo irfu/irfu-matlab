@@ -52,7 +52,7 @@ for ii=1:2:length(pdist.time)-1
   if phi.data(ii,1) > phi.data(ii+1,1)
     phir(newelnum,:) = (phi.data(ii,:)+phis(ii+1,:))/2;
     pdisttemp = circshift(squeeze(pdist.data(ii+1,:,:,:)),1,2);
-    
+
     if stepTable(ii)
       pdistr(newelnum, 2:2:64,:,:) = pdist.data(ii,:,:,:);
       pdistr(newelnum, 1:2:63,:,:) = pdisttemp;
@@ -62,7 +62,7 @@ for ii=1:2:length(pdist.time)-1
     end
   else
     phir(newelnum,:) = (phi.data(ii,:)+phi.data(ii+1,:))/2;
-    
+
     if stepTable(ii)
       pdistr(newelnum,2:2:64,:,:) = pdist.data(ii,:,:,:);
       pdistr(newelnum,1:2:63,:,:) = pdist.data(ii+1,:,:,:);
@@ -71,7 +71,7 @@ for ii=1:2:length(pdist.time)-1
       pdistr(newelnum,2:2:64,:,:) = pdist.data(ii+1,:,:,:);
     end
   end
-  
+
   newelnum = newelnum+1;
 end
 

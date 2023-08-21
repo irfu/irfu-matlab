@@ -37,16 +37,16 @@ end
 switch flag_case
   case 'L'
     be=irf_resamp(b,x);
-    
+
     nl=irf_norm(be); % along the B
     nn=irf_norm(irf_cross(be,irf_cross(n,be))); % closest to given vn vector
     nm=irf_cross(nn,nl); % in (n x b) direction
-    
+
   case 'N'
     nn=irf_norm(n);
     nm=irf_norm(irf_cross(mean(b),nn));
     nl=irf_cross(nm,nn);
-    
+
   case 'LMN'
     if abs(dot(cross(L,M),N)-norm(L)*norm(M)*norm(N))>1e-5
       disp('irf_lmn: L,M,N does not satisfy M=LxN,N=MxL! using L=(NxL)xN; M=NxL;');

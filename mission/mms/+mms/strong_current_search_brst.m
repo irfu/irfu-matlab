@@ -139,7 +139,7 @@ for int=1:length(timeIntervalMMS(:,1))
       clear R
       c_eval('R? = R?.resample(B1);',1:4);
     end
-    
+
     %Quality data comes 2 days late
     % Load quality of tetrahedron
     disp('Checks tetrahedron quality');
@@ -155,7 +155,7 @@ for int=1:length(timeIntervalMMS(:,1))
       c_eval('R.C? = R?(tetrahedronGood);',1:4);
       c_eval('B.C? = B?(tetrahedronGood);',1:4);
     end
-    
+
     if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
       error('Tetrahedron quality is not good enough to use curlometer method');
     else
@@ -171,24 +171,24 @@ for int=1:length(timeIntervalMMS(:,1))
         continue
       end
     end
-    
+
     if isempty(IntervalStrongCurrent)
       continue
     else
       if test==1
-        
+
         currentIntervals=IntervalStrongCurrent;
         amountStrongCurrent=amountStrongCurrent+1;
       else
         disp('Saves the data in structure');
-        
+
         currentIntervals(length(currentIntervals(:,1))+1:length(IntervalStrongCurrent(:,1))+length(currentIntervals(:,1)),:)=IntervalStrongCurrent;
-        
+
         amountStrongCurrent=amountStrongCurrent+1;
-        
+
       end
       test=test+1;
-      
+
     end
   catch
     warning('Problem using function.  Move to next interval');

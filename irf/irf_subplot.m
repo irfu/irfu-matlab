@@ -67,10 +67,10 @@ if narg == 1
   % 2) a 3-character string containing a number as above
   % 3) an axis handle
   code = nrows;
-  
+
   % turn string into a number:
   if(ischar(code)), code = str2double(code); end
-  
+
   % number with a fractional part can only be an identifier:
   if(rem(code,1) > 0)
     handle = code;
@@ -140,10 +140,10 @@ elseif(isempty(position))
       PERC_OFFSET_L = 0.9*PERC_OFFSET_L;
       PERC_OFFSET_R = 0.9*PERC_OFFSET_R;
     end
-    
+
     row = (nrows-1) -fix((thisPlot-1)/ncols);
     col = rem (thisPlot-1, ncols);
-    
+
     % For this to work the default axes position must be in normalized coordinates
     if ~strcmp(get(gcf,'defaultaxesunits'),'normalized')
       warning('DefaultAxesUnits not normalized.')

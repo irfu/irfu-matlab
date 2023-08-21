@@ -102,7 +102,7 @@ else
   speciEnSp.p_label={'log'};
   speciEnSp.f_label = {'Energy (eV)'};
   speciEnSp.f = single(energy);
-  
+
   disp('Makes electron energy omni directional')
   tmp2 = (eEnSp_pX.data + eEnSp_pY.data + eEnSp_pZ.data + eEnSp_mX.data + eEnSp_mY.data + eEnSp_mZ.data); %/6;
   [~,energy] = hist([log10(10),log10(30e3)],32);

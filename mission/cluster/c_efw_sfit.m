@@ -168,30 +168,30 @@ if method==1 || method==2
   end
 else
   % Original version using polyfit() by Anders.Eriksson@irfu.se, 13 December 2002
-  
+
   % Turn off warnings for badly conditioned polynomial:
   warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
-  
+
   % Chop up time interval
   % We always start at 0,4,8.. secs, so that we have
   % the same timelines an all SC at 2,6,10... sec
   tstart = fix(min(te)/4)*4;
   tend = max(te);
-  
+
   n = floor((tend - tstart)/4) + 1;
   spinfit = zeros(n,8);
-  
+
   n_gap = 0;
   for i=1:n
     tsfit = tstart + (i-1)*4 +2;
     ind = find( ( te >= tsfit-2 ) & ( te < tsfit+2 ) );
-    
+
     % Check for data gaps inside one spin.
     if sf>0 && length(ind)<N_EMPTY*MAX_SPIN_PERIOD*sf
       n_gap = n_gap + 1;
       continue
     end
-    
+
     % Compute spin period
     pol = polyfit(tpha(ind),pha(ind),1);
     spinp = 2*pi/pol(1);
@@ -200,20 +200,20 @@ else
       n_gap = n_gap + 1;
       continue
     end
-    
+
     % Clear NaNs
     ind(isnan(data(ind))) = [];
-    
+
     % Check for data gaps inside one spin.
     if sf>0 && length(ind)<N_EMPTY*sf*4, continue, end
-    
+
     % Use Matlab version by AIE
     spinfit(i - n_gap,:) = c_efw_onesfit(pair,fout,maxit,minpts,te(ind),...
       data(ind),te(ind),ph(ind));
     spinfit(i - n_gap, 1) = tsfit;
   end
   spinfit = spinfit(1:n - n_gap, :);
-  
+
   warning('on','MATLAB:polyfit:RepeatedPointsOrRescale');
 end
 

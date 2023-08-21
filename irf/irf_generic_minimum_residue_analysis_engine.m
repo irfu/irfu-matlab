@@ -77,7 +77,7 @@ if doCalculateQ
   detadqAver = irf.nanmean(matrix_dot(deta,1,dq,1),1);
   deta2Aver  = irf.nanmean(dot(deta,deta,2),1);
   U = detadqAver/deta2Aver; % Eq. 12
-  
+
   % Q estimate
   dqdqAver = shiftdim(irf.nanmean(matrix_dot(dq,1,dq,1),1),1);
   detadqAver2Matrix = detadqAver' *detadqAver;

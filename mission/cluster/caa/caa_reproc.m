@@ -51,7 +51,7 @@ for d=1:length(dirs)
   if strcmp(dir_s(1:12),BASE_DIR)
     dir_s = dir_s(14:end); % Convert to relative path
   end
-  
+
   if length(dir_s) <= 21 % /data/caa/l1/2001/20010204_0900/C1
     sdirs = dir([BASE_DIR '/' dir_s '/2*_*']);
     if isempty(sdirs), continue, end
@@ -60,21 +60,21 @@ for d=1:length(dirs)
   else
     sdirs = {''};
   end
-  
+
   for sdi = 1:length(sdirs)
     if isempty(sdirs{sdi}), curr_d = dir_s;
     else, curr_d = [dir_s '/' sdirs{sdi}];
     end
-    
+
     cd( [BASE_DIR '/' curr_d])
-    
+
     if ~write_caa_reproc || ~exist('./.caa_reproc','file') && ( exist('./.caa_sh_interval','file') ...
         || exist('./.caa_ms_interval','file') )
       cl_id = str2double(curr_d(21));
       if isnan(cl_id) || cl_id>4 || cl_id<1, error(['wrong directory ' curr_d]), end
-      
+
       irf_log('proc',[ '-- GETTING -- : ' curr_d]);
-      
+
       % Clean files
       if ~isempty(cfiles)
         for i=1:length(cfiles)
@@ -88,7 +88,7 @@ for d=1:length(dirs)
           end
         end
       end
-      
+
       % L0 vars
       if ~isempty(l0vars)
         [iso_t,dt] = caa_read_interval;
@@ -98,7 +98,7 @@ for d=1:length(dirs)
           getData(ClusterDB,st,dt,cl_id,l0vars{i});
         end
       end
-      
+
       % L1 vars
       if ~isempty(l1vars)
         for i=1:length(l1vars)
@@ -106,12 +106,12 @@ for d=1:length(dirs)
           getData(ClusterProc(pwd),cl_id,l1vars{i});
         end
       end
-      
+
       % Create .caa_ms/sh_interval
       if exist('./.caa_sh_interval','file'), lf = '.caa_sh_interval';
       else, lf = '.caa_ms_interval';
       end
-      
+
       fid = fopen(lf,'w');
       if fid<0
         irf_log('save',['problem creating ' lf])
@@ -122,7 +122,7 @@ for d=1:length(dirs)
         irf_log('save',['problem writing to ' lf])
         cd(old_pwd), return
       end
-      
+
       if write_caa_reproc
         lf = '.caa_reproc'; %#ok<UNRCH>
         fid = fopen(lf,'w');
@@ -136,7 +136,7 @@ for d=1:length(dirs)
           cd(old_pwd), return
         end
       end
-      
+
     else
       irf_log('proc',[ '-- SKIPPING -- : ' curr_d]);
     end

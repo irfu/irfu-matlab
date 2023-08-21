@@ -1,9 +1,9 @@
 classdef test_mms_defatt_phase < matlab.unittest.TestCase
   %TEST_MMS_DEFATT_PHASE
-  
+
   properties
   end
-  
+
   methods (Test)
     function test_constant_phase(testCase)
       spinRate = 3.1; %RPM

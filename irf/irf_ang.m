@@ -33,7 +33,7 @@ else
   end
   n1=[cos(t1r).*cos(p1r) cos(t1r).*sin(p1r) sin(t1r)];
   n2=[cos(t2r).*cos(p2r) cos(t2r).*sin(p2r) sin(t2r)];
-  
+
   d=acos(dot(n1,n2))*180/pi;
 end
 

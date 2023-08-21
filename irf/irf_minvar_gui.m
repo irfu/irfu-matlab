@@ -43,11 +43,11 @@ switch action
   case 'initialize'
     % X is used for minimum variance estimates
     evalin('base','clear ud; global ud;');
-    
+
     if min(column)==1, time_vector=1:size(x,1);
     elseif min(column)>1, time_vector=x(:,1);
     end
-    
+
     X=[time_vector x(:,column)];X=irf_abs(X);
     irf_plot(1,'newfigure');
     h(1)=subplot(4,1,1);
@@ -57,50 +57,50 @@ switch action
     zoom(h(1),'off');
     ud=get(gcf,'userdata');
     if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else, ud.t0=0; end
-    
+
     ud.X=X;
     ud.from = 1; % first click with mouse is 'from', second is 'to'
     ud.cancel = 0;
     ud.tlim = [min(X(:,1)) max(X(:,1))];
     ud.tlim_mva=ud.tlim+[-1 1]; % default tlim_mva includes all interval, add 1s to help later in program
-    
+
     %  irf_pl_info(h(1),['irf\_minvar\_gui() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
     set(h(1),'layer','top');
     grid(h(1),'on');
     ax=axis(h(1));
     ud.patch_mvar_intervals=patch([ud.tlim(1) ud.tlim(2) ud.tlim(2) ud.tlim(1)]-ud.t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','parent',h(1));
-    
+
     h(2)=subplot(4,1,2);set(h(2),'outerposition',[0 0.5 1 0.25]);
     irf_plot(h(2),X);
     axis(h(2),'tight');
     zoom(h(2),'off');
-    
+
     h(3)=subplot(4,2,5);
-    
+
     h(4)=subplot(4,2,6);
-    
+
     ud.h=h;
-    
+
     xp=0.2;yp=0.2;
     ud.fromtext=uicontrol('style', 'text', 'string', 'From:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','red');
     ud.fromh = uicontrol('style', 'edit', ...
       'string', irf_time(ud.tlim(1),'utc'), ...
       'callback', 'irf_minvar_gui(''from'')', ...
       'backgroundcolor','white','units','normalized','position', [xp+0.11 yp 0.25 0.05]);
-    
+
     yp=0.15;
     ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
     ud.toh=uicontrol('style', 'edit', ...
       'string', irf_time(ud.tlim(2),'utc'), ...
       'callback', 'irf_minvar_gui(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
-    
-    
+
+
     xp=0.1;yp=0.1;
     uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
     ud.filter = uicontrol('style', 'edit', ...
       'string', '1', ...
       'backgroundcolor','white','units','normalized','position', [xp+0.21 yp 0.1 0.05]);
-    
+
     xp=0.1;yp=0.05;
     uicontrol('style', 'text', 'string', 'MVAR method','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
     ud.mvar_method_handle=uicontrol('Style', 'popup',...
@@ -109,20 +109,20 @@ switch action
       'Position', [xp+0.21 yp 0.25 0.04],...
       'Callback', @setmethod);
     ud.mvar_method='mvar'; % default method
-    
+
     uimenu('label','&Recalculate','accelerator','r','callback','irf_minvar_gui(''mva'')');
-    
+
     h(5)=subplot(4,2,8);
     axis(h(5),'off');
     irf_legend(0,['irf\_minvar\_gui() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0.02 0.02],'fontsize',8); % add information to the plot
     ud.result_text=text(0,0.8,'result','parent',h(5));
-    
+
     set(gcf,'userdata',ud);
-    
+
     irf_minvar_gui('from');
     fix_legends;
     fix_hittest(ud.h(1:2));
-    
+
   case 'ax'
     ud=get(gcf,'userdata');
     tlim = get(ud.patch_mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
@@ -194,7 +194,7 @@ switch action
     set(gcf,'userdata',ud);
     fix_legends;
     fix_hittest(ud.h(1:2));
-    
+
   case 'mva'
     ud=get(gcf,'userdata');
     ud.tlim_mva=ud.tlim;

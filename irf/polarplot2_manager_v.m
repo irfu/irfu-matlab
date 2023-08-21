@@ -23,8 +23,8 @@ switch arg
     fplmin=str2num(get(ud.fplminh,'string'));
     fplmax=str2num(get(ud.fplmaxh,'string'));
     irf_zoom([fplmin fplmax],'x',ud.h2(1:3));set(h2(1),'ylim','auto');
-    
-    
+
+
 end
 
 if flag_calculate_v==1
@@ -42,7 +42,7 @@ if flag_calculate_v==1
   freqgood2=freqgood2(:);  phgood2=phgood2(:);
   ind2=find(freqgood2 < fmin | freqgood2 > fmax);
   freqgood2(ind2)=[];phgood2(ind2)=[];
-  
+
   if flag_fitzero == 1    % least square fit
     if size(phgood1)
       [vphase1, flag_lsqr_1]=lsqr(freqgood1,phgood1,[],20);

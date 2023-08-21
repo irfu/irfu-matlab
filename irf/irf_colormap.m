@@ -64,8 +64,8 @@ if nargs > 0
         242,109,074;...
         211,064,082]/255;
       cmap = interp1(linspace(1,64,size(c,1)),c,1:64);
-     case 'cubehelix' % stolen from matplotlib
-        cmap = [0, 0, 0;
+    case 'cubehelix' % stolen from matplotlib
+      cmap = [0, 0, 0;
         1, 0, 1;
         3, 1, 3;
         4, 1, 4;
@@ -321,7 +321,7 @@ if nargs > 0
         251, 253, 252;
         253, 254, 253;
         255, 255, 255] / 255;
-      
+
   end
 end
 

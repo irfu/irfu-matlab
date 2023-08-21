@@ -45,7 +45,7 @@ for iOrbit = 1:nOrbits
       end
     end
   end
-  
+
   % Add new data to memory and check what is discarded
   discData = data.data(iOrbit,:)+newSavedData; % default all
   newSavedData = discData*0;
@@ -61,7 +61,7 @@ for iOrbit = 1:nOrbits
   end
   discardedData(iOrbit,:) = discData;
   savedData(iOrbit,:) = newSavedData;
-  
+
 end
 
 tsData.saved      = data; tsData.saved.data = savedData;

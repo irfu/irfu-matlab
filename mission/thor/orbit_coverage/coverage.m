@@ -44,7 +44,7 @@ if 0 % Illustrate gridding
   title(hca,['Orbit during T_{tot} = ' num2str(ndays,'%.0f') ' days'])
   xlabel(hca,'R_E')
   ylabel(hca,'R_E')
-  
+
   hca=subplot(1,3,2);
   hold(hca,'on');
   mesh(hca,X,Y,X*0-1);
@@ -54,7 +54,7 @@ if 0 % Illustrate gridding
   title(hca,['time between two consecutive ''o'', dt = ' num2str(dt,'%.0f') ' s'])
   xlabel(hca,'R_E')
   ylabel(hca,'R_E')
-  
+
   hca=subplot(1,3,3);
   ax_pos=get(hca,'position');
   %[cX,cY] = meshgrid(centers,centers);
@@ -67,11 +67,11 @@ if 0 % Illustrate gridding
   xlabel(hca,'R_E')
   ylabel(hca,'R_E')
   shading(hca,'flat')
-  
+
   cb = colorbar('peer',hca);
   ylabel(cb,['total time spent in bin [hours]'])
   set(hca,'position',ax_pos);
-  
+
   % grayscale colormap
   cmap=colormap('gray');
   if 1 % make background white
@@ -91,11 +91,11 @@ if 1 % figure with bowshock + magnetopause
   xlabel(hca,'x_{GSE} [R_E]')
   ylabel(hca,'y_{GSE} [R_E]')
   shading(hca,'flat')
-  
+
   % add colorbar
   cb = colorbar('peer',hca);
   ylabel(cb,['total time spent in bin [hours]'])
-  
+
   % grayscale colormap
   cmap=colormap('gray');
   if 1 % make background white
@@ -105,7 +105,7 @@ if 1 % figure with bowshock + magnetopause
     cmap(2:10,:)=[];
   end
   colormap(cmap);
-  
+
   % add bowshock and magnetopause
   % load stand off distances (from Svein)
   filepath = '/Users/Cecilia/M4/thor/orbit_coverage/';
@@ -118,7 +118,7 @@ if 1 % figure with bowshock + magnetopause
   indR = round([1 0.25*N 0.5*N 0.75*N N]); % percentiles
   %linestyle = {'--','--','-','--','--'};
   linewidth = [1.5 1.5 3 1.5 1.5];
-  
+
   cMP = [0 0.0 1];
   cBS = [1 0.0 0];
   for kk = 1:numel(indR)%numel(indR):-1:1%1:numel(indR)
@@ -127,12 +127,12 @@ if 1 % figure with bowshock + magnetopause
     [xbs,ybs] = boundary(R_BS(indR(kk)),'bs');
     plot(hca,-xbs,ybs,'linewidth',linewidth(kk),'color',cBS,'linestyle','-')
   end
-  
+
   % other stuff
   box(hca,'on')
   set(hca,'ylim',[-20 20],'xlim',[-30 10])
   axis(hca,'square')
-  
+
   % flip x and y labels
   xticks = get(hca,'xtick'); nticks = numel(xticks);
   xlabels = repmat(' ',nticks,3);
@@ -147,11 +147,11 @@ if 1 % figure with bowshock + magnetopause
     ylabels(pp,1:numel(ystr)) = ystr;
   end
   set(hca,'xticklabel',xlabels,'yticklabel',ylabels)
-  
+
   % add Earth
   patch(cos(-pi/2:0.01:pi/2),sin(-pi/2:0.01:pi/2),'k')
   plot(cos(pi/2:0.01:pi*4/2),sin(pi/2:0.01:pi*4/2),'k')
-  
+
   % set font size
   set(gcf,'defaultAxesFontSize',16);
   set(gcf,'defaultTextFontSize',16);

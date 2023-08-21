@@ -198,13 +198,13 @@ if ~isempty(vars)
   if ~isempty(L_find(vars,{'e','bsc'})) &&  isempty(L_find(vars,'tmode'))
     vars = [{'tmode'} vars];
   end
-  
+
   if dosrc
     for cl_id=sc_list
       for k=1:length(vars), getData(cdb,st,dt,cl_id,vars{k}); end
     end
   end
-  
+
   if doproc && isempty(varsProc)
     if L_find(vars,{'e','p'})
       varsProc = [{'whip','sweep','bdump'} varsProc];

@@ -61,15 +61,15 @@ if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 for ievent=1:numel(TT)
   tint=TT.TimeInterval(ievent,:);
   irf.log('warning',sprintf('processing %s\n',irf_disp_iso_range(tint,1)))
-  
-  
+
+
   %% Load data
   axxx = ls('/data/caalocal'); axxx = ls('/data/themis');
   % Round time interval to minutes
   tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
   % Extend time interval by these ranges to avoid edge effects
   DT_PC5 = 80*60; DT_PC2 = 120;
-  
+
   bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
   % Clean backward time jumps, example THD
   bs = clear_backward_jump(bs,'BS');
@@ -94,11 +94,11 @@ for ievent=1:numel(TT)
       ef = clear_backward_jump(ef,'EF');
     end
   end
-  
-  
+
+
   R = th_gse2dsl(irf_tlim(gseR,tint+DT_PC5*[-1 1]),thId);
   V = th_gse2dsl(irf_tlim(gseV,tint+DT_PC5*[-1 1]),thId);
-  
+
   %% Calculate and plot
   bf = irf_filt(bs,0,1/600,1/5,5);
   t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
@@ -116,11 +116,11 @@ for ievent=1:numel(TT)
   end
   if isempty(B0_1MIN), irf.log('warning','no BS data, skipping interval'), continue, end
   facMatrix = irf_convert_fac([],B0_1MIN,R);
-  
+
   if wantPC35
     t_1SEC = ((tint(1)+2-DT_PC5):1:(tint(end)+DT_PC5))';
     B_1SEC = irf_resamp(bs,t_1SEC);
-    
+
     % Set Gaps to NaN. for safety we set both E and B
     if nGaps>0
       for iGap=1:nGaps
@@ -139,7 +139,7 @@ for ievent=1:numel(TT)
       end
     end
     B_1SEC(t_1SEC(:,1)<bs(1,1),2:4) = NaN; B_1SEC(t_1SEC(:,1)>bs(end,1),2:4) = NaN;
-    
+
     if isempty(es), iE3D_1SEC = [];
     else
       E3D_1SEC = irf_resamp(es,t_1SEC);
@@ -158,7 +158,7 @@ for ievent=1:numel(TT)
       end
       iE3D_1SEC(t_1SEC(:,1)<es(1,1),2:4) = NaN; iE3D_1SEC(t_1SEC(:,1)>es(end,1),2:4) = NaN;
     end
-    
+
     ebsp = ...
       irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,[],'pc35',...
       'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
@@ -189,7 +189,7 @@ for ievent=1:numel(TT)
       fSampE = 1/median(diff(ef(:,1)));
       t_BASE = (fix(min(bl(1,1),ef(1,1))):1/baseFreq:ceil(max(bl(end,1),ef(end,1))))';
     end
-    
+
     B_BASE = irf_resamp(bl,t_BASE);
     T_TMP = t_BASE(t_BASE(:,1)>=bl(1,1) & t_BASE(:,1)<=bl(end,1)); ttB = T_TMP([1 end],1)';
     ii = find(diff(bl(:,1))>2/fSampB);
@@ -206,7 +206,7 @@ for ievent=1:numel(TT)
       end
     end
     B_BASE(t_BASE(:,1)<bl(1,1),2:4) = NaN; B_BASE(t_BASE(:,1)>bl(end,1),2:4) = NaN;
-    
+
     ttE = [];
     if ~isempty(ef)
       E3D_BASE = irf_resamp(ef,t_BASE);
@@ -225,13 +225,13 @@ for ievent=1:numel(TT)
         end
       end
       E3D_BASE(t_BASE(:,1)<ef(1,1),2:4) = NaN; E3D_BASE(t_BASE(:,1)>ef(end,1),2:4) = NaN;
-      
+
       % Construct the inertial frame
       evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
       iE3D_BASE = E3D_BASE;
       iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
     end
-    
+
     % Set Gaps to NaN. for safety we set both E and B
     if nGaps>0
       for iGap=1:nGaps
@@ -242,7 +242,7 @@ for ievent=1:numel(TT)
         end
       end
     end
-    
+
     % Join intervals for BL and EF
     tt = [ttE; ttB];
     irf.log('warning',sprintf('starting with %d chunks',size(tt,1)))
@@ -260,7 +260,7 @@ for ievent=1:numel(TT)
     end
     irf.log('warning',sprintf('total %d chunks',size(tt,1)))
     irf_disp_iso_range(tt);
-    
+
     for iChunk = 1:size(tt,1)
       tintChunk = tt(iChunk,:);
       irf.log('warning',...
@@ -272,7 +272,7 @@ for ievent=1:numel(TT)
         'polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
         'facMatrix',facMatrix);
       toc
-      
+
       ebsp.r = gseR; % add position for plotting
       tlim_ebsp(tintChunk);
       if isempty(ebsp.t)
@@ -292,7 +292,7 @@ for ievent=1:numel(TT)
       end
     end
   end
-  
+
   % Export FAC matrix
   if exportFlag
     [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
@@ -304,7 +304,7 @@ for ievent=1:numel(TT)
       maarble.export(facMatrix,tint,['th' thId])
     end
   end
-  
+
 end
 
   function tlim_ebsp(timeLim) % Trim ebsp to tlim

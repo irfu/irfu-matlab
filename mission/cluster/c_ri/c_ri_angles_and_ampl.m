@@ -29,38 +29,38 @@ function [angles, ampl] = c_ri_angles_and_ampl(B1,B2,B3,B4)
 warning off
 
 if B1(1,1) ~= 0 && B2(1,1) ~= 0 && B3(1,1) ~= 0 && B4(1,1) ~= 0
-  
+
   angles(:,1) = B1(:,1);
-  
+
   [B1_n, a1] = norm_B(B1);
   [B2_n, a2] = norm_B(B2);
   [B3_n, a3] = norm_B(B3);
   [B4_n, a4] = norm_B(B4);
-  
+
   ampl = [a1 a2 a3 a4];
-  
+
   mDotn = M_dot_N(B1_n,B2_n);
   angles(:,2) = acos(mDotn);
-  
+
   mDotn = M_dot_N(B1_n,B3_n);
   angles(:,3) = acos(mDotn);
-  
+
   mDotn = M_dot_N(B1_n,B4_n);
   angles(:,4) = acos(mDotn);
-  
+
   mDotn = M_dot_N(B2_n,B3_n);
   angles(:,5) = acos(mDotn);
-  
+
   mDotn = M_dot_N(B2_n,B4_n);
   angles(:,6) = acos(mDotn);
-  
+
   mDotn = M_dot_N(B3_n,B4_n);
   angles(:,7) = acos(mDotn);
-  
+
   angles(:,2:7) = angles(:,2:7)*180/pi;
-  
+
   angles(:,2:7) = real(angles(:,2:7));
-  
+
 else
   angles = 0;
   ampl = [0 0 0 0];

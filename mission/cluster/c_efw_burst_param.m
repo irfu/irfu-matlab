@@ -50,14 +50,14 @@ switch SS
       otherwise
         output=[0 0];
     end
-    
+
   case 1
     if fff==5
       output=[18000 2];
     else
       error('bad fff');
     end
-    
+
   case 2
     switch fff
       case 4
@@ -67,7 +67,7 @@ switch SS
       otherwise
         output=[0 0];
     end
-    
+
   case 3
     switch fff
       case 0
@@ -109,24 +109,24 @@ madc1={ 'V2L' 'V2M' 'V2H' 'V2U' 'V4L' 'V4M' 'V4H' 'V4U'...
   'V43M' 'V12H' 'SCY' 'BP12' 'BAD' };
 
 while length(data)>=ii && data(ii)~=63
-  
+
   adc0 = bitand(data(ii),15);
   adc1 = bitand(data(ii),240);
   adc1 = bitshift(adc1,-4);
   adc1 = bitor(bitand(adc0,8),bitand(adc1,7));
-  
+
   if adc0>11 || adc0<0
     adc0=11;
   end
   varsb{i} = madc0{adc0+1}; %#ok<AGROW>
-  
+
   if adc1>11 || adc1<0
     adc1=11;
   end
   varsb{iii} = madc1{adc1+1}; %#ok<AGROW>
-  
+
   i=i+2;
   ii=ii+1;
   iii=iii+2;
-  
+
 end

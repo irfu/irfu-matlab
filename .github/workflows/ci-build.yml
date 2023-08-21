@@ -2,7 +2,7 @@
 
 name: ci-build
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers this workflow on push to master, devel, MMSdevel or SOdevel. Or pull requests to devel.
   push:

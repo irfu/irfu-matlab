@@ -29,15 +29,15 @@ function [rowsList] = read_text_file(filePath, linebreakRegexp)
 
 
 
-    bytesArray = irf.fs.read_file(filePath);
+bytesArray = irf.fs.read_file(filePath);
 
 %     % IMPLEMENTATION NOTE: "delimiter" does not refer to end-of-line (there is a separate property for that).
 %     % Default textscan behaviour is to detect which of LF, CR, or CR+LF to use for end-of-line.
 %     % delimiter='' probably means to ignore "
 %     temp = textscan(fileId, '%s', 'delimiter', '', 'whitespace', '');
 %     assert(numel(temp) == 1, 'textscan unexpectedly returned a non-scalar cell array.')
-% 
+%
 %     rowsList = temp{1};
-    rowsList = strsplit(char(bytesArray(:)'), linebreakRegexp, 'DelimiterType', 'RegularExpression', 'CollapseDelimiters', false)';
-    
+rowsList = strsplit(char(bytesArray(:)'), linebreakRegexp, 'DelimiterType', 'RegularExpression', 'CollapseDelimiters', false)';
+
 end

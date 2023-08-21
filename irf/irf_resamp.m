@@ -146,10 +146,10 @@ if strcmp(flag_do,'check') % Check if interpolation or average
   if ndata>1
     % If more than one output time check sampling frequencies
     % to decide interpolation/average
-    
+
     % Guess samplings frequency for Y
     guess_sampling_freq()
-    
+
     if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
       flag_do='average';
       irf.log('warning','Using averages in irf_resamp.');
@@ -220,10 +220,10 @@ elseif strcmp(flag_do,'interpolation')
     irf.log('critical',errS), error(errS)
   end
   if nargin < 3 || isempty(method), method = 'linear'; end
-  
+
   % If time series agree, no interpolation is necessary.
   if size(x,1)==size(y,1), if x(:,1)==y(:,1), out = x; return, end, end
-  
+
   out = [t interp1(x(:,1),x(:,2:end),t,method,'extrap')];
 end
 

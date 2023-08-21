@@ -13,25 +13,25 @@
 % First created 2020-06-03.
 %
 function write_file(filePath, byteArray)
-    % PROPOSAL: Flag for permitting overwrite.
-    
-    assert(isa(byteArray, 'uint8'), 'byteArray is not uint8.')
-    irf.assert.vector(byteArray)
+% PROPOSAL: Flag for permitting overwrite.
 
-    % fopen options:
-    % 'w'     open file for writing; discard existing contents
-    fileId = fopen(filePath, 'w');    
-    % ~ASSERTION
-    if fileId == -1
-        error('write_file:CanNotOpenFile', 'Can not open file: "%s"', filePath)
-    end
+assert(isa(byteArray, 'uint8'), 'byteArray is not uint8.')
+irf.assert.vector(byteArray)
 
-    fwrite(fileId, byteArray);   
+% fopen options:
+% 'w'     open file for writing; discard existing contents
+fileId = fopen(filePath, 'w');
+% ~ASSERTION
+if fileId == -1
+  error('write_file:CanNotOpenFile', 'Can not open file: "%s"', filePath)
+end
+
+fwrite(fileId, byteArray);
 
 
-    errorCode = fclose(fileId);
-    % ~ASSERTION
-    if errorCode == -1
-        error('write_file:CanNotCloseFile', 'Can not close file: "%s"', filePath)
-    end
+errorCode = fclose(fileId);
+% ~ASSERTION
+if errorCode == -1
+  error('write_file:CanNotCloseFile', 'Can not close file: "%s"', filePath)
+end
 end

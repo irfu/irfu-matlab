@@ -7,7 +7,7 @@ for dd=1:31
   dataDir = ['/data/mms/' mmsId '/edp/fast/l2a/dce2d/' yymm '/'];
   fList=dir([dataDir '*' yymm(1:4) yymm(6:7) day '*.cdf']);
   if isempty(fList), continue, end
-  
+
   vMax = [0 0 0]; fName = '';
   for i=1:length(fList)
     filenameData = mms_fields_file_info(fList(i).name);
@@ -53,7 +53,7 @@ for dd=1:31
       Dce.e12.bitmask = dobj.data.([mmsId '_edp_bitmask_fast_l2a']).data(idx,1);
       Dce.e34.bitmask = dobj.data.([mmsId '_edp_bitmask_fast_l2a']).data(idx,2);
       Phase.data = dobj.data.([mmsId '_edp_phase_fast_l2a']).data(idx);
-      
+
       try
         Dcv.time = dobjScp.data.([mmsId '_edp_epoch_fast_l2']).data(idx);
       catch
@@ -65,7 +65,7 @@ for dd=1:31
         Dcv.(pS).data = dobjScp.data.([mmsId '_edp_dcv_fast_l2']).data(idx,p);
         Dcv.(pS).bitmask = dobjScp.data.([mmsId '_edp_bitmask_fast_l2']).data(idx);
       end
-      
+
       [~,Model360] = mms_sdp_model_spin_residual(Dce,Dcv,Phase,...
         {'e12','e34','v1','v2','v3','v4'},sampleRate);
       Model360.time = irf.tint(t0,tEnd);

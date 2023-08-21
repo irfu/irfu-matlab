@@ -34,27 +34,27 @@ else
   % all new data except internal burst
   datatypes={ 'P' 'P' 'P' 'E' 'E' 'E' 'HK' 'DER' 'SFIT' };
   levels =  [  1   2   3   1   2   3   2     3     3 ];
-  
+
   % L1 only commissioning 2000-07 - 2000-11
   %datatypes={ 'P' 'P' 'P' 'E' 'E' 'E' };
   %levels =  [  1   2   3   1   2   3  ];
-  
+
   % debug
   %datatypes={ 'DER' 'SFIT' };
   %levels =  [   3     3 ];
-  
+
   % preliminary data only
   %datatypes={ 'P' 'P' 'HK'};
   %levels= [2 3 2];
-  
+
   % internal burst only
   %levels=[1 2 2 2];
   %datatypes={'IB' 'PB' 'EB' 'BB'};
-  
+
   % all new + old
   %datatypes={ 'P' 'E' 'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT' };
   %levels =  [  1   1   1    1    1    1    1     1      1    2   3    3    2   3   2    3 ];
-  
+
   % all old
   %datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK' 'SFIT'};
   %levels=    [1    1    1    1    1     1      1    2   3    3    2   3   2    3];
@@ -121,7 +121,7 @@ switch year
     if month <= 11    % probe 2 failure on C3 3 November 2014 do NOT deliver C3 L1_E (new detected delivering 201604 data), C3 L2_E, L3_E, L3 DER or L3_SFIT from the 4 of Nov.
       exceptions={{1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P3'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
     else
-%      exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
+      %      exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
       exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
     end
   case 2015
@@ -144,12 +144,12 @@ switch year
   case 2021
     exceptions={{1 'DER'} {1 'SFIT'} {1 'E' 1} {1 'E' 2} {1 'E' 3} {3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P3'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
   case 2022
-    if month <= 8   % probe 3 failure on C2 2022-08-23T12.08:15 
+    if month <= 8   % probe 3 failure on C2 2022-08-23T12.08:15
       exceptions={{1 'DER'} {1 'SFIT'} {1 'E' 1} {1 'E' 2} {1 'E' 3} {3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P3'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
     else
       exceptions={{1 'DER'} {1 'SFIT'} {1 'E' 1} {1 'E' 2} {1 'E' 3} {2 'DER'} {2 'SFIT'} {2 'E' 1} {2 'E' 2} {2 'E' 3} {3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P3'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
     end
-    otherwise
+  otherwise
     error('Year out of range.')
 end
 

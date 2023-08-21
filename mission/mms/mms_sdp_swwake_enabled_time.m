@@ -43,7 +43,7 @@ if(~isempty(list))
   [sw.time, indUniq] = unique(timeSort); % Ensure no duplicated values
   dataSort = data3(indSort, :); % Sorted data (based on time)
   sw.wake = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
-  
+
   % Check to see if we are reprocessing any old times, before our "regions"
   % calibration file starts. In that case fall back to the old enabled
   % times for wake removal.
@@ -64,7 +64,7 @@ if(~isempty(list))
     sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
     sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
   end
-  
+
 else
   % Did not locate any file, use old hard coded values
   switch scId
@@ -82,7 +82,7 @@ else
       sw.time(end+1) = EpochTT('2017-08-31T19:00:00.000000000Z').ttns; sw.wake(end+1) = 1; % Enable for one hour (S/W interactions seen in data).
       sw.time(end+1) = EpochTT('2017-08-31T19:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
       sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
-      
+
       sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
     otherwise
       error('Invalid scId')

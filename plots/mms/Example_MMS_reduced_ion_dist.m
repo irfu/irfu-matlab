@@ -1,6 +1,6 @@
 % A routine to compute and plot reduced ion distributions from FPI
 %
-% Since this example was written, the event it uses has been published in 
+% Since this example was written, the event it uses has been published in
 % https://doi.org/10.3847/1538-4357/abcb88
 %
 % See Example_MMS_IPshock for how to convert these type of data to the
@@ -83,9 +83,9 @@ f2Dnt2 = iPDist(indT-2:indT+2).reduce('2D',nDMPA,t2DMPA,'base','cart','vg',vg2D,
 f2Dt1t2 = iPDist(indT-2:indT+2).reduce('2D',t1DMPA,t2DMPA,'base','cart','vg',vg2D,'nMC',nMC*5);
 
 
-%% set colormap 
+%% set colormap
 % nice colormap but opens a figure for some reason
-% cmap = irf_colormap('waterfall'); 
+% cmap = irf_colormap('waterfall');
 % just jet
 cmap = jet;
 

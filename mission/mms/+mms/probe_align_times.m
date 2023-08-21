@@ -144,63 +144,63 @@ SCV12(idxB) = NaN;
 SCV34(idxB) = NaN;
 
 if plotfigure
-  
+
   Bplane = TSeries(Bxyz.time,[sqrt(Bxyz.data(:,1).^2+Bxyz.data(:,2).^2) abs(Bxyz.data(:,3))]);
   thetas = TSeries(zphase.time,[thetap1b thetap3b]);
   Scpots1234 = TSeries(SCpot.time,[SCV12 SCV34]);
   E1234 = TSeries(SCpot.time,[E1 E2 E3 E4]);
   Epp1234 = TSeries(SCpot.time,[E12 E34]);
-  
+
   h=irf_plot(7,'newfigure');
-  
+
   h(1)=irf_panel('Bdmpa');
   irf_plot(h(1),Bxyz);
   ylabel(h(1),'B_{DMPA} (nT)','Interpreter','tex');
   irf_legend(h(1),{'B_x','B_y','B_z'},[0.98 0.1])
   irf_legend(h(1),'(a)',[0.99 0.98],'color','k')
-  
+
   h(2)=irf_panel('Bdmpa2');
   irf_plot(h(2),Bplane);
   ylabel(h(2),'B_{DMPA} (nT)','Interpreter','tex');
   irf_zoom(h(2),'y',[0,100])
   irf_legend(h(2),{'|B_{plane}|','|B_z|'},[0.98 0.1])
   irf_legend(h(2),'(b)',[0.99 0.98],'color','k')
-  
+
   h(3)=irf_panel('theta');
   irf_plot(h(3),thetas)
   ylabel(h(3),'\theta (deg)','Interpreter','tex');
   irf_legend(h(3),{'\theta_{1}','\theta_{3}'},[0.98 0.1])
   irf_legend(h(3),'(c)',[0.99 0.98],'color','k')
   irf_zoom(h(3),'y',[0 90])
-  
+
   h(4)=irf_panel('Vp');
   irf_plot(h(4),Scpots1234)
   ylabel(h(4),'Pot (V)');
   irf_legend(h(4),{'V_{SC12}','V_{SC34}'},[0.98 0.1])
   irf_legend(h(4),'(d)',[0.99 0.98],'color','k')
-  
+
   h(5)=irf_panel('Ep');
   irf_plot(h(5),E1234)
   ylabel(h(5),'E (mV/m)');
   irf_legend(h(5),{'E_{SC-p1}','E_{p2-SC}','E_{SC-p3}','E_{p4-SC}'},[0.98 0.1])
   irf_legend(h(5),'(e)',[0.99 0.98],'color','k')
-  
+
   h(6)=irf_panel('Efac');
   irf_plot(h(6),Efac)
   ylabel(h(6),'E (mV/m)');
   irf_legend(h(6),{'E_{\perp 1}','E_{\perp 2}','E_{||}'},[0.98 0.1])
   irf_legend(h(6),'(f)',[0.99 0.98],'color','k')
-  
+
   h(7)=irf_panel('Eplane');
   irf_plot(h(7),Epp1234)
   ylabel(h(7),'E (mV/m)');
   irf_legend(h(7),{'E_{p2-p1}','E_{p4-p3}'},[0.98 0.1])
   irf_legend(h(7),'(g)',[0.99 0.98],'color','k')
-  
+
   irf_plot_axis_align(7)
   irf_zoom(h,'x',tlimit);
   irf_timeaxis(h);
-  
+
 end
 
 %set(gcf,'paperpositionmode','auto')

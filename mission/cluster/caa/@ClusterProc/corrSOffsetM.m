@@ -35,10 +35,10 @@ if ok
   dsiof = c_ctl(cl_id,'dsiof');
   if isempty(dsiof)
     [dsiof_def, dam_def] = c_efw_dsi_off(diEs(1,1),cl_id);
-    
+
     [ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
     [ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
-    
+
     if ok1 || ok2, irf_log('calb',...
         ['Saved DSI offsets on C' num2str(cl_id)])
       %else irf_log('calb','Using default DSI offsets')
@@ -49,12 +49,12 @@ if ok
     irf_log('calb',['User DSI offsets on C' num2str(cl_id)])
   end
   clear dsiof
-  
+
   offset(1) = Ddsi; clear Ddsi
   irf_log('proc',sprintf('Ddsi=%.2f', offset(1)))
   offset(2) = Damp; clear Damp
   irf_log('proc',sprintf('Damp=%.2f', offset(2)))
-  
+
 else
   error('caa:noData','no diEs{cl_id}p34 data in mEDSI')
 end
@@ -156,7 +156,7 @@ for co=1:2
       dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
     end
   end
-  
+
   axes(h(co))
   eval(['plot(' dummy ');'])
   irf_timeaxis
@@ -249,7 +249,7 @@ while(q ~= 'q')
     diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
     diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
     diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
-    
+
     figure(17)
     zoom off
     t1 = tokenize(var_list,',');
@@ -261,7 +261,7 @@ while(q ~= 'q')
           dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
         end
       end
-      
+
       axes(h(co)), cla(h(co))
       ax_pos=get(h(co),'position');
       eval(['plot(h(co),' dummy ');'])
@@ -270,7 +270,7 @@ while(q ~= 'q')
       grid(h(co)), set(h(co),'XTickLabel',[]), xlabel('')
       if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
     end
-    
+
     axes(h(1))
     title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
     irf_pl_add_info

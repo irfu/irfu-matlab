@@ -100,7 +100,7 @@ if flag_create_Cluster_file
   c_eval('Rper?=R?(iper?+1,:);');
   save mRcluster Rap1 % initiate saving file
   c_eval('save -append mRcluster Rap? Rper?');
-  
+
   %% Find separations at perigee and apogee
   c_eval('drper?!=R?(iper?,1:4)-R!(iper?,1:4);');
   c_eval('drper?!=irf_abs(drper?!);');
@@ -110,7 +110,7 @@ if flag_create_Cluster_file
   c_eval('drap?!=irf_abs(drap?!);');
   c_eval('drap?!(:,1)=R?(iap?,1);');
   save -append mRcluster drap12 drap13 drap14 drap23 drap24 drap34;
-  
+
   %% Find tail season an dayside season
   c_eval('itail?=find(Rap?(2:end,2)<0 & (Rap?(1:end-1,3).*Rap?(2:end,3) <0) );')
   c_eval('ttail?=Rap?(itail?,1);');

@@ -28,24 +28,24 @@ for i=1:length(yy)
     continue
   end
   x = x(:,2);
-  
+
   pdf = zeros(size(d));
-  
+
   for j=1:length(d)
     pdf(j) = length(find( x>=d(j) & x<d(j)+STEP ));
   end
-  
+
   pdf = pdf/abs(sum(x));
-  
+
   im = find( pdf==max(pdf), 1, 'last');
   ii = im-3:im+3; ii(ii<=0) = [];
   cf = fit(d(ii)'+STEP/2,(pdf(ii))','gauss1');
   cf = coeffvalues(cf);
-  
+
   [xx,ii] = sort([d+STEP/2 cf(2)]);
   pdf = [pdf cf(1)]; %#ok<AGROW>
   pdf = pdf(ii);
-  
+
   plot(xx,pdf,[c(i) '-o'])
   hold on
   text(cf(2),cf(1),sprintf('. %.2f mV/m',cf(2)))

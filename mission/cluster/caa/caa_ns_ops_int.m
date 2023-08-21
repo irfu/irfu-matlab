@@ -104,7 +104,7 @@ while found
         % clear already processed records
         ns_ops(ii(1),:) = [];
       end
-      
+
     end
   end
   if ~found, break, end

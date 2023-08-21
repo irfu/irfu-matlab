@@ -111,7 +111,7 @@ if isnumeric(Ps)
   ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
   Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
   if isempty(Psr), return, end
-  
+
   ii = find(Psr(:,2) < SC_POT_LIM);
   if isempty(ii), return, end
 elseif ischar(Ps)

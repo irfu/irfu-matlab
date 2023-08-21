@@ -33,11 +33,11 @@ end
 return % return from main function
 
   function plot_variables_in_separate_panels()
-    
+
   end
 
   function  plot_components_in_separate_panels()
-    
+
   end
 
   function plot_in_single_panel()
@@ -50,7 +50,7 @@ return % return from main function
     hca = ax(1);
     ts = irf_plot_start_epoch(x{1}.time);
     tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
-    
+
     %if length(x)==2 && strcmp(get_units(x{1}),get_units(x{2}))
     flagHold = ishold(hca);
     if flagHold, flagHolding = true; else, flagHolding = false; end
@@ -62,7 +62,7 @@ return % return from main function
       end
     end
     if ~flagHold && flagHolding, hold(hca,'off'), end
-    
+
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore
     %zoom_in_if_necessary(hca);
@@ -71,7 +71,7 @@ return % return from main function
     %ylabel(hca,get_label());
     irf_timeaxis(hca)
     hax=hca;
-    
+
     function st = randStr
       symbols = ['a':'z' 'A':'Z' '0':'9'];
       MAX_ST_LENGTH = 10;
