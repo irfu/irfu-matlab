@@ -605,7 +605,7 @@ classdef mms_edp_Sweep < handle
       % Inputs:
       %  - "sps" is a sunpulse structure obtained from
       %    sunpulse_from_hk101(), or ancillary defatt spin phase information.
-      %  - "printStatus" indicates whether to print (1/true) or not print 
+      %  - "printStatus" indicates whether to print (1/true) or not print
       %    (0/false) status for each sweep as they get processed.
       %  - "eclipseOrManeuver" is a combined eclipse and maneuver struct
       %    obtained from:
@@ -616,7 +616,7 @@ classdef mms_edp_Sweep < handle
       % If "sps" is absent no phase is computed.
       % If "printStatus" is absent or false/"0", no status is printed for
       % each sweep.
-      % 
+      %
       % If "eclipseOrManeuver" is sent and the time of sweep aligns with
       % either time of eclipse or maneuver then a warning is displayed when
       % anaylzing it and a status bit is set to indicate its results are to
