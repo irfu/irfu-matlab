@@ -48,9 +48,11 @@ runner = matlab.unittest.TestRunner.withTextOutput;
 ciPath = [irf('path'), filesep, 'ciPath'];
 if ~exist(ciPath, 'dir'), mkdir(ciPath); end
 runner.addPlugin(TestReportPlugin.producingPDF([ciPath, filesep, 'report.pdf'], 'Verbosity', 3));
-% CHECK output, if any problems do not release new version of irfu-matlab!
+
+% CHECK output. If there are any problems do not release new version of irfu-matlab!
 % assertSuccess should allow CI/CD Matlab Actions to report error if any
 % test failed.
+% NOTE: assertSuccess() only exists in MATLAB R2020a and later.
 assertSuccess(runner.run(suite));
 
 end

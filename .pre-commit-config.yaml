@@ -1,0 +1,21 @@
+repos:
+
+  ## Disabled autoupdate due to being slow.
+  #  - repo: local
+  #    # This hook helps keep all pre-commit updated.
+  #    hooks:
+  #      - id: pre-commit-autoupdate
+  #        name: Check for new versions with pre-commit autoupdate
+  #        entry: "pre-commit autoupdate"
+  #        language: system
+  #        pass_filenames: false
+
+  ## Some pre-commit out-of-the-box hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.4.0"
+    hooks:
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml

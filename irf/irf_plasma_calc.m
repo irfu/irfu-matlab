@@ -88,7 +88,7 @@ if flag_ask_parameters_interactively
   end
 end
 
-%if time series are supplied then time series shoud be returned
+%if time series are supplied then time series should be returned
 if size(B,2)>1      % we have time series of B
   t=B(:,1); %#ok<NASGU>     % time axis
   B(:,1)=[];      % delete time column

@@ -32,7 +32,7 @@ Cal = [];
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2023-07-27T12:08:00';
+codeVerStr = '2023-08-11T10:11:00';
 
 AddEntry('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z',[0.8889  3.4389]); % Based on data from 2020-04-07
 AddEntry('2020-05-18T04:05:55Z/2020-05-29T23:59:59Z',[0.8154  4.5562]);
@@ -148,7 +148,12 @@ NeScp.userData = '';
 % not yet used by BICAS (2023-08-10).
 % NOTE: Overwrite every value with zero in order to also overwrite Nan which
 % may otherwise inherited from NeScp.
-NeScpQualityBit = TSeries(NeScp.time, zeros(size(NeScp.data)));
+%NOTE: Density from TNR plasma line used to calibrate NeScp only measues up
+%to 122 cc, everything above that value is uncertain, therefore is flagged.
+%Low values of NeScp i.e <2 cc are also uncertain
+NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
+NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
+NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%% Help function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function AddEntry(TintS, calData, PSPintersection)

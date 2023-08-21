@@ -28,7 +28,7 @@ classdef solo_local_file_db < solo_file_db
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
       % fileList = list_files(obj, filePrefix, [tint]);
-      % List files from Database "obj", wich match "filePrefix" and cover
+      % List files from Database "obj", which match "filePrefix" and cover
       % optional time period "tint".
       % Example:
       %  SOLO_DB = solo_local_file_db('/data/solo'); % init

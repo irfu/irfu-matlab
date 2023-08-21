@@ -1,25 +1,25 @@
 version: 2
 updates:
-- package-ecosystem: "maven"
-  # Check for updates to pom.xml dependencies every weekday
-  directory: "/.github"
-  schedule:
-    interval: "daily"
-    time: "09:00"
-    timezone: "Europe/Stockholm"
-  open-pull-requests-limit: 10
-  target-branch: "devel"
-  assignees:
-  - thomas-nilsson-irfu
+  - package-ecosystem: "maven"
+    # Check for updates to pom.xml dependencies every weekday
+    directory: "/.github"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    target-branch: "devel"
+    assignees:
+      - thomas-nilsson-irfu
 
-- package-ecosystem: "github-actions"
-  # Check for updates to GitHub Actions every weekday
-  directory: "/"
-  schedule:
-    interval: "daily"
-    time: "09:05"
-    timezone: "Europe/Stockholm"
-  open-pull-requests-limit: 10
-  target-branch: "devel"
-  assignees:
-  - thomas-nilsson-irfu
+  - package-ecosystem: "github-actions"
+    # Check for updates to GitHub Actions every weekday
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:05"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    target-branch: "devel"
+    assignees:
+      - thomas-nilsson-irfu
