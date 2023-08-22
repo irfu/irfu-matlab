@@ -19,8 +19,9 @@ jobs:
   matlab:
     # Runs Matlab
     #runs-on: ubuntu-latest
-    ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
-    # which does not appear to have "libgfortran4" (used for tests of +whamp/) in its repo.
+    ## Specify ubuntu-20.04 (as per 2023-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
+    # which may or may not have correct gfortran versions used for some compiled code in its repo.
+    # ("libgfortran5" used for tests of +whamp/ and contrib/libirbem/).
     runs-on: ubuntu-20.04
     steps:
       # Check-out repository
@@ -31,10 +32,10 @@ jobs:
         uses: matlab-actions/setup-matlab@v1
 
       # Install required runtime lib for Fortan (whamp mex file)
-      - name: Install libgfortran4
+      - name: Install libgfortran5
         run: |
           sudo apt-get update
-          sudo apt-get install libgfortran4
+          sudo apt-get install libgfortran5
 
       # setup irfu-matlab and run tests_before_release
       - name: Run commands

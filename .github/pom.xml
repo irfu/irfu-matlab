@@ -17,7 +17,7 @@
     <dependency>
       <groupId>com.github.prbem</groupId>
       <artifactId>IRBEM</artifactId>
-      <version>4.4.0</version>
+      <version>5.0.0</version>
     </dependency>
     <!-- https://github.com/irfu/whamp -->
     <dependency>
