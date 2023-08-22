@@ -370,7 +370,7 @@ end
 % Calculate velocity moment
 
 if projDim == 1
-  vel = nansum(Fg.*dAg.*vg);
+  vel = sum(Fg.*dAg.*vg,'omitnan');
 elseif strcmpi(base,'pol')
   VG = repmat(vg',1,nAzg);
   PHIG = repmat(phig,nVg,1);
