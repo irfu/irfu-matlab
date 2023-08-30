@@ -209,7 +209,13 @@ end
 % NOTE: Only want to modify the zVariables that contain data, i.e. for which CDF
 % variable attribute DEPEND_0=Epoch, not metadata e.g. ACQUISITION_TIME_UNITS.
 % Code does not use rigorous condition. Should ideally use zVariable attribute
-% DEPEND_0. Is therefore not a generic function.
+% DEPEND_0. Is therefore not a truly generic function.
+%
+% RETURN VALUE
+% ============
+% Zvs
+%       Modified version of input argument. All fields with same number of rows
+%       as field "Epoch" modified by only keeping the rows specified in iArray.
 %
 function Zvs = select_ZVS_indices(Zvs, iArray)
     % NOTE: Can not use

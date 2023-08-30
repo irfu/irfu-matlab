@@ -29,7 +29,6 @@
 % First created 2020-10-22.
 %
 function mstd = mstd(v, ref, iDim)
-    % PROPOSAL: Rename using abbreviation MSTD.
     % PROPOSAL: Ignore NaN in the calculation of MSTD.
     %           ==> Be able to return non-NaN if there are sufficiently many non-NaN values.
     % PROPOSAL: Argument for smallest number of non-NaN values separately per
@@ -45,8 +44,8 @@ function mstd = mstd(v, ref, iDim)
         % NOTE:
         % N==0 ==> MSTD undefined.
         % N==1 ==> Standard deviation is undefined / ill-defined.
-        %   ref<>v ==> mstd ~ 1/0   (       1 / (N-1) )
-        %   ref==v ==> mstd ~ 0/0   ( (v-ref) / (N-1) )
+        %   ref<>v ==> mstd ~ 1/0        (       1 / (N-1) )
+        %   ref==v ==> mstd ~ 1/0 or 0/0 ( (v-ref) / (N-1) )
         
         mstdSize       = size(v);
         mstdSize(iDim) = 1;

@@ -32,7 +32,7 @@ classdef demuxer
     %   NOTE: Can not use ASR/AS ID. Does not cover all sources.
     %   PROPOSAL: .signalSource
     % PROPOSAL: Change fieldname <routing>.dest
-    %   PROOPSAL: .datasetAsId
+    %   PROPOSAL: .datasetAsId
     
     
     
@@ -47,8 +47,8 @@ classdef demuxer
         %    (statically) initialized, not every time the
         %    bicas.proc.L1L2.demuxer.main function is called.
         %    ==> Faster
-        % ** Makes all necessary calls bicas.proc.L1L2.PhysicalSignalSrcDest constructor
-        %    immediately, regardless of for which arguments the
+        % ** Makes all necessary calls bicas.proc.L1L2.PhysicalSignalSrcDest
+        %    constructor immediately, regardless of for which arguments the
         %    bicas.proc.L1L2.demuxer.main function is called (in particular mux
         %    mode).
         %    ==> Tests more code immediately.
@@ -89,7 +89,7 @@ classdef demuxer
 %         ROUTING_UNKNOWN_3_TO_V3_LF    = bicas.proc.L1L2.demuxer.routing('Unknown',   [], 'DC single', [3]);
         % NOTE: BLTS 4 & 5 are never unknown.
         
-        % Table to connect BLTS destinations with ASR struct fieldnamnes (FN).
+        % Table that associates BLTS destinations with ASR struct fieldnamnes (FN).
         BLTS_DEST_ASR_FN_TABLE = {...
             bicas.proc.L1L2.demuxer.SRC_DC_V1,  'dcV1'; ...
             bicas.proc.L1L2.demuxer.SRC_DC_V2,  'dcV2'; ...
@@ -119,7 +119,8 @@ classdef demuxer
         %       NOTE: This is needed for calibration.
         % (2) as what ASR (if any) should the BLTS be represented in the
         %     datasets,
-        % (3) derive the ASRs (samples) from the ASRs which have not been set.
+        % (3) derive the ASRs (samples) from those ASRs which have not already
+        %     been set.
         %       NOTE: This derivation from fully calibrated ASR samples only
         %       requires addition/subtraction of ASRs. It does not require any
         %       sophisticated/non-trivial calibration since the relationships
@@ -213,7 +214,7 @@ classdef demuxer
             % PROPOSAL: Log message for mux=NaN.
             
             % ASSERTIONS
-            assert(isscalar(demuxMode))
+            assert(isscalar(demuxMode))   % switch-case checks values.
             assert(isscalar(dlrUsing12))
             assert(iscell(bltsSamplesAVolt))            
             irf.assert.vector(bltsSamplesAVolt)
@@ -221,21 +222,8 @@ classdef demuxer
             % Should ideally check for all indices, but one helps.
             assert(isnumeric(bltsSamplesAVolt{1}))
             
-            % AS = "ASR Samples" (avolt)
-%             NAN_VALUES = nan(size(bltsSamplesAVolt{1}));
-%             As.dcV1  = NAN_VALUES;
-%             As.dcV2  = NAN_VALUES;
-%             As.dcV3  = NAN_VALUES;
-%             As.dcV12 = NAN_VALUES;
-%             As.dcV13 = NAN_VALUES;
-%             As.dcV23 = NAN_VALUES;
-%             As.acV12 = NAN_VALUES;
-%             As.acV13 = NAN_VALUES;
-%             As.acV23 = NAN_VALUES;
-            As = struct();
-            
-            
-            
+
+
             if dlrUsing12
                 ROUTING_DC_V1x = bicas.proc.L1L2.demuxer.ROUTING_DC_V12;
                 ROUTING_AC_V1x = bicas.proc.L1L2.demuxer.ROUTING_AC_V12;
@@ -243,9 +231,7 @@ classdef demuxer
                 ROUTING_DC_V1x = bicas.proc.L1L2.demuxer.ROUTING_DC_V13;
                 ROUTING_AC_V1x = bicas.proc.L1L2.demuxer.ROUTING_AC_V13;
             end
-
-            import bicas.proc.L1L2.demuxer.*
-
+            
             % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux
             % mode, but the code hard-codes this separately for every case (i.e.
             % multiple times) for completeness.
@@ -259,7 +245,6 @@ classdef demuxer
                     RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_DC_V23;
                     RoutingArray(4) =                         ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
-                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
 
                 case 1   % Probe 1 fails
 
@@ -268,7 +253,6 @@ classdef demuxer
                     RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_DC_V23;
                     RoutingArray(4) =                         ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
-                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3
                     % contain redundant data (regardless of latching relay
@@ -281,7 +265,6 @@ classdef demuxer
                     RoutingArray(3) =                         ROUTING_DC_V1x;
                     RoutingArray(4) = bicas.proc.L1L2.demuxer.ROUTING_AC_V13;
                     RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
-                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                 case 3   % Probe 3 fails
 
@@ -290,7 +273,6 @@ classdef demuxer
                     RoutingArray(3) =                         ROUTING_DC_V1x;
                     RoutingArray(4) =                         ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
-                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
 
                 case 4   % Calibration mode 0
                     
@@ -299,7 +281,6 @@ classdef demuxer
                     RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_DC_V3;
                     RoutingArray(4) =                         ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
-                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
 
                 case {5,6,7}   % Calibration mode 1/2/3
 
@@ -315,7 +296,6 @@ classdef demuxer
                     end
                     RoutingArray(4) =                         ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
-                    %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                 otherwise
                     % IMPLEMENTATION NOTE: switch-case statement does not work
@@ -331,7 +311,6 @@ classdef demuxer
                         RoutingArray(3) = bicas.proc.L1L2.demuxer.ROUTING_UNKNOWN_3_TO_NOTHING;
                         RoutingArray(4) =                         ROUTING_AC_V1x;
                         RoutingArray(5) = bicas.proc.L1L2.demuxer.ROUTING_AC_V23;
-                        %As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                         
                         % BUG/NOTE: Does not set any DC samples. Therefore just
                         % keeping the defaults. Can not derive any DC signals
@@ -343,8 +322,11 @@ classdef demuxer
                     end
             end    % switch
             
-            As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
-            As = complement_ASR(As);
+            % AS = "ASR Samples" (avolt)
+            As = struct();
+            As = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
+                As, bltsSamplesAVolt, RoutingArray);
+            As = bicas.proc.L1L2.demuxer.complement_ASR(As);
             
             
             
@@ -377,8 +359,8 @@ classdef demuxer
         function AsrSamplesAVolt = complement_ASR(AsrSamplesAVolt)
             As = AsrSamplesAVolt;   % Shorten variable name.
             
-            % NOTE: A relation can be complemented at most once, but algorithm
-            % will try to complement relations multiple times.
+            % NOTE: A relation can be complemented at most once, but the
+            % algorithm will try to complement relations multiple times.
             %
             % PROPOSAL: Add empty/NaN same-sized fields when can not derive any more fields. Assertion on fieldnames
             %           at the end.
@@ -434,7 +416,10 @@ classdef demuxer
             % overdetermined/redundant).
             %   Ex: mux=1,2,3
             %===================================================================
+            
+            % BUG? Field might not exist?
             tempNaN = nan(size(As.acV12));    % Use first field in fieldnames?
+
             for iFn = 1:N_ASR_FIELDNAMES
                 fn = bicas.proc.L1L2.demuxer.ASR_FIELDNAMES_CA{iFn};
                 if ~isfield(As, fn)
@@ -463,7 +448,7 @@ classdef demuxer
         
         % Utility function.
         % Create struct for a given BLTS describing where the physical signal
-        % comes from and how it should be stored in the datasets. objects.
+        % comes from and how it should be stored in the datasets objects.
         %
         %
         % ARGUMENTS
@@ -477,11 +462,15 @@ classdef demuxer
         %
         % RETURN VALUE
         % ============
-        % R : Struct. Fields are bicas.proc.L1L2.PhysicalSignalSrcDest.
-        %   .src  : Where the physical signal in BLTS ultimately comes from.
+        % R
+        %       Struct. Fields are instances of
+        %       bicas.proc.L1L2.PhysicalSignalSrcDest.
+        %       .src
+        %           Where the physical signal in BLTS ultimately comes from.
         %           This is used to determine how the signal should be
         %           calibrated.
-        %   .dest : How the BLTS should be stored in the datasets.
+        %       .dest
+        %           How the BLTS should be stored in the datasets.
         %           If varargin is not used, then identical to .src .
         %
         function R = routing(srcCategory, srcAntennas, varargin)
@@ -522,12 +511,13 @@ classdef demuxer
         
         
         
-        % Convert a PhysicalSignalSrcDest (representing an ASR) to a corresponding
-        % struct fieldname.
+        % Convert a bicas.proc.L1L2.PhysicalSignalSrcDest object (representing
+        % an ASR) to a corresponding struct fieldname.
         function fn = get_ASR_fieldname(BltsDest)
             % PROPOSAL: New name implying "destination".
             
             BLTS_DEST_ASR_FN_TABLE = bicas.proc.L1L2.demuxer.BLTS_DEST_ASR_FN_TABLE;
+            
             for i =1:size(BLTS_DEST_ASR_FN_TABLE, 1)
                 if isequal(BltsDest, BLTS_DEST_ASR_FN_TABLE{i, 1})
                     fn = BLTS_DEST_ASR_FN_TABLE{i, 2};
@@ -546,8 +536,14 @@ classdef demuxer
         %
         % ARGUMENTS
         % =========
-        % As             : Struct
-        % fn1, fn2, fn3 : Existent or non-existent fieldnames in s.
+        % As            
+        %       Struct.
+        % fn1, fn2, fn3
+        %       Existent or non-existent fieldnames in s. If exactly one of them
+        %       is missing in "As", then the field is created with values
+        %       assuming that the field contents are related through the
+        %       relationship fn1 = fn2 + fn3.
+        %       In other cases, "As" is returned unmodified.
         %
         function As = complete_relation(As, fn1, fn2, fn3)
             e1 = isfield(As, fn1);

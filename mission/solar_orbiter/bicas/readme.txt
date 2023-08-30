@@ -9,6 +9,13 @@ the RPW instrument on the Solar Orbiter spacecraft. The principle author of
 this software is Erik P G Johansson, Swedish Institute of Space Physics (IRF),
 Uppsala, Sweden. Software development began 2016-03-xx (March 2016).
 
+The software was originally developed for processing
+(1) L1R-->L2, for being run at ROC for official processing (deliveries of L2 to SOAR).
+After that, the software has been extended analogously to also process more datasets at IRFU
+(2) L2-->L3, for official deliveries IRFU-->ROC (and further to SOAR), and
+(3) L2-->L2 (SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND; IRFU-internal unofficial dataset)
+.
+
 IMPORTANT NOTE: BICAS is designed to comply with the RCS ICD. Much documentation
 on how to use this software can thus be found there. For more documentation,
 see RCS ICD and RUM documents (see below).
@@ -43,19 +50,21 @@ AAPT
     Antenna ampere/TM
 ASR, Antenna Signal Representation.
     (1) A reference to a particular "physical antenna signal"
-    (a "data channel") which BIAS-LFR/TDS is trying to measure, or
-    (2) a measurement of such thereof. In reality, the terminology is:
+        (a "data channel") which BIAS-LFR/TDS is trying to measure, or
+    (2) a measurement of such.
+    In reality, the terminology is:
     ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF
                   (DC diff, antenna 1-2)
     ASR samples : Samples representing a specific ASR (as opposed to BLTS).
-    NOTE: There are 9 ASRs, i.e. they can refer also to signals not represented
-    by any single BLTS, given a chosen mux mode (and latching relay setting).
+    NOTE: There are 9 ASRs (DC: 3 singles, 3 diffs; AC: 3 diffs), i.e. they
+    can refer also to signals not represented by any single BLTS, given a
+    chosen mux mode (and latching relay setting).
 AV, avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from
     singles). May also refer to offsets and values without offsets.
 AVPIV
-    Antenna volt/interface volt
+    Antenna Volt / (Per) Interface Volt
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".

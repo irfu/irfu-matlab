@@ -1,10 +1,19 @@
 %
 % Class that stores metadata for one SWD input dataset.
+% 
+% NOTE: Not to be confused with bicas.InputDataset.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef InputDataset
+% PROPOSAL: Rename to not be same as bicas.InputDataset.
+%   InputSwmDataset
+%       CON: SWM already in path (MATLAB package name).
+%   InputMetadataDataset
+%       CON: 2x "data"
+
+
 
     %#####################
     %#####################

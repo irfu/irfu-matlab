@@ -26,7 +26,8 @@ classdef dc
     % PROPOSAL: Make AsrSamplesAVolt/DemuxerOutput a class.
     %   PRO: Can initialize right-sized empty fields in constructor.
 
-    
+
+
     %#######################
     %#######################
     % PUBLIC STATIC METHODS

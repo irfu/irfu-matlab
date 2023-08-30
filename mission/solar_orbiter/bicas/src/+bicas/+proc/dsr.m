@@ -209,16 +209,18 @@ classdef dsr
         %
         % ARGUMENTS
         % =========
-        % zvAllTt2000           : Column array. ~Epoch.
-        %                         PROBLEM: Can not handle zvAllTt2000(1),
-        %                         zvAllTt2000(end) being during positive leap
-        %                         second.
-        % boundaryRefTt2000     : Must not be during leap second. Specifies
-        %                         boundaries will be together with other
-        %                         arguments.
-        % binLengthWolsNs       : Length of each bin.
-        % binTimestampPosWolsNs : Position of timestamp that represents bin,
-        %                         relative to beginning of bin.
+        % zvAllTt2000
+        %       Column array. ~Epoch.
+        %       PROBLEM: Can not handle zvAllTt2000(1), zvAllTt2000(end)
+        %       being during positive leap second.
+        % boundaryRefTt2000
+        %       Must not be during leap second. Specifies boundaries will be
+        %       together with other arguments.
+        % binLengthWolsNs
+        %       Length of each bin.
+        % binTimestampPosWolsNs
+        %       Position of timestamp that represents bin, relative to beginning
+        %       of bin.
         %
         %
         % RETURN VALUES
@@ -229,7 +231,7 @@ classdef dsr
         % iRecordsInBinCa
         %       Column cell array.
         %       Indices to CDF records for respective bins.
-        %       {iBin, 1}(iSamples,1) = Non-downsampled CDF record number.
+        %       {iBin,1}(iSample,1) = Non-downsampled CDF record number.
         % binSizeArrayNs
         %       (iBin, 1). Bin size.
         %       RATIONALE: Useful for automatic testing, setting zVar
@@ -239,9 +241,9 @@ classdef dsr
         % NAMING CONVENTIONS
         % ==================
         % See readme.txt
-        % bin      = Time interval within which all corresponding CDF records
+        % bin      : Time interval within which all corresponding CDF records
         %            should be condensed to one.
-        % boundary = Edge of bin(s).
+        % boundary : Edge of bin(s).
         %
         function [zvBinsTt2000, iRecordsInBinCa, binSizeArrayNs] = ...
             get_downsampling_bins(...
@@ -480,10 +482,15 @@ classdef dsr
         % corresponding non-downsampled records (bin).
         %
         % NOTE: Handles empty bins.
-        %
-        function QUALITY_FLAG = downsample_bin_QUALITY_FLAG(...
+        % RETURN VALUE
+        % ============
+        % zv_QUALITY_FLAG
+        %       Scalar. Lowest value of the bin values.
+        %       Bin with only non-fill values or empty bin: Fill value.
+        function zv_QUALITY_FLAG = downsample_bin_QUALITY_FLAG(...
                 zv_QUALITY_FLAG_bin, fillValue)
             % TODO: Automated tests.
+            % PROPOSAL: Work on FPA.
 
             % Remove records with fill values.
             bUse = (zv_QUALITY_FLAG_bin ~= fillValue);
@@ -492,10 +499,10 @@ classdef dsr
             % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
             % does not work if one wants to return 0 for empty bins.
             if isempty(zv_QUALITY_FLAG_bin)
-                QUALITY_FLAG = fillValue;
+                zv_QUALITY_FLAG = fillValue;
             else
                 % CASE: zv_QUALITY_FLAG_bin contains no fill values.
-                QUALITY_FLAG = min(zv_QUALITY_FLAG_bin);
+                zv_QUALITY_FLAG = min(zv_QUALITY_FLAG_bin);
             end
         end
 
@@ -503,6 +510,9 @@ classdef dsr
 
         % Derive a quality bitmask for ONE downsampled CDF record, from the
         % corresponding non-downsampled records (bin).
+        %
+        % Assumes that bit set represents data problem, which must be preserved
+        % in bin, i.e. OR:ing bit samples.
         %
         % NOTE: "QUALITY_BITMASK" refers to any zVariable with a UINT16 quality
         % bitmask.
@@ -516,6 +526,9 @@ classdef dsr
         function zv_QUALITY_BITMASK = downsample_bin_QUALITY_BITMASK(...
                 zv_QUALITY_BITMASK_bin, fillValue)
             % TODO: Automated tests.
+            % PROPOSAL: Work on FPA.
+            %   PRO: Does not need to know fill value.
+            %   CON: One FPA per bin?!
 
             % IMPLEMENTATION NOTE:
             % 2020-11-23: L2 zVar "QUALITY_BITMASK" is

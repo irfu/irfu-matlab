@@ -1,11 +1,15 @@
 %
 % Class whose instances represent one loaded dataset (CDF file).
 %
+% NOTE: Not to be confused with bicas.swm.InputDataset.
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-09
 %
 classdef InputDataset
+    % PROPOSAL: Make all properties/instance variables immutable. Modify by
+    %           creating modified copy of class instance.
 
 
 

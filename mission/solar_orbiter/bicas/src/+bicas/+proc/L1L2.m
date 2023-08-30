@@ -142,6 +142,7 @@ classdef L1L2
                     ['HK timestamps do not increase monotonically', ...
                     ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
                     USE_ZV_ACQUISITION_TIME_HK)
+                
             end
             if ~irf.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
                 %---------------------------------------
@@ -156,6 +157,7 @@ classdef L1L2
                     settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
                     'BICAS:SWMProcessing')
+                
             elseif ~irf.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 %-------------------------------------------------
                 % CASE: SCI does not cover a subset of HK in time
@@ -178,6 +180,7 @@ classdef L1L2
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:DatasetFormat:SWMProcessing')
+                
             end
 
 

@@ -1,6 +1,6 @@
 %
-% Simple class which instances can represent either of two things
-% (1) SIGNAL SOURCE: where a particular BLTS comes from, i.e.
+% Simple class which instances represent either of two things:
+% (1) SIGNAL SOURCE: where a particular BLTS ultimately comes from, i.e.
 %     ** an ASR (DC single/DC diff/AC diff)
 %     ** "2.5 V Ref"
 %     ** "GND"
@@ -60,12 +60,13 @@ classdef PhysicalSignalSrcDest
     
     
     methods(Access=public)
-        
-        
+
+
+
         % Constructor
         function obj = PhysicalSignalSrcDest(category, antennas)
             
-            % ASSERTIONS: antenna
+            % ASSERTIONS: antennas
             assert(isnumeric(antennas))
             % NOTE: OK for empty value, [].
             assert(all(ismember(antennas, [1,2,3])))

@@ -137,8 +137,8 @@ classdef L2L3
             % ~HACK: MODIFY INPUT ARGUMENT InLfrCwf
             % -------------------------------------
             % IMPLEMENTATION NOTE: This is to modify QUALITY_FLAG for both OSR
-            % and DSR datasets. In principle, this is to keep the interface to
-            % init_shared_DSR_ZVs() simple.
+            % and DSR datasets. In principle, this is for keeping the interface
+            % to bicas.proc.dsr.init_shared_DSR_ZVs() simple.
             %===================================================================
             InLfrCwf.Zv.QUALITY_FLAG(R.bNotUsed) = InLfrCwf.ZvFv.QUALITY_FLAG;
 
@@ -197,12 +197,13 @@ classdef L2L3
             % NOTE: Not setting DSR ".Ga"/global attributes here, since DSR
             % datasets later copy ".Ga" from the respective OSR datasets.
             InitialDsr = struct('Zv', InitialDsrZv);
+            % nRecordsDsr = numel(iRecordsInBinCa);
             
 
 
-            %=======================
+            %====================
             % ZVs for EFIELD OSR
-            %=======================
+            %====================
             OutEfieldOsr = InitialOsr;
             OutEfieldOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
@@ -213,9 +214,9 @@ classdef L2L3
         
 
 
-            %======================
+            %===================
             % ZVs for SCPOT OSR
-            %======================
+            %===================
             OutScpotOsr = InitialOsr;
             OutScpotOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
@@ -228,9 +229,9 @@ classdef L2L3
 
 
 
-            %========================
+            %=====================
             % ZVs for DENSITY OSR
-            %========================
+            %=====================
             OutDensityOsr = InitialOsr;
             OutDensityOsr.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
             %
@@ -241,9 +242,9 @@ classdef L2L3
 
 
 
-            %==============================
-            % ZVs for EFIELD DOWNSAMPLED
-            %==============================
+            %====================
+            % ZVs for EFIELD DSR
+            %====================
             OutEfieldDsr    = InitialDsr;
             OutEfieldDsr.Ga = OutEfieldOsr.Ga;
             %
@@ -260,9 +261,9 @@ classdef L2L3
 
             
 
-            %=============================
-            % ZVs for SCPOT DOWNSAMPLED
-            %=============================
+            %===================
+            % ZVs for SCPOT DSR
+            %===================
             OutScpotDsr    = InitialDsr;
             OutScpotDsr.Ga = OutScpotOsr.Ga;
             %
@@ -286,9 +287,9 @@ classdef L2L3
 
 
 
-            %===============================
-            % ZVs for DENSITY DOWNSAMPLED
-            %===============================
+            %=====================
+            % ZVs for DENSITY DSR
+            %=====================
             OutDensityDsr    = InitialDsr;
             OutDensityDsr.Ga = OutDensityOsr.Ga;
             %
