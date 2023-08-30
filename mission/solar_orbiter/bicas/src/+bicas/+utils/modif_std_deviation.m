@@ -1,7 +1,6 @@
 %
-% Calculate "modified standard deviation" (MSTD), i.e. standard deviation but
-% using an arbitrary reference (e.g. median) instead of the conventional mean.
-% Calculate it over one arbitrary dimension.
+% Calculate "modified standard deviation" (MSTD). Calculate it over one
+% arbitrary dimension.
 %
 %
 % ARGUMENTS
@@ -17,19 +16,20 @@
 % RETURN VALUES
 % =============
 % mstd
-%       Modified STandard Deviation (MSTD).
+%       MSTD.
 %       Same size as "v", except for that size(mstd, iDim) == 1.
 %       --
 %       NaN, if size(v, iDim) == 0 or 1, or
 %            if "v" contains at least one NaN for the particular 1D-sub-vector
 %            for which one scalar MSTD values is calculated.
-%       Modified standard deviation otherwise.
+%       MSTD otherwise.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-10-22.
 %
 function mstd = modif_std_deviation(v, ref, iDim)
+    % PROPOSAL: Rename using abbreviation MSTD.
     % PROPOSAL: Ignore NaN in the calculation of MSTD.
     %           ==> Be able to return non-NaN if there are sufficiently many non-NaN values.
     % PROPOSAL: Argument for smallest number of non-NaN values separately per

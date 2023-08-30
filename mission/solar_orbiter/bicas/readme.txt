@@ -125,6 +125,9 @@ L2QBM
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
+MSTD
+    Modified STandard Deviation. Like standard deviation but using an
+    arbitrary reference (e.g. median) instead of the conventional mean.
 NS
     Nanoseconds
 NSO

@@ -339,9 +339,9 @@ classdef dsr
         
         % Downsample a single NxM science zVar.
         %
-        % Use bins and for every bin, derive median and modified standard
-        % deviation over dimension 1 (within bin). Construct two zVariables for
-        % median+MSTD for the corresponding downsampled CDF record.
+        % Use bins and for every bin, derive median and MSTD over dimension 1
+        % (within bin). Construct two zVariables for median+MSTD for the
+        % corresponding downsampled CDF record.
         %
         % NOTE: Can handle zero records in bin.
         % NOTE: Function is only public so that automated test code can access
@@ -368,8 +368,10 @@ classdef dsr
         %
         % RETURN VALUES
         % =============
-        % zvMed  : (iBin, iChannel). Median.
-        % zvMstd : (iBin, iChannel). Modified STandard Deviation (MSTD).
+        % zvMed
+        %       (iBin, iChannel). Median.
+        % zvMstd
+        %       (iBin, iChannel). MSTD.
         %
         function [zvMed, zvMstd] = downsample_sci_ZV(...
                 zv, nMinReqRecords, iRecordsInBinCa, L)
