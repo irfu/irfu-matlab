@@ -8,7 +8,7 @@
 classdef dsr    
     %
     % PROPOSAL: Test code for code that downsamples.
-    %   Ex: bicas.proc.dsr.downsample_bin_L12_QUALITY_BITMASK() -- Too trivial?
+    %   Ex: bicas.proc.dsr.downsample_bin_QUALITY_BITMASK() -- Too trivial?
     %   Ex: bicas.proc.dsr.downsample_bin_QUALITY_FLAG()        -- Too trivial?
     %   --
     %   PRO: Can verify now uncertain edge cases.
@@ -147,12 +147,12 @@ classdef dsr
                 %   (SKELETON_MODS: V12=Feb 2021)
                 % .
                 QUALITY_BITMASK_dsr(iBin)    = ...
-                    bicas.proc.dsr.downsample_bin_L12_QUALITY_BITMASK(...
+                    bicas.proc.dsr.downsample_bin_QUALITY_BITMASK(...
                         uint16( InLfrCwf.Zv.QUALITY_BITMASK( k ) ), ...
                         InLfrCwf.ZvFv.QUALITY_BITMASK);
 
                 L2_QUALITY_BITMASK_dsr(iBin) = ...
-                    bicas.proc.dsr.downsample_bin_L12_QUALITY_BITMASK(...
+                    bicas.proc.dsr.downsample_bin_QUALITY_BITMASK(...
                         InLfrCwf.Zv.L2_QUALITY_BITMASK( k ), ...
                         InLfrCwf.ZvFv.L2_QUALITY_BITMASK);
             end
@@ -494,29 +494,39 @@ classdef dsr
         % Derive a quality bitmask for ONE downsampled CDF record, from the
         % corresponding non-downsampled records (bin).
         %
-        % NOTE: "L12_QUALITY_BITMASK" refers to both zVariables
-        %   (1) QUALITY_BITMASK (set in L1), and
-        %   (2) L2_QUALITY_BITMASK.
+        % NOTE: "QUALITY_BITMASK" refers to any zVariable with a UINT16 quality
+        % bitmask.
         %
-        % NOTE: Handles empty bins.
+        % RETURN VALUE
+        % ============
+        % QUALITY_BITMASK
+        %       Scalar. OR:ed bits for non-fill value bin values.
+        %       Bin with only fill values or empty bin: Fill value.
         %
-        function L12_QUALITY_BITMASK = downsample_bin_L12_QUALITY_BITMASK(...
-                zv_L12_QUALITY_BITMASK_bin, fillValue)
+        function zv_QUALITY_BITMASK = downsample_bin_QUALITY_BITMASK(...
+                zv_QUALITY_BITMASK_bin, fillValue)
             % TODO: Automated tests.
 
-            % IMPLEMENTATION NOTE: 2020-11-23: L2 zVar "QUALITY_BITMASK" is
-            % mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
-            assert(isa(zv_L12_QUALITY_BITMASK_bin, 'uint16'))
+            % IMPLEMENTATION NOTE:
+            % 2020-11-23: L2 zVar "QUALITY_BITMASK" is
+            %   mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
+            % 2023-08-30: Can neither see this for L1:QUALITY_BITMASK nor
+            %   L2:L2_QUALITY_BITMASK in
+            %   solo_L1_rpw-lfr-surv-cwf-cdag_20200212_V10.cdf
+            %   solo_L2_rpw-lfr-surv-cwf-e-cdag_20200229_V13.cdf
+            %   solo_L2_rpw-lfr-surv-cwf-e-cdag_20230823_V02.cdf
+            %   solo_L1_rpw-lfr-surv-cwf-cdag_20230823_V02.cdf
+            assert(isa(zv_QUALITY_BITMASK_bin, 'uint16'))
             
             % Remove records with fill values.
-            b = zv_L12_QUALITY_BITMASK_bin ~= fillValue;
-            zv_L12_QUALITY_BITMASK_bin = zv_L12_QUALITY_BITMASK_bin(b, :, :);
+            b = zv_QUALITY_BITMASK_bin ~= fillValue;
+            zv_QUALITY_BITMASK_bin = zv_QUALITY_BITMASK_bin(b, :, :);
 
-            if isempty(zv_L12_QUALITY_BITMASK_bin)
-                L12_QUALITY_BITMASK = fillValue;
+            if isempty(zv_QUALITY_BITMASK_bin)
+                zv_QUALITY_BITMASK = fillValue;
             else
-                L12_QUALITY_BITMASK = bicas.utils.bitops.or(...
-                    zv_L12_QUALITY_BITMASK_bin);
+                zv_QUALITY_BITMASK = bicas.utils.bitops.or(...
+                    zv_QUALITY_BITMASK_bin);
             end
         end
 
