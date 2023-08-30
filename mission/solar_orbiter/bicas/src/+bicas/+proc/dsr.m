@@ -72,8 +72,7 @@ classdef dsr
                     binLengthWolsNs, ...
                     binTimestampPosWolsNs, ...
                     L);
-            % nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
-            nRecordsDsr = numel(zvEpochDsr);
+            nRecordsDsr = numel(iRecordsInBinCa);
             
             
             
@@ -124,41 +123,35 @@ classdef dsr
             % Source:
             % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
             %====================================================================
+            % IMPLEMENTATION NOTE:
+            % 2020-11-23: L2 zVar "L2_QUALITY_BITMASK" is mistakenly
+            % uint8/CDF_UINT1 when it should be uint16/CDF_UINT2. Must
+            % therefore TYPECAST.
+            % 2021-05-06: L2 zVar "QUALITY_BITMASK" type was changed from
+            %   SOLO_L2_RPW-LFR-SURV-CWF-E_V11.skt: CDF_UTIN1
+            % to 
+            %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
+            %   (SKELETON_MODS: V12=Feb 2021)
+            % .
+            zv_QUALITY_BITMASK_dsr    = bicas.proc.dsr.downsample_QUALITY_BITMASK(...
+                InLfrCwf.Zv.QUALITY_BITMASK, ...
+                InLfrCwf.ZvFv.QUALITY_BITMASK, ...
+                iRecordsInBinCa);
+            zv_L2_QUALITY_BITMASK_dsr = bicas.proc.dsr.downsample_QUALITY_BITMASK(...
+                InLfrCwf.Zv.L2_QUALITY_BITMASK, ...
+                InLfrCwf.ZvFv.L2_QUALITY_BITMASK, ...
+                iRecordsInBinCa);
             % Pre-allocate
-            QUALITY_FLAG_dsr       = zeros(nRecordsDsr, 1, 'uint8');
-            QUALITY_BITMASK_dsr    = zeros(nRecordsDsr, 1, 'uint16');
-            L2_QUALITY_BITMASK_dsr = zeros(nRecordsDsr, 1, 'uint16');
+            QUALITY_FLAG_dsr = zeros(nRecordsDsr, 1, 'uint8');
             for iBin = 1:nRecordsDsr
                 k = iRecordsInBinCa{iBin};
-
+                
                 QUALITY_FLAG_dsr(iBin) = ...
                     bicas.proc.dsr.downsample_bin_QUALITY_FLAG(...
                         InLfrCwf.Zv.QUALITY_FLAG( k ), ...
                         InLfrCwf.ZvFv.QUALITY_FLAG);
-
-                % IMPLEMENTATION NOTE:
-                % 2020-11-23: L2 zVar "QUALITY_BITMASK" is mistakenly
-                % uint8/CDF_UINT1 when it should be uint16/CDF_UINT2. Must
-                % therefore TYPECAST.
-                % 2021-05-06: L2 zVar "QUALITY_BITMASK" type was changed from
-                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V11.skt: CDF_UTIN1
-                % to 
-                %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
-                %   (SKELETON_MODS: V12=Feb 2021)
-                % .
-                QUALITY_BITMASK_dsr(iBin)    = ...
-                    bicas.proc.dsr.downsample_bin_QUALITY_BITMASK(...
-                        uint16( InLfrCwf.Zv.QUALITY_BITMASK( k ) ), ...
-                        InLfrCwf.ZvFv.QUALITY_BITMASK);
-
-                L2_QUALITY_BITMASK_dsr(iBin) = ...
-                    bicas.proc.dsr.downsample_bin_QUALITY_BITMASK(...
-                        InLfrCwf.Zv.L2_QUALITY_BITMASK( k ), ...
-                        InLfrCwf.ZvFv.L2_QUALITY_BITMASK);
             end
-
-
-
+            
             %============================================================
             % Shared zVariables between all DOWNSAMPLED datasets
             %
@@ -167,8 +160,8 @@ classdef dsr
             InitialDsrZv = struct();
             InitialDsrZv.Epoch              = zvEpochDsr;
             InitialDsrZv.QUALITY_FLAG       = QUALITY_FLAG_dsr;
-            InitialDsrZv.QUALITY_BITMASK    = QUALITY_BITMASK_dsr;
-            InitialDsrZv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK_dsr;
+            InitialDsrZv.QUALITY_BITMASK    = zv_QUALITY_BITMASK_dsr;
+            InitialDsrZv.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK_dsr;
             %
             % NOTE: Takes leap seconds into account.
             % NOTE/BUG: DELTA_PLUS_MINUS not perfect since the bin timestamp is
@@ -185,6 +178,23 @@ classdef dsr
 %             bicas.log_speed_profiling(L, ...
 %                 'bicas.proc.dsr.init_shared_DSR_ZVs', tTicToc, ...
 %                 nRecordsDsr, 'DSR record')
+        end
+        
+        
+        
+        % Downsample a zVariable *QUALITY_SAMPLE into multiple bins.
+        %
+        function zv_QUALITY_BITMASK_dsr = downsample_QUALITY_BITMASK(...
+                zv_QUALITY_BITMASK_osr, fillValue, iRecordsInBinCa)
+            nRecordsDsr = numel(iRecordsInBinCa);
+            zv_QUALITY_BITMASK_dsr = zeros(nRecordsDsr, 1, 'uint16');
+
+            for iBin = 1:nRecordsDsr
+                k = iRecordsInBinCa{iBin};
+
+                zv_QUALITY_BITMASK_dsr(iBin) = bicas.proc.dsr.downsample_bin_QUALITY_BITMASK(...
+                        uint16(zv_QUALITY_BITMASK_osr(k)), fillValue);
+            end
         end
 
 
