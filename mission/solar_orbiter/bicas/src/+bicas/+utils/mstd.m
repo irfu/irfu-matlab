@@ -28,7 +28,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-10-22.
 %
-function mstd = modif_std_deviation(v, ref, iDim)
+function mstd = mstd(v, ref, iDim)
     % PROPOSAL: Rename using abbreviation MSTD.
     % PROPOSAL: Ignore NaN in the calculation of MSTD.
     %           ==> Be able to return non-NaN if there are sufficiently many non-NaN values.

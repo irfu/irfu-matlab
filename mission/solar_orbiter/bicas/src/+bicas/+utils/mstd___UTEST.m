@@ -1,11 +1,11 @@
 %
-% matlab.unittest automatic test code for bicas.utils.modif_std_deviation().
+% matlab.unittest automatic test code for bicas.utils.mstd().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-10 from older test code.
 %
-classdef modif_std_deviation___UTEST < matlab.unittest.TestCase
+classdef mstd___UTEST < matlab.unittest.TestCase
 
 
 
@@ -21,12 +21,12 @@ classdef modif_std_deviation___UTEST < matlab.unittest.TestCase
         function test0(testCase)
             
             function test(v, ref, iDim, mstd)
-                actOutput = bicas.utils.modif_std_deviation(v, ref, iDim);
+                actOutput = bicas.utils.mstd(v, ref, iDim);
                 testCase.verifyEqual(actOutput, mstd)
             end
             %===================================================================
             
-            % Function declaration: mstd = modif_std_deviation(v, ref, iDim)
+            % Function declaration: mstd = mstd(v, ref, iDim)
 
             % Empty data.
             test(zeros(0,3), 5, 1, NaN(1,3));
