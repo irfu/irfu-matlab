@@ -126,7 +126,10 @@ classdef L2L3
             % solo.vdccal()
             R = bicas.proc.L2L3.calc_EFIELD_SCPOT(InLfrCwf.Zv, SETTINGS);
             % solo.psp2ne()
-            [NeScpTs, psp2neCodeVerStr] = bicas.proc.L2L3.calc_DENSITY(R.PspTs);
+            [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = bicas.proc.L2L3.calc_DENSITY(R.PspTs);
+            clear NeScpQualityBitTs
+            % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
+            %       expected to be used by BICAS later.
 
 
             
@@ -468,16 +471,13 @@ classdef L2L3
         % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
         % relies on PSP values for which this has already been done.
         %
-        function [NeScpTs, psp2neCodeVerStr] = calc_DENSITY(PspTs)
+        function [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = calc_DENSITY(PspTs)
             
             %==========================
             % CALL BICAS-EXTERNAL CODE
             %==========================
             [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
             %==========================
-            % NOTE: Ignoring return value NeScpQualityBit(Ts) for now except for
-            %       assertions on it. Value is expected to be used by BICAS
-            %       later.
             
 
 
