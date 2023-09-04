@@ -20,7 +20,7 @@
             2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2023-07-26, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2023-07-01 (inclusive). Only contains manually identified thuster firings.
+            2023-07-26, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2023-09-02 (inclusive). Only contains manually identified thuster firings.
         </note>
         <note>
             Note that since data gaps may be filled in after that a time interval has been manually searched for thruster firings etc., this list still might not label all such thruster firings (etc.) in the time period(s) that has/have been stated to be searched.
@@ -35,6 +35,8 @@
     ########
     -->
     <eventsTable>
+
+
 
         <event>
             <startTimeUtc>2020-03-30T21:59:34</startTimeUtc>
@@ -1651,6 +1653,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2022-10-22T01:04:25</startTimeUtc>
+            <stopTimeUtc> 2022-10-22T01:18:34</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
             <startTimeUtc>2022-10-24T01:04:23</startTimeUtc>
             <stopTimeUtc> 2022-10-24T01:18:12</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
@@ -1909,6 +1917,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2023-04-29T21:02:26</startTimeUtc>
+            <stopTimeUtc> 2023-04-29T21:17:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
             <startTimeUtc>2023-05-01T01:04:24</startTimeUtc>
             <stopTimeUtc> 2023-05-01T01:22:52</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
@@ -1959,6 +1973,60 @@
         <event>
             <startTimeUtc>2023-06-26T01:04:26</startTimeUtc>
             <stopTimeUtc> 2023-06-26T01:21:30</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-07-03T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2023-07-03T01:22:50</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-07-10T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2023-07-10T01:22:08</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-07-17T01:04:27</startTimeUtc>
+            <stopTimeUtc> 2023-07-17T01:22:09</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-07-24T01:04:18</startTimeUtc>
+            <stopTimeUtc> 2023-07-24T01:22:56</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-07-31T01:04:26</startTimeUtc>
+            <stopTimeUtc> 2023-07-31T01:22:59</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-08-07T01:04:19</startTimeUtc>
+            <stopTimeUtc> 2023-08-07T01:14:15</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-08-14T01:04:22</startTimeUtc>
+            <stopTimeUtc> 2023-08-14T01:14:47</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-08-21T01:04:27</startTimeUtc>
+            <stopTimeUtc> 2023-08-21T01:14:26</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-08-28T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2023-08-28T01:15:54</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
