@@ -34,7 +34,7 @@ end
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
-  
+
   if flagOldFile
     Bmask = mms.db_get_ts(fPre,...
       sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
@@ -50,7 +50,7 @@ for mmsId = 1:4
       end
     end
   end
-  
+
   if ~isempty(Bmask)
     if flagOldFile
       P34 = mms.db_get_ts(fPre,...
@@ -70,7 +70,7 @@ for mmsId = 1:4
     if ~any(mskAsponOn)
       TAspOn = Tint.stop+(-3*3600); mskAsponOn = epochFull>TAspOn.ttns;
     end
-    
+
     % Resample bitmask
     spinSize = MMS_CONST.Limit.SPINFIT_INTERV;
     mskAsponOnSpin = false(size(epochSpin));
@@ -92,7 +92,7 @@ for mmsId = 1:4
     end
     E34.(mmsIdS) = Es34AspocOffR;
   end
-  
+
   for iManuev = 1:length(maneuvers.(sprintf('mms%i',mmsId)))
     % Maneuvers was found...
     irf.log('warning', ['Maneuver: ', ...
@@ -102,7 +102,7 @@ for mmsId = 1:4
     E34.(mmsIdS).data(bitand( E34.(mmsIdS).time.ttns >= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.start.ttns, ...
       E34.(mmsIdS).time.ttns <= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.stop.ttns), :) = NaN;
   end
-  
+
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
   if isempty(B) || (midnightROI && B.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
     % If higher level data was not found, or ROI covers midnight +10min and
@@ -122,7 +122,7 @@ for mmsId = 1:4
       irf.log('warning','Using L2pre DFG data');
     end
   end
-  
+
   % Here we try different sources of FPI data
   Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
   if isempty(Vifpi) || (midnightROI && Vifpi.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
@@ -155,9 +155,9 @@ for mmsId = 1:4
   end
   Efpi = irf_e_vxb(Vifpi,B.resample(Vifpi));
   EfpiR = Efpi.resample(Epoch20s,'median');
-  
+
   EFPI.(mmsIdS) = EfpiR;
-  
+
   if isempty(idxMSH)
     NifpiR = Nifpi.resample(Epoch20s,'median');
     VifpiR = Vifpi.resample(Epoch20s,'median');
@@ -215,7 +215,7 @@ if 1 % Panel Ex
     if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
     plData= [plData {E34.(mmsIdS).x}]; %#ok<AGROW>
   end
-  
+
   hca = irf_panel('Ex'); set(hca,'ColorOrder',mmsColors)
   irf_plot(hca,plData,'comp')
   hold(hca,'on'), irf_plot(hca,ErefFpi.x,'c.'), hold(hca,'off')
@@ -230,7 +230,7 @@ if 1 % Panel Ey
     if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
     plData= [plData {E34.(mmsIdS).y}]; %#ok<AGROW>
   end
-  
+
   hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
   irf_plot(hca,plData,'comp')
   hold(hca,'on'), irf_plot(hca,ErefFpi.y,'c.'), hold(hca,'off')
@@ -244,11 +244,11 @@ if 1 % Panel dEx
     if isempty(DE.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
     plData= [plData {DE.(mmsIdS).x}]; %#ok<AGROW>
   end
-  
+
   hca = irf_panel('dEx'); set(hca,'ColorOrder',mmsColors)
   irf_plot(hca,plData,'comp')
   ylabel(hca,'dEx [mV/m]')
-  
+
   plData = {};
   for mmsId = 1:4
     mmsIdS = sprintf('c%d',mmsId);
@@ -265,11 +265,11 @@ if 1 % Panel dEy
     if isempty(DE.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
     plData= [plData {DE.(mmsIdS).y}]; %#ok<AGROW>
   end
-  
+
   hca = irf_panel('dEy'); set(hca,'ColorOrder',mmsColors)
   irf_plot(hca,plData,'comp')
   ylabel(hca,'dEy [mV/m]')
-  
+
   plData = {};
   for mmsId = 1:4
     mmsIdS = sprintf('c%d',mmsId);
@@ -286,7 +286,7 @@ if 1 % Panel Ex-corr
     if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
     plData= [plData {E34.(mmsIdS).x*ALPHA-Off.(mmsIdS)(1)}]; %#ok<AGROW>
   end
-  
+
   hca = irf_panel('Ex-corr'); set(hca,'ColorOrder',mmsColors)
   irf_plot(hca,plData,'comp')
   ttt = ErefFpi.x;
@@ -301,7 +301,7 @@ if 1 % Panel Ey-corr
     if isempty(E34.(mmsIdS)), plData= [plData {[]}]; continue, end %#ok<AGROW>
     plData= [plData {E34.(mmsIdS).y*ALPHA-Off.(mmsIdS)(2)}]; %#ok<AGROW>
   end
-  
+
   hca = irf_panel('Ey-corr'); set(hca,'ColorOrder',mmsColors)
   irf_plot(hca,plData,'comp')
   ttt = ErefFpi.y;

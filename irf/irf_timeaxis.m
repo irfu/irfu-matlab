@@ -103,7 +103,7 @@ for j=1:numel(h)
   else
     set( h(j), 'XTickLabel','');
   end
-  
+
   if addXtraXlabels  % xlabels should be added
     set( h(j), 'XTickLabel','');
     lab    = res{2};
@@ -132,7 +132,7 @@ for j=1:numel(h)
     ud=get(h(j),'UserData');
     ud.h_xlabels=h_xlabels;
     set(h(j),'UserData',ud);
-    
+
     % Add titles
     h_xlabeltitle=1:size(xlabeltitle,2); % allocated handles for text labels
     str = 'UT      ';

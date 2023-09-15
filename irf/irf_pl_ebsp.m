@@ -62,7 +62,7 @@ if nargin==1 || isempty(params)
   limByDopStruct = struct('type','low','val',0.6,'param','dop','comp',1);
   limByPlanarityStruct = struct('type','low','val',0.6,'param','planarity','comp',1);
   %limBSsumStruct = struct('type','low','val',-1.0,'param','bb_xxyyzzss','comp',4);
-  
+
   params = {{'bb_xxyyzzss',4},...
     {'ee_ss'},...
     {'dop'},{'planarity'},...
@@ -168,14 +168,14 @@ if nargout, out = h; end % Return here
   function GetPlotParams
     for idx = 1:length(params)
       p = params{idx};
-      
+
       param = p{1};
       if ~ischar(param)
         error('invalid FIELD_NAME for parameter #%d, expecting string',idx)
       end
       if isempty(intersect({param},fieldsPlottable)), continue, end
       plotFields = [plotFields {param}]; %#ok<AGROW>
-      
+
       if length(p)>1 && ~isempty(p{2})
         comps = p{2};
         if ~isnumeric(comps) || any(comps<0) || any( comps ~= uint8(comps))
@@ -189,7 +189,7 @@ if nargout, out = h; end % Return here
         comps = 1:nComps;
       end
       plotComps = [plotComps {comps}]; %#ok<AGROW>
-      
+
       if length(p)>2 && ~isempty(p{3})
         for idxLim = 1:length(p{3})
           s = ValidateLimStruct(p{3}{idxLim});
@@ -199,7 +199,7 @@ if nargout, out = h; end % Return here
       else
         limFields = [limFields {''}]; %#ok<AGROW>
       end
-      
+
       nPanels = nPanels + nComps;
     end
     function s = ValidateLimStruct(limStruct)

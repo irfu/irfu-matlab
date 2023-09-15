@@ -121,13 +121,13 @@ if n==0,    return;end
 % important if V > 0.1 * V_th.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if vsc < 0.1 * sqrt(Units.e*T/m)
-  
+
   % Ratio of potential to thermal energy.
   X = vectorU/T;
-  
+
   % Total current to/from body.
   fluxIp = n*Units.e*sqrt( T*Units.e/(2.0*pi*m) );
-  
+
 else
   X = ( Units.e / (m*vsc^2/2 + Units.e*T) ) .* vectorU;
   fluxIp = n*Units.e*sqrt( vsc^2/16 + T*Units.e/(2.0*pi*m) );
@@ -162,14 +162,14 @@ end
 if isprop(Lprobe,'Area')
   A = Lprobe.Area.wire;
   Ip = A*fluxIp;
-  
+
   sq         = zeros(size(vectorU));
   %     erfv       = zeros( U_pts, 1 );
-  
+
   sq(indNegativeU) = sqrt( abs(-X(indNegativeU)) );
   sq(indPositiveU) = sqrt( abs(+X(indPositiveU)) );
   erfv = erf( sq );
-  
+
   if q > 0
     jThermalWire(indPositiveU) = Ip .* exp(-X(indPositiveU));
     jThermalWire(indNegativeU) = Ip .* ( (2/sqrt(pi)) .* sq(indNegativeU) ...

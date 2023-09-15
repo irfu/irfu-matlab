@@ -49,7 +49,7 @@ if inputNumeric
     end
     res = irf_vec_x_scal( irf_cross(e,b), [b(:,1) irf_abs(b,1)], -2 );
     res = irf_tappl(res,'*1e3');
-    
+
   elseif estimateVxB
     if inputVConstant
       v = [b(:,1) repmat(v,[size(b,1) 1])];
@@ -99,7 +99,7 @@ if inputTSeries
     res.units = 'mV/m';
     res.name = 'Electric field';
     res.userData.LABLAXIS = 'E';
-    
+
   end
 end
 

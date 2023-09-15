@@ -185,21 +185,21 @@ switch lower(base)
     if projDim == 2
       phig_edges = [phig-dPhig/2,phig(end)+dPhig/2];
     end
-    
+
     % primed (grid) diffs
     dVg = diff(vg_edges);
-    
+
     % convert to cartesian mesh, only for output
     if projDim == 2
       [phiMesh,vMesh] = meshgrid(phig_edges+dPhig/2,vg); % Creates the mesh, center of bins, phi has one extra bin at the end
       [vxMesh,vyMesh] = pol2cart(phiMesh-pi/nAzg,vMesh);    % Converts to cartesian
-      
+
       [phiMesh_edges,vMesh_edges] = meshgrid(phig_edges,vg_edges); % Creates the mesh, edges of bins
       [vxMesh_edges,vyMesh_edges] = pol2cart(phiMesh_edges,vMesh_edges); % Converts to cartesian, edges
     end
-    
-    
-    
+
+
+
   case 'cart'
     % for cartesian grid, the velocity bins must all be equal
     % a linearly spaced grid can have small roundoff differences in step
@@ -249,7 +249,7 @@ switch lower(base)
     Fg_ = zeros(nAzg,nVg); % use this one with 'edges bins'
     % Area or line element (primed)
     dAg = vg.^(projDim-1).*dVg*dPhig;
-    
+
   case 'cart'
     Fg = zeros(nVg,nVg);
     dAg = dVg^2;
@@ -266,16 +266,16 @@ for i = 1:nV % velocity (energy)
       if F(i,j,k) == 0
         continue;
       end
-      
+
       % Construct Monte Carlo particles within particle bins
       % first is not random
       dV_MC = [0;-rand(nMCt-1,1)*dV(i)-dVm(1)]; % velocity within [-dVm,+dVp]
       dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi(j)];
       dTH_MC = [0;(rand(nMCt-1,1)-.5)*dTh(k)];
-      
+
       % convert instrument bin to cartesian velocity
       [vx,vy,vz] = sph2cart(PHI(i,j,k)+dPHI_MC,TH(i,j,k)+dTH_MC,VEL(i,j,k)+dV_MC);
-      
+
       % Get velocities in primed coordinate system
       vxp = [vx,vy,vz]*xphat'; % all MC points
       vyp = [vx,vy,vz]*yphat';
@@ -285,10 +285,10 @@ for i = 1:nV % velocity (energy)
         vzp = sqrt(vyp.^2+vzp.^2); % call it vzp
       end
       alpha = asind(vzp./vabsp);
-      
+
       % If "particle" is outside allowed interval, don't use point
       usePoint = (vzp >= vzint(1) & vzp <= vzint(2) & alpha >= aint(1) & alpha <= aint(2));
-      
+
       if projDim == 1
         vp = vxp;
       elseif strcmp(base,'pol')
@@ -297,8 +297,8 @@ for i = 1:nV % velocity (energy)
         % fix if negative
         phip(phip<0) = 2*pi+phip(phip<0);
       end
-      
-      
+
+
       % different procedure for 1D or polar OR cartesian
       if strcmpi(base,'pol') || projDim == 1
         % ------ 1D AND POLAR CASE ------
@@ -307,13 +307,13 @@ for i = 1:nV % velocity (energy)
         % fixes bug that exists on some systems, may influence
         % performance
         iVg(iVg==0) = nan;
-        
+
         if projDim == 2
           iAzg = discretize(phip,phig_edges);
         else
           iAzg = ones(1,nMCt);
         end
-        
+
         % Loop through MC points and add value of instrument bin to the
         % appropriate projection bin
         for l = 1:nMCt
@@ -325,10 +325,10 @@ for i = 1:nV % velocity (energy)
             end
           end
         end
-        
+
       elseif strcmpi(base,'cart')
         % ------ CARTESIAN CASE ------
-        
+
         % get indicies for all MC points
         iVxg = discretize(vxp,vg_edges);
         iVyg = discretize(vyp,vg_edges);
@@ -336,7 +336,7 @@ for i = 1:nV % velocity (energy)
         % performance
         iVxg(iVxg==0) = nan;
         iVyg(iVyg==0) = nan;
-        
+
         % Loop through MC points and add value of instrument bin to the
         % appropriate projection bin
         for l = 1:nMCt
@@ -345,7 +345,7 @@ for i = 1:nV % velocity (energy)
           end
         end
       end
-      
+
     end
   end
 end
@@ -370,12 +370,12 @@ end
 % Calculate velocity moment
 
 if projDim == 1
-  vel = nansum(Fg.*dAg.*vg);
+  vel = sum(Fg.*dAg.*vg,'omitnan');
 elseif strcmpi(base,'pol')
   VG = repmat(vg',1,nAzg);
   PHIG = repmat(phig,nVg,1);
   [VXG,VYG] = pol2cart(PHIG,VG);
-  
+
   vel = [0,0];
   for l = 1:nVg
     for m = 1:nAzg
@@ -406,7 +406,7 @@ elseif strcmpi(base,'cart')
   pst.F_using_edges = [[Fg,zeros(nVg,1)];zeros(1,nVg+1)];
   pst.vx_edges = vg_edges;
   pst.vy_edges = vg_edges;
-  
+
 end
 pst.dens = dens;
 pst.vel = vel;

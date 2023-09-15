@@ -40,13 +40,13 @@ end
 
 if 0 % Set to 1 to plot all fk power spectra
   probecomb = 1; %#ok<UNRCH>
-  
+
   for ii=1:length(starttime1)
-    
+
     if (endtime1(ii)-starttime1(ii) > 0.2)
       tint = irf.tint(strcat(starttime1(ii).utc,'/',endtime1(ii).utc));
       [fkpower,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
-      
+
       h=irf_plot(1,'newfigure');
       h(1)=irf_panel('disprel');
       pcolor(h(1),wavenumber,freq*1e-3,log10(fkpower))
@@ -54,7 +54,7 @@ if 0 % Set to 1 to plot all fk power spectra
       ylabel(h(1),'f (kHz)','fontsize',20);
       xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
       set(h(1),'fontsize',20)
-      
+
       %Overplot phase speed estimate
       vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
       kfit = 0.0001:0.0001:0.1;
@@ -66,27 +66,27 @@ if 0 % Set to 1 to plot all fk power spectra
       plot(h(1),kfit,ffit*1e-3,'linewidth',3,'color','r')
       hold(h(1),'off');
       irf_legend(h(1),strcat('v = ',num2str(vph(1)/1000),'km s^{-1}'),[0.6 0.9],'fontsize',20,'color','r')
-      
+
       c=colorbar;
       ylabel(c,'log_{10} P(f,k)/P_{max}','fontsize',20);
       set(c,'fontsize',20)
       set(h(1),'position',[0.09 0.2 0.76 0.78]);
-      
+
       pictitle = strcat('MMS',num2str(ic),'p',num2str(probecomb),num2str(probecomb+1),'t',starttime1(ii).utc,'to',endtime1(ii).utc,'.eps');
       set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
       print(pictitle,'-depsc','-painters');
-      
+
     end
   end
-  
+
   probecomb = 3;
-  
+
   for ii=1:length(starttime3)
-    
+
     if (endtime3(ii)-starttime3(ii) > 0.2)
       tint = irf.tint(strcat(starttime3(ii).utc,'/',endtime3(ii).utc));
       [fkpower,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
-      
+
       h=irf_plot(1,'newfigure');
       h(1)=irf_panel('disprel');
       pcolor(h(1),wavenumber,freq*1e-3,log10(fkpower))
@@ -94,7 +94,7 @@ if 0 % Set to 1 to plot all fk power spectra
       ylabel(h(1),'f (kHz)','fontsize',20);
       xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
       set(h(1),'fontsize',20)
-      
+
       %Overplot phase speed estimate
       vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
       kfit = 0.0001:0.0001:0.1;
@@ -106,16 +106,16 @@ if 0 % Set to 1 to plot all fk power spectra
       plot(h(1),kfit,ffit*1e-3,'linewidth',3,'color','r')
       hold(h(1),'off');
       irf_legend(h(1),strcat('v = ',num2str(vph(1)/1000),'km s^{-1}'),[0.6 0.9],'fontsize',20,'color','r')
-      
+
       c=colorbar;
       ylabel(c,'log_{10} P(f,k)/P_{max}','fontsize',20);
       set(c,'fontsize',20)
       set(h(1),'position',[0.09 0.2 0.76 0.78]);
-      
+
       pictitle = strcat('MMS',num2str(ic),'p',num2str(probecomb),num2str(probecomb+1),'t',starttime3(ii).utc,'to',endtime3(ii).utc,'.eps');
       set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
       print(pictitle,'-depsc','-painters');
-      
+
     end
   end
 end

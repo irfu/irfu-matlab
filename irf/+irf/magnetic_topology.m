@@ -72,15 +72,15 @@ if isa(B1,'TSeries') || isa(R1,'TSeries')
   for i=1:4
     if isa(idR{i},'TSeries')
       idR{i} = [idR{i}.time.epochUnix double(idR{i}.data)];
-      
+
     end
     if isa(idB{i},'TSeries')
       idB{i} =  [idB{i}.time.epochUnix double(idB{i}.data)];
     end
   end
-  
+
 else
-  
+
   if size(idR{1},2)==4
     timeInd=true;
   end
@@ -126,7 +126,7 @@ elseif ~mod(length(varargin),2)
         end
         %Case 'startx'
       elseif strcmp(varargin(i),'startx')
-        
+
         if isnumeric(cell2mat(varargin(i+1)))
           xStart=cell2mat(varargin(i+1));
           GivenSX=true;
@@ -135,7 +135,7 @@ elseif ~mod(length(varargin),2)
         end
         %Case 'starty'
       elseif strcmp(varargin(i),'starty')
-        
+
         if isnumeric(cell2mat(varargin(i+1)))
           yStart=cell2mat(varargin(i+1));
           GivenSY=true;
@@ -144,7 +144,7 @@ elseif ~mod(length(varargin),2)
         end
         %Case 'startz'
       elseif strcmp(varargin(i),'startz')
-        
+
         if isnumeric(cell2mat(varargin(i+1)))
           zStart=cell2mat(varargin(i+1));
           GivenSZ=true;
@@ -153,7 +153,7 @@ elseif ~mod(length(varargin),2)
         end
         %Case 'FluxWidth'
       elseif strcmp(varargin(i),'FluxWidth')
-        
+
         if isnumeric(cell2mat(varargin(i+1)))
           tubeWidth=cell2mat(varargin(i+1));
           GiventubeWidth=true;
@@ -192,7 +192,7 @@ elseif mod(length(varargin),2)
           if isnumeric(cell2mat(varargin(i+1)))
             Blim=cell2mat(varargin(i+1));
             GivenBLim=true;
-            
+
           else
             error('Unapproved combination of arguments. See usage: help 3D_magnetic_topology')
           end
@@ -206,7 +206,7 @@ elseif mod(length(varargin),2)
           end
           %Case 'startx'
         elseif strcmp(varargin(i),'startx')
-          
+
           if isnumeric(cell2mat(varargin(i+1)))
             xStart=cell2mat(varargin(i+1));
             GivenSX=true;
@@ -215,7 +215,7 @@ elseif mod(length(varargin),2)
           end
           %Case 'starty'
         elseif strcmp(varargin(i),'starty')
-          
+
           if isnumeric(cell2mat(varargin(i+1)))
             yStart=cell2mat(varargin(i+1));
             GivenSY=true;
@@ -224,7 +224,7 @@ elseif mod(length(varargin),2)
           end
           %Case 'startz'
         elseif strcmp(varargin(i),'startz')
-          
+
           if isnumeric(cell2mat(varargin(i+1)))
             zStart=cell2mat(varargin(i+1));
             GivenSZ=true;
@@ -233,11 +233,11 @@ elseif mod(length(varargin),2)
           end
           %Case 'FluxWidth'
         elseif strcmp(varargin(i),'FluxWidth')
-          
+
           if isnumeric(cell2mat(varargin(i+1)))
             tubeWidth=cell2mat(varargin(i+1));
             GiventubeWidth=true;
-            
+
           else
             error('Unapproved combination of arguments. See usage: help 3D_magnetic_topology')
           end
@@ -290,7 +290,7 @@ if SpecificTime
   idB{1,2}=idB{1,2}(minpos,:);
   idB{1,3}=idB{1,3}(minpos,:);
   idB{1,4}=idB{1,4}(minpos,:);
-  
+
   idR{1,1}=idR{1,1}(minpos,:);
   idR{1,2}=idR{1,2}(minpos,:);
   idR{1,3}=idR{1,3}(minpos,:);
@@ -325,17 +325,17 @@ z=linspace(-boxWidth,+boxWidth,10);
 
 %Starting points
 if ~GivenSX
-  
+
   xstep=abs(x(1,1)-x(1,end))/10;
   xStart=x(1,2):1.5*xstep:x(1,8);
 end
 if  ~GivenSY
-  
+
   ystep=abs(y(1,1)-y(1,end))/10;
   yStart=y(1,2):1.5*ystep:y(1,8);
 end
 if ~GivenSZ
-  
+
   zstep=abs(z(1,1)-z(1,end))/10;
   zStart=z(1,2):1.5*zstep:z(1,8);
 end
@@ -414,7 +414,7 @@ for i=1:size(XYZfront,2)
         Bamplback(m,1)=irf_abs(Blineback,1);
       end
     end
-    
+
     Bmagfront{k}=Bamplfront;
     Bmagback{l}=Bamplback;
     k=k+1;
@@ -435,7 +435,7 @@ irf_plot(1,'newfigure');
 hold('on')
 for ic=1:4
   % put Cluster markers
-  
+
   plot3(SCpos{ic}(1),SCpos{ic}(2),SCpos{ic}(3),mms_marker{ic}{:});
 end
 

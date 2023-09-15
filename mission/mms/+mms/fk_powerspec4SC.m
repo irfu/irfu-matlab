@@ -219,7 +219,7 @@ for ii = 1:N+1
   for jj = 1:numf
     % Volumetric tensor with SC1 as center.
     m = dR\[dt2(ii,jj);dt3(ii,jj);dt4(ii,jj)]; % "1/v vector"
-    
+
     kx(ii,jj) = 2*pi*W1.f(jj)*m(1);
     ky(ii,jj) = 2*pi*W1.f(jj)*m(2);
     kz(ii,jj) = 2*pi*W1.f(jj)*m(3);

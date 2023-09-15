@@ -137,27 +137,27 @@ end
 if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
   Nu = size(spec.Bu,1); % number of points, must be same for all parameters
   Nd = size(spec.Bd,1);
-  
+
   % randomize points upstream and downstream
   if isfield(spec,'N'); N = spec.N; else; N = 10; end
   % sort of "indices" from 0 to 1
   idtu = rand(1,N); idtd = rand(1,N);
-  
+
   % copy spec
   tempSpec = spec;
-  
-  
+
+
   % loop with up/downstream values randomly picked
   for i = 1:N
     % get value from given point
     tempSpec.Bu = interp1(linspace(0,1,Nu),spec.Bu,idtu(i));
     tempSpec.Vu = interp1(linspace(0,1,Nu),spec.Vu,idtu(i));
     tempSpec.nu = interp1(linspace(0,1,Nu),spec.nu,idtu(i));
-    
+
     tempSpec.Bd = interp1(linspace(0,1,Nd),spec.Bd,idtd(i));
     tempSpec.Vd = interp1(linspace(0,1,Nd),spec.Vd,idtd(i));
     tempSpec.nd = interp1(linspace(0,1,Nd),spec.nd,idtd(i));
-    
+
     if i == 1
       % run once to get structure
       nd = irf_shock_normal(tempSpec);
@@ -172,7 +172,7 @@ if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
         % get second layer names, Vsh does not have two layers
         fn2.(fn1{k}) = fieldnames(nd.(fn1{k}));
       end
-      
+
       % do a double loop
       for k = 1:length(fn1) % fist layer
         strl1 = fn1{k}; % first layer string
@@ -192,13 +192,13 @@ if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
           end
         end
       end
-      
-      
+
+
     end
-    
+
     % get shock normal for this point
     tempNd = irf_shock_normal(tempSpec,leq90);
-    
+
     % do another double loop
     for k = 1:length(fn1) % fist layer
       strl1 = fn1{k}; % first layer string
@@ -220,8 +220,8 @@ if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
         end
       end
     end
-    
-    
+
+
   end
   return; % return results with vector
 end
@@ -430,14 +430,14 @@ function Vsp = speed_gosling_thomsen(spec,n,thBn,fn)
 for k = 1:length(fn)
   th = thBn.(fn{k})*pi/180;
   nvec = n.(fn{k});
-  
+
   % Notation as in (Gosling and Thomsen 1985)
   W = spec.Fcp*2*pi;
   t1 = acos((1-2*cos(th).^2)./(2*sin(th).^2))/W;
-  
+
   f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
   x0 = f(th)/(W*spec.dTf);
-  
+
   % the sign of Vsh in this method is ambiguous, assume n points upstream
   Vsp.(fn{k}) = spec.d2u*dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
 end
@@ -468,11 +468,11 @@ for k = 1:length(fn)
   th = thBn.(fn{k})*pi/180;
   nvec = n.(fn{k});
   thVn = acos(dot(nvec,spec.Vu)/norm(spec.Vu));
-  
+
   % Notation as in (Moses et al., 1985)
   W = spec.Fcp*2*pi;
   x = 0.68*sin(th)^2*cos(thVn)/(W*spec.dTf);
-  
+
   Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x/(1+spec.d2u*x));
 end
 end
@@ -562,7 +562,7 @@ if isstruct(spec.R) % MMS specific
     rsc = rsc_sum'/4;
   end
 elseif isa(spec.R,'TSeries') % TSeries
-  
+
   rsc = mean(spec.R.data)'/(u.RE*1e-3);
 elseif isnumeric(spec.R) && length(R) == 3 % just a vector
   rsc = spec.R;

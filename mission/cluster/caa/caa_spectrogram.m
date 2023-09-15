@@ -114,12 +114,12 @@ if isempty(h), clf, for comp=1:ncomp, h(comp) = irf_subplot(ncomp,1,-comp); end,
 % If H is specified, but is shorter than NCOMP, we plot just first
 % length(H) spectra
 for comp=1:min(length(h),ncomp)
-  
+
   for jj=1:ndata
     %		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
     specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = NaN;
   end
-  
+
   ud = get(gcf,'userdata');
   ii = find(~isnan(specrec.t));
   if isfield(ud,'t_start_epoch')
@@ -133,7 +133,7 @@ for comp=1:min(length(h),ncomp)
   else
     t_start_epoch = double(0);
   end
-  
+
   % Special case when we have only one spectrum
   % We duplicate it
   if ndata==1
@@ -152,7 +152,7 @@ for comp=1:min(length(h),ncomp)
       specrec.f_label=['frequency [' specrec.f_unit ']'];
     end
   end
-  
+
   if min(size(specrec.f))==1, ff=double(specrec.f(:))';
   else
     ff=double(specrec.f);
@@ -203,7 +203,7 @@ for comp=1:min(length(h),ncomp)
     ppnew(jj*2,:)=NaN;
     pp=ppnew;
   end
-  
+
   if min(size(ff))==1 % frequency is vector
     if any(min(pp)<0) % spectra include negative values linear spectrogram
       pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
@@ -231,7 +231,7 @@ for comp=1:min(length(h),ncomp)
     specrec.f_label=['[' specrec.f_unit ']'];
   end
   ylabel(h(comp),specrec.f_label)
-  
+
   if isfield(specrec,'p_label')
     if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
     else, hcb = colorbar('peer',h(comp));

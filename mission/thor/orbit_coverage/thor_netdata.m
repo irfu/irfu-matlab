@@ -30,7 +30,7 @@ for iOrbit = 2:nOrbits
   % add the new data
   tot_data = netData(iOrbit-1,:) + new_data;
   tot_data_stacked = cumsum(tot_data,2);
-  
+
   if delay == downlink_delay
     delay = 0;
     % remove the downlinked data
@@ -42,12 +42,12 @@ for iOrbit = 2:nOrbits
     %downloaded = tot_data_stacked-new_net_data_stacked;
     %tot_data = diff([0 new_net_data_stacked]);
   end
-  
+
   netData(iOrbit,:) = tot_data;
   if any(new_data>memory_limit)
     1;
   end
-  
+
 end
 
 tsNetData = irf.ts_scalar(data.time,netData);

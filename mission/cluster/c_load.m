@@ -125,7 +125,7 @@ for cli=cl_id
     eval(['load -mat ./' d.file_old '.mat ' vs_tmp])
     warning on %#ok<WNON>
   end
-  
+
   % Return the result
   if exist(vs_tmp,'var')
     switch nargout

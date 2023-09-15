@@ -1,6 +1,6 @@
 classdef TestTimeArray < matlab.unittest.TestCase
   % Test cases for GenericTimeArray and derived classes
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -8,7 +8,7 @@ classdef TestTimeArray < matlab.unittest.TestCase
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
+
   properties (TestParameter)
     class = {'EpochUnix','EpochTT','EpochCdf','EpochCdf16'};
     utc = {'1970-01-01T00:00:00.000000Z',...
@@ -20,7 +20,7 @@ classdef TestTimeArray < matlab.unittest.TestCase
       int64(68515264183999999), int64(491702468184000000)};
     unixEpoch = {0, 900676800.1234568, 1015243200, 1438430400};
   end
-  
+
   methods (Test, ParameterCombination='sequential')
     function testEpochUnixConstructorFromUtc(testCase,utc,unixEpoch)
       t = EpochUnix(utc);

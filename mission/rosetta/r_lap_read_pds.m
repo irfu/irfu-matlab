@@ -69,7 +69,7 @@ switch NAME((end-6):(end-4))
           case {'L','H','S','D'}
           otherwise, error('unrecognized Measurement Type')
         end
-        
+
         switch flagIV
           case {'I','V','E'}
             switch mesType
@@ -147,7 +147,7 @@ switch fSuf
     %         for i=1:length(fields)
     %             data.(fields{i}) = C{i+1};
     %         end
-    
+
   case 'PSD'
     times = cell2mat(C{1}); times(:,end+1)='Z'; t = iso2epoch(times);
     data.t = t;

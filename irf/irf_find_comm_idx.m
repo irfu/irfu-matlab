@@ -36,14 +36,14 @@ while 1
   la = min(length(t1(s1:end)),length(t2(s2:end))) - 1;
   d = t1(s1:s1+la)-t2(s2:s2+la);
   ii = find(abs(d) > threshold);
-  
+
   if isempty(ii) % time lines are identical
     % save the interval and break
     ii1 = [ii1 s1:s1+la]; ii2 = [ii2 s2:s2+la];
     if DEBUG, disp('break at 1'), end %#ok<UNRCH>
     break
   end
-  
+
   ii = ii(1); % first point where times differ
   if ii>1
     % save the interval and shift
@@ -54,7 +54,7 @@ while 1
   if d(ii) > 0
     % shift t2
     if DEBUG, disp('shift t2'), end %#ok<UNRCH>
-    
+
     i_t0 = find(abs(t2(s2:end)-t1(s1))<threshold);
     if isempty(i_t0)
       if t1(s1) > t2(end)

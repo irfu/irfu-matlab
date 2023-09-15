@@ -76,7 +76,7 @@ if ~isempty(res), res(diff(res(:,1))==0,:) = []; end
       res = [tmpTime double(res)];
     end
     res = res;
-    
+
     function res = find_depend_time
       res = '';
       info = spdfcdfinfo(fileToRead);
@@ -87,7 +87,7 @@ if ~isempty(res), res(diff(res(:,1))==0,:) = []; end
         end
       end
     end % find_depend_time()
-    
+
   end % read_var
 
   function res = find_file_to_read

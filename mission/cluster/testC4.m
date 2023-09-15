@@ -1,9 +1,9 @@
 classdef testC4 < matlab.unittest.TestCase
   % TESTC4 test c_4_grad routine
-  
+
   properties
   end
-  
+
   methods (Static)
     function R=defineSatellitePosition(scSeparation)
       %
@@ -60,6 +60,6 @@ classdef testC4 < matlab.unittest.TestCase
   % 	% Fitzpatrick book page 30
   % 	% V=mv^2/2/e B x gradB / B^3
   %
-  
+
 end
 

@@ -1,7 +1,7 @@
 classdef EpochCdf < GenericTimeArray
   %EpochCdf Class representing CDF epoch
   %   Detailed explanation goes here
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -9,7 +9,7 @@ classdef EpochCdf < GenericTimeArray
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
+
   methods
     function obj = EpochCdf(inp)
       if nargin==0, return, end

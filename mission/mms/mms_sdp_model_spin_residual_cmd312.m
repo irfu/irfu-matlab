@@ -81,7 +81,7 @@ for iSig = 1:length(signals)
   if ~ismember(sig, {'v1','v2','v3','v4'})
     errS = ['invalid signal: ' sig]; irf.log('critical',errS), error(errS)
   end
-  
+
   phaseRadTmp = phaRad;
   if( (Dcv.time(1)<=t0) && (t0<=Dcv.time(end)))
     bits = MMS_CONST.Bitmask.SWEEP_DATA;
@@ -97,10 +97,10 @@ for iSig = 1:length(signals)
       ' no data cover first spinfit timestamp (t0=%i)'],t0);
     irf.log('warning', warnStr);
   end
-  
+
   sfitR = interp1(double(tSfit-epoch0),Sfit.(sig),epochTmp);
   spinFitComponent = sfitR(:,1) + sfitR(:,2).*cos(phaRad) + sfitR(:,3).*sin(phaRad);
-  
+
   spinRes = double(double(dataIn))-spinFitComponent;
   switch iSig
     case 1, cmdRes = spinRes;
@@ -475,7 +475,7 @@ switch scId
       -0.3221,...
       -0.2999];
   case 3
-  % Hard coded basic model for MMS3. Updated 2022-06-16
+    % Hard coded basic model for MMS3. Updated 2022-06-16
     cmdAv = [-0.1667,...
       -0.1476,...
       -0.1294,...

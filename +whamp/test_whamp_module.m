@@ -32,7 +32,7 @@ classdef test_whamp_module < matlab.unittest.TestCase
       'maxIterations', 50);
     output = [];
   end
-  
+
   methods (Test)
     function verify_empty_default_run(testCase)
       %% Verify empty inputs gets default values
@@ -42,7 +42,7 @@ classdef test_whamp_module < matlab.unittest.TestCase
       testCase.verifyEqual(testCase.output.InputParameters, testCase.InputParameters);
       testCase.verifyEqual(testCase.output.PlasmaModel,     testCase.PlasmaModel);
     end
-    
+
     function verify_default_run(testCase)
       %% Verify explicit inputs gets expected output
       % whamp.run

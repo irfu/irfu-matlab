@@ -149,7 +149,7 @@ while 1
                   try eval(var_caa_data_menu); catch, end
               end
             end
-            
+
           case 's'
             param=getfield(get(current_caa_file,'VariableAttributes'),'PARAMETER_TYPE');
             i_data=[];

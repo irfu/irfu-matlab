@@ -145,11 +145,11 @@ for i = i_start:i_end
   try save -append '.c_ri_parameters.mat' time_interval_start;
   catch, disp('Could not save time_interval_start');
   end
-  
+
   disp([num2str(i) '. time interval. ' datestr(st_m(i,:),31) ' -- ' datestr(et_m(i,:),31)]);
   st = st_m(i,:);
   et = et_m(i,:);
-  
+
   %step 1
   if run_steps(1) == 1
     disp('==============  STEP 1. Finding MP crossings ====================');
@@ -161,7 +161,7 @@ for i = i_start:i_end
     end
     save mMP passing_MP dist_t
   end
-  
+
   %step 2
   if run_steps(2) == 1
     if run_steps(1) == 0; load mMP; end
@@ -235,9 +235,9 @@ for i = i_start:i_end
       amplitude(ind_bad_events,:)=[];
       clear j_good;
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     save mEvents events angles amplitude;
     disp(['Alltogether found ' num2str(size(events,1)) ' events.']);
   end

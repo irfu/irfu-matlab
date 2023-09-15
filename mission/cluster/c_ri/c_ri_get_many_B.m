@@ -40,20 +40,20 @@ for mp_cross = 1:nr_cross
   from = passing_MP(mp_cross,1);
   to = passing_MP(mp_cross,2);
   disp([ 'mp crossing' datestring(fromepoch(from)) ' ' datestring(fromepoch(to))]);
-  
+
   for cl_nr = 1:4
     b_table = 0;
     n_table = 0;
-    
+
     [b_table, n_table] = create_timetable(from,to,cl_nr);
-    
+
     if b_table ~= 0
       [b_s, col] = size(b_table);
       for k = 1:b_s
         c_ri_get_B( b_table(k,1), b_table(k,2), cl_nr, 'b',path_output);
       end
     end
-    
+
     if n_table ~= 0
       [n_s, col] = size(n_table);
       for i = 1:2:n_s
@@ -61,5 +61,5 @@ for mp_cross = 1:nr_cross
       end
     end
   end
-  
+
 end

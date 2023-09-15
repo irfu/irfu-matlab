@@ -150,7 +150,7 @@ if find(ismember(fn,['Ti',rgs{1}])); hasTi = 1; else, hasTi = 0; end
 if find(ismember(fn,['Te',rgs{1}])); hasTe = 1; else, hasTe = 0; end
 
 % Frame velocities need to know wether there is a normal vector
-if find(ismember(fn,'nvec')); hasNvec = 1; else, hasNvec = 0; end 
+if find(ismember(fn,'nvec')); hasNvec = 1; else, hasNvec = 0; end
 
 
 %% Calculate parameters
@@ -286,11 +286,11 @@ Rcp = irf_plasma_calc(norm(B),0,0,0,Ep_kin,'Rop'); % returns in km
 end
 
 % frame velocities
-function vNIF = nif_speed(V,spec) 
+function vNIF = nif_speed(V,spec)
 vNIF = V-(dot(V,spec.nvec)-spec.Vsh)*spec.nvec;
 end
 
-function vHTF = htf_speed(B,V,spec) % 
+function vHTF = htf_speed(B,V,spec) %
 % first get the velocity in a shock rest frame
 V_in_shock_rest_frame = V-spec.Vsh*spec.nvec;
 % then get the dHT frame speed in the shock rest frame

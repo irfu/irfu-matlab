@@ -16,14 +16,14 @@ if isempty(dirs), disp('NO DIRS'), cd(old_pwd), return, end
 for d=1:length(dirs)
   curr_d = dirs{d};
   cd( [BASE_DIR '/' curr_d])
-  
+
   if ~exist('./.caa_rerun_L3E','file')
     cl_id = str2double(curr_d(21));
     if isnan(cl_id) || cl_id>4 || cl_id<1, error(['wrong directory ' curr_d]), end
-    
+
     irf_log('proc',[ '-- RERUNNING -- : ' curr_d]);
     getData(ClusterProc(pwd),cl_id,'dies')
-    
+
     % Create .caa_rerun_L3E
     fid = fopen('.caa_rerun_L3E','w');
     if fid<0

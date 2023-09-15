@@ -35,48 +35,48 @@ function matlabClass = convert_CDF_type_to_MATLAB_class(cdfDataType, policy)
 
 
 
-    %===============================================================================
-    % Translation table from which variables are derived
-    % --------------------------------------------------
-    % Left column     : Legal MATLAB types.
-    % Right column(s) : Legal types for scpdfcdfwrite which all correspond to the
-    %                   ONE MATLAB type in the left column.
-    %===============================================================================
-    DATA = {...
-        'int8',    {'CDF_INT1', 'CDF_BYTE'};
-        'int16',   {'CDF_INT2'}; ...
-        'int32',   {'CDF_INT4'}; ...
-        'int64',   {'CDF_INT8', 'CDF_TIME_TT2000', 'tt2000'}; ...
-        'uint8',   {'CDF_UINT1'}; ...
-        'uint16',  {'CDF_UINT2'}; ...
-        'uint32',  {'CDF_UINT4'}; ...
-        'single',  {'CDF_FLOAT',  'CDF_REAL4'}; ...
-        'double',  {'CDF_DOUBLE', 'CDF_REAL8'}; ...
-        'char',    {'CDF_CHAR',   'CDF_UCHAR'}; ...
-        };
-    MATLAB_CLASSES = DATA(:, 1);
-    CDF_TYPES      = DATA(:, 2);
+%===============================================================================
+% Translation table from which variables are derived
+% --------------------------------------------------
+% Left column     : Legal MATLAB types.
+% Right column(s) : Legal types for scpdfcdfwrite which all correspond to the
+%                   ONE MATLAB type in the left column.
+%===============================================================================
+DATA = {...
+  'int8',    {'CDF_INT1', 'CDF_BYTE'};
+  'int16',   {'CDF_INT2'}; ...
+  'int32',   {'CDF_INT4'}; ...
+  'int64',   {'CDF_INT8', 'CDF_TIME_TT2000', 'tt2000'}; ...
+  'uint8',   {'CDF_UINT1'}; ...
+  'uint16',  {'CDF_UINT2'}; ...
+  'uint32',  {'CDF_UINT4'}; ...
+  'single',  {'CDF_FLOAT',  'CDF_REAL4'}; ...
+  'double',  {'CDF_DOUBLE', 'CDF_REAL8'}; ...
+  'char',    {'CDF_CHAR',   'CDF_UCHAR'}; ...
+  };
+MATLAB_CLASSES = DATA(:, 1);
+CDF_TYPES      = DATA(:, 2);
 
 
 
-    switch(policy)
-        case 'Only CDF data types';   permitMatlabClasses = 0;
-        case 'Permit MATLAB classes'; permitMatlabClasses = 1;
-        otherwise
-            error(...
-                'Illegal policy.');
-    end
+switch(policy)
+  case 'Only CDF data types';   permitMatlabClasses = 0;
+  case 'Permit MATLAB classes'; permitMatlabClasses = 1;
+  otherwise
+    error(...
+      'Illegal policy.');
+end
 
-    for i = 1:size(DATA, 1)
-        if any(strcmp(cdfDataType, CDF_TYPES{i}))
-            matlabClass = MATLAB_CLASSES{i};
-            return
-        end
-        if permitMatlabClasses && strcmp(cdfDataType, MATLAB_CLASSES{i})
-            matlabClass = MATLAB_CLASSES{i};
-            return
-        end
-    end
-    error('Does not recognize CDF variable type "%s".', cdfDataType)
+for i = 1:size(DATA, 1)
+  if any(strcmp(cdfDataType, CDF_TYPES{i}))
+    matlabClass = MATLAB_CLASSES{i};
+    return
+  end
+  if permitMatlabClasses && strcmp(cdfDataType, MATLAB_CLASSES{i})
+    matlabClass = MATLAB_CLASSES{i};
+    return
+  end
+end
+error('Does not recognize CDF variable type "%s".', cdfDataType)
 
 end

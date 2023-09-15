@@ -195,17 +195,17 @@ while have_options
     case 'xyz'
       l = 2;
       coord_sys = args{2};
-      
+
       if ~all(size(coord_sys) == [3 3]) % to avoid errors associated with coordinate system: check for size of xyz, give error if not 3x3
         error('Please verify your coordinate system ''xyz'', it has to be a 3x3 matrix: [x;y;z], where x,y,z are 1x3 vectors.')
       end
-      
+
       x = coord_sys(1,:)/norm(coord_sys(1,:));
       y = coord_sys(2,:)/norm(coord_sys(2,:));
       z = coord_sys(3,:)/norm(coord_sys(3,:));
       z = cross(x,y); z = z/norm(z);
       y = cross(z,x); y = y/norm(y);
-      
+
       if abs(acosd(x*(coord_sys(1,:)/norm(coord_sys(1,:)))'))>1 % x is never changed
         irf.log('warning',['In making ''xyz'' a right handed orthogonal coordinate system, x (in-plane 1) was changed from [' num2str(coord_sys(1,:)/norm(coord_sys(1,:)),'% .2f') '] to [' num2str(x,'%.2f') ']. Please verify that this is according to your intentions.']);
         changed_xyz(1) = 1;
@@ -311,33 +311,33 @@ for ii = 1:length(dist.time)
   X = -sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
   Y = -sin(POL).*sin(AZ);
   Z = -cos(POL);
-  
+
   % Transform into different coordinate system
   xX = reshape(X,size(X,1)*size(X,2),1);
   yY = reshape(Y,size(Y,1)*size(Y,2),1);
   zZ = reshape(Z,size(Z,1)*size(Z,2),1);
-  
+
   newTmpX = [xX yY zZ]*x';
   newTmpY = [xX yY zZ]*y';
   newTmpZ = [xX yY zZ]*z';
-  
+
   newX = reshape(newTmpX,size(X,1),size(X,2));
   newY = reshape(newTmpY,size(X,1),size(X,2));
   newZ = reshape(newTmpZ,size(X,1),size(X,2));
-  
+
   elevationAngle = atan(newZ./sqrt(newX.^2+newY.^2));
   planeAz = atan2(newY,newX)+pi;
-  
+
   % gets velocity in direction normal to 'z'-axis
   geoFactorElev = cos(elevationAngle);
   % geoFactorBinSize - detector bins in 'equator' plane are bigger and get a larger weight.
   % I think this is not good for the implementation in this function
   if correctForBinSize, geoFactorBinSize = sin(POL);
   else, geoFactorBinSize = 1; end
-  
+
   % New coordinate system
   [nAz,binAz] = histc(planeAz,edgesAz);
-  
+
   % Collect data in new distribution function FF
   for iE = 1:lengthE
     for iAz = 1:32
@@ -349,7 +349,7 @@ for ii = 1:length(dist.time)
       % surf(ax,newX,newY,newZ,C);xlabel(ax,'x');ylabel(ax,'y')
       C(planeAz<(edgesAz(iAz)-0.1*pi/180)) = NaN;             % use 0.1 deg to fix Az angle edges bug
       C(planeAz>(edgesAz(iAz+1)+0.1*pi/180)) = NaN;           % use 0.1 deg to fix Az angle edges bug
-      
+
       FF(ii,iAz,iE) = irf.nanmean(irf.nanmean(C));
     end
   end

@@ -23,20 +23,20 @@ for d=1:length(dirs)
   cl_id = str2double( s(34) );
   [ok, Del] = c_load('D?p12p34',cl_id);
   if ~ok || ~isreal(Del(1)), continue, end
-  
+
   irf_log('proc',['inverting delta in ' s(33:end)])
-  
+
   [ok, p12] = c_load('diEs?p12',cl_id);
   if ~ok, error('cannot load p12'), end
-  
+
   [ok, p34] = c_load('diEs?p34',cl_id);
   if ~ok, error('cannot load p34'), end
-  
+
   % apply delta offset to p34 instead
   p12(:,2:3) = p12(:,2:3) +ones(size(p12(:,1),1),1)*Del; %#ok<NASGU>
   p34(:,2:3) = p34(:,2:3) +ones(size(p34(:,1),1),1)*Del; %#ok<NASGU>
   Del = -Del*1i; %#ok<NASGU>
-  
+
   c_eval('D?p12p34 = Del; diEs?p12 = p12; diEs?p34 = p34; save mEDSI.mat D?p12p34 diEs?p12 diEs?p34 -append',cl_id)
   getData(ClusterProc(pwd),cl_id,'die');
 end

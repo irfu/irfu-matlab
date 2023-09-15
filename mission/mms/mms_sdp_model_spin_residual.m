@@ -74,7 +74,7 @@ for signal = signals
   if isempty(intersect(signal,{'e12','e34','v1','v2','v3','v4'}))
     errS = ['invalid signal: ' sig]; irf.log('critical',errS), error(errS)
   end
-  
+
   phaseRadTmp = phaRad;
   if( (Dcv.time(1)<=t0) && (t0<=Dcv.time(end)))
     bits = MMS_CONST.Bitmask.SWEEP_DATA;
@@ -96,10 +96,10 @@ for signal = signals
       ' no data cover first spinfit timestamp (t0=%i)'],t0);
     irf.log('warning', warnStr);
   end
-  
+
   sfitR = interp1(double(tSfit-epoch0),Sfit.(sig),epochTmp);
   spinFitComponent = sfitR(:,1) + sfitR(:,2).*cos(phaRad) + sfitR(:,3).*sin(phaRad);
-  
+
   Model360.(sig) = zeros(n360,1);
   spinRes = interp1(epochTmp,double(double(dataIn))-spinFitComponent,timeTmp);
   for idx=1:n360

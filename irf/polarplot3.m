@@ -114,7 +114,7 @@ phase=atan2(Vmean,Umean)*180/pi;
 
 if plotflag == 1 %%% The case with phase difference and coherence
   phase(coh<threshold)=NaN;
-  
+
   h(1)=subplot(4,1,1);
   pcolor(T-t0,freq,log10(2*n*Imean/sampl))
   shading flat
@@ -124,7 +124,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
   xlabel('')
   %set(gca,'yscale','log')
-  
+
   h(2)=subplot(4,1,2);
   pcolor(T-t0,freq,coh)
   shading flat
@@ -135,7 +135,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
   xlabel('')
   %set(gca,'yscale','log')
-  
+
   h(3)=subplot(4,1,3);
   pcolor(T-t0,freq,phase)
   shading flat
@@ -147,7 +147,7 @@ if plotflag == 1 %%% The case with phase difference and coherence
   irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
   xlabel('')
   %set(gca,'yscale','log')
-  
+
   h(4)=subplot(4,1,4);
   plot(t-t0,Ex,t-t0,Ey)
   xlabel('UT')
@@ -159,12 +159,12 @@ if plotflag == 1 %%% The case with phase difference and coherence
   axis([temp1(1:2),temp2(3:4)])
   irf_timeaxis(gca,t0); set(gca,'tickdir','out');
   %set(gca,'yscale','log')
-  
+
 else %%% The standard case
   temp=find(p<threshold);
   vp(temp)=NaN;
   phi(temp)=NaN;
-  
+
   h(1)=subplot(4,1,1);
   pcolor(T-t0,freq,log10(Imean))
   shading flat
@@ -174,7 +174,7 @@ else %%% The standard case
   irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
   xlabel('')
   %set(gca,'yscale','log')
-  
+
   h(2)=subplot(4,1,2);
   pcolor(T-t0,freq,p)
   shading flat
@@ -185,7 +185,7 @@ else %%% The standard case
   irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
   xlabel('')
   %set(gca,'yscale','log')
-  
+
   h(3)=subplot(4,1,3);
   pcolor(T-t0,freq,vp)
   shading flat
@@ -196,7 +196,7 @@ else %%% The standard case
   irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
   xlabel('')
   %set(gca,'yscale','log')
-  
+
   h(4)=subplot(4,1,4);
   pcolor(T-t0,freq,phi)
   shading flat

@@ -82,13 +82,13 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), two dimensional electric field.',...
       scId,procName,tmModeStr);
-    
+
     dce_xyz_dsl = Dmgr.dce_xyz_dsl;
     if mms_is_error(dce_xyz_dsl)
       errStr='Cannot output ''dce_xyz_dsl''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    
+
     epochTT = dce_xyz_dsl.time;
     % Ensure dce is in correct class
     dsl = mms_sdp_typecast('dce', dce_xyz_dsl.data);
@@ -98,7 +98,7 @@ switch procId
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',dce_xyz_dsl.bitmask));
     dplus   = mms_sdp_typecast('deltaplus', 10^9/(2*Dmgr.samplerate)); % in nanoseconds, half the time interval.
     repres1 = ['x'; 'y'; 'z'];
-    
+
     name.epoch   = [datasetPrefix '_dce_epoch'];
     name.dsl     = [datasetPrefix '_dce_xyz_dsl'];
     name.bitmask = [datasetPrefix '_dce_bitmask'];
@@ -106,7 +106,7 @@ switch procId
     name.quality = [datasetPrefix '_dce_quality'];
     name.dplus   = [datasetPrefix '_deltap']; % Delta Plus (time interval)
     name.repres1 = [datasetPrefix '_representation1'];
-    
+
     label = ['Ex DSL'; 'Ey DSL'; 'Ez DSL'];
     outVars = {name.epoch, epochTT, name.label, label, name.dsl, dsl, ...
       name.bitmask, bitmask, name.quality, quality, ...
@@ -125,7 +125,7 @@ switch procId
     compressVars = {name.label, COMPRESS_LEVEL, name.dsl, COMPRESS_LEVEL, ...
       name.bitmask, COMPRESS_LEVEL, name.quality, COMPRESS_LEVEL, ...
       name.dplus, COMPRESS_LEVEL, name.repres1, COMPRESS_LEVEL};
-    
+
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, in TT2000'; ...
       name.label,   'Label'; ...
@@ -192,7 +192,7 @@ switch procId
       name.dplus,   'support_data';...
       name.repres1, 'metadata'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
-    
+
   case MMS_CONST.SDCProc.l2a
     % L2A (same as old L2pre)
     varNameSuffix = [tmModeStr, '_l2a'];
@@ -200,7 +200,7 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), two dimensional electric field. L2A file',...
       scId,procName,tmModeStr);
-    
+
     % Verify output data exist. L2A outputs: DCE [e12, e34, e56], phase,
     % Spinfit [e12, e34] {sdev A B C}, bitmask of DCE [e12, e34, e56] and a
     % quality. (and corresponding epoch and labels).
@@ -249,7 +249,7 @@ switch procId
       errStr = 'Cannot output ''sw_wake''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    
+
     epochTT = dce.time;
     % adcdata & dcedata, defined as CDF_REAL4 (single in Matlab)
     % NOTE: The minus sign on DCE E56 in order to flip it to the DSL Z direction!
@@ -265,7 +265,7 @@ switch procId
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',bitmask(:,1)));
     dplus   = mms_sdp_typecast('deltaplus', 10^9/(2*Dmgr.samplerate)); % in nanoseconds, half the time interval.
     dplus2  = mms_sdp_typecast('deltaplus', double(MMS_CONST.Limit.SPINFIT_INTERV)/2); % in nanoseconds, half the time interval.
-    
+
     name.epoch   = [datasetPrefix '_epoch_' varNameSuffix];
     name.dce     = [datasetPrefix '_dce_' varNameSuffix];
     name.phase   = [datasetPrefix '_phase_' varNameSuffix];
@@ -289,7 +289,7 @@ switch procId
     label        = ['E_12'; 'E_34'; 'E_56'];
     label3       = ['E_12'; 'E_34'];
     label4       = ['Delta Ex DSL'; 'Delta Ey DSL'];
-    
+
     outVars = {name.epoch, epochTT, name.label, label, name.dce, dcedata, ...
       name.bitmask, bitmask, name.quality, quality, name.phase, phasedata, ...
       name.label3, label3, name.adc, adcdata, ...
@@ -334,7 +334,7 @@ switch procId
       name.dplus2, COMPRESS_LEVEL, name.swwake, COMPRESS_LEVEL, ...
       name.repres1, COMPRESS_LEVEL, name.repres2, COMPRESS_LEVEL, ...
       name.radius, COMPRESS_LEVEL};
-    
+
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, in TT2000'; ...
       name.label,      'Label'; ...
@@ -500,7 +500,7 @@ switch procId
       name.repres2,    'metadata'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE';...
       name.sfitsEpoch, 'INCREASE'};
-    
+
     switch (size(spinfit.sfit.(sdpPair{1}),2))
       case 3
         % [A], B & C, 15 char each.
@@ -520,7 +520,7 @@ switch procId
         error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
     outVars = [outVars {name.label2, label2}];
-    
+
     for iPair=1:numel(sdpPair)
       name.sfits.(sdpPair{iPair}) = [datasetPrefix,'_espin_', strrep(sdpPair{iPair},'e','p'),'_', varNameSuffix];
       name.sfitSdev = [datasetPrefix '_sdevfit_', strrep(sdpPair{iPair},'e','p'),'_', varNameSuffix]; % Spinfit SDEV.
@@ -592,7 +592,7 @@ switch procId
         name.sfitSdev,   'support_data'; ...
         name.sfitAfit,   'support_data'}];
     end
-    
+
     if(~no_CMD)
       cmdmodel = mms_sdp_typecast('dce', cmdmodel);
       name.cmdmodel = [datasetPrefix '_cmdmodel_' varNameSuffix];
@@ -614,7 +614,7 @@ switch procId
       VATTRIB.VALIDMAX = [VATTRIB.VALIDMAX; {name.cmdmodel, EFIELD_MAX}];
       VATTRIB.VAR_TYPE = [VATTRIB.VAR_TYPE; {name.cmdmodel, 'support_data'}];
     end
-    
+
   case MMS_CONST.SDCProc.l2pre
     % L2Pre (new output: ADP separate, and 2d DCE from E12, E34 and 3rd
     % componenet from E*B = 0.)
@@ -623,13 +623,13 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), two dimensional electric field.',...
       scId,procName,tmModeStr);
-    
+
     l2pre = Dmgr.l2a;
     if mms_is_error(l2pre)
       errStr='Cannot output ''l2pre''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    
+
     epochTT = l2pre.dce.time;
     % Ensure dce is in correct class
     dsl = mms_sdp_typecast('dce', l2pre.dsl.data);
@@ -647,7 +647,7 @@ switch procId
     % and quality
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',l2pre.dsl.bitmask));
     dplus   = mms_sdp_typecast('deltaplus', (10^9/(2*Dmgr.samplerate))); % in nanoseconds, half the time interval.
-    
+
     name.epoch   = [datasetPrefix '_epoch_' varNameSuffix];
     name.adp     = [datasetPrefix '_adp_' varNameSuffix];
     name.adc     = [datasetPrefix '_adc_offset_' varNameSuffix];
@@ -670,7 +670,7 @@ switch procId
     label3       = ['Delta Ex DSL'; 'Delta Ey DSL'];
     repres1      = ['x'; 'y'; 'z'];
     repres2      = ['x'; 'y'];
-    
+
     outVars = {name.epoch, epochTT, name.label, label, name.adp, adp, ...
       name.phase, phase, name.dsl, dsl, name.bitmask, bitmask, ...
       name.quality, quality, name.label2, label2, name.adc, adcdata,...
@@ -709,7 +709,7 @@ switch procId
       name.swwake, COMPRESS_LEVEL, name.spinEpo, COMPRESS_LEVEL, ...
       name.dplus, COMPRESS_LEVEL, name.repres1, COMPRESS_LEVEL, ...
       name.repres2, COMPRESS_LEVEL, name.dsl_off, COMPRESS_LEVEL};
-    
+
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, in TT2000'; ...
       name.label,   'Label'; ...
@@ -881,8 +881,8 @@ switch procId
       name.repres1, 'metadata'; ...
       name.repres2, 'metadata'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
-    
-    
+
+
   case MMS_CONST.SDCProc.scpot
     % ScPot - get data
     varNameSuffix = [tmModeStr, '_l2'];
@@ -890,7 +890,7 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), Spacecraft potential',...
       scId,procName,tmModeStr);
-    
+
     dcv = Dmgr.dcv;
     if mms_is_error(dcv)
       errStr='Cannot output ''dcv''';
@@ -906,7 +906,7 @@ switch procId
       errStr='Cannot output ''sc_pot''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    
+
     epochTT = dcv.time;
     % psp_p, PSP, ESCP stored as CDF_REAL4 (single in Matlab)
     psp_p = mms_sdp_typecast('scpot',[dcv.v1.data, dcv.v2.data, dcv.v3.data, ...
@@ -916,7 +916,7 @@ switch procId
     bitmask = mms_sdp_typecast('bitmask',sc_pot.bitmask);
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',sc_pot.bitmask));
     dplus   = mms_sdp_typecast('deltaplus', (10^9/(2*Dmgr.samplerate))); % in nanoseconds, half the time interval.
-    
+
     name.epoch   = [datasetPrefix '_epoch_' varNameSuffix]; % Timestamp in TT2000
     name.scpot   = [datasetPrefix '_scpot_' varNameSuffix]; % Estimated Spacecraft potential
     name.psp     = [datasetPrefix '_psp_' varNameSuffix]; % Probe to spacecraft potential, averaged
@@ -925,9 +925,9 @@ switch procId
     name.quality = [datasetPrefix '_quality_' varNameSuffix]; % Quality
     name.label   = [datasetPrefix '_label1_' varNameSuffix];
     name.dplus   = [datasetPrefix '_deltap_' varNameSuffix]; % Delta Plus (time interval)
-    
+
     label = ['PSP_P1'; 'PSP_P2'; 'PSP_P3'; 'PSP_P4'; 'PSP_P5'; 'PSP_P6'];
-    
+
     outVars = {name.epoch, epochTT, ...
       name.label, label, ...
       name.scpot, ESCP, ...
@@ -936,11 +936,11 @@ switch procId
       name.bitmask, bitmask,...
       name.quality, quality, ...
       name.dplus, dplus};
-    
+
     % RecordBound, ie individual cdf records for each row.
     recBound = {name.epoch, name.scpot, name.psp, name.psp_p, ...
       name.bitmask, name.quality};
-    
+
     % Variable Datatypes
     varDatatype = {name.epoch, getfield(mms_sdp_typecast('epoch'),'cdf'), ...
       name.label,   getfield(mms_sdp_typecast('label'),  'cdf'), ...
@@ -950,13 +950,13 @@ switch procId
       name.bitmask, getfield(mms_sdp_typecast('bitmask'),'cdf'), ...
       name.quality, getfield(mms_sdp_typecast('quality'),'cdf'), ...
       name.dplus,   getfield(mms_sdp_typecast('deltaplus'),'cdf')};
-    
+
     % Compression
     compressVars = {name.label, COMPRESS_LEVEL, name.scpot, COMPRESS_LEVEL, ...
       name.psp, COMPRESS_LEVEL, name.psp_p, COMPRESS_LEVEL, ...
       name.bitmask, COMPRESS_LEVEL, name.quality, COMPRESS_LEVEL, ...
       name.dplus, COMPRESS_LEVEL};
-    
+
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, in TT2000'; ...
       name.label,   'Label'; ...
@@ -1046,7 +1046,7 @@ switch procId
       name.quality, 'support_data'; ...
       name.dplus,   'support_data'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
-    
+
     %% Update GlobalAttribute
     % ref: https://heliophysicsdata.gsfc.nasa.gov/queries/CDAWeb_SPASE.html
     % (as per 2022-08-30T11:30 CEST)
@@ -1147,7 +1147,7 @@ cd(oldDir);
     verStr = sprintf('%d.%d.',MMS_CONST.Version.(procName).X, MMS_CONST.Version.(procName).Y);
     fileName = [scIdStr '_' INST_NAME, '_' tmModeStr '_' subDir '_' ...
       suf '_' startTime '_v' ];
-    
+
     % Check for preexisting files and increment file version
     switch tmMode
       case MMS_CONST.TmMode.brst
@@ -1172,7 +1172,7 @@ cd(oldDir);
     end
     verStr = [verStr num2str(newVer)];
     fileName = [fileName verStr];
-    
+
     function r = get_rev(s)
       % Find revision (Z) from version string in a file name xxx_vX.Y.Z.cdf
       idxDot = find(s=='.');

@@ -132,7 +132,7 @@ start_date_s = strrep(datestr(fromepoch(start_time),29),'-','');
 p = tokenize(data_path,'|');
 
 for i=1:length(p)
-  
+
   if ~isempty(regexp(p{i},':\d{1,2}\>','once'))
     % use ISDAT
     useISDAT = 1;
@@ -145,8 +145,8 @@ for i=1:length(p)
       continue
     end
   end
-  
-  
+
+
   if useISDAT
     %irf_log('dsrc',,'Using ISDAT')
     lasterr('')
@@ -161,19 +161,19 @@ for i=1:length(p)
         r.pr, r.mem, r.inst, r.sen);
       Mat_DbClose(dbase)
       clear dbase
-      
+
       if ~isempty(dat)
         % If dat has more the one column, we need to transpose it
         sz = size(dat);
         if sz( sz~=length(t) ) > 1, dat = dat'; end
-        
+
         data = [double(t) double(dat)];
         return
       else
         % irf_log('dsrc','No data')
       end
     end
-    
+
   else
     irf_log('dsrc','Using FILE')
     disp([p{i} '/CSDS/' r.file start_date_s '*']);

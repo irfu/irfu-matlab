@@ -33,11 +33,11 @@ c_eval('AI?.data(AI?.data==min(AI?.data))=NaN;')
 %%
 if 0
   h = irf_plot(2); %#ok<UNRCH>
-  
+
   hca = irf_panel('Ex');
   hl = irf_plot(hca,{E1.x,Edi1.x},'comp');
   hl.Children(1).Marker = '.';
-  
+
   hca = irf_panel('Ey');
   hl = irf_plot(hca,{E1.y,Edi1.y},'comp');
   hl.Children(1).Marker = '.';

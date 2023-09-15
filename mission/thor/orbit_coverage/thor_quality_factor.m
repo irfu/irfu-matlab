@@ -32,7 +32,7 @@ else % download data from omni database, change the years as is appropriate
   clear tintUTC
   tsub = 1;
   c_eval('tintUTC{tsub} = ''?-01-01T00:00:00/?-12-31T23:59:00''; tsub = tsub+1;',2001:2004);
-  
+
   omni_orig = [];
   tic;
   for iy = 1:numel(tintUTC)
@@ -41,18 +41,18 @@ else % download data from omni database, change the years as is appropriate
     omni_orig = [omni_orig; tmp_omni];
     toc
   end
-  
+
   % Clean up data
   omni = omni_orig;
   t0 = irf_time(omni_orig(:,1),'epoch>epochtt');
-  
+
   if 0 % Removing all the points that dont have R0 data changes the total time
     omni(isnan(omni(:,2)),:)=[]; % remove all points that dont have R0 data
   end
-  
+
   R0 = omni(:,2); % RE
   kmR0 = omni(:,2)*units.RE*1e-3; % km
-  
+
   tsBSNX = irf.ts_scalar(irf_time(omni(:,1),'epoch>utc'),omni(:,2));
   tsBSNX = tsBSNX.resample(t0);
   tsBSNX.units = 'RE';
@@ -215,7 +215,7 @@ if 1 % B angle
   colormap(hca,mirrorcmap);
   hca.CLim = [0 180];
   hca.Title.String = 'Magnetic field normal angle';
-  
+
   hLegend = [];
   txtLegend = {};
   if plotB
@@ -290,7 +290,7 @@ if 1 % B angle
   colormap(hca,mirrorcmap);
   hca.CLim = [0 180];
   hca.Title.String = 'Shock normal angle';
-  
+
   if plotB
     hold(hca,'on')
     quiver(hca,xTHOR(isCrossing),yTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),'k')

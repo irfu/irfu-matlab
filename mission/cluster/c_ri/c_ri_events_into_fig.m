@@ -47,7 +47,7 @@ for i = 1:i_end
   if dt_ev(i) > per
     f_count = f_count +1;
     f_events(f_count,:) = time_of_events(i+1,:);
-    
+
     % if there is a new point with greater angle
   elseif  f_events(f_count,2) < time_of_events(i+1,2)
     f_events(f_count,:) = time_of_events(i+1,:);
@@ -83,7 +83,7 @@ for g =1:f_count
   t = f_events(g,1);
   s_t = fromepoch(t);
   e_t = fromepoch(t);
-  
+
   for i_MP_file=1:size(MP_files,1)
     file_name = MP_files(i_MP_file).name;
     if c_ri_timestr_within_intervall_M(file_name,s_t,e_t) == 1
@@ -103,10 +103,10 @@ for g =1:f_count
       end
     end
   end
-  
+
   %---------------------------------------
   % read data files - E field, P
-  
+
   data_files=dir([path_data 'F*T*.mat']);
   for i_data_file=1:size(data_files,1)
     file_name = data_files(i_data_file).name;
@@ -115,36 +115,36 @@ for g =1:f_count
       if debug, disp(['Data file: ' path_data file_name]);end
     end
   end
-  
+
   %---------------------------------------
   % ls all Bp_*.* files
   Bp_files=dir([path_Bp 'Bp_*.mat']);
   for i_Bp_file=1:size(Bp_files,1)
     file_name = Bp_files(i_Bp_file).name;
-    
+
     if c_ri_timestr_within_intervall(file_name,s_t,e_t) == 1
       %load B1,B2,B3,B4
       load([path_Bp file_name]);
       if debug, disp(['Bp file: ' path_Bp file_name]);end
       mode = file_name(length(file_name)-4);
-      
+
       m1 = time2row(t-5,B1);
       m2 = time2row(t+5,B1);
-      
+
       B1_eve = B1(m1:m2,:);
       B2_eve = B2(m1:m2,:);
       B3_eve = B3(m1:m2,:);
       B4_eve = B4(m1:m2,:);
-      
+
       % fills datagaps, this can be removed if the process get to slow
       B1_eve = c_ri_fill_datagaps(B1_eve);
       B2_eve = c_ri_fill_datagaps(B2_eve);
       B3_eve = c_ri_fill_datagaps(B3_eve);
       B4_eve = c_ri_fill_datagaps(B4_eve);
-      
+
       [angles, ampl] = c_ri_angles_and_ampl(B1_eve,B2_eve,B3_eve,B4_eve);
-      
-      
+
+
       clf;clear h;
       np=8;ip=1;
       h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
@@ -185,32 +185,32 @@ for g =1:f_count
       if isfield(ud,'t_start_epoch'), 	ts=ud.t_start_epoch;else, ts=0;end
       plot(t-ts,0,'xk');
       ylabel('Vps, [cc]')
-      
+
       irf_zoom(t+[-5 5],'x',h);
       irf_timeaxis(h);
       set(h,'YLimMode','auto');
-      
+
       %plotting data
       variable = who('min_ampl');
       if isempty(variable)
         min_ampl = 0;
       end
-      
+
       variable = who('min_angle');
       if isempty(variable)
         min_angle = 0;
       end
-      
+
       variable = who('dist2MP');
       if isempty(variable)
         dist2MP = 3;
       end
-      
+
       variable = who('p_solarwind');
       if isempty(variable)
         p_solarwind = 2;
       end
-      
+
       if dMP(1,1) ~= 0
         distance = dMP(g);
       end
@@ -218,14 +218,14 @@ for g =1:f_count
       if isempty(variable)
         distance = 0;
       end
-      
+
       r= time2row(t,angles);
-      
+
       [amaxim, amaximp] = max(angles(r,2:7));
       [apr1, apr2] =  ind2nr(amaximp);
-      
+
       distan_str = sprintf('%2.1f',distance);
-      
+
       h(ip)=subplot(np,1,ip);ip=ip+1;
       %left side
       text(1,4.5,R_datestring2(fromepoch(t)));
@@ -233,7 +233,7 @@ for g =1:f_count
       text(1,1.5,['min angle: ' int2str(min_angle) ' degrees']);
       text(1,0,['distance to MP: ' distan_str ' RE']);
       text(1,-1.5, ['burst or normal, (b/n) ' mode]);
-      
+
       %right side
       text(2.5,3,['angles: ' int2str(angles(r,2:7)) ' degrees']);
       text(2.5,4.5,['|B|: ' int2str(ampl(r,:)) ' nT']);

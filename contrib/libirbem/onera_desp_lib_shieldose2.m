@@ -189,9 +189,9 @@ if ~isnumeric(IDET)
         case {'si','silicon'}, IDET = 3;
         case {'air'}, IDET = 4;
         case {'bone'}, IDET = 5;
-        case {'cafl','calcium'}, IDET = 6;
+        case {'cafl','caf2','calcium'}, IDET = 6;
         case {'gaar','gaas','gallium'}, IDET = 7;
-        case {'lifl','lithium'}, IDET = 8;
+        case {'lifl','lif','lithium'}, IDET = 8;
         case {'sio2','glass'}, IDET = 9;
         case {'tissue'}, IDET = 10;
         case {'water','h2o'}, IDET = 11;

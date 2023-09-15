@@ -38,16 +38,16 @@ while tStart<=targetTime(end)
   tPhaTmp = tDefatt(iPhaTmp); phaTmp = phaseDefatt(iPhaTmp);
   if length(tPhaTmp)<=1, tStart = tStop; continue; end
   phaTmpUnwrapped = unwrap(phaTmp*pi/180)*180/pi;
-  
+
   if isempty(iLastOkPoint), iOutTmp = targetTime < tStop;
   else, iOutTmp = targetTime<tStop & targetTime>targetTime(iLastOkPoint);
   end
   if ~any(iOutTmp), tStart = tStop; continue; end
-  
+
   %XXX TODO: add handling of gaps
   gaps = find(diff(tPhaTmp)>60/SPIN_RATE_MAX, 1);
   if ~isempty(gaps), error('gaps'), end
-  
+
   comp_spin_rate()
   if ~flagSpinRateStable || ~isempty(spinRateLast) &&...
       abs(spinRate-spinRateLast) > MAX_SPIN_RATE_CHANGE

@@ -153,7 +153,7 @@ for in = 1:n_spins
     te = phase_2(i360(end),1);
     empty = 0;
   end
-  
+
   ttime(:,in) = (ts + (0:1:360) *(te-ts)/360.0)';
   if empty, tt(:,in) = NaN;
   else
@@ -196,7 +196,7 @@ for in = 1:n_spins
       tt(:,in) = dtmp(:,2);
       clear dtmp
     end
-    
+
     % Identify spins for which we attempt to correct wake
     if (in>=6 && sum(isnan(tt(1,in - (0:1:5) )))<=1)
       % We allow max one data gap within 6 spins
@@ -227,7 +227,7 @@ for in = iok
     plot_i = 0;
   else, plotflag_now = 0;
   end
-  
+
   ts = ttime(1,in);
   if in==n_spins-2
     % Last interval
@@ -241,10 +241,10 @@ for in = iok
     else, idx = -2:1:2;
     end
   end
-  
+
   % Spin in the middle has maximum weight
   av12 = sum(tt(:, in + (idx) ).*([.1 .25 .3 .25 .1]'*ones(1,NPOINTS))',2);
-  
+
   % First find a proxy wake fit
   % Identify wakes by max second derivative
   d12 = [av12(1)-av12(end); diff(av12)];
@@ -252,28 +252,28 @@ for in = iok
   % Average with 7 points to minimize danger of detecting a wrong maximum
   %d12 = w_ave(d12,7);
   d12=filter(ones(1,9)/9,1,d12);
-  
+
   % Fix wake position
   if pair==12
     i1 = (30:65) +1; % Get degrees 50 (-20,+15)
   elseif pair==34
     i1 = (30:65) +1 +90; % Get degrees 140 (-20,+15)
   end
-  
+
   ind1 = find(d12 == min(d12(i1))) -1;
   ind2 = find(d12 == max(d12(i1+180))) -1;
-  
+
   % The proxy wake is narrow (1/2 of the final fit)
   wake_width = fix(WAKE_MAX_HALFWIDTH/2);
   i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
   i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-  
+
   % The proxy wake is symmetric
   dav = (d12(i1)-d12(i2))/2;
   cdav = cumsum(dav);
   cdav = cdav - mean(cdav);
   ccdav = cumsum(cdav);
-  
+
   % Save wake description
   fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
   wakedesc(in*2-1+fw,1) = ttime(mod(ind1,NPOINTS)+1,in);
@@ -294,18 +294,18 @@ for in = iok
     continue
   end
   wakedesc([in*2-1 in*2],4) = wampl;
-  
+
   wake = zeros(NPOINTS,1);
   wake( i1 ) = ccdav;
   wake( i2 ) = -ccdav;
-  
+
   % Correct for the proxy wake
   av12_corr = av12 - wake;
   % Find the ground tone and remove it from the data
   x = fft(av12_corr);
   x(3:359) = 0;
   av12_corr = av12 -ifft(x,'symmetric');
-  
+
   % Now find the final fit
   d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
   d12 = [d12(1)-d12(end); diff(d12)];
@@ -315,11 +315,11 @@ for in = iok
   % Average with only 5 points to get a more fine fit
   %d12 = w_ave(d12,5);
   d12=filter(ones(1,9)/9,1,d12);
-  
+
   wake_width = WAKE_MAX_HALFWIDTH;
   i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
   i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-  
+
   % Allow the final fit to be asymmetric
   cdav = cumsum(d12(i1));
   cdav = cdav - mean(cdav);
@@ -327,7 +327,7 @@ for in = iok
   cdav = cumsum(d12(i2));
   cdav = cdav - mean(cdav);
   ccdav2 = cumsum(cdav);
-  
+
   if max(abs(ccdav1))< WAKE_MIN_AMPLITUDE || ...
       max(abs(ccdav2))< WAKE_MIN_AMPLITUDE || ...
       max(max(abs(ccdav1)),max(abs(ccdav2)))>WAKE_MAX_AMPLITUDE
@@ -353,7 +353,7 @@ for in = iok
     wakedesc([in*2-1 in*2],:) = NaN;
     continue
   end
-  
+
   % Save wake description
   wakedesc(in*2-1+fw,3) = max(abs(ccdav1));
   % Wake half-width
@@ -380,7 +380,7 @@ for in = iok
   end
   wakedesc(in*2-fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
   clear ii iimax
-  
+
   if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
     irf_log('proc',sprintf('wake is too narrow (%d deg) at %s',...
       min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4)),...
@@ -388,11 +388,11 @@ for in = iok
     wakedesc([in*2-1 in*2],:) = NaN;
     continue
   end
-  
+
   wake = zeros(NPOINTS,1);
   wake( i1 ) = ccdav1;
   wake( i2 ) = ccdav2;
-  
+
   if plotflag_now
     clf
     subplot(4,1,1)
@@ -407,27 +407,27 @@ for in = iok
     ylabel('E12 [mV/m]');
     irf_timeaxis(gca,ts); xlabel('');
     set(gca,'XLim',[0 te-ts])
-    
+
     subplot(4,1,2)
     plot(ttime(:,in)-ts,d12_tmp,'g');%,ttime(:,in)-ts, d12,'b');
     ylabel(['D2(E' num2str(pair) ') [mV/m]']);
     irf_timeaxis(gca,ts); xlabel('');
     set(gca,'XLim',[0 te-ts])
-    
+
     subplot(4,1,3)
     plot(ttime(:,in)-ts, wake)
     ylabel('Wake [mV/m]');
     irf_timeaxis(gca,ts);
     set(gca,'XLim',[0 te-ts])
   end
-  
+
   % Correct the spin in the middle
   ind = find(e(:,1)>=ttime(1,in) & e(:,1)<ttime(end,in));
   if ~isempty(ind)
     wake_e = irf_resamp([ttime(:,in) wake], e(ind,1));
     data(ind,2) = data(ind,2) - wake_e(:,2);
     n_corrected = n_corrected + 1;
-    
+
     if plotflag_now
       subplot(4,1,4)
       irf_plot({e(ind,:),data(ind,:)},'comp')
@@ -435,7 +435,7 @@ for in = iok
       irf_zoom([ts te],'x',gca)
     end
   end
-  
+
   % Correct edge spins
   cox = [];
   if in==iok(1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))

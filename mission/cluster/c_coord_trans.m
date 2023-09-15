@@ -81,7 +81,7 @@ if size(args,2) > 1, have_options = 1; end
 
 while have_options
   if ~ischar(args{1}), error('expecting ''sax'',''cl_id'' or ''t'''),end
-  
+
   switch(lower(args{1}))
     case 'sax'
       if length(args)>1
@@ -127,7 +127,7 @@ while have_options
 end
 
 if strcmpi(from,'GSE') || strcmpi(to,'GSE')
-  
+
   if isempty(sax) && ( isempty(cl_id) || isempty(t) )
     error('Need both CL_ID and T if SAX is not given and wanting GSE')
   end
@@ -163,7 +163,7 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
       sax=[];
     end
   end
-  
+
   if isempty(sax) % could not load anywhere SAX, use default 0 0 1
     disp('!!!!!!!!!!!! ERROR !!!!!!!!!!!!')
     disp('c_coord_trans: could not load SAX variable')

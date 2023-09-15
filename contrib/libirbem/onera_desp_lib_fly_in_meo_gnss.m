@@ -21,7 +21,7 @@ function [Lower_flux,Mean_flux,Upper_flux] = onera_desp_lib_fly_in_meo_gnss(laun
 %
 % [Lower_flux,Mean_flux,Upper_flux] = onera_desp_lib_fly_in_meo_gnss(launch_year,duration,whichm,energy)
 % This function allows one to fly any MEO GNSS type spacecraft in MEO ONERA
-% models. The use of the model is limited to GPS altitude (~20000 km - 55ï¿½
+% models. The use of the model is limited to GPS altitude (~20000 km - 55°
 % inclination).
 %
 % launch_year: year of launch (uses integer part only)

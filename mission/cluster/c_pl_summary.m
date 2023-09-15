@@ -98,7 +98,7 @@ for cl_id=sc_list
     getData(cp,cl_id,'edb','ang_blank','ang_limit',ang_limit);
     getData(cp,cl_id,'vedbs');
   end
-  
+
   figure(cl_id), clf, orient tall
   splot_options = [{cp} {cl_id} args];
   summaryPlot(splot_options{:})

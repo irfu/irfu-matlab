@@ -10,9 +10,9 @@
 % Initially created <2020-04-09.
 %
 function v1IsSubsetOfV2 = is_range_subset(v1, v2)
-    
-    irf.assert.vector(v1)
-    irf.assert.vector(v2)
-    
-    v1IsSubsetOfV2 = (min(v2) <= min(v1)) && (max(v1) <= max(v2));   % NOTE: Equality counts as a subset.
+
+irf.assert.vector(v1)
+irf.assert.vector(v2)
+
+v1IsSubsetOfV2 = (min(v2) <= min(v1)) && (max(v1) <= max(v2));   % NOTE: Equality counts as a subset.
 end

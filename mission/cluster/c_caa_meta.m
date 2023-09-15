@@ -113,7 +113,7 @@ else
       cellfun(@(x) fprintf('%s\n',x),vertcat(mat_output(datasetNames(iSelected),1)), 'UniformOutput',false);
       return;
     end
-    
+
   end
 end
 end

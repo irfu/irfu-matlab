@@ -87,25 +87,25 @@ end_of_i = max(size(time_line));
 length_of_B1 = max(size(B1));
 tic %starts the clock
 for i = 1:end_of_i
-  
+
   if rem(i,10000) == 0
     est_time = end_of_i/i*toc;
     disp(['the running will take ' num2str(est_time) ' seconds'])
     disp(['calculation so far ' num2str(i/end_of_i*100) ' %'])
   end
-  
+
   time = time_line(i);
   %writing the time
   angles(i,1) = time;
-  
+
   [B_vectors, n_pos] = time_synch( time, dt, B1, n_pos(1), B2, n_pos(2), B3, n_pos(3), B4, n_pos(4));
   %the calculation of the angles
-  
+
   % the amplitude of each vector
   for d = 1:4
     ampl(i,d) =  norm(B_vectors(d,:));
   end
-  
+
   angles(i,2:7) = four_vector_angles(B_vectors);
 end
 

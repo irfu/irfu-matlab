@@ -1,7 +1,7 @@
 %
 % Generic function for recursing over the files & directories under an arbitrary
 % directory.
-% 
+%
 % Recurses over all, or a subset of, files and directories under a directory
 % subtree ("the root path/directory"). Calls one arbitrary function for every
 % directory and another arbitrary function for every file. A third arbitrary
@@ -67,7 +67,7 @@
 %           the children of the specified directory.
 %           NOTE: DirFunc will always be called for the directory specified
 %           here.
-%                     
+%
 % varargin
 %       Optional settings on format determined by
 %       irf.utils.interpret_settings_args().
@@ -147,7 +147,7 @@
 %    (2) rootPath = Path without the name for the final subdirectory, e.g.
 %        ".", "/qwe/asd/.", "/qwe/asd/.."
 %    (3) Empty directory (or subdirectory)
-% Not tested for: 
+% Not tested for:
 %    (1) Symbolic links, hard links, devices etc but it should be possible to
 %        derive the behaviour for symbolic links using the notes below.
 %
@@ -179,7 +179,7 @@
 % Initially created 2016-11-29 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function result = recurse_directory_tree(...
-        rootPath, FileFunc, DirFunc, ShouldRecurseFunc, varargin)
+  rootPath, FileFunc, DirFunc, ShouldRecurseFunc, varargin)
 
 % GUIDING NEEDS / RATIONALE / MOTIVATION
 % ======================================
@@ -223,74 +223,74 @@ function result = recurse_directory_tree(...
 %       CON: ArgStruct.relativePath = '' or '.' for a root directory. Is also
 %       that kind of a special case.
 
-    
 
-    % ASSERTION
+
+% ASSERTION
 %     if ~exist(rootDirPath, 'dir')
 %         error('Can not find directory "%s".', rootDirPath)
 %     end
 
 
-    
-    % Set default settings.
-    %DEFAULT_SETTINGS.useRelativeDirectorySlash = false;
-    DEFAULT_SETTINGS.useRootRelativePathPeriod = false;
-    Settings = irf.utils.interpret_settings_args(...
-        DEFAULT_SETTINGS, varargin);
-    irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
-    % ASSERTION
-    %if Settings.useRelativeDirectorySlash && ~Settings.useRootRelativePathPeriod
-    %    error('Illegal combination of settings.')
-    %end
-    
-    % Convert settings into values to actually use (set once here for speed; to avoid repetition).
+% Set default settings.
+%DEFAULT_SETTINGS.useRelativeDirectorySlash = false;
+DEFAULT_SETTINGS.useRootRelativePathPeriod = false;
+Settings = irf.utils.interpret_settings_args(...
+  DEFAULT_SETTINGS, varargin);
+irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+
+% ASSERTION
+%if Settings.useRelativeDirectorySlash && ~Settings.useRootRelativePathPeriod
+%    error('Illegal combination of settings.')
+%end
+
+% Convert settings into values to actually use (set once here for speed; to avoid repetition).
 %     if Settings.useRelativeDirectorySlash ; relativeDirectoryPathSuffix = '/';
 %     else                                    relativeDirectoryPathSuffix = '';
 %     end
-    relativeDirectoryPathSuffix = '';
-    % NOTE: Should NOT include trailing slash. Should be added automatically if
-    % desired.
-    if Settings.useRootRelativePathPeriod ; relativePathRoot = '.';
-    else                                    relativePathRoot = '';
-    end
+relativeDirectoryPathSuffix = '';
+% NOTE: Should NOT include trailing slash. Should be added automatically if
+% desired.
+if Settings.useRootRelativePathPeriod ; relativePathRoot = '.';
+else                                    relativePathRoot = '';
+end
 
-    
-    
-    % IMPLEMENTATION NOTE: "isfile" is incompatible with MATLAB R2016a (i.e. Lapsus).
-    if exist(rootPath, 'file') && ~exist(rootPath, 'dir')    
 
-        result = FileFunc(struct(...
-            'rootDirPath',    rootPath, ...
-            'relativePath',   '', ...   % Always empty string since not a directory.
-            'fullPath',       rootPath, ...
-            'dirCmdResult',   dir(rootPath), ...
-            'recursionDepth', 0));
 
-    % IMPLEMENTATION NOTE: "isfolder" is incompatible with MATLAB R2016a (i.e.
-    % Lapsus).
-    elseif exist(rootPath, 'dir')
-        
-        rootPath = irf.fs.remove_trailing_slash(rootPath);
+% IMPLEMENTATION NOTE: "isfile" is incompatible with MATLAB R2016a (i.e. Lapsus).
+if exist(rootPath, 'file') && ~exist(rootPath, 'dir')
 
-        dirCmdResultRootPath = get_dir_cmd_result_for_single_directory(rootPath);
-        
-        % NOTE: Using empty string to represent relative path to rootPath instead
-        % of period. The string is used for is used for building other relative
-        % paths (with "fullfile"). If one uses '.', or './' then one gets "ugly"
-        % relative paths beginning with "./" which is unnecessary for the actual
-        % children of the directory.
-        result = recurse_directory_tree_INTERNAL(...
-            rootPath, '', ...
-            dirCmdResultRootPath, ...
-            0, ...
-            FileFunc, DirFunc, ShouldRecurseFunc, ...
-            relativeDirectoryPathSuffix, relativePathRoot);
-        
-    else
-        error('rootPath="%s" is neither file nor directory.', rootPath)
-    end
-    
+  result = FileFunc(struct(...
+    'rootDirPath',    rootPath, ...
+    'relativePath',   '', ...   % Always empty string since not a directory.
+    'fullPath',       rootPath, ...
+    'dirCmdResult',   dir(rootPath), ...
+    'recursionDepth', 0));
+
+  % IMPLEMENTATION NOTE: "isfolder" is incompatible with MATLAB R2016a (i.e.
+  % Lapsus).
+elseif exist(rootPath, 'dir')
+
+  rootPath = irf.fs.remove_trailing_slash(rootPath);
+
+  dirCmdResultRootPath = get_dir_cmd_result_for_single_directory(rootPath);
+
+  % NOTE: Using empty string to represent relative path to rootPath instead
+  % of period. The string is used for is used for building other relative
+  % paths (with "fullfile"). If one uses '.', or './' then one gets "ugly"
+  % relative paths beginning with "./" which is unnecessary for the actual
+  % children of the directory.
+  result = recurse_directory_tree_INTERNAL(...
+    rootPath, '', ...
+    dirCmdResultRootPath, ...
+    0, ...
+    FileFunc, DirFunc, ShouldRecurseFunc, ...
+    relativeDirectoryPathSuffix, relativePathRoot);
+
+else
+  error('rootPath="%s" is neither file nor directory.', rootPath)
+end
+
 end
 
 
@@ -318,123 +318,123 @@ end
 % DirFunc,
 % ShouldRecurseFunc
 %       Same as arguments to main function.
-% 
+%
 %
 % RETURN VALUE
 % ============
 % result
 %       [] (not cell), if ShouldRecurseFunc returns false for this directory.
-% 
+%
 function result = recurse_directory_tree_INTERNAL(...
-        rootDirPath, ...
-        relativePath, ...
-        dirCmdResultCurrent, ...
-        recursionDepth, ...
+  rootDirPath, ...
+  relativePath, ...
+  dirCmdResultCurrent, ...
+  recursionDepth, ...
+  FileFunc, DirFunc, ShouldRecurseFunc, ...
+  relativeDirectoryPathSuffix, relativePathRoot)
+
+% "dir" command results to remove/ignore, as identified by their .name fields.
+NON_CHILDREN_NAMES = {'.', '..'};
+
+% Value to return when shouldRecurse == false
+NO_RECURSE_DIRECTORY_RESULT = {};
+
+%fprintf(1, 'BEGIN: recurse_directory_tree_INTERNAL("%s")\n', relativePath)
+
+
+
+% Set "relativeDirPath". Only used for calling ShouldRecurseFunc and DirFunc.
+if recursionDepth == 0
+  relativeDirPath = [relativePathRoot, relativeDirectoryPathSuffix];
+else
+  relativeDirPath = [relativePath,     relativeDirectoryPathSuffix];
+end
+fullDirPath = fullfile(rootDirPath, relativeDirPath);
+
+
+
+%========================
+% Call ShouldRecurseFunc
+%========================
+willRecurseOverChildren = ShouldRecurseFunc(struct(...
+  'rootDirPath',    rootDirPath, ...
+  'relativePath',   relativeDirPath, ...
+  'fullPath',       fullDirPath, ...
+  'dirCmdResult',   dirCmdResultCurrent, ...
+  'recursionDepth', recursionDepth));
+
+%=============================================
+% Derive "childrenResultsList" is supposed to.
+%=============================================
+if willRecurseOverChildren
+
+  %==========================================================
+  % Get information on the children of the current directory
+  %==========================================================
+  currentFullPath   = fullfile(rootDirPath, relativePath);
+  % Returns column vector of structs.
+  DirCmdResultsArray = dir(currentFullPath);
+  % Remove non-children from dir command results.
+  iDelete = ismember({DirCmdResultsArray.name}, NON_CHILDREN_NAMES);
+  DirCmdResultsArray(iDelete) = [];
+
+  %=======================================
+  % Iterate over the directory's children
+  %=======================================
+  childrenResultsArray  = cell(length(DirCmdResultsArray), 1);
+  for iChild = 1:length(DirCmdResultsArray)
+    dirCmdResultChild = DirCmdResultsArray(iChild);
+    childRelativePath = fullfile(relativePath, dirCmdResultChild.name);
+
+    if dirCmdResultChild.isdir
+      % CASE: Child is a directory.
+
+      %================
+      % RECURSIVE CALL
+      %================
+      childrenResultsArray{iChild} = recurse_directory_tree_INTERNAL(...
+        rootDirPath, childRelativePath, ...
+        dirCmdResultChild, recursionDepth+1, ...
         FileFunc, DirFunc, ShouldRecurseFunc, ...
-        relativeDirectoryPathSuffix, relativePathRoot)
-    
-    % "dir" command results to remove/ignore, as identified by their .name fields.
-    NON_CHILDREN_NAMES = {'.', '..'};
-    
-    % Value to return when shouldRecurse == false
-    NO_RECURSE_DIRECTORY_RESULT = {};
-
-    %fprintf(1, 'BEGIN: recurse_directory_tree_INTERNAL("%s")\n', relativePath)
-    
-    
-    
-    % Set "relativeDirPath". Only used for calling ShouldRecurseFunc and DirFunc.
-    if recursionDepth == 0
-        relativeDirPath = [relativePathRoot, relativeDirectoryPathSuffix];
+        relativeDirectoryPathSuffix, relativePathRoot);
     else
-        relativeDirPath = [relativePath,     relativeDirectoryPathSuffix];
-    end
-    fullDirPath = fullfile(rootDirPath, relativeDirPath);
-    
-    
-    
-    %========================
-    % Call ShouldRecurseFunc
-    %========================
-    willRecurseOverChildren = ShouldRecurseFunc(struct(...
+      % CASE: Child is a file.
+
+      %===============
+      % Call FileFunc
+      %===============
+      %fprintf(1, 'Calling FileFunc("%s")\n', childRelativePath)
+      childrenResultsArray{iChild} = FileFunc(struct(...
         'rootDirPath',    rootDirPath, ...
-        'relativePath',   relativeDirPath, ...
-        'fullPath',       fullDirPath, ...
-        'dirCmdResult',   dirCmdResultCurrent, ...
-        'recursionDepth', recursionDepth));
-
-    %=============================================
-    % Derive "childrenResultsList" is supposed to.
-    %=============================================
-    if willRecurseOverChildren
-
-        %==========================================================
-        % Get information on the children of the current directory
-        %==========================================================
-        currentFullPath   = fullfile(rootDirPath, relativePath);
-        % Returns column vector of structs.
-        DirCmdResultsArray = dir(currentFullPath);
-        % Remove non-children from dir command results.
-        iDelete = ismember({DirCmdResultsArray.name}, NON_CHILDREN_NAMES);
-        DirCmdResultsArray(iDelete) = [];
-
-        %=======================================
-        % Iterate over the directory's children
-        %=======================================
-        childrenResultsArray  = cell(length(DirCmdResultsArray), 1);
-        for iChild = 1:length(DirCmdResultsArray)
-            dirCmdResultChild = DirCmdResultsArray(iChild);
-            childRelativePath = fullfile(relativePath, dirCmdResultChild.name);
-
-            if dirCmdResultChild.isdir
-                % CASE: Child is a directory.
-
-                %================
-                % RECURSIVE CALL
-                %================
-                childrenResultsArray{iChild} = recurse_directory_tree_INTERNAL(...
-                    rootDirPath, childRelativePath, ...
-                    dirCmdResultChild, recursionDepth+1, ...
-                    FileFunc, DirFunc, ShouldRecurseFunc, ...
-                    relativeDirectoryPathSuffix, relativePathRoot);
-            else
-                % CASE: Child is a file.
-
-                %===============
-                % Call FileFunc
-                %===============
-                %fprintf(1, 'Calling FileFunc("%s")\n', childRelativePath)
-                childrenResultsArray{iChild} = FileFunc(struct(...
-                    'rootDirPath',    rootDirPath, ...
-                    'relativePath',   childRelativePath, ...
-                    'fullPath',       fullfile(rootDirPath, childRelativePath), ...
-                    'dirCmdResult',   dirCmdResultChild, ...
-                    'recursionDepth', recursionDepth+1));
-            end
-        end
-
-    else
-        childrenResultsArray = NO_RECURSE_DIRECTORY_RESULT;
+        'relativePath',   childRelativePath, ...
+        'fullPath',       fullfile(rootDirPath, childRelativePath), ...
+        'dirCmdResult',   dirCmdResultChild, ...
+        'recursionDepth', recursionDepth+1));
     end
+  end
 
-    %fprintf(1, 'Calling DirFunc("%s")\n', relativePath)
-    
-    %==============
-    % Call DirFunc
-    %==============
-    % NOTE: Requires cell braces around "childrenResultsList" to prevent
-    % "struct" from creating an analogous array of structs. (Other fields are
-    % identical for all array components.)
-    result = DirFunc(struct(...
-        'rootDirPath',              rootDirPath, ...
-        'relativePath',             relativeDirPath, ...
-        'fullPath',                 fullDirPath, ...
-        'dirCmdResult',             dirCmdResultCurrent, ...
-        'recursionDepth',           recursionDepth, ...
-        'childrenResultsList',      {childrenResultsArray}, ...
-        'hasRecursedOverChildren',  willRecurseOverChildren));
+else
+  childrenResultsArray = NO_RECURSE_DIRECTORY_RESULT;
+end
 
-    %fprintf(1, 'END:   recurse_directory_tree_INTERNAL("%s")\n', relativePath)
+%fprintf(1, 'Calling DirFunc("%s")\n', relativePath)
+
+%==============
+% Call DirFunc
+%==============
+% NOTE: Requires cell braces around "childrenResultsList" to prevent
+% "struct" from creating an analogous array of structs. (Other fields are
+% identical for all array components.)
+result = DirFunc(struct(...
+  'rootDirPath',              rootDirPath, ...
+  'relativePath',             relativeDirPath, ...
+  'fullPath',                 fullDirPath, ...
+  'dirCmdResult',             dirCmdResultCurrent, ...
+  'recursionDepth',           recursionDepth, ...
+  'childrenResultsList',      {childrenResultsArray}, ...
+  'hasRecursedOverChildren',  willRecurseOverChildren));
+
+%fprintf(1, 'END:   recurse_directory_tree_INTERNAL("%s")\n', relativePath)
 end
 
 
@@ -451,33 +451,33 @@ end
 % Should only be needed exactly once (for the root directory).
 %
 function DirCmdResult = get_dir_cmd_result_for_single_directory(dirPath)
-    % TODO-DEC: How handle "/"?
-    
-    % IMPLEMENTATION NOTE: Need correct path to later determine the name of the
-    % directory (e.g. for relative paths, "/", "..").
-    % irf.fs.get_abs_path might not be enough.
-    absPath = irf.fs.get_abs_path(dirPath);   
-    
-    DirCmdResultsArray = dir(absPath);
-    
-    % IMPLEMENTATION NOTE: Empirically, "dir" returns zero entries for
-    % non-readable directories WITHOUT THROWING ANY EXCEPTION. This can give
-    % very non-intuitive errors.
-    assert(~isempty(DirCmdResultsArray), ...
-        ['"dir" returned zero entries for directory "%s".', ...
-        ' Non-existent directory? No read permissions?'], absPath)
+% TODO-DEC: How handle "/"?
 
-    % Replace "." (current directory) with the actual name of the current
-    % directory.
-    iDir = find(strcmp({DirCmdResultsArray.name}, '.'));
-    assert(isscalar(iDir), ...
-        ['Can not find exactly one instance of object named "."', ...
-        ' when using "dir()" on directory.'])
-    DirCmdResult = DirCmdResultsArray(iDir);
-    
-    % IMPLEMENTATION NOTE: Keep compatible with MATLAB R2009a.
-    % ==> Do NOT use "~" notation.
-    %[junk, baseName, ext] = fileparts(absPath);
-    %dirCmdResult.name = [baseName, ext];
-    DirCmdResult.name = irf.fs.get_name(absPath);
+% IMPLEMENTATION NOTE: Need correct path to later determine the name of the
+% directory (e.g. for relative paths, "/", "..").
+% irf.fs.get_abs_path might not be enough.
+absPath = irf.fs.get_abs_path(dirPath);
+
+DirCmdResultsArray = dir(absPath);
+
+% IMPLEMENTATION NOTE: Empirically, "dir" returns zero entries for
+% non-readable directories WITHOUT THROWING ANY EXCEPTION. This can give
+% very non-intuitive errors.
+assert(~isempty(DirCmdResultsArray), ...
+  ['"dir" returned zero entries for directory "%s".', ...
+  ' Non-existent directory? No read permissions?'], absPath)
+
+% Replace "." (current directory) with the actual name of the current
+% directory.
+iDir = find(strcmp({DirCmdResultsArray.name}, '.'));
+assert(isscalar(iDir), ...
+  ['Can not find exactly one instance of object named "."', ...
+  ' when using "dir()" on directory.'])
+DirCmdResult = DirCmdResultsArray(iDir);
+
+% IMPLEMENTATION NOTE: Keep compatible with MATLAB R2009a.
+% ==> Do NOT use "~" notation.
+%[junk, baseName, ext] = fileparts(absPath);
+%dirCmdResult.name = [baseName, ext];
+DirCmdResult.name = irf.fs.get_name(absPath);
 end

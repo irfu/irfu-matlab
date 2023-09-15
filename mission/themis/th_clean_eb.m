@@ -122,7 +122,7 @@ if ~isempty(ii)
     otherwise
       error('Unknown methos. must be one of LINEAR, ZERO, NaN')
   end
-  
+
   if nargout<3, return, end
   idxGap=[1; find(diff(ii)>1)+1];
   for i=1:length(idxGap)

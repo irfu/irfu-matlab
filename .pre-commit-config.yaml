@@ -1,0 +1,25 @@
+# https://pre-commit.ci/ help keep this .pre-commit-config.yaml
+# automatically updated, and enforce clean runs on Pull Requests
+# (try to automatically fix any code as well). Run against "devel" branch.
+ci:
+    autofix_prs: true
+    autoupdate_branch: 'devel'
+    autoupdate_schedule: weekly
+    skip: []
+    submodules: false
+
+repos:
+
+  ## Some pre-commit out-of-the-box hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.4.0"
+    hooks:
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml
+      # In Matlab files remove trailing whitespace, excluding contributed code and solar_orbiter
+      - id: trailing-whitespace
+        files: '.*.m$'
+        exclude: 'contrib/|mission/solar_orbiter|plots/solo/'

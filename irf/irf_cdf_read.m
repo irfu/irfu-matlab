@@ -269,7 +269,7 @@ for k=2:numel(variables)
   else
     var=DATA{k};
   end
-  
+
   var(var<-1e30) = NaN;
   if isfield(cdf_file_info.VariableAttributes,'FILLVAL')
     for j = 1:size(cdf_file_info.VariableAttributes.FILLVAL,1)

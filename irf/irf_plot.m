@@ -143,13 +143,13 @@ if ischar(x) % Try to get variable labels etc.
 end
 
 if iscell(x) % Plot several variables
-  
+
   % No ylabels are given
   % But no way to now the name of variables
   if size(var_desc,2)<size(x,2), var_desc = cell(1,length(x)); end
-  
+
   if dt==0, dt(1:size(x,2)) = double(0); end
-  
+
   switch plot_type
     case ''
       flag_subplot = 2;
@@ -235,7 +235,7 @@ if flag_subplot==0  % One subplot
   else
     return % empty matrix or does not know what to do
   end
-  
+
 elseif flag_subplot==1 % Separate subplot for each component
   if isstruct(x), error('cannot plot spectra in COMP mode'), end
   if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data(:,:);
@@ -254,19 +254,19 @@ elseif flag_subplot==1 % Separate subplot for each component
     set_ylabel(hca,x, ipl);
   end
   firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
-  
+
 elseif flag_subplot==2 % Separate subplot for each variable
   if isempty(x), return, end
-  
+
   %   t_start_epoch is saved in figures user_data variable
   if isa(x{1},'TSeries'), ts = t_start_epoch(x{1}.time.epochUnix);
   elseif isstruct(x{1}), ts = t_start_epoch(x{1}.t);
   else, ts = t_start_epoch(x{1}(:,1));
   end
-  
+
   t_st = []; t_end = [];
   xlen = [];
-  
+
   npl = size(x,2);
   c=initialize_figure(npl);
   for ipl=1:npl
@@ -289,7 +289,7 @@ elseif flag_subplot==2 % Separate subplot for each variable
     else, if firstTimeStamp(end)>t_end, t_end = firstTimeStamp(end); end
     end
     clear tt
-    
+
     if isstruct(y)
       irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
       if flag_colorbar, hcbar = colorbar; end
@@ -313,10 +313,10 @@ elseif flag_subplot==2 % Separate subplot for each variable
       plot(c(ipl),t_tmp,data,marker_cur);
       grid(c(ipl),'on');
       zoom_in_if_necessary(c(ipl));
-      
+
       % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
       irf_zoom(c(ipl),'y');
-      
+
       if isa(y,'TSeries')
         set_ylabel(c(ipl),y);
       elseif ~isempty(var_desc) && ~isempty(var_desc{ipl})
@@ -338,9 +338,9 @@ elseif flag_subplot==2 % Separate subplot for each variable
     end
   end
   clear t_st t_end
-  
+
   firstTimeStamp = firstTimeStamp(1);
-  
+
 elseif flag_subplot==3  % components of vectors in separate panels
   if isstruct(x), error('cannot plot spectra in COMP mode'), end
   idxEmpty = cellfun(@isempty, x);
@@ -357,7 +357,7 @@ elseif flag_subplot==3  % components of vectors in separate panels
   else
     ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
   end
-  
+
   if npl==1     % We make new figure with subplots only if more than 1 component to plot
     c = ax;
   else
@@ -366,7 +366,7 @@ elseif flag_subplot==3  % components of vectors in separate panels
   for ipl=1:npl
     hca = c(ipl);
     tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
-    
+
     line_colors=get(hca,'ColorOrder');
     for jj=1:size(x,2)
       use_color = 1;

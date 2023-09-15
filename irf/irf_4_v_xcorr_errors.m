@@ -171,7 +171,7 @@ if ~patternInput
   tau12 = fminsearch(@(x) msdTS(x,S2,S1,tint),startTau(2));
   tau13 = fminsearch(@(x) msdTS(x,S3,S1,tint),startTau(3));
   tau14 = fminsearch(@(x) msdTS(x,S4,S1,tint),startTau(4));
-  
+
   % Construct an average signal to use as pattern
   disp('Constructing an average signal to use as new pattern...')
   c_eval('S?p = S?; S?p.time = S?p.time+tau1?;',2:4)
@@ -179,10 +179,10 @@ if ~patternInput
   P = 1/4*(S1+S2p.resample(S1)+S3p.resample(S1)+S4p.resample(S1));
   % only in tint
   P = P.tlim(tint);
-  
+
   %redefine startTau, negative starting guess for good measure
   startTau = [-1e-9,tau12,tau13,tau14];
-  
+
 end
 
 %% Get time differences using the pattern
@@ -202,17 +202,17 @@ tau = -[tau1,tau2,tau3,tau4];
 if calcErrors
   % the time interval used for averaging
   Tw = diff(P.time([1,end]).epochUnix)/2;
-  
+
   % Define a time diff vector Delta
   Delta = P.time.epochUnix-mean(P.time.epochUnix);
   % number of points
   N = length(Delta);
-  
+
   % get G (49)
   disp('Calculating G...')
   G = zeros(1,N);
   for ii = 1:N; G(ii) = corrG(Delta(ii),Tw,Tsamp,P); end
-  
+
   % Get H (50)
   c_eval('H?! = zeros(1,N);',1:4,1:4); % initiate arrays
   % 16 times! wow!
@@ -238,19 +238,19 @@ if calcErrors
   for ii = 1:N; H43(ii) = corrH(Delta(ii),tau4,tau3,S4,S3,P); end
   for ii = 1:N; H44(ii) = corrH(Delta(ii),tau4,tau4,S4,S4,P); end
   fprintf(1,'\b\b\b%d%%\n',100);
-  
-  
-  
+
+
+
   Imin1 = msdTS(tau1,S1,P,tint);
   Imin2 = msdTS(tau2,S2,P,tint);
   Imin3 = msdTS(tau3,S3,P,tint);
   Imin4 = msdTS(tau4,S4,P,tint);
   dtau2 = zeros(4,4);
-  
+
   % derivative of P
   Pp = P;
   Pp.data = [0;diff(P.data)/Tsamp]; % zero fill value
-  
+
   % error through eq (52)
   c_eval('dtau2(?,!) = sqrt(Imin?*Imin!)/(N*mean(Pp.data.^2))*sum(G.*H?!);',1:4,1:4)
 else
@@ -292,14 +292,14 @@ if showFigure
   set(fn,'PaperPosition',[xLeft yTop xSize ySize])
   set(fn,'Position',[10 10 xSize*50 ySize*50])
   set(fn,'paperpositionmode','auto') % to get the same printing as on screen
-  
+
   delete(h); % make new ones
   nPlots = 4+~patternInput;
   unitStr = S1.units;
   if isempty(unitStr); unitStr = 'a.u.'; end
   h = gobjects(1,nPlots);
   tintPlot = [S1.time(1);S1.time(end)];
-  
+
   % original signals and possibly pattern
   hca = subplot(nPlots,1,1);
   irf_pl_tx(hca,'S?')
@@ -312,7 +312,7 @@ if showFigure
   irf_pl_mark(hca,tint)
   xlabel(hca,'')
   h(1) = hca;
-  
+
   % first time-shifted signals and new pattern
   if ~patternInput
     hca = subplot(nPlots,1,2);
@@ -328,7 +328,7 @@ if showFigure
     xlabel(hca,'')
     h(2) = hca;
   end
-  
+
   % final time-shifted signals
   hca = subplot(nPlots,1,2+~patternInput);
   c_eval('S?pp = S?;'); c_eval('S?pp.time = S?.time+-tau(?);')
@@ -342,7 +342,7 @@ if showFigure
   irf_pl_mark(hca,tint)
   xlabel(hca,'')
   h(2+~patternInput) = hca;
-  
+
   % residuals
   hca = subplot(nPlots,1,3+~patternInput);
   % Plot like Fig 5a. in the paper
@@ -357,7 +357,7 @@ if showFigure
   irf_legend(hca,{'\alpha = 1','\alpha = 2','\alpha = 3','\alpha = 4'},[.02,.98],'color','cluster')
   hca.XLim = Delta([1,end]);
   h(3+~patternInput) = hca;
-  
+
   % Product of correlation functions
   hca = subplot(nPlots,1,4+~patternInput);
   % Plot like Fig 5b. in the paper
@@ -370,10 +370,10 @@ if showFigure
   ylabel(hca,'$G(\Delta)*H_{1,\beta}(\Delta)$','interpreter','latex')
   irf_legend(hca,{'\beta = 1','\beta = 2','\beta = 3','\beta = 4'},[.02,.98],'color','cluster')
   xlabel(hca,'$\Delta$ [s]','interpreter','latex')
-  
+
   hca.XLim = Delta([1,end]);
   h(4+~patternInput) = hca;
-  
+
   % axes loop
   for jj = 1:length(h)
     hca = h(jj);
@@ -381,7 +381,7 @@ if showFigure
     hca.LineWidth = 1.3;
     grid(hca,'on')
   end
-  
+
 end
 disp('---------------------------')
 end
