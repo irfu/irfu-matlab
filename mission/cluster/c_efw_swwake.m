@@ -61,6 +61,7 @@ WAKE_MAX_HALFWIDTH = 45; % degrees
 WAKE_MIN_HALFWIDTH = 11;  % degrees
 WAKE_MIN_AMPLITUDE = 0.4; % mV/m
 WAKE_MAX_AMPLITUDE = 7; % mV/m
+MAX_WAKE_DISPLACEMENT = 5; % degrees - location of the two opposing wakes
 plot_step = 1;
 plot_i = 0;
 
@@ -220,7 +221,7 @@ for in = iok
   
   ind1 = find(d12 == min(d12(i1))) -1;
   ind2 = find(d12 == max(d12(i1+180))) -1;
-  if abs(ind2-ind1-180)>5
+  if abs(ind2-ind1-180)>MAX_WAKE_DISPLACEMENT
     if DEBUG
       irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180)')...
         ' deg at ' epoch2iso(ts,1)])
