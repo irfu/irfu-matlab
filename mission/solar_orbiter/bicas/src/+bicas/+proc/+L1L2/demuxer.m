@@ -324,11 +324,9 @@ classdef demuxer
             % fields are supplied but the system of equations is
             % overdetermined/redundant).
             %   Ex: mux=1,2,3
-            %===================================================================
-            
-            % BUG? Field might not exist?
-            tempNaN = nan(size(As.acV12));    % Use first field in fieldnames?
-
+            %===================================================================            
+            fnCa    = fieldnames(As);
+            tempNaN = nan(size(As.(fnCa{1})));
             for iFn = 1:N_ASR_FIELDNAMES
                 fn = C.ASR_FIELDNAMES_CA{iFn};
                 if ~isfield(As, fn)
