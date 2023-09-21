@@ -208,7 +208,7 @@ classdef demuxer
                     RoutingArray(1) = C.ROUTING_DC_V1;
                     RoutingArray(2) = C.ROUTING_DC_V3;
                     RoutingArray(3) =   ROUTING_DC_V1x;
-                    RoutingArray(4) = C.ROUTING_AC_V13;
+                    RoutingArray(4) =   ROUTING_AC_V1x;
                     RoutingArray(5) = C.ROUTING_AC_V23;
                     
                 case 3   % Probe 3 fails
