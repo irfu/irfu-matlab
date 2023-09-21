@@ -28,11 +28,6 @@
 % First created 2019-11-18
 %
 classdef demuxer
-    % PROPOSAL: Change fieldname <routing>.src
-    %   NOTE: Can not use ASR/AS ID. Does not cover all sources.
-    %   PROPOSAL: .signalSource
-    % PROPOSAL: Change fieldname <routing>.dest
-    %   PROPOSAL: .datasetAsId
     
     
     
@@ -164,17 +159,18 @@ classdef demuxer
                     % for NaN. Therefore using "otherwise".
                     if isnan(demuxMode)
                         
+                        % NOTE: Could route unknown DC signals to V1-V3, but
+                        % since this behaviour is probably not very obvious to
+                        % the user, the code effectively deletes the information
+                        % instead.
+                        RoutingArray(1) = C.ROUTING_UNKNOWN_1_TO_NOWHERE;
+                        RoutingArray(2) = C.ROUTING_UNKNOWN_2_TO_NOWHERE;
+                        RoutingArray(3) = C.ROUTING_UNKNOWN_3_TO_NOWHERE;
+                        
                         % NOTE: The routing of BLTS 4 & 5 is identical for all
                         % mux modes (but does depend on the latching relay). Can
                         % therefore route them also when the mux mode is
                         % unknown.
-                        RoutingArray(1) = C.ROUTING_UNKNOWN_1_TO_NOTHING;
-                        RoutingArray(2) = C.ROUTING_UNKNOWN_2_TO_NOTHING;
-                        RoutingArray(3) = C.ROUTING_UNKNOWN_3_TO_NOTHING;
-                        
-                        % BUG/NOTE: Does not set any DC samples. Therefore just
-                        % keeping the defaults. Can not derive any DC signals
-                        % from other DC signals.
                         
                     else
                         error('BICAS:Assertion:IllegalArgument:DatasetFormat', ...
@@ -389,18 +385,15 @@ classdef demuxer
             C.ROUTING_AC_V23 = bicas.proc.L1L2.Routing(C.SRC_AC_V23);
 
 
-            C.ROUTING_25VREF_1_TO_DC_V1     = bicas.proc.L1L2.Routing(C.SRC_25VREF,  C.SRC_DC_V1);
-            C.ROUTING_25VREF_2_TO_DC_V2     = bicas.proc.L1L2.Routing(C.SRC_25VREF,  C.SRC_DC_V2);
-            C.ROUTING_25VREF_3_TO_DC_V3     = bicas.proc.L1L2.Routing(C.SRC_25VREF,  C.SRC_DC_V3);
-            C.ROUTING_GND_1_TO_V1_LF        = bicas.proc.L1L2.Routing(C.SRC_GND,     C.SRC_DC_V1);
-            C.ROUTING_GND_2_TO_V2_LF        = bicas.proc.L1L2.Routing(C.SRC_GND,     C.SRC_DC_V2);
-            C.ROUTING_GND_3_TO_V3_LF        = bicas.proc.L1L2.Routing(C.SRC_GND,     C.SRC_DC_V3);
-            C.ROUTING_UNKNOWN_1_TO_NOTHING  = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.DEST_NOWHERE);
-            C.ROUTING_UNKNOWN_2_TO_NOTHING  = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.DEST_NOWHERE);
-            C.ROUTING_UNKNOWN_3_TO_NOTHING  = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.DEST_NOWHERE);
-    %         ROUTING_UNKNOWN_1_TO_V1_LF    = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.SRC_DC_V1);
-    %         ROUTING_UNKNOWN_2_TO_V2_LF    = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.SRC_DC_V2);
-    %         ROUTING_UNKNOWN_3_TO_V3_LF    = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.SRC_DC_V3);
+            C.ROUTING_25VREF_1_TO_DC_V1    = bicas.proc.L1L2.Routing(C.SRC_25VREF,  C.SRC_DC_V1);
+            C.ROUTING_25VREF_2_TO_DC_V2    = bicas.proc.L1L2.Routing(C.SRC_25VREF,  C.SRC_DC_V2);
+            C.ROUTING_25VREF_3_TO_DC_V3    = bicas.proc.L1L2.Routing(C.SRC_25VREF,  C.SRC_DC_V3);
+            C.ROUTING_GND_1_TO_V1_LF       = bicas.proc.L1L2.Routing(C.SRC_GND,     C.SRC_DC_V1);
+            C.ROUTING_GND_2_TO_V2_LF       = bicas.proc.L1L2.Routing(C.SRC_GND,     C.SRC_DC_V2);
+            C.ROUTING_GND_3_TO_V3_LF       = bicas.proc.L1L2.Routing(C.SRC_GND,     C.SRC_DC_V3);
+            C.ROUTING_UNKNOWN_1_TO_NOWHERE = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.DEST_NOWHERE);
+            C.ROUTING_UNKNOWN_2_TO_NOWHERE = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.DEST_NOWHERE);
+            C.ROUTING_UNKNOWN_3_TO_NOWHERE = bicas.proc.L1L2.Routing(C.SRC_UNKNOWN, C.DEST_NOWHERE);
             % NOTE: BLTS 4 & 5 are never unknown.
 
             % Table that associates BLTS destinations with ASR struct fieldnamnes (FN).

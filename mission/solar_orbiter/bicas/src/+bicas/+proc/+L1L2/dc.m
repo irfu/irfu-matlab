@@ -14,8 +14,6 @@ classdef dc
     %   PROPOSAL: dcq = Demux, Calibrate, Quality
     
     % PROPOSAL: Automatic test code.
-    % PROPOSAL: Include bicas.proc.L1L2.demuxer.
-    %   CON: Too much code.
     %
     % PROPOSAL:   process_calibrate_demux()
     %           & calibrate_demux_voltages()

@@ -1,12 +1,15 @@
 %
-% Class that represents a particular routing of signals via a particular BLTS:
-% Where the physical signal comes from and how it should be stored in the
-% datasets objects.
+% Immutable class that represents a particular routing of signals via a
+% particular BLTS: (1) where a physical signal comes from, and (2) how it should
+% be stored in the dataset object (if at all).
+%
+% Immutable.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef Routing   % < handle
+    % PROPOSAL: src --> ssid, dest --> sdid
 
 
 
@@ -52,10 +55,14 @@ classdef Routing   % < handle
                     error('BICAS:Assertion:IllegalArgument', ...
                         'Illegal number of extra arguments.')
             end
+            
+            assert(obj.dest.is_ASR())
         end
 
 
 
     end    % methods(Access=public)
-        
+
+
+
 end

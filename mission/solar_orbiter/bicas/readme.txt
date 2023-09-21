@@ -58,7 +58,7 @@ ASR, Antenna Signal Representation.
     ASR samples : Samples representing a specific ASR (as opposed to BLTS).
     NOTE: There are 9 ASRs (DC: 3 singles, 3 diffs; AC: 3 diffs), i.e. they
     can refer also to signals not represented by any single BLTS, given a
-    chosen mux mode (and latching relay setting).
+    chosen mux mode and latching relay setting.
 AV, avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from

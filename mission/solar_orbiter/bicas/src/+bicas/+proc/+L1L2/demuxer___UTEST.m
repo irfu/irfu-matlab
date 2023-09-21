@@ -172,7 +172,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         
         % Local utility function.
         % as = assign. Effectively implements ~ternary operator + constant (NaN).
-        function V = as(b,V)
+        function V = as(b, V)
             assert(isscalar(b) && ismember(b, [0,1]))
             if b; V = V;
             else  V = NaN;

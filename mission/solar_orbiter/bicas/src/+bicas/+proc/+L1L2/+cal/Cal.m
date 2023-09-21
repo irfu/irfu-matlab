@@ -646,7 +646,7 @@ classdef Cal < handle
         % =========
         % samplesTm    : 1D cell array of numeric 1D arrays.
         % samplesAVolt : 1D cell array of numeric 1D arrays.
-        % CalSettings  : Struct that groups together arguments
+        % CalSettings  : Struct that groups together arguments.
         %   .iBlts     : Scalar integer. 1..5.
         %   .BltsSrc   : bicas.proc.L1L2.PhysicalSignalSrcDest describing where the
         %                signal comes from.

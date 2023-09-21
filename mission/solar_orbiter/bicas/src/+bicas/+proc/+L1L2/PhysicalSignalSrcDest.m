@@ -17,11 +17,6 @@
 % Immutable.
 %
 %
-% DEFINITIONS
-% ===========
-% See bicas.proc.L1L2.cal.Cal.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-19
 %
@@ -29,21 +24,36 @@ classdef PhysicalSignalSrcDest
     % NOTE: Only(?) the demultiplexer creates its own instances.
     % PROPOSAL: Make publically un-instantiable. Define a fixed set of legal instances accessible via constants.
     %   PRO: Limiting the number of instantiations speeds up the code. Having assertions is then no downside.
-    %   CON: Unpractical to access via names instead of numbers.
-    %   CON-PROPOSAL: Have the bicas.proc.L1L2.demuxer.main use its own pre-defined constants.
-    %       NOTE/CON: Slightly impractical for routings which depend on the latching relay.
+    %   PRO: Can move constants from bicas.proc.L1L2.demuxer to this class.
+    %   CON: Unpractical to access via names (long qualifiers, including the class name).
+    %       CON: bicas.proc.L1L2.demuxer only uses them for its routings, but
+    %            can import them for setting the routings.
     %
-    % PROPOSAL: Other name that does not reference BLTS. -- IMPLEMENTED
-    %   See bicas.proc.L1L2.cal.Cal BOGIQ.
-    %   PRO: Reference to BLTS is confusing.
-    %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
+    % PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
     %
-    % PROPOSAL: Separate classes for (1) BLTS physical signal source, and (2) BLTS signal representation in dataset.
-    %   CON: (2) is subset of (1).
-    %       CON: Practically, but not conceptually.
-    %   CON-PROPOSAL: Method for whether object represents a destination in dataset.
+    % PROPOSAL: Separate classes for
+    %           (1) SignalSourceId
+    %               DC single, DC diff, AC diff, GND, 2.5V Ref, Unknown
+    %               Implement using AntennaSignalId.
+    %           (2) SignalDestinationId
+    %               DC single, DC diff, AC diff, Nowhere
+    %               Implement using AntennaSignalId.
+    %           (3) AntennaSignalId
+    %               DC single, DC diff, AC diff
+    %   CON: Class implementation would be very similar. Code duplication.
+    %       CON: Not conceptually similar.
+    %   NOTE: "Signal source"      is almost superset of "signal destination".
+    %   NOTE: "Signal source"      is        superset of ASR.
+    %   NOTE: "Signal destination" is almost superset of ASR/dataset representation.
+    %   NOTE: "Unknown": Always a source.
+    %   NOTE: "Nowhere": Always a destination. Is signal storage but not ASR?!
+    %   NOTE: Only AntennaSignalId can be the key in a future class for storing
+    %         all ASRs (samples).
+    %   --
+    %   CON-PROPOSAL: One class, but methods for determining which type of object.
     %       PRO: Useful for assertions.
-    % PROPOSAL: Flag for whether an instance is a source or a destination.
+    %   PROPOSAL: Classes can use other class: Composition.
+    %   PROPOSAL: All inherit from same superclass: Signal ID
 
 
 
