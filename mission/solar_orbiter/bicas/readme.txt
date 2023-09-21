@@ -186,11 +186,15 @@ RV
 sampere
     "Set current ampere". Simplified calibration value (in ampere) that is
     exactly proportional to bias current in TM.
+SDID
+    bicas.proc.L1L2.SignalDestinationId
 Sec
     Seconds
 SPR
     Samples (per channel) Per (CDF) Record. Only refers to actual data
     (currents, voltages), not metadata.
+SSID
+    bicas.proc.L1L2.SignalSourceId
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not

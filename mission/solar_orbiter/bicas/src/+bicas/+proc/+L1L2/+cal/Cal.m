@@ -75,25 +75,6 @@ classdef Cal < handle
 % TODO-NI: What parasitic capacitance value(s) should one use?
 % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
 %
-% ~DOCUMENTATION BUG?!!:
-%   PROPOSAL: Abolish ASR. Define acronyms for
-%       (1) Antenna signals (AC, DC, singles, diffs)
-%       (2) All possible sources of signals of which (1) is a subset (a diff counts as a source).
-%           PROPOSAL: Be able to use for both physical signal sources, and for where to place in dataset.
-%               PRO: Can use acronym for both, and for class bicas.proc.L1L2.PhysicalSignalSrcDest.
-%           PROPOSAL: PSS  = Physical Signal Source
-%           PROPOSAL: PS   = Physical Signal
-%           PROPOSAL: PSSD = Physical Signal Source or Destination
-%           PROPOSAL: PSSR = Physical Signal Source or Representation
-%           PROPOSAL: PSSR = Physical Signal Source or Dataset Representation
-%
-% PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR.
-% PROPOSAL: Replace PSSD=bicas.proc.L1L2.PhysicalSignalSrcDestHave with different
-%           classes and acronyms for
-%           (1) physical signal sources, and
-%           (2) dataset representation
-%           where (2) is in practice a kind of subset of (1).
-%
 % PROPOSAL: Assertion function for CalSettings.
 %   TODO-NI: Same struct, with same fields in all cases?
 %   NOTE: Function does not know which fields are actually used.
@@ -575,7 +556,7 @@ classdef Cal < handle
             % ASSERTIONS
             assert(isstruct(CalSettings))
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'BltsSrc', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             irf.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
             assert(islogical(voltageNaN) && isscalar(voltageNaN))
@@ -648,8 +629,6 @@ classdef Cal < handle
         % samplesAVolt : 1D cell array of numeric 1D arrays.
         % CalSettings  : Struct that groups together arguments.
         %   .iBlts     : Scalar integer. 1..5.
-        %   .BltsSrc   : bicas.proc.L1L2.PhysicalSignalSrcDest describing where the
-        %                signal comes from.
         %   ...
         %
         function samplesCaAVolt = calibrate_voltage_BIAS_LFR(obj, ...
@@ -704,10 +683,10 @@ classdef Cal < handle
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
 
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'BltsSrc', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
             iBlts        = CalSettings.iBlts;
-            BltsSrc      = CalSettings.BltsSrc;
+            Ssid         = CalSettings.Ssid;
             biasHighGain = CalSettings.biasHighGain;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
@@ -717,7 +696,7 @@ classdef Cal < handle
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.proc.L1L2.PhysicalSignalSrcDest'))
+            assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             assert(iNonBiasRct >= 1)
 
             if obj.use_CALIBRATION_TABLE_INDEX2
@@ -739,7 +718,7 @@ classdef Cal < handle
                 % NOTE: Low/high gain is irrelevant for TDS. Argument value
                 % arbitrary.
                 BiasCalibData = obj.get_BIAS_calib_data(...
-                    BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+                    Ssid, biasHighGain, iCalibTimeL, iCalibTimeH);
 
                 if obj.lfrTdsTfDisabled
                     tdsFactorIvpt = 1;
@@ -798,10 +777,10 @@ classdef Cal < handle
                 dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
             
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'BltsSrc', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
             iBlts        = CalSettings.iBlts;
-            BltsSrc      = CalSettings.BltsSrc;
+            Ssid         = CalSettings.Ssid;
             biasHighGain = CalSettings.biasHighGain;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
@@ -811,7 +790,7 @@ classdef Cal < handle
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.proc.L1L2.PhysicalSignalSrcDest'))
+            assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             assert(iNonBiasRct >= 1)
 
             if obj.use_CALIBRATION_TABLE_INDEX2
@@ -827,7 +806,7 @@ classdef Cal < handle
             % NOTE: Low/high gain is irrelevant for TDS. Argument value
             % arbitrary.
             BiasCalibData = obj.get_BIAS_calib_data(...
-                BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+                Ssid, biasHighGain, iCalibTimeL, iCalibTimeH);
 
             % Initialize empty output variable.
             samplesCaAVolt = cell(size(samplesCaTm));
@@ -917,13 +896,13 @@ classdef Cal < handle
         %       the special case.
         %
         function BiasCalibData = get_BIAS_calib_data(obj, ...
-                BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+                Ssid, biasHighGain, iCalibTimeL, iCalibTimeH)
 
             % PROPOSAL: Log warning message when simultaneously biasHighGain=NaN
             % and the value is needed.
 
             % ASSERTION
-            assert(isa(BltsSrc, 'bicas.proc.L1L2.PhysicalSignalSrcDest'))
+            assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
@@ -934,25 +913,25 @@ classdef Cal < handle
             %###################################################################
             % kIvpav = Multiplication factor "k" that represents/replaces the
             % (forward) transfer function.
-            switch(BltsSrc.category)
+            switch(Ssid.value.category)
                 case 'DC single'
 
                     % NOTE: List of ITFs for different times.
                     biasItfAvpiv = BiasRct.ItfSet.dcSingleAvpiv{iCalibTimeL};
                     kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
                     offsetAVolt  = BiasRct.dcSingleOffsetsAVolt(...
-                        iCalibTimeH, BltsSrc.antennas);
+                        iCalibTimeH, Ssid.value.antennas);
 
                 case 'DC diff'
 
                     biasItfAvpiv = BiasRct.ItfSet.dcDiffAvpiv{iCalibTimeL};
                     kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
-                    if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = BiasRct.DcDiffOffsets.E12AVolt(iCalibTimeH);
-                    elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E13AVolt(iCalibTimeH);
-                    elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E23AVolt(iCalibTimeH);
+                    if     isequal(Ssid.value.antennas(:)', [1,2]);   offsetAVolt = BiasRct.DcDiffOffsets.E12AVolt(iCalibTimeH);
+                    elseif isequal(Ssid.value.antennas(:)', [1,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E13AVolt(iCalibTimeH);
+                    elseif isequal(Ssid.value.antennas(:)', [2,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E23AVolt(iCalibTimeH);
                     else
                         error('BICAS:Assertion:IllegalArgument', ...
-                            'Illegal BltsSrc.');
+                            'Illegal Ssid.');
                     end
 
                 case 'AC diff'
@@ -977,9 +956,9 @@ classdef Cal < handle
 
                 otherwise
                     error('BICAS:Assertion:IllegalArgument', ...
-                        ['Illegal argument BltsSrc.category=%s.', ...
+                        ['Illegal argument Ssid.value.category=%s.', ...
                         ' Can not obtain calibration data for this type of signal.'], ...
-                        BltsSrc.category)
+                        Ssid.value.category)
             end
 
             if obj.biasOffsetsDisabled && ~isnan(offsetAVolt)
@@ -1065,10 +1044,10 @@ classdef Cal < handle
 
             % ASSERTIONS
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'BltsSrc', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             iBlts        = CalSettings.iBlts;
-            BltsSrc      = CalSettings.BltsSrc;
+            Ssid         = CalSettings.Ssid;
             biasHighGain = CalSettings.biasHighGain;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
@@ -1076,7 +1055,7 @@ classdef Cal < handle
 
             % ASSERTIONS
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-            assert(isa(BltsSrc, 'bicas.proc.L1L2.PhysicalSignalSrcDest'))
+            assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
             assert(isscalar(iNonBiasRct))
             assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
@@ -1114,7 +1093,7 @@ classdef Cal < handle
             %====================================================
             % Obtain settings for bicas.tf.apply_TF()
             %====================================================
-            if CalSettings.BltsSrc.is_AC()
+            if CalSettings.Ssid.value.is_AC()
                 % IMPLEMENTATION NOTE: DC is (optionally) detrended via
                 % bicas.tf.apply_TF() in the sense of a linear fit
                 % being removed, TF applied, and then added back. That same
@@ -1133,7 +1112,7 @@ classdef Cal < handle
             % Obtain BIAS calibration data
             %==============================
             CalData.BiasCalibData = obj.get_BIAS_calib_data(...
-                BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+                Ssid, biasHighGain, iCalibTimeL, iCalibTimeH);
 
             %========================================
             % Obtain (official) LFR calibration data
@@ -1150,7 +1129,7 @@ classdef Cal < handle
             CalData.itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
                 CalData.lfrItfIvpt, ...
                 CalData.BiasCalibData.itfAvpiv, ...
-                BltsSrc.is_AC(), ...
+                Ssid.value.is_AC(), ...
                 obj.itfAcConstGainLowFreqRps);
         end
 

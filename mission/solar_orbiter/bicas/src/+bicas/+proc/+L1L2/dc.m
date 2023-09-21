@@ -361,7 +361,7 @@ classdef dc
 
         % Calibrate one BLTS channel.
         function samplesAVolt = calibrate_BLTS(...
-                BltsSrcAsr, samplesTm, iBlts, ...
+                Ssid, samplesTm, iBlts, ...
                 hasSnapshotFormat, ...
                 zvNValidSamplesPerRecord, biasHighGain, ...
                 iCalibL, iCalibH, iLsf, dtSec, ...
@@ -379,16 +379,16 @@ classdef dc
             % PROPOSAL: Reorder arguments to group them.
             %   PROPOSAL: Group arguments from PreDc.
 
-            if strcmp(BltsSrcAsr.category, 'Unknown')
-                % ==> Calibrated data == NaN.
+            if isequal(Ssid.value, 'Unknown')
+                % ==> Calibrated data set to NaN.
                 samplesAVolt = nan(size(samplesTm));
 
-            elseif ismember(BltsSrcAsr.category, {'GND', '2.5V Ref'})
+            elseif isequal(Ssid.value, 'GND') || isequal(Ssid.value, '2.5V Ref')
                 % ==> No calibration.
                 samplesAVolt = ssSamplesTm;
 
             else
-                assert(BltsSrcAsr.is_ASR())
+                assert(Ssid.is_ASR())
                 % ==> Calibrate (unless explicitly stated that should not)
 
                 if hasSnapshotFormat
@@ -415,7 +415,7 @@ classdef dc
                 % Ex: LFR SWF 2020-02-25, 2020-02-28.
                 CalSettings = struct();
                 CalSettings.iBlts        = iBlts;
-                CalSettings.BltsSrc      = BltsSrcAsr;
+                CalSettings.Ssid         = Ssid;
                 CalSettings.biasHighGain = biasHighGain;
                 CalSettings.iCalibTimeL  = iCalibL;
                 CalSettings.iCalibTimeH  = iCalibH;
