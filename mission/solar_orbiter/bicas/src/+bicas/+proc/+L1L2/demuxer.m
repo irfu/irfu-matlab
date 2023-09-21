@@ -177,9 +177,6 @@ classdef demuxer
                 ROUTING_AC_V1x = C.ROUTING_AC_V13;
             end
             
-            % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux
-            % mode, but the code hard-codes this separately for every case (i.e.
-            % multiple times) for completeness.
             switch(demuxMode)
                 
                 case 0   % "Standard operation" : We have all information.
@@ -188,16 +185,12 @@ classdef demuxer
                     RoutingArray(1) = C.ROUTING_DC_V1;
                     RoutingArray(2) =   ROUTING_DC_V1x;
                     RoutingArray(3) = C.ROUTING_DC_V23;
-                    RoutingArray(4) =   ROUTING_AC_V1x;
-                    RoutingArray(5) = C.ROUTING_AC_V23;
 
                 case 1   % Probe 1 fails
 
                     RoutingArray(1) = C.ROUTING_DC_V2;
                     RoutingArray(2) = C.ROUTING_DC_V3;
                     RoutingArray(3) = C.ROUTING_DC_V23;
-                    RoutingArray(4) =   ROUTING_AC_V1x;
-                    RoutingArray(5) = C.ROUTING_AC_V23;
                     
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3
                     % contain redundant data (regardless of latching relay
@@ -208,24 +201,18 @@ classdef demuxer
                     RoutingArray(1) = C.ROUTING_DC_V1;
                     RoutingArray(2) = C.ROUTING_DC_V3;
                     RoutingArray(3) =   ROUTING_DC_V1x;
-                    RoutingArray(4) =   ROUTING_AC_V1x;
-                    RoutingArray(5) = C.ROUTING_AC_V23;
                     
                 case 3   % Probe 3 fails
 
                     RoutingArray(1) = C.ROUTING_DC_V1;
                     RoutingArray(2) = C.ROUTING_DC_V2;
                     RoutingArray(3) =   ROUTING_DC_V1x;
-                    RoutingArray(4) =   ROUTING_AC_V1x;
-                    RoutingArray(5) = C.ROUTING_AC_V23;
 
                 case 4   % Calibration mode 0
                     
                     RoutingArray(1) = C.ROUTING_DC_V1;
                     RoutingArray(2) = C.ROUTING_DC_V2;
                     RoutingArray(3) = C.ROUTING_DC_V3;
-                    RoutingArray(4) =   ROUTING_AC_V1x;
-                    RoutingArray(5) = C.ROUTING_AC_V23;
 
                 case {5,6,7}   % Calibration mode 1/2/3
 
@@ -239,8 +226,6 @@ classdef demuxer
                             RoutingArray(2) = C.ROUTING_GND_2_TO_V2_LF;
                             RoutingArray(3) = C.ROUTING_GND_3_TO_V3_LF;
                     end
-                    RoutingArray(4) =   ROUTING_AC_V1x;
-                    RoutingArray(5) = C.ROUTING_AC_V23;
                     
                 otherwise
                     % IMPLEMENTATION NOTE: switch-case statement does not work
@@ -254,8 +239,6 @@ classdef demuxer
                         RoutingArray(1) = C.ROUTING_UNKNOWN_1_TO_NOTHING;
                         RoutingArray(2) = C.ROUTING_UNKNOWN_2_TO_NOTHING;
                         RoutingArray(3) = C.ROUTING_UNKNOWN_3_TO_NOTHING;
-                        RoutingArray(4) =   ROUTING_AC_V1x;
-                        RoutingArray(5) = C.ROUTING_AC_V23;
                         
                         % BUG/NOTE: Does not set any DC samples. Therefore just
                         % keeping the defaults. Can not derive any DC signals
@@ -266,6 +249,8 @@ classdef demuxer
                             'Illegal argument value demuxMode=%g.', demuxMode)
                     end
             end    % switch
+            RoutingArray(4) =   ROUTING_AC_V1x;
+            RoutingArray(5) = C.ROUTING_AC_V23;
             
             % AS = "ASR Samples" (avolt)
             As = struct();
