@@ -312,11 +312,8 @@ classdef dc
             %=======================================
             % DEMULTIPLEXER: FIND ASR-BLTS ROUTINGS
             %=======================================
-            % NOTE: Call demultiplexer with no samples. Only for collecting
-            % information on which BLTS channels are connected to which
-            % ASRs.
-            [BltsSrcAsrArray, ~] = bicas.proc.L1L2.demuxer.main(...
-                MUX_SET_ss, dlrUsing12_ss, {[],[],[],[],[]});
+            DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
+                MUX_SET_ss, dlrUsing12_ss);
 
 
 
@@ -340,7 +337,7 @@ classdef dc
             ssSamplesAVoltCa = cell(5,1);
             for iBlts = 1:5
                 ssSamplesAVoltCa{iBlts} = bicas.proc.L1L2.dc.calibrate_BLTS(...
-                    BltsSrcAsrArray(iBlts), ...
+                    DemuxerRoutingArray(iBlts).src, ...
                     ssSamplesCaTm{iBlts}, ...
                     iBlts, ...
                     PreDc.hasSnapshotFormat, ...
@@ -358,8 +355,8 @@ classdef dc
             %====================================
             % DEMULTIPLEXER: DERIVE MISSING ASRs
             %====================================
-            [~, SsAsrSamplesAVolt] = bicas.proc.L1L2.demuxer.main(...
-                MUX_SET_ss, dlrUsing12_ss, ssSamplesAVoltCa);
+            SsAsrSamplesAVolt = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
+                DemuxerRoutingArray, ssSamplesAVoltCa);
         end    % calibrate_demux_subsequence
 
 

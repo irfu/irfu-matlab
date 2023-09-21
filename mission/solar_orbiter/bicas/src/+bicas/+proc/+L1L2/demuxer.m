@@ -1,7 +1,7 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
-%   bicas.proc.L1L2.demuxer.main(), and
+%   bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(), and
 %   bicas.proc.L1L2.PhysicalSignalSrcDest
 %
 %
@@ -53,44 +53,19 @@ classdef demuxer
     methods(Static, Access=public)
         
         
-        
         % Function that "encodes" the demultiplexer part of the BIAS subsystem.
         % For a specified mux mode and demuxer latching relay setting, it
-        % determines/encodes
-        % (1) which (physical) input signal (Antennas, GND, "2.5V Ref", unknown)
-        %     is routed to which physical output signal (BLTS)
-        %       NOTE: This is needed for calibration.
+        % determines, for every BLTS, it associates
+        % (1) which (physical) input signal (Antennas, GND, "2.5V Ref",
+        %     unknown), and
         % (2) as what ASR (if any) should the BLTS be represented in the
-        %     datasets,
-        % (3) derive the ASRs (samples) from those ASRs which have not already
-        %     been set.
-        %       NOTE: This derivation from fully calibrated ASR samples only
-        %       requires addition/subtraction of ASRs. It does not require any
-        %       sophisticated/non-trivial calibration since the relationships
-        %       between the ASRs are so simple. The only consideration is that
-        %       DC diffs have higher accurracy than DC singles, and should have
-        %       precedence when deriving ASRs.
-        %
-        % NOTE: This code does NOT handle the equivalent of demultiplexer
-        % multiplication of the BLTS signal (alpha, beta, gamma in the BIAS
-        % specification). It is assumed that the supplied BLTS samples have been
-        % calibrated to account for this already.
-        % 
-        % 
-        % USAGE
-        % =====
-        % The function is meant to be called in two different ways, typically
-        % twice for any single time period with samples:
-        % (1) To obtain signal type info needed for how to calibrate every
-        %     BIAS-LFR/TDS signal (BIAS_i) signal given any demux mode.
-        % (2) To derive the complete set of ASR samples from the given BLTS
-        %     samples.
+        %     datasets.
         %
         %
         % RATIONALE
         % =========
         % Meant to collect all hard-coded information about the demultiplexer
-        % routing of signals in the BIAS specification, Table 4.
+        % ROUTING of signals in the BIAS specification, Table 4.
         %
         %
         % EDGE CASES
@@ -98,75 +73,32 @@ classdef demuxer
         % Function must be able to handle:
         % ** demuxMode = NaN                                   
         %    Unknown demux mode, e.g. due to insufficient HK time coverage.
-        % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref".
-        %    Demux modes 5-7.
+        % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref" in demux modes 5-7.
+        % NOTE: Can not hande unknown dlrUsing12.
         %
         %
         % ARGUMENTS
         % =========
-        % demuxMode          : Scalar value. Demultiplexer mode.
-        %                      NOTE: Can be NaN to represent unknown demux mode.
-        %                      Implies that AsrSamplesVolt fields are correctly
-        %                      sized with NaN values.
-        % dlrUsing12         : See bicas.proc.L1L2.demuxer_latching_relay.
-        % bltsSamplesAVolt   : Cell array of vectors/matrices, length 5.
-        %                      {iBlts} = Vector/matrix with sample values
-        %                      for that BLTS channel, calibrated as for ASR.
-        % --
-        % NOTE: There is no argument for diff gain since this function does not
-        % calibrate/multiply signals by factor.
+        % demuxMode
+        %       Scalar value. Demultiplexer mode.
+        %       NOTE: Can be NaN to represent unknown demux mode.
+        %       Implies that AsrSamplesVolt fields are correctly
+        %       sized with NaN values.
+        % dlrUsing12
+        %       See bicas.proc.L1L2.demuxer_latching_relay.
         %
         %
         % RETURN VALUES
         % =============
-        % BltsSrcArray   : Array of bicas.proc.L1L2.PhysicalSignalSrcDest objects.
-        %                  (iBlts) = Represents the origin of the corresponding
-        %                  BLTS.
-        % AsrSamplesVolt : Samples for all ASRs (singles, diffs) which can
-        %                  possibly be derived from the BLTS (BIAS_i). Those
-        %                  which can not be derived are correctly sized
-        %                  containing only NaN. Struct with fields.
-        %                  NOTE: See "EDGE CASES".
-        % --
-        % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVolt to denote that
-        % they are organized by BLTS and ASRs.
-        %
-        function [BltsSrcArray, AsrSamplesAVolt] = main(demuxMode, dlrUsing12, bltsSamplesAVolt)
-            % PROPOSAL: Function name that implies constant settings (MUX_SET at least; DIFF_GAIN?!).
-            %   invert
-            %   main
-            %   demux, demultiplex
-            %
-            % PROPOSAL: Split into two functions.
-            %   (1) Function that returns routing and calibration information
-            %   (2) Function that derives the missing ASRs (complements struct)
-            %       NOTE: DC and AC are separate groups of signals. ==> Simplifies.
-            %   NOTE: Needs to use (e.g.) non-existence of field as indication that field has not been derived.
-            %           ==> Must set only non-existent fields to NaN.
-            %   CON: Only pure data modes should be complemented as far as
-            %        possible. Uncertain how to handle other modes (mux=5,6,7).
-            %       Ex: mux=5. V1,V2,V3=2.5VRef. but may still want to keep
-            %           V12,V13,V23=NaN. Maybe...
-            %   CON: Might be harder than it seems.
-            %       PRO: Unclear which assumptions to make without using knowledge of the mux table, in which case one
-            %       does not want to split up the function in two (does not want to split up the knowledge of the mux
-            %       table in two).
-            %       CON: Only four relationships between DC ASRs. Only Vxy=f(Vyz,Vxz) (diff as a function of diffs) has
-            %            preference over other relationships due to higher precision.
-            %
-            % PROPOSAL: Log message for mux=NaN.
-            
-            % ASSERTIONS
+        % RoutingArray
+        %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
+        %       (iBlts).
+        function RoutingArray = get_routings(demuxMode, dlrUsing12)
             assert(isscalar(demuxMode))   % switch-case checks values.
             assert(isscalar(dlrUsing12))
-            assert(iscell(bltsSamplesAVolt))            
-            irf.assert.vector(bltsSamplesAVolt)
-            assert(numel(bltsSamplesAVolt)==5)
-            % Should ideally check for all indices, but one helps.
-            assert(isnumeric(bltsSamplesAVolt{1}))
-            
+
             C = bicas.proc.L1L2.demuxer.C;
-            
+
 
 
             if dlrUsing12
@@ -249,24 +181,71 @@ classdef demuxer
                             'Illegal argument value demuxMode=%g.', demuxMode)
                     end
             end    % switch
+            
             RoutingArray(4) =   ROUTING_AC_V1x;
             RoutingArray(5) = C.ROUTING_AC_V23;
+        end
+        
+        
+        
+        % (1) Given demultiplexer routings, convert the (already calibrated)
+        %     BLTSs to ASRs.
+        % (2) Derive the ASRs (samples) from those ASRs which have not already
+        %     been set.
+        %       NOTE: This derivation from fully calibrated ASR samples only
+        %       requires addition/subtraction of ASRs. It does not require any
+        %       sophisticated/non-trivial calibration since the relationships
+        %       between the ASRs are so simple. The only consideration is that
+        %       DC diffs have higher accurracy than DC singles, and should have
+        %       precedence when deriving ASRs.
+        %
+        % NOTE: This code does NOT handle the equivalent of demultiplexer
+        % multiplication of the BLTS signal (alpha, beta, gamma in the BIAS
+        % specification). It is assumed that the supplied BLTS samples have been
+        % calibrated to account for this already.
+        % 
+        % 
+        % ARGUMENTS
+        % =========
+        % bltsSamplesAVolt
+        %       Cell array of vectors/matrices, length 5.
+        %       {iBlts} = Vector/matrix with sample values
+        %                 for that BLTS channel, calibrated as for ASR.
+        %
+        %
+        % RETURN VALUES
+        % =============
+        % AsrSamplesVolt
+        %       Samples for all ASRs (singles, diffs) which can
+        %       possibly be derived from the BLTS (BIAS_i). Those
+        %       which can not be derived are correctly sized
+        %       containing only NaN. Struct with fields.
+        % --
+        % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVolt to denote that
+        % they are organized by BLTS and ASRs respectively.
+        %
+        function AsrSamplesAVolt = calibrated_BLTSs_to_ASRs(RoutingArray, bltsSamplesAVoltCa)
+            % PROPOSAL: Log message for mux=NaN.
+            
+            % ASSERTIONS
+            assert(numel(RoutingArray) == 5)
+            assert(isa(RoutingArray, 'bicas.proc.L1L2.Routing'))
+            assert(iscell(bltsSamplesAVoltCa))            
+            irf.assert.vector(bltsSamplesAVoltCa)
+            assert(numel(bltsSamplesAVoltCa)==5)
+            % Should ideally check for all indices, but one helps.
+            assert(isnumeric(bltsSamplesAVoltCa{1}))
             
             % AS = "ASR Samples" (avolt)
             As = struct();
             As = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
-                As, bltsSamplesAVolt, RoutingArray);
+                As, bltsSamplesAVoltCa, RoutingArray);
             As = bicas.proc.L1L2.demuxer.complement_ASR(As);
-            
-            
-            
+
             % ASSERTIONS
-            irf.assert.struct(As, C.ASR_FIELDNAMES_CA, {})
-            assert(numel(RoutingArray) == 5)
-            assert(isa(RoutingArray, 'bicas.proc.L1L2.Routing'))
+            irf.assert.struct(As, bicas.proc.L1L2.demuxer.C.ASR_FIELDNAMES_CA, {})
             
             % Assign return values.
-            BltsSrcArray    = [RoutingArray.src];
             AsrSamplesAVolt = As;
         end
         
