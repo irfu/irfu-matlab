@@ -173,6 +173,7 @@ classdef qual
         %       NOTE: Only needed for logging.
         function [zvDemuxerOutput, zvCurrentAAmpere] = set_voltage_current_fill_value(...
                 zv_Epoch, zvDemuxerOutput, zvCurrentAAmpere, zvUfv, L)
+            
             assert(islogical(zvUfv))
 
             % Log

@@ -174,15 +174,16 @@ classdef demuxer
         
         
         % (1) Given demultiplexer routings, convert the (already calibrated)
-        %     BLTSs to ASRs.
-        % (2) Derive the ASRs (samples) from those ASRs which have not already
-        %     been set.
+        %     BLTSs to (subset of) ASRs.
+        % (2) Derive the remaining ASRs (samples) from those ASRs which have
+        %     already been set.
         %       NOTE: This derivation from fully calibrated ASR samples only
         %       requires addition/subtraction of ASRs. It does not require any
         %       sophisticated/non-trivial calibration since the relationships
         %       between the ASRs are so simple. The only consideration is that
         %       DC diffs have higher accurracy than DC singles, and should have
-        %       precedence when deriving ASRs.
+        %       precedence when deriving ASRs in the event of redundant
+        %       information.
         %
         % NOTE: This code does NOT handle the equivalent of demultiplexer
         % multiplication of the BLTS signal (alpha, beta, gamma in the BIAS
@@ -281,8 +282,8 @@ classdef demuxer
             end
 
             %===================================================================
-            % Assign all ASIDs which have not yet been assigned
-            % -------------------------------------------------
+            % Add all ASIDs which have not yet been assigned
+            % ----------------------------------------------
             % IMPLEMENTATION NOTE: This is needed to handle for situations when
             % the supplied fields can not be used to determine all nine fields.
             %   Ex: mux=1,2,3
@@ -315,6 +316,7 @@ classdef demuxer
     
     methods(Static, Access=private)
     
+
     
         % Given FIVE BLTS, write the corresponding ASRs in a countainers.Map.
         function AsrSamplesMap = assign_ASR_samples_from_BLTS(...
@@ -322,12 +324,14 @@ classdef demuxer
 
             % ASSERTIONS
             assert(numel(BltsSamplesCa) == 5 && iscell(BltsSamplesCa))
-            assert(numel(SdidArray)  == 5)
+            assert(numel(SdidArray) == 5)
 
             AsrSamplesMap = containers.Map();
             for iBlts = 1:5
                 if ~isequal(SdidArray(iBlts).value, 'Nowhere')
-                    AsrSamplesMap(SdidArray(iBlts).value.s) = BltsSamplesCa{iBlts};
+                    AsrSamplesMap.add(...
+                        SdidArray(iBlts).value.s, ...
+                        BltsSamplesCa{iBlts});
                 end
             end
         end

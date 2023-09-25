@@ -193,7 +193,7 @@ SDID
 Sec
     Seconds
 SPR
-    Samples (per channel) Per (CDF) Record. Only refers to actual data
+    Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.
 SSID
     bicas.proc.L1L2.SignalSourceId

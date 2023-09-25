@@ -3,11 +3,6 @@
 % data processing.
 %
 %
-% TERMINOLOGY
-% ===========
-% SPR = Samples Per (CDF-like) Record
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-10
 %
@@ -50,6 +45,7 @@ classdef utils
 % PROPOSAL: Replace functions
 %               set_struct_field_rows()
 %               assert_struct_num_fields_have_same_N_rows()
+%               select_row_range_from_cell_comps()
 %       with new class that has a map from arbitrary value to arrays and/or
 %       instances of same class (recursive).
 %   PRO: Can enforce same number of rows.
@@ -528,7 +524,7 @@ classdef utils
         %
         % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
         % ===========================================================
-        % PreDc.Zv.samplesCaTm    : Cell array of cell arrays.
+        % PreDc.Zv.samplesCaTm    : Cell array of arrays.
         % PostDc.Zv.DemuxerOutput : Struct of arrays.
 
         % NOTE: Function name somewhat bad.

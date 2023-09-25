@@ -44,11 +44,11 @@ classdef SignalDestinationId
 
 
 
-        function SDID = init_const()
-            SDID = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
+        function C = init_const()
+            C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
                 @(asid) (bicas.proc.L1L2.SignalDestinationId(asid)));
 
-            SDID.NOWHERE = bicas.proc.L1L2.SignalDestinationId('Nowhere');
+            C.NOWHERE = bicas.proc.L1L2.SignalDestinationId('Nowhere');
         end
 
 

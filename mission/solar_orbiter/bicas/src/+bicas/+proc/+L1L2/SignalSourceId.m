@@ -50,13 +50,13 @@ classdef SignalSourceId
 
     methods(Access=private, Static)
 
-        function SSID = init_const()
-            SSID = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
+        function C = init_const()
+            C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
                 @(asid) (bicas.proc.L1L2.SignalSourceId(asid)));
 
-            SSID.REF25V   = bicas.proc.L1L2.SignalSourceId('2.5V Ref');
-            SSID.GND      = bicas.proc.L1L2.SignalSourceId('GND');
-            SSID.UNKNOWN  = bicas.proc.L1L2.SignalSourceId('Unknown');
+            C.REF25V   = bicas.proc.L1L2.SignalSourceId('2.5V Ref');
+            C.GND      = bicas.proc.L1L2.SignalSourceId('GND');
+            C.UNKNOWN  = bicas.proc.L1L2.SignalSourceId('Unknown');
         end
 
     end

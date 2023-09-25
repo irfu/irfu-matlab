@@ -248,6 +248,11 @@ classdef Cal < handle
 %
 % PROPOSAL: Refactor to use a struct constant for those arguments to
 %           bicas.tf.apply_TF() which are constant.
+%
+% BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least not
+%      for LFR.
+%   PROPOSAL: Tests.
+
 
 
 
@@ -316,7 +321,6 @@ classdef Cal < handle
         use_CALIBRATION_TABLE_rcts
         % Whether to use CALIBRATION_TABLE_INDEX(iRecord,2) for calibration.
         use_CALIBRATION_TABLE_INDEX2
-
 
     end
 

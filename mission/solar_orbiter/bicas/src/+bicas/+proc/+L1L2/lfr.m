@@ -323,7 +323,7 @@ classdef lfr
         %
         % ARGUMENTS
         % =========
-        % zv1 : zVar-like variabel or empty. Column vector (Nx1) or empty.
+        % zv1 : zVar-like variable or empty. Column vector (Nx1) or empty.
         %
         % RETURN VALUE
         % ============

@@ -1,12 +1,17 @@
 %
-% Immutable class which instances represent an ASR channel ID (DC single/DC diff/AC
-% diff). This may or may not refer to a physical source signal, or how a signal
-% (from antennas) should be represented in a dataset.
+% Immutable class which instances represent an ASR channel ID (DC single/DC
+% diff/AC diff). This may or may not refer to a physical source signal, or how a
+% signal (from antennas) should be represented in a dataset.
+%
+% NOTE: The constant field names used in bicas.proc.L1L2.AntennaSignalId.C
+% auto-propagate(!) to constant field names in bicas.proc.L1L2.SignalSourceId.C
+% and bicas.proc.L1L2.SignalDestinationId.C.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef AntennaSignalId
+    % PROPOSAL: Shorten constant field names to DC1, AC23 etc.
 
 
 
@@ -38,7 +43,8 @@ classdef AntennaSignalId
 
         % 1x1, or 1x2 numeric array with components representing antennas.
         % Its exact interpretation depends on "category".
-        % Row/column vector important for comparisons. Therefore well defined.
+        % Whether it is row or column vector is important for comparisons and is
+        % therefore well defined.
         antennas
     end
 
@@ -113,18 +119,23 @@ classdef AntennaSignalId
 
     methods(Access=public, Static)
 
+
+
         % Function for quickly generating struct of constants with the same
         % names (field names) as the ASID constants, and derived from the
-        % corresponding ASID constants.
+        % corresponding ASID constants. Can be used by other classes that define
+        % immutable objects using ASIDs.
         function C = get_derived_ASR_constants(fh)
             ASID = bicas.proc.L1L2.AntennaSignalId.C;
-            C    = struct;
+            C    = struct();
 
             for asidNameCa = ASID.ALL_ASID_NAMES_CA'
                 asidName = asidNameCa{1};
                 C.(asidName) = fh(ASID.(asidName));
             end
         end
+
+
 
     end
 
