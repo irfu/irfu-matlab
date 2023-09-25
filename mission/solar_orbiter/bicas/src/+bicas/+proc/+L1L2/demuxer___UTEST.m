@@ -1,8 +1,7 @@
 %
 % matlab.unittest automatic test code for bicas.proc.L1L2.demuxer.
 %
-% Very basic tests at this stage. Could be improved but unsure how much is
-% meaningful.
+% Could be improved but unsure how much is meaningful. Seems to complicated.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -19,92 +18,129 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         % Test two function in combination.
         %
         % IMPLEMENTATION NOTE: The design is for historical reasons before the
         % two functions were split up.
         function test_get_routings_calibrated_BLTSs_to_ASRs(testCase)
-            
-            function test(demuxMode, dlrUsing12, bltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVolt)
-                ActRoutingArray    = bicas.proc.L1L2.demuxer.get_routings(demuxMode, dlrUsing12);
-                ActAsrSamplesAVolt = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(ActRoutingArray, bltsSamplesAVolt);
-                testCase.verifyEqual(ActRoutingArray,    ExpRoutingArray)
-                testCase.verifyEqual(ActAsrSamplesAVolt, ExpAsrSamplesAVolt)
-            end
+
+            A = bicas.proc.L1L2.AntennaSignalId.C;
+            % R = bicas.proc.L1L2.Routing.C;
 
             % =========
             % Test data
             % =========
-            V1   = 10;
-            V2   = 11;
-            V3   = 12;
-            V12  = V1-V2;
-            V13  = V1-V3;
-            V23  = V2-V3;
-            V12a = 45-56;
-            V13a = 45-69;
-            V23a = 56-69;
+            DATA = { ...
+                A.DC_V1.s,  10; ...
+                A.DC_V2.s,  11; ...
+                A.DC_V3.s,  13; ...
+                A.DC_V12.s, 10-11; ...
+                A.DC_V13.s, 10-13; ...
+                A.DC_V23.s, 11-13; ...
+                A.AC_V12.s, 45-56; ...
+                A.AC_V13.s, 45-69; ...
+                A.AC_V23.s, 56-69 ...
+            };
+            ASID_SAMPLES_MAP = containers.Map(DATA(:, 1), DATA(:, 2));
 
-            % Create ASRs using constants. Arguments determine which ASRs should
-            % be NaN instead of constants.
-            function AsrSamplesVolt = ASR_samples(varargin)
-                import bicas.proc.L1L2.demuxer___UTEST.as
-                
-                % varargin{i} == 0 or 1. Determines whether constant or NaN will
-                % be used.
-                assert(nargin == 9)
-                AsrSamplesVolt = struct(...
-                    'dcV1',  as(varargin{1}, V1), ...
-                    'dcV2',  as(varargin{2}, V2), ...
-                    'dcV3',  as(varargin{3}, V3), ...
-                    'dcV12', as(varargin{4}, V12), ...
-                    'dcV13', as(varargin{5}, V13), ...
-                    'dcV23', as(varargin{6}, V23), ...
-                    'acV12', as(varargin{7}, V12a), ...
-                    'acV13', as(varargin{8}, V13a), ...
-                    'acV23', as(varargin{9}, V23a));
-            end
             
-            R = bicas.proc.L1L2.Routing.C;
+
+            % Function for testing mux=0-4. All those all those map (route) ASR
+            % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
+            function test_mux01234(demuxMode, dlrUsing12, bltsAsidCa, ExpAsrSamplesAVoltStruct)
+                % Convert bltsAsidCa --> BltsSamplesCa, ExpRoutingArray
+                BltsSamplesCa = {};
+                ExpRoutingArray = bicas.proc.L1L2.Routing.empty(0, 1);
+                for asidCa = bltsAsidCa
+                    asid = asidCa{1};
+                    assert(isa(asid, 'bicas.proc.L1L2.AntennaSignalId'))
+                    
+                    BltsSamplesCa{end+1}   = ASID_SAMPLES_MAP(asid.s);
+                    ExpRoutingArray(end+1) = bicas.proc.L1L2.Routing(bicas.proc.L1L2.SignalSourceId(asid));
+                end
+                
+                % CALL FUNCTIONS
+                ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
+                    demuxMode, dlrUsing12);
+                ActAsrSamplesAVoltStruct = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
+                    [ActRoutingArray.dest], BltsSamplesCa);
+                
+                % ASSERTIONS
+                testCase.verifyEqual(ActRoutingArray,          ExpRoutingArray)
+                testCase.verifyEqual(ActAsrSamplesAVoltStruct, ExpAsrSamplesAVoltStruct)
+            end
+
+
+
+            % Create samples per ASID using constants. Arguments determine for
+            % which ASIDs samples should be NaN instead of data.
+            %
+            % varargin{i} == 0 or 1. Determines whether constant or NaN will
+            % be used.
+            function AsStruct = selected_ASR_samples(varargin)
+                assert(nargin == 9)
+                
+                % Define which varargin{i} corresponds to which ASID.
+                ASID_CA = {...
+                    A.DC_V1,  A.DC_V2,  A.DC_V3,  ...
+                    A.DC_V12, A.DC_V13, A.DC_V23, ...
+                    A.AC_V12, A.AC_V13, A.AC_V23 ...
+                };
+                AsStruct = struct();
+                for iAsid = 1:9
+                    asidName = ASID_CA{iAsid}.s;
+
+                    samplesAVolt = ASID_SAMPLES_MAP(asidName);
+                    if varargin{iAsid}
+                        AsStruct.(asidName) = samplesAVolt;
+                    else
+                        AsStruct.(asidName) = samplesAVolt * NaN;
+                    end
+                end
+            end
+
+
 
             % ===========================
             % mux = 0, drUsing12 = [0, 1]
             % ===========================
-            test(...
-                0, false, {V1, V13, V23, V13a, V23a}, ...
-                [R.DC_V1, R.DC_V13, R.DC_V23, R.AC_V13, R.AC_V23], ...
-                ASR_samples(1,1,1, 1,1,1, 1,1,1)...
+            test_mux01234(...
+                0, false, ...
+                {A.DC_V1, A.DC_V13, A.DC_V23, A.AC_V13, A.AC_V23}, ...
+                selected_ASR_samples(1,1,1, 1,1,1, 1,1,1)...
             )
-            test(...
-                0, true, {V1, V12, V23, V12a, V23a}, ...
-                [R.DC_V1, R.DC_V12, R.DC_V23, R.AC_V12, R.AC_V23], ...
-                ASR_samples(1,1,1, 1,1,1, 1,1,1)...
+            test_mux01234(...
+                0, true, ...
+                {A.DC_V1, A.DC_V12, A.DC_V23, A.AC_V12, A.AC_V23}, ...
+                selected_ASR_samples(1,1,1, 1,1,1, 1,1,1)...
             )
-        
+
             % ======================
             % mux = 1, drUsing12 = 0
             % ======================
-            test(...
-                1, false, {V2, V3, V23, V13a, V23a}, ...
-                [R.DC_V2, R.DC_V3, R.DC_V23, R.AC_V13, R.AC_V23], ...
-                ASR_samples(0,1,1, 0,0,1, 1,1,1) ...
+            test_mux01234(...
+                1, false, ...
+                {A.DC_V2, A.DC_V3, A.DC_V23, A.AC_V13, A.AC_V23}, ...
+                selected_ASR_samples(0,1,1, 0,0,1, 1,1,1) ...
             )
-        
+
             % ====================================
             % mux = 4 (calibration), drUsing12 = 1
             % ====================================
-            test(...
-                4, true, {V1, V2, V3, V12a, V23a}, ...
-                [R.DC_V1, R.DC_V2, R.DC_V3, R.AC_V12, R.AC_V23], ...
-                ASR_samples(1,1,1, 1,1,1, 1,1,1) ...
+            test_mux01234(...
+                4, true, ...
+                {A.DC_V1, A.DC_V2, A.DC_V3, A.AC_V12, A.AC_V23}, ...
+                selected_ASR_samples(1,1,1, 1,1,1, 1,1,1) ...
             )
         end
         
         
         
         function test_complement_ASR(testCase)
+            
+            C = bicas.proc.L1L2.AntennaSignalId.C;
             
             % Local utility function.
             function assert_relation(A, B, C)
@@ -117,61 +153,47 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         
         
             % NOTE: Only verifies the correct relationships between the return
-            % results.
+            % results. Does not verify entire return results.
+            % BUG/NOTE: Will fail if function returns NaN when it should not!
             function test(inputFieldsCa)
-                A = bicas.proc.L1L2.demuxer.complement_ASR( struct(inputFieldsCa{:}) );
+                AsMap = containers.Map();
+                for i = 1:(numel(inputFieldsCa)/2)
+                    key   = inputFieldsCa{2*i-1}.s;
+                    value = inputFieldsCa{2*i  };
+                    AsMap(key) = value;
+                end
+                
+                % RUN FUNCTION TO BE TESTED
+                ActAsStruct = bicas.proc.L1L2.demuxer.complement_ASR(AsMap);
 
                 % Test all possible relationsships.
                 %
                 % NOTE: Implicitly asserts that all fields are present.
                 % NOTE: Must account for that some fields may be NaN, and
                 %       therefore can not be checked against relations.
-                assert_relation(A.dcV1,  A.dcV12, A.dcV2 )
-                assert_relation(A.dcV1,  A.dcV13, A.dcV3 )
-                assert_relation(A.dcV2,  A.dcV23, A.dcV3 )
-                assert_relation(A.dcV13, A.dcV12, A.dcV23)    % DC. All diffs
-                %
-                assert_relation(A.acV13, A.acV12, A.acV23)    % AC. All diffs
+                assert_relation(ActAsStruct.(C.DC_V1.s),  ActAsStruct.(C.DC_V12.s), ActAsStruct.(C.DC_V2.s))
+                assert_relation(ActAsStruct.(C.DC_V2.s),  ActAsStruct.(C.DC_V23.s), ActAsStruct.(C.DC_V3.s))
+                assert_relation(ActAsStruct.(C.DC_V1.s),  ActAsStruct.(C.DC_V13.s), ActAsStruct.(C.DC_V3.s))
+                
+                % DC. All diffs
+                assert_relation(ActAsStruct.(C.DC_V13.s), ActAsStruct.(C.DC_V12.s), ActAsStruct.(C.DC_V23.s))
+                
+                % AC. All diffs
+                assert_relation(ActAsStruct.(C.AC_V13.s), ActAsStruct.(C.AC_V12.s), ActAsStruct.(C.AC_V23.s))
             end
             %===================================================================
 
-            % TODO: dlrUsing12
-
-            test({'dcV1', 19, 'dcV12', 27, 'dcV23', 33,    'acV12', 54, 'acV23', 75});    % mux=0, dlrUsing12=1
-            test({'dcV1', 19, 'dcV13', 27, 'dcV23', 33,    'acV13', 54, 'acV23', 75});    % mux=0, dlrUsing12=0
-            test({'dcV2', 19, 'dcV3',  27, 'dcV23', 19-27, 'acV12', 54, 'acV23', 75});    % mux=1
-            test({'dcV1', 2   'dcV2',  7,  'dcV3',  32,    'acV12', 74, 'acV23', 85});    % mux=4
+            test({C.DC_V1, 19, C.DC_V12, 27, C.DC_V23, 33,    C.AC_V12, 54, C.AC_V23, 75});    % mux=0, dlrUsing12=1
+            test({C.DC_V1, 19, C.DC_V13, 27, C.DC_V23, 33,    C.AC_V13, 54, C.AC_V23, 75});    % mux=0, dlrUsing12=0
+            test({C.DC_V2, 19, C.DC_V3,  27, C.DC_V23, 19-27, C.AC_V12, 54, C.AC_V23, 75});    % mux=1
+            test({C.DC_V1,  2, C.DC_V2,   7, C.DC_V3,  32,    C.AC_V12, 74, C.AC_V23, 85});    % mux=4
 
         end
         
         
         
     end    % methods(Test)
-        
-        
-    
-    %########################
-    %########################
-    % PRIVATE STATIC METHODS
-    %########################
-    %########################
-    methods(Static, Access=private)
-        
-        
-        
-        % Local utility function.
-        % as = assign. Effectively implements ~ternary operator + constant (NaN).
-        function V = as(b, V)
-            assert(isscalar(b) && ismember(b, [0,1]))
-            if b; V = V;
-            else  V = NaN;
-            end
-        end
-        
-        
-        
-    end    % methods(Static, Access=private)
 
-    
-    
+
+
 end

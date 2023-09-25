@@ -48,6 +48,8 @@ AA, aampere
     Antenna ampere. Calibrated ampere at the antenna.
 AAPT
     Antenna ampere/TM
+ASID
+    bicas.proc.L1L2.AntennaSignalId
 ASR, Antenna Signal Representation.
     (1) A reference to a particular "physical antenna signal"
         (a "data channel") which BIAS-LFR/TDS is trying to measure, or

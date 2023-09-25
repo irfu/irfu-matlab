@@ -315,8 +315,8 @@ classdef tds
 
 
 
-            nSamplesPerRecordChannel  = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);
             nRecords                  = size(SciPreDc.Zv.Epoch, 1);
+            nSamplesPerRecordChannel  = size(SciPostDc.Zv.DemuxerOutput.DC_V1, 2);
 
             OutSci = [];
 
@@ -359,17 +359,17 @@ classdef tds
                 OutSci.Zv.EDC = tempNaN;
                 OutSci.Zv.EAC = tempNaN;
 
-                OutSci.Zv.VDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
-                OutSci.Zv.VDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
-                OutSci.Zv.VDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
+                OutSci.Zv.VDC(:,1) = SciPostDc.Zv.DemuxerOutput.DC_V1;
+                OutSci.Zv.VDC(:,2) = SciPostDc.Zv.DemuxerOutput.DC_V2;
+                OutSci.Zv.VDC(:,3) = SciPostDc.Zv.DemuxerOutput.DC_V3;
 
-                OutSci.Zv.EDC(:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
-                OutSci.Zv.EDC(:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
-                OutSci.Zv.EDC(:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
+                OutSci.Zv.EDC(:,1) = SciPostDc.Zv.DemuxerOutput.DC_V12;
+                OutSci.Zv.EDC(:,2) = SciPostDc.Zv.DemuxerOutput.DC_V13;
+                OutSci.Zv.EDC(:,3) = SciPostDc.Zv.DemuxerOutput.DC_V23;
 
-                OutSci.Zv.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
-                OutSci.Zv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
-                OutSci.Zv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
+                OutSci.Zv.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.AC_V12;
+                OutSci.Zv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.AC_V13;
+                OutSci.Zv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.AC_V23;
 
             elseif C.isSwf
 
@@ -399,17 +399,17 @@ classdef tds
                 OutSci.Zv.EDC = tempNaN;
                 OutSci.Zv.EAC = tempNaN;
 
-                OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV1;
-                OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV2;
-                OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV3;
+                OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.DC_V1;
+                OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.DC_V2;
+                OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.DC_V3;
 
-                OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.dcV12;
-                OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.dcV13;
-                OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.dcV23;
+                OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.DemuxerOutput.DC_V12;
+                OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.DemuxerOutput.DC_V13;
+                OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.DemuxerOutput.DC_V23;
 
-                OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
-                OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
-                OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
+                OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.AC_V12;
+                OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.AC_V13;
+                OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.AC_V23;
 
             else
                 error('BICAS:Assertion:IllegalArgument', ...

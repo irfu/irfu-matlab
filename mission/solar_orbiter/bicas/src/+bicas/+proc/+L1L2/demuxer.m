@@ -33,23 +33,10 @@ classdef demuxer
     
     
     
-    properties(Access=private, Constant)
-        % IMPLEMENTATION NOTE: Defining one constant struct, which contains
-        % multiple constants as fields. Advantages:
-        % (1) Many constants need to be defined using other constants (in this
-        %     class) and MATLAB then requires that one uses the full qualifiers,
-        %     i.e. bicas.proc.L1L2.demuxer.* which makes the code very long. One
-        %     can also not use "import".
-        % (2) Makes it possible to access constants through a variable copy of
-        %     this constant rather than using the long qualifiers.
-        C = bicas.proc.L1L2.demuxer.init_const();
-    end
-
-
-
     methods(Static, Access=public)
-        
-        
+
+
+
         % Function that "encodes" the demultiplexer part of the BIAS subsystem.
         % For a specified mux mode and demuxer latching relay setting, it
         % determines, for every BLTS, it associates
@@ -213,6 +200,8 @@ classdef demuxer
         %
         % RETURN VALUES
         % =============
+        % SsidArray
+        %       Length-5 array of SSIDs. One SSID per BLTS.
         % AsrSamplesVolt
         %       Samples for all ASRs (singles, diffs) which can
         %       possibly be derived from the BLTS (BIAS_i). Those
@@ -222,35 +211,26 @@ classdef demuxer
         % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVolt to denote that
         % they are organized by BLTS and ASRs respectively.
         %
-        function AsrSamplesAVolt = calibrated_BLTSs_to_ASRs(RoutingArray, bltsSamplesAVoltCa)
+        function AsrSamplesAVoltMap = calibrated_BLTSs_to_ASRs(SdidArray, bltsSamplesAVoltCa)
             % PROPOSAL: Log message for mux=NaN.
             
             % ASSERTIONS
-            assert(numel(RoutingArray) == 5)
-            assert(isa(RoutingArray, 'bicas.proc.L1L2.Routing'))
+            assert(numel(SdidArray) == 5)
+            assert(isa(SdidArray, 'bicas.proc.L1L2.SignalDestinationId'))
             assert(iscell(bltsSamplesAVoltCa))            
-            irf.assert.vector(bltsSamplesAVoltCa)
             assert(numel(bltsSamplesAVoltCa)==5)
             % Should ideally check for all indices, but one helps.
             assert(isnumeric(bltsSamplesAVoltCa{1}))
             
-            % AS = "ASR Samples" (avolt)
-            As = struct();
-            As = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
-                As, bltsSamplesAVoltCa, RoutingArray);
-            As = bicas.proc.L1L2.demuxer.complement_ASR(As);
-
-            % ASSERTIONS
-            irf.assert.struct(As, bicas.proc.L1L2.demuxer.C.ASR_FIELDNAMES_CA, {})
-            
-            % Assign return values.
-            AsrSamplesAVolt = As;
+            AsrSamplesAVoltMap = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
+                bltsSamplesAVoltCa, SdidArray);
+            AsrSamplesAVoltMap = bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltMap);
         end
         
         
         
-        % Given an incomplete ASR struct, derive the missing ASRs using the
-        % existing ones.
+        % Given an incomplete containers.Map of ASR-labelled samples, derive the
+        % missing ASRs.
         %
         % NOTE: In the event of redundant FIELDS, but not redundant DATA
         % (non-fill value), the code can NOT make intelligent choice of only
@@ -263,28 +243,12 @@ classdef demuxer
         %
         % NOTE: Only public for the purpose of automatic testing.
         %
-        function AsrSamplesAVolt = complement_ASR(AsrSamplesAVolt)
+        function AsrSamplesAVoltStruct = complement_ASR(AsrSamplesAVoltMap)
+            assert(isa(AsrSamplesAVoltMap, 'containers.Map'))
+            
             % Shorten variable names.
-            C  = bicas.proc.L1L2.demuxer.C;
-            As = AsrSamplesAVolt;   
-            
-            % NOTE: A relation can be complemented at most once, but the
-            % algorithm will try to complement relations multiple times.
-            %
-            % PROPOSAL: Add empty/NaN same-sized fields when can not derive any more fields. Assertion on fieldnames
-            %           at the end.
-            %
-            % PROPOSAL: Implement on a record-by-record basis, with b indices to
-            %           select which records should be derived.
-            %   PRO: Can apply over multiple demultiplexer modes.
-            %       CON: Not necessarily for non-antenna data. Might want to
-            %       keep V12=NaN, but V1,V2=non-NaN for e.g. 2.5V ref data.
-            %       Maybe...
-            %   Ex: b1 = ~isnan(As.dcV1), ...
-            %       b = b1 & b2 & ~b12;
-            %       As.dcV12(b, :) = As.dcV1(b, :) - As.dcV2(b, :);
-            
-            N_ASR_FIELDNAMES = numel(C.ASR_FIELDNAMES_CA);
+            C  = bicas.proc.L1L2.AntennaSignalId.C;
+            AsMap = AsrSamplesAVoltMap;
             
             %================
             % Derive AC ASRs
@@ -292,51 +256,51 @@ classdef demuxer
             % AC ASRs are separate from DC. Does not have to be in loop.
             % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
             % nFnAfter == 9 condition does not work.
-            As = bicas.proc.L1L2.demuxer.complete_relation(As, 'acV13', 'acV12', 'acV23');
+            AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.AC_V13, C.AC_V12, C.AC_V23);
 
             %================
             % Derive DC ASRs
             %================
-            nFnBefore = numel(fieldnames(As));
+            nAsidBefore = AsMap.length;
             while true
-                % NOTE: Relation dcV13 = dcV12 + dcV23 has precedence for
+                % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
                 % deriving diffs since it is better to derive a diff from
                 % (initially available) diffs rather than singles, directly or
                 % indirectly, if possible.
-                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV13', 'dcV12', 'dcV23');
+                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V13, C.DC_V12, C.DC_V23);
                 
-                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV1',  'dcV12', 'dcV2');
-                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV1',  'dcV13', 'dcV3');
-                As = bicas.proc.L1L2.demuxer.complete_relation(As, 'dcV2',  'dcV23', 'dcV3');
-                nFnAfter = numel(fieldnames(As));
+                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V1,  C.DC_V12, C.DC_V2);
+                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V1,  C.DC_V13, C.DC_V3);
+                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V2,  C.DC_V23, C.DC_V3);
+                nAsidAfter = AsMap.length;
                 
-                if (nFnBefore == nFnAfter) || (nFnAfter == 9)
+                if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
                     break
                 end
-                nFnBefore = nFnAfter;
+                nAsidBefore = nAsidAfter;
             end
-                        
+
             %===================================================================
-            % Assign all ASRs/fields which have not yet been assigned
-            % -------------------------------------------------------
+            % Assign all ASIDs which have not yet been assigned
+            % -------------------------------------------------
             % IMPLEMENTATION NOTE: This is needed to handle for situations when
-            % the supplied fields can not be used to determine all fields (five
-            % fields are supplied but the system of equations is
-            % overdetermined/redundant).
+            % the supplied fields can not be used to determine all nine fields.
             %   Ex: mux=1,2,3
             %===================================================================            
-            fnCa    = fieldnames(As);
-            tempNaN = nan(size(As.(fnCa{1})));
-            for iFn = 1:N_ASR_FIELDNAMES
-                fn = C.ASR_FIELDNAMES_CA{iFn};
-                if ~isfield(As, fn)
-                    As.(fn) = tempNaN;
+            asidCa  = AsMap.keys;
+            tempNaN = nan(size(AsMap(asidCa{1})));
+
+            AsStruct = struct();
+            for asidNameCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA'
+                asidName = asidNameCa{1};
+                if AsMap.isKey(asidName)
+                    AsStruct.(asidName) = AsMap(asidName);
+                else
+                    AsStruct.(asidName) = tempNaN;
                 end
             end
             
-            irf.assert.struct(As, C.ASR_FIELDNAMES_CA, {})
-            
-            AsrSamplesAVolt = As;
+            AsrSamplesAVoltStruct = AsStruct;
         end
         
         
@@ -350,92 +314,49 @@ classdef demuxer
     
     
     methods(Static, Access=private)
-    %methods(Static, Access=public)
     
     
-        function R = init_const()
-            SDID = bicas.proc.L1L2.SignalDestinationId.C;
-            % Table that associates SDIDs with ASR struct fieldnamnes (FN).
-            R.SDID_ASR_FN_TABLE = {...
-                SDID.DC_V1,  'dcV1'; ...
-                SDID.DC_V2,  'dcV2'; ...
-                SDID.DC_V3,  'dcV3'; ...
-                ...
-                SDID.DC_V12, 'dcV12'; ...
-                SDID.DC_V13, 'dcV13'; ...
-                SDID.DC_V23, 'dcV23'; ...
-                ...
-                SDID.AC_V12, 'acV12'; ...
-                SDID.AC_V13, 'acV13'; ...
-                SDID.AC_V23, 'acV23'; ...
-            };
+        % Given FIVE BLTS, write the corresponding ASRs in a countainers.Map.
+        function AsrSamplesMap = assign_ASR_samples_from_BLTS(...
+                BltsSamplesCa, SdidArray)
 
-            R.ASR_FIELDNAMES_CA = R.SDID_ASR_FN_TABLE(:, 2);
-        end
-    
-    
-
-        % Overwrite ASR struct fields from all FIVE BLTS, given specified
-        % routings. Does not touch other struct fields.
-        function AsrSamples = assign_ASR_samples_from_BLTS(...
-                AsrSamples, BltsSamplesAVolt, RoutingArray)
-            
             % ASSERTIONS
-            irf.assert.all_equal(...
-                [numel(BltsSamplesAVolt), numel(RoutingArray), 5])
-            
+            assert(numel(BltsSamplesCa) == 5 && iscell(BltsSamplesCa))
+            assert(numel(SdidArray)  == 5)
+
+            AsrSamplesMap = containers.Map();
             for iBlts = 1:5
-                if ~isequal(RoutingArray(iBlts).dest.value, 'Nowhere')
-                    asrFn = bicas.proc.L1L2.demuxer.get_ASR_fieldname(...
-                        RoutingArray(iBlts).dest);
-                    AsrSamples.(asrFn) = BltsSamplesAVolt{iBlts};
+                if ~isequal(SdidArray(iBlts).value, 'Nowhere')
+                    AsrSamplesMap(SdidArray(iBlts).value.s) = BltsSamplesCa{iBlts};
                 end
             end
         end
         
-        
-        
-        % Convert a bicas.proc.L1L2.SignalDestinationId object (nominally
-        % representing an ASR) to a corresponding struct fieldname.
-        function fn = get_ASR_fieldname(Sdid)
-            % PROPOSAL: New name implying "destination".
-            
-            SDID_ASR_FN_TABLE = bicas.proc.L1L2.demuxer.C.SDID_ASR_FN_TABLE;
-            
-            for i =1:size(SDID_ASR_FN_TABLE, 1)
-                if isequal(Sdid, SDID_ASR_FN_TABLE{i, 1})
-                    fn = SDID_ASR_FN_TABLE{i, 2};
-                    return
-                end
-            end
-            error('BICAS:Assertion:IllegalArgument', ...
-                'Illegal argument BltsDest.')
-        end
-        
-        
+
         
         % Utility function. Derive missing ASR fields from other fields. If
-        % exactly two of the fieldnames exist in S, then derive the third using
-        % the relationship As.(fn1) == As.(fn2) + As.(fn3)
+        % exactly two of the Map keys exist in S, then derive the third using
+        % the relationship AsMap(asid1) == AsMap(asid2) + AsMap(asid3)
         %
         % ARGUMENTS
         % =========
-        % As            
-        %       Struct.
-        % fn1, fn2, fn3
-        %       Existent or non-existent fieldnames in s. If exactly one of them
-        %       is missing in "As", then the field is created with values
-        %       assuming that the field contents are related through the
-        %       relationship fn1 = fn2 + fn3.
-        %       In other cases, "As" is returned unmodified.
+        % AsMap
+        %       containers.Map
+        % asid1, asid2, asid3
+        %       ASID names key strings which may or may not be keys in AsMap. If
+        %       exactly one of them is missing in "As", then the key+value is
+        %       created with values assuming that the field contents are related
+        %       through the relationship value1 = value2 + value3.
+        %       In other cases, "AsMap" is returned unmodified.
         %
-        function As = complete_relation(As, fn1, fn2, fn3)
-            e1 = isfield(As, fn1);
-            e2 = isfield(As, fn2);
-            e3 = isfield(As, fn3);
-            if     ~e1 &&  e2 &&  e3     As.(fn1) = As.(fn2) + As.(fn3);
-            elseif  e1 && ~e2 &&  e3     As.(fn2) = As.(fn1) - As.(fn3);
-            elseif  e1 &&  e2 && ~e3     As.(fn3) = As.(fn1) - As.(fn2);
+        function AsMap = complete_relation(AsMap, asid1, asid2, asid3)
+            e1 = AsMap.isKey(asid1.s);
+            e2 = AsMap.isKey(asid2.s);
+            e3 = AsMap.isKey(asid3.s);
+
+            if     ~e1 &&  e2 &&  e3   AsMap(asid1.s) = AsMap(asid2.s) + AsMap(asid3.s);
+            elseif  e1 && ~e2 &&  e3   AsMap(asid2.s) = AsMap(asid1.s) - AsMap(asid3.s);
+            elseif  e1 &&  e2 && ~e3   AsMap(asid3.s) = AsMap(asid1.s) - AsMap(asid2.s);
             end
         end
 
