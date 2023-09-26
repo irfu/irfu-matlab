@@ -43,9 +43,9 @@ classdef utils
 %       CON: Does not work for ACQUISITION_TIME since two columns.
 %
 % PROPOSAL: Replace functions
-%               set_struct_field_rows()
-%               assert_struct_num_fields_have_same_N_rows()
+%               set_struct_field_rows()                     -- DONE
 %               select_row_range_from_cell_comps()
+%               assert_struct_num_fields_have_same_N_rows()
 %       with new class that has a map from arbitrary value to arrays and/or
 %       instances of same class (recursive).
 %   PRO: Can enforce same number of rows.
@@ -458,44 +458,6 @@ classdef utils
 
 
 
-        % Generic utility function.
-        % Overwrite struct fields at specific field rows using other struct
-        % fields.
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % S
-        %       Struct. Only numeric fields.
-        %       All fields have same number of rows.
-        % SNew
-        %       Struct. Only numeric fields.
-        %       All fields have same number of rows. Same fields as S.
-        % iRowsArray
-        %       1D array. Same length as number of rows in SNew fields.
-        %       Specifies the rows (in fields in S) that shall be assigned.
-        function S = set_struct_field_rows(S, SNew, iRowsArray)
-
-            % ASSERTIONS
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S);
-            nRowsSa = bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(SNew);
-            assert(numel(iRowsArray) == nRowsSa)
-            irf.assert.castring_sets_equal(fieldnames(S), fieldnames(SNew))
-
-            fieldNamesList = fieldnames(SNew);
-            for i=1:length(fieldNamesList)
-                fn = fieldNamesList{i};
-
-                % ASSERTIONS
-                assert(isnumeric(S.(fn)))
-                assert(isnumeric(SNew.(fn)))
-
-                S.(fn)(iRowsArray, :) = SNew.(fn)(:, :);
-            end
-        end
-
-
-
         function nRows = assert_struct_num_fields_have_same_N_rows(S)
         % Assert that struct consisting of
         %   logical arrays
@@ -559,17 +521,20 @@ classdef utils
                         nRowsArray(end+1) = size(fieldValue{iCc}, 1);
                     end
 
-                elseif isstruct(fieldValue)
-                    % CASE: Struct
-                    % Check number of rows in every field (regardless of type).
+%                 elseif isstruct(fieldValue)
+%                     % CASE: Struct
+%                     % Check number of rows in every field (regardless of type).
+% 
+%                     fieldNamesList2 = fieldnames(fieldValue);
+%                     for iFn2 = 1:length(fieldNamesList2)
+%                         nRowsArray(end+1) = size(...
+%                             fieldValue.(fieldNamesList2{iFn2}), ...
+%                             1);
+%                     end
 
-                    fieldNamesList2 = fieldnames(fieldValue);
-                    for iFn2 = 1:length(fieldNamesList2)
-                        nRowsArray(end+1) = size(...
-                            fieldValue.(fieldNamesList2{iFn2}), ...
-                            1);
-                    end
-
+                elseif isa(fieldValue, 'bicas.utils.SameRowsMap')
+                    nRowsArray(end+1) = fieldValue.nRows();
+                    
                 else
                     % CASE: Other field value type.
                     error('BICAS:Assertion', ...

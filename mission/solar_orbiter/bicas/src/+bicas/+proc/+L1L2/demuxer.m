@@ -244,8 +244,8 @@ classdef demuxer
         %
         % NOTE: Only public for the purpose of automatic testing.
         %
-        function AsrSamplesAVoltStruct = complement_ASR(AsrSamplesAVoltMap)
-            assert(isa(AsrSamplesAVoltMap, 'containers.Map'))
+        function AsrSamplesAVoltMap = complement_ASR(AsrSamplesAVoltMap)
+            assert(isa(AsrSamplesAVoltMap, 'bicas.utils.SameRowsMap'))
             
             % Shorten variable names.
             C  = bicas.proc.L1L2.AntennaSignalId.C;
@@ -288,20 +288,16 @@ classdef demuxer
             % the supplied fields can not be used to determine all nine fields.
             %   Ex: mux=1,2,3
             %===================================================================            
-            asidCa  = AsMap.keys;
-            tempNaN = nan(size(AsMap(asidCa{1})));
+            tempNaN = nan(AsMap.nRows(), 1);
 
-            AsStruct = struct();
             for asidNameCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA'
                 asidName = asidNameCa{1};
-                if AsMap.isKey(asidName)
-                    AsStruct.(asidName) = AsMap(asidName);
-                else
-                    AsStruct.(asidName) = tempNaN;
+                if ~AsMap.isKey(asidName)
+                    AsMap.add(asidName, tempNaN);
                 end
             end
             
-            AsrSamplesAVoltStruct = AsStruct;
+            AsrSamplesAVoltMap = AsMap;
         end
         
         
@@ -326,7 +322,8 @@ classdef demuxer
             assert(numel(BltsSamplesCa) == 5 && iscell(BltsSamplesCa))
             assert(numel(SdidArray) == 5)
 
-            AsrSamplesMap = containers.Map();
+            nRows = size(BltsSamplesCa{1}, 1);
+            AsrSamplesMap = bicas.utils.SameRowsMap('char', nRows, 'empty');
             for iBlts = 1:5
                 if ~isequal(SdidArray(iBlts).value, 'Nowhere')
                     AsrSamplesMap.add(...
@@ -358,9 +355,9 @@ classdef demuxer
             e2 = AsMap.isKey(asid2.s);
             e3 = AsMap.isKey(asid3.s);
 
-            if     ~e1 &&  e2 &&  e3   AsMap(asid1.s) = AsMap(asid2.s) + AsMap(asid3.s);
-            elseif  e1 && ~e2 &&  e3   AsMap(asid2.s) = AsMap(asid1.s) - AsMap(asid3.s);
-            elseif  e1 &&  e2 && ~e3   AsMap(asid3.s) = AsMap(asid1.s) - AsMap(asid2.s);
+            if     ~e1 &&  e2 &&  e3   AsMap.add(asid1.s, AsMap.get(asid2.s) + AsMap.get(asid3.s));
+            elseif  e1 && ~e2 &&  e3   AsMap.add(asid2.s, AsMap.get(asid1.s) - AsMap.get(asid3.s));
+            elseif  e1 &&  e2 && ~e3   AsMap.add(asid3.s, AsMap.get(asid1.s) - AsMap.get(asid2.s));
             end
         end
 

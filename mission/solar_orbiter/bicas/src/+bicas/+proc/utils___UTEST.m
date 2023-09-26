@@ -51,32 +51,6 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-        function test_set_struct_field_rows(testCase)
-
-            function test(inputsCa, expOutputsCa)
-                % Pre-allocate correct size for later assignment via function
-                actOutputs = cell(size(expOutputsCa));
-
-                [actOutputs{:}] = bicas.proc.utils.set_struct_field_rows(inputsCa{:});
-                testCase.verifyEqual(actOutputs, expOutputsCa)
-            end
-            %===================================================================
-            % VERY INCOMPLETE TEST SUITE.
-
-            test({...
-                struct('asd', reshape([1:24], [4,3,2])), ...
-                struct('asd', reshape([1:12], [2,3,2])), 2:3}, {...
-                struct('asd', reshape([1,1,2,4, 5,3,4,8, 9,5,6,12,   13,7,8,16, 17,9,10,20, 21,11,12,24], 4,3,2)) ...
-                });
-
-            test({...
-                struct('asd', [1;2;3;4;5]), ...
-                struct('asd', [8;9]), [4,3]}, {...
-                struct('asd', [1;2;9;8;5])});
-        end
-
-
-
         function test_set_NaN_end_of_rows(testCase)
 
             function test(inputsCa, expOutputsCa)

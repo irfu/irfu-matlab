@@ -44,12 +44,13 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 A.AC_V23.s, 56-69 ...
             };
             ASID_SAMPLES_MAP = containers.Map(DATA(:, 1), DATA(:, 2));
+            N_ROWS = size(DATA{1,2}, 1);
 
             
 
             % Function for testing mux=0-4. All those all those map (route) ASR
             % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
-            function test_mux01234(demuxMode, dlrUsing12, bltsAsidCa, ExpAsrSamplesAVoltStruct)
+            function test_mux01234(demuxMode, dlrUsing12, bltsAsidCa, ExpAsrSamplesAVoltMap)
                 % Convert bltsAsidCa --> BltsSamplesCa, ExpRoutingArray
                 BltsSamplesCa = {};
                 ExpRoutingArray = bicas.proc.L1L2.Routing.empty(0, 1);
@@ -64,12 +65,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
                     demuxMode, dlrUsing12);
-                ActAsrSamplesAVoltStruct = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
+                ActAsrSamplesAVoltMap = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
                     [ActRoutingArray.dest], BltsSamplesCa);
                 
                 % ASSERTIONS
-                testCase.verifyEqual(ActRoutingArray,          ExpRoutingArray)
-                testCase.verifyEqual(ActAsrSamplesAVoltStruct, ExpAsrSamplesAVoltStruct)
+                testCase.assertEqual(ActRoutingArray, ExpRoutingArray)
+                testCase.assertTrue(ActAsrSamplesAVoltMap == ExpAsrSamplesAVoltMap)
             end
 
 
@@ -79,7 +80,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             %
             % varargin{i} == 0 or 1. Determines whether constant or NaN will
             % be used.
-            function AsStruct = selected_ASR_samples(varargin)
+            function AsMap = selected_ASR_samples(varargin)
                 assert(nargin == 9)
                 
                 % Define which varargin{i} corresponds to which ASID.
@@ -88,16 +89,16 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                     A.DC_V12, A.DC_V13, A.DC_V23, ...
                     A.AC_V12, A.AC_V13, A.AC_V23 ...
                 };
-                AsStruct = struct();
+                AsMap = bicas.utils.SameRowsMap('char', N_ROWS, 'empty');
+                
                 for iAsid = 1:9
                     asidName = ASID_CA{iAsid}.s;
 
                     samplesAVolt = ASID_SAMPLES_MAP(asidName);
-                    if varargin{iAsid}
-                        AsStruct.(asidName) = samplesAVolt;
-                    else
-                        AsStruct.(asidName) = samplesAVolt * NaN;
+                    if ~varargin{iAsid}
+                        samplesAVolt = samplesAVolt * NaN;
                     end
+                    AsMap.add(asidName, samplesAVolt);
                 end
             end
 
@@ -156,30 +157,32 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             % results. Does not verify entire return results.
             % BUG/NOTE: Will fail if function returns NaN when it should not!
             function test(inputFieldsCa)
-                AsMap = containers.Map();
+                nRows = size(inputFieldsCa{2}, 1);
+                AsMap = bicas.utils.SameRowsMap('char', nRows, 'empty');
                 for i = 1:(numel(inputFieldsCa)/2)
-                    key   = inputFieldsCa{2*i-1}.s;
+                    asid  = inputFieldsCa{2*i-1};
                     value = inputFieldsCa{2*i  };
-                    AsMap(key) = value;
+                    %AsMap(key) = value;
+                    AsMap.add(asid.s, value)
                 end
                 
                 % RUN FUNCTION TO BE TESTED
-                ActAsStruct = bicas.proc.L1L2.demuxer.complement_ASR(AsMap);
+                ActAsMap = bicas.proc.L1L2.demuxer.complement_ASR(AsMap);
 
                 % Test all possible relationsships.
                 %
                 % NOTE: Implicitly asserts that all fields are present.
                 % NOTE: Must account for that some fields may be NaN, and
                 %       therefore can not be checked against relations.
-                assert_relation(ActAsStruct.(C.DC_V1.s),  ActAsStruct.(C.DC_V12.s), ActAsStruct.(C.DC_V2.s))
-                assert_relation(ActAsStruct.(C.DC_V2.s),  ActAsStruct.(C.DC_V23.s), ActAsStruct.(C.DC_V3.s))
-                assert_relation(ActAsStruct.(C.DC_V1.s),  ActAsStruct.(C.DC_V13.s), ActAsStruct.(C.DC_V3.s))
+                assert_relation(ActAsMap.get(C.DC_V1.s),  ActAsMap.get(C.DC_V12.s), ActAsMap.get(C.DC_V2.s))
+                assert_relation(ActAsMap.get(C.DC_V2.s),  ActAsMap.get(C.DC_V23.s), ActAsMap.get(C.DC_V3.s))
+                assert_relation(ActAsMap.get(C.DC_V1.s),  ActAsMap.get(C.DC_V13.s), ActAsMap.get(C.DC_V3.s))
                 
                 % DC. All diffs
-                assert_relation(ActAsStruct.(C.DC_V13.s), ActAsStruct.(C.DC_V12.s), ActAsStruct.(C.DC_V23.s))
+                assert_relation(ActAsMap.get(C.DC_V13.s), ActAsMap.get(C.DC_V12.s), ActAsMap.get(C.DC_V23.s))
                 
                 % AC. All diffs
-                assert_relation(ActAsStruct.(C.AC_V13.s), ActAsStruct.(C.AC_V12.s), ActAsStruct.(C.AC_V23.s))
+                assert_relation(ActAsMap.get(C.AC_V13.s), ActAsMap.get(C.AC_V12.s), ActAsMap.get(C.AC_V23.s))
             end
             %===================================================================
 

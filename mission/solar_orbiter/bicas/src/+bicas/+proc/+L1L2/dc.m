@@ -141,7 +141,7 @@ classdef dc
         % NOTE: Can handle arrays of any size if the sizes are
         % consistent.
         %
-        function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, L)
+        function AsrSamplesAVoltMap = calibrate_demux_voltages(PreDc, Cal, L)
         % PROPOSAL: Sequence of constant settings includes dt (for CWF)
         %   PROBLEM: Not clear how to implement it since it is a property of two records, not one.
         %       PROPOSAL: Use other utility function(s).
@@ -191,11 +191,10 @@ classdef dc
             % ------------
             % IMPLEMENTATION NOTE: Very important for speeding up LFR-SWF which
             % tends to be broken into subsequences of 1 record.
-            tempVoltageArray = nan(nRecords, nSamplesPerRecordChannel);
-            AsrSamplesAVolt = struct();
-            for asidCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA(:)'
-                AsrSamplesAVolt.(asidCa{1}) = tempVoltageArray;
-            end
+            AsrSamplesAVoltMap = bicas.utils.SameRowsMap(...
+                'char', nRecords, 'constant', ...
+                nan(nRecords, nSamplesPerRecordChannel), ...
+                bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA);
 
             dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
             iCalibLZv    = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
@@ -235,12 +234,11 @@ classdef dc
                 iFirst = iFirstList(iSs);
                 iLast  = iLastList (iSs);
 
-                SsAsrSamplesAVolt = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
+                SsAsrSamplesAVoltMap = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
                     PreDc, dlrUsing12zv, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
 
                 % Add demuxed sequence to the to-be complete set of records.
-                AsrSamplesAVolt = bicas.proc.utils.set_struct_field_rows(...
-                    AsrSamplesAVolt, SsAsrSamplesAVolt, iFirst:iLast);
+                AsrSamplesAVoltMap.setRows(SsAsrSamplesAVoltMap, [iFirst:iLast]');
             end
 
 
