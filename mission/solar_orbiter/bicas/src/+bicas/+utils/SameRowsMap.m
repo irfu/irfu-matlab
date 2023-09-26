@@ -6,6 +6,15 @@
 % Some method names are chosen to be identical with containers.Map.
 %
 %
+% IMPLEMENTATION NOTE
+% ===================
+% bicas.utils.SameRowsMap.setRows() can be slow if storing data directly as
+% values in containers.Map, presumably since preallocation does not work.
+% Therefore storing all values inside handle class objects, which (presumably)
+% makes it possible to modify arrays without implicit copying by MATLAB, thus
+% increasing performance. Does seem to work.
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef SameRowsMap < handle
@@ -164,7 +173,8 @@ classdef SameRowsMap < handle
         
         % Mostly for debugging.
         function valuesCa = values(obj)
-            valuesCa = obj.Map.values();
+            hwCa     = obj.Map.values();
+            valuesCa = cellfun(@(x) (x.v), hwCa, 'UniformOutput', 'false');
             valuesCa = valuesCa(:);
         end
 
@@ -183,10 +193,9 @@ classdef SameRowsMap < handle
         function add(obj, key, value)
             bicas.utils.SameRowsMap.assert_legal_key(key)
             assert(~obj.Map.isKey(key))
-            
             assert(obj.nRows2 == size(value, 1))
             
-            obj.Map(key) = value;
+            obj.Map(key) = bicas.utils.HandleWrapper(value);
         end
         
         
@@ -219,28 +228,29 @@ classdef SameRowsMap < handle
             for keyCa = keysCa(:)'
                 key = keyCa{1};
                 
-                value1 = obj.get(key);
-                value2 = Map2.get(key);
+                hw1 = obj.Map(key);
+                hw2 = Map2.Map(key);
                 
-                size1 = size(value1);
-                size2 = size(value2);
-                assert(isequal(size1(2:end ), size2(2:end )))
-                assert(isequal(class(value1), class(value2)))
+                size1 = size(hw1.v);
+                size2 = size(hw2.v);
+                assert(isequal(size1(2:end ), size2(2:end)))
+                assert(isequal(class(hw1.v),  class(hw2.v)))
 
                 % IMPLEMENTATION NOTE: Unsure, but think that explicitly setting
                 % second dimension to ":" makes the command handle any
                 % dimensionalities (assuming that dimensionalities and sizes are
                 % consistent).
-                value1(iRowsArray, :) = value2(:, :);
+                hw1.v(iRowsArray, :) = hw2.v(:, :);
                 
-                obj.Map(key) = value1;
+                % IMPLEMENTATION NOTE: Does not need to set obj.Map(key) since
+                % using handle classes.
             end
         end
 
 
 
         function value = get(obj, key)
-            value = obj.Map(key);
+            value = obj.Map(key).v;
         end
 
 
@@ -271,6 +281,8 @@ classdef SameRowsMap < handle
             for i = 1:numel(keysCa)
                 key = keysCa{i};
                 
+                % IMPLEMENTATION NOTE: Using methods for accessing data bypasses
+                % the indirection introduced by using bicas.utils.HandleWrapper.
                 value1 = obj.get(key);
                 value2 = other.get(key);
                 
