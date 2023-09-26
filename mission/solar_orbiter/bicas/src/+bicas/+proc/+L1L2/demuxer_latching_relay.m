@@ -17,7 +17,7 @@
 % 2023-07-28: YK has asked ROC/Diane Berard who has asked SOC to change the DLR
 % value. "will likely take several weeks".
 % Diane Berard e-mail 2023-08-29: The latching relay did change on "August 21st
-% at 12:03:04 in flight". HK_BIA_MODE_DIFF_PROBE should indeed 8very likely) be
+% at 12:03:04 in flight". HK_BIA_MODE_DIFF_PROBE should indeed (very likely) be
 % the latching relay.
 %
 %
@@ -36,8 +36,9 @@
 %
 function dlrUsing12 = demuxer_latching_relay(Epoch)
 % PROPOSAL: Use BIAS HK for setting value.
+%           Delete this function when implemented. Save relevant notes/comments.
 
     bicas.utils.assert_ZV_Epoch(Epoch)
-    
+
     dlrUsing12 = ones(size(Epoch));
 end

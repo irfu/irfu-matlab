@@ -34,15 +34,10 @@
 classdef L1L2
 %#######################################################################################################################
 %
-% PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets. -- ABANDONED?
-%
-% PROPOSAL: Split into smaller files.
-%   NOTE: All functions 2023-08-14(?):
-%         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
-%         function [PreDc, PostDc] = process_quality_filter_L2(...
-%         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
-%         function zvUfv = get_UFV_records_from_settings(...
-%         function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
+% PROPOSAL: Move normalize_CALIBRATION_TABLE_INDEX() to some collection of utils.
+%   PROPOSAL: bicas.proc.utils
+%       CON: Function is too specific. Has inputDsi as argument.
+%           CON: Could be less bad than this file.
 %
 % PROPOSAL: Submit zVar variable attributes.
 %   PRO: Can interpret fill values.
@@ -54,7 +49,6 @@ classdef L1L2
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
 %
 % PROPOSAL: Class for HkSciTime.
-% PROPOSAL: Class for DemuxerOutput.
 %
 %#######################################################################################################################
 
@@ -186,7 +180,16 @@ classdef L1L2
 
 
             % Derive time margin within which the nearest HK value will be used.
-            % NOTE: Requires >=2 records.
+            % NOTE: Requires >=2 records. 0 or 1 records ==> NaN (and MATLAB
+            %       warning).
+            %
+            % BUG?: This looks as if it could yield bad results. If the margin
+            %       is small, then interpolation would yield too many NaN.
+            %   NOTE: HK nominally has a much lower "sampling rate" than science
+            %         data. ==> The derived margin tends to be higher.
+            %   NOTE: Time difference between HK samples varies, which means
+            %         that mode() will not necessarily identify the de facto
+            %         most common time difference.
             hkEpochExtrapMargin = mode(diff(hkEpoch)) / 2;
             
             
@@ -254,15 +257,5 @@ classdef L1L2
     end    % methods(Static, Access=public)
 
 
-
-    %##############################
-    %##############################
-    methods(Static, Access=private)
-    %##############################
-    %##############################
-
-
-
-    end    % methods(Static, Access=private)
 
 end

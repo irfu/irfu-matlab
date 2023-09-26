@@ -69,7 +69,7 @@ classdef demuxer
         %       Implies that AsrSamplesVolt fields are correctly
         %       sized with NaN values.
         % dlrUsing12
-        %       See bicas.proc.L1L2.demuxer_latching_relay.
+        %       See bicas.proc.L1L2.demuxer_latching_relay().
         %
         %
         % RETURN VALUES
@@ -314,7 +314,8 @@ classdef demuxer
     
 
     
-        % Given FIVE BLTS, write the corresponding ASRs in a countainers.Map.
+        % Given FIVE BLTS sample arrays, copy those which correspond to ASRs
+        % (five or fewer!) into a bicas.utils.SameRowsMap.
         function AsrSamplesMap = assign_ASR_samples_from_BLTS(...
                 BltsSamplesCa, SdidArray)
 

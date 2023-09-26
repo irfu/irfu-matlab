@@ -64,9 +64,9 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
                 @() (bicas.utils.SameRowsMap('double', 3, 'constant', [1;2])), ...
                 ?MException)
         end
-        
-        
-        
+
+
+
         function test_setRows(testCase)
             
             % Insert zero rows into zero rows.
@@ -76,7 +76,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             M2.add('K2', zeros(0,0))
             M1.setRows(M2, zeros(0,1))
             testCase.assertEqual(M1.get('K2'), zeros(0,0))
-
+            
             % Insert zero rows into non-zero rows.
             M1 = bicas.utils.SameRowsMap('char', 3, 'empty');
             M1.add('K2', zeros(3,0))

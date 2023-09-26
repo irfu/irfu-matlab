@@ -1,7 +1,9 @@
 %
 % Immutable class that represents a particular routing of signals via a
-% particular BLTS: (1) where a physical signal comes from, and (2) how it should
-% be stored in the dataset object (if at all).
+% particular BLTS given a particular demux mode and DLR setting:
+% (1) where a physical signal comes from (which relates to how
+%     it should be calibrated), and
+% (2) how it should be stored in the dataset object (if at all).
 %
 % Immutable.
 %

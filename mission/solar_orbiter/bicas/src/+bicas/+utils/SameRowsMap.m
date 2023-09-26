@@ -10,9 +10,9 @@
 % ===================
 % bicas.utils.SameRowsMap.setRows() can be slow if storing data directly as
 % values in containers.Map, presumably since preallocation does not work.
-% Therefore storing all values inside handle class objects, which (presumably)
-% makes it possible to modify arrays without implicit copying by MATLAB, thus
-% increasing performance. Does seem to work.
+% Therefore storing all values indirectly via handle class objects, which
+% (presumably) makes it possible to modify arrays without implicit copying by
+% MATLAB, thus increasing performance. Does seem to work.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -150,7 +150,7 @@ classdef SameRowsMap < handle
 
                 otherwise
                     error('BICAS:Assertion:IllegalArgument', ...
-                        'Illegal argument initType=%s', initType)
+                        'Illegal argument initType="%s"', initType)
             end
 
         end
@@ -222,6 +222,8 @@ classdef SameRowsMap < handle
             % Maps.
             assert(isa(Map2, 'bicas.utils.SameRowsMap'))
             assert(isnumeric(iRowsArray) && iscolumn(iRowsArray))
+            assert(size(iRowsArray, 1) == Map2.nRows)
+            
             assert(bicas.utils.SameRowsMap.key_sets_equal(obj.keys, Map2.keys))
             
             keysCa = obj.keys();
@@ -233,8 +235,12 @@ classdef SameRowsMap < handle
                 
                 size1 = size(hw1.v);
                 size2 = size(hw2.v);
-                assert(isequal(size1(2:end ), size2(2:end)))
-                assert(isequal(class(hw1.v),  class(hw2.v)))
+                % IMPLEMENTATION NOTE: Using num2str(key) since it can handle
+                % both strings and numbers.
+                assert(isequal(size1(2:end),     size2(2:end)    ), ...
+                    'Values for key="%s" have inconsistent sizes.', num2str(key))
+                assert(isequal(class(hw1.v), class(hw2.v)), ...
+                    'Values for key="%s" have inconsistent MATLAB classes.', num2str(key))
 
                 % IMPLEMENTATION NOTE: Unsure, but think that explicitly setting
                 % second dimension to ":" makes the command handle any
@@ -261,30 +267,30 @@ classdef SameRowsMap < handle
         
         
         
-        function equals = eq(obj, other)
-            assert(isa(other, 'bicas.utils.SameRowsMap'))
+        function equals = eq(obj1, obj2)
+            assert(isa(obj2, 'bicas.utils.SameRowsMap'))
             
             % IMPLEMENTATION NOTE: Must support the case of zero keys.
             
-            if ~bicas.utils.SameRowsMap.key_sets_equal(obj.keys, other.keys)
+            if ~bicas.utils.SameRowsMap.key_sets_equal(obj1.keys, obj2.keys)
                 equals = false;
                 return
-            elseif obj.nRows ~= other.nRows
+            elseif obj1.nRows ~= obj2.nRows
                 equals = false;
                 return
-            elseif ~isequal(obj.Map.KeyType, other.Map.KeyType)
+            elseif ~isequal(obj1.Map.KeyType, obj2.Map.KeyType)
                 equals = false;
                 return
             end
             
-            keysCa = obj.Map.keys;
+            keysCa = obj1.Map.keys;
             for i = 1:numel(keysCa)
                 key = keysCa{i};
                 
                 % IMPLEMENTATION NOTE: Using methods for accessing data bypasses
                 % the indirection introduced by using bicas.utils.HandleWrapper.
-                value1 = obj.get(key);
-                value2 = other.get(key);
+                value1 = obj1.get(key);
+                value2 = obj2.get(key);
                 
                 % NOTE: NaN == NaN ==> Use isequaln().
                 if ~isequaln(value1, value2) || ~isequal(class(value1), class(value2))
@@ -331,6 +337,11 @@ classdef SameRowsMap < handle
 
 
         function equal = key_sets_equal(keySetCa1, keySetCa2)
+            % PROPOSAL: Abandon normalization. Use for loops and isequaln().
+            %   PROPOSAL: Implement via general-purpose function.
+            %   PROPOSAL: Return pair of index arrays to matching elements in each set.
+            %       TODO-DEC: How handle input arrays which are not sets
+            %       (contain doubles)?
             keySetCa1 = cellfun(@bicas.utils.SameRowsMap.normalize_key, keySetCa1, 'UniformOutput', false);
             keySetCa2 = cellfun(@bicas.utils.SameRowsMap.normalize_key, keySetCa2, 'UniformOutput', false);
             

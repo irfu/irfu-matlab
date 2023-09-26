@@ -189,8 +189,8 @@ classdef dc
 
             % Pre-allocate
             % ------------
-            % IMPLEMENTATION NOTE: Very important for speeding up LFR-SWF which
-            % tends to be broken into subsequences of 1 record.
+            % IMPLEMENTATION NOTE: Preallocation is very important for speeding
+            % up LFR-SWF which tends to be broken into subsequences of 1 record.
             AsrSamplesAVoltMap = bicas.utils.SameRowsMap(...
                 'char', nRecords, 'constant', ...
                 nan(nRecords, nSamplesPerRecordChannel), ...

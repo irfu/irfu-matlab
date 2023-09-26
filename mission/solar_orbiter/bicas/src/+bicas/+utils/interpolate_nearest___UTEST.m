@@ -46,11 +46,11 @@ classdef interpolate_nearest___UTEST < matlab.unittest.TestCase
 
             test({1,   [3 4], [13 14], []}, {[]});
 
-            % Non-incrementing x1,x2.
+            % Non-incrementing xArray1,xArray2.
             test({1,   [3 5 4], [13 15 14], [3 4 5]}, {[13 14 15]});
             test({1,   [3 5 4], [13 15 14], [5 4 3]}, {[15 14 13]});
             
-            % Row/column vectors x2, y2.
+            % Row/column vectors xArray2, yArray2.
             test({1,   [3 4],   [13 14],    [3 4] }, {[13 14] });
             test({1,   [3 4],   [13 14],    [3 4]'}, {[13 14]'});
 
