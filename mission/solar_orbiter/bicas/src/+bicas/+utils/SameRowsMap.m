@@ -174,7 +174,7 @@ classdef SameRowsMap < handle
         % Mostly for debugging.
         function valuesCa = values(obj)
             hwCa     = obj.Map.values();
-            valuesCa = cellfun(@(x) (x.v), hwCa, 'UniformOutput', 'false');
+            valuesCa = cellfun(@(x) (x.v), hwCa, 'UniformOutput', false);
             valuesCa = valuesCa(:);
         end
 
