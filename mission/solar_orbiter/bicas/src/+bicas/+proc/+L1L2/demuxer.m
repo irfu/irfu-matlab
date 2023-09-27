@@ -79,13 +79,16 @@ classdef demuxer
         %       (iBlts).
         function RoutingArray = get_routings(demuxMode, dlrUsing12)
             assert(isscalar(demuxMode))   % switch-case checks values.
-            assert(isscalar(dlrUsing12))
+            assert(isscalar(dlrUsing12) && isfloat(dlrUsing12))
 
             R = bicas.proc.L1L2.Routing.C;
 
 
 
-            if dlrUsing12
+            if isnan(dlrUsing12)
+                R.DC_V1x = R.UNKNOWN_TO_NOWHERE;
+                R.AC_V1x = R.UNKNOWN_TO_NOWHERE;
+            elseif dlrUsing12
                 R.DC_V1x = R.DC_V12;
                 R.AC_V1x = R.AC_V12;
             else
@@ -288,7 +291,14 @@ classdef demuxer
             % the supplied fields can not be used to determine all nine fields.
             %   Ex: mux=1,2,3
             %===================================================================            
-            tempNaN = nan(AsMap.nRows(), 1);
+            
+            keysCa = AsrSamplesAVoltMap.keys;
+
+            % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
+            % for deriving the entire size (samples per record), until possibly
+            % using a future bicas.utils.SameSizeTypeMap instead.
+            %tempNaN = nan(AsMap.nRows(), 1);
+            tempNaN = nan(size(AsrSamplesAVoltMap.get(keysCa{1})));
 
             for asidNameCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA'
                 asidName = asidNameCa{1};
