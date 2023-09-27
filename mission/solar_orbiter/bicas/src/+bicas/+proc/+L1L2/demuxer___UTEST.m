@@ -66,9 +66,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                     end
                 end
                 
+                dlrUsing12Fpa = bicas.utils.FillPositionsArray(dlrUsing12, 'fill value', NaN).cast('logical', 0);
+                
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
-                    demuxMode, dlrUsing12);
+                    demuxMode, dlrUsing12Fpa);
                 ActAsrSamplesAVoltMap = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
                     [ActRoutingArray.dest], BltsSamplesCa);
                 

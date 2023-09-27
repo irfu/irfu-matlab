@@ -77,18 +77,17 @@ classdef demuxer
         % RoutingArray
         %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
         %       (iBlts).
-        function RoutingArray = get_routings(demuxMode, dlrUsing12)
+        function RoutingArray = get_routings(demuxMode, dlrUsing12Fpa)
             assert(isscalar(demuxMode))   % switch-case checks values.
-            assert(isscalar(dlrUsing12) && isfloat(dlrUsing12))
+            assert(isscalar(dlrUsing12Fpa) && isa(dlrUsing12Fpa, 'bicas.utils.FillPositionsArray'))
 
             R = bicas.proc.L1L2.Routing.C;
 
-
-
-            if isnan(dlrUsing12)
+            dlrUsing12Float = dlrUsing12Fpa.cast('double', false).get_data(NaN);
+            if isnan(dlrUsing12Float)
                 R.DC_V1x = R.UNKNOWN_TO_NOWHERE;
                 R.AC_V1x = R.UNKNOWN_TO_NOWHERE;
-            elseif dlrUsing12
+            elseif dlrUsing12Float
                 R.DC_V1x = R.DC_V12;
                 R.AC_V1x = R.AC_V12;
             else

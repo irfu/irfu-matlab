@@ -115,6 +115,8 @@ EMIDP
     parts of the MException .identifier string field (error message ID).
     NOTE: "Component" has a special meaning in the context of error
     message IDs. Therefore uses the term "part" instead.
+FPA
+    Class bicas.utils.FillPositionsArray
 FTF
     Forward Transfer Function = TF that describes the conversion of physical
     INPUT to OUTPUT (not the reverse). Cf. ITF.

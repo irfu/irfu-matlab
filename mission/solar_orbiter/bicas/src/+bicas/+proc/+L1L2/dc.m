@@ -214,11 +214,12 @@ classdef dc
                 % NaN=unknown/fill value.
                 
                 % NOTE: Temporary variable, "13".
-                dlrUsing13zv = PreDc.Zv.HK_BIA_MODE_DIFF_PROBE;
-                bNan = isnan(dlrUsing13zv);
-                dlrUsing13zv(bNan) = 0;
-                dlrUsing12zv       = double(~dlrUsing13zv);
-                dlrUsing12zv(bNan) = NaN;
+%                 dlrUsing13zv = PreDc.Zv.HK_BIA_MODE_DIFF_PROBE;
+%                 bNan = isnan(dlrUsing13zv);
+%                 dlrUsing13zv(bNan) = 0;
+%                 dlrUsing12zv       = double(~dlrUsing13zv);
+%                 dlrUsing12zv(bNan) = NaN;
+                dlrUsing12Fpa = PreDc.ZvFpa.HK_BIA_MODE_DIFF_PROBE.convert(@(x) (~x), 'logical', false);
             end
             
             iCalibLZv    = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
@@ -247,7 +248,7 @@ classdef dc
                 PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
                 PreDc.Zv.ufv, ...
                 PreDc.Zv.lfrRx, ...
-                dlrUsing12zv, ...
+                dlrUsing12Fpa.cast('double', false).get_data(NaN), ...
                 iCalibLZv, ...
                 iCalibHZv);
 
@@ -259,7 +260,7 @@ classdef dc
                 iLast  = iLastList (iSs);
 
                 SsAsrSamplesAVoltMap = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
-                    PreDc, dlrUsing12zv, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
+                    PreDc, dlrUsing12Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
 
                 % Add demuxed sequence to the to-be complete set of records.
                 AsrSamplesAVoltMap.setRows(SsAsrSamplesAVoltMap, [iFirst:iLast]');
@@ -276,7 +277,9 @@ classdef dc
 
         % Calibrate and demux all BLTS channels for one subsequence.
         function SsAsrSamplesAVolt = calibrate_demux_subsequence(...
-                PreDc, dlrUsing12zv, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L)
+                PreDc, dlrUsing12Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L)
+            % PROPOSAL: Move indexing outside function.
+            
             % IMPLEMENTATION NOTE: Function created to make loop in
             % calibrate_demux_voltages() smaller and more easy-to-understand.
 
@@ -288,7 +291,7 @@ classdef dc
             iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
             CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
             ufv_ss                     = PreDc.Zv.ufv(                    iFirst);
-            dlrUsing12_ss              = dlrUsing12zv(                    iFirst);
+            dlrUsing12Fpa_ss           = dlrUsing12Fpa(                   iFirst);
             iCalibL_ss                 = iCalibLZv(                       iFirst);
             iCalibH_ss                 = iCalibHZv(                       iFirst);
 
@@ -317,7 +320,9 @@ classdef dc
                     iFirst, iLast, ...
                     bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
                     bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
-                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, ...
+                    MUX_SET_ss, DIFF_GAIN_ss, ...
+                    dlrUsing12Fpa_ss.cast('double', false).get_data(NaN), ...
+                    freqHz_ss, ...
                     iCalibL_ss, iCalibH_ss, ufv_ss, ...
                     CALIBRATION_TABLE_INDEX_ss(1), ...
                     CALIBRATION_TABLE_INDEX_ss(2))
@@ -327,7 +332,7 @@ classdef dc
             % DEMULTIPLEXER: FIND ASR-BLTS ROUTINGS
             %=======================================
             DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
-                MUX_SET_ss, dlrUsing12_ss);
+                MUX_SET_ss, dlrUsing12Fpa_ss);
 
 
 

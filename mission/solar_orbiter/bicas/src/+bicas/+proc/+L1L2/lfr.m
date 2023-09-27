@@ -154,7 +154,7 @@ classdef lfr
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN', 'HK_BIA_MODE_DIFF_PROBE'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN', 'Fpa_HK_BIA_MODE_DIFF_PROBE'}, {})
             
             % ASSERTIONS: CDF
             bicas.proc.utils.assert_increasing(...
@@ -219,7 +219,8 @@ classdef lfr
 
 
 
-            Zv = [];
+            Zv    = [];
+            ZvFpa = [];
 
             Zv.samplesCaTm    = cell(5,1);
             Zv.samplesCaTm{1} = single(InSci.Zv.V);
@@ -237,7 +238,7 @@ classdef lfr
             Zv.BW                      = InSci.Zv.BW;
             Zv.ufv                     = ~logical(InSci.Zv.BW);
             Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
-            Zv.HK_BIA_MODE_DIFF_PROBE  = HkSciTime.HK_BIA_MODE_DIFF_PROBE;
+            ZvFpa.HK_BIA_MODE_DIFF_PROBE = HkSciTime.Fpa_HK_BIA_MODE_DIFF_PROBE;
             Zv.iLsf                    = iLsfZv;
 
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
@@ -291,7 +292,7 @@ classdef lfr
             Ga.OBS_ID    = InSci.Ga.OBS_ID;
             Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
             
-            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isLfrSurvSwf, true, false);
+            PreDc = bicas.proc.L1L2.PreDc(Zv, ZvFpa, Ga, C.isLfrSurvSwf, true, false);
 
         end    % process_CDF_to_PreDC
 
