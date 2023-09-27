@@ -196,7 +196,31 @@ classdef dc
                 nan(nRecords, nSamplesPerRecordChannel), ...
                 bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA);
 
-            dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
+            % Set dlrUsing12zv
+            % ----------------
+            if 0
+                % Use hardcoded values
+                % --------------------
+                % IMPLEMENTATION NOTE: This exists for historical reasons and
+                % should eventually be abolished, together with the function
+                % called below..
+                dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
+            else
+                % Use HK
+                % ------
+                % IMPLEMENTATION NOTE: HK contains the inverted value compared
+                % to what BICAS uses. Inverting the boolean value is non-trivial
+                % since the code uses float to represent a boolean value, with
+                % NaN=unknown/fill value.
+                
+                % NOTE: Temporary variable, "13".
+                dlrUsing13zv = PreDc.Zv.HK_BIA_MODE_DIFF_PROBE;
+                bNan = isnan(dlrUsing13zv);
+                dlrUsing13zv(bNan) = 0;
+                dlrUsing12zv       = double(~dlrUsing13zv);
+                dlrUsing12zv(bNan) = NaN;
+            end
+            
             iCalibLZv    = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
             iCalibHZv    = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
 

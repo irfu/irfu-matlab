@@ -223,8 +223,19 @@ classdef L1L2
 
 
 
+            %===============================
+            % Derive HK_BIA_MODE_DIFF_PROBE
+            %===============================
+            HkSciTime.HK_BIA_MODE_DIFF_PROBE = bicas.utils.interpolate_nearest(...
+                hkEpochExtrapMargin, ...
+                hkEpoch, ...
+                InHk.Zv.HK_BIA_MODE_DIFF_PROBE, ...
+                InSci.Zv.Epoch);
+
+
+
             % ASSERTIONS
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN', 'HK_BIA_MODE_DIFF_PROBE'}, {})
         end
 
 

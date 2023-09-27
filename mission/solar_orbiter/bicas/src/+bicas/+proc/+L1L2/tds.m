@@ -179,7 +179,7 @@ classdef tds
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN', 'HK_BIA_MODE_DIFF_PROBE'}, {})
 
             C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
 
@@ -224,6 +224,7 @@ classdef tds
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
             Zv.MUX_SET                 = HkSciTime.MUX_SET;
             Zv.DIFF_GAIN               = HkSciTime.DIFF_GAIN;
+            Zv.HK_BIA_MODE_DIFF_PROBE  = HkSciTime.HK_BIA_MODE_DIFF_PROBE;
             Zv.ufv                     = false(nRecords, 1);
             Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
