@@ -18,48 +18,61 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
         
         
         function test_basic(testCase)
+            % Test sequences of operations on a single Map.
+            % Exlude setRows().
             
-            % Adds key-values, zero rows, char keys, 'empty'.
+            % ==============================================
+            % Adds key-values, zero rows, char keys, 'empty'
+            % ==============================================
             V1 = zeros(0, 1);
             V2 = ones( 0, 1, 2);
             
             M = bicas.utils.SameRowsMap('char', 0, 'empty');
+            
             testCase.assertEqual(M.keys(), cell(0, 1))
             testCase.assertEqual(M.length, 0)
             testCase.assertEqual(M.nRows,  0)
-            
+            bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {}, {})
+
             M.add('K1', V1)
+            
             testCase.assertEqual(M.keys,   {'K1'})
             testCase.assertEqual(M.length, 1)
-            
+            bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K1'}, {V1})            
             testCase.assertFalse(M.isKey('K2'))
+            
             M.add('K2', V2)
-            testCase.assertTrue(bicas.utils.SameRowsMap.key_sets_equal(...
-                M.keys(), {'K1', 'K2'} ...
-            ))
+            
             testCase.assertEqual(M.length, 2)
-            testCase.assertTrue(M.isKey('K2'))
+            testCase.assertTrue( M.isKey('K2'))
+            
+            % Test different orders. ==> Effectively testing the helper
+            % function "test_keys_values()".
+            bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K2', 'K1'}, {V2, V1})
+            bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K1', 'K2'}, {V1, V2})
             
             testCase.assertEqual(M.get('K1'), V1);
             testCase.assertEqual(M.get('K2'), V2);
             testCase.assertEqual(M.nRows,  0)
             
-
-            
-            % Zero number of constant values.
+            % =================================================
+            % Zero number of constant values (test constructor)
+            % =================================================
             M = bicas.utils.SameRowsMap('double', 3, 'constant', [1;2;3], {});
             testCase.assertEqual(M.nRows, 3)
-            
 
-            
+            % ======================================
             % double keys, non-zero rows, 'constant'
-            M = bicas.utils.SameRowsMap('double', 3, 'constant', [1;2;3], {9});
+            % ======================================
+            V = [1;2;3];
+            M = bicas.utils.SameRowsMap('double', 3, 'constant', V, {9});
             testCase.assertEqual(M.nRows, 3)
-            testCase.assertEqual(M.get(9), [1;2;3])
-            
-            
+            testCase.assertEqual(M.get(9), V)
+            bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {9}, {V})
 
-            % Initial value has inconsistent number of rows.
+            % =============================================
+            % Initial value has inconsistent number of rows
+            % =============================================
             testCase.assertError(...
                 @() (bicas.utils.SameRowsMap('double', 3, 'constant', [1;2])), ...
                 ?MException)
@@ -224,6 +237,34 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
     %########################
     %########################
     methods(Static, Access=private)
+        
+        
+        
+        % Helper function. Test that Map returns correct values for methods
+        % .keys() and .values(). Takes into account that keys/values may be in
+        % a different order than specified.
+        function test_keys_values(testCase, Map, expKeysCa, expValuesCa)
+            % NOTE: Implementation should permit both numbers and strings as
+            % keys, mixed.
+            
+            actKeysCa   = Map.keys();
+            actValuesCa = Map.values();
+            
+            testCase.assertTrue(bicas.utils.SameRowsMap.key_sets_equal(actKeysCa, expKeysCa))
+            
+            for iAct = 1:numel(actKeysCa)
+                for iExp = 1:numel(expKeysCa)
+                    if isequal(actKeysCa{iAct}, expKeysCa{iExp})
+                        actValue = actValuesCa{iAct};
+                        expValue = expValuesCa{iExp};
+                        testCase.assertEqual(actValue, expValue)
+                    end
+                end
+            end
+            
+        end
+        
+        
         
     end    % methods(Static, Access=private)
 
