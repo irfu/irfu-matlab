@@ -3,7 +3,7 @@ function [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
 % [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
-% dataType is one of : 'defatt','defeph','defq', 'predq'
+% dataType is one of : 'defatt','defeph','defq', 'predq', 'predeph'
 
 if(~exist(fullFilename,'file'))
   errStr = ['File not found. ', fullFilename];
@@ -33,7 +33,7 @@ switch lower(dataType)
     % (where doy is day of year and mmm is milliseconds)
     % Column 10 Z-Phase (in degrees).
     formatSpec='%f-%f%s %*f %*f %*f %*f %*f %*f %*f %*f %f %f %f %f %f %f %f %f %f %f %*[^\n]';
-  case 'defeph'
+  case {'defeph', 'predeph'}
     % DEFEPH file:
     % The DEFEPH files start with a header, the number of lines with
     % header in not constant and this file does not contain things like
@@ -116,7 +116,7 @@ switch lower(dataType)
     fs = fields(dataIN);
     for idxFs=1:length(fs), dataIN.(fs{idxFs})(idxBad) = []; end
 
-  case 'defeph'
+  case {'defeph', 'predeph'}
     % Convert time to fromat TT2000 using the irf_time function by first
     % converting [yyyy, doy] to a 'yyyy-mm-dd' string, then add the
     % remaining 'HH:MM:SS.mmm' string (excluding the "/") which was read
