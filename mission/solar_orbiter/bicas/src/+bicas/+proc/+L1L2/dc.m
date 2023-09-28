@@ -104,9 +104,12 @@ classdef dc
             [zvUfv, Zv.QUALITY_FLAG, Zv.L2_QUALITY_BITMASK] = ...
                 bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);
             clear ZvIn
-            %
-            [Zv.DemuxerOutput, Zv.currentAAmpere] = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
+            
+            % NOTE: Modifies DemuxerOutput !
+            Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
                 PreDc.Zv.Epoch, DemuxerOutput, currentAAmpere, zvUfv, L);
+            Zv.DemuxerOutput = DemuxerOutput;
+            clear DemuxerOutput
             
 
             
