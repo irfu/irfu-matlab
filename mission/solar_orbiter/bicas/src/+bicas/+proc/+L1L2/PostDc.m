@@ -31,7 +31,7 @@ classdef PostDc
 
         function obj = PostDc(Zv)
             irf.assert.struct(Zv, ...
-                {'DemuxerOutput', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
+                {'AsrSamplesAVoltSrm', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
             
             obj.Zv = Zv;
 

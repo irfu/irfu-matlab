@@ -486,22 +486,23 @@ classdef utils
         %
         % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
         % ===========================================================
-        % PreDc.Zv.samplesCaTm    : Cell array of arrays.
-        % PostDc.Zv.DemuxerOutput : Struct of arrays.
+        % PreDc.Zv.samplesCaTm      : Cell array of arrays.
+        % PostDc.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
 
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
         % PROPOSAL: Implement using new features in irf.assert.sizes().
         % TODO-NI: Function only used for cases where ALL fields should have
         %          same number of rows? (Due to previous refactoring.)
-        % PROBLEM: Function is an obstacle to converting DemuxerOutput to class.
-        %   NOTE: DemuxerOutput class should ensure INTERNALLY consistent array
+        % PROBLEM: Function is an obstacle to converting AsrSamplesAVoltSrm to
+        %          a class.
+        %   NOTE: An AsrSamplesAVoltSrm class should ensure INTERNALLY consistent array
         %         sizes, but not consistent with a parent struct.
         %   PROPOSAL: Special case for the specific class.
         %   PROPOSAL: Convert all "Zv" data structs into class that enforces what
         %             this function tests.
         %   PROPOSAL: Redefine as  ~assert_ZV_struct().
-        %       PRO: Special case for future class DemuxerOutput is more
+        %       PRO: Special case for future class AsrSamplesAVoltSrm is more
         %            natural.
 
             fieldNamesList1 = fieldnames(S);

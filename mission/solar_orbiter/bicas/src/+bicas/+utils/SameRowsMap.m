@@ -32,7 +32,7 @@ classdef SameRowsMap < handle
     % NOTE: Examples of usage for ZV collections:
     %   currentTmCa
     %   AsrMap (while building)
-    %   AsrMap (final) / DemuxerOutput
+    %   AsrMap (final)
     %   PreDc/PostDc.Zv
     %
     % PROPOSAL: Fixed set of keys.

@@ -50,7 +50,7 @@ classdef dc
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
-            DemuxerOutputSrm = ...
+            AsrSamplesAVoltSrm = ...
                 bicas.proc.L1L2.dc.calibrate_demux_voltages(PreDc, Cal, L);
 
 
@@ -102,11 +102,11 @@ classdef dc
                 bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);
             clear ZvIn
             
-            % NOTE: Modifies DemuxerOutputSrm !
+            % NOTE: Modifies AsrSamplesAVoltSrm !
             Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
-                PreDc.Zv.Epoch, DemuxerOutputSrm, currentAAmpere, zvUfv, L);
-            Zv.DemuxerOutput = DemuxerOutputSrm;
-            clear DemuxerOutputSrm
+                PreDc.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
+            Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
+            clear AsrSamplesAVoltSrm
             
 
             
