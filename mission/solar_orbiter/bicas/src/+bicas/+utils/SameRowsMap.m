@@ -235,7 +235,7 @@ classdef SameRowsMap < handle
             assert(isnumeric(iRowsArray) && iscolumn(iRowsArray))
             assert(size(iRowsArray, 1) == Map2.nRows)
             
-            assert(bicas.utils.SameRowsMap.key_sets_equal(obj.keys, Map2.keys))
+            assert(bicas.utils.SameRowsMap.object_sets_isequaln(obj.keys, Map2.keys))
             
             keysCa = obj.keys();
             for keyCa = keysCa(:)'
@@ -283,7 +283,7 @@ classdef SameRowsMap < handle
             
             % IMPLEMENTATION NOTE: Must support the case of zero keys.
             
-            if ~bicas.utils.SameRowsMap.key_sets_equal(obj1.keys, obj2.keys)
+            if ~bicas.utils.SameRowsMap.object_sets_isequaln(obj1.keys, obj2.keys)
                 equals = false;
                 return
             elseif obj1.nRows ~= obj2.nRows
@@ -340,27 +340,22 @@ classdef SameRowsMap < handle
         
         
         
-        function assert_legal_key_set(keysCa)
-            keysCa = cellfun(@bicas.utils.SameRowsMap.normalize_key, keysCa, 'UniformOutput', false);
-            irf.assert.castring_set(keysCa)
+        % Whether two sets (arrays) of arbitrary objects are set equal.
+        %
+        % NOTE: Compare objects, not handles. NaN == NaN.
+        % NOTE: Ignores duplicated objects within arrays.        
+        function equal = object_sets_isequaln(Ar1, Ar2)
+            % PROPOSAL: Convert into generic function.
+            %   PROPOSAL: bicas.utils.* .
+
+            % IMPLEMENTATION NOTE: Should not be most optimal implementation,
+            % but good enough.
+            equal = bicas.utils.SameRowsMap.is_subset_isequaln(Ar1, Ar2) ...
+                && bicas.utils.SameRowsMap.is_subset_isequaln(Ar2, Ar1);
         end
-
-
-
-        function equal = key_sets_equal(keySetCa1, keySetCa2)
-            % PROPOSAL: Abandon normalization. Use for loops and isequaln().
-            %   PROPOSAL: Implement via general-purpose function.
-            %   PROPOSAL: Return pair of index arrays to matching elements in each set.
-            %       TODO-DEC: How handle input arrays which are not sets
-            %       (contain doubles)?
-            keySetCa1 = cellfun(@bicas.utils.SameRowsMap.normalize_key, keySetCa1, 'UniformOutput', false);
-            keySetCa2 = cellfun(@bicas.utils.SameRowsMap.normalize_key, keySetCa2, 'UniformOutput', false);
-            
-            equal = isempty(setxor(keySetCa1, keySetCa2));
-        end
-
-
-
+        
+        
+        
     end
 
 
@@ -371,34 +366,44 @@ classdef SameRowsMap < handle
     %########################
     %########################
     methods(Static, Access=private)
-
-
-
-        % IMPLEMENTATION NOTE: Implemented on the assumption that keys which
-        % are strings/char and numeric can be mixed, which is not true in
-        % the current implementation since containers.Map does not support
-        % it.
+        
+        
+        
+        % Whether Ar1 is a subset of Ar2.
         %
-        % IMPLEMENTATION NOTE: MATLAB's set operations (setxor) seem to
-        % support numbers and strings, but not mixed. Therefore using hack
-        % to convert all to strings before set operations on keys.
-        %
-        % NOTE: Will not distinguish between different numeric types (e.g.
-        % double and single).
-        function key = normalize_key(key)
-            % IMPLEMENTATION NOTE: Add prefix to string in both cases, in
-            % case the original string coincides with string version of a
-            % number (e.g. string key "3").
-            if isnumeric(key)
-                key = ['n', num2str(key)];
-            else
-                key = ['s', key];
+        % NOTE: Compare objects, not handles. NaN == NaN.
+        % NOTE: Ignores duplicated objects within arrays.        
+        function isSubset = is_subset_isequaln(Ar1, Ar2)
+            % PROPOSAL: Convert into generic function.
+            %   PROPOSAL: bicas.utils.* .
+            
+            for i = 1:numel(Ar1)
+                if isempty(bicas.utils.SameRowsMap.find_first_isequaln(Ar1(i), Ar2))
+                    % CASE: Ar1(i) not found in Ar2
+                    isSubset = false;
+                    return
+                end
             end
+            
+            isSubset = true;
+        end
+        
+        
+        
+        % First index into Ar for which isequaln(x, Ar(i)).
+        function i = find_first_isequaln(x, Ar)
+
+            for i = 1:numel(Ar)
+                if isequaln(x, Ar(i))
+                    return
+                end
+            end
+            i = [];
         end
 
 
-
-    end
+        
+    end    % methods
 
 
 

@@ -162,11 +162,11 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
         
         
         
-        function test_key_sets_equal(testCase)
+        function test_object_sets_isequaln(testCase)
             
             % One output variable.
             function test(keysCa1, keysCa2, expEqual)
-                actEqual = bicas.utils.SameRowsMap.key_sets_equal(keysCa1, keysCa2);
+                actEqual = bicas.utils.SameRowsMap.object_sets_isequaln(keysCa1, keysCa2);
                 testCase.assertEqual(actEqual, expEqual)
             end
 
@@ -250,7 +250,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             actKeysCa   = Map.keys();
             actValuesCa = Map.values();
             
-            testCase.assertTrue(bicas.utils.SameRowsMap.key_sets_equal(actKeysCa, expKeysCa))
+            testCase.assertTrue(bicas.utils.SameRowsMap.object_sets_isequaln(actKeysCa, expKeysCa))
             
             for iAct = 1:numel(actKeysCa)
                 for iExp = 1:numel(expKeysCa)
