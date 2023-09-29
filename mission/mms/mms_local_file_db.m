@@ -428,7 +428,7 @@ classdef mms_local_file_db < mms_file_db
         ANC_VARS.defatt = {'wphase','zra','zdec','zphase','lra','ldec',...
           'lphase','pra','pdec','pphase'};
         ANC_VARS.defeph = {'r','v'};
-        ANS_VARS.predeph = ANC_VARS.defeph;
+        ANC_VARS.predeph = ANC_VARS.defeph;
         ANC_VARS.defq = {'quality', 'scale'};
         ANC_VARS.predq = ANC_VARS.defq;
         if ~isempty(intersect(varName,...
