@@ -195,15 +195,15 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 % NOTE: Implicitly asserts that all fields are present.
                 % NOTE: Must account for that some fields may be NaN, and
                 %       therefore can not be checked against relations.
-                assert_relation(ActAsSrm.get(C.DC_V1.s),  ActAsSrm.get(C.DC_V12.s), ActAsSrm.get(C.DC_V2.s))
-                assert_relation(ActAsSrm.get(C.DC_V2.s),  ActAsSrm.get(C.DC_V23.s), ActAsSrm.get(C.DC_V3.s))
-                assert_relation(ActAsSrm.get(C.DC_V1.s),  ActAsSrm.get(C.DC_V13.s), ActAsSrm.get(C.DC_V3.s))
+                assert_relation(ActAsSrm(C.DC_V1.s),  ActAsSrm(C.DC_V12.s), ActAsSrm(C.DC_V2.s))
+                assert_relation(ActAsSrm(C.DC_V2.s),  ActAsSrm(C.DC_V23.s), ActAsSrm(C.DC_V3.s))
+                assert_relation(ActAsSrm(C.DC_V1.s),  ActAsSrm(C.DC_V13.s), ActAsSrm(C.DC_V3.s))
                 
                 % DC. All diffs
-                assert_relation(ActAsSrm.get(C.DC_V13.s), ActAsSrm.get(C.DC_V12.s), ActAsSrm.get(C.DC_V23.s))
+                assert_relation(ActAsSrm(C.DC_V13.s), ActAsSrm(C.DC_V12.s), ActAsSrm(C.DC_V23.s))
                 
                 % AC. All diffs
-                assert_relation(ActAsSrm.get(C.AC_V13.s), ActAsSrm.get(C.AC_V12.s), ActAsSrm.get(C.AC_V23.s))
+                assert_relation(ActAsSrm(C.AC_V13.s), ActAsSrm(C.AC_V12.s), ActAsSrm(C.AC_V23.s))
             end
 
 

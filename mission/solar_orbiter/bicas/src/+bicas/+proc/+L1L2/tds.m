@@ -318,7 +318,7 @@ classdef tds
 
 
             nRecords                 = size(SciPreDc.Zv.Epoch, 1);
-            nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V1'), 2);
+            nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
 
             OutSci = [];
 
@@ -361,17 +361,17 @@ classdef tds
                 OutSci.Zv.EDC = tempNaN;
                 OutSci.Zv.EAC = tempNaN;
 
-                OutSci.Zv.VDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V1');
-                OutSci.Zv.VDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V2');
-                OutSci.Zv.VDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V3');
+                OutSci.Zv.VDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
+                OutSci.Zv.VDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
+                OutSci.Zv.VDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
 
-                OutSci.Zv.EDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V12');
-                OutSci.Zv.EDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V13');
-                OutSci.Zv.EDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V23');
+                OutSci.Zv.EDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
+                OutSci.Zv.EDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
+                OutSci.Zv.EDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
 
-                OutSci.Zv.EAC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('AC_V12');
-                OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('AC_V13');
-                OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('AC_V23');
+                OutSci.Zv.EAC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
+                OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
+                OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
 
             elseif C.isSwf
 
@@ -401,17 +401,17 @@ classdef tds
                 OutSci.Zv.EDC = tempNaN;
                 OutSci.Zv.EAC = tempNaN;
 
-                OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V1');
-                OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V2');
-                OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V3');
+                OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
+                OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
+                OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
 
-                OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V12');
-                OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V13');
-                OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('DC_V23');
+                OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
+                OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
+                OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
 
-                OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('AC_V12');
-                OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('AC_V13');
-                OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm.get('AC_V23');
+                OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
+                OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
+                OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
 
             else
                 error('BICAS:Assertion:IllegalArgument', ...

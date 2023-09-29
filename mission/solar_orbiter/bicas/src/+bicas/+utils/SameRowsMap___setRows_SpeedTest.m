@@ -56,7 +56,7 @@ function tSec = speed_test_setRows(nArrayRows, nArrayCols)
     end
     tSec = toc(t);
     
-    %assert(all(isnan(M1.get('K')), 'all'))
+    assert(all(isnan(M1('K')), 'all'))
 end
 
 

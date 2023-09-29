@@ -303,7 +303,7 @@ classdef demuxer
             % for deriving the entire size (samples per record), until possibly
             % using a future bicas.utils.SameSizeTypeMap instead.
             %tempNaN = nan(AsMap.nRows(), 1);
-            tempNaN = nan(size(AsrSamplesAVoltSrm.get(keysCa{1})));
+            tempNaN = nan(size(AsrSamplesAVoltSrm(keysCa{1})));
 
             for asidNameCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA'
                 asidName = asidNameCa{1};
@@ -370,9 +370,9 @@ classdef demuxer
             e2 = AsSrm.isKey(asid2.s);
             e3 = AsSrm.isKey(asid3.s);
 
-            if     ~e1 &&  e2 &&  e3   AsSrm.add(asid1.s, AsSrm.get(asid2.s) + AsSrm.get(asid3.s));
-            elseif  e1 && ~e2 &&  e3   AsSrm.add(asid2.s, AsSrm.get(asid1.s) - AsSrm.get(asid3.s));
-            elseif  e1 &&  e2 && ~e3   AsSrm.add(asid3.s, AsSrm.get(asid1.s) - AsSrm.get(asid2.s));
+            if     ~e1 &&  e2 &&  e3   AsSrm.add(asid1.s, AsSrm(asid2.s) + AsSrm(asid3.s));
+            elseif  e1 && ~e2 &&  e3   AsSrm.add(asid2.s, AsSrm(asid1.s) - AsSrm(asid3.s));
+            elseif  e1 &&  e2 && ~e3   AsSrm.add(asid3.s, AsSrm(asid1.s) - AsSrm(asid2.s));
             end
         end
 

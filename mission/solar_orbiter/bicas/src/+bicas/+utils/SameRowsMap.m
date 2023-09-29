@@ -266,8 +266,28 @@ classdef SameRowsMap < handle
 
 
 
-        function value = get(obj, key)
-            value = obj.Map(key).v;
+        function varargout = subsref(obj, S)
+
+            switch(S(1).type)
+                case '()'
+                    assert(isscalar(S))
+                    assert(isscalar(S.subs), 'Illegal index. Must be exactly one argument.')
+                    
+                    if isnumeric(S.subs{1})
+                        assert(isscalar(S.subs{1}), 'Illegal index. Value must be scalar.')
+                    end
+                    
+                    % IMPLEMENTATION NOTE: Only intended for singular values,
+                    % whether strings or numbers. Should not support indices
+                    % like "1,2", colons, or "end".
+                    varargout = {obj.Map(S.subs{1}).v};
+
+                otherwise
+                    % CASE: {} or .
+                    
+                    % Fail for {}. % Call method/property.
+                    [varargout{1:nargout}] = builtin('subsref', obj, S);
+            end
         end
 
 
@@ -298,10 +318,8 @@ classdef SameRowsMap < handle
             for i = 1:numel(keysCa)
                 key = keysCa{i};
                 
-                % IMPLEMENTATION NOTE: Using methods for accessing data bypasses
-                % the indirection introduced by using bicas.utils.HandleWrapper.
-                value1 = obj1.get(key);
-                value2 = obj2.get(key);
+                value1 = obj1.Map(key).v;
+                value2 = obj2.Map(key).v;
                 
                 % NOTE: NaN == NaN ==> Use isequaln().
                 if ~isequaln(value1, value2) || ~isequal(class(value1), class(value2))

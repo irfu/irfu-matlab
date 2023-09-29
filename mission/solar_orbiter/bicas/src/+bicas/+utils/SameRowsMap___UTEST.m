@@ -51,8 +51,8 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K2', 'K1'}, {V2, V1})
             bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K1', 'K2'}, {V1, V2})
             
-            testCase.assertEqual(M.get('K1'), V1);
-            testCase.assertEqual(M.get('K2'), V2);
+            testCase.assertEqual(M('K1'), V1);
+            testCase.assertEqual(M('K2'), V2);
             testCase.assertEqual(M.nRows,  0)
             
             % =================================================
@@ -67,7 +67,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             V = [1;2;3];
             M = bicas.utils.SameRowsMap('double', 3, 'constant', V, {9});
             testCase.assertEqual(M.nRows, 3)
-            testCase.assertEqual(M.get(9), V)
+            testCase.assertEqual(M(9), V)
             bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {9}, {V})
 
             % =============================================
@@ -88,7 +88,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             M2 = bicas.utils.SameRowsMap('char', 0, 'empty');
             M2.add('K2', zeros(0,0))
             M1.setRows(M2, zeros(0,1))
-            testCase.assertEqual(M1.get('K2'), zeros(0,0))
+            testCase.assertEqual(M1('K2'), zeros(0,0))
             
             % Insert zero rows into non-zero rows.
             M1 = bicas.utils.SameRowsMap('char', 3, 'empty');
@@ -96,7 +96,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             M2 = bicas.utils.SameRowsMap('char', 0, 'empty');
             M2.add('K2', zeros(0,0))
             M1.setRows(M2, zeros(0,1))
-            testCase.assertEqual(M1.get('K2'), zeros(3,0))
+            testCase.assertEqual(M1('K2'), zeros(3,0))
 
             % Preserve type
             M1 = bicas.utils.SameRowsMap('char', 4, 'empty');
@@ -104,7 +104,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             M2 = bicas.utils.SameRowsMap('char', 2, 'empty');
             M2.add('K2', int16([[8;9]]))
             M1.setRows(M2, [2;3])
-            testCase.assertEqual(M1.get('K2'), int16([1;8;9;4]))
+            testCase.assertEqual(M1('K2'), int16([1;8;9;4]))
 
 
 
@@ -133,7 +133,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             
             V2              = V1;
             V2([3,2], :, :) = V1(1:2, :, :);
-            testCase.assertEqual(M1.get('K'), V2)
+            testCase.assertEqual(M1('K'), V2)
 
 
 
