@@ -10,9 +10,12 @@
 % ===================
 % bicas.utils.SameRowsMap.setRows() can be slow if storing data directly as
 % values in containers.Map, presumably since preallocation does not work.
-% Therefore storing all values indirectly via handle class objects, which
-% (presumably) makes it possible to modify arrays without implicit copying by
-% MATLAB, thus increasing performance. Does seem to work.
+% Therefore storing all values indirectly via handle class objects
+% (bicas.utils.HandleWrapper), which (apparently) makes it possible to modify
+% arrays without implicit copying by MATLAB, thus increasing performance. Does
+% seem to work. Since the class's internal data structure uses handle objects,
+% the class itself also has to be a handle class, to avoid that internal handle
+% objects are shared between different instances of bicas.utils.SameRowsMap.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -215,11 +218,19 @@ classdef SameRowsMap < handle
         % iRowsArray
         %       Column array. Same length as number of rows in Map2 fields.
         %       Specifies the rows that shall be overwritten.
+        %       NOTE: Can not use logical indexing.
         %
         %
         function setRows(obj, Map2, iRowsArray)
             % NOTE: Could add support for other (future) custom-made types of
-            % Maps.
+            %       Maps.
+            % PROPOSAL: Support logical indexing.
+            % PROPOSAL: Support using an 1-row SRM for overwriting N rows.
+            % PROPOSAL: Implement method by overloading indexing notation:
+            %           subsasgn.
+            %   PRO: Using subsasgn() for assigning internal arrays might handle
+            %        (1) logical indexing), (2) assigning multiple rows with
+            %        1-row SRM.
             assert(isa(Map2, 'bicas.utils.SameRowsMap'))
             assert(isnumeric(iRowsArray) && iscolumn(iRowsArray))
             assert(size(iRowsArray, 1) == Map2.nRows)

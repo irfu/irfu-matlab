@@ -120,6 +120,9 @@ FPA
 FTF
     Forward Transfer Function = TF that describes the conversion of physical
     INPUT to OUTPUT (not the reverse). Cf. ITF.
+FV
+    Field Value.
+    (CDF) Fill Value.
 GA
     CDF Global Attributes
 ICD

@@ -32,7 +32,13 @@
 %
 function yArray2 = interpolate_nearest(xMargin, xArray1, yArray1, xArray2)
     % NOTE: In principle a weakness that y2 is always a double. Should ideally
-    % be same MATLAB class as y1.
+    %       be same MATLAB class as y1.
+    %
+    % PROPOSAL: Make y values work for any MATLAB class: input and output (same type).
+    %   PRO: Useful for integer+logical ZVs while caring about fill values.
+    %   CON: interp1() requires floats. Would have to convert integers and
+    %        logicals to floats and back.
+    %       PRO: Can not represent fill values.
     
     assert(isscalar(xMargin) && (xMargin >= 0))
     
@@ -44,7 +50,7 @@ function yArray2 = interpolate_nearest(xMargin, xArray1, yArray1, xArray2)
         return
         
     elseif nX1 == 1
-        % NOTE: Special treatment of scalar x1 since "interp1" does not support
+        % NOTE: Special treatment of scalar x1 since interp1() does not support
         % it.
         assert(isfinite(xArray1))
         
@@ -52,6 +58,7 @@ function yArray2 = interpolate_nearest(xMargin, xArray1, yArray1, xArray2)
         yArray2(xArray2 == xArray1) = yArray1;
         
     else
+        % IMPLEMENTATION NOTE: interp1() requires floats.
         % Required by interp1.
         xArray1 = double(xArray1);
         yArray1 = double(yArray1);

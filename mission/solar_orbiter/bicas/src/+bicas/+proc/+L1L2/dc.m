@@ -20,9 +20,6 @@ classdef dc
     %           should only accept the needed ZVs and variables.
     %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
     %         from struct.
-    %
-    % PROPOSAL: Make AsrSamplesAVolt/DemuxerOutput a class.
-    %   PRO: Can initialize right-sized empty fields in constructor.
 
 
 
@@ -53,7 +50,7 @@ classdef dc
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
-            DemuxerOutput = ...
+            DemuxerOutputSrm = ...
                 bicas.proc.L1L2.dc.calibrate_demux_voltages(PreDc, Cal, L);
 
 
@@ -93,9 +90,9 @@ classdef dc
 
 
 
-            % ####################################
-            % Set quality variables, and apply UFV
-            % ####################################
+            % ##############################################
+            % Set quality variables, and apply UFV (to data)
+            % ##############################################
             ZvIn = struct(...
                 'Epoch',          PreDc.Zv.Epoch, ...
                 'ufv',            PreDc.Zv.ufv, ...
@@ -105,11 +102,11 @@ classdef dc
                 bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);
             clear ZvIn
             
-            % NOTE: Modifies DemuxerOutput !
+            % NOTE: Modifies DemuxerOutputSrm !
             Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
-                PreDc.Zv.Epoch, DemuxerOutput, currentAAmpere, zvUfv, L);
-            Zv.DemuxerOutput = DemuxerOutput;
-            clear DemuxerOutput
+                PreDc.Zv.Epoch, DemuxerOutputSrm, currentAAmpere, zvUfv, L);
+            Zv.DemuxerOutput = DemuxerOutputSrm;
+            clear DemuxerOutputSrm
             
 
             
@@ -144,7 +141,7 @@ classdef dc
         % NOTE: Can handle arrays of any size if the sizes are
         % consistent.
         %
-        function AsrSamplesAVoltMap = calibrate_demux_voltages(PreDc, Cal, L)
+        function AsrSamplesAVoltSrm = calibrate_demux_voltages(PreDc, Cal, L)
         % PROPOSAL: Sequence of constant settings includes dt (for CWF)
         %   PROBLEM: Not clear how to implement it since it is a property of two records, not one.
         %       PROPOSAL: Use other utility function(s).
@@ -194,7 +191,7 @@ classdef dc
             % ------------
             % IMPLEMENTATION NOTE: Preallocation is very important for speeding
             % up LFR-SWF which tends to be broken into subsequences of 1 record.
-            AsrSamplesAVoltMap = bicas.utils.SameRowsMap(...
+            AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
                 'char', nRecords, 'constant', ...
                 nan(nRecords, nSamplesPerRecordChannel), ...
                 bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA);
@@ -262,11 +259,11 @@ classdef dc
                 iFirst = iFirstList(iSs);
                 iLast  = iLastList (iSs);
 
-                SsAsrSamplesAVoltMap = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
+                SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
                     PreDc, dlrUsing12Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
 
                 % Add demuxed sequence to the to-be complete set of records.
-                AsrSamplesAVoltMap.setRows(SsAsrSamplesAVoltMap, [iFirst:iLast]');
+                AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iFirst:iLast]');
             end
 
 
@@ -279,9 +276,16 @@ classdef dc
 
 
         % Calibrate and demux all BLTS channels for one subsequence.
-        function SsAsrSamplesAVolt = calibrate_demux_subsequence(...
+        function SsAsrSamplesAVoltSrm = calibrate_demux_subsequence(...
                 PreDc, dlrUsing12Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L)
             % PROPOSAL: Move indexing outside function.
+            %   CON: Must then submit all the PreDc.Zv.* variables separately
+            %        (six variables). ==> More arguments.
+            %       CON: Eliminates indexing arguments iFirst & iLast.
+            %       CON-PROPOSAL: Use bicas.utils.SameRowsMap and reduce
+            %                     the indexing to one operation (method call).
+            %           PRO: Could include the additional non-PreDc.Zv
+            %                variables in the same object.
             
             % IMPLEMENTATION NOTE: Function created to make loop in
             % calibrate_demux_voltages() smaller and more easy-to-understand.
@@ -377,7 +381,7 @@ classdef dc
             %====================================
             % DEMULTIPLEXER: DERIVE MISSING ASRs
             %====================================
-            SsAsrSamplesAVolt = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
+            SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
                 [DemuxerRoutingArray.dest], ssSamplesAVoltCa);
         end    % calibrate_demux_subsequence
 

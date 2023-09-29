@@ -69,7 +69,7 @@ classdef demuxer
         %       Implies that AsrSamplesVolt fields are correctly
         %       sized with NaN values.
         % dlrUsing12
-        %       See bicas.proc.L1L2.demuxer_latching_relay().
+        %       Scalar value. See bicas.proc.L1L2.demuxer_latching_relay().
         %
         %
         % RETURN VALUES
@@ -205,7 +205,7 @@ classdef demuxer
         % =============
         % SsidArray
         %       Length-5 array of SSIDs. One SSID per BLTS.
-        % AsrSamplesVolt
+        % AsrSamplesAVoltSrm
         %       Samples for all ASRs (singles, diffs) which can
         %       possibly be derived from the BLTS (BIAS_i). Those
         %       which can not be derived are correctly sized
@@ -214,7 +214,7 @@ classdef demuxer
         % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVolt to denote that
         % they are organized by BLTS and ASRs respectively.
         %
-        function AsrSamplesAVoltMap = calibrated_BLTSs_to_ASRs(SdidArray, bltsSamplesAVoltCa)
+        function AsrSamplesAVoltSrm = calibrated_BLTSs_to_ASRs(SdidArray, bltsSamplesAVoltCa)
             % PROPOSAL: Log message for mux=NaN.
             
             % ASSERTIONS
@@ -225,9 +225,9 @@ classdef demuxer
             % Should ideally check for all indices, but one helps.
             assert(isnumeric(bltsSamplesAVoltCa{1}))
             
-            AsrSamplesAVoltMap = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
+            AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
                 bltsSamplesAVoltCa, SdidArray);
-            AsrSamplesAVoltMap = bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltMap);
+            bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltSrm);
         end
         
         
@@ -246,12 +246,18 @@ classdef demuxer
         %
         % NOTE: Only public for the purpose of automatic testing.
         %
-        function AsrSamplesAVoltMap = complement_ASR(AsrSamplesAVoltMap)
-            assert(isa(AsrSamplesAVoltMap, 'bicas.utils.SameRowsMap'))
+        %
+        % ARGUMENTS
+        % =========
+        % AsrSamplesAVoltSrm
+        %       NOTE: Modifies argument.
+        %
+        function complement_ASR(AsrSamplesAVoltSrm)
+            assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
             
             % Shorten variable names.
-            C  = bicas.proc.L1L2.AntennaSignalId.C;
-            AsMap = AsrSamplesAVoltMap;
+            C     = bicas.proc.L1L2.AntennaSignalId.C;
+            AsSrm = AsrSamplesAVoltSrm;
             
             %================
             % Derive AC ASRs
@@ -259,23 +265,23 @@ classdef demuxer
             % AC ASRs are separate from DC. Does not have to be in loop.
             % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
             % nFnAfter == 9 condition does not work.
-            AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.AC_V13, C.AC_V12, C.AC_V23);
+            AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.AC_V13, C.AC_V12, C.AC_V23);
 
             %================
             % Derive DC ASRs
             %================
-            nAsidBefore = AsMap.length;
+            nAsidBefore = AsSrm.length;
             while true
                 % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
                 % deriving diffs since it is better to derive a diff from
                 % (initially available) diffs rather than singles, directly or
                 % indirectly, if possible.
-                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V13, C.DC_V12, C.DC_V23);
+                AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V13, C.DC_V12, C.DC_V23);
                 
-                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V1,  C.DC_V12, C.DC_V2);
-                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V1,  C.DC_V13, C.DC_V3);
-                AsMap = bicas.proc.L1L2.demuxer.complete_relation(AsMap, C.DC_V2,  C.DC_V23, C.DC_V3);
-                nAsidAfter = AsMap.length;
+                AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V12, C.DC_V2);
+                AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V13, C.DC_V3);
+                AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V2,  C.DC_V23, C.DC_V3);
+                nAsidAfter = AsSrm.length;
                 
                 if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
                     break
@@ -291,22 +297,21 @@ classdef demuxer
             %   Ex: mux=1,2,3
             %===================================================================            
             
-            keysCa = AsrSamplesAVoltMap.keys;
+            keysCa = AsSrm.keys;
 
             % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
             % for deriving the entire size (samples per record), until possibly
             % using a future bicas.utils.SameSizeTypeMap instead.
             %tempNaN = nan(AsMap.nRows(), 1);
-            tempNaN = nan(size(AsrSamplesAVoltMap.get(keysCa{1})));
+            tempNaN = nan(size(AsrSamplesAVoltSrm.get(keysCa{1})));
 
             for asidNameCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA'
                 asidName = asidNameCa{1};
-                if ~AsMap.isKey(asidName)
-                    AsMap.add(asidName, tempNaN);
+                if ~AsSrm.isKey(asidName)
+                    AsSrm.add(asidName, tempNaN);
                 end
             end
             
-            AsrSamplesAVoltMap = AsMap;
         end
         
         
@@ -325,7 +330,7 @@ classdef demuxer
     
         % Given FIVE BLTS sample arrays, copy those which correspond to ASRs
         % (five or fewer!) into a bicas.utils.SameRowsMap.
-        function AsrSamplesMap = assign_ASR_samples_from_BLTS(...
+        function AsrSamplesSrm = assign_ASR_samples_from_BLTS(...
                 BltsSamplesCa, SdidArray)
 
             % ASSERTIONS
@@ -333,10 +338,10 @@ classdef demuxer
             assert(numel(SdidArray) == 5)
 
             nRows = size(BltsSamplesCa{1}, 1);
-            AsrSamplesMap = bicas.utils.SameRowsMap('char', nRows, 'empty');
+            AsrSamplesSrm = bicas.utils.SameRowsMap('char', nRows, 'empty');
             for iBlts = 1:5
                 if ~isequal(SdidArray(iBlts).value, 'Nowhere')
-                    AsrSamplesMap.add(...
+                    AsrSamplesSrm.add(...
                         SdidArray(iBlts).value.s, ...
                         BltsSamplesCa{iBlts});
                 end
@@ -351,8 +356,6 @@ classdef demuxer
         %
         % ARGUMENTS
         % =========
-        % AsMap
-        %       containers.Map
         % asid1, asid2, asid3
         %       ASID names key strings which may or may not be keys in AsMap. If
         %       exactly one of them is missing in "As", then the key+value is
@@ -360,14 +363,16 @@ classdef demuxer
         %       through the relationship value1 = value2 + value3.
         %       In other cases, "AsMap" is returned unmodified.
         %
-        function AsMap = complete_relation(AsMap, asid1, asid2, asid3)
-            e1 = AsMap.isKey(asid1.s);
-            e2 = AsMap.isKey(asid2.s);
-            e3 = AsMap.isKey(asid3.s);
+        function AsSrm = complete_relation(AsSrm, asid1, asid2, asid3)
+            assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
+            
+            e1 = AsSrm.isKey(asid1.s);
+            e2 = AsSrm.isKey(asid2.s);
+            e3 = AsSrm.isKey(asid3.s);
 
-            if     ~e1 &&  e2 &&  e3   AsMap.add(asid1.s, AsMap.get(asid2.s) + AsMap.get(asid3.s));
-            elseif  e1 && ~e2 &&  e3   AsMap.add(asid2.s, AsMap.get(asid1.s) - AsMap.get(asid3.s));
-            elseif  e1 &&  e2 && ~e3   AsMap.add(asid3.s, AsMap.get(asid1.s) - AsMap.get(asid2.s));
+            if     ~e1 &&  e2 &&  e3   AsSrm.add(asid1.s, AsSrm.get(asid2.s) + AsSrm.get(asid3.s));
+            elseif  e1 && ~e2 &&  e3   AsSrm.add(asid2.s, AsSrm.get(asid1.s) - AsSrm.get(asid3.s));
+            elseif  e1 &&  e2 && ~e3   AsSrm.add(asid3.s, AsSrm.get(asid1.s) - AsSrm.get(asid2.s));
             end
         end
 

@@ -175,11 +175,11 @@ classdef qual
         %       ASR samples.
         %       NOTE: Handle object which is MODIFIED.
         function zvCurrentAAmpere = set_voltage_current_fill_value(...
-                zv_Epoch, zvDemuxerOutput, zvCurrentAAmpere, zvUfv, L)
+                zv_Epoch, zvDemuxerOutputSrm, zvCurrentAAmpere, zvUfv, L)
             % PROPOSAL: Separate functions for ASR samples and bias currents.
             
             assert(islogical(zvUfv))
-            assert(isa(zvDemuxerOutput, 'bicas.utils.SameRowsMap'))
+            assert(isa(zvDemuxerOutputSrm, 'bicas.utils.SameRowsMap'))
 
             % Log
             logHeaderStr = sprintf(...
@@ -195,15 +195,17 @@ classdef qual
             % ====================================
             % NOTE: Should really use future bicas.utils.SameSizeTypeMap here
             %       which contains size on other dimensions.
-            keysCa = zvDemuxerOutput.keys;
-            nSpr = size(zvDemuxerOutput.get(keysCa{1}), 2);
+            keysCa = zvDemuxerOutputSrm.keys;
+            nSpr   = size(zvDemuxerOutputSrm.get(keysCa{1}), 2);
 
             % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.setRows() can not
             % handle logical indexing.
             iUfv = find(zvUfv);
             nanArray = NaN(size(iUfv, 1), nSpr);
-            tempSrm = bicas.utils.SameRowsMap('char', size(nanArray, 1), 'constant', nanArray, zvDemuxerOutput.keys);
-            zvDemuxerOutput.setRows(tempSrm, iUfv);
+            tempSrm = bicas.utils.SameRowsMap(...
+                'char', size(nanArray, 1), ...
+                'constant', nanArray, zvDemuxerOutputSrm.keys);
+            zvDemuxerOutputSrm.setRows(tempSrm, iUfv);
         end
 
 

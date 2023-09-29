@@ -48,19 +48,21 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             % with "snapshots" (SPR>1).
             TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(3,2)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
             
-            AsidTestSamplesMap = containers.Map(TEST_DATA_CA(:, 1), TEST_DATA_CA(:, 2));
+            AsidTestSamplesSrm = containers.Map(TEST_DATA_CA(:, 1), TEST_DATA_CA(:, 2));
             nRows = size(TEST_DATA_CA{1,2}, 1);
 
             
 
             % Function for testing mux=0-4. All those all those map (route) ASR
             % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
-            function test_mux01234(demuxMode, dlrUsing12, ExpRoutingArray, ExpAsrSamplesAVoltMap)
+            function test_mux01234(demuxMode, dlrUsing12, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
+                assert(isa(ExpAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
+                
                 % Convert ExpRoutingArray --> BltsSamplesCa (test argument)
                 BltsSamplesCa = {};
                 for routing = ExpRoutingArray
                     if isa(routing.src.value, 'bicas.proc.L1L2.AntennaSignalId')                    
-                        BltsSamplesCa{end+1} = AsidTestSamplesMap(routing.src.value.s);
+                        BltsSamplesCa{end+1} = AsidTestSamplesSrm(routing.src.value.s);
                     else
                         BltsSamplesCa{end+1} = TEST_DATA_UNKNOWN;
                     end
@@ -71,12 +73,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
                     demuxMode, dlrUsing12Fpa);
-                ActAsrSamplesAVoltMap = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
+                ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
                     [ActRoutingArray.dest], BltsSamplesCa);
                 
                 % ASSERTIONS
                 testCase.assertEqual(ActRoutingArray, ExpRoutingArray)
-                testCase.assertTrue(ActAsrSamplesAVoltMap == ExpAsrSamplesAVoltMap)
+                testCase.assertTrue(ActAsrSamplesAVoltSrm == ExpAsrSamplesAVoltSrm)
             end
 
 
@@ -86,7 +88,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             %
             % varargin{i} == 0 or 1. Determines whether constant or NaN will
             % be used.
-            function AsMap = selected_ASR_samples(varargin)
+            function AsSrm = selected_ASR_samples(varargin)
                 assert(nargin == 9)
                 
                 % Define which varargin{i} corresponds to which ASID.
@@ -95,16 +97,16 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                     A.DC_V12, A.DC_V13, A.DC_V23, ...
                     A.AC_V12, A.AC_V13, A.AC_V23 ...
                 };
-                AsMap = bicas.utils.SameRowsMap('char', nRows, 'empty');
+                AsSrm = bicas.utils.SameRowsMap('char', nRows, 'empty');
                 
                 for iAsid = 1:9
                     asidName = ASID_CA{iAsid}.s;
 
-                    samplesAVolt = AsidTestSamplesMap(asidName);
+                    samplesAVolt = AsidTestSamplesSrm(asidName);
                     if ~varargin{iAsid}
                         samplesAVolt = samplesAVolt * NaN;
                     end
-                    AsMap.add(asidName, samplesAVolt);
+                    AsSrm.add(asidName, samplesAVolt);
                 end
             end
 
@@ -158,6 +160,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         function test_complement_ASR(testCase)
             
             C = bicas.proc.L1L2.AntennaSignalId.C;
+
+
             
             % Local utility function.
             function assert_relation(A, B, C)
@@ -167,40 +171,42 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 testCase.verifyEqual( A(b), B(b) + C(b) )
             end
 
-        
+
         
             % NOTE: Only verifies the correct relationships between the return
             % results. Does not verify entire return results.
             % BUG/NOTE: Will fail if function returns NaN when it should not!
             function test(inputFieldsCa)
                 nRows = size(inputFieldsCa{2}, 1);
-                AsMap = bicas.utils.SameRowsMap('char', nRows, 'empty');
+                AsSrm = bicas.utils.SameRowsMap('char', nRows, 'empty');
                 for i = 1:(numel(inputFieldsCa)/2)
                     asid  = inputFieldsCa{2*i-1};
                     value = inputFieldsCa{2*i  };
                     %AsMap(key) = value;
-                    AsMap.add(asid.s, value)
+                    AsSrm.add(asid.s, value)
                 end
                 
                 % RUN FUNCTION TO BE TESTED
-                ActAsMap = bicas.proc.L1L2.demuxer.complement_ASR(AsMap);
+                bicas.proc.L1L2.demuxer.complement_ASR(AsSrm);
+                ActAsSrm = AsSrm;
 
                 % Test all possible relationsships.
                 %
                 % NOTE: Implicitly asserts that all fields are present.
                 % NOTE: Must account for that some fields may be NaN, and
                 %       therefore can not be checked against relations.
-                assert_relation(ActAsMap.get(C.DC_V1.s),  ActAsMap.get(C.DC_V12.s), ActAsMap.get(C.DC_V2.s))
-                assert_relation(ActAsMap.get(C.DC_V2.s),  ActAsMap.get(C.DC_V23.s), ActAsMap.get(C.DC_V3.s))
-                assert_relation(ActAsMap.get(C.DC_V1.s),  ActAsMap.get(C.DC_V13.s), ActAsMap.get(C.DC_V3.s))
+                assert_relation(ActAsSrm.get(C.DC_V1.s),  ActAsSrm.get(C.DC_V12.s), ActAsSrm.get(C.DC_V2.s))
+                assert_relation(ActAsSrm.get(C.DC_V2.s),  ActAsSrm.get(C.DC_V23.s), ActAsSrm.get(C.DC_V3.s))
+                assert_relation(ActAsSrm.get(C.DC_V1.s),  ActAsSrm.get(C.DC_V13.s), ActAsSrm.get(C.DC_V3.s))
                 
                 % DC. All diffs
-                assert_relation(ActAsMap.get(C.DC_V13.s), ActAsMap.get(C.DC_V12.s), ActAsMap.get(C.DC_V23.s))
+                assert_relation(ActAsSrm.get(C.DC_V13.s), ActAsSrm.get(C.DC_V12.s), ActAsSrm.get(C.DC_V23.s))
                 
                 % AC. All diffs
-                assert_relation(ActAsMap.get(C.AC_V13.s), ActAsMap.get(C.AC_V12.s), ActAsMap.get(C.AC_V23.s))
+                assert_relation(ActAsSrm.get(C.AC_V13.s), ActAsSrm.get(C.AC_V12.s), ActAsSrm.get(C.AC_V23.s))
             end
-            %===================================================================
+
+
 
             test({C.DC_V1, 19, C.DC_V12, 27, C.DC_V23, 33,    C.AC_V12, 54, C.AC_V23, 75});    % mux=0, dlrUsing12=1
             test({C.DC_V1, 19, C.DC_V13, 27, C.DC_V23, 33,    C.AC_V13, 54, C.AC_V23, 75});    % mux=0, dlrUsing12=0
