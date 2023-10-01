@@ -185,25 +185,33 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
         
         % NOTE: Does not test method per se.
         function test_equal(testCase)
-            % TODO: NaN
             
+            % NOTE: Having no keys with different KeyType means that the key
+            % values do not distinguish the KeyTypes.
             M1a = bicas.utils.SameRowsMap('char',   1, 'empty');
             M1b = bicas.utils.SameRowsMap('char',   1, 'empty');
-            M2  = bicas.utils.SameRowsMap('char',   2, 'empty');
-            M3  = bicas.utils.SameRowsMap('double', 1, 'empty');
+            M2a = bicas.utils.SameRowsMap('double', 1, 'empty');
+            M2b = bicas.utils.SameRowsMap('double', 1, 'empty');
+            M3  = bicas.utils.SameRowsMap('char',   2, 'empty');
             
             testCase.assertTrue( M1a == M1b)
-            testCase.assertFalse(M1a == M2)
-            testCase.assertFalse(M1a == M3)
+            testCase.assertFalse(M1a == M2a)
+            testCase.assertTrue( M2a == M2b)
+            testCase.assertFalse(M1a == M3 )
             
-            M1a = bicas.utils.SameRowsMap('char', 1, 'constant', [1],   {'K1', 'K2'});
-            M1b = bicas.utils.SameRowsMap('char', 1, 'constant', [1],   {'K1', 'K2'});
-            M2  = bicas.utils.SameRowsMap('char', 1, 'constant', [9],   {'K1', 'K2'});
-            M3  = bicas.utils.SameRowsMap('char', 2, 'constant', [1;2], {'K1', 'K2'});
-            
-            testCase.assertTrue( (M1a == M1b))
-            testCase.assertFalse((M1a == M2))
-            testCase.assertFalse((M1a == M3))
+            M1a = bicas.utils.SameRowsMap('char',   1, 'constant', [1],   {'K1', 'K2'});
+            M1b = bicas.utils.SameRowsMap('char',   1, 'constant', [1],   {'K1', 'K2'});
+            M2a = bicas.utils.SameRowsMap('double', 1, 'constant', [9],   {1, 2});
+            M2b = bicas.utils.SameRowsMap('double', 1, 'constant', [9],   {1, 2});            
+            M3  = bicas.utils.SameRowsMap('char',   1, 'constant', [9],   {'K1', 'K2'});
+            M4  = bicas.utils.SameRowsMap('char',   2, 'constant', [1;2], {'K1', 'K2'});
+
+            testCase.assertTrue( M1a == M1b)
+            testCase.assertTrue( M2a == M2b)
+            testCase.assertFalse(M1a == M3 )
+            testCase.assertFalse(M1a == M4)
+            testCase.assertFalse(M2a == M3)
+            testCase.assertFalse(M2a == M4)
             
             % NaN, different key order.
             M1a = bicas.utils.SameRowsMap('char', 1, 'empty');
@@ -215,14 +223,14 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
             
             testCase.assertTrue( M1a == M1b)
             testCase.assertTrue( M1a == M1b)
-            testCase.assertFalse(M1a == M2 )
+            testCase.assertFalse(M1a == M3 )
             
             % Different MATLAB classes.
             M1  = bicas.utils.SameRowsMap('char', 1, 'empty');
             M1.add('K1', [1])
-            M2  = bicas.utils.SameRowsMap('char', 1, 'empty');
-            M2.add('K1', int8([1]))
-            testCase.assertFalse(M1a == M2 )
+            M3  = bicas.utils.SameRowsMap('char', 1, 'empty');
+            M3.add('K1', int8([1]))
+            testCase.assertFalse(M1a == M3 )
         end
         
         

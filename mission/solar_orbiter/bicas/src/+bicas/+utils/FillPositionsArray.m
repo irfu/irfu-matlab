@@ -1,6 +1,6 @@
 %
 % Class for storing one arbitrary array together with information on which
-% positions are "fill positions" (elements which values should be ignored)
+% elements are "fill positions" (elements which values should be ignored)
 % without resorting to using fill values to represent them. Analogous to, and
 % inspired by, JUICE/RPWI GS pipeline's class FillPositionsArray.
 %
@@ -33,6 +33,8 @@ classdef FillPositionsArray   % < handle
     %   TODO-DEC: Name?
     %       .class, .matlabClass
     %   PROPOSAL: Read-only property.
+    %
+    % PROPOSAL: Turn fpAr into WriteAccess=private property
 
 
 
@@ -46,7 +48,7 @@ classdef FillPositionsArray   % < handle
 
         % Logical array of same size as dataAr. True<=>The corresponding
         % position in dataAr is a fill position where the value is irrelevant
-        % (and must be hidden from the user).
+        % and must be hidden from the user.
         fillPositionsAr
     end
 
@@ -101,7 +103,8 @@ classdef FillPositionsArray   % < handle
                     assert(isscalar(fillValue))
                     assert(strcmp(class(fillValue), class(dataAr)))
 
-                    % NOTE: Array operation. Can not use isequaln()
+                    % NOTE: Array operation. Can not use isequaln(). Needs
+                    % special case for NaN.
                     fillPositionsAr = (dataAr == fillValue) | (isnan(dataAr) & isnan(fillValue));
                     clear fillValue
 
@@ -139,7 +142,7 @@ classdef FillPositionsArray   % < handle
         
         
         
-        % Convert FPA to other FPA using a specified array operation
+        % Convert FPA to other FPA using a specified ARRAY operation
         % (array-->array)
         %
         % NOTE: Can not be used for combining data from multiple FPAs.
@@ -149,11 +152,11 @@ classdef FillPositionsArray   % < handle
         % =========
         % fhArrayOperation
         %       Function handle: outputArray = f(inputArray).
-        % fillValue
-        %       Fill value used for the input to the function.
-        % outputType
+        % outputClass
         %       MATLAB class to which the operation output will be cast. Is the
         %       type of the new FPA.
+        % fillValue
+        %       Fill value used for the input to the function.
         %
         %
         % RETURN VALUE
@@ -194,7 +197,6 @@ classdef FillPositionsArray   % < handle
             % PROPOSAL: Make fillValue argument optional for cases where
             %           fillValue could be automatically derived depending on
             %           conversion.
-            %   CON: Failure would depend on hidden fill position values.
             
             Fpa = obj.convert(...
                 @(x) (cast(x, outputClass)), ...
@@ -204,17 +206,30 @@ classdef FillPositionsArray   % < handle
 
 
         % Operator overloading: ==
+        %
+        % NOTE: Ignores values at fill positions.
+        % NOTE: NaN counts as equal to itself.
+        %
+        %
+        % RETURN VALUE
+        % ============
+        % r
+        %       Scalar. Logical. Whether the two FPAs are equal.
+        %       NOTE: Always scalar. Therefore can not do element-wise
+        %       comparison.
         function r = eq(obj1, obj2)
+            
             % Tentatively permit subclassing of this class, though requiring
             % identical classes. Subclass should be able to use this method to
-            % e.g. implement its own counterpart method.
+            % e.g. implement its own counterpart method. Unclear what is the
+            % best behaviour.
             if ~strcmp(class(obj1), class(obj2))
                 r = false;
                 
             elseif ~strcmp(class(obj1.dataAr), class(obj2.dataAr))
                 r = false;
                 
-            elseif ~isequal(obj1.fillPositionsAr, obj2.fillPositionsAr)
+            elseif ~isequaln(obj1.fillPositionsAr, obj2.fillPositionsAr)
                 % NOTE: Indirectly checks equal .dataAr sizes.
                 r = false;
                 
@@ -226,6 +241,7 @@ classdef FillPositionsArray   % < handle
                 else
                     % CASE: Arrays are not empty.
                     fv = obj1.dataAr(1);   % Arbitrary fill value.
+                    % NOTE: NaN == NaN
                     r = isequaln(obj1.get_data(fv), obj2.get_data(fv));
                 end
             end
@@ -240,7 +256,7 @@ classdef FillPositionsArray   % < handle
 
 
 
-        % Indexing overloading: Array indexing, Fpa(i, j, ...)
+        % Indexing overloading: Array indexing for reading: Fpa(i, j, ...)
         function varargout = subsref(obj, S)
             switch S(1).type
                 case '()'

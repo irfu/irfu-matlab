@@ -32,10 +32,10 @@ classdef PostDc
         function obj = PostDc(Zv)
             irf.assert.struct(Zv, ...
                 {'AsrSamplesAVoltSrm', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
+            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
             
             obj.Zv = Zv;
 
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(obj.Zv);
         end
 
     end    % methods(Access=public)

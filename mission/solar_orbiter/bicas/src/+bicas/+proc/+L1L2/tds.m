@@ -192,7 +192,7 @@ classdef tds
                 ' increase monotonously.']...
             )
             [nRecords, WAVEFORM_DATA_nChannels, nCdfSamplesPerRecord] = irf.assert.sizes(...
-                InSci.Zv.Epoch, [-1], ...
+                InSci.Zv.Epoch,         [-1], ...
                 InSci.Zv.WAVEFORM_DATA, [-1, -2, -3]);
             if     C.isL1r   WAVEFORM_DATA_nChannels_expected = 3;
             elseif C.isL1    WAVEFORM_DATA_nChannels_expected = 8;
@@ -434,13 +434,7 @@ classdef tds
         
         
     end    % methods(Static)
-    
-    %########################
-    %########################
-    % PRIVATE STATIC METHODS
-    %########################
-    %########################
-    methods(Static, Access=private)
-    end    % methods(Static, Access=private)
+
+
 
 end

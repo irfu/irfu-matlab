@@ -121,10 +121,9 @@ FTF
     Forward Transfer Function = TF that describes the conversion of physical
     INPUT to OUTPUT (not the reverse). Cf. ITF.
 FV
-    Field Value.
-    (CDF) Fill Value.
+    (1) Field Value. (2) (CDF) Fill Value.
 GA
-    CDF Global Attributes
+    (CDF) Global Attributes
 ICD
     Interface Control Document
 ITF

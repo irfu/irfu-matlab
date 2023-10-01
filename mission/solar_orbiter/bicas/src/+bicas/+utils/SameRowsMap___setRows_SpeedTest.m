@@ -1,7 +1,9 @@
 %
 % Performance test for bicas.utils.SameRowsMap.setRows().
-% The performance of this function is critical to the performance of LFR-SWF
-% processing.
+%
+% The performance of that function is critical to the performance of LFR-SWF
+% processing. This code tests how modifying subsets of internal values scales
+% with the size of the pre-allocated internal variable.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -12,7 +14,7 @@ function SameRowsMap___setRows_SpeedTest
     N_DATA_POINTS    = 20;
     N_ARRAY_COLS     = 1024;
     N_ARRAY_ROWS_MIN = 1e1;
-    N_ARRAY_ROWS_MAX = 1e5;
+    N_ARRAY_ROWS_MAX = 1e4;
     FH = @speed_test_setRows;
     %FH = @speed_test_growing_array;
     %FH = @speed_test_preallocated_array;

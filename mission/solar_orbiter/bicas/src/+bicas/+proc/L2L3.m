@@ -305,7 +305,7 @@ classdef L2L3
 
 
 
-            nRecordsOsr = size(InLfrCwf.Zv.Epoch,    1);
+            nRecordsOsr = size(InLfrCwf.Zv.Epoch,   1);
             nRecordsDsr = size(InitialDsr.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L3.process_L2_to_L3', tTicToc, ...

@@ -8,6 +8,8 @@
 %
 classdef utils
     % PROPOSAL: Automatic test code.
+    % PROPOSAL: Rename.
+    %   PRO: "utils" implies that code is generic, while code seems to not be.
 
 
 
@@ -30,8 +32,8 @@ classdef utils
 
 
 
-        function utcStr = TT2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
+        function utcStr = TT2000_to_UTC_str(zvTt2000)
 
             bicas.utils.assert_ZV_Epoch(zvTt2000)
 

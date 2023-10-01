@@ -210,8 +210,10 @@ function SETTINGS = create_default_SETTINGS()
     % List of zVar names for which alternate fill value should be used when the
     % ZVs are loaded and interpreted.
     %S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {'IBIAS_1', 'IBIAS_2', 'IBIAS_3'})
+    % PROPOSAL: Abolish?!
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     cell(0,1))
     % Alternate fill value to use.
+    % PROPOSAL: Abolish?!
     S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES

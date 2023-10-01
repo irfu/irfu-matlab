@@ -39,8 +39,8 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     %=========================================================================
     L.log('info', 'Converting dataobj (CDF data structure) to PDV.')
     Zvs    = struct();
-    ZvFvs  = struct();
-    ZvsLog = struct();   % zVariables for logging.
+    ZvFv   = struct();
+    ZvsLog = struct();   % zVariables (name+value) for logging.
     zVariableNameList = fieldnames(DataObj.data);
     for iZv = 1:length(zVariableNameList)
         zvName  = zVariableNameList{iZv};
@@ -49,7 +49,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
         ZvsLog.(zvName) = zvValue;
         
         [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
-        ZvFvs.(zvName) = fillValue;
+        ZvFv.(zvName) = fillValue;
             
         %=================================================
         % Replace fill/pad values with NaN for FLOAT data
@@ -186,7 +186,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
 
 
     % Create return value.
-    Dataset = bicas.InputDataset(Zvs, ZvFvs, GlobalAttributes, filePath);
+    Dataset = bicas.InputDataset(Zvs, ZvFv, GlobalAttributes, filePath);
     
     
     
