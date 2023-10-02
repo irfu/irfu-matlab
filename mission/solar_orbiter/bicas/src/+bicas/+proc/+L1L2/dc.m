@@ -222,8 +222,8 @@ classdef dc
                 dlrUsing12Fpa = PreDc.ZvFpa.HK_BIA_MODE_DIFF_PROBE.convert(@(x) (~x), 'logical', false);
             end
             
-            iCalibLZv    = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
-            iCalibHZv    = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
+            iCalibLZv = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
+            iCalibHZv = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
 
 
 

@@ -67,7 +67,7 @@ classdef SameRowsMap < handle
 %       references).
 %
 % NOTE: Examples of usage for ZV collections:
-%   currentTmCa             (until bicas.utils.SameSizeTypeMap)
+%   samplesCaTm             (until bicas.utils.SameSizeTypeMap)
 %   AsrMap (while building) (until bicas.utils.SameSizeTypeMap)
 %   AsrMap (final)          (until bicas.utils.SameSizeTypeMap)
 %   PreDc/PostDc.Zv
@@ -285,7 +285,7 @@ classdef SameRowsMap < handle
             assert(isnumeric(iRowsArray) && iscolumn(iRowsArray))
             assert(size(iRowsArray, 1) == Map2.nRows)
             
-            assert(bicas.utils.SameRowsMap.object_sets_isequaln(obj.keys, Map2.keys))
+            assert(bicas.utils.object_sets_isequaln(obj.keys, Map2.keys))
             
             keysCa = obj.keys();
             for keyCa = keysCa(:)'
@@ -353,7 +353,7 @@ classdef SameRowsMap < handle
             
             % IMPLEMENTATION NOTE: Must support the case of zero keys.
             
-            if ~bicas.utils.SameRowsMap.object_sets_isequaln(obj1.keys, obj2.keys)
+            if ~bicas.utils.object_sets_isequaln(obj1.keys, obj2.keys)
                 equals = false;
                 return
             elseif obj1.nRows ~= obj2.nRows
@@ -393,35 +393,6 @@ classdef SameRowsMap < handle
 
 
 
-    %#######################
-    %#######################
-    % PUBLIC STATIC METHODS
-    %#######################
-    %#######################
-    methods(Static, Access=public)
-
-
-
-        % Whether two sets (arrays) of arbitrary objects are set equal.
-        %
-        % NOTE: Compare objects, not handles. NaN == NaN.
-        % NOTE: Ignores duplicated objects within arrays.        
-        function equal = object_sets_isequaln(Ar1, Ar2)
-            % PROPOSAL: Convert into generic function.
-            %   PROPOSAL: bicas.utils.* .
-
-            % IMPLEMENTATION NOTE: Should not be most optimal implementation,
-            % but good enough.
-            equal = bicas.utils.SameRowsMap.is_subset_isequaln(Ar1, Ar2) ...
-                && bicas.utils.SameRowsMap.is_subset_isequaln(Ar2, Ar1);
-        end
-        
-        
-        
-    end
-
-
-
     %########################
     %########################
     % PRIVATE STATIC METHODS
@@ -436,40 +407,6 @@ classdef SameRowsMap < handle
         end
         
         
-        
-        % Whether Ar1 is a subset of Ar2.
-        %
-        % NOTE: Compare objects, not handles. NaN == NaN.
-        % NOTE: Ignores duplicated objects within arrays.        
-        function isSubset = is_subset_isequaln(Ar1, Ar2)
-            % PROPOSAL: Convert into generic function.
-            %   PROPOSAL: bicas.utils.* .
-            
-            for i = 1:numel(Ar1)
-                if isempty(bicas.utils.SameRowsMap.find_first_isequaln(Ar1(i), Ar2))
-                    % CASE: Ar1(i) not found in Ar2
-                    isSubset = false;
-                    return
-                end
-            end
-            
-            isSubset = true;
-        end
-        
-        
-        
-        % First index into Ar for which isequaln(x, Ar(i)).
-        function i = find_first_isequaln(x, Ar)
-
-            for i = 1:numel(Ar)
-                if isequaln(x, Ar(i))
-                    return
-                end
-            end
-            i = [];
-        end
-
-
         
     end    % methods
 

@@ -21,6 +21,22 @@ classdef utils
     methods(Static)
 
 
+
+        % Whether two sets (arrays) of arbitrary objects are set equal.
+        %
+        % NOTE: Compare objects, not handles. NaN == NaN.
+        % NOTE: Ignores duplicated objects within arrays.        
+        function equal = object_sets_isequaln(Ar1, Ar2)
+            % PROPOSAL: Better name
+
+            % IMPLEMENTATION NOTE: Should not be most optimal implementation,
+            % but good enough.
+            equal = bicas.utils.is_subset_isequaln(Ar1, Ar2) ...
+                && bicas.utils.is_subset_isequaln(Ar2, Ar1);
+        end
+
+
+
         % Get path to the root of the BICAS directory structure.
         function bicasRootPath = get_BICAS_root_path()
             % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
@@ -185,6 +201,38 @@ classdef utils
 
 
 
+        % Whether Ar1 is a subset of Ar2.
+        %
+        % NOTE: Compare objects, not handles. NaN == NaN.
+        % NOTE: Ignores duplicated objects within arrays.        
+        function isSubset = is_subset_isequaln(Ar1, Ar2)
+            % PROPOSAL: Convert into generic function.
+            
+            for i = 1:numel(Ar1)
+                if isempty(bicas.utils.find_first_isequaln(Ar1(i), Ar2))
+                    % CASE: Ar1(i) not found in Ar2
+                    isSubset = false;
+                    return
+                end
+            end
+            
+            isSubset = true;
+        end
+        
+        
+        
+        % First index into Ar for which isequaln(x, Ar(i)).
+        function i = find_first_isequaln(x, Ar)
+            for i = 1:numel(Ar)
+                if isequaln(x, Ar(i))
+                    return
+                end
+            end
+            i = [];
+        end
+
+
+        
         function ColumnStrs = get_array_statistics_strings(...
                 varName, varValue, varType, SETTINGS)
         %
