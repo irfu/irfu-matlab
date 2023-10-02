@@ -486,7 +486,7 @@ classdef utils
         %
         % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
         % ===========================================================
-        % PreDc.Zv.samplesCaTm      : Cell array of arrays.
+        % PreDc.Zv.bltsSamplesTmCa  : Cell array of arrays.
         % PostDc.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
 
         % NOTE: Function name somewhat bad.

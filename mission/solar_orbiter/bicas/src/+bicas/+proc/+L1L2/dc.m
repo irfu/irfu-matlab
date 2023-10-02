@@ -175,15 +175,15 @@ classdef dc
 
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
-            assert(iscell(  PreDc.Zv.samplesCaTm))
-            irf.assert.vector(PreDc.Zv.samplesCaTm)
-            assert(numel(PreDc.Zv.samplesCaTm) == 5)
+            assert(iscell(  PreDc.Zv.bltsSamplesTmCa))
+            irf.assert.vector(PreDc.Zv.bltsSamplesTmCa)
+            assert(numel(PreDc.Zv.bltsSamplesTmCa) == 5)
             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
-                PreDc.Zv.samplesCaTm)
+                PreDc.Zv.bltsSamplesTmCa)
             [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
                 PreDc.Zv.MUX_SET,        [-1,  1], ...
                 PreDc.Zv.DIFF_GAIN,      [-1,  1], ...
-                PreDc.Zv.samplesCaTm{1}, [-1, -2]);
+                PreDc.Zv.bltsSamplesTmCa{1}, [-1, -2]);
 
 
 
@@ -303,8 +303,8 @@ classdef dc
             iCalibH_ss                 = iCalibHZv(                       iFirst);
 
             % Extract subsequence of DATA records to "demux".
-            ssSamplesCaTm = bicas.proc.utils.select_row_range_from_cell_comps(...
-                PreDc.Zv.samplesCaTm, iFirst, iLast);
+            ssBltsSamplesTmCa = bicas.proc.utils.select_row_range_from_cell_comps(...
+                PreDc.Zv.bltsSamplesTmCa, iFirst, iLast);
             % NOTE: "zVariable" (i.e. first index=record) for only the
             % current subsequence.
             ssZvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord(iFirst:iLast);
@@ -360,11 +360,11 @@ classdef dc
             %=====================
             % ITERATE OVER BLTS's
             %=====================
-            ssSamplesAVoltCa = cell(5,1);
+            ssBltsSamplesAVoltCa = cell(5,1);
             for iBlts = 1:5
-                ssSamplesAVoltCa{iBlts} = bicas.proc.L1L2.dc.calibrate_BLTS(...
+                ssBltsSamplesAVoltCa{iBlts} = bicas.proc.L1L2.dc.calibrate_BLTS(...
                     DemuxerRoutingArray(iBlts).src, ...
-                    ssSamplesCaTm{iBlts}, ...
+                    ssBltsSamplesTmCa{iBlts}, ...
                     iBlts, ...
                     PreDc.hasSnapshotFormat, ...
                     ssZvNValidSamplesPerRecord, ...
@@ -382,7 +382,7 @@ classdef dc
             % DEMULTIPLEXER: DERIVE MISSING ASRs
             %====================================
             SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
-                [DemuxerRoutingArray.dest], ssSamplesAVoltCa);
+                [DemuxerRoutingArray.dest], ssBltsSamplesAVoltCa);
         end    % calibrate_demux_subsequence
 
 
@@ -420,12 +420,12 @@ classdef dc
                 % ==> Calibrate (unless explicitly stated that should not)
 
                 if hasSnapshotFormat
-                    samplesCaTm = ...
+                    bltsSamplesTmCa = ...
                         bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
                             double(samplesTm), zvNValidSamplesPerRecord);
                 else
                     assert(all(zvNValidSamplesPerRecord == 1))
-                    samplesCaTm = {double(samplesTm)};
+                    bltsSamplesTmCa = {double(samplesTm)};
                 end
 
                 %######################
@@ -449,8 +449,8 @@ classdef dc
                 CalSettings.iCalibTimeH  = iCalibH;
                 CalSettings.iLsf         = iLsf;
                 %#######################################################
-                ssSamplesCaAVolt = Cal.calibrate_voltage_all(...
-                    dtSec, samplesCaTm, ...
+                ssBltsSamplesAVoltCa = Cal.calibrate_voltage_all(...
+                    dtSec, bltsSamplesTmCa, ...
                     isLfr, isTdsCwf, CalSettings, ...
                     CALIBRATION_TABLE_INDEX, ufv);
                 %#######################################################
@@ -458,11 +458,11 @@ classdef dc
                 if hasSnapshotFormat
                     [samplesAVolt, ~] = ...
                         bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
-                            ssSamplesCaAVolt, ...
+                            ssBltsSamplesAVoltCa, ...
                             size(samplesTm, 2));
                 else
                     % NOTE: Must be column array.
-                    samplesAVolt = ssSamplesCaAVolt{1};
+                    samplesAVolt = ssBltsSamplesAVoltCa{1};
                 end
             end
         end    % calibrate_BLTS

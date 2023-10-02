@@ -67,7 +67,7 @@ classdef SameRowsMap < handle
 %       references).
 %
 % NOTE: Examples of usage for ZV collections:
-%   samplesCaTm             (until bicas.utils.SameSizeTypeMap)
+%   bltsSamplesTmCa         (until bicas.utils.SameSizeTypeMap)
 %   AsrMap (while building) (until bicas.utils.SameSizeTypeMap)
 %   AsrMap (final)          (until bicas.utils.SameSizeTypeMap)
 %   PreDc/PostDc.Zv

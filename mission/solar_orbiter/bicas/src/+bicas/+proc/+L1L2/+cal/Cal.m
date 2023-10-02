@@ -553,8 +553,8 @@ classdef Cal < handle
         %           an illegal calibration configuration when argument is set
         %           to true.
         %
-        function samplesCaAVolt = calibrate_voltage_all(obj, ...
-                dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, ...
+        function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
+                dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, ...
                 zv_CALIBRATION_TABLE_INDEX, voltageNaN)
 
             % ASSERTIONS
@@ -583,19 +583,19 @@ classdef Cal < handle
 
             if obj.allVoltageCalibDisabled || voltageNaN
 
-                samplesCaAVolt = cell(size(samplesCaTm));
+                bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
 
-                for i = 1:numel(samplesCaTm)
+                for i = 1:numel(bltsSamplesTmCa)
                     if obj.allVoltageCalibDisabled
                         % CASE: Set voltages to TM values.
-                        samplesCaAVolt{i} = double(samplesCaTm{i});
+                        bltsSamplesAVoltCa{i} = double(bltsSamplesTmCa{i});
                     end
                     if voltageNaN
                         % CASE: Set voltages to NaN.
 
                         % IMPLEMENTATION NOTE: Potentially overwrites TM value
                         % set in above "if" statement.
-                        samplesCaAVolt{i} = nan(size(samplesCaTm{i}));
+                        bltsSamplesAVoltCa{i} = nan(size(bltsSamplesTmCa{i}));
                     end
                 end
 
@@ -605,20 +605,20 @@ classdef Cal < handle
                     %===========
                     % CASE: LFR
                     %===========
-                    samplesCaAVolt = obj.calibrate_voltage_BIAS_LFR(...
-                        dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
+                    bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_LFR(...
+                        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
                 else
                     %===========
                     % CASE: TDS
                     %===========
                     if isTdsCwf
                         % CASE: TDS CWF
-                        samplesCaAVolt = obj.calibrate_voltage_BIAS_TDS_CWF(...
-                            dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
+                        bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_TDS_CWF(...
+                            dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
                     else
                         % CASE: TDS RSWF
-                        samplesCaAVolt = obj.calibrate_voltage_BIAS_TDS_RSWF(...
-                            dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2);
+                        bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_TDS_RSWF(...
+                            dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
                     end
                 end
 
@@ -635,14 +635,14 @@ classdef Cal < handle
         %   .iBlts     : Scalar integer. 1..5.
         %   ...
         %
-        function samplesCaAVolt = calibrate_voltage_BIAS_LFR(obj, ...
-                dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
+        function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
+                dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
 
             % ASSERTIONS
-            irf.assert.vector(samplesCaTm)
-            assert(iscell(samplesCaTm))
+            irf.assert.vector(bltsSamplesTmCa)
+            assert(iscell(bltsSamplesTmCa))
             irf.assert.vector(dtSec)
-            assert(numel(samplesCaTm) == numel(dtSec))
+            assert(numel(bltsSamplesTmCa) == numel(dtSec))
 
 
 
@@ -655,13 +655,13 @@ classdef Cal < handle
             %====================================
             % CALIBRATE: LFR TM --> TM --> avolt
             %====================================
-            samplesCaAVolt = cell(size(samplesCaTm));
-            for i = 1:numel(samplesCaTm)
+            bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
+            for i = 1:numel(bltsSamplesTmCa)
 
                 % APPLY TRANSFER FUNCTION (BIAS + LFR)
                 tempSamplesAVolt = bicas.tf.apply_TF(...
                     dtSec(i), ...
-                    samplesCaTm{i}(:), ...
+                    bltsSamplesTmCa{i}(:), ...
                     CalibData.itfAvpt, ...
                     'method',                  obj.tfMethod, ...
                     'detrendingDegreeOf',      CalibData.detrendingDegreeOf, ...
@@ -673,7 +673,7 @@ classdef Cal < handle
                     'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 
                 % ADD BIAS offset
-                samplesCaAVolt{i} = tempSamplesAVolt + CalibData.BiasCalibData.offsetAVolt;
+                bltsSamplesAVoltCa{i} = tempSamplesAVolt + CalibData.BiasCalibData.offsetAVolt;
             end
         end
 
@@ -683,8 +683,8 @@ classdef Cal < handle
         % =========
         % See calibrate_voltage_BIAS_LFR.
         %
-        function samplesCaAVolt = calibrate_voltage_BIAS_TDS_CWF(obj, ...
-                dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
+        function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
+                dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
 
 %             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'Ssid', 'biasHighGain', ...
@@ -697,8 +697,8 @@ classdef Cal < handle
 
             % ASSERTIONS
             irf.assert.vector(dtSec)
-            assert(iscell(samplesCaTm))
-            assert(numel(samplesCaTm) == numel(dtSec))
+            assert(iscell(bltsSamplesTmCa))
+            assert(numel(bltsSamplesTmCa) == numel(dtSec))
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             assert(iNonBiasRct >= 1)
@@ -711,7 +711,7 @@ classdef Cal < handle
             end
 
             % Initialize empty output variable.
-            samplesCaAVolt = cell(size(samplesCaTm));
+            bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
 
             if ismember(iBlts, [1,2,3])
                 % CASE: BLTS 1-3 which TDS does support.
@@ -731,13 +731,13 @@ classdef Cal < handle
                     tdsFactorIvpt = RctList{iNonBiasRct}.factorsIvpt(iBlts);
                 end
 
-                for i = 1:numel(samplesCaTm)
+                for i = 1:numel(bltsSamplesTmCa)
 
                     %===============================================
                     % CALIBRATE: TDS TM --> TDS/BIAS interface volt
                     %===============================================
                     % MULTIPLICATION
-                    tempSamplesIVolt = tdsFactorIvpt * samplesCaTm{i};
+                    tempSamplesIVolt = tdsFactorIvpt * bltsSamplesTmCa{i};
 
                     %=====================================================
                     % CALIBRATE: TDS/BIAS interface volt --> antenna volt
@@ -757,15 +757,15 @@ classdef Cal < handle
                         'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 
                     % ADD BIAS OFFSET
-                    samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
+                    bltsSamplesAVoltCa{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
 
             else
                 % CASE: BLTS 4-5 which TDS does NOT support.
 
-                for i = 1:numel(samplesCaTm)
+                for i = 1:numel(bltsSamplesTmCa)
                     % Always return NaN.
-                    samplesCaAVolt{i} = NaN * samplesCaTm{i};
+                    bltsSamplesAVoltCa{i} = NaN * bltsSamplesTmCa{i};
                 end
             end
 
@@ -777,8 +777,8 @@ classdef Cal < handle
         % =========
         % See calibrate_voltage_BIAS_LFR.
         %
-        function samplesCaAVolt = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
-                dtSec, samplesCaTm, CalSettings, iNonBiasRct, cti2)
+        function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+                dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
             
 %             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'Ssid', 'biasHighGain', ...
@@ -791,8 +791,8 @@ classdef Cal < handle
 
             % ASSERTIONS
             irf.assert.vector(dtSec)
-            assert(iscell(samplesCaTm))
-            assert(numel(samplesCaTm) == numel(dtSec))
+            assert(iscell(bltsSamplesTmCa))
+            assert(numel(bltsSamplesTmCa) == numel(dtSec))
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             assert(iNonBiasRct >= 1)
@@ -813,7 +813,7 @@ classdef Cal < handle
                 Ssid, biasHighGain, iCalibTimeL, iCalibTimeH);
 
             % Initialize empty output variable.
-            samplesCaAVolt = cell(size(samplesCaTm));
+            bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
             if ismember(iBlts, [1,2,3])
 
                 %======================================
@@ -835,10 +835,10 @@ classdef Cal < handle
                 % CALIBRATE: TDS TM --> antenna volt
                 %====================================
                 % APPLY TRANSFER FUNCTION (BIAS + TDS-RSWF)
-                for i = 1:numel(samplesCaTm)
+                for i = 1:numel(bltsSamplesTmCa)
                     tempSamplesAVolt = bicas.tf.apply_TF(...
                         dtSec(i), ...
-                        samplesCaTm{i}(:), ...
+                        bltsSamplesTmCa{i}(:), ...
                         itfAvpt, ...
                         'method',                  obj.tfMethod, ...
                         'detrendingDegreeOf',      obj.dcDetrendingDegreeOf, ...
@@ -850,13 +850,13 @@ classdef Cal < handle
                         'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 
                     % ADD BIAS OFFSET
-                    samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
+                    bltsSamplesAVoltCa{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
             else
-                for i = 1:numel(samplesCaTm)
+                for i = 1:numel(bltsSamplesTmCa)
                     % CASE: BLTS 4-5 which TDS does not support.
                     % Always return NaN.
-                    samplesCaAVolt{i} = NaN * samplesCaTm{i};
+                    bltsSamplesAVoltCa{i} = NaN * bltsSamplesTmCa{i};
                 end
             end
 
