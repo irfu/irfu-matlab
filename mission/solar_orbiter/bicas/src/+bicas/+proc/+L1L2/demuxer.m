@@ -214,19 +214,17 @@ classdef demuxer
         % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVolt to denote that
         % they are organized by BLTS and ASRs respectively.
         %
-        function AsrSamplesAVoltSrm = calibrated_BLTSs_to_ASRs(SdidArray, bltsSamplesAVoltCa)
+        function AsrSamplesAVoltSrm = calibrated_BLTSs_to_ASRs(SdidArray, bltsSamplesAVolt)
             % PROPOSAL: Log message for mux=NaN.
             
             % ASSERTIONS
             assert(numel(SdidArray) == 5)
             assert(isa(SdidArray, 'bicas.proc.L1L2.SignalDestinationId'))
-            assert(iscell(bltsSamplesAVoltCa))            
-            assert(numel(bltsSamplesAVoltCa)==5)
-            % Should ideally check for all indices, but one helps.
-            assert(isnumeric(bltsSamplesAVoltCa{1}))
+            assert(isnumeric(bltsSamplesAVolt))
+            irf.assert.sizes(bltsSamplesAVolt, [-1, -2, 5])
             
             AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
-                bltsSamplesAVoltCa, SdidArray);
+                bltsSamplesAVolt, SdidArray);
             bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltSrm);
         end
         
@@ -331,19 +329,20 @@ classdef demuxer
         % Given FIVE BLTS sample arrays, copy those which correspond to ASRs
         % (five or fewer!) into a bicas.utils.SameRowsMap.
         function AsrSamplesSrm = assign_ASR_samples_from_BLTS(...
-                BltsSamplesCa, SdidArray)
+                bltsSamplesAVolt, SdidArray)
 
             % ASSERTIONS
-            assert(numel(BltsSamplesCa) == 5 && iscell(BltsSamplesCa))
             assert(numel(SdidArray) == 5)
+            assert(isnumeric(bltsSamplesAVolt))
+            irf.assert.sizes(bltsSamplesAVolt, [-1, -2, 5])
 
-            nRows = size(BltsSamplesCa{1}, 1);
+            nRows = size(bltsSamplesAVolt, 1);
             AsrSamplesSrm = bicas.utils.SameRowsMap('char', nRows, 'empty');
             for iBlts = 1:5
                 if ~isequal(SdidArray(iBlts).value, 'Nowhere')
                     AsrSamplesSrm.add(...
                         SdidArray(iBlts).value.s, ...
-                        BltsSamplesCa{iBlts});
+                        bltsSamplesAVolt(:, :, iBlts));
                 end
             end
         end

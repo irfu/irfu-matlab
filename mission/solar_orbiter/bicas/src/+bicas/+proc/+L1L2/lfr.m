@@ -222,14 +222,20 @@ classdef lfr
             Zv    = [];
             ZvFpa = [];
 
-            Zv.bltsSamplesTmCa    = cell(5,1);
-            Zv.bltsSamplesTmCa{1} = single(InSci.Zv.V);
+%             Zv.bltsSamplesTmCa    = cell(5,1);
+%             Zv.bltsSamplesTmCa{1} = single(InSci.Zv.V);
+%             % Copy values, except when zvRx==0 (==>NaN).
+%             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==0 );
+%             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==0 );
+%             Zv.bltsSamplesTmCa{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
+%             Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==1 );
+            Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
             % Copy values, except when zvRx==0 (==>NaN).
-            Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==0 );
-            Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==0 );
-            Zv.bltsSamplesTmCa{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
-            Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==1 );
-
+            Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==0 );
+            Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==0 );
+            Zv.bltsSamplesTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
+            Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==1 );
+            
             Zv.Epoch                   = InSci.Zv.Epoch;
             Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
                 zvFreqHz, nCdfSamplesPerRecord);

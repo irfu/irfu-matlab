@@ -562,6 +562,8 @@ classdef Cal < handle
 %             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'Ssid', 'biasHighGain', ...
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+            assert(iscell(bltsSamplesTmCa))
+            assert(isvector(bltsSamplesTmCa))
             irf.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
             assert(islogical(voltageNaN) && isscalar(voltageNaN))
 
@@ -640,7 +642,7 @@ classdef Cal < handle
 
             % ASSERTIONS
             irf.assert.vector(bltsSamplesTmCa)
-            assert(iscell(bltsSamplesTmCa))
+            assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
             irf.assert.vector(dtSec)
             assert(numel(bltsSamplesTmCa) == numel(dtSec))
 
@@ -697,7 +699,7 @@ classdef Cal < handle
 
             % ASSERTIONS
             irf.assert.vector(dtSec)
-            assert(iscell(bltsSamplesTmCa))
+            assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
             assert(numel(bltsSamplesTmCa) == numel(dtSec))
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
@@ -791,7 +793,7 @@ classdef Cal < handle
 
             % ASSERTIONS
             irf.assert.vector(dtSec)
-            assert(iscell(bltsSamplesTmCa))
+            assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
             assert(numel(bltsSamplesTmCa) == numel(dtSec))
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))

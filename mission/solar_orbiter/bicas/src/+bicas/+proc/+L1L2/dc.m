@@ -175,15 +175,15 @@ classdef dc
 
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
-            assert(iscell(  PreDc.Zv.bltsSamplesTmCa))
-            irf.assert.vector(PreDc.Zv.bltsSamplesTmCa)
-            assert(numel(PreDc.Zv.bltsSamplesTmCa) == 5)
-            bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
-                PreDc.Zv.bltsSamplesTmCa)
+            assert(isnumeric(  PreDc.Zv.bltsSamplesTm))
+            %irf.assert.vector(PreDc.Zv.bltsSamplesTmCa)
+            %assert(numel(PreDc.Zv.bltsSamplesTmCa) == 5)
+%             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
+%                 PreDc.Zv)
             [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
-                PreDc.Zv.MUX_SET,        [-1,  1], ...
-                PreDc.Zv.DIFF_GAIN,      [-1,  1], ...
-                PreDc.Zv.bltsSamplesTmCa{1}, [-1, -2]);
+                PreDc.Zv.MUX_SET,       [-1,  1], ...
+                PreDc.Zv.DIFF_GAIN,     [-1,  1], ...
+                PreDc.Zv.bltsSamplesTm, [-1, -2, 5]);
 
 
 
@@ -301,13 +301,11 @@ classdef dc
             dlrUsing12Fpa_ss           = dlrUsing12Fpa(                   iFirst);
             iCalibL_ss                 = iCalibLZv(                       iFirst);
             iCalibH_ss                 = iCalibHZv(                       iFirst);
-
             % Extract subsequence of DATA records to "demux".
-            ssBltsSamplesTmCa = bicas.proc.utils.select_row_range_from_cell_comps(...
-                PreDc.Zv.bltsSamplesTmCa, iFirst, iLast);
+            ssBltsSamplesTm            = PreDc.Zv.bltsSamplesTm(          iFirst:iLast, :, :);
             % NOTE: "zVariable" (i.e. first index=record) for only the
             % current subsequence.
-            ssZvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord(iFirst:iLast);
+            ssZvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord( iFirst:iLast);
 
             if ~(PreDc.hasSnapshotFormat && PreDc.isLfr)
                 % IMPLEMENTATION NOTE: Do not log for LFR SWF since it
@@ -360,11 +358,11 @@ classdef dc
             %=====================
             % ITERATE OVER BLTS's
             %=====================
-            ssBltsSamplesAVoltCa = cell(5,1);
+            ssBltsSamplesAVolt = [];
             for iBlts = 1:5
-                ssBltsSamplesAVoltCa{iBlts} = bicas.proc.L1L2.dc.calibrate_BLTS(...
+                ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
                     DemuxerRoutingArray(iBlts).src, ...
-                    ssBltsSamplesTmCa{iBlts}, ...
+                    ssBltsSamplesTm(:, :, iBlts), ...
                     iBlts, ...
                     PreDc.hasSnapshotFormat, ...
                     ssZvNValidSamplesPerRecord, ...
@@ -382,7 +380,7 @@ classdef dc
             % DEMULTIPLEXER: DERIVE MISSING ASRs
             %====================================
             SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
-                [DemuxerRoutingArray.dest], ssBltsSamplesAVoltCa);
+                [DemuxerRoutingArray.dest], ssBltsSamplesAVolt);
         end    % calibrate_demux_subsequence
 
 
@@ -406,6 +404,9 @@ classdef dc
             %       CON: cal does not seem to use more values.
             % PROPOSAL: Reorder arguments to group them.
             %   PROPOSAL: Group arguments from PreDc.
+            
+            assert(isnumeric(samplesTm))
+            irf.assert.sizes(samplesTm, [-1, -2])   % One BLTS channel.
 
             if isequal(Ssid.value, 'Unknown')
                 % ==> Calibrated data set to NaN.
@@ -461,7 +462,9 @@ classdef dc
                             ssBltsSamplesAVoltCa, ...
                             size(samplesTm, 2));
                 else
-                    % NOTE: Must be column array.
+                    % Scalar cell array since not snapshot.
+                    assert(isscalar(ssBltsSamplesAVoltCa))
+                    % NOTE: Cell content must be column array.
                     samplesAVolt = ssBltsSamplesAVoltCa{1};
                 end
             end

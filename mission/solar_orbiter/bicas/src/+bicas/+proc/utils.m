@@ -44,7 +44,7 @@ classdef utils
 %
 % PROPOSAL: Replace functions
 %               set_struct_field_rows()                     -- DONE
-%               select_row_range_from_cell_comps()
+%               select_row_range_from_cell_comps()          -- ABOLISHED
 %               assert_struct_num_fields_have_same_N_rows()
 %       with new class that has a map from arbitrary value to arrays and/or
 %       instances of same class (recursive).
@@ -55,7 +55,7 @@ classdef utils
 %           select_row_range_from_cell_comps()
 %           convert_matrix_to_cell_array_of_vectors()
 %           convert_cell_array_of_vectors_to_matrix()
-%           assert_cell_array_comps_have_same_N_rows()
+%           assert_cell_array_comps_have_same_N_rows() -- ABOLISHED
 %       with methods.
 
 
@@ -359,6 +359,7 @@ classdef utils
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
 
             % ASSERTIONS
+            assert(isnumeric(M))
             irf.assert.vector(nCopyColsPerRowArray)
             nRows = irf.assert.sizes(...
                 M,                    [-1, NaN], ...
@@ -425,10 +426,10 @@ classdef utils
         %       size(ca{i}, 1) for all "i" must evaluate to the same value for
         %       assertion to pass.
         %
-        function assert_cell_array_comps_have_same_N_rows(ca)
-            nRowsArray = cellfun(@(v) (size(v, 1)), ca, 'UniformOutput', true);
-            irf.assert.all_equal( nRowsArray )
-        end
+%         function assert_cell_array_comps_have_same_N_rows(ca)
+%             nRowsArray = cellfun(@(v) (size(v, 1)), ca, 'UniformOutput', true);
+%             irf.assert.all_equal( nRowsArray )
+%         end
 
 
 
@@ -440,15 +441,15 @@ classdef utils
         % ca2
         %       ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
         %
-        function ca2 = select_row_range_from_cell_comps(ca1, iFirst, iLast)
-
-            % ASSERTIONS
-            bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(ca1)
-
-            for i = 1:numel(ca1)
-                ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
-            end
-        end
+%         function ca2 = select_row_range_from_cell_comps(ca1, iFirst, iLast)
+% 
+%             % ASSERTIONS
+%             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(ca1)
+% 
+%             for i = 1:numel(ca1)
+%                 ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
+%             end
+%         end
 
 
 
@@ -462,8 +463,7 @@ classdef utils
         % Assert that struct consisting of
         %   logical arrays
         %   numeric arrays
-        %   cell arrays
-        %   1x1 structs of arrays (not recursive)
+        %   bicas.utils.SameRowsMap
         % has the same number rows in all its arrays.
         %
         % Useful for structs where all fields represent CDF zVariables and/or
@@ -486,7 +486,6 @@ classdef utils
         %
         % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
         % ===========================================================
-        % PreDc.Zv.bltsSamplesTmCa  : Cell array of arrays.
         % PostDc.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
 
         % NOTE: Function name somewhat bad.
@@ -515,12 +514,12 @@ classdef utils
 
                     nRowsArray(end+1) = size(fieldValue, 1);
 
-                elseif iscell(fieldValue)
-                    % CASE: Cell array
-
-                    for iCc = 1:numel(fieldValue)
-                        nRowsArray(end+1) = size(fieldValue{iCc}, 1);
-                    end
+%                 elseif iscell(fieldValue)
+%                     % CASE: Cell array
+% 
+%                     for iCc = 1:numel(fieldValue)
+%                         nRowsArray(end+1) = size(fieldValue{iCc}, 1);
+%                     end
 
 %                 elseif isstruct(fieldValue)
 %                     % CASE: Struct

@@ -265,17 +265,22 @@ classdef tds
 
 
 
-            %==========================
-            % Set Zv.bltsSamplesTmCa
-            %==========================
+            %======================
+            % Set Zv.bltsSamplesTm
+            %======================
             zv_WAVEFORM_DATA_modif = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
 
-            Zv.bltsSamplesTmCa    = cell(5,1);
-            Zv.bltsSamplesTmCa{1} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
-            Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
-            Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
-            Zv.bltsSamplesTmCa{4} = nan(nRecords, nCdfSamplesPerRecord);
-            Zv.bltsSamplesTmCa{5} = nan(nRecords, nCdfSamplesPerRecord);
+%             Zv.bltsSamplesTmCa    = cell(5,1);
+%             Zv.bltsSamplesTmCa{1} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
+%             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
+%             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
+%             Zv.bltsSamplesTmCa{4} = nan(nRecords, nCdfSamplesPerRecord);
+%             Zv.bltsSamplesTmCa{5} = nan(nRecords, nCdfSamplesPerRecord);
+            Zv.bltsSamplesTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
+            Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
+            Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
+            Zv.bltsSamplesTm(:, :, 4) = nan(nRecords, nCdfSamplesPerRecord);
+            Zv.bltsSamplesTm(:, :, 5) = nan(nRecords, nCdfSamplesPerRecord);
 
 
 

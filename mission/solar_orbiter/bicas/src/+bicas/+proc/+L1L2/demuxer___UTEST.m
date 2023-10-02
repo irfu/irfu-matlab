@@ -56,15 +56,17 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             % Function for testing mux=0-4. All those all those map (route) ASR
             % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
             function test_mux01234(demuxMode, dlrUsing12, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
+                assert(numel(ExpRoutingArray) == 5)
                 assert(isa(ExpAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
                 
                 % Convert ExpRoutingArray --> BltsSamplesCa (test argument)
-                BltsSamplesCa = {};
-                for routing = ExpRoutingArray
+                bltsSamplesAVolt = [];
+                for i = 1:numel(ExpRoutingArray)
+                    routing = ExpRoutingArray(i);
                     if isa(routing.src.value, 'bicas.proc.L1L2.AntennaSignalId')                    
-                        BltsSamplesCa{end+1} = AsidTestSamplesSrm(routing.src.value.s);
+                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.src.value.s);
                     else
-                        BltsSamplesCa{end+1} = TEST_DATA_UNKNOWN;
+                        bltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
                     end
                 end
                 
@@ -74,7 +76,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
                     demuxMode, dlrUsing12Fpa);
                 ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
-                    [ActRoutingArray.dest], BltsSamplesCa);
+                    [ActRoutingArray.dest], bltsSamplesAVolt);
                 
                 % ASSERTIONS
                 testCase.assertEqual(ActRoutingArray, ExpRoutingArray)
