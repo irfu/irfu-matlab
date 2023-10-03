@@ -3,14 +3,7 @@
 % with the demultiplexer mode, determines how BLTS channels and ASR signals are
 % related.
 %
-% The latching relay state should ideally be obtained from telecommanding just
-% like the bias currents, but this has not been implemented into the ROC
-% pipeline and is not planned to be since the latching relay state is not
-% expected to be changed unless a hardware failure (probe failure) occurs
-% (2019-11-19). Therefore, the latching relay state is hard-coded until further
-% notice.
-%
-% NOTE: BIAS HK contains the value in HK_BIA_MODE_DIFF_PROBE (presumably). See
+% NOTE: BIAS HK contains the value in HK_BIA_MODE_DIFF_PROBE. See
 % BIAS specification, section "3.4.4.14 MODE", "Data D3 = Diff probe 1&2(0),
 % Diff probe 1&3(1)"
 %

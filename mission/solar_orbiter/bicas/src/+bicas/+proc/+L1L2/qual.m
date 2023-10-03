@@ -31,12 +31,6 @@ classdef qual
             % PROPOSAL: Separate function for handling UFV.
             %   CON: Other quality variable processing might want to read or
             %        modify the UFV.
-            % PROPOSAL: Separate function for modifying voltage & current using
-            %           UFV, not for deriving it. Function called outside. This
-            %           function (modify_quality_filter) only returns ZV UFV.
-            %           -- IMPLEMENTED
-            %   PRO: Good for testing.
-            %       PRO: Fewer variables in & out of function when testing.
             %
             % PROPOSAL: Structs for arguments & return values. -- IMPLEMENTED
             %   PRO: Safer w.r.t. confusing variables.

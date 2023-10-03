@@ -160,13 +160,13 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_cast(testCase)
-            % float FPA --> logical FPA
+            % double FPA --> logical FPA
             Fpa1   = bicas.utils.FillPositionsArray([0, 1, NaN], 'fill value', NaN);
             Fpa2   = Fpa1.cast('logical', 0);
             dataAr = Fpa2.get_data(true);
             testCase.verifyEqual(dataAr, [false, true, true])
             
-            % logical FPA --> float FPA
+            % logical FPA --> double FPA
             Fpa1   = bicas.utils.FillPositionsArray([false, true, false], 'fill positions', [false, false, true]);
             Fpa2   = Fpa1.cast('double', false);
             dataAr = Fpa2.get_data(NaN);
@@ -209,9 +209,10 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                 ones(0, 0), ...
                 ones(1, 1), ...
                 ones(1, 1, 0), ...
-                ones(3, 1), ...
-                ones(1, 3), ...
-                ones(4, 5), ...
+                ones(3, 1), ...      % 1D
+                ones(1, 3), ...      % 1D, in second dimension.
+                ones(4, 5), ...      % 2D
+                ones(4, 5, 6), ...   % 3D
             };
             
             for ca = TEST_DATA_CA(:)'
@@ -223,10 +224,9 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                 testCase.verifyEqual(ndims(Fpa),    ndims(v)   )
                 
                 for iDim = 1:3
-                    testCase.verifyEqual(size(Fpa, iDim),  size(v, iDim) )
+                    testCase.verifyEqual(size(Fpa, iDim), size(v, iDim) )
                 end
-            end
-            
+            end    % for
         end
 
 

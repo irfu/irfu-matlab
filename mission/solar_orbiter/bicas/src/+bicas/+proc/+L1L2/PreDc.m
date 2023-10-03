@@ -6,6 +6,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef PreDc
+    % PROPOSAL: Merge ZvFpa into Zv. Abolish ZvFpa.
 
     %#####################
     %#####################

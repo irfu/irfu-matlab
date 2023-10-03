@@ -110,6 +110,8 @@ DLR
     The convention used for representing the value is the same as in the ZV.
     0/false = V12
     1/true  = V13
+    2023-08-29, EJ: Variable is constant for the entire mission except when it
+    flips from zero to one at about 2023-08-21T12:04.
 DSI
     DATASET_ID. String constant that uniquely identifies each type of dataset.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical

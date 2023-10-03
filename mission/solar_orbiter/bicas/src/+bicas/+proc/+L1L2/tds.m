@@ -36,6 +36,7 @@ classdef tds
             C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
 
 
+
             %===================================
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
@@ -293,12 +294,6 @@ classdef tds
             Zv.lfrRx          = ones(nRecords, 1);
             
             PreDc = bicas.proc.L1L2.PreDc(Zv, ZvFpa, Ga, C.isTdsRswf, false, C.isTdsCwf);
-
-
-
-            % ASSERTIONS
-            assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'))
-
         end    % process_CDF_to_PreDC
 
 

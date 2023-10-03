@@ -32,10 +32,12 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 SETTINGS.override_value('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S', S.lfrBdmMarginSec, 'test')
                 SETTINGS.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', S.tdsBdmMarginSec, 'test')
                 SETTINGS.make_read_only()
-
                 L = bicas.Logger('human-readable', false);
+
+                % CALL FUNCTION
                 [actZvUfv, actZv_QUALITY_FLAG, actZv_L2_QUALITY_BITMASK] = ...
                     bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L);
+
                 testCase.verifyEqual(actZvUfv,                 expZvOut.ufv)
                 testCase.verifyEqual(actZv_QUALITY_FLAG,       expZvOut.QUALITY_FLAG)
                 testCase.verifyEqual(actZv_L2_QUALITY_BITMASK, expZvOut.L2_QUALITY_BITMASK)
