@@ -83,7 +83,7 @@ classdef demuxer
 
             R = bicas.proc.L1L2.Routing.C;
 
-            dlrUsing12Float = dlrUsing12Fpa.cast('double', false).get_data(NaN);
+            dlrUsing12Float = dlrUsing12Fpa.logical2doubleNan();
             if isnan(dlrUsing12Float)
                 R.DC_V1x = R.UNKNOWN_TO_NOWHERE;
                 R.AC_V1x = R.UNKNOWN_TO_NOWHERE;

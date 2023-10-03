@@ -200,6 +200,26 @@ classdef FillPositionsArray   % < handle
                 @(x) (cast(x, outputClass)), ...
                 outputClass, fillValue);
         end
+        
+        
+        
+        % Utility function
+        function data = int2doubleNan(obj)
+            assert(isinteger(obj.dataAr))
+            
+            fillValue = cast(0, class(obj.dataAr));
+            Fpa  = obj.cast('double', fillValue);
+            data = Fpa.get_data(NaN);
+        end
+        
+        
+        
+        function data = logical2doubleNan(obj)
+            assert(islogical(obj.dataAr))
+            
+            Fpa  = obj.cast('double', false);
+            data = Fpa.get_data(NaN);
+        end
 
 
 
@@ -291,6 +311,28 @@ classdef FillPositionsArray   % < handle
 
 
     end    % methods(Access=public)
+    
+    
+    
+    %#######################
+    %#######################
+    % PUBLIC STATIC METHODS
+    %#######################
+    %#######################
+    methods(Static, Access=public)
+        
+        
+        
+        % Utility function
+        function Fpa = floatNan2logical(ar)
+            assert(isfloat(ar))
+            Fpa = bicas.utils.FillPositionsArray(...
+                ar, 'fill value', NaN).cast('logical', 0);
+        end
+
+
+            
+    end
 
 
 
