@@ -154,7 +154,7 @@ classdef lfr
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'Fpa_DIFF_GAIN', 'dlrUsing13Fpa'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'Fpa_DIFF_GAIN', 'dlrFpa'}, {})
             
             % ASSERTIONS: CDF
             bicas.proc.utils.assert_increasing(...
@@ -244,7 +244,7 @@ classdef lfr
             Zv.BW                      = InSci.Zv.BW;
             Zv.ufv                     = ~logical(InSci.Zv.BW);
             ZvFpa.DIFF_GAIN            = HkSciTime.Fpa_DIFF_GAIN;
-            ZvFpa.dlrUsing13           = HkSciTime.dlrUsing13Fpa;
+            ZvFpa.dlr                  = HkSciTime.dlrFpa;
             Zv.iLsf                    = iLsfZv;
 
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;

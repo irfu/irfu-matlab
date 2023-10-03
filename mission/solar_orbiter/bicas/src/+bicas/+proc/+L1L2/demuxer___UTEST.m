@@ -55,7 +55,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
             % Function for testing mux=0-4. All those all those map (route) ASR
             % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
-            function test_mux01234(demuxMode, dlrUsing13, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
+            function test_mux01234(demuxMode, dlr, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
                 assert(numel(ExpRoutingArray) == 5)
                 assert(isa(ExpAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
                 
@@ -70,11 +70,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                     end
                 end
                 
-                dlrUsing13Fpa = bicas.utils.FillPositionsArray(dlrUsing13, 'fill value', NaN).cast('logical', 0);
+                dlrFpa = bicas.utils.FillPositionsArray(dlr, 'fill value', NaN).cast('logical', 0);
                 
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
-                    demuxMode, dlrUsing13Fpa);
+                    demuxMode, dlrFpa);
                 ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
                     [ActRoutingArray.dest], bltsSamplesAVolt);
                 
@@ -114,9 +114,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-            % =================================
-            % mux = 0, dlrUsing13 = [0, 1, NaN]
-            % =================================
+            % ==========================
+            % mux = 0, dlr = [0, 1, NaN]
+            % ==========================
             test_mux01234(...
                 0, 1, ...
                 [R.DC_V1, R.DC_V13, R.DC_V23, R.AC_V13, R.AC_V23], ...
@@ -133,9 +133,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 selected_ASR_samples(1,0,0, 0,0,1, 0,0,1)...
             )
 
-            % ==============================
-            % mux = 1, dlrUsing13 = [0, NaN]
-            % ==============================
+            % =======================
+            % mux = 1, dlr = [0, NaN]
+            % =======================
             test_mux01234(...
                 1, 1, ...
                 [R.DC_V2, R.DC_V3, R.DC_V23, R.AC_V13, R.AC_V23], ...
@@ -147,9 +147,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 selected_ASR_samples(0,1,1, 0,0,1, 0,0,1) ...
             )
 
-            % =====================================
-            % mux = 4 (calibration), dlrUsing13 = 1
-            % =====================================
+            % ==============================
+            % mux = 4 (calibration), dlr = 1
+            % ==============================
             test_mux01234(...
                 4, 0, ...
                 [R.DC_V1, R.DC_V2, R.DC_V3, R.AC_V12, R.AC_V23], ...
@@ -210,8 +210,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-            test({C.DC_V1, 19, C.DC_V12, 27, C.DC_V23, 33,    C.AC_V12, 54, C.AC_V23, 75});    % mux=0, dlrUsing13=0
-            test({C.DC_V1, 19, C.DC_V13, 27, C.DC_V23, 33,    C.AC_V13, 54, C.AC_V23, 75});    % mux=0, dlrUsing13=1
+            test({C.DC_V1, 19, C.DC_V12, 27, C.DC_V23, 33,    C.AC_V12, 54, C.AC_V23, 75});    % mux=0, dlr=0
+            test({C.DC_V1, 19, C.DC_V13, 27, C.DC_V23, 33,    C.AC_V13, 54, C.AC_V23, 75});    % mux=0, dlr=1
             test({C.DC_V2, 19, C.DC_V3,  27, C.DC_V23, 19-27, C.AC_V12, 54, C.AC_V23, 75});    % mux=1
             test({C.DC_V1,  2, C.DC_V2,   7, C.DC_V3,  32,    C.AC_V12, 74, C.AC_V23, 85});    % mux=4
 

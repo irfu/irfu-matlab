@@ -102,7 +102,12 @@ Deg
     Degrees (angle). 1 revolution=360 degrees=2*pi radians.
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
-    of the demultiplexer. See the "BIAS specification".
+    of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
+    "Data D3 = Diff probe 1&2(0), Diff probe 1&3(1)".
+    Corresponds to BIAS HK zVariable "HK_BIA_MODE_DIFF_PROBE".
+    The convention used for representing the value is the same as in the ZV.
+    0/false = V12
+    1/true  = V13
 DSI
     DATASET_ID. String constant that uniquely identifies each type of dataset.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical

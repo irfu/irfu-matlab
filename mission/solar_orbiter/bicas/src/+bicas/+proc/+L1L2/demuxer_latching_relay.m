@@ -24,7 +24,7 @@
 % ARGUMENTS AND RETURN VALUE
 % ==========================
 % Epoch 
-% dlrUsing13Fpa
+% dlrFpa
 %       Logical. FPA same size as Epoch.
 %       NOTE: The interpretation of values follows the same convention as
 %       BIAS HK ZV "HK_BIA_MODE_DIFF_PROBE".
@@ -33,9 +33,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %
-function dlrUsing13Fpa = demuxer_latching_relay(Epoch)
+function dlrFpa = demuxer_latching_relay(Epoch)
     bicas.utils.assert_ZV_Epoch(Epoch)
 
-    dlrUsing13Fpa = bicas.utils.FillPositionsArray(...
+    dlrFpa = bicas.utils.FillPositionsArray(...
         false(size(Epoch)), 'fill positions', false(size(Epoch)));
 end

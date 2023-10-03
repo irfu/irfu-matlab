@@ -67,7 +67,7 @@ classdef demuxer
         %       NOTE: Can be NaN to represent unknown demux mode.
         %       Implies that AsrSamplesVolt fields are correctly
         %       sized with NaN values.
-        % dlrUsing13Fpa
+        % dlrFpa
         %       Scalar value. See bicas.proc.L1L2.demuxer_latching_relay().
         %
         %
@@ -76,17 +76,17 @@ classdef demuxer
         % RoutingArray
         %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
         %       (iBlts).
-        function RoutingArray = get_routings(demuxMode, dlrUsing13Fpa)
+        function RoutingArray = get_routings(demuxMode, dlrFpa)
             assert(isscalar(demuxMode))   % switch-case checks values.
-            assert(isscalar(dlrUsing13Fpa) && isa(dlrUsing13Fpa, 'bicas.utils.FillPositionsArray'))
+            assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FillPositionsArray'))
 
             R = bicas.proc.L1L2.Routing.C;
 
-            dlrUsing13Float = dlrUsing13Fpa.logical2doubleNan();
-            if isnan(dlrUsing13Float)
+            dlrFloat = dlrFpa.logical2doubleNan();
+            if isnan(dlrFloat)
                 R.DC_V1x = R.UNKNOWN_TO_NOWHERE;
                 R.AC_V1x = R.UNKNOWN_TO_NOWHERE;
-            elseif dlrUsing13Float
+            elseif dlrFloat
                 R.DC_V1x = R.DC_V13;
                 R.AC_V1x = R.AC_V13;
             else
