@@ -20,17 +20,32 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         function test_misc(testCase)
             import bicas.utils.FillPositionsArray___UTEST.test_equality
 
-            % ===========================================
-            % Test illegal assignment to *property* fpAr
-            % ===========================================
+            % ===========================================================
+            % Test legal & illegal read & write to *properties* (public &
+            % private)
+            % ===========================================================
             Fpa = bicas.utils.FillPositionsArray([], 'fill value', 0);
+            
+            % fpAr
+            % NOTE: .fpAr is a READ-only property.
             function fpAr_assign_fail()
-                % NOTE: .fpAr is a READ-only property.
                 Fpa.fpAr = logical([]);
             end
-            testCase.verifyError(...
-                @() fpAr_assign_fail(), ...
-                ?MException)
+            testCase.verifyError(@() fpAr_assign_fail(), ?MException)
+            testCase.verifyEqual(Fpa.fpAr, logical([]))
+            
+            % dataAr
+            % NOTE: .dataAr is a private property.
+            function dataAr_assign_fail()
+                Fpa.dataAr = [];
+            end
+            testCase.verifyError(@() dataAr_assign_fail(), ?MException)
+            if 0
+                % Read dataAr (should fail).
+                % Does not work, since class does not work.
+                testCase.verifyError(@() (Fpa.dataAr), ?MException)
+            end
+            
             
             %=============
             % 0x0, double
@@ -205,6 +220,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                 
                 testCase.verifyEqual(isscalar(Fpa), isscalar(v))
                 testCase.verifyEqual(size(Fpa),     size(v)    )
+                testCase.verifyEqual(ndims(Fpa),    ndims(v)   )
                 
                 for iDim = 1:3
                     testCase.verifyEqual(size(Fpa, iDim),  size(v, iDim) )

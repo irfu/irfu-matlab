@@ -33,8 +33,6 @@ classdef FillPositionsArray   % < handle
     %   TODO-DEC: Name?
     %       .class, .matlabClass
     %   PROPOSAL: Read-only property.
-    %
-    % PROPOSAL: Turn fpAr into WriteAccess=private property
 
 
 
@@ -43,18 +41,18 @@ classdef FillPositionsArray   % < handle
     % INSTANCE PROPERTIES
     %#####################
     %#####################
-    properties(GetAccess=private)
+    properties(GetAccess=private, SetAccess=immutable)
+        % NOTE: Should be private, but in practice it is possible to read
+        % "dataAr". Unknown why.
         dataAr
-
-        % Logical array of same size as dataAr. True<=>The corresponding
-        % position in dataAr is a fill position where the value is irrelevant
-        % and must be hidden from the user.
-        fillPositionsAr
     end
 
 
     
-    properties
+    properties(GetAccess=public, SetAccess=immutable)
+        % Logical array of same size as dataAr. True<=>The corresponding
+        % position in dataAr is a fill position where the value is irrelevant
+        % and must be hidden from the user.
         fpAr
     end
 
@@ -94,9 +92,9 @@ classdef FillPositionsArray   % < handle
             assert(isnumeric(dataAr) || ischar(dataAr) || islogical(dataAr))
             irf.assert.castring(fpDescriptionType)
 
-            % ======================
-            % Assign fillPositionsAr
-            % ======================
+            % ===========
+            % Assign fpAr
+            % ===========
             switch(fpDescriptionType)
                 case 'fill value'
                     fillValue = fpDescription;
@@ -105,25 +103,25 @@ classdef FillPositionsArray   % < handle
 
                     % NOTE: Array operation. Can not use isequaln(). Needs
                     % special case for NaN.
-                    fillPositionsAr = (dataAr == fillValue) | (isnan(dataAr) & isnan(fillValue));
+                    fpAr = (dataAr == fillValue) | (isnan(dataAr) & isnan(fillValue));
                     clear fillValue
 
                 case 'fill positions'
-                    fillPositionsAr = fpDescription;
+                    fpAr = fpDescription;
                     % NOTE: Assertions on variable come later.
 
                 otherwise
                     error('Illegal argument "%s"', fpDescriptionType)
             end
             clear fpDescription
-            assert(islogical(fillPositionsAr))
-            assert(isequal(size(dataAr), size(fillPositionsAr)))
+            assert(islogical(fpAr))
+            assert(isequal(size(dataAr), size(fpAr)))
 
             % ====================
             % Assign object fields
             % ====================
-            obj.dataAr          = dataAr;
-            obj.fillPositionsAr = fillPositionsAr;
+            obj.dataAr = dataAr;
+            obj.fpAr   = fpAr;
         end
 
 
@@ -136,8 +134,8 @@ classdef FillPositionsArray   % < handle
                 'Argument fillValue has a MATLAB class ("%s") which is inconsistent with the object''s MATLAB class ("%s").', ...
                 class(fillValue), class(obj.dataAr))
 
-            dataAr                      = obj.dataAr;
-            dataAr(obj.fillPositionsAr) = fillValue;
+            dataAr           = obj.dataAr;
+            dataAr(obj.fpAr) = fillValue;
         end
         
         
@@ -181,7 +179,7 @@ classdef FillPositionsArray   % < handle
             castOutputAr = cast(outputAr, outputClass);
             
             Fpa = bicas.utils.FillPositionsArray(...
-                castOutputAr, 'fill positions', obj.fillPositionsAr);
+                castOutputAr, 'fill positions', obj.fpAr);
         end
         
         
@@ -229,12 +227,12 @@ classdef FillPositionsArray   % < handle
             elseif ~strcmp(class(obj1.dataAr), class(obj2.dataAr))
                 r = false;
                 
-            elseif ~isequaln(obj1.fillPositionsAr, obj2.fillPositionsAr)
+            elseif ~isequaln(obj1.fpAr, obj2.fpAr)
                 % NOTE: Indirectly checks equal .dataAr sizes.
                 r = false;
                 
             else
-                % CASE: .fillPositionsAr, sizes and types are equal.
+                % CASE: .fpAr, sizes and types are equal.
                 
                 if isempty(obj1.dataAr)
                     r = true;
@@ -260,11 +258,11 @@ classdef FillPositionsArray   % < handle
         function varargout = subsref(obj, S)
             switch S(1).type
                 case '()'
-                    dataAr          = subsref(obj.dataAr, S);
-                    fillPositionsAr = subsref(obj.fillPositionsAr, S);
+                    dataAr = subsref(obj.dataAr, S);
+                    fpAr   = subsref(obj.fpAr, S);
 
                     varargout = {bicas.utils.FillPositionsArray(...
-                        dataAr, 'fill positions', fillPositionsAr)};
+                        dataAr, 'fill positions', fpAr)};
 
                 case '.'
                     % Call method (sic!)
@@ -285,35 +283,14 @@ classdef FillPositionsArray   % < handle
 
 
 
+        % "Overload" ndims(Fpa, ...)
+        function n = ndims(obj, varargin)
+            n = ndims(obj.dataAr, varargin{:});
+        end
+
+
+
     end    % methods(Access=public)
-
-
-
-    methods
-
-
-
-        % Property
-        % Make property readonly.
-        %
-        % IMPLEMENTATION NOTE: If this method is absent, then the statement to
-        % assign the property does NOT raise exception, while at the same time
-        % doing nothing! Therefore better to have this function. Unsure if there
-        % is a better way to implement the same functionality.
-        function fpAr = get.fpAr(obj)
-            fpAr = obj.fillPositionsAr;
-        end
-
-
-
-        % Property
-        function fpAr = set.fpAr(obj, value)
-            error('Illegal assignment of property.')
-        end
-
-
-
-    end
 
 
 
