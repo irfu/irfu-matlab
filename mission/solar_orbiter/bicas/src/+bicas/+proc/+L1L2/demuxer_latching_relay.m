@@ -24,21 +24,20 @@
 % ARGUMENTS AND RETURN VALUE
 % ==========================
 % Epoch 
-% dlrUsing12 : 0/1, false/true. Array same size as Epoch.
-%               False=0 = Using diffs V13_DC, V13_AC
-%               True =1 = Using diffs V12_DC, V12_AC
-%               NOTE: The meaning of values follow the opposite convention
-%               compared to BIAS specification.
+% dlrUsing12Fpa
+%       Logical. FPA same size as Epoch.
+%       False = Using diffs V13_DC, V13_AC
+%       True  = Using diffs V12_DC, V12_AC
+%       NOTE: The meaning of values follow the opposite convention
+%       compared to BIAS specification.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %
-function dlrUsing12 = demuxer_latching_relay(Epoch)
-% PROPOSAL: Use BIAS HK for setting value.
-%           Delete this function when implemented. Save relevant notes/comments.
-
+function dlrUsing12Fpa = demuxer_latching_relay(Epoch)
     bicas.utils.assert_ZV_Epoch(Epoch)
 
-    dlrUsing12 = ones(size(Epoch));
+    dlrUsing12Fpa = bicas.utils.FillPositionsArray(...
+        true(size(Epoch)), 'fill positions', false(size(Epoch)));
 end

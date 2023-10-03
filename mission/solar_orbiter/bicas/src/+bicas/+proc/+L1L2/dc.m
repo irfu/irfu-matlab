@@ -203,8 +203,8 @@ classdef dc
                 % --------------------
                 % IMPLEMENTATION NOTE: This exists for historical reasons and
                 % should eventually be abolished, together with the function
-                % called below..
-                dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
+                % called below.
+                dlrUsing12Fpa = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
             else
                 % Use HK
                 % ------
