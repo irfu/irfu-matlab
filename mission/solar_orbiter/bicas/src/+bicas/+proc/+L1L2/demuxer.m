@@ -58,7 +58,6 @@ classdef demuxer
         % ** demuxMode = NaN                                   
         %    Unknown demux mode, e.g. due to insufficient HK time coverage.
         % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref" in demux modes 5-7.
-        % NOTE: Can not hande unknown dlrUsing12.
         %
         %
         % ARGUMENTS
@@ -68,7 +67,7 @@ classdef demuxer
         %       NOTE: Can be NaN to represent unknown demux mode.
         %       Implies that AsrSamplesVolt fields are correctly
         %       sized with NaN values.
-        % dlrUsing12
+        % dlrUsing13Fpa
         %       Scalar value. See bicas.proc.L1L2.demuxer_latching_relay().
         %
         %
@@ -77,22 +76,22 @@ classdef demuxer
         % RoutingArray
         %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
         %       (iBlts).
-        function RoutingArray = get_routings(demuxMode, dlrUsing12Fpa)
+        function RoutingArray = get_routings(demuxMode, dlrUsing13Fpa)
             assert(isscalar(demuxMode))   % switch-case checks values.
-            assert(isscalar(dlrUsing12Fpa) && isa(dlrUsing12Fpa, 'bicas.utils.FillPositionsArray'))
+            assert(isscalar(dlrUsing13Fpa) && isa(dlrUsing13Fpa, 'bicas.utils.FillPositionsArray'))
 
             R = bicas.proc.L1L2.Routing.C;
 
-            dlrUsing12Float = dlrUsing12Fpa.logical2doubleNan();
-            if isnan(dlrUsing12Float)
+            dlrUsing13Float = dlrUsing13Fpa.logical2doubleNan();
+            if isnan(dlrUsing13Float)
                 R.DC_V1x = R.UNKNOWN_TO_NOWHERE;
                 R.AC_V1x = R.UNKNOWN_TO_NOWHERE;
-            elseif dlrUsing12Float
-                R.DC_V1x = R.DC_V12;
-                R.AC_V1x = R.AC_V12;
-            else
+            elseif dlrUsing13Float
                 R.DC_V1x = R.DC_V13;
                 R.AC_V1x = R.AC_V13;
+            else
+                R.DC_V1x = R.DC_V12;
+                R.AC_V1x = R.AC_V12;
             end
             
             switch(demuxMode)

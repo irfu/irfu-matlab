@@ -196,15 +196,15 @@ classdef dc
                 nan(nRecords, nSamplesPerRecordChannel), ...
                 bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA);
 
-            % Set dlrUsing12zv
-            % ----------------
+            % Set dlrUsing13Fpa
+            % -----------------
             if 0
                 % Use hardcoded values
                 % --------------------
                 % IMPLEMENTATION NOTE: This exists for historical reasons and
                 % should eventually be abolished, together with the function
                 % called below.
-                dlrUsing12Fpa = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
+                dlrUsing13Fpa = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
             else
                 % Use HK
                 % ------
@@ -214,7 +214,7 @@ classdef dc
                 % NaN=unknown/fill value.
                 
                 % Negate flag.
-                dlrUsing12Fpa = PreDc.ZvFpa.dlrUsing13.convert(@(x) (~x), 'logical', false);
+                dlrUsing13Fpa = PreDc.ZvFpa.dlrUsing13;
             end
             
             iCalibLZv = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
@@ -243,7 +243,7 @@ classdef dc
                 PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
                 PreDc.Zv.ufv, ...
                 PreDc.Zv.lfrRx, ...
-                dlrUsing12Fpa.logical2doubleNan(), ...
+                dlrUsing13Fpa.logical2doubleNan(), ...
                 iCalibLZv, ...
                 iCalibHZv);
 
@@ -255,7 +255,7 @@ classdef dc
                 iLast  = iLastList (iSs);
 
                 SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
-                    PreDc, dlrUsing12Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
+                    PreDc, dlrUsing13Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
 
                 % Add demuxed sequence to the to-be complete set of records.
                 AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iFirst:iLast]');
@@ -272,7 +272,7 @@ classdef dc
 
         % Calibrate and demux all BLTS channels for one subsequence.
         function SsAsrSamplesAVoltSrm = calibrate_demux_subsequence(...
-                PreDc, dlrUsing12Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L)
+                PreDc, dlrUsing13Fpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L)
             % PROPOSAL: Move indexing outside function.
             %   CON: Must then submit all the PreDc.Zv.* variables separately
             %        (six variables). ==> More arguments.
@@ -294,7 +294,7 @@ classdef dc
             iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
             CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
             ufv_ss                     = PreDc.Zv.ufv(                    iFirst);
-            dlrUsing12Fpa_ss           = dlrUsing12Fpa(                   iFirst);
+            dlrUsing13Fpa_ss           = dlrUsing13Fpa(                   iFirst);
             iCalibL_ss                 = iCalibLZv(                       iFirst);
             iCalibH_ss                 = iCalibHZv(                       iFirst);
             % Extract subsequence of DATA records to "demux".
@@ -315,14 +315,14 @@ classdef dc
                 %
                 % NOTE: DIFF_GAIN needs three characters to fit in "NaN".
                 L.logf('info', ['Records %8i-%8i : %s -- %s', ...
-                    ' MUX_SET=%i; DIFF_GAIN=%-3i; dlrUsing12=%i;', ...
+                    ' MUX_SET=%i; DIFF_GAIN=%-3i; dlrUsing13=%i;', ...
                     ' freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
                     ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
                     bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
                     bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
                     MUX_SET_ss, DIFF_GAIN_ss, ...
-                    dlrUsing12Fpa_ss.logical2doubleNan(), ...
+                    dlrUsing13Fpa_ss.logical2doubleNan(), ...
                     freqHz_ss, ...
                     iCalibL_ss, iCalibH_ss, ufv_ss, ...
                     CALIBRATION_TABLE_INDEX_ss(1), ...
@@ -333,7 +333,7 @@ classdef dc
             % DEMULTIPLEXER: FIND ASR-BLTS ROUTINGS
             %=======================================
             DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
-                MUX_SET_ss, dlrUsing12Fpa_ss);
+                MUX_SET_ss, dlrUsing13Fpa_ss);
 
 
 
