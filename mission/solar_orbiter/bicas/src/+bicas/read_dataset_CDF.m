@@ -19,13 +19,29 @@
 % other file.
 %
 function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
+    % IMPLEMENTATION NOTE: Generating FPAs for all ZVs in parallel with the old
+    % representation of ZV values. The intention is that this will be a move
+    % towards only using FPAs for all ZVs.
+    %
+    % PROBLEM: How convert some ZVs to FPAs at a time?
+    %   PROPOSAL: Use list(s) for ZVs that should be FPA and/or not.
+    %       PROPOSAL: List of ZVs that should not be FPAs.
+    %           PRO: Will shrink with time. When it is empty then one know that the process is complete.
+    %           CON: Difficult to begin with since needs to fill with long list.
+    %
+    % PROPOSAL: Test code:
+    %   PROPOSAL: Separate ~inner function that accepts ~dataobj as input argument.
+    %       NOTE: bicas.get_dataobj_fill_pad_class_values() takes DO as
+    %             argument.
+    %   PROPOSAL: Write CDF file as part of test(!).
     
+    % List of ZVs that should be represented as FPAs (and not as plain arrays).
+    FPA_ZV_NAME_CA = {'HK_BIA_MODE_DIFF_PROBE'};
+
     tTicToc = tic();
-    
-    disableReplacePadValue        = SETTINGS.get_fv('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED');
-    [ofvZvList,  ovfZvSettingKey] = SETTINGS.get_fv('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES');
-    [ofvFillVal, ovfFvSettingKey] = SETTINGS.get_fv('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE');
-    
+
+
+
     %===========
     % Read file
     %===========
@@ -38,46 +54,65 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     % Copy zVariables (only the data) into analogous fields in smaller struct
     %=========================================================================
     L.log('info', 'Converting dataobj (CDF data structure) to PDV.')
+    ZvFpa  = struct();
     Zvs    = struct();
     ZvFv   = struct();
     ZvsLog = struct();   % zVariables (name+value) for logging.
+
     zVariableNameList = fieldnames(DataObj.data);
     for iZv = 1:length(zVariableNameList)
-        zvName  = zVariableNameList{iZv};
-        zvValue = DataObj.data.(zvName).data;
+        zvName    = zVariableNameList{iZv};
+        zvValueDo = DataObj.data.(zvName).data;
+        ZvsLog.(zvName) = zvValueDo;    % NOTE: Do = As found in dataobj (before typecasting & replacing FV-->NaN)).
         
-        ZvsLog.(zvName) = zvValue;
+        [fillValue, ~, matlabClass] = bicas.get_dataobj_fill_pad_class_values(DataObj, zvName);
         
-        [fillValue, padValue] = bicas.get_fill_pad_values(DataObj, zvName);
-        ZvFv.(zvName) = fillValue;
-            
+        % =========================
+        % Normalize ZV MATLAB class
+        % =========================
+        zvValueTyped = zvValueDo;    % ZV value after normalizing type/class
+        if ~strcmp(matlabClass, class(zvValueTyped))
+            % Ex: /nonhome_data/SOLAR_ORBITER/bicas_test_input/LFR-SURV-CWF-SWF_test/solo_L1R_rpw-lfr-surv-cwf-e-cdag_20200213_V07.cdf
+            %     ZV "COMMON_BIA_STATUS_FLAG".
+            %     zvValue = [] (double), matlabClass = 'int8' (?)
+            L.logf('warning', ...
+                'Loaded CDF ZV "%s" (size [%s]) has MATLAB class "%s" which is different from the stated MATLAB class "%s". Typecasting ZV to correct.', ...
+                zvName, num2str(size(zvValueTyped)), class(zvValueTyped), matlabClass)
+            zvValueTyped = cast(zvValueTyped, matlabClass);
+        end
+
+
         %=================================================
         % Replace fill/pad values with NaN for FLOAT data
         %=================================================
         % TODO-NI: How does/should this work with integer fields that MUST
         %          also be stored as integers internally?!!!
         %    Ex: Epoch, ACQUISITION_TIME.
-        if isfloat(zvValue)
+        zvValueTypedNan = zvValueTyped;
+        if isfloat(zvValueTypedNan)
             
             if ~isempty(fillValue)
                 % CASE: There is a fill value.
                 
-                if any(ismember(zvName, ofvZvList))
-                    L.logf('warning', ...
-                        ['Overriding input CDF fill value with %d', ...
-                        ' due to settings "%s" and "%s".'], ...
-                        ofvFillVal, ovfZvSettingKey, ovfFvSettingKey)
-                    fillValue = ofvFillVal;
-                end
-                
-                zvValue = irf.utils.replace_value(zvValue, fillValue, NaN);
-            end
-            if ~disableReplacePadValue
-                zvValue = irf.utils.replace_value(zvValue, padValue,  NaN);
+                zvValueTypedNan = irf.utils.replace_value(zvValueTypedNan, fillValue, NaN);
             end
         end
         
-        Zvs.(zvName) = zvValue;
+        if ismember(zvName, FPA_ZV_NAME_CA)
+            % ===============================
+            % Derive FPA representation of ZV
+            % ===============================
+            if isempty(fillValue)
+                Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'fill positions', false(size(zvValue)));
+            else
+                Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'fill value', fillValue);
+            end
+            
+            ZvFpa.(zvName) = Fpa;
+        else
+            Zvs.(zvName)   = zvValueTypedNan;
+            ZvFv.(zvName)  = fillValue;
+        end
     end
 
     
@@ -186,7 +221,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
 
 
     % Create return value.
-    Dataset = bicas.InputDataset(Zvs, ZvFv, GlobalAttributes, filePath);
+    Dataset = bicas.InputDataset(ZvFpa, Zvs, ZvFv, GlobalAttributes, filePath);
     
     
     

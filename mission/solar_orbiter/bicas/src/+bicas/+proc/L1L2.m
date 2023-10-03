@@ -229,14 +229,9 @@ classdef L1L2
             % IMPLEMENTATION NOTE: Using FPA experimentally on this zVariable.
             % This would be more natural if loading all zVariables as FPAs
             % (possible future implementation.
-            % NOTE: Never asserts against encountering non-0/1/FV.
-            Fpa_InHK_HK_BIA_MODE_DIFF_PROBE = bicas.utils.FillPositionsArray(...
-                InHk.Zv.HK_BIA_MODE_DIFF_PROBE, 'fill value', ...
-                InHk.ZvFv.HK_BIA_MODE_DIFF_PROBE);   % uint8.
-
             % FPA-->float
             InHk_float_HK_BIA_MODE_DIFF_PROBE = ...
-                Fpa_InHK_HK_BIA_MODE_DIFF_PROBE.cast('double', uint8(0)).get_data(NaN);
+                InHk.ZvFpa.HK_BIA_MODE_DIFF_PROBE.cast('double', uint8(0)).get_data(NaN);
 
             % Float-->float
             HkSciTime_float_HK_BIA_MODE_DIFF_PROBE = bicas.utils.interpolate_nearest(...

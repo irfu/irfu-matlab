@@ -184,7 +184,7 @@ function DataObj = init_modif_dataobj(...
         % /2023-08-10
         if isfield(ZvsSubset, 'QUALITY_FLAG')
             fillValue = getfillval(DataObj, 'QUALITY_FLAG');
-            %[fillValue, ~] = get_fill_pad_values(DataObj, 'QUALITY_FLAG');
+            %[fillValue, ~, ~] = bicas.get_dataobj_fill_pad_class_values(DataObj, 'QUALITY_FLAG');
             
             %===================================================================
             % Set global max value for zVar QUALITY_FLAG
@@ -286,7 +286,7 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     % (when reading CDF), then the code can not distinguish between fill
     % values and pad values writing the CDF.
     %======================================================================
-    [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
+    [fillValue, ~, ~] = bicas.get_dataobj_fill_pad_class_values(DataObj, zvName);
     if isfloat(zvValuePd)
         zvValueTemp = irf.utils.replace_value(zvValuePd, NaN, fillValue);
     else
@@ -438,7 +438,7 @@ function DataObj = handle_empty_ZV_anomaly(...
                     zvName, settingKey, settingValue)
                 
                 nEpochRecords  = size(ZvsSubset.Epoch, 1);
-                [fillValue, ~] = bicas.get_fill_pad_values(DataObj, zvName);
+                [fillValue, ~, ~] = bicas.get_dataobj_fill_pad_class_values(DataObj, zvName);
                 zvSize      = [nEpochRecords, DataObj.data.(fn{1}).dim];
                 zvValueTemp = cast(zeros(zvSize), matlabClass);
                 zvValueCdf  = irf.utils.replace_value(zvValueTemp, 0, fillValue);

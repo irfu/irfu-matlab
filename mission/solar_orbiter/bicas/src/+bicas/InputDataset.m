@@ -23,9 +23,12 @@ classdef InputDataset
     % Mutable properties
     %====================
     properties
-        % Struct with zVariable values.
-        % IMPLEMENTATION NOTE: Not immutable since some values are normalized
-        % during processing (2x6x L1/L1R-->L2).
+        % IMPLEMENTATION NOTE: Variables here are not immutable since some
+        % values are normalized during processing (2x6x L1/L1R-->L2).
+
+        % Struct with zVariables stored as FPAs.
+        ZvFpa
+        % Struct with zVariables stored as plain arrays.
         Zv
     end
     
@@ -55,7 +58,8 @@ classdef InputDataset
         
         
         
-        function obj = InputDataset(Zv, ZvFv, Ga, filePath)
+        function obj = InputDataset(ZvFpa, Zv, ZvFv, Ga, filePath)
+            obj.ZvFpa    = ZvFpa;
             obj.Zv       = Zv;
             obj.ZvFv     = ZvFv;
             obj.Ga       = Ga;

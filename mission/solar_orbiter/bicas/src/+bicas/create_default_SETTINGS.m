@@ -201,21 +201,6 @@ function SETTINGS = create_default_SETTINGS()
     % monotonically increasing timestamps.
     S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING, SORT
 
-    % Whether to replace PAD VALUES values with NaN internally.
-    % IMPORTANT NOTE: Refers to CDF _PAD_VALUES, NOT CDF _FILL_VALUES!
-    % NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore
-    % useful.
-    S.define_setting('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED',       1)            % 0/false, 1/true.
-
-    % List of zVar names for which alternate fill value should be used when the
-    % ZVs are loaded and interpreted.
-    %S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {'IBIAS_1', 'IBIAS_2', 'IBIAS_3'})
-    % PROPOSAL: Abolish?!
-    S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     cell(0,1))
-    % Alternate fill value to use.
-    % PROPOSAL: Abolish?!
-    S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
-
     S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
 
 

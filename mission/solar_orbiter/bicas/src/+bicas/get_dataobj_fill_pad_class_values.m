@@ -15,7 +15,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function [fillValue, padValue] = get_fill_pad_values(Do, zvName)
+function [fillValue, padValue, matlabClass] = get_dataobj_fill_pad_class_values(Do, zvName)
     % NOTE: Uncertain how it handles the absence of a fill value. (Or is fill value mandatory?)
     % PROPOSAL: Remake into general-purpose function.
     % PROPOSAL: Remake into just using the do.Variables array?
@@ -26,17 +26,32 @@ function [fillValue, padValue] = get_fill_pad_values(Do, zvName)
     %   CON: This function also returns pad value. There is no known getpadval().
     %   CON: Can not handle TT2000 (?)
     
+    % ===========================
+    % Fill value and MATLAB class
+    % ===========================
+    
+    % Obtain tentative values
     % NOTE: Special function for dataobj.
-    fillValue = getfillval(Do, zvName);
+    fillValue   = getfillval(Do, zvName);
+    matlabClass = Do.data.(zvName).type;
+    
     % NOTE: For unknown reasons, the fill value for tt2000 zVariables (or at
-    % least "Epoch") is stored as a UTC(?) string.
-    if strcmp(Do.data.(zvName).type, 'tt2000')
+    %       least "Epoch") is stored as a UTC(?) string.
+    % NOTE: dataobj (probably) has a special case for "type" for "Epoch" or
+    %       TT2000.
+    if strcmp(matlabClass, 'tt2000')
         % NOTE: Uncertain if this is the correct conversion function.
         fillValue = spdfparsett2000(fillValue);
+        matlabClass = 'int64';
     end
     
+    % =========
+    % Pad value
+    % =========
     iZv = strcmp(Do.Variables(:,1), zvName);
     padValue   = Do.Variables{iZv, 9};
     % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad
     % values since the structure/array commented on should be identical.
+    
+    
 end
