@@ -183,8 +183,8 @@ function DataObj = init_modif_dataobj(...
         % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
         % /2023-08-10
         if isfield(ZvsSubset, 'QUALITY_FLAG')
-            fillValue = getfillval(DataObj, 'QUALITY_FLAG');
-            %[fillValue, ~, ~] = bicas.get_dataobj_fill_pad_class_values(DataObj, 'QUALITY_FLAG');
+            %fillValue = getfillval(DataObj, 'QUALITY_FLAG');
+            [fillValue, ~, ~] = bicas.get_dataobj_fill_pad_class_values(DataObj, 'QUALITY_FLAG');
             
             %===================================================================
             % Set global max value for zVar QUALITY_FLAG
