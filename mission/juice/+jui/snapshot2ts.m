@@ -3,11 +3,11 @@ function res = snapshot2ts(d, varName, varargin)
 %
 %  res = jui.snapshot2ts(DataObj, varName, [FLAGS])
 %
-% Input: 
+% Input:
 %   DataObj - dataobj (e.g. DATA)
 %   varName - name of a variable
 %
-% Options: 
+% Options:
 %   'NoNaN' - do not add NaN at the end of each snapshot
 %   'RmMedian' - subtract median value from each of the snapshots
 
@@ -50,11 +50,11 @@ for iFreq = 1:length(freqs)
   lBlock = size(data,2);
   nComp = size(data,3);
   if nComp>8 % XXX hack
-    nComp = size(data,2); lBlock = size(data,3); 
+    nComp = size(data,2); lBlock = size(data,3);
     data = permute(data,[1 3 2]);
   end
   epoch = d.data.Epoch.data(ii);
-  
+
   lSnapshot = lBlock*nData/(nSnapshot);
   if flagAddNan, lSnapshot = lSnapshot + 1; end
   dtNs = int64((linspace(0, lSnapshot-1, lSnapshot)/double(freq))*1e9);
