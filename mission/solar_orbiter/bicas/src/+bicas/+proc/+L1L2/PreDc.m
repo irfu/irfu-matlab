@@ -40,7 +40,7 @@ classdef PreDc
                 'ufv', 'lfrRx'}, ...
                 {'BW'});
             irf.assert.struct(ZvFpa, ...
-                {'DIFF_GAIN', 'HK_BIA_MODE_DIFF_PROBE'}, {})
+                {'DIFF_GAIN', 'dlrUsing13'}, {})
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
             assert(isa(Zv.freqHz,         'double' ))
             assert(isa(hasSnapshotFormat, 'logical'))

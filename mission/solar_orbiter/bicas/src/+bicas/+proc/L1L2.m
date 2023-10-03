@@ -224,11 +224,11 @@ classdef L1L2
 
 
 
-            %===============================
-            % Derive HK_BIA_MODE_DIFF_PROBE
-            %===============================
+            %=====================================
+            % Derive HK_BIA_MODE_DIFF_PROBE / DLR
+            %=====================================
             % NOTE: FPA uint8 --> float-NaN --> FPA logical
-            HkSciTime.Fpa_HK_BIA_MODE_DIFF_PROBE = bicas.utils.FillPositionsArray.floatNan2logical(...
+            HkSciTime.dlrUsing13Fpa = bicas.utils.FillPositionsArray.floatNan2logical(...
                 bicas.utils.interpolate_nearest(...
                     hkEpochExtrapMargin, ...
                     hkEpoch, ...
@@ -239,7 +239,7 @@ classdef L1L2
 
             % ASSERTIONS
             %irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN', 'HK_BIA_MODE_DIFF_PROBE'}, {})
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'Fpa_DIFF_GAIN', 'Fpa_HK_BIA_MODE_DIFF_PROBE'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'Fpa_DIFF_GAIN', 'dlrUsing13Fpa'}, {})
         end
 
 

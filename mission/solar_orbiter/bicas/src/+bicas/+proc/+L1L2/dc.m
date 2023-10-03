@@ -213,13 +213,8 @@ classdef dc
                 % since the code uses float to represent a boolean value, with
                 % NaN=unknown/fill value.
                 
-                % NOTE: Temporary variable, "13".
-%                 dlrUsing13zv = PreDc.Zv.HK_BIA_MODE_DIFF_PROBE;
-%                 bNan = isnan(dlrUsing13zv);
-%                 dlrUsing13zv(bNan) = 0;
-%                 dlrUsing12zv       = double(~dlrUsing13zv);
-%                 dlrUsing12zv(bNan) = NaN;
-                dlrUsing12Fpa = PreDc.ZvFpa.HK_BIA_MODE_DIFF_PROBE.convert(@(x) (~x), 'logical', false);
+                % Negate flag.
+                dlrUsing12Fpa = PreDc.ZvFpa.dlrUsing13.convert(@(x) (~x), 'logical', false);
             end
             
             iCalibLZv = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
