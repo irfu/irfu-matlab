@@ -210,12 +210,12 @@ classdef L1L2
 
 
             %==================================================================
-            % Derive DIFF_GAIN
-            % ----------------
+            % Derive DIFF_GAIN / biasHighGain
+            % -------------------------------
             % NOTE: Not perfect handling of time when 1 snapshot/record, since
             % one should ideally use time stamps for every LFR _sample_.
             %==================================================================
-            HkSciTime.Fpa_DIFF_GAIN = bicas.utils.FillPositionsArray.floatNan2logical(...
+            HkSciTime.biasHighGainFpa = bicas.utils.FillPositionsArray.floatNan2logical(...
                 bicas.utils.interpolate_nearest(...
                     hkEpochExtrapMargin, ...
                     hkEpoch, ...
@@ -238,8 +238,7 @@ classdef L1L2
 
 
             % ASSERTIONS
-            %irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN', 'HK_BIA_MODE_DIFF_PROBE'}, {})
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'Fpa_DIFF_GAIN', 'dlrFpa'}, {})
+            irf.assert.struct(HkSciTime, {'MUX_SET', 'biasHighGainFpa', 'dlrFpa'}, {})
         end
 
 
