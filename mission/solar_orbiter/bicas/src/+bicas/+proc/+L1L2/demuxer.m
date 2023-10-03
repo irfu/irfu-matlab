@@ -55,14 +55,14 @@ classdef demuxer
         % EDGE CASES
         % ==========
         % Function must be able to handle:
-        % ** demuxMode = NaN                                   
+        % ** bdm = NaN                                   
         %    Unknown demux mode, e.g. due to insufficient HK time coverage.
         % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref" in demux modes 5-7.
         %
         %
         % ARGUMENTS
         % =========
-        % demuxMode
+        % bdm
         %       Scalar value. Demultiplexer mode.
         %       NOTE: Can be NaN to represent unknown demux mode.
         %       Implies that AsrSamplesVolt fields are correctly
@@ -76,8 +76,8 @@ classdef demuxer
         % RoutingArray
         %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
         %       (iBlts).
-        function RoutingArray = get_routings(demuxMode, dlrFpa)
-            assert(isscalar(demuxMode))   % switch-case checks values.
+        function RoutingArray = get_routings(bdm, dlrFpa)
+            assert(isscalar(bdm))   % switch-case checks values.
             assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FillPositionsArray'))
 
             R = bicas.proc.L1L2.Routing.C;
@@ -94,7 +94,7 @@ classdef demuxer
                 R.AC_V1x = R.AC_V12;
             end
             
-            switch(demuxMode)
+            switch(bdm)
                 
                 case 0   % "Standard operation" : We have all information.
                     
@@ -133,7 +133,7 @@ classdef demuxer
 
                 case {5,6,7}   % Calibration mode 1/2/3
 
-                    switch(demuxMode)
+                    switch(bdm)
                         case 5
                             RoutingArray(1) = R.REF25V_1_TO_DC_V1;
                             RoutingArray(2) = R.REF25V_2_TO_DC_V2;
@@ -147,7 +147,7 @@ classdef demuxer
                 otherwise
                     % IMPLEMENTATION NOTE: switch-case statement does not work
                     % for NaN. Therefore using "otherwise".
-                    if isnan(demuxMode)
+                    if isnan(bdm)
                         
                         % NOTE: Could route unknown DC signals to V1-V3, but
                         % since this behaviour is probably not very obvious to
@@ -164,7 +164,7 @@ classdef demuxer
                         
                     else
                         error('BICAS:Assertion:IllegalArgument:DatasetFormat', ...
-                            'Illegal argument value demuxMode=%g.', demuxMode)
+                            'Illegal argument value bdm=%g.', bdm)
                     end
             end    % switch
             

@@ -50,17 +50,17 @@ classdef qual
             %           PRO: Implementation is clear on what goes in and out of function.
             %   PROPOSAL: Abolish
 
-            zv_Epoch         = ZvIn.Epoch;
-            zvUfv            = ZvIn.ufv;
-            zv_MUX_SET       = ZvIn.MUX_SET;
-            zv_QUALITY_FLAG  = ZvIn.QUALITY_FLAG;
+            zv_Epoch        = ZvIn.Epoch;
+            zvUfv           = ZvIn.ufv;
+            zvBdm           = ZvIn.bdm;
+            zv_QUALITY_FLAG = ZvIn.QUALITY_FLAG;
             clear ZvIn
 
             % ASSERTIONS
             assert(isscalar(isLfr) && islogical(isLfr))
             nRecords = irf.assert.sizes( ...
                 zv_Epoch,        [-1], ...
-                zv_MUX_SET,      [-1], ...
+                zvBdm,           [-1], ...
                 zv_QUALITY_FLAG, [-1], ...
                 zvUfv,           [-1]);
 
@@ -70,7 +70,7 @@ classdef qual
             % Find CDF records to remove due to settings and LFR ZV "BW"
             %============================================================
             zvUfvSettings = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
-                zv_Epoch, zv_MUX_SET, isLfr, SETTINGS, L);
+                zv_Epoch, zvBdm, isLfr, SETTINGS, L);
 
             zvUfv = zvUfv | zvUfvSettings;
 
@@ -217,11 +217,11 @@ classdef qual
         %
         % ARGUMENTS
         % ---------
-        % zv_MUX_SET
-        %   Demultiplexer data, from BIAS HK or LFR.
+        % zvBdm
+        %       Demultiplexer data, from BIAS HK or LFR.
         %
         function zvUfv = get_UFV_records_from_settings(...
-                zv_Epoch, zv_MUX_SET, isLfr, SETTINGS, L)
+                zv_Epoch, zvBdm, isLfr, SETTINGS, L)
             % PROPOSAL: Only derive UFV records based on settings. Not take
             %           previously found UFV records (BW) into account. Merging UFV
             %           records from settings and BW respectively can be done
@@ -234,9 +234,9 @@ classdef qual
             %===============
             % Read settings
             %===============
-            [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv(...
+            [bdmRemoveArray, settingBdmRemoveKey] = SETTINGS.get_fv(...
                 'PROCESSING.L2.REMOVE_DATA.MUX_MODES');
-            muxModesRemove = muxModesRemove(:);
+            bdmRemoveArray = bdmRemoveArray(:);
             if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
             end
@@ -247,7 +247,7 @@ classdef qual
             %==========================================
             zvUfv = irf.utils.true_with_margin(...
                 zv_Epoch, ...
-                ismember(zv_MUX_SET, muxModesRemove), ...
+                ismember(zvBdm, bdmRemoveArray), ...
                 removeMarginSec * 1e9);
 
             %=====
@@ -259,8 +259,8 @@ classdef qual
                 '    NOTE: This may not be all CDF records which will be removed.\n', ...
                 '    Setting %s = [%s]\n', ...
                 '    Setting %s = %f\n'], ...
-                settingMuxModesKey, ...
-                strjoin(irf.str.sprintf_many('%g', muxModesRemove), ', '), ...
+                settingBdmRemoveKey, ...
+                strjoin(irf.str.sprintf_many('%g', bdmRemoveArray), ', '), ...
                 settingMarginKey, ...
                 removeMarginSec);
             bicas.proc.L1L2.qual.log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)

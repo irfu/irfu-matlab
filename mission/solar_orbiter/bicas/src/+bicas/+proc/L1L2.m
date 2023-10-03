@@ -201,7 +201,7 @@ classdef L1L2
             %       ==> Can not change MUX_SET in the middle of a record.
             % NOTE: Can potentially obtain MUX_SET from LFR SCI.
             %=============================================================
-            HkSciTime.MUX_SET = bicas.utils.interpolate_nearest(...
+            HkSciTime.bdm = bicas.utils.interpolate_nearest(...
                 hkEpochExtrapMargin, ...
                 hkEpoch, ...
                 InHk.Zv.HK_BIA_MODE_MUX_SET, ...
@@ -238,7 +238,7 @@ classdef L1L2
 
 
             % ASSERTIONS
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'biasHighGainFpa', 'dlrFpa'}, {})
+            irf.assert.struct(HkSciTime, {'bdm', 'biasHighGainFpa', 'dlrFpa'}, {})
         end
 
 

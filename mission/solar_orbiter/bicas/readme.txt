@@ -67,6 +67,8 @@ AV, avolt, Antenna Volt
     singles). May also refer to offsets and values without offsets.
 AVPIV
     Antenna Volt / (Per) Interface Volt
+BDM, "mux mode"
+    BIAS Demultiplexer Mode. Corresponds to BIAS HK ZV "HK_BIA_MODE_MUX_SET".
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".
