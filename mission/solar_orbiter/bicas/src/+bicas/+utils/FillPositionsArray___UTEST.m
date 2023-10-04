@@ -176,26 +176,130 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_subsref(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
             % ===
             % 0x0
             % ===
-            Fpa1 = bicas.utils.FillPositionsArray([], 'fill value', NaN);
+            Fpa1 = Fpa([], NaN);
             Fpa2 = Fpa1(:);    % 0x0 --> 0x1
-            dataAr2 = Fpa2.get_data(NaN);
-            testCase.verifyEqual(dataAr2, ones(0,1))
+            testCase.assertEqual(size(Fpa2), [0, 1])
             
+            Fpa1 = Fpa([], NaN);
+            Fpa2 = Fpa1(:, :);    % 0x0 --> 0x0
+            testCase.assertEqual(size(Fpa2), [0, 0])
+
             % ==
             % 2D
             % ==
-            Fpa1 = bicas.utils.FillPositionsArray([1,2; 3,4; 5,NaN], 'fill value', NaN);
+            Fpa1 = Fpa([1,2; 3,4; 5,NaN], NaN);
             
             Fpa2 = Fpa1(3, 1:2);    % 2 values, one range.
-            dataAr2 = Fpa2.get_data(NaN);
-            testCase.verifyEqual(dataAr2, [5, NaN])
+            testCase.assertEqual(Fpa2, Fpa([5, NaN], NaN))
             
-            Fpa3 = Fpa1(:);    % 1D indexing.
-            dataAr3 = Fpa3.get_data(NaN);
-            testCase.verifyEqual(dataAr3, [1,3,5,2,4,NaN]')
+            % ===============
+            % Linear indexing
+            % ===============
+            Fpa1 = Fpa([1,2; 3,4; 5,NaN], NaN);
+            Fpa2 = Fpa1(:);
+            Fpa3 = Fpa([1,3,5, 2,4,NaN]', NaN);
+            testCase.assertEqual(Fpa2, Fpa3)
+            
+            Fpa1 = Fpa([1,2; 3,4; 5,NaN], NaN);
+            Fpa2 = Fpa1([3,5,6]);
+            Fpa3 = Fpa([5,4,NaN], NaN);
+            testCase.assertEqual(Fpa2, Fpa3)
+            
+            % ================
+            % Logical indexing
+            % ================
+            Fpa1 = Fpa([1,2; 3,4; 5,NaN], NaN);
+            Fpa2 = Fpa1(logical([1,0; 0,0; 0,1]));    % 2D --> 1D
+            Fpa3 = Fpa([1, NaN]', NaN);
+            testCase.assertEqual(Fpa2, Fpa3)
+        end
+        
+        
+        
+        function test_subsasgn(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
+            % Test assigning single to double. ==> Error
+            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa2 = Fpa(single([9]'), single(NaN));
+            function test_assign_fail()
+                Fpa1(1,1) = Fpa2;
+            end
+            testCase.verifyError(@() (test_assign_fail()), ?MException)            
+
+            % Test keep both FV and non-FV.
+            % Test overwrite FV/non-FV with FV/non-FV.
+            Fpa1 = Fpa([1, NaN, 2, NaN, 3,   NaN], NaN);
+            Fpa2 = Fpa(        [8,   9, NaN, NaN], NaN);
+            Fpa3 = Fpa([1, NaN, 8,   9, NaN, NaN], NaN);
+            Fpa1(3:6) = Fpa2;
+            testCase.assertEqual(Fpa1, Fpa3)
+
+            % ================
+            % Regular indexing
+            % ================
+            % Assign 0x0 to 0x0 over entire range.
+            Fpa1 = Fpa([], NaN);
+            Fpa2 = Fpa([], NaN);
+            Fpa3 = Fpa([], NaN);
+            Fpa1(:, :, :, :) = Fpa2;
+            testCase.assertEqual(Fpa1, Fpa3)
+
+            % Assign single element.
+            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa2 = Fpa([9], NaN);
+            Fpa3 = Fpa([1,2,3; 4,5,9], NaN);            
+            Fpa1(2, 3) = Fpa2;
+            testCase.verifyEqual(Fpa1, Fpa3)
+            
+            % Assign entire dimensions.
+            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa2 = Fpa([9,8,7; 6,5,4], NaN);
+            Fpa3 = Fpa2;
+            Fpa1(:, :) = Fpa2;
+            testCase.verifyEqual(Fpa1, Fpa3)
+            
+            % end
+            % scalar input --> vector output
+            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa2 = Fpa([9], NaN);
+            Fpa3 = Fpa([1,9,3; 4,9,6], NaN);
+            Fpa1(1:end, end-1) = Fpa2;
+            testCase.verifyEqual(Fpa1, Fpa3)
+            
+            % ===============
+            % Linear indexing
+            % ===============
+            % Assign non-rectangular subset of elements in 2D FPA.
+            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa2 = Fpa([9,8,7]', NaN);
+            Fpa3 = Fpa([9,2,7; 4,8,6], NaN);
+            Fpa1([1,4,5]) = Fpa2;
+            testCase.verifyEqual(Fpa1, Fpa3)
+            
+            % ================
+            % Logical indexing
+            % ================
+            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa2 = Fpa([9,8,7]', NaN);
+            Fpa3 = Fpa([9,2,7; 4,8,6], NaN);
+            Fpa1(logical([1,0,1; 0,1,0])) = Fpa2;
+            testCase.verifyEqual(Fpa1, Fpa3)
+            
+            % =======================
+            % Logical linear indexing
+            % =======================
+            % Index = 1D vector of logical.
+            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa2 = Fpa([9,8,7]', NaN);
+            Fpa3 = Fpa([9,2,7; 4,8,6], NaN);
+            Fpa1(logical([1,0,0, 1,1,0]')) = Fpa2;
+            testCase.verifyEqual(Fpa1, Fpa3)
         end
         
         

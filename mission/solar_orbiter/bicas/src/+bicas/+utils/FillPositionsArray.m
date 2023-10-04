@@ -50,7 +50,7 @@ classdef FillPositionsArray   % < handle
     %   Ex: Using option BIAS_HK_LFR_SCI in
     %       bicas.proc.L1L2.lfr.process_CDF_to_PreDC().
     %       Using BDM from LFR when possible, but BIAS HK when not.
-    %   PROPOSAL: Support assigning index.
+    %   PROPOSAL: Support assigning index. -- IMPLEMENTED
     %       CON: Makes class mutable.
     %       PRO: More general.
     %       PRO: Should not be difficult to implement assignment 
@@ -76,7 +76,7 @@ classdef FillPositionsArray   % < handle
     % INSTANCE PROPERTIES
     %#####################
     %#####################
-    properties(GetAccess=private, SetAccess=immutable)
+    properties(GetAccess=private, SetAccess=private)
         % NOTE: Should be completely private, but in practice it is possible to
         % read "dataAr" under MATLAB R2019b. Unknown why. Property is
         % write-protected though. Update test w.r.t. to this if fixed.
@@ -85,11 +85,17 @@ classdef FillPositionsArray   % < handle
 
 
     
-    properties(GetAccess=public, SetAccess=immutable)
+    properties(GetAccess=public, SetAccess=private)
         % Logical array of same size as dataAr. True<=>The corresponding
         % position in dataAr is a fill position where the value is irrelevant
         % and must be hidden from the user.
         fpAr
+    end
+    
+    
+    
+    properties(GetAccess=public, SetAccess=immutable)
+        % MATLAB class for internal data.
         class
     end
 
@@ -335,6 +341,42 @@ classdef FillPositionsArray   % < handle
         
         
         
+        % Indexing overloading: Array indexing for writing: Fpa(i, j, ...) = ...
+        %
+        % NOTE: Function should currently be unused (except for tests).
+        %
+        % PERFORMANCE
+        % ===========
+        % Testing (bicas.utils.FillPositionsArray___subsasgn_SpeedTest) implies
+        % that preallocating a large FPA and then overwriting subsets using
+        % subsasgn does not work. Time consumption per element grows with size
+        % of FPA. Class should thus not be suitable for storing samples in the
+        % processing step which updates pre-allocated global array of samples.
+        function Fpa1 = subsasgn(Fpa1, S, Fpa2)
+            switch S(1).type
+                case '()'
+                    assert(isscalar(S))
+                    assert(isa(Fpa2, 'bicas.utils.FillPositionsArray'))
+                    assert(isequaln(Fpa1.class, Fpa2.class))
+                    
+                    % IMPLEMENTATION NOTE: Check that index is not some
+                    % array-like objet, e.g. FPA itself. Could maybe support FPA
+                    % in the future(?!!).
+                    for i = 1:numel(S.subs)
+                        x = S.subs{i};
+                        assert(isnumeric(x) || islogical(x) || strcmp(x, ':'))
+                    end
+                    
+                    Fpa1.dataAr = subsasgn(Fpa1.dataAr, S, Fpa2.dataAr);
+                    Fpa1.fpAr   = subsasgn(Fpa1.fpAr,   S, Fpa2.fpAr);
+
+                otherwise
+                    error('BICAS:Assertion', 'Unsupported operation.')
+            end
+        end
+
+
+
         % Set those elements which are fill positions using values from another
         % FPA.
         %
@@ -354,22 +396,6 @@ classdef FillPositionsArray   % < handle
         
         
         
-%         function subsasgn(obj, S, value)
-%             switch S(1).type
-%                 case '()'
-%                     dataAr = subsref(obj.dataAr, S);
-%                     fpAr   = subsref(obj.fpAr, S);
-% 
-%                     varargout = {bicas.utils.FillPositionsArray(...
-%                         dataAr, 'fill positions', fpAr)};
-% 
-%                 otherwise
-%                     error('BICAS:Assertion', 'Unsupported operation.')
-%             end
-%         end
-
-
-
         % "Overload" size(Fpa, ...)
         function s = size(obj, varargin)
             s = size(obj.dataAr, varargin{:});
@@ -380,6 +406,19 @@ classdef FillPositionsArray   % < handle
         % "Overload" ndims(Fpa, ...)
         function n = ndims(obj, varargin)
             n = ndims(obj.dataAr, varargin{:});
+        end
+
+
+
+        % Overload "end" in indexing.
+        function iEnd = end(obj, iDim, nDim)
+            sz = size(obj.dataAr);
+
+            if iDim < nDim
+                iEnd = sz(iDim);
+            else
+                iEnd = prod(sz(iDim:end));
+            end
         end
 
 
