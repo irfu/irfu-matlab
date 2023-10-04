@@ -135,9 +135,9 @@ classdef demuxer
 
                     switch(bdm)
                         case 5
-                            RoutingArray(1) = R.REF25V_1_TO_DC_V1;
-                            RoutingArray(2) = R.REF25V_2_TO_DC_V2;
-                            RoutingArray(3) = R.REF25V_3_TO_DC_V3;
+                            RoutingArray(1) = R.REF25V_TO_DC_V1;
+                            RoutingArray(2) = R.REF25V_TO_DC_V2;
+                            RoutingArray(3) = R.REF25V_TO_DC_V3;
                         case {6,7}
                             RoutingArray(1) = R.GND_TO_DC_V1;
                             RoutingArray(2) = R.GND_TO_DC_V2;
