@@ -6,7 +6,7 @@ XSLTPROC=xsltproc
 all: html txt cef
 
 html: check ns_ops_epo.xml
-	${XSLTPROC} html.xsl ns_ops_epo.xml > ns_ops.html
+	${XSLTPROC} --stringparam current-date `date +%Y-%m-%d` html.xsl ns_ops_epo.xml > ns_ops.html
 
 txt: ns_ops_epo.xml
 	${XSLTPROC} text.xsl ns_ops_epo.xml
