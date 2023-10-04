@@ -215,7 +215,6 @@ classdef tds
 
 
             Zv    = [];
-            ZvFpa = [];
 
             Zv.Epoch                   = InSci.Zv.Epoch;
             Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
@@ -224,9 +223,9 @@ classdef tds
             Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
             Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
-            ZvFpa.bdm                  = HkSciTime.bdmFpa;
-            ZvFpa.biasHighGain         = HkSciTime.biasHighGainFpa;
-            ZvFpa.dlr                  = HkSciTime.dlrFpa;
+            Zv.bdmFpa                  = HkSciTime.bdmFpa;
+            Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;
+            Zv.dlrFpa                  = HkSciTime.dlrFpa;
             Zv.ufv                     = false(nRecords, 1);
             Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
@@ -293,7 +292,7 @@ classdef tds
             Zv.iLsf           = nan(nRecords, 1);
             Zv.lfrRx          = ones(nRecords, 1);
             
-            PreDc = bicas.proc.L1L2.PreDc(Zv, ZvFpa, Ga, C.isTdsRswf, false, C.isTdsCwf);
+            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isTdsRswf, false, C.isTdsCwf);
         end    % process_CDF_to_PreDC
 
 

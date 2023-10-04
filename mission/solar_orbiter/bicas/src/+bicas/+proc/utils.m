@@ -509,7 +509,7 @@ classdef utils
             for iFn1 = 1:length(fieldNamesList1)
                 fieldValue = S.(fieldNamesList1{iFn1});
 
-                if isnumeric(fieldValue) || islogical(fieldValue)
+                if isnumeric(fieldValue) || islogical(fieldValue) || isa(fieldValue, 'bicas.utils.FillPositionsArray')
                     % CASE: Numeric & logical field.
 
                     nRowsArray(end+1) = size(fieldValue, 1);

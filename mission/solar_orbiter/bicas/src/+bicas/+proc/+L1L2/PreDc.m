@@ -15,7 +15,6 @@ classdef PreDc
     %#####################
     properties(SetAccess=immutable)
         Zv
-        ZvFpa
         Ga
         hasSnapshotFormat
         isLfr
@@ -31,17 +30,16 @@ classdef PreDc
     %#########################
     methods(Access=public)
 
-        function obj = PreDc(Zv, ZvFpa, Ga, hasSnapshotFormat, isLfr, isTdsCwf)
+        function obj = PreDc(Zv, Ga, hasSnapshotFormat, isLfr, isTdsCwf)
 
             irf.assert.struct(Zv, ...
                 {'Epoch', 'bltsSamplesTm', 'freqHz', 'nValidSamplesPerRecord', ...
+                'bdmFpa', 'biasHighGainFpa', 'dlrFpa', ...
                 'iLsf', ...
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
                 'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', ...
                 'ufv', 'lfrRx'}, ...
                 {'BW'});
-            irf.assert.struct(ZvFpa, ...
-                {'bdm', 'biasHighGain', 'dlr'}, {})
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
             assert(isa(Zv.freqHz,         'double' ))
             assert(isa(hasSnapshotFormat, 'logical'))
@@ -49,7 +47,6 @@ classdef PreDc
             assert(isa(isTdsCwf,          'logical'))
 
             obj.Zv                = Zv;
-            obj.ZvFpa             = ZvFpa;
             obj.Ga                = Ga;
             obj.hasSnapshotFormat = hasSnapshotFormat;
             obj.isLfr             = isLfr;

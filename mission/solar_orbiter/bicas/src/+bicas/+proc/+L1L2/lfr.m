@@ -220,7 +220,6 @@ classdef lfr
 
 
             Zv    = [];
-            ZvFpa = [];
 
 %             Zv.bltsSamplesTmCa    = cell(5,1);
 %             Zv.bltsSamplesTmCa{1} = single(InSci.Zv.V);
@@ -243,8 +242,8 @@ classdef lfr
             Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
             Zv.BW                      = InSci.Zv.BW;
             Zv.ufv                     = ~logical(InSci.Zv.BW);
-            ZvFpa.biasHighGain         = HkSciTime.biasHighGainFpa;
-            ZvFpa.dlr                  = HkSciTime.dlrFpa;
+            Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;
+            Zv.dlrFpa                  = HkSciTime.dlrFpa;
             Zv.iLsf                    = iLsfZv;
 
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
@@ -283,7 +282,7 @@ classdef lfr
                     error('BICAS:ConfigurationBug', ...
                         'Illegal settings value %s="%s"', bdmSrcSettingKey, bdmSrcSettingValue)
             end
-            ZvFpa.bdm = bdmFpa;
+            Zv.bdmFpa = bdmFpa;
 
 
 
@@ -291,7 +290,7 @@ classdef lfr
             Ga.OBS_ID    = InSci.Ga.OBS_ID;
             Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
             
-            PreDc = bicas.proc.L1L2.PreDc(Zv, ZvFpa, Ga, C.isLfrSurvSwf, true, false);
+            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isLfrSurvSwf, true, false);
 
         end    % process_CDF_to_PreDC
 
