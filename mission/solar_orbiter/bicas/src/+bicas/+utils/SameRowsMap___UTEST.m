@@ -214,6 +214,19 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_display(testCase)
+            M  = bicas.utils.SameRowsMap('char', 0, 'constant', uint8(ones(0,2)), {'K1'});
+            disp(M)
+            
+            M  = bicas.utils.SameRowsMap('double', 1, 'constant', [9], {1});
+            disp(M)
+            
+            M  = bicas.utils.SameRowsMap('char', 3, 'constant', [1,2;3,4;5,6], {'K1', 'K2'});
+            disp(M)
+        end
+        
+        
+        
     end    % methods(Test)
         
         

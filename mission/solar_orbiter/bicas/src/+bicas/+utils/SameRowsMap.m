@@ -388,6 +388,25 @@ classdef SameRowsMap < handle
 
 
 
+        % Overload disp(Srm). Useful for debugging e.g. tests.
+        %
+        % Unclear if works for non-numeric, non-char key values. Probably not.
+        %
+        function s = disp(obj)
+            keysCa = obj.Map.keys();
+            sCa = {sprintf('%i row(s)', obj.nRows())};
+            for i = 1:numel(keysCa)
+                key = keysCa{i};
+                value = subsref(obj, substruct('()', {key}));
+                
+                sCa{end+1} = sprintf('%s : %s (%s)', num2str(key), mat2str(value), class(value));
+            end
+            
+            s = strjoin(sCa, '\n');
+        end
+
+
+
     end    % methods(Access=public)
 
 
