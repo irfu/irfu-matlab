@@ -76,9 +76,10 @@ classdef demuxer
         % RoutingArray
         %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
         %       (iBlts).
-        function RoutingArray = get_routings(bdm, dlrFpa)
-            assert(isscalar(bdm))   % switch-case checks values.
-            assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FillPositionsArray'))
+        function RoutingArray = get_routings(bdmFpa, dlrFpa)
+            % switch-case checks bdmFpa values.
+            assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FillPositionsArray') && strcmp(bdmFpa.class, 'uint8'))
+            assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FillPositionsArray') && strcmp(dlrFpa.class, 'logical'))
 
             R = bicas.proc.L1L2.Routing.C;
 
@@ -94,7 +95,10 @@ classdef demuxer
                 R.AC_V1x = R.AC_V12;
             end
             
-            switch(bdm)
+            % IMPLEMENTATION NOTE: switch-case statement does not work
+            % for NaN. Therefore not using NaN for
+            bdmInt = bdmFpa.get_data(uint8(255));
+            switch(bdmInt)
                 
                 case 0   % "Standard operation" : We have all information.
                     
@@ -133,7 +137,7 @@ classdef demuxer
 
                 case {5,6,7}   % Calibration mode 1/2/3
 
-                    switch(bdm)
+                    switch(bdmInt)
                         case 5
                             RoutingArray(1) = R.REF25V_TO_DC_V1;
                             RoutingArray(2) = R.REF25V_TO_DC_V2;
@@ -144,28 +148,23 @@ classdef demuxer
                             RoutingArray(3) = R.GND_TO_DC_V3;
                     end
                     
+                case 255
+                    % NOTE: Could route unknown DC signals to V1-V3, but
+                    % since this behaviour is probably not very obvious to
+                    % the user, the code effectively deletes the information
+                    % instead.
+                    RoutingArray(1) = R.UNKNOWN_TO_NOWHERE;
+                    RoutingArray(2) = R.UNKNOWN_TO_NOWHERE;
+                    RoutingArray(3) = R.UNKNOWN_TO_NOWHERE;
+
+                    % NOTE: The routing of BLTS 4 & 5 is identical for all
+                    % mux modes (but does depend on the latching relay). Can
+                    % therefore route them also when the mux mode is
+                    % unknown.
+                    
                 otherwise
-                    % IMPLEMENTATION NOTE: switch-case statement does not work
-                    % for NaN. Therefore using "otherwise".
-                    if isnan(bdm)
-                        
-                        % NOTE: Could route unknown DC signals to V1-V3, but
-                        % since this behaviour is probably not very obvious to
-                        % the user, the code effectively deletes the information
-                        % instead.
-                        RoutingArray(1) = R.UNKNOWN_TO_NOWHERE;
-                        RoutingArray(2) = R.UNKNOWN_TO_NOWHERE;
-                        RoutingArray(3) = R.UNKNOWN_TO_NOWHERE;
-                        
-                        % NOTE: The routing of BLTS 4 & 5 is identical for all
-                        % mux modes (but does depend on the latching relay). Can
-                        % therefore route them also when the mux mode is
-                        % unknown.
-                        
-                    else
-                        error('BICAS:Assertion:IllegalArgument:DatasetFormat', ...
-                            'Illegal argument value bdm=%g.', bdm)
-                    end
+                    error('BICAS:Assertion:IllegalArgument:DatasetFormat', ...
+                        'Illegal argument value bdm=%g.', bdm)
             end    % switch
             
             RoutingArray(4) = R.AC_V1x;

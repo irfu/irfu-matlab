@@ -195,17 +195,20 @@ classdef L1L2
             
 
             %=============================================================
-            % Derive MUX_SET
-            % --------------
-            % NOTE: Only obtains one MUX_SET per record
-            %       ==> Can not change MUX_SET in the middle of a record.
-            % NOTE: Can potentially obtain MUX_SET from LFR SCI.
+            % Derive BDM
+            % ----------
+            % NOTE: Only obtains one BDM per record
+            %       ==> Can not change BDM in the middle of a record.
+            % NOTE: Can potentially also obtain BDM from LFR SCI, but that
+            %       decision should not be made here.
+            %       See bicas.proc.L1L2.lfr.process_CDF_to_PreDC().
             %=============================================================
-            HkSciTime.bdm = bicas.utils.interpolate_nearest(...
-                hkEpochExtrapMargin, ...
-                hkEpoch, ...
-                InHk.Zv.HK_BIA_MODE_MUX_SET, ...
-                InSci.Zv.Epoch);
+            bdmDoubleNan = bicas.utils.interpolate_nearest(...
+                    hkEpochExtrapMargin, ...
+                    hkEpoch, ...
+                    InHk.ZvFpa.HK_BIA_MODE_MUX_SET.int2doubleNan(), ...
+                    InSci.Zv.Epoch);
+            HkSciTime.bdmFpa = bicas.utils.FillPositionsArray(bdmDoubleNan, 'fill value', NaN).cast('uint8', 0);
 
 
 
@@ -238,7 +241,7 @@ classdef L1L2
 
 
             % ASSERTIONS
-            irf.assert.struct(HkSciTime, {'bdm', 'biasHighGainFpa', 'dlrFpa'}, {})
+            irf.assert.struct(HkSciTime, {'bdmFpa', 'biasHighGainFpa', 'dlrFpa'}, {})
         end
 
 

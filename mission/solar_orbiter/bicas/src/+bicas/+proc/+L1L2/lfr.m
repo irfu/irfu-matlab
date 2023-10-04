@@ -154,7 +154,7 @@ classdef lfr
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            irf.assert.struct(HkSciTime, {'bdm', 'biasHighGainFpa', 'dlrFpa'}, {})
+            irf.assert.struct(HkSciTime, {'bdmFpa', 'biasHighGainFpa', 'dlrFpa'}, {})
             
             % ASSERTIONS: CDF
             bicas.proc.utils.assert_increasing(...
@@ -258,39 +258,32 @@ classdef lfr
 
 
             %==========================================
-            % Set MUX_SET
-            % -----------
+            % Set BDM
+            % -------
             % Select which source of mux mode is used.
             %==========================================
-            [value, key] = SETTINGS.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
-            switch(value)
+            [bdmSrcSettingValue, bdmSrcSettingKey] = SETTINGS.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
+            switch(bdmSrcSettingValue)
                 case 'BIAS_HK'
                     L.log('debug', 'Using BIAS HK mux mode.')
-                    bdm = HkSciTime.bdm;
+                    bdmFpa = HkSciTime.bdmFpa;
 
                 case 'LFR_SCI'
                     L.log('debug', 'Using LFR SCI mux mode.')
-                    bdm = InSci.Zv.BIAS_MODE_MUX_SET;
+                    bdmFpa = InSci.ZvFpa.BIAS_MODE_MUX_SET;
 
                 case 'BIAS_HK_LFR_SCI'
                     L.log('debug', ...
                         ['Using mux mode from BIAS HK when available, and', ...
                         ' from LFR SCI when the former is not available.'])
 
-                    % ASSERTION
-                    % Added since the logic/algorithm is inherently relying on
-                    % the implementation using NaN.
-                    assert(isfloat(HkSciTime.bdm))
-
-                    bdm             = HkSciTime.bdm;
-                    bUseLfrBdm      = isnan(bdm);
-                    bdm(bUseLfrBdm) = InSci.Zv.BIAS_MODE_MUX_SET(bUseLfrBdm);
+                    bdmFpa = HkSciTime.bdmFpa.set_FPs(InSci.ZvFpa.BIAS_MODE_MUX_SET);
 
                 otherwise
                     error('BICAS:ConfigurationBug', ...
-                        'Illegal settings value %s="%s"', key, value)
+                        'Illegal settings value %s="%s"', bdmSrcSettingKey, bdmSrcSettingValue)
             end
-            Zv.bdm = bdm;
+            ZvFpa.bdm = bdmFpa;
 
 
 

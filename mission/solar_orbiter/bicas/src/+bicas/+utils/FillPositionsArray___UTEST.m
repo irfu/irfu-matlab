@@ -200,6 +200,24 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_set_FPs(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
+            Fpa1    = Fpa([], NaN);
+            Fpa2    = Fpa([], NaN);            
+            ExpFpa3 = Fpa([],  -9);
+            Fpa3    = Fpa1.set_FPs(Fpa2);
+            testCase.verifyTrue(Fpa3 == ExpFpa3);
+
+            Fpa1    = Fpa([1, NaN;   3, NaN], NaN);
+            Fpa2    = Fpa([1,   2; NaN, NaN], NaN);
+            ExpFpa3 = Fpa([1,   2;   3,  -9],  -9);
+            Fpa3 = Fpa1.set_FPs(Fpa2);
+            testCase.verifyTrue(Fpa3 == ExpFpa3);
+        end
+        
+        
+        
         function test_size(testCase)
             % IMPLEMENTATION NOTE: In a sense, this does not only test the code,
             % but also the author's understanding of "overloading" with a method
@@ -228,6 +246,43 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                 end
             end    % for
         end
+        
+        
+        
+        function test_floatNan2logical(testCase)
+            for mcCa = {'single', 'double'}'
+                mc = mcCa{1};
+
+                ExpFpa = bicas.utils.FillPositionsArray(...
+                    [false, true,  false], 'fill positions', ...
+                    [false, false,  true]);
+                
+                ActFpa = bicas.utils.FillPositionsArray.floatNan2logical(...
+                    cast([0, 1, NaN], mc));
+
+                testCase.verifyTrue(ExpFpa == ActFpa)
+            end
+        end
+        
+        
+        
+        function test_floatNan2int(testCase)
+            for floatMcCa = {'single', 'double'}'                
+                floatMc = floatMcCa{1};
+                for intMcCa = {'uint8', 'int8'}'
+                    intMc = intMcCa{1};
+
+                    ExpFpa = bicas.utils.FillPositionsArray(...
+                        cast([    0,     1,     0], intMc), 'fill positions', ...
+                             [false, false,  true]);
+
+                    ActFpa = bicas.utils.FillPositionsArray.floatNan2int(...
+                        cast([0, 1, NaN], floatMc), intMc);
+                    
+                    testCase.verifyTrue(ExpFpa == ActFpa)
+                end
+            end
+        end
 
 
 
@@ -241,6 +296,12 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
     %########################
     %########################
     methods(Static, Access=private)
+        
+        
+        
+        function Fpa = Fpa(dataAr, fv)
+            Fpa = bicas.utils.FillPositionsArray(dataAr, 'fill value', fv);
+        end
         
         
         

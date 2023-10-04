@@ -44,43 +44,62 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 A.AC_V13.s, 45-69; ...
                 A.AC_V23.s, 56-69 ...
             };
+            SAMPLES_SIZE = [3,2];
             % Multiply the sample values with matrix to test multiple records
             % with "snapshots" (SPR>1).
-            TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(3,2)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
+            TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(SAMPLES_SIZE)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
             
             AsidTestSamplesSrm = containers.Map(TEST_DATA_CA(:, 1), TEST_DATA_CA(:, 2));
             nRows = size(TEST_DATA_CA{1,2}, 1);
-
             
-
-            % Function for testing mux=0-4. All those all those map (route) ASR
-            % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
-            function test_mux01234(bdm, dlr, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
+            
+            
+            % Test any BDM.
+            function test(bdmFloatNan, dlrFloatNan, bltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
                 assert(numel(ExpRoutingArray) == 5)
-                assert(isa(ExpAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
                 
-                % Convert ExpRoutingArray --> BltsSamplesCa (test argument)
-                bltsSamplesAVolt = [];
-                for i = 1:numel(ExpRoutingArray)
-                    routing = ExpRoutingArray(i);
-                    if isa(routing.src.value, 'bicas.proc.L1L2.AntennaSignalId')                    
-                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.src.value.s);
-                    else
-                        bltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
-                    end
-                end
-                
-                dlrFpa = bicas.utils.FillPositionsArray(dlr, 'fill value', NaN).cast('logical', 0);
+                dlrFpa = bicas.utils.FillPositionsArray.floatNan2logical(dlrFloatNan);
+                bdmFpa = bicas.utils.FillPositionsArray.floatNan2int(bdmFloatNan, 'uint8');
                 
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
-                    bdm, dlrFpa);
+                    bdmFpa, dlrFpa);
                 ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
                     [ActRoutingArray.dest], bltsSamplesAVolt);
                 
                 % ASSERTIONS
                 testCase.assertEqual(ActRoutingArray, ExpRoutingArray)
                 testCase.assertTrue(ActAsrSamplesAVoltSrm == ExpAsrSamplesAVoltSrm)
+            end
+
+            
+
+            % Function for testing BDM 0-4. All those all those map (route) ASR
+            % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
+            function test_BDM01234(bdmFloatNan, dlrFloatNan, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
+                assert(isa(ExpAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
+                assert(ismember(bdmFloatNan, [0:4]))
+                
+                % Autogenerate bltsSamplesCa (test argument) using
+                % ExpRoutingArray (only possible for BDM 0-4.
+                bltsSamplesAVolt = gen_BLTS_samples(ExpRoutingArray);
+                
+                test(bdmFloatNan, dlrFloatNan, bltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
+            end
+            
+            
+            
+            function bltsSamplesAVolt = gen_BLTS_samples(RoutingArray)
+                bltsSamplesAVolt = zeros(SAMPLES_SIZE);
+                
+                for i = 1:numel(RoutingArray)
+                    routing = RoutingArray(i);
+                    if isa(routing.src.value, 'bicas.proc.L1L2.AntennaSignalId')                    
+                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.src.value.s);
+                    else
+                        bltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
+                    end
+                end
             end
 
 
@@ -90,7 +109,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             %
             % varargin{i} == 0 or 1. Determines whether constant or NaN will
             % be used.
-            function AsSrm = selected_ASR_samples(varargin)
+            function AsSrm = get_ASR_samples(varargin)
                 assert(nargin == 9)
                 
                 % Define which varargin{i} corresponds to which ASID.
@@ -115,46 +134,86 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
             % ==========================
-            % mux = 0, dlr = [0, 1, NaN]
+            % bdm = 0, dlr = [0, 1, NaN]
             % ==========================
-            test_mux01234(...
-                0, 1, ...
-                [R.DC_V1, R.DC_V13, R.DC_V23, R.AC_V13, R.AC_V23], ...
-                selected_ASR_samples(1,1,1, 1,1,1, 1,1,1)...
-            )
-            test_mux01234(...
+            test_BDM01234(...
                 0, 0, ...
                 [R.DC_V1, R.DC_V12, R.DC_V23, R.AC_V12, R.AC_V23], ...
-                selected_ASR_samples(1,1,1, 1,1,1, 1,1,1)...
+                get_ASR_samples(1,1,1, 1,1,1, 1,1,1)...
             )
-            test_mux01234(...
+            test_BDM01234(...
+                0, 1, ...
+                [R.DC_V1, R.DC_V13, R.DC_V23, R.AC_V13, R.AC_V23], ...
+                get_ASR_samples(1,1,1, 1,1,1, 1,1,1)...
+            )
+            test_BDM01234(...
                 0, NaN, ...
                 [R.DC_V1, R.UNKNOWN_TO_NOWHERE, R.DC_V23, R.UNKNOWN_TO_NOWHERE, R.AC_V23], ...
-                selected_ASR_samples(1,0,0, 0,0,1, 0,0,1)...
+                get_ASR_samples(1,0,0, 0,0,1, 0,0,1)...
             )
 
             % =======================
-            % mux = 1, dlr = [0, NaN]
+            % bdm = 1, dlr = [0, NaN]
             % =======================
-            test_mux01234(...
+            test_BDM01234(...
                 1, 1, ...
                 [R.DC_V2, R.DC_V3, R.DC_V23, R.AC_V13, R.AC_V23], ...
-                selected_ASR_samples(0,1,1, 0,0,1, 1,1,1) ...
+                get_ASR_samples(0,1,1, 0,0,1, 1,1,1) ...
             )
-            test_mux01234(...
+            test_BDM01234(...
                 1, NaN, ...
                 [R.DC_V2, R.DC_V3, R.DC_V23, R.UNKNOWN_TO_NOWHERE, R.AC_V23], ...
-                selected_ASR_samples(0,1,1, 0,0,1, 0,0,1) ...
+                get_ASR_samples(0,1,1, 0,0,1, 0,0,1) ...
             )
 
             % ==============================
-            % mux = 4 (calibration), dlr = 1
+            % bdm = 4 (calibration), dlr = 1
             % ==============================
-            test_mux01234(...
+            test_BDM01234(...
                 4, 0, ...
                 [R.DC_V1, R.DC_V2, R.DC_V3, R.AC_V12, R.AC_V23], ...
-                selected_ASR_samples(1,1,1, 1,1,1, 1,1,1) ...
+                get_ASR_samples(1,1,1, 1,1,1, 1,1,1) ...
             )
+
+
+            % ==============
+            % BDM = 5, DLR 1
+            % ==============
+            bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1.s);
+            bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2.s);
+            bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3.s);
+            bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V13.s);
+            bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23.s);
+            test(5, 1, ...
+                bltsSamplesAVolt, ...
+                [R.REF25V_TO_DC_V1, R.REF25V_TO_DC_V2, R.REF25V_TO_DC_V3, R.AC_V13, R.AC_V23], ...
+                get_ASR_samples(1,1,1, 1,1,1, 1,1,1))
+            
+            % ==============
+            % BDM = 6, DLR 0
+            % ==============
+            bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1.s);
+            bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2.s);
+            bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3.s);
+            bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V12.s);
+            bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23.s);
+            test(6, 0, ...
+                bltsSamplesAVolt, ...
+                [R.GND_TO_DC_V1, R.GND_TO_DC_V2, R.GND_TO_DC_V3, R.AC_V12, R.AC_V23], ...
+                get_ASR_samples(1,1,1, 1,1,1, 1,1,1))
+            
+            % ==============
+            % BDM = Unknwon, DLR Unknown
+            % ==============
+            bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1.s);
+            bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2.s);
+            bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3.s);
+            bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V12.s);
+            bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23.s);
+            test(NaN, NaN, ...
+                bltsSamplesAVolt, ...
+                [R.UNKNOWN_TO_NOWHERE, R.UNKNOWN_TO_NOWHERE, R.UNKNOWN_TO_NOWHERE, R.UNKNOWN_TO_NOWHERE, R.AC_V23], ...
+                get_ASR_samples(0,0,0, 0,0,0, 0,0,1))
         end
         
         
@@ -210,10 +269,10 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-            test({C.DC_V1, 19, C.DC_V12, 27, C.DC_V23, 33,    C.AC_V12, 54, C.AC_V23, 75});    % mux=0, dlr=0
-            test({C.DC_V1, 19, C.DC_V13, 27, C.DC_V23, 33,    C.AC_V13, 54, C.AC_V23, 75});    % mux=0, dlr=1
-            test({C.DC_V2, 19, C.DC_V3,  27, C.DC_V23, 19-27, C.AC_V12, 54, C.AC_V23, 75});    % mux=1
-            test({C.DC_V1,  2, C.DC_V2,   7, C.DC_V3,  32,    C.AC_V12, 74, C.AC_V23, 85});    % mux=4
+            test({C.DC_V1, 19, C.DC_V12, 27, C.DC_V23, 33,    C.AC_V12, 54, C.AC_V23, 75});    % bdm=0, dlr=0
+            test({C.DC_V1, 19, C.DC_V13, 27, C.DC_V23, 33,    C.AC_V13, 54, C.AC_V23, 75});    % bdm=0, dlr=1
+            test({C.DC_V2, 19, C.DC_V3,  27, C.DC_V23, 19-27, C.AC_V12, 54, C.AC_V23, 75});    % bdm=1
+            test({C.DC_V1,  2, C.DC_V2,   7, C.DC_V3,  32,    C.AC_V12, 74, C.AC_V23, 85});    % bdm=4
 
         end
         

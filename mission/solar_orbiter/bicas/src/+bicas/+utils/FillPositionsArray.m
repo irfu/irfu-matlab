@@ -90,6 +90,7 @@ classdef FillPositionsArray   % < handle
         % position in dataAr is a fill position where the value is irrelevant
         % and must be hidden from the user.
         fpAr
+        class
     end
 
 
@@ -160,6 +161,7 @@ classdef FillPositionsArray   % < handle
             % ====================
             obj.dataAr = dataAr;
             obj.fpAr   = fpAr;
+            obj.class  = class(dataAr);
         end
 
 
@@ -330,7 +332,41 @@ classdef FillPositionsArray   % < handle
                     error('BICAS:Assertion', 'Does not support operation.')
             end
         end
+        
+        
+        
+        % Set those elements which are fill positions using values from another
+        % FPA.
+        %
+        % NOTE: Creates new instance. ==> Not suitable for pre-allocation.
+        function fpa2 = set_FPs(obj, fpa1)
+            % PROPOSAL: Better name.
+            % PROPOSAL: Replace by subsasgn(). See BOGIQ.
 
+            assert(strcmp(class(obj.dataAr), class(fpa1.dataAr)))
+            
+            dataAr           = obj.dataAr;
+            dataAr(obj.fpAr) = fpa1.dataAr(obj.fpAr);
+            fpAr             = obj.fpAr & fpa1.fpAr;
+            
+            fpa2 = bicas.utils.FillPositionsArray(dataAr, 'fill positions', fpAr);
+        end
+        
+        
+        
+%         function subsasgn(obj, S, value)
+%             switch S(1).type
+%                 case '()'
+%                     dataAr = subsref(obj.dataAr, S);
+%                     fpAr   = subsref(obj.fpAr, S);
+% 
+%                     varargout = {bicas.utils.FillPositionsArray(...
+%                         dataAr, 'fill positions', fpAr)};
+% 
+%                 otherwise
+%                     error('BICAS:Assertion', 'Unsupported operation.')
+%             end
+%         end
 
 
 
@@ -363,9 +399,26 @@ classdef FillPositionsArray   % < handle
         
         % Wrapper around constructor. Effectively custom constructor.
         function Fpa = floatNan2logical(ar)
+            % PROPOSAL: Assert that input elements are [0,1,NaN].
             assert(isfloat(ar))
+            floatNaN  = cast(NaN, class(ar));
+            floatZero = cast(0,   class(ar));
+            
             Fpa = bicas.utils.FillPositionsArray(...
-                ar, 'fill value', NaN).cast('logical', 0);
+                ar, 'fill value', floatNaN).cast('logical', floatZero);
+        end
+        
+        
+        
+        function Fpa = floatNan2int(ar, fpaMatlabClass)
+            assert(isfloat(ar))
+            assert(isinteger(cast(0, fpaMatlabClass)))
+
+            floatNaN  = cast(NaN, class(ar));
+            floatZero = cast(0,   class(ar));
+            
+            Fpa = bicas.utils.FillPositionsArray(...
+                ar, 'fill value', floatNaN).cast(fpaMatlabClass, floatZero);
         end
 
 

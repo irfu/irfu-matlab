@@ -46,7 +46,7 @@ classdef qual
 
             zv_Epoch        = ZvIn.Epoch;
             zvUfv           = ZvIn.ufv;
-            zvBdm           = ZvIn.bdm;
+            zvBdmFpa        = ZvIn.bdmFpa;
             zv_QUALITY_FLAG = ZvIn.QUALITY_FLAG;
             clear ZvIn
 
@@ -54,7 +54,7 @@ classdef qual
             assert(isscalar(isLfr) && islogical(isLfr))
             nRecords = irf.assert.sizes( ...
                 zv_Epoch,        [-1], ...
-                zvBdm,           [-1], ...
+                zvBdmFpa,        [-1], ...
                 zv_QUALITY_FLAG, [-1], ...
                 zvUfv,           [-1]);
 
@@ -64,7 +64,7 @@ classdef qual
             % Find CDF records to remove due to settings and LFR ZV "BW"
             %============================================================
             zvUfvSettings = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
-                zv_Epoch, zvBdm, isLfr, SETTINGS, L);
+                zv_Epoch, zvBdmFpa, isLfr, SETTINGS, L);
 
             zvUfv = zvUfv | zvUfvSettings;
 
@@ -213,9 +213,10 @@ classdef qual
         % ---------
         % zvBdm
         %       Demultiplexer data, from BIAS HK or LFR.
+        %       Fill positions are not recognized as BDMs for setting UFV.
         %
         function zvUfv = get_UFV_records_from_settings(...
-                zv_Epoch, zvBdm, isLfr, SETTINGS, L)
+                zv_Epoch, zvBdmFpa, isLfr, SETTINGS, L)
             % PROPOSAL: Only derive UFV records based on settings. Not take
             %           previously found UFV records (BW) into account. Merging UFV
             %           records from settings and BW respectively can be done
@@ -224,6 +225,7 @@ classdef qual
 
             bicas.utils.assert_ZV_Epoch(zv_Epoch)
             assert(islogical(isLfr));
+            assert(isa(zvBdmFpa, 'bicas.utils.FillPositionsArray'))
 
             %===============
             % Read settings
@@ -241,7 +243,7 @@ classdef qual
             %==========================================
             zvUfv = irf.utils.true_with_margin(...
                 zv_Epoch, ...
-                ismember(zvBdm, bdmRemoveArray), ...
+                ismember(zvBdmFpa.int2doubleNan(), bdmRemoveArray), ...
                 removeMarginSec * 1e9);
 
             %=====

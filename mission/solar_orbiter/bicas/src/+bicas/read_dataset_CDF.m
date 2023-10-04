@@ -36,7 +36,10 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     %   PROPOSAL: Write CDF file as part of test(!).
     
     % List of ZVs that should be represented as FPAs (and not as plain arrays).
-    FPA_ZV_NAME_CA = {'HK_BIA_MODE_DIFF_PROBE', 'HK_BIA_DIFF_GAIN'};
+    FPA_ZV_NAME_BIAS_HK_CA = {'HK_BIA_MODE_MUX_SET', 'HK_BIA_MODE_DIFF_PROBE', 'HK_BIA_DIFF_GAIN'};
+    FPA_ZV_NAME_LFR_SCI_CA = {'BIAS_MODE_MUX_SET'};
+    
+    FPA_ZV_NAME_CA = [FPA_ZV_NAME_BIAS_HK_CA, FPA_ZV_NAME_LFR_SCI_CA];
 
     tTicToc = tic();
 
