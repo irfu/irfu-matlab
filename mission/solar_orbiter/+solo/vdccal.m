@@ -8,6 +8,10 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_in
 % =========
 % VDC_inp, EDC_inp
 %       TSeries objects with data from L2 CWF file(s).
+%       NOTE: 2023-10-04: BICAS calls this function but sets samples to NaN for
+%       timestamps for which QUALITY_FLAG are (strictly) lower than BICAS
+%       setting PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN which is set to "2" by
+%       default.
 % calFilename
 %       The name of the calibration file (.mat) one wishes to
 %       use. If empty, then code will use BICAS's official calibration file
