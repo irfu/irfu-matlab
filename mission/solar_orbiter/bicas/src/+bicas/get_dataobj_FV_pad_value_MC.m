@@ -8,14 +8,14 @@
 %
 % RETURN VALUES
 % =============
-% fillValue
+% fv
 %       Empty if there is no fill value.
 % padValue
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function [fillValue, padValue, mc] = get_dataobj_fill_pad_MC_values(Do, zvName)
+function [fv, padValue, mc] = get_dataobj_FV_pad_value_MC(Do, zvName)
     % NOTE: Uncertain how it handles the absence of a fill value. (Or is fill value mandatory?)
     % PROPOSAL: Remake into general-purpose function.
     % PROPOSAL: Remake into just using the do.Variables array?
@@ -32,7 +32,7 @@ function [fillValue, padValue, mc] = get_dataobj_fill_pad_MC_values(Do, zvName)
     
     % Obtain tentative values
     % NOTE: Special function for dataobj.
-    fillValue   = getfillval(Do, zvName);
+    fv = getfillval(Do, zvName);
     mc = Do.data.(zvName).type;
     
     % NOTE: For unknown reasons, the fill value for tt2000 zVariables (or at
@@ -41,15 +41,15 @@ function [fillValue, padValue, mc] = get_dataobj_fill_pad_MC_values(Do, zvName)
     %       TT2000.
     if strcmp(mc, 'tt2000')
         % NOTE: Uncertain if this is the correct conversion function.
-        fillValue = spdfparsett2000(fillValue);
+        fv = spdfparsett2000(fv);
         mc = 'int64';
     end
     
     % =========
     % Pad value
     % =========
-    iZv = strcmp(Do.Variables(:,1), zvName);
-    padValue   = Do.Variables{iZv, 9};
+    iZv      = strcmp(Do.Variables(:,1), zvName);
+    padValue = Do.Variables{iZv, 9};
     % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad
     % values since the structure/array commented on should be identical.
     

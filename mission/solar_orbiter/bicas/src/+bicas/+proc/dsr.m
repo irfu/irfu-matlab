@@ -477,7 +477,7 @@ classdef dsr
 
 
         function zvDsr = downsample_ZV_minimum(...
-                zvOsr, fillValue, iRecordsInBinCa)
+                zvOsr, fv, iRecordsInBinCa)
             
             nRecordsDsr = numel(iRecordsInBinCa);
             zvDsr = zeros(nRecordsDsr, 1, class(zvOsr));
@@ -485,7 +485,7 @@ classdef dsr
             for iBin = 1:nRecordsDsr
                 zvDsr(iBin) = ...
                     bicas.proc.dsr.downsample_ZV_minimum_bin(...
-                        zvOsr(iRecordsInBinCa{iBin}), fillValue);
+                        zvOsr(iRecordsInBinCa{iBin}), fv);
             end
         end
 
@@ -501,18 +501,18 @@ classdef dsr
         % zvDsr
         %       Scalar. Lowest value of the bin values.
         %       Bin with only non-fill values or empty bin: Fill value.
-        function zvDsr = downsample_ZV_minimum_bin(zvBinOsr, fillValue)
+        function zvDsr = downsample_ZV_minimum_bin(zvBinOsr, fv)
 
-            assert(strcmp(class(zvBinOsr), class(fillValue)))
+            assert(strcmp(class(zvBinOsr), class(fv)))
 
             % Remove records with fill values.
-            bUse = (zvBinOsr ~= fillValue);
+            bUse = (zvBinOsr ~= fv);
             zvBinOsr = zvBinOsr(bUse, :, :);
             
             % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
             % does not work if one wants to return 0 for empty bins.
             if isempty(zvBinOsr)
-                zvDsr = fillValue;
+                zvDsr = fv;
             else
                 % CASE: zv_QUALITY_FLAG_bin contains no fill values.
                 zvDsr = min(zvBinOsr, [], 1);
@@ -524,14 +524,14 @@ classdef dsr
         % Downsample a bitmask zVariable using pre-defined bins.
         %
         function zvDsr = downsample_ZV_bitmask(...
-                zvOsr, fillValue, iRecordsInBinCa)
+                zvOsr, fv, iRecordsInBinCa)
 
             nRecordsDsr = numel(iRecordsInBinCa);
             zvDsr = zeros(nRecordsDsr, 1, class(zvOsr));
 
             for iBin = 1:nRecordsDsr
                 zvDsr(iBin) = bicas.proc.dsr.downsample_ZV_bitmask_bin(...
-                    zvOsr(iRecordsInBinCa{iBin}), fillValue);
+                    zvOsr(iRecordsInBinCa{iBin}), fv);
             end
         end
 
@@ -552,7 +552,7 @@ classdef dsr
         %       Bin with only fill values or empty bin: Fill value.
         %
         function zvDsr = downsample_ZV_bitmask_bin(...
-                zvBinOsr, fillValue)
+                zvBinOsr, fv)
 
             % Algorithm does not generalize to more than 1D, due to:
             % (1) bicas.utils.bitops.or(),
@@ -560,14 +560,14 @@ classdef dsr
             assert(iscolumn(zvBinOsr))
             
             assert(isinteger(zvBinOsr))
-            assert(strcmp(class(zvBinOsr), class(fillValue)))
+            assert(strcmp(class(zvBinOsr), class(fv)))
             
             % Remove records with fill values.
-            b = (zvBinOsr ~= fillValue);
+            b = (zvBinOsr ~= fv);
             zvBinOsr = zvBinOsr(b);
 
             if isempty(zvBinOsr)
-                zvDsr = fillValue;
+                zvDsr = fv;
             else
                 zvDsr = bicas.utils.bitops.or(zvBinOsr);
             end

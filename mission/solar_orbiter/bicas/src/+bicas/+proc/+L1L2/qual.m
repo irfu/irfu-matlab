@@ -159,7 +159,7 @@ classdef qual
 
 
 
-        % Overwrite selected records of voltage & current with fill values.
+        % Overwrite selected records of voltage & current with FVs.
         %
         % ARGUMENTS
         % =========
@@ -168,7 +168,7 @@ classdef qual
         % zvAsrSamplesAVoltSrm
         %       ASR samples.
         %       NOTE: Handle object which is MODIFIED.
-        function zvCurrentAAmpere = set_voltage_current_fill_value(...
+        function zvCurrentAAmpere = set_voltage_current_FV(...
                 zv_Epoch, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, zvUfv, L)
             % PROPOSAL: Separate functions for ASR samples and bias currents.
             

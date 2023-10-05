@@ -103,7 +103,7 @@ classdef dc
             clear ZvIn
             
             % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
-            Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
+            Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
                 PreDc.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
             Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
             clear AsrSamplesAVoltSrm

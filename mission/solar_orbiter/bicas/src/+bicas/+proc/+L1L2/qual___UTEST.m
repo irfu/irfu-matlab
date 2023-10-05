@@ -143,7 +143,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-        function test_set_voltage_current_fill_value(testCase)
+        function test_set_voltage_current_FV(testCase)
 
             function test(...
                     zv_Epoch, zvUfv, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, ...
@@ -156,7 +156,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 L = bicas.Logger('none', false);
 
                 % NOTE: Modifies argument zvAsrSamplesAVoltSrm (handle object).
-                actZvCurrentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
+                actZvCurrentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
                     zv_Epoch, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, zvUfv, L);
 
                 actZvAsrSamplesAVoltSrm = zvAsrSamplesAVoltSrm;

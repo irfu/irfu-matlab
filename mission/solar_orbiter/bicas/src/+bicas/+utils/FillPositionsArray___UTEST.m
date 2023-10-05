@@ -453,7 +453,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         % Do multiple tests for FPAs which should be equal.
-        function test_equality(testCase, fpa1, fpa2, fillValue)
+        function test_equality(testCase, fpa1, fpa2, fv)
             % Ensure that method "eq" is called.
             r = (fpa1 == fpa2);
             testCase.assertTrue(isscalar(r))
@@ -465,8 +465,8 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             testCase.verifyFalse(r)
 
             testCase.verifyEqual(...
-                fpa1.get_data(fillValue), ...
-                fpa2.get_data(fillValue))
+                fpa1.get_data(fv), ...
+                fpa2.get_data(fv))
             testCase.verifyEqual(...
                 fpa1.fpAr, ...
                 fpa2.fpAr)

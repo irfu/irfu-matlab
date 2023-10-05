@@ -31,7 +31,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     %
     % PROPOSAL: Test code:
     %   PROPOSAL: Separate ~inner function that accepts ~dataobj as input argument.
-    %       NOTE: bicas.get_dataobj_fill_pad_MC_values() takes DO as
+    %       NOTE: bicas.get_dataobj_FV_pad_value_MC() takes DO as
     %             argument.
     %   PROPOSAL: Write CDF file as part of test(!).
     
@@ -68,7 +68,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
         zvValueDo = DataObj.data.(zvName).data;
         ZvsLog.(zvName) = zvValueDo;    % NOTE: Do = As found in dataobj (before typecasting & replacing FV-->NaN)).
         
-        [fillValue, ~, mc] = bicas.get_dataobj_fill_pad_MC_values(DataObj, zvName);
+        [fv, ~, mc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
         
         % =========================
         % Normalize ZV MATLAB class
@@ -94,10 +94,10 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
         zvValueTypedNan = zvValueTyped;
         if isfloat(zvValueTypedNan)
             
-            if ~isempty(fillValue)
+            if ~isempty(fv)
                 % CASE: There is a fill value.
                 
-                zvValueTypedNan = irf.utils.replace_value(zvValueTypedNan, fillValue, NaN);
+                zvValueTypedNan = irf.utils.replace_value(zvValueTypedNan, fv, NaN);
             end
         end
         
@@ -105,16 +105,16 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
             % ===============================
             % Derive FPA representation of ZV
             % ===============================
-            if isempty(fillValue)
+            if isempty(fv)
                 Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'NO_FILL_POSITIONS');
             else
-                Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'FILL_VALUE', fillValue);
+                Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'FILL_VALUE', fv);
             end
             
             ZvFpa.(zvName) = Fpa;
         else
             Zvs.(zvName)   = zvValueTypedNan;
-            ZvFv.(zvName)  = fillValue;
+            ZvFv.(zvName)  = fv;
         end
     end
 

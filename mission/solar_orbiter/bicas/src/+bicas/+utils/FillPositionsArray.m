@@ -175,15 +175,15 @@ classdef FillPositionsArray   % < handle
             switch(fpDescriptionType)
                 case 'FILL_VALUE'
                     assert(numel(varargin) == 1)
-                    fillValue = varargin{1};
-                    assert(isscalar(fillValue))
-                    assert(strcmp(class(fillValue), class(dataAr)), ...
+                    fv = varargin{1};
+                    assert(isscalar(fv))
+                    assert(strcmp(class(fv), class(dataAr)), ...
                         'Fill value and data have different MATLAB classes.')
 
                     % NOTE: Array operation. Can not use isequaln(). Needs
                     % special case for NaN.
-                    fpAr = (dataAr == fillValue) | (isnan(dataAr) & isnan(fillValue));
-                    clear fillValue
+                    fpAr = (dataAr == fv) | (isnan(dataAr) & isnan(fv));
+                    clear fv
 
                 case 'FILL_POSITIONS'
                     assert(numel(varargin) == 1)
@@ -218,15 +218,15 @@ classdef FillPositionsArray   % < handle
 
 
         % Return array with fill positions filled in with specified fill value.
-        function dataAr = get_data(obj, fillValue)
-            assert(isscalar(fillValue))
+        function dataAr = get_data(obj, fv)
+            assert(isscalar(fv))
             assert(...
-                strcmp(class(fillValue), obj.mc), ...
-                'Argument fillValue has a MATLAB class ("%s") which is inconsistent with the object''s MATLAB class ("%s").', ...
-                class(fillValue), obj.mc)
+                strcmp(class(fv), obj.mc), ...
+                'Argument fv has a MATLAB class ("%s") which is inconsistent with the object''s MATLAB class ("%s").', ...
+                class(fv), obj.mc)
 
             dataAr           = obj.dataAr;
-            dataAr(obj.fpAr) = fillValue;
+            dataAr(obj.fpAr) = fv;
         end
         
         
@@ -244,7 +244,7 @@ classdef FillPositionsArray   % < handle
         % outputClass
         %       MATLAB class to which the operation output will be cast. Is the
         %       type of the new FPA.
-        % fillValueBefore
+        % fvBefore
         %       Fill value used for the input to the function.
         %
         %
@@ -254,7 +254,7 @@ classdef FillPositionsArray   % < handle
         %       FPA. Operation output array elements for fill positions will be
         %       ignored in the new FPA.
         %
-        function Fpa = convert(obj, fhArrayOperation, outputClass, fillValueBefore)
+        function Fpa = convert(obj, fhArrayOperation, outputClass, fvBefore)
             % IMPLEMENTATION NOTE: Can not use (a) arbitrary fill values, or (b)
             % just use the values stored in obj.dataAr since the array operation
             % might trigger error for some values, e.g. ~NaN (negating NaN, but
@@ -265,7 +265,7 @@ classdef FillPositionsArray   % < handle
             % specified MATLAB class/type?
             assert(isa(fhArrayOperation, 'function_handle'))
             
-            inputAr      = obj.get_data(fillValueBefore);
+            inputAr      = obj.get_data(fvBefore);
             outputAr     = fhArrayOperation(inputAr);
             castOutputAr = cast(outputAr, outputClass);
             

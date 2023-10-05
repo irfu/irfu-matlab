@@ -183,8 +183,8 @@ function DataObj = init_modif_dataobj(...
         % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
         % /2023-08-10
         if isfield(ZvsSubset, 'QUALITY_FLAG')
-            %fillValue = getfillval(DataObj, 'QUALITY_FLAG');
-            [fillValue, ~, ~] = bicas.get_dataobj_fill_pad_MC_values(DataObj, 'QUALITY_FLAG');
+            %fv = getfillval(DataObj, 'QUALITY_FLAG');
+            [fv, ~, ~] = bicas.get_dataobj_FV_pad_value_MC(DataObj, 'QUALITY_FLAG');
             
             %===================================================================
             % Set global max value for zVar QUALITY_FLAG
@@ -201,7 +201,7 @@ function DataObj = init_modif_dataobj(...
                     ' global max value.'], ...
                     key, value);
             end
-            b = ZvsSubset.QUALITY_FLAG ~= fillValue;
+            b = ZvsSubset.QUALITY_FLAG ~= fv;
             ZvsSubset.QUALITY_FLAG(b, :) = min(...
                 ZvsSubset.QUALITY_FLAG(b, :), ...
                 value);
@@ -286,9 +286,9 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     % (when reading CDF), then the code can not distinguish between fill
     % values and pad values writing the CDF.
     %======================================================================
-    [fillValue, ~, ~] = bicas.get_dataobj_fill_pad_MC_values(DataObj, zvName);
+    [fv, ~, ~] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
     if isfloat(zvValuePd)
-        zvValueTemp = irf.utils.replace_value(zvValuePd, NaN, fillValue);
+        zvValueTemp = irf.utils.replace_value(zvValuePd, NaN, fv);
     else
         zvValueTemp = zvValuePd;
     end
@@ -327,7 +327,7 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
         
         % Remove fill values
         zvValueCdfLin = zvValueCdf(:);
-        zvValueCdfLin(zvValueCdfLin == fillValue) = [];
+        zvValueCdfLin(zvValueCdfLin == fv) = [];
         assert(all(~isnan(zvValueCdfLin)), ...
             'BICAS:Assertion', ...
             'zvValuePdLin for zvName="%s" contains NaN despite being expected not to.', ...
@@ -438,10 +438,10 @@ function DataObj = handle_empty_ZV_anomaly(...
                     zvName, settingKey, settingValue)
                 
                 nEpochRecords  = size(ZvsSubset.Epoch, 1);
-                [fillValue, ~, ~] = bicas.get_dataobj_fill_pad_MC_values(DataObj, zvName);
+                [fv, ~, ~] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
                 zvSize      = [nEpochRecords, DataObj.data.(fn{1}).dim];
                 zvValueTemp = cast(zeros(zvSize), mc);
-                zvValueCdf  = irf.utils.replace_value(zvValueTemp, 0, fillValue);
+                zvValueCdf  = irf.utils.replace_value(zvValueTemp, 0, fv);
                 
                 DataObj.data.(zvName).data = zvValueCdf;
                 
