@@ -408,7 +408,10 @@ classdef FillPositionsArray   % < handle
         
         % Indexing overloading: Array indexing for writing: Fpa(i, j, ...) = ...
         %
-        % NOTE: Function should currently be unused (except for tests).
+        % Supports assigning from (1) either a (1) FPA, or (2) array, either of
+        % which must have (a) the same MATLAB class, and (b) compatible size
+        % (either identical or scalar).
+        %
         %
         % PERFORMANCE
         % ===========
@@ -417,13 +420,11 @@ classdef FillPositionsArray   % < handle
         % subsasgn does not work. Time consumption per element grows with size
         % of FPA. Class should thus not be suitable for storing samples in the
         % processing step which updates pre-allocated global array of samples.
-        function Fpa1 = subsasgn(Fpa1, S, Fpa2)
+        %
+        function Fpa1 = subsasgn(Fpa1, S, obj2)
             switch S(1).type
                 case '()'
                     assert(isscalar(S))
-                    assert(isa(Fpa2, 'bicas.utils.FillPositionsArray'))
-                    assert(isequaln(Fpa1.mc, Fpa2.mc))
-                    
                     % IMPLEMENTATION NOTE: Check that index is not some
                     % array-like objet, e.g. FPA itself. Could maybe support FPA
                     % in the future(?!!).
@@ -432,8 +433,19 @@ classdef FillPositionsArray   % < handle
                         assert(isnumeric(x) || islogical(x) || strcmp(x, ':'))
                     end
                     
-                    Fpa1.dataAr = subsasgn(Fpa1.dataAr, S, Fpa2.dataAr);
-                    Fpa1.fpAr   = subsasgn(Fpa1.fpAr,   S, Fpa2.fpAr);
+                    if isa(obj2, 'bicas.utils.FillPositionsArray')
+                        assert(strcmp(Fpa1.mc, obj2.mc))
+                        dataAr2 = obj2.dataAr;
+                        fpAr2   = obj2.fpAr;
+                    else
+                        assert(strcmp(Fpa1.mc, class(obj2)), ...
+                            'Assigned value has a MATLAB class "%s" that is incompatible with the FPA'' MATLAB class "%s".', Fpa1.mc, class(obj2))
+                        dataAr2 = obj2;
+                        fpAr2   = false(size(obj2));
+                    end
+                    
+                    Fpa1.dataAr = subsasgn(Fpa1.dataAr, S, dataAr2);
+                    Fpa1.fpAr   = subsasgn(Fpa1.fpAr,   S, fpAr2);
 
                 otherwise
                     error('BICAS:Assertion', 'Unsupported operation.')

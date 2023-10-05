@@ -319,20 +319,27 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         
-        function test_subsasgn(testCase)
+        function test_subsasgn_exact_size(testCase)
             import bicas.utils.FillPositionsArray___UTEST.Fpa
             
-            % Test assigning single to double. ==> Error
+            % Copies FPAs, which requires FPA to be a non-handle class.
+            assert(~isa(bicas.utils.FillPositionsArray.floatNan2logical([]), 'handle'))
+            
+            % Test assigning the wrong type: single to double. ==> Error
             Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
             Fpa2 = Fpa(single([9]'), single(NaN));
-            function test_assign_fail()
+            function test_assign_FPA_fail()
                 Fpa1(1,1) = Fpa2;
             end
-            testCase.verifyError(@() (test_assign_fail()), ?MException)            
+            testCase.verifyError(@() (test_assign_FPA_fail()), ?MException)            
+            function test_assign_array_fail()
+                Fpa1(1,1) = Fpa2.get_data(NaN);
+            end
+            testCase.verifyError(@() (test_assign_array_fail()), ?MException)            
 
             % Test keep both FV and non-FV.
             % Test overwrite FV/non-FV with FV/non-FV.
-            Fpa1 = Fpa([1, NaN, 2, NaN, 3,   NaN], NaN);
+            Fpa1 = Fpa([1, NaN, 2, NaN,   3, NaN], NaN);
             Fpa2 = Fpa(        [8,   9, NaN, NaN], NaN);
             Fpa3 = Fpa([1, NaN, 8,   9, NaN, NaN], NaN);
             Fpa1(3:6) = Fpa2;
@@ -342,11 +349,16 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             % Regular indexing
             % ================
             % Assign 0x0 to 0x0 over entire range.
-            Fpa1 = Fpa([], NaN);
+            Fpa1a = Fpa([], NaN);
+            Fpa1b = Fpa1a;
+            
             Fpa2 = Fpa([], NaN);
             Fpa3 = Fpa([], NaN);
-            Fpa1(:, :, :, :) = Fpa2;
-            testCase.assertEqual(Fpa1, Fpa3)
+            Fpa1a(:, :, :, :) = Fpa2;
+            testCase.assertEqual(Fpa1a, Fpa3)
+
+            Fpa1b(:, :, :, :) = Fpa2.get_data(NaN);
+            testCase.assertEqual(Fpa1b, Fpa3)
 
             % Assign single element.
             Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
@@ -355,6 +367,13 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             Fpa1(2, 3) = Fpa2;
             testCase.verifyEqual(Fpa1, Fpa3)
             
+            % Assign entire row.
+            Fpa1 = Fpa([1,2,NaN; 4,NaN,  6], NaN);
+            Fpa2 = Fpa([9,8,NaN], NaN);
+            Fpa3 = Fpa([1,2,NaN; 9,  8,NaN], NaN);
+            Fpa1(2, :) = Fpa2;
+            testCase.verifyEqual(Fpa1, Fpa3)
+
             % Assign entire dimensions.
             Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
             Fpa2 = Fpa([9,8,7; 6,5,4], NaN);
@@ -383,25 +402,52 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             % ================
             % Logical indexing
             % ================
-            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa1a = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa1b = Fpa1a;
             Fpa2 = Fpa([9,8,7]', NaN);
             Fpa3 = Fpa([9,2,7; 4,8,6], NaN);
-            Fpa1(logical([1,0,1; 0,1,0])) = Fpa2;
-            testCase.verifyEqual(Fpa1, Fpa3)
+            Fpa1a(logical([1,0,1; 0,1,0])) = Fpa2;
+            testCase.verifyEqual(Fpa1a, Fpa3)
+            
+            Fpa1b(logical([1,0,1; 0,1,0])) = Fpa2.get_data(NaN);
+            testCase.verifyEqual(Fpa1b, Fpa3)
             
             % =======================
             % Logical linear indexing
             % =======================
             % Index = 1D vector of logical.
-            Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa1a = Fpa([1,2,3; 4,5,6], NaN);
+            Fpa1b = Fpa1a;
             Fpa2 = Fpa([9,8,7]', NaN);
             Fpa3 = Fpa([9,2,7; 4,8,6], NaN);
-            Fpa1(logical([1,0,0, 1,1,0]')) = Fpa2;
-            testCase.verifyEqual(Fpa1, Fpa3)
+            Fpa1a(logical([1,0,0, 1,1,0]')) = Fpa2;
+            testCase.verifyEqual(Fpa1a, Fpa3)
+
+            Fpa1b(logical([1,0,0, 1,1,0]')) = Fpa2.get_data(NaN);
+            testCase.verifyEqual(Fpa1b, Fpa3)
         end
         
         
         
+        function test_subsasgn_different_size(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
+            % Copies FPAs, which requires FPA to be a non-handle class.
+            assert(~isa(bicas.utils.FillPositionsArray.floatNan2logical([]), 'handle'))
+
+            % Assign scalar to matrix.
+            Fpa1a = Fpa([1,NaN,3; 4,5,NaN], NaN);
+            Fpa1b = Fpa1a;
+            Fpa2 = Fpa([9], NaN);
+            Fpa3 = Fpa([9,9,9; 9,9,9], NaN);
+            Fpa1a(:, :) = Fpa2;
+            testCase.verifyEqual(Fpa1a, Fpa3)
+            Fpa1b(:, :) = Fpa2.get_data(NaN);
+            testCase.verifyEqual(Fpa1b, Fpa3)
+
+        end
+
+
         function test_size(testCase)
             % IMPLEMENTATION NOTE: In a sense, this does not only test the code,
             % but also the author's understanding of "overloading" with a method
