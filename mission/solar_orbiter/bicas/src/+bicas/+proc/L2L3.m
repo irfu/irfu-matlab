@@ -2,8 +2,6 @@
 % Class that collects "processing functions" as public static methods. Only
 % covers processing L2-->L3.
 %
-% This class is not meant to be instantiated.
-%
 %
 % CODE CONVENTIONS
 % ================
@@ -25,6 +23,8 @@ classdef L2L3
 %       CON: Not very heavy operation.
 %   PRO: Leads to better organization of code.
 %       PRO: process_L2_to_L3() is too large and should be split up anyway.
+%   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed after
+%        the latter.
 
 
 
@@ -175,8 +175,8 @@ classdef L2L3
             %=========================================
             % Global attributes -- shared between all OSR+DSR datasets.
             InitialGa = struct();
-            InitialGa.OBS_ID                 = InLfrCwf.Ga.OBS_ID;
-            InitialGa.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
+            InitialGa.OBS_ID                = InLfrCwf.Ga.OBS_ID;
+            InitialGa.SOOP_TYPE             = InLfrCwf.Ga.SOOP_TYPE;
             % zVariables -- shared between all OSR datasets.
             InitialOsrZv = struct();
             InitialOsrZv.Epoch              = InLfrCwf.Zv.Epoch;

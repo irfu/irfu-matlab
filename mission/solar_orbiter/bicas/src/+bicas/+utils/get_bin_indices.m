@@ -26,15 +26,15 @@
 % ARGUMENTS
 % =========
 % t
-%       1D numeric array. Sorted increasing (non-monotonically).
+%       1D numeric array. Sorted increasing (non-strictly).
 % bb
-%       1D numeric array. Sorted increasing (non-monotonically).
+%       1D numeric array. Sorted increasing (non-strictly).
 %       Bin boundaries (BB). There are no bins below or above the highest
 %       boundaries (to infinities).
 %       NOTE: Smaller boundary of a bin is inclusive, higher boundary is
-%       exclusive.
+%             exclusive.
 %       NOTE: Can have zero-size bins, but no data will be assigned to those
-%       bins (since no t satisfies b =< t < b).
+%             bins (since there is no "t" which satisfies b =< t < b).
 %       NOTE: Empty xBoundaries ==> iInBinCa == {}
 % nBbThreshold
 %       Scalar number, >=3.
@@ -69,7 +69,7 @@ function iInBinCa = get_bin_indices(t, bb, nBbThreshold)
     %        (L2-->L2+L3).
     %        solo_L2_rpw-lfr-surv-cwf-e_20200704_V01.cdf (99 MiB).
     %
-    % PROPOSAL: Move to bicas.proc.dsr or bicas.proc.utils.
+    % PROPOSAL: Move to bicas.proc.dsr.
     %   CON: Potentially generic outside of BICAS.
     % --------------------------------------------------------------
     % Speed test for older implementation 2021-05-19, brain:
@@ -94,23 +94,22 @@ function iInBinCa = get_bin_indices(t, bb, nBbThreshold)
     % ASSERTIONS
     assert(iscolumn(t),  'Argument t is not a column vector.')
     assert(iscolumn(bb), 'Argument binBoundaries is not a column vector.')
-    % Does not need to check for MONOTONICALLY ascending bin boundaries.
-    % Algorithm works for non-monotonic increasing values.
-    assert(issorted(bb, 'ascend'), 'Argument bb is not sorted and increasing.')
+    
     % NOTE: REQUIRED by recursive implementation for adding back index offsets
     % when merging results from recursive calls.
     assert(issorted(t,  'ascend'), 'Argument t is not sorted and increasing.')
+    
+    % Does not need to check for STRICTLY ascending bin boundaries.
+    % Algorithm works for non-strictly increasing values.
+    assert(issorted(bb, 'ascend'), 'Argument bb is not sorted and increasing.')
+    
     % Going below threshold leads to infinite recursion.
     assert(isscalar(nBbThreshold) && (nBbThreshold >= 3))
     
-    
-    
     % Slow for large vectors.
-    % iInBinCa = implementation_RAW(t, binBoundaries);   
-    
+    % iInBinCa = implementation_RAW(t, binBoundaries);
     % Faster
     iInBinCa = implementation_RECURSIVE(t, bb, nBbThreshold);
-    
 end
 
 
@@ -130,6 +129,7 @@ function iInBinCa = implementation_RECURSIVE(t, bb, nBbThreshold)
     if nBb >= nBbThreshold
         i = round((1+nBb) / 2);
         
+        % Group bins into two large bins.
         iInBinCa  = implementation_RAW(t, bb([1,i,end]));
         
         % NOTE: Separate variables which are useful for debugging (inspecting
@@ -145,10 +145,10 @@ function iInBinCa = implementation_RECURSIVE(t, bb, nBbThreshold)
         
         % Add offset to the resulting indices from the SECOND recursive call
         % ------------------------------------------------------------------
-        % ASSUMES: t is sorted. Can otherwise not adjust indices from second
-        % recursive call this easily since iInBinCa{1} would not constitute a
-        % continuous range of indices starting at 1. Relaxing the assumption
-        % would require more index magic.
+        % ASSUMES: t is (non-strictly) increasing. Can otherwise not adjust
+        % indices from second recursive call this easily since iInBinCa{1} would
+        % not constitute a continuous range of indices starting at 1. Relaxing
+        % the assumption would require more index magic.
         iInBinCa2 = cellfun(@(x) (x+numel(t1)), iInBinCa2, 'UniformOutput', false);
         
         iInBinCa = [iInBinCa1; iInBinCa2];
@@ -161,7 +161,7 @@ end
 
 
 function iInBinCa = implementation_RAW(t, bb)
-    % PROPOSAL: Special case for b small: if-then
+    % PROPOSAL: Special case for bb small: if-then
     
     nBins = numel(bb) - 1;
 
@@ -171,16 +171,15 @@ function iInBinCa = implementation_RAW(t, bb)
     %     since cell(-1,1) == cell(0,1).
     iInBinCa = cell(nBins, 1);
     for iBin = 1:nBins
-        b =   (bb(iBin) <= t) ...
-            & (t        <  bb(iBin+1));
+        bInBin = (bb(iBin) <= t) & (t < bb(iBin+1));
 
-        % NOTE: find does not always return a column vector for column vector
+        % NOTE: find() does not always return a column vector for column vector
         % input.
         % find(zeros(0,1)) == <0x1>
         % find(zeros(1,1)) == <0x0>  (sic!)
         % find(zeros(2,1)) == <0x1>
         
-        iInBin = find(b);
+        iInBin = find(bInBin);
         %iInBin = find([b; 0; 0]);   % Not a speed improvement.
         
         % Normalize result to always be a column vector.

@@ -5,13 +5,6 @@
 classdef bitops
     % PROPOSAL: Automatic test code.
     
-
-    
-    %#######################
-    %#######################
-    % PUBLIC STATIC METHODS
-    %#######################
-    %#######################
     methods(Static)
 
         % Repeated bit-wise OR on all values in vector.

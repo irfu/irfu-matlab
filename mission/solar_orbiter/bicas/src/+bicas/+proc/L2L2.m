@@ -11,16 +11,6 @@ classdef L2L2
     
     
     
-    %#####################
-    %#####################
-    % INSTANCE PROPERTIES
-    %#####################
-    %#####################
-    properties(SetAccess = immutable)
-    end
-
-
-
     %#######################
     %#######################
     % PUBLIC STATIC METHODS

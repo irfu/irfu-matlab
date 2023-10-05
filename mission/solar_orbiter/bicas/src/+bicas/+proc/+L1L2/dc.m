@@ -102,7 +102,7 @@ classdef dc
                 bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);
             clear ZvIn
             
-            % NOTE: Modifies AsrSamplesAVoltSrm !
+            % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
             Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_fill_value(...
                 PreDc.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
             Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;

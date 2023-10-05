@@ -62,7 +62,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             testCase.verifyError(@() dataAr_assign_fail(), ?MException)
             if 0
                 % Read dataAr (should fail).
-                % Does not work, since class does not work.
+                % NOTE: Does not work, since class does not work.
                 testCase.verifyError(@() (Fpa.dataAr), ?MException)
             end
             

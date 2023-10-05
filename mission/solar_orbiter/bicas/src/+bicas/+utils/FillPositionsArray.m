@@ -4,7 +4,15 @@
 % without resorting to using fill values to represent them. Analogous to, and
 % inspired by, JUICE/RPWI GS pipeline's class FillPositionsArray.
 %
-% Immutable.
+%
+% RATIONALE
+% =========
+% Class should be useful for representing variables where individual elements
+% can also be unknown (in practice, originate from CDF fill values). BICAS was
+% originally not written with this in mind, but some has been retrofitted to use
+% this class, but far from all. Using this class more should however be the
+% natural approach to solve problems associated with fill values/unknown values
+% in the future.
 %
 %
 % NAMING CONVENTION
@@ -74,7 +82,8 @@ classdef FillPositionsArray   % < handle
     % PROPOSAL: Support more constructor modes:
     %   PROPOSAL: All FPs false. Requires only data.
     %   PROPOSAL: All FPs true. Requires only array size.
-    %   PROPOSAL: Reorder arguments to have initType first.
+    %   PROPOSAL: Reorder arguments to have fpDescriptionType first.
+    %       CON: Unnecessary. Still makes sense to always have data first.
     %
     % PROPOSAL: More static constructor wrapper methods
     %   PRO: Useful for automatic tests.
@@ -93,8 +102,6 @@ classdef FillPositionsArray   % < handle
         % write-protected though. Update test w.r.t. to this if fixed.
         dataAr
     end
-
-
     
     properties(GetAccess=public, SetAccess=private)
         % Logical array of same size as dataAr. True<=>The corresponding
@@ -103,10 +110,9 @@ classdef FillPositionsArray   % < handle
         fpAr
     end
     
-    
-    
     properties(GetAccess=public, SetAccess=immutable)
         % MATLAB class for internal data.
+        % NOTE: Immutable.
         class
     end
 
@@ -199,9 +205,9 @@ classdef FillPositionsArray   % < handle
         function dataAr = get_data(obj, fillValue)
             assert(isscalar(fillValue))
             assert(...
-                strcmp(class(fillValue), class(obj.dataAr)), ...
+                strcmp(class(fillValue), obj.class), ...
                 'Argument fillValue has a MATLAB class ("%s") which is inconsistent with the object''s MATLAB class ("%s").', ...
-                class(fillValue), class(obj.dataAr))
+                class(fillValue), obj.class)
 
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fillValue;
@@ -274,9 +280,9 @@ classdef FillPositionsArray   % < handle
         
         % Utility function
         function data = int2doubleNan(obj)
-            assert(isinteger(obj.dataAr), 'FPA is not integer. It is of class "%s".', class(obj.dataAr))
+            assert(isinteger(obj.dataAr), 'FPA is not integer. It is of class "%s".', obj.class)
             
-            fillValue = cast(0, class(obj.dataAr));
+            fillValue = cast(0, obj.class);
             Fpa  = obj.cast('double', fillValue);
             data = Fpa.get_data(NaN);
         end
@@ -408,7 +414,7 @@ classdef FillPositionsArray   % < handle
             % PROPOSAL: Better name.
             % PROPOSAL: Replace by subsasgn(). See BOGIQ.
 
-            assert(strcmp(class(obj.dataAr), class(fpa1.dataAr)))
+            assert(strcmp(obj.class, class(fpa1.dataAr)))
             
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fpa1.dataAr(obj.fpAr);

@@ -1,9 +1,11 @@
 %
-% Performance test for bicas.utils.FillPositionsArray.subsasgn(), i.e. for assigning Fpa(...) = OtherFpa.
+% Performance test for bicas.utils.FillPositionsArray.subsasgn(), i.e. for
+% assigning Fpa(...) = OtherFpa.
 %
-% The performance of that function is critical to the performance of LFR-SWF
-% processing. This code tests how modifying subsets of internal values scales
-% with the size of the pre-allocated internal variable.
+% The performance of that function could be critical to the performance of
+% LFR-SWF processing if FPAs are ever used for updating the (preallocated)
+% global array of samples. This code tests how modifying subsets of internal
+% values scales with the size of the pre-allocated internal variable.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

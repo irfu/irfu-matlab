@@ -132,7 +132,7 @@ FTF
 FV
     (1) Field Value. (2) (CDF) Fill Value.
 GA
-    (CDF) Global Attributes
+    (CDF) Global Attribute(s).
 ICD
     Interface Control Document
 ITF
@@ -152,6 +152,8 @@ LSF
 MSTD
     Modified STandard Deviation. Like standard deviation but using an
     arbitrary reference (e.g. median) instead of the conventional mean.
+MVPM
+    Milli-Volt Per Meter (mV/m).
 NS
     Nanoseconds
 NSO
@@ -208,6 +210,8 @@ Sec
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.
+SRF
+    Name of a particular s/c coordinate system. "Spacecraft Reference Frame"?
 SSID
     bicas.proc.L1L2.SignalSourceId
 SWD, S/W descriptor
