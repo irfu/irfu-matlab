@@ -78,8 +78,8 @@ classdef demuxer
         %       (iBlts).
         function RoutingArray = get_routings(bdmFpa, dlrFpa)
             % switch-case checks bdmFpa values.
-            assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FillPositionsArray') && strcmp(bdmFpa.class, 'uint8'))
-            assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FillPositionsArray') && strcmp(dlrFpa.class, 'logical'))
+            assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FillPositionsArray') && strcmp(bdmFpa.mc, 'uint8'))
+            assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FillPositionsArray') && strcmp(dlrFpa.mc, 'logical'))
 
             R = bicas.proc.L1L2.Routing.C;
 

@@ -129,7 +129,7 @@ classdef FillPositionsArray   % < handle
     properties(GetAccess=public, SetAccess=immutable)
         % MATLAB class for internal data.
         % NOTE: Immutable.
-        class
+        mc
     end
 
 
@@ -212,7 +212,7 @@ classdef FillPositionsArray   % < handle
             % ====================
             obj.dataAr = dataAr;
             obj.fpAr   = fpAr;
-            obj.class  = class(dataAr);
+            obj.mc     = class(dataAr);
         end
 
 
@@ -221,9 +221,9 @@ classdef FillPositionsArray   % < handle
         function dataAr = get_data(obj, fillValue)
             assert(isscalar(fillValue))
             assert(...
-                strcmp(class(fillValue), obj.class), ...
+                strcmp(class(fillValue), obj.mc), ...
                 'Argument fillValue has a MATLAB class ("%s") which is inconsistent with the object''s MATLAB class ("%s").', ...
-                class(fillValue), obj.class)
+                class(fillValue), obj.mc)
 
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fillValue;
@@ -288,7 +288,7 @@ classdef FillPositionsArray   % < handle
             switch(nargin)
                 case 2
                     fvBefore = bicas.utils.FillPositionsArray.get_cast_FV(...
-                        obj.class, outputMc);
+                        obj.mc, outputMc);
                 case 3
                     % Do nothing
                 otherwise
@@ -303,7 +303,7 @@ classdef FillPositionsArray   % < handle
         
         % Utility function
         function data = int2doubleNan(obj)
-            assert(isinteger(obj.dataAr), 'FPA is not integer. It is of class "%s".', obj.class)
+            assert(isinteger(obj.dataAr), 'FPA is not integer. It is of class "%s".', obj.mc)
             
             Fpa  = obj.cast('double');
             data = Fpa.get_data(NaN);
@@ -408,7 +408,7 @@ classdef FillPositionsArray   % < handle
                 case '()'
                     assert(isscalar(S))
                     assert(isa(Fpa2, 'bicas.utils.FillPositionsArray'))
-                    assert(isequaln(Fpa1.class, Fpa2.class))
+                    assert(isequaln(Fpa1.mc, Fpa2.mc))
                     
                     % IMPLEMENTATION NOTE: Check that index is not some
                     % array-like objet, e.g. FPA itself. Could maybe support FPA
@@ -436,7 +436,7 @@ classdef FillPositionsArray   % < handle
             % PROPOSAL: Better name.
             % PROPOSAL: Replace by subsasgn(). See BOGIQ.
 
-            assert(strcmp(obj.class, class(fpa1.dataAr)))
+            assert(strcmp(obj.mc, class(fpa1.dataAr)))
             
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fpa1.dataAr(obj.fpAr);

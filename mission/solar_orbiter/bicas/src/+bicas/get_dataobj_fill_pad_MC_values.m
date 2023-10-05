@@ -15,7 +15,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function [fillValue, padValue, matlabClass] = get_dataobj_fill_pad_class_values(Do, zvName)
+function [fillValue, padValue, mc] = get_dataobj_fill_pad_MC_values(Do, zvName)
     % NOTE: Uncertain how it handles the absence of a fill value. (Or is fill value mandatory?)
     % PROPOSAL: Remake into general-purpose function.
     % PROPOSAL: Remake into just using the do.Variables array?
@@ -33,16 +33,16 @@ function [fillValue, padValue, matlabClass] = get_dataobj_fill_pad_class_values(
     % Obtain tentative values
     % NOTE: Special function for dataobj.
     fillValue   = getfillval(Do, zvName);
-    matlabClass = Do.data.(zvName).type;
+    mc = Do.data.(zvName).type;
     
     % NOTE: For unknown reasons, the fill value for tt2000 zVariables (or at
     %       least "Epoch") is stored as a UTC(?) string.
     % NOTE: dataobj (probably) has a special case for "type" for "Epoch" or
     %       TT2000.
-    if strcmp(matlabClass, 'tt2000')
+    if strcmp(mc, 'tt2000')
         % NOTE: Uncertain if this is the correct conversion function.
         fillValue = spdfparsett2000(fillValue);
-        matlabClass = 'int64';
+        mc = 'int64';
     end
     
     % =========

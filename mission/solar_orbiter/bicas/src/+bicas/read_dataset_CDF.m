@@ -31,7 +31,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     %
     % PROPOSAL: Test code:
     %   PROPOSAL: Separate ~inner function that accepts ~dataobj as input argument.
-    %       NOTE: bicas.get_dataobj_fill_pad_class_values() takes DO as
+    %       NOTE: bicas.get_dataobj_fill_pad_MC_values() takes DO as
     %             argument.
     %   PROPOSAL: Write CDF file as part of test(!).
     
@@ -68,20 +68,20 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
         zvValueDo = DataObj.data.(zvName).data;
         ZvsLog.(zvName) = zvValueDo;    % NOTE: Do = As found in dataobj (before typecasting & replacing FV-->NaN)).
         
-        [fillValue, ~, matlabClass] = bicas.get_dataobj_fill_pad_class_values(DataObj, zvName);
+        [fillValue, ~, mc] = bicas.get_dataobj_fill_pad_MC_values(DataObj, zvName);
         
         % =========================
         % Normalize ZV MATLAB class
         % =========================
         zvValueTyped = zvValueDo;    % ZV value after normalizing type/class
-        if ~strcmp(matlabClass, class(zvValueTyped))
+        if ~strcmp(mc, class(zvValueTyped))
             % Ex: /nonhome_data/SOLAR_ORBITER/bicas_test_input/LFR-SURV-CWF-SWF_test/solo_L1R_rpw-lfr-surv-cwf-e-cdag_20200213_V07.cdf
             %     ZV "COMMON_BIA_STATUS_FLAG".
-            %     zvValue = [] (double), matlabClass = 'int8' (?)
+            %     zvValue = [] (double), mc = 'int8' (?)
             L.logf('warning', ...
                 'Loaded CDF ZV "%s" (size [%s]) has MATLAB class "%s" which is different from the stated MATLAB class "%s". Typecasting ZV to correct.', ...
-                zvName, num2str(size(zvValueTyped)), class(zvValueTyped), matlabClass)
-            zvValueTyped = cast(zvValueTyped, matlabClass);
+                zvName, num2str(size(zvValueTyped)), class(zvValueTyped), mc)
+            zvValueTyped = cast(zvValueTyped, mc);
         end
 
 
