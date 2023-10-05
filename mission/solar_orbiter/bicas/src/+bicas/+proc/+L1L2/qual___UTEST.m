@@ -213,7 +213,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
             function actZvUfv = call_func(zv_Epoch, zvBdmDoubleNan, isLfr, bdmRemoveArray, lfrBdmMarginSec, tdsBdmMarginSec)
                 assert(isfloat(zvBdmDoubleNan))
-                zvBdmFpa = bicas.utils.FillPositionsArray(zvBdmDoubleNan, 'FILL_VALUE', NaN).cast('int8', 0);
+                zvBdmFpa = bicas.utils.FillPositionsArray(zvBdmDoubleNan, 'FILL_VALUE', NaN).cast('int8');
 
                 SETTINGS = bicas.create_default_SETTINGS();
                 SETTINGS.override_value('PROCESSING.L2.REMOVE_DATA.MUX_MODES',             bdmRemoveArray,  'test')

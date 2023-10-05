@@ -88,6 +88,22 @@ classdef FillPositionsArray   % < handle
     % PROPOSAL: More static constructor wrapper methods
     %   PRO: Useful for automatic tests.
     %       PROPOSAL: doubleNan --> Specified int
+    
+    
+    
+    %##############################
+    %##############################
+    % "STATIC" CONSTANT PROPERTIES
+    %##############################
+    %##############################
+    properties(Constant)
+        % List of all numeric MATLAB classes.
+        MC_NUMERIC_CA = {...
+            'single', 'double', ...
+            'int8', 'uint8', 'int16', 'uint16', ...
+            'int32', 'uint32', 'int64', 'uint64' ...
+        };
+    end
 
 
 
@@ -259,21 +275,28 @@ classdef FillPositionsArray   % < handle
         
         
         
-        % Convert to other MATLAB class.
+        % Convert FPA to FPA with other MATLAB class.
         %
         % ARGUMENTS
         % =========
-        % fillValueBefore
-        %       Fill value (before cast) that can survive the cast.
+        % fvBefore
+        %       Optional, if value can be automatically derived.
+        %       FV (before cast) that can survive the cast.
         %
-        function Fpa = cast(obj, outputClass, fillValueBefore)
-            % PROPOSAL: Make fillValue argument optional for cases where
-            %           fillValue could be automatically derived depending on
-            %           conversion.
+        function Fpa = cast(obj, outputMc, fvBefore)
+            
+            switch(nargin)
+                case 2
+                    fvBefore = bicas.utils.FillPositionsArray.get_cast_FV(...
+                        obj.class, outputMc);
+                case 3
+                    % Do nothing
+                otherwise
+                    error('BICAS:AssertionError', 'Illegal number of arguments')
+            end
             
             Fpa = obj.convert(...
-                @(x) (cast(x, outputClass)), ...
-                outputClass, fillValueBefore);
+                @(x) (cast(x, outputMc)), outputMc, fvBefore);
         end
         
         
@@ -282,8 +305,7 @@ classdef FillPositionsArray   % < handle
         function data = int2doubleNan(obj)
             assert(isinteger(obj.dataAr), 'FPA is not integer. It is of class "%s".', obj.class)
             
-            fillValue = cast(0, obj.class);
-            Fpa  = obj.cast('double', fillValue);
+            Fpa  = obj.cast('double');
             data = Fpa.get_data(NaN);
         end
         
@@ -292,7 +314,7 @@ classdef FillPositionsArray   % < handle
         function data = logical2doubleNan(obj)
             assert(islogical(obj.dataAr))
             
-            Fpa  = obj.cast('double', false);
+            Fpa  = obj.cast('double');
             data = Fpa.get_data(NaN);
         end
 
@@ -470,10 +492,9 @@ classdef FillPositionsArray   % < handle
             % PROPOSAL: Assert that input elements are [0,1,NaN].
             assert(isfloat(ar))
             floatNaN  = cast(NaN, class(ar));
-            floatZero = cast(0,   class(ar));
             
             Fpa = bicas.utils.FillPositionsArray(...
-                ar, 'FILL_VALUE', floatNaN).cast('logical', floatZero);
+                ar, 'FILL_VALUE', floatNaN).cast('logical');
         end
         
         
@@ -482,11 +503,50 @@ classdef FillPositionsArray   % < handle
             assert(isfloat(ar))
             assert(isinteger(cast(0, fpaMatlabClass)))
 
-            floatNaN  = cast(NaN, class(ar));
-            floatZero = cast(0,   class(ar));
+            floatNan  = cast(NaN, class(ar));
             
             Fpa = bicas.utils.FillPositionsArray(...
-                ar, 'FILL_VALUE', floatNaN).cast(fpaMatlabClass, floatZero);
+                ar, 'FILL_VALUE', floatNan).cast(fpaMatlabClass);
+        end
+        
+        
+        
+    end
+    
+    
+    
+    %########################
+    %########################
+    % PRIVATE STATIC METHODS
+    %########################
+    %########################
+    methods(Static, Access=private)
+        
+        
+        
+        % Return FV which will survive a cast from MATLAB class mc1 to mc2.
+        %
+        % NOTE: This function defines the MATLAB classes between which one can
+        %       typecast FPAs.
+        %
+        % RATIONALE: Having this function saved time not having to figure out
+        %            which MATLAB class to specify, which is often error prone.
+        function fv = get_cast_FV(mc1, mc2)
+            isNum1 = ismember(mc1, bicas.utils.FillPositionsArray.MC_NUMERIC_CA);
+            isNum2 = ismember(mc2, bicas.utils.FillPositionsArray.MC_NUMERIC_CA);
+            isLog1 = strcmp(mc1, 'logical');
+            isLog2 = strcmp(mc2, 'logical');
+
+            if isNum1 && (isNum2 || isLog2)
+                % NOTE: Can not use NaN for numeric-->logical.
+                fv = cast(0, mc1);
+            elseif isLog1 && (isNum2 || isLog2)
+                fv = false;
+            else
+                % CASE: Can not determine MATLAB class and hence FV.
+                %fv = [];
+                error('BICAS:AssertionError:IllegalArgument', 'Can not derive value that survives typecasting from "%s" to "%s".', mc1, mc2)
+            end
         end
 
 

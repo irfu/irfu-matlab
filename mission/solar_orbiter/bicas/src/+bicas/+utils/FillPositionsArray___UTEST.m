@@ -182,15 +182,33 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         function test_cast(testCase)
             % double FPA --> logical FPA
             Fpa1   = bicas.utils.FillPositionsArray([0, 1, NaN], 'FILL_VALUE', NaN);
-            Fpa2   = Fpa1.cast('logical', 0);
+            Fpa2   = Fpa1.cast('logical');
             dataAr = Fpa2.get_data(true);
             testCase.verifyEqual(dataAr, [false, true, true])
             
             % logical FPA --> double FPA
-            Fpa1   = bicas.utils.FillPositionsArray([false, true, false], 'FILL_POSITIONS', [false, false, true]);
-            Fpa2   = Fpa1.cast('double', false);
+            Fpa1   = bicas.utils.FillPositionsArray(...
+                [false, true, false], 'FILL_POSITIONS', [false, false, true]);
+            Fpa2   = Fpa1.cast('double');
             dataAr = Fpa2.get_data(NaN);
             testCase.verifyEqual(dataAr, [0, 1, NaN])
+            
+            % .cast() using automatic specification of FV (not specifying
+            % argument).
+            for mcCa1 = bicas.utils.FillPositionsArray.MC_NUMERIC_CA(:)'
+                mc1 = mcCa1{1};
+                for mcCa2 = bicas.utils.FillPositionsArray.MC_NUMERIC_CA(:)'
+                    mc2 = mcCa2{1};
+                    
+                    Fpa1 = bicas.utils.FillPositionsArray(...
+                        cast([false, false], mc1), 'FILL_POSITIONS', [false, true]);
+                    % Automatically set FV.
+                    Fpa2 = Fpa1.cast(mc2);
+                    % Set FV explicitly.
+                    Fpa3 = Fpa1.cast(mc2, cast(false, mc1));
+                end
+            end
+                
         end
         
         
