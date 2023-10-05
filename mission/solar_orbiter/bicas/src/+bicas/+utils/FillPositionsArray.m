@@ -287,6 +287,33 @@ classdef FillPositionsArray   % < handle
         
         
         
+        % Return all elements which are not fill positions.
+        %
+        % RETURN VALUE
+        % ============
+        % ar
+        %       1D column array. Internal array is first converted to column
+        %       vector. Then fill positions are removed.
+        function ar = get_non_FP_data(obj)
+            % PROPOSAL: Better name.
+            %   NOTE: Cf .get_data().
+            %   ~get_non_FP
+            %   ~elements
+            %   ~data
+            %   ~clean
+            %   ~valid
+            %   ~actual
+            %   ~real
+            %   PROPOSAL: Term for non-FP in general, as opposed to FP and FP + non-FP.
+
+            % IMPLEMENTATION NOTE: Must convert to column array. Otherwise a 1D
+            % vector that is not a column remains a column in that dimension.
+            dataAr = obj.dataAr(:);   % Convert to column array.
+            ar = dataAr(~obj.fpAr(:));
+        end
+        
+        
+        
         % Utility function
         function data = int2doubleNan(obj)
             assert(isinteger(obj.dataAr), 'FPA is not integer. It is of MATLAB class "%s".', obj.mc)

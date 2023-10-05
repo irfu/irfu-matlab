@@ -231,6 +231,48 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_get_non_FP_data(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
+            % 0x0 --> 0x1
+            Fpa1  = Fpa([], NaN);
+            actAr = Fpa1.get_non_FP_data();
+            testCase.assertEqual(actAr, zeros(0, 1))
+            
+            % Iterate over (1) different 1D vectors, in (2) different dimensions.
+            for ca = {...
+                {zeros(0,1),      zeros(0, 1)}, ...
+                {[3, NaN, 4],     [3; 4]}, ...
+                {[NaN, NaN], NaN, zeros(0, 1)} ...
+            }'
+                v1    = ca{1}{1};
+                expAr = ca{1}{2};
+                
+                for iDim = 0:2
+                    v2 = permute(v1(:), wshift(1, 1:3, -iDim));
+%                     disp('---------')
+%                     size(v1)
+%                     size(v2)                    
+
+                    Fpa1  = Fpa(v2, NaN);
+                    actAr = Fpa1.get_non_FP_data();
+                    testCase.assertEqual(actAr, expAr)
+                end
+            end
+            
+            % 2x3 --> 0x1
+            Fpa1  = Fpa(NaN(2,3), NaN);
+            actAr = Fpa1.get_non_FP_data();
+            testCase.assertEqual(actAr, zeros(0,1))
+
+            % 2x3 --> 3x1
+            Fpa1  = Fpa([NaN, 2, NaN; 4, NaN, 6], NaN);
+            actAr = Fpa1.get_non_FP_data();
+            testCase.assertEqual(actAr, [4; 2; 6])
+        end
+        
+        
+        
         function test_subsref(testCase)
             import bicas.utils.FillPositionsArray___UTEST.Fpa
             
