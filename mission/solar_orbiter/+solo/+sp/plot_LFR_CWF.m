@@ -140,7 +140,7 @@ function zv = get_CDF_zv_data(D, zvName, i2)
         zvName = 'E';
     end
     
-    fillValue = getfillval(D, zvName);
+    fv = getfillval(D, zvName);
     zv = D.data.(zvName).data(:, i2);
-    zv = changem(zv, NaN, fillValue);
+    zv = changem(zv, NaN, fv);
 end

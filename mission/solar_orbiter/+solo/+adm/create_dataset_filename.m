@@ -163,7 +163,7 @@ end
 
 
 function s = create_time_interval_str(R)
-    function b = isfv(fnName, nComp)
+    function b = is_FV(fnName, nComp)
         b = isfield(R, fnName) && (numel(R.(fnName)) == nComp);
     end
 
@@ -171,17 +171,17 @@ function s = create_time_interval_str(R)
     dv1 = isfield(R, 'dateVec1');
     dv2 = isfield(R, 'dateVec2');
 
-    if     isfv('dateVec', 3) && ~dv1 && ~dv2
+    if     is_FV('dateVec', 3) && ~dv1 && ~dv2
         s = sprintf(...
             '%04i%02i%02i', ...
             R.dateVec);
 
-    elseif ~dv && isfv('dateVec1', 3) && isfv('dateVec2', 3)
+    elseif ~dv && is_FV('dateVec1', 3) && is_FV('dateVec2', 3)
         s = sprintf(...
             '%04i%02i%02i-%04i%02i%02i', ...
             R.dateVec1(:), R.dateVec2(:));
 
-    elseif ~dv && isfv('dateVec1', 6) && isfv('dateVec2', 6)
+    elseif ~dv && is_FV('dateVec1', 6) && is_FV('dateVec2', 6)
         s = sprintf(...
             '%04i%02i%02iT%02i%02i%02i-%04i%02i%02iT%02i%02i%02i', ...
             R.dateVec1(:), R.dateVec2(:));
