@@ -25,6 +25,9 @@ classdef L2L3
 %       PRO: process_L2_to_L3() is too large and should be split up anyway.
 %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed after
 %        the latter.
+%
+% NOTE: Class only has one function.
+%   PROPOSAL: Convert to function file.
 
 
 
@@ -97,11 +100,6 @@ classdef L2L3
             % NS = Nanoseconds
             BIN_LENGTH_WOLS_NS        = int64(10e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
-            % Regular expression for the format of version strings from
-            % BICAS-external code.
-            % Equivalent to: yyyy-mm-ddThh:mm:ss
-            CODE_VER_STR_REGEXP = ...
-                '[0-9]{4}-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]';
             
 
 
@@ -123,13 +121,12 @@ classdef L2L3
             % (1) EFIELD, SCPOT, and from that
             % (2) DENSITY.
             %=======================================
-            % solo.vdccal()
-            R = bicas.proc.L2L3.calc_EFIELD_SCPOT(InLfrCwf.Zv, SETTINGS);
-            % solo.psp2ne()
-            [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = bicas.proc.L2L3.calc_DENSITY(R.PspTs);
-            clear NeScpQualityBitTs
-            % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
-            %       expected to be used by BICAS later.
+            LfrCwfZv = [];
+            LfrCwfZv.Epoch        = InLfrCwf.Zv.Epoch;
+            LfrCwfZv.VDC          = InLfrCwf.Zv.VDC;
+            LfrCwfZv.EDC          = InLfrCwf.Zv.EDC;
+            LfrCwfZv.QUALITY_FLAG = InLfrCwf.Zv.QUALITY_FLAG;
+            R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, SETTINGS);
 
 
             
@@ -147,23 +144,15 @@ classdef L2L3
             %====================================================================
             % Derive values for CDF global attribute "Misc_calibration_versions"
             %====================================================================
-            assert(~isempty(R.vdccalMatVerStr), ...
-                ['solo.vdccal() returns an empty vdccalMatVerStr', ...
-                ' (string representing the version of the corresponding', ...
-                ' .mat file). BICAS therefore needs to be updated.'])
-            irf.assert.castring_regexp(R.vdccalCodeVerStr, CODE_VER_STR_REGEXP)
-            irf.assert.castring_regexp(psp2neCodeVerStr,   CODE_VER_STR_REGEXP)
-            %
-            % NOTE: Should not add BICAS version to glob.attr.
-            % "Misc_calibration_versions" since this is already encoded in
-            % global attribute "Software_version" (together with
-            % "Software_name").
+            % NOTE: Should not add BICAS version to GA
+            % "Misc_calibration_versions" since this is already encoded in GA
+            % "Software_version" (together with "Software_name").
             %
             % NOTE: Density "Misc_calibration_versions" contains all three
             % versions, since density is derived from PSP.
             vdccalStr    = ['solo.vdccal() code version ',     R.vdccalCodeVerStr];
             vdccalMatStr = ['solo.vdccal() calibration file ', R.vdccalMatVerStr];
-            psp2neStr    = ['solo.psp2ne() code version ',     psp2neCodeVerStr];
+            psp2neStr    = ['solo.psp2ne() code version ',     R.psp2neCodeVerStr];
             gaEfieldScpot_Misc_calibration_versions = {vdccalStr, vdccalMatStr};
             gaDensity_Misc_calibration_versions     = ...
                 [gaEfieldScpot_Misc_calibration_versions, {psp2neStr}];
@@ -207,7 +196,7 @@ classdef L2L3
             OutEfieldOsr = InitialOsr;
             OutEfieldOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutEfieldOsr.Zv.EDC_SRF                   = R.zvEdcMvpm;
+            OutEfieldOsr.Zv.EDC_SRF                   = R.edcSrfMvpm;
             %
             b = all(isnan(OutEfieldOsr.Zv.EDC_SRF), 2);
             OutEfieldOsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
@@ -220,8 +209,8 @@ classdef L2L3
             OutScpotOsr = InitialOsr;
             OutScpotOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutScpotOsr.Zv.SCPOT                     = R.ScpotTs.data;
-            OutScpotOsr.Zv.PSP                       = R.PspTs.data;
+            OutScpotOsr.Zv.SCPOT                     = R.scpotVolt;
+            OutScpotOsr.Zv.PSP                       = R.pspVolt;
             %
             b = isnan(OutScpotOsr.Zv.SCPOT) & ...
                 isnan(OutScpotOsr.Zv.PSP);
@@ -235,10 +224,10 @@ classdef L2L3
             OutDensityOsr = InitialOsr;
             OutDensityOsr.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
             %
-            OutDensityOsr.Zv.DENSITY                   = NeScpTs.data;
+            OutDensityOsr.Zv.DENSITY                   = R.neScpCm3;
             %
             b = isnan(OutDensityOsr.Zv.DENSITY);
-            OutDensityOsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            OutDensityOsr.Zv.QUALITY_FLAG(b)           = InLfrCwf.ZvFv.QUALITY_FLAG;
 
 
 
@@ -321,188 +310,5 @@ classdef L2L3
     end    % methods(Static, Access=public)
 
 
-
-    %##############################
-    %##############################
-    methods(Static, Access=private)
-    %##############################
-    %##############################
-    
-    
-    
-        % Calculate both
-        %   (1) ELECTRIC FIELD, and
-        %   (2) SPACECRAFT POTENTIALS
-        % via the same BICAS-external code solo.vdccal() (still inside
-        % irfu-matlab).
-        %
-        % Largely a wrapper around solo.vdccal().
-        %
-        % NOTE: Needs to be careful with the units, and incompatible updates to
-        % solo.vdccal() without the knowledge of the BICAS author. Therefore
-        % uses extra assertions to detect such changes.
-        %
-        % RETURN VALUE
-        % ============
-        % R : Struct with multiple variables.
-        %     NOTE: Return values are packaged as a struct to provide named
-        %     return values and avoid confusing similar return results with each
-        %     other.
-        %
-        function R = calc_EFIELD_SCPOT(...
-                InLfrCwfZv, SETTINGS)
-            
-            QUALITY_FLAG_minForUse = SETTINGS.get_fv(...
-                'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
-
-
-            
-            % Shorten recurring variables.
-            zv_VDC   = InLfrCwfZv.VDC;
-            zv_EDC   = InLfrCwfZv.EDC;
-            zv_Epoch = InLfrCwfZv.Epoch;            
-            
-            %======================================================
-            % Create input variables for solo.vdccal()
-            % ----------------------------------------
-            % Set records to NaN for QUALITY_FLAG below threshold.
-            %======================================================
-            % NOTE: Comparison will technically fail for QUALITY_FLAG fill
-            % value, but that is acceptable (ideal result is ambiguous anyway).
-            bNotUsed = InLfrCwfZv.QUALITY_FLAG < QUALITY_FLAG_minForUse;
-            clear InLfrCwfZv
-            zv_VDC(bNotUsed, :) = NaN;
-            zv_EDC(bNotUsed, :) = NaN;
-            %
-            % NOTE: Should TSeries objects really use TensorOrder=1 and
-            % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
-            % fo three scalars. Probably does not matter. solo.vdccal() does
-            % indeed use VDC.x, EDC.x etc.
-            VdcTs = TSeries(...
-                EpochTT(zv_Epoch), zv_VDC, ...
-                'TensorOrder', 1, ...
-                'repres',      {'x', 'y', 'z'});
-            EdcTs = TSeries(...
-                EpochTT(zv_Epoch), zv_EDC, ...
-                'TensorOrder', 1, ...
-                'repres',      {'x', 'y', 'z'});
-            
-            
-            
-            %==========================
-            % CALL BICAS-EXTERNAL CODE
-            %==========================
-            % NOTE: Not specifying calibration file.
-            % ==> Use current official calibration file, hardcoded in
-            %     solo.vdccal(), that should be used for official datasets.
-            [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
-                = solo.vdccal(VdcTs, EdcTs, []);
-            clear VdcTs EdcTs
-            %==========================
-            
-            
-            
-            % ASSERTIONS: Check solo.vdccal() return values.
-            irf.assert.sizes(...
-                zv_Epoch,      [-1, 1], ...
-                EdcSrfTs.data, [-1, 3], ...
-                PspTs.data,    [-1, 1], ...
-                ScpotTs.data,  [-1, 1]);
-            assert(strcmp(EdcSrfTs.units,            'mV/m'))
-            assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF'))
-            assert(strcmp(PspTs.units,               'V'))
-            assert(strcmp(ScpotTs.units,             'V'))
-            assert(all(zv_Epoch == EdcSrfTs.time.ttns))
-            assert(all(zv_Epoch ==    PspTs.time.ttns))
-            assert(all(zv_Epoch ==  ScpotTs.time.ttns))
-
-            
-            
-            %===================================================================
-            % Normalize the representation of E-field X-component
-            % (EdcSrfTs --> zvEdcMvpm)
-            % ---------------------------------------------------
-            % Set E_x = NaN, but ONLY if assertion deems that the corresponding
-            % information is missing.
-            %
-            % IMPLEMENTATION NOTE: solo.vdccal() sets antenna 1 values to be
-            % zero, if its input data is non-fill value/NaN, but NaN if fill
-            % value. Must therefore check for both zero and NaN.
-            % Ex: Dataset 2020-08-01
-            %===================================================================
-            zvEdcMvpm = EdcSrfTs.data;    % MVPM = mV/m
-            clear EdcSrfTs
-            % IMPLEMENTATION NOTE: ismember() does not work for NaN.
-            assert(all(zvEdcMvpm(:, 1) == 0 | isnan(zvEdcMvpm(:, 1))), ...
-                ['EDC for antenna 1 returned from', ...
-                ' solo.vdccal() is neither zero nor NaN and can therefore', ...
-                ' not be assumed to be unknown anymore.', ...
-                ' Verify that this is correct solo.vdccal() behaviour and', ...
-                ' (if correct) then update BICAS to handle this.'])
-            zvEdcMvpm(:, 1) = NaN;
-            
-            
-            
-            % Prepare return struct.
-            R = [];
-            R.PspTs            = PspTs;
-            R.ScpotTs          = ScpotTs;
-            R.zvEdcMvpm        = zvEdcMvpm;
-            R.vdccalCodeVerStr = vdccalCodeVerStr;
-            R.vdccalMatVerStr  = vdccalMatVerStr;
-            R.bNotUsed         = bNotUsed;
-            
-        end
-
-
-
-        % Calculate DENSITY via a BICAS-external code solo.psp2ne() (still
-        % inside irfu-matlab).
-        %
-        % Essentially a wrapper around solo.psp2ne().
-        % 
-        % NOTE: One needs to be careful with units and incompatible updates to
-        % solo.vdccal() without the knowledge of the BICAS author. Therefore
-        % uses extra assertions to detect such changes.
-        %
-        % NOTE: Empirically, some return values are NaN.
-        % NOTE: Shortening "SCP" = SCPOT comes from the return variable name in
-        % solo.psp2ne().
-        %
-        % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
-        % relies on PSP values for which this has already been done.
-        %
-        function [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = calc_DENSITY(PspTs)
-            
-            %==========================
-            % CALL BICAS-EXTERNAL CODE
-            %==========================
-            [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
-            %==========================
-            
-
-
-            % ASSERTIONS: Check solo.psp2ne() return values.
-            irf.assert.sizes(...
-                PspTs.data,             [-1, 1], ...
-                NeScpTs.data,           [-1, 1], ...
-                NeScpQualityBitTs.data, [-1, 1] ...
-            );
-            assert(strcmp(NeScpTs.units, 'cm^-3'))
-            assert(all(PspTs.time == NeScpTs.time          ))
-            assert(all(PspTs.time == NeScpQualityBitTs.time))
-            assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
-                'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
-            assert(strcmp(NeScpTs.units, 'cm^-3'))
-            % NOTE: Not permitting NaN quality bit. Unsure if that is the
-            %       best behaviour.
-            assert(...
-                all(ismember(NeScpQualityBitTs.data, [0, 1])), ...
-                'solo.psp2ne() returned illegal NeScpTsQualityBitTs.')
-        end
-
-
-
-    end    % methods(Static, Access=private)
 
 end

@@ -93,6 +93,8 @@ CA
     Cell Array.
 CLI
     Command-line interface
+CM3
+    cm^-3
 CTI
     CALIBRATION_TABLE_INDEX (zVariable).
 CTI2
