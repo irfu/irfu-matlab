@@ -208,7 +208,7 @@ classdef L1L2
                     hkEpoch, ...
                     InHk.ZvFpa.HK_BIA_MODE_MUX_SET.int2doubleNan(), ...
                     InSci.Zv.Epoch);
-            HkSciTime.bdmFpa = bicas.utils.FillPositionsArray(bdmDoubleNan, 'fill value', NaN).cast('uint8', 0);
+            HkSciTime.bdmFpa = bicas.utils.FillPositionsArray(bdmDoubleNan, 'FILL_VALUE', NaN).cast('uint8', 0);
 
 
 

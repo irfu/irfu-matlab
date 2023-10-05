@@ -24,6 +24,17 @@ classdef FillPositionsArray   % < handle
     %   ZvFpa_L3_QUALITY_BITMASK
     %   L3_QUALITY_BITMASK_Fpa
     %
+    % PROPOSAL: Better fpDescriptionType naming convention.
+    %   PROPOSAL: SCREAMING_SNAKE_CASE. -- IMPLEMENTED
+    %       PRO: More conventional (looks)
+    %           PRO: Used by JUICE/RPWI GS pipeline.
+    %       PRO: Stands out visually.
+    %           PRO: Resembles convention for constants.
+    %       PRO: Easier to do string replacement.
+    %       Ex: FILL_VALUE, FV
+    %       Ex: FILL_POSITIONS, FILL_POS, FP
+    %       Ex: FP_TRUE, FP_FALSE, NO_FILL_POSITIONS, ONLY_FILL_POSITIONS
+    %
     % PROPOSAL: Shorten "doubleNan" --> "dblNan"
     %
     % PROPOSAL: Convenience methods for common conversion FPA<-->array
@@ -118,11 +129,11 @@ classdef FillPositionsArray   % < handle
         %       String constant.
         % fpDescription
         %       Meaning determined by fpDescriptionType:
-        %       'fill value'
+        %       'FILL_VALUE'
         %           Fill value. Same type as dataAr. Scalar.
         %           dataAr elements with this value will be identified as fill
         %           positions.
-        %       'fill positions'
+        %       'FILL_POSITIONS'
         %           Fill positions array. Logical. Same size as dataAr.
         %           True == Fill position.
         %       
@@ -140,7 +151,7 @@ classdef FillPositionsArray   % < handle
             % Assign fpAr
             % ===========
             switch(fpDescriptionType)
-                case 'fill value'
+                case 'FILL_VALUE'
                     fillValue = fpDescription;
                     assert(isscalar(fillValue))
                     assert(strcmp(class(fillValue), class(dataAr)), ...
@@ -151,7 +162,7 @@ classdef FillPositionsArray   % < handle
                     fpAr = (dataAr == fillValue) | (isnan(dataAr) & isnan(fillValue));
                     clear fillValue
 
-                case 'fill positions'
+                case 'FILL_POSITIONS'
                     fpAr = fpDescription;
                     % NOTE: Assertions on variable come later.
 
@@ -225,7 +236,7 @@ classdef FillPositionsArray   % < handle
             castOutputAr = cast(outputAr, outputClass);
             
             Fpa = bicas.utils.FillPositionsArray(...
-                castOutputAr, 'fill positions', obj.fpAr);
+                castOutputAr, 'FILL_POSITIONS', obj.fpAr);
         end
         
         
@@ -328,7 +339,7 @@ classdef FillPositionsArray   % < handle
                     fpAr   = subsref(obj.fpAr, S);
 
                     varargout = {bicas.utils.FillPositionsArray(...
-                        dataAr, 'fill positions', fpAr)};
+                        dataAr, 'FILL_POSITIONS', fpAr)};
 
                 case '.'
                     % Call method (sic!)
@@ -391,7 +402,7 @@ classdef FillPositionsArray   % < handle
             dataAr(obj.fpAr) = fpa1.dataAr(obj.fpAr);
             fpAr             = obj.fpAr & fpa1.fpAr;
             
-            fpa2 = bicas.utils.FillPositionsArray(dataAr, 'fill positions', fpAr);
+            fpa2 = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
         
         
@@ -444,7 +455,7 @@ classdef FillPositionsArray   % < handle
             floatZero = cast(0,   class(ar));
             
             Fpa = bicas.utils.FillPositionsArray(...
-                ar, 'fill value', floatNaN).cast('logical', floatZero);
+                ar, 'FILL_VALUE', floatNaN).cast('logical', floatZero);
         end
         
         
@@ -457,7 +468,7 @@ classdef FillPositionsArray   % < handle
             floatZero = cast(0,   class(ar));
             
             Fpa = bicas.utils.FillPositionsArray(...
-                ar, 'fill value', floatNaN).cast(fpaMatlabClass, floatZero);
+                ar, 'FILL_VALUE', floatNaN).cast(fpaMatlabClass, floatZero);
         end
 
 
