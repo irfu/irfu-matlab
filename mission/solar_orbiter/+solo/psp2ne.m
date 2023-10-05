@@ -3,22 +3,29 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 %
 % [NeScp, NeScpQualityBit, codeVerStr] = solo.psp2ne(PSP)
 %
-% Convert probe-to-spacecraft (PSP) potential to electron density (NeScp)
+% Convert probe-to-spacecraft (PSP) potential to electron density (NeScp).
 %
-% The calibration is based on the RPW/QTN/Fpe data
+% The calibration is based on the RPW/QTN/Fpe data.
 %
-% Outputs:
+%
+% RETURN VALUES
+% =============
 %   NeScp           - Electron density (derived from "SCP", hence the name).
 %   NeScpQualityBit - Binary value that specifies whether the density value
 %                     seems bad or not. 1=Bad, 0=Can not find any problem.
 %                     Must not be NaN. (Currently (2023-08-10) not sure if this
 %                     is strictly in agreement with conventions, but that is
 %                     what BIACS requires).
-%   codeVerStr      - Version string. Used by BICAS.
+%   codeVerStr      - Code version string. Used by BICAS. Represents the version
+%                     of the function *code*, including calibration data,
+%                     excluding comments.
+%                     Is on the form of a human-readable UTC timestamp string.
 %
-% NOTE: This function is used by BICAS for producing official datasets.
-% NOTE: 2023-08-10: NeScpQualityBit is not yet used by BICAS, but BICAS is
-%       requires it being set.
+%
+% NOTE: This function is used by BICAS for producing official L3 datasets.
+% NOTE: 2023-10-05: Return value NeScpQualityBit is not yet used by BICAS, but
+%       BICAS still requires it to be set and to be on the correct format in
+%       preparation of using it.
 %
 % Calibration using plasma line 
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
@@ -223,4 +230,3 @@ NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
         end
     end
 end
-
