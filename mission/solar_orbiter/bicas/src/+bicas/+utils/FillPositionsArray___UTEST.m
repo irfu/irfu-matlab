@@ -392,17 +392,22 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_floatNan2logical(testCase)
+            function test_element_illegal_fail(mc2)
+                Fpa = bicas.utils.FillPositionsArray.floatNan2logical(...
+                    cast([2], mc2));
+            end
+            
             for mcCa = {'single', 'double'}'
                 mc = mcCa{1};
 
                 ExpFpa = bicas.utils.FillPositionsArray(...
                     [false, true,  false], 'FILL_POSITIONS', ...
                     [false, false,  true]);
-                
                 ActFpa = bicas.utils.FillPositionsArray.floatNan2logical(...
                     cast([0, 1, NaN], mc));
-
                 testCase.verifyTrue(ExpFpa == ActFpa)
+
+                testCase.verifyError(@() test_element_illegal_fail(mc), ?MException)
             end
         end
         

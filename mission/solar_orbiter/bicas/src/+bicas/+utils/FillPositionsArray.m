@@ -488,9 +488,12 @@ classdef FillPositionsArray   % < handle
         
         
         % Wrapper around constructor. Effectively custom constructor.
+        %
+        % NOTE: Requires input values to be [0, 1, NaN].
         function Fpa = floatNan2logical(ar)
-            % PROPOSAL: Assert that input elements are [0,1,NaN].
-            assert(isfloat(ar))
+            assert(isfloat(ar))            
+            assert(all(ismember(ar, [0,1]) | isnan(ar)))   % All elements are [0,1,NaN].
+            
             floatNaN  = cast(NaN, class(ar));
             
             Fpa = bicas.utils.FillPositionsArray(...
