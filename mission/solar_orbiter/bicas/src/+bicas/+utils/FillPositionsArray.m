@@ -469,7 +469,67 @@ classdef FillPositionsArray   % < handle
 
 
 
+        % Overload <
+        function r = lt(obj1, obj2)
+            r = obj1.compare(obj2, @(o1, o2) (o1 < o2));
+        end
+
+        % Overload >
+        function r = gt(obj1, obj2)
+            r = obj1.compare(obj2, @(o1, o2) (o1 > o2));
+        end
+
+        % Overload <=
+        function r = le(obj1, obj2)
+            r = obj1.compare(obj2, @(o1, o2) (o1 <= o2));
+        end
+
+        % Overload >=
+        function r = ge(obj1, obj2)
+            r = obj1.compare(obj2, @(o1, o2) (o1 >= o2));
+        end
+
+
+
     end    % methods(Access=public)
+
+
+
+    %##########################
+    %##########################
+    % PRIVATE INSTANCE METHODS
+    %##########################
+    %##########################
+    methods(Access=private)
+        
+
+
+        % Helper function to make it easier to implement operator overloading
+        % for binary operators.
+        %
+        % NOTE: Always outputs an FPA.
+        function Fpa3 = compare(obj1, obj2, fhCompare)
+            % PROPOSAL: Only compare data from .get_data()?
+            %   PRO: Safer.
+            %   CON: Need to determine safe fill value to use.
+            %       PRO: Can not do for any data type.
+            % PROPOSAL: Make public.
+            %   PRO: Compare .convert().
+            %   PROPOSAL: Change name.
+            
+            if isa(obj2, 'bicas.utils.FillPositionsArray')
+                dataAr = fhCompare(obj1.dataAr, obj2.dataAr);
+                fpAr   = (obj1.fpAr | obj2.fpAr);
+            else
+                dataAr = fhCompare(obj1.dataAr, obj2);
+                fpAr   = obj1.fpAr;
+            end
+            Fpa3 = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
+        end
+        
+        
+        
+    end
     
     
     

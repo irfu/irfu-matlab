@@ -433,6 +433,36 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_lt_gt_le_ge(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+
+            Fpa1 = Fpa([1,  3, 2,   2, NaN], NaN);
+            Fpa2 = Fpa([3,  1, 2, NaN,   2], NaN);
+            FP = [false, false, false,  true,  true];
+
+            ActFpa3 = Fpa1 < Fpa2;
+            ExpFpa3 = bicas.utils.FillPositionsArray(...
+                [true,  false, false, false, false], 'FILL_POSITIONS', FP);
+            testCase.assertEqual(ActFpa3, ExpFpa3)
+
+            ActFpa3 = Fpa1 > Fpa2;
+            ExpFpa3 = bicas.utils.FillPositionsArray(...
+                [false,  true, false, false, false], 'FILL_POSITIONS', FP);
+            testCase.assertEqual(ActFpa3, ExpFpa3)
+
+            ActFpa3 = Fpa1 <= Fpa2;
+            ExpFpa3 = bicas.utils.FillPositionsArray(...
+                [true,  false, true, false, false], 'FILL_POSITIONS', FP);
+            testCase.assertEqual(ActFpa3, ExpFpa3)
+
+            ActFpa3 = Fpa1 >= Fpa2;
+            ExpFpa3 = bicas.utils.FillPositionsArray(...
+                [false,  true, true, false, false], 'FILL_POSITIONS', FP);
+            testCase.assertEqual(ActFpa3, ExpFpa3)
+        end
+        
+        
+        
         function test_floatNan2logical(testCase)
             function test_element_illegal_fail(mc2)
                 Fpa = bicas.utils.FillPositionsArray.floatNan2logical(...
