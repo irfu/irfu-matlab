@@ -14,6 +14,26 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
     %##############
     %##############
     methods(Test)
+        
+        
+        
+        function test_constructor(testCase)
+            Fpa = bicas.utils.FillPositionsArray(  [1, 2, -1], 'FILL_VALUE', -1);
+            testCase.assertEqual(Fpa.get_data(-2), [1, 2, -2])
+            testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
+
+            Fpa = bicas.utils.FillPositionsArray(  [1, 2, -1], 'FILL_POSITIONS', [false, false, true]);
+            testCase.assertEqual(Fpa.get_data(-2), [1, 2, -2])
+            testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
+
+            Fpa = bicas.utils.FillPositionsArray(   [1, 2, -1], 'NO_FILL_POSITIONS');
+            testCase.assertEqual(Fpa.get_data(NaN), [1, 2, -1])
+            testCase.assertEqual(Fpa.fpAr,  logical([0, 0,  0]))
+
+%             Fpa = bicas.utils.FillPositionsArray(  [1,   2, -1], 'ONLY_FILL_POSITIONS');
+%             testCase.assertEqual(Fpa.get_data(-2), [-2, -2, -2])
+%             testCase.assertEqual(Fpa.fpAr, logical([ 1,  1,  1]))
+        end
 
 
 
@@ -24,7 +44,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             % Test legal & illegal read & write to *properties* (public &
             % private)
             % ===========================================================
-            Fpa = bicas.utils.FillPositionsArray([], 'FILL_VALUE', 0);
+            Fpa = bicas.utils.FillPositionsArray([], 'NO_FILL_POSITIONS');
             
             % fpAr
             % NOTE: .fpAr is a READ-only property.
@@ -51,8 +71,8 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             % 0x0, double
             %=============
             if 1
-                Fpa1 = bicas.utils.FillPositionsArray([], 'FILL_VALUE', 0);
-                Fpa2 = bicas.utils.FillPositionsArray([], 'FILL_POSITIONS', logical([]));
+                Fpa1 = bicas.utils.FillPositionsArray([], 'NO_FILL_POSITIONS');
+                Fpa2 = bicas.utils.FillPositionsArray([], 'NO_FILL_POSITIONS');
                 %
                 test_equality(testCase, Fpa1, Fpa2, -99)
                 testCase.verifyEqual(Fpa1.get_data(999), [])

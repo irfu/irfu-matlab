@@ -47,7 +47,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
             ENA           = zeros(0, 1);
             ECA           = cell(0, 1);
-            ENA_UINT8_FPA = bicas.utils.FillPositionsArray(uint8(ENA), 'FILL_VALUE', uint8(255));
+            ENA_UINT8_FPA = bicas.utils.FillPositionsArray(uint8(ENA), 'NO_FILL_POSITIONS');
             EmptyNsoTable    = bicas.NsoTable(int64(ENA), int64(ENA), ECA);
             NonemptyNsoTable = bicas.NsoTable(...
                 int64([1, 2]'*1e9), ...

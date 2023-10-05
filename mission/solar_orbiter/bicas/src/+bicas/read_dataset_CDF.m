@@ -106,7 +106,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
             % Derive FPA representation of ZV
             % ===============================
             if isempty(fillValue)
-                Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'FILL_POSITIONS', false(size(zvValue)));
+                Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'NO_FILL_POSITIONS');
             else
                 Fpa = bicas.utils.FillPositionsArray(zvValueTyped, 'FILL_VALUE', fillValue);
             end

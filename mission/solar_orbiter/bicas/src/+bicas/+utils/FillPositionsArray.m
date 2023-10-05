@@ -137,7 +137,7 @@ classdef FillPositionsArray   % < handle
         %           Fill positions array. Logical. Same size as dataAr.
         %           True == Fill position.
         %       
-        function obj = FillPositionsArray(dataAr, fpDescriptionType, fpDescription)
+        function obj = FillPositionsArray(dataAr, fpDescriptionType, varargin)
 
             % IMPLEMENTATION NOTE: Limiting the data types to those for which
             % one can use MATLAB's element-wise operations for matrices, e.g.
@@ -152,7 +152,8 @@ classdef FillPositionsArray   % < handle
             % ===========
             switch(fpDescriptionType)
                 case 'FILL_VALUE'
-                    fillValue = fpDescription;
+                    assert(numel(varargin) == 1)
+                    fillValue = varargin{1};
                     assert(isscalar(fillValue))
                     assert(strcmp(class(fillValue), class(dataAr)), ...
                         'Fill value and data have different MATLAB classes.')
@@ -163,8 +164,19 @@ classdef FillPositionsArray   % < handle
                     clear fillValue
 
                 case 'FILL_POSITIONS'
-                    fpAr = fpDescription;
+                    assert(numel(varargin) == 1)
+                    fpAr = varargin{1};
                     % NOTE: Assertions on variable come later.
+
+                case 'NO_FILL_POSITIONS'
+                    assert(numel(varargin) == 0)
+                    fpAr = false(size(dataAr));
+                    % NOTE: Assertions on variable come later.
+
+%                 case 'ONLY_FILL_POSITIONS'
+%                     assert(numel(varargin) == 0)
+%                     fpAr = true(size(dataAr));
+%                     % NOTE: Assertions on variable come later.
 
                 otherwise
                     error('Illegal argument "%s"', fpDescriptionType)
