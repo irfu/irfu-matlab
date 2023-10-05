@@ -213,6 +213,24 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_set_FPs(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
+            Fpa1    = Fpa([], NaN);
+            Fpa2    = Fpa([], NaN);            
+            ExpFpa3 = Fpa([],  -9);
+            Fpa3    = Fpa1.set_FPs(Fpa2);
+            testCase.verifyTrue(Fpa3 == ExpFpa3);
+
+            Fpa1    = Fpa([1, NaN;   3, NaN], NaN);
+            Fpa2    = Fpa([1,   2; NaN, NaN], NaN);
+            ExpFpa3 = Fpa([1,   2;   3,  -9],  -9);
+            Fpa3 = Fpa1.set_FPs(Fpa2);
+            testCase.verifyTrue(Fpa3 == ExpFpa3);
+        end
+        
+        
+        
         function test_subsref(testCase)
             import bicas.utils.FillPositionsArray___UTEST.Fpa
             
@@ -338,24 +356,6 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             Fpa3 = Fpa([9,2,7; 4,8,6], NaN);
             Fpa1(logical([1,0,0, 1,1,0]')) = Fpa2;
             testCase.verifyEqual(Fpa1, Fpa3)
-        end
-        
-        
-        
-        function test_set_FPs(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
-            
-            Fpa1    = Fpa([], NaN);
-            Fpa2    = Fpa([], NaN);            
-            ExpFpa3 = Fpa([],  -9);
-            Fpa3    = Fpa1.set_FPs(Fpa2);
-            testCase.verifyTrue(Fpa3 == ExpFpa3);
-
-            Fpa1    = Fpa([1, NaN;   3, NaN], NaN);
-            Fpa2    = Fpa([1,   2; NaN, NaN], NaN);
-            ExpFpa3 = Fpa([1,   2;   3,  -9],  -9);
-            Fpa3 = Fpa1.set_FPs(Fpa2);
-            testCase.verifyTrue(Fpa3 == ExpFpa3);
         end
         
         

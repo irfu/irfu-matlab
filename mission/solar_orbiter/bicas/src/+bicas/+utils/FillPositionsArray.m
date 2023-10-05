@@ -32,17 +32,6 @@ classdef FillPositionsArray   % < handle
     %   ZvFpa_L3_QUALITY_BITMASK
     %   L3_QUALITY_BITMASK_Fpa
     %
-    % PROPOSAL: Better fpDescriptionType naming convention.
-    %   PROPOSAL: SCREAMING_SNAKE_CASE. -- IMPLEMENTED
-    %       PRO: More conventional (looks)
-    %           PRO: Used by JUICE/RPWI GS pipeline.
-    %       PRO: Stands out visually.
-    %           PRO: Resembles convention for constants.
-    %       PRO: Easier to do string replacement.
-    %       Ex: FILL_VALUE, FV
-    %       Ex: FILL_POSITIONS, FILL_POS, FP
-    %       Ex: FP_TRUE, FP_FALSE, NO_FILL_POSITIONS, ONLY_FILL_POSITIONS
-    %
     % PROPOSAL: Shorten "doubleNan" --> "dblNan"
     %
     % PROPOSAL: Convenience methods for common conversion FPA<-->array
@@ -54,36 +43,10 @@ classdef FillPositionsArray   % < handle
     %       NEED: Short.
     %       PROBLEM: How represent that output is FPA or array, if kept short?
     %
-    % PROPOSAL: Method for data class (type).
-    %   PRO: Can use for assertions.
-    %   TODO-DEC: Name?
-    %       .class, .matlabClass
-    %   PROPOSAL: Read-only property.
-    %
     % PROPOSAL: Performance w.r.t. pre-allocation?
     %   TODO-DEC:  Is it a relevant question? Would such code use FPA?
     %   PROPOSAL: Use HandleWrapper internally.
     %       NOTE: Class needs to become handle class.
-    %
-    % PROBLEM: How support operation Fpa1(b) = Fpa2(b) ?
-    %   Ex: Using option BIAS_HK_LFR_SCI in
-    %       bicas.proc.L1L2.lfr.process_CDF_to_PreDC().
-    %       Using BDM from LFR when possible, but BIAS HK when not.
-    %   PROPOSAL: Support assigning index. -- IMPLEMENTED
-    %       CON: Makes class mutable.
-    %       PRO: More general.
-    %       PRO: Should not be difficult to implement assignment 
-    %            Fpa1(<index1>) = Fpa2 since can just directly pass on indexing
-    %            to internal arrays.
-    %            NOTE: Can already use indices for Fpa2 (subsref()).
-    %   PROPOSAL: Method: Fpa3 = Fpa1.set_FPs(Fpa2) -- IMPLEMENTED
-    %       NOTE: Can not be trivially reduced to indexing operation (subsasgn).
-    %
-    % PROPOSAL: Support more constructor modes:
-    %   PROPOSAL: All FPs false. Requires only data.
-    %   PROPOSAL: All FPs true. Requires only array size.
-    %   PROPOSAL: Reorder arguments to have fpDescriptionType first.
-    %       CON: Unnecessary. Still makes sense to always have data first.
     %
     % PROPOSAL: More static constructor wrapper methods
     %   PRO: Useful for automatic tests.
@@ -127,7 +90,7 @@ classdef FillPositionsArray   % < handle
     end
     
     properties(GetAccess=public, SetAccess=immutable)
-        % MATLAB class for internal data.
+        % MATLAB class for the internal data.
         % NOTE: Immutable.
         mc
     end
@@ -231,8 +194,8 @@ classdef FillPositionsArray   % < handle
         
         
         
-        % Convert FPA to other FPA using a specified ARRAY operation
-        % (array-->array).
+        % Convert FPA to other FPA using a specified ARRAY operation for its
+        % data (array-->array).
         %
         % NOTE: Can not be used for combining data from multiple FPAs.
         %
@@ -301,9 +264,32 @@ classdef FillPositionsArray   % < handle
         
         
         
+        % Set those elements which are fill positions using values from another
+        % FPA, unless those elements are also fill positions.
+        %
+        % NOTE: Creates new instance. ==> Not suitable for pre-allocation.
+        function Fpa2 = set_FPs(obj, Fpa1)
+            % PROPOSAL: Better name.
+            %   ~set fill positions
+            %   ~fill in (holes)
+            %   ~fill in (fill positions)
+            %   ~complement
+            %   PROPOSAL: Reverse roles of FPAs. Name it ~override, ~overlay.
+
+            assert(strcmp(obj.mc, class(Fpa1.dataAr)))
+            
+            dataAr           = obj.dataAr;
+            dataAr(obj.fpAr) = Fpa1.dataAr(obj.fpAr);
+            fpAr             = obj.fpAr & Fpa1.fpAr;
+            
+            Fpa2 = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
+        end
+        
+        
+        
         % Utility function
         function data = int2doubleNan(obj)
-            assert(isinteger(obj.dataAr), 'FPA is not integer. It is of class "%s".', obj.mc)
+            assert(isinteger(obj.dataAr), 'FPA is not integer. It is of MATLAB class "%s".', obj.mc)
             
             Fpa  = obj.cast('double');
             data = Fpa.get_data(NaN);
@@ -311,6 +297,7 @@ classdef FillPositionsArray   % < handle
         
         
         
+        % Utility function
         function data = logical2doubleNan(obj)
             assert(islogical(obj.dataAr))
             
@@ -428,25 +415,6 @@ classdef FillPositionsArray   % < handle
 
 
 
-        % Set those elements which are fill positions using values from another
-        % FPA.
-        %
-        % NOTE: Creates new instance. ==> Not suitable for pre-allocation.
-        function fpa2 = set_FPs(obj, fpa1)
-            % PROPOSAL: Better name.
-            % PROPOSAL: Replace by subsasgn(). See BOGIQ.
-
-            assert(strcmp(obj.mc, class(fpa1.dataAr)))
-            
-            dataAr           = obj.dataAr;
-            dataAr(obj.fpAr) = fpa1.dataAr(obj.fpAr);
-            fpAr             = obj.fpAr & fpa1.fpAr;
-            
-            fpa2 = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
-        end
-        
-        
-        
         % "Overload" size(Fpa, ...)
         function s = size(obj, varargin)
             s = size(obj.dataAr, varargin{:});
@@ -502,14 +470,14 @@ classdef FillPositionsArray   % < handle
         
         
         
-        function Fpa = floatNan2int(ar, fpaMatlabClass)
+        function Fpa = floatNan2int(ar, fpaMc)
             assert(isfloat(ar))
-            assert(isinteger(cast(0, fpaMatlabClass)))
+            assert(isinteger(cast(0, fpaMc)))
 
             floatNan  = cast(NaN, class(ar));
             
             Fpa = bicas.utils.FillPositionsArray(...
-                ar, 'FILL_VALUE', floatNan).cast(fpaMatlabClass);
+                ar, 'FILL_VALUE', floatNan).cast(fpaMc);
         end
         
         

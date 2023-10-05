@@ -126,6 +126,8 @@ EMIDP
     parts of the MException .identifier string field (error message ID).
     NOTE: "Component" has a special meaning in the context of error
     message IDs. Therefore uses the term "part" instead.
+FH
+    Function Handle (Pointer).
 FPA
     Class bicas.utils.FillPositionsArray
 FTF
@@ -151,6 +153,9 @@ L2QBM
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
+MC
+    MATLAB Class. MATLAB data type represented as a string constant.
+    Return value from "class()".
 MSTD
     Modified STandard Deviation. Like standard deviation but using an
     arbitrary reference (e.g. median) instead of the conventional mean.

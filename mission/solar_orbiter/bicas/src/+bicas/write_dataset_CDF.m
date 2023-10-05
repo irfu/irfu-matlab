@@ -292,9 +292,9 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     else
         zvValueTemp = zvValuePd;
     end
-    cdfMatlabClass = irf.cdf.convert_CDF_type_to_MATLAB_class(...
+    cdfMc = irf.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
-    zvValueCdf     = cast(zvValueTemp, cdfMatlabClass);
+    zvValueCdf     = cast(zvValueTemp, cdfMc);
     
     
     
@@ -373,8 +373,8 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
             % (future?) algorithm (above) for setting values may cancel that
             % (e.g. for constants). Must therefore typecast again, just to be
             % sure.
-            SCALEMIN_zvaCdf = cast(SCALEMIN_zvaCdf, cdfMatlabClass);
-            SCALEMAX_zvaCdf = cast(SCALEMAX_zvaCdf, cdfMatlabClass);
+            SCALEMIN_zvaCdf = cast(SCALEMIN_zvaCdf, cdfMc);
+            SCALEMAX_zvaCdf = cast(SCALEMAX_zvaCdf, cdfMc);
             
             DataObj.VariableAttributes.SCALEMIN{iZv,2} = SCALEMIN_zvaCdf;
             DataObj.VariableAttributes.SCALEMAX{iZv,2} = SCALEMAX_zvaCdf;

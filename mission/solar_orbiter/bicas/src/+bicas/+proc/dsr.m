@@ -388,8 +388,6 @@ classdef dsr
             
             % PROPOSAL: Require nMinReqSamples >= 1? Code can handle 0, though it gives NaN.
             
-            
-            
             tTicToc = tic();
             
             
@@ -504,6 +502,8 @@ classdef dsr
         function zvDsr = downsample_ZV_minimum_bin(zvBinOsr, fv)
 
             assert(strcmp(class(zvBinOsr), class(fv)))
+            % NOTE: FV handling requires integer.
+            assert(isinteger(zvBinOsr))
 
             % Remove records with fill values.
             bUse = (zvBinOsr ~= fv);

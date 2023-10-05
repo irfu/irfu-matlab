@@ -60,13 +60,13 @@ classdef ext
             assert(strcmp(NeScpTs.units,    'cm^-3'))
             
             R = [];
-            R.pspVolt          = R1.PspTs.data;
-            R.scpotVolt        = R1.ScpotTs.data;
-            R.edcSrfMvpm       = R1.EdcSrfTs.data;
-            R.vdccalCodeVerStr = R1.vdccalCodeVerStr;
-            R.vdccalMatVerStr  = R1.vdccalMatVerStr;
-            R.bNotUsed         = R1.bNotUsed;
-            R.neScpCm3         = NeScpTs.data;
+            R.pspVolt            = R1.PspTs.data;
+            R.scpotVolt          = R1.ScpotTs.data;
+            R.edcSrfMvpm         = R1.EdcSrfTs.data;
+            R.vdccalCodeVerStr   = R1.vdccalCodeVerStr;
+            R.vdccalMatVerStr    = R1.vdccalMatVerStr;
+            R.bNotUsed           = R1.bNotUsed;
+            R.neScpCm3           = NeScpTs.data;
             % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
             %       expected to be used by BICAS later.
             R.neScpQualityBit  = NeScpQualityBitTs.data;
