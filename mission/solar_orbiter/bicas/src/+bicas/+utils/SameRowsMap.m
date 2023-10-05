@@ -180,10 +180,10 @@ classdef SameRowsMap < handle
             obj.Map = containers.Map('KeyType', keyType, 'ValueType', 'any');
             
             switch(initType)
-                case 'empty'
+                case 'EMPTY'
                     assert(numel(varargin) == 0)
                     
-                case 'constant'
+                case 'CONSTANT'
                     assert(numel(varargin) == 2)
                     value  = varargin{1};
                     keysCa = varargin{2};

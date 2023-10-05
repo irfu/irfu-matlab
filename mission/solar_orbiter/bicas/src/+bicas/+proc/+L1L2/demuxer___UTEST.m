@@ -118,7 +118,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                     A.DC_V12, A.DC_V13, A.DC_V23, ...
                     A.AC_V12, A.AC_V13, A.AC_V23 ...
                 };
-                AsSrm = bicas.utils.SameRowsMap('char', nRows, 'empty');
+                AsSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
                 
                 for iAsid = 1:9
                     asidName = ASID_CA{iAsid}.s;
@@ -239,7 +239,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             % BUG/NOTE: Will fail if function returns NaN when it should not!
             function test(inputFieldsCa)
                 nRows = size(inputFieldsCa{2}, 1);
-                AsSrm = bicas.utils.SameRowsMap('char', nRows, 'empty');
+                AsSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
                 for i = 1:(numel(inputFieldsCa)/2)
                     asid  = inputFieldsCa{2*i-1};
                     value = inputFieldsCa{2*i  };

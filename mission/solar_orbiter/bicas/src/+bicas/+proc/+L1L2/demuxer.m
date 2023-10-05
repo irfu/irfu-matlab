@@ -335,7 +335,7 @@ classdef demuxer
             irf.assert.sizes(bltsSamplesAVolt, [-1, -2, 5])
 
             nRows = size(bltsSamplesAVolt, 1);
-            AsrSamplesSrm = bicas.utils.SameRowsMap('char', nRows, 'empty');
+            AsrSamplesSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
             for iBlts = 1:5
                 if ~isequal(SdidArray(iBlts).value, 'Nowhere')
                     AsrSamplesSrm.add(...

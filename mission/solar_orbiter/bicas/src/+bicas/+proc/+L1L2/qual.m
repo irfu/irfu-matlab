@@ -198,7 +198,7 @@ classdef qual
             nanArray = NaN(size(iUfv, 1), nSpr);
             tempSrm = bicas.utils.SameRowsMap(...
                 'char', size(nanArray, 1), ...
-                'constant', nanArray, zvAsrSamplesAVoltSrm.keys);
+                'CONSTANT', nanArray, zvAsrSamplesAVoltSrm.keys);
             zvAsrSamplesAVoltSrm.setRows(tempSrm, iUfv);
         end
 
