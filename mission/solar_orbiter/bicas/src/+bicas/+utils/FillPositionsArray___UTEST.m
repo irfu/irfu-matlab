@@ -213,19 +213,19 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         
-        function test_set_FPs(testCase)
+        function test_complement(testCase)
             import bicas.utils.FillPositionsArray___UTEST.Fpa
             
             Fpa1    = Fpa([], NaN);
             Fpa2    = Fpa([], NaN);            
             ExpFpa3 = Fpa([],  -9);
-            Fpa3    = Fpa1.set_FPs(Fpa2);
+            Fpa3    = Fpa1.complement(Fpa2);
             testCase.verifyTrue(Fpa3 == ExpFpa3);
 
             Fpa1    = Fpa([1, NaN;   3, NaN], NaN);
             Fpa2    = Fpa([1,   2; NaN, NaN], NaN);
             ExpFpa3 = Fpa([1,   2;   3,  -9],  -9);
-            Fpa3 = Fpa1.set_FPs(Fpa2);
+            Fpa3 = Fpa1.complement(Fpa2);
             testCase.verifyTrue(Fpa3 == ExpFpa3);
         end
         

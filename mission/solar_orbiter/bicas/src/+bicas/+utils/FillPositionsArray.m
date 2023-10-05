@@ -264,11 +264,11 @@ classdef FillPositionsArray   % < handle
         
         
         
-        % Set those elements which are fill positions using values from another
-        % FPA, unless those elements are also fill positions.
+        % Set fill positions using values from another FPA, unless those
+        % elements are also fill positions.
         %
         % NOTE: Creates new instance. ==> Not suitable for pre-allocation.
-        function Fpa2 = set_FPs(obj, Fpa1)
+        function Fpa2 = complement(obj, Fpa1)
             % PROPOSAL: Better name.
             %   ~set fill positions
             %   ~fill in (holes)

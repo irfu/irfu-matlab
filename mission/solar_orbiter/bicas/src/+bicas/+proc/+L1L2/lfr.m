@@ -277,7 +277,7 @@ classdef lfr
                         ['Using mux mode from BIAS HK when available, and', ...
                         ' from LFR SCI when the former is not available.'])
 
-                    bdmFpa = HkSciTime.bdmFpa.set_FPs(InSci.ZvFpa.BIAS_MODE_MUX_SET);
+                    bdmFpa = HkSciTime.bdmFpa.complement(InSci.ZvFpa.BIAS_MODE_MUX_SET);
 
                 otherwise
                     error('BICAS:ConfigurationBug', ...
