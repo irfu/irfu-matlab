@@ -2,22 +2,43 @@
 % Collection of shared code used for creating downsampled datasets.
 %
 %
+% NOTE
+% ====
+% 2020-11-23: L2 zVar "QUALITY_BITMASK" is
+%   mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
+% 2023-08-30: Can neither see this for L1:QUALITY_BITMASK nor
+%   L2:L2_QUALITY_BITMASK in
+%   solo_L1_rpw-lfr-surv-cwf-cdag_20200212_V10.cdf
+%   solo_L2_rpw-lfr-surv-cwf-e-cdag_20200229_V13.cdf
+%   solo_L2_rpw-lfr-surv-cwf-e-cdag_20230823_V02.cdf
+%   solo_L1_rpw-lfr-surv-cwf-cdag_20230823_V02.cdf
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-18
 %
 classdef dsr    
     %
     % PROPOSAL: Test code for code that downsamples.
-    %   Ex: bicas.proc.dsr.downsample_bin_QUALITY_BITMASK() -- Too trivial?
-    %   Ex: bicas.proc.dsr.downsample_bin_QUALITY_FLAG()        -- Too trivial?
+    %   Ex: bicas.proc.dsr.downsample_ZV_bitmask()
+    %   Ex: bicas.proc.dsr.downsample_ZV_minimum()
     %   --
     %   PRO: Can verify now uncertain edge cases.
     %           Ex: Quality ZVs when science data=fill values.
     %       PRO: Can verify bugfix for integer quality zVar=fill value when
     %            there is no science data.
     %
-    % PROPOSAL: Include bicas.utils.get_bin_indices ?!
+    % PROPOSAL: Work with FPA.
+    %   PRO: Does not need to know fill value.
+    %   CON: One FPA per bin? Slow?!
+    %
+    % PROPOSAL: Include bicas.utils.get_bin_indices() ?!
     %   CON: Potentially generic outside of BICAS.
+    %       CON: Some code in this class can be considered similarly generic.
+    %
+    % PROPOSAL: Merge downsample_ZV_minimum() and downsample_ZV_bitmask()
+    %           somwhow.
+    %   PRO: Are very similar. Difference is the inner function called.
 
 
 
@@ -41,7 +62,7 @@ classdef dsr
         %       Distribution of non-downsampled records in bins.
         %
         function [InitialDsrZv, iRecordsInBinCa] = init_shared_DSR_ZVs(...
-                InLfrCwf, binLengthWolsNs, binTimestampPosWolsNs, L)
+                InLfrCwfOsr, binLengthWolsNs, binTimestampPosWolsNs, L)
             
             tTicToc = tic();
 
@@ -55,10 +76,10 @@ classdef dsr
             %================
             % Find bin boundary reference timestamp. This is used for
             % setting the bin boundaries together with the bin length.
-            v = spdfbreakdowntt2000(InLfrCwf.Zv.Epoch(1));
+            v = spdfbreakdowntt2000(InLfrCwfOsr.Zv.Epoch(1));
             % UTC subsecond (milliseconds, microseconds, nanoseconds)
             v(6)   = 5;   % UTC second
-            v(7:9) = 0;
+            v(7:9) = 0;   % Milliseconds, microseconds, nanoseconds
             boundaryRefTt2000 = spdfcomputett2000(v);
             % Find
             % (1) bin timestamps (downsampled timestamps to represent each bin),
@@ -67,12 +88,12 @@ classdef dsr
             %     (=downsampled records).
             [zvEpochDsr, iRecordsInBinCa, binSizeArrayNs] = ...
                 bicas.proc.dsr.get_downsampling_bins(...
-                    InLfrCwf.Zv.Epoch, ...
+                    InLfrCwfOsr.Zv.Epoch, ...
                     boundaryRefTt2000, ...
                     binLengthWolsNs, ...
                     binTimestampPosWolsNs, ...
                     L);
-            nRecordsDsr = numel(iRecordsInBinCa);
+            % nRecordsDsr = numel(iRecordsInBinCa);
             
             
             
@@ -133,24 +154,18 @@ classdef dsr
             %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
             %   (SKELETON_MODS: V12=Feb 2021)
             % .
-            zv_QUALITY_BITMASK_dsr    = bicas.proc.dsr.downsample_QUALITY_BITMASK(...
-                InLfrCwf.Zv.QUALITY_BITMASK, ...
-                InLfrCwf.ZvFv.QUALITY_BITMASK, ...
+            zv_QUALITY_BITMASK_dsr    = bicas.proc.dsr.downsample_ZV_bitmask(...
+                InLfrCwfOsr.Zv.QUALITY_BITMASK, ...
+                InLfrCwfOsr.ZvFv.QUALITY_BITMASK, ...
                 iRecordsInBinCa);
-            zv_L2_QUALITY_BITMASK_dsr = bicas.proc.dsr.downsample_QUALITY_BITMASK(...
-                InLfrCwf.Zv.L2_QUALITY_BITMASK, ...
-                InLfrCwf.ZvFv.L2_QUALITY_BITMASK, ...
+            zv_L2_QUALITY_BITMASK_dsr = bicas.proc.dsr.downsample_ZV_bitmask(...
+                InLfrCwfOsr.Zv.L2_QUALITY_BITMASK, ...
+                InLfrCwfOsr.ZvFv.L2_QUALITY_BITMASK, ...
                 iRecordsInBinCa);
-            % Pre-allocate
-            QUALITY_FLAG_dsr = zeros(nRecordsDsr, 1, 'uint8');
-            for iBin = 1:nRecordsDsr
-                k = iRecordsInBinCa{iBin};
-                
-                QUALITY_FLAG_dsr(iBin) = ...
-                    bicas.proc.dsr.downsample_bin_QUALITY_FLAG(...
-                        InLfrCwf.Zv.QUALITY_FLAG( k ), ...
-                        InLfrCwf.ZvFv.QUALITY_FLAG);
-            end
+            zv_QUALITY_FLAG_dsr = bicas.proc.dsr.downsample_ZV_minimum(...
+                InLfrCwfOsr.Zv.QUALITY_FLAG, ...
+                InLfrCwfOsr.ZvFv.QUALITY_FLAG, ...
+                iRecordsInBinCa);
             
             %============================================================
             % Shared zVariables between all DOWNSAMPLED datasets
@@ -159,7 +174,7 @@ classdef dsr
             %============================================================
             InitialDsrZv = struct();
             InitialDsrZv.Epoch              = zvEpochDsr;
-            InitialDsrZv.QUALITY_FLAG       = QUALITY_FLAG_dsr;
+            InitialDsrZv.QUALITY_FLAG       = zv_QUALITY_FLAG_dsr;
             InitialDsrZv.QUALITY_BITMASK    = zv_QUALITY_BITMASK_dsr;
             InitialDsrZv.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK_dsr;
             %
@@ -182,23 +197,6 @@ classdef dsr
         
         
         
-        % Downsample a zVariable *QUALITY_SAMPLE into multiple bins.
-        %
-        function zv_QUALITY_BITMASK_dsr = downsample_QUALITY_BITMASK(...
-                zv_QUALITY_BITMASK_osr, fillValue, iRecordsInBinCa)
-            nRecordsDsr = numel(iRecordsInBinCa);
-            zv_QUALITY_BITMASK_dsr = zeros(nRecordsDsr, 1, 'uint16');
-
-            for iBin = 1:nRecordsDsr
-                k = iRecordsInBinCa{iBin};
-
-                zv_QUALITY_BITMASK_dsr(iBin) = bicas.proc.dsr.downsample_bin_QUALITY_BITMASK(...
-                        uint16(zv_QUALITY_BITMASK_osr(k)), fillValue);
-            end
-        end
-
-
-
         % Utility function to help downsampling data by grouping together
         % adjacent time intervals that have the same length when discounting
         % leap seconds.
@@ -478,38 +476,68 @@ classdef dsr
 
 
 
-        % Derive QUALITY_FLAG for ONE downsampled CDF record, from the
-        % corresponding non-downsampled records (bin).
-        %
-        % NOTE: Handles empty bins.
-        % RETURN VALUE
-        % ============
-        % zv_QUALITY_FLAG
-        %       Scalar. Lowest value of the bin values.
-        %       Bin with only non-fill values or empty bin: Fill value.
-        function zv_QUALITY_FLAG = downsample_bin_QUALITY_FLAG(...
-                zv_QUALITY_FLAG_bin, fillValue)
-            % TODO: Automated tests.
-            % PROPOSAL: Work on FPA.
-
-            % Remove records with fill values.
-            bUse = (zv_QUALITY_FLAG_bin ~= fillValue);
-            zv_QUALITY_FLAG_bin = zv_QUALITY_FLAG_bin(bUse, :, :);
+        function zvDsr = downsample_ZV_minimum(...
+                zvOsr, fillValue, iRecordsInBinCa)
             
-            % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
-            % does not work if one wants to return 0 for empty bins.
-            if isempty(zv_QUALITY_FLAG_bin)
-                zv_QUALITY_FLAG = fillValue;
-            else
-                % CASE: zv_QUALITY_FLAG_bin contains no fill values.
-                zv_QUALITY_FLAG = min(zv_QUALITY_FLAG_bin);
+            nRecordsDsr = numel(iRecordsInBinCa);
+            zvDsr = zeros(nRecordsDsr, 1, class(zvOsr));
+
+            for iBin = 1:nRecordsDsr
+                zvDsr(iBin) = ...
+                    bicas.proc.dsr.downsample_ZV_minimum_bin(...
+                        zvOsr(iRecordsInBinCa{iBin}), fillValue);
             end
         end
 
 
 
-        % Derive a quality bitmask for ONE downsampled CDF record, from the
-        % corresponding non-downsampled records (bin).
+        % Derive ZV for ONE downsampled CDF record, from the corresponding
+        % non-downsampled records (bin).
+        %
+        % NOTE: Handles empty bins.
+        %
+        % RETURN VALUE
+        % ============
+        % zvDsr
+        %       Scalar. Lowest value of the bin values.
+        %       Bin with only non-fill values or empty bin: Fill value.
+        function zvDsr = downsample_ZV_minimum_bin(zvBinOsr, fillValue)
+
+            assert(strcmp(class(zvBinOsr), class(fillValue)))
+
+            % Remove records with fill values.
+            bUse = (zvBinOsr ~= fillValue);
+            zvBinOsr = zvBinOsr(bUse, :, :);
+            
+            % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
+            % does not work if one wants to return 0 for empty bins.
+            if isempty(zvBinOsr)
+                zvDsr = fillValue;
+            else
+                % CASE: zv_QUALITY_FLAG_bin contains no fill values.
+                zvDsr = min(zvBinOsr, [], 1);
+            end
+        end
+
+
+
+        % Downsample a bitmask zVariable using pre-defined bins.
+        %
+        function zvDsr = downsample_ZV_bitmask(...
+                zvOsr, fillValue, iRecordsInBinCa)
+
+            nRecordsDsr = numel(iRecordsInBinCa);
+            zvDsr = zeros(nRecordsDsr, 1, class(zvOsr));
+
+            for iBin = 1:nRecordsDsr
+                zvDsr(iBin) = bicas.proc.dsr.downsample_ZV_bitmask_bin(...
+                    zvOsr(iRecordsInBinCa{iBin}), fillValue);
+            end
+        end
+
+
+
+        % Derive a scalar bitmask value for one bin of non-downsampled samples.
         %
         % Assumes that bit set represents data problem, which must be preserved
         % in bin, i.e. OR:ing bit samples.
@@ -519,37 +547,29 @@ classdef dsr
         %
         % RETURN VALUE
         % ============
-        % QUALITY_BITMASK
+        % zvBitmaskScalar
         %       Scalar. OR:ed bits for non-fill value bin values.
         %       Bin with only fill values or empty bin: Fill value.
         %
-        function zv_QUALITY_BITMASK = downsample_bin_QUALITY_BITMASK(...
-                zv_QUALITY_BITMASK_bin, fillValue)
-            % TODO: Automated tests.
-            % PROPOSAL: Work on FPA.
-            %   PRO: Does not need to know fill value.
-            %   CON: One FPA per bin?!
+        function zvDsr = downsample_ZV_bitmask_bin(...
+                zvBinOsr, fillValue)
 
-            % IMPLEMENTATION NOTE:
-            % 2020-11-23: L2 zVar "QUALITY_BITMASK" is
-            %   mistakenly uint8/CDF_UINT1 when it should be uint16/CDF_UINT2.
-            % 2023-08-30: Can neither see this for L1:QUALITY_BITMASK nor
-            %   L2:L2_QUALITY_BITMASK in
-            %   solo_L1_rpw-lfr-surv-cwf-cdag_20200212_V10.cdf
-            %   solo_L2_rpw-lfr-surv-cwf-e-cdag_20200229_V13.cdf
-            %   solo_L2_rpw-lfr-surv-cwf-e-cdag_20230823_V02.cdf
-            %   solo_L1_rpw-lfr-surv-cwf-cdag_20230823_V02.cdf
-            assert(isa(zv_QUALITY_BITMASK_bin, 'uint16'))
+            % Algorithm does not generalize to more than 1D, due to:
+            % (1) bicas.utils.bitops.or(),
+            % (2) elimination of fill values.
+            assert(iscolumn(zvBinOsr))
+            
+            assert(isinteger(zvBinOsr))
+            assert(strcmp(class(zvBinOsr), class(fillValue)))
             
             % Remove records with fill values.
-            b = zv_QUALITY_BITMASK_bin ~= fillValue;
-            zv_QUALITY_BITMASK_bin = zv_QUALITY_BITMASK_bin(b, :, :);
+            b = (zvBinOsr ~= fillValue);
+            zvBinOsr = zvBinOsr(b);
 
-            if isempty(zv_QUALITY_BITMASK_bin)
-                zv_QUALITY_BITMASK = fillValue;
+            if isempty(zvBinOsr)
+                zvDsr = fillValue;
             else
-                zv_QUALITY_BITMASK = bicas.utils.bitops.or(...
-                    zv_QUALITY_BITMASK_bin);
+                zvDsr = bicas.utils.bitops.or(zvBinOsr);
             end
         end
 
