@@ -195,13 +195,15 @@ classdef pf
             
             InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
+            Ec = bicas.proc.L2L3.ExternalCodeImplementation();
+
             %==============
             % Process data
             %==============
             [EfieldOsrCdf,  EfieldDsrCdf, ...
              ScpotOsrCdf,   ScpotDsrCdf, ...
              DensityOsrCdf, DensityDsrCdf] = ...
-                bicas.proc.L2L3.process_L2_to_L3(InputLfrCwfCdf, SETTINGS, L);
+                bicas.proc.L2L3.process_L2_to_L3(InputLfrCwfCdf, Ec, SETTINGS, L);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('EFIELD_OSR_cdf')  = EfieldOsrCdf;

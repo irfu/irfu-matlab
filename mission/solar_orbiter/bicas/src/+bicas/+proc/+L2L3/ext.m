@@ -38,7 +38,8 @@ classdef ext
         % Indirectly call BICAS-external code to calculate
         % (1) EFIELD, SCPOT (solo.vdccal), and from that
         % (2) DENSITY       (solo.psp2ne).
-        function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, SETTINGS)
+        function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, SETTINGS)
+            assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
             
             QUALITY_FLAG_minForUse = SETTINGS.get_fv(...
                 'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
@@ -46,13 +47,13 @@ classdef ext
             % =================================
             % Call wrapper around solo.vdccal()
             % =================================
-            R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse);
+            R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse, Ec);
             
             % ===================================
             % Caller wrapper around solo.psp2ne()
             % ===================================
             [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
-                bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs);
+                bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Ec);
 
 
             assert(strcmp(R1.PspTs.units,   'V'))
@@ -108,8 +109,7 @@ classdef ext
         %       return values and avoid confusing similar return results with
         %       each other.
         %
-        function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse)
-
+        function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse, Ec)
             irf.assert.struct(Zv, {'Epoch', 'VDC', 'EDC', 'QUALITY_FLAG_Fpa'}, {})
 
 
@@ -147,7 +147,7 @@ classdef ext
             % ==> Use current official calibration file, hardcoded in
             %     solo.vdccal(), that should be used for official datasets.
             [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
-                = solo.vdccal(VdcTs, EdcTs, []);
+                = Ec.vdccal(VdcTs, EdcTs, []);
             clear VdcTs EdcTs
             %##########################
 
@@ -225,13 +225,13 @@ classdef ext
         % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
         % relies on PSP values for which this has already been done.
         %
-        function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = calc_DENSITY(PspTs)
-            
-            %##########################
+        function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = calc_DENSITY(PspTs, Ec)
+
+            %##################################################################
             % CALL BICAS-EXTERNAL CODE
-            %##########################
-            [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = solo.psp2ne(PspTs);
-            %##########################
+            %##################################################################
+            [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = Ec.psp2ne(PspTs);
+            %##################################################################
             
             %===============================================
             % ASSERTIONS: Check solo.psp2ne() return values

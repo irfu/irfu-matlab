@@ -153,10 +153,15 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FillPositionsArray(uint16(DATA2(:, 3)), 'FILL_VALUE', uint16(InLfrCwf.ZvFv.QUALITY_BITMASK));
             ExpDsr.Zv.L2_QUALITY_BITMASK = uint16(DATA2(:, 4));
 
+            % Uses the actual implementations of external code rather than test
+            % implementation for now, since tests (for historical reasons) never
+            % checked the actual data.
+            Ec = bicas.proc.L2L3.ExternalCodeImplementation();
+            
             [OutEfieldOsr,  OutEfieldDsr, ...
              OutScpotOsr,   OutScpotDsr, ...
              OutDensityOsr, OutDensityDsr] ...
-            = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, SETTINGS, L);
+                = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, Ec, SETTINGS, L);
 
             % OSR
             testCase.assertEqual(OutEfieldOsr.Zv.Epoch,              InLfrCwf.Zv.Epoch)

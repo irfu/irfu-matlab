@@ -54,7 +54,7 @@ classdef L2L3
         function [OutEfieldOsr,  OutEfieldDsr, ...
                   OutScpotOsr,   OutScpotDsr, ...
                   OutDensityOsr, OutDensityDsr] ...
-                = process_L2_to_L3(InLfrCwf, SETTINGS, L)
+                = process_L2_to_L3(InLfrCwf, Ec, SETTINGS, L)
 
             % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
             %           (still combine non-downsampled and downsampled).
@@ -87,6 +87,7 @@ classdef L2L3
             %   QUALITY_BITMASK=CDF_UINT2, fill value 65535 (correct).
 
             tTicToc = tic();
+            assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
 
 
@@ -115,7 +116,7 @@ classdef L2L3
                 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
             
             
-
+            
             %=======================================
             % Call BICAS-external code to calculate
             % (1) EFIELD, SCPOT, and from that
@@ -126,7 +127,7 @@ classdef L2L3
             LfrCwfZv.VDC              = InLfrCwf.Zv.VDC;
             LfrCwfZv.EDC              = InLfrCwf.Zv.EDC;
             LfrCwfZv.QUALITY_FLAG_Fpa = InLfrCwf.ZvFpa.QUALITY_FLAG;
-            R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, SETTINGS);
+            R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, SETTINGS);
 
 
             
