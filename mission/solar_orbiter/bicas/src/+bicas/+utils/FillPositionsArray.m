@@ -15,6 +15,12 @@
 % in the future.
 %
 %
+% ~BUG
+% ====
+% The implementation of subsref() seems to block instances of the (value) class
+% from being modified. Unknown why.
+%
+%
 % NAMING CONVENTION
 % =================
 % FP: Fill Position.
@@ -73,6 +79,20 @@ classdef FillPositionsArray   % < handle
     %
     % PROBLEM: Can not call e.g. isnumeric(Fpa), isfloat(Fpa), islogical().
     %   PROPOSAL: isnumeric(cast(0, Fpa.mc)) etc.
+    %
+    % PROBLEM: Can not create empty FPA for arbitrary MATLAB class dynamically (from MATLAB class string).
+    %   PROBLEM: How specify in constructor?
+    %       PROPOSAL: Syntax(size, 'EMPTY', mc)
+    %           CON: Inconsistent compared to other constructor modes.
+    %   PROPOSAL: Treat as special case: Do not initialize dataAr until
+    %             non-empty.
+    %       CON: More work.
+    %           CON: Not feasible for implementing subsref, subsasgn, cat.
+    %       CON: Ugly.
+    %   PROPOSAL: Use eval inside constructor.
+    %   PROPOSAL: Restrict supported data types.
+    %       PROPOSAL: logical & numeric & char.
+    %           PRO: Already done in constructor...
     
     
     
@@ -91,7 +111,7 @@ classdef FillPositionsArray   % < handle
     
         % Constant that is useful for setting FPA elements to be Fs (also for
         % multiple elements using indexing).
-        FP_UINT8 = bicas.utils.FillPositionsArray(uint8(0), 'ONLY_FILL_POSITIONS');
+        FP_UINT8 = bicas.utils.FillPositionsArray.get_scalar_FP('uint8');
     end
 
 
@@ -216,6 +236,17 @@ classdef FillPositionsArray   % < handle
 
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fv;
+        end
+        
+        
+        
+        % Set all positions to FP.
+        %
+        % NOTE/BUG: Does not modify the object without explicitly using the
+        % return value! Call Fpa = Fpa.set_FP() to effectively modify the
+        % object.
+        function obj = set_FP(obj)
+            obj.fpAr(:) = true;
         end
         
         
@@ -419,6 +450,18 @@ classdef FillPositionsArray   % < handle
 
                 case '.'
                     % Call method (sic!)
+                    
+                    % NOTE/BUG: This seems to prevent methods from modifying the
+                    % (value) object for unknown reason. Can for example not
+                    % implement a method that mutates obj.
+                    %   function obj = set_FP(obj)
+                    %       obj.fpAr(:) = true;
+                    %   end
+                    % when calling
+                    %   FpFpa.set_FP();
+                    % For that call, varargout == {obj} though.
+                    % This works though:
+                    %   FpFpa = FpFpa.set_FP();
                     [varargout{1:nargout}] = builtin('subsref', obj, S);
 
                 otherwise
@@ -500,6 +543,13 @@ classdef FillPositionsArray   % < handle
 
 
 
+        % "Overload" isempty(Fpa)
+        function n = isempty(obj)
+            n = isempty(obj.dataAr);
+        end
+
+
+
         % Overload "end" in indexing.
         function iEnd = end(obj, iDim, nDim)
             sz = size(obj.dataAr);
@@ -531,6 +581,38 @@ classdef FillPositionsArray   % < handle
         % Overload >=
         function r = ge(obj1, obj2)
             r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 >= o2));
+        end
+
+
+        % "Overload" cat().
+        % NOTE: First argument should NOT be the instance of the class!!!
+        function Fpa = cat(iDim, varargin)
+            % ASSERTIONS
+            assert(isnumeric(iDim))
+            FpaCa = varargin;
+            for i = 1:numel(FpaCa)
+                assert(isa(FpaCa{1}, 'bicas.utils.FillPositionsArray'))
+            end
+            mcCa = cellfun(@(Fpa) Fpa.mc, FpaCa, 'UniformOutput', false);
+            assert(numel(unique(mcCa)) == 1)
+            
+            % "ALGORITHM"
+            dataArCa = cellfun(@(Fpa) Fpa.dataAr, FpaCa, 'UniformOutput', false);
+            dataAr   = cat(iDim, dataArCa{:});
+            fpArCa   = cellfun(@(Fpa) Fpa.fpAr, FpaCa, 'UniformOutput', false);
+            fpAr     = cat(iDim, fpArCa{:});
+
+            Fpa = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
+        end
+
+        % "Overload" vertcat() = [... ; ...].
+        function Fpa = vertcat(varargin)
+            Fpa = cat(1, varargin{:});
+        end
+
+        % "Overload" horzcat() = [..., ...]
+        function Fpa = horzcat(varargin)
+            Fpa = cat(2, varargin{:});
         end
 
 
@@ -590,6 +672,15 @@ classdef FillPositionsArray   % < handle
     %#######################
     %#######################
     methods(Static, Access=public)
+
+
+
+        % Return Scalar (1x1) FPA containing one FP for a specified MATLAB
+        % class.
+        function Fpa = get_scalar_FP(mc)
+            fv = bicas.utils.FillPositionsArray.get_cast_FV(mc, mc);
+            Fpa = bicas.utils.FillPositionsArray(fv, 'ONLY_FILL_POSITIONS');
+        end
         
         
         

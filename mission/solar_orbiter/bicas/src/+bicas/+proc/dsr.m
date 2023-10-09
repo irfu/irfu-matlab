@@ -155,11 +155,11 @@ classdef dsr
             %   (SKELETON_MODS: V12=Feb 2021)
             % .
             
-            % NOTE: Temporary hack: Convert FPAs to arrays+FV.
-            zv_QUALITY_FLAG_dsr = bicas.proc.dsr.downsample_ZV_minimum(...
-                InLfrCwfOsr.ZvFpa.QUALITY_FLAG.get_data(InLfrCwfOsr.ZvFv.QUALITY_FLAG), ...
-                InLfrCwfOsr.ZvFv.QUALITY_FLAG, ...
-                iRecordsInBinCa);
+            zv_QUALITY_FLAG_FpaDsr = bicas.proc.dsr.downsample_ZV_minimum(...
+                InLfrCwfOsr.ZvFpa.QUALITY_FLAG, iRecordsInBinCa);
+            
+            % NOTE: Temporary hack: Convert FPAs to arrays+FV for downsampling.
+            % Later convert back to FPAs.
             zv_QUALITY_BITMASK_dsr    = bicas.proc.dsr.downsample_ZV_bitmask(...
                 InLfrCwfOsr.ZvFpa.QUALITY_BITMASK.get_data(InLfrCwfOsr.ZvFv.QUALITY_BITMASK), ...
                 InLfrCwfOsr.ZvFv.QUALITY_BITMASK, ...
@@ -169,7 +169,6 @@ classdef dsr
                 InLfrCwfOsr.ZvFv.L2_QUALITY_BITMASK, ...
                 iRecordsInBinCa);
             
-            zv_QUALITY_FLAG_FpaDsr    = bicas.utils.FillPositionsArray(zv_QUALITY_FLAG_dsr,    'FILL_VALUE', InLfrCwfOsr.ZvFv.QUALITY_FLAG);
             zv_QUALITY_BITMASK_FpaDsr = bicas.utils.FillPositionsArray(zv_QUALITY_BITMASK_dsr, 'FILL_VALUE', InLfrCwfOsr.ZvFv.QUALITY_BITMASK);
             
             %============================================================
@@ -466,6 +465,52 @@ classdef dsr
 
 
 
+        function ZvDsrFpa = downsample_ZV_minimum(...
+                ZvOsrFpa, iRecordsInBinCa)
+            
+            assert(isa(ZvOsrFpa, 'bicas.utils.FillPositionsArray'))
+            assert(iscell(iRecordsInBinCa))
+            % Only 1D column vectors.
+            irf.assert.sizes(ZvOsrFpa,        [NaN])
+            irf.assert.sizes(iRecordsInBinCa, [NaN])
+            
+            nRecordsDsr = numel(iRecordsInBinCa);
+            
+            EmptyFpa = ZvOsrFpa(1:0, :);    % 0x1;
+            FpFpa    = bicas.utils.FillPositionsArray.get_scalar_FP(ZvOsrFpa.mc);
+            
+            zvDsrFpaCa = cell(nRecordsDsr, 1);   % Preallocate
+
+            for iBin = 1:nRecordsDsr
+                BinZvOsrFpa = ZvOsrFpa(iRecordsInBinCa{iBin});
+
+                % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
+                % does not work if one wants to return 0 for empty bins.
+                if isempty(BinZvOsrFpa)
+                    % CASE: Bin contains no values.
+                    zvDsrFpa = FpFpa;
+                else
+                    % CASE: Bin contains non-zero number of values, which
+                    %       might be FPs.
+
+                    nfpAr = BinZvOsrFpa.get_non_FP_data();
+                    if isempty(nfpAr)
+                        zvDsrFpa = FpFpa;
+                    else
+                        % NOTE: min(X, [], iDim)
+                        m        = min(nfpAr, [], 1);
+                        zvDsrFpa = bicas.utils.FillPositionsArray(m, 'NO_FILL_POSITIONS');
+                    end
+                end
+
+                zvDsrFpaCa{iBin} = zvDsrFpa;
+            end    % for
+            ZvDsrFpa = cat(1, EmptyFpa, zvDsrFpaCa{:});
+
+        end    % function
+
+
+
     end
         
 
@@ -476,53 +521,6 @@ classdef dsr
     %########################
     %########################
     methods(Static, Access=private)
-
-
-
-        function zvDsr = downsample_ZV_minimum(...
-                zvOsr, fv, iRecordsInBinCa)
-            
-            nRecordsDsr = numel(iRecordsInBinCa);
-            zvDsr = zeros(nRecordsDsr, 1, class(zvOsr));
-
-            for iBin = 1:nRecordsDsr
-                zvDsr(iBin) = ...
-                    bicas.proc.dsr.downsample_ZV_minimum_bin(...
-                        zvOsr(iRecordsInBinCa{iBin}), fv);
-            end
-        end
-
-
-
-        % Derive ZV for ONE downsampled CDF record, from the corresponding
-        % non-downsampled records (bin).
-        %
-        % NOTE: Handles empty bins.
-        %
-        % RETURN VALUE
-        % ============
-        % zvDsr
-        %       Scalar. Lowest value of the bin values.
-        %       Bin with only non-fill values or empty bin: Fill value.
-        function zvDsr = downsample_ZV_minimum_bin(zvBinOsr, fv)
-
-            assert(strcmp(class(zvBinOsr), class(fv)))
-            % NOTE: FV handling requires integer.
-            assert(isinteger(zvBinOsr))
-
-            % Remove records with fill values.
-            bUse = (zvBinOsr ~= fv);
-            zvBinOsr = zvBinOsr(bUse, :, :);
-            
-            % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
-            % does not work if one wants to return 0 for empty bins.
-            if isempty(zvBinOsr)
-                zvDsr = fv;
-            else
-                % CASE: zv_QUALITY_FLAG_bin contains no fill values.
-                zvDsr = min(zvBinOsr, [], 1);
-            end
-        end
 
 
 

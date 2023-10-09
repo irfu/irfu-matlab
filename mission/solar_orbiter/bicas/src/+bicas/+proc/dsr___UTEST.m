@@ -210,6 +210,37 @@ classdef dsr___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_downsample_ZV_minimum(testCase)
+            
+            function test(inAr, inFv, iRecordsInBinCa, expDsrAr, expDsrFv)
+                Fpa       = bicas.utils.FillPositionsArray(inAr,     'FILL_VALUE', inFv);
+                ExpDsrFpa = bicas.utils.FillPositionsArray(expDsrAr, 'FILL_VALUE', expDsrFv);
+                ActDsrFpa = bicas.proc.dsr.downsample_ZV_minimum(Fpa, iRecordsInBinCa);
+                
+                testCase.assertEqual(ActDsrFpa, ExpDsrFpa)
+            end
+            
+            if 1
+            % Empty
+            test(ones(0, 1), NaN,        cell(0, 1), ones(0, 1), NaN)            
+            % One sample, non-double type
+            test(uint8(3),   uint8(255), {1},        uint8(3),   uint8(255))
+            % Three, different sized bins
+            test([3;4;5; 2;3; 9],   NaN,  {1:3; 4:5; 6},    [3;2;9],  NaN)
+
+            test([NaN],     NaN,  {1},      [NaN],  NaN)
+            test([2;NaN],   NaN,  {1:2},    [2],    NaN)
+            end
+
+            test([2;NaN; NaN],   NaN,  {1:2; 3},    [2; NaN],  NaN)
+
+            % Size-zero bin.
+            test(ones(0, 1),   NaN,  {1:0},         [NaN],         NaN)
+            test([2;3; NaN],   NaN,  {1:2; 1:0; 3}, [2; NaN; NaN], NaN)
+        end
+        
+        
+        
     end    % methods(Test)
         
         

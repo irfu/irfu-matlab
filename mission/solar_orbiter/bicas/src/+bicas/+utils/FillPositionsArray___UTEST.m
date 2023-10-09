@@ -160,6 +160,30 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             end
 
         end    % Function
+        
+        
+        
+        function test_set_FP(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
+            function test(ar, fv)
+                Fpa1  = Fpa(ar, fv);
+                fpAr0 = Fpa1.fpAr;
+                
+                Fpa1.set_FP();
+                fpAr1 = Fpa1.fpAr;
+                % Assert that fpAr has NOT changed.
+                testCase.assertEqual(fpAr0, fpAr1)
+                
+                Fpa2  = Fpa1.set_FP();
+                fpAr2 = Fpa2.fpAr;
+                % Assert that fpAr has changed/been set.
+                testCase.assertTrue(all(fpAr2, 'all'))
+            end
+            
+            test([], nan)
+            test([1,2; 3,4], nan)
+        end
 
 
 
@@ -472,6 +496,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                 testCase.verifyEqual(isscalar(Fpa), isscalar(v))
                 testCase.verifyEqual(size(Fpa),     size(v)    )
                 testCase.verifyEqual(ndims(Fpa),    ndims(v)   )
+                testCase.verifyEqual(isempty(Fpa),  isempty(v) )
                 
                 for iDim = 1:3
                     testCase.verifyEqual(size(Fpa, iDim), size(v, iDim) )
@@ -549,6 +574,36 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                     testCase.verifyTrue(ExpFpa == ActFpa)
                 end
             end
+        end
+        
+        
+        
+        function test_cat_vertcat_horzcat(testCase)
+            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            
+            Fpa1 = Fpa([], nan);
+            ActFpa = [Fpa1];
+            ExpFpa = Fpa1;
+            testCase.assertEqual(ActFpa, ExpFpa)
+            
+            Fpa1 = Fpa([1, 2], nan);
+            Fpa2 = Fpa([3, 4], nan);
+
+            ActFpa = [Fpa1, Fpa2];
+            ExpFpa = Fpa([1, 2, 3, 4], nan);
+            testCase.assertEqual(ActFpa, ExpFpa)
+
+            ActFpa = [Fpa1; Fpa2];
+            ExpFpa = Fpa([1, 2; 3, 4], nan);
+            testCase.assertEqual(ActFpa, ExpFpa)
+
+            ActFpa = cat(1, Fpa1, Fpa2);
+            ExpFpa = Fpa([1, 2; 3, 4], nan);
+            testCase.assertEqual(ActFpa, ExpFpa)
+
+            ActFpa = cat(2, Fpa1, Fpa2);
+            ExpFpa = Fpa([1, 2, 3, 4], nan);
+            testCase.assertEqual(ActFpa, ExpFpa)
         end
 
 
