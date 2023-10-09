@@ -82,9 +82,10 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             %===========
             % 1D, int64
             %===========
+            % Fill positions have different values.
             if 1
                 Fpa1 = bicas.utils.FillPositionsArray(...
-                    int64([1, 2, 3, -9]), 'FILL_VALUE', int64(-9));
+                    int64([1, 2, 3, -8]), 'FILL_VALUE', int64(-8));
                 Fpa2 = bicas.utils.FillPositionsArray(...
                     int64([1, 2, 3, -9]), 'FILL_POSITIONS', logical([0, 0, 0, 1]));
                 %
@@ -98,6 +99,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             %==========
             % 2D, char
             %==========
+            % Fill positions have different values.
             if 1
                 Fpa1 = bicas.utils.FillPositionsArray(...
                     ['abX'; 'dXf'], 'FILL_VALUE', 'X');
@@ -582,6 +584,12 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             testCase.assertTrue(isscalar(r))
             testCase.verifyFalse(r)
 
+            % Ensure that method "isequaln" is called.
+            r = isequaln(fpa1, fpa2);
+            testCase.assertTrue(isscalar(r))
+            testCase.verifyTrue(r)
+
+            % Verify equality through the methods for obtaining data.
             testCase.verifyEqual(...
                 fpa1.get_data(fv), ...
                 fpa2.get_data(fv))

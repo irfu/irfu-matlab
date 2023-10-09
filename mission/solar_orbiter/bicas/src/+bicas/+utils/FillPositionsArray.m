@@ -382,7 +382,16 @@ classdef FillPositionsArray   % < handle
         function r = ne(obj1, obj2)
             r = ~obj1.eq(obj2);
         end
+        
+        
+        
+        function r = isequaln(obj1, obj2)
+            r = obj1.eq(obj2);
+        end
 
+        function r = isequal(obj1, obj2)
+            error('BICAS:OperationNotImplemented', 'isequal() has not been implemented.')
+        end
 
 
         % Indexing overloading: Array indexing for reading: Fpa(i, j, ...)
