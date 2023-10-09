@@ -217,23 +217,22 @@ classdef FillPositionsArray   % < handle
         %       FPA. Operation output array elements for fill positions will be
         %       ignored in the new FPA.
         %
-        function Fpa = convert(obj, fhArrayOperation, outputClass, fvBefore)
-            % IMPLEMENTATION NOTE: Can not use (a) arbitrary fill values, or (b)
-            % just use the values stored in obj.dataAr since the array operation
-            % might trigger error for some values, e.g. ~NaN (negating NaN, but
-            % NaN can not be interptered as logical/boolean).
+        function Fpa = convert(obj, fhArrayOperation, fvBefore)
+            % IMPLEMENTATION NOTE: Can not use
+            %     (a) arbitrary fill values,
+            %     (b) just use the values stored in obj.dataAr, or
+            %     (c) bicas.utils.FillPositionsArray.MC_NUMERIC_CA,
+            % since the array operation might trigger error for some values,
+            % e.g. ~NaN (negating NaN, but NaN can not be interptered as
+            % logical/boolean).
             
-            % TODO-DEC: Should the function (1) require the output to be on the
-            % specified MATLAB class/type, or (2) cast the output to the
-            % specified MATLAB class/type?
             assert(isa(fhArrayOperation, 'function_handle'))
             
-            inputAr      = obj.get_data(fvBefore);
-            outputAr     = fhArrayOperation(inputAr);
-            castOutputAr = cast(outputAr, outputClass);
+            inputAr  = obj.get_data(fvBefore);
+            outputAr = fhArrayOperation(inputAr);
             
             Fpa = bicas.utils.FillPositionsArray(...
-                castOutputAr, 'FILL_POSITIONS', obj.fpAr);
+                outputAr, 'FILL_POSITIONS', obj.fpAr);
         end
         
         
@@ -259,7 +258,7 @@ classdef FillPositionsArray   % < handle
             end
             
             Fpa = obj.convert(...
-                @(x) (cast(x, outputMc)), outputMc, fvBefore);
+                @(x) (cast(x, outputMc)), fvBefore);
         end
         
         

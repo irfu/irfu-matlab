@@ -167,14 +167,14 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             % Convert to type that forbids negative values, while input used
             % negative FV.
             Fpa1 = bicas.utils.FillPositionsArray([0,1,-1,2,3], 'FILL_VALUE', -1);
-            Fpa2   = Fpa1.convert(@(x) (x), 'uint16', 99);
+            Fpa2   = Fpa1.convert(@(x) (uint16(x)), 99);
             dataAr = Fpa2.get_data(uint16(999));
             testCase.verifyEqual(dataAr, uint16([0,1,999,2,3]))
             
             % Operation that raises error for NaN.
             % Convert to type that forbids NaN, while input used NaN as FV.
             Fpa1 = bicas.utils.FillPositionsArray([0, 3, NaN], 'FILL_VALUE', NaN);
-            Fpa2   = Fpa1.convert(@(x) (~x), 'logical', 99);
+            Fpa2   = Fpa1.convert(@(x) logical(~x), 99);
             dataAr = Fpa2.get_data(true);
             testCase.verifyEqual(dataAr, [true, false, true])
         end
