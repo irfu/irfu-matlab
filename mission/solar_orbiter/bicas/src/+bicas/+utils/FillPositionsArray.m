@@ -158,10 +158,10 @@ classdef FillPositionsArray   % < handle
                     fpAr = false(size(dataAr));
                     % NOTE: Assertions on variable come later.
 
-%                 case 'ONLY_FILL_POSITIONS'
-%                     assert(numel(varargin) == 0)
-%                     fpAr = true(size(dataAr));
-%                     % NOTE: Assertions on variable come later.
+                case 'ONLY_FILL_POSITIONS'
+                    assert(numel(varargin) == 0)
+                    fpAr = true(size(dataAr));
+                    % NOTE: Assertions on variable come later.
 
                 otherwise
                     error('Illegal argument "%s"', fpDescriptionType)

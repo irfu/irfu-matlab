@@ -30,9 +30,9 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             testCase.assertEqual(Fpa.get_data(NaN), [1, 2, -1])
             testCase.assertEqual(Fpa.fpAr,  logical([0, 0,  0]))
 
-%             Fpa = bicas.utils.FillPositionsArray(  [1,   2, -1], 'ONLY_FILL_POSITIONS');
-%             testCase.assertEqual(Fpa.get_data(-2), [-2, -2, -2])
-%             testCase.assertEqual(Fpa.fpAr, logical([ 1,  1,  1]))
+            Fpa = bicas.utils.FillPositionsArray(  [1,   2, -1], 'ONLY_FILL_POSITIONS');
+            testCase.assertEqual(Fpa.get_data(-2), [-2, -2, -2])
+            testCase.assertEqual(Fpa.fpAr, logical([ 1,  1,  1]))
         end
 
 
