@@ -220,7 +220,6 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 testCase.assertEqual(ActDsrFpa, ExpDsrFpa)
             end
             
-            if 1
             % Empty
             test(ones(0, 1), NaN,        cell(0, 1), ones(0, 1), NaN)            
             % One sample, non-double type
@@ -230,13 +229,50 @@ classdef dsr___UTEST < matlab.unittest.TestCase
 
             test([NaN],     NaN,  {1},      [NaN],  NaN)
             test([2;NaN],   NaN,  {1:2},    [2],    NaN)
-            end
 
             test([2;NaN; NaN],   NaN,  {1:2; 3},    [2; NaN],  NaN)
 
             % Size-zero bin.
             test(ones(0, 1),   NaN,  {1:0},         [NaN],         NaN)
             test([2;3; NaN],   NaN,  {1:2; 1:0; 3}, [2; NaN; NaN], NaN)
+        end
+        
+        
+        
+        function downsample_ZV_bitmask(testCase)
+            
+            function test(inAr, iRecordsInBinCa, expDsrAr)
+                inAr     = uint8(inAr);
+                inFv     = uint8(255);
+                expDsrAr = uint8(expDsrAr);
+                expDsrFv = uint8(255);
+
+                Fpa       = bicas.utils.FillPositionsArray(inAr,     'FILL_VALUE', inFv);
+                ExpDsrFpa = bicas.utils.FillPositionsArray(expDsrAr, 'FILL_VALUE', expDsrFv);
+                ActDsrFpa = bicas.proc.dsr.downsample_ZV_bitmask(Fpa, iRecordsInBinCa);
+                
+                testCase.assertEqual(ActDsrFpa, ExpDsrFpa)
+            end
+            
+            % Zero samples, zero bins
+            test(ones(0, 1), cell(0, 1), ones(0, 1))            
+            % One sample
+            test(3,          {1},        3)
+            
+            % One bin, multiple samples
+            test([1;2;4],    {1:3},      7)
+            
+            % Three, different sized bins
+            test([4;5;6; 2;3; 9],  {1:3; 4:5; 6},    [7;3;9])
+
+            test([255],     {1},      [255])
+            test([2;255],   {1:2},    [2])
+
+            test([2;255; 255],   {1:2; 3},    [2; 255])
+
+            % Size-zero bin.
+            test(ones(0, 1),   {1:0},         [255]        )
+            test([2;3; 255],   {1:2; 1:0; 3}, [3; 255; 255])
         end
         
         

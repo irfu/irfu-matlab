@@ -172,7 +172,7 @@ classdef L2L3
             InitialOsrZv.Epoch              = InLfrCwf.Zv.Epoch;
             InitialOsrZv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
             InitialOsrZv.QUALITY_BITMASK    = InLfrCwf.ZvFpa.QUALITY_BITMASK;
-            InitialOsrZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
+            InitialOsrZv.L2_QUALITY_BITMASK = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
             InitialOsrZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
             %
             InitialOsr = struct(...
