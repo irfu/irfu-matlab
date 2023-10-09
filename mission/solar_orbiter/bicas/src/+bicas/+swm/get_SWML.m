@@ -144,6 +144,14 @@ function Swml = get_SWML(SETTINGS, L)
         % Iterate over the "fundamental" TDS S/W modes
         %==============================================
         for iSwm = 1:numel(TDS_SWM_DATA)
+            
+            if strcmp(TDS_SWM_DATA(iSwm).CWF_RSWF, 'RSWF') ...
+                    && strcmp(inputDatasetLevelList{iInputLevel}, 'L1')
+                % CASE: TDS RSWF
+                % Exclude SWM since BICAS can not currently (2023-10-09) read
+                % TDS RSWF L1 datasets.!
+                continue
+            end
 
             % Define local string modification function.
             strmod = @(s) strrep(strmodg(s, iInputLevel), ...
