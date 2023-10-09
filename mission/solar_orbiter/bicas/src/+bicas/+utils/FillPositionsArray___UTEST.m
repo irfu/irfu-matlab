@@ -450,7 +450,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         end
 
 
-        function test_size(testCase)
+        function test_size_ndims(testCase)
             % IMPLEMENTATION NOTE: In a sense, this does not only test the code,
             % but also the author's understanding of "overloading" with a method
             % size().
@@ -572,8 +572,11 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         
-        % Do multiple tests for FPAs which should be equal.
+        % Do multiple tests for FPAs which should be EQUAL.
         function test_equality(testCase, fpa1, fpa2, fv)
+            % NOTE: For tests to be truly meaningful, implementation-dependent
+            % fill position values should different.
+            
             % Ensure that method "eq" is called.
             r = (fpa1 == fpa2);
             testCase.assertTrue(isscalar(r))

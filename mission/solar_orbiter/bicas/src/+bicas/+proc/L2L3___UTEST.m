@@ -62,7 +62,14 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % NOTE: No consistent relationship between VDC and EDC values, since
             % that is not needed for testing.
             %===================================================================
-            % Columns: Epoch [s], QUALITY_FLAG_in, QUALITY_FLAG_OSR_out, ...
+            % Columns:
+            % 1:    Epoch [s]
+            % 2:    QUALITY_FLAG_in
+            % 3:    QUALITY_FLAG_OSR_out
+            % 4:    QUALITY_BITMASK_in
+            % 5:    L2_QUALITY_BITMASK
+            % 6- 8: VDC
+            % 9-11: EDC
             DATA1 = [...
                 % Normal bin
                 % Test merging QUALITY_BITMASK bits.
@@ -110,7 +117,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
                 100,   2, 255, 0,  0,   N,N,N, N,N,N; ...
                 101,   2,   2, 0,  0,   1,2,3, -1,-2,-3; ...
                 102,   2,   2, 0,  0,   1,2,3, -1,-2,-3; ...
-                ];
+            ];
 
             %===========
             % DSR DATA

@@ -11,6 +11,7 @@
 % fv
 %       Empty if there is no fill value.
 % padValue
+% mc
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -52,6 +53,4 @@ function [fv, padValue, mc] = get_dataobj_FV_pad_value_MC(Do, zvName)
     padValue = Do.Variables{iZv, 9};
     % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad
     % values since the structure/array commented on should be identical.
-    
-    
 end

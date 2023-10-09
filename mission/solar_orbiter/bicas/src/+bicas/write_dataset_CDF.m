@@ -71,7 +71,7 @@ function write_dataset_CDF(...
         'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
         
-        DataObj = init_modif_dataobj(...
+        DataObj = init_modify_dataobj(...
             ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
         % IMPLEMENTATION NOTE: This call will fail if setting
         % OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
@@ -125,7 +125,7 @@ end
 % easily submit "no data" for debugging purposes (deactivate processing but
 % still write file).
 %
-function DataObj = init_modif_dataobj(...
+function DataObj = init_modify_dataobj(...
         ZvsSubset, GaSubset, ...
         masterCdfPath, outputFile, SETTINGS, L)
     
@@ -250,11 +250,11 @@ function DataObj = init_modif_dataobj(...
         end    % if isempty(DataObj.data.(zvName).data)
     end    % for
     
-end    % init_modif_dataobj
+end    % init_modify_dataobj
 
 
 
-% Function used by init_modif_dataobj() for using ZVs from processing, to
+% Function used by init_modify_dataobj() for using ZVs from processing, to
 % overwrite ZVs in dataobj (from master CDF).
 % 
 % ARGUMENTS
@@ -314,6 +314,10 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     %   PROPOSAL: Set to fill value.
     %       CON: Legal?
     %
+    % PROPOSAL: Move code into separate function.
+    %
+    % NOTE: Could be simplified with FPAs?
+    %
     % NOTE: For some ZVs, SCALEMIN & SCALEMAX will not be wrong, but may also
     % not be very meaningful.
     % NOTE: Some ZVs might not change, i.e. min=max.
@@ -325,12 +329,13 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
         iZv = find(strcmp(DataObj.VariableAttributes.SCALEMAX(:,1), zvName));
         assert(isscalar(iZv))
         
-        % Remove fill values
+        % Derive 1D array without fill values for inspection and derivation of
+        % ZVAs.
         zvValueCdfLin = zvValueCdf(:);
         zvValueCdfLin(zvValueCdfLin == fv) = [];
         assert(all(~isnan(zvValueCdfLin)), ...
             'BICAS:Assertion', ...
-            'zvValuePdLin for zvName="%s" contains NaN despite being expected not to.', ...
+            'zvValueCdfLin for zvName="%s" contains NaN despite being expected not to.', ...
             zvName)
         
         % SCALEMIN/-MAX from master CDFs.
@@ -387,7 +392,7 @@ end
 
 
 
-% Function used by init_modif_dataobj() when finding empty zVar.
+% Function used by init_modify_dataobj() when finding empty zVar.
 %
 % ARGUMENTS
 % =========
@@ -412,7 +417,7 @@ function DataObj = handle_empty_ZV_anomaly(...
         'processing data. This should only happen for incomplete processing.'], ...
         masterCdfPath, zvName);
     
-    mc   = irf.cdf.convert_CDF_type_to_MATLAB_class(...
+    mc = irf.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
     isNumericZVar = isnumeric(cast(0.0, mc));
     

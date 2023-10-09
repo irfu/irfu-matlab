@@ -59,12 +59,15 @@ classdef utils
 
 
         % Log human readable summary of a set of zVar-like variables.
+        %
         % NOTE: Ignores string ZVs.
+        % NOTE: Can not handle FPAs.
         %
         %
         % ARGUMENTS
         % =========
-        % Zvs : Struct with ~zVariables.
+        % Zvs
+        %       Struct with ~zVariables.
         %       NOTE: Uses field name to determine whether field is Epoch-like
         %             or not.
         %
@@ -113,7 +116,7 @@ classdef utils
 
                 else
                     error('BICAS:Assertion', ...
-                        'Can not handle zVar "%s".', zvName)
+                        'Can not handle zVar "%s" ("%s").', zvName, class(zvValue))
                 end
             end
 
@@ -265,12 +268,14 @@ classdef utils
         %       one row in a table.
         %
 
-            % PROPOSAL: Handle fill/pad value?
+            % PROPOSAL: Test code.
             % PROPOSAL: Move to +utils.
             % PROPOSAL: Special log function for ZVs. Can print CDF type (implicitly range).
             % PROPOSAL: Print MATLAB class (implicitly range).
             % PROPOSAL: Better function name. Should imply that it generates strings for logging, not the logging
             %           itself.
+            % PROPOSAL: Handle fill/pad value?
+            % PROPOSAL: Only work on FPAs.
 
             % ASSERTION
             assert(isnumeric(varValue))

@@ -23,6 +23,24 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef FillPositionsArray   % < handle
+    % PROPOSAL: Shorter name.
+    %   PRO: Frequently referenced.
+    %       PRO: 2023-10-09: 98 occurrences of class name.
+    %   PROPOSAL: FPArray
+    %
+    % PROPOSAL: Change name of "get_data()"
+    %   PROPOSAL: array, data, data_array
+    % PROPOSAL: Better name for method "get_non_FP_data".
+    %   NOTE: Cf .get_data().
+    %   ~get_non_FP
+    %   ~elements
+    %   ~data
+    %   ~clean
+    %   ~valid
+    %   ~actual
+    %   ~real
+    %   PROPOSAL: General terms: FP, non-FP data, FP + non-FP data.
+    %
     % TODO-DEC: Tolerate cell arrays?
     %   NOTE: Should not be needed for BICAS.
     %
@@ -34,13 +52,8 @@ classdef FillPositionsArray   % < handle
     %
     % PROPOSAL: Shorten "doubleNan" --> "dblNan"
     %
-    % PROPOSAL: Convenience methods for common conversion FPA<-->array
-    %   Ex:
-    %       float array --> logical FPA
-    %       logical FPA --> float array
-    %   CON: Tests?
-    %   TODO-DEC: Naming convention
-    %       NEED: Short.
+    % TODO-DEC: Naming convention for convenience methods for FPA<-->array.
+    %   NEED: Short.
     %       PROBLEM: How represent that output is FPA or array, if kept short?
     %
     % PROPOSAL: Performance w.r.t. pre-allocation?
@@ -48,9 +61,18 @@ classdef FillPositionsArray   % < handle
     %   PROPOSAL: Use HandleWrapper internally.
     %       NOTE: Class needs to become handle class.
     %
-    % PROPOSAL: More static constructor wrapper methods
-    %   PRO: Useful for automatic tests.
-    %       PROPOSAL: doubleNan --> Specified int
+    % PROBLEM: How handle specifying a FV in .get_data() that is identical to
+    %          some non-FP elements?
+    %   PROPOSAL: Assertion in method.
+    %       PROPOSAL: Extra argument for whether to have assertion.
+    %   PROPOSAL: Make it easy to check before calling method.
+    %       PROPOSAL: Method .contains(value) .
+    %
+    % PROPOSAL: disp() method.
+    %   PROPOSAL: Number of FPs and non-FPs of total (percent?).
+    %
+    % PROBLEM: Can not call e.g. isnumeric(Fpa), isfloat(Fpa), islogical().
+    %   PROPOSAL: isnumeric(cast(0, Fpa.mc)) etc.
     
     
     
@@ -252,7 +274,7 @@ classdef FillPositionsArray   % < handle
                     fvBefore = bicas.utils.FillPositionsArray.get_cast_FV(...
                         obj.mc, outputMc);
                 case 3
-                    % Do nothing
+                    % Do nothing. Use caller-supplied value of "fbBefore".
                 otherwise
                     error('BICAS:AssertionError', 'Illegal number of arguments')
             end
@@ -294,17 +316,6 @@ classdef FillPositionsArray   % < handle
         %       1D column array. Internal array is first converted to column
         %       vector. Then fill positions are removed.
         function ar = get_non_FP_data(obj)
-            % PROPOSAL: Better name.
-            %   NOTE: Cf .get_data().
-            %   ~get_non_FP
-            %   ~elements
-            %   ~data
-            %   ~clean
-            %   ~valid
-            %   ~actual
-            %   ~real
-            %   PROPOSAL: Term for non-FP in general, as opposed to FP and FP + non-FP.
-
             % IMPLEMENTATION NOTE: Must convert to column array. Otherwise a 1D
             % vector that is not a column remains a column in that dimension.
             dataAr = obj.dataAr(:);   % Convert to column array.
@@ -346,7 +357,6 @@ classdef FillPositionsArray   % < handle
         %       NOTE: Always scalar. Therefore can not do element-wise
         %       comparison.
         function r = eq(obj1, obj2)
-            
             % Tentatively permit subclassing of this class, though requiring
             % identical classes. Subclass should be able to use this method to
             % e.g. implement its own counterpart method. Unclear what is the
@@ -442,12 +452,15 @@ classdef FillPositionsArray   % < handle
                     end
                     
                     if isa(obj2, 'bicas.utils.FillPositionsArray')
-                        assert(strcmp(Fpa1.mc, obj2.mc))
+                        assert(strcmp(Fpa1.mc, obj2.mc), ...
+                            'FPA to be assigned has a MATLAB class "%s" that incompatible with the assigned FPA''s MATLAB class "%s".', ...
+                            obj2.mc, Fpa1.mc)
                         dataAr2 = obj2.dataAr;
                         fpAr2   = obj2.fpAr;
                     else
                         assert(strcmp(Fpa1.mc, class(obj2)), ...
-                            'Assigned value has a MATLAB class "%s" that is incompatible with the FPA'' MATLAB class "%s".', Fpa1.mc, class(obj2))
+                            'Value to be assigned has a MATLAB class "%s" that is incompatible with the assigned FPA''s MATLAB class "%s".', ...
+                            class(obj2), Fpa1.mc)
                         dataAr2 = obj2;
                         fpAr2   = false(size(obj2));
                     end
@@ -491,22 +504,22 @@ classdef FillPositionsArray   % < handle
 
         % Overload <
         function r = lt(obj1, obj2)
-            r = obj1.compare(obj2, @(o1, o2) (o1 < o2));
+            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 < o2));
         end
 
         % Overload >
         function r = gt(obj1, obj2)
-            r = obj1.compare(obj2, @(o1, o2) (o1 > o2));
+            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 > o2));
         end
 
         % Overload <=
         function r = le(obj1, obj2)
-            r = obj1.compare(obj2, @(o1, o2) (o1 <= o2));
+            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 <= o2));
         end
 
         % Overload >=
         function r = ge(obj1, obj2)
-            r = obj1.compare(obj2, @(o1, o2) (o1 >= o2));
+            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 >= o2));
         end
 
 
@@ -528,14 +541,21 @@ classdef FillPositionsArray   % < handle
         % for binary operators.
         %
         % NOTE: Always outputs an FPA.
-        function Fpa3 = compare(obj1, obj2, fhCompare)
+        function Fpa3 = binary_operation_to_FPA(obj1, obj2, fhCompare)
+            % Concerning potential names for method:
+            % "More specifically, an internal binary operation on a set is a
+            % binary operation whose two domains and the codomain are the same
+            % set."
+            % /https://en.wikipedia.org/wiki/Binary_operation
+            % =================================================================
             % PROPOSAL: Only compare data from .get_data()?
             %   PRO: Safer.
             %   CON: Need to determine safe fill value to use.
             %       PRO: Can not do for any data type.
+            %   PROPOSAL: Add argument for FVs.
             % PROPOSAL: Make public.
             %   PRO: Compare .convert().
-            %   PROPOSAL: Change name.
+            
             
             if isa(obj2, 'bicas.utils.FillPositionsArray')
                 dataAr = fhCompare(obj1.dataAr, obj2.dataAr);
@@ -602,13 +622,14 @@ classdef FillPositionsArray   % < handle
         
         
         
-        % Return FV which will survive a cast from MATLAB class mc1 to mc2.
+        % Return FV which will survive a cast from MATLAB class mc1 to mc2, for
+        % some pre-defined MATLAB classes. 
         %
-        % NOTE: This function defines the MATLAB classes between which one can
-        %       typecast FPAs.
+        % NOTE: FPAs as such can handle more classes than specified here.
         %
-        % RATIONALE: Having this function saved time not having to figure out
+        % RATIONALE: Having this function saves time not having to figure out
         %            which MATLAB class to specify, which is often error prone.
+        %
         function fv = get_cast_FV(mc1, mc2)
             isNum1 = ismember(mc1, bicas.utils.FillPositionsArray.MC_NUMERIC_CA);
             isNum2 = ismember(mc2, bicas.utils.FillPositionsArray.MC_NUMERIC_CA);
@@ -623,12 +644,13 @@ classdef FillPositionsArray   % < handle
             else
                 % CASE: Can not determine MATLAB class and hence FV.
                 %fv = [];
-                error('BICAS:AssertionError:IllegalArgument', 'Can not derive value that survives typecasting from "%s" to "%s".', mc1, mc2)
+                error('BICAS:AssertionError:IllegalArgument', ...
+                    'Can not derive value that survives typecasting from "%s" to "%s".', mc1, mc2)
             end
         end
-
-
-            
+        
+        
+        
     end
 
 

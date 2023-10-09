@@ -10,8 +10,8 @@
 % IMPLEMENTATION NOTE
 % ===================
 % The production of VHT datasets does not fit into BICAS's and ROC's model for
-% production of datasets and can therefore not be performed by BICAS as of
-% 2021-03-31.
+% production of datasets and can therefore not be performed by BICAS proper as
+% of 2021-03-31.
 % Reasons:
 % (1) The RCS interface (2021-03-31) can not handle this case in principle:
 %     Multiple input datasets (one for every day of the month) for one output
@@ -26,6 +26,8 @@
 % NOTE: Future versions may try to read the original (input) datasets that were
 % used to produce the .mat file, to complement the output datasets with metadata
 % and quality variables.
+% VHT files therefore has no ZVs QUALITY_FLAG, QUALITY_BITMASK,
+% L2_QUALITY_BITMASK.
 %
 %
 % ARGUMENTS
