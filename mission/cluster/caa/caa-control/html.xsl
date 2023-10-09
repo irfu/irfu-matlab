@@ -21,7 +21,7 @@ $Id$
 	</HEAD>
 	<BODY>
 	<H1 ALIGN="center">
-		EFW Non-Standard Operations Created (branch devel, commit: <A HREF="https://github.com/irfu/irfu-matlab/tree/{$git-hash}"><xsl:value-of select="$git-hash"/></A>): <xsl:value-of select="$current-date"/>
+		EFW Non-Standard Operations Created (branch devel): <xsl:value-of select="$current-date"/>
 	</H1>
 	<H2>
 		<xsl:value-of select="//description"/>
