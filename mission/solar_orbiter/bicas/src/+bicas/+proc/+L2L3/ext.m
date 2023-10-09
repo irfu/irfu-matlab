@@ -51,7 +51,7 @@ classdef ext
             % ===================================
             % Caller wrapper around solo.psp2ne()
             % ===================================
-            [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = ...
+            [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
                 bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs);
 
 
@@ -69,8 +69,8 @@ classdef ext
             R.neScpCm3           = NeScpTs.data;
             % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
             %       expected to be used by BICAS later.
-            R.neScpQualityBit  = NeScpQualityBitTs.data;
-            R.psp2neCodeVerStr = psp2neCodeVerStr;
+            R.NeScpQualityBitFpa = NeScpQualityBitFpa;
+            R.psp2neCodeVerStr   = psp2neCodeVerStr;
         end
 
 
@@ -225,7 +225,7 @@ classdef ext
         % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
         % relies on PSP values for which this has already been done.
         %
-        function [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = calc_DENSITY(PspTs)
+        function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = calc_DENSITY(PspTs)
             
             %##########################
             % CALL BICAS-EXTERNAL CODE
@@ -255,6 +255,12 @@ classdef ext
                 'solo.psp2ne() returned illegal NeScpTsQualityBitTs. Contains values which are not 0 or 1.')
 
             irf.assert.castring_regexp(psp2neCodeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
+
+            % ==================================
+            % Convert NeScpQualityBitTs --> FPA
+            % ==================================
+            NeScpQualityBitFpa = bicas.utils.FillPositionsArray.floatNan2logical(...
+                NeScpQualityBitTs.data);
         end
 
 
