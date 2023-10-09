@@ -42,7 +42,19 @@ classdef const
         % FULL_BAND mode snapshots which are 2^18=262144 samples/snapshot ("This
         % mode is however meant for calibration and testing, not for science
         % operations.").
-        TDS_RSWF_SAMPLES_PER_RECORD = 32768;
+        %
+        % IMPORTANT NOTE
+        % ==============
+        % Empirically, this value varies between L1R and L1 datasets. Since
+        % BICAS does not officially support reading L1 datasets, the code should
+        % use the value for L1R. The code is also (probably) not adapted to
+        % having another number of samples/record. This means that BICAS
+        % currently (2023-10-09) can not read L1 SOLO_L1_RPW-TDS-LFM-RSWF
+        % datasets.
+        % Ex:
+        % solo_L1R_rpw-tds-lfm-rswf-e-cdag_20200409_V12.cdf: 32768 samples/record
+        % solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V09.cdf   : 16384 samples/record
+        TDS_RSWF_L1R_SAMPLES_PER_RECORD = 32768;
         
         % Max absolute value of set current.
         %

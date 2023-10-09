@@ -202,8 +202,25 @@ classdef tds
                 WAVEFORM_DATA_nChannels == WAVEFORM_DATA_nChannels_expected, ...
                 'BICAS:Assertion:DatasetFormat', ...
                 'TDS zVar WAVEFORM_DATA has an unexpected size.')
-            if C.isTdsRswf   assert(nCdfSamplesPerRecord == solo.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD)
-            else             assert(nCdfSamplesPerRecord == 1)
+
+            % IMPORTANT NOTE
+            % ==============
+            % Empirically, this value varies between L1R and L1 datasets. Since
+            % BICAS does not officially support reading L1 datasets, the code
+            % should use the value for L1R. The code is also (probably) not
+            % adapted to having another number of samples/record. This means
+            % that BICAS CURRENTLY (2023-10-09) CAN NOT READ L1
+            % SOLO_L1_RPW-TDS-LFM-RSWF datasets.
+            % Ex:
+            %     solo_L1R_rpw-tds-lfm-rswf-e-cdag_20200409_V12.cdf: 32768 samples/record
+            %     solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V09.cdf   : 16384 samples/record
+            if C.isTdsRswf
+                assert(...
+                    nCdfSamplesPerRecord == solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD, ...
+                    'Unexpected number of samples per CDF record (%i). Expected %i.', ...
+                    nCdfSamplesPerRecord, solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD)
+            else
+                assert(nCdfSamplesPerRecord == 1)
             end
 
 
@@ -379,7 +396,7 @@ classdef tds
                         solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;
                 elseif C.isTds
                     SAMPLES_PER_RECORD_CHANNEL = ...
-                        solo.hwzv.const.TDS_RSWF_SAMPLES_PER_RECORD;
+                        solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD;
                 else
                     error(...
                         'BICAS:Assertion', ...
