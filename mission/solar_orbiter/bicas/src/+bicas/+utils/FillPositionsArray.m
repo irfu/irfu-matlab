@@ -440,6 +440,10 @@ classdef FillPositionsArray   % < handle
         % processing step which updates pre-allocated global array of samples.
         %
         function Fpa1 = subsasgn(Fpa1, S, obj2)
+            % TODO-DEC: Is it appropriate that non-FPAs can be used to assign
+            %           FPAs? Could lead to bugs in transition from non-FPAs to
+            %           FPAs.
+            
             switch S(1).type
                 case '()'
                     assert(isscalar(S))
@@ -457,12 +461,15 @@ classdef FillPositionsArray   % < handle
                             obj2.mc, Fpa1.mc)
                         dataAr2 = obj2.dataAr;
                         fpAr2   = obj2.fpAr;
+                    % DISABLE assignment using non-FPAs (e.g. regular arrays).
+                    % else
+                    %     assert(strcmp(Fpa1.mc, class(obj2)), ...
+                    %         'Value to be assigned has a MATLAB class "%s" that is incompatible with the assigned FPA''s MATLAB class "%s".', ...
+                    %         class(obj2), Fpa1.mc)
+                    %     dataAr2 = obj2;
+                    %     fpAr2   = false(size(obj2));
                     else
-                        assert(strcmp(Fpa1.mc, class(obj2)), ...
-                            'Value to be assigned has a MATLAB class "%s" that is incompatible with the assigned FPA''s MATLAB class "%s".', ...
-                            class(obj2), Fpa1.mc)
-                        dataAr2 = obj2;
-                        fpAr2   = false(size(obj2));
+                        error('BICAS:AssertionError', 'Assigning FPA elements with non-FPA.')
                     end
                     
                     Fpa1.dataAr = subsasgn(Fpa1.dataAr, S, dataAr2);

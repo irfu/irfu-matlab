@@ -359,8 +359,8 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             Fpa1a(:, :, :, :) = Fpa2;
             testCase.assertEqual(Fpa1a, Fpa3)
 
-            Fpa1b(:, :, :, :) = Fpa2.get_data(NaN);
-            testCase.assertEqual(Fpa1b, Fpa3)
+%             Fpa1b(:, :, :, :) = Fpa2.get_data(NaN);
+%             testCase.assertEqual(Fpa1b, Fpa3)
 
             % Assign single element.
             Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
@@ -411,8 +411,8 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             Fpa1a(logical([1,0,1; 0,1,0])) = Fpa2;
             testCase.verifyEqual(Fpa1a, Fpa3)
             
-            Fpa1b(logical([1,0,1; 0,1,0])) = Fpa2.get_data(NaN);
-            testCase.verifyEqual(Fpa1b, Fpa3)
+%             Fpa1b(logical([1,0,1; 0,1,0])) = Fpa2.get_data(NaN);
+%             testCase.verifyEqual(Fpa1b, Fpa3)
             
             % =======================
             % Logical linear indexing
@@ -425,8 +425,8 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             Fpa1a(logical([1,0,0, 1,1,0]')) = Fpa2;
             testCase.verifyEqual(Fpa1a, Fpa3)
 
-            Fpa1b(logical([1,0,0, 1,1,0]')) = Fpa2.get_data(NaN);
-            testCase.verifyEqual(Fpa1b, Fpa3)
+%             Fpa1b(logical([1,0,0, 1,1,0]')) = Fpa2.get_data(NaN);
+%             testCase.verifyEqual(Fpa1b, Fpa3)
         end
         
         
@@ -444,8 +444,8 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             Fpa3 = Fpa([9,9,9; 9,9,9], NaN);
             Fpa1a(:, :) = Fpa2;
             testCase.verifyEqual(Fpa1a, Fpa3)
-            Fpa1b(:, :) = Fpa2.get_data(NaN);
-            testCase.verifyEqual(Fpa1b, Fpa3)
+%             Fpa1b(:, :) = Fpa2.get_data(NaN);
+%             testCase.verifyEqual(Fpa1b, Fpa3)
 
         end
 
