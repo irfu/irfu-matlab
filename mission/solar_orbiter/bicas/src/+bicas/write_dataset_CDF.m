@@ -151,15 +151,46 @@ function DataObj = init_modify_dataobj(...
     
     
     
-    ZvsLog  = struct();   % ZVs for logging.
-    
-    
-    
     %======================
     % Read master CDF file
     %======================
     L.logf('info', 'Reading master CDF file: "%s"', masterCdfPath)
     DataObj = dataobj(masterCdfPath);
+        
+
+
+    % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
+    % /2023-08-10
+    if isfield(ZvsSubset, 'QUALITY_FLAG')
+
+        %===================================================================
+        % Enforce global max value for zVar QUALITY_FLAG
+        % ----------------------------------------------
+        % NOTE: Ignore fill positions/values.
+        %===================================================================
+        assert(isa(ZvsSubset.QUALITY_FLAG, 'bicas.utils.FillPositionsArray'))
+
+        [qfMax, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
+        assert(...
+            isfinite(qfMax) ...
+            && (bicas.const.QUALITY_FLAG_MIN < qfMax) ...
+            && (qfMax <= bicas.const.QUALITY_FLAG_MAX), ...
+            'BICAS:Assertion:ConfigurationBug', ...
+            'Illegal BICAS setting "%s"=%i.', key, qfMax)
+        if qfMax < bicas.const.QUALITY_FLAG_MAX
+            L.logf('warning', ...
+                ['Using setting %s = %i to set global max value for', ...
+                ' zVar QUALITY_FLAG.'], ...
+                key, qfMax);
+        end
+        QfFpa = ZvsSubset.QUALITY_FLAG;   % Temporary variable to make algo. clearer.
+        
+        TooHighQfFpa                        = (QfFpa >= qfMax);
+        QfFpa(TooHighQfFpa.get_data(false)) = bicas.utils.FillPositionsArray(uint8(qfMax), 'NO_FILL_POSITIONS');
+
+        ZvsSubset.QUALITY_FLAG = QfFpa;
+        clear QfFpa
+    end
     
     
     
@@ -171,43 +202,38 @@ function DataObj = init_modify_dataobj(...
     %==================================================================
     % NOTE: Only sets a SUBSET of the zVariables in master CDF.
     L.log('info', 'Converting PDV to dataobj (CDF data structure)')
+    ZvsLog  = struct();   % ZVs for logging.
     pdFieldNameList = fieldnames(ZvsSubset);
     for iPdFieldName = 1:length(pdFieldNameList)
-        zvName = pdFieldNameList{iPdFieldName};
+        zvName    = pdFieldNameList{iPdFieldName};
+        zvValuePd = ZvsSubset.(zvName);
         
-        zvValuePd       = ZvsSubset.(zvName);
-        ZvsLog.(zvName) = zvValuePd;
-        
-        
-
-        % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
-        % /2023-08-10
-        if isfield(ZvsSubset, 'QUALITY_FLAG')
-            %fv = getfillval(DataObj, 'QUALITY_FLAG');
-            [fv, ~, ~] = bicas.get_dataobj_FV_pad_value_MC(DataObj, 'QUALITY_FLAG');
+        % HACK: Normalize for the purpose of (old) ZV logging
+        % FPA --> Array.
+        % Use Master CDF FVs, except floats use NaN.
+        % ---------------------------------------------------
+        % IMPLEMENTATION NOTE: This is to avoid having to modify other old
+        % non-FPA-aware code for now. Long term, should probably adapt logging
+        % to only work on FPAs.
+        if isa(zvValuePd, 'bicas.utils.FillPositionsArray')
+            % Normalize FPA --> array with CDF FV.
+            [fv, ~, masterMc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
+            assert(...
+                strcmp(masterMc, zvValuePd.mc), ...
+                'Mismatching MATLAB classes for ZV "%s" between master CDF ("%s") and MATLAB (FPA) variable ("%s").', ...
+                zvName, masterMc, zvValuePd.mc)
             
-            %===================================================================
-            % Set global max value for zVar QUALITY_FLAG
-            % ------------------------------------------
-            % NOTE: Ignore fill values.
-            %===================================================================
-            [value, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
-            assert(isfinite(value) && (0 < value) && (value <= 3), ...
-                'BICAS:Assertion:ConfigurationBug', ...
-                'Illegal BICAS setting "%s"=%i.', key, value)
-            if value < 3
-                L.logf('warning', ...
-                    ['Using setting %s = %i to set zVar QUALITY_FLAG', ...
-                    ' global max value.'], ...
-                    key, value);
+            if ismember(zvValuePd.mc, {'single', 'double'})
+                fv = cast(NaN, zvValuePd.mc);
             end
-            b = ZvsSubset.QUALITY_FLAG ~= fv;
-            ZvsSubset.QUALITY_FLAG(b, :) = min(...
-                ZvsSubset.QUALITY_FLAG(b, :), ...
-                value);
+            assert(all(~ismember(fv, zvValuePd.get_non_FP_data())))
+            
+            zvValueLog = zvValuePd.get_data(fv);
+        else
+            zvValueLog = zvValuePd;
         end
         
-        
+        ZvsLog.(zvName) = zvValueLog;
 
         DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L);
     end
@@ -276,25 +302,34 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
             ' in the master CDF file.'], zvName)
     end
     
+    
+    
     %======================================================================
     % Prepare PDV zVariable value to save to CDF:
-    % (1) floats: Replace NaN-->fill value
-    % (2) Convert zVar variable to the corresponding MATLAB class specified in
-    %     the master CDF.
+    % (1a) FPAs --> array
+    % (1b) floats: Replace NaN-->fill value
+    % (3)  Convert zVar variable to the corresponding MATLAB class specified in
+    %      the master CDF.
     %
     % NOTE: If both fill values and pad values have been replaced with NaN
     % (when reading CDF), then the code can not distinguish between fill
     % values and pad values writing the CDF.
     %======================================================================
-    [fv, ~, ~] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
-    if isfloat(zvValuePd)
+    [fv, ~, mc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
+    if isa(zvValuePd, 'bicas.utils.FillPositionsArray')
+        % Normalize FPA --> array with CDF FV.
+        assert(strcmp(mc, zvValuePd.mc))
+        assert(all(~ismember(fv, zvValuePd.get_non_FP_data())))
+        zvValueTemp = zvValuePd.get_data(fv);
+    elseif isfloat(zvValuePd)
+        % Normalize array --> array with CDF FV.
         zvValueTemp = irf.utils.replace_value(zvValuePd, NaN, fv);
     else
         zvValueTemp = zvValuePd;
     end
     cdfMc = irf.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
-    zvValueCdf     = cast(zvValueTemp, cdfMc);
+    zvValueCdf = cast(zvValueTemp, cdfMc);
     
     
     

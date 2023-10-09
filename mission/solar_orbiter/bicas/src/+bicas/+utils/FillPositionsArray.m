@@ -88,6 +88,10 @@ classdef FillPositionsArray   % < handle
             'int8', 'uint8', 'int16', 'uint16', ...
             'int32', 'uint32', 'int64', 'uint64' ...
         };
+    
+        % Constant that is useful for setting FPA elements to be Fs (also for
+        % multiple elements using indexing).
+        FP_UINT8 = bicas.utils.FillPositionsArray(uint8(0), 'ONLY_FILL_POSITIONS');
     end
 
 

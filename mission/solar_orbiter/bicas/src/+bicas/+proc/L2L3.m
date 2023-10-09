@@ -122,10 +122,10 @@ classdef L2L3
             % (2) DENSITY.
             %=======================================
             LfrCwfZv = [];
-            LfrCwfZv.Epoch        = InLfrCwf.Zv.Epoch;
-            LfrCwfZv.VDC          = InLfrCwf.Zv.VDC;
-            LfrCwfZv.EDC          = InLfrCwf.Zv.EDC;
-            LfrCwfZv.QUALITY_FLAG = InLfrCwf.Zv.QUALITY_FLAG;
+            LfrCwfZv.Epoch            = InLfrCwf.Zv.Epoch;
+            LfrCwfZv.VDC              = InLfrCwf.Zv.VDC;
+            LfrCwfZv.EDC              = InLfrCwf.Zv.EDC;
+            LfrCwfZv.QUALITY_FLAG_Fpa = InLfrCwf.ZvFpa.QUALITY_FLAG;
             R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, SETTINGS);
 
 
@@ -137,7 +137,7 @@ classdef L2L3
             % and DSR datasets. In principle, this is for keeping the interface
             % to bicas.proc.dsr.init_shared_DSR_ZVs() simple.
             %===================================================================
-            InLfrCwf.Zv.QUALITY_FLAG(R.bNotUsed) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FillPositionsArray.FP_UINT8;
 
 
 
@@ -169,9 +169,9 @@ classdef L2L3
             % zVariables -- shared between all OSR datasets.
             InitialOsrZv = struct();
             InitialOsrZv.Epoch              = InLfrCwf.Zv.Epoch;
-            InitialOsrZv.QUALITY_BITMASK    = InLfrCwf.Zv.QUALITY_BITMASK;
+            InitialOsrZv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
+            InitialOsrZv.QUALITY_BITMASK    = InLfrCwf.ZvFpa.QUALITY_BITMASK;
             InitialOsrZv.L2_QUALITY_BITMASK = InLfrCwf.Zv.L2_QUALITY_BITMASK;
-            InitialOsrZv.QUALITY_FLAG       = InLfrCwf.Zv.QUALITY_FLAG;
             InitialOsrZv.DELTA_PLUS_MINUS   = InLfrCwf.Zv.DELTA_PLUS_MINUS;
             %
             InitialOsr = struct(...
@@ -199,7 +199,7 @@ classdef L2L3
             OutEfieldOsr.Zv.EDC_SRF                   = R.edcSrfMvpm;
             %
             b = all(isnan(OutEfieldOsr.Zv.EDC_SRF), 2);
-            OutEfieldOsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            OutEfieldOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
         
 
 
@@ -214,7 +214,7 @@ classdef L2L3
             %
             b = isnan(OutScpotOsr.Zv.SCPOT) & ...
                 isnan(OutScpotOsr.Zv.PSP);
-            OutScpotOsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            OutScpotOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
 
 
 
@@ -227,7 +227,7 @@ classdef L2L3
             OutDensityOsr.Zv.DENSITY                   = R.neScpCm3;
             %
             b = isnan(OutDensityOsr.Zv.DENSITY);
-            OutDensityOsr.Zv.QUALITY_FLAG(b)           = InLfrCwf.ZvFv.QUALITY_FLAG;
+            OutDensityOsr.Zv.QUALITY_FLAG(b)           = bicas.utils.FillPositionsArray.FP_UINT8;
 
 
 
@@ -246,7 +246,7 @@ classdef L2L3
             %
             % NOTE: Merge across samples in same record.
             b = all(isnan(OutEfieldDsr.Zv.EDC_SRF), 2);
-            OutEfieldDsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            OutEfieldDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
 
             
 
@@ -272,7 +272,7 @@ classdef L2L3
             %
             b = isnan(OutScpotDsr.Zv.SCPOT) & ...
                 isnan(OutScpotDsr.Zv.PSP);
-            OutScpotDsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            OutScpotDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
 
 
 
@@ -290,7 +290,7 @@ classdef L2L3
                 L);
             %
             b = isnan(OutDensityDsr.Zv.DENSITY);
-            OutDensityDsr.Zv.QUALITY_FLAG(b) = InLfrCwf.ZvFv.QUALITY_FLAG;
+            OutDensityDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
 
 
 

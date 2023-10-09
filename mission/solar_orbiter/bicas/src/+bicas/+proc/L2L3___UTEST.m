@@ -139,18 +139,18 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             BASE_TT2000 = spdfparsett2000('2020-03-14T00:00:00');
 
             InLfrCwf.Zv.Epoch              = int64( DATA1(:, 1)*1e9) + BASE_TT2000;
-            InLfrCwf.Zv.QUALITY_FLAG       = uint8( DATA1(:, 2));
-            InLfrCwf.Zv.QUALITY_BITMASK    = uint16(DATA1(:, 4));
+            InLfrCwf.ZvFpa.QUALITY_FLAG    = bicas.utils.FillPositionsArray(uint8( DATA1(:, 2)), 'FILL_VALUE', uint8( InLfrCwf.ZvFv.QUALITY_FLAG));
+            InLfrCwf.ZvFpa.QUALITY_BITMASK = bicas.utils.FillPositionsArray(uint16(DATA1(:, 4)), 'FILL_VALUE', uint16(InLfrCwf.ZvFv.QUALITY_BITMASK));
             InLfrCwf.Zv.L2_QUALITY_BITMASK = uint16(DATA1(:, 5));
             InLfrCwf.Zv.DELTA_PLUS_MINUS   = int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch));
-            InLfrCwf.Zv.VDC = single(DATA1(:, 6: 8));
-            InLfrCwf.Zv.EDC = single(DATA1(:, 9:11));
+            InLfrCwf.Zv.VDC                = single(DATA1(:, 6: 8));
+            InLfrCwf.Zv.EDC                = single(DATA1(:, 9:11));
 
-            ExpOsr.Zv.QUALITY_FLAG       = uint8( DATA1(:, 3));
+            ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FillPositionsArray(uint8( DATA1(:, 3)), 'FILL_VALUE', uint8 (InLfrCwf.ZvFv.QUALITY_FLAG));
             %
             ExpDsr.Zv.Epoch              = int64( DATA2(:, 1)*1e9) + BASE_TT2000;
-            ExpDsr.Zv.QUALITY_FLAG       = uint8( DATA2(:, 2));
-            ExpDsr.Zv.QUALITY_BITMASK    = uint16(DATA2(:, 3));
+            ExpDsr.Zv.QUALITY_FLAG       = bicas.utils.FillPositionsArray(uint8( DATA2(:, 2)), 'FILL_VALUE', uint8( InLfrCwf.ZvFv.QUALITY_FLAG));
+            ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FillPositionsArray(uint16(DATA2(:, 3)), 'FILL_VALUE', uint16(InLfrCwf.ZvFv.QUALITY_BITMASK));
             ExpDsr.Zv.L2_QUALITY_BITMASK = uint16(DATA2(:, 4));
 
             [OutEfieldOsr,  OutEfieldDsr, ...
@@ -159,16 +159,16 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, SETTINGS, L);
 
             % OSR
-            testCase.verifyEqual(OutEfieldOsr.Zv.Epoch,              InLfrCwf.Zv.Epoch)
-            testCase.verifyEqual(OutEfieldOsr.Zv.QUALITY_FLAG,       ExpOsr.Zv.QUALITY_FLAG)
-            testCase.verifyEqual(OutEfieldOsr.Zv.QUALITY_BITMASK,    InLfrCwf.Zv.QUALITY_BITMASK)
-            testCase.verifyEqual(OutEfieldOsr.Zv.L2_QUALITY_BITMASK, InLfrCwf.Zv.L2_QUALITY_BITMASK)
+            testCase.assertEqual(OutEfieldOsr.Zv.Epoch,              InLfrCwf.Zv.Epoch)
+            testCase.assertEqual(OutEfieldOsr.Zv.QUALITY_FLAG,       ExpOsr.Zv.QUALITY_FLAG)
+            testCase.assertEqual(OutEfieldOsr.Zv.QUALITY_BITMASK,    InLfrCwf.ZvFpa.QUALITY_BITMASK)
+            testCase.assertEqual(OutEfieldOsr.Zv.L2_QUALITY_BITMASK, InLfrCwf.Zv.L2_QUALITY_BITMASK)
 
             % DSR
-            testCase.verifyEqual(OutEfieldDsr.Zv.Epoch,              ExpDsr.Zv.Epoch)
-            testCase.verifyEqual(OutEfieldDsr.Zv.QUALITY_FLAG,       ExpDsr.Zv.QUALITY_FLAG)
-            testCase.verifyEqual(OutEfieldDsr.Zv.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
-            testCase.verifyEqual(OutEfieldDsr.Zv.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
+            testCase.assertEqual(OutEfieldDsr.Zv.Epoch,              ExpDsr.Zv.Epoch)
+            testCase.assertEqual(OutEfieldDsr.Zv.QUALITY_FLAG,       ExpDsr.Zv.QUALITY_FLAG)
+            testCase.assertEqual(OutEfieldDsr.Zv.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
+            testCase.assertEqual(OutEfieldDsr.Zv.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
         end
         
         

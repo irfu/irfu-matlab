@@ -123,19 +123,24 @@ classdef lfr
             [settingValue, settingKey] = SETTINGS.get_fv(...
                 'PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
 
-            InSciNorm.Zv.QUALITY_BITMASK = bicas.proc.L1L2.lfr.normalize_ZV_empty(...
+            InSciNorm.ZvFpa.QUALITY_BITMASK = bicas.proc.L1L2.lfr.normalize_ZV_empty(...
                 L, settingValue, settingKey, nRecords, ...
-                InSci.Zv.QUALITY_BITMASK, 'QUALITY_BITMASK');
+                InSci.ZvFpa.QUALITY_BITMASK, 'QUALITY_BITMASK');
 
-            InSciNorm.Zv.QUALITY_FLAG    = bicas.proc.L1L2.lfr.normalize_ZV_empty(...
+            InSciNorm.ZvFpa.QUALITY_FLAG    = bicas.proc.L1L2.lfr.normalize_ZV_empty(...
                 L, settingValue, settingKey, nRecords, ...
-                InSci.Zv.QUALITY_FLAG,    'QUALITY_FLAG');
+                InSci.ZvFpa.QUALITY_FLAG,    'QUALITY_FLAG');
+            
+            % NOTE: Very old L1R LFR-SBM1/2 (test) data datasets have been
+            % observed to have QUALITY_BITMASK with illegal data type
+            % CDF_UINT1/uint8 while newer ones do not. This is not mitigated in
+            % the code since it does not seem to be needed.
 
             % ASSERTIONS
             irf.assert.sizes(...
-                InSciNorm.Zv.QUALITY_BITMASK, [nRecords, 1], ...
-                InSciNorm.Zv.QUALITY_FLAG,    [nRecords, 1])
-
+                InSciNorm.ZvFpa.QUALITY_BITMASK, [nRecords, 1], ...
+                InSciNorm.ZvFpa.QUALITY_FLAG,    [nRecords, 1])
+            
         end    % process_normalize_CDF
 
 
@@ -250,8 +255,8 @@ classdef lfr
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
             Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
-            Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
-            Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
+            Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
+            Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
 
             Zv.lfrRx                   = zvRx;
 
@@ -324,23 +329,19 @@ classdef lfr
         %
         % ARGUMENTS
         % =========
-        % zv1 : zVar-like variable or empty. Column vector (Nx1) or empty.
-        %
-        % RETURN VALUE
-        % ============
-        % zv2 : If zv1 is non-empty, then zv2=zv1.
-        %       If zv1 is empty,     then error/mitigate.
-        %
-        function zv2 = normalize_ZV_empty(...
-                L, settingValue, settingKey, nRecords, zv1, zvName)
+        % ZvFpa1
+        %   zVar-like FPA. Column vector (Nx1) or empty.
+        function ZvFpa2 = normalize_ZV_empty(...
+                L, settingValue, settingKey, nRecords, ZvFpa1, zvName)
 
-            if ~isempty(zv1)
+            if ~isempty(ZvFpa1)
                 % Do nothing (except assertion later).
-                zv2 = zv1;
+                ZvFpa2 = ZvFpa1;
             else
                 anomalyDescrMsg = sprintf(...
                     'zVar "%s" from the LFR SCI source dataset is empty.', ...
                     zvName);
+
                 switch(settingValue)
                     case 'USE_FILL_VALUE'
                         bicas.default_anomaly_handling(L, ...
@@ -349,7 +350,8 @@ classdef lfr
                             'BICAS:DatasetFormat:SWMProcessing')
 
                         L.logf('warning', 'Using fill values for %s.', zvName)
-                        zv2 = nan(nRecords, 1);
+                        ZvFpa2 = bicas.utils.FillPositionsArray(...
+                            zeros(nRecords, 1, ZvFpa1.mc), 'ONLY_FILL_POSITIONS');
 
                     otherwise
                         bicas.default_anomaly_handling(L, ...
@@ -359,7 +361,7 @@ classdef lfr
                 end
             end
 
-            irf.assert.sizes(zv2, [NaN])
+            irf.assert.sizes(ZvFpa2, [NaN])
         end
         
         

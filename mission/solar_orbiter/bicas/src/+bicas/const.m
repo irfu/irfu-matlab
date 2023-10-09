@@ -132,6 +132,13 @@ classdef const
         % NOTE: Currently used for both L2 downsampled and L3 downsampled.
         % /2021-05-24
         N_MIN_SAMPLES_PER_DSR_BIN = 3;
+        
+        
+        
+        % Absolute min & max for ZV QUALITY_FLAG, according to external metadata
+        % standards.
+        QUALITY_FLAG_MIN = 0;
+        QUALITY_FLAG_MAX = 3;
 
 
 

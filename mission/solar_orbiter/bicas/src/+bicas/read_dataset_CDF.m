@@ -37,7 +37,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     % List of ZVs that should be represented as FPAs (and not as plain arrays).
     FPA_ZV_NAME_BIAS_HK_CA = {'HK_BIA_MODE_MUX_SET', 'HK_BIA_MODE_DIFF_PROBE', 'HK_BIA_DIFF_GAIN'};
-    FPA_ZV_NAME_LFR_SCI_CA = {'BIAS_MODE_MUX_SET'};
+    FPA_ZV_NAME_LFR_SCI_CA = {'BIAS_MODE_MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK'};
     
     FPA_ZV_NAME_CA = [FPA_ZV_NAME_BIAS_HK_CA, FPA_ZV_NAME_LFR_SCI_CA];
 
@@ -114,8 +114,11 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
             ZvFpa.(zvName) = Fpa;
         else
             Zvs.(zvName)   = zvValueTypedNan;
-            ZvFv.(zvName)  = fv;
         end
+        % IMPLEMENTATION NOTE: Should not really need to store explicit FV for
+        % ZVs converted to FPAs, but temporary conversions FPA-->array require
+        % this any way.
+        ZvFv.(zvName) = fv;
     end
 
     

@@ -237,8 +237,8 @@ classdef tds
             Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
                 freqHzZv, nCdfSamplesPerRecord);
             Zv.freqHz                  = freqHzZv;
-            Zv.QUALITY_BITMASK         = InSci.Zv.QUALITY_BITMASK;
-            Zv.QUALITY_FLAG            = InSci.Zv.QUALITY_FLAG;
+            Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
+            Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
             Zv.bdmFpa                  = HkSciTime.bdmFpa;
             Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;

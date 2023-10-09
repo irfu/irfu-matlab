@@ -110,7 +110,7 @@ classdef ext
         %
         function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse)
 
-            irf.assert.struct(Zv, {'Epoch', 'VDC', 'EDC', 'QUALITY_FLAG'}, {})
+            irf.assert.struct(Zv, {'Epoch', 'VDC', 'EDC', 'QUALITY_FLAG_Fpa'}, {})
 
 
 
@@ -119,9 +119,9 @@ classdef ext
             % ----------------------------------------
             % Set records to NaN for QUALITY_FLAG below threshold.
             %======================================================
-            % NOTE: Comparison will technically fail for QUALITY_FLAG fill
-            % value, but that is acceptable (ideal result is ambiguous anyway).
-            bNotUsed            = Zv.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            % NOTE: Unclear how treat QUALITY_FLAG=FV.
+            bNotUsedFpa         = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
+            bNotUsed            = bNotUsedFpa.get_data(false);   % FV = false wise?
             Zv.VDC(bNotUsed, :) = NaN;
             Zv.EDC(bNotUsed, :) = NaN;
             %

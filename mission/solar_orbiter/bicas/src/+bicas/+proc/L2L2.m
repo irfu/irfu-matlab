@@ -105,9 +105,9 @@ classdef L2L2
             
             
             
-            % NOTE: Comparison will technically fail for QUALITY_FLAG fill
-            % value, but that is acceptable (ideal result is ambiguous anyway).
-            bDoNotUse = InLfrCwf.Zv.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            % NOTE: Unclear how treat QUALITY_FLAG=FV.
+            bDoNotUseFpa         = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            bDoNotUse            = bDoNotUseFpa.get_data(false);   % FV = false wise?
             
             zv_VDC(bDoNotUse, :) = NaN;
             zv_EDC(bDoNotUse, :) = NaN;
