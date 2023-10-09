@@ -33,28 +33,24 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % 
             % Unclear how much testing is meaningful. Could add more tests.
             %
+            % PROPOSITION: The complexity of the test code implies that the
+            %              underlying code needs to be refactored somehow.
+            %   NOTE: InLfrCwf.ZvFv should become obsoleted eventually if using
+            %         FPAs.
+            %   NOTE: Test sets GAs!
+            %
             % PROPOSAL: Separate tests (function calls) for different special
             %           cases of bins.
+            %   PRO: Easier to follow behaviour in tested code.
+            %
+            % PROPOSAL: Check OSR data for NaN (not just DSR).
 
             % Test(s) are designed for this value.
             assert(bicas.const.N_MIN_SAMPLES_PER_DSR_BIN == 3)
 
 
+
             N = NaN;
-            L        = bicas.Logger('none', false);
-            SETTINGS = bicas.create_default_SETTINGS();
-            SETTINGS.make_read_only();
-
-            % Tests are designer for this value.
-            assert(SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX') == 2)
-
-            InLfrCwf.ZvFv = struct(...
-                'QUALITY_FLAG',       uint8(255), ...
-                'QUALITY_BITMASK',    uint16(65535), ...
-                'L2_QUALITY_BITMASK', uint16(65535));
-            InLfrCwf.Ga.OBS_ID    = {' '};
-            InLfrCwf.Ga.SOOP_TYPE = {' '};
-
             %===================================================================
             % OSR DATA: Input+expected output
             % --------------------------------
@@ -71,12 +67,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % 5:    L2_QUALITY_BITMASK
             % 6- 8: VDC
             % 9-11: EDC
-            DATA1 = [...
-                % Normal bin
-                % Test merging QUALITY_BITMASK bits.
-                 -1,   2,   2, 1,  8,   1,2,3, -1,-2,-3; ...
-                  0,   2,   2, 2, 16,   1,2,3, -1,-2,-3; ...
-                  1,   2,   2, 4, 32,   1,2,3, -1,-2,-3; ...
+            DATA_OSR = [...
                 % Too few records
                  10,   2,   2, 0,  0,   1,2,3, -1,-2,-3; ...
                 % Zero records
@@ -133,8 +124,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % NOTE: nanData is almost same as QUALITY_FLAG < 2, except for bin
             % filled with only QUALITY_FLAG=FV (sic!). Might change
             % implementation w.r.t. this behaviour some day.
-            DATA2 = [...
-                  0,   2,     7,    56, 0; ...
+            DATA_DSR = [...
                  10, 255,     0,     0, 1;...
                  20, 255, 65535, 65535, 1; ...
                  30,   2,     0,     0, 0; ...
@@ -145,25 +135,85 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
                  80, 255,     0,     0, 0; ...
                  90, 255,     0,     0, 1; ...
                 100, 255,     0,     0, 1; ...
-                ];
+            ];
+            bicas.proc.L2L3___UTEST.test(testCase, DATA_OSR, DATA_DSR)
+            
+            % Normal bin
+            % Test merging QUALITY_BITMASK bits.
+            bicas.proc.L2L3___UTEST.test(testCase, ...
+                [ ...
+                 -1,   2,   2, 1,  8,   1,2,3, -1,-2,-3; ...
+                  0,   2,   2, 2, 16,   1,2,3, -1,-2,-3; ...
+                  1,   2,   2, 4, 32,   1,2,3, -1,-2,-3; ...
+                ], [ ...
+                  0,   2,     7,    56, 0; ...
+                ] ...
+            )
 
+        end
+        
+        
+        
+    end    % methods(Test)
+
+
+
+    methods(Static)
+
+        % DATA_OSR
+        % --------
+        % Columns:
+        % 1:    Epoch [s]
+        % 2:    QUALITY_FLAG_in
+        % 3:    QUALITY_FLAG_OSR_out
+        % 4:    QUALITY_BITMASK_in
+        % 5:    L2_QUALITY_BITMASK
+        % 6- 8: VDC
+        % 9-11: EDC
+        %
+        % DATA_DSR
+        % --------
+        % Columns:
+        % 1: Epoch [s]
+        % 2: QUALITY_FLAG
+        % 3: QUALITY_BITMASK
+        % 4: L2_QUALITY_BITMASK
+        % 5: nanData
+        %
+        function test(testCase, DATA_OSR, DATA_DSR)
+            L        = bicas.Logger('none', false);
+            SETTINGS = bicas.create_default_SETTINGS();
+            SETTINGS.make_read_only();
+
+            % Tests are designed for this value.
+            assert(SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX') == 2)
+
+            InLfrCwf.ZvFv = struct(...
+                'QUALITY_FLAG',       uint8(255), ...
+                'QUALITY_BITMASK',    uint16(65535), ...
+                'L2_QUALITY_BITMASK', uint16(65535));
+            InLfrCwf.Ga.OBS_ID    = {' '};
+            InLfrCwf.Ga.SOOP_TYPE = {' '};
+
+            
+            
             BASE_TT2000 = spdfparsett2000('2020-03-14T00:00:00');
 
-            InLfrCwf.Zv.Epoch              = int64( DATA1(:, 1)*1e9) + BASE_TT2000;
-            InLfrCwf.ZvFpa.QUALITY_FLAG    = bicas.utils.FillPositionsArray(uint8( DATA1(:, 2)), 'FILL_VALUE', uint8( InLfrCwf.ZvFv.QUALITY_FLAG));
-            InLfrCwf.ZvFpa.QUALITY_BITMASK = bicas.utils.FillPositionsArray(uint16(DATA1(:, 4)), 'FILL_VALUE', uint16(InLfrCwf.ZvFv.QUALITY_BITMASK));
-            InLfrCwf.Zv.L2_QUALITY_BITMASK = uint16(DATA1(:, 5));
+            InLfrCwf.Zv.Epoch              = int64( DATA_OSR(:, 1)*1e9) + BASE_TT2000;
+            InLfrCwf.ZvFpa.QUALITY_FLAG    = bicas.utils.FillPositionsArray(uint8( DATA_OSR(:, 2)), 'FILL_VALUE', uint8( InLfrCwf.ZvFv.QUALITY_FLAG));
+            InLfrCwf.ZvFpa.QUALITY_BITMASK = bicas.utils.FillPositionsArray(uint16(DATA_OSR(:, 4)), 'FILL_VALUE', uint16(InLfrCwf.ZvFv.QUALITY_BITMASK));
+            InLfrCwf.Zv.L2_QUALITY_BITMASK = uint16(DATA_OSR(:, 5));
             InLfrCwf.Zv.DELTA_PLUS_MINUS   = int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch));
-            InLfrCwf.Zv.VDC                = single(DATA1(:, 6: 8));
-            InLfrCwf.Zv.EDC                = single(DATA1(:, 9:11));
+            InLfrCwf.Zv.VDC                = single(DATA_OSR(:, 6: 8));
+            InLfrCwf.Zv.EDC                = single(DATA_OSR(:, 9:11));
 
-            ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FillPositionsArray(uint8( DATA1(:, 3)), 'FILL_VALUE', uint8 (InLfrCwf.ZvFv.QUALITY_FLAG));
+            ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FillPositionsArray(uint8( DATA_OSR(:, 3)), 'FILL_VALUE', uint8 (InLfrCwf.ZvFv.QUALITY_FLAG));
             %
-            ExpDsr.Zv.Epoch              = int64( DATA2(:, 1)*1e9) + BASE_TT2000;
-            ExpDsr.Zv.QUALITY_FLAG       = bicas.utils.FillPositionsArray(uint8( DATA2(:, 2)), 'FILL_VALUE', uint8( InLfrCwf.ZvFv.QUALITY_FLAG));
-            ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FillPositionsArray(uint16(DATA2(:, 3)), 'FILL_VALUE', uint16(InLfrCwf.ZvFv.QUALITY_BITMASK));
-            ExpDsr.Zv.L2_QUALITY_BITMASK = uint16(DATA2(:, 4));
-            ExpDsr.nanData               = logical(DATA2(:, 5));
+            ExpDsr.Zv.Epoch              = int64( DATA_DSR(:, 1)*1e9) + BASE_TT2000;
+            ExpDsr.Zv.QUALITY_FLAG       = bicas.utils.FillPositionsArray(uint8( DATA_DSR(:, 2)), 'FILL_VALUE', uint8( InLfrCwf.ZvFv.QUALITY_FLAG));
+            ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FillPositionsArray(uint16(DATA_DSR(:, 3)), 'FILL_VALUE', uint16(InLfrCwf.ZvFv.QUALITY_BITMASK));
+            ExpDsr.Zv.L2_QUALITY_BITMASK = uint16(DATA_DSR(:, 4));
+            ExpDsr.nanData               = logical(DATA_DSR(:, 5));
 
             % ==========================
             % Set RVs for external code
@@ -226,20 +276,20 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
                 testCase.assertEqual(OutDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
             end
             
-            testCase.assertEqual(all(isnan(OutEfieldDsr.Zv.EDC_SRF),     2), ExpDsr.nanData);
-            testCase.assertEqual(all(isnan(OutEfieldDsr.Zv.EDCSTD_SRF),  2), ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutDensityDsr.Zv.DENSITY)       , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutDensityDsr.Zv.DENSITYSTD)    , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.SCPOT)           , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.SCPOTSTD)        , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.PSP)             , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.PSPSTD)          , ExpDsr.nanData);
+            testCase.assertEqual(all(isnan(OutEfieldDsr.Zv.EDC_SRF),    2), ExpDsr.nanData);
+            testCase.assertEqual(all(isnan(OutEfieldDsr.Zv.EDCSTD_SRF), 2), ExpDsr.nanData);
+            testCase.assertEqual(    isnan(OutDensityDsr.Zv.DENSITY)      , ExpDsr.nanData);
+            testCase.assertEqual(    isnan(OutDensityDsr.Zv.DENSITYSTD)   , ExpDsr.nanData);
+            testCase.assertEqual(    isnan(OutScpotDsr.Zv.SCPOT)          , ExpDsr.nanData);
+            testCase.assertEqual(    isnan(OutScpotDsr.Zv.SCPOTSTD)       , ExpDsr.nanData);
+            testCase.assertEqual(    isnan(OutScpotDsr.Zv.PSP)            , ExpDsr.nanData);
+            testCase.assertEqual(    isnan(OutScpotDsr.Zv.PSPSTD)         , ExpDsr.nanData);
         end
-        
-        
-        
-    end    % methods(Test)
+
 
     
+    end    % methods(Static)
+
+
     
 end
