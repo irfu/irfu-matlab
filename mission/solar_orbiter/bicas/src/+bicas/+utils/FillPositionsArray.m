@@ -259,9 +259,10 @@ classdef FillPositionsArray   % < handle
         % NOTE/BUG: Does not modify the object without explicitly using the
         % return value! Call Fpa = Fpa.set_FP() to effectively modify the
         % object.
-        function obj = set_FP(obj)
-            obj.fpAr(:) = true;
-        end
+%         function obj = set_FP(obj)
+%             obj.fpAr(:) = true;
+%         end
+%       Function disabled since not used.
         
         
         
