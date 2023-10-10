@@ -45,7 +45,6 @@ classdef findread
     %#####################
     properties(Access=private, Constant)
         
-        % LL = Log Level
         READING_RCT_PATH_LL = 'info';
         
     end
@@ -98,11 +97,14 @@ classdef findread
             for i = 1:numel(rctidCa)
                 rctid = rctidCa{i};
                 
+                % Find path to RCT.
                 settingKey     = bicas.proc.L1L2.cal.rct.typeproc.RCT_TYPES_MAP(...
                     rctid).filenameRegexpSettingKey;
                 filenameRegexp = SETTINGS.get_fv(settingKey);
                 filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                     rctDir, filenameRegexp, L);
+                
+                % Read RCT file.
                 RctDataList    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
                     rctid, filePath, L)};
                 
@@ -135,7 +137,7 @@ classdef findread
         % ARGUMENTS
         % =========
         % nonBiasRctid
-        %       RCTID for a non-BIAS RCT.
+        %       RCTID for one *non-BIAS* RCT.
         % ga_CALIBRATION_TABLE
         %       1D cell array of strings. LFR/TDS RCT global attribute
         %       CALIBRATION_TABLE.
@@ -159,10 +161,13 @@ classdef findread
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, SETTINGS, L)            
             
+            % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRctid".
+            % specifies.
             BiasRctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
                 {'BIAS'}, rctDir, SETTINGS, L);
             
-            RctDataList = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
+            % Read BIAS RCT as specified by argument "nonBiasRctid".
+            NonBiasRctDataList = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
                 nonBiasRctid, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
@@ -170,7 +175,7 @@ classdef findread
             
             RctDataMap               = containers.Map();
             RctDataMap('BIAS')       = BiasRctDataMap('BIAS');
-            RctDataMap(nonBiasRctid) = RctDataList;
+            RctDataMap(nonBiasRctid) = NonBiasRctDataList;
         end
                 
         
@@ -178,7 +183,8 @@ classdef findread
         % Determine the path to the RCT that should be used according to
         % algorithm specified in the documentation(?). If there are multiple
         % matching candidates, choose the latest one as indicated by the
-        % filename.
+        % filename (last one in list of sorted strings, where the strings are
+        % filenames).
         %
         %
         % IMPLEMENTATION NOTES
@@ -189,6 +195,11 @@ classdef findread
         % NOTE: Only public due to automatic testing.
         %
         function path = find_RCT_regexp(rctDir, filenameRegexp, L)
+            % PROPOSAL: Better name.
+            %   ~path, ~file, ~select
+            %   find_select_RCT_by_regexp
+            %   NOTE: Does not read the file.
+            %   NOTE: Cf. bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp()
 
             %=================================================
             % Find candidate files and select the correct one
@@ -210,7 +221,7 @@ classdef findread
             % CASE: There is at least one candidate file.
             
             filenameList = sort(filenameList);
-            filename     = filenameList{end};
+            filename     = filenameList{end};    % NOTE: Selects one file out of many.
             path         = fullfile(rctDir, filename);
             
             if numel(filenameList) > 1
@@ -219,7 +230,7 @@ classdef findread
                     ['Found multiple calibration files matching regular', ...
                     ' expression "%s"\n in directory "%s".\n', ...
                      'Selecting the latest one as indicated by', ...
-                     ' the filename: "%s".\n'], ...
+                     ' the filename (sorting strings): "%s".\n'], ...
                     filenameRegexp, rctDir, filename);
                 for i = 1:numel(filenameList)
                     msg = [msg, sprintf('    %s\n', filenameList{i})];
@@ -259,6 +270,7 @@ classdef findread
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, L)
+            % PROPOSAL: Separate function for extracting filenames from ZVs.
             
             % CT = glob.attr. CALIBRATION_TABLE
             

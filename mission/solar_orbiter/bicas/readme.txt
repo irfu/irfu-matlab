@@ -150,6 +150,8 @@ IVPT
     Interface volt Per TM unit. IV/TM.
 L2QBM
     zVar L2_QUALITY_BITMASK.
+LL
+    Log Level
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.

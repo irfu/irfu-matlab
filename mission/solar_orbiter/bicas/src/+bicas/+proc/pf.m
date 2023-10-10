@@ -136,7 +136,7 @@ classdef pf
             useCti2   = false;    % Always false for TDS.
             
             if useCtRcts
-                % Create fake zv_BW since it does not exist for TDS (only LFR).
+                % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
                 % NOTE: This should not be regarded as a hack but as
                 % ~normalization to avoid later special cases.
                 zv_BW = uint8(ones(...

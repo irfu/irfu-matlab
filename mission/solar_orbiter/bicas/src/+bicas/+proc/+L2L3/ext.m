@@ -140,16 +140,16 @@ classdef ext
 
 
 
-            %##########################
+            %#################################################################
             % CALL BICAS-EXTERNAL CODE
-            %##########################
+            %#################################################################
             % NOTE: Not specifying calibration file.
             % ==> Use current official calibration file, hardcoded in
             %     solo.vdccal(), that should be used for official datasets.
             [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
                 = Ec.vdccal(VdcTs, EdcTs, []);
             clear VdcTs EdcTs
-            %##########################
+            %#################################################################
 
 
 
@@ -237,13 +237,14 @@ classdef ext
             % ASSERTIONS: Check solo.psp2ne() return values
             %===============================================
             irf.assert.sizes(...
-                PspTs.data,             [-1, 1], ...
+                PspTs.data,             [-1, 1], ...   % Implicitly checks Epoch's size.
                 NeScpTs.data,           [-1, 1], ...
                 NeScpQualityBitTs.data, [-1, 1] ...
             );
             assert(all(PspTs.time == NeScpTs.time          ))
             assert(all(PspTs.time == NeScpQualityBitTs.time))
 
+            assert(isfloat(NeScpTs.data))
             assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
             assert(strcmp(NeScpTs.units, 'cm^-3'))

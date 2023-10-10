@@ -39,6 +39,7 @@ classdef FillPositionsArray   % < handle
     % PROPOSAL: Better name for method "get_non_FP_data".
     %   NOTE: Cf .get_data().
     %   ~get_non_FP
+    %   ~NFP_array    ## cf. .array(fv)
     %   ~elements
     %   ~data
     %   ~clean
@@ -453,6 +454,7 @@ classdef FillPositionsArray   % < handle
         end
 
 
+
         % Indexing overloading: Array indexing for reading: Fpa(i, j, ...)
         function varargout = subsref(obj, S)
             switch S(1).type
@@ -606,7 +608,7 @@ classdef FillPositionsArray   % < handle
             assert(isnumeric(iDim))
             FpaCa = varargin;
             for i = 1:numel(FpaCa)
-                assert(isa(FpaCa{1}, 'bicas.utils.FillPositionsArray'))
+                assert(isa(FpaCa{i}, 'bicas.utils.FillPositionsArray'))
             end
             mcCa = cellfun(@(Fpa) Fpa.mc, FpaCa, 'UniformOutput', false);
             assert(numel(unique(mcCa)) == 1)
@@ -690,7 +692,7 @@ classdef FillPositionsArray   % < handle
 
 
 
-        % Return Scalar (1x1) FPA containing one FP for a specified MATLAB
+        % Return scalar (1x1) FPA containing one FP for a specified MATLAB
         % class.
         function Fpa = get_scalar_FP(mc)
             fv = bicas.utils.FillPositionsArray.get_cast_FV(mc, mc);

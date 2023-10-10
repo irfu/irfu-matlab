@@ -147,7 +147,7 @@ classdef dsr___UTEST < matlab.unittest.TestCase
             test_1_bin(zeros(0,2), 0, NaN(1,2), NaN(1,2));
 
             % mstd=0
-            test_1_bin([1,2,3              ], 0, [1,2,3], [nan,nan,nan]);
+            test_1_bin([1,2,3              ], 0, [1,2,3], [NaN,NaN,NaN]);
             test_1_bin([1,2,3; 1,2,3       ], 0, [1,2,3], [0,0,0]);
             test_1_bin([1,2,3; 1,2,3; 1,2,3], 0, [1,2,3], [0,0,0]);
             test_1_bin([1    ; 1    ; 1    ], 0, [1],     [0]);

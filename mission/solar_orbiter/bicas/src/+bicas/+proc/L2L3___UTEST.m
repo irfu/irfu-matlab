@@ -35,9 +35,17 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             %
             % PROPOSITION: The complexity of the test code implies that the
             %              underlying code needs to be refactored somehow.
-            %   NOTE: InLfrCwf.ZvFv should become obsoleted eventually if using
-            %         FPAs.
             %   NOTE: Test sets GAs!
+            %   PRO: This test code really tests
+            %       bicas.proc.dsr.init_shared_DSR_ZVs() to a large extent. That
+            %       function sets:
+            %         Epoch
+            %         QUALITY_FLAG
+            %         QUALITY_BITMASK
+            %         L2_QUALITY_BITMASK
+            %         DELTA_PLUS_MINUS
+            %   PROPOSAL: Reorg into test of
+            %       bicas.proc.dsr.init_shared_DSR_ZVs().
             %
             % PROPOSAL: Separate tests (function calls) for different special
             %           cases of bins.
