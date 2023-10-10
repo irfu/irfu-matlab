@@ -93,7 +93,8 @@ classdef dsr
                     binLengthWolsNs, ...
                     binTimestampPosWolsNs, ...
                     L);
-            % nRecordsDsr = numel(iRecordsInBinCa);
+            nRecordsOsr = numel(InLfrCwfOsr.Zv.Epoch);
+            nRecordsDsr = numel(iRecordsInBinCa);
             
             
             
@@ -155,12 +156,35 @@ classdef dsr
             %   (SKELETON_MODS: V12=Feb 2021)
             % .
             
+%             tt = tic();
             zv_QUALITY_FLAG_FpaDsr    = bicas.proc.dsr.downsample_ZV_minimum(...
                 InLfrCwfOsr.ZvFpa.QUALITY_FLAG,    iRecordsInBinCa);
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_FLAG', tt, ...
+%                 nRecordsOsr, 'OSR record')
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_FLAG', tt, ...
+%                 nRecordsDsr, 'DSR record')
+
+%             tt = tic();
             zv_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
                 InLfrCwfOsr.ZvFpa.QUALITY_BITMASK, iRecordsInBinCa);
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_BITMASK', tt, ...
+%                 nRecordsOsr, 'OSR record')
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_BITMASK', tt, ...
+%                 nRecordsDsr, 'DSR record')
+
+%             tt = tic();
             zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
                 InLfrCwfOsr.ZvFpa.L2_QUALITY_BITMASK, iRecordsInBinCa);
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dsr.init_shared_DSR_ZVs:L2_QUALITY_BITMASK', tt, ...
+%                 nRecordsOsr, 'OSR record')
+%             bicas.log_speed_profiling(L, ...
+%                 'bicas.proc.dsr.init_shared_DSR_ZVs:L2_QUALITY_BITMASK', tt, ...
+%                 nRecordsDsr, 'DSR record')
             
             %============================================================
             % Shared zVariables between all DOWNSAMPLED datasets
@@ -182,12 +206,12 @@ classdef dsr
 
 
 
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs', tTicToc, ...
-%                 nRecordsOsr, 'OSR record')
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs', tTicToc, ...
-%                 nRecordsDsr, 'DSR record')
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.dsr.init_shared_DSR_ZVs', tTicToc, ...
+                nRecordsOsr, 'OSR record')
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.dsr.init_shared_DSR_ZVs', tTicToc, ...
+                nRecordsDsr, 'DSR record')
         end
         
         
@@ -456,90 +480,235 @@ classdef dsr
         
         
         
-        function ZvDsrFpa = downsample(ZvOsrFpa, iRecordsInBinCa, fhBin)
-            assert(isa(ZvOsrFpa, 'bicas.utils.FillPositionsArray'))
-            assert(iscell(iRecordsInBinCa))
-            % Only 1D column vectors.
-            irf.assert.sizes(ZvOsrFpa,        [NaN])
-            irf.assert.sizes(iRecordsInBinCa, [NaN])
+        % ######################################################################
+        % IMPLEMENTATIONS USING FPAs ALSO FOR BINS INTERNALLY
+        % ######################################################################
+        
+
+
+%         % General-purpose function for downsampling data using bins.
+%         % The implementation sends and receives FPAs to/from the inner function.
+%         % Therefore tends to be very slow.
+%         %
+%         % ARGUMENTS
+%         % =========
+%         % ZvOsrFpa
+%         %       FPA. ZV-like OSR data. 2D i.e. may have multiple columns.
+%         % iRecordsInBinCa
+%         % fhBin
+%         %       Function handle. Condenses one bin of OSR CDF records to one (or
+%         %       zero) CDF records.
+%         %       ZvDsrFpa = fhBin(BinZvOsrFpa, FpFpa)
+%         function DsrFpa = downsample_FPA(OsrFpa, iRecordsInBinCa, fhBin)
+%             assert(isa(OsrFpa, 'bicas.utils.FillPositionsArray'), ...
+%                 'Argument is not an instance of bicas.utils.FillPositionsArray.')
+%             assert(ismatrix(OsrFpa))
+%             assert(iscell(iRecordsInBinCa))            
+%             assert(iscolumn(iRecordsInBinCa))
+%             
+%             nRecordsDsr = numel(iRecordsInBinCa);
+%             
+%             EmptyFpa = OsrFpa(1:0, :);    % 0x1;
+%             FpFpa    = bicas.utils.FillPositionsArray.get_scalar_FP(OsrFpa.mc);
+%             
+%             dsrFpaCa = cell(nRecordsDsr, 1);   % Preallocate
+% 
+%             for iBin = 1:nRecordsDsr
+%                 dsrFpaCa{iBin} = fhBin(...
+%                     OsrFpa(iRecordsInBinCa{iBin}), FpFpa);
+%             end
+% 
+%             DsrFpa = cat(1, EmptyFpa, dsrFpaCa{:});
+%         end
+%         
+%         
+%         
+%         % Downsample a zVariable using pre-defined bins to minimum in each bin.
+%         %
+%         function DsrFpa = downsample_ZV_minimum_W_FPAs( OsrFpa, iRecordsInBinCa )
+%             
+%             function DsrFpa = bin_algo(BinOsrFpa, FpFpa)
+%                 if isempty(BinOsrFpa)
+%                     % CASE: Bin contains no values.
+%                     DsrFpa = FpFpa;
+%                 else
+%                     % CASE: Bin contains non-zero number of values, which
+%                     %       might be FPs.
+% 
+%                     nfpAr = BinOsrFpa.get_non_FP_data();
+%                     if isempty(nfpAr)
+%                         DsrFpa = FpFpa;
+%                     else
+%                         % NOTE: min(X, [], iDim)
+%                         m        = min(nfpAr, [], 1);
+%                         DsrFpa = bicas.utils.FillPositionsArray(m, 'NO_FILL_POSITIONS');
+%                     end
+%                 end
+%             end
+%             
+%             assert(iscolumn(OsrFpa))
+%             DsrFpa = bicas.proc.dsr.downsample_FPA(OsrFpa, iRecordsInBinCa, @bin_algo);
+%         end
+%         
+%         
+%         
+%         % Downsample a zVariable using pre-defined bins to the logical OR of
+%         % each bin.
+%         %
+%         function DsrFpa = downsample_ZV_bitmask_W_FPAs(OsrFpa, iRecordsInBinCa)
+% 
+%             function DsrFpa = bin_algo(BinOsrFpa, FpFpa)
+%                 if isempty(BinOsrFpa)
+%                     % CASE: Bin contains no values.
+%                     DsrFpa = FpFpa;
+%                 else
+%                     % CASE: Bin contains non-zero number of values, which
+%                     %       might be FPs.
+% 
+%                     nfpAr = BinOsrFpa.get_non_FP_data();
+%                     if isempty(nfpAr)
+%                         DsrFpa = FpFpa;
+%                     else
+%                         r = bicas.utils.bitops.or(nfpAr);
+%                         DsrFpa = bicas.utils.FillPositionsArray(r, 'NO_FILL_POSITIONS');
+%                     end
+%                 end
+%             end
+% 
+%             assert(iscolumn(OsrFpa))
+%             DsrFpa = bicas.proc.dsr.downsample_FPA(OsrFpa, iRecordsInBinCa, @bin_algo);
+%         end
+
+
+
+        % ######################################################################
+        % IMPLEMENTATIONS USING ARRAYS FOR BINS INTERNALLY
+        % ######################################################################
+        
+
+
+        % General-purpose function for downsampling data using bins.
+        %
+        % ARGUMENTS
+        % =========
+        % OsrFpa
+        %       FPA. ZV-like OSR data. 2D i.e. may have multiple columns.
+        % iRecordsInBinCa
+        % fhBin
+        %       Function handle. Condenses one bin of OSR CDF records to one (or
+        %       zero) CDF records.
+        %       [binSamplesDsrAr, binFpAr] = fhBin(samplesOsrAr(iAr), fpOsrAr(iAr));
+        function DsrFpa = downsample_W_INNER_ARRAYS(OsrFpa, iRecordsInBinCa, fhBin)
+            assert(isa(OsrFpa, 'bicas.utils.FillPositionsArray'), ...
+                'Argument is not an instance of bicas.utils.FillPositionsArray.')
+            assert(ismatrix(OsrFpa))
+            assert(iscell(iRecordsInBinCa))            
+            assert(iscolumn(iRecordsInBinCa))
             
             nRecordsDsr = numel(iRecordsInBinCa);
             
-            EmptyFpa = ZvOsrFpa(1:0, :);    % 0x1;
-            FpFpa    = bicas.utils.FillPositionsArray.get_scalar_FP(ZvOsrFpa.mc);
+            samplesOsrAr   = OsrFpa.get_data();
+            fpOsrAr        = OsrFpa.fpAr;
             
-            zvDsrFpaCa = cell(nRecordsDsr, 1);   % Preallocate
+            samplesDsrArCa = cell(nRecordsDsr, 1);    % Preallocate
+            fpDsrArCa      = cell(nRecordsDsr, 1);    % Preallocate
 
             for iBin = 1:nRecordsDsr
-                zvDsrFpaCa{iBin} = fhBin(...
-                    ZvOsrFpa(iRecordsInBinCa{iBin}), FpFpa);
+                iAr = iRecordsInBinCa{iBin};
+
+                [binSamplesDsrAr, binFpAr] = fhBin(samplesOsrAr(iAr), fpOsrAr(iAr));
+                
+                if 1
+                    % DEBUG: Verify the return values from function.
+                    assert(isa(      binSamplesDsrAr, OsrFpa.mc))
+                    assert(islogical(binFpAr        ))
+                    assert(isequaln(...
+                        size(binSamplesDsrAr), ...
+                        size(binFpAr        )))
+                end
+                
+                samplesDsrArCa{iBin} = binSamplesDsrAr;
+                fpDsrArCa{     iBin} = binFpAr;
             end
 
-            ZvDsrFpa = cat(1, EmptyFpa, zvDsrFpaCa{:});
+            samplesDsrAr = cat(1, zeros(0, 1, OsrFpa.mc), samplesDsrArCa{:});
+            fpDsrAr      = cat(1, false(0, 1),            fpDsrArCa{     :});
+            
+            DsrFpa = bicas.utils.FillPositionsArray(samplesDsrAr, 'FILL_POSITIONS', fpDsrAr);
         end
-        
-        
-        
+
+
+
         % Downsample a zVariable using pre-defined bins to minimum in each bin.
         %
-        function ZvDsrFpa = downsample_ZV_minimum( ZvOsrFpa, iRecordsInBinCa )
-            
-            function zvDsrFpa = bin_algo(BinZvOsrFpa, FpFpa)
-                % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
-                % does not work if one wants to return 0 for empty bins.
-                if isempty(BinZvOsrFpa)
+        function [DsrFpa] = downsample_ZV_minimum( OsrFpa, iRecordsInBinCa )
+           
+            function [binSamplesDsrAr, binFpDsrAr] = bin_algo(binSamplesOsrAr, binFpOsrAr)
+
+                binSamplesOsrAr(binFpOsrAr, :) = [];   % Delete rows with FPs.
+
+                if isempty(binSamplesOsrAr)
                     % CASE: Bin contains no values.
-                    zvDsrFpa = FpFpa;
+                    binSamplesDsrAr = fv;
+                    binFpDsrAr      = true;
                 else
                     % CASE: Bin contains non-zero number of values, which
                     %       might be FPs.
 
-                    nfpAr = BinZvOsrFpa.get_non_FP_data();
-                    if isempty(nfpAr)
-                        zvDsrFpa = FpFpa;
+                    if isempty(binSamplesOsrAr)
+                        binSamplesDsrAr = fv;
+                        binFpDsrAr      = true;
                     else
                         % NOTE: min(X, [], iDim)
-                        m        = min(nfpAr, [], 1);
-                        zvDsrFpa = bicas.utils.FillPositionsArray(m, 'NO_FILL_POSITIONS');
+                        binSamplesDsrAr = min(binSamplesOsrAr, [], 1);
+                        binFpDsrAr      = false;
                     end
                 end
             end
             
-            ZvDsrFpa = bicas.proc.dsr.downsample(ZvOsrFpa, iRecordsInBinCa, @bin_algo);
+            assert(iscolumn(OsrFpa))
+            fv = zeros(1,1, OsrFpa.mc);   % Used by inner function.
+            
+            DsrFpa = bicas.proc.dsr.downsample_W_INNER_ARRAYS(OsrFpa, iRecordsInBinCa, @bin_algo);
         end
-        
-        
+
+
         
         % Downsample a zVariable using pre-defined bins to the logical OR of
         % each bin.
         %
-        function ZvDsrFpa = downsample_ZV_bitmask(ZvOsrFpa, iRecordsInBinCa)
+        function DsrFpa = downsample_ZV_bitmask(OsrFpa, iRecordsInBinCa)
 
-            function zvDsrFpa = bin_algo(BinZvOsrFpa, FpFpa)
-                % IMPLEMENTATION NOTE: Using min([zv_QUALITY_FLAG_segment; 0])
-                % does not work if one wants to return 0 for empty bins.
-                if isempty(BinZvOsrFpa)
+            function [binSamplesDsrAr, binFpDsrAr] = bin_algo(binSamplesOsrAr, binFpOsrAr)
+
+                binSamplesOsrAr(binFpOsrAr, :) = [];   % Delete rows with FPs.
+
+                if isempty(binSamplesOsrAr)
                     % CASE: Bin contains no values.
-                    zvDsrFpa = FpFpa;
+                    binSamplesDsrAr = fv;
+                    binFpDsrAr      = true;
                 else
                     % CASE: Bin contains non-zero number of values, which
                     %       might be FPs.
 
-                    nfpAr = BinZvOsrFpa.get_non_FP_data();
-                    if isempty(nfpAr)
-                        zvDsrFpa = FpFpa;
+                    if isempty(binSamplesOsrAr)
+                        binSamplesDsrAr = fv;
+                        binFpDsrAr      = true;
                     else
-                        r = bicas.utils.bitops.or(nfpAr);
-                        zvDsrFpa = bicas.utils.FillPositionsArray(r, 'NO_FILL_POSITIONS');
+                        binSamplesDsrAr = bicas.utils.bitops.or(binSamplesOsrAr);
+                        binFpDsrAr      = false;
                     end
                 end
             end
 
-            ZvDsrFpa = bicas.proc.dsr.downsample(ZvOsrFpa, iRecordsInBinCa, @bin_algo);
+            assert(iscolumn(OsrFpa))
+            fv = zeros(1,1, OsrFpa.mc);   % Used by inner function.
+
+            DsrFpa = bicas.proc.dsr.downsample_W_INNER_ARRAYS(OsrFpa, iRecordsInBinCa, @bin_algo);
         end
-
-
-
+        
+        
+        
     end
 
 

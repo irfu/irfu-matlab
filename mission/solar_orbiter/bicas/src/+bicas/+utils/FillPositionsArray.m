@@ -227,12 +227,26 @@ classdef FillPositionsArray   % < handle
 
 
         % Return array with fill positions filled in with specified fill value.
+        %
+        % ARGUMENTS
+        % =========
+        % fv
+        %       Fill value to use for fill positions. Is optional for MATLAB
+        %       classes for which a value can be automatially derived.
         function dataAr = get_data(obj, fv)
-            assert(isscalar(fv))
-            assert(...
-                strcmp(class(fv), obj.mc), ...
-                'Argument fv has a MATLAB class ("%s") which is inconsistent with the object''s MATLAB class ("%s").', ...
-                class(fv), obj.mc)
+            
+            switch(nargin)
+                case 1
+                    fv = bicas.utils.FillPositionsArray.get_cast_FV(obj.mc, obj.mc);
+                case 2
+                    assert(isscalar(fv))
+                    assert(...
+                        strcmp(class(fv), obj.mc), ...
+                        'Argument fv has MATLAB class ("%s") which is inconsistent with the object''s MATLAB class ("%s").', ...
+                        class(fv), obj.mc)
+                otherwise
+                    error('BICAS:Assertion', 'Illegal number of arguments.')
+            end
 
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fv;
