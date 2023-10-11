@@ -186,7 +186,7 @@ function DataObj = init_modify_dataobj(...
         QfFpa = ZvsSubset.QUALITY_FLAG;   % Temporary variable to make algo. clearer.
         
         TooHighQfFpa                        = (QfFpa >= qfMax);
-        QfFpa(TooHighQfFpa.get_data(false)) = bicas.utils.FPArray(uint8(qfMax), 'NO_FILL_POSITIONS');
+        QfFpa(TooHighQfFpa.array(false)) = bicas.utils.FPArray(uint8(qfMax), 'NO_FILL_POSITIONS');
 
         ZvsSubset.QUALITY_FLAG = QfFpa;
         clear QfFpa
@@ -228,7 +228,7 @@ function DataObj = init_modify_dataobj(...
             end
             assert(all(~ismember(fv, zvValuePd.get_non_FP_data())))
             
-            zvValueLog = zvValuePd.get_data(fv);
+            zvValueLog = zvValuePd.array(fv);
         else
             zvValueLog = zvValuePd;
         end
@@ -320,7 +320,7 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
         % Normalize FPA --> array with CDF FV.
         assert(strcmp(mc, zvValuePd.mc))
         assert(all(~ismember(fv, zvValuePd.get_non_FP_data())))
-        zvValueTemp = zvValuePd.get_data(fv);
+        zvValueTemp = zvValuePd.array(fv);
     elseif isfloat(zvValuePd)
         % Normalize array --> array with CDF FV.
         zvValueTemp = irf.utils.replace_value(zvValuePd, NaN, fv);

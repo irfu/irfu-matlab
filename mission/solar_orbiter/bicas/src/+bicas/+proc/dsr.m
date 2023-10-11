@@ -612,7 +612,7 @@ classdef dsr
             
             nRecordsDsr = numel(iRecordsInBinCa);
             
-            samplesOsrAr   = OsrFpa.get_data();
+            samplesOsrAr   = OsrFpa.array();
             fpOsrAr        = OsrFpa.fpAr;
             
             samplesDsrArCa = cell(nRecordsDsr, 1);    % Preallocate

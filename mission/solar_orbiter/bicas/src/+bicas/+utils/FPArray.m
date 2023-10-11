@@ -34,7 +34,7 @@ classdef FPArray   % < handle
     %       PRO: 2023-10-09: 98 occurrences of class name.
     %   PROPOSAL: FPArray
     %
-    % PROPOSAL: Change name of "get_data()"
+    % PROPOSAL: Change name of "array()"
     %   PROPOSAL: array, data, data_array
     % PROPOSAL: Better name for method "get_non_FP_data".
     %   NOTE: Cf .get_data().
@@ -68,7 +68,7 @@ classdef FPArray   % < handle
     %   PROPOSAL: Use HandleWrapper internally.
     %       NOTE: Class needs to become handle class.
     %
-    % PROBLEM: How handle specifying a FV in .get_data() that is identical to
+    % PROBLEM: How handle specifying a FV in .array() that is identical to
     %          some non-FP elements?
     %   PROPOSAL: Assertion in method.
     %       PROPOSAL: Extra argument for whether to have assertion.
@@ -234,7 +234,11 @@ classdef FPArray   % < handle
         % fv
         %       Fill value to use for fill positions. Is optional for MATLAB
         %       classes for which a value can be automatially derived.
-        function dataAr = get_data(obj, fv)
+        %       NOTE: This is allowed to be identical to any non-FP element.
+        %
+        function dataAr = array(obj, fv)
+            % IMPLEMENTATION NOTE: There are times when you want the FV to be
+            % identical non-FP elements. Must therefore not forbid it.
             
             switch(nargin)
                 case 1
@@ -301,7 +305,7 @@ classdef FPArray   % < handle
             
             assert(isa(fhArrayOperation, 'function_handle'))
             
-            inputAr  = obj.get_data(fvBefore);
+            inputAr  = obj.array(fvBefore);
             outputAr = fhArrayOperation(inputAr);
             
             Fpa = bicas.utils.FPArray(...
@@ -380,7 +384,7 @@ classdef FPArray   % < handle
             assert(isinteger(obj.dataAr), 'FPA is not integer. It is of MATLAB class "%s".', obj.mc)
             
             Fpa  = obj.cast('double');
-            data = Fpa.get_data(NaN);
+            data = Fpa.array(NaN);
         end
         
         
@@ -390,7 +394,7 @@ classdef FPArray   % < handle
             assert(islogical(obj.dataAr))
             
             Fpa  = obj.cast('double');
-            data = Fpa.get_data(NaN);
+            data = Fpa.array(NaN);
         end
 
 
@@ -431,7 +435,7 @@ classdef FPArray   % < handle
                     % CASE: Arrays are not empty.
                     fv = obj1.dataAr(1);   % Arbitrary fill value.
                     % NOTE: NaN == NaN
-                    r = isequaln(obj1.get_data(fv), obj2.get_data(fv));
+                    r = isequaln(obj1.array(fv), obj2.array(fv));
                 end
             end
         end
@@ -658,7 +662,7 @@ classdef FPArray   % < handle
             % set."
             % /https://en.wikipedia.org/wiki/Binary_operation
             % =================================================================
-            % PROPOSAL: Only compare data from .get_data()?
+            % PROPOSAL: Only compare data from .array()?
             %   PRO: Safer.
             %   CON: Need to determine safe fill value to use.
             %       PRO: Can not do for any data type.

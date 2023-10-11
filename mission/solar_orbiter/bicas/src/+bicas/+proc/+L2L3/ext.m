@@ -121,7 +121,7 @@ classdef ext
             %======================================================
             % NOTE: Unclear how treat QUALITY_FLAG=FV.
             bNotUsedFpa         = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
-            bNotUsed            = bNotUsedFpa.get_data(false);   % FV = false wise?
+            bNotUsed            = bNotUsedFpa.array(false);   % FV = false wise?
             Zv.VDC(bNotUsed, :) = NaN;
             Zv.EDC(bNotUsed, :) = NaN;
             %

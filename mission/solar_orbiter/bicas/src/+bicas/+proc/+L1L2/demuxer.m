@@ -97,7 +97,7 @@ classdef demuxer
             
             % IMPLEMENTATION NOTE: switch-case statement does not work
             % for NaN. Therefore not using NaN for
-            bdmInt = bdmFpa.get_data(uint8(255));
+            bdmInt = bdmFpa.array(uint8(255));
             switch(bdmInt)
                 
                 case 0   % "Standard operation" : We have all information.

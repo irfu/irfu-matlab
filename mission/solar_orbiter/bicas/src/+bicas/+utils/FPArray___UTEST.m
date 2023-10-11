@@ -19,19 +19,19 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         function test_constructor(testCase)
             Fpa = bicas.utils.FPArray(  [1, 2, -1], 'FILL_VALUE', -1);
-            testCase.assertEqual(Fpa.get_data(-2), [1, 2, -2])
+            testCase.assertEqual(Fpa.array(-2), [1, 2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
 
             Fpa = bicas.utils.FPArray(  [1, 2, -1], 'FILL_POSITIONS', [false, false, true]);
-            testCase.assertEqual(Fpa.get_data(-2), [1, 2, -2])
+            testCase.assertEqual(Fpa.array(-2), [1, 2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
 
             Fpa = bicas.utils.FPArray(   [1, 2, -1], 'NO_FILL_POSITIONS');
-            testCase.assertEqual(Fpa.get_data(NaN), [1, 2, -1])
+            testCase.assertEqual(Fpa.array(NaN), [1, 2, -1])
             testCase.assertEqual(Fpa.fpAr,  logical([0, 0,  0]))
 
             Fpa = bicas.utils.FPArray(  [1,   2, -1], 'ONLY_FILL_POSITIONS');
-            testCase.assertEqual(Fpa.get_data(-2), [-2, -2, -2])
+            testCase.assertEqual(Fpa.array(-2), [-2, -2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([ 1,  1,  1]))
         end
 
@@ -75,7 +75,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
                 Fpa2 = bicas.utils.FPArray([], 'NO_FILL_POSITIONS');
                 %
                 test_equality(testCase, Fpa1, Fpa2, -99)
-                testCase.verifyEqual(Fpa1.get_data(999), [])
+                testCase.verifyEqual(Fpa1.array(999), [])
                 testCase.verifyEqual(Fpa1.fpAr,          logical([]))
             end
 
@@ -91,7 +91,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
                 %
                 test_equality(testCase, Fpa1, Fpa2, int64(-99))
                 testCase.verifyEqual(...
-                    Fpa1.get_data(int64(-9)), int64([1, 2, 3, -9]))
+                    Fpa1.array(int64(-9)), int64([1, 2, 3, -9]))
                 testCase.verifyEqual(...
                     Fpa1.fpAr,                logical([0,0,0,1]))
             end
@@ -123,7 +123,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
                 %
                 test_equality(testCase, Fpa1, Fpa2, fv2)
                 testCase.verifyEqual(...
-                    Fpa1.get_data(fv2), [1, 2,-2; 4,-2, 6])
+                    Fpa1.array(fv2), [1, 2,-2; 4,-2, 6])
                 testCase.verifyEqual(...
                     Fpa1.fpAr,          logical([0,0,1;0,1,0]))
             end
@@ -148,7 +148,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
                                 %
                                 test_equality(testCase, Fpa1, Fpa2, fv2)
                                 testCase.verifyEqual(...
-                                    Fpa1.get_data(fv2), ...
+                                    Fpa1.array(fv2), ...
                                     [x, fv2])
                                 testCase.verifyEqual(...
                                     Fpa1.fpAr, ...
@@ -192,14 +192,14 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             % negative FV.
             Fpa1 = bicas.utils.FPArray([0,1,-1,2,3], 'FILL_VALUE', -1);
             Fpa2   = Fpa1.convert(@(x) (uint16(x)), 99);
-            dataAr = Fpa2.get_data(uint16(999));
+            dataAr = Fpa2.array(uint16(999));
             testCase.verifyEqual(dataAr, uint16([0,1,999,2,3]))
             
             % Operation that raises error for NaN.
             % Convert to type that forbids NaN, while input used NaN as FV.
             Fpa1 = bicas.utils.FPArray([0, 3, NaN], 'FILL_VALUE', NaN);
             Fpa2   = Fpa1.convert(@(x) logical(~x), 99);
-            dataAr = Fpa2.get_data(true);
+            dataAr = Fpa2.array(true);
             testCase.verifyEqual(dataAr, [true, false, true])
         end
         
@@ -209,14 +209,14 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             % double FPA --> logical FPA
             Fpa1   = bicas.utils.FPArray([0, 1, NaN], 'FILL_VALUE', NaN);
             Fpa2   = Fpa1.cast('logical');
-            dataAr = Fpa2.get_data(true);
+            dataAr = Fpa2.array(true);
             testCase.verifyEqual(dataAr, [false, true, true])
             
             % logical FPA --> double FPA
             Fpa1   = bicas.utils.FPArray(...
                 [false, true, false], 'FILL_POSITIONS', [false, false, true]);
             Fpa2   = Fpa1.cast('double');
-            dataAr = Fpa2.get_data(NaN);
+            dataAr = Fpa2.array(NaN);
             testCase.verifyEqual(dataAr, [0, 1, NaN])
             
             % .cast() using automatic specification of FV (not specifying
@@ -359,7 +359,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             end
             testCase.verifyError(@() (test_assign_FPA_fail()), ?MException)            
             function test_assign_array_fail()
-                Fpa1(1,1) = Fpa2.get_data(NaN);
+                Fpa1(1,1) = Fpa2.array(NaN);
             end
             testCase.verifyError(@() (test_assign_array_fail()), ?MException)            
 
@@ -383,7 +383,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             Fpa1a(:, :, :, :) = Fpa2;
             testCase.assertEqual(Fpa1a, Fpa3)
 
-%             Fpa1b(:, :, :, :) = Fpa2.get_data(NaN);
+%             Fpa1b(:, :, :, :) = Fpa2.array(NaN);
 %             testCase.assertEqual(Fpa1b, Fpa3)
 
             % Assign single element.
@@ -435,7 +435,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             Fpa1a(logical([1,0,1; 0,1,0])) = Fpa2;
             testCase.verifyEqual(Fpa1a, Fpa3)
             
-%             Fpa1b(logical([1,0,1; 0,1,0])) = Fpa2.get_data(NaN);
+%             Fpa1b(logical([1,0,1; 0,1,0])) = Fpa2.array(NaN);
 %             testCase.verifyEqual(Fpa1b, Fpa3)
             
             % =======================
@@ -449,7 +449,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             Fpa1a(logical([1,0,0, 1,1,0]')) = Fpa2;
             testCase.verifyEqual(Fpa1a, Fpa3)
 
-%             Fpa1b(logical([1,0,0, 1,1,0]')) = Fpa2.get_data(NaN);
+%             Fpa1b(logical([1,0,0, 1,1,0]')) = Fpa2.array(NaN);
 %             testCase.verifyEqual(Fpa1b, Fpa3)
         end
         
@@ -468,7 +468,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             Fpa3 = Fpa([9,9,9; 9,9,9], NaN);
             Fpa1a(:, :) = Fpa2;
             testCase.verifyEqual(Fpa1a, Fpa3)
-%             Fpa1b(:, :) = Fpa2.get_data(NaN);
+%             Fpa1b(:, :) = Fpa2.array(NaN);
 %             testCase.verifyEqual(Fpa1b, Fpa3)
 
         end
@@ -649,8 +649,8 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
 
             % Verify equality through the methods for obtaining data.
             testCase.verifyEqual(...
-                fpa1.get_data(fv), ...
-                fpa2.get_data(fv))
+                fpa1.array(fv), ...
+                fpa2.array(fv))
             testCase.verifyEqual(...
                 fpa1.fpAr, ...
                 fpa2.fpAr)

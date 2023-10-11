@@ -107,7 +107,7 @@ classdef L2L2
             
             % NOTE: Unclear how treat QUALITY_FLAG=FV.
             bDoNotUseFpa         = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
-            bDoNotUse            = bDoNotUseFpa.get_data(false);   % FV = false wise?
+            bDoNotUse            = bDoNotUseFpa.array(false);   % FV = false wise?
             
             zv_VDC(bDoNotUse, :) = NaN;
             zv_EDC(bDoNotUse, :) = NaN;

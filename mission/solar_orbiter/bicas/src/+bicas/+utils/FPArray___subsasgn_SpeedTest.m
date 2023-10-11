@@ -62,7 +62,7 @@ function tSec = speed_test_subsasgn(nArrayRows, nArrayCols)
     end
     tSec = toc(t);
     
-    assert(all(isnan(Fpa1.get_data(-1)), 'all'))
+    assert(all(isnan(Fpa1.array(-1)), 'all'))
 end
 
 
