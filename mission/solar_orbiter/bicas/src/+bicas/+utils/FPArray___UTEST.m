@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for class bicas.utils.FillPositionsArray.
+% matlab.unittest automatic test code for class bicas.utils.FPArray.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
+classdef FPArray___UTEST < matlab.unittest.TestCase
 
 
 
@@ -18,19 +18,19 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_constructor(testCase)
-            Fpa = bicas.utils.FillPositionsArray(  [1, 2, -1], 'FILL_VALUE', -1);
+            Fpa = bicas.utils.FPArray(  [1, 2, -1], 'FILL_VALUE', -1);
             testCase.assertEqual(Fpa.get_data(-2), [1, 2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
 
-            Fpa = bicas.utils.FillPositionsArray(  [1, 2, -1], 'FILL_POSITIONS', [false, false, true]);
+            Fpa = bicas.utils.FPArray(  [1, 2, -1], 'FILL_POSITIONS', [false, false, true]);
             testCase.assertEqual(Fpa.get_data(-2), [1, 2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
 
-            Fpa = bicas.utils.FillPositionsArray(   [1, 2, -1], 'NO_FILL_POSITIONS');
+            Fpa = bicas.utils.FPArray(   [1, 2, -1], 'NO_FILL_POSITIONS');
             testCase.assertEqual(Fpa.get_data(NaN), [1, 2, -1])
             testCase.assertEqual(Fpa.fpAr,  logical([0, 0,  0]))
 
-            Fpa = bicas.utils.FillPositionsArray(  [1,   2, -1], 'ONLY_FILL_POSITIONS');
+            Fpa = bicas.utils.FPArray(  [1,   2, -1], 'ONLY_FILL_POSITIONS');
             testCase.assertEqual(Fpa.get_data(-2), [-2, -2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([ 1,  1,  1]))
         end
@@ -38,13 +38,13 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
 
 
         function test_misc(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.test_equality
+            import bicas.utils.FPArray___UTEST.test_equality
 
             % ===========================================================
             % Test legal & illegal read & write to *properties* (public &
             % private)
             % ===========================================================
-            Fpa = bicas.utils.FillPositionsArray([], 'NO_FILL_POSITIONS');
+            Fpa = bicas.utils.FPArray([], 'NO_FILL_POSITIONS');
             
             % fpAr
             % NOTE: .fpAr is a READ-only property.
@@ -71,8 +71,8 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             % 0x0, double
             %=============
             if 1
-                Fpa1 = bicas.utils.FillPositionsArray([], 'NO_FILL_POSITIONS');
-                Fpa2 = bicas.utils.FillPositionsArray([], 'NO_FILL_POSITIONS');
+                Fpa1 = bicas.utils.FPArray([], 'NO_FILL_POSITIONS');
+                Fpa2 = bicas.utils.FPArray([], 'NO_FILL_POSITIONS');
                 %
                 test_equality(testCase, Fpa1, Fpa2, -99)
                 testCase.verifyEqual(Fpa1.get_data(999), [])
@@ -84,9 +84,9 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             %===========
             % Fill positions have different values.
             if 1
-                Fpa1 = bicas.utils.FillPositionsArray(...
+                Fpa1 = bicas.utils.FPArray(...
                     int64([1, 2, 3, -8]), 'FILL_VALUE', int64(-8));
-                Fpa2 = bicas.utils.FillPositionsArray(...
+                Fpa2 = bicas.utils.FPArray(...
                     int64([1, 2, 3, -9]), 'FILL_POSITIONS', logical([0, 0, 0, 1]));
                 %
                 test_equality(testCase, Fpa1, Fpa2, int64(-99))
@@ -101,9 +101,9 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             %==========
             % Fill positions have different values.
             if 1
-                Fpa1 = bicas.utils.FillPositionsArray(...
+                Fpa1 = bicas.utils.FPArray(...
                     ['abX'; 'dXf'], 'FILL_VALUE', 'X');
-                Fpa2 = bicas.utils.FillPositionsArray(...
+                Fpa2 = bicas.utils.FPArray(...
                     ['abY'; 'dYf'], 'FILL_POSITIONS', logical([0, 0, 1; 0, 1, 0]));
                 %
                 test_equality(testCase, Fpa1, Fpa2, 'Z')
@@ -115,9 +115,9 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             if 1
                 fv1 = -1;
                 fv2 = -2;
-                Fpa1 = bicas.utils.FillPositionsArray(...
+                Fpa1 = bicas.utils.FPArray(...
                     [1, 2, fv1; 4, fv1, 6], 'FILL_VALUE', fv1);
-                Fpa2 = bicas.utils.FillPositionsArray(...
+                Fpa2 = bicas.utils.FPArray(...
                     [1, 2,  -2; 4,  -5, 6], 'FILL_POSITIONS', ...
                     logical([0, 0, 1; 0, 1, 0]));
                 %
@@ -140,9 +140,9 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                             if ~isequaln(x, fv1)
                                 % fprintf('x=%g; fv1=%g; fv2=%g\n', x, fv1, fv2)
 
-                                Fpa1 = bicas.utils.FillPositionsArray(...
+                                Fpa1 = bicas.utils.FPArray(...
                                     [x, fv1], 'FILL_VALUE', fv1);
-                                Fpa2 = bicas.utils.FillPositionsArray(...
+                                Fpa2 = bicas.utils.FPArray(...
                                     [x,   x], 'FILL_POSITIONS', ...
                                     logical([0, 1]));
                                 %
@@ -164,7 +164,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
 %         function test_set_FP(testCase)
-%             import bicas.utils.FillPositionsArray___UTEST.Fpa
+%             import bicas.utils.FPArray___UTEST.Fpa
 %             
 %             function test(ar, fv)
 %                 Fpa1  = Fpa(ar, fv);
@@ -190,14 +190,14 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         function test_convert(testCase)
             % Convert to type that forbids negative values, while input used
             % negative FV.
-            Fpa1 = bicas.utils.FillPositionsArray([0,1,-1,2,3], 'FILL_VALUE', -1);
+            Fpa1 = bicas.utils.FPArray([0,1,-1,2,3], 'FILL_VALUE', -1);
             Fpa2   = Fpa1.convert(@(x) (uint16(x)), 99);
             dataAr = Fpa2.get_data(uint16(999));
             testCase.verifyEqual(dataAr, uint16([0,1,999,2,3]))
             
             % Operation that raises error for NaN.
             % Convert to type that forbids NaN, while input used NaN as FV.
-            Fpa1 = bicas.utils.FillPositionsArray([0, 3, NaN], 'FILL_VALUE', NaN);
+            Fpa1 = bicas.utils.FPArray([0, 3, NaN], 'FILL_VALUE', NaN);
             Fpa2   = Fpa1.convert(@(x) logical(~x), 99);
             dataAr = Fpa2.get_data(true);
             testCase.verifyEqual(dataAr, [true, false, true])
@@ -207,13 +207,13 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         function test_cast(testCase)
             % double FPA --> logical FPA
-            Fpa1   = bicas.utils.FillPositionsArray([0, 1, NaN], 'FILL_VALUE', NaN);
+            Fpa1   = bicas.utils.FPArray([0, 1, NaN], 'FILL_VALUE', NaN);
             Fpa2   = Fpa1.cast('logical');
             dataAr = Fpa2.get_data(true);
             testCase.verifyEqual(dataAr, [false, true, true])
             
             % logical FPA --> double FPA
-            Fpa1   = bicas.utils.FillPositionsArray(...
+            Fpa1   = bicas.utils.FPArray(...
                 [false, true, false], 'FILL_POSITIONS', [false, false, true]);
             Fpa2   = Fpa1.cast('double');
             dataAr = Fpa2.get_data(NaN);
@@ -221,12 +221,12 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             
             % .cast() using automatic specification of FV (not specifying
             % argument).
-            for mcCa1 = bicas.utils.FillPositionsArray.MC_NUMERIC_CA(:)'
+            for mcCa1 = bicas.utils.FPArray.MC_NUMERIC_CA(:)'
                 mc1 = mcCa1{1};
-                for mcCa2 = bicas.utils.FillPositionsArray.MC_NUMERIC_CA(:)'
+                for mcCa2 = bicas.utils.FPArray.MC_NUMERIC_CA(:)'
                     mc2 = mcCa2{1};
                     
-                    Fpa1 = bicas.utils.FillPositionsArray(...
+                    Fpa1 = bicas.utils.FPArray(...
                         cast([false, false], mc1), 'FILL_POSITIONS', [false, true]);
                     % Automatically set FV.
                     Fpa2 = Fpa1.cast(mc2);
@@ -240,7 +240,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_complement(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            import bicas.utils.FPArray___UTEST.Fpa
             
             Fpa1    = Fpa([], NaN);
             Fpa2    = Fpa([], NaN);            
@@ -258,7 +258,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_get_non_FP_data(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            import bicas.utils.FPArray___UTEST.Fpa
             
             % 0x0 --> 0x1
             Fpa1  = Fpa([], NaN);
@@ -300,7 +300,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_subsref(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            import bicas.utils.FPArray___UTEST.Fpa
             
             % ===
             % 0x0
@@ -346,10 +346,10 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_subsasgn_exact_size(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            import bicas.utils.FPArray___UTEST.Fpa
             
             % Copies FPAs, which requires FPA to be a non-handle class.
-            assert(~isa(bicas.utils.FillPositionsArray.floatNan2logical([]), 'handle'))
+            assert(~isa(bicas.utils.FPArray.floatNan2logical([]), 'handle'))
             
             % Test assigning the wrong type: single to double. ==> Error
             Fpa1 = Fpa([1,2,3; 4,5,6], NaN);
@@ -456,10 +456,10 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_subsasgn_different_size(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            import bicas.utils.FPArray___UTEST.Fpa
             
             % Copies FPAs, which requires FPA to be a non-handle class.
-            assert(~isa(bicas.utils.FillPositionsArray.floatNan2logical([]), 'handle'))
+            assert(~isa(bicas.utils.FPArray.floatNan2logical([]), 'handle'))
 
             % Assign scalar to matrix.
             Fpa1a = Fpa([1,NaN,3; 4,5,NaN], NaN);
@@ -491,7 +491,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
             
             for ca = TEST_DATA_CA(:)'
                 v = ca{1};
-                Fpa = bicas.utils.FillPositionsArray(v, 'FILL_VALUE', NaN);
+                Fpa = bicas.utils.FPArray(v, 'FILL_VALUE', NaN);
                 
                 testCase.verifyEqual(isscalar(Fpa), isscalar(v))
                 testCase.verifyEqual(size(Fpa),     size(v)    )
@@ -507,29 +507,29 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_lt_gt_le_ge(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            import bicas.utils.FPArray___UTEST.Fpa
 
             Fpa1 = Fpa([1,  3, 2,   2, NaN], NaN);
             Fpa2 = Fpa([3,  1, 2, NaN,   2], NaN);
             FP = [false, false, false,  true,  true];
 
             ActFpa3 = Fpa1 < Fpa2;
-            ExpFpa3 = bicas.utils.FillPositionsArray(...
+            ExpFpa3 = bicas.utils.FPArray(...
                 [true,  false, false, false, false], 'FILL_POSITIONS', FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
 
             ActFpa3 = Fpa1 > Fpa2;
-            ExpFpa3 = bicas.utils.FillPositionsArray(...
+            ExpFpa3 = bicas.utils.FPArray(...
                 [false,  true, false, false, false], 'FILL_POSITIONS', FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
 
             ActFpa3 = Fpa1 <= Fpa2;
-            ExpFpa3 = bicas.utils.FillPositionsArray(...
+            ExpFpa3 = bicas.utils.FPArray(...
                 [true,  false, true, false, false], 'FILL_POSITIONS', FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
 
             ActFpa3 = Fpa1 >= Fpa2;
-            ExpFpa3 = bicas.utils.FillPositionsArray(...
+            ExpFpa3 = bicas.utils.FPArray(...
                 [false,  true, true, false, false], 'FILL_POSITIONS', FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
         end
@@ -538,17 +538,17 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         function test_floatNan2logical(testCase)
             function test_element_illegal_fail(mc2)
-                Fpa = bicas.utils.FillPositionsArray.floatNan2logical(...
+                Fpa = bicas.utils.FPArray.floatNan2logical(...
                     cast([2], mc2));
             end
             
             for mcCa = {'single', 'double'}'
                 mc = mcCa{1};
 
-                ExpFpa = bicas.utils.FillPositionsArray(...
+                ExpFpa = bicas.utils.FPArray(...
                     [false, true,  false], 'FILL_POSITIONS', ...
                     [false, false,  true]);
-                ActFpa = bicas.utils.FillPositionsArray.floatNan2logical(...
+                ActFpa = bicas.utils.FPArray.floatNan2logical(...
                     cast([0, 1, NaN], mc));
                 testCase.verifyTrue(ExpFpa == ActFpa)
 
@@ -564,11 +564,11 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
                 for intMcCa = {'uint8', 'int8'}'
                     intMc = intMcCa{1};
 
-                    ExpFpa = bicas.utils.FillPositionsArray(...
+                    ExpFpa = bicas.utils.FPArray(...
                         cast([    0,     1,     0], intMc), 'FILL_POSITIONS', ...
                              [false, false,  true]);
 
-                    ActFpa = bicas.utils.FillPositionsArray.floatNan2int(...
+                    ActFpa = bicas.utils.FPArray.floatNan2int(...
                         cast([0, 1, NaN], floatMc), intMc);
                     
                     testCase.verifyTrue(ExpFpa == ActFpa)
@@ -579,7 +579,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function test_cat_vertcat_horzcat(testCase)
-            import bicas.utils.FillPositionsArray___UTEST.Fpa
+            import bicas.utils.FPArray___UTEST.Fpa
             
             Fpa1 = Fpa([], nan);
             ActFpa = [Fpa1];
@@ -622,7 +622,7 @@ classdef FillPositionsArray___UTEST < matlab.unittest.TestCase
         
         
         function Fpa = Fpa(dataAr, fv)
-            Fpa = bicas.utils.FillPositionsArray(dataAr, 'FILL_VALUE', fv);
+            Fpa = bicas.utils.FPArray(dataAr, 'FILL_VALUE', fv);
         end
         
         

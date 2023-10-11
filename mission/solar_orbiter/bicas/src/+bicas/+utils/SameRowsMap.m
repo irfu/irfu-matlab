@@ -56,7 +56,7 @@ classdef SameRowsMap < handle
 %       CON: Complicated to implement(?).
 %       NOTE: (:, <rowIndex>) must be supported for assignment.
 %
-% PROPOSAL: Make compatible with bicas.utils.FillPositionsArray.
+% PROPOSAL: Make compatible with bicas.utils.FPArray.
 %   NOTE: Should be, assuming that FPA implements subsref, subsasgn etc.
 %
 % NEED: Simultaneously store collections of same-rows ZVs and same-size&type

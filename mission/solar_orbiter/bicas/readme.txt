@@ -129,7 +129,7 @@ EMIDP
 FH
     Function Handle (Pointer).
 FPA
-    Class bicas.utils.FillPositionsArray
+    Class bicas.utils.FPArray.
 FTF
     Forward Transfer Function = TF that describes the conversion of physical
     INPUT to OUTPUT (not the reverse). Cf. ITF.

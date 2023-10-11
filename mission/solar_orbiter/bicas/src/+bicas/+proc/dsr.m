@@ -505,8 +505,8 @@ classdef dsr
 %         %       zero) CDF records.
 %         %       ZvDsrFpa = fhBin(BinZvOsrFpa, FpFpa)
 %         function DsrFpa = downsample_FPA(OsrFpa, iRecordsInBinCa, fhBin)
-%             assert(isa(OsrFpa, 'bicas.utils.FillPositionsArray'), ...
-%                 'Argument is not an instance of bicas.utils.FillPositionsArray.')
+%             assert(isa(OsrFpa, 'bicas.utils.FPArray'), ...
+%                 'Argument is not an instance of bicas.utils.FPArray.')
 %             assert(ismatrix(OsrFpa))
 %             assert(iscell(iRecordsInBinCa))            
 %             assert(iscolumn(iRecordsInBinCa))
@@ -514,7 +514,7 @@ classdef dsr
 %             nRecordsDsr = numel(iRecordsInBinCa);
 %             
 %             EmptyFpa = OsrFpa(1:0, :);    % 0x1;
-%             FpFpa    = bicas.utils.FillPositionsArray.get_scalar_FP(OsrFpa.mc);
+%             FpFpa    = bicas.utils.FPArray.get_scalar_FP(OsrFpa.mc);
 %             
 %             dsrFpaCa = cell(nRecordsDsr, 1);   % Preallocate
 % 
@@ -546,7 +546,7 @@ classdef dsr
 %                     else
 %                         % NOTE: min(X, [], iDim)
 %                         m        = min(nfpAr, [], 1);
-%                         DsrFpa = bicas.utils.FillPositionsArray(m, 'NO_FILL_POSITIONS');
+%                         DsrFpa = bicas.utils.FPArray(m, 'NO_FILL_POSITIONS');
 %                     end
 %                 end
 %             end
@@ -575,7 +575,7 @@ classdef dsr
 %                         DsrFpa = FpFpa;
 %                     else
 %                         r = bicas.utils.bitops.or(nfpAr);
-%                         DsrFpa = bicas.utils.FillPositionsArray(r, 'NO_FILL_POSITIONS');
+%                         DsrFpa = bicas.utils.FPArray(r, 'NO_FILL_POSITIONS');
 %                     end
 %                 end
 %             end
@@ -604,8 +604,8 @@ classdef dsr
         %       zero) CDF records.
         %       [binSamplesDsrAr, binFpAr] = fhBin(samplesOsrAr(iAr), fpOsrAr(iAr));
         function DsrFpa = downsample_W_INNER_ARRAYS(OsrFpa, iRecordsInBinCa, fhBin)
-            assert(isa(OsrFpa, 'bicas.utils.FillPositionsArray'), ...
-                'Argument is not an instance of bicas.utils.FillPositionsArray.')
+            assert(isa(OsrFpa, 'bicas.utils.FPArray'), ...
+                'Argument is not an instance of bicas.utils.FPArray.')
             assert(ismatrix(OsrFpa))
             assert(iscell(iRecordsInBinCa))            
             assert(iscolumn(iRecordsInBinCa))
@@ -639,7 +639,7 @@ classdef dsr
             samplesDsrAr = cat(1, zeros(0, 1, OsrFpa.mc), samplesDsrArCa{:});
             fpDsrAr      = cat(1, false(0, 1),            fpDsrArCa{     :});
             
-            DsrFpa = bicas.utils.FillPositionsArray(samplesDsrAr, 'FILL_POSITIONS', fpDsrAr);
+            DsrFpa = bicas.utils.FPArray(samplesDsrAr, 'FILL_POSITIONS', fpDsrAr);
         end
 
 

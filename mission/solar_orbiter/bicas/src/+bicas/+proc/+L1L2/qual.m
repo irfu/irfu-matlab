@@ -225,7 +225,7 @@ classdef qual
 
             bicas.utils.assert_ZV_Epoch(zv_Epoch)
             assert(islogical(isLfr));
-            assert(isa(zvBdmFpa, 'bicas.utils.FillPositionsArray'))
+            assert(isa(zvBdmFpa, 'bicas.utils.FPArray'))
 
             %===============
             % Read settings

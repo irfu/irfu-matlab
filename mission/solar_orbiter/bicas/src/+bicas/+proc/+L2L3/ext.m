@@ -260,7 +260,7 @@ classdef ext
             % ==================================
             % Convert NeScpQualityBitTs --> FPA
             % ==================================
-            NeScpQualityBitFpa = bicas.utils.FillPositionsArray.floatNan2logical(...
+            NeScpQualityBitFpa = bicas.utils.FPArray.floatNan2logical(...
                 NeScpQualityBitTs.data);
         end
 

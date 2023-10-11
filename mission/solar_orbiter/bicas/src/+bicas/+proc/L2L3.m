@@ -138,7 +138,7 @@ classdef L2L3
             % and DSR datasets. In principle, this is for keeping the interface
             % to bicas.proc.dsr.init_shared_DSR_ZVs() simple.
             %===================================================================
-            InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FillPositionsArray.FP_UINT8;
+            InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
 
 
 
@@ -200,7 +200,7 @@ classdef L2L3
             OutEfieldOsr.Zv.EDC_SRF                   = R.edcSrfMvpm;
             %
             b = all(isnan(OutEfieldOsr.Zv.EDC_SRF), 2);
-            OutEfieldOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
+            OutEfieldOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
         
 
 
@@ -215,7 +215,7 @@ classdef L2L3
             %
             b = isnan(OutScpotOsr.Zv.SCPOT) & ...
                 isnan(OutScpotOsr.Zv.PSP);
-            OutScpotOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
+            OutScpotOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
 
 
@@ -228,7 +228,7 @@ classdef L2L3
             OutDensityOsr.Zv.DENSITY                   = R.neScpCm3;
             %
             b = isnan(OutDensityOsr.Zv.DENSITY);
-            OutDensityOsr.Zv.QUALITY_FLAG(b)           = bicas.utils.FillPositionsArray.FP_UINT8;
+            OutDensityOsr.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
 
 
 
@@ -247,7 +247,7 @@ classdef L2L3
             %
             % NOTE: Merge across samples in same record.
             b = all(isnan(OutEfieldDsr.Zv.EDC_SRF), 2);
-            OutEfieldDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
+            OutEfieldDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
             
 
@@ -273,7 +273,7 @@ classdef L2L3
             %
             b = isnan(OutScpotDsr.Zv.SCPOT) & ...
                 isnan(OutScpotDsr.Zv.PSP);
-            OutScpotDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
+            OutScpotDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
 
 
@@ -291,7 +291,7 @@ classdef L2L3
                 L);
             %
             b = isnan(OutDensityDsr.Zv.DENSITY);
-            OutDensityDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FillPositionsArray.FP_UINT8;
+            OutDensityDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
 
 

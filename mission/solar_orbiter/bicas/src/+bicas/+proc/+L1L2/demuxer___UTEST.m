@@ -58,8 +58,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             function test(bdmFloatNan, dlrFloatNan, bltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
                 assert(numel(ExpRoutingArray) == 5)
                 
-                dlrFpa = bicas.utils.FillPositionsArray.floatNan2logical(dlrFloatNan);
-                bdmFpa = bicas.utils.FillPositionsArray.floatNan2int(bdmFloatNan, 'uint8');
+                dlrFpa = bicas.utils.FPArray.floatNan2logical(dlrFloatNan);
+                bdmFpa = bicas.utils.FPArray.floatNan2int(bdmFloatNan, 'uint8');
                 
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...

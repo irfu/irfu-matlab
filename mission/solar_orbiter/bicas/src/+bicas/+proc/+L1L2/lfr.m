@@ -249,7 +249,7 @@ classdef lfr
             Zv.ufv                     = ~logical(InSci.Zv.BW);
             Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;
             Zv.dlrFpa                  = HkSciTime.dlrFpa;
-            %Zv.dlrFpa                  = bicas.utils.FillPositionsArray(false(size(InSci.Zv.Epoch)), 'NO_FILL_POSITIONS');   % TEST: Always DLR = 0.
+            %Zv.dlrFpa                  = bicas.utils.FPArray(false(size(InSci.Zv.Epoch)), 'NO_FILL_POSITIONS');   % TEST: Always DLR = 0.
             Zv.iLsf                    = iLsfZv;
 
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
@@ -350,7 +350,7 @@ classdef lfr
                             'BICAS:DatasetFormat:SWMProcessing')
 
                         L.logf('warning', 'Using fill values for %s.', zvName)
-                        ZvFpa2 = bicas.utils.FillPositionsArray(...
+                        ZvFpa2 = bicas.utils.FPArray(...
                             zeros(nRecords, 1, ZvFpa1.mc), 'ONLY_FILL_POSITIONS');
 
                     otherwise

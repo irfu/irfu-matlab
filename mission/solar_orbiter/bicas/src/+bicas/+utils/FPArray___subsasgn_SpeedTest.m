@@ -1,5 +1,5 @@
 %
-% Performance test for bicas.utils.FillPositionsArray.subsasgn(), i.e. for
+% Performance test for bicas.utils.FPArray.subsasgn(), i.e. for
 % assigning Fpa(...) = OtherFpa.
 %
 % The performance of that function could be critical to the performance of
@@ -10,7 +10,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function FillPositionsArray___subsasgn_SpeedTest
+function FPArray___subsasgn_SpeedTest
 % PROPOSAL: Name that implies preallocation.
 
     clear classes
@@ -53,8 +53,8 @@ function tSec = speed_test_subsasgn(nArrayRows, nArrayCols)
     bigArray   = repmat(linspace(1, nArrayRows, nArrayRows)', 1, nArrayCols);
     smallArray = NaN(1, nArrayCols);
     
-    Fpa1 = bicas.utils.FillPositionsArray(bigArray,   'NO_FILL_POSITIONS');
-    Fpa2 = bicas.utils.FillPositionsArray(smallArray, 'NO_FILL_POSITIONS');
+    Fpa1 = bicas.utils.FPArray(bigArray,   'NO_FILL_POSITIONS');
+    Fpa2 = bicas.utils.FPArray(smallArray, 'NO_FILL_POSITIONS');
     
     t = tic();
     for i = 1:nArrayRows

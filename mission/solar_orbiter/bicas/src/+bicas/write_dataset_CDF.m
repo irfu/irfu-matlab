@@ -168,7 +168,7 @@ function DataObj = init_modify_dataobj(...
         % ----------------------------------------------
         % NOTE: Ignore fill positions/values.
         %===================================================================
-        assert(isa(ZvsSubset.QUALITY_FLAG, 'bicas.utils.FillPositionsArray'))
+        assert(isa(ZvsSubset.QUALITY_FLAG, 'bicas.utils.FPArray'))
 
         [qfMax, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
         assert(...
@@ -186,7 +186,7 @@ function DataObj = init_modify_dataobj(...
         QfFpa = ZvsSubset.QUALITY_FLAG;   % Temporary variable to make algo. clearer.
         
         TooHighQfFpa                        = (QfFpa >= qfMax);
-        QfFpa(TooHighQfFpa.get_data(false)) = bicas.utils.FillPositionsArray(uint8(qfMax), 'NO_FILL_POSITIONS');
+        QfFpa(TooHighQfFpa.get_data(false)) = bicas.utils.FPArray(uint8(qfMax), 'NO_FILL_POSITIONS');
 
         ZvsSubset.QUALITY_FLAG = QfFpa;
         clear QfFpa
@@ -215,7 +215,7 @@ function DataObj = init_modify_dataobj(...
         % IMPLEMENTATION NOTE: This is to avoid having to modify other old
         % non-FPA-aware code for now. Long term, should probably adapt logging
         % to only work on FPAs.
-        if isa(zvValuePd, 'bicas.utils.FillPositionsArray')
+        if isa(zvValuePd, 'bicas.utils.FPArray')
             % Normalize FPA --> array with CDF FV.
             [fv, ~, masterMc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
             assert(...
@@ -316,7 +316,7 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     % values and pad values writing the CDF.
     %======================================================================
     [fv, ~, mc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
-    if isa(zvValuePd, 'bicas.utils.FillPositionsArray')
+    if isa(zvValuePd, 'bicas.utils.FPArray')
         % Normalize FPA --> array with CDF FV.
         assert(strcmp(mc, zvValuePd.mc))
         assert(all(~ismember(fv, zvValuePd.get_non_FP_data())))

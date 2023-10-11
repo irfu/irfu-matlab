@@ -221,8 +221,8 @@ classdef dsr___UTEST < matlab.unittest.TestCase
             FH_CA{end+1} = @bicas.proc.dsr.downsample_ZV_minimum;
             
             function test(inAr, inFv, iRecordsInBinCa, expDsrAr, expDsrFv)
-                Fpa       = bicas.utils.FillPositionsArray(inAr,     'FILL_VALUE', inFv);
-                ExpDsrFpa = bicas.utils.FillPositionsArray(expDsrAr, 'FILL_VALUE', expDsrFv);
+                Fpa       = bicas.utils.FPArray(inAr,     'FILL_VALUE', inFv);
+                ExpDsrFpa = bicas.utils.FPArray(expDsrAr, 'FILL_VALUE', expDsrFv);
                 ActDsrFpa = fh(Fpa, iRecordsInBinCa);
                 
                 testCase.assertEqual(ActDsrFpa, ExpDsrFpa)
@@ -266,8 +266,8 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 expDsrAr = uint8(expDsrAr);
                 expDsrFv = uint8(255);
 
-                Fpa       = bicas.utils.FillPositionsArray(inAr,     'FILL_VALUE', inFv);
-                ExpDsrFpa = bicas.utils.FillPositionsArray(expDsrAr, 'FILL_VALUE', expDsrFv);
+                Fpa       = bicas.utils.FPArray(inAr,     'FILL_VALUE', inFv);
+                ExpDsrFpa = bicas.utils.FPArray(expDsrAr, 'FILL_VALUE', expDsrFv);
 
                 ActDsrFpa = fh(Fpa, iRecordsInBinCa);
                 

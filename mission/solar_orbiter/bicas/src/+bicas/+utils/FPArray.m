@@ -28,7 +28,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef FillPositionsArray   % < handle
+classdef FPArray   % < handle
     % PROPOSAL: Shorter name.
     %   PRO: Frequently referenced.
     %       PRO: 2023-10-09: 98 occurrences of class name.
@@ -112,7 +112,7 @@ classdef FillPositionsArray   % < handle
     
         % Constant that is useful for setting FPA elements to be Fs (also for
         % multiple elements using indexing).
-        FP_UINT8 = bicas.utils.FillPositionsArray.get_scalar_FP('uint8');
+        FP_UINT8 = bicas.utils.FPArray.get_scalar_FP('uint8');
     end
 
 
@@ -169,7 +169,7 @@ classdef FillPositionsArray   % < handle
         %           Fill positions array. Logical. Same size as dataAr.
         %           True == Fill position.
         %       
-        function obj = FillPositionsArray(dataAr, fpDescriptionType, varargin)
+        function obj = FPArray(dataAr, fpDescriptionType, varargin)
 
             % IMPLEMENTATION NOTE: Limiting the data types to those for which
             % one can use MATLAB's element-wise operations for matrices, e.g.
@@ -238,7 +238,7 @@ classdef FillPositionsArray   % < handle
             
             switch(nargin)
                 case 1
-                    fv = bicas.utils.FillPositionsArray.get_cast_FV(obj.mc, obj.mc);
+                    fv = bicas.utils.FPArray.get_cast_FV(obj.mc, obj.mc);
                 case 2
                     assert(isscalar(fv))
                     assert(...
@@ -294,7 +294,7 @@ classdef FillPositionsArray   % < handle
             % IMPLEMENTATION NOTE: Can not use
             %     (a) arbitrary fill values,
             %     (b) just use the values stored in obj.dataAr, or
-            %     (c) bicas.utils.FillPositionsArray.MC_NUMERIC_CA,
+            %     (c) bicas.utils.FPArray.MC_NUMERIC_CA,
             % since the array operation might trigger error for some values,
             % e.g. ~NaN (negating NaN, but NaN can not be interptered as
             % logical/boolean).
@@ -304,7 +304,7 @@ classdef FillPositionsArray   % < handle
             inputAr  = obj.get_data(fvBefore);
             outputAr = fhArrayOperation(inputAr);
             
-            Fpa = bicas.utils.FillPositionsArray(...
+            Fpa = bicas.utils.FPArray(...
                 outputAr, 'FILL_POSITIONS', obj.fpAr);
         end
         
@@ -322,7 +322,7 @@ classdef FillPositionsArray   % < handle
             
             switch(nargin)
                 case 2
-                    fvBefore = bicas.utils.FillPositionsArray.get_cast_FV(...
+                    fvBefore = bicas.utils.FPArray.get_cast_FV(...
                         obj.mc, outputMc);
                 case 3
                     % Do nothing. Use caller-supplied value of "fbBefore".
@@ -354,7 +354,7 @@ classdef FillPositionsArray   % < handle
             dataAr(obj.fpAr) = Fpa1.dataAr(obj.fpAr);
             fpAr             = obj.fpAr & Fpa1.fpAr;
             
-            Fpa2 = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
+            Fpa2 = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
         
         
@@ -462,7 +462,7 @@ classdef FillPositionsArray   % < handle
                     dataAr = subsref(obj.dataAr, S);
                     fpAr   = subsref(obj.fpAr, S);
 
-                    varargout = {bicas.utils.FillPositionsArray(...
+                    varargout = {bicas.utils.FPArray(...
                         dataAr, 'FILL_POSITIONS', fpAr)};
 
                 case '.'
@@ -497,7 +497,7 @@ classdef FillPositionsArray   % < handle
         %
         % PERFORMANCE
         % ===========
-        % Testing (bicas.utils.FillPositionsArray___subsasgn_SpeedTest) implies
+        % Testing (bicas.utils.FPArray___subsasgn_SpeedTest) implies
         % that preallocating a large FPA and then overwriting subsets using
         % subsasgn does not work. Time consumption per element grows with size
         % of FPA. Class should thus not be suitable for storing samples in the
@@ -519,7 +519,7 @@ classdef FillPositionsArray   % < handle
                         assert(isnumeric(x) || islogical(x) || strcmp(x, ':'))
                     end
                     
-                    if isa(obj2, 'bicas.utils.FillPositionsArray')
+                    if isa(obj2, 'bicas.utils.FPArray')
                         assert(strcmp(Fpa1.mc, obj2.mc), ...
                             'FPA to be assigned has a MATLAB class "%s" that incompatible with the assigned FPA''s MATLAB class "%s".', ...
                             obj2.mc, Fpa1.mc)
@@ -608,7 +608,7 @@ classdef FillPositionsArray   % < handle
             assert(isnumeric(iDim))
             FpaCa = varargin;
             for i = 1:numel(FpaCa)
-                assert(isa(FpaCa{i}, 'bicas.utils.FillPositionsArray'))
+                assert(isa(FpaCa{i}, 'bicas.utils.FPArray'))
             end
             mcCa = cellfun(@(Fpa) Fpa.mc, FpaCa, 'UniformOutput', false);
             assert(numel(unique(mcCa)) == 1)
@@ -619,7 +619,7 @@ classdef FillPositionsArray   % < handle
             fpArCa   = cellfun(@(Fpa) Fpa.fpAr, FpaCa, 'UniformOutput', false);
             fpAr     = cat(iDim, fpArCa{:});
 
-            Fpa = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
+            Fpa = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
 
         % "Overload" vertcat() = [... ; ...].
@@ -667,14 +667,14 @@ classdef FillPositionsArray   % < handle
             %   PRO: Compare .convert().
             
             
-            if isa(obj2, 'bicas.utils.FillPositionsArray')
+            if isa(obj2, 'bicas.utils.FPArray')
                 dataAr = fhCompare(obj1.dataAr, obj2.dataAr);
                 fpAr   = (obj1.fpAr | obj2.fpAr);
             else
                 dataAr = fhCompare(obj1.dataAr, obj2);
                 fpAr   = obj1.fpAr;
             end
-            Fpa3 = bicas.utils.FillPositionsArray(dataAr, 'FILL_POSITIONS', fpAr);
+            Fpa3 = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
         
         
@@ -695,8 +695,8 @@ classdef FillPositionsArray   % < handle
         % Return scalar (1x1) FPA containing one FP for a specified MATLAB
         % class.
         function Fpa = get_scalar_FP(mc)
-            fv = bicas.utils.FillPositionsArray.get_cast_FV(mc, mc);
-            Fpa = bicas.utils.FillPositionsArray(fv, 'ONLY_FILL_POSITIONS');
+            fv = bicas.utils.FPArray.get_cast_FV(mc, mc);
+            Fpa = bicas.utils.FPArray(fv, 'ONLY_FILL_POSITIONS');
         end
         
         
@@ -710,7 +710,7 @@ classdef FillPositionsArray   % < handle
             
             floatNaN  = cast(NaN, class(ar));
             
-            Fpa = bicas.utils.FillPositionsArray(...
+            Fpa = bicas.utils.FPArray(...
                 ar, 'FILL_VALUE', floatNaN).cast('logical');
         end
         
@@ -722,7 +722,7 @@ classdef FillPositionsArray   % < handle
 
             floatNan  = cast(NaN, class(ar));
             
-            Fpa = bicas.utils.FillPositionsArray(...
+            Fpa = bicas.utils.FPArray(...
                 ar, 'FILL_VALUE', floatNan).cast(fpaMc);
         end
         
@@ -750,8 +750,8 @@ classdef FillPositionsArray   % < handle
         %            which MATLAB class to specify, which is often error prone.
         %
         function fv = get_cast_FV(mc1, mc2)
-            isNum1 = ismember(mc1, bicas.utils.FillPositionsArray.MC_NUMERIC_CA);
-            isNum2 = ismember(mc2, bicas.utils.FillPositionsArray.MC_NUMERIC_CA);
+            isNum1 = ismember(mc1, bicas.utils.FPArray.MC_NUMERIC_CA);
+            isNum2 = ismember(mc2, bicas.utils.FPArray.MC_NUMERIC_CA);
             isLog1 = strcmp(mc1, 'logical');
             isLog2 = strcmp(mc2, 'logical');
 
