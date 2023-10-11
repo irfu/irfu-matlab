@@ -36,7 +36,12 @@ classdef FPArray   % < handle
     %
     % PROPOSAL: Change name of "array()"
     %   PROPOSAL: array, data, data_array
-    % PROPOSAL: Better name for method "get_non_FP_data".
+    %   PROPOSAL: data
+    %       CON: Is not all data, only the non-FP elements.
+    %   PROPOSAL: dataAr
+    %       NOTE: Same as internal variable.
+    %
+    % PROPOSAL: Better name for method "NFP_array".
     %   NOTE: Cf .get_data().
     %   ~get_non_FP
     %   ~NFP_array    ## cf. .array(fv)
@@ -370,7 +375,7 @@ classdef FPArray   % < handle
         % ar
         %       1D column array. Internal array is first converted to column
         %       vector. Then fill positions are removed.
-        function ar = get_non_FP_data(obj)
+        function ar = NFP_array(obj)
             % IMPLEMENTATION NOTE: Must convert to column array. Otherwise a 1D
             % vector that is not a column remains a column in that dimension.
             dataAr = obj.dataAr(:);   % Convert to column array.

@@ -163,6 +163,8 @@ MSTD
     arbitrary reference (e.g. median) instead of the conventional mean.
 MVPM
     Milli-Volt Per Meter (mV/m).
+NFP
+    Non-Fill Position, in the context of FPAs.
 NS
     Nanoseconds
 NSO

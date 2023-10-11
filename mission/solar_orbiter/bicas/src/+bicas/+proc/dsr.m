@@ -540,7 +540,7 @@ classdef dsr
 %                     % CASE: Bin contains non-zero number of values, which
 %                     %       might be FPs.
 % 
-%                     nfpAr = BinOsrFpa.get_non_FP_data();
+%                     nfpAr = BinOsrFpa.NFP_array();
 %                     if isempty(nfpAr)
 %                         DsrFpa = FpFpa;
 %                     else
@@ -570,7 +570,7 @@ classdef dsr
 %                     % CASE: Bin contains non-zero number of values, which
 %                     %       might be FPs.
 % 
-%                     nfpAr = BinOsrFpa.get_non_FP_data();
+%                     nfpAr = BinOsrFpa.NFP_array();
 %                     if isempty(nfpAr)
 %                         DsrFpa = FpFpa;
 %                     else

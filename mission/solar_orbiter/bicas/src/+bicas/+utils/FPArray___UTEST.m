@@ -257,12 +257,12 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         
         
-        function test_get_non_FP_data(testCase)
+        function test_NFP_array(testCase)
             import bicas.utils.FPArray___UTEST.Fpa
             
             % 0x0 --> 0x1
             Fpa1  = Fpa([], NaN);
-            actAr = Fpa1.get_non_FP_data();
+            actAr = Fpa1.NFP_array();
             testCase.assertEqual(actAr, zeros(0, 1))
             
             % Iterate over (1) different 1D vectors, in (2) different dimensions.
@@ -281,19 +281,19 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
 %                     size(v2)                    
 
                     Fpa1  = Fpa(v2, NaN);
-                    actAr = Fpa1.get_non_FP_data();
+                    actAr = Fpa1.NFP_array();
                     testCase.assertEqual(actAr, expAr)
                 end
             end
             
             % 2x3 --> 0x1
             Fpa1  = Fpa(NaN(2,3), NaN);
-            actAr = Fpa1.get_non_FP_data();
+            actAr = Fpa1.NFP_array();
             testCase.assertEqual(actAr, zeros(0,1))
 
             % 2x3 --> 3x1
             Fpa1  = Fpa([NaN, 2, NaN; 4, NaN, 6], NaN);
-            actAr = Fpa1.get_non_FP_data();
+            actAr = Fpa1.NFP_array();
             testCase.assertEqual(actAr, [4; 2; 6])
         end
         
