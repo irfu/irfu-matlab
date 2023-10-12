@@ -3,12 +3,29 @@
 % arbitrary dimension.
 %
 %
+% IMPLEMENTATION NOTE
+% ===================
+% The implementation and interface only works with double, using NaN as a "fill
+% value" which is allowed to propagate through the calculations and make the
+% result NaN. This is use instead of using e.g. arbitrary fill value/positions
+% (which are not counted/ignored) or bicas.utils.FPArray since:
+% (1) bicas.utils.FPArray would probably be too slow in realistic applications,
+% (2) the operation only makes sense for floats (square root, division), and
+% (3) NaN propagates naturally and meaningfully through the mathematical
+%     operations.
+% Due to (3), it also makes sense to use all values in the calculation rather
+% than ignoring (fill) values. It is therefore the caller's responsibility to
+% omit values, e.g. NaN values/FPs if it wishes them to be omitted from the
+% calculation.
+%
+%
 % ARGUMENTS
 % =========
 % v
-%       Array with arbitrary size and number of dimensions. May be NaN.
+%       Double. Array with arbitrary size and number of dimensions. May be NaN.
 % ref
-%       Scalar value that replaces the mean in standard deviation. May be NaN.
+%       Double. Scalar value that replaces the mean in standard deviation. May
+%       be NaN.
 % iDim
 %       Scalar value. Dimension along which to calculate MSTD.
 %        
@@ -16,7 +33,7 @@
 % RETURN VALUES
 % =============
 % mstd
-%       MSTD.
+%       MSTD. Double.
 %       Same size as "v", except for that size(mstd, iDim) == 1.
 %       --
 %       NaN, if size(v, iDim) == 0 or 1, or
@@ -29,21 +46,18 @@
 % First created 2020-10-22.
 %
 function mstd = mstd(v, ref, iDim)
-    % PROPOSAL: Ignore NaN in the calculation of MSTD.
-    %           ==> Be able to return non-NaN if there are sufficiently many non-NaN values.
-    % PROPOSAL: Argument for smallest number of non-NaN values separately per
-    %           1D-subvector.
-    % PROPOSAL: Non-scalar "ref".
-    %   CON: Complicates assertion on size.
     
-    assert(isscalar(ref))    % Permit NaN.
+    % Permit ref=NaN.
+    assert(isscalar(ref))
     assert(isscalar(iDim))
+    assert(isa(v,   'double'))
+    assert(isa(ref, 'double'))
     
     N = size(v, iDim);
     if N == 0 || N == 1
         % NOTE:
         % N==0 ==> MSTD undefined.
-        % N==1 ==> Standard deviation is undefined / ill-defined.
+        % N==1 ==> MSTD is undefined / ill-defined.
         %   ref<>v ==> mstd ~ 1/0        (       1 / (N-1) )
         %   ref==v ==> mstd ~ 1/0 or 0/0 ( (v-ref) / (N-1) )
         
@@ -53,14 +67,6 @@ function mstd = mstd(v, ref, iDim)
     else
         % CASE: N>=2
         mstd = sqrt( sum((v-ref).^2, iDim) / (N-1) );
-        
-        % EXPERIMENTAL
-        % Try ignore NaN.
-        % ==> Handle absense of non-NaN.
-        %mstd = sqrt( sum((v-ref).^2, iDim, 'ignorenan') / (N-1) );
-        %nNaN = sum(isnan(v), iDim);
-        %mstd(nNaN == N) = NaN;
-        
     end
     
     % ASSERTION

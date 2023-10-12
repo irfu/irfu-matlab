@@ -108,23 +108,28 @@ classdef dsr___UTEST < matlab.unittest.TestCase
         
         function test_downsample_sci_ZV(testCase)
             
-            % function [zvMed, zvMstd] = downsample_sci_ZV(...
-            %         zv, nMinReqRecords, iRecordsInBinCa, L)
-
-            % Arbitrary number output variables.
-            function test(inputsCa, expOutputsCa)
-                % Pre-allocate correct size for later assignment via function
-                actOutputs = cell(size(expOutputsCa));
+            function test(...
+                    OsrAr, nMinNfpSamplesPerBin, iRecordsInBinCa, L, ...
+                    expMedianDsrAr, expMstdDsrAr)
                 
-                [actOutputs{:}] = bicas.proc.dsr.downsample_sci_ZV(inputsCa{:});
-                testCase.verifyEqual(actOutputs, expOutputsCa)
+                % NOTE: bicas.proc.dsr.downsample_sci_ZV() only accepts
+                % double-typed FPAs. Therefore only needs to test such.
+                OsrFpa          = bicas.utils.FPArray(OsrAr,          'FILL_VALUE', NaN);
+                ExpMedianDsrFpa = bicas.utils.FPArray(expMedianDsrAr, 'FILL_VALUE', NaN);
+                ExpMstdDsrFpa   = bicas.utils.FPArray(expMstdDsrAr,   'FILL_VALUE', NaN);
+                
+                [ActMedianDsrFpa, ActMstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                    OsrFpa, nMinNfpSamplesPerBin, iRecordsInBinCa, L);
+                
+                testCase.assertEqual(ActMedianDsrFpa, ExpMedianDsrFpa)
+                testCase.assertEqual(ActMstdDsrFpa,   ExpMstdDsrFpa)
             end
             
             % Create test with exactly ONE BIN.
-            function test_1_bin(zv, nMinReqSamples, med, mstd)
+            function test_1_bin(osrAr, nMinReqSamples, expMedAr, expMstdAr)
                 test(...
-                    {zv, nMinReqSamples, {1:size(zv,1)}, testCase.L}, ...
-                    {med, mstd});
+                    osrAr, nMinReqSamples, {1:size(osrAr,1)}, testCase.L, ...
+                    expMedAr, expMstdAr);
             end
 
             % Create test with N BINS (i.e. an arbitrary call).
@@ -132,8 +137,9 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 assert(isrow(iRecordsDsrCa))
                 bicas.proc.dsr___UTEST.assert_iRecordsDsrCa(iRecordsDsrCa, zv)
 
-                test({zv, nMinReqSamples, iRecordsDsrCa', testCase.L}, ...
-                    {med, mstd});
+                test(...
+                    zv, nMinReqSamples, iRecordsDsrCa', testCase.L, ...
+                    med, mstd);
             end
             %===================================================================
 

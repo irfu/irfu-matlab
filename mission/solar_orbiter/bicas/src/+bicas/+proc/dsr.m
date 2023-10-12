@@ -379,217 +379,124 @@ classdef dsr
         %
         % NOTE: Can handle zero records in bin.
         % NOTE: Function is only public so that automated test code can access
-        % it.
-        % NOTE: Can handle varying number of NaN in different zVar columns
-        % (different channels).
+        %       it.
+        % NOTE: Can handle varying number of FP in different zVar columns
+        %       (different channels).
         %
-        % IMPLEMENTATION NOTE: Must count non-NaN samples for every channel (in
-        % each bin) separately. This is a relevant use case since e.g. E-field
-        % has Ex=NaN only, i.e. one can have bins with different number of NaN
-        % in different columns.
+        % IMPLEMENTATION NOTE: Must count NFP samples for every channel (in each
+        % bin) separately. This is a relevant use case since e.g. E-field has
+        % E_x=FV/FP only, i.e. one can have bins with different number of FP in
+        % different columns.
+        %
+        % IMPLEMENTATION NOTE: Could generalize function to arbitrary number
+        % of dimensions, but that is not needed. Therefore only requires 2D
+        % data (iRecord, iChannel).
         %
         %
         % ARGUMENTS
         % =========
-        % zv
-        %       (iCdfRecord, iChannel). Float.
-        % nMinReqSamples
-        %       Minimum number of samples (fill value or not) for not returning
-        %       fill value.
+        % OsrFpa
+        %       (iCdfRecord, iChannel). FPA double.
+        % nMinNfpSamplesPerBin
+        %       Minimum number of NFP samples (per channel/column) per bin for
+        %       not returning FP.
         % iRecordsInBinCa
         %       Column cell array. {iBin, 1}
         %
         %
         % RETURN VALUES
         % =============
-        % zvMed
-        %       (iBin, iChannel). Median.
-        % zvMstd
-        %       (iBin, iChannel). MSTD.
+        % MedianDsrFpa
+        %       (iBin, iChannel). FPA. Median.
+        % MstdDsrFpa
+        %       (iBin, iChannel). FPA. MSTD.
         %
-        function [zvMed, zvMstd] = downsample_sci_ZV(...
-                zv, nMinReqRecords, iRecordsInBinCa, L)
+        function [MedianDsrFpa, MstdDsrFpa] = downsample_sci_ZV(...
+                OsrFpa, nMinNfpSamplesPerBin, iRecordsInBinCa, L)
             
-            % PROPOSAL: Require nMinReqSamples >= 1? Code can handle 0, though it gives NaN.
+            % PROPOSAL: Require nMinNfpSamplesPerBin >= 1? Code can handle 0, though it gives NaN.
+            
+            % IMPLEMENTATION NOTE: Not using bicas.proc.dsr.downsample() since
+            % it is not designed for returning two values per bin.
             
             tTicToc = tic();
-            
-            
 
-            % ASSERTION
-            assert(isfloat(zv))
-            assert(nMinReqRecords >= 0)
-            [nRecordsOsr, nRecordsDsr, nSpr] = irf.assert.sizes(...
-                zv,              [-1, -3], ...
+            % ASSERTIONS
+            assert(isa(OsrFpa, 'bicas.utils.FPArray'))
+            assert(strcmp(OsrFpa.mc, 'double'))
+            assert(nMinNfpSamplesPerBin >= 0)
+            [nRecordsOsr, nBins, nSpr] = irf.assert.sizes(...
+                OsrFpa,          [-1, -3], ...
                 iRecordsInBinCa, [-2]);
+            nRecordsDsr = numel(iRecordsInBinCa);
             
             
+
+            % FPA --> OSR arrays
+            % ------------------
+            % NOTE: Convert to double-NaN since that is what the algorithm
+            % works with (MSTD, really).
+            dataOsr = OsrFpa.array(NaN);
+            fpOsr   = OsrFpa.fpAr();
             
-            % Pre-allocate
-            zvMed  = NaN(nRecordsDsr, nSpr);
-            zvMstd = NaN(nRecordsDsr, nSpr);
+            % Pre-allocate DSR arrays.
+            medianDsr = zeros(nBins, nSpr, OsrFpa.mc);
+            mstdDsr   = zeros(nBins, nSpr, OsrFpa.mc);
+            
+            % Pre-allocate DSR bin arrays.
+            binDsrSize    = size(dataOsr);
+            binDsrSize(1) = 1;
+            binMedian = zeros(binDsrSize);
+            binMstd   = zeros(binDsrSize);
+            
+            for iBin = 1:nBins
+                % OSR bin arrays
+                kBin = iRecordsInBinCa{iBin};
+                binDataOsr = dataOsr(kBin, :);
+                binFpOsr   = fpOsr  (kBin, :);
 
-            for iBin = 1:nRecordsDsr
-                k           = iRecordsInBinCa{iBin};
-                
-                binZv       = zv(k, :);
-                % Number of OSR records in bin.
-                nBinRecords = size(binZv, 1);
+                for iChannel = 1:nSpr
 
-                % (1) Pre-allocate (e.g. in case of zero samples/record).
-                % (2) Set default values in case of too few records.
-                binMed  = NaN(1, nSpr);
-                binMstd = binMed;
+                    % Vector of NFP samples (for one channel/bin column).
+                    binChannelData    = binDataOsr              (:, iChannel);
+                    binChannelDataNfp = binChannelData(~binFpOsr(:, iChannel));
 
-                if nBinRecords >= nMinReqRecords
-                    % CASE: Enough records, but not necessarily non-NaN samples.
-                    
-                    for iChannel = 1:nSpr
+                    if numel(binChannelDataNfp) < nMinNfpSamplesPerBin
+                        % CASE: Too few NFP samples.
+                        binMedian(1, iChannel) = NaN;
+                        binMstd  (1, iChannel) = NaN;
+                    else
+                        % CASE: Enough NFP samples.
+                        medianScalarData = median(binChannelDataNfp, 1);
+                        mstdScalarData   = bicas.utils.mstd(...
+                            binChannelDataNfp, ...
+                            medianScalarData, ...
+                            1);
                         
-                        % Vector of non-NaN samples, for one specific bin
-                        % column.
-                        tempSamples = binZv(:, iChannel);
-                        samples     = tempSamples(~isnan(tempSamples));
-                        
-                        if size(samples, 1) < nMinReqRecords
-                            % CASE: Too few non-NaN samples.
-                            binMed(iChannel)  = NaN;
-                            binMstd(iChannel) = NaN;
-                        else
-                            % CASE: Enough non-NaN samples.
-                            binMed(iChannel)  = median(samples, 1);
-                            binMstd(iChannel) = bicas.utils.mstd(...
-                                samples, ...
-                                binMed(iChannel), ...
-                                1);
-                        end
+                        binMedian(1, iChannel) = medianScalarData;   % May be NaN.
+                        binMstd  (1, iChannel) = mstdScalarData;     % May be NaN.
                     end
                 end
                 
-                zvMed (iBin, :) = binMed;
-                zvMstd(iBin, :) = binMstd;
-                
-                % clear binMed binMstd
+                medianDsr(iBin, :) = binMedian;
+                mstdDsr  (iBin, :) = binMstd;
             end    % for
-            
-            
-            
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
-%                 nRecordsOsr, 'OSR record')
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
-%                 nRecordsDsr,              'DSR record')
+
+            % NOTE: Must be (MATLAB class) double FPAs.
+            MedianDsrFpa = bicas.utils.FPArray(medianDsr, 'FILL_VALUE', NaN);
+            MstdDsrFpa   = bicas.utils.FPArray(mstdDsr,   'FILL_VALUE', NaN);
+
+
+
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
+                nRecordsOsr, 'OSR record')
+            bicas.log_speed_profiling(L, ...
+                'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
+                nRecordsDsr,              'DSR record')
             
         end    % downsample_sci_ZV
-        
-        
-        
-        % ######################################################################
-        % IMPLEMENTATIONS USING FPAs ALSO FOR BINS INTERNALLY
-        % ######################################################################
-        
 
-
-%         % General-purpose function for downsampling data using bins.
-%         % The implementation sends and receives FPAs to/from the inner function.
-%         % Therefore tends to be very slow.
-%         %
-%         % ARGUMENTS
-%         % =========
-%         % ZvOsrFpa
-%         %       FPA. ZV-like OSR data. 2D i.e. may have multiple columns.
-%         % iRecordsInBinCa
-%         % fhBin
-%         %       Function handle. Condenses one bin of OSR CDF records to one (or
-%         %       zero) CDF records.
-%         %       ZvDsrFpa = fhBin(BinZvOsrFpa, FpFpa)
-%         function DsrFpa = downsample_FPA(OsrFpa, iRecordsInBinCa, fhBin)
-%             assert(isa(OsrFpa, 'bicas.utils.FPArray'), ...
-%                 'Argument is not an instance of bicas.utils.FPArray.')
-%             assert(ismatrix(OsrFpa))
-%             assert(iscell(iRecordsInBinCa))            
-%             assert(iscolumn(iRecordsInBinCa))
-%             
-%             nRecordsDsr = numel(iRecordsInBinCa);
-%             
-%             EmptyFpa = OsrFpa(1:0, :);    % 0x1;
-%             FpFpa    = bicas.utils.FPArray.get_scalar_FP(OsrFpa.mc);
-%             
-%             dsrFpaCa = cell(nRecordsDsr, 1);   % Preallocate
-% 
-%             for iBin = 1:nRecordsDsr
-%                 dsrFpaCa{iBin} = fhBin(...
-%                     OsrFpa(iRecordsInBinCa{iBin}), FpFpa);
-%             end
-% 
-%             DsrFpa = cat(1, EmptyFpa, dsrFpaCa{:});
-%         end
-%         
-%         
-%         
-%         % Downsample a zVariable using pre-defined bins to minimum in each bin.
-%         %
-%         function DsrFpa = downsample_ZV_minimum_W_FPAs( OsrFpa, iRecordsInBinCa )
-%             
-%             function DsrFpa = bin_algo(BinOsrFpa, FpFpa)
-%                 if isempty(BinOsrFpa)
-%                     % CASE: Bin contains no values.
-%                     DsrFpa = FpFpa;
-%                 else
-%                     % CASE: Bin contains non-zero number of values, which
-%                     %       might be FPs.
-% 
-%                     nfpAr = BinOsrFpa.NFP_array();
-%                     if isempty(nfpAr)
-%                         DsrFpa = FpFpa;
-%                     else
-%                         % NOTE: min(X, [], iDim)
-%                         m        = min(nfpAr, [], 1);
-%                         DsrFpa = bicas.utils.FPArray(m, 'NO_FILL_POSITIONS');
-%                     end
-%                 end
-%             end
-%             
-%             assert(iscolumn(OsrFpa))
-%             DsrFpa = bicas.proc.dsr.downsample_FPA(OsrFpa, iRecordsInBinCa, @bin_algo);
-%         end
-%         
-%         
-%         
-%         % Downsample a zVariable using pre-defined bins to the logical OR of
-%         % each bin.
-%         %
-%         function DsrFpa = downsample_ZV_bitmask_W_FPAs(OsrFpa, iRecordsInBinCa)
-% 
-%             function DsrFpa = bin_algo(BinOsrFpa, FpFpa)
-%                 if isempty(BinOsrFpa)
-%                     % CASE: Bin contains no values.
-%                     DsrFpa = FpFpa;
-%                 else
-%                     % CASE: Bin contains non-zero number of values, which
-%                     %       might be FPs.
-% 
-%                     nfpAr = BinOsrFpa.NFP_array();
-%                     if isempty(nfpAr)
-%                         DsrFpa = FpFpa;
-%                     else
-%                         r = bicas.utils.bitops.or(nfpAr);
-%                         DsrFpa = bicas.utils.FPArray(r, 'NO_FILL_POSITIONS');
-%                     end
-%                 end
-%             end
-% 
-%             assert(iscolumn(OsrFpa))
-%             DsrFpa = bicas.proc.dsr.downsample_FPA(OsrFpa, iRecordsInBinCa, @bin_algo);
-%         end
-
-
-
-        % ######################################################################
-        % IMPLEMENTATIONS USING ARRAYS FOR BINS INTERNALLY
-        % ######################################################################
-        
 
 
         % General-purpose function for downsampling data using bins.
@@ -623,14 +530,15 @@ classdef dsr
 
                 [binSamplesDsrAr, binFpAr] = fhBin(samplesOsrAr(iAr), fpOsrAr(iAr));
                 
-                if 1
-                    % DEBUG: Verify the return values from function.
-                    assert(isa(      binSamplesDsrAr, OsrFpa.mc))
-                    assert(islogical(binFpAr        ))
-                    assert(isequaln(...
-                        size(binSamplesDsrAr), ...
-                        size(binFpAr        )))
-                end
+%                 if 0
+%                     % DEBUG: Verify the return values from function.
+%                     assert(isa(      binSamplesDsrAr, OsrFpa.mc))
+%                     assert(islogical(binFpAr        ))
+%                     assert(size(binSamplesDsrAr, 1)  == 1)
+%                     assert(isequaln(...
+%                         size(binSamplesDsrAr), ...
+%                         size(binFpAr        )))
+%                 end
                 
                 samplesDsrArCa{iBin} = binSamplesDsrAr;
                 fpDsrArCa{     iBin} = binFpAr;

@@ -197,9 +197,9 @@ classdef L2L3
             OutEfieldOsr = InitialOsr;
             OutEfieldOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutEfieldOsr.Zv.EDC_SRF                   = R.edcSrfMvpm;
+            OutEfieldOsr.Zv.EDC_SRF                   = R.EdcSrfMvpmFpa.cast('single');
             %
-            b = all(isnan(OutEfieldOsr.Zv.EDC_SRF), 2);
+            b = all(OutEfieldOsr.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
             OutEfieldOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
         
 
@@ -210,11 +210,11 @@ classdef L2L3
             OutScpotOsr = InitialOsr;
             OutScpotOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
             %
-            OutScpotOsr.Zv.SCPOT                     = R.scpotVolt;
-            OutScpotOsr.Zv.PSP                       = R.pspVolt;
+            OutScpotOsr.Zv.SCPOT                     = R.ScpotVoltFpa.cast('single');
+            OutScpotOsr.Zv.PSP                       = R.PspVoltFpa.cast('single');
             %
-            b = isnan(OutScpotOsr.Zv.SCPOT) & ...
-                isnan(OutScpotOsr.Zv.PSP);
+            b = OutScpotOsr.Zv.SCPOT.fpAr & ...
+                OutScpotOsr.Zv.PSP.fpAr;
             OutScpotOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
 
@@ -225,9 +225,9 @@ classdef L2L3
             OutDensityOsr = InitialOsr;
             OutDensityOsr.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
             %
-            OutDensityOsr.Zv.DENSITY                   = R.neScpCm3;
+            OutDensityOsr.Zv.DENSITY                   = R.NeScpCm3Fpa.cast('single');
             %
-            b = isnan(OutDensityOsr.Zv.DENSITY);
+            b = OutDensityOsr.Zv.DENSITY.fpAr;
             OutDensityOsr.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
 
 
@@ -237,16 +237,16 @@ classdef L2L3
             %====================
             OutEfieldDsr    = InitialDsr;
             OutEfieldDsr.Ga = OutEfieldOsr.Ga;
-            %
-            [OutEfieldDsr.Zv.EDC_SRF, ...
-             OutEfieldDsr.Zv.EDCSTD_SRF] = bicas.proc.dsr.downsample_sci_ZV(...
-                OutEfieldOsr.Zv.EDC_SRF, ...
+            %            
+            [EdcSrfDsrFpa, EdcstdSrfDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                R.EdcSrfMvpmFpa, ...
                 bicas.const.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
+            OutEfieldDsr.Zv.EDC_SRF    = EdcSrfDsrFpa.cast('single');
+            OutEfieldDsr.Zv.EDCSTD_SRF = EdcstdSrfDsrFpa.cast('single');
             %
-            % NOTE: Merge across samples in same record.
-            b = all(isnan(OutEfieldDsr.Zv.EDC_SRF), 2);
+            b = all(OutEfieldDsr.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
             OutEfieldDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
             
@@ -257,22 +257,24 @@ classdef L2L3
             OutScpotDsr    = InitialDsr;
             OutScpotDsr.Ga = OutScpotOsr.Ga;
             %
-            [OutScpotDsr.Zv.SCPOT, ...
-             OutScpotDsr.Zv.SCPOTSTD] = bicas.proc.dsr.downsample_sci_ZV(...
-                OutScpotOsr.Zv.SCPOT, ...
+            [ScpotDsrFpa, ScpotstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                R.ScpotVoltFpa, ...
                 bicas.const.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
+            OutScpotDsr.Zv.SCPOT    = ScpotDsrFpa.cast('single');
+            OutScpotDsr.Zv.SCPOTSTD = ScpotstdDsrFpa.cast('single');
             %
-            [OutScpotDsr.Zv.PSP, ...
-             OutScpotDsr.Zv.PSPSTD] = bicas.proc.dsr.downsample_sci_ZV(...
-                OutScpotOsr.Zv.PSP, ...
+            [PspDsrFpa, PspstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                R.PspVoltFpa, ...
                 bicas.const.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
+            OutScpotDsr.Zv.PSP    = PspDsrFpa.cast('single');
+            OutScpotDsr.Zv.PSPSTD = PspstdDsrFpa.cast('single');
             %
-            b = isnan(OutScpotDsr.Zv.SCPOT) & ...
-                isnan(OutScpotDsr.Zv.PSP);
+            b = OutScpotDsr.Zv.SCPOT.fpAr & ...
+                OutScpotDsr.Zv.PSP.fpAr;
             OutScpotDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
 
@@ -283,14 +285,15 @@ classdef L2L3
             OutDensityDsr    = InitialDsr;
             OutDensityDsr.Ga = OutDensityOsr.Ga;
             %
-            [OutDensityDsr.Zv.DENSITY, ...
-             OutDensityDsr.Zv.DENSITYSTD] = bicas.proc.dsr.downsample_sci_ZV(...
-                OutDensityOsr.Zv.DENSITY, ...
+            [DensityDsrFpa, DensitystdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                R.NeScpCm3Fpa, ...
                 bicas.const.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
+            OutDensityDsr.Zv.DENSITY    = DensityDsrFpa.cast('single');
+            OutDensityDsr.Zv.DENSITYSTD = DensitystdDsrFpa.cast('single');
             %
-            b = isnan(OutDensityDsr.Zv.DENSITY);
+            b = OutDensityDsr.Zv.DENSITY.fpAr;
             OutDensityDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
 
 

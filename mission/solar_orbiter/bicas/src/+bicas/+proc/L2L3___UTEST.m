@@ -284,14 +284,14 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
                 testCase.assertEqual(OutDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
             end
             
-            testCase.assertEqual(all(isnan(OutEfieldDsr.Zv.EDC_SRF),    2), ExpDsr.nanData);
-            testCase.assertEqual(all(isnan(OutEfieldDsr.Zv.EDCSTD_SRF), 2), ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutDensityDsr.Zv.DENSITY)      , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutDensityDsr.Zv.DENSITYSTD)   , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.SCPOT)          , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.SCPOTSTD)       , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.PSP)            , ExpDsr.nanData);
-            testCase.assertEqual(    isnan(OutScpotDsr.Zv.PSPSTD)         , ExpDsr.nanData);
+            testCase.assertEqual(all(OutEfieldDsr.Zv.EDC_SRF.fpAr,    2),   ExpDsr.nanData);
+            testCase.assertEqual(all(OutEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2),   ExpDsr.nanData);
+            testCase.assertEqual(    OutDensityDsr.Zv.DENSITY.fpAr        , ExpDsr.nanData);
+            testCase.assertEqual(    OutDensityDsr.Zv.DENSITYSTD.fpAr     , ExpDsr.nanData);
+            testCase.assertEqual(    OutScpotDsr.Zv.SCPOT.fpAr            , ExpDsr.nanData);
+            testCase.assertEqual(    OutScpotDsr.Zv.SCPOTSTD.fpAr         , ExpDsr.nanData);
+            testCase.assertEqual(    OutScpotDsr.Zv.PSP.fpAr              , ExpDsr.nanData);
+            testCase.assertEqual(    OutScpotDsr.Zv.PSPSTD.fpAr           , ExpDsr.nanData);
         end
 
 

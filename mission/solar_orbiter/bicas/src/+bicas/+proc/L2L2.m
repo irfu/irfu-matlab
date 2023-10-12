@@ -99,18 +99,18 @@ classdef L2L2
             
             
             
-            zv_VDC = InLfrCwf.Zv.VDC;
-            zv_EDC = InLfrCwf.Zv.EDC;
+            VdcOsrFpa = bicas.utils.FPArray(double(InLfrCwf.Zv.VDC), 'FILL_VALUE', NaN);
+            EdcOsrFpa = bicas.utils.FPArray(double(InLfrCwf.Zv.EDC), 'FILL_VALUE', NaN);
             nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
             
             
             
             % NOTE: Unclear how treat QUALITY_FLAG=FV.
-            bDoNotUseFpa         = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
-            bDoNotUse            = bDoNotUseFpa.array(false);   % FV = false wise?
+            bDoNotUseFpa = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            bDoNotUse    = bDoNotUseFpa.array(false);   % FV = false wise?
             
-            zv_VDC(bDoNotUse, :) = NaN;
-            zv_EDC(bDoNotUse, :) = NaN;
+            VdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_DOUBLE;
+            EdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_DOUBLE;
             
             
             
@@ -123,22 +123,24 @@ classdef L2L2
             % ----------
             % NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
             %===============================================
-            [OutLfrCwfDsr.Zv.VDC, ...
-             OutLfrCwfDsr.Zv.VDCSTD] = bicas.proc.dsr.downsample_sci_ZV(...
-                zv_VDC, ...
+            [VdcDsrFpa, VdcstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                VdcOsrFpa, ...
                 bicas.const.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
+            OutLfrCwfDsr.Zv.VDC    = VdcDsrFpa.cast('single');
+            OutLfrCwfDsr.Zv.VDCSTD = VdcstdDsrFpa.cast('single');
             
-            [OutLfrCwfDsr.Zv.EDC, ...
-             OutLfrCwfDsr.Zv.EDCSTD] = bicas.proc.dsr.downsample_sci_ZV(...
-                zv_EDC, ...
+            [EdcDsrFpa, EdcstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                EdcOsrFpa, ...
                 bicas.const.N_MIN_SAMPLES_PER_DSR_BIN, ...
                 iRecordsInBinCa, ...
                 L);
+            OutLfrCwfDsr.Zv.EDC    = EdcDsrFpa.cast('single');
+            OutLfrCwfDsr.Zv.EDCSTD = EdcstdDsrFpa.cast('single');
             
             
-            
+
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L2.process_LFRCWF_to_DSR', tTicToc, ...
                 nRecordsOsr, 'OSR record')

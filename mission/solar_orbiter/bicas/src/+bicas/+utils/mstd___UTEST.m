@@ -22,6 +22,7 @@ classdef mstd___UTEST < matlab.unittest.TestCase
             
             function test(v, ref, iDim, mstd)
                 actOutput = bicas.utils.mstd(v, ref, iDim);
+                assert(isa(actOutput, 'double'))
                 testCase.verifyEqual(actOutput, mstd)
             end
             %===================================================================

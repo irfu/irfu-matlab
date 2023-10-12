@@ -61,13 +61,13 @@ classdef ext
             assert(strcmp(NeScpTs.units,    'cm^-3'))
             
             R = [];
-            R.pspVolt            = R1.PspTs.data;
-            R.scpotVolt          = R1.ScpotTs.data;
-            R.edcSrfMvpm         = R1.EdcSrfTs.data;
+            R.PspVoltFpa         = bicas.utils.FPArray(R1.PspTs.data,    'FILL_VALUE', NaN);
+            R.ScpotVoltFpa       = bicas.utils.FPArray(R1.ScpotTs.data,  'FILL_VALUE', NaN);
+            R.EdcSrfMvpmFpa      = bicas.utils.FPArray(R1.EdcSrfTs.data, 'FILL_VALUE', NaN);
             R.vdccalCodeVerStr   = R1.vdccalCodeVerStr;
             R.vdccalMatVerStr    = R1.vdccalMatVerStr;
             R.bNotUsed           = R1.bNotUsed;
-            R.neScpCm3           = NeScpTs.data;
+            R.NeScpCm3Fpa        = bicas.utils.FPArray(NeScpTs.data, 'FILL_VALUE', NaN);
             % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
             %       expected to be used by BICAS later.
             R.NeScpQualityBitFpa = NeScpQualityBitFpa;
