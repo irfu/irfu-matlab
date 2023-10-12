@@ -28,11 +28,11 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef FPArray   % < handle
     % PROPOSAL: Shorter name.
     %   PRO: Frequently referenced.
     %       PRO: 2023-10-09: 98 occurrences of class name.
     %   PROPOSAL: FPArray
+classdef FPArray < matlab.mixin.CustomDisplay
     %
     % PROPOSAL: Change name of "array()"
     %   PROPOSAL: array, data, data_array
@@ -647,6 +647,45 @@ classdef FPArray   % < handle
 
 
 
+    methods(Access=protected)
+
+
+
+        % Override method inherited from matlab.mixin.CustomDisplay to modify
+        % the human-readable string representation of the object. This is useful
+        % for debugging. testCase.assertEqual() etc. use this.
+        %
+        % NOTE: Not perfect implementation since using strings to represent
+        % non-strings for dataAr and fpAr (can be seen in the presence of single
+        % quotes.
+        %
+        function groups = getPropertyGroups(obj)
+            % PROPOSAL: Separate properties for MATLAB class and size.
+            %   PRO: Avoids repetition.
+            %   CON: Less good for debugging class itself.
+            
+            % IMPLEMENTATION NOTE: It appear that one can only represent
+            % "properties" using single-row strings.
+            
+            dataAr2 = obj.array();
+                
+            properties = struct(...
+                'dataAr', bicas.utils.FPArray.value_to_single_row_string(dataAr2), ...
+                'fpAr',   bicas.utils.FPArray.value_to_single_row_string(obj.fpAr), ...
+                'size',   size(obj), ...
+                'mc',     obj.mc, ...
+                'onlyFp', all( obj.fpAr, 'all'), ...
+                'noFp',   all(~obj.fpAr, 'all') ...
+            );
+            groups = matlab.mixin.util.PropertyGroup(properties);
+        end
+
+
+        
+    end
+    
+
+
     %##########################
     %##########################
     % PRIVATE INSTANCE METHODS
@@ -733,6 +772,56 @@ classdef FPArray   % < handle
             
             Fpa = bicas.utils.FPArray(...
                 ar, 'FILL_VALUE', floatNan).cast(fpaMc);
+        end
+        
+        
+        
+        % Convert an "arbitrary" value to a human-readable string for debugging.
+        % Depending on the value, it may or may not be expanded into
+        % representing the entire value.
+        %
+        % IMPLEMENTATION NOTE: One could expect similar functionality to exist
+        % in MATLAB but it has not been found at the time of writing.
+        %
+        function s = value_to_single_row_string(x)
+            % PROPOSAL: Convert to generic function.
+            %   CON: This class has special needs for metadata (class, size).
+            
+            N_MAX_ELEMENTS = 20;
+            
+            assert(isnumeric(x) || islogical(x))            
+            
+%             sizeS = strjoin(arrayfun(@num2str, size(x), 'UniformOutput', false), 'x');
+            %sMetadata = sprintf('%s, %s', sizeS, class(x));
+            tt = tic();
+            if (numel(x) > 1) && (ndims(x) <= 2) && (numel(x) < N_MAX_ELEMENTS)
+                sRowCa = {};
+                for iRow = 1:size(x, 1)
+                    sElemCa = {};
+                    for iCol = 1:size(x, 2)
+                        sElem = num2str(x(iRow, iCol));
+                        sElemCa{end+1} = sElem;
+                    end
+                    sRowCa{end+1} = strjoin(sElemCa, ',');
+                end
+                s = sprintf('[%s]', strjoin(sRowCa, '; '));
+                
+            else
+                % NOTE: num2str() does print all elements for nDims > 2, but it
+                % is hard to read. Therefore not using.
+                if any(size(x) > 1) || (numel(x) >= N_MAX_ELEMENTS)
+                    s = '[...]';
+                else
+                    % IMPLEMENTATION NOTE: num2str() is slow for large arrays.
+                    % Therefore want to avoid that.
+                    % NOTE: num2str() yields multi-row strings (char arrays) for
+                    % nRows>1 arrays.
+                    s = num2str(x);
+                end
+
+            end
+            
+            toc(tt)
         end
         
         

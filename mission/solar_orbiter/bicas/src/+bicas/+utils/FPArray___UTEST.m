@@ -605,6 +605,23 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             ExpFpa = Fpa([1, 2, 3, 4], nan);
             testCase.assertEqual(ActFpa, ExpFpa)
         end
+        
+        
+        
+        % NOTE: Only tests the method indirectly, and only by checking if code
+        % does not crash.
+        function test_getPropertyGroups(testCase)
+            % runtests('bicas.utils.FPArray___UTEST/test_getPropertyGroups')
+            
+            import bicas.utils.FPArray___UTEST.Fpa
+
+            Fpa(ones(0,0), NaN)
+            Fpa(ones(0,1), NaN)
+            Fpa(ones(1,0), NaN)
+            Fpa(ones(2,3,4), NaN)
+            Fpa([NaN,inf,-inf], -1)
+            Fpa([0,1,2; 3,4,5], NaN)
+        end
 
 
 
