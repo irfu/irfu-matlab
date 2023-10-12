@@ -123,11 +123,7 @@ classdef const
 
 
 
-        % Minimum number of non-downsampled records per downsampled record.
-        % NOTE: Does not consider whether samples are fill values.
-        %
-        % IMPLEMENTATION NOTE: Not perfect solution since includes fill values,
-        % but easy to implement as at least a temporary algorithm.
+        % Minimum number of non-FV OSR records per bin/DSR record.
         %
         % NOTE: Currently used for both L2 downsampled and L3 downsampled.
         % /2021-05-24
@@ -135,8 +131,8 @@ classdef const
         
         
         
-        % Absolute min & max for ZV QUALITY_FLAG, according to external metadata
-        % standards.
+        % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
+        % external metadata standards.
         QUALITY_FLAG_MIN = 0;
         QUALITY_FLAG_MAX = 3;
 
@@ -636,5 +632,7 @@ classdef const
 
 
     end    % methods(Static, Access=private)
+
+
 
 end

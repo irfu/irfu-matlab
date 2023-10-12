@@ -20,6 +20,9 @@ classdef ExternalCodeAbstract
     %   ~science calibration
     %   ~science processing
     %   ~science data
+    %   ~call
+    %   ExternalCodeCall*
+    %   ExternalCall*
     %   NOTE: Should fit with naming of subclasses.
     %
     % PROPOSAL: How implement interface?

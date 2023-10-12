@@ -187,7 +187,6 @@ classdef L2L3
             % NOTE: Not setting DSR ".Ga"/global attributes here, since DSR
             % datasets later copy ".Ga" from the respective OSR datasets.
             InitialDsr = struct('Zv', InitialDsrZv);
-            % nRecordsDsr = numel(iRecordsInBinCa);
             
 
 

@@ -68,8 +68,4 @@ function mstd = mstd(v, ref, iDim)
         % CASE: N>=2
         mstd = sqrt( sum((v-ref).^2, iDim) / (N-1) );
     end
-    
-    % ASSERTION
-    % NOTE: Requires mstd to always be set (outside if-then).
-    %irf.assert.sizes(mstd, mstdSize)   % Disable?
 end

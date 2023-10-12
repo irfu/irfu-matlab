@@ -225,14 +225,11 @@ classdef dsr
         % adjacent time intervals that have the same length when discounting
         % leap seconds.
         %
-        % NOTE: Function is only public so that automated test code can access
-        % it.
-        %
         %
         % ARGUMENTS
         % =========
         % zvAllTt2000
-        %       Column array. ~Epoch.
+        %       Column array. ~Epoch. Timestamps of OSR samples.
         %       PROBLEM: Can not handle zvAllTt2000(1), zvAllTt2000(end)
         %       being during positive leap second.
         % boundaryRefTt2000
@@ -285,8 +282,15 @@ classdef dsr
             %
             % PROPOSAL: Better name that implies that it is not a generic
             %           function (works on Epoch with leap seconds).
-            
-            
+            %
+            % PROPOSAL: Same-sized bins when including leap seconds.
+            %   PRO: More "clean".
+            %       PRO: Same-length bins.
+            %       PRO: No problems with leap seconds(?).
+            %       CON: Bin boundaries will not line up if merging data from
+            %            multiple days.
+            %
+            % PROPOSAL: Separate function for generating boundaries.
             
             tTicToc = tic();
             
@@ -294,9 +298,9 @@ classdef dsr
             
             % ASSERTIONS
             % ----------
-            % Does not assert monotonic increase.
+            % Function does not assert strict increase.
             bicas.utils.assert_ZV_Epoch(zvAllTt2000)
-            % NOTE: Function algorithm assumes this monotonic increase.
+            % NOTE: Function algorithm assumes this strict increase.
             assert(issorted(zvAllTt2000, 'strictascend'))
             %
             bicas.utils.assert_ZV_Epoch(boundaryRefTt2000)
@@ -332,7 +336,8 @@ classdef dsr
             %======================================
             % Find bin boundaries & bin timestamps
             %======================================
-            % "Round" ttw1 down to nearest lower interval boundary.
+            % "Round" ttw1 down to nearest lower interval boundary, assuming
+            % that boundaries are always on the form TTW=n*binLengthWolsNs.
             ttw1Floor = ...
                 idivide(ttw1 - boundaryRefTtw, binLengthWolsNs, 'floor') ...
                 * binLengthWolsNs + boundaryRefTtw;
@@ -371,7 +376,7 @@ classdef dsr
         
         
         
-        % Downsample a single NxM science zVar.
+        % Downsample a single NxM science ZV.
         %
         % Use bins and for every bin, derive median and MSTD over dimension 1
         % (within bin). Construct two zVariables for median+MSTD for the
@@ -506,11 +511,13 @@ classdef dsr
         % OsrFpa
         %       FPA. ZV-like OSR data. 2D i.e. may have multiple columns.
         % iRecordsInBinCa
-        % fhBin
-        %       Function handle. Condenses one bin of OSR CDF records to one (or
-        %       zero) CDF records.
-        %       [binSamplesDsrAr, binFpAr] = fhBin(samplesOsrAr(iAr), fpOsrAr(iAr));
-        function DsrFpa = downsample_W_INNER_ARRAYS(OsrFpa, iRecordsInBinCa, fhBin)
+        % fhBinToRecord
+        %       Function handle. Condenses one bin of OSR CDF records to exactly
+        %       one CDF record.
+        %       [binSamplesDsrAr, binFpAr] = fhBinToRecord(samplesOsrAr, fpOsrAr);
+        function DsrFpa = downsample(OsrFpa, iRecordsInBinCa, fhBinToRecord)
+            % PROPOSAL: Abolish
+            
             assert(isa(OsrFpa, 'bicas.utils.FPArray'), ...
                 'Argument is not an instance of bicas.utils.FPArray.')
             assert(ismatrix(OsrFpa))
@@ -528,7 +535,7 @@ classdef dsr
             for iBin = 1:nRecordsDsr
                 iAr = iRecordsInBinCa{iBin};
 
-                [binSamplesDsrAr, binFpAr] = fhBin(samplesOsrAr(iAr), fpOsrAr(iAr));
+                [binSamplesDsrAr, binFpAr] = fhBinToRecord(samplesOsrAr(iAr), fpOsrAr(iAr));
                 
 %                 if 0
 %                     % DEBUG: Verify the return values from function.
@@ -556,7 +563,7 @@ classdef dsr
         %
         function [DsrFpa] = downsample_ZV_minimum( OsrFpa, iRecordsInBinCa )
            
-            function [binSamplesDsrAr, binFpDsrAr] = bin_algo(binSamplesOsrAr, binFpOsrAr)
+            function [binSamplesDsrAr, binFpDsrAr] = bin_to_record(binSamplesOsrAr, binFpOsrAr)
 
                 binSamplesOsrAr(binFpOsrAr, :) = [];   % Delete rows with FPs.
 
@@ -582,7 +589,7 @@ classdef dsr
             assert(iscolumn(OsrFpa))
             fv = zeros(1,1, OsrFpa.mc);   % Used by inner function.
             
-            DsrFpa = bicas.proc.dsr.downsample_W_INNER_ARRAYS(OsrFpa, iRecordsInBinCa, @bin_algo);
+            DsrFpa = bicas.proc.dsr.downsample(OsrFpa, iRecordsInBinCa, @bin_to_record);
         end
 
 
@@ -592,7 +599,7 @@ classdef dsr
         %
         function DsrFpa = downsample_ZV_bitmask(OsrFpa, iRecordsInBinCa)
 
-            function [binSamplesDsrAr, binFpDsrAr] = bin_algo(binSamplesOsrAr, binFpOsrAr)
+            function [binSamplesDsrAr, binFpDsrAr] = bin_to_record(binSamplesOsrAr, binFpOsrAr)
 
                 binSamplesOsrAr(binFpOsrAr, :) = [];   % Delete rows with FPs.
 
@@ -617,7 +624,7 @@ classdef dsr
             assert(iscolumn(OsrFpa))
             fv = zeros(1,1, OsrFpa.mc);   % Used by inner function.
 
-            DsrFpa = bicas.proc.dsr.downsample_W_INNER_ARRAYS(OsrFpa, iRecordsInBinCa, @bin_algo);
+            DsrFpa = bicas.proc.dsr.downsample(OsrFpa, iRecordsInBinCa, @bin_to_record);
         end
         
         

@@ -21,24 +21,19 @@
 % from being modified. Unknown why.
 %
 %
-% NAMING CONVENTION
-% =================
-% FP: Fill Position.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-    % PROPOSAL: Shorter name.
-    %   PRO: Frequently referenced.
-    %       PRO: 2023-10-09: 98 occurrences of class name.
-    %   PROPOSAL: FPArray
 classdef FPArray < matlab.mixin.CustomDisplay
     %
+    % PROPOSAL: Change name fpAr --> fp
+    %                       dataAr --> data
+    %
     % PROPOSAL: Change name of "array()"
-    %   PROPOSAL: array, data, data_array
-    %   PROPOSAL: data
+    %   ~data, data_array
+    %   ~elements
+    %   ~data
     %       CON: Is not all data, only the non-FP elements.
-    %   PROPOSAL: dataAr
+    %   ~dataAr
     %       NOTE: Same as internal variable.
     %
     % PROPOSAL: Better name for method "NFP_array".
@@ -51,6 +46,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %   ~valid
     %   ~actual
     %   ~real
+    %   ~1D
     %   PROPOSAL: General terms: FP, non-FP data, FP + non-FP data.
     %
     % TODO-DEC: Tolerate cell arrays?
@@ -73,16 +69,6 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %   PROPOSAL: Use HandleWrapper internally.
     %       NOTE: Class needs to become handle class.
     %
-    % PROBLEM: How handle specifying a FV in .array() that is identical to
-    %          some non-FP elements?
-    %   PROPOSAL: Assertion in method.
-    %       PROPOSAL: Extra argument for whether to have assertion.
-    %   PROPOSAL: Make it easy to check before calling method.
-    %       PROPOSAL: Method .contains(value) .
-    %
-    % PROPOSAL: disp() method.
-    %   PROPOSAL: Number of FPs and non-FPs of total (percent?).
-    %
     % PROBLEM: Can not call e.g. isnumeric(Fpa), isfloat(Fpa), islogical().
     %   PROPOSAL: isnumeric(cast(0, Fpa.mc)) etc.
     %
@@ -99,6 +85,10 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %   PROPOSAL: Restrict supported data types.
     %       PROPOSAL: logical & numeric & char.
     %           PRO: Already done in constructor...
+    %
+    % PROPOSAL: Constructor that supports setting FPs through both FP array and
+    %           FV (union of both).
+    %   Ex: bicas.proc.dsr.downsample_sci_ZV().
     
     
     
@@ -245,6 +235,8 @@ classdef FPArray < matlab.mixin.CustomDisplay
         function dataAr = array(obj, fv)
             % IMPLEMENTATION NOTE: There are times when you want the FV to be
             % identical non-FP elements. Must therefore not forbid it.
+            %
+            % PROPOSAL: Optionally return second value: fpAr
             
             switch(nargin)
                 case 1
@@ -379,7 +371,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         function ar = NFP_array(obj)
             % IMPLEMENTATION NOTE: Must convert to column array. Otherwise a 1D
             % vector that is not a column remains a column in that dimension.
-            dataAr = obj.dataAr(:);   % Convert to column array.
+            dataAr = obj.dataAr(:);    % Convert to column array.
             ar = dataAr(~obj.fpAr(:));
         end
         
@@ -641,7 +633,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         function Fpa = horzcat(varargin)
             Fpa = cat(2, varargin{:});
         end
-
+        
 
 
     end    % methods(Access=public)

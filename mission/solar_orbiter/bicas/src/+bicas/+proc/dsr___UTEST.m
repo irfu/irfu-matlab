@@ -125,12 +125,16 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 testCase.assertEqual(ActMstdDsrFpa,   ExpMstdDsrFpa)
             end
             
+
+
             % Create test with exactly ONE BIN.
             function test_1_bin(osrAr, nMinReqSamples, expMedAr, expMstdAr)
                 test(...
                     osrAr, nMinReqSamples, {1:size(osrAr,1)}, testCase.L, ...
                     expMedAr, expMstdAr);
             end
+
+
 
             % Create test with N BINS (i.e. an arbitrary call).
             function test_N_bins(zv, nMinReqSamples, iRecordsDsrCa, med, mstd)
@@ -141,12 +145,15 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                     zv, nMinReqSamples, iRecordsDsrCa', testCase.L, ...
                     med, mstd);
             end
-            %===================================================================
+
+
 
             AS10 = zeros(1,0);   % AS10 = Array Size 1x0
             N    = NaN;
 
-
+            %====================
+            % Tests with one bin
+            %====================
             % Empty data, zero records, zero columns.
             test_1_bin(zeros(0,0), 0, AS10, AS10);
             test_1_bin(zeros(2,0), 0, AS10, AS10);
@@ -161,23 +168,24 @@ classdef dsr___UTEST < matlab.unittest.TestCase
             % Test nMinReqSamples
             % -------------------
             % Enough samples
-            test_1_bin([1,2,3; 1,2,3; 1,2,3], 3, [1,2,3], [0,0,0]);
+            test_1_bin([1,2,3; 1,2,3; 1,2,3],        3, [1,2,3], [0,0,0]);
             % Not enough samples
-            test_1_bin([1,2,3; 1,2,3; 1,2,3], 4, [N,N,N], [N,N,N]);
+            test_1_bin([1,2,3; 1,2,3; 1,2,3],        4, [N,N,N], [N,N,N]);
             % Not enough samples if removes NaN.
             test_1_bin([1,2,3; 1,2,3; 1,2,N],        3, [1,2,N], [0,0,N]);
             % Enough samples even if removes NaN.
             test_1_bin([1,2,3; 1,2,3; 1,2,N; 1,2,3], 3, [1,2,3], [0,0,0]);
 
-
-
-            % Average of two values (special case)
+            % Median of two values ==> Average (special case)
             test_1_bin([1,2,3; 2,3,4], 0, [1.5, 2.5, 3.5], sqrt(0.5)*[1,1,1]);
             % Nominal median
             test_1_bin([1;2;10],       0, [2], sqrt( (1^2+0^2+8^2)/2 ));
 
 
 
+            %===================
+            % Tests with N bins
+            %===================
             test_N_bins([1,2; 2,3], 1, {1, 2}, [1,2; 2,3], NaN(2,2))
 
             test_N_bins(...
@@ -205,13 +213,18 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                  sqrt(4*1^2  )/2 * [1,1]])
 
             % Higher threshold
-            test_N_bins([1,2; 2,3; 3,4; 4,5; 5,6], 3, {1:2, [], 3:5}, ...
+            test_N_bins(...
+                [1,2;
+                 2,3;
+                 3,4;
+                 4,5;
+                 5,6], 3, {1:2, [], 3:5}, ...
                 [NaN, NaN; ...
                  NaN, NaN; ...
                  4, 5], ...
                 [NaN, NaN; ...
                  NaN, NaN; 
-                 sqrt(4*1^2  )/2 * [1,1]])
+                 [1,1] * sqrt(4*1^2  )/2])
         end
         
         

@@ -128,6 +128,8 @@ EMIDP
     message IDs. Therefore uses the term "part" instead.
 FH
     Function Handle (Pointer).
+FP
+    Fill Position, in the context of FPAs.
 FPA
     Class bicas.utils.FPArray.
 FTF
