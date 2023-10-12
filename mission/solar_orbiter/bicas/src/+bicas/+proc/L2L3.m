@@ -107,13 +107,14 @@ classdef L2L3
             %======================
             % Normalize zVar names
             %======================
-            [InLfrCwf.Zv, fnChangeList] = ...
-                irf.ds.normalize_struct_fieldnames(InLfrCwf.Zv, ...
-                {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
-
-            bicas.proc.utils.handle_ZV_name_change(...
-                fnChangeList, INPUT_DSI, SETTINGS, L, 'VDC', ...
-                'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+            % Old code that can not handle that FPAs are located in InLfrCwf.ZvFpa.
+%             [InLfrCwf.Zv, fnChangeList] = ...
+%                 irf.ds.normalize_struct_fieldnames(InLfrCwf.Zv, ...
+%                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
+%
+%             bicas.proc.utils.handle_ZV_name_change(...
+%                 fnChangeList, INPUT_DSI, SETTINGS, L, 'VDC', ...
+%                 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
             
             
             
@@ -124,8 +125,8 @@ classdef L2L3
             %=======================================
             LfrCwfZv = [];
             LfrCwfZv.Epoch            = InLfrCwf.Zv.Epoch;
-            LfrCwfZv.VDC              = InLfrCwf.Zv.VDC;
-            LfrCwfZv.EDC              = InLfrCwf.Zv.EDC;
+            LfrCwfZv.VDC_Fpa          = InLfrCwf.ZvFpa.VDC;
+            LfrCwfZv.EDC_Fpa          = InLfrCwf.ZvFpa.EDC;
             LfrCwfZv.QUALITY_FLAG_Fpa = InLfrCwf.ZvFpa.QUALITY_FLAG;
             R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, SETTINGS);
 

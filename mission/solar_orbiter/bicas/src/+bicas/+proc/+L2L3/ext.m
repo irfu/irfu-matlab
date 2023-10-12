@@ -110,7 +110,7 @@ classdef ext
         %       each other.
         %
         function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse, Ec)
-            irf.assert.struct(Zv, {'Epoch', 'VDC', 'EDC', 'QUALITY_FLAG_Fpa'}, {})
+            irf.assert.struct(Zv, {'Epoch', 'VDC_Fpa', 'EDC_Fpa', 'QUALITY_FLAG_Fpa'}, {})
 
 
 
@@ -122,19 +122,19 @@ classdef ext
             % NOTE: Unclear how treat QUALITY_FLAG=FV.
             bNotUsedFpa         = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
             bNotUsed            = bNotUsedFpa.array(false);   % FV = false wise?
-            Zv.VDC(bNotUsed, :) = NaN;
-            Zv.EDC(bNotUsed, :) = NaN;
+            Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
+            Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
             %
             % NOTE: Should TSeries objects really use TensorOrder=1 and
             % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
             % fo three scalars. Probably does not matter. solo.vdccal() does
             % indeed use VDC.x, EDC.x etc.
             VdcTs = TSeries(...
-                EpochTT(Zv.Epoch), Zv.VDC, ...
+                EpochTT(Zv.Epoch), Zv.VDC_Fpa.array(single(NaN)), ...
                 'TensorOrder', 1, ...
                 'repres',      {'x', 'y', 'z'});
             EdcTs = TSeries(...
-                EpochTT(Zv.Epoch), Zv.EDC, ...
+                EpochTT(Zv.Epoch), Zv.EDC_Fpa.array(single(NaN)), ...
                 'TensorOrder', 1, ...
                 'repres',      {'x', 'y', 'z'});
 

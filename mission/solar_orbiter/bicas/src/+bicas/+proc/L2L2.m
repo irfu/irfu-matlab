@@ -99,8 +99,8 @@ classdef L2L2
             
             
             
-            VdcOsrFpa = bicas.utils.FPArray(double(InLfrCwf.Zv.VDC), 'FILL_VALUE', NaN);
-            EdcOsrFpa = bicas.utils.FPArray(double(InLfrCwf.Zv.EDC), 'FILL_VALUE', NaN);
+            VdcOsrFpa = InLfrCwf.ZvFpa.VDC;
+            EdcOsrFpa = InLfrCwf.ZvFpa.EDC;
             nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
             
             
@@ -109,8 +109,8 @@ classdef L2L2
             bDoNotUseFpa = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
             bDoNotUse    = bDoNotUseFpa.array(false);   % FV = false wise?
             
-            VdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_DOUBLE;
-            EdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_DOUBLE;
+            VdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+            EdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
             
             
             
@@ -124,7 +124,7 @@ classdef L2L2
             % NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
             %===============================================
             [VdcDsrFpa, VdcstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
-                VdcOsrFpa, ...
+                VdcOsrFpa.cast('double'), ...
                 bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
                 iRecordsInBinCa, ...
                 L);
@@ -132,7 +132,7 @@ classdef L2L2
             OutLfrCwfDsr.Zv.VDCSTD = VdcstdDsrFpa.cast('single');
             
             [EdcDsrFpa, EdcstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
-                EdcOsrFpa, ...
+                EdcOsrFpa.cast('double'), ...
                 bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
                 iRecordsInBinCa, ...
                 L);

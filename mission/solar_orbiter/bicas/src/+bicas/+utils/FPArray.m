@@ -108,6 +108,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % Constant that are useful for setting FPA elements to be FPs (either one
         % or many elements using indexing).
         FP_UINT8  = bicas.utils.FPArray.get_scalar_FP('uint8');
+        FP_SINGLE = bicas.utils.FPArray.get_scalar_FP('single');
         FP_DOUBLE = bicas.utils.FPArray.get_scalar_FP('double');
     end
 

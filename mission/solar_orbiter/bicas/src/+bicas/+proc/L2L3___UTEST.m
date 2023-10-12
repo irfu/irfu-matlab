@@ -212,8 +212,8 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_OSR(:, 4)), 'FILL_VALUE', uint16(FV_QUALITY_BITMASK));
             InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_OSR(:, 5)), 'FILL_VALUE', uint16(FV_L2_QUALITY_BITMASK));
             InLfrCwf.Zv.DELTA_PLUS_MINUS   = int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch));
-            InLfrCwf.Zv.VDC                = single(DATA_OSR(:, 6: 8));
-            InLfrCwf.Zv.EDC                = single(DATA_OSR(:, 9:11));
+            InLfrCwf.ZvFpa.VDC             = bicas.utils.FPArray(DATA_OSR(:, 6: 8), 'FILL_VALUE', NaN).cast('single');
+            InLfrCwf.ZvFpa.EDC             = bicas.utils.FPArray(DATA_OSR(:, 9:11), 'FILL_VALUE', NaN).cast('single');
 
             ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_OSR(:, 3)), 'FILL_VALUE', uint8 (FV_QUALITY_FLAG));
             %
@@ -229,8 +229,8 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % IMPLEMENTATION NOTE: Currently setting all the science data to
             % nonsense and not checking the output result. Pure downsampling
             % should be tested elsewhere.
-            vectorAr = ones(size(InLfrCwf.Zv.VDC      ));
-            scalarAr = ones(size(InLfrCwf.Zv.VDC(:, 1)));
+            vectorAr = ones(size(InLfrCwf.ZvFpa.VDC      ));   % Time series of vectors.
+            scalarAr = ones(size(InLfrCwf.ZvFpa.VDC(:, 1)));   % Time series of scalars.
             %
             VdccalRv = [];
             VdccalRv.DCE_SRF_out = TSeries(...
