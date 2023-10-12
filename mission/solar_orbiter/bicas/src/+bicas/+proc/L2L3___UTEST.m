@@ -29,7 +29,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % Partially NaN data
             % QUALITY_FLAG < min value
             % QUALITY_FLAG = FV
-            % #samples < bicas.const.N_MIN_SAMPLES_PER_DSR_BIN
+            % #samples < bicas.const.N_MIN_OSR_SAMPLES_PER_BIN
             % 
             % Unclear how much testing is meaningful. Could add more tests.
             %
@@ -54,7 +54,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             % PROPOSAL: Check OSR data for NaN (not just DSR).
 
             % Test(s) are designed for this value.
-            assert(bicas.const.N_MIN_SAMPLES_PER_DSR_BIN == 3)
+            assert(bicas.const.N_MIN_OSR_SAMPLES_PER_BIN == 3)
 
 
 
