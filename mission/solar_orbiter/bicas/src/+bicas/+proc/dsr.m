@@ -207,7 +207,7 @@ classdef dsr
             % not centered for leap seconds. Epoch+-DELTA_PLUS_MINUS will thus
             % go outside/inside the bin boundaries for leap seconds. The same
             % problem exists for both positive and negative leap seconds.
-            InitialDsrZv.DELTA_PLUS_MINUS   = double(binSizeArrayNs / 2);
+            InitialDsrZv.DELTA_PLUS_MINUS   = bicas.utils.FPArray(binSizeArrayNs / 2, 'NO_FILL_POSITIONS');
 
 
 

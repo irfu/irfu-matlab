@@ -38,7 +38,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     % List of ZVs that should be represented as FPAs (and not as plain arrays).
     FPA_ZV_NAME_BIAS_HK_CA = {'HK_BIA_MODE_MUX_SET', 'HK_BIA_MODE_DIFF_PROBE', 'HK_BIA_DIFF_GAIN'};
     FPA_ZV_NAME_LFR_SCI_CA = {'BIAS_MODE_MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK'};
-    FPA_ZV_NAME_L2_CA = {'VDC', 'EDC'};
+    FPA_ZV_NAME_L2_CA = {'VDC', 'EDC', 'DELTA_PLUS_MINUS'};
     
     FPA_ZV_NAME_CA = [FPA_ZV_NAME_BIAS_HK_CA, FPA_ZV_NAME_LFR_SCI_CA, FPA_ZV_NAME_L2_CA];
 
