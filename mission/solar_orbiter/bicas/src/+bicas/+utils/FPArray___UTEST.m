@@ -504,29 +504,78 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         
         function test_lt_gt_le_ge(testCase)
+            % PROPOSAL: Combine with tests for ==.
+            %   PRO: Should have synergies. Similar tests.
+            %   PRO: There are relationships between <, >, <=, >=, == that one could use.
+            %
+            % PROBLEM: There are many combinations to test. Would ideally like
+            %          to test every combination of:
+            %   input 1/2 elements: lower number, higher number, NaN, -Inf, +Inf, FP
+            %   input 1/2 FPA     scalar and non-scalar
+            %   input 2   non-FPA scalar and non-scalar
+            %   operation: <, >, <=, >=
+            %   PROPOSAL: Automatically derive expected results from using non-FPAs.
+            %   PROPOSAL: Specify results for any combination of inputs for <.
+            %             Then derive the remaining ones automatically.
+            %
+            % PROPOSAL: Test different MATLAB classes.
+            
             import bicas.utils.FPArray___UTEST.Fpa
 
-            % Define FPAs which are used as input for all operators.
+            % Define FPAs which are used as input for all operators. Should
+            % contain every case of element-wise comparison.
             % NOTE: Expected FPs will be the same, regardless of operation.
             Fpa1 = Fpa([1,  3, 2,   2, NaN], NaN);
             Fpa2 = Fpa([3,  1, 2, NaN,   2], NaN);
             EXP_FP = [false, false, false,  true,  true];
 
+            % ===
+            %  <
+            % ===
+            % FPA non-scalar < FPA non-scalar
             ActFpa3 = Fpa1 < Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
                 [true,  false, false, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
-
+            % Non-scalar FPA < scalar FPA
+            ActFpa3 = Fpa1 < Fpa(2, NaN);
+            ExpFpa3 = bicas.utils.FPArray(...
+                [true,  false, false, false, false], 'FILL_POSITIONS', ...
+                [false, false, false, false, true ]);
+            testCase.assertEqual(ActFpa3, ExpFpa3)
+            % Scalar FPA < non-scalar FPA -- Tests specific bugfix!
+            ActFpa3 = Fpa(2, NaN) < [1,2,3,NaN];
+            ExpFpa3 = bicas.utils.FPArray(...
+                [false, false, true,  false], 'FILL_POSITIONS', ...
+                [false, false, false, false]);
+            testCase.assertEqual(ActFpa3, ExpFpa3)
+            
+            % ===
+            %  >
+            % ===
+            % FPA non-scalar > FPA non-scalar
             ActFpa3 = Fpa1 > Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
                 [false,  true, false, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
+            % Non-scalar FPA > scalar FPA
+            ActFpa3 = Fpa(2, NaN) > Fpa2;
+            ExpFpa3 = bicas.utils.FPArray(...
+                [false,  true, false, false, false], 'FILL_POSITIONS', ...
+                [false, false, false, true,  false]);
+            testCase.assertEqual(ActFpa3, ExpFpa3)
 
+            % ====
+            %  <=
+            % ====
             ActFpa3 = Fpa1 <= Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
                 [true,  false, true, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
 
+            % ====
+            %  >=
+            % ====
             ActFpa3 = Fpa1 >= Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
                 [false,  true, true, false, false], 'FILL_POSITIONS', EXP_FP);

@@ -709,8 +709,24 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % Helper function to make it easier to implement operator overloading
         % for binary operators.
         %
+        %
+        % ARGUMENTS
+        % =========
+        % obj1
+        %       Instance of FPA.
+        % obj2
+        %       FPA, or some other object/array.
+        % fhBinaryArrayOperation
+        %       Function handle. Combines two arrays (not FPAs) to produce third
+        %       array. Input arrays have to have same MATLAB class, and either
+        %       (a) same size or (b) one of them has to be scalar. The operation
+        %       has to be element-wise. (Otherwise the handling of FPs won't
+        %       work.)
+        %
+        %
         % NOTE: Always outputs an FPA.
-        function Fpa3 = binary_operation_to_FPA(obj1, obj2, fhCompare)
+        % 
+        function Fpa3 = binary_operation_to_FPA(obj1, obj2, fhBinaryArrayOperation)
             % Concerning potential names for method:
             % "More specifically, an internal binary operation on a set is a
             % binary operation whose two domains and the codomain are the same
@@ -732,12 +748,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %   ~same-sized, ~elementwise
             
             if isa(obj2, 'bicas.utils.FPArray')
-                dataAr = fhCompare(obj1.dataAr, obj2.dataAr);
-                fpAr   = (obj1.fpAr | obj2.fpAr);
+                dataAr2 = obj2.dataAr;
+                fpAr2   = obj2.fpAr;
             else
-                dataAr = fhCompare(obj1.dataAr, obj2);
-                fpAr   = obj1.fpAr;
+                dataAr2 = obj2;
+                fpAr2  = false(size(obj2));
             end
+
+            dataAr = fhBinaryArrayOperation(obj1.dataAr, dataAr2);
+            fpAr   = obj1.fpAr | fpAr2;
+
             Fpa3 = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
         
