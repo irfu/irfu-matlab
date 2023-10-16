@@ -41,8 +41,8 @@ classdef ext
         function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, SETTINGS)
             assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
             
-            QUALITY_FLAG_minForUse = SETTINGS.get_fv(...
-                'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN');
+            QUALITY_FLAG_minForUse = uint8(SETTINGS.get_fv(...
+                'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
             
             % =================================
             % Call wrapper around solo.vdccal()

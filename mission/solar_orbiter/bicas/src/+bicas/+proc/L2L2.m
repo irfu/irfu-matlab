@@ -75,8 +75,8 @@ classdef L2L2
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
 
             % 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data.
-            QUALITY_FLAG_minForUse = SETTINGS.get_fv(...
-                'PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN');
+            QUALITY_FLAG_minForUse = uint8(SETTINGS.get_fv(...
+                'PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN'));
 
 
             

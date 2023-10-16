@@ -749,7 +749,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %
         % NOTE: Always outputs an FPA.
         % 
-        function Fpa3 = binary_operation_to_FPA(obj1, obj2, fhBinaryArrayOperation)
+        function Fpa3 = binary_operation_to_FPA(Fpa1, obj2, fhBinaryArrayOperation)
             % Concerning potential names for method:
             % "More specifically, an internal binary operation on a set is a
             % binary operation whose two domains and the codomain are the same
@@ -769,17 +769,29 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %        assumes that operation is either between
             %        (a) two same-sized arrays, or (b) scalar+array.
             %   ~same-sized, ~elementwise
+            %
+            % PROPOSAL: Abolish checking for same MATLAB class (.mc) of input
+            %           arguments.
+            %   PRO: Not generic.
+            %   CON: Has proven true for all cases so far.
             
             if isa(obj2, 'bicas.utils.FPArray')
+                assert(strcmp(Fpa1.mc, obj2.mc))
+
                 dataAr2 = obj2.dataAr;
                 fpAr2   = obj2.fpAr;
             else
+                assert(strcmp(Fpa1.mc, class(obj2)), 'FPA (%s) and obj2 (%s) have different MATLAB classes.', Fpa1.mc, class(obj2))
+
                 dataAr2 = obj2;
                 fpAr2  = false(size(obj2));
             end
 
-            dataAr = fhBinaryArrayOperation(obj1.dataAr, dataAr2);
-            fpAr   = obj1.fpAr | fpAr2;
+            dataAr = fhBinaryArrayOperation(Fpa1.dataAr, dataAr2);
+            fpAr   = Fpa1.fpAr | fpAr2;
+            % IMPLEMENTATION NOTE: Can not require return value to have same
+            % MATLAB class (.mc) as inputs, since should work for arbitrary
+            % operations.
 
             Fpa3 = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
