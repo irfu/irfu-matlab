@@ -661,10 +661,8 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % IMPLEMENTATION NOTE: It appear that one can only represent
             % "properties" using single-row strings.
             
-            dataAr2 = obj.array();
-                
             properties = struct(...
-                'dataAr', bicas.utils.FPArray.value_to_single_row_string(dataAr2), ...
+                'dataAr', bicas.utils.FPArray.value_to_single_row_string(obj.dataAr, obj.fpAr), ...
                 'fpAr',   bicas.utils.FPArray.value_to_single_row_string(obj.fpAr), ...
                 'size',   size(obj), ...
                 'mc',     obj.mc, ...
@@ -777,23 +775,34 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % IMPLEMENTATION NOTE: One could expect similar functionality to exist
         % in MATLAB but it has not been found at the time of writing.
         %
-        function s = value_to_single_row_string(x)
+        function s = value_to_single_row_string(x, fp)
             % PROPOSAL: Convert to generic function.
             %   CON: This class has special needs for metadata (class, size).
             
             N_MAX_ELEMENTS = 20;
             
-            assert(isnumeric(x) || islogical(x))            
+            assert(isnumeric(x) || islogical(x))
+            switch(nargin)
+                case 1
+                    fp = false(size(x));
+                case 2
+                    assert(islogical(fp))
+                    assert(isequaln(size(x), size(fp)))
+            end
             
-%             sizeS = strjoin(arrayfun(@num2str, size(x), 'UniformOutput', false), 'x');
-            %sMetadata = sprintf('%s, %s', sizeS, class(x));
             tt = tic();
-            if (numel(x) > 1) && (ndims(x) <= 2) && (numel(x) < N_MAX_ELEMENTS)
+            if (numel(x) >= 1) && (ndims(x) <= 2) && (numel(x) < N_MAX_ELEMENTS)
+                % CASE: Non-empty 2D array that is not "too large"
                 sRowCa = {};
                 for iRow = 1:size(x, 1)
                     sElemCa = {};
                     for iCol = 1:size(x, 2)
-                        sElem = num2str(x(iRow, iCol));
+                        if fp(iRow, iCol)
+                            sElem = '_';
+                        else
+                            sElem = num2str(x(iRow, iCol));
+                        end
+                        
                         sElemCa{end+1} = sElem;
                     end
                     sRowCa{end+1} = strjoin(sElemCa, ',');
@@ -803,13 +812,15 @@ classdef FPArray < matlab.mixin.CustomDisplay
             else
                 % NOTE: num2str() does print all elements for nDims > 2, but it
                 % is hard to read. Therefore not using.
-                if any(size(x) > 1) || (numel(x) >= N_MAX_ELEMENTS)
+                % IMPLEMENTATION NOTE: num2str() is slow for large arrays.
+                % Therefore want to avoid that.
+                % NOTE: num2str() yields multi-row strings (char arrays) for
+                % nRows>1 arrays.
+                if any(size(x) > 1)
                     s = '[...]';
                 else
-                    % IMPLEMENTATION NOTE: num2str() is slow for large arrays.
-                    % Therefore want to avoid that.
-                    % NOTE: num2str() yields multi-row strings (char arrays) for
-                    % nRows>1 arrays.
+                    % CASE: Empty
+                    
                     s = num2str(x);
                 end
 
