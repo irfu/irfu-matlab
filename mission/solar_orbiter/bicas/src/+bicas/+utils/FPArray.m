@@ -614,34 +614,34 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
         % Overload <
         function Fpa = lt(obj1, obj2)
-            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 < a2));
+            Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 < a2));
         end
 
         % Overload >
         function Fpa = gt(obj1, obj2)
-            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 > a2));
+            Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 > a2));
         end
 
         % Overload <=
         function Fpa = le(obj1, obj2)
-            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 <= a2));
+            Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 <= a2));
         end
 
         % Overload >=
         function Fpa = ge(obj1, obj2)
-            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 >= a2));
+            Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 >= a2));
         end
 
         % Overload operator .*  (not *).
         %
         % IMPLEMENTATION NOTE: Overloading operator for elementwise
         % multiplication (.*) instead of matrix multiplication (*), since (1)
-        % binary_operation_to_FPA() can not handle matrix multiplication, and
+        % elementwise_binary_operation_to_FPA() can not handle matrix multiplication, and
         % (2) matrix multiplication is not needed (only scalar times
         % non-matrix).
         %
         function Fpa = times(obj1, obj2)
-            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 .* a2));
+            Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 .* a2));
         end
 
 
@@ -677,6 +677,23 @@ classdef FPArray < matlab.mixin.CustomDisplay
             Fpa = cat(2, varargin{:});
         end
         
+        
+        
+        function Fpa3 = min(Fpa1, Fpa2)
+            % IMPLEMENTATION NOTE: Does not appear that MATLAB allows one to
+            % override the behaviour of min(). Might not be easy either w.r.t.
+            % to deriving new fill positions.
+            
+            % PROPOSAL: Better name.
+            %   ~minimum of two FPAs
+            %       as opposed to "minimum value inside one array/FPA".
+            % PROBLEM: How handle NaN?! "omitnan", "includenan"
+
+            Fpa3 = Fpa1.elementwise_binary_operation_to_FPA(...
+                Fpa2, ...
+                @(a1, a2) (min(a1, a2, 'omitnan')));
+        end
+
 
 
     end    % methods(Access=public)
@@ -749,7 +766,8 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %
         % NOTE: Always outputs an FPA.
         % 
-        function Fpa3 = binary_operation_to_FPA(Fpa1, obj2, fhBinaryArrayOperation)
+        function Fpa3 = elementwise_binary_operation_to_FPA(...
+                Fpa1, obj2, fhBinaryArrayOperation)
             % Concerning potential names for method:
             % "More specifically, an internal binary operation on a set is a
             % binary operation whose two domains and the codomain are the same

@@ -26,7 +26,7 @@ classdef qual
         %       by bicas.write_dataset_CDF().
         % NOTE: Does not seem able to ever set zv_L2_QUALITY_BITMASK to fill
         %       value.
-        function [zvUfv, zv_QUALITY_FLAG, zv_L2_QUALITY_BITMASK] = ...
+        function [zvUfv, zv_QUALITY_FLAG_Fpa, zv_L2_QUALITY_BITMASK] = ...
                 modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L)
             % PROPOSAL: Separate function for handling UFV.
             %   CON: Other quality variable processing might want to read or
@@ -44,19 +44,22 @@ classdef qual
             %           PRO: Implementation is clear on what goes in and out of function.
             %   PROPOSAL: Abolish
 
-            zv_Epoch        = ZvIn.Epoch;
-            zvUfv           = ZvIn.ufv;
-            zvBdmFpa        = ZvIn.bdmFpa;
-            zv_QUALITY_FLAG = ZvIn.QUALITY_FLAG;
+            
+            irf.assert.struct(ZvIn, {'Epoch', 'ufv', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
+            zv_Epoch            = ZvIn.Epoch;
+            zvUfv               = ZvIn.ufv;
+            zvBdmFpa            = ZvIn.bdmFpa;
+            zv_QUALITY_FLAG_Fpa = ZvIn.QUALITY_FLAG_Fpa;
             clear ZvIn
 
             % ASSERTIONS
             assert(isscalar(isLfr) && islogical(isLfr))
+            assert(isa(zv_QUALITY_FLAG_Fpa, 'bicas.utils.FPArray'))
             nRecords = irf.assert.sizes( ...
-                zv_Epoch,        [-1], ...
-                zvBdmFpa,        [-1], ...
-                zv_QUALITY_FLAG, [-1], ...
-                zvUfv,           [-1]);
+                zv_Epoch,            [-1], ...
+                zvBdmFpa,            [-1], ...
+                zv_QUALITY_FLAG_Fpa, [-1], ...
+                zvUfv,               [-1]);
 
 
 
@@ -111,19 +114,21 @@ classdef qual
                 % Take action depending on NSOID
                 %=================================
                 % Temporary shorter variable name.
-                zv_QUALITY_FLAG_cdfEvent       = zv_QUALITY_FLAG      (bCdfEventRecordsCa{kCdfEvent});
+                zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_Fpa(  bCdfEventRecordsCa{kCdfEvent});
                 zv_L2_QUALITY_BITMASK_cdfEvent = zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
 
                 switch(eventNsoid)
 
                     case bicas.const.NSOID.PARTIAL_SATURATION
-                        zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
+                        %zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
+                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(uint8(1));
                         zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
                             zv_L2_QUALITY_BITMASK_cdfEvent, ...
                             bicas.const.L2QBM_PARTIAL_SATURATION);
 
                     case bicas.const.NSOID.FULL_SATURATION
-                        zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 0, 'includeNaN');
+                        %zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 0, 'includeNaN');
+                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(uint8(0));
                         % NOTE: Also set PARTIAL saturation bit when FULL
                         % saturation. /YK 2020-10-02.
                         zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
@@ -132,7 +137,8 @@ classdef qual
                             bicas.const.L2QBM_PARTIAL_SATURATION);
 
                     case bicas.const.NSOID.THRUSTER_FIRING
-                        zv_QUALITY_FLAG_cdfEvent = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
+                        %zv_QUALITY_FLAG_cdfEvent = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
+                        zv_QUALITY_FLAG_cdfEventFpa = zv_QUALITY_FLAG_cdfEventFpa.min(uint8(1));
                         % NOTE: There will be an L1 QUALITY_BITMASK bit for
                         % thruster firings eventually according to
                         % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
@@ -150,11 +156,12 @@ classdef qual
                             cdfEventNsoidCa{kCdfEvent})
 
                 end
-                zv_QUALITY_FLAG      (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG_cdfEvent;
+                zv_QUALITY_FLAG_Fpa  (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG_cdfEventFpa;
                 zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK_cdfEvent;
-
+                
             end    % for
-
+            
+            assert(isa(zv_L2_QUALITY_BITMASK, 'uint16'))
         end    % modify_quality_filter
 
 

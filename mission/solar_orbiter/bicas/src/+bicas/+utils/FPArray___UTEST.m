@@ -697,6 +697,25 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_min(testCase)
+            import bicas.utils.FPArray___UTEST.Fpa
+
+            Fpa1   = Fpa([1, 2, NaN, 4  ], NaN);
+            Fpa2   = Fpa([2, 1, 3,   NaN], NaN);
+            ExpFpa = Fpa([1, 1, NaN, NaN], NaN);
+            ActFpa = Fpa1.min(Fpa2);
+            testCase.assertEqual(ActFpa, ExpFpa)
+
+            Fpa2   = Fpa([2], NaN);
+            ExpFpa = Fpa([1, 2, NaN, 2], NaN);
+            ActFpa1 = Fpa1.min(Fpa2);
+            ActFpa2 = Fpa2.min(Fpa1);
+            testCase.assertEqual(ActFpa1, ExpFpa)
+            testCase.assertEqual(ActFpa2, ExpFpa)
+        end
+        
+        
+        
         % NOTE: Only tests the method indirectly, and only by checking if code
         % does not crash.
         function test_getPropertyGroups(testCase)
