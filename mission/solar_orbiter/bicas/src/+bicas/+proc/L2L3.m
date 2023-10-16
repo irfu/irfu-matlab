@@ -95,7 +95,7 @@ classdef L2L3
             % Constants
             %===========
             % The only acceptable input DSI.
-            INPUT_DSI                 = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
+            %INPUT_DSI                 = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
             % Define length of bins, and relative position of corresponding
             % bin timestamps.
             % NS = Nanoseconds

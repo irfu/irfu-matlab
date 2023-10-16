@@ -208,9 +208,9 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             BASE_TT2000 = spdfparsett2000('2020-03-14T00:00:00');
 
             InLfrCwf.Zv.Epoch                 = int64( DATA_OSR(:, 1)*1e9) + BASE_TT2000;
-            InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_OSR(:, 2)), 'FILL_VALUE', uint8( FV_QUALITY_FLAG));
-            InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_OSR(:, 4)), 'FILL_VALUE', uint16(FV_QUALITY_BITMASK));
-            InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_OSR(:, 5)), 'FILL_VALUE', uint16(FV_L2_QUALITY_BITMASK));
+            InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_OSR(:, 2)), 'FILL_VALUE', FV_QUALITY_FLAG);
+            InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_OSR(:, 4)), 'FILL_VALUE', FV_QUALITY_BITMASK);
+            InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_OSR(:, 5)), 'FILL_VALUE', FV_L2_QUALITY_BITMASK);
             InLfrCwf.ZvFpa.DELTA_PLUS_MINUS   = bicas.utils.FPArray(int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch)), 'NO_FILL_POSITIONS');
             InLfrCwf.ZvFpa.VDC                = bicas.utils.FPArray(DATA_OSR(:, 6: 8), 'FILL_VALUE', NaN).cast('single');
             InLfrCwf.ZvFpa.EDC                = bicas.utils.FPArray(DATA_OSR(:, 9:11), 'FILL_VALUE', NaN).cast('single');
@@ -218,9 +218,9 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_OSR(:, 3)), 'FILL_VALUE', uint8 (FV_QUALITY_FLAG));
             %
             ExpDsr.Zv.Epoch              = int64( DATA_DSR(:, 1)*1e9) + BASE_TT2000;
-            ExpDsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_DSR(:, 2)), 'FILL_VALUE', uint8( FV_QUALITY_FLAG));
-            ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_DSR(:, 3)), 'FILL_VALUE', uint16(FV_QUALITY_BITMASK));
-            ExpDsr.Zv.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_DSR(:, 4)), 'FILL_VALUE', uint16(FV_L2_QUALITY_BITMASK));
+            ExpDsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_DSR(:, 2)), 'FILL_VALUE', FV_QUALITY_FLAG);
+            ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_DSR(:, 3)), 'FILL_VALUE', FV_QUALITY_BITMASK);
+            ExpDsr.Zv.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_DSR(:, 4)), 'FILL_VALUE', FV_L2_QUALITY_BITMASK);
             ExpDsr.nanData               = logical(DATA_DSR(:, 5));
 
             % ==========================

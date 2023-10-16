@@ -216,6 +216,10 @@ function DataObj = init_modify_dataobj(...
         % non-FPA-aware code for now. Long term, should probably adapt logging
         % to only work on FPAs.
         if isa(zvValuePd, 'bicas.utils.FPArray')
+            %------------------------------
+            % CASE: ZV is stored as an FPA
+            %------------------------------
+            
             % Normalize FPA --> array with CDF FV.
             [fv, ~, masterMc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
             assert(...
@@ -230,6 +234,9 @@ function DataObj = init_modify_dataobj(...
             
             zvValueLog = zvValuePd.array(fv);
         else
+            %--------------------------------
+            % CASE: ZV is stored as an array
+            %--------------------------------
             zvValueLog = zvValuePd;
         end
         

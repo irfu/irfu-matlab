@@ -4,6 +4,8 @@
 % without resorting to using fill values to represent them. Analogous to, and
 % inspired by, JUICE/RPWI GS pipeline's class FillPositionsArray.
 %
+% Class is "almost immutable". The only exception is method subsasgn().
+%
 %
 % RATIONALE
 % =========
@@ -18,7 +20,7 @@
 % ~BUG
 % ====
 % The implementation of subsref() seems to block instances of the (value) class
-% from being modified. Unknown why.
+% from being modified through methods (not indexing). Unknown why.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -28,7 +30,14 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % PROPOSAL: Change name fpAr --> fp
     %                       dataAr --> data
     %
-    % PROPOSAL: Change name of "array()"
+    % PROPOSAL: Shorten constructor string constants.
+    %   FILL_VALUE          --> FV
+    %   FILL_POSITIONS      --> FP,    FPs
+    %   NO_FILL_POSITIONS   --> NO_FP, NO_FPs
+    %   ONLY_FILL_POSITIONS --> ONLY_FP
+    %   CON: Plural becomes problematic(?).
+    %
+    % PROPOSAL: Change name of method "array()"
     %   ~data, data_array
     %   ~elements
     %   ~data
@@ -49,9 +58,6 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %   ~1D
     %   PROPOSAL: General terms: FP, non-FP data, FP + non-FP data.
     %
-    % TODO-DEC: Tolerate cell arrays?
-    %   NOTE: Should not be needed for BICAS.
-    %
     % TODO-DEC: Naming convention for FPA variables?
     %   *Fpa, Fpa* Fpa_L3_QUALITY_BITMASK
     %   Fpa_L3_QUALITY_BITMASK
@@ -63,6 +69,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % TODO-DEC: Naming convention for convenience methods for FPA<-->array.
     %   NEED: Short.
     %       PROBLEM: How represent that output is FPA or array, if kept short?
+    %
+    % TODO-DEC: Tolerate cell arrays?
+    %   NOTE: Should not be needed for BICAS.
     %
     % PROPOSAL: Performance w.r.t. pre-allocation?
     %   TODO-DEC:  Is it a relevant question? Would such code use FPA?
@@ -89,6 +98,15 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % PROPOSAL: Constructor that supports setting FPs through both FP array and
     %           FV (union of both).
     %   Ex: bicas.proc.dsr.downsample_sci_ZV().
+    %
+    % PROPOSAL: Method for converting all FPs-->NFPs (set to value), but still
+    %           convert FPA-->FPA.
+    %   PROPOSAL: Create new FPA (not modify instance).
+    %   TODO-DEC: Name?
+    %       NEED: Not confuse with future method for querying object for whether
+    %             there are no or only FPs.
+    %       ~FP, ~NFP, ~disable, ~remove, ~set, ~unset, ~all, ~no, ~ensure
+    %       PROPOSAL: ensure_NFP(fv)
     
     
     
@@ -378,22 +396,22 @@ classdef FPArray < matlab.mixin.CustomDisplay
         
         
         
-        % Utility function
-        function data = int2doubleNan(obj)
+        % Utility function: Convert integer FPA to double-NaN array.
+        function ar = int2doubleNan(obj)
             assert(isinteger(obj.dataAr), 'FPA is not integer. It is of MATLAB class "%s".', obj.mc)
             
-            Fpa  = obj.cast('double');
-            data = Fpa.array(NaN);
+            Fpa = obj.cast('double');
+            ar  = Fpa.array(NaN);
         end
         
         
         
-        % Utility function
-        function data = logical2doubleNan(obj)
+        % Utility function: Convert logical FPA to double-NaN array.
+        function ar = logical2doubleNan(obj)
             assert(islogical(obj.dataAr))
             
-            Fpa  = obj.cast('double');
-            data = Fpa.array(NaN);
+            Fpa = obj.cast('double');
+            ar  = Fpa.array(NaN);
         end
 
 
@@ -584,24 +602,25 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
 
         % Overload <
-        function r = lt(obj1, obj2)
-            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 < o2));
+        function Fpa = lt(obj1, obj2)
+            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 < a2));
         end
 
         % Overload >
-        function r = gt(obj1, obj2)
-            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 > o2));
+        function Fpa = gt(obj1, obj2)
+            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 > a2));
         end
 
         % Overload <=
-        function r = le(obj1, obj2)
-            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 <= o2));
+        function Fpa = le(obj1, obj2)
+            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 <= a2));
         end
 
         % Overload >=
-        function r = ge(obj1, obj2)
-            r = obj1.binary_operation_to_FPA(obj2, @(o1, o2) (o1 >= o2));
+        function Fpa = ge(obj1, obj2)
+            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 >= a2));
         end
+
 
 
         % "Overload" cat().
@@ -705,7 +724,12 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %   PROPOSAL: Add argument for FVs.
             % PROPOSAL: Make public.
             %   PRO: Compare .convert().
-            
+            %
+            % PROPOSAL: Better name.
+            %   PRO: Is not for arbitrary binary operations. Handling of FPs
+            %        assumes that operation is either between
+            %        (a) two same-sized arrays, or (b) scalar+array.
+            %   ~same-sized, ~elementwise
             
             if isa(obj2, 'bicas.utils.FPArray')
                 dataAr = fhCompare(obj1.dataAr, obj2.dataAr);

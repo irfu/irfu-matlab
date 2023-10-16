@@ -276,9 +276,6 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
                 
                 for iDim = 0:2
                     v2 = permute(v1(:), wshift(1, 1:3, -iDim));
-%                     disp('---------')
-%                     size(v1)
-%                     size(v2)                    
 
                     Fpa1  = Fpa(v2, NaN);
                     actAr = Fpa1.NFP_array();
@@ -509,28 +506,30 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         function test_lt_gt_le_ge(testCase)
             import bicas.utils.FPArray___UTEST.Fpa
 
+            % Define FPAs which are used as input for all operators.
+            % NOTE: Expected FPs will be the same, regardless of operation.
             Fpa1 = Fpa([1,  3, 2,   2, NaN], NaN);
             Fpa2 = Fpa([3,  1, 2, NaN,   2], NaN);
-            FP = [false, false, false,  true,  true];
+            EXP_FP = [false, false, false,  true,  true];
 
             ActFpa3 = Fpa1 < Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
-                [true,  false, false, false, false], 'FILL_POSITIONS', FP);
+                [true,  false, false, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
 
             ActFpa3 = Fpa1 > Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
-                [false,  true, false, false, false], 'FILL_POSITIONS', FP);
+                [false,  true, false, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
 
             ActFpa3 = Fpa1 <= Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
-                [true,  false, true, false, false], 'FILL_POSITIONS', FP);
+                [true,  false, true, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
 
             ActFpa3 = Fpa1 >= Fpa2;
             ExpFpa3 = bicas.utils.FPArray(...
-                [false,  true, true, false, false], 'FILL_POSITIONS', FP);
+                [false,  true, true, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
         end
         
