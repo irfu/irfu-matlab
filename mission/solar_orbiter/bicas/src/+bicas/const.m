@@ -116,10 +116,18 @@ classdef const
             'FULL_SATURATION',    'FULL_SATURATION', ...
             'THRUSTER_FIRING',    'THRUSTER_FIRING');
 
-        % Define the bits in L2_QUALITY_BITMASK.
-        % Intended for bit operations.
+        % Define the bits (bitmasks) in L2_QUALITY_BITMASK and
+        % L3_QUALITY_BITMASK. Intended for bit operations.
+        %
+        % NOTE: The definitions here must be consistent with the definitions in
+        % the corresponding CDF skeletons.
+        %
+        % NOTE: L3_QUALITY_BITMASK bits might (maybe) assign different meanings
+        % to the same bit in different L3 data sets in the future (DENSITY.
+        % EFIELD, SCPOT).
         L2QBM_PARTIAL_SATURATION = uint16(1);
         L2QBM_FULL_SATURATION    = uint16(2);
+        L3QBM_BAD_DENSITY        = uint16(1);
 
 
 

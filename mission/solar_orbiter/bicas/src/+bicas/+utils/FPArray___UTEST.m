@@ -296,6 +296,22 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         
         
+        function test_ensure_NFP(testCase)
+            import bicas.utils.FPArray___UTEST.Fpa
+            
+            Fpa1   = Fpa([], NaN);
+            ExpFpa = Fpa([], NaN);
+            ActFpa = Fpa1.ensure_NFP(-1);
+            testCase.assertEqual(ActFpa, ExpFpa)
+
+            Fpa1   = Fpa([3, NaN], NaN);
+            ExpFpa = Fpa([3,  -1], NaN);
+            ActFpa = Fpa1.ensure_NFP(-1);
+            testCase.assertEqual(ActFpa, ExpFpa)
+        end
+        
+        
+        
         function test_subsref(testCase)
             import bicas.utils.FPArray___UTEST.Fpa
             
@@ -580,6 +596,31 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             ExpFpa3 = bicas.utils.FPArray(...
                 [false,  true, true, false, false], 'FILL_POSITIONS', EXP_FP);
             testCase.assertEqual(ActFpa3, ExpFpa3)
+        end
+        
+        
+        
+        function test_times(testCase)
+            import bicas.utils.FPArray___UTEST.Fpa
+            
+            function test(Fpa1, Fpa2, ExpFpa)
+                ActFpa12 = Fpa1 .* Fpa2;
+                ActFpa21 = Fpa2 .* Fpa1;
+                ActFpa12b = Fpa1 .* Fpa2.array();
+                ActFpa21b = Fpa2 .* Fpa1.array();
+                
+                testCase.assertEqual(ActFpa12,  ExpFpa)
+                testCase.assertEqual(ActFpa21,  ExpFpa)
+                testCase.assertEqual(ActFpa12b, ExpFpa)
+                testCase.assertEqual(ActFpa21b, ExpFpa)
+            end
+            
+            % Non-scalar .* non-scalar
+            test(Fpa([2, 3], NaN), Fpa([3, 4], NaN), Fpa([6, 12], NaN))
+            % Scalar .* non-scalar
+            test(Fpa([2],    NaN), Fpa([3; 4], NaN), Fpa([6;  8], NaN))
+            % Scalar .* scalar
+            test(Fpa([2],    NaN), Fpa([3],    NaN), Fpa([6],     NaN))
         end
         
         

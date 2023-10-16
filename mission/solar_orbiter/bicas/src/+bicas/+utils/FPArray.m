@@ -126,6 +126,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % Constant that are useful for setting FPA elements to be FPs (either one
         % or many elements using indexing).
         FP_UINT8  = bicas.utils.FPArray.get_scalar_FP('uint8');
+        FP_UINT16 = bicas.utils.FPArray.get_scalar_FP('uint16');
         FP_SINGLE = bicas.utils.FPArray.get_scalar_FP('single');
         FP_DOUBLE = bicas.utils.FPArray.get_scalar_FP('double');
     end
@@ -396,6 +397,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
         
         
         
+        % Create new FPA but with FPs replaced with fill values (NFPs).
+        function Fpa = ensure_NFP(obj, fv)
+            % PROPOSAL: Better name.
+            %   PROBLEM: Unclear that new instance is created.
+            
+            Fpa = bicas.utils.FPArray(obj.array(fv), 'NO_FILL_POSITIONS');
+        end
+        
+        
+        
         % Utility function: Convert integer FPA to double-NaN array.
         function ar = int2doubleNan(obj)
             assert(isinteger(obj.dataAr), 'FPA is not integer. It is of MATLAB class "%s".', obj.mc)
@@ -619,6 +630,18 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % Overload >=
         function Fpa = ge(obj1, obj2)
             Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 >= a2));
+        end
+
+        % Overload operator .*  (not *).
+        %
+        % IMPLEMENTATION NOTE: Overloading operator for elementwise
+        % multiplication (.*) instead of matrix multiplication (*), since (1)
+        % binary_operation_to_FPA() can not handle matrix multiplication, and
+        % (2) matrix multiplication is not needed (only scalar times
+        % non-matrix).
+        %
+        function Fpa = times(obj1, obj2)
+            Fpa = obj1.binary_operation_to_FPA(obj2, @(a1, a2) (a1 .* a2));
         end
 
 

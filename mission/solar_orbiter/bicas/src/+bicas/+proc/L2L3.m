@@ -229,6 +229,13 @@ classdef L2L3
             %
             b = OutDensityOsr.Zv.DENSITY.fpAr;
             OutDensityOsr.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
+            OutDensityOsr.Zv.L3_QUALITY_BITMASK        = ...
+                R.NeScpQualityBitFpa.ensure_NFP(false).cast('uint16') .* bicas.const.L3QBM_BAD_DENSITY;
+            OutDensityOsr.Zv.L3_QUALITY_BITMASK(b)     = bicas.utils.FPArray.FP_UINT16;   % ?!
+            % NOTE: Behaviour w.r.t. FPs:
+            %   Density FP     ==> L3_QUALITY_BITMASK FP
+            %   Density bit FP ==> Do not set L3_QUALITY_BITMASK (since there is
+            %                      no FP for individual quality bits).
 
 
 
@@ -295,6 +302,9 @@ classdef L2L3
             %
             b = OutDensityDsr.Zv.DENSITY.fpAr;
             OutDensityDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
+            OutDensityDsr.Zv.L3_QUALITY_BITMASK = bicas.proc.dsr.downsample_ZV_bitmask(...
+                OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa);
+            OutDensityDsr.Zv.L3_QUALITY_BITMASK(b) = bicas.utils.FPArray.FP_UINT16;
 
 
 
