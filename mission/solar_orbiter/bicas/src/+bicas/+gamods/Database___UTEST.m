@@ -16,8 +16,6 @@ classdef Database___UTEST < matlab.unittest.TestCase
 
 
         function test0(testCase)
-            ECA = cell(0, 1);
-
             % ===========
             % Constructor
             % ===========

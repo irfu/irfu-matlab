@@ -1,7 +1,10 @@
 %
 % Class that represents the data in one GA "MODS" entry for one unique
-% combination of DSI and dataset version. One such entry can then be "applied"
-% to multiple DSIs via bicas.gamods.Database.
+% combination of (1) DSI and (2) dataset version. One such entry can then be
+% "applied" to multiple DSIs via bicas.gamods.Database. One entry contains a
+% data (of a BICAS version), a BICAS version, and a list of comments. One entry
+% does NOT contain the DSI or dataset version. That is for the owner of the
+% object to store.
 %
 % IMMUTABLE.
 %
@@ -32,11 +35,13 @@ classdef VersionEntry
     %#########################
     methods(Access=public)
 
+
+
         function obj = VersionEntry(dateStr, bicasVersionStr, commentsCa)
             % ASSERTIONS
             irf.assert.castring_regexp(dateStr, ...
                 '20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]')
-            % NOTE: Without initial "V".
+            % NOTE: Version string without initial "V".
             irf.assert.castring_regexp(bicasVersionStr, '[0-9]+.[0-9]+.[0-9]+')
             bicas.gamods.VersionEntry.assert_commentsCa(commentsCa)
 
@@ -47,9 +52,11 @@ classdef VersionEntry
 
 
 
+        % NOTE: Does not modify the object, but returns a modified object(!).
         function obj = add_comments(obj, commentsCa)
-            bicas.gamods.VersionEntry.assert_commentsCa(commentsCa)
-            obj.commentsCa = [obj.commentsCa; commentsCa(:)];
+            obj = bicas.gamods.VersionEntry(...
+                obj.dateStr, obj.bicasVersionStr, ...
+                [obj.commentsCa; commentsCa(:)]);
         end
 
 
@@ -89,10 +96,14 @@ classdef VersionEntry
                 % that comment strings hardcoded over multiple rows (inside a
                 % cell array) are not accidentally split up into multiple
                 % strings (one per row).
-                assert(s(end) == '.')
+                assert(s(end) == '.', 'Comment %i does not end with period.', i)
             end
         end
 
+
+
     end
+
+
 
 end

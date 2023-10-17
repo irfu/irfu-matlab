@@ -1,18 +1,23 @@
 %
 % Mutable class that stores values for GA "MODS" for all output datasets.
-% Intended to make it easy to build corresponding hard-coded constant
+% Intended to make it easy to build the corresponding hard-coded constant
 % (1) with a lot of overlap between dataset IDs and entries, and
 % (2) that conforms to certain format.
 %
-% MUTABLE.
+% Contains map DSI-->bicas.gamods.DsiEntry.
+%
+% MUTABLE. HANDLE CLASS.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef Database < handle
-    % PROPOSAL: Abolish specifying DSIs in constructor. Simply add DsiEntry when
-    %           needed.
-    %   CON: Useful for asserting that only valid DSIs are specified later.
+% PROPOSAL: Abolish specifying DSIs in constructor. Simply add DsiEntry when
+%           needed.
+%   CON: Useful for asserting that only valid DSIs are specified later.
+% PROPOSAL: Method for returning the latest BICAS version.
+%   PRO: Can use for asserting that it equals the current BICAS version.
+%   PROBLEM: Version string (x.y.z) is stored as string in code.
 
     
     
@@ -36,6 +41,8 @@ classdef Database < handle
 
 
 
+        % Constructor. Creates database which is initialized with empty
+        % bicas.gamods.DsiEntry for specified DSIs.
         function obj = Database(dsiCa)
             obj.DsiMap = containers.Map('KeyType', 'char', 'ValueType', 'Any');
 
@@ -63,7 +70,7 @@ classdef Database < handle
 
 
         function add_version_entry(obj, dsiCa, ve)
-            irf.assert.castring_set(dsiCa)           
+            irf.assert.castring_set(dsiCa)
             assert(isa(ve, 'bicas.gamods.VersionEntry'))
 
             for i = 1:numel(dsiCa)
@@ -75,6 +82,8 @@ classdef Database < handle
 
 
 
+        % Return cell array of strings to be used as value GA MODS for the
+        % specified DSI.
         function gaModsStrCa = get_MODS_strings_CA(obj, dsi)
             de = obj.DsiMap(dsi);
             gaModsStrCa = de.get_MODS_strings_CA();
@@ -83,5 +92,7 @@ classdef Database < handle
 
 
     end    % methods(Access=public)
+
+
 
 end

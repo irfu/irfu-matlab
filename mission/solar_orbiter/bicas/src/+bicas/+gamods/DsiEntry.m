@@ -1,14 +1,17 @@
 %
 % Class that represents the GA "MODS" information for one DSI.
+% Contains list of instances of bicas.gamods.VersionEntry.
+% 
 %
-% MUTABLE.
+% MUTABLE. HANDLE CLASS.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef DsiEntry < handle
-    % PROPOSAL: Assert than all comment strings (separate ones in VerionEntry)
-    % are unique.
+% PROPOSAL: Assert than all comment strings (separate ones in VersionEntry)
+%           are unique.
+% PROPOSAL: Rename add_version_entry() --> add_GMVE().
 
     
     
@@ -73,6 +76,8 @@ classdef DsiEntry < handle
 
 
 
+        % Return cell array of strings to be used as value GA MODS for the
+        % specified DSI.
         function gaModsStrCa = get_MODS_strings_CA(obj)
             gaModsStrCa = cellfun(...
                 @(ve) (ve.get_str()), obj.versionEntryCa(:), ...
@@ -82,5 +87,7 @@ classdef DsiEntry < handle
 
 
     end
+
+
 
 end

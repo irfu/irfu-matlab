@@ -1,8 +1,8 @@
 %
-% Function for dynamically deriving global attributes for a specific output
-% dataset given the global attributes of multiple input datasets.
+% Function for dynamically deriving GAs for a specific output
+% dataset given the GAs of multiple input datasets.
 %
-% NOTE: Some of the global attribute values determined here are
+% NOTE: Some of the GA values determined here are
 %   (1) unique for this particular output dataset,
 %   (2) common for all output datasets for the current s/w mode,
 %   (3) common for alla output datasets.
@@ -28,7 +28,7 @@
 % OutputDataset
 %       Struct from processing with fields
 %           .Ga.(globAttrName)
-%               Subset of global attribute values that should be used.
+%               Subset of GA values that should be used.
 %           .Zv.(zvName)
 %               zVariables.
 % outputFilename
@@ -43,7 +43,7 @@
 %       Struct where each field name corresponds to a CDF global atttribute.
 %       NOTE: Deviates from the usual variable naming conventions.
 %       GlobalAttributesSubset field names have
-%               the exact names of CDF global attributes.
+%               the exact names of CDF GAs.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -151,7 +151,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
                 InputDatasetInfo.filePath)
         end
         
-        % NOTE: Parsing INPUT dataset filename to set some global attributes.
+        % NOTE: Parsing INPUT dataset filename to set some GAs.
         [logicalFileId, ~, dataVersionStr, ~] = parse_dataset_filename(...
             irf.fs.get_name(InputDatasetInfo.filePath));
         % Sets string, not number. Correct?
@@ -168,7 +168,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
     OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
     
-    % NOTE: Parsing OUTPUT dataset filename to set some global attributes.
+    % NOTE: Parsing OUTPUT dataset filename to set some GAs.
     [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = parse_dataset_filename(outputFilename);
 
     % Ex: Logical_file_id="solo_L1_rpw-tds-surv-hist2d_20220301_V01"
@@ -249,7 +249,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
     
     
     % ROC DFMD hints that value should not be set dynamically. (See meaning of
-    % non-italic black text for global attribute name in table.)
+    % non-italic black text for GA name in table.)
     %DataObj.GlobalAttribute.CAVEATS = ?!!
 
     

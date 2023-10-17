@@ -30,9 +30,6 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
 
             % Add entry with reused BICAS version.
             ve = bicas.gamods.VersionEntry('2021-01-01', '1.0.0', {'Comment3.'});
-            % testCase.verifyError(...
-            %     @() de.add_version_entry(ve), ...
-            %     ?MException)
             de.add_version_entry(ve)
 
             % Add entry.

@@ -399,13 +399,12 @@ classdef const
             %       CON: Not if want to be really general, e.g. accounting for
             %            ROC-SGSE/SOLO distinctions.
             % PROPOSAL: Setting L2 and L3 in separate (sub)functions.
-            %
-            % PROPOSAL: Move to code to bicas.gamods.*.
 
             %====================================================
-            % Lists of commonly used GROUPS of DSIs (DSI)
+            % Lists of commonly used GROUPS of DSIs
             % --------------------------------------------------
             % NOTE: Groups are allowed to overlap.
+            % NOTE: Only include OFFICIAL datasets.
             %====================================================
             L2_LFR_DSIs = {...
                 'SOLO_L2_RPW-LFR-SBM1-CWF-E', ...
@@ -415,7 +414,7 @@ classdef const
             L2_TDS_DSIs = {...
                 'SOLO_L2_RPW-TDS-LFM-CWF-E', ...
                 'SOLO_L2_RPW-TDS-LFM-RSWF-E'};
-            % NOTE: Only official L2 datasets.
+            % NOTE: Only include OFFICIAL L2 datasets.
             L2_LFR_TDS_DSIs = [L2_LFR_DSIs, L2_TDS_DSIs];
 
             L3_DENSITY_DSIs = {...
@@ -439,11 +438,11 @@ classdef const
             %======================================================
             % NOTE: Includes UNOFFICIAL DATASETS. Not strictly required.
             % NOTE: Formal parent dataset(s) might be changed due to
-            %       reorganizing s/w mode, which could change the technically
+            %       reorganizing SWM, which could change the technically
             %       correct value.
             DSI_CA = [...
-                L2_LFR_TDS_DSIs, L3_DSIs, ...
-                {'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'}...
+                L2_LFR_TDS_DSIs, L3_DSIs ...
+                %{'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'}...
             ]';
             Db = bicas.gamods.Database(DSI_CA);
 
@@ -481,7 +480,8 @@ classdef const
             %       bicas.derive_output_dataset_GAs).
             %===================================================================
 
-            % BICAS v1.0.0 : No MODS needed.
+            % BICAS v1.0.0 : No MODS needed since there are no changes compared
+            %                to an earlier version.
 
 
 
@@ -632,7 +632,7 @@ classdef const
 
 
 
-            % YET-TO-BE-DETERMINED VERSION
+            % FUTURE YET-TO-BE-DETERMINED BICAS VERSION
 %             Db.add_version_entry(L3_DSIs, ...
 %                 bicas.gamods.VersionEntry('202x-xx-xx', 'x.y.z', ...
 %                 {['Updated L3 CDF skeletons to remove LFR from', ...

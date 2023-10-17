@@ -520,7 +520,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         
         function test_lt_gt_le_ge(testCase)
-            % PROPOSAL: Combine with tests for ==.
+            % PROPOSAL: Combine with tests for == and min().
             %   PRO: Should have synergies. Similar tests.
             %   PRO: There are relationships between <, >, <=, >=, == that one could use.
             %

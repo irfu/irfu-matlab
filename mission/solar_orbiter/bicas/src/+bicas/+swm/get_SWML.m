@@ -7,7 +7,8 @@
 %
 % RETURN VALUES
 % =============
-% Official bicas.swm.SoftwareModeList object (singleton) that is actually used by BICAS.
+% Official bicas.swm.SoftwareModeList object (singleton) that is actually used
+% by BICAS.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

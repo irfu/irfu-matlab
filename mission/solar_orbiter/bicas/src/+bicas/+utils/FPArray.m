@@ -230,7 +230,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
                     error('Illegal argument "%s"', fpDescriptionType)
             end
             clear fpDescription
-            assert(islogical(fpAr))
+            assert(islogical(fpAr), 'Argument for FP array is not MATLAB class logical.')
             assert(isequal(size(dataAr), size(fpAr)))
 
             % ====================
@@ -747,15 +747,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
 
         % Helper function to make it easier to implement operator overloading
-        % for binary operators.
+        % for elementwise binary operators.
         %
         %
         % ARGUMENTS
         % =========
-        % obj1
+        % Fpa1
         %       Instance of FPA.
         % obj2
         %       FPA, or some other object/array.
+        %       Must have same MATLAB class (obj2.mc if it is an FPA) as "Fpa1".
         % fhBinaryArrayOperation
         %       Function handle. Combines two arrays (not FPAs) to produce third
         %       array. Input arrays have to have same MATLAB class, and either

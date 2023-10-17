@@ -6,12 +6,15 @@
 %
 classdef VersionEntry___UTEST < matlab.unittest.TestCase
 
+
+
     %##############
     %##############
     % TEST METHODS
     %##############
     %##############
     methods(Test)
+
 
 
         function test_constructor(testCase)
@@ -29,7 +32,7 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
 
 
         function test_add_comments(testCase)
-            ve = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {'Comment1.'});
+            ve  = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {'Comment1.'});
             ve2 = ve.add_comments({'Comment2.'});
 
             testCase.verifyEqual(ve.bicasVersionStr, ve2.bicasVersionStr)
@@ -65,5 +68,7 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
 
 
     end    % methods(Test)
+
+
 
 end
