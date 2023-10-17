@@ -27,7 +27,7 @@ classdef Database < handle
     %#####################
     %#####################
     properties(SetAccess=private, GetAccess=private)
-        DsiMap
+        DsiGmdeMap
     end
 
 
@@ -44,7 +44,7 @@ classdef Database < handle
         % Constructor. Creates database which is initialized with empty
         % bicas.gamods.DsiEntry for specified DSIs.
         function obj = Database(dsiCa)
-            obj.DsiMap = containers.Map('KeyType', 'char', 'ValueType', 'Any');
+            obj.DsiGmdeMap = containers.Map('KeyType', 'char', 'ValueType', 'Any');
 
             for i = 1:numel(dsiCa)
                 dsi = dsiCa{i};
@@ -55,14 +55,14 @@ classdef Database < handle
                 % effectively contains the same assertion but without proper
                 % error message), but it is actually useful when configuring
                 % hardcoded values manually.
-                if obj.DsiMap.isKey(dsi)
+                if obj.DsiGmdeMap.isKey(dsi)
                     error('BICAS:Assertion', ...
                         'Map already has a key dsi="%s".', dsi)
                 end
 
                 % NOTE: Effectively (additional) assertion on that "dsi" is a
                 % valid key.
-                obj.DsiMap(dsi) = bicas.gamods.DsiEntry();
+                obj.DsiGmdeMap(dsi) = bicas.gamods.DsiEntry();
             end
 
         end
@@ -75,8 +75,8 @@ classdef Database < handle
 
             for i = 1:numel(dsiCa)
                 dsi = dsiCa{i};
-                de = obj.DsiMap(dsi);
-                de.add_version_entry(Gmve)
+                Gmde = obj.DsiGmdeMap(dsi);
+                Gmde.add_version_entry(Gmve)
             end
         end
 
@@ -85,8 +85,8 @@ classdef Database < handle
         % Return cell array of strings to be used as value GA MODS for the
         % specified DSI.
         function gaModsStrCa = get_MODS_strings_CA(obj, dsi)
-            de = obj.DsiMap(dsi);
-            gaModsStrCa = de.get_MODS_strings_CA();
+            Gmde = obj.DsiGmdeMap(dsi);
+            gaModsStrCa = Gmde.get_MODS_strings_CA();
         end
 
 
