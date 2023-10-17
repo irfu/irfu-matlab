@@ -21,7 +21,7 @@ classdef DsiEntry < handle
     %#####################
     %#####################
     properties(SetAccess=private, GetAccess=private)
-        versionEntryCa
+        gmveCa
     end
 
 
@@ -36,29 +36,29 @@ classdef DsiEntry < handle
 
 
         function obj = DsiEntry()
-            obj.versionEntryCa = {};
+            obj.gmveCa = {};
         end
 
 
 
-        function add_version_entry(obj, ve)
-            assert(isa(ve, 'bicas.gamods.VersionEntry'))
+        function add_version_entry(obj, Gmve)
+            assert(isa(Gmve, 'bicas.gamods.VersionEntry'))
 
             % ASSERTIONS
-            if ~isempty(obj.versionEntryCa)
-                vePrev = obj.versionEntryCa{end};
+            if ~isempty(obj.gmveCa)
+                GmvePrev = obj.gmveCa{end};
 
                 dateStrCa = cellfun(@(ca) ca.dateStr, ...
-                    obj.versionEntryCa, 'UniformOutput', false);
+                    obj.gmveCa, 'UniformOutput', false);
                 % bicasVersionStrCa = cellfun(@(ca) ca.bicasVersionStr, ...
-                %     obj.versionEntryCa, 'UniformOutput', false);
+                %     obj.gmveCa, 'UniformOutput', false);
 
                 % Do not reuse earlier date.
-                assert(~ismember(ve.dateStr, dateStrCa))
+                assert(~ismember(Gmve.dateStr, dateStrCa))
 
                 % Date comes after previous one.
                 % NOTE: issorted() does not check for equality for strings.
-                assert(issorted({vePrev.dateStr, ve.dateStr}))
+                assert(issorted({GmvePrev.dateStr, Gmve.dateStr}))
 
                 % Do not reuse earlier BICAS version
                 % ----------------------------------
@@ -66,12 +66,12 @@ classdef DsiEntry < handle
                 % reusing earlier BICAS version, but since there have been L3
                 % deliveries made with the same BICAS version (despite minor
                 % BICAS modifications), we can not use this check.                
-                % assert(~ismember(ve.bicasVersionStr, bicasVersionStrCa))
+                % assert(~ismember(Gmve.bicasVersionStr, bicasVersionStrCa))
                 
                 % NOTE: Can not easily assert sorting of BICAS version strings.
             end
 
-            obj.versionEntryCa{end+1, 1} = ve;
+            obj.gmveCa{end+1, 1} = Gmve;
         end
 
 
@@ -80,7 +80,7 @@ classdef DsiEntry < handle
         % specified DSI.
         function gaModsStrCa = get_MODS_strings_CA(obj)
             gaModsStrCa = cellfun(...
-                @(ve) (ve.get_str()), obj.versionEntryCa(:), ...
+                @(Gmve) (Gmve.get_str()), obj.gmveCa(:), ...
                 'UniformOutput', false);
         end
 

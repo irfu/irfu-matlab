@@ -491,23 +491,23 @@ classdef const
 
 
 
-            veTds = bicas.gamods.VersionEntry('2020-07-07', '3.0.0', ...
+            GmveTds = bicas.gamods.VersionEntry('2020-07-07', '3.0.0', ...
                 {'Bias currents changed to nA (not ampere).', ...
                  'Ignoring frequencies above high-frequency cutoff at 0.7 times Nyquist frequency.'});
-            veLfr = veTds.add_comments({'Hereafter copying LFR L1 zVar BW.'});
-            Gmdb.add_version_entry(L2_LFR_DSIs, veLfr)
-            Gmdb.add_version_entry(L2_TDS_DSIs, veTds)
-            clear veTds veLfr
+            GmveLfr = GmveTds.add_comments({'Hereafter copying LFR L1 zVar BW.'});
+            Gmdb.add_version_entry(L2_LFR_DSIs, GmveLfr)
+            Gmdb.add_version_entry(L2_TDS_DSIs, GmveTds)
+            clear GmveLfr GmveTds
             
 
 
-            veTds = bicas.gamods.VersionEntry('2020-09-01', '3.1.0', {...
+            GmveTds = bicas.gamods.VersionEntry('2020-09-01', '3.1.0', {...
                     'Crude sweep removal based on mux mode.', ...
                     'Preliminary setting of QUALITY_FLAG (max 2).'});
-            veLfr = veTds.add_comments({'Bugfix to handle LFR L1 zVar BW=0.'});
-            Gmdb.add_version_entry(L2_LFR_DSIs, veLfr)
-            Gmdb.add_version_entry(L2_TDS_DSIs, veTds)
-            clear veTds veLfr
+            GmveLfr = GmveTds.add_comments({'Bugfix to handle LFR L1 zVar BW=0.'});
+            Gmdb.add_version_entry(L2_LFR_DSIs, GmveLfr)
+            Gmdb.add_version_entry(L2_TDS_DSIs, GmveTds)
+            clear GmveLfr GmveTds
 
 
 
@@ -524,19 +524,19 @@ classdef const
 
 
 
-            veTds = bicas.gamods.VersionEntry('2020-12-07', '4.1.0', {...
+            GmveTds = bicas.gamods.VersionEntry('2020-12-07', '4.1.0', {...
                 ['Set QUALITY_FLAG and L2_QUALITY_BITMASK based on', ...
                 ' tabulated thruster firings.']...
             });
-            veLfr = veTds.add_comments({...
+            GmveLfr = GmveTds.add_comments({...
                 ['Bugfixed AC detrending that only removes mean and does', ...
                 ' not add linear component (mostly SWF).'], ...
                 ['Inverting AC using artificial constant gain for low', ...
                 ' frequencies to not amplify noise.']...
             });
-            Gmdb.add_version_entry(L2_LFR_DSIs, veLfr)
-            Gmdb.add_version_entry(L2_TDS_DSIs, veTds)
-            clear veTds veLfr
+            Gmdb.add_version_entry(L2_LFR_DSIs, GmveLfr)
+            Gmdb.add_version_entry(L2_TDS_DSIs, GmveTds)
+            clear GmveLfr GmveTds
 
 
 
@@ -594,14 +594,14 @@ classdef const
 
 
 
-            veTds = bicas.gamods.VersionEntry('2022-09-15', '6.0.1', ...
+            GmveTds = bicas.gamods.VersionEntry('2022-09-15', '6.0.1', ...
                 {['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
                 ' until 2022-09-03.']});
-            veLfr = veTds.add_comments(...
+            GmveLfr = GmveTds.add_comments(...
                 {'Bugfix: Use LFR''s R0/R1/R2 for splitting into time intervals.'});
-            Gmdb.add_version_entry(L2_LFR_DSIs, veLfr)
-            Gmdb.add_version_entry(L2_TDS_DSIs, veTds)
-            clear veLfr veTds
+            Gmdb.add_version_entry(L2_LFR_DSIs, GmveLfr)
+            Gmdb.add_version_entry(L2_TDS_DSIs, GmveTds)
+            clear GmveLfr GmveTds
 
 
 

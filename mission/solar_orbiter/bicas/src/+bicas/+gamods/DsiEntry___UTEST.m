@@ -19,22 +19,22 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
 
             de = bicas.gamods.DsiEntry();
 
-            ve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment1.'});
-            de.add_version_entry(ve)
+            Gmve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment1.'});
+            de.add_version_entry(Gmve)
 
             % Add entry with reused date.
-            ve = bicas.gamods.VersionEntry('2020-01-01', '2.0.0', {'Comment2.'});
+            Gmve = bicas.gamods.VersionEntry('2020-01-01', '2.0.0', {'Comment2.'});
             testCase.verifyError(...
-                @() de.add_version_entry(ve), ...
+                @() de.add_version_entry(Gmve), ...
                 ?MException)
 
             % Add entry with reused BICAS version.
-            ve = bicas.gamods.VersionEntry('2021-01-01', '1.0.0', {'Comment3.'});
-            de.add_version_entry(ve)
+            Gmve = bicas.gamods.VersionEntry('2021-01-01', '1.0.0', {'Comment3.'});
+            de.add_version_entry(Gmve)
 
             % Add entry.
-            ve = bicas.gamods.VersionEntry('2022-01-01', '2.0.0', {'Comment4.'});
-            de.add_version_entry(ve)
+            Gmve = bicas.gamods.VersionEntry('2022-01-01', '2.0.0', {'Comment4.'});
+            de.add_version_entry(Gmve)
 
             actStrCa = de.get_MODS_strings_CA();
             expStrCa = {...

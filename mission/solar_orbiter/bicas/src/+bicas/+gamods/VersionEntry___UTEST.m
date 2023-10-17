@@ -32,14 +32,14 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
 
 
         function test_add_comments(testCase)
-            ve  = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {'Comment1.'});
-            ve2 = ve.add_comments({'Comment2.'});
+            Gmve1 = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {'Comment1.'});
+            Gmve2 = Gmve1.add_comments({'Comment2.'});
 
-            testCase.verifyEqual(ve.bicasVersionStr, ve2.bicasVersionStr)
-            testCase.verifyEqual(ve.dateStr,         ve2.dateStr)
+            testCase.verifyEqual(Gmve1.bicasVersionStr, Gmve2.bicasVersionStr)
+            testCase.verifyEqual(Gmve1.dateStr,         Gmve2.dateStr)
 
-            testCase.verifyEqual(ve.commentsCa,  {'Comment1.'})
-            testCase.verifyEqual(ve2.commentsCa, {'Comment1.'; 'Comment2.'})
+            testCase.verifyEqual(Gmve1.commentsCa,  {'Comment1.'})
+            testCase.verifyEqual(Gmve2.commentsCa, {'Comment1.'; 'Comment2.'})
 
             testCase.verifyError(@() bicas.gamods.VersionEntry('2020-01-01', '1.2.3', ...
                 {}), ...
@@ -52,15 +52,15 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
 
 
         function test_get_str(testCase)
-            ve = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {...
+            Gmve = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {...
                 'A first comment.'});
-            actStr = ve.get_str();
+            actStr = Gmve.get_str();
             expStr = '2020-01-01 -- V1.2.3 -- A first comment.';
             testCase.verifyEqual(actStr, expStr)
 
-            ve = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {...
+            Gmve = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {...
                 'A first comment.', 'A second comment.'});
-            actStr = ve.get_str();
+            actStr = Gmve.get_str();
             expStr = '2020-01-01 -- V1.2.3 -- A first comment. | A second comment.';
             testCase.verifyEqual(actStr, expStr)
         end

@@ -69,14 +69,14 @@ classdef Database < handle
 
 
 
-        function add_version_entry(obj, dsiCa, ve)
+        function add_version_entry(obj, dsiCa, Gmve)
             irf.assert.castring_set(dsiCa)
-            assert(isa(ve, 'bicas.gamods.VersionEntry'))
+            assert(isa(Gmve, 'bicas.gamods.VersionEntry'))
 
             for i = 1:numel(dsiCa)
                 dsi = dsiCa{i};
                 de = obj.DsiMap(dsi);
-                de.add_version_entry(ve)
+                de.add_version_entry(Gmve)
             end
         end
 
