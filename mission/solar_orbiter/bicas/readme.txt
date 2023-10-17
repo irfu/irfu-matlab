@@ -139,6 +139,8 @@ FV
     (1) Field Value. (2) (CDF) Fill Value.
 GA
     (CDF) Global Attribute(s).
+GMDB
+    "GA MODS DataBase", i.e. class bicas.gamods.Database.
 ICD
     Interface Control Document
 ITF
