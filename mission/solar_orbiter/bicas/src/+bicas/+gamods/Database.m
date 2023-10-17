@@ -65,7 +65,6 @@ classdef Database < handle
         function add_version_entry(obj, dsiCa, ve)
             irf.assert.castring_set(dsiCa)           
             assert(isa(ve, 'bicas.gamods.VersionEntry'))
-            assert(ve.is_valid())
 
             for i = 1:numel(dsiCa)
                 dsi = dsiCa{i};

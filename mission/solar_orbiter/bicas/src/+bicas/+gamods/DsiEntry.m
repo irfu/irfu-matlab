@@ -40,7 +40,6 @@ classdef DsiEntry < handle
 
         function add_version_entry(obj, ve)
             assert(isa(ve, 'bicas.gamods.VersionEntry'))
-            assert(ve.is_valid())
 
             % ASSERTIONS
             if ~isempty(obj.versionEntryCa)

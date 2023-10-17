@@ -37,14 +37,18 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
 
             testCase.verifyEqual(ve.commentsCa,  {'Comment1.'})
             testCase.verifyEqual(ve2.commentsCa, {'Comment1.'; 'Comment2.'})
+
+            testCase.verifyError(@() bicas.gamods.VersionEntry('2020-01-01', '1.2.3', ...
+                {}), ...
+                ?MException)
+            testCase.verifyError(@() bicas.gamods.VersionEntry('2020-01-01', '1.2.3', ...
+                {'Comment without trailing period'}), ...
+                ?MException)
         end
 
 
 
         function test_get_str(testCase)
-            ve = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {});
-            testCase.verifyError(@() ve.getstr(), ?MException)
-
             ve = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {...
                 'A first comment.'});
             actStr = ve.get_str();

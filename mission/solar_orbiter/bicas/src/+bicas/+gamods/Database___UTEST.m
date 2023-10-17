@@ -30,17 +30,9 @@ classdef Database___UTEST < matlab.unittest.TestCase
             % add_version_entry()
             % ===================
             
-            % Add bad VE to zero DSIs.
-            ve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {});
-            testCase.verifyError(...
-                @() db.add_version_entry({}, ve), ...
-                ?MException)
-
-            % Add bad VE to one DSI.
-            ve = bicas.gamods.VersionEntry('2020-01-01', '2.0.0', {});
-            testCase.verifyError(...
-                @() db.add_version_entry({'DSI_1', 'DSI_2'}, ve), ...
-                ?MException)
+            % Add VE to zero DSIs.
+            ve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
+            db.add_version_entry({}, ve)
 
             % Add to one DSI.
             ve1 = bicas.gamods.VersionEntry('2020-01-01', '3.0.0', {...

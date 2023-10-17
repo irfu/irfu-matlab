@@ -35,13 +35,7 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
             %     ?MException)
             de.add_version_entry(ve)
 
-            % Add entry with no comments.
-            ve = bicas.gamods.VersionEntry('2020-01-01', '2.0.0', {});
-            testCase.verifyError(...
-                @() de.add_version_entry(ve), ...
-                ?MException)
-
-            % Add second entry (successfully).
+            % Add entry.
             ve = bicas.gamods.VersionEntry('2022-01-01', '2.0.0', {'Comment4.'});
             de.add_version_entry(ve)
 

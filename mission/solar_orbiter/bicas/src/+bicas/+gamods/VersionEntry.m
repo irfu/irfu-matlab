@@ -53,19 +53,12 @@ classdef VersionEntry
         end
 
 
-        function s = get_str(obj)
-            assert(obj.is_valid())
 
+        function s = get_str(obj)
             commentsStr = strjoin(obj.commentsCa, ' | ');
             % NOTE: Add "V" before/to BICAS version string.
             s = sprintf('%s -- V%s -- %s', ...
                 obj.dateStr, obj.bicasVersionStr, commentsStr);
-        end
-
-
-
-        function is_valid = is_valid(obj)
-            is_valid = ~isempty(obj.commentsCa);
         end
 
 
@@ -81,8 +74,11 @@ classdef VersionEntry
     %########################
     methods(Static, Access=private)
 
+
+
         function assert_commentsCa(commentsCa)
             irf.assert.castring_set(commentsCa)
+            assert(~isempty(commentsCa))
 
             for i = 1:numel(commentsCa)
                 s = commentsCa{i};
