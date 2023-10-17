@@ -478,7 +478,7 @@ classdef const
             % NOTE: L3 dates are effectively determined by deliveries to ROC.
             % NOTE: Including VHT, since VHT uses the same BICAS functions for
             %       writing datasets (including
-            %       bicas.derive_output_dataset_GlobalAttributes).
+            %       bicas.derive_output_dataset_GAs).
             %===================================================================
 
             % BICAS v1.0.0 : No MODS needed.
