@@ -21,7 +21,7 @@ classdef DsiEntry < handle
     %#####################
     %#####################
     properties(SetAccess=private, GetAccess=private)
-        gmveCa
+        GmveAr
     end
 
 
@@ -36,7 +36,7 @@ classdef DsiEntry < handle
 
 
         function obj = DsiEntry()
-            obj.gmveCa = {};
+            obj.GmveAr = bicas.gamods.VersionEntry.empty(0, 1);
         end
 
 
@@ -45,13 +45,13 @@ classdef DsiEntry < handle
             assert(isa(Gmve, 'bicas.gamods.VersionEntry'))
 
             % ASSERTIONS
-            if ~isempty(obj.gmveCa)
-                GmvePrev = obj.gmveCa{end};
+            if ~isempty(obj.GmveAr)
+                GmvePrev = obj.GmveAr(end);
 
-                dateStrCa = cellfun(@(ca) ca.dateStr, ...
-                    obj.gmveCa, 'UniformOutput', false);
+                dateStrCa = arrayfun(@(ca) ca.dateStr, ...
+                    obj.GmveAr, 'UniformOutput', false);
                 % bicasVersionStrCa = cellfun(@(ca) ca.bicasVersionStr, ...
-                %     obj.gmveCa, 'UniformOutput', false);
+                %     obj.GmveAr, 'UniformOutput', false);
 
                 % Do not reuse earlier date.
                 assert(~ismember(Gmve.dateStr, dateStrCa))
@@ -71,7 +71,7 @@ classdef DsiEntry < handle
                 % NOTE: Can not easily assert sorting of BICAS version strings.
             end
 
-            obj.gmveCa{end+1, 1} = Gmve;
+            obj.GmveAr(end+1, 1) = Gmve;
         end
 
 
@@ -79,8 +79,8 @@ classdef DsiEntry < handle
         % Return cell array of strings to be used as value GA MODS for the
         % specified DSI.
         function gaModsStrCa = get_MODS_strings_CA(obj)
-            gaModsStrCa = cellfun(...
-                @(Gmve) (Gmve.get_str()), obj.gmveCa(:), ...
+            gaModsStrCa = arrayfun(...
+                @(Gmve) (Gmve.get_str()), obj.GmveAr, ...
                 'UniformOutput', false);
         end
 
