@@ -177,13 +177,13 @@ classdef dc
             assert(isscalar(PreDc.hasSnapshotFormat))
             assert(isnumeric(  PreDc.Zv.bltsSamplesTm))
             %irf.assert.vector(PreDc.Zv.bltsSamplesTmCa)
-            %assert(numel(PreDc.Zv.bltsSamplesTmCa) == 5)
+            %assert(numel(PreDc.Zv.bltsSamplesTmCa) == bicas.const.N_BLTS)
 %             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
 %                 PreDc.Zv)
             [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
                 PreDc.Zv.bdmFpa,          [-1,  1], ...
                 PreDc.Zv.biasHighGainFpa, [-1,  1], ...
-                PreDc.Zv.bltsSamplesTm,   [-1, -2, 5]);
+                PreDc.Zv.bltsSamplesTm,   [-1, -2, bicas.const.N_BLTS]);
 
 
 
@@ -273,6 +273,10 @@ classdef dc
         % Calibrate and demux all BLTS channels for one subsequence.
         function SsAsrSamplesAVoltSrm = calibrate_demux_subsequence(...
                 PreDc, dlrFpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L)
+            % PROPOSAL: Rename "subsequence".
+            %   ~time interval
+            %   ~constant settings time interval
+            %
             % PROPOSAL: Move indexing outside function.
             %   CON: Must then submit all the PreDc.Zv.* variables separately
             %        (six variables). ==> More arguments.
@@ -290,7 +294,7 @@ classdef dc
             bdmFpa_ss                  = PreDc.Zv.bdmFpa(                 iFirst);
             bdm_ss                     = bdmFpa_ss.int2doubleNan();
             biasHighGainFpa_ss         = PreDc.Zv.biasHighGainFpa(        iFirst);    % Temporary variable. Should be eliminated eventually.
-            biasHighGain_ss            = biasHighGainFpa_ss.logical2doubleNan();
+            biasHighGain_ss            = biasHighGainFpa_ss.logical2doubleNan();      % Convert FPA --> double-NaN
             freqHz_ss                  = PreDc.Zv.freqHz(                 iFirst);
             iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
             CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
@@ -356,14 +360,14 @@ classdef dc
             % ITERATE OVER BLTS's
             %=====================
             ssBltsSamplesAVolt = [];
-            for iBlts = 1:5
+            for iBlts = 1:bicas.const.N_BLTS
                 ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
                     DemuxerRoutingArray(iBlts).src, ...
                     ssBltsSamplesTm(:, :, iBlts), ...
                     iBlts, ...
                     PreDc.hasSnapshotFormat, ...
                     ssZvNValidSamplesPerRecord, ...
-                    biasHighGain_ss, ...         % Should use FPA.
+                    biasHighGain_ss, ...         % Should use FPA (but does not).
                     iCalibL_ss, ...
                     iCalibH_ss, ...
                     iLsf_ss, ...

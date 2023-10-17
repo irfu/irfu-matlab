@@ -181,9 +181,13 @@ classdef SameRowsMap < handle
             
             switch(initType)
                 case 'EMPTY'
+                    % Zero initial keys and values.
+
                     assert(numel(varargin) == 0)
                     
                 case 'CONSTANT'
+                    % Same (constant) initial value for all keys.
+
                     assert(numel(varargin) == 2)
                     value  = varargin{1};
                     keysCa = varargin{2};

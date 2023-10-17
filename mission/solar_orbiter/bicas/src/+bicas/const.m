@@ -20,6 +20,8 @@ classdef const
     % PROPOSAL: Move N_MIN_OSR_SAMPLES_PER_BIN to settings?
     %
     % PROPOSAL: Log all constants.
+    % PROPOSAL: Move bicas.const.N_BLTS to solo.hwzv.const.
+
 
 
 
@@ -143,6 +145,9 @@ classdef const
         % external metadata standards.
         QUALITY_FLAG_MIN = 0;
         QUALITY_FLAG_MAX = 3;
+        
+        % Number of BLTS.
+        N_BLTS = 5;
 
 
 

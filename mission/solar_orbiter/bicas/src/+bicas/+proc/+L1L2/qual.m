@@ -31,18 +31,15 @@ classdef qual
             % PROPOSAL: Separate function for handling UFV.
             %   CON: Other quality variable processing might want to read or
             %        modify the UFV.
+            %   CON: Has effectively already been done.
+            %   PROPOSAL: Move NSO table processing to own function.
             %
-            % PROPOSAL: Structs for arguments & return values. -- IMPLEMENTED
-            %   PRO: Safer w.r.t. confusing variables.
-            %   CON: Can not as easily see in function which are the arguments & return values.
-            %       CON: Easier to see arguments & return values when calling
-            %            function, assuming that caller unpacks the return struct.
-            %           CON: Caller may forget to unpack field in return value.
-            %       CON-PROPOSAL: Explicitly convert between struct fields and
-            %                     variables at beginning and end of function.
-            %           CON: Longer code.
-            %           PRO: Implementation is clear on what goes in and out of function.
-            %   PROPOSAL: Abolish
+            % PROPOSAL: Move constants to bicas.const.
+
+            QUALITY_FLAG_CAP_PARTIAL_SATURATION = uint8(1);
+            QUALITY_FLAG_CAP_FULL_SATURATION    = uint8(0);
+            QUALITY_FLAG_CAP_THRUSTER_FIRING    = uint8(1);
+
 
             
             irf.assert.struct(ZvIn, {'Epoch', 'ufv', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
@@ -91,6 +88,7 @@ classdef qual
                 ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
                 nCdfEvents, nGlobalEvents);
 
+            % Pre-allocate
             zv_L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
 
             % Iterate over index into LOCAL/CDF NSO events table.
@@ -109,7 +107,6 @@ classdef qual
                     eventNsoid);
 
 
-
                 %=================================
                 % Take action depending on NSOID
                 %=================================
@@ -121,14 +118,14 @@ classdef qual
 
                     case bicas.const.NSOID.PARTIAL_SATURATION
                         %zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
-                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(uint8(1));
+                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(QUALITY_FLAG_CAP_PARTIAL_SATURATION);
                         zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
                             zv_L2_QUALITY_BITMASK_cdfEvent, ...
                             bicas.const.L2QBM_PARTIAL_SATURATION);
 
                     case bicas.const.NSOID.FULL_SATURATION
                         %zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 0, 'includeNaN');
-                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(uint8(0));
+                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(QUALITY_FLAG_CAP_FULL_SATURATION);
                         % NOTE: Also set PARTIAL saturation bit when FULL
                         % saturation. /YK 2020-10-02.
                         zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
@@ -138,7 +135,7 @@ classdef qual
 
                     case bicas.const.NSOID.THRUSTER_FIRING
                         %zv_QUALITY_FLAG_cdfEvent = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
-                        zv_QUALITY_FLAG_cdfEventFpa = zv_QUALITY_FLAG_cdfEventFpa.min(uint8(1));
+                        zv_QUALITY_FLAG_cdfEventFpa = zv_QUALITY_FLAG_cdfEventFpa.min(QUALITY_FLAG_CAP_THRUSTER_FIRING);
                         % NOTE: There will be an L1 QUALITY_BITMASK bit for
                         % thruster firings eventually according to
                         % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
