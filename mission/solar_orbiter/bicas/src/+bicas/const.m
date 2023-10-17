@@ -133,6 +133,13 @@ classdef const
 
 
 
+        % Highest allowed QUALITY_FLAG values for various conditions.
+        QUALITY_FLAG_CAP_PARTIAL_SATURATION = uint8(1);
+        QUALITY_FLAG_CAP_FULL_SATURATION    = uint8(0);
+        QUALITY_FLAG_CAP_THRUSTER_FIRING    = uint8(1);
+
+
+            
         % Minimum number of non-FV OSR records per bin/DSR record.
         %
         % NOTE: Currently used for both L2 downsampled and L3 downsampled.
@@ -143,8 +150,8 @@ classdef const
         
         % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
         % external metadata standards.
-        QUALITY_FLAG_MIN = 0;
-        QUALITY_FLAG_MAX = 3;
+        QUALITY_FLAG_MIN = uint8(0);
+        QUALITY_FLAG_MAX = uint8(3);
         
         % Number of BLTS.
         N_BLTS = 5;

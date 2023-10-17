@@ -28,20 +28,7 @@ classdef qual
         %       value.
         function [zvUfv, zv_QUALITY_FLAG_Fpa, zv_L2_QUALITY_BITMASK] = ...
                 modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L)
-            % PROPOSAL: Separate function for handling UFV.
-            %   CON: Other quality variable processing might want to read or
-            %        modify the UFV.
-            %   CON: Has effectively already been done.
-            %   PROPOSAL: Move NSO table processing to own function.
-            %
-            % PROPOSAL: Move constants to bicas.const.
 
-            QUALITY_FLAG_CAP_PARTIAL_SATURATION = uint8(1);
-            QUALITY_FLAG_CAP_FULL_SATURATION    = uint8(0);
-            QUALITY_FLAG_CAP_THRUSTER_FIRING    = uint8(1);
-
-
-            
             irf.assert.struct(ZvIn, {'Epoch', 'ufv', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
             zv_Epoch            = ZvIn.Epoch;
             zvUfv               = ZvIn.ufv;
@@ -58,6 +45,8 @@ classdef qual
                 zv_QUALITY_FLAG_Fpa, [-1], ...
                 zvUfv,               [-1]);
 
+            % Pre-allocate
+            zv_L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
 
 
             %============================================================
@@ -73,69 +62,112 @@ classdef qual
             %========================================
             % Take actions based on NSO events table
             %========================================
+            [zv_QUALITY_FLAG_CapFpa, zv_L2_QUALITY_BITMASK_new] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
+                zv_Epoch, NsoTable, L);
+            zv_QUALITY_FLAG_Fpa   = zv_QUALITY_FLAG_Fpa.min(zv_QUALITY_FLAG_CapFpa);
+            zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, zv_L2_QUALITY_BITMASK_new);
+
+
+
+            assert(isa(zv_L2_QUALITY_BITMASK, 'uint16'))
+        end    % modify_quality_filter
+        
+        
+        
+        % Derive QUALITY_FLAG *cap* and L2_QUALITY_FLAG *bits* set due to NSO
+        % table by itself. Return values are then supposed to be used for
+        % creating global versions of the actual ZVs.
+        %
+        %
+        % RETURN VALUES
+        % =============
+        % QUALITY_FLAG_CapFpa
+        %       FPA. Cap (highest allowed value) for ZV QUALITY_FLAG.
+        % L2_QUALITY_BITMASK
+        %       Array. L2_QUALITY_BITMASK bits set based on NSOs only. Should be
+        %       merged (OR:ed) with global L2_QUALITY_BITMASK.
+        %
+        function [QUALITY_FLAG_CapFpa, L2_QUALITY_BITMASK] = get_quality_by_NSOs(...
+                zv_Epoch, NsoTable, L)
+
+            % PROPOSAL: Arguments for the QUALITY_FLAG cap and
+            %           L2_QUALITY_BITMASK values to set for the respective NSOIDs.
+            %   PRO: Better for testing.
+            %   PRO: Can better document the consequences of different NSOIDs.
+            %       PROPOSAL: Can document as ~constants.
+            %   PROPOSAL: Map argument.
+
             % Variable naming conventions:
-            % CDF event    = NSO event that overlaps with CDF records.
-            % Global event = NSO event in global NSO event table.
-            % NA           = Numeric Array
+            % CE = CDF Event    = NSO event that overlaps with CDF records.
+            % GE = Global Event = NSO event in global NSO event table.
+            % NA                = Numeric Array
 
             % NOTE: iCdfEventNa = CDF events as indices to global events.
-            [bCdfEventRecordsCa, cdfEventNsoidCa, iCdfEventNa] = ...
+            [bCeRecordsCa, ceNsoidCa, iCeNa] = ...
                 NsoTable.get_NSO_timestamps(zv_Epoch);
-            nCdfEvents    = numel(cdfEventNsoidCa);
-            nGlobalEvents = numel(NsoTable.evtNsoidCa);
+            nCe = numel(ceNsoidCa);
+            nGe = numel(NsoTable.evtNsoidCa);
             L.logf('info', ...
                 ['Searched non-standard operations (NSO) table.', ...
                 ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
-                nCdfEvents, nGlobalEvents);
+                nCe, nGe);
+
+
 
             % Pre-allocate
-            zv_L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
+            QUALITY_FLAG_CapFpa = bicas.utils.FPArray(...
+                bicas.const.QUALITY_FLAG_MAX * ones(size(zv_Epoch), 'uint8'), ...
+                'NO_FILL_POSITIONS');
+            L2_QUALITY_BITMASK = zeros(size(zv_Epoch), 'uint16');
 
             % Iterate over index into LOCAL/CDF NSO events table.
-            for kCdfEvent = 1:nCdfEvents
+            for kCe = 1:nCe
 
                 % Index into GLOBAL NSO events table.
-                iGlobalEvent = iCdfEventNa(kCdfEvent);
-                eventNsoid   = cdfEventNsoidCa{kCdfEvent};
+                iGe = iCeNa(kCe);
+                eventNsoid = ceNsoidCa{kCe};
+                % Indices into ZVs.
+                bCeRecords = bCeRecordsCa{kCe};
 
                 %===========================================================
                 % Log the relevant NSO event in the GLOBAL NSO events table
                 %===========================================================
                 L.logf('info', '    %s -- %s %s', ...
-                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
-                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGlobalEvent)), ...
+                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGe)), ...
+                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGe)), ...
                     eventNsoid);
 
-
-                %=================================
+                %================================
                 % Take action depending on NSOID
-                %=================================
+                %================================
                 % Temporary shorter variable name.
-                zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_Fpa(  bCdfEventRecordsCa{kCdfEvent});
-                zv_L2_QUALITY_BITMASK_cdfEvent = zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
+                L2_QUALITY_BITMASK_ce = L2_QUALITY_BITMASK(bCeRecords);
 
                 switch(eventNsoid)
 
                     case bicas.const.NSOID.PARTIAL_SATURATION
-                        %zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
-                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(QUALITY_FLAG_CAP_PARTIAL_SATURATION);
-                        zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
-                            zv_L2_QUALITY_BITMASK_cdfEvent, ...
+
+                        QUALITY_FLAG_capCe = bicas.const.QUALITY_FLAG_CAP_PARTIAL_SATURATION;
+
+                        L2_QUALITY_BITMASK_ce = bitor(...
+                            L2_QUALITY_BITMASK_ce, ...
                             bicas.const.L2QBM_PARTIAL_SATURATION);
 
                     case bicas.const.NSOID.FULL_SATURATION
-                        %zv_QUALITY_FLAG_cdfEvent       = min(zv_QUALITY_FLAG_cdfEvent, 0, 'includeNaN');
-                        zv_QUALITY_FLAG_cdfEventFpa    = zv_QUALITY_FLAG_cdfEventFpa.min(QUALITY_FLAG_CAP_FULL_SATURATION);
+
+                        QUALITY_FLAG_capCe = bicas.const.QUALITY_FLAG_CAP_FULL_SATURATION;
+
                         % NOTE: Also set PARTIAL saturation bit when FULL
                         % saturation. /YK 2020-10-02.
-                        zv_L2_QUALITY_BITMASK_cdfEvent = bitor(...
-                            zv_L2_QUALITY_BITMASK_cdfEvent, ...
+                        L2_QUALITY_BITMASK_ce = bitor(...
+                            L2_QUALITY_BITMASK_ce, ...
                             bicas.const.L2QBM_FULL_SATURATION + ...
                             bicas.const.L2QBM_PARTIAL_SATURATION);
 
                     case bicas.const.NSOID.THRUSTER_FIRING
-                        %zv_QUALITY_FLAG_cdfEvent = min(zv_QUALITY_FLAG_cdfEvent, 1, 'includeNaN');
-                        zv_QUALITY_FLAG_cdfEventFpa = zv_QUALITY_FLAG_cdfEventFpa.min(QUALITY_FLAG_CAP_THRUSTER_FIRING);
+
+                        QUALITY_FLAG_capCe = bicas.const.QUALITY_FLAG_CAP_THRUSTER_FIRING;
+
                         % NOTE: There will be an L1 QUALITY_BITMASK bit for
                         % thruster firings eventually according to
                         % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
@@ -150,16 +182,23 @@ classdef qual
                         % interval) currently processed. (Therefore also checks
                         % all NSOIDs when reads NSO table.)
                         error('Can not interpret RCS NSOID "%s".', ...
-                            cdfEventNsoidCa{kCdfEvent})
+                            ceNsoidCa{kCe})
 
                 end
-                zv_QUALITY_FLAG_Fpa  (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG_cdfEventFpa;
-                zv_L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK_cdfEvent;
+                
+                % Old implementation which should have bug which tests do not
+                % test: Can not handle time-overlapping NSO events (for
+                % different NSOIDs).
+%                 QUALITY_FLAG_CapFpa(bCdfEvent, 1) = bicas.utils.FPArray(QUALITY_FLAG_capCdfEvent, 'NO_FILL_POSITIONS');
+%                 L2_QUALITY_BITMASK( bCdfEvent, 1) = L2_QUALITY_BITMASK_cdfEvent;
+                % New implementation which should not have abovementioned bug.
+                QUALITY_FLAG_CapFpaTemp            = QUALITY_FLAG_CapFpa(bCeRecords, 1);
+                QUALITY_FLAG_CapFpa(bCeRecords, 1) = QUALITY_FLAG_CapFpaTemp.min(bicas.utils.FPArray(QUALITY_FLAG_capCe, 'NO_FILL_POSITIONS'));
+                L2_QUALITY_BITMASK( bCeRecords, 1) = bitor(L2_QUALITY_BITMASK(bCeRecords, 1), L2_QUALITY_BITMASK_ce);
                 
             end    % for
-            
-            assert(isa(zv_L2_QUALITY_BITMASK, 'uint16'))
-        end    % modify_quality_filter
+
+        end
 
 
 
