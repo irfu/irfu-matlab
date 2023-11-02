@@ -473,7 +473,14 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
   end
   urlListDatasets = csa_parse_url(urlListDatasets);
   irf.log('warning',['Patience! Requesting "' dataset '" ' urlListDatasets]);
-  caalog=urlread(urlListDatasets); %#ok<URLRD> webread introduced in R2014b
+  if verLessThan('matlab', '8.4') % 8.4 = R2014b
+    caalog=urlread(urlListDatasets); %#ok<URLRD> webread introduced in R2014b
+  else
+    options = weboptions;
+    options.Timeout = 50; % seconds, default "5" is too short
+    options.ContentType = 'text'; % plaintext, don't have Matlab automatically decode it
+    caalog=webread(urlListDatasets, options);
+  end
   if isempty(caalog) % return empty output
     downloadStatus = [];
     return
@@ -500,7 +507,14 @@ if checkDataInventory
   urlListDatasets = csa_parse_url(urlListDatasets);
   irf.log('warning','Patience! Requesting list of files.');
   irf.log('notice',['URL: ' urlListDatasets]);
-  caalist=urlread(urlListDatasets); %#ok<URLRD> webread introduced in R2014b
+  if verLessThan('matlab', '8.4') % 8.4 = R2014b
+    caalist=urlread(urlListDatasets); %#ok<URLRD> webread introduced in R2014b
+  else
+    options = weboptions;
+    options.Timeout = 50; % seconds, default 5 is too short
+    options.ContentType = 'text'; % plaintext, don't have Matlab automatically decode it
+    caalist=webread(urlListDatasets);
+  end
   irf.log('debug',['returned: ' caalist]);
   if isempty(caalist) % no datasets available
     irf.log('warning','There are no data sets available!');
