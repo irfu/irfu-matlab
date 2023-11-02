@@ -513,7 +513,7 @@ if checkDataInventory
     options = weboptions;
     options.Timeout = 50; % seconds, default 5 is too short
     options.ContentType = 'text'; % plaintext, don't have Matlab automatically decode it
-    caalist=webread(urlListDatasets);
+    caalist=webread(urlListDatasets, options);
   end
   irf.log('debug',['returned: ' caalist]);
   if isempty(caalist) % no datasets available
