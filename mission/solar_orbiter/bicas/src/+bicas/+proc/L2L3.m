@@ -166,156 +166,33 @@ classdef L2L3
             % Misc. variables shared between datasets and later modified for
             % specific datasets
             %================================================================
-            % Global attributes - Shared between all OSR+DSR datasets.
-            InitialGa = struct();
-            InitialGa.OBS_ID                = InLfrCwf.Ga.OBS_ID;
-            InitialGa.SOOP_TYPE             = InLfrCwf.Ga.SOOP_TYPE;
-            %-----
-            % OSR
-            %-----
-            InitialOsrZv = struct();
-            InitialOsrZv.Epoch              = InLfrCwf.Zv.Epoch;
-            InitialOsrZv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
-            InitialOsrZv.QUALITY_BITMASK    = InLfrCwf.ZvFpa.QUALITY_BITMASK;
-            InitialOsrZv.L2_QUALITY_BITMASK = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
-            InitialOsrZv.DELTA_PLUS_MINUS   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
-            %
-            InitialOsr = struct(...
-                'Ga', InitialGa, ...
-                'Zv', InitialOsrZv);
-            %-----
-            % DSR
-            %-----
-            [InitialDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
+            TemplateOsr = bicas.proc.L2L3.get_OSR_template(InLfrCwf);
+            [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
                 InLfrCwf, ...
                 BIN_LENGTH_WOLS_NS, ...
                 BIN_TIMESTAMP_POS_WOLS_NS, ...
                 L);
             % NOTE: Not setting DSR ".Ga"/global attributes here, since DSR
             % datasets later copy ".Ga" from the respective OSR datasets.
-            InitialDsr = struct('Zv', InitialDsrZv);
-            
+            TemplateDsr = struct('Zv', TemplateDsrZv);
 
 
-            %====================
-            % ZVs for EFIELD OSR
-            %====================
-            OutEfieldOsr = InitialOsr;
-            OutEfieldOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
+
+            %=======================================
+            % Generate data structures for datasets
+            %=======================================            
+            OutEfieldOsr  = bicas.proc.L2L3.OSR_efield( TemplateOsr, R.EdcSrfMvpmFpa,                       gaEfieldScpot_Misc_calibration_versions);
+            OutScpotOsr   = bicas.proc.L2L3.OSR_scpot(  TemplateOsr, R.ScpotVoltFpa,  R.PspVoltFpa,         gaEfieldScpot_Misc_calibration_versions);
+            OutDensityOsr = bicas.proc.L2L3.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   R.NeScpQualityBitFpa, gaDensity_Misc_calibration_versions);
             %
-            OutEfieldOsr.Zv.EDC_SRF                   = R.EdcSrfMvpmFpa.cast('single');
-            %
-            b = all(OutEfieldOsr.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-            OutEfieldOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
-        
-
-
-            %===================
-            % ZVs for SCPOT OSR
-            %===================
-            OutScpotOsr = InitialOsr;
-            OutScpotOsr.Ga.Misc_calibration_versions = gaEfieldScpot_Misc_calibration_versions;
-            %
-            OutScpotOsr.Zv.SCPOT                     = R.ScpotVoltFpa.cast('single');
-            OutScpotOsr.Zv.PSP                       = R.PspVoltFpa.cast('single');
-            %
-            b = OutScpotOsr.Zv.SCPOT.fpAr & ...
-                OutScpotOsr.Zv.PSP.fpAr;
-            OutScpotOsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
-
-
-
-            %=====================
-            % ZVs for DENSITY OSR
-            %=====================
-            OutDensityOsr = InitialOsr;
-            OutDensityOsr.Ga.Misc_calibration_versions = gaDensity_Misc_calibration_versions;
-            %
-            OutDensityOsr.Zv.DENSITY                   = R.NeScpCm3Fpa.cast('single');
-            %
-            b = OutDensityOsr.Zv.DENSITY.fpAr;
-            OutDensityOsr.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
-            OutDensityOsr.Zv.L3_QUALITY_BITMASK        = ...
-                R.NeScpQualityBitFpa.ensure_NFP(false).cast('uint16') .* bicas.const.L3QBM_BAD_DENSITY;
-            OutDensityOsr.Zv.L3_QUALITY_BITMASK(b)     = bicas.utils.FPArray.FP_UINT16;   % ?!
-            % NOTE: Behaviour w.r.t. FPs:
-            %   Density FP     ==> L3_QUALITY_BITMASK FP
-            %   Density bit FP ==> Do not set L3_QUALITY_BITMASK (since there is
-            %                      no FP for individual quality bits).
-
-
-
-            %====================
-            % ZVs for EFIELD DSR
-            %====================
-            OutEfieldDsr    = InitialDsr;
-            OutEfieldDsr.Ga = OutEfieldOsr.Ga;
-            %            
-            [EdcSrfDsrFpa, EdcstdSrfDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
-                R.EdcSrfMvpmFpa, ...
-                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
-                iRecordsInBinCa, ...
-                L);
-            OutEfieldDsr.Zv.EDC_SRF    = EdcSrfDsrFpa.cast('single');
-            OutEfieldDsr.Zv.EDCSTD_SRF = EdcstdSrfDsrFpa.cast('single');
-            %
-            b = all(OutEfieldDsr.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-            OutEfieldDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
-
-            
-
-            %===================
-            % ZVs for SCPOT DSR
-            %===================
-            OutScpotDsr    = InitialDsr;
-            OutScpotDsr.Ga = OutScpotOsr.Ga;
-            %
-            [ScpotDsrFpa, ScpotstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
-                R.ScpotVoltFpa, ...
-                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
-                iRecordsInBinCa, ...
-                L);
-            OutScpotDsr.Zv.SCPOT    = ScpotDsrFpa.cast('single');
-            OutScpotDsr.Zv.SCPOTSTD = ScpotstdDsrFpa.cast('single');
-            %
-            [PspDsrFpa, PspstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
-                R.PspVoltFpa, ...
-                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
-                iRecordsInBinCa, ...
-                L);
-            OutScpotDsr.Zv.PSP    = PspDsrFpa.cast('single');
-            OutScpotDsr.Zv.PSPSTD = PspstdDsrFpa.cast('single');
-            %
-            b = OutScpotDsr.Zv.SCPOT.fpAr & ...
-                OutScpotDsr.Zv.PSP.fpAr;
-            OutScpotDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
-
-
-
-            %=====================
-            % ZVs for DENSITY DSR
-            %=====================
-            OutDensityDsr    = InitialDsr;
-            OutDensityDsr.Ga = OutDensityOsr.Ga;
-            %
-            [DensityDsrFpa, DensitystdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
-                R.NeScpCm3Fpa, ...
-                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
-                iRecordsInBinCa, ...
-                L);
-            OutDensityDsr.Zv.DENSITY    = DensityDsrFpa.cast('single');
-            OutDensityDsr.Zv.DENSITYSTD = DensitystdDsrFpa.cast('single');
-            %
-            b = OutDensityDsr.Zv.DENSITY.fpAr;
-            OutDensityDsr.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
-            OutDensityDsr.Zv.L3_QUALITY_BITMASK = bicas.proc.dsr.downsample_ZV_bitmask(...
-                OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa);
-            OutDensityDsr.Zv.L3_QUALITY_BITMASK(b) = bicas.utils.FPArray.FP_UINT16;
+            OutEfieldDsr  = bicas.proc.L2L3.DSR_efield( TemplateDsr, OutEfieldOsr.Ga,  R.EdcSrfMvpmFpa,                                    iRecordsInBinCa, L);
+            OutScpotDsr   = bicas.proc.L2L3.DSR_scpot(  TemplateDsr, OutScpotOsr.Ga,   R.ScpotVoltFpa, R.PspVoltFpa,                       iRecordsInBinCa, L);
+            OutDensityDsr = bicas.proc.L2L3.DSR_density(TemplateDsr, OutDensityOsr.Ga, R.NeScpCm3Fpa, OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa, L);
 
 
 
             nRecordsOsr = size(InLfrCwf.Zv.Epoch,   1);
-            nRecordsDsr = size(InitialDsr.Zv.Epoch, 1);
+            nRecordsDsr = size(TemplateDsr.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L3.process_L2_to_L3', tTicToc, ...
                 nRecordsOsr, 'OSR record')
@@ -326,6 +203,134 @@ classdef L2L3
         
         
         
+        % Starting template for OSR datasets. Return value is modified 
+        function TemplateOsr = get_OSR_template(InLfrCwf)
+            Ga = struct();
+            Ga.OBS_ID             = InLfrCwf.Ga.OBS_ID;
+            Ga.SOOP_TYPE          = InLfrCwf.Ga.SOOP_TYPE;
+
+            Zv = struct();
+            Zv.Epoch              = InLfrCwf.Zv.Epoch;
+            Zv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
+            Zv.QUALITY_BITMASK    = InLfrCwf.ZvFpa.QUALITY_BITMASK;
+            Zv.L2_QUALITY_BITMASK = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
+            Zv.DELTA_PLUS_MINUS   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
+
+            TemplateOsr = struct('Ga', Ga, 'Zv', Zv);
+        end
+        
+        
+        
+        function Out = OSR_efield(TemplateOsr, EdcSrfMvpmFpa, gaMisc_calibration_versions)
+            Out = TemplateOsr;
+            Out.Ga.Misc_calibration_versions = gaMisc_calibration_versions;
+            
+            Out.Zv.EDC_SRF                   = EdcSrfMvpmFpa.cast('single');
+            
+            b = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
+            Out.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
+        end
+
+
+
+        function Out = OSR_scpot(TemplateOsr, ScpotVoltFpa, PspVoltFpa, gaMisc_calibration_versions)
+            Out = TemplateOsr;
+            Out.Ga.Misc_calibration_versions = gaMisc_calibration_versions;
+
+            Out.Zv.SCPOT                     = ScpotVoltFpa.cast('single');
+            Out.Zv.PSP                       = PspVoltFpa.  cast('single');
+
+            b = Out.Zv.SCPOT.fpAr & ...
+                Out.Zv.PSP.fpAr;
+            Out.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
+        end
+
+
+
+        function Out = OSR_density(TemplateOsr, NeScpCm3Fpa, NeScpQualityBitFpa, gaMisc_calibration_versions)
+            Out = TemplateOsr;
+            Out.Ga.Misc_calibration_versions = gaMisc_calibration_versions;
+
+            Out.Zv.DENSITY                   = NeScpCm3Fpa.cast('single');
+
+            b = Out.Zv.DENSITY.fpAr;
+            Out.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
+            Out.Zv.L3_QUALITY_BITMASK        = ...
+                NeScpQualityBitFpa.ensure_NFP(false).cast('uint16') .* bicas.const.L3QBM_BAD_DENSITY;
+            Out.Zv.L3_QUALITY_BITMASK(b)     = bicas.utils.FPArray.FP_UINT16;   % ?!
+            % NOTE: Behaviour w.r.t. FPs:
+            %   Density FP     ==> L3_QUALITY_BITMASK FP
+            %   Density bit FP ==> Do not set L3_QUALITY_BITMASK (since there is
+            %                      no FP for individual quality bits).
+        end
+
+
+
+        function Out = DSR_efield(TemplateDsr, OutEfieldOsrGa, EdcSrfMvpmOsrFpa, iRecordsInBinCa, L)
+            Out    = TemplateDsr;
+            Out.Ga = OutEfieldOsrGa;
+
+            [EdcSrfDsrFpa, EdcstdSrfDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                EdcSrfMvpmOsrFpa, ...
+                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
+                iRecordsInBinCa, L);
+            Out.Zv.EDC_SRF    = EdcSrfDsrFpa.   cast('single');
+            Out.Zv.EDCSTD_SRF = EdcstdSrfDsrFpa.cast('single');
+
+            b = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
+            Out.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
+        end
+
+
+
+        function Out = DSR_scpot(TemplateDsr, OutScpotOsrGa, ScpotVoltOsrFpa, PspVoltOsrFpa, iRecordsInBinCa, L)
+            Out    = TemplateDsr;
+            Out.Ga = OutScpotOsrGa;
+
+            % Downsample SCPOT
+            [ScpotDsrFpa, ScpotstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                ScpotVoltOsrFpa, ...
+                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
+                iRecordsInBinCa, ...
+                L);
+            Out.Zv.SCPOT    = ScpotDsrFpa.   cast('single');
+            Out.Zv.SCPOTSTD = ScpotstdDsrFpa.cast('single');
+
+            % Downsample PSP
+            [PspDsrFpa, PspstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                PspVoltOsrFpa, ...
+                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
+                iRecordsInBinCa, L);
+            Out.Zv.PSP    = PspDsrFpa.   cast('single');
+            Out.Zv.PSPSTD = PspstdDsrFpa.cast('single');
+
+            b = Out.Zv.SCPOT.fpAr & ...
+                Out.Zv.PSP.fpAr;
+            Out.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
+        end
+
+
+
+        function Out = DSR_density(TemplateDsr, OutDensityOsrGa, NeScpCm3OsrFpa, osr_L3_QUALITY_BITMASK, iRecordsInBinCa, L)
+            Out    = TemplateDsr;
+            Out.Ga = OutDensityOsrGa;
+
+            [DensityDsrFpa, DensitystdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
+                NeScpCm3OsrFpa, ...
+                bicas.const.N_MIN_OSR_SAMPLES_PER_BIN, ...
+                iRecordsInBinCa, L);
+            Out.Zv.DENSITY    = DensityDsrFpa.   cast('single');
+            Out.Zv.DENSITYSTD = DensitystdDsrFpa.cast('single');
+
+            b = Out.Zv.DENSITY.fpAr;
+            Out.Zv.QUALITY_FLAG(b)       = bicas.utils.FPArray.FP_UINT8;
+            Out.Zv.L3_QUALITY_BITMASK    = bicas.proc.dsr.downsample_ZV_bitmask(...
+                osr_L3_QUALITY_BITMASK, iRecordsInBinCa);
+            Out.Zv.L3_QUALITY_BITMASK(b) = bicas.utils.FPArray.FP_UINT16;
+        end
+
+
+
     end    % methods(Static, Access=public)
 
 
