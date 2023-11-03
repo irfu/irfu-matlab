@@ -13,7 +13,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 %                     seems bad or not. 1=Bad, 0=Can not find any problem.
 %                     Must not be NaN. (Currently (2023-08-10) not sure if this
 %                     is strictly in agreement with conventions, but that is
-%                     what BIACS requires).
+%                     what BICAS requires).
 %   codeVerStr      - Code version string. Used by BICAS. Represents the version
 %                     of the function *code*, including calibration data,
 %                     excluding comments.

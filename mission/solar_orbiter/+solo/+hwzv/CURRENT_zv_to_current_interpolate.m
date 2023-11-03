@@ -1,5 +1,5 @@
 %
-% Utility function for easily deriving the bias set current at arbitrary
+% Utility function for easily deriving the bias current at arbitrary
 % timestamps almost directly from SOLO_L1_RPW-BIA-CURRENT dataset zVariables.
 % Therefore has some extra features to handle the quirks of the dataset format.
 %
@@ -12,21 +12,26 @@
 %
 %
 % ARGUMENTS
-% ==========
-% t1        : Nx1 vector. Time. Sorted. Exact type of time is unimportant as long
-%             as it is a number that increases linear with time). Can be TT2000.
-% zvIBIASx1 : Nx1 vector. Floating-point. Same length as t1. New bias values.
-%             Can be zVar from CURRENT dataset.
-% t2        : Nx1 vector. Time. Same type of time as t1.
+% =========
+% t1
+%       Nx1 vector. Time. Sorted. Exact type of time is unimportant as long
+%       as it is a number that increases linear with time). Can be TT2000.
+% zvIBIASx1
+%       Nx1 vector. Floating-point. Same length as t1. New bias values.
+%       Can be zVar from CURRENT dataset.
+% t2
+%       Nx1 vector. Time. Same type of time as t1.
 %
 % 
-% RETURN VALUE
-% ============
-% zvIBIASx2         : Current values at t2. Floating-point. NaN for timestamps
-%                     before first input timestamp.
-% duplicatesAnomaly : Whether the function detected a known anomaly in
-%                     SOLO_L1_RPW-BIA-CURRENT datasets.
-%                     RATIONALE: Caller (e.g. BICAS) can give error, warning.
+% RETURN VALUES
+% =============
+% zvIBIASx2
+%       Current values at t2. Floating-point. NaN for timestamps before first
+%       input timestamp.
+% duplicatesAnomaly
+%       Whether the function detected a known anomaly in SOLO_L1_RPW-BIA-CURRENT
+%       datasets.
+%       RATIONALE: Caller (e.g. BICAS) can give error, warning.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

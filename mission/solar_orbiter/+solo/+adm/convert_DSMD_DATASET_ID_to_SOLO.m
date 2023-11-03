@@ -1,7 +1,7 @@
 %
-% Change all DATA_SET_IDs ROC-SGSE-->SOLO.
+% Change all dataset IDs ROC-SGSE-->SOLO when possible.
 %
-% NOTE: Requires DSMD.datasetId to be mutable.
+% NOTE: Requires solo.adm.DSMD.datasetId to be mutable.
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-27.

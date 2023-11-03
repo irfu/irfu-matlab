@@ -5,8 +5,7 @@
 %
 %
 % NOTE: Might be slow (~minutes) if applying to all ROC data files, including
-% former_versions/. This is likely (?) due to
-% irf.utils.find_equalities().
+% former_versions/. This is likely (?) due to irf.utils.find_equalities().
 %
 % NOTE: Includes "better hacks" to resolve uncertainties, ambiguities and
 % complexities in the official naming & versioning scheme. See ALGORITHM.
@@ -36,7 +35,12 @@
 % (1) CDAG vs non-CDAG
 % (2) version number (DSMD.versionNbr)
 % (3) if enabled: whether datasets is under a former_versions/ directory
-% according to DSMD.path.
+%     according to solo.adm.DSMD.path.
+%
+%
+% LOCAL ABBREVIATIONS
+% ===================
+% FVD = former_versions/ directory.
 %
 %
 % ARGUMENTS
@@ -53,7 +57,6 @@
 %       "cdagAlgorithm"
 %           String constant determining which algorithm/definition of highest
 %           version to use.
-%   ...
 %
 %
 % RETURN VALUE
@@ -178,15 +181,16 @@ function Result = group_sort_DSMD_versions(DsmdArray1, mode, varargin)
     % for large numbers of DSMDs.
     % IMPLEMENTATION NOTE: Can not use vertcat for strings.
     
-    DT0 = datetime('2020-01-01T00:00:00.000Z', 'TimeZone', 'UTCLeapSeconds');
+    % Arbitrary "epoch" which value should not affect the result.
+    DT_EPOCH = datetime('2020-01-01T00:00:00.000Z', 'TimeZone', 'UTCLeapSeconds');
     if isempty(DsmdArray1)
         t1 = zeros(0, 1);
         t2 = zeros(0, 1);
     else
         % IMPLEMENTATION NOTE: vertcat() for empty array returns double (not
         %                      datetime).
-        t1 = seconds(vertcat(DsmdArray1.dt1) - DT0);
-        t2 = seconds(vertcat(DsmdArray1.dt2) - DT0);
+        t1 = seconds(vertcat(DsmdArray1.dt1) - DT_EPOCH);
+        t2 = seconds(vertcat(DsmdArray1.dt2) - DT_EPOCH);
     end
     datasetIdCa = {DsmdArray1.datasetId};
     datasetIdCa = datasetIdCa(:);
@@ -341,7 +345,7 @@ function rankArray = rank_DSMDs_wrt_former_versions_dir(DsmdArray)
     FVD_NAME = 'former_versions';
 
     pathArray = {DsmdArray.path};
-    rankArray = zeros(size(pathArray));    % FVD = former_versions/ directory.
+    rankArray = zeros(size(pathArray));
     for i = 1:numel(pathArray)
         pathPartsArray = strsplit(pathArray{i}, filesep);
         rankArray(i)   = double(~any(ismember(FVD_NAME, pathPartsArray)));
