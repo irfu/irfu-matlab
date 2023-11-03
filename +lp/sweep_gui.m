@@ -81,7 +81,7 @@ switch action
     inp.probe.radius_value               = uicontrol('Parent',hp,'String',num2str(ud.probe.radius),'Position',[120 135 70 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
     inp.probe.bias_current_text          = uicontrol('Parent',hp,'String','bias current [uA]',     'Position',[0   110 120 30]);
     inp.probe.bias_current_value         = uicontrol('Parent',hp,'String','0','style','edit',      'Position',[120 110 70 30],'backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-    
+
     inp.UV_factor_text                   = uicontrol('Parent',hp,'String','UV factor',             'Position',[0   80 60 30]);
     inp.UV_factor_value                  = uicontrol('Parent',hp,'String',num2str(ud.UV_factor),   'Position',[70  80 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
     inp.Rsun_text                        = uicontrol('Parent',hp,'String','Rsun [AU]',             'Position',[0   55 60 30]);
@@ -123,7 +123,7 @@ switch action
     %% initialize plot menu
     hpl= uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .94 .3 .06]);
     inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU|Antenna noise','Position',[0 0 150 25],'style','popup','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-    
+
     ud.inp=inp;
     set(gcf,'userdata',ud);
     %
@@ -224,7 +224,7 @@ switch action
       end
       Ibias=J_probe(ind==1); % bias current to probe measured with respect to sc
       Ubias=Upot(ind==1);
-      
+
       %
       antena_guard_area_factor=(ud.probe.cross_section_area+ud.sc.antenna_guard_area/ud.sc.number_of_probes)/ud.probe.cross_section_area;
       Iprobe=Ibias*antena_guard_area_factor;
@@ -269,7 +269,7 @@ switch action
         Uprobe2plasma(ii)=uprobe;
         Uproberefsweep(ii)=refpot;
       end
-      
+
       Uprobe2sc        =Uprobe2plasma-Usatsweep;
       Uprobe2refpot    =Uprobe2plasma-Uproberefsweep;
       dUdI_probe2plasma=gradient(Uprobe2plasma,Ibias);
@@ -324,11 +324,11 @@ switch action
       end
     end
     hold(h(1),'off');
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % INFORMATION PANEL
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     Rmin = min(abs(dUdI)); % minimum resistance
     fcr=1/2/pi/Rmin/probe.capacitance;
     disp(['Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.']);
@@ -339,7 +339,7 @@ switch action
     else
       info_txt=[info_txt '\newline Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.'];
     end
-    
+
     if min(J_probe)<0 && max(J_probe)>0                   % display information on Ufloat
       Ufloat=interp1(J_probe,Upot,0); % floating potential
       ii=isfinite(Upot);Rfloat=interp1(Upot(ii),dUdI(ii),Ufloat);
@@ -384,11 +384,11 @@ switch action
         end
       end
     end
-    
+
     axis(h(3),'off');
     set(ud.ht,'string',info_txt,'fontsize',11);
     set(gcf,'userdata',ud);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % TOP PANEL
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -423,15 +423,15 @@ switch action
       A_antenna=ud.probe.total_area;
       distance_to_Sun=ud.R_sun; % AU
       UV=ud.UV_factor;
-      
+
       noise_preamp=10e-9; % preamplifier noise 10nV/Hz1/2
       noise_preamp_level=(noise_preamp/antenna_eff_length)^2;
       f_break=400; % transition frequency at which 1/f noise is starting
-      
+
       % instrumental noise
       noise_instr_X=[f_range(1) f_break f_range(2)];
       noise_instr_Y=noise_preamp_level*[sqrt(f_break/f_range(1)) 1  1];
-      
+
       if exist('Rbias','var')
         T_eV=1; % photoelectron temperature
         noise_thermal_bias=4*Units.e*T_eV*sqrt(Rbias^2./(1+(2*pi*f).^2*Rbias^2*C_antenna^2))/antenna_eff_length^2;
@@ -489,14 +489,14 @@ switch action
           ht=text(f_range(1),noise_total_bias(1),'total noise (bias)','parent',ax);
           set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left','color','r');
         end
-        
+
         ylabel(h(2),'Electric field intensity [V^2/m^2/Hz]');
         %ylabel('Electric field intensity [dB V/m/Hz^{1/2}]');
         xlabel(h(2),'Frequency [Hz]');
         hold(h(2),'off');
       end
     end
-    
+
 end
 disp('READY!')
 end

@@ -229,13 +229,13 @@ if DOPLOT
     %diE( diE(:,1)>=t(j)-TAV/2 & diE(:,1)<=t(j)+TAV/2, 2:end) = NaN;
     diE( diE(:,1)>=t(j)-TAV & diE(:,1)<=t(j)+TAV, 2:end) = NaN;
   end
-  
+
   h(6) = irf_subplot(nplots,1,-6);
   irf_plot(diE(:,1:3))
   ylabel('E cor [mV/m]')
-  
+
   irf_zoom(h,'x',[t(1)-TAV/2 t(end)+TAV/2])
-  
+
   [ok,r] = c_load('R?',cl_id);
   if ok, add_position(h(6),r), end
 elseif ~isempty(wind)

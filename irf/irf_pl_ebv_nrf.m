@@ -45,7 +45,7 @@ if nargin == 4,  sc_list=1;de1=e;db1=b; end
 if nargin == 5,  eval(irf_ssub('de?=irf_tlim(e,tint);db?=irf_tlim(b,tint);',sc_list));  end
 
 for ic=sc_list % which satellite
-  
+
   %%%%%%%%%%%%%%%%%%%%% Convert to MP boundary reference frame %%%%%%%%%%%%
   eval(irf_ssub('vn=c_gse2dsc(vngse,[tint(1) ic]);b=db?;e=de?;',ic));
   if q_flag == 2, flag=c_gse2dsc(L_dir,[tint(1) ic]);end
@@ -58,7 +58,7 @@ for ic=sc_list % which satellite
   ebv=irf_add(1,eb,1,evxb);
   ev=irf_add(1,e,1,evxb);
   veb=irf_e_vxb(ebv,be,-1);
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%   Convert to LMN %%%%%%%%%%%%%%%%%%%%%%%%
   [ev_lmn,L,M,N]=irf_eb_nrf(ev,be,vn,flag);
   eb_lmn=irf_eb_nrf(eb,be,vn,flag);
@@ -67,7 +67,7 @@ for ic=sc_list % which satellite
   elmn=ebv_lmn;
   b_lmn=irf_eb_nrf(be,be,vn,flag);
   v_lmn=irf_eb_nrf(veb,be,vn,flag);
-  
+
   %%%%%%%%%%%%%%%%  Get the directions of L,M,N in GSE coordinates %%%%%%%%%%%%%%%%
   L=c_gse2dsc(L,[tint(1) ic],-1);
   M=c_gse2dsc(M,[tint(1) ic],-1);
@@ -87,11 +87,11 @@ for ic=sc_list % which satellite
   else
     N_str=['N=[' num2str(N(1,2:4),'%7.2f') ']'];
   end
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%%%%%%   PLOT %%%%%%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
+
   figure(ic);clf
   npl=7;ipl=1;
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
@@ -111,26 +111,26 @@ for ic=sc_list % which satellite
     disp('No satellite potential data');
   end
   irf_pl_info([mfilename '  '  char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))]); % add information to the plot
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(b_lmn);grid on;axis tight;ylabel('B_{LMN} [nT]');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot([eb(:,1:2) -eb(:,3:4)]);grid on; ylabel('E_{DSI} [mV/m]');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(ev_lmn);grid on; ylabel('E+vxB [mV/m]');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(ebv_lmn);grid on; ylabel('E_{E.B=0}+vxB [mV/m]');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(v_lmn);grid on; ylabel('v_{ExB}-Vmp [km/s]');
-  
+
   h(ic,ipl)=irf_subplot(npl,1,ipl);ipl=ipl+1;
   irf_plot(b_angle);grid on;irf_zoom([-90 90],'y');title('B elevation angle. +-10 deg limits marked.');ylabel('[degrees]');
   ll=line(b_angle([1 end end 1],1),[10 10 -10 -10],'Color',[.8 .8 .8]);
-  
+
 end
 
 irf_zoom(tint,'x',h(sc_list,:));

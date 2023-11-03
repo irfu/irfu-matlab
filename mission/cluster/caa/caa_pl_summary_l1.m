@@ -94,16 +94,16 @@ c_eval('p?=[];ps?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];pswake?=[];lowake
 for cli=1:4
   cdir = [sdir '/C' num2str(cli)];
   in = {};
-  
+
   if ~exist(cdir, 'dir'), continue, end
   d = dir([cdir '/2*_*']);
   if isempty(d), continue, end
-  
+
   for jj=1:length(d)
     curdir = [cdir '/' d(jj).name];
     if ~exist([curdir '/.interval'],'file'), continue, end
     cd(curdir)
-    
+
     % Load intervals & TM mode
     [st_s,dt1] = caa_read_interval;
     t1 = iso2epoch(st_s);
@@ -119,7 +119,7 @@ for cli=1:4
     end
     in = [in; {in_tmp}]; %#ok<AGROW>
     clear in_tmp
-    
+
     cd(old_pwd)
   end
   if ~isempty(in), c_eval('in?=in;',cli), end, clear in
@@ -136,16 +136,16 @@ for cli=1:4
   cdir = [sdir '/C' num2str(cli)];
   p = []; ps = [];spec = {}; es = []; rspec = []; wamp = [];
   pswake = []; lowake = []; edi = [];
-  
+
   if exist(cdir, 'dir')
     d = dir([cdir '/2*_*']);
     if isempty(d), continue, end
-    
+
     for jj=1:length(d)
       curdir = [cdir '/' d(jj).name];
       if ~exist([curdir '/.interval'],'file'), continue, end
       cd(curdir)
-      
+
       % Load R
       if isempty(r) || ri==cli
         r_tmp = c_load('R?',cli,'var');
@@ -153,19 +153,19 @@ for cli=1:4
         if isempty(ri), ri = cli; end
       end
       clear r_tmp
-      
+
       % Load EDI
       edi_tmp = c_load('diEDI?',cli,'var');
       if ~isempty(edi_tmp) && edi_tmp(1,1)~=-157e8
         edi = [edi; edi_tmp]; %#ok<AGROW>
       end
       clear edi_tmp
-      
+
       % Load P
       p_tmp = c_load('P?',cli,'var');
       if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end %#ok<AGROW>
       clear p_tmp
-      
+
       % Load Ps
       p_tmp = c_load('Ps?',cli,'var');
       [ok,probe_info,msg] = c_load('Ps?_info',cli);
@@ -175,14 +175,14 @@ for cli=1:4
         p_tmp(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
         p_quality_column = size(p_tmp, 2);
         p_bitmask_column = p_quality_column - 1;
-        
+
         p_tmp = caa_identify_problems(p_tmp, 3, num2str(probe_info.probe), cli, p_bitmask_column, p_quality_column, 1);
         ps = [ps; p_tmp];
       else
         irf_log('load',msg)
       end
       clear p_tmp
-      
+
       % Load SW WAKE amplitude
       for pp=[12 32 34]
         wamp_tmp = c_load(['WAKE?p' num2str(pp)],cli,'var');
@@ -196,7 +196,7 @@ for cli=1:4
         end
         clear wamp_tmp
       end
-      
+
       % Load PS/LO WAKEs
       for pp=[12 32 34 42]
         pswake_tmp = c_load(['PSWAKE?p' num2str(pp)],cli,'var');
@@ -210,7 +210,7 @@ for cli=1:4
         end
         clear lowake_tmp
       end
-      
+
       % Load spectrum
       spec_tmp = c_load('diESPEC?p1234',cli,'var');
       if ~isstruct(spec_tmp) && (isempty(spec_tmp) || spec_tmp==-157e8)
@@ -221,12 +221,12 @@ for cli=1:4
         if spec_tmp.f(end)>fmax, fmax = spec_tmp.f(end); end
       end
       clear spec_tmp
-      
+
       % Load Es
       spinFits = caa_sfit_load(cli);
-      
+
       if ~isempty(spinFits)
-        
+
         if spinFits.flagLX
           probe_numeric = spinFits.probePair;
         else
@@ -256,7 +256,7 @@ for cli=1:4
           end
           clear ok hbias msg
         end
-        
+
         % Remove saturation
         if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
         else, probepair_list=[1 2 3 4];end
@@ -271,7 +271,7 @@ for cli=1:4
           end
           clear ok hbias msg
         end
-        
+
         % Remove whisper pulses
         [ok,whip,msg] = c_load('WHIP?',cli);
         if ok
@@ -282,7 +282,7 @@ for cli=1:4
         else, irf_log('load',msg)
         end
         clear ok whip msg
-        
+
         % Remove ns_ops intervals
         ns_ops = c_ctl('get', cli, 'ns_ops');
         if isempty(ns_ops)
@@ -301,22 +301,22 @@ for cli=1:4
           end
           clear ns_ops ns_ops_intervals
         end
-        
+
         %%% Fill gaps in data???? %%%
-        
-        
+
+
         % Extend data array to accept bitmask and quality flag (2 columns at the end)
         spinFits.diEs = [spinFits.diEs zeros(size(spinFits.diEs, 1), 2)];
         spinFits.diEs(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
         e_quality_column = size(spinFits.diEs, 2);
         e_bitmask_column = e_quality_column - 1;
-        
+
         % Identify and flag problem areas in data with bitmask and quality factor:
         if probe_numeric == 120 || probe_numeric == 320 || probe_numeric == 340 || probe_numeric == 420
           probe_numeric = probe_numeric/10;
         end
         spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',probe_numeric), cli, e_bitmask_column, e_quality_column);
-        
+
         % Delta offsets
         Del_caa = c_efw_delta_off(spinFits.diEs(1,1),cli);
         if ~isempty(Del_caa)
@@ -328,8 +328,8 @@ for cli=1:4
             spinFits.diEs = caa_corof_delta(spinFits.diEs,spinFits.probePair,Del_caa,'apply');
           end
         end
-        
-        
+
+
         % DSI offsets
         dsiof = c_ctl(cli,'dsiof');
         if isempty(dsiof)
@@ -341,7 +341,7 @@ for cli=1:4
             [dsiof_def, dam_def] = c_efw_dsi_off(spinFits.diEs(1,1),cli,Ps);
           end
           clear ok Ps msg
-          
+
           if usextra % Xtra offset
             [ok1,Ddsi] = c_load('DdsiX?',cli);
             if ~ok1
@@ -356,7 +356,7 @@ for cli=1:4
             if ~ok1, Ddsi = dsiof_def; end
           end
           [ok2,Damp] = c_load('Damp?',cli); if ~ok2, Damp = dam_def; end
-          
+
           if ok1 || ok2, irf_log('calb',...
               ['Saved DSI offsets on C' num2str(cli)])
             %else irf_log('calb','Using default DSI offsets')
@@ -367,10 +367,10 @@ for cli=1:4
           irf_log('calb',['User DSI offsets on C' num2str(cl_id)])
         end
         clear dsiof
-        
+
         spinFits.diEs = caa_corof_dsi(spinFits.diEs,Ddsi,Damp); clear Ddsi Damp
         es = [es; spinFits.diEs]; %#ok<AGROW>
-        
+
         % Load RSPEC
         if spinFits.probePair == 120 || spinFits.probePair == 320 || spinFits.probePair == 340 || spinFits.probePair == 420
           spinFits.probePair = spinFits.probePair/10;
@@ -389,7 +389,7 @@ for cli=1:4
         end
         clear rspec_tmp
       end
-      
+
       cd(old_pwd)
     end
     if ~isempty(edi), c_eval('edi?=edi;',cli), end, clear edi
@@ -406,7 +406,7 @@ for cli=1:4
       %			if ~isempty(es), es = caa_rm_blankt(es,lowake); end
     end
     clear lowake
-    
+
     if ~isempty(es), c_eval('es?=es;',cli), end, clear es
     if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end, clear rspec
     if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
@@ -421,18 +421,18 @@ tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if plotspec
-  
+
   figure(75)
   if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
   else, set(gcf,'position',[7   159   790   916])
   end
   clf
-  
+
   h = 1:7;
   for pl=1:7, h(pl) = irf_subplot(7,1,-pl); end
-  
+
   figure_start_epoch(st);
-  
+
   ytick =  [.25 .5 1 10];
   if fullscale && fmax>100, ytick = [ytick 100]; end
   for cli=1:4
@@ -457,26 +457,26 @@ if plotspec
     end
     set(hca,'XTickLabel',[])
   end
-  
+
   % Plot quality
   plot_quality(h(5), {{es1,ps1}, {es2,ps2}, {es3,ps3}, {es4,ps4}}, st)
-  
+
   % Plot P
   hca = h(6);
   c_pl_tx(hca,'ps?',2)
   ylabel(hca,'P L3 [-V]'), xlabel(hca,'')
   a = get(hca,'YLim');
   if a(1)<-70, a(1)=-70; set(hca,'YLim',a); end
-  
+
   if dt>0
     plot_intervals(h(7),{in1,in2,in3,in4},st)
     irf_zoom(h,'x',st +[0 dt])
     xlabel(h(end),'')
     if ~isempty(r), add_position(h(7),r), end
   end
-  
+
   orient(75,'tall')
-  
+
 end % if plotspec
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -524,7 +524,7 @@ for cli=1:4
     yrange = get(hca,'YLim');
     text(in_tmp.interv(1)-figure_start_epoch(st)+60,yrange(2)*0.8,['p' in_tmp.probeID],'parent',hca)
   end
-  
+
 end
 
 t_start_epoch = figure_start_epoch(st);
@@ -567,23 +567,23 @@ orient(76,'tall')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if plotbitmask
-  
+
   figure(77)
   if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
   else, set(gcf,'position',[7   159   790   916])
   end
   clf
-  
+
   h = 1:6;
   for pl=1:6, h(pl) = irf_subplot(6,1,-pl); end
-  
+
   t_start_epoch = figure_start_epoch(st);
-  
+
   % Plot bits in bitmask
   ytick_label =  1:16;
   ytick_offset = fix( (ytick_label-1) / 4 );
   ytick = ytick_label + ytick_offset;
-  
+
   for cli=1:4
     hca = h(cli);
     hold(hca,'on')
@@ -620,19 +620,19 @@ if plotbitmask
     set(hca,'YTick',ytick, 'YTickLabel', ytick_label, 'FontSize', 6)
     grid(hca,'on')
     hold(hca,'off')
-    
+
   end
-  
+
   % Plot quality
   plot_quality(h(5), {{es1,ps1}, {es2,ps2}, {es3,ps3}, {es4,ps4}}, st)
-  
+
   if dt>0
     plot_intervals(h(6),{in1,in2,in3,in4},st)
     irf_zoom(h,'x',st +[0 dt])
     xlabel(h(end),'')
     if ~isempty(r), add_position(h(6),r), end
   end
-  
+
   orient(77, 'tall')
 end % if plotbitmask
 
@@ -764,7 +764,7 @@ for cli=1:4
     indexes = [];
     start_ind = 1;
     finished = 0;
-    
+
     while ~finished
       if isnan(quality(start_ind))
         next_ind = find(~isnan(quality(start_ind:end)), 1);
@@ -775,16 +775,16 @@ for cli=1:4
         next_ind = length(quality(start_ind:end)) + 1;
         finished = 1;
       end
-      
+
       end_ind = start_ind + next_ind - 2;
       indexes = [indexes; [start_ind end_ind] quality(start_ind)]; %#ok<AGROW>
-      
+
       if ~isnan(quality(start_ind))
         plot(h,[data(start_ind, 1)-2 data(end_ind, 1)+2] - t_start_epoch, ...
           [cli_pos(cli) cli_pos(cli)]+0.2*(iVar-1), linecolor(quality(start_ind)+1), ...
           'LineWidth', 3-quality(start_ind)+0.5);
       end
-      
+
       start_ind = start_ind + next_ind - 1;
     end
   end

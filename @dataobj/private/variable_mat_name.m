@@ -28,15 +28,15 @@ end
 
 % Take care of names longer than 63 symbols (Matlab limit)
 if length(variableMatName)>63
-    %Try typical changes (based on FEEPS variable names)
-    variableMatName = strrep(variableMatName,'electron','elec');
-    variableMatName = strrep(variableMatName,'energy','ener');
-    variableMatName = strrep(variableMatName,'sensorid','sensid');
-    variableMatName = strrep(variableMatName,'contamination','contam');
-    %continue with truncate if above fails
-    if length(variableMatName)>63
-        variableMatName = variableMatName(1:63);
-    end
+  %Try typical changes (based on FEEPS variable names)
+  variableMatName = strrep(variableMatName,'electron','elec');
+  variableMatName = strrep(variableMatName,'energy','ener');
+  variableMatName = strrep(variableMatName,'sensorid','sensid');
+  variableMatName = strrep(variableMatName,'contamination','contam');
+  %continue with truncate if above fails
+  if length(variableMatName)>63
+    variableMatName = variableMatName(1:63);
+  end
 end
 
 % if changes made write out log

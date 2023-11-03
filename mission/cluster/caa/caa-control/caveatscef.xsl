@@ -12,7 +12,7 @@ Valid parameter clusterno: values 1-4
 
 Uses exslt date & time and dynamic functions. Works with xsltproc.
 
-Copyright 2011-15 Jan Karlsson
+Copyright (c) 2011-23 Jan Karlsson
 
 Updated to exclude infinity (-1) stop time items
 
@@ -24,7 +24,7 @@ $Id$
   <xsl:text> </xsl:text>
   <xsl:value-of select="substring(date:time(),1,8)"/>
 !--------------------------------------------------------|
-FILE_NAME = "C<xsl:value-of select="$clusterno"/>_CQ_EFW_INST_V00.cef"
+FILE_NAME = "C<xsl:value-of select="$clusterno"/>_CQ_EFW_INST__20010128_V02.cef"
 FILE_FORMAT_VERSION = "CEF-2.0"
 END_OF_RECORD_MARKER = "$"
 include = "CL_CH_MISSION.ceh"
@@ -39,21 +39,21 @@ START_META     =   DATASET_VERSION
    ENTRY       =   "3"
 END_META       =   DATASET_VERSION
 START_META     =   LOGICAL_FILE_ID
-   ENTRY       =   "C<xsl:value-of select="$clusterno"/>_CQ_EFW_INST_V00"
+   ENTRY       =   "C<xsl:value-of select="$clusterno"/>_CQ_EFW_INST__20010128_V02"
 END_META       =   LOGICAL_FILE_ID
 START_META     =   VERSION_NUMBER
-   ENTRY       =   "00"
+   ENTRY       =   02
 END_META       =   VERSION_NUMBER
 START_META     =   FILE_TIME_SPAN
    VALUE_TYPE  =   ISO_TIME_RANGE
-   ENTRY       =   2001-02-01T00:00:00Z/2020-01-01T00:00:00Z
+   ENTRY       =   2001-01-28T00:00:00Z/2022-01-01T00:00:00Z
 END_META       =   FILE_TIME_SPAN
 START_META     =   GENERATION_DATE
    VALUE_TYPE  =   ISO_TIME
    ENTRY       =   <xsl:value-of select="substring(date:date-time(),1,19)"/>Z
 END_META       =   GENERATION_DATE
 START_META     =   FILE_CAVEATS
-   ENTRY       =   "Cluster <xsl:value-of select="$clusterno"/>. TBD stop time: 2020-01-01T00:00:00Z"
+   ENTRY       =   "Cluster <xsl:value-of select="$clusterno"/>. TBD stop time: 2022-01-01T00:00:00Z"
 END_META       =   FILE_CAVEATS
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -79,8 +79,8 @@ DATA_UNTIL = "END_OF_DATA"
 		<xsl:variable name="dt" select="@dt"/>
 		<xsl:if test="$dt != -1">
 			<xsl:value-of select="@start"/>/<xsl:choose>
-			<!--	<xsl:when test="$dt = -1">2020-01-01T00:00:00Z</xsl:when>        Infinity removed -->
-				<xsl:when test="$dt = -157">2020-01-01T00:00:00Z</xsl:when> <!-- TBD -->
+			<!--	<xsl:when test="$dt = -1">2025-01-01T00:00:00Z</xsl:when>        Infinity removed -->
+				<xsl:when test="$dt = -157">2022-01-01T00:00:00Z</xsl:when> <!-- TBD -->
 				<xsl:otherwise><xsl:value-of select="date:add(@start,concat('PT',$dt,'S'))"/></xsl:otherwise>
 			</xsl:choose>,"<xsl:value-of select="@sdesc"/>","<xsl:apply-templates select="@plan"/>","<xsl:value-of select="translate(translate(child::desc,'&#x9;&#xa;',''),'&#x22;',&quot;&#x27;&quot;)"/>" $
 </xsl:if> <!-- Not indented to not f**k up result file -->

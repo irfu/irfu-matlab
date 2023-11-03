@@ -251,11 +251,11 @@ if 0 % plot regions
   ind=3; plot(rTHOR.x.data(find((iKSR.data)==ind),:),rTHOR.y.data(find((iKSR.data)==ind),:),'.');
   ind=6; plot(rTHOR.x.data(find((iKSR.data)==ind),:),rTHOR.y.data(find((iKSR.data)==ind),:),'.');
   hold(hca,'off')
-  
+
   hca = subplot(2,3,isub); isub = isub + 1;
   plot(rTHOR.x.data(isWithin15min,:),rTHOR.y.data(isWithin15min,:),'r.'); hold(hca,'on')
   ind=6; plot(rTHOR.x.data(find((iKSR.data)==ind),:),rTHOR.y.data(find((iKSR.data)==ind),:),'.'); hold(hca,'off')
-  
+
 end
 
 %% Divide into orbits, and Q-bins
@@ -312,21 +312,21 @@ if 0
   labels = arrayfun(@(x,y) {[num2str(x) ' > Q_{||} > ' num2str(y)]}, edgesQ(end:-1:2),edgesQ(end-1:-1:1));
   hpatches=findall(hca,'Type','patch');
   legend(hp,labels,'location','eastoutside')
-  
+
   hca = irf_panel('qpar dist total counts');
   tsCumSumKSR = irf.ts_scalar(iKSRorbit.time,cumsum(iKSRorbit.data(:,[6 4:-1:1]),2));
   hp = irf_patch(hca,tsCumSumKSR);
   %irf_plot(hca,tsCumSumKSR);
   hca.YLabel.String = {'KSR','#/orbit'};
   legend(hp,{'6-bowshock','4-pristine solar wind','3-foreshock (parker)','2-magnetosheath','1-magnetosphere'},'location','eastoutside')
-  
+
   hca = irf_panel('KSR + qpar dist total counts');
   tsCumSumKSR_Q = irf.ts_scalar(tsDistKSR_Q.time,cumsum(tsDistKSR_Q.data(:,[14:-1:6 4:-1:1]),2));
   hp = irf_patch(hca,tsCumSumKSR_Q);
   %irf_plot(hca,tsCumSumKSR);
   hca.YLabel.String = {'KSR','#/orbit'};
   %legend(hp,{'6-bowshock','4-pristine solar wind','3-foreshock (parker)','2-magnetosheath','1-magnetosphere'},'location','eastoutside')
-  
+
   irf_plot_axis_align
 end
 
@@ -466,7 +466,7 @@ else
   % downlinkDelay = 3;
   % make downlinkDelay into time array, because it varies between the
   % phases, NSP1: 3, NSP2: 2, NSP3: 2
-  
+
   % make tm buffert also as timeseries: (orbit time - 8 h) * (average telemetry rate)
   % tmAllocationNSP1, tmAllocationNSP2, tmAllocationNSP3
   tRoiNSP1 = (tApogee(iOrbNSP1(end-10))-tApogee(iOrbNSP1(end-11)))-60*60*8; % minus 8 h
@@ -501,7 +501,7 @@ else
   tmBS    = thor_tm_sitl(dataFomBS,  downlinkBS , memorySaved, tsDownlinkDelay, tsAvTM); tmBS.collected = dataFomBS;
   tmFS    = thor_tm_sitl(dataFomFS,  downlinkFS , memorySaved, tsDownlinkDelay, tsAvTM); tmFS.collected = dataFomFS;
   tmSW    = thor_tm_sitl(dataFomSW,  downlinkSW , memorySaved, tsDownlinkDelay, tsAvTM); tmSW.collected = dataFomSW;
-  
+
   dataTotal = dataMSH;
   dataTotal.data = dataFomBS.data + dataFomMSH.data + dataFomFS.data + dataFomSW.data;
   tmTotal = thor_tm_sitl(dataTotal,   burstTMperOrbitGbit ,memorySaved, tsDownlinkDelay, tsAvTM);  tmTotal.collected = irf.ts_scalar(tmTotal.saved.time,dataTotal.data);
@@ -559,18 +559,18 @@ if 0 % Saved data per orbit
   hold(hca,'off')
   hl_ = irf_legend(hca,{'Memory allocated for'},[0.01, 0.85],'k'); hl_.Color = 0.3*[1 1 1];
   hl_ = irf_legend(hca,{'newly collected data'},[0.01, 0.7],'k'); hl_.Color = 0.3*[1 1 1];
-  
+
   %irf_legend(hca,{'Data with assigned FOM'},[0.01, 0.55],'k')
   %irf_legend(hca,{'placed in download queue'},[0.01, 0.3],'k')
-  
+
   %ht = irf_legend(hca,{'Data with assigned FOM'},[0.98, 0.3],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
   %ht = irf_legend(hca,{'placed in download queue'},[0.98, 0.1],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
   irf_timeaxis(hca);
   labels = arrayfun(@(x) {['Cat. ' num2str(x)]}, 1:4);
   %labels = {labels{:},'m'}
   legend([hp],labels{:},'location','eastoutside')
-  
-  
+
+
   hca.YLabel.String = {'Saved','onboard','Gbit/orbit'};
   hca.YLabel.String = {'Saved data in','download queue','Gbit'};
   hca.YLabel.String = {'Onboard data','Gbit'};
@@ -650,7 +650,7 @@ if 1 % Onboard data
   hpatch2.FaceColor = [1 1 1];
   hpatch2.EdgeColor = 0.0*[1 1 1];
   hpatch2.FaceAlpha = 0.3;
-  
+
   %hl_ = irf_legend(hca,{'Memory allocated for'},[0.01, 0.95],'k'); hl_.Color = 0.3*[1 1 1];
   %hl_ = irf_legend(hca,{'newly collected data'},[0.01, 0.8],'k'); hl_.Color = 0.3*[1 1 1];
   if 1
@@ -679,8 +679,8 @@ if 1 % Onboard data
   %ht = irf_legend(hca,{'Data with assigned FOM'},[0.98, 0.3],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
   %ht = irf_legend(hca,{'placed in download queue'},[0.98, 0.1],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
   irf_timeaxis(hca);
-  
-  
+
+
   hca.YLabel.String = {'Saved','onboard','Gbit/orbit'};
   hca.YLabel.String = {'Saved data in','download queue','Gbit'};
   hca.YLabel.String = {'Memory','(Gbit)'};
@@ -787,18 +787,18 @@ if 1 % Saved data per orbit
   hold(hca,'off')
   hl_ = irf_legend(hca,{'Memory allocated for'},[0.01, 0.85],'k'); hl_.Color = 0.3*[1 1 1];
   hl_ = irf_legend(hca,{'newly collected data'},[0.01, 0.7],'k'); hl_.Color = 0.3*[1 1 1];
-  
+
   %irf_legend(hca,{'Data with assigned FOM'},[0.01, 0.55],'k')
   %irf_legend(hca,{'placed in download queue'},[0.01, 0.3],'k')
-  
+
   %ht = irf_legend(hca,{'Data with assigned FOM'},[0.98, 0.3],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
   %ht = irf_legend(hca,{'placed in download queue'},[0.98, 0.1],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
   irf_timeaxis(hca);
   labels = arrayfun(@(x) {['Cat. ' num2str(x)]}, 1:4);
   %labels = {labels{:},'m'}
   legend([hp],labels{:},'location','eastoutside')
-  
-  
+
+
   hca.YLabel.String = {'Saved','onboard','Gbit/orbit'};
   hca.YLabel.String = {'Saved data in','download queue','Gbit'};
   hca.YLabel.String = {'Onboard data','Gbit'};

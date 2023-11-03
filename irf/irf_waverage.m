@@ -47,7 +47,7 @@ for col=2:ncol
     otherwise
       error('nAveragePoints must be 5 or 7')
   end
-  
+
   for j=1:ndata+1
     out(j,col) = w_ave(dtmp(j:j+nAveragePoints-1),nAveragePoints);
   end

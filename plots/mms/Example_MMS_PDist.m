@@ -158,16 +158,16 @@ projclim = [0 5]; % colorbar limit
 for i=1:80
   idx = tInd + i -1;
   time = ePDistN.time(idx);
-  
+
   hatExB0 = cross(hatE0tmp(idx,:),hatB0(idx,:));
   hatE0 = cross(hatB0(idx,:),hatExB0);
-  
+
   x = hatE0;
   y = hatExB0;
   z = hatB0(idx,:);
-  
+
   % Initialize figure
-  
+
   % Alt 1: 2x3 plots
   %nRows = 2; nCols = 3;
   %for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end
@@ -175,34 +175,34 @@ for i=1:80
   for ii = 1:3; h(ii) = subplot(2,3,ii); end
   for ii = 4:5; h(ii) = subplot(2,2,ii-1); end
   isub = 1;
-  
+
   hca = h(isub); isub = isub + 1;
   xyz = [x; y; z * (-1)];
   vlabels = {'v_E','v_{ExB}','v_B'};
   mms.plot_projection(hca,ePDistN.convertto('s^3/km^6'),'tint',time,'xyz',xyz,'elevationlim',elevlim,'vlim',vlim,'clim',projclim,'scpot',scpot,'vlabel',vlabels);
-  
+
   hca = h(isub); isub = isub + 1;
   xyz = [y; z; x * (-1)];
   vlabels = {'v_{ExB}','v_B','v_E'};
   mms.plot_projection(hca,ePDistN.convertto('s^3/km^6'),'tint',time,'xyz',xyz,'elevationlim',elevlim,'vlim',vlim,'clim',projclim,'scpot',scpot,'vlabel',vlabels);
-  
+
   hca = h(isub); isub = isub + 1;
   xyz = [z; x; y * (-1)];
   vlabels = {'v_B','v_E','v_{ExB}'};
   mms.plot_projection(hca,ePDistN.convertto('s^3/km^6'),'tint',time,'xyz',xyz,'elevationlim',elevlim,'vlim',vlim,'clim',projclim,'scpot',scpot,'vlabel',vlabels);
-  
+
   if 0
     hca = h(isub); isub = isub + 1; %#ok<UNRCH>
     mms.plot_skymap(hca,ePDistN,'tint',time,'energy',150,'flat');
-    
+
     hca = h(isub); isub = isub + 1;
     mms.plot_skymap(hca,ePDistN,'tint',time,'energy',150,'flat','log');
     %hca.CLim = projclim;
-    
+
     hca = h(isub); isub = isub + 1;
     mms.plot_skymap(hca,ePDistN,'tint',time,'energy',150,'vectors',{hatB0,'B'},'log');
   end
-  
+
   hca = h(isub); isub = isub + 1;
   plot(hca,ePitchN.depend{1}(idx,:),ePitchN.data(idx,:,1),...
     ePitchN.depend{1}(idx,:),ePitchN.data(idx,:,9),...
@@ -215,7 +215,7 @@ for i=1:80
   hca.YLim = [1e-31 2e-26];
   hleg = irf_legend(hca,{'0';'90';'180'},[0.98 0.98]);
   title(hca,irf_ssub('MMS?',ic))
-  
+
   hca = h(isub); isub = isub + 1;
   plot(hca,ePitchN.depend{2},squeeze(ePitchN.data(idx,:,:)));
   hca.YScale = 'log';
@@ -224,6 +224,6 @@ for i=1:80
   hca.XLim = [0 180];
   hca.YLim = [1e-31 2e-26];
   hca.XTick = [0 45 90 135 180];
-  
+
   irf_print_fig([irf_ssub('mms?_desdist_',ic) irf_fname(time,4)],'png')
 end

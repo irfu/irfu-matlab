@@ -107,7 +107,7 @@ switch action
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'init'
     inprog_mtx = 0;
-    
+
     % Create figure
     if find(get(0,'children')==main_fig_id)
       pos_old = get(main_fig_id,'Position');
@@ -116,22 +116,22 @@ switch action
     h0 = figure(main_fig_id);
     clf
     set(main_fig_id,'Name', 'CLUSTER CAL GUI')
-    
+
     hnd = guihandles(h0);
-    
+
     % Save the screen size
     sc_s = get(0,'ScreenSize');
     if sc_s(3)==1600 && sc_s(4)==1200, hnd.scrn_size = 2;
     else, hnd.scrn_size = 1;
     end
-    
+
     if isempty(pos_old), set(h0,'Position', pos_main_fig(hnd.scrn_size,:)), end
-    
+
     hnd.DATApanel = uipanel('Position',[.85 .01 .14 .98]);
     set(hnd.DATApanel,'Title','Data')
-    
+
     % Load data
-    
+
     c_Edata = {'diE?p1234','diEs?p12','diEs?p32','diEs?p34', 'diELXs?p42'};
     c_Ddata = {'diEDI?'};
     c_Vdata = {'diVCp?','diVCh?'};
@@ -164,7 +164,7 @@ switch action
     hnd.c_visible = [1 1 1 1]; % all sc are visible by default
     no_active = 1;
     ncdata = 0; % number of non-AUX variables
-    
+
     for cl_id=1:4
       s = irf_ssub('C?',cl_id);
       pxd = .1; pyd = .95-(cl_id-1)*.24;
@@ -174,7 +174,7 @@ switch action
         'Callback',['c_cal_gui(''update_' s 'checkbox'')'],...
         'Tag',[s 'checkbox']);
       ndata = 0;
-      
+
       % Load FGM data
       clear BFGM BPP
       BFGM = []; BPP = [];
@@ -192,11 +192,11 @@ switch action
       if ok, irf_log('load',irf_ssub('loaded  diBr?',cl_id)), end
       [ok,Brs] = c_load('diBrs?',cl_id);
       if ok, irf_log('load',irf_ssub('loaded  diBrs?',cl_id)), end
-      
+
       hnd.BData = [hnd.BData {BFGM}];
       hnd.BPPData = [hnd.BPPData {BPP}];
       clear BFGM BPP
-      
+
       % Load data
       for d=1:4
         for j=1:length(dd{d})
@@ -223,7 +223,7 @@ switch action
             data.sen = dsc.sen;
             [data.plot_style,data.plot_color] =...
               p_style(data.cl_id, data.inst,data.sen);
-            
+
             % tlim
             eval(['tlxxx(1) = ' vs '(1,1); tlxxx(2) = ' vs '(end,1);'])
             if ~hnd.tlim(1), hnd.tlim(1) = tlxxx(1);
@@ -231,7 +231,7 @@ switch action
             end
             if hnd.tlim(2) < tlxxx(2), hnd.tlim(2) = tlxxx(2); end
             clear tlxxx
-            
+
             eval(['data.data =' vs ';'])
             data.p_data = [];
             if ((strcmp(dsc.sen,'1234') || strcmp(dsc.sen,'12') || strcmp(dsc.sen,'32')) && ...
@@ -276,7 +276,7 @@ switch action
               hnd.old_ActiveVar = '';
             end
             eval(['hnd.DATA' vs 'checkbox=hhd;clear hhd'])
-            
+
             % Delta offsets: remove automatic and apply CAA
             if d==1 && strcmp(dsc.quant,'dies')
               eval(['Del_caa = c_efw_delta_off(' vs '(1,1),cl_id);'])
@@ -291,7 +291,7 @@ switch action
               end
               clear Del_caa
             end
-            
+
             % Assign magnetic field to the variable
             % For EFW we use already resampled filed
             % for the others we resample.
@@ -332,7 +332,7 @@ switch action
               else, data.B = [];
               end
             end
-            
+
             % Assing AUX flag
             if d < 4
               data.aux = 0;
@@ -341,10 +341,10 @@ switch action
               % AUX data
               data.aux = 1;
             end
-            
+
             hnd.Data = [hnd.Data, {data}];
             eval(['clear ' vs])
-            
+
           else
             irf_log('load',['cannot load ' vs])
           end
@@ -355,18 +355,18 @@ switch action
         hnd.c_visible(cl_id) = 0;
       end
       eval(['hnd.' s 'checkbox=hhh;clear hhh'])
-      
+
       % Load EFW offsets
       old_pwd = pwd; cd(sp);
       offset = c_ctl(cl_id,'dsiof');
-      
+
       if isempty(offset)
         [dsiof_def, dam_def] = c_efw_dsi_off(hnd.tlim(1),cl_id);
         offset(1) = dsiof_def; offset(2) = dam_def;
-        
+
         [ok1,Ddsi] = c_load('Ddsi?',cl_id); if ok1, offset(1) = Ddsi; end
         [ok2,Damp] = c_load('Damp?',cl_id); if ok2, offset(2) = Damp; end
-        
+
         if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
         else, irf_log('calb','Using default DSI offsets')
         end
@@ -374,17 +374,17 @@ switch action
       else
         irf_log('calb','Using user specified DSI offsets')
       end
-      
+
       cd(old_pwd)
       hnd.EFWoffset(cl_id,:) = offset;
-      
+
       % Load CIS offsets, must be only in Z.
       warning('off','MATLAB:load:variableNotFound')
       if exist('mCIS.mat','file')
         c_eval('load -mat mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
       end
       warning('on','MATLAB:load:variableNotFound')
-      
+
       offset = [0 0];
       if exist(irf_ssub('DHdsi?',cl_id),'var')
         c_eval('offset(1)=DHdsi?;clear DHdsi?',cl_id)
@@ -411,15 +411,15 @@ switch action
       end
       hnd.CISCoffset(cl_id,:) = offset;
     end
-    
+
     hnd.EFWoffset_save = hnd.EFWoffset;
     hnd.CISHoffset_save = hnd.CISHoffset;
     hnd.CISCoffset_save = hnd.CISCoffset;
     hnd.off_updated = 1;
-    
+
     % Check if we have any data apart from AUX
     if ~ncdata, error('No usefull data loaded'), end
-    
+
     % Create Data Axes
     hnd.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes',...
       'ButtonDownFcn','c_cal_gui(''click_Xaxes'')');
@@ -429,13 +429,13 @@ switch action
       'ButtonDownFcn','c_cal_gui(''click_Zaxes'')');
     hnd.AUXaxes = axes('Position',[pxa pya wa ha],'Tag','AUXaxes',...
       'ButtonDownFcn','c_cal_gui(''click_Waxes'')');
-    
+
     % Create Legend Axes
     hnd.DLaxes = axes('Position',[.01 pya+(ha+dya) .12 ha+(ha+dya)*2 ],...
       'Visible','off','XTick',[],'YTick',[]);
     hnd.ALaxes = axes('Position',[.01 pya .12 ha ],...
       'Visible','off','XTick',[],'YTick',[]);
-    
+
     % Create Calibrators
     wp = .15;
     hnd.DXpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*3 wp ha]);
@@ -500,17 +500,17 @@ switch action
       'Units','normalized','Position',[pxa+wa/2-.45*wp-.015 .01 .45*wp hbut*.7],...
       'String','<<',...
       'Callback','c_cal_gui(''press_RWDbutton'')','Tag','RWDbutton');
-    
+
     % Disable buttons
     set(hnd.SaveALLbutton,'Enable','off');
     set(hnd.SAVEbutton,'Enable','off');
     set(hnd.RESETbutton,'Enable','off');
-    
+
     hnd.EVbutton = uicontrol(h0,'Style','togglebutton',...
       'Units','normalized','Position',[pxa+wa+dya*2+.015 pya wp hbut],...
       'String','V, ExB',...
       'Callback','c_cal_gui(''update_EVbutton'')','Tag','EVbutton');
-    
+
     % Menu
     hnd.menu_time = uimenu(h0,'Label','&Time');
     hnd.menu_zoom_in = uimenu(hnd.menu_time,'Label','&Zoom in',...
@@ -525,7 +525,7 @@ switch action
       'Callback','c_cal_gui(''zoom_rs'')',...
       'Accelerator','r',...
       'Enable','off');
-    
+
     % Menu tools
     hnd.menu_tools = uimenu(h0,'Label','&Tools');
     hnd.menu_show_raw = uimenu(hnd.menu_tools,'Label','&Show raw data',...
@@ -550,14 +550,14 @@ switch action
       'Callback','caa_pl_summary',...
       'Accelerator','i',...
       'Enable','on');
-    
+
     guidata(h0,hnd);
-    
+
     c_cal_gui('replot_all')
-    
+
     % Take care of the active variable
     c_cal_gui('ch_active_var')
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % ch_active_var
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -570,7 +570,7 @@ switch action
       hnd.off = hnd.EFWoffset(hnd.Data{j}.cl_id,:);
     else
       j = D_findByName(hnd.Data,hnd.ActiveVar);
-      
+
       if strcmp(hnd.Data{j}.type,'E')
         d_m = 2; vs = 'E'; vsz = 'AMP';
         hnd.off = hnd.EFWoffset(hnd.Data{j}.cl_id,:);
@@ -601,7 +601,7 @@ switch action
     set(hnd.DZedit,'String',num2str(hnd.off(2)))
     set(hnd.DZslider,'Min',MMZ(d_m,1),'Max',MMZ(d_m,2),'Value',hnd.off(2))
     set(hnd.DZpanel,'Title',[num2str(MMZ(d_m,1)) ' < d' vsz ' < ' num2str(MMZ(d_m,2))])
-    
+
     guidata(h0,hnd);
     c_cal_gui('update_SAVEbuttons')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -617,32 +617,32 @@ switch action
     % replot
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'replot'
-    
+
     if inprog_mtx, return, end
     inprog_mtx = 1;
-    
+
     % Plot data
     hnd = guidata(h0);
     h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
     if isempty(hnd.Data), error('no data to calibrate'),end
     if isempty(hnd.last), disp('List empty, will do nothing'), return, end
-    
+
     % Update selected records in DataLegList
     % we set hnd.last to name of the variable we need to add
     d_ii = D_findByNameList(hnd.Data,hnd.last);
-    
+
     % Sanity check
     if isempty(d_ii)
       error('cannot find variables in the data list')
     end
-    
+
     % Plotting
     for j=1:length(d_ii)
       %disp([action ': plotting ' hnd.Data{d_ii(j)}.name])
-      
+
       % Process only visible data
       if ~hnd.Data{d_ii(j)}.visible, continue, end
-      
+
       if hnd.Data{d_ii(j)}.aux
         % Sanity check
         if isempty(L_find(hnd.AUXList,hnd.Data{d_ii(j)}.name))
@@ -650,7 +650,7 @@ switch action
         else
           disp([action ': ' hnd.Data{d_ii(j)}.name ' already in the list'])
         end
-        
+
         % Plotting
         hold(h(4),'on')
         hnd.Data{d_ii(j)}.ploth = plot(hnd.AUXaxes,...
@@ -671,7 +671,7 @@ switch action
             end
           end
         end
-        
+
         % Update p_data only if calibrations were changed
         if isempty(hnd.Data{d_ii(j)}.p_data) || hnd.off_updated
           %disp('replot: recalculating plot data')
@@ -680,7 +680,7 @@ switch action
         end
         if ~isempty(hnd.Data{d_ii(j)}.p_data)
           hnd.DataList = L_add(hnd.DataList,hnd.Data{d_ii(j)}.name);
-          
+
           % Plotting
           for ax=1:3
             hold(h(ax),'on')
@@ -689,7 +689,7 @@ switch action
               hnd.Data{d_ii(j)}.p_data(:,1+ax),...
               hnd.Data{d_ii(j)}.plot_style,...
               'Color',hnd.Data{d_ii(j)}.plot_color);
-            
+
             % Take care of the active variable
             if strcmp(hnd.Data{d_ii(j)}.name,hnd.ActiveVar)
               set(hnd.Data{d_ii(j)}.ploth(ax),...
@@ -707,15 +707,15 @@ switch action
     end
     hnd.last = [];
     hnd.off_updated = 0;
-    
+
     irf_zoom(h,'x',hnd.tlim(end,:));
-    
+
     % Hide the markers so thet they will not contribute YLim
     ts_tmp = hide_t_marker(hnd,hnd.ts_marker);
     te_tmp = hide_t_marker(hnd,hnd.te_marker);
-    
+
     set(h,'YLimMode','auto')
-    
+
     % Show the markers back
     if ~isempty(ts_tmp.t)
       hnd.ts_marker = replot_t_marker(hnd,ts_tmp);
@@ -723,12 +723,12 @@ switch action
     if ~isempty(te_tmp.t)
       hnd.te_marker = replot_t_marker(hnd,te_tmp);
     end
-    
+
     guidata(h0,hnd);
     c_cal_gui('update_legend')
-    
+
     inprog_mtx = 0;
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % replot_all
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -737,13 +737,13 @@ switch action
     hnd = guidata(h0);
     h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
     if isempty(hnd.Data), error('no data to calibrate'),end
-    
+
     if isempty(hnd.last)
       % Clear everything
       for ax=1:4, cla(h(ax)), end
       hnd.DataList = {};
       hnd.AUXList = {};
-      
+
       % Plot
       for j=1:length(hnd.Data)
         hnd.last = L_add(hnd.last,hnd.Data{j}.name);
@@ -752,7 +752,7 @@ switch action
       guidata(h0,hnd);
       c_cal_gui('replot')
       hnd = guidata(h0);
-      
+
       % Axes labels
       labs = ['x' 'y' 'z'];
       if hnd.mode, u_s = 'E'; u_u = 'mV/m'; cmp = '';
@@ -765,10 +765,10 @@ switch action
       ylabel(h(4),'AUX')
       irf_timeaxis(h);
       grid(h(4),'on')
-      
+
       % Time span
       irf_zoom(h,'x',hnd.tlim(end,:));
-      
+
       guidata(h0,hnd);
     else
       % Replotting NOT ALL data (hnd.last is set)
@@ -785,7 +785,7 @@ switch action
     else
       cla(hnd.DLaxes)
       set(hnd.DLaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
-      
+
       % Make fake plots
       for j=1:length(hnd.DataList)
         ii = D_findByName(hnd.Data,hnd.DataList{j});
@@ -796,7 +796,7 @@ switch action
           'Visible','off')
         hold(hnd.DLaxes,'off')
       end
-      
+
       % Make legend
       ii = D_findByNameList(hnd.Data,hnd.DataList);
       l_s = ['''' hnd.Data{ii(1)}.label ''''];
@@ -816,7 +816,7 @@ switch action
     else
       cla(hnd.ALaxes)
       set(hnd.ALaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
-      
+
       % Make fake plots
       for j=1:length(hnd.AUXList)
         ii = D_findByName(hnd.Data,hnd.AUXList{j});
@@ -827,7 +827,7 @@ switch action
           'Visible','off')
         hold(hnd.ALaxes,'off')
       end
-      
+
       % Make legend
       ii = D_findByNameList(hnd.Data,hnd.AUXList);
       l_s = ['''' hnd.Data{ii(1)}.label ''''];
@@ -850,7 +850,7 @@ switch action
     hnd = guidata(h0);
     ava = hnd.Data{D_findByName(hnd.Data,hnd.ActiveVar)};
     cl_id = ava.cl_id;
-    
+
     % See if we have offsets different from the saved ones and
     % enable SAVE and RESET buttons
     if strcmp(ava.type,'E'), off_s = hnd.EFWoffset_save(cl_id,:);
@@ -864,7 +864,7 @@ switch action
     if any(off_s-hnd.off), for j=1:3, set(hxx(j),'Enable','on'), end
     else, for j=1:3, set(hxx(j),'Enable','off'), end
     end
-    
+
     % SaveALL button
     if any(hnd.EFWoffset_save(:) - hnd.EFWoffset(:)) || ...
         any(hnd.CISHoffset_save(:) - hnd.CISHoffset(:)) ||...
@@ -876,29 +876,29 @@ switch action
     % update_off
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'update_off'
-    
+
     if inprog_mtx, return, end
     inprog_mtx = 1;
-    
+
     hnd = guidata(h0);
     k = D_findByName(hnd.Data,hnd.ActiveVar);
-    
+
     if strcmp(hnd.Data{k}.type,'E')
       % We calibrate E
-      
+
       % Sanity check
       if ~strcmp(hnd.Data{k}.inst,'EFW')
         disp('update_off: we are doing something wrong with INST')
         inprog_mtx = 0;
         return
       end
-      
+
       % See if offsets were really changed and replot everything
       if any(hnd.EFWoffset(hnd.Data{k}.cl_id,:) - hnd.off)
         hnd.EFWoffset(hnd.Data{k}.cl_id,:) = hnd.off;
         %disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
         hnd.off_updated = 1;
-        
+
         % Create list of variables which need to be replotted
         ii = D_findByCLID(hnd.Data,hnd.Data{k}.cl_id);
         up_list = {};
@@ -920,7 +920,7 @@ switch action
       end
     else
       % We calibrate V
-      
+
       % See if offsets were really changed and replot everything
       if strcmp(hnd.Data{k}.sen,'HIA')
         d_off = hnd.CISHoffset(hnd.Data{k}.cl_id,:);
@@ -933,7 +933,7 @@ switch action
         end
         %disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
         hnd.off_updated = 1;
-        
+
         % Create list of variables which need to be replotted
         ii = D_findByCLID(hnd.Data,hnd.Data{k}.cl_id);
         up_list = {};
@@ -961,7 +961,7 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'update_EVbutton'
     hnd = guidata(h0);
-    
+
     % Clear last for security
     hnd.last = [];
     if get(hnd.EVbutton,'Value')==1
@@ -987,10 +987,10 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'press_SAVEbutton'
     hnd = guidata(h0);
-    
+
     ava = hnd.Data{D_findByName(hnd.Data,hnd.ActiveVar)};
     cl_id = ava.cl_id;
-    
+
     if strcmp(ava.inst,'EFW') && strcmp(ava.type,'E')
       f_name = './mEDSI.mat';
       c_eval('Ddsi?=hnd.off(1);Damp?=hnd.off(2);')
@@ -1023,18 +1023,18 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'press_SaveALLbutton'
     hnd = guidata(h0);
-    
+
     f_name = {'./mEDSI.mat' './mCIS.mat' './mCIS.mat'};
     o_name = {'EFW' 'CISH' 'CISC'};
     v1 = {'Ddsi?' 'DHdsi?' 'DCdsi?'};
     v2 = {'Damp?' 'DHz?' 'DCz?'};
-    
+
     for j=1:3
       c_eval([v1{j} '=hnd.' o_name{j} 'offset(?,1);' ...
         v2{j} '=hnd.' o_name{j} 'offset(?,2);'])
       c_eval(['hnd.' o_name{j} 'offset_save(?,:)=hnd.' o_name{j} 'offset(?,:);'])
       c_eval(['s?=[''' v1{j} ''' '' '' ''' v2{j} '''];']);
-      
+
       var_s = [s1 ' ' s2 ' ' s3 ' ' s4];
       eval(['save ' f_name{j} ' ' var_s ' -mat -append'])
       irf_log('save',[var_s ' -> ' f_name{j}])
@@ -1047,7 +1047,7 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'press_RESETbutton'
     hnd = guidata(h0);
-    
+
     k = D_findByName(hnd.Data,hnd.ActiveVar);
     if strcmp(hnd.Data{k}.type,'E')
       hnd.off = hnd.EFWoffset_save(hnd.Data{k}.cl_id,:);
@@ -1071,7 +1071,7 @@ switch action
       set(eval(['hnd.D' comp_s(comp) 'edit']),'String',num2str(val));
       set(eval(['hnd.D' comp_s(comp) 'slider']),'Value',val);
     end
-    
+
     guidata(h0,hnd);
     c_cal_gui('update_off')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1139,14 +1139,14 @@ switch action
     hnd = guidata(h0);
     ii = D_findByCLID(hnd.Data,cl_id);
     if isempty(ii), return, end
-    
+
     % Check if we try to hide the active variable
     if ~isempty(D_findByName(hnd.Data(ii),hnd.ActiveVar))
       set(eval(['hnd.C' num2str(cl_id) 'checkbox']),'Value',1)
       disp([action ': cannot hide the active variable'])
       return
     end
-    
+
     if get(eval(['hnd.C' num2str(cl_id) 'checkbox']),'Value')==1
       % Show
       for j=1:length(ii)
@@ -1166,7 +1166,7 @@ switch action
       kk(kk==0) = [];
       ii(kk) =[];
       if isempty(ii), return, end
-      
+
       for j=1:length(ii)
         %disp(['hide ' hnd.Data{ii(j)}.name])
         delete(hnd.Data{ii(j)}.ploth)
@@ -1174,7 +1174,7 @@ switch action
         set(eval(['hnd.DATA' hnd.Data{ii(j)}.name 'checkbox']),...
           'Value', 0);
       end
-      
+
       % remove from the plotting lists
       ii = cell(1,2);
       ii{1} = sort(D_findByNameList(hnd.Data,hnd.DataList));
@@ -1188,7 +1188,7 @@ switch action
           end
         end
       end
-      
+
       guidata(h0,hnd);
       c_cal_gui('update_legend')
     end
@@ -1196,7 +1196,7 @@ switch action
     % update_DATAcheckbox
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'update_DATAcheckbox'
-    
+
     hnd = guidata(h0);
     if get(eval(['hnd.DATA' vs 'checkbox']),'Value')==1
       if inprog_mtx
@@ -1204,19 +1204,19 @@ switch action
         return
       end
       inprog_mtx = 1; %#ok<NASGU>
-      
+
       % Plot the varible
       j = D_findByName(hnd.Data,vs);
       %disp(['plotting ' hnd.Data{j}.name])
       hnd.Data{j}.visible = 1;
       hnd.last = {vs};
       guidata(h0,hnd);
-      
+
       inprog_mtx = 0;
       c_cal_gui('replot')
-      
+
       hnd = guidata(h0);
-      
+
       % Check if we need to show C# checkBox
       if get(eval(['hnd.C' num2str(hnd.Data{j}.cl_id) 'checkbox']),'Value')==0
         set(eval(['hnd.C' num2str(hnd.Data{j}.cl_id) 'checkbox']),...
@@ -1228,27 +1228,27 @@ switch action
         return
       end
       inprog_mtx = 1;
-      
+
       % Check if we are hiding the active variable
       if strcmp(hnd.ActiveVar,vs)
         disp('you cannot hide the active variable')
         set(eval(['hnd.DATA' vs 'checkbox']),'Value',1)
         return
       end
-      
+
       % Hide the varible
       j = D_findByName(hnd.Data,vs);
       hnd.Data{j}.visible = 0;
-      
+
       % Hide the markers so thet they will not contribute YLim
       ts_tmp = hide_t_marker(hnd,hnd.ts_marker);
       te_tmp = hide_t_marker(hnd,hnd.te_marker);
-      
+
       % Delete the variable
       delete(hnd.Data{j}.ploth)
       h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
       set(h,'YLimMode','auto')
-      
+
       % Show the markers back
       if ~isempty(ts_tmp.t)
         hnd.ts_marker = replot_t_marker(hnd,ts_tmp);
@@ -1256,7 +1256,7 @@ switch action
       if ~isempty(te_tmp.t)
         hnd.te_marker = replot_t_marker(hnd,te_tmp);
       end
-      
+
       % Check if we need to hide C# checkBox
       cl_id = hnd.Data{j}.cl_id;
       ii = D_findByCLID(hnd.Data,cl_id);
@@ -1269,16 +1269,16 @@ switch action
         set(eval(['hnd.C' num2str(cl_id) 'checkbox']),...
           'Value',0)
       end
-      
+
       % Remove from the plotting lists
       j = L_find(hnd.DataList,vs);
       if ~isempty(j), hnd.DataList = L_rm_ii(hnd.DataList,j);
       else, hnd.AUXList = L_rm(hnd.AUXList,vs);
       end
-      
+
       guidata(h0,hnd);
       c_cal_gui('update_legend')
-      
+
       inprog_mtx = 0;
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1288,7 +1288,7 @@ switch action
     hnd = guidata(h0);
     if get(eval(['hnd.DATA' vs 'radiobutton,']),'Value')==1
       vs_old = hnd.ActiveVar;
-      
+
       j = D_findByName(hnd.Data,vs);
       % Show the new data if not visible
       if hnd.Data{j}.visible==0
@@ -1297,7 +1297,7 @@ switch action
         c_cal_gui(['update_DATA' vs 'checkbox'])
         hnd = guidata(h0);
       end
-      
+
       j = D_findByName(hnd.Data,vs);
       % Give the new data 4*width and active color
       if hnd.Data{j}.visible
@@ -1311,10 +1311,10 @@ switch action
       else
         return
       end
-      
+
       % Hide the old active rb
       set(eval(['hnd.DATA' vs_old 'radiobutton,']),'Value',0)
-      
+
       % Give the old data usual width and color
       j = D_findByName(hnd.Data,vs_old);
       for k=1:length(hnd.Data{j}.ploth)
@@ -1322,7 +1322,7 @@ switch action
           'LineWidth',get(hnd.Data{j}.ploth(k),'LineWidth')/4,...
           'Color',hnd.Data{j}.plot_color)
       end
-      
+
       guidata(h0,hnd);
       c_cal_gui('ch_active_var')
     else
@@ -1334,13 +1334,13 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'click_axes'
     hnd = guidata(h0);
-    
+
     replot_ts_marker = 0;
     replot_te_marker = 0;
-    
+
     t = get(eval(['hnd.' curr_ax 'axes']),'CurrentPoint');
     t = t(1);
-    
+
     % If we press the left mouse button we modify TS_MARKER
     % If we press the right mouse button of Control-click
     % we modify TE_MARKER
@@ -1348,7 +1348,7 @@ switch action
     if strcmp(get(h0,'SelectionType'),'normal')
       hnd.ts_marker.t = t;
       replot_ts_marker = 1;
-      
+
       % We check the TS_MARKER should always precede TE_MARKER
       if ~isempty(hnd.te_marker)
         if hnd.ts_marker.t > hnd.te_marker.t
@@ -1358,7 +1358,7 @@ switch action
     elseif strcmp(get(h0,'SelectionType'),'alt')
       hnd.te_marker.t = t;
       replot_te_marker = 1;
-      
+
       % We check the TS_MARKER should always precede TE_MARKER
       if ~isempty(hnd.ts_marker)
         if hnd.ts_marker.t > hnd.te_marker.t
@@ -1367,31 +1367,31 @@ switch action
       end
     else, return
     end
-    
+
     if replot_ts_marker
       hnd.ts_marker = replot_t_marker(hnd,hnd.ts_marker);
     elseif replot_te_marker
       hnd.te_marker = replot_t_marker(hnd,hnd.te_marker);
     end
-    
+
     % Enable menu
     if ~isempty(hnd.ts_marker) && ~isempty(hnd.te_marker)
       set(hnd.menu_zoom_in,'Enable','on')
       set(hnd.menu_cut_int,'Enable','on')
     end
-    
+
     guidata(h0,hnd);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % press_RWDbutton
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'press_RWDbutton'
     hnd = guidata(h0);
-    
+
     dt_tmp = hnd.tlim(end,2) - hnd.tlim(end,1);
     hnd.ts_marker.t = hnd.tlim(end,1) - dt_tmp;
     hnd.te_marker.t = hnd.tlim(end,2) - dt_tmp;
     clear dt_tmp
-    
+
     guidata(h0,hnd);
     c_cal_gui('zoom_in')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1399,12 +1399,12 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'press_FWDbutton'
     hnd = guidata(h0);
-    
+
     dt_tmp = hnd.tlim(end,2) - hnd.tlim(end,1);
     hnd.ts_marker.t = hnd.tlim(end,1) + dt_tmp;
     hnd.te_marker.t = hnd.tlim(end,2) + dt_tmp;
     clear dt_tmp
-    
+
     guidata(h0,hnd);
     c_cal_gui('zoom_in')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1412,51 +1412,51 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'zoom_in'
     hnd = guidata(h0);
-    
+
     % Check if we really have update tlim
     % This check is probably unnecessary
     if hnd.ts_marker.t==hnd.tlim(end,1) && hnd.te_marker.t==hnd.tlim(end,2)
       return
     end
-    
+
     hnd.tlim(end+1,:) = [hnd.ts_marker.t hnd.te_marker.t];
     hide_t_marker(hnd,hnd.ts_marker); hnd.ts_marker = [];
     hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
-    
+
     h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
     irf_zoom(h,'x',hnd.tlim(end,:));
     set(h,'YLimMode','auto')
     irf_timeaxis(h)
-    
+
     % Enable/disable menus
     set(hnd.menu_zoom_in,'Enable','off')
     set(hnd.menu_cut_int,'Enable','off')
     set(hnd.menu_zoom_un,'Enable','on')
     set(hnd.menu_zoom_rs,'Enable','on')
-    
+
     guidata(h0,hnd);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % zoom_un
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'zoom_un'
     hnd = guidata(h0);
-    
+
     % Check if we really can undo
     % This check is probably unnecessary
     if size(hnd.tlim,1)<=1
       disp('Cannot undo. Already at the the original time span.')
       return
     end
-    
+
     hnd.tlim(end,:) = [];
     hide_t_marker(hnd,hnd.ts_marker); hnd.ts_marker = [];
     hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
-    
+
     h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
     irf_zoom(h,'x',hnd.tlim(end,:));
     set(h,'YLimMode','auto')
     irf_timeaxis(h)
-    
+
     % Enable/disable menus
     set(hnd.menu_zoom_in,'Enable','off')
     set(hnd.menu_cut_int,'Enable','off')
@@ -1464,46 +1464,46 @@ switch action
       set(hnd.menu_zoom_un,'Enable','off')
       set(hnd.menu_zoom_rs,'Enable','off')
     end
-    
+
     guidata(h0,hnd);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % zoom_un
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'zoom_rs'
     hnd = guidata(h0);
-    
+
     % Check if we really can undo
     % This check is probably unnecessary
     if size(hnd.tlim,1)<=1
       disp('Cannot reset. Already at the the original time span.')
       return
     end
-    
+
     hnd.tlim(2:end,:) = [];
     hide_t_marker(hnd,hnd.ts_marker); hnd.ts_marker = [];
     hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
-    
+
     h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
     irf_zoom(h,'x',hnd.tlim(end,:));
     set(h,'YLimMode','auto')
     irf_timeaxis(h)
-    
+
     % Enable/disable menus
     set(hnd.menu_zoom_in,'Enable','off')
     set(hnd.menu_cut_int,'Enable','off')
     set(hnd.menu_zoom_un,'Enable','off')
     set(hnd.menu_zoom_rs,'Enable','off')
-    
+
     guidata(h0,hnd);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % show_raw
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'show_raw'
     hnd = guidata(h0);
-    
+
     j = D_findByName(hnd.Data,hnd.ActiveVar);
-    
+
     % Create figure
     if find(get(0,'children')==raw_fig_id)
       pos_old = get(raw_fig_id,'Position');
@@ -1513,7 +1513,7 @@ switch action
     clf
     set(raw_fig_id,'Name', 'RAW DATA')
     if isempty(pos_old), set(fig,'Position', pos_raw_fig(hnd.scrn_size,:)), end
-    
+
     if strcmp(hnd.Data{j}.type,'E')
       d_tmp = {};
       leg_tmp = {};
@@ -1590,9 +1590,9 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'show_b'
     hnd = guidata(h0);
-    
+
     j = D_findByName(hnd.Data,hnd.ActiveVar);
-    
+
     % Create figure
     if find(get(0,'children')==raw_fig_id)
       pos_old = get(raw_fig_id,'Position');
@@ -1610,14 +1610,14 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'show_spect'
     hnd = guidata(h0);
-    
+
     j = D_findByName(hnd.Data,hnd.ActiveVar);
-    
+
     if ~strcmp(hnd.Data{j}.type,'E')
       disp('should not see this: no need for cis')
       return,
     end
-    
+
     % Create figure
     if find(get(0,'children')==spect_fig_id)
       pos_old = get(spect_fig_id,'Position');
@@ -1627,7 +1627,7 @@ switch action
     clf
     set(spect_fig_id,'Name', 'SPECTRUM')
     if isempty(pos_old), set(fig,'Position', pos_spect_fig(hnd.scrn_size,:)), end
-    
+
     if strcmp(hnd.Data{j}.sen,'1234'), E_tmp = hnd.Data{j};
     else
       ii = D_findByName(hnd.Data,irf_ssub('diE?p1234',hnd.Data{j}.cl_id));
@@ -1638,28 +1638,28 @@ switch action
         return
       end
     end
-    
+
     ndata = length(E_tmp.data(:,1));
     % Guess the sampling frequency
     sf = c_efw_fsample(E_tmp.data(:,1));
     if sf==25, nfft = 512;
     else, nfft = 4096;
     end
-    
+
     % Exclude NaNs
     ii = find(~isnan(E_tmp.data(:,2)));
-    
+
     % Check if we have enough data
     if length(ii) < nfft/2
       irf_log('proc','not enough points for FFT')
       return
     elseif length(ii) < nfft, nfft = nfft/2;
     end
-    
+
     % Compute FFT
     [Px,Freqx] = irf_psd(E_tmp.data(ii,[1 2]),nfft,sf);
     [Py,Freqy] = irf_psd(E_tmp.data(ii,[1 3]),nfft,sf);
-    
+
     figure(spect_fig_id), clf
     loglog(Freqx,Px,Freqy,Py)
     set(gca,'Xlim',[.05 5]);
@@ -1680,22 +1680,22 @@ switch action
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   case 'cut_int'
     hnd = guidata(h0);
-    
+
     % Check if we really have update tlim
     % This check is probably unnecessary
     if hnd.ts_marker.t==hnd.tlim(end,1) && hnd.te_marker.t==hnd.tlim(end,2)
       return
     end
-    
+
     tlim_tmp = [hnd.ts_marker.t hnd.te_marker.t];
     j = D_findByName(hnd.Data,hnd.ActiveVar);
-    
+
     btn = questdlg([hnd.ActiveVar ' : Remove ' num2str(tlim_tmp(2)-tlim_tmp(1)) ...
       ' sec starting from ' epoch2iso(tlim_tmp(1),1)], ...
       'Confirmation', ...
       'Yes','No','No');
     if strcmp(btn,'No'), return, end
-    
+
     if strcmp(hnd.Data{j}.type,'E')
       btn = questdlg('Remove corresponding single probe potentials?', ...
         'Question', ...
@@ -1713,7 +1713,7 @@ switch action
             {['P10Hz?p' hnd.Data{j}.sen(1)],['P10Hz?p' hnd.Data{j}.sen(2)]}];
         end
       end
-      
+
       % Remove the desired interval from the raw data
       n_ok = 0;
       tint_tmp = [];
@@ -1723,7 +1723,7 @@ switch action
         if ok
           irf_log('proc',...
             ['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1),1)])
-          
+
           eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
           dsc = c_desc(v_s);
           eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append']);
@@ -1740,7 +1740,7 @@ switch action
       end
       clear ii v_s
       if n_ok<1, disp('was no raw data'), return, end
-      
+
       % Reprocess the data using the updated raw data
       c_get_batch(tint_tmp(1),tint_tmp(2)-tint_tmp(1),hnd.Data{j}.cl_id,...
         'vars','e','nosrc');
@@ -1751,7 +1751,7 @@ switch action
       % Variables which we need to reload
       var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234'};
       if rm_pot, var_list = [var_list, {'P?'}]; end
-      
+
     else % Cut V CIS
       if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
       else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
@@ -1772,11 +1772,11 @@ switch action
       end
       clear ii v_s
       if n_ok<1, disp('was no raw data'), return, end
-      
+
       % We need only diV*
       var_list = var_list(1);
     end
-    
+
     % Reload updated variables
     n_ok = 0;
     for vi = 1:length(var_list)
@@ -1798,7 +1798,7 @@ switch action
       disp('could not load any updated data. this is strange')
       return
     end
-    
+
     guidata(h0,hnd);
     c_cal_gui('replot_all')
   otherwise
@@ -1904,7 +1904,7 @@ p_data = [];
 if data.visible
   p_data = data.data;
   %disp(['get_plot_data : ' data.name])
-  
+
   % Correct offsets
   if data.editable
     %disp(['get_plot_data : correcting offsets in ' data.name])
@@ -1930,7 +1930,7 @@ if data.visible
         irf_log('proc','Unknown data type.')
     end
   end
-  
+
   % Calculate Ez, convert V->E and V->E
   switch data.type
     case 'E'

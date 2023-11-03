@@ -167,33 +167,33 @@ if ischar(scd)
       ud.params.tintu = irf_time(ud.tu,'epoch>epochtt');
       ud.params.tintd = irf_time(ud.td,'epoch>epochtt');
       ud.params.tintf = irf_time(ud.tf,'epoch>epochtt');
-      
+
       % check for manual input to overwrite other inputs
       ud = manual_input(ud);
       % get shock parameters (Mach #, beta, Fcp,...)
 
       ud.shp.par = irf_shock_parameters(ud.params);
-      
+
       % set parameters for shock foot width methods
       if isfield(ud.shp.par,'Fcpf')
         ud.params.Fcp = ud.shp.par.Fcpf; % foot ion cycl. freq.
         ud.params.dTf = diff(ud.tf);
         ud.params.d2u = sign(mean(ud.tu)-mean(ud.td));
       end
-      
+
       % calculate shock normals and speeds
       ud.shp.nvec = irf_shock_normal(ud.params);
-      
+
       ud.shp.data = ud.params;
-      
+
       ud = display_prop(ud);
-      
-      
-      
+
+
+
       set(gcf,'userdata',ud)
   end
 else
-  
+
   % input names
   fn = fieldnames(scd);
   % sc position is moved
@@ -207,7 +207,7 @@ else
   end
   % number of data inputs
   Nin = numel(fn);
-  
+
   % possible inputs
   poss_inp = {'B','V','n','Ti','Te','R'};
   for k = 1:Nin % remove all fields that are not allowed
@@ -217,7 +217,7 @@ else
       Nin = Nin-1;
     end
   end
-  
+
   % User data that is used everywhere
   ud = [];
   % number of inputs
@@ -226,7 +226,7 @@ else
   ud.scd = scd;
   % handles to UI elements
   ud.uih = [];
-  
+
   if nargin == 1 % do not write to workspace if no filename given
     ud.doSave = 0;
   else % if filename is given, save to workspace
@@ -249,7 +249,7 @@ else
   ud.sc_up.nu = ud.params.nu;
   ud.sc_up.Vu = ud.params.Vu;
   ud.sc_up.Tiu = ud.params.Tiu;
-  
+
   % initiate GUI
   ud = init_gui(ud);
   % set default to not use OMNI, must change in GUI as well if changed
@@ -497,7 +497,7 @@ post(ceil(nt/2)+1:end,2) = fliplr(linspace(0.05,0.8,nt-ceil(nt/2)));
 
 % make the text boxes
 for k = 1:nt
-  
+
   ud.uih.cl.(par_name{k}) = uicontrol('style','text',...
     'Units', 'normalized',...
     'position',post(k,:),...
@@ -510,7 +510,7 @@ for k = 1:nt
     'Position',[post(k,1)-0.1 post(k,2)+0.05 0.07 0.07],...
     'Parent',ud.uih.par.panel,...
     'Callback','irf_shock_gui(''manual_input'')');
-  
+
 end
 
 %% Calculate panel
@@ -861,7 +861,7 @@ end
 if ud.use_omni.B
   %   Bomni = nanmean(irf_resamp(ud.omnidata(:,1:4),ud.tu),1);
   %   ud.params.Bu = Bomni(2:4);
-  
+
   Bomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,2:4)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Bu = Bomni;
 else; ud.params.Bu = ud.sc_up.Bu;
@@ -869,7 +869,7 @@ end
 if ud.use_omni.n
   %   nomni = nanmean(irf_resamp(ud.omnidata(:,[1,5]),ud.tu),1);
   %   ud.params.nu = nomni(2);
-  
+
   nomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,5)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.nu = nomni;
 else; ud.params.nu = ud.sc_up.nu;
@@ -877,7 +877,7 @@ end
 if ud.use_omni.V
   %   Vomni = nanmean(irf_resamp(ud.omnidata(:,[1,6:8]),ud.tu),1);
   %   ud.params.Vu = Vomni(2:4);
-  
+
   Vomni = nanmean(irf.ts_vec_xyz(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,6:8)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Vu = Vomni;
 else; ud.params.Vu = ud.sc_up.Vu;
@@ -885,7 +885,7 @@ end
 if ud.use_omni.Ti
   %   Tomni = nanmean(irf_resamp(ud.omnidata(:,[1,9]),ud.tu),1);
   %   ud.params.Tiu = Tomni(2);
-  
+
   Tomni = nanmean(irf.ts_scalar(EpochUnix(ud.omnidata(:,1)),ud.omnidata(:,9)).tlim(EpochUnix(ud.tu)+[-60 60]).data,1);
   ud.params.Tiu = Tomni;
 else; ud.params.Tiu = ud.sc_up.Tiu;
@@ -952,26 +952,26 @@ post(ceil(nt/2)+1:end,2) = fliplr(linspace(0.05,0.8,nt-ceil(nt/2)));
 
 % make the text boxes
 for k = 1:nt
-  
+
   if ud.uih.cl.([par_name{k} 'c']).Value && ~isfield(ud.uih.cl,[par_name{k} 'm'])
     ud.uih.cl.(par_name{k}).String=[par_str{k},' = '];
-    
-    
+
+
     ud.uih.cl.([par_name{k} 'm'])=uicontrol('Style','edit',...
       'Units','normalized',...
       'Position',[post(k,1)+0.09 post(k,2)+0.01 0.15 0.15],...
       'Parent',ud.uih.par.panel,...
       'String',num2str(round(100*ud.params.(par_name{k}))/100),'Callback','irf_shock_gui(''calc'')');
-    
+
     ud.uih.cl.([par_name{k} 't2'])=uicontrol('Style','text',...
       'Units','normalized',...
       'Position',[post(k,1)+0.24 post(k,2)+0.02 0.15 0.1],...
       'Parent',ud.uih.par.panel,...
       'String',Uns{k},'FontSize',12,'HorizontalAlignment','left');
-    
+
   elseif ud.uih.cl.([par_name{k} 'c']).Value && isfield(ud.uih.cl,[par_name{k} 'm'])
     ud.params.(par_name{k}) = cell2mat(textscan(ud.uih.cl.([par_name{k} 'm']).String,'%f'))';
-    
+
   elseif isfield(ud.uih.cl,[par_name{k} 'm'])
     delete(ud.uih.cl.([par_name{k} 'm']));
     ud.uih.cl = rmfield(ud.uih.cl, [par_name{k} 'm']);
@@ -981,7 +981,7 @@ for k = 1:nt
     ud = set_omni(ud);
     ud = display_vals(ud);
   end
-  
+
 end
 
 

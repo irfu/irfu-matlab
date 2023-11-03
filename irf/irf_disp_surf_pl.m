@@ -146,7 +146,7 @@ if axisnorm == 2
   % convert k to k*di = k*Va/wci
   wfac = m_i;
   kFac = sqrt(m_i)/w_pe;
-  
+
   w1 = wfac*w1;
   w2 = wfac*w2;
   w3 = wfac*w3;

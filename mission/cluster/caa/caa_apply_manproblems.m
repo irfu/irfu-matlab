@@ -32,7 +32,7 @@ for cl_id=cli
   fid = fopen(f_name);
   C = textscan(fid, '%s %n %1[+-] %s','commentStyle', '%');
   fclose(fid);
-  
+
   for i=1:length(C{1})
     st_mp=iso2epoch(C{1}{i});
     dt_mp=C{2}(i);

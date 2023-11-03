@@ -119,7 +119,7 @@ if(bashRun)
     % Entire day:
     % savefig(fig.(iData{ii}), [outPath, DayOfInterest, '_', iData{ii}, '_000000_235959'], 'compact'); %R2013b or later
     print(fig.(iData{ii}), '-dpng', [outFolder, filesep, filePrefix, '000000_235959']);
-    
+
     % Interval 00:01:00 to 00:11:00 UTC
     tint = irf.tint([DayOfInterest,'T00:01:00Z'], [DayOfInterest,'T00:11:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);
@@ -129,7 +129,7 @@ if(bashRun)
       'Zoom in: 00:01:00 to 00:11:00 UTC'});
     disp('Saving 00:01:00 to 00:11:00');
     print(fig.(iData{ii}), '-dpng', [outFolder, filesep, filePrefix, '000100_001100']);
-    
+
     % Interval 06:00:00 to 06:10:00 UTC
     tint = irf.tint([DayOfInterest,'T06:00:00Z'], [DayOfInterest,'T06:10:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);
@@ -139,7 +139,7 @@ if(bashRun)
       'Zoom in: 06:00:00 to 06:10:00 UTC.'});
     disp('Saving 06:00:00 to 06:10:00');
     print(fig.(iData{ii}), '-dpng', [outFolder, filesep, filePrefix, '060000_061000']);
-    
+
     % Interval 12:00:00 to 12:01:00 UTC (ie a shorter interval as well).
     tint = irf.tint([DayOfInterest,'T12:00:00Z'], [DayOfInterest,'T12:01:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);
@@ -149,7 +149,7 @@ if(bashRun)
       'Zoom in: 12:00:00 to 12:01:00 UTC.'});
     disp('Saving 12:00:00 to 12:01:00');
     print(fig.(iData{ii}), '-dpng', [outFolder, filesep, filePrefix, '120000_120100']);
-    
+
     % Interval 18:00:00 to 18:10:00 UTC
     tint = irf.tint([DayOfInterest,'T18:00:00Z'], [DayOfInterest,'T18:10:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);

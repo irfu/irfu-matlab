@@ -118,19 +118,19 @@ if mode
   vi_4s_s3 = sortrows([vi_d_4s_s3;vi_dd_4s_s3]);
   ii = diff(vi_4s_s3(:,1))==0; %Remove repeating points
   vi_4s_s3(ii,:) = [];
-  
+
   [ts2_d,t1s_d,ts2_dd,t1s_dd] = irf_corr_deriv(ps2f,p1sf,flag_corr_deriv);
   vi_d_s2_1s = [ts2_d (t1s_d-ts2_d)/dist];
   vi_dd_s2_1s = [ts2_dd (t1s_dd-ts2_dd)/dist];
   vi_s2_1s = sortrows([vi_d_s2_1s;vi_dd_s2_1s]);
   ii = find(diff(vi_s2_1s(:,1))==0); %Remove repeating points
   vi_s2_1s(ii,:) = [];
-  
+
   [t1,t2,i1,i2] = irf_find_closest(vi_4s_s3(:,1),vi_s2_1s(:,1));
   vi23 = [vi_4s_s3(i1,1) vi_s2_1s(i2,2) vi_4s_s3(i1,2)];
-  
+
   k = [vi23(:,1) ff_ref*irf_abs([vi23 vi_4s_s3(i1,1)*0],1)];
-  
+
   vphiDS = c_efw_despin(vi23,A);
   vphiDS(:,3) = -vphiDS(:,3); % convert to DSI
 else
@@ -138,21 +138,21 @@ else
   vi_d_23_41=[t23_d (t41_d-t23_d)/dist];
   vi_dd_23_41=[t23_dd (t41_dd-t23_dd)/dist];
   vi_23_41=sortrows([vi_d_23_41;vi_dd_23_41]);
-  
+
   [t42_d,t13_d,t42_dd,t13_dd]=irf_corr_deriv(p42f,p13f,flag_corr_deriv);
   vi_d_42_13=[t42_d (t13_d-t42_d)/dist];
   vi_dd_42_13=[t42_dd (t13_dd-t42_dd)/dist];
   vi_42_13=sortrows([vi_d_42_13;vi_dd_42_13]);
-  
+
   ii = diff(vi_23_41(:,1))==0; %Remove repeating points
   vi_23_41(ii,:) = [];
   ii = find(diff(vi_42_13(:,1))==0); %Remove repeating points
   vi_42_13(ii,:) = [];
   [t1,t2,i1,i2]=irf_find_closest(vi_23_41(:,1),vi_42_13(:,1));
   vi23=[vi_23_41(i1,1) vi_42_13(i2,2) -vi_23_41(i1,2)];
-  
+
   k=[vi23(:,1) ff_ref*irf_abs([vi23 vi23(:,1)*0],1)];
-  
+
   vphiDS=c_efw_despin(vi23,A,'interf');
   vphiDS(:,3) = -vphiDS(:,3); % convert to DSI
 end

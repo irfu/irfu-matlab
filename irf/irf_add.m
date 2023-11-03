@@ -21,7 +21,7 @@ else
     else
       irf_log('proc','ERROR: could not make inteligent guess what you are meaning.');return;
     end
-    
+
   elseif size(x2,2)>size(x1,2)
     irf_log('proc','WARNING: x2 has more columns than x1');
     if size(x1,2)==2, for j=3:size(x2,2), x1(:,j)=x1(:,2); end % assume x2 is time series of scalar
@@ -31,13 +31,13 @@ else
       irf_log('proc','irf_add() ERROR: could not make inteligent guess what you are meaning.');return;
     end
   end
-  
+
   if size(x1,1) ~= size(x2,1)
     irf_log('proc','interpolating x2 to x1.');
     x2=irf_resamp(x2,x1);
   end
-  
+
   y=x1;
-  
+
   y(:,2:end)=c1*x1(:,2:end)+c2*x2(:,2:end);
 end

@@ -46,18 +46,18 @@ fp = fopen(ls_out, 'r');
 while feof(fp) == 0
   file_name = fgetl(fp);
   f_length = length(file_name);
-  
+
   %excluding bad filenames
   if strcmp(file_name(1:3),file_prefix) && strcmp(file_name(f_length-3:f_length), '.mat')
-    
+
     if c_ri_timestr_within_intervall(file_name,s_t,e_t) == 1
-      
+
       c_ri_calc_angle_w_preprocess(path_input, file_name, path_output);
-      
+
     end
-    
+
   end
-  
+
 end
 
 cd(start_path);

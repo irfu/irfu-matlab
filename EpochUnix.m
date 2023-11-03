@@ -3,7 +3,7 @@ classdef EpochUnix < GenericTimeArray
   %   Detailed explanation goes here
   %
   % See also GenericTimeArray
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -11,7 +11,7 @@ classdef EpochUnix < GenericTimeArray
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
+
   methods
     function obj = EpochUnix(inp)
       if nargin==0, return, end
@@ -67,7 +67,7 @@ classdef EpochUnix < GenericTimeArray
       outObj = EpochUnix(epoch);
     end
   end
-  
+
   methods (Static)
     function ttns = to_ttns(epoch)
       % Convert unix epoch to TT2000 (ns)

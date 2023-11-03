@@ -66,7 +66,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   elseif strcmp(q,'2')
     % define sc_list
     sc_list = irf_ask('Spacecraft list [%]>','sc_list',1:4);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Phase
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,7 +79,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(irf_ssub('Atwo?=[double(t) double(data)];',ic));%clear t data;
       c_eval('save_list=[save_list '' A? Atwo? ''];',ic);
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Ephemeris
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -103,7 +103,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(irf_ssub('if exist(''mR.mat''),save mR V? dV? -append; else, save mR V? dV? ;end',ic));
     end
     save_list = '';
-    
+
   elseif strcmp(q,'x')
     var_name=input('matlab variable name =','s');
     disp('? in input is substituted by cluster number');
@@ -117,7 +117,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       [t,data] = isGetDataLite( db, start_time, Dt,str{1}, str{2}, str{3}, str{4},str{5},str{6},str{7});
       eval([varic '=[double(t) double(data)];']);
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Magnetic fields
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,12 +129,12 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       %      eval(irf_ssub('BPP?=[double(t) double(data)''];',ic));clear t,data;
       %     eval(irf_ssub('if exist(''./mBPP.mat''),save mBPP BPP? -append; else, save mBPP BPP?;end',ic));
     end
-    
+
   elseif strcmp(q,'db')
     for ic=sc_list
       eval(irf_ssub('load mBPP BPP?;dBPP?=c_gse2dsc(BPP?,[BPP?(1,1) ic]);save -append mBPP dBPP?;',ic));
     end
-    
+
   elseif strcmp(q,'bf')
     for ic=sc_list
       disp(['Choose FGM GSE data for spacecraft ' num2str(ic) ]);
@@ -147,28 +147,28 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     eval(['save mB ' save_list]);
     save_list = '';
-    
+
   elseif strcmp(q,'bfgm')
     disp('CONTACT STEPHAN BUCHERT!!!!!!!!!!!!!!!!!!!');
     save_file='./mB.mat';
     save_list = '';
     c_eval('B?=c_get_bfgm(tint_epoch,?);save_list=[save_list '' B? ''];',sc_list);
     c_eval('diB?=c_gse2dsc(B?,[B?(1,1) ?],2);save_list=[save_list '' diB? ''];',sc_list);
-    
+
   elseif strcmp(q,'dbf')
     for ic=sc_list
       eval(irf_ssub('load mB B?;tt=B?(1,1);',ic));
       eval(irf_ssub('dB?=c_gse2dsc(B?,[B?(1,1) ic]);',ic));
       eval(irf_ssub('save -append mB dB?;',ic));
     end
-    
+
   elseif strcmp(q,'dibf')
     for ic=sc_list
       eval(irf_ssub('load mB B?;',ic));
       eval(irf_ssub('diB?=c_gse2dsc(B?,?,2);',ic));
       eval(irf_ssub('save -append mB diB?;',ic));
     end
-    
+
   elseif strcmp(q,'bs')
     mode=input('Model L=1/M=2? If different give as vector. [1]');if isempty(mode),mode=1;end
     for ic=sc_list
@@ -180,10 +180,10 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(irf_ssub('wBS?=[double(t) double(data)''];',ic));clear t data;
     end
     save mBS wBS1 wBS2 wBS3 wBS4;
-    
+
   elseif strcmp(q,'dbs')
     c_eval('load mBS.mat wBS?; c_load A?; if ~isempty(wBS?), dBS?=c_efw_despin(wBS?,A?); save -append mBS dBS?;end; clear wBS? A?',sc_list);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % E p1234 or p12 & p34
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -226,14 +226,14 @@ while(q ~= 'q') % ====== MAIN LOOP =========
           param='180Hz';
         end
       end
-      
+
       if (toepoch(start_time)>toepoch([2001 12 28 03 00 00])&&ic==1) || (toepoch(start_time)>toepoch([2002 07 29 09 06 59 ])&&ic==3)
         p34_only = 1;
         disp(sprintf('            !Only p34 exists for sc%d',ic));
       else
         p34_only = 0;
       end
-      
+
       clear sensor;
       if strcmp(q,'e')
         disp(['EFW...sc' num2str(ic) '...E ' param ' filter']);
@@ -267,7 +267,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       end
     end
     %if exist('./mE.mat'), eval(['save -append mE  ' save_list]); else, eval(['save mE  ' save_list]);end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % spinfits
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,7 +276,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     for ic=sc_list
       eval(irf_ssub('load mE wE?p12 wE?p34;',ic));
       eval(irf_ssub('load mA.mat A?;',ic));
-      
+
       if exist(irf_ssub('wE?p12',ic),'var')
         eval(irf_ssub('tt=wE?p12;aa=A?;',ic))
         disp(sprintf('Spin fit wE%dp12 -> dvE%dp12 mean:%.2f',ic,ic,mean(tt(:,2))))
@@ -290,7 +290,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       else
         disp(sprintf('No p12 data for sc%d',ic))
       end
-      
+
       if exist(irf_ssub('wE?p34',ic),'var')
         eval(irf_ssub('tt=wE?p34;aa=A?;',ic))
         disp(sprintf('Spin fit wE%dp34 -> dvE%dp34 mean:%.2f',ic,ic,mean(tt(:,2))))
@@ -304,15 +304,15 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       else
         disp(sprintf('No p34 data for sc%d',ic))
       end
-      
+
       %display offsets
       if exist(irf_ssub('wE?p12',ic),'var') && exist(irf_ssub('wE?p34',ic),'var')
         disp(sprintf('[X Y] offsets <p12>-<p34> : [ %.2f %.2f ]', o12(1)-o34(1), o12(2)-o34(2)))
       end
-      
+
     end
     %eval(['save -append mE  ' save_list]);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % despin E
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -333,7 +333,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(irf_ssub('save_list=[save_list '' dvE? ''];',ic));
     end
     %eval(['save -append mE  ' save_list]);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % dE
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -345,7 +345,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(irf_ssub('save_list=[save_list '' dE? ''];',ic));
     end
     eval(['save -append mE  ' save_list]);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % deo
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -364,7 +364,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     eval(['save -append mE  ' save_list]);
     save_list = '';
-    
+
   elseif strcmp(q,'es') % create E ascii files
     for ic=sc_list
       % E_GSE file creation
@@ -400,7 +400,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       fprintf(fid,'%10.4f %8.3f %8.3f\n',x);
       fclose(fid);
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % E ASCII
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -488,7 +488,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
         save_list=[save_list irf_ssub(' EDI? dEDI? VEDI? ',ic)];
       end
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % WBD
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -504,8 +504,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       clear data
     end
     disp('!!! please check whether the data is E or B !!!')
-    
-    
+
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % P
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -538,7 +538,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       elseif (mm == 3), param='4kHz';tmmode='any';
       elseif (mm == 4), param='32kHz';tmmode='any';
       end
-      
+
       for probe=1:4
         disp(['EFW...sc' num2str(ic) '...probe' num2str(probe) '->P' param num2str(ic) 'p' num2str(probe)]);
         [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', ['p' num2str(probe)],param, tmmode);
@@ -569,7 +569,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     if exist('./mP.mat','file'), eval(['save mP ' save_list ' -append']); else, eval(['save mP ' save_list]); end
     save_list = '';
-    
+
   elseif strcmp(q,'pa') % create V_sc n ascii files
     for ic=sc_list
       % Vsc_N file creation
@@ -582,7 +582,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
         eval(irf_ssub('c_export_ascii(NVps?);',ic));
       end
     end
-    
+
   elseif strcmp(q,'r') || strcmp(q,'v')
     save_file='./mR.mat';save_list=[];
     for ic=sc_list
@@ -595,7 +595,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       clear tr tv data_r data_v;
       save_list=[save_list irf_ssub(' R? V? ', ic)];
     end
-    
+
   elseif strcmp(q,'vc')
     for ic=sc_list
       disp(['...VCp' num2str(ic) ', dVCp' num2str(ic)]);
@@ -609,7 +609,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     eval(['save mCIS ' save_list]);
     save_list = '';
-    
+
   elseif strcmp(q,'vce')
     CIS=load('mCIS');
     for ic=sc_list
@@ -630,12 +630,12 @@ while(q ~= 'q') % ====== MAIN LOOP =========
         eval(irf_ssub('dVCEh?=c_gse2dsc(VCEh?,[VCEh?(1,1) ic]);save -append mCIS dVCEh?;',ic));
       end
     end
-    
+
     % If line is not recognized evaluate it in matlab
   else
     eval(q,'');
   end
-  
+
   % If flag_save is set, save variables to specified file
   if flag_save==1 && length(save_file)>0 && ~isempty(save_list)
     if exist(save_file,'file')
@@ -644,7 +644,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(['save ' save_file ' ' save_list]);
     end
   end
-  
+
 end
 
 if exist('db'), Mat_DbClose(db); end

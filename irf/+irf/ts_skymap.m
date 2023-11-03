@@ -24,11 +24,11 @@ if isempty(energy) % must check that energy0, energy1 and esteptable is given
     end
   end
   if ~(energy0_ok && energy1_ok && esteptable_ok); error('Energy input required'); end
-  
+
   if ~isnumeric(energy0); energy0 = energy.data; end
   if ~isnumeric(energy1); energy1 = energy.data; end
   if ~isnumeric(esteptable); esteptable = esteptable.data; end
-  
+
   energy = repmat(torow(energy0),numel(esteptable),1);
   energy(esteptable==1,:) = repmat(energy1,sum(esteptable),1);
 end

@@ -26,15 +26,15 @@ if useMemoValues
   % Magnetosheath Boundaries
   rInnerMS = [12, 12.01, 12.05, 12.11, 12.20, 12.31, 12.45, 12.63, 12.83, 13.06]; %Define as per Memo
   rOuterMS = [13, 13.02, 13.08, 13.19, 13.35, 13.55, 13.80, 14.11, 14.48, 14.92]; %Define
-  
+
   % Shock Boundaries
   rInnerShock = [13, 13.02, 13.08, 13.19, 13.35, 13.55];
   rOuterShock = [15, 15.02, 15.08, 15.18, 15.32, 15.51];
-  
+
   % Foreshock Boundaries
   rInnerFS = [20, 20.01, 20.04, 20.09, 20.17, 20.28, 20.44, 20.65, 20.92, 21.26];
   rOuterFS = [26, 26.02, 26.06, 26.15, 26.19, 26.28, 26.74, 27.04, 27.51, 28.04];
-  
+
   %  Pristine Solar Wind Boundary (not limited to the outside)
   rInnerPSW = 30;
 else % use values from region_coverage.m

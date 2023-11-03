@@ -50,11 +50,11 @@ if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 for ievent=1:numel(TT)
   tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
   %try
-  
+
   %outDir = '.';
   plotFlag = 1;
   exportFlag = 1;
-  
+
   wantPC12 = 0;
   wantPC35 = 0; wantSCM = 0;
   if ischar(freqRange)
@@ -72,14 +72,14 @@ for ievent=1:numel(TT)
   else
     if freqRange(1) > 1, wantSCM = 1; end
   end
-  
-  
+
+
   % Round time interval to minutes
   tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
   cl_s = int2str(cl_id);
   % Extend time interval by these ranges to avoid edge effects
   DT_PC5 = 80*60; DT_PC2 = 120;
-  
+
   %% Download data
   if 0
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');  %#ok<UNRCH>
@@ -92,9 +92,9 @@ for ievent=1:numel(TT)
       caa_download(tint+DT_PC2*[-1 1],['C' cl_s '_CP_STA_CWF_HBR_ISR2'],'nowildcard');
     end
   end
-  
+
   %% Load
-  
+
   % Construct 1 min-B0 (lowpassed at 1/600 Hz)
   gseB_5VPS = c_caa_var_get(['B_vec_xyz_gse__C' cl_s '_CP_FGM_5VPS'],...
     'mat','tint',tint+DT_PC5*[-1 1]);
@@ -111,7 +111,7 @@ for ievent=1:numel(TT)
   R = c_coord_trans('gse','isr2',gseR,'SAX',SAX);
   V = c_coord_trans('gse','isr2',gseV,'SAX',SAX);
   B_5VPS = c_coord_trans('gse','isr2',gseB_5VPS,'SAX',SAX);
-  
+
   MIN_E_QUALITY=2; % disregard E with quality below this
   if wantPC35
     E_4SEC = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L3_E'],...
@@ -125,7 +125,7 @@ for ievent=1:numel(TT)
   if wantPC12
     B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
       'mat','tint',tint+DT_PC2*[-1 1]);
-    
+
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
       'mat','tint',tint+DT_PC2*[-1 1]);
     E_L2_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L2_E'],...
@@ -134,7 +134,7 @@ for ievent=1:numel(TT)
       E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;
     end
   end
-  
+
   if ~wantPC35 && ~wantPC12
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
       'mat','tint',tint+[-1 1]);
@@ -144,7 +144,7 @@ for ievent=1:numel(TT)
       BSC = c_caa_var_get('B_vec_xyz_Instrument__C4_CP_STA_CWF_HBR_ISR2','mat');
     end
   end
-  
+
   if wantPC35
     checkDataExist=(~isempty(B_5VPS) && ~isempty(E_4SEC) && size(E_4SEC,2)>2);
   elseif wantPC12
@@ -152,25 +152,25 @@ for ievent=1:numel(TT)
   elseif ~wantPC35 && ~wantPC12
     checkDataExist=(~isempty(B_5VPS) && ~isempty(E_L2) && size(E_L2,2)>2);
   end
-  
+
   if checkDataExist
-    
+
     %% Calculate and plot
     bf = irf_filt(B_5VPS,0,1/600,1/5,5);
     t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
     B0_1MIN = irf_resamp(bf,t_1min); %clear bf
     facMatrix = irf_convert_fac([],B0_1MIN,R);
-    
+
     if wantPC35
       t_4SEC = ((tint(1)+2-DT_PC5):4:(tint(end)+DT_PC5))';
       B_4SEC = irf_resamp(B_5VPS,t_4SEC);
       E3D_4SEC = irf_edb(irf_resamp(E_4SEC,t_4SEC),B_4SEC,15,'Eperp+NaN'); % Ez
-      
+
       % Construct the inertial frame
       evxb = irf_tappl(irf_cross(B_4SEC,irf_resamp(V,t_4SEC)),'*1e-3*(-1)');
       iE3D_4SEC = E3D_4SEC;
       iE3D_4SEC(:,2:4) = iE3D_4SEC(:,2:4) - evxb(:,2:4);
-      
+
       ebsp = ...
         irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35',...
         'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
@@ -186,13 +186,13 @@ for ievent=1:numel(TT)
         maarble.export(ebsp,tint,cl_id,'pc35')
       end
     end
-    
+
     if wantPC12
       fFGM = 22.5;
       t_BASE = (fix(min(B_FULL(1,1),E_L2(1,1))):2.0/fFGM:ceil(max(B_FULL(end,1),E_L2(end,1))))';
       B_BASE = irf_resamp(B_FULL,t_BASE);
       E3D_BASE = irf_edb(irf_resamp(E_L2,t_BASE),B_BASE,15,'Eperp+NaN'); % Ez
-      
+
       % Construct the inertial frame
       evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
       iE3D_BASE = E3D_BASE;
@@ -216,7 +216,7 @@ for ievent=1:numel(TT)
         maarble.export(ebsp,tint,cl_id,'pc12')
       end
     end
-    
+
     if ~wantPC35 && ~wantPC12
       tic
       if wantSCM
@@ -231,14 +231,14 @@ for ievent=1:numel(TT)
       irf_zoom(h,'x',tint)
       title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
     end
-    
+
     % Export FAC matrix
     [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
     facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
     if exportFlag
       maarble.export(facMatrix,tint,cl_id)
     end
-    
+
   else
     display(['No data available for times ' irf_disp_iso_range(tint,1)]);
     try

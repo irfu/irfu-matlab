@@ -182,13 +182,13 @@ end
       error('number of frequencies in ebsp.f must be %d (not %d!)',...
         numberOfFreq,nFreq)
     end
-    
+
     %% Prepare data array
     % B0
     if isempty(ebsp.fullB), magB = ebsp.B0; else, magB = ebsp.fullB; end
     magB = irf_abs(magB); magB = magB(:,[1 5]); magB = irf_resamp(magB,ebsp.t);
     magB = magB(:,2);
-    
+
     ebsp.k_tp(isnan(ebsp.k_tp)) = FILLVAL;
     ebsp.ellipticity(isnan(ebsp.ellipticity)) = FILLVAL;
     ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
@@ -205,7 +205,7 @@ end
         ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
       end
     end
-    
+
     % fliplr to make frequencies ascending
     ebsp.ellipticity = fliplr(ebsp.ellipticity);
     ebsp.planarity = fliplr(ebsp.planarity);
@@ -214,7 +214,7 @@ end
     if flagHasE
       ebsp.ee_ss = fliplr(ebsp.ee_ss);
     end
-    
+
     % Reformat matrices/vectors and fliplr to make frequencies ascending
     BB_2D = zeros(nData,nFreq*3);
     for comp=1:3
@@ -232,7 +232,7 @@ end
         end
       end
     end
-    
+
     % NOTE: This list must be consistent with the CEF header file
     if ~flagHasE % Only magnetic field is available
       dataToExport = {...
@@ -256,7 +256,7 @@ end
         {FORMAT_EXP, ebsp.ee_ss},...         % ESUM
         {FORMAT_EXP, magB}                   % BMAG
         };
-      
+
       % For Pc3-5 we also add E spectrum in FAC
       if strcmpi(freqRange,'pc35')
         ebsp.ee_xxyyzzss(isnan(ebsp.ee_xxyyzzss)) = FILLVAL_EXP;

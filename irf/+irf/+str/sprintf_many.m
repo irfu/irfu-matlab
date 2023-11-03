@@ -33,31 +33,31 @@
 % First created 2020-03-11
 %
 function stringCa = sprintf_many(sprintfFormat, array)
-    % PROPOSAL: Generalize to taking arbitrary arrays (per sprintf call), one component per value required by sprintf pattern.
-    %   NOTE: Can not use arrayfun/cellfun without repackaging arrays into one cell array, where every cell contains
-    %   cell array of values for one sprintf call.
-    %   TODO-DEC: Interface?
-    %       PROPOSAL: Interface: One N-dim cell array per sprintf pattern variable.
-    %           PRO: Natural extension.
-    %           PRO: Likely convenient for caller.
-    %           CON: Can not easily use with cellfun, arrayfun.
-    %       PROPOSAL: Interface: One N-dim cell array. Every component is in turn cell
-    %           array with one component per sprintf pattern variable.
-    %   PROPOSAL: Repackage arrays into one cell array of cell arrays.
-    %   PROPOSAL: Code itselfs iterate over all components.
-    %       CON: Difficult for arbitrary number of dimensions, if want return value with same output indices as input indices.
-    %           PROPOSAL: reshape+sub2ind+ind2sub.
-    %   PROPOSAL: Use one dimension/index of "array" for submitting multiple values to for each sprintf call.
-    
-    if iscell(array)
-        stringCa = cellfun(...
-            @(x) (sprintf(sprintfFormat, x)), ...
-            array, 'UniformOutput', false);
-        
-    elseif isnumeric(array)
-        
-        stringCa = arrayfun(...
-            @(x) (sprintf(sprintfFormat, x)), ...
-            array, 'UniformOutput', false);
-    end
+% PROPOSAL: Generalize to taking arbitrary arrays (per sprintf call), one component per value required by sprintf pattern.
+%   NOTE: Can not use arrayfun/cellfun without repackaging arrays into one cell array, where every cell contains
+%   cell array of values for one sprintf call.
+%   TODO-DEC: Interface?
+%       PROPOSAL: Interface: One N-dim cell array per sprintf pattern variable.
+%           PRO: Natural extension.
+%           PRO: Likely convenient for caller.
+%           CON: Can not easily use with cellfun, arrayfun.
+%       PROPOSAL: Interface: One N-dim cell array. Every component is in turn cell
+%           array with one component per sprintf pattern variable.
+%   PROPOSAL: Repackage arrays into one cell array of cell arrays.
+%   PROPOSAL: Code itselfs iterate over all components.
+%       CON: Difficult for arbitrary number of dimensions, if want return value with same output indices as input indices.
+%           PROPOSAL: reshape+sub2ind+ind2sub.
+%   PROPOSAL: Use one dimension/index of "array" for submitting multiple values to for each sprintf call.
+
+if iscell(array)
+  stringCa = cellfun(...
+    @(x) (sprintf(sprintfFormat, x)), ...
+    array, 'UniformOutput', false);
+
+elseif isnumeric(array)
+
+  stringCa = arrayfun(...
+    @(x) (sprintf(sprintfFormat, x)), ...
+    array, 'UniformOutput', false);
+end
 end

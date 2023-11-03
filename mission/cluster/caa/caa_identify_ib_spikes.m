@@ -36,12 +36,12 @@ pos = ndata; idx = []; prevSpike = [];
 while pos-PL >= 1
   pos = pos - PL;
   di = sum( abs(diff( pdata(pos:pos+PL-1,2:end) ,1,1)) ,2);
-  
+
   %      clf, h(1) = subplot(2,1,1); h(2) = subplot(2,1,2);
   %      plot(h(1), pdata(:,2:end),'.-'), plot(h(2),di,'.-')
   %      hold(h(1),'on'),hold(h(2),'on'),set(h(1),'XLim',pos + [0 PL-1],'YLimMode','auto')
   %      ylabel(h(1),'pdata'), ylabel(h(2),'diff')
-  
+
   nSpike = 0;
   while nSpike<=3
     OFF_P=2; OFF_M=2;
@@ -51,7 +51,7 @@ while pos-PL >= 1
       if spikeProxy <= OFF_M, spikeProxy = OFF_M + 1;
       elseif spikeProxy >= PL - OFF_P -1, spikeProxy = PL - OFF_P -2;
       end
-      
+
       if spikeProxy < PL
         if any(di(spikeProxy + (-OFF_M:1:OFF_P)) > 0.25*SDTTHRESH*std(di))
           ii = find( di(spikeProxy + (-OFF_M:1:OFF_P)) == ...
@@ -77,7 +77,7 @@ while pos-PL >= 1
         break
       end
     end
-    
+
     if isempty(prevSpike), prevSpike = spike; end
     if size(spike,1)==2
       idx_add = [spike(1) + ((-OFF_M+1):1:0) spike(2) + (0:1:(OFF_P-1))]
@@ -89,14 +89,14 @@ while pos-PL >= 1
     end
     idx = [idx idx_add]; %#ok<AGROW>
     nSpike = nSpike + 1;
-    
+
     %plot(h(1),idx_add,pdata(idx_add,2:end),'ko')
     %plot(h(2),ii,di(ii),'ko')
-    
+
     pdata(idx_add,2:end) = ones(length(idx_add),1)*(...
       pdata(min(idx_add)-1,2:end) + pdata(max(idx_add)+1,2:end) )*0.5;
     di = sum( abs(diff( pdata(pos:pos+PL-1,2:end) ,1,1)) ,2);
-    
+
     %plot(h(1),idx_add,pdata(idx_add,2:end),'m*'), set(h(1),'XLim',[min(idx_add)-5 max(idx_add)+5])
     %plot(h(2),ii,di(ii),'m*'), set(h(2),'XLim',ii + [-10 10])
     %keyboard

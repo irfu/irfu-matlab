@@ -1,8 +1,8 @@
 function write_dataobj(filePath, ...
-    dataobj_GlobalAttributes, ...
-    dataobj_data, ...
-    dataobj_VariableAttributes, ...
-    dataobj_Variables, varargin)
+  dataobj_GlobalAttributes, ...
+  dataobj_data, ...
+  dataobj_VariableAttributes, ...
+  dataobj_Variables, varargin)
 %
 % Function which writes a CDF file.
 %
@@ -199,347 +199,347 @@ function write_dataobj(filePath, ...
 % this into account by internally converting the zVar variable back to the right class and size.
 
 
-    
-    % ZVAs that should reasonably have the same data type as the zVariable
-    % itself.
-    ZVA_OF_ZV_DATA_TYPE_NAME_LIST = {...
-        'VALIDMIN', 'VALIDMAX', ...
-        'SCALEMIN', 'SCALEMAX', ...
-        'FILLVAL'};
-    
-    DEFAULT_SETTINGS = struct();...
-    % Whether zVariable value size per record must fit the submitted metadata
-    % (dataobj_Variables{i, 2}).
-    DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = 1;
-    % Default 1/true since dataobj is not strict about SIZE  of empty zVars.
-    DEFAULT_SETTINGS.strictEmptyNumericZvSizePerRecord = 1;
-    % Default 1/true since dataobj is not strict about CLASS of empty zVars.
-    DEFAULT_SETTINGS.strictEmptyZvClass                = 1;
-    % Whether zVar attr should have same class as zVar.
-    % Exception: When zVar is TT2000 and zVar attr is char.
-    % Deactivation is useful for less stringent CDFs.
-    DEFAULT_SETTINGS.strictZvAttrClass                 = 'error';   % error, warning, ignore
-    DEFAULT_SETTINGS.calculateMd5Checksum              = 1;
-    % Useful for debugging test runs.
-    DEFAULT_SETTINGS.disableSpdfcdfwrite               = 0;
-    %
-    Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-    irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
-    
-    
-    
-    % ASSERTION: ZV names are all unique and unambiguous
-    % ---------------------------------------------------------
-    % zvNameAllCa1 previously called for only non-char data. Why?
-    zvNameAllCa1 = dataobj_Variables(:, 1);
-    zvNameAllCa2 = fieldnames(dataobj_data);
-    %
-    irf.assert.castring_set(zvNameAllCa1)
-    irf.assert.castring_sets_equal(zvNameAllCa1, zvNameAllCa2)
-    
-    zvNameAllCa = zvNameAllCa1;
-    clear zvNameAllCa1 zvNameAllCa2
-    
-    
-    
-    %============================================================
-    % Construct variables that spdfcdfwrite accepts as arguments
-    %============================================================
-    zvNameRcCa          = {};   % RC = spdfcdfwrite option "RecordBound".
-    % Lists where pairs of successive components contain (a) zVar names, and (b)
-    % corresponding zVar values/data types/pad values. These lists are needed as
-    % arguments to spdfcdfwrite, which requires that very format.
-    zvNameAndValueCa    = {};
-    zvNameAndDataTypeCa = {};
-    zvNameAndPadValueCa = {};
-    
-    for i = 1:length(dataobj_Variables(:,1))
-        
-        %===========================================================================
-        % Extract ZV data from arguments
-        % -------------------------------------
-        % IMPLEMENTATION NOTE: Not using (1) data(i).VariableName or (2)
-        % info.Variables(:,1) to obtain the variable name since experience shows
-        % that components of (1) can be empty (contain empty struct fields) and (2)
-        % may not cover all variables when obtained via spdfcdfread!!
-        %===========================================================================
-        zvName                 = dataobj_Variables{i, 1};
-        specifiedSizePerRecord = dataobj_Variables{i, 2};
-        % "CdfDataType" refers to that the value should be interpreted as a CDF
-        % standard string for representing data type (not a MATLAB class/type):
-        % uint32, tt2000 etc.
-        specifiedCdfDataType   = dataobj_Variables{i, 4};
-        
-        % This value can NOT be found in dataobj_data. Has to be read from
-        % dataobj_Variables.
-        padValue               = dataobj_Variables{i, 9};
-        
-        zvValue                = dataobj_data.(zvName).data;
-        specifiedMatlabClass   = irf.cdf.convert_CDF_type_to_MATLAB_class(...
-            specifiedCdfDataType, 'Permit MATLAB classes');
-        
-        
-        
-        % ASSERTION: No zero-size dimensions (in size per record)
-        %
-        % IMPLEMENTATION NOTE: Code can not handle zero size dimensions (in size
-        % per record).
-        % In practice: #records > 0 with zero-size records ==> zero records
-        % Not certain that the CDF files format is meant to handle this either.
-        if prod(specifiedSizePerRecord) == 0
-            error('write_dataobj:Assertion', ...
-                ['Specified size per record contains zero-size dimension(s).', ...
-                ' This function can not handle this case.'])
-        end
-        
-        %zvValue = handle_zero_records(zvValue, padValue, dataobjStatedMatlabClass, turnZeroRecordsIntoOneRecord);
-        
-        
-        
-        %======================================================================
-        % ASSERTION:
-        %   Check that the supplied ZV data variable has a MATLAB class
-        %   (type) which matches the specified CDF type.
-        % --------------------------------------------------------------------
-        % IMPLEMENTATION NOTE:
-        % (1) Empty data (empty arrays) from spdfcdfread are known to have the
-        % wrong data type (char). Therefore, do this check after having dealt
-        % with empty data.
-        % (2) Must do this after converting time strings (char) data to
-        % uint64/tt2000.
-        %======================================================================
-        zvDataMatlabClass = class(zvValue);
-        
-        if ~strcmp( specifiedMatlabClass, zvDataMatlabClass ) && ...
-           (Settings.strictEmptyZvClass || ~isempty(zvValue))
-            
-            error('write_dataobj:Assertion', ...
-                ['The MATLAB class ("%s") of the variable containing zVariable', ...
-                ' ("%s") data does not match specified CDF data type "%s".'], ...
-                zvDataMatlabClass, zvName, specifiedCdfDataType)
-        end
-        
-        
-        
-        [zvValue, isRecordBound] = prepare_ZV_value(...
-            zvValue, specifiedSizePerRecord, Settings, zvName);
-        if isRecordBound
-            zvNameRcCa{end+1} = zvName;
-        end
-        
-        
-        
-        %============================================================================
-        % Convert specific VariableAttributes values
-        %
-        % Case 1: tt2000 values as UTC strings : Convert to tt2000.
-        % Case 2: All other                    : Convert to the zVariable data type.
-        % --------------------------------------------------------------------------
-        % IMPLEMENTATION NOTE: spdfcdfread (not spdfcdfwrite) can crash if not
-        % doing this!!! The tt2000 CDF variables are likely the problem(?).
-        %
-        % BUG: Does not seem to work on SCALEMIN/-MAX specifically despite
-        % identical treatment, for unknown reason.
-        %============================================================================
-        for iZvaOfZvDataType = 1:length(ZVA_OF_ZV_DATA_TYPE_NAME_LIST)
-            zvaName = ZVA_OF_ZV_DATA_TYPE_NAME_LIST{iZvaOfZvDataType};
-            if ~isfield(dataobj_VariableAttributes, zvaName)
-                continue
-            end
-            
-            % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is
-            % represented among the cell arrays in
-            % dataobj_VariableAttributes.(...).
-            % Example: EM2_CAL_BIAS_SWEEP_LFR_CONF1_1M_2016-04-15_Run1__e1d0a9a__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-CWF_e1d0a9a_CNE_V01.cdf
-            
-            % Retrieve this ZVA (e.g. VALIDMIN) but for all zVariables (where
-            % present) from argument standard struct dataobj_VariableAttributes.
-            % Nx2 array.
-            %
-            % DOVAF = dataobj VariableAttributes Field
-            dovafCa = dataobj_VariableAttributes.(zvaName);
-            
-            iDovafRow  = find(strcmp(dovafCa(:,1), zvName));
-            if isempty(iDovafRow)
-                % CASE: The current zVariable does not have this attribute
-                % (varAttrName).
-                continue
-            elseif length(iDovafRow) > 1
-                error('write_dataobj:Assertion:OperationNotImplemented', ...
-                    ['Can not handle multiple zVariable name matches in', ...
-                    ' dataobj_VariableAttributes.%s.'], zvaName)
-            end
-            % CASE: iDovafRow is scalar.
-            
-            zvaValue = dovafCa{iDovafRow, 2};
-            if strcmp(specifiedCdfDataType, 'tt2000') && ischar(zvaValue)
-                zvaValue = spdfparsett2000(zvaValue);   % Convert char-->tt2000.
-                
-            elseif ~strcmp(specifiedMatlabClass, class(zvaValue))
-                msg = sprintf(...
-                    ['Found VariableAttribute %s for CDF variable "%s"', ...
-                    ' whose data type did not match the declared one.', ...
-                    ' specifiedCdfDataType="%s", specifiedMatlabClass="%s",', ...
-                    ' class(zvaValue)="%s"'], ...
-                    zvaName, zvName, specifiedCdfDataType, ...
-                    specifiedMatlabClass, class(zvaValue));
-                
-                switch(Settings.strictZvAttrClass)
-                    case 'error'
-                        error('write_dataobj:Assertion', msg)
-                    case 'warning'
-                        warning('write_dataobj:Assertion', msg)
-                    case 'ignore'
-                        % Do nothing.
-                    otherwise
-                        error('Illegal setting Settings.strictZvAttrClass="%s".', ...
-                            Settings.strictZvAttrClass)
-                end
-            end
-            
-            % Modify dataobj_VariableAttributes correspondingly.
-            dovafCa{iDovafRow, 2}                = zvaValue;
-            dataobj_VariableAttributes.(zvaName) = dovafCa;
-        end
-        
-        zvNameAndValueCa   (end+[1,2]) = {zvName, zvValue             };
-        zvNameAndDataTypeCa(end+[1,2]) = {zvName, specifiedCdfDataType};
-        zvNameAndPadValueCa(end+[1,2]) = {zvName, padValue            };
-    end    % for
-    
-    
-    
-    %===================================================================================================
-    % RELEVANT spdfcdfwrite OPTIONS:
-    % (Relevant excerpts from spdfcdfwrite.m COPIED here for convenience.)
-    % --------------------------------------------------------------------
-    %   SPDFCDFWRITE(FILE, VARIABLELIST, ...) writes out a CDF file whose name
-    %   is specified by FILE.  VARIABLELIST is a cell array of ordered
-    %   pairs, which are comprised of a CDF variable name (a string) and
-    %   the corresponding CDF variable value.  To write out multiple records
-    %   for a variable, there are two ways of doing it. One way is putting the
-    %   variable values in a cell array, where each element in the cell array
-    %   represents a record. Another way, the better one, is to place the
-    %   values in an array (single or multi-dimensional) with the option
-    %   'RecordBound' being specified.
-    %
-    %   SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) specifies data values in arrays
-    %   (1-D or multi-dimensional) are to be written into "records" for the given
-    %   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
-    %   data will create M rows (records), while each row having N elements. For
-    %   examples, 5-by-1 array will create five (5) scalar records and 1-by-5 array
-    %   will write out just one (1) record with 5 elements. For 3-D array of
-    %   M-by-N-by-R, R records will be written, and each record with M-by-N
-    %   elements. Without this option, array of M-by-N will be written into a single
-    %   record of 2-dimensions. See sample codes for its usage.
-    %
-    %   SPDFCDFWRITE(..., 'GlobalAttributes', GATTRIB, ...) writes the structure
-    %   GATTRIB as global meta-data for the CDF.  Each field of the
-    %   struct is the name of a global attribute.  The value of each
-    %   field contains the value of the attribute.  To write out
-    %   multiple values for an attribute, the field value should be a
-    %   cell array.
-    %
-    %   If there is a master CDF that has all the meta-data that the new CDF needs,
-    %   then SPDFCDFINFO module can be used to retrieve the infomation. The
-    %   'GlobalAttributes' field from the returned structure can be
-    %   passed in for the GATTRIB.
-    %
-    %   In order to specify a global attribute name that is illegal in
-    %   MATLAB, create a field called "CDFAttributeRename" in the
-    %   attribute struct.  The "CDFAttribute Rename" field musdataobjStatedMatlabClasst have a value
-    %   which is a cell array of ordered pairs.  The ordered pair consists
-    %   of the name of the original attribute, as listed in the
-    %   GlobalAttributes struct and the corresponding name of the attribute
-    %   to be written to the CDF.
-    %
-    %   SPDFCDFWRITE(..., 'VariableAttributes', VATTRIB, ...) writes the
-    %   structure VATTRIB as variable meta-data for the CDF.  Each
-    %   field of the struct is the name of a variable attribute.  The
-    %   value of each field should be an Mx2 cell array where M is the
-    %   number of variables with attributes.  The first element in the
-    %   cell array should be the name of the variable and the second
-    %   element should be the value of the attribute for that variable.
-    %
-    %   If there is a master CDF that has all the meta-data that the new CDF needs,
-    %   then SPDFCDFINFO module can be used to retrieve the infomation. The
-    %   'VariableAttributes' field from the returned structure can
-    %   be passed in for the VATTRIB.
-    %
-    %   In order to specify a variable attribute name that is illegal in
-    %   MATLAB, create a field called "CDFAttributeRename" in the
-    %   attribute struct.  The "CDFAttribute Rename" field must have a value
-    %   which is a cell array of ordered pairs.  The ordered pair consists
-    %   of the name of the original attribute, as listed in the
-    %   VariableAttributes struct and the corresponding name of the attribute
-    %   to be written to the CDF.   If you are specifying a variable attribute
-    %   of a CDF variable that you are re-naming, the name of the variable in
-    %   the VariableAttributes struct must be the same as the re-named variable.
-    %
-    %   SPDFCDFWRITE(..., 'Vardatatypes', VARDATATYPE) specifies the variable's
-    %   data types. By default, this module uses each variable's passed data to
-    %   determine its corresponding CDF data type. While it is fine for the most
-    %   cases, this will not work for the CDF epoch types, i.e., CDF_EPOCH (a double),
-    %   CDF_EPOCH16 (an array of 2 doubles) and CDF_TIME_TT2000 (an int64). This
-    %   option can be used to address such issue. VARDATATYPE is a cell array of
-    %   variable names and their respective data types (in string).
-    %
-    %   The following table shows the valid type strings, either in CDF defined
-    %   forms, or alternatively in the forms presented at column 4 in the Variables
-    %   field of the structure returned from a SPDFCDFINFO module call to an
-    %   existing CDF or master CDF.
-    %       type             CDF Types
-    %       -----            ---------
-    %       int8             CDF_INT1 or CDF_BYTE
-    %       int16            CDF_INT2
-    %       int32            CDF_INT4
-    %       int64            CDF_INT8
-    %       uint8            CDF_UINT1
-    %       uint16           CDF_UINT2
-    %       uint32           CDF_UINT4
-    %       single           CDF_FLOAT or CDF_REAL4
-    %       double           CDF_DOUBLE or CDF_REAL8
-    %       epoch            CDF_EPOCH
-    %       epoch16          CDF_EPOCH16
-    %       tt2000           CDF_TIME_TT2000
-    %       char             CDF_CHAR or CDF_UCHAR
-    %
-    %   Note: Make sure variable's data match to the defined type.
-    %
-    %   SPDFCDFWRITE(..., 'PadValues', PADVALS) writes out pad values for given
-    %   variable names.  PADVALS is a cell array of ordered pairs, which
-    %   are comprised of a variable name (a string) and a corresponding
-    %   pad value.  Pad values are the default value associated with the
-    %   variable when an out-of-bounds record is accessed.  Variable names
-    %   that appear in PADVALS must appear in VARIABLELIST.
-    %
-    %   SPDFCDFWRITE(..., 'Singleton', VARS, ...) indicates whether to keep the
-    %   singleton dimension(s) passed in from the multi-dimensional data. VARS is
-    %   a cell array of variable names, indicating each variable's singleton
-    %   dimension(s) is to be kept.
-    %   For example, variable with data dimensions like 10x1x100 will be written
-    %   as 2-dimensions (10x1) for 100 records if the record bound is specified.
-    %   For a row (1-by-M) or column (M-by-1) vector, the variable data will be
-    %   written as 2-dimension as is, unless the recordbound is specified.
-    %   The default setting is to have all singleton dimension(s) removed.
-    %   The above 10x1x100 variable will be written as 1-dimension
-    %   (with 10 elements).
-    %===================================================================================================
-    if Settings.calculateMd5Checksum ; checksumFlagArg = 'MD5';
-    else                             ; checksumFlagArg = 'None';
+
+% ZVAs that should reasonably have the same data type as the zVariable
+% itself.
+ZVA_OF_ZV_DATA_TYPE_NAME_LIST = {...
+  'VALIDMIN', 'VALIDMAX', ...
+  'SCALEMIN', 'SCALEMAX', ...
+  'FILLVAL'};
+
+DEFAULT_SETTINGS = struct();...
+  % Whether zVariable value size per record must fit the submitted metadata
+% (dataobj_Variables{i, 2}).
+DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = 1;
+% Default 1/true since dataobj is not strict about SIZE  of empty zVars.
+DEFAULT_SETTINGS.strictEmptyNumericZvSizePerRecord = 1;
+% Default 1/true since dataobj is not strict about CLASS of empty zVars.
+DEFAULT_SETTINGS.strictEmptyZvClass                = 1;
+% Whether zVar attr should have same class as zVar.
+% Exception: When zVar is TT2000 and zVar attr is char.
+% Deactivation is useful for less stringent CDFs.
+DEFAULT_SETTINGS.strictZvAttrClass                 = 'error';   % error, warning, ignore
+DEFAULT_SETTINGS.calculateMd5Checksum              = 1;
+% Useful for debugging test runs.
+DEFAULT_SETTINGS.disableSpdfcdfwrite               = 0;
+%
+Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+
+
+
+% ASSERTION: ZV names are all unique and unambiguous
+% ---------------------------------------------------------
+% zvNameAllCa1 previously called for only non-char data. Why?
+zvNameAllCa1 = dataobj_Variables(:, 1);
+zvNameAllCa2 = fieldnames(dataobj_data);
+%
+irf.assert.castring_set(zvNameAllCa1)
+irf.assert.castring_sets_equal(zvNameAllCa1, zvNameAllCa2)
+
+zvNameAllCa = zvNameAllCa1;
+clear zvNameAllCa1 zvNameAllCa2
+
+
+
+%============================================================
+% Construct variables that spdfcdfwrite accepts as arguments
+%============================================================
+zvNameRcCa          = {};   % RC = spdfcdfwrite option "RecordBound".
+% Lists where pairs of successive components contain (a) zVar names, and (b)
+% corresponding zVar values/data types/pad values. These lists are needed as
+% arguments to spdfcdfwrite, which requires that very format.
+zvNameAndValueCa    = {};
+zvNameAndDataTypeCa = {};
+zvNameAndPadValueCa = {};
+
+for i = 1:length(dataobj_Variables(:,1))
+
+  %===========================================================================
+  % Extract ZV data from arguments
+  % -------------------------------------
+  % IMPLEMENTATION NOTE: Not using (1) data(i).VariableName or (2)
+  % info.Variables(:,1) to obtain the variable name since experience shows
+  % that components of (1) can be empty (contain empty struct fields) and (2)
+  % may not cover all variables when obtained via spdfcdfread!!
+  %===========================================================================
+  zvName                 = dataobj_Variables{i, 1};
+  specifiedSizePerRecord = dataobj_Variables{i, 2};
+  % "CdfDataType" refers to that the value should be interpreted as a CDF
+  % standard string for representing data type (not a MATLAB class/type):
+  % uint32, tt2000 etc.
+  specifiedCdfDataType   = dataobj_Variables{i, 4};
+
+  % This value can NOT be found in dataobj_data. Has to be read from
+  % dataobj_Variables.
+  padValue               = dataobj_Variables{i, 9};
+
+  zvValue                = dataobj_data.(zvName).data;
+  specifiedMatlabClass   = irf.cdf.convert_CDF_type_to_MATLAB_class(...
+    specifiedCdfDataType, 'Permit MATLAB classes');
+
+
+
+  % ASSERTION: No zero-size dimensions (in size per record)
+  %
+  % IMPLEMENTATION NOTE: Code can not handle zero size dimensions (in size
+  % per record).
+  % In practice: #records > 0 with zero-size records ==> zero records
+  % Not certain that the CDF files format is meant to handle this either.
+  if prod(specifiedSizePerRecord) == 0
+    error('write_dataobj:Assertion', ...
+      ['Specified size per record contains zero-size dimension(s).', ...
+      ' This function can not handle this case.'])
+  end
+
+  %zvValue = handle_zero_records(zvValue, padValue, dataobjStatedMatlabClass, turnZeroRecordsIntoOneRecord);
+
+
+
+  %======================================================================
+  % ASSERTION:
+  %   Check that the supplied ZV data variable has a MATLAB class
+  %   (type) which matches the specified CDF type.
+  % --------------------------------------------------------------------
+  % IMPLEMENTATION NOTE:
+  % (1) Empty data (empty arrays) from spdfcdfread are known to have the
+  % wrong data type (char). Therefore, do this check after having dealt
+  % with empty data.
+  % (2) Must do this after converting time strings (char) data to
+  % uint64/tt2000.
+  %======================================================================
+  zvDataMatlabClass = class(zvValue);
+
+  if ~strcmp( specifiedMatlabClass, zvDataMatlabClass ) && ...
+      (Settings.strictEmptyZvClass || ~isempty(zvValue))
+
+    error('write_dataobj:Assertion', ...
+      ['The MATLAB class ("%s") of the variable containing zVariable', ...
+      ' ("%s") data does not match specified CDF data type "%s".'], ...
+      zvDataMatlabClass, zvName, specifiedCdfDataType)
+  end
+
+
+
+  [zvValue, isRecordBound] = prepare_ZV_value(...
+    zvValue, specifiedSizePerRecord, Settings, zvName);
+  if isRecordBound
+    zvNameRcCa{end+1} = zvName;
+  end
+
+
+
+  %============================================================================
+  % Convert specific VariableAttributes values
+  %
+  % Case 1: tt2000 values as UTC strings : Convert to tt2000.
+  % Case 2: All other                    : Convert to the zVariable data type.
+  % --------------------------------------------------------------------------
+  % IMPLEMENTATION NOTE: spdfcdfread (not spdfcdfwrite) can crash if not
+  % doing this!!! The tt2000 CDF variables are likely the problem(?).
+  %
+  % BUG: Does not seem to work on SCALEMIN/-MAX specifically despite
+  % identical treatment, for unknown reason.
+  %============================================================================
+  for iZvaOfZvDataType = 1:length(ZVA_OF_ZV_DATA_TYPE_NAME_LIST)
+    zvaName = ZVA_OF_ZV_DATA_TYPE_NAME_LIST{iZvaOfZvDataType};
+    if ~isfield(dataobj_VariableAttributes, zvaName)
+      continue
     end
-    
-    if ~Settings.disableSpdfcdfwrite
-        spdfcdfwrite(...
-            filePath, zvNameAndValueCa(:), ...
-            'RecordBound',        zvNameRcCa, ...
-            'GlobalAttributes',   dataobj_GlobalAttributes, ...
-            'VariableAttributes', dataobj_VariableAttributes, ...
-            'Vardatatypes',       zvNameAndDataTypeCa, ...
-            'PadValues',          zvNameAndPadValueCa, ...
-            'Singleton',          zvNameAllCa, ...
-            'Checksum',           checksumFlagArg)
+
+    % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is
+    % represented among the cell arrays in
+    % dataobj_VariableAttributes.(...).
+    % Example: EM2_CAL_BIAS_SWEEP_LFR_CONF1_1M_2016-04-15_Run1__e1d0a9a__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-CWF_e1d0a9a_CNE_V01.cdf
+
+    % Retrieve this ZVA (e.g. VALIDMIN) but for all zVariables (where
+    % present) from argument standard struct dataobj_VariableAttributes.
+    % Nx2 array.
+    %
+    % DOVAF = dataobj VariableAttributes Field
+    dovafCa = dataobj_VariableAttributes.(zvaName);
+
+    iDovafRow  = find(strcmp(dovafCa(:,1), zvName));
+    if isempty(iDovafRow)
+      % CASE: The current zVariable does not have this attribute
+      % (varAttrName).
+      continue
+    elseif length(iDovafRow) > 1
+      error('write_dataobj:Assertion:OperationNotImplemented', ...
+        ['Can not handle multiple zVariable name matches in', ...
+        ' dataobj_VariableAttributes.%s.'], zvaName)
     end
+    % CASE: iDovafRow is scalar.
+
+    zvaValue = dovafCa{iDovafRow, 2};
+    if strcmp(specifiedCdfDataType, 'tt2000') && ischar(zvaValue)
+      zvaValue = spdfparsett2000(zvaValue);   % Convert char-->tt2000.
+
+    elseif ~strcmp(specifiedMatlabClass, class(zvaValue))
+      msg = sprintf(...
+        ['Found VariableAttribute %s for CDF variable "%s"', ...
+        ' whose data type did not match the declared one.', ...
+        ' specifiedCdfDataType="%s", specifiedMatlabClass="%s",', ...
+        ' class(zvaValue)="%s"'], ...
+        zvaName, zvName, specifiedCdfDataType, ...
+        specifiedMatlabClass, class(zvaValue));
+
+      switch(Settings.strictZvAttrClass)
+        case 'error'
+          error('write_dataobj:Assertion', msg)
+        case 'warning'
+          warning('write_dataobj:Assertion', msg)
+        case 'ignore'
+          % Do nothing.
+        otherwise
+          error('Illegal setting Settings.strictZvAttrClass="%s".', ...
+            Settings.strictZvAttrClass)
+      end
+    end
+
+    % Modify dataobj_VariableAttributes correspondingly.
+    dovafCa{iDovafRow, 2}                = zvaValue;
+    dataobj_VariableAttributes.(zvaName) = dovafCa;
+  end
+
+  zvNameAndValueCa   (end+[1,2]) = {zvName, zvValue             };
+  zvNameAndDataTypeCa(end+[1,2]) = {zvName, specifiedCdfDataType};
+  zvNameAndPadValueCa(end+[1,2]) = {zvName, padValue            };
+end    % for
+
+
+
+%===================================================================================================
+% RELEVANT spdfcdfwrite OPTIONS:
+% (Relevant excerpts from spdfcdfwrite.m COPIED here for convenience.)
+% --------------------------------------------------------------------
+%   SPDFCDFWRITE(FILE, VARIABLELIST, ...) writes out a CDF file whose name
+%   is specified by FILE.  VARIABLELIST is a cell array of ordered
+%   pairs, which are comprised of a CDF variable name (a string) and
+%   the corresponding CDF variable value.  To write out multiple records
+%   for a variable, there are two ways of doing it. One way is putting the
+%   variable values in a cell array, where each element in the cell array
+%   represents a record. Another way, the better one, is to place the
+%   values in an array (single or multi-dimensional) with the option
+%   'RecordBound' being specified.
+%
+%   SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) specifies data values in arrays
+%   (1-D or multi-dimensional) are to be written into "records" for the given
+%   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
+%   data will create M rows (records), while each row having N elements. For
+%   examples, 5-by-1 array will create five (5) scalar records and 1-by-5 array
+%   will write out just one (1) record with 5 elements. For 3-D array of
+%   M-by-N-by-R, R records will be written, and each record with M-by-N
+%   elements. Without this option, array of M-by-N will be written into a single
+%   record of 2-dimensions. See sample codes for its usage.
+%
+%   SPDFCDFWRITE(..., 'GlobalAttributes', GATTRIB, ...) writes the structure
+%   GATTRIB as global meta-data for the CDF.  Each field of the
+%   struct is the name of a global attribute.  The value of each
+%   field contains the value of the attribute.  To write out
+%   multiple values for an attribute, the field value should be a
+%   cell array.
+%
+%   If there is a master CDF that has all the meta-data that the new CDF needs,
+%   then SPDFCDFINFO module can be used to retrieve the infomation. The
+%   'GlobalAttributes' field from the returned structure can be
+%   passed in for the GATTRIB.
+%
+%   In order to specify a global attribute name that is illegal in
+%   MATLAB, create a field called "CDFAttributeRename" in the
+%   attribute struct.  The "CDFAttribute Rename" field musdataobjStatedMatlabClasst have a value
+%   which is a cell array of ordered pairs.  The ordered pair consists
+%   of the name of the original attribute, as listed in the
+%   GlobalAttributes struct and the corresponding name of the attribute
+%   to be written to the CDF.
+%
+%   SPDFCDFWRITE(..., 'VariableAttributes', VATTRIB, ...) writes the
+%   structure VATTRIB as variable meta-data for the CDF.  Each
+%   field of the struct is the name of a variable attribute.  The
+%   value of each field should be an Mx2 cell array where M is the
+%   number of variables with attributes.  The first element in the
+%   cell array should be the name of the variable and the second
+%   element should be the value of the attribute for that variable.
+%
+%   If there is a master CDF that has all the meta-data that the new CDF needs,
+%   then SPDFCDFINFO module can be used to retrieve the infomation. The
+%   'VariableAttributes' field from the returned structure can
+%   be passed in for the VATTRIB.
+%
+%   In order to specify a variable attribute name that is illegal in
+%   MATLAB, create a field called "CDFAttributeRename" in the
+%   attribute struct.  The "CDFAttribute Rename" field must have a value
+%   which is a cell array of ordered pairs.  The ordered pair consists
+%   of the name of the original attribute, as listed in the
+%   VariableAttributes struct and the corresponding name of the attribute
+%   to be written to the CDF.   If you are specifying a variable attribute
+%   of a CDF variable that you are re-naming, the name of the variable in
+%   the VariableAttributes struct must be the same as the re-named variable.
+%
+%   SPDFCDFWRITE(..., 'Vardatatypes', VARDATATYPE) specifies the variable's
+%   data types. By default, this module uses each variable's passed data to
+%   determine its corresponding CDF data type. While it is fine for the most
+%   cases, this will not work for the CDF epoch types, i.e., CDF_EPOCH (a double),
+%   CDF_EPOCH16 (an array of 2 doubles) and CDF_TIME_TT2000 (an int64). This
+%   option can be used to address such issue. VARDATATYPE is a cell array of
+%   variable names and their respective data types (in string).
+%
+%   The following table shows the valid type strings, either in CDF defined
+%   forms, or alternatively in the forms presented at column 4 in the Variables
+%   field of the structure returned from a SPDFCDFINFO module call to an
+%   existing CDF or master CDF.
+%       type             CDF Types
+%       -----            ---------
+%       int8             CDF_INT1 or CDF_BYTE
+%       int16            CDF_INT2
+%       int32            CDF_INT4
+%       int64            CDF_INT8
+%       uint8            CDF_UINT1
+%       uint16           CDF_UINT2
+%       uint32           CDF_UINT4
+%       single           CDF_FLOAT or CDF_REAL4
+%       double           CDF_DOUBLE or CDF_REAL8
+%       epoch            CDF_EPOCH
+%       epoch16          CDF_EPOCH16
+%       tt2000           CDF_TIME_TT2000
+%       char             CDF_CHAR or CDF_UCHAR
+%
+%   Note: Make sure variable's data match to the defined type.
+%
+%   SPDFCDFWRITE(..., 'PadValues', PADVALS) writes out pad values for given
+%   variable names.  PADVALS is a cell array of ordered pairs, which
+%   are comprised of a variable name (a string) and a corresponding
+%   pad value.  Pad values are the default value associated with the
+%   variable when an out-of-bounds record is accessed.  Variable names
+%   that appear in PADVALS must appear in VARIABLELIST.
+%
+%   SPDFCDFWRITE(..., 'Singleton', VARS, ...) indicates whether to keep the
+%   singleton dimension(s) passed in from the multi-dimensional data. VARS is
+%   a cell array of variable names, indicating each variable's singleton
+%   dimension(s) is to be kept.
+%   For example, variable with data dimensions like 10x1x100 will be written
+%   as 2-dimensions (10x1) for 100 records if the record bound is specified.
+%   For a row (1-by-M) or column (M-by-1) vector, the variable data will be
+%   written as 2-dimension as is, unless the recordbound is specified.
+%   The default setting is to have all singleton dimension(s) removed.
+%   The above 10x1x100 variable will be written as 1-dimension
+%   (with 10 elements).
+%===================================================================================================
+if Settings.calculateMd5Checksum ; checksumFlagArg = 'MD5';
+else                             ; checksumFlagArg = 'None';
+end
+
+if ~Settings.disableSpdfcdfwrite
+  spdfcdfwrite(...
+    filePath, zvNameAndValueCa(:), ...
+    'RecordBound',        zvNameRcCa, ...
+    'GlobalAttributes',   dataobj_GlobalAttributes, ...
+    'VariableAttributes', dataobj_VariableAttributes, ...
+    'Vardatatypes',       zvNameAndDataTypeCa, ...
+    'PadValues',          zvNameAndPadValueCa, ...
+    'Singleton',          zvNameAllCa, ...
+    'Checksum',           checksumFlagArg)
+end
 
 end    % function
 
@@ -553,17 +553,17 @@ end    % function
 % charArray : Char array with indices (iRecord,iCharWithinString,)
 %
 function charArray = convert_dataobj_charZVValue_2_consistent_charZVValue(...
-    charArray, nWrd1)
-    
-    % ASSERTION
-    assert(isscalar(nWrd1), ...
-        'write_dataobj:Assertion', 'Argument nWrd1 is not a scalar.')
+  charArray, nWrd1)
 
-    if nWrd1 == 1
-        charArray = permute(charArray, [2,1,3]);
-    else
-        charArray = permute(charArray, [2,3,1]);
-    end
+% ASSERTION
+assert(isscalar(nWrd1), ...
+  'write_dataobj:Assertion', 'Argument nWrd1 is not a scalar.')
+
+if nWrd1 == 1
+  charArray = permute(charArray, [2,1,3]);
+else
+  charArray = permute(charArray, [2,3,1]);
+end
 end
 
 
@@ -594,48 +594,48 @@ end
 %                 spdfcdfwrite with option "RecordBound" enabled.
 %
 function [zvValue, isRecordBound] = prepare_char_ZV_data(charArray)
-    
-    % ASSERTIONS. Important to check that the code can actually handle the case.
-    assert(ischar(charArray), ...
-        'write_dataobj:Assertion', ...
-        'Argument charArray is not a char array.')
-    assert(ndims(charArray) <= 3, ...
-        'write_dataobj:Assertion:OperationNotImplemented', ...
-        ['Argument charArray has more than 3 dimension (2 per record).', ...
-        ' Can not produce value for such zVariable.'])
-    assert(~isempty(charArray), ...
-        'write_dataobj:Assertion:OperationNotImplemented', ...
-        ['Argument charArray constains zero strings.', ...
-        ' Can not produce value for empty zVariable.'])
-    
-    % WRD1 = Within-Record Dimension 1.    
-    nRecords = size(charArray, 2);   % CASE: >=1, because of assertion.
-    nWrd1    = size(charArray, 3);   % CASE: >=1, because of assertion.
-    
-    if nRecords == 1
-        if nWrd1 == 1
-            zvValue = permute(charArray, [2, 1, 3]);
-        else
-            zvValue = permute(charArray, [3, 1, 2]);
-        end
-    else
-        if nWrd1 == 1
-            zvValue = cell(nRecords, nWrd1);
-            for iRecord = 1:nRecords
-                for iWrd1 = 1:nWrd1
-                    zvValue{iRecord, nWrd1} = ...
-                        permute(charArray(:, iRecord, iWrd1), [2, 1, 3]);
-                end
-            end
-        else
-            error('write_dataobj:Assertion:OperationNotImplemented', ...
-                ['Argument charArray represents multiple records containing', ...
-                ' multiple strings per record. Can not produce zVariable', ...
-                ' value for this case.']);
-        end
-    end    
-    
-    isRecordBound = 0;    % Always!
+
+% ASSERTIONS. Important to check that the code can actually handle the case.
+assert(ischar(charArray), ...
+  'write_dataobj:Assertion', ...
+  'Argument charArray is not a char array.')
+assert(ndims(charArray) <= 3, ...
+  'write_dataobj:Assertion:OperationNotImplemented', ...
+  ['Argument charArray has more than 3 dimension (2 per record).', ...
+  ' Can not produce value for such zVariable.'])
+assert(~isempty(charArray), ...
+  'write_dataobj:Assertion:OperationNotImplemented', ...
+  ['Argument charArray constains zero strings.', ...
+  ' Can not produce value for empty zVariable.'])
+
+% WRD1 = Within-Record Dimension 1.
+nRecords = size(charArray, 2);   % CASE: >=1, because of assertion.
+nWrd1    = size(charArray, 3);   % CASE: >=1, because of assertion.
+
+if nRecords == 1
+  if nWrd1 == 1
+    zvValue = permute(charArray, [2, 1, 3]);
+  else
+    zvValue = permute(charArray, [3, 1, 2]);
+  end
+else
+  if nWrd1 == 1
+    zvValue = cell(nRecords, nWrd1);
+    for iRecord = 1:nRecords
+      for iWrd1 = 1:nWrd1
+        zvValue{iRecord, nWrd1} = ...
+          permute(charArray(:, iRecord, iWrd1), [2, 1, 3]);
+      end
+    end
+  else
+    error('write_dataobj:Assertion:OperationNotImplemented', ...
+      ['Argument charArray represents multiple records containing', ...
+      ' multiple strings per record. Can not produce zVariable', ...
+      ' value for this case.']);
+  end
+end
+
+isRecordBound = 0;    % Always!
 end
 
 
@@ -654,142 +654,142 @@ end
 %       For numeric: zValue size minus the first value, "size(zvValue)(2:end)".
 %
 function [zvValue, isRecordBound] = prepare_ZV_value(...
-        zvValue, specifiedSizePerRecord, Settings, zvName)
-    
-    if ischar(zvValue)
-        %==========================================================================
-        % CASE: char zVar: Convert 3-D char matrices to column cell arrays of
-        % 2-D char matrices.
-        % ------------------------------------------------------------------------
-        % IMPLEMENTATION NOTE: It is not possible to permute indices for string
-        % as one can for non-char for ndim==3.
-        %==========================================================================
-        
-        zvValue = convert_dataobj_charZVValue_2_consistent_charZVValue(...
-            zvValue, specifiedSizePerRecord(1));
-        
-        %=======================================
-        % ASSERTION: Check zVar size per record
-        %=======================================
-        % NOTE: This check can not be perfect since zvValue with multiple
-        % strings can be interpreted correctly for two different values of
-        % specifiedSizePerRecord: 1 (multiple strings in one record) and non-1
-        % (multiple records, with one string per record).
-        temp          = size(zvValue);
-        % NOTE: Throw away indices iRecord and iCharWithinString.
-        sizePerRecord = temp(3:end);
-        if ~isequal(...
-                normalize_size_vec(specifiedSizePerRecord), ...
-                normalize_size_vec(sizePerRecord))
-            error('write_dataobj:Assertion', ...
-                ['The zVariable data size (dataobj_data.(''%s'').data) does', ...
-                ' not fit the stated size per record (dataobj_Variables).'], ...
-                zvName)
-        end
-        
-        [zvValue, isRecordBound] = prepare_char_ZV_data(zvValue);
-        
-        
-        
-    elseif isnumeric(zvValue)
-        
-        nRecords = size(zvValue, 1);
-        if Settings.strictNumericZvSizePerRecord || ...
-          (Settings.strictEmptyNumericZvSizePerRecord && (nRecords == 0))
-            % NOTE: dataobj zVar data is always (empirically) [] (i.e. numeric
-            % 0x0) when nRecords=0, i.e. also for char-valued zVars, and also
-            % for non-empty size per record. Therefore code often needs to be
-            % tolerant of this. Note that the code can not (?) reconstruct an
-            % original char zVar from dataobj for nRecords=0 since it does not
-            % have the length of the strings.
-            
-            %=======================================
-            % ASSERTION: Check zVar size per record
-            %=======================================
-            temp          = size(zvValue);
-            sizePerRecord = temp(2:end);
-            if ~isequal(...
-                    normalize_size_vec(specifiedSizePerRecord), ...
-                    normalize_size_vec(sizePerRecord))
-                
-                sizePerRecordStr       = ['[', ...
-                    strjoin(irf.str.sprintf_many('%i', sizePerRecord), ', '), ...
-                    ']'];
-                specifiedSizePerRecordStr = ['[', ...
-                    strjoin(irf.str.sprintf_many('%i', specifiedSizePerRecord), ', '), ...
-                    ']'];
-                
-                error('write_dataobj:Assertion', ...
-                    ['The zVariable "%s" data size according to data variable', ...
-                    ' itself is not consistent with the stated size per record', ...
-                    ' in other argument.\n', ...
-                    '    Size per record according to data variable produced', ...
-                    ' by processing: %s\n', ...
-                    '    Size per record separately specified:              ', ...
-                    '                %s'], ...
-                    zvName, sizePerRecordStr, specifiedSizePerRecordStr)
-            end
-        end
-        
-        
-        
-        %===================================================================================
-        % Special behaviour for numeric matrices with >=2D per record
-        % -----------------------------------------------------------
-        % For 3D matrices, spdfcdfwrite interprets the last index (not the first
-        % index!) as the record number. Must therefore permute the indices so that
-        % write_cdf2 is consistent for all numbers of dimensions.
-        %     write_dataobj data arguments : index 1 = record.
-        %     matrix passed on to spdfcdfwrite : index 3 = record.
-        % NOTE: spdfcdfread (at least with argument "'Structure', 1,
-        % 'KeepEpochAsIs', 1") works like spdfcdfwrite in this regard.
-        %
-        % Excerpt from the comments in "spdfcdfwrite.m":
-        % ----------------------------------------------
-        %   """"SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) specifies data values in arrays
-        %   (1-D or multi-dimensional) are to be written into "records" for the given
-        %   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
-        %   data will create M rows (records), while each row having N elements. For
-        %   examples, 5-by-1 array will create five (5) scalar records and 1-by-5 array
-        %   will write out just one (1) record with 5 elements. For 3-D array of
-        %   M-by-N-by-R, R records will be written, and each record with M-by-N
-        %   elements. Without this option, array of M-by-N will be written into a single
-        %   record of 2-dimensions. See sample codes for its usage.""""
-        %
-        %   """"SPDFCDFWRITE(..., 'Singleton', VARS, ...) indicates whether to keep the
-        %   singleton dimension(s) passed in from the multi-dimensional data. VARS is
-        %   a cell array of variable names, indicating each variable's singleton
-        %   dimension(s) is to be kept.
-        %   For example, variable with data dimensions like 10x1x100 will be written
-        %   as 2-dimensions (10x1) for 100 records if the record bound is specified.
-        %   For a row (1-by-M) or column (M-by-1) vector, the variable data will be
-        %   written as 2-dimension as is, unless the recordbound is specified.
-        %   The default setting is to have all singleton dimension(s) removed.
-        %   The above 10x1x100 variable will be written as 1-dimension
-        %   (with 10 elements).""""
-        %==================================================================================
-        %if nRecords == 0
-        %    zvValue = zeros(sizePerRecord);
-        %else
-        if nRecords == 1
-            % Shift/permute indices "left" so that index 1 appears last (and
-            % hence "disappears" since it is size=1 due to how MATLAB handles
-            % indices).
-            zvValue = shiftdim(zvValue, 1);
-            isRecordBound = 0;
-        else
-            % CASE: First index size>=2.
-            if ndims(zvValue) >= 3
-                % Shift/permute indices "left" so that index 1 appears last
-                % where it will be interpreted as number of records.
-                zvValue = shiftdim(zvValue, 1);
-            end
-            isRecordBound = 1;
-        end
-    else
-        error('write_dataobj:Assertion', 'zvValue is neither char nor numeric.')
+  zvValue, specifiedSizePerRecord, Settings, zvName)
+
+if ischar(zvValue)
+  %==========================================================================
+  % CASE: char zVar: Convert 3-D char matrices to column cell arrays of
+  % 2-D char matrices.
+  % ------------------------------------------------------------------------
+  % IMPLEMENTATION NOTE: It is not possible to permute indices for string
+  % as one can for non-char for ndim==3.
+  %==========================================================================
+
+  zvValue = convert_dataobj_charZVValue_2_consistent_charZVValue(...
+    zvValue, specifiedSizePerRecord(1));
+
+  %=======================================
+  % ASSERTION: Check zVar size per record
+  %=======================================
+  % NOTE: This check can not be perfect since zvValue with multiple
+  % strings can be interpreted correctly for two different values of
+  % specifiedSizePerRecord: 1 (multiple strings in one record) and non-1
+  % (multiple records, with one string per record).
+  temp          = size(zvValue);
+  % NOTE: Throw away indices iRecord and iCharWithinString.
+  sizePerRecord = temp(3:end);
+  if ~isequal(...
+      normalize_size_vec(specifiedSizePerRecord), ...
+      normalize_size_vec(sizePerRecord))
+    error('write_dataobj:Assertion', ...
+      ['The zVariable data size (dataobj_data.(''%s'').data) does', ...
+      ' not fit the stated size per record (dataobj_Variables).'], ...
+      zvName)
+  end
+
+  [zvValue, isRecordBound] = prepare_char_ZV_data(zvValue);
+
+
+
+elseif isnumeric(zvValue)
+
+  nRecords = size(zvValue, 1);
+  if Settings.strictNumericZvSizePerRecord || ...
+      (Settings.strictEmptyNumericZvSizePerRecord && (nRecords == 0))
+    % NOTE: dataobj zVar data is always (empirically) [] (i.e. numeric
+    % 0x0) when nRecords=0, i.e. also for char-valued zVars, and also
+    % for non-empty size per record. Therefore code often needs to be
+    % tolerant of this. Note that the code can not (?) reconstruct an
+    % original char zVar from dataobj for nRecords=0 since it does not
+    % have the length of the strings.
+
+    %=======================================
+    % ASSERTION: Check zVar size per record
+    %=======================================
+    temp          = size(zvValue);
+    sizePerRecord = temp(2:end);
+    if ~isequal(...
+        normalize_size_vec(specifiedSizePerRecord), ...
+        normalize_size_vec(sizePerRecord))
+
+      sizePerRecordStr       = ['[', ...
+        strjoin(irf.str.sprintf_many('%i', sizePerRecord), ', '), ...
+        ']'];
+      specifiedSizePerRecordStr = ['[', ...
+        strjoin(irf.str.sprintf_many('%i', specifiedSizePerRecord), ', '), ...
+        ']'];
+
+      error('write_dataobj:Assertion', ...
+        ['The zVariable "%s" data size according to data variable', ...
+        ' itself is not consistent with the stated size per record', ...
+        ' in other argument.\n', ...
+        '    Size per record according to data variable produced', ...
+        ' by processing: %s\n', ...
+        '    Size per record separately specified:              ', ...
+        '                %s'], ...
+        zvName, sizePerRecordStr, specifiedSizePerRecordStr)
     end
-    
+  end
+
+
+
+  %===================================================================================
+  % Special behaviour for numeric matrices with >=2D per record
+  % -----------------------------------------------------------
+  % For 3D matrices, spdfcdfwrite interprets the last index (not the first
+  % index!) as the record number. Must therefore permute the indices so that
+  % write_cdf2 is consistent for all numbers of dimensions.
+  %     write_dataobj data arguments : index 1 = record.
+  %     matrix passed on to spdfcdfwrite : index 3 = record.
+  % NOTE: spdfcdfread (at least with argument "'Structure', 1,
+  % 'KeepEpochAsIs', 1") works like spdfcdfwrite in this regard.
+  %
+  % Excerpt from the comments in "spdfcdfwrite.m":
+  % ----------------------------------------------
+  %   """"SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) specifies data values in arrays
+  %   (1-D or multi-dimensional) are to be written into "records" for the given
+  %   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
+  %   data will create M rows (records), while each row having N elements. For
+  %   examples, 5-by-1 array will create five (5) scalar records and 1-by-5 array
+  %   will write out just one (1) record with 5 elements. For 3-D array of
+  %   M-by-N-by-R, R records will be written, and each record with M-by-N
+  %   elements. Without this option, array of M-by-N will be written into a single
+  %   record of 2-dimensions. See sample codes for its usage.""""
+  %
+  %   """"SPDFCDFWRITE(..., 'Singleton', VARS, ...) indicates whether to keep the
+  %   singleton dimension(s) passed in from the multi-dimensional data. VARS is
+  %   a cell array of variable names, indicating each variable's singleton
+  %   dimension(s) is to be kept.
+  %   For example, variable with data dimensions like 10x1x100 will be written
+  %   as 2-dimensions (10x1) for 100 records if the record bound is specified.
+  %   For a row (1-by-M) or column (M-by-1) vector, the variable data will be
+  %   written as 2-dimension as is, unless the recordbound is specified.
+  %   The default setting is to have all singleton dimension(s) removed.
+  %   The above 10x1x100 variable will be written as 1-dimension
+  %   (with 10 elements).""""
+  %==================================================================================
+  %if nRecords == 0
+  %    zvValue = zeros(sizePerRecord);
+  %else
+  if nRecords == 1
+    % Shift/permute indices "left" so that index 1 appears last (and
+    % hence "disappears" since it is size=1 due to how MATLAB handles
+    % indices).
+    zvValue = shiftdim(zvValue, 1);
+    isRecordBound = 0;
+  else
+    % CASE: First index size>=2.
+    if ndims(zvValue) >= 3
+      % Shift/permute indices "left" so that index 1 appears last
+      % where it will be interpreted as number of records.
+      zvValue = shiftdim(zvValue, 1);
+    end
+    isRecordBound = 1;
+  end
+else
+  error('write_dataobj:Assertion', 'zvValue is neither char nor numeric.')
+end
+
 end
 
 
@@ -810,9 +810,9 @@ end
 % [1 1] ==> [] (1x0)
 %
 function sizeVec = normalize_size_vec(sizeVec)
-    % IMPLEMENTATION NOTE: sizeVec = [] ==> find returns [] (not a number) ==> 1:[],
-    % but that gives the same result as 1:0 so the code works anyway.
-    sizeVec = sizeVec(1:find(sizeVec ~= 1, 1, 'last'));    % "Normalize" size vector.
+% IMPLEMENTATION NOTE: sizeVec = [] ==> find returns [] (not a number) ==> 1:[],
+% but that gives the same result as 1:0 so the code works anyway.
+sizeVec = sizeVec(1:find(sizeVec ~= 1, 1, 'last'));    % "Normalize" size vector.
 end
 
 
@@ -821,7 +821,7 @@ end
 % zvValue
 %
 % function zvValue = handle_zero_records(zvValue, padValue, specifiedMatlabClass, turnZeroRecordsIntoOneRecord)
-%     
+%
 %     if isempty(zvValue)
 %         if ~turnZeroRecordsIntoOneRecord
 %             error('write_dataobj:Assertion', ...
@@ -845,5 +845,5 @@ end
 %             end
 %         end
 %     end
-%     
+%
 % end

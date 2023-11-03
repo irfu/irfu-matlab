@@ -147,7 +147,7 @@ else
   E12 = E12.resample(V1.time); %These resamples need to be changed.
   E34 = E34.resample(V1.time);
   E56 = E56.resample(V1.time);
-  
+
 end
 
 V2 = V1 - E12 * 0.120;
@@ -163,9 +163,9 @@ SCpot = SCpot.tlim(ts2l);
 Bxyz = Bxyz.tlim(ts2l);
 
 if ~use_56 %Unnecessary if probes 5 & 6 are used.
-  
+
   zphase = zphase.tlim(ts2l);
-  
+
   norepeat = ones(length(zphase.time),1);
   nph = length(zphase.data);
   for ii=2:nph
@@ -177,12 +177,12 @@ if ~use_56 %Unnecessary if probes 5 & 6 are used.
       norepeat(ii) = 0;
     end
   end
-  
+
   zphasetime = zphase.time(norepeat == 1);
   zphasedata = zphase.data(norepeat == 1);
-  
+
   zphase = TSeries(zphasetime,zphasedata,'to',1);
-  
+
   zphase = zphase.resample(SCpot);
 end
 Bxyz = Bxyz.resample(SCpot);

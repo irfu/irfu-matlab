@@ -1,6 +1,7 @@
 *.m~
 *.DS_Store
 *.asv
+*.swp
 fort.6
 .caa.log
 

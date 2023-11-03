@@ -153,20 +153,20 @@ parfor ind_a=1:length(a)
   mWexp = repmat(mWexp,1,3);
   Wwe = sqrt(1).*Swe.*mWexp;
   Wwb = sqrt(1).*Swb.*mWexp;
-  
+
   %% Get the wavelet transform by IFFT of the FFT
   We = ifft(Wwe,[],1);
   Wb = ifft(Wwb,[],1);
-  
+
   %% Calculate the power spectrum
   newfreqmat=w0/a(ind_a);
-  
+
   %  power=(2*pi)*conj(W).*W./newfreqmat;
   powerE = 2*pi*(We.*conj(We))./newfreqmat;
   powerE(:,4) = sum(powerE,2);
   powerB = 2*pi*(Wb.*conj(Wb))./newfreqmat;
   powerB(:,4) = sum(powerB,2);
-  
+
   %% Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
   coef_poynt=10/4/pi*(1/4)*(4*pi); % 4pi from wavelets, see A. Tjulins power estimates a few lines above
   S = zeros(ndata,3);
@@ -175,7 +175,7 @@ parfor ind_a=1:length(a)
   S(:,1)= coef_poynt*real(Wey.*conj(Wbz)+conj(Wey).*Wbz-Wez.*conj(Wby)-conj(Wez).*Wby)./newfreqmat;
   S(:,2)= coef_poynt*real(Wez.*conj(Wbx)+conj(Wez).*Wbx-Wex.*conj(Wbz)-conj(Wex).*Wbz)./newfreqmat;
   S(:,3)= coef_poynt*real(Wex.*conj(Wby)+conj(Wex).*Wby-Wey.*conj(Wbx)-conj(Wey).*Wbx)./newfreqmat;
-  
+
   %For some reason this code works 20% slower than the above one
   %conjWe = conj(We); conjWb = conj(Wb);
   %S = coef_poynt*real( ...
@@ -183,14 +183,14 @@ parfor ind_a=1:length(a)
   %    - We(:,[3 1 2]).*conjWb(:,[2 3 1]) - conjWe(:,[3 1 2]).*Wb(:,[2 3 1])...
   %    )./newfreqmat;
   Spar=sum(S.*bn,2);
-  
+
   %% Remove data possibly influenced by edge effects
   censur=floor(2*a);
   censur_indexes=[1:min(censur(ind_a),size(e,1)) max(1,size(e,1)-censur(ind_a)):size(e,1)];
   powerE(censur_indexes,:) = NaN;
   powerB(censur_indexes,:) = NaN;
   Spar(censur_indexes) = NaN;
-  
+
   powerEx_plot(:,ind_a) = powerE(:,1);
   powerEy_plot(:,ind_a) = powerE(:,2);
   powerEz_plot(:,ind_a) = powerE(:,3);
@@ -257,7 +257,7 @@ if plot_type == 2
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(B);ylabel('B [nT]');
   set(gca,'tickdir','out');colorbar;hh=get(gca,'position');colorbar off;set(gca,'position',hh); set(gca,'tickdir','in'); % to get the same size as colorbar plots
-  
+
   irf_timeaxis(h(1:3),'nolabels');
   irf_timeaxis(gca,'nodate');
 end
@@ -301,7 +301,7 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0
     ylabel('f [Hz]')
     %ht=text(0,0,'S_{II} [\mu W/m^2Hz]^{1/2}');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     set(gca,'yscale','log');set(gca,'tickdir','out');
-    
+
     cc = [-max(max(sqrt(abs(Spar_plot)))) max(max(sqrt(abs(Spar_plot))))];
     caxis(cc);
     colormap(xcm);
@@ -363,7 +363,7 @@ elseif plot_type == 3
   caxis(floor(cmean)+[-3.5 3.5]);
   hca = colorbar;
   ylabel(hca,'E [(mV/m)^2/Hz]');
-  
+
   irf_timeaxis(h);
 end
 

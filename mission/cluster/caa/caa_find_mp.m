@@ -88,7 +88,7 @@ irf_log('proc',['subint: ' epoch2iso(start_time,1) ' -- ' ...
 r_prev = [];
 for t=st:1800:st+dt
   irf_log('proc',['time: ' epoch2iso(t,1)])
-  
+
   % ACE time shift
   if strcmp(sc_source,'ace')
     if isempty(ace_V), dt_ace = ACE_DT_DEF;
@@ -105,7 +105,7 @@ for t=st:1800:st+dt
   else
     dt_ace = 0;
   end
-  
+
   if isempty(ace_V), vx_tmp = ACE_VX_DEF;
   else
     vx_tmp = linear_solve(ace_V, t, dt_ace);
@@ -116,7 +116,7 @@ for t=st:1800:st+dt
   end
   %irf_log('proc',['ace_vx_tmp: ' num2str(vx_tmp,'%.2f') ' km/s'])
   %v_ttt = [v_ttt; t-dt_ace vx_tmp];
-  
+
   if isempty(ace_N), n_tmp = ACE_N_DEF;
   else
     n_tmp = linear_solve(ace_N, t, dt_ace);
@@ -127,7 +127,7 @@ for t=st:1800:st+dt
   end
   %irf_log('proc',['ace_nn_tmp: ' num2str(n_tmp,'%.2f') ' cc'])
   %n_ttt = [n_ttt; t-dt_ace n_tmp];
-  
+
   if isempty(ace_B), bz_tmp = ACE_BZ_DEF;
   else
     bz_tmp = linear_solve(ace_B(:,[1 4]), t, dt_ace);
@@ -138,19 +138,19 @@ for t=st:1800:st+dt
   end
   %irf_log('proc',['ace_vx_tmp: ' num2str(bz_tmp,'%.2f') ' nT'])
   %b_ttt = [b_ttt; t-dt_ace bz_tmp];
-  
+
   r_tmp = linear_solve(R, t, 0);
   if isnan(r_tmp)
     irf_log('proc',['R : NaN at ' epoch2iso(t,1)])
     continue
   end
-  
+
   r_gsm = irf_gse2gsm([t r_tmp]);
   r_gsm(2:4) = r_gsm(2:4)/R_E;
   r_mp = r_shue_mp(r_gsm, bz_tmp, nv2press(n_tmp,vx_tmp^2));
   %irf_log('proc',['r: ' num2str(r_gsm(2:4),'%.2f %.2f %.2f') ...
   %		' mp:' num2str(r_mp,'%.2f') ' Re'])
-  
+
   if isempty(t_mp_out) && ~isempty(r_prev) && (r_prev>0) && (r_mp<0)
     t_mp_out = t -1800;
     irf_log('proc',['FOUND OUTBOUND : ' epoch2iso(t_mp_out,1)])

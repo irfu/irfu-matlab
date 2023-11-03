@@ -190,7 +190,7 @@ else              % dticv in seconds
   % calculate the time value of the first minor tick
   dmort = dticv/mtics;
   tbeg = dmort*ceil(limit(1)/dmort);
-  
+
   % calculate the number of ticks
   ttic = tbeg;
   ntics = 0;
@@ -203,12 +203,12 @@ else              % dticv in seconds
       break;
     end
   end
-  
+
   % generate array with the time values of the major ticks
   % tictv = tbeg + dticv.*[0:ntics-1];
   % generate array with the time values of the ticks
   tictv = tbeg + dmort*(0:ntics-1);
-  
+
   % generate the time strings for the labels,
   ticstr = cell(1, ntics);
   ticval = mod(tictv, 86400);
@@ -239,7 +239,7 @@ else              % dticv in seconds
     format = '%02d:%02d:%02.0f';
     hhmmss = [hour; minute; mod(ticval(n), 60)];
   end
-  
+
   ind_labels=find(abs(mod(tictv,dticv))<1e-6); % NOTE does not work for tick distance below a few microseconds
   for j=n,ticstr{j} = ' ';end
   if dticv>=3600*24
@@ -247,7 +247,7 @@ else              % dticv in seconds
   else
     for j=ind_labels, ticstr{j} = sprintf(format, hhmmss(:,j));end
   end
-  
+
   if dticv>=.1
     ind_ms_labels=find(abs(mod(tictv(ind_labels),1))>1e-6);
     if length(ind_ms_labels) < length(ind_labels)

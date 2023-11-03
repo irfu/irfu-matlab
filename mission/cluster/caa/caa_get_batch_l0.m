@@ -47,7 +47,7 @@ count_skip = 0;
 for cl_id=sc_list
   st_tmp = st;
   tm = []; tm_prev = [];
-  
+
   while st_tmp<st+dt
     irf_log('proc',['Requesting C' num2str(cl_id)...
       ' : ' epoch2iso(st_tmp,1)])
@@ -58,13 +58,13 @@ for cl_id=sc_list
         ' at ' epoch2iso(st_tmp,1)])
       tm_cur = -1;
     end
-    
+
     % First frame is directly good, probably we started in the middle of
     % good interval
     if isempty(tm_prev) && tm_cur>=0
       tm(end+1,:) = [st_tmp tm_cur]; %#ok<AGROW>
     end
-    
+
     if ~isempty(tm_prev) && tm_prev~=tm_cur && tm_cur>=0
       % We skip MAX_SKIP frames of NM because it is folliwing
       % BM1 or data gap and usually contains junk
@@ -79,11 +79,11 @@ for cl_id=sc_list
       end
     else, count_skip = 0;
     end
-    
+
     st_tmp = st_tmp + REQ_INT;
     tm_prev = tm_cur;
   end
-  
+
   % Throw away all modes>1
   if ~isempty(tm)
     ii_out = find(tm(:,2)>1);
@@ -112,7 +112,7 @@ for cl_id=sc_list
     end
   end
   c_eval('tm=tm?;',cl_id);
-  
+
   % Split long intervals into SPLIT_INT chunks
   j = 1;
   while 1
@@ -133,7 +133,7 @@ for cl_id=sc_list
     else, j = j + 1;
     end
   end
-  
+
   % Read NS_OPS database
   clear ns_ops
   ns_ops = c_ctl('get',cl_id,'ns_ops');
@@ -142,7 +142,7 @@ for cl_id=sc_list
     ns_ops = c_ctl('get',cl_id,'ns_ops');
   end
   if isempty(ns_ops), error(['cannot get NS_OPS for C' num2str(cl_id)]), end
-  
+
   % Split intervals if a non-blanking nsops starts in the interval
   ii = find( ns_ops(:,1)>st & ns_ops(:,1)<st+dt);
   problem_list=[caa_str2errid('hxonly') caa_str2errid('bad_bias') caa_str2errid('bad_hx') caa_str2errid('bad_lx')];
@@ -167,13 +167,13 @@ for cl_id=sc_list
       end
     end
   end
-  
+
   for inter=1:size(tm,1)
     t1 = tm(inter,1);
     if inter==size(tm,1), dt1 = st +dt -t1;
     else, dt1 = tm(inter+1,1) -t1;
     end
-    
+
     % Disregard bad NS_OPS intervals directly here
     [st_nsops, dt_nsops] = caa_ns_ops_int(t1,dt1,ns_ops); %#ok<NASGU>
     if isempty(st_nsops)
@@ -182,7 +182,7 @@ for cl_id=sc_list
         epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
       continue
     end
-    
+
     % Intervals shorter then 300 sec and which are not at the
     % beginning of the entire interval are considered bad,
     % as they are usually signatures of hacked data
@@ -194,7 +194,7 @@ for cl_id=sc_list
       irf_log('proc',['C' num2str(cl_id) ' interval ' ...
         epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
     end
-    
+
     % Get the data
     c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'check_caa_sh_interval',1,'noproc')
   end

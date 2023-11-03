@@ -97,16 +97,16 @@ if(p.Results.plotSpect)
       end
       dslCommTs.(SCid{kk})=[]; % Empty to save memory.
     end
-    
+
   end
-  
+
   % Get fast (32Hz) or slow (8Hz) mode data, starting around 2015-07-15
   tmMode = {'fast'};
   dslFastTs = getDATA(2); % dsl data of only fast as a TSeries
-  
+
   tmMode = {'slow'};
   dslSlowTs = getDATA(2); % dsl data of only slow as a TSeries
-  
+
   for kk=1:length(SCid)
     disp(['Computing fast spectra for DSL xyz for ',SCid{kk}]);
     dslFastSpect.(SCid{kk}) = irf_powerfft(dslFastTs.(SCid{kk}), ...
@@ -117,7 +117,7 @@ if(p.Results.plotSpect)
       warning(['Empty spectra from DSL on ', SCid{kk}]);
     end
     dslFastTs.(SCid{kk})=[]; % Empty to save memory.
-    
+
     disp(['Computing slow spectra for DSL xyz for ',SCid{kk}]);
     slowRate = MMS_CONST.Samplerate.slow{1};
     dtSlow = round(10^9/median(double(diff(dslSlowTs.(SCid{kk}).time.ttns))));
@@ -134,7 +134,7 @@ if(p.Results.plotSpect)
       warning(['Empty spectra from DSL on ', SCid{kk}]);
     end
     dslSlowTs.(SCid{kk})=[]; % Empty to save memory.
-    
+
     % Combine the various power spectra in some nice function so plots are
     % continuous...
     % THIS WORKS but will slightly adjust times.
@@ -175,11 +175,11 @@ if(p.Results.plotSpect)
         comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslCommNew.p{1,ll}(indNotNaN,:);
       end
     end
-    
+
     dslFastSpect.(SCid{kk}) = []; % Save some memory
     dslComm128Spect.(SCid{kk}) = [];
     dslSlowSpect.(SCid{kk}) = [];
-    
+
   end
   dslCommSpect = comb;
   clear comb newTime dslSlowTs dslFastTs dslSlowNew dslFastNew;
@@ -199,7 +199,7 @@ if(p.Results.plotUsc || p.Results.plotDSL)
   % E-y and third Usc. (Regardless if DSL is to be plotted? Keep position
   % in figure to ensure easy comparison between pictures?)
   h = irf_plot(3, 'newfigure'); % FIXME, see below... (how to plot to specific subplots.)
-  
+
   if(p.Results.plotUsc)
     % PLOT USC
     disp('Plotting Usc');
@@ -213,7 +213,7 @@ if(p.Results.plotUsc || p.Results.plotDSL)
     ylabel(h(1),{'Spacecraft potential','[V]'});
     clear toPlot uscTs; % save some memory...
   end
-  
+
   if(p.Results.plotDSL)
     % PLOT DSL E-X, E-Y
     disp('Plotting DSL');
@@ -232,7 +232,7 @@ if(p.Results.plotUsc || p.Results.plotDSL)
     ylabel(h(3),{'DSL E-y','[mV/m]'});
     clear toPlot dslTs; % save some memory..
   end
-  
+
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
     for iZoom=0:3:21
@@ -253,14 +253,14 @@ if(p.Results.plotSpect)
   clear dslCommTs
   % PLOT spectogram of DSL
   disp('Plotting DSL spectra');
-  
+
   yTicks = [0.1, 1.0, 10];
   yTickLabel = {0.1; 1.0; 10};
   yLimits = [0, 12.5];
   h = irf_plot(length(SCid), 'newfigure');
   set(gcf,'position',[7   159   790   916]);
   figure_start_epoch(tint.start.epochUnix);
-  
+
   for kk=1:length(SCid)
     % DSL E-X
     hold(h(kk),'on')
@@ -280,9 +280,9 @@ if(p.Results.plotSpect)
         '. Combined pds(Ex_{dsl}) + pds(Ey_{dsl}).']); end
     dslCommSpect.(SCid{kk}) = []; % Clear to save memory
   end
-  
+
   clear dslCommSpect
-  
+
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
     for iZoom=0:3:21
@@ -306,9 +306,9 @@ end % End of plot figure with DSL spectra
     if(dataID>size(dataSuf)), error('Incorrect usage'); end
     for ii=1:length(SCid)
       disp(['Loading and converting data from ',SCid{ii},' for ',dataSuf{dataID}]);
-      
+
       TsCombined = struct(SCid{ii},struct('time',[],'data',[]));
-      
+
       for jj=1:length(tmMode)
         TsTmp.(SCid{ii}).(tmMode{jj}) = mms.db_get_ts([SCid{ii},'_edp_',tmMode{jj},'_',fileSuf{dataID}],...
           [SCid{ii},'_edp_',dataSuf{dataID}], tint);
@@ -321,7 +321,7 @@ end % End of plot figure with DSL spectra
         TsCombined.(SCid{ii}).time = [TsCombined.(SCid{ii}).time; TsTmp.(SCid{ii}).(tmMode{jj}).time.ttns];
         TsCombined.(SCid{ii}).data = [TsCombined.(SCid{ii}).data; TsTmp.(SCid{ii}).(tmMode{jj}).data];
       end
-      
+
       % Sort by time
       [~, idxSort] = sort(TsCombined.(SCid{ii}).time);
       TsCombined.(SCid{ii}).time = TsCombined.(SCid{ii}).time(idxSort);
@@ -330,7 +330,7 @@ end % End of plot figure with DSL spectra
       [~,idxUniq] = unique(TsCombined.(SCid{ii}).time);
       TsCombined.(SCid{ii}).time = TsCombined.(SCid{ii}).time(idxUniq);
       TsCombined.(SCid{ii}).data = TsCombined.(SCid{ii}).data(idxUniq,:);
-      
+
       % Return a struct with fields of time series for each sc.
       if(~isempty(TsCombined.(SCid{ii}).time))
         if(size(TsCombined.(SCid{ii}).data,2)==3)
@@ -343,7 +343,7 @@ end % End of plot figure with DSL spectra
         outTs.(SCid{ii}) = TSeries(EpochTT(tint.start), NaN(1,3), 'vec_xyz');
       end
       outTs.(SCid{ii}).name = upper(SCid{ii});
-      
+
       clear TsCombined TsTmp % Clear to save memory
     end
   end

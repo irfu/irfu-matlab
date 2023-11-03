@@ -44,11 +44,11 @@ allVars = dobj.Variables(:,1);
 for iName=1:length(varAttNames)
   iattr = find(strcmpi(dobj.vars{iVar,2},varAtts.(varAttNames{iName})(:,1))==1);
   if isempty(iattr), continue, end
-  
+
   % Copy attribute
   attr = varAtts.(varAttNames{iName}){iattr,2};
   res.(varAttNames{iName}) = attr;
-  
+
   % Char attr may be a dependence on another variable, so we pull it in
   % Some buggy files may have identical key/value pairs, we ignore those
   if ~ischar(attr) || strcmp(attr,varName) || ...

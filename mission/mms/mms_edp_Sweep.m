@@ -7,7 +7,7 @@ classdef mms_edp_Sweep < handle
   %
   %   where fileName is a L1b sweep CDF file name
   %   and printStatus indicates whether to print (1) or not print (0) status for each sweep
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -15,8 +15,8 @@ classdef mms_edp_Sweep < handle
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
-  
+
+
   properties (SetAccess = immutable)
     sweep
     scId
@@ -31,21 +31,25 @@ classdef mms_edp_Sweep < handle
     p5
     p6
   end
-  
+
   methods
-    
-    function obj = mms_edp_Sweep(fileName,printStatus)
+
+    function obj = mms_edp_Sweep(fileName, varargin)
+      % inputs:
+      % "fileName" - mms edp sweep cdf file
+      % "printStatus" - optional parameter, "1"/"true" if extra debug information is
+      %               to be displayed, "0"/"false" if no extra debug.
+      pInput = inputParser;
+      addRequired(pInput, 'fileName', ...
+        @(x) isfile(x) && ... % require it to be a file
+        ~isempty(regexp(x, 'mms[1-4]_edp_srvy_l1b_sweeps_', 'once'))); % and also require it to match mms filename convention for edp sweeps
+      addOptional(pInput, 'printStatus', 0); % optional positional, default to 0
       if nargin==0
+        % allow an empty fallback
         obj.nSweeps = []; obj.sweep = []; obj.scId = ''; return
       end
-      if nargin==1
-        printStatus = 0;
-      end
-      if isempty(regexp(fileName,'mms[1-4]_edp_srvy_l1b_sweeps_', 'once'))
-        msg = 'File name must be mms[1-4]_edp_srvy_l1b_sweeps_*.cdf';
-        irf.log('critical', msg); error(msg);
-      end
-      obj.sweep = dataobj(fileName);
+      parse(pInput, fileName, varargin{:});
+      obj.sweep = dataobj(pInput.Results.fileName);
       if isempty(obj.sweep)
         msg = 'No data loaded'; irf.log('critical', msg); error(msg);
       end
@@ -78,7 +82,7 @@ classdef mms_edp_Sweep < handle
         else
           type = '**';
         end
-        if printStatus
+        if pInput.Results.printStatus
           if any(isnan(biasRes1))
             nanstr = [num2str(sum(isnan(biasRes1))), ' NaNs '];
           else
@@ -127,6 +131,7 @@ classdef mms_edp_Sweep < handle
         tmp.phase_knee = NaN;
         tmp.type = type;
         tmp.impedance_src = ''; % keep track source used for ".impedance" (is it from "plot_time()" or "analyse()")
+        tmp.eclipseManeuver = 0; % keep track of if eclipse/maneuvers occured during sweep (default to "0" ="no eclipse/maneuver", otherwise "1").
         switch prb1
           case 1, p_1='p1'; p_2='p2';
           case 2, p_1='p2'; p_2='p1';
@@ -141,28 +146,61 @@ classdef mms_edp_Sweep < handle
         obj.(p_2) = [ obj.(p_2) tmp ];
       end
     end % CONSTRUCTOR
-    
-    function analyze(obj,iSweep,sps)
+
+    function analyze(obj,iSweep,varargin)
       % Analyze sweep
       %
       % This function analyzes a sweep and determines iPh, impedance,
       % "iPh_knee" (current value of the typical sweep "knee"),
       % and spin phase of the "knee" for one sweep in a sweep object obj
       %
-      % analyze(obj,iSweep[,sps])
+      % analyze(obj, iSweep[, sps[, eclipseOrManeuver]])
       %
-      % Input: iSweep - sweep number in the file
-      %        sps is a sunpulse structure obtained from
+      % Input: "iSweep" - sweep number in the file
+      %        "sps" -  is a sunpulse structure obtained from
       %        sunpulse_from_hk101() or spin phase information from
-      %        ancillary defatt files.
-      % If using ancillary defatt, it can be loaded first using:
+      %        ancillary defatt files. If using ancillary DefAtt, it can be
+      %        loaded using:
       %  sps = mms_load_ancillary(defattFileName, 'defatt');
       %  idxBad = diff(sps.time)==0; % Identify duplicates to be removed
       %  sps.time(idxBad) = []; sps.zphase(idxBad) = [];
       %
-      % If sps is absent no phase is computed
-      narginchk(2,3);
-      if(nargin==2), doPhase=false; else, doPhase=true; end
+      % If "sps" is absent no phase is computed.
+      %
+      % Likewise if "eclipseOrManeuver" is absent sweep status is set to
+      % default "0". When eclipseOrManeuver is sent and its time overlap
+      % with time of sweep a status bit of that sweep will be set to "1"
+      % and a warning provided to the user to use the results with caution.
+      % The "eclipseOrManeuver" require "sps" to be sent.
+      %
+      % Load "eclipseOrManeuver" from mms_maneuvers.m, and is taken from
+      % ancillary files (mission timeline), but combine the two as:
+      % scId = 3;
+      % [maneuvers, timeline, eclipse] = mms_maneuvers(Tint, scId);
+      % eclipseOrManeuver = [eclipse; maneuvers];
+      narginchk(2,4);
+      pInput = inputParser;
+      % require a sweep object first of all (using "mfilename" here as this
+      % file here is a class definition in case it ever changes name).
+      addRequired(pInput, 'obj', @(x) isa(x, mfilename));
+      % require a sweep number to analyze, and this number must be an
+      % integer between 1 and total number of sweeps in the sweep object.
+      addRequired(pInput, 'iSweep', @(x)validateattributes(x, ...
+        {'numeric'}, ...
+        {'scalar', 'integer', '>=', 1, '<=', obj.nSweeps}) );
+      % optional "sps" input with phase information must be a struct with
+      % 'time' of phase measurement and phase as per defatt ('zphase') or
+      % hk 101 files ('sunpulse').
+      addOptional(pInput, 'sps', false, ...
+        @(sps) isa(sps, 'struct') && ...
+        isfield(sps,'time') && ...
+        (isfield(sps, 'zphase') || isfield(sps, 'sunpulse')) );
+      % optional "eclipseOrManeuver" input with eclipse and/or maneuvers
+      % ongoing must be struct (output from mms_maneuvers.m).
+      addOptional(pInput, 'eclipseOrManeuver', false, ...
+        @(eclipseOrManeuver) isa(eclipseOrManeuver, 'struct'));
+      parse(pInput, obj, iSweep, varargin{:});
+
       [sweepTime, prb1, ~, voltage1, biasRes1, voltage2, biasRes2,...
         ~, ~, v01, v02] = getSweep(obj,iSweep);
       if isempty(voltage1)
@@ -206,7 +244,7 @@ classdef mms_edp_Sweep < handle
         ph_tmp1 = NaN;
         ph_tmp2 = NaN;
       end
-      if doPhase
+      if isa(pInput.Results.sps, 'struct') % "sps" is matched expected struct
         switch type
           case '00'
             disp(['*** Warning, phase not computed for type ', type, ...
@@ -232,11 +270,11 @@ classdef mms_edp_Sweep < handle
             irf.log('warning', ['Unexpected type', type,' to compute z-phase for...']);
             phaseTimesIn = [];
         end
-        if isfield(sps, 'zphase')
+        if isfield(pInput.Results.sps, 'zphase')
           % phase from defatt
           for iPhase = 1:length(phaseTimesIn)
             if ~isnan(phaseTimesIn{iPhase})
-              phase = mms_defatt_phase(sps, phaseTimesIn{iPhase}); %#ok<NASGU>
+              phase = mms_defatt_phase(pInput.Results.sps, phaseTimesIn{iPhase}); %#ok<NASGU>
               eval([phasesOut{iPhase}, '=phase.data;']);
             end
           end
@@ -244,12 +282,12 @@ classdef mms_edp_Sweep < handle
           % phase from sunpulses
           for iPhase = 1:length(phaseTimesIn)
             if ~isnan(phaseTimesIn{iPhase})
-              [phase, ~] = mms_sdp_phase_2(sps, phaseTimesIn{iPhase}); %#ok<ASGLU>
+              [phase, ~] = mms_sdp_phase_2(pInput.Results.sps, phaseTimesIn{iPhase}); %#ok<ASGLU>
               eval([phasesOut{iPhase}, '=phase;']);
             end
           end
         end
-      end % doPhase
+      end % "sps" matched expected struct
       switch obj.pTable(1,iSweep)
         case 1, p_1='p1'; p_2='p2'; angle1=30; angle2=210;
         case 2, p_1='p2'; p_2='p1'; angle1=210; angle2=30;
@@ -274,7 +312,7 @@ classdef mms_edp_Sweep < handle
       obj.(p_2)(obj.pTable(2,iSweep)).optimal_gradient = tmp2.optimal_gradient;
       obj.(p_1)(obj.pTable(2,iSweep)).optimal_bias = tmp1.optimal_bias;
       obj.(p_2)(obj.pTable(2,iSweep)).optimal_bias = tmp2.optimal_bias;
-      
+
       if ismember(type, {'+-', '-+'})
         obj.(p_1)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp1{1}+angle1+90,360)-90, mod(ph_knee_tmp1{2}+angle1+90,360)-90};
         obj.(p_2)(obj.pTable(2,iSweep)).phase_knee = {mod(ph_knee_tmp2{1}+angle2+90,360)-90, mod(ph_knee_tmp2{2}+angle2+90,360)-90};
@@ -289,8 +327,27 @@ classdef mms_edp_Sweep < handle
       % New "iPh knee" values
       obj.(p_1)(obj.pTable(2,iSweep)).iPh_knee = tmp1.iPh_knee;
       obj.(p_2)(obj.pTable(2,iSweep)).iPh_knee = tmp2.iPh_knee;
+      %
+      if isa(pInput.Results.eclipseOrManeuver, 'struct') % "eclipseOrManeuver" matched expected struct input
+        eclipseFound = 0; % default false
+        for iEclip = 1:length(pInput.Results.eclipseOrManeuver)
+          eclipse = pInput.Results.eclipseOrManeuver(iEclip).(obj.scId);
+          if ~(isempty(eclipse))
+            % check time interval vs sweepTime..
+            for iEclipse = 1:length(eclipse)
+              if ~(isempty(sweepTime.tlim(eclipse{iEclipse})))
+                warnStr = sprintf('It appears sweep %i was performed at the same time as during spacecraft eclipse or maneuver, noting its status.', iSweep);
+                irf.log('warn', warnStr);
+                eclipseFound = 1;
+              end
+            end
+          end
+        end
+        obj.(p_1)(obj.pTable(2,iSweep)).eclipseManeuver = eclipseFound;
+        obj.(p_2)(obj.pTable(2,iSweep)).eclipseManeuver = eclipseFound;
+      end % "eclipseOrManeuver" matched expected struct input
       return
-      
+
       % Help function
       function tmp = compute_IPh_Impedance(voltage, v0, biasRes, type, sweepTime)
         % Compute photoemission iPh, iPh_knee (and its timestamp) and impedance dV/dI
@@ -314,7 +371,7 @@ classdef mms_edp_Sweep < handle
           tmp.iPh_knee_time = NaN;
           tmp.iPh_time = NaN;
         end
-        
+
         %% Find settling time (with fallback max 10% of sweep) based on
         % voltage response ("--" sweep should have negative gradient "++"
         % sweep should have positive gradient of voltage, so discard the
@@ -389,7 +446,7 @@ classdef mms_edp_Sweep < handle
             % method as a fallback
             oldFallback = true;
         end
-        
+
         %% Old method
         if ismember(type, {'+-', '-+'})
           % Split upward and downward part (was not done in the original
@@ -408,7 +465,7 @@ classdef mms_edp_Sweep < handle
           % second half
           biasSecond = biasResSegm(splitInd+1:end);
           voltSecond = voltageSegm(splitInd+1:end);
-          [~, old_indIph] = min(abs(voltSecond-(2*v0+vmin)/3));         
+          [~, old_indIph] = min(abs(voltSecond-(2*v0+vmin)/3));
           tmp.iPh{2} = -biasSecond(old_indIph);
           tmp.iPh_time{2} = timeArray(splitInd + old_indIph);
         else
@@ -471,9 +528,9 @@ classdef mms_edp_Sweep < handle
             tmp.impedance = 1000*p(1);
           end
         end
-        
+
       end
-      
+
       function [iPhKnee, optimalGradient, optimalBias] = compute_IPh_knee(voltage, bias, type)
         % Help function to compute iPh_knee, a value which nominal
         % operating point wants to avoid..
@@ -536,20 +593,35 @@ classdef mms_edp_Sweep < handle
         end % all data saturated? & supported type?
       end
     end % analyze
-    
-    function analyze_all(obj,sps,printStatus)
+
+    function analyze_all(obj,sps,printStatus,eclipseOrManeuver)
       % Analyze sweeps
       %
       % This function analyzes sweeps and determines iPh, impedance,
       % and phase for each sweep in a sweep object obj
       %
-      % analyze_all(obj[,sps[,printStatus]])
+      % analyze_all(obj[,sps[,printStatus[,eclipseOrManeuver]]])
       %
-      % Input: sps is a sunpulse structure obtained from sunpulse_from_hk101()
-      % printStatus indicates whether to print (1) or not print (0) status for each sweep
+      % Inputs:
+      %  - "sps" is a sunpulse structure obtained from
+      %    sunpulse_from_hk101(), or ancillary defatt spin phase information.
+      %  - "printStatus" indicates whether to print (1/true) or not print
+      %    (0/false) status for each sweep as they get processed.
+      %  - "eclipseOrManeuver" is a combined eclipse and maneuver struct
+      %    obtained from:
+      %    scId = 3;
+      %    [maneuvers, timeline, eclipse] = mms_maneuvers(Tint, scId);
+      %    eclipseOrManeuver = [eclipse; maneuvers];
       %
-      % If sps is absent no phase is computed
-      % If printStatus is absent, no status is printed for each sweep
+      % If "sps" is absent no phase is computed.
+      % If "printStatus" is absent or false/"0", no status is printed for
+      % each sweep.
+      %
+      % If "eclipseOrManeuver" is sent and the time of sweep aligns with
+      % either time of eclipse or maneuver then a warning is displayed when
+      % anaylzing it and a status bit is set to indicate its results are to
+      % be used with caution. Otherwise the sweep(-s) carry no such warning
+      % information and status bit is set to indicate "okey" data.
       %
       if nargin == 1
         for iSweep = 1:obj.nSweeps
@@ -564,10 +636,14 @@ classdef mms_edp_Sweep < handle
           if printStatus, disp(['Analyzing sweep ', num2str(iSweep)]), end
           analyze(obj, iSweep, sps)
         end
+      elseif nargin == 4
+        for iSweep = 1:obj.nSweeps
+          if printStatus, disp(['Analyzing sweep ', num2str(iSweep)]), end
+          analyze(obj, iSweep, sps, eclipseOrManeuver)
+        end
       end
-      return
     end % analyze_all
-    
+
     function [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         eVolt, eBias, v01, v02]...
         = debug(obj,iSweep)
@@ -592,11 +668,20 @@ classdef mms_edp_Sweep < handle
       %  v01 - last voltage value of swept probe before sweep
       %  v02 - last voltage value of other probe before sweep
       %
+      pInput = inputParser;
+      % require a sweep object first of all (using "mfilename" here as this
+      % file here is a class definition in case it ever changes name).
+      addRequired(pInput, 'obj', @(x) isa(x, mfilename));
+      % require a sweep number to analyze, and this number must be an
+      % integer between 1 and total number of sweeps in the sweep object.
+      addRequired(pInput, 'iSweep', @(x)validateattributes(x, ...
+        {'numeric'}, ...
+        {'scalar', 'integer', '>=', 1, '<=', obj.nSweeps}) );
+      parse(pInput, obj, iSweep);
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         eVolt, eBias, v01, v02] = getSweep(obj, iSweep);
-      return
     end
-    
+
     function list(obj, iSweep)
       % List sweep
       %
@@ -604,9 +689,19 @@ classdef mms_edp_Sweep < handle
       %
       % Input: iSweep - sweep number in the file
       %
+      pInput = inputParser;
+      % require a sweep object first of all (using "mfilename" here as this
+      % file here is a class definition in case it ever changes name).
+      addRequired(pInput, 'obj', @(x) isa(x, mfilename));
+      % require a sweep number to analyze, and this number must be an
+      % integer between 1 and total number of sweeps in the sweep object.
+      addRequired(pInput, 'iSweep', @(x)validateattributes(x, ...
+        {'numeric'}, ...
+        {'scalar', 'integer', '>=', 1, '<=', obj.nSweeps}) );
+      parse(pInput, obj, iSweep);
       [sweepTime, ~, ~, voltage1, biasRes1, voltage2, biasRes2,...
         eVolt, eBias, v01, v02]...
-        = getSweep(obj,iSweep);
+        = getSweep(pInput.Results.obj, pInput.Results.iSweep);
       disp(['Sweep start: ', sweepTime.start.utc]);
       disp(['Sweep end:   ', sweepTime.stop.utc]);
       time = sweepTime.start + (0:length(biasRes1)-1)' * ...
@@ -625,7 +720,7 @@ classdef mms_edp_Sweep < handle
           ' ', num2str((eVolt(i)-sweepTime.start)*1e3) ]);
       end
     end % list
-    
+
     function hout = plot(obj,h,iSweep)
       % Plot sweep
       %
@@ -711,11 +806,6 @@ classdef mms_edp_Sweep < handle
       end
       ylim = [min([biasRes1; biasRes2])-10 max([biasRes1; biasRes2])+10];
       set(h, 'YLim', ylim);
-      t = title(h, [obj.scId, ' ', toUtc(sweepTime(1),1), ' sweep ', num2str(iSweep), ...
-        ', len=', num2str(len), ' stp=', num2str(stp), ' dwl=', num2str(dwl), ...
-        ' rate=', num2str(128*len/double(stp)/double(dwl))]);
-      %t = title(h,[obj.scId ' ' toUtc(sweepTime(1),1) ' sweep ' num2str(iSweep)]);
-      if isa(h, 'handle'), set(t, 'FontSize', 12); end % Needed for HG2
       ylabel(h, ...
         ['Bias [', getunits(obj.sweep,[obj.scId, '_sweep_bias1']), ']'])
       xlabel(h, ...
@@ -744,6 +834,8 @@ classdef mms_edp_Sweep < handle
         Iph2_knee = obj.(p_2)(obj.pTable(2,iSweep)).iPh_knee;
         pha1_knee = obj.(p_1)(obj.pTable(2,iSweep)).phase_knee;
         pha2_knee = obj.(p_2)(obj.pTable(2,iSweep)).phase_knee;
+        eclipse1 = obj.(p_1)(obj.pTable(2, iSweep)).eclipseManeuver;
+        eclipse2 = obj.(p_2)(obj.pTable(2, iSweep)).eclipseManeuver;
       else
         Iph1 = NaN; Iph2 = NaN;
         dVdI1 = NaN; dVdI2 = NaN;
@@ -752,7 +844,16 @@ classdef mms_edp_Sweep < handle
         pha1 = NaN; pha2 = NaN;
         Iph1_knee = NaN; Iph2_knee = NaN;
         pha1_knee = NaN; pha2_knee = NaN;
+        eclipse1 = 0; eclipse2 = 0;
       end
+      titleStr = [obj.scId, ' ', toUtc(sweepTime(1),1), ' sweep ', num2str(iSweep), ...
+        ', len=', num2str(len), ' stp=', num2str(stp), ' dwl=', num2str(dwl), ...
+        ' rate=', num2str(128*len/double(stp)/double(dwl))];
+      if (eclipse1==1 || eclipse2==1)
+        titleStr = {titleStr, 'Warning: Sweep appears to have been performed during a spacecraft eclipse and/or maneuver, use with caution.'};
+      end
+      t = title(h, titleStr);
+      if isa(h, 'handle'), set(t, 'FontSize', 12); end % Needed for HG2
       % Output for debugging
       % [double(prb1) double(prb2) Iph1 Iph2 dVdI1 dVdI2]
       if ismember(type, {'+-', '-+'})
@@ -773,7 +874,7 @@ classdef mms_edp_Sweep < handle
       grid(h, 'on')
       if nargout, hout = h; end
     end % PLOT
-    
+
     function hout = plot_time(obj, h, iSweep, sps, evfile)
       % Plot sweep
       %
@@ -789,8 +890,8 @@ classdef mms_edp_Sweep < handle
       %    evfile - corresponding dce file
       %
       if nargin==4, evfile = sps; plotev = true; else, plotev = false; end
-      if nargin>=3, sps = iSweep; iSweep = h; h = []; doPhase = true;
-      elseif nargin == 2, iSweep = h; h = []; doPhase = false;
+      if nargin>=3, sps = iSweep; iSweep = h; h = []; doPhase = true; %#ok<NASGU>
+      elseif nargin == 2, iSweep = h; h = []; doPhase = false; %#ok<NASGU>
       elseif ~isgraphics(h, 'axes')
         msg = 'H must be an axes handle';
         irf.log('critical', msg); error(msg);
@@ -809,6 +910,7 @@ classdef mms_edp_Sweep < handle
         return
       end
       type = obj.(['p' num2str(obj.pTable(1,iSweep))])(obj.pTable(2,iSweep)).type;
+      eclipse = obj.(['p' num2str(obj.pTable(1,iSweep))])(obj.pTable(2,iSweep)).eclipseManeuver;
       dwl = obj.sweep.data.([obj.scId, '_sweep_dwell']).data(iSweep);
       stp = obj.sweep.data.([obj.scId, '_sweep_steps']).data(iSweep);
       len = length(voltage1);
@@ -901,9 +1003,13 @@ classdef mms_edp_Sweep < handle
           irf.ts_vec_xy(time(ind_impedance), [impedance1(ind_impedance), impedance2(ind_impedance)])}, ...
           '.-');
       end % if doPhase
-      title(h1(1), sprintf('%s %s sweep %i, len=%d stp=%d dwl=%d rate=%d', ...
+      titleStr = sprintf('%s %s sweep %i, len=%d stp=%d dwl=%d rate=%d', ...
         obj.scId, sweepTime.start.utc(1), iSweep, len, stp, dwl, ...
-        128*len/double(stp)/double(dwl)));
+        128*len/double(stp)/double(dwl));
+      if (eclipse)
+        titleStr = {titleStr, 'Warning: Sweep appears to have been performed during a spacecraft eclipse and/or maneuver, use with caution.'};
+      end
+      title(h1(1), titleStr);
       ylabel(h1(1), {'Bias', ['[', getunits(obj.sweep, [obj.scId, '_sweep_bias1']), ']']});
       ylabel(h1(2), {'Voltage', ['[', getunits(obj.sweep, [obj.scId, '_edp_sweeps']), ']']});
       legend(h1(1), p_1);
@@ -988,11 +1094,11 @@ classdef mms_edp_Sweep < handle
       end
       if nargout, hout = h1; end
     end % PLOT_TIME
-    
+
   end % methods
-  
+
   methods(Access=private)
-    
+
     function [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         Epoch, eBias, v01, v02]...
         = getSweep(obj, iSweep)
@@ -1064,7 +1170,7 @@ classdef mms_edp_Sweep < handle
         biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i);
       end
     end % getSweep
-    
+
   end % methods(Access=private)
-  
+
 end

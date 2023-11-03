@@ -23,8 +23,8 @@ suite = testsuite();
 for pkgPathCa = {'bicas'}
   suite = [ ...
     suite, matlab.unittest.TestSuite.fromPackage(...
-      pkgPathCa{1}, 'IncludingSubpackages', true) ...
-  ];
+    pkgPathCa{1}, 'IncludingSubpackages', true) ...
+    ];
 end
 
 % Generate test report (PDF), if not pre-existing.
@@ -36,7 +36,7 @@ if ~exist(ciPath, 'dir')
 end
 runner.addPlugin(TestReportPlugin.producingPDF(...
   fullfile(ciPath, 'report_R2020a.pdf'), 'Verbosity', 3 ...
-));
+  ));
 
 % RUN TESTS
 assertSuccess(runner.run(suite));

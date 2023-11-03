@@ -33,7 +33,7 @@ classdef TimeTable
   %
   %   %read Cluster Master Science Plan
   %   msp=irf.TimeTable('http://jsoc1.bnsc.rl.ac.uk/msp/full_msp_ascii.lst');
-  
+
   % The following properties can be set only by class methods
   properties (SetAccess = public)
     Header
@@ -83,7 +83,7 @@ classdef TimeTable
         % convert ascii to time table
         % function out=from_ascii(ttascii) % convert ascii tt to matlab format
         TT=irf.TimeTable;
-        
+
         isHeader					= 1;
         iHeaderLine					= 0;
         nTimeInterval				= 0;

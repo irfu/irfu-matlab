@@ -12,10 +12,10 @@ if isfield(ud,'subplot_handles')
     set(figurehandle,'userdata',ud);
   end
 else
-  
+
   htmp=findobj(figurehandle,'type','axes','-not','tag','Colorbar');
   number_of_subplots=numel(htmp);
-  
+
   if number_of_subplots>=1 % if there are subplots
     axy=zeros(1,number_of_subplots);
     axx=axy;

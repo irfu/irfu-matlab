@@ -22,7 +22,7 @@ for idxMo=yymmList
     fName = mms_find_latest_version_cdf(...
       [dataDir '*' yymm day '*.cdf'])
     if isempty(fName), continue, end
-    
+
     disp(['Processing: ' fName.name])
     [out,Tint] = mms_sdp_1sec_db(fName.name,dataDir);
     if isempty(out), continue, end

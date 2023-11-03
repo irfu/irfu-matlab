@@ -53,7 +53,7 @@ elseif nargin > 1
         args(1:2)=[];
         eta = 0;
         q=reshape(repmat(B,3,1),[size(B) 3]);
-        
+
       case 'MFR' % Minimum Faraday Residue
         B = args{3};
         E = args{2};
@@ -69,14 +69,14 @@ elseif nargin > 1
             end
           end
         end
-        
+
       case 'MFRV' % Minimum Faraday Residue
         B = args{3};
         V = args{2};
         args(1:3)=[];
         E=-irf_cross(V*1e3,B*1e-9)*1e-3; % mV/m
         [L,V,U] = irf_generic_minimum_residue_analysis('MFR',E,B,args{:});
-        
+
       case 'MMR'
         n = args{2};
         V = args{3};
@@ -84,19 +84,19 @@ elseif nargin > 1
         eta = n;
         q = bsxfun(@times,n,V);
         q = reshape(q,size(q,1),1,size(q,2));
-        
+
       case 'TD'
         v = args{2};
         args(1:2)=[];
         vAverage = irf.nanmean(v,1);
         nConstraint = vAverage/norm(vAverage);
         doConstraint = true;
-        
+
       otherwise
         irf.log('critical','unrecognized input');
         return;
     end
-    
+
   end
 end
 

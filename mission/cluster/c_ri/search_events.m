@@ -62,7 +62,7 @@ d = datenum(start_time(1:3)) - datenum(start_time(1),1 ,1) +1;
 
 if pos(1,1) == -1 %errorcheck. if -1 the there is no data
   time_of_events = -1
-  
+
 else
   b=0; %starting with zero events
   for i = 1:nr_of_positions
@@ -73,42 +73,42 @@ else
     xgsm_re = xgsm/6378;
     ygsm_re = ygsm/6378;
     zgsm_re = zgsm/6378;
-    
+
     dist = distance_to_MP(p_solarwind, -1, xgsm_re, ygsm_re, zgsm_re);
-    
+
     %logging the distance
     if dist < dist_to_MP
       dist_pos = dist_pos + 1;
       dist_t(dist_pos,1) = pos(i,1);
       dist_t(dist_pos,2) = dist;
     end
-    
+
     % gets the timetag when the satellite enters the MP
     if dist < dist_to_MP && inside == 0
       b=b+1;
       inside = 1;
       time_of_events(b,1) = pos(i,1);
     end
-    
+
     % gets the timetag when the satellite leaves the MP
     if dist > dist_to_MP && inside == 1
       inside = 0;
       time_of_events(b,2) = pos(i,1);
     end
-    
+
   end
-  
+
   %when the duration time, dt, has ended and the satellites are still within
   %the event area.
   if inside == 1
     time_of_events(b,2) = pos(i,1);
   end
-  
+
   %of no events where found then -1 is returned
   if b == 0
     time_of_events = -1;
   end
-  
+
 end
 
 

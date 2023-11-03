@@ -264,7 +264,7 @@ iSpecArray = 1:nSpec;
 t1SpecSec = linspace(t1FirstSpecSec, t2LastSpecSec-lenSpecSec, nSpec);
 t2SpecSec = t1SpecSec + lenSpecSec;
 for iSpec = iSpecArray     % NOT USING "parfor"
-  
+
   %=============================================================================
   % Find index interval i1:i2 for the samples of the current spectrum
   % -----------------------------------------------------------------
@@ -283,13 +283,13 @@ for iSpec = iSpecArray     % NOT USING "parfor"
   while (i2Spec+1 <= nTimeAllData) && (tAllDataSec(i2Spec+1) <= t2SpecSec(iSpec))
     i2Spec = i2Spec + 1;
   end
-  
+
   % Only use below assertions when debugging/testing (code is slow).
   % NOTE: Even if disabled, the assertions still illustrate conditions that must
   % be satisfied.
   %assert(  find(tAllDataSec >= t1SpecSec, 1, 'first') == i1 )
   %assert( (find(tAllDataSec <= t2SpecSec, 1, 'last')  == i2) || (i2 == nTimeAllData))
-  
+
   %==============================================
   % Extract samples to use for deriving spectrum
   %==============================================
@@ -304,7 +304,7 @@ end
 % Iterate over spectra: Set Specrec .p, .t
 %==========================================
 for iSpec = 1:nSpec
-  
+
   % Center of time interval
   Specrec.t(iSpec) = t1SpecSec(iSpec) + lenSpecSec*0.5;
   if usingTSeries
@@ -322,19 +322,19 @@ for iSpec = 1:nSpec
     % irf_spectrogram().
     Specrec.t(iSpec) = EpochUnix.from_ttns(int64(Specrec.t(iSpec) * 1e9));
   end
-  
+
   %samplesSpec = select_preprocess_data(tAllDataSec, samplesAllData, t1SpecSec, samplFreqHz, nFft);
   samplesSpec = samplesSpecCa{iSpec};
-  
+
   for iComp = 1:nComp
     if( ~isempty(samplesSpec) && all(~isnan(samplesSpec(:,iComp))) )
-      
+
       %==============
       % FFT + window
       %==============
       ff = fft(detrend(samplesSpec(:,iComp)) .* w, nFft);
       pf = ff .*conj(ff) * nnorm;
-      
+
       Specrec.p{iComp}(iSpec,:) = pf(1:nFreqs);
     else
       % There is at least one NaN in the data that underlies the spectrum.
@@ -342,7 +342,7 @@ for iSpec = 1:nSpec
       Specrec.p{iComp}(iSpec,:) = NaN;
     end
   end
-  
+
 end    % for iSpec
 
 
@@ -524,7 +524,7 @@ bNan = isnan(samples);
 if any(bNan)
   % NOTE: One mean per component/channel.
   meanArray = irf.nanmean(samples, 1, 1-MAX_FRACTION_NAN);
-  
+
   for iComp = 1:size(samples, 2)
     if(any(bNan(:,iComp)))
       samples(bNan(:,iComp), iComp) = meanArray(iComp);

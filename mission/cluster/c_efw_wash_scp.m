@@ -35,7 +35,7 @@ ii = find( isnan(data(:,2)) );
 % Fill gaps before spectral cleaning
 if ~isempty(ii)
   if length(ii) == size(data,1), return, end
-  
+
   % First point is already a gap
   if ii(1) == 1
     jj = find(~isnan(data(:,2)));
@@ -72,7 +72,7 @@ if ~isempty(ii)
     otherwise
       error('METHOD can be : LINEAR, PREVSPIN')
   end
-  
+
 end
 
 res = clean_spec(res,4,0.75,nargout);

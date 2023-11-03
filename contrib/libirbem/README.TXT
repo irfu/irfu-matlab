@@ -29,8 +29,8 @@ INSTALLATION
 
 The IRBEM compile scripts will create the shared library file for
 use with IDL or Matlab. A copy of the shared library is created in the
-"matlab" subdirectory, and is given a name "onera_desp_lib.dll" or
-"onera_desp_lib.so" depending on the platform. Thus, in order to
+"matlab" subdirectory, and is given a name "libirbem.dll" or
+"libirbem.so" depending on the platform. Thus, in order to
 access the library and the wrappers, the user needs only add the
 "matlab" subdirectory (e.g. "c:\onera_desp\matlab") to the Matlab
 path. In order for the library to easily locate the data files that it

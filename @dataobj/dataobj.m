@@ -92,7 +92,7 @@ switch action
       if usingNasaPatchCdf
         timeVariable = [];
         [data,info] = spdfcdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true);
-        
+
         % Convert epoch/epoch16/tt2000 to ISDAT epoch
         isCdfEpochVariableArray=cellfun(@(x) strcmpi(x,'epoch'), info.Variables(:,4));
         if any(isCdfEpochVariableArray)
@@ -165,9 +165,9 @@ switch action
             end
           end
         end
-        
+
         fix_order_of_array_dimensions;
-        
+
         if ~shouldReadAllData
           nVariables = size(info.Variables,1);
           records = cell(nVariables,1); recsTmp = {};
@@ -264,7 +264,7 @@ switch action
       dobj.VariableAttributes = info.VariableAttributes;
       dobj.GlobalAttributes	= info.GlobalAttributes;
       dobj.Variables			= info.Variables;
-      
+
       % check if there is time data
       if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
           any(strcmpi(info.Variables(:,4),'epoch16')==1) || ...

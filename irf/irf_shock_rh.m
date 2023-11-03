@@ -67,22 +67,22 @@ function [outp] = irf_shock_rh(inp,varargin)
 %   Vd - Downstream plasma flow velocity vector in [km/s]
 %   nd - Downstream plasma number density in [cm^-3]
 %   Td - Downstream plasma temperature in [eV]
-%   Tid/Ted - Ion/electron temperatures in [eV] (assumes adiabatic 
+%   Tid/Ted - Ion/electron temperatures in [eV] (assumes adiabatic
 %               electron heating)
 %   dimLessOut - All dimensionless outputs
 %
 %
-% Notes: 
+% Notes:
 %   - The function uses a semi-analytical approach where the difference in
 %   energy flux between up- and downstream is calculated for a given
 %   density compression ratio. The solution is then found where the energy
-%   fluxes are the same. 
+%   fluxes are the same.
 %   - If Mf in the input is close to 1, the function might have
 %   difficulties separating the shock solution from the trivial no-shock
 %   solution
 %   - Shock angle th close to 0 can be cause issues
 %   - The function can deal with switch-on shocks but care should be taken
-%   when this is the case 
+%   when this is the case
 %
 % Examples:
 %   % Example 1: simple use

@@ -132,21 +132,21 @@ if flag_rmwhip, c_load('WHIP?',cl_id), end
 % Load data
 for k=1:length(q_list)
   %q_list{k}
-  
+
   if c_load(q_list{k},cl_id)
     if have_tint
       c_eval([q_list{k} '=irf_tlim(' q_list{k} ',st+[0 dt]);'],cl_id);
     end
-    
+
     if flag_rmwhip && (k==1 || k==3)
       if exist(irf_ssub('WHIP?',cl_id),'var')
         irf_log('proc','not using times with Whisper pulses');
         c_eval([q_list{k} '=caa_rm_blankt(' q_list{k}  ',WHIP? );'],cl_id);
       end
     end
-    
+
     n_plots = n_plots + 1;
-    
+
     switch k
       case 1 % P
         d_t = [];
@@ -163,7 +163,7 @@ for k=1:length(q_list)
         else
           data{n_plots} = d_t;
         end
-        
+
       case 2 % B-field
         c_eval(['data{n_plots}=irf_abs(' q_list{k} '(:,1:4));'],cl_id)
         labels{n_plots} = l_list{k};
@@ -172,7 +172,7 @@ for k=1:length(q_list)
         end
         elev_ang = [data{n_plots}(:,1) atan2(data{n_plots}(:,4),...
           sqrt(data{n_plots}(:,2).^2+data{n_plots}(:,3).^2))*180/pi];
-        
+
       case 3 % E-field
         if strcmp(cs,'dsi')
           % correct DSI offsets
@@ -185,14 +185,14 @@ for k=1:length(q_list)
               else, st = st(1);
               end
             end
-            
+
             [ok,Ps,msg] = c_load('Ps?',cl_id);
             if ~ok, irf_log('load',msg), end
             [dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id,Ps);
-            
+
             [ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end %#ok<NASGU>
             [ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end %#ok<NASGU>
-            
+
             if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
             else, irf_log('calb','Using default DSI offsets')
             end
@@ -204,10 +204,10 @@ for k=1:length(q_list)
           clear dsiof
           c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id);
         end
-        
+
         c_eval(['data{n_plots}=' q_list{k} '(:,1:3);'],cl_id);
         labels{n_plots} = l_list{k};
-        
+
       case 4 % Es-field /IB
         c_eval(['d_t=' q_list{k} ';'],cl_id);
         if flag_ib
@@ -224,12 +224,12 @@ for k=1:length(q_list)
               else, st = st(1);
               end
             end
-            
+
             [dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id);
-            
+
             [ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
             [ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
-            
+
             if ok1 || ok2, irf_log('calb','Using saved DSI offsets');
             else, irf_log('calb','Using default DSI offsets');
             end
@@ -268,7 +268,7 @@ for k=1:length(q_list)
           labels{n_plots} = l_list{k};
         end
         clear d_t Ddsi Damp
-        
+
       otherwise
         d_t = [];
         c_eval(['d_t=' q_list{k} ';'],cl_id);
@@ -280,7 +280,7 @@ for k=1:length(q_list)
         end
         clear d_t
     end
-    
+
   end
 end
 

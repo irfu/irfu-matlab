@@ -19,13 +19,13 @@ classdef test_irf_plot < matlab.unittest.TestCase
       testCase.TS3 = irf.ts_vec_xy(testCase.T,[.8*testCase.x 1.1*testCase.y]);
     end
   end
-  
+
   methods (Test)
-    
+
     function testPlotTwoPanels(testCase)
       import matlab.unittest.diagnostics.Diagnostic;
       import matlab.unittest.diagnostics.FigureDiagnostic;
-      
+
       h = irf_plot(2);
       testCase.addTeardown(@close, h.Parent);
       hca = irf_panel('panel A');
@@ -37,11 +37,11 @@ classdef test_irf_plot < matlab.unittest.TestCase
         Diagnostic.join('Please confirm two panels with data, both with shape of y=exp(0.001x)*sin(x).', ...
         FigureDiagnostic(gcf)));
     end
-    
+
     function testPlotTwoTSeries(testCase)
       import matlab.unittest.diagnostics.Diagnostic;
       import matlab.unittest.diagnostics.FigureDiagnostic;
-      
+
       irf_plot({testCase.TS1,testCase.TS2});
       % Now we log it for fun and for profit.
       testCase.addTeardown(@close, gcf);
@@ -49,11 +49,11 @@ classdef test_irf_plot < matlab.unittest.TestCase
         Diagnostic.join('Please confirm two panels of data, first panel one line and second panel lines of data.', ...
         FigureDiagnostic(gcf)));
     end
-    
+
     function testPlotTwoTSeriesCompared(testCase)
       import matlab.unittest.diagnostics.Diagnostic;
       import matlab.unittest.diagnostics.FigureDiagnostic;
-      
+
       irf_plot({testCase.TS1,testCase.TS2},'comp');
       testCase.addTeardown(@close, gcf);
       % Now we log it for fun and for profit.
@@ -61,11 +61,11 @@ classdef test_irf_plot < matlab.unittest.TestCase
         Diagnostic.join('Please confirm there is one panel of data with one overplotted line.', ...
         FigureDiagnostic(gcf)));
     end
-    
+
     function testPlotTwoTSeriesComparedSubpanels(testCase)
       import matlab.unittest.diagnostics.Diagnostic;
       import matlab.unittest.diagnostics.FigureDiagnostic;
-      
+
       h = irf_plot(2);
       hca = irf_panel('panel A');
       irf_plot(hca,{testCase.TS2.x,testCase.TS3.x},'comp');
@@ -77,7 +77,7 @@ classdef test_irf_plot < matlab.unittest.TestCase
         Diagnostic.join('Please confirm there are two panels with two lines of data in each.', ...
         FigureDiagnostic(gcf)));
     end
-    
+
   end
 end
 

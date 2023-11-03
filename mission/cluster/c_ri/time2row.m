@@ -35,14 +35,14 @@ if start_r > r
 end
 
 for i = start_r:r
-  
+
   if M(i,1) >= time
     row = i;
     break
   end
-  
+
   if i == r
     row = i,
   end
-  
+
 end

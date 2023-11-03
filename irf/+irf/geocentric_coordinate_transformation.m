@@ -99,41 +99,41 @@ end
 switch lower(flag)
   case 'gse>gsm', tInd = 3;
   case 'gsm>gse', tInd = -3;
-    
+
   case 'gse>gei', tInd = -2;
   case 'gse>geo', tInd = [1 -2];
   case 'gse>sm',  tInd = [4 3];
   case 'gse>mag', tInd = [5 1 -2];
-    
+
   case 'gsm>gei', tInd = [-2 -3];
   case 'gsm>geo', tInd = [1 -2 -3];
   case 'gsm>sm',  tInd = 4;
   case 'gsm>mag', tInd = [5 1 -2 -3];
-    
+
   case 'sm>gei', tInd = [-2 -3 -4];
   case 'sm>geo', tInd = [1 -2 -3 -4];
   case 'sm>gse', tInd = [-3 -4];
   case 'sm>gsm', tInd = -4;
   case 'sm>mag', tInd = [5 1 -2 -3 -4];
-    
+
   case 'mag>gei', tInd = [-1 -5];
   case 'mag>geo', tInd = -5;
   case 'mag>gse', tInd = [2 -1 -5];
   case 'mag>gsm', tInd = [3 2 -1 -5];
   case 'mag>sm',  tInd = [4 3 2 -1 -5];
-    
+
   case 'geo>gei', tInd = -1;
   case 'geo>gse', tInd = [2 -1];
   case 'geo>gsm', tInd = [3 2 -1];
   case 'geo>sm',  tInd = [4 3 2 -1];
   case 'geo>mag', tInd = 5;
-    
+
   case 'gei>geo', tInd = 1;
   case 'gei>gse', tInd = 2;
   case 'gei>gsm', tInd = [3 2];
   case 'gei>sm',  tInd = [4 3 2];
   case 'gei>mag', tInd = [5 1];
-    
+
   case 'dipoledirectiongse'
     out = [t dipole_direction_gse];
     return
@@ -244,12 +244,12 @@ end
   function T=triang(angle,ax)
     % angle in degrees
     % ax=1 > X, ax=2 > y,ax=3 > z)
-    
+
     cosAngle = cosd(angle);
     sinAngle = sind(angle);
     a = [1 2 3];
     axXX = a(ax~=a);
-    
+
     T = zeros(numel(angle),3,3);
     T(:,axXX(1),axXX(1)) = cosAngle;
     T(:,axXX(2),axXX(2)) = cosAngle;

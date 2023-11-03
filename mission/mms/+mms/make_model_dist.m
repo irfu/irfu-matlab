@@ -13,9 +13,9 @@ function modelPDist = make_model_dist(varargin)
 %       V - bulk velocity (TSeries)
 %       T - temperature (TSeries, must be full tensor)
 %
-%   Options: 
+%   Options:
 %       'isotropic' - set to 1 to make an isotropic model distribution
-%       funciton. 
+%       funciton.
 %
 %   Output:
 %       modelPDist - Distribution function in the same format as PDist.

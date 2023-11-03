@@ -12,6 +12,8 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_in
 %       timestamps for which QUALITY_FLAG are (strictly) lower than BICAS
 %       setting PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN which is set to "2" by
 %       default.
+%       VDC_inp: x, y, z = V1,  V2,  V3
+%       EDC_inp: x, y, z = V12, V13, V23
 % calFilename
 %       The name of the calibration file (.mat) one wishes to
 %       use. If empty, then code will use BICAS's official calibration file

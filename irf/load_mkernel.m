@@ -96,7 +96,7 @@ end
 if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission)
   % New loading (entirly new, or new mission)
   rootKernelPath = get_spice_root(p.Results.mission);
-  
+
   mkPath = [rootKernelPath, filesep, 'kernels', filesep, 'mk'];
   if ~exist(mkPath, 'dir')
     errStr = ['Did not find the expected metakernel path: ', mkPath];
@@ -104,7 +104,7 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
     datastore('spice_paths', p.Results.mission, []); % Clear out stored path
     error(errStr);
   end
-  
+
   % Default names for "flown" and "predicted" kernels, (each mission have
   % their own naming standard).
   flown.rosetta          = 'ROS_OPS_*.TM'; % Rosetta flown mk name standard
@@ -113,14 +113,14 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
   flown.parkersolarprobe = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   flown.solarorbiter     = 'solo_ANC_soc-flown-mk_v*.tm'; % SolO flown
   flown.cometinterceptor = 'interceptor_study_v02.tm'; % FIXME: Some other orbit senario?/Update when CI has launched.
-  
+
   pred.rosetta           = flown.rosetta; % Rosetta EOL, no more predicted
   pred.juice             = 'juice_crema_5_0b23_1.tm'; % FIXME: Some other orbit senario?/Update when JUICE has launched.
   pred.bepicolombo       = 'bc_plan_*.tm'; % BepiColombo predicted
   pred.parkersolarprobe  = 'test*.tm'; % FIXME: UPDATE WHEN PSP sync script is tested
   pred.solarorbiter      = 'solo_ANC_soc-pred-mk_v*.tm'; % SolO predicted
   pred.cometinterceptor  = 'interceptor_study_v02.tm'; % FIXME: Some other orbit senario?/Update when CI has launched.
-  
+
   switch p.Results.flown_or_predicted
     case 'predicted'
       srcMKfile = dir([mkPath, filesep, pred.(p.Results.mission)]);
@@ -136,7 +136,7 @@ if isempty(LoadedSpiceKernels) || ~isfield(LoadedSpiceKernels, p.Results.mission
     return
   end
   metakernel = adoptMetakernel(srcMKfile.folder, srcMKfile.name);
-  
+
   cspice_furnsh(metakernel);
   % Keep its named stored (along with fields of what we have stored)
   LoadedSpiceKernels.(p.Results.mission).(p.Results.flown_or_predicted) = metakernel;
@@ -175,7 +175,7 @@ end
     localMKfile = tempname;
     % Full local absolute path (metakernel are in subfolder "mk", so up one level)
     localSpicePath = what([srcPath, filesep, '..']);
-    
+
     % Replace relative or remote paths with absolute path on locally mounted
     % system
     expression = 'PATH_VALUES\s{0,}=\s{0,}(\s{0,}''[a-zA-Z_0-9\.\/]*''\s{0,}';

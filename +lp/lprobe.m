@@ -18,7 +18,7 @@ classdef lprobe
   %  capacitance  - F
   %  Area         - structure with fields: sphere, wire, total, sunlit,
   %  totalVsSunlit, sunlitVsTotal
-  
+
   properties
     name
     surface
@@ -32,9 +32,9 @@ classdef lprobe
     Area           % structure with fields total, sunlit, totalVsSunlit, sunlitVsTotal,sphere,cylinder
     capacitance
   end
-  
+
   methods
-    
+
     function type = get.type(Lp)
       if ~isempty(Lp.radiusSphere) && ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire)
         type = 'sphere+wire';
@@ -46,7 +46,7 @@ classdef lprobe
         type =[];
       end
     end
-    
+
     function Area = get.Area(Lp)
       areaSphereSunlit = 0;
       areaSphereTotal  = 0;
@@ -66,17 +66,17 @@ classdef lprobe
         end
         areaWireTotal  = pi*areaWireSunlit;
       end
-      
+
       Area.sphere = areaSphereTotal;
       Area.wire   = areaWireTotal;
       Area.total  = areaWireTotal + areaSphereTotal;
       Area.sunlit = areaWireSunlit + areaSphereSunlit;
-      
+
       Area.totalVsSunlit = Area.total / Area.sunlit;
       Area.sunlitVsTotal = Area.sunlit / Area.total;
-      
+
     end
-    
+
     function capacitance = get.capacitance(Lp)
       cWire = 0;
       cSphere  = irf_estimate('capacitance_sphere',Lp.radiusSphere);
@@ -98,7 +98,7 @@ classdef lprobe
       end
       capacitance = sum([ cSphere cWire]);
     end
-    
+
     function surfacePhotoemission = get.surfacePhotoemission(Lp)
       if any(strcmp(Lp.surface,'user defined')) || ~isempty(Lp.surfacePhotoemission)
         surfacePhotoemission = Lp.surfacePhotoemission;
@@ -106,8 +106,8 @@ classdef lprobe
         surfacePhotoemission = lp.photocurrent(1,0,1,Lp.surface);
       end
     end
-    
+
   end
-  
+
 end
 

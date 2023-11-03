@@ -55,7 +55,7 @@ if strcmp(action,'initialize')
   else
     figure(ch(indx));clf;figNumber=gcf;
   end
-  
+
   h(1)=subplot(2,2,1);axis equal;axis([-50 50 -50 50]);axis manual;title(['s/c' num2str(spacecraft) ' spin plane']);
   h(2)=subplot(2,2,2);axis equal;axis([-50 50 -50 50]);axis manual;title('View along B');
   h(3)=subplot(2,2,3);axis equal;axis([-50 50 -50 50]);axis manual;title('View towards sun');
@@ -116,28 +116,28 @@ if strcmp(action,'initialize')
   eval(eval_figuserdata);
   set(figNumber,'UserData',figuserdata);
   c_efw_pl_orient('time');
-  
+
 elseif strcmp(action,'time')
   t=iso2epoch(get(timeHndl, 'string'));
   phase = c_phase(t,a);
   phase = phase(2);
   set(phaseHndl,'string',num2str(phase,'%.1f'));
   c_efw_pl_orient('plot');
-  
+
 elseif strcmp(action,'phase')
   phase=str2num(get(phaseHndl, 'string'));
   c_efw_pl_orient('plot');
-  
-  
+
+
 elseif strcmp(action,'plot')
   figuserdata=get(figNumber,'userdata');
   h=figuserdata{1};
-  
+
   flag_v1=get(vec1flag, 'value');
   if flag_v1==1, v1=eval(get(vec1Hndl,'string'));if length(v1)==1, flag_v1=0;end;end
   flag_v2=get(vec2flag, 'value');
   if flag_v2==1, v2=eval(get(vec2Hndl,'string'));if length(v2)==1, flag_v2=0;end;end
-  
+
   phase_p1=phase/180*pi + 3*pi/4 ;
   phase_p3=phase_p1     - pi/2   ;
   phase_p2=phase_p1     + pi     ;
@@ -146,7 +146,7 @@ elseif strcmp(action,'plot')
   rp2=[44*cos(phase_p2) 44*sin(phase_p2) 0]; %#ok<NASGU>
   rp3=[44*cos(phase_p3) 44*sin(phase_p3) 0]; %#ok<NASGU>
   rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0]; %#ok<NASGU>
-  
+
   for ip=1:4,eval(irf_ssub('rp?_gse=c_gse2dsc([t rp?],ic,-1);rp?_gse(1)=[];',ip)),end
   bfield=irf_resamp(b,t);
   bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
@@ -154,7 +154,7 @@ elseif strcmp(action,'plot')
   bn=irf_norm(bfield);
   bn_gse=c_gse2dsc(bn,ic,-1);
   b_elevation=-asin(bn(4))*180/pi;
-  
+
   if flag_v1==1
     vn1_gse=[bn(1,1) irf_norm(v1)];
     vn1_ds=c_gse2dsc(vn1_gse,ic);
@@ -165,11 +165,11 @@ elseif strcmp(action,'plot')
     vn2_ds=c_gse2dsc(vn2_gse,ic);
     vn2_elevation=-asin(vn2_ds(4))*180/pi;
   end
-  
+
   for ip=1:4,eval(irf_ssub('rp?_b=[irf_dot(rp?,bxs,1) irf_dot(rp?,bxsxb,1) irf_dot(rp?,bn,1)];',ip)),end
-  
+
   aa=0:.1:2*pi;x_circle=cos(aa);y_circle=sin(aa);
-  
+
   axes(h(1));cla
   text(0,50,'sun','verticalalignment','middle','horizontalalignment','center','fontweight','demi');
   text(50,0,'dawn','rotation',90,'verticalalignment','middle','horizontalalignment','center','fontweight','demi');
@@ -194,7 +194,7 @@ elseif strcmp(action,'plot')
     text(30*vn2proj(3),30*vn2proj(2),'V');           % label
     text(-49,38,['V2 elevation=' num2str(vn2_elevation,2) ' deg'],'fontsize',8);           % label
   end
-  
+
   for aa=0:pi/12:2*pi
     hl=line([0 100*cos(aa)],[0 100*sin(aa)]);
     set(hl,'linestyle',':','color','green','linewidth',.2);
@@ -204,7 +204,7 @@ elseif strcmp(action,'plot')
     eval(irf_ssub('patch(rp?(2)+x_circle*0.4,rp?(1)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip));
     eval(irf_ssub('text(rp?(2)*.8,rp?(1)*.8,num2str(?));',ip));
   end
-  
+
   axes(h(3));cla
   text(0,50,'Z_{GSE}','verticalalignment','middle','horizontalalignment','center','fontweight','demi');
   text(50,0,'-Y_{GSE}','rotation',90,'verticalalignment','middle','horizontalalignment','center','fontweight','demi');
@@ -226,7 +226,7 @@ elseif strcmp(action,'plot')
     hl=line([0 -vn2_gse(3)*25],[0 vn2_gse(4)*25]);set(hl,'color','b','linewidth',2);       % V direction
     text(-30*vn2proj(3),30*vn2proj(4),'V');           % label
   end
-  
+
   for aa=0:pi/12:pi/2
     hl=line(x_circle*44*sin(aa),y_circle*44*sin(aa));
     set(hl,'linestyle',':','color','green','linewidth',.2);
@@ -236,7 +236,7 @@ elseif strcmp(action,'plot')
     eval(irf_ssub('patch(-rp?_gse(2)+x_circle*0.4,rp?_gse(3)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip));
     eval(irf_ssub('text(-rp?_gse(2)*.8,rp?_gse(3)*.8,num2str(?));',ip));
   end
-  
+
   axes(h(2));cla
   text(0,50,'(BxS)xS','verticalalignment','middle','horizontalalignment','center','fontweight','demi');
   text(50,0,'BxS','rotation',90,'verticalalignment','middle','horizontalalignment','center','fontweight','demi');
@@ -251,7 +251,7 @@ elseif strcmp(action,'plot')
     eval(irf_ssub('patch(rp?_b(1)+x_circle*0.4,rp?_b(2)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip));
     eval(irf_ssub('text(rp?_b(1)*.8,rp?_b(2)*.8,num2str(?));',ip));
   end
-  
+
   axes(h(4))
   ht=irf_pl_info(['c_efw_pl_orient() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],gca,[0,1 ]); set(ht,'interpreter','none');
   xp=0;yp=.9;dyp=-0.1;
@@ -261,7 +261,7 @@ elseif strcmp(action,'plot')
   %  text(xp,yp,vstr);
   %  yp=yp+dyp;
   %end
-  
+
 else
   disp(sprintf( ...
     'c_efw_pl_orient: action string ''%s'' not recognized, no action taken.',action))

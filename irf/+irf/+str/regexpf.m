@@ -1,6 +1,6 @@
 %
 % regexpf = regexp (MATLAB builtin) + f (=full match)
-% 
+%
 % Roughly like MATLAB's "regexp", except
 % (1) it ONLY MATCHES ENTIRE strings (not substrings). In practice, it surrounds
 %     the submitted regular expressions with ^ and $.
@@ -11,7 +11,7 @@
 %
 %
 % ARGUMENTS
-% ========= 
+% =========
 % str
 %       String or cell array of strings. Empty string must be of class char,
 %       i.e. e.g. not [] (due to function "regexp").
@@ -48,54 +48,54 @@ function isMatch = regexpf(str, regexpPattern)
 %               CON/PROBLEM: Difficult to implement.
 
 
-    
-    
-    %====================================================
-    % ASSERTIONS:
-    % NORMALIZE input: Turn strings into 1x1 cell arrays
-    %====================================================
-    % IMPLEMENTATION NOTE: Empty string must be of class char, i.e. not [] (due
-    % to function "regexp"). This is also more consistent.
-    if ischar(str)
-        str = {str};
-    end
-    if ischar(regexpPattern)
-        regexpPattern = {regexpPattern};
-    end
-    assert(iscell(str))
-    assert(iscell(regexpPattern))
-    
-    
-    
-    if  numel(regexpPattern) == 1
-        % NOTE: Handles case of both str and regexpPattern being scalar.
-        
-        isMatch = cellfun(...
-            @(s) (~isempty(regexp(...
-                s, ['^', regexpPattern{1}, '$'], 'once', 'emptymatch'))), ...
-            str);
-        
-    elseif numel(str) == 1
-    
-        % IMPLEMENTATION NOTE: regexp option "emptymatch" is required to match
-        % empty strings.
-        isMatch = cellfun(...
-            @(re) (~isempty(regexp(...
-                str{1}, ['^', re, '$'], 'once', 'emptymatch'))), ...
-            regexpPattern);
-    else
-        % CASE: Neither "str" or "regexpPattern" is scalar.
-        % ASSERTION
-        error(...
-            ['Both arguments are non-scalar (more than one element)', ...
-            ' cell arrays. Function can not handle that case.'])
-    end
-    
-    % IMPLEMENTATION NOTE: Empirically, cellfun() returns empty DOUBLE array for
-    % empty cell arrays, but the size is correct. ==> Must correct type.
-    if isempty(isMatch)
-        isMatch = logical(isMatch);
-    end
-    
-    assert(islogical(isMatch))
+
+
+%====================================================
+% ASSERTIONS:
+% NORMALIZE input: Turn strings into 1x1 cell arrays
+%====================================================
+% IMPLEMENTATION NOTE: Empty string must be of class char, i.e. not [] (due
+% to function "regexp"). This is also more consistent.
+if ischar(str)
+  str = {str};
+end
+if ischar(regexpPattern)
+  regexpPattern = {regexpPattern};
+end
+assert(iscell(str))
+assert(iscell(regexpPattern))
+
+
+
+if  numel(regexpPattern) == 1
+  % NOTE: Handles case of both str and regexpPattern being scalar.
+
+  isMatch = cellfun(...
+    @(s) (~isempty(regexp(...
+    s, ['^', regexpPattern{1}, '$'], 'once', 'emptymatch'))), ...
+    str);
+
+elseif numel(str) == 1
+
+  % IMPLEMENTATION NOTE: regexp option "emptymatch" is required to match
+  % empty strings.
+  isMatch = cellfun(...
+    @(re) (~isempty(regexp(...
+    str{1}, ['^', re, '$'], 'once', 'emptymatch'))), ...
+    regexpPattern);
+else
+  % CASE: Neither "str" or "regexpPattern" is scalar.
+  % ASSERTION
+  error(...
+    ['Both arguments are non-scalar (more than one element)', ...
+    ' cell arrays. Function can not handle that case.'])
+end
+
+% IMPLEMENTATION NOTE: Empirically, cellfun() returns empty DOUBLE array for
+% empty cell arrays, but the size is correct. ==> Must correct type.
+if isempty(isMatch)
+  isMatch = logical(isMatch);
+end
+
+assert(islogical(isMatch))
 end

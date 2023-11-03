@@ -84,7 +84,7 @@ if 1
   z=repmat(irf_norm(mean(B(:,2:4),1)),na,1); % B/z direction, tries*3
   y=irf_norm(irf_cross(irf_cross(z,[1 0 0]),z)); % perp1
   x=irf_norm(irf_cross(y,z)); % perp2
-  
+
   theta=(0:2*pi/na:2*pi-pi/na)'; % angles
   xn=irf_norm(x.*repmat(cos(theta),1,3)+y.*repmat(sin(theta),1,3));
   y=irf_cross(z,xn);
@@ -111,12 +111,12 @@ for k=1:na
   dEn(:,k+1)=irf_dot(EAC(:,(2:4)),y(k,:));
   Ek(:,k+1)=irf_dot(E(:,(2:4)),x(k,:));
   En(:,k+1)=irf_dot(E(:,(2:4)),y(k,:));
-  
+
   % Get Phi_E = int(Ek), there's no minus since the field is integrated
   % in the opposite direction of the wave propagation direction.
   prel=irf_integrate([dEk(:,1) dEk(:,k+1)]);
   intEdt(:,k+1)=prel(:,2)-mean(prel(:,2));
-  
+
   % Get correlation
   correlation(k,1)=xcorr(intEdt(:,k+1),Bz(:,2),0,'coeff');
 end

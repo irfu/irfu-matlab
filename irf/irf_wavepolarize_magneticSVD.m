@@ -107,22 +107,22 @@ for ii=1:nt
     Bsmr=real(esm(ii,jj,:,:));  Bsmr=squeeze(Bsmr);
     Bsmi=imag(esm(ii,jj,:,:));  Bsmi=squeeze(Bsmi);
     X=[Bsmr; Bsmi];
-    
+
     nb=Bbgd(ii,2:4)/Bmag(ii,2);
     nperp1=cross(nb,[0 1 0]);
     nperp1=nperp1/sqrt(dot(nperp1,nperp1));
     nperp2=cross(nb,nperp1);
-    
+
     [U,W,V] = svd(X,'econ');
-    
+
     rowmin=3;  rowmid=2;  rowmax=1;
     w1=W(rowmin,rowmin); w2=W(rowmid,rowmid); w3=W(rowmax,rowmax);
-    
+
     VT=V';
     k_propagate=VT(rowmin,:);
     k_perp_min=VT(rowmid,:);
     k_perp_max=VT(rowmax,:);
-    
+
     Bpsd(ii,jj)=Bsmr(1,1)+Bsmr(2,2)+Bsmr(3,3);
     if Bpsd(ii,jj)>minPsd
       waveangle(ii,jj)=acos(dot(k_propagate, nb))*180/pi;

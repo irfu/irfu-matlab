@@ -44,7 +44,7 @@ if fla
   c_eval('ind=ind_zeros?(ind_zeros?_minu);xx=x?;t_zeros?_minu=xx(ind,1)+(xx(ind+1,1)-xx(ind,1)).*1./(1+abs(xx(ind+1,2))./abs(xx(ind,2)));',k)
 else
   %%%%%%%%%%%%%%% 2nd derivative %%%%%%%%%%%
-  
+
   c_eval('ddx?=[dx?(1:end-1,1)+0.5*diff(dx?(:,1)) diff(dx?(:,2))];',k)
   c_eval('ind_zeros?=find(sign(ddx?(1:end-1,2).*ddx?(2:end,2))<0);ind_zeros?(ind_zeros?==1)=[];',k)
   c_eval('ind_zeros?_plus=find(ddx?(ind_zeros?-1,2)-ddx?(ind_zeros?,2)>0);',k)

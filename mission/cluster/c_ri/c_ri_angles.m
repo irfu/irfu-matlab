@@ -23,12 +23,12 @@ function [angles, ampl1, ampl2] = c_ri_angles(B1,B2)
 for i=1:i_end
   v1 = B1(i,2:4);
   v2 = B2(i,2:4);
-  
+
   if v1== [0 0 0] || v2 == [0 0 0]
     angles(i) = 0;
     ampl1(i) = norm(v1);
     ampl2(i) = norm(v2);
-    
+
   else
     n1 = norm(v1);
     n2 = norm(v2);
@@ -36,18 +36,18 @@ for i=1:i_end
     ampl2(i) =n2;
     t1 = v1/n1;
     t2 = v2/n2;
-    
+
     t3 = dot(t1,t2);
     if t3 > 1
       t3 = 1;
     end
-    
+
     a = acos(t3)/pi*180;
-    
+
     if a>180  %to avoid angles greater than 180 degrees
       ang = 360 - a;
     end
-    
+
     angles(i) = a;
   end
 end

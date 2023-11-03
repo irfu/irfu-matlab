@@ -37,7 +37,7 @@ if length(t)<5 || any(diff(t)<0) || (t(end)-t(1)) > length(t)*100
     case 1
       out = num2str(d,'%04d-%02d-%02dT%02d:%02d:%06.3fZ');
   end
-  
+
   ii = find(out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
   if any(ii)
     out(ii,:) = epoch2iso(t(ii)+dt_res,fmt);
@@ -51,16 +51,16 @@ else
   out(:,11) = 'T';
   out(:,[14 17]) = ':';
   out(:,end) = 'Z';
-  
+
   tss = fromepoch(t(1));
   tee = fromepoch(t(end));
-  
+
   mins = toepoch([tss(1:5) 0]):60:toepoch([tee(1:5) 0]);
   d = fromepoch(mins);
-  
+
   s1 = {'', '', '', '',''}; sl=[0 4; 5 2; 8 2; 11 2; 14 2];
   j_start = 0;
-  
+
   for j=1:5
     if d(1,j)==d(end,j)
       ss = num2str(d(1,j),'%02d');
@@ -71,7 +71,7 @@ else
       break
     end
   end
-  
+
   for j=1:length(mins)
     if j==length(mins), ii = find(t>=mins(j));
     else, ii = find(t>=mins(j) & t<mins(j+1));

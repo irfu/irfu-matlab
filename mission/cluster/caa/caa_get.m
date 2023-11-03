@@ -64,7 +64,7 @@ for t=t0:SPLIT_INT*3600:t1
   y = fromepoch(t);
   main_int = [DP '/' num2str(y(1)) '/' irf_fname(t) '/C' num2str(cl_id)];
   if ~exist(main_int,'dir'), continue, end
-  
+
   %disp(main_int)
   cd(main_int)
   d = dir('*_*');
@@ -75,7 +75,7 @@ for t=t0:SPLIT_INT*3600:t1
     if caa_is_valid_dirname(d(j).name), good_dir = [good_dir {d(j).name}]; end %#ok<AGROW>
   end
   if isempty(good_dir), continue, end
-  
+
   for j=1:length(good_dir)
     subdir = [main_int '/' good_dir{j}];
     cd(subdir)
@@ -87,7 +87,7 @@ for t=t0:SPLIT_INT*3600:t1
     if ~ok, continue, end
     ttt.st = st_tmp;
     ttt.dt = dt_tmp;
-    
+
     if NEED_SAME_TM && tm~=tm(1)*ones(size(tm))
       error('tape mode changes during the selected time inteval')
     end
@@ -119,7 +119,7 @@ for j = ii
     % TODO: times must never be NaN.
     if ~isstruct(tt), tt(isnan(tt(:,1)),:) = []; end
     if isempty(tt), continue, end
-    
+
     % Uncorrect delta offsets. This is black magic...
     if regexp(var_name,'^diEs([1-4]|?)p(12|32|34)$')==1
       % Delta offsets
@@ -131,7 +131,7 @@ for j = ii
         tt = caa_corof_delta(tt,pp,Delauto,'undo');
       end
     end
-    
+
     % Append time to variables which does not have it
     % 946684800 = toepoch([2000 01 01 00 00 00])
     if ~isstruct(tt) && ( tt(1,1) < 946684800 )
@@ -145,7 +145,7 @@ for j = ii
       end
     end
   end
-  
+
   if isempty(data), data = tt;
   elseif ~(isstruct(data) || isstruct(tt))
     data = caa_append_data(data,tt);
