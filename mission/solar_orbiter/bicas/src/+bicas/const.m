@@ -20,8 +20,16 @@ classdef const
     % PROPOSAL: Move N_MIN_OSR_SAMPLES_PER_BIN to settings?
     %
     % PROPOSAL: Log all constants.
+    %   CON: Not straightforward/easy to log all constants since they use
+    %        "non-primitive" data structures.
+    %       Ex: SWD_METADATA = bicas.const.init_SWD_metadata();
+    %           Map-->Strings
+    %       Ex: EMIDP_2_INFO = bicas.const.init_EMIDP_2_INFO;
+    %           Map-->Struct
+    %       Ex: GA_MODS_DB = bicas.const.init_GA_MODS_DB();
+    %           Custom objects.
+    %       PROPOSAL: Only log those which are easy.
     % PROPOSAL: Move bicas.const.N_BLTS to solo.hwzv.const.
-
 
 
 
@@ -70,7 +78,7 @@ classdef const
         %           defines what kinds of errors this error code should cover.
         %
         %
-        EMIDP_2_INFO = bicas.const.init_EMIDP_2_INFO;
+        EMIDP_2_INFO = bicas.const.init_EMIDP_2_INFO();
 
 
 
@@ -153,7 +161,7 @@ classdef const
         QUALITY_FLAG_MIN = uint8(0);
         QUALITY_FLAG_MAX = uint8(3);
         
-        % Number of BLTS.
+        % Number of BLTSs.
         N_BLTS = 5;
 
 
@@ -651,7 +659,7 @@ classdef const
 %                 ' GAs Dataset_ID, Descriptor, and SKELETON_PARENT.']}))
 %             Gmdb.add_version_entry(L2_LFR_TDS_DSIs, ...
 %                 bicas.gamods.VersionEntry('202x-xx-xx', 'x.y.z', ...
-%                 {['Support changing demultiplexer latching relay setting.']}))
+%                 {['Support demultiplexer latching relay setting changing over time.']}))
 %             Gmdb.add_version_entry(L3_DENSITY_DSIs, ...
 %                 bicas.gamods.VersionEntry('202x-xx-xx', 'x.y.z', ...
 %                 {['Add zVar L3_QUALITY_BITS with density quality bit.']}))

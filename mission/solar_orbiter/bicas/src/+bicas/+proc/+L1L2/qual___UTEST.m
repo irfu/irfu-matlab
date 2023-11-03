@@ -18,13 +18,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
         function test_modify_quality_filter(testCase)
-            % PROPOSAL: Test for specific sets of NSOs (one or multiple) in one timestamp/sample.
-            %   PRO: Can simplify a lot using helper function.
-            %   PRO: More useful if having many NSOIDs.
+            % IMPLEMENTATION NOTE: Test exist partly for historical reasons.
+            % The "real tests" test the two functions called by
+            % bicas.proc.L1L2.qual.modify_quality_filter().
             %
-            % TODO: QUALITY_FLAG FPs.
-            %
-            % PROPOSAL: Split up into tests for bicas.proc.L1L2.get_quality_by_NSOs().
+            % PROPOSAL: QUALITY_FLAG FPs.
 
             % One output variable.
             function test(ZvIn, isLfr, NsoTable, S, expZvOut)
@@ -66,7 +64,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                         % "Simple test"
                         %===============
                         % Empty data
-                        % LFR/TDS, empty/nont empty NSO table
+                        % LFR/TDS, empty/non-empty NSO table
                         Settings = struct(...
                             'bdmRemoveArray',  [1, 2], ...
                             'lfrBdmMarginSec', 1.5, ...

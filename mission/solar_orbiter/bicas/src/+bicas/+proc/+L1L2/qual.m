@@ -26,34 +26,35 @@ classdef qual
         %       by bicas.write_dataset_CDF().
         % NOTE: Does not seem able to ever set zv_L2_QUALITY_BITMASK to fill
         %       value.
-        function [zvUfv, zv_QUALITY_FLAG_Fpa, zv_L2_QUALITY_BITMASK] = ...
-                modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L)
+        function [zvUfv, QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
+                modify_quality_filter(InZv, isLfr, NsoTable, SETTINGS, L)
 
-            irf.assert.struct(ZvIn, {'Epoch', 'ufv', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
-            zv_Epoch            = ZvIn.Epoch;
-            zvUfv               = ZvIn.ufv;
-            zvBdmFpa            = ZvIn.bdmFpa;
-            zv_QUALITY_FLAG_Fpa = ZvIn.QUALITY_FLAG_Fpa;
+            irf.assert.struct(InZv, {'Epoch', 'ufv', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
+            Epoch            = InZv.Epoch;
+            zvUfv            = InZv.ufv;
+            zvBdmFpa         = InZv.bdmFpa;
+            QUALITY_FLAG_Fpa = InZv.QUALITY_FLAG_Fpa;
             clear ZvIn
 
             % ASSERTIONS
             assert(isscalar(isLfr) && islogical(isLfr))
-            assert(isa(zv_QUALITY_FLAG_Fpa, 'bicas.utils.FPArray'))
+            assert(isa(QUALITY_FLAG_Fpa, 'bicas.utils.FPArray') && strcmp(QUALITY_FLAG_Fpa.mc, 'uint8'))
             nRecords = irf.assert.sizes( ...
-                zv_Epoch,            [-1], ...
-                zvBdmFpa,            [-1], ...
-                zv_QUALITY_FLAG_Fpa, [-1], ...
-                zvUfv,               [-1]);
+                Epoch,            [-1], ...
+                zvBdmFpa,         [-1], ...
+                QUALITY_FLAG_Fpa, [-1], ...
+                zvUfv,            [-1]);
 
             % Pre-allocate
-            zv_L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
+            L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
 
 
+            
             %============================================================
-            % Find CDF records to remove due to settings and LFR ZV "BW"
+            % Find CDF records to remove due to settings
             %============================================================
             zvUfvSettings = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
-                zv_Epoch, zvBdmFpa, isLfr, SETTINGS, L);
+                Epoch, zvBdmFpa, isLfr, SETTINGS, L);
 
             zvUfv = zvUfv | zvUfvSettings;
 
@@ -63,13 +64,13 @@ classdef qual
             % Take actions based on NSO events table
             %========================================
             [zv_QUALITY_FLAG_CapFpa, zv_L2_QUALITY_BITMASK_new] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
-                zv_Epoch, NsoTable, L);
-            zv_QUALITY_FLAG_Fpa   = zv_QUALITY_FLAG_Fpa.min(zv_QUALITY_FLAG_CapFpa);
-            zv_L2_QUALITY_BITMASK = bitor(zv_L2_QUALITY_BITMASK, zv_L2_QUALITY_BITMASK_new);
+                Epoch, NsoTable, L);
+            QUALITY_FLAG_Fpa   = QUALITY_FLAG_Fpa.min(zv_QUALITY_FLAG_CapFpa);
+            L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, zv_L2_QUALITY_BITMASK_new);
 
 
 
-            assert(isa(zv_L2_QUALITY_BITMASK, 'uint16'))
+            assert(isa(L2_QUALITY_BITMASK, 'uint16'))
         end    % modify_quality_filter
         
         
@@ -83,12 +84,13 @@ classdef qual
         % =============
         % QUALITY_FLAG_CapFpa
         %       FPA. Cap (highest allowed value) for ZV QUALITY_FLAG.
+        %       NOTE: Will never have FPs.
         % L2_QUALITY_BITMASK
         %       Array. L2_QUALITY_BITMASK bits set based on NSOs only. Should be
         %       merged (OR:ed) with global L2_QUALITY_BITMASK.
         %
         function [QUALITY_FLAG_CapFpa, L2_QUALITY_BITMASK] = get_quality_by_NSOs(...
-                zv_Epoch, NsoTable, L)
+                Epoch, NsoTable, L)
 
             % PROPOSAL: Arguments for the QUALITY_FLAG cap and
             %           L2_QUALITY_BITMASK values to set for the respective NSOIDs.
@@ -96,15 +98,16 @@ classdef qual
             %   PRO: Can better document the consequences of different NSOIDs.
             %       PROPOSAL: Can document as ~constants.
             %   PROPOSAL: Map argument.
+            %       NSOID-->(QUALITY_FLAG cap, L2_QUALITY_FLAG bits to set)
 
             % Variable naming conventions:
-            % CE = CDF Event    = NSO event that overlaps with CDF records.
+            % ----------------------------
             % GE = Global Event = NSO event in global NSO event table.
+            % CE = CDF Event    = NSO event that overlaps with CDF records.
             % NA                = Numeric Array
 
             % NOTE: iCdfEventNa = CDF events as indices to global events.
-            [bCeRecordsCa, ceNsoidCa, iCeNa] = ...
-                NsoTable.get_NSO_timestamps(zv_Epoch);
+            [bCeRecordsCa, ceNsoidCa, iCeNa] = NsoTable.get_NSO_timestamps(Epoch);
             nCe = numel(ceNsoidCa);
             nGe = numel(NsoTable.evtNsoidCa);
             L.logf('info', ...
@@ -116,9 +119,9 @@ classdef qual
 
             % Pre-allocate
             QUALITY_FLAG_CapFpa = bicas.utils.FPArray(...
-                bicas.const.QUALITY_FLAG_MAX * ones(size(zv_Epoch), 'uint8'), ...
+                bicas.const.QUALITY_FLAG_MAX * ones(size(Epoch), 'uint8'), ...
                 'NO_FILL_POSITIONS');
-            L2_QUALITY_BITMASK = zeros(size(zv_Epoch), 'uint16');
+            L2_QUALITY_BITMASK = zeros(size(Epoch), 'uint16');
 
             % Iterate over index into LOCAL/CDF NSO events table.
             for kCe = 1:nCe
@@ -186,11 +189,6 @@ classdef qual
 
                 end
                 
-                % Old implementation which should have bug which tests do not
-                % test: Can not handle time-overlapping NSO events (for
-                % different NSOIDs).
-%                 QUALITY_FLAG_CapFpa(bCdfEvent, 1) = bicas.utils.FPArray(QUALITY_FLAG_capCdfEvent, 'NO_FILL_POSITIONS');
-%                 L2_QUALITY_BITMASK( bCdfEvent, 1) = L2_QUALITY_BITMASK_cdfEvent;
                 % New implementation which should not have abovementioned bug.
                 QUALITY_FLAG_CapFpaTemp            = QUALITY_FLAG_CapFpa(bCeRecords, 1);
                 QUALITY_FLAG_CapFpa(bCeRecords, 1) = QUALITY_FLAG_CapFpaTemp.min(bicas.utils.FPArray(QUALITY_FLAG_capCe, 'NO_FILL_POSITIONS'));
@@ -252,19 +250,20 @@ classdef qual
         %
         % Ex: Sweeps
         %
+        %
         % ARGUMENTS
-        % ---------
-        % zvBdm
+        % =========
+        % zvBdmFpa
         %       Demultiplexer data, from BIAS HK or LFR.
-        %       Fill positions are not recognized as BDMs for setting UFV.
+        %       Fill positions are not matched agains BDMs stored in settings.
         %
         function zvUfv = get_UFV_records_from_settings(...
                 zv_Epoch, zvBdmFpa, isLfr, SETTINGS, L)
-            % PROPOSAL: Only derive UFV records based on settings. Not take
-            %           previously found UFV records (BW) into account. Merging UFV
-            %           records from settings and BW respectively can be done
-            %           outside (trivial).
+            
             % PROPOSAL: Separate function for logging which records that should be removed.
+            % PROPOSAL: Arguments for settings.
+            %   CON: Logs the settings keys.
+            %   CON: Settings used depends on argument isLfr.
 
             bicas.utils.assert_ZV_Epoch(zv_Epoch)
             assert(islogical(isLfr));
@@ -284,6 +283,7 @@ classdef qual
             %==========================================
             % Find exact indices/CDF records to remove
             %==========================================
+            % NOTE: ismember(NaN, nan) == false
             zvUfv = irf.utils.true_with_margin(...
                 zv_Epoch, ...
                 ismember(zvBdmFpa.int2doubleNan(), bdmRemoveArray), ...
@@ -353,5 +353,7 @@ classdef qual
 
 
     end    % methods(Static, Access=private)
+
+
 
 end

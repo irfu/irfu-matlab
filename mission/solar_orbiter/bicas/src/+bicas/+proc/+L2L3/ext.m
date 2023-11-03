@@ -9,10 +9,8 @@
 %
 classdef ext
     % PROPOSAL: Automatic test code.
+    %   NOTE: Should take advantage of bicas.proc.L2L3.ExternalCodeAbstract.
     % PROPOSAL: Move constants to bicas.const.
-    %
-    % PROPOSAL: Instantiable class for raw wrappers around external code.
-    %   PRO: Can switch out external code. Good for testing.
     
     
     
@@ -54,7 +52,6 @@ classdef ext
             % ===================================
             [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
                 bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Ec);
-
 
             assert(strcmp(R1.PspTs.units,   'V'))
             assert(strcmp(R1.ScpotTs.units, 'V'))
@@ -110,6 +107,10 @@ classdef ext
         %       each other.
         %
         function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse, Ec)
+            % PROPOSAL: Take bNotUsed as an argument.
+            %   PRO: Can be used also for bicas.proc.L2L3.ext.calc_DENSITY()
+            %        (which it is currently not).
+            
             irf.assert.struct(Zv, {'Epoch', 'VDC_Fpa', 'EDC_Fpa', 'QUALITY_FLAG_Fpa'}, {})
 
 
@@ -245,7 +246,7 @@ classdef ext
             assert(all(PspTs.time == NeScpQualityBitTs.time))
 
             assert(isfloat(NeScpTs.data))
-            assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data)), ...
+            assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data) ), ...
                 'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
             assert(strcmp(NeScpTs.units, 'cm^-3'))
 

@@ -1,12 +1,14 @@
 %
-% Implementation of abstract superclass for tests. Constructor sets function
+% Implementation of abstract superclass for tests. The constructor sets function
 % return values.
+%
+% NOTE 2023-11-03: Not yet used by any tests.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
-    % PROPOSAL: Automatic test code.
+    % PROPOSAL: Automatic test code for class itself.
     % PROPOSAL: How set data to be returned from functions?
     %   PROPOSAL: Specify cell arrays of return data.
     %       CON: Difficult to distinguish which RV is which.

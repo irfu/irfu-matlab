@@ -1,6 +1,6 @@
 %
-% Implementation of abstract superclass that actually proceeds call to nominal
-% external code.
+% Implementation of abstract superclass that passes on method calls to the
+% nominal external code.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

@@ -99,14 +99,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %           FV (union of both).
     %   Ex: bicas.proc.dsr.downsample_sci_ZV().
     %
-    % PROPOSAL: Method for converting all FPs-->NFPs (set to value), but still
-    %           convert FPA-->FPA.
-    %   PROPOSAL: Create new FPA (not modify instance).
-    %   TODO-DEC: Name?
-    %       NEED: Not confuse with future method for querying object for whether
-    %             there are no or only FPs.
-    %       ~FP, ~NFP, ~disable, ~remove, ~set, ~unset, ~all, ~no, ~ensure
-    %       PROPOSAL: ensure_NFP(fv)
+    % PROPOSAL: Replace constants for scalar FPs (FP_UINT8, FP_SINGLE etc.) with
+    %           static method: scalar_FP(mc)
+    %   NOTE: Public such function really already exists: get_scalar_FP(mc)
     
     
     
@@ -318,7 +313,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %     (b) just use the values stored in obj.dataAr, or
             %     (c) bicas.utils.FPArray.MC_NUMERIC_CA,
             % since the array operation might trigger error for some values,
-            % e.g. ~NaN (negating NaN, but NaN can not be interptered as
+            % e.g. ~NaN (negating NaN, but NaN can not be interpreted as
             % logical/boolean).
             
             assert(isa(fhArrayOperation, 'function_handle'))
@@ -358,7 +353,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         
         
         
-        % Set fill positions using values from another FPA, unless those
+        % Set fill positions using NFP values from another FPA, unless those
         % elements are also fill positions.
         %
         % NOTE: Creates new instance. ==> Not suitable for pre-allocation.
@@ -401,6 +396,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         function Fpa = ensure_NFP(obj, fv)
             % PROPOSAL: Better name.
             %   PROBLEM: Unclear that new instance is created.
+            %   PROPOSAL: all_NFP, only_NFP
             
             Fpa = bicas.utils.FPArray(obj.array(fv), 'NO_FILL_POSITIONS');
         end
@@ -424,6 +420,14 @@ classdef FPArray < matlab.mixin.CustomDisplay
             Fpa = obj.cast('double');
             ar  = Fpa.array(NaN);
         end
+        
+        
+        
+        % ======================================================
+        % ======================================================
+        % Overloading: Syntactic sugar and customizing behaviour
+        % ======================================================
+        % ======================================================
 
 
 
@@ -700,6 +704,11 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
 
 
+    %###########################
+    %###########################
+    % PROTECTED INSTANCE METHODS
+    %###########################
+    %###########################
     methods(Access=protected)
 
 
@@ -795,7 +804,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %   CON: Has proven true for all cases so far.
             
             if isa(obj2, 'bicas.utils.FPArray')
-                assert(strcmp(Fpa1.mc, obj2.mc))
+                assert(strcmp(Fpa1.mc, obj2.mc), 'FPA (%s) and FPA obj2 (%s) have different MATLAB classes.', Fpa1.mc, obj2.mc)
 
                 dataAr2 = obj2.dataAr;
                 fpAr2   = obj2.fpAr;

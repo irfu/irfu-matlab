@@ -14,6 +14,17 @@
 % See readme.txt.
 %
 %
+% BUG?
+% ====
+% bNotUsed is used when calling
+% bicas.proc.L2L3.ext.calc_EFIELD_SCPOT() but not when calling
+% bicas.proc.L2L3.ext.calc_DENSITY() (should maybe be used for both).
+% At the same time, bNotUsed is used for creating the OSR template which is used
+% for all datasets (DENSITY, EFIELD, SCPOT).
+%   InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
+%   TemplateOsr = bicas.proc.L2L3.get_OSR_template(InLfrCwf);
+% 
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef L2L3
@@ -28,6 +39,10 @@ classdef L2L3
 %
 % NOTE: Class only has one function.
 %   PROPOSAL: Convert to function file.
+%
+% PROPOSAL: Split up customization of 2x3 datasets into separate functions.
+%   PROPOSAL: Instead of sharing initial "template variables", have function for
+%             generating those variables.
 
 
 
@@ -104,20 +119,6 @@ classdef L2L3
             
 
 
-            %======================
-            % Normalize zVar names
-            %======================
-            % Old code that can not handle that FPAs are located in InLfrCwf.ZvFpa.
-%             [InLfrCwf.Zv, fnChangeList] = ...
-%                 irf.ds.normalize_struct_fieldnames(InLfrCwf.Zv, ...
-%                 {{{'VDC', 'V'}, 'VDC'}}, 'Assert one matching candidate');
-%
-%             bicas.proc.utils.handle_ZV_name_change(...
-%                 fnChangeList, INPUT_DSI, SETTINGS, L, 'VDC', ...
-%                 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-            
-            
-            
             %=======================================
             % Call BICAS-external code to calculate
             % (1) EFIELD, SCPOT, and from that
@@ -131,13 +132,13 @@ classdef L2L3
             R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, SETTINGS);
 
 
-            
+
             %===================================================================
             % ~HACK: MODIFY INPUT ARGUMENT InLfrCwf
             % -------------------------------------
             % IMPLEMENTATION NOTE: This is to modify QUALITY_FLAG for both OSR
             % and DSR datasets. In principle, this is for keeping the interface
-            % to bicas.proc.dsr.init_shared_DSR_ZVs() simple.
+            % to bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template() simple.
             %===================================================================
             InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
 
@@ -161,14 +162,17 @@ classdef L2L3
 
             
             
-            %=========================================
-            % Misc. variables shared between datasets
-            %=========================================
-            % Global attributes -- shared between all OSR+DSR datasets.
+            %================================================================
+            % Misc. variables shared between datasets and later modified for
+            % specific datasets
+            %================================================================
+            % Global attributes - Shared between all OSR+DSR datasets.
             InitialGa = struct();
             InitialGa.OBS_ID                = InLfrCwf.Ga.OBS_ID;
             InitialGa.SOOP_TYPE             = InLfrCwf.Ga.SOOP_TYPE;
-            % zVariables -- shared between all OSR datasets.
+            %-----
+            % OSR
+            %-----
             InitialOsrZv = struct();
             InitialOsrZv.Epoch              = InLfrCwf.Zv.Epoch;
             InitialOsrZv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
@@ -179,8 +183,10 @@ classdef L2L3
             InitialOsr = struct(...
                 'Ga', InitialGa, ...
                 'Zv', InitialOsrZv);
-            %
-            [InitialDsrZv, iRecordsInBinCa] = bicas.proc.dsr.init_shared_DSR_ZVs(...
+            %-----
+            % DSR
+            %-----
+            [InitialDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
                 InLfrCwf, ...
                 BIN_LENGTH_WOLS_NS, ...
                 BIN_TIMESTAMP_POS_WOLS_NS, ...
@@ -316,7 +322,6 @@ classdef L2L3
             bicas.log_speed_profiling(L, ...
                 'bicas.proc.L2L3.process_L2_to_L3', tTicToc, ...
                 nRecordsDsr, 'DSR record')
-
         end    % process_L2_to_L3
         
         

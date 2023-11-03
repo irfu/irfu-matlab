@@ -51,17 +51,17 @@ classdef dsr
 
 
 
-        % Derive values which are used by all DOWNSAMPLED datasets.
+        % Derive template ZVs (not GA) for all datasets based on DOWNSAMPLED LFR CWF.
         %
         %
         % RETURN VALUES
         % =============
-        % InitialDsrZv
+        % TemplateDsrZv
         %       Struct with zVariables. 
         % iRecordsInBinCa
         %       Distribution of non-downsampled records in bins.
         %
-        function [InitialDsrZv, iRecordsInBinCa] = init_shared_DSR_ZVs(...
+        function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
                 InLfrCwfOsr, binLengthWolsNs, binTimestampPosWolsNs, L)
             
             % NOTE: Function argument InLfrCwfOsr contains too much information!
@@ -161,61 +161,42 @@ classdef dsr
             %   (SKELETON_MODS: V12=Feb 2021)
             % .
             
-%             tt = tic();
             zv_QUALITY_FLAG_FpaDsr    = bicas.proc.dsr.downsample_ZV_minimum(...
                 InLfrCwfOsr.ZvFpa.QUALITY_FLAG,    iRecordsInBinCa);
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_FLAG', tt, ...
-%                 nRecordsOsr, 'OSR record')
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_FLAG', tt, ...
-%                 nRecordsDsr, 'DSR record')
 
-%             tt = tic();
             zv_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
                 InLfrCwfOsr.ZvFpa.QUALITY_BITMASK, iRecordsInBinCa);
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_BITMASK', tt, ...
-%                 nRecordsOsr, 'OSR record')
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs:QUALITY_BITMASK', tt, ...
-%                 nRecordsDsr, 'DSR record')
 
-%             tt = tic();
             zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
                 InLfrCwfOsr.ZvFpa.L2_QUALITY_BITMASK, iRecordsInBinCa);
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs:L2_QUALITY_BITMASK', tt, ...
-%                 nRecordsOsr, 'OSR record')
-%             bicas.log_speed_profiling(L, ...
-%                 'bicas.proc.dsr.init_shared_DSR_ZVs:L2_QUALITY_BITMASK', tt, ...
-%                 nRecordsDsr, 'DSR record')
             
             %============================================================
             % Shared zVariables between all DOWNSAMPLED datasets
             %
             % (Initial value for QUALITY_FLAG; might be modified later.)
             %============================================================
-            InitialDsrZv = struct();
-            InitialDsrZv.Epoch              = zvEpochDsr;
-            InitialDsrZv.QUALITY_FLAG       = zv_QUALITY_FLAG_FpaDsr;
-            InitialDsrZv.QUALITY_BITMASK    = zv_QUALITY_BITMASK_FpaDsr;
-            InitialDsrZv.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK_FpaDsr;
+            Zv = struct();
+            Zv.Epoch              = zvEpochDsr;
+            Zv.QUALITY_FLAG       = zv_QUALITY_FLAG_FpaDsr;
+            Zv.QUALITY_BITMASK    = zv_QUALITY_BITMASK_FpaDsr;
+            Zv.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK_FpaDsr;
             %
             % NOTE: Takes leap seconds into account.
             % NOTE/BUG: DELTA_PLUS_MINUS not perfect since the bin timestamp is
             % not centered for leap seconds. Epoch+-DELTA_PLUS_MINUS will thus
             % go outside/inside the bin boundaries for leap seconds. The same
             % problem exists for both positive and negative leap seconds.
-            InitialDsrZv.DELTA_PLUS_MINUS   = bicas.utils.FPArray(binSizeArrayNs / 2, 'NO_FILL_POSITIONS');
+            Zv.DELTA_PLUS_MINUS   = bicas.utils.FPArray(binSizeArrayNs / 2, 'NO_FILL_POSITIONS');
+            
+            TemplateDsrZv = Zv;
 
 
 
             bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.init_shared_DSR_ZVs', tTicToc, ...
+                'bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', tTicToc, ...
                 nRecordsOsr, 'OSR record')
             bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.init_shared_DSR_ZVs', tTicToc, ...
+                'bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', tTicToc, ...
                 nRecordsDsr, 'DSR record')
         end
         

@@ -112,7 +112,7 @@ classdef NsoTable
             % IMPLEMENTATION NOTE: Can not assume that both start & stop
             % timestaps are sorted. One event may entirely contain another
             % event (with different NSOID) in time. Therefore enforcing only
-            % sorted start values, but not stop values.
+            % sorted start values, but not sorted stop values.
             % IMPLEMENTATION NOTE: Can not assume "strictly ascending" values,
             % since events with separate NSOIDs may begin at the exact same
             % instant.
@@ -206,6 +206,8 @@ classdef NsoTable
             %       bEvtArraysCa{iNsoid}(iTimestamp)
             %       evtNsoidCa{iNsoid}
             %       iGlobalEventsCa{iNsoid}(iEvt)
+            %
+            % PROPOSAL: Return class to simplify return values.
             
             assert(isa(tt2000Array, 'int64') && iscolumn(tt2000Array), ...
                 'tt2000Array is not an int64 column vector.')
