@@ -53,8 +53,8 @@ function tSec = speed_test_subsasgn(nArrayRows, nArrayCols)
     bigArray   = repmat(linspace(1, nArrayRows, nArrayRows)', 1, nArrayCols);
     smallArray = NaN(1, nArrayCols);
     
-    Fpa1 = bicas.utils.FPArray(bigArray,   'NO_FILL_POSITIONS');
-    Fpa2 = bicas.utils.FPArray(smallArray, 'NO_FILL_POSITIONS');
+    Fpa1 = bicas.utils.FPArray(bigArray);
+    Fpa2 = bicas.utils.FPArray(smallArray);
     
     t = tic();
     for i = 1:nArrayRows

@@ -29,6 +29,5 @@
 function dlrFpa = demuxer_latching_relay(Epoch)
     bicas.utils.assert_ZV_Epoch(Epoch)
 
-    dlrFpa = bicas.utils.FPArray(...
-        false(size(Epoch)), 'NO_FILL_POSITIONS');
+    dlrFpa = bicas.utils.FPArray(false(size(Epoch)));
 end

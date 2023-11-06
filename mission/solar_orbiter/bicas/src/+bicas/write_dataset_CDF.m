@@ -187,7 +187,7 @@ function DataObj = init_modify_dataobj(...
         QfFpa = ZvsSubset.QUALITY_FLAG;   % Temporary variable to make algorithm clearer.
         
         TooHighQfFpa                     = (QfFpa >= qfMax);
-        QfFpa(TooHighQfFpa.array(false)) = bicas.utils.FPArray(uint8(qfMax), 'NO_FILL_POSITIONS');
+        QfFpa(TooHighQfFpa.array(false)) = bicas.utils.FPArray(uint8(qfMax));
 
         ZvsSubset.QUALITY_FLAG = QfFpa;
         clear QfFpa

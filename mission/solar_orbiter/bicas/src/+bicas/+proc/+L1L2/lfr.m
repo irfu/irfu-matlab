@@ -249,7 +249,7 @@ classdef lfr
             Zv.ufv                     = ~logical(InSci.Zv.BW);
             Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;
             Zv.dlrFpa                  = HkSciTime.dlrFpa;
-            %Zv.dlrFpa                  = bicas.utils.FPArray(false(size(InSci.Zv.Epoch)), 'NO_FILL_POSITIONS');   % TEST: Always DLR = 0.
+            %Zv.dlrFpa                  = bicas.utils.FPArray(false(size(InSci.Zv.Epoch)));   % TEST: Always DLR = 0.
             Zv.iLsf                    = iLsfZv;
 
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;

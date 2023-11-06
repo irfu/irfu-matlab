@@ -13,7 +13,7 @@ function dsr_speedTests()
     % NOTE: N_BINS is not the same as DSR samples, if bin DSR output can be empty.
     N_BINS        = 3610;
 
-    ZvOsrFpa        = bicas.utils.FPArray(ones(N_OSR_SAMPLES, 1), 'NO_FILL_POSITIONS');
+    ZvOsrFpa        = bicas.utils.FPArray(ones(N_OSR_SAMPLES, 1));
     iRecordsInBinCa = cell(N_BINS, 1);
     
     for iBin = 1:N_BINS

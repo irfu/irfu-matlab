@@ -18,20 +18,24 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         
         function test_constructor(testCase)
-            Fpa = bicas.utils.FPArray(  [1, 2, -1], 'FILL_VALUE', -1);
-            testCase.assertEqual(Fpa.array(-2), [1, 2, -2])
+            Fpa = bicas.utils.FPArray(             [1, 2, -1], 'FILL_VALUE', -1);
+            testCase.assertEqual(Fpa.array(-2),    [1, 2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
 
-            Fpa = bicas.utils.FPArray(  [1, 2, -1], 'FILL_POSITIONS', [false, false, true]);
-            testCase.assertEqual(Fpa.array(-2), [1, 2, -2])
+            Fpa = bicas.utils.FPArray(             [1, 2, -1], 'FILL_POSITIONS', [false, false, true]);
+            testCase.assertEqual(Fpa.array(-2),    [1, 2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([0, 0,  1]))
 
-            Fpa = bicas.utils.FPArray(   [1, 2, -1], 'NO_FILL_POSITIONS');
-            testCase.assertEqual(Fpa.array(NaN), [1, 2, -1])
+            % NO_FILL_POSITIONS
+            Fpa = bicas.utils.FPArray(              [1, 2, -1]);
+            testCase.assertEqual(Fpa.array(NaN),    [1, 2, -1])
+            testCase.assertEqual(Fpa.fpAr,  logical([0, 0,  0]))
+            Fpa = bicas.utils.FPArray(              [1, 2, -1], 'NO_FILL_POSITIONS');
+            testCase.assertEqual(Fpa.array(NaN),    [1, 2, -1])
             testCase.assertEqual(Fpa.fpAr,  logical([0, 0,  0]))
 
-            Fpa = bicas.utils.FPArray(  [1,   2, -1], 'ONLY_FILL_POSITIONS');
-            testCase.assertEqual(Fpa.array(-2), [-2, -2, -2])
+            Fpa = bicas.utils.FPArray(             [ 1,  2, -1], 'ONLY_FILL_POSITIONS');
+            testCase.assertEqual(Fpa.array(-2),    [-2, -2, -2])
             testCase.assertEqual(Fpa.fpAr, logical([ 1,  1,  1]))
         end
 
@@ -44,7 +48,7 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             % Test legal & illegal read & write to *properties* (public &
             % private)
             % ===========================================================
-            Fpa = bicas.utils.FPArray([], 'NO_FILL_POSITIONS');
+            Fpa = bicas.utils.FPArray([]);
             
             % fpAr
             % NOTE: .fpAr is a READ-only property.
@@ -71,8 +75,8 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             % 0x0, double
             %=============
             if 1
-                Fpa1 = bicas.utils.FPArray([], 'NO_FILL_POSITIONS');
-                Fpa2 = bicas.utils.FPArray([], 'NO_FILL_POSITIONS');
+                Fpa1 = bicas.utils.FPArray([]);
+                Fpa2 = bicas.utils.FPArray([]);
                 %
                 test_equality(testCase, Fpa1, Fpa2, -99)
                 testCase.verifyEqual(Fpa1.array(999), [])

@@ -108,8 +108,7 @@ classdef qual
             % Pre-allocate
             % NOTE: QUALITY_FLAG is set to max value.
             QUALITY_FLAG_Fpa = bicas.utils.FPArray(...
-                bicas.const.QUALITY_FLAG_MAX * ones(size(Epoch), 'uint8'), ...
-                'NO_FILL_POSITIONS');
+                bicas.const.QUALITY_FLAG_MAX * ones(size(Epoch), 'uint8'));
             L2_QUALITY_BITMASK = zeros(size(Epoch), 'uint16');
             
             
@@ -152,7 +151,7 @@ classdef qual
 
                 QUALITY_FLAG_CeFpa              = QUALITY_FLAG_Fpa(bCeRecords, 1);
                 QUALITY_FLAG_Fpa(bCeRecords, 1) = QUALITY_FLAG_CeFpa.min(...
-                    bicas.utils.FPArray(QUALITY_FLAG_nsoid, 'NO_FILL_POSITIONS'));
+                    bicas.utils.FPArray(QUALITY_FLAG_nsoid));
             
                 L2_QUALITY_BITMASK( bCeRecords, 1) = bitor(...
                     L2_QUALITY_BITMASK(bCeRecords, 1), ...

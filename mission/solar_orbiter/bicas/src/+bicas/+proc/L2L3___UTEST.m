@@ -211,7 +211,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_OSR(:, 2)), 'FILL_VALUE', FV_QUALITY_FLAG);
             InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_OSR(:, 4)), 'FILL_VALUE', FV_QUALITY_BITMASK);
             InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_OSR(:, 5)), 'FILL_VALUE', FV_L2_QUALITY_BITMASK);
-            InLfrCwf.ZvFpa.DELTA_PLUS_MINUS   = bicas.utils.FPArray(int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch)), 'NO_FILL_POSITIONS');
+            InLfrCwf.ZvFpa.DELTA_PLUS_MINUS   = bicas.utils.FPArray(int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch)));
             InLfrCwf.ZvFpa.VDC                = bicas.utils.FPArray(DATA_OSR(:, 6: 8), 'FILL_VALUE', NaN).cast('single');
             InLfrCwf.ZvFpa.EDC                = bicas.utils.FPArray(DATA_OSR(:, 9:11), 'FILL_VALUE', NaN).cast('single');
 

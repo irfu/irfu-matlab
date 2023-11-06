@@ -168,10 +168,11 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % =========
         % dataAr
         %       Array of actual data. Limited to some data types.
-        % fpDescriptionType
-        %       String constant.
-        % fpDescription
-        %       Meaning determined by fpDescriptionType:
+        % fpDescriptionType == varargin{1}
+        %       String constant. 'NO_FILL_POSITIONS' if not specified.
+        % fpDescription == varargin{2}
+        %       Required or not depending on fpDescriptionType.
+        %       Interpretation  depending on fpDescriptionType.
         %       'FILL_VALUE'
         %           Fill value. Same type as dataAr. Scalar.
         %           dataAr elements with this value will be identified as fill
@@ -180,7 +181,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %           Fill positions array. Logical. Same size as dataAr.
         %           True == Fill position.
         %       
-        function obj = FPArray(dataAr, fpDescriptionType, varargin)
+        function obj = FPArray(dataAr, varargin)
 
             % IMPLEMENTATION NOTE: Limiting the data types to those for which
             % one can use MATLAB's element-wise operations for matrices, e.g.
@@ -188,6 +189,15 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % NOTE: Does not permit cell arrays.
             % NOTE: Needs to permit char arrays for metadata ZVs.
             assert(isnumeric(dataAr) || ischar(dataAr) || islogical(dataAr))
+            
+            
+            if numel(varargin) == 0
+                fpDescriptionType = 'NO_FILL_POSITIONS';
+            elseif numel(varargin) >= 1
+                fpDescriptionType = varargin{1};
+                varargin = varargin(2:end);
+            end
+            
             irf.assert.castring(fpDescriptionType)
 
             % ===========
@@ -398,7 +408,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %   PROBLEM: Unclear that new instance is created.
             %   PROPOSAL: all_NFP, only_NFP
             
-            Fpa = bicas.utils.FPArray(obj.array(fv), 'NO_FILL_POSITIONS');
+            Fpa = bicas.utils.FPArray(obj.array(fv));
         end
         
         
