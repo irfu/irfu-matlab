@@ -208,10 +208,15 @@ classdef qual
 
 
 
-        % Find CDF records to remove based on settings (not data itself, almost,
-        % since MUX mode is data).
+        % Find CDF records to remove (set to fill value) based on settings (not
+        % data itself, almost, since MUX mode is data).
         %
         % Ex: Sweeps
+        %
+        % NOTE: It is not obvious that data should be set to FV instead of
+        % having quality bitmask/flag modified. Nonetheless, I think setting
+        % data to fill value was requested by YK many years ago. /Erik P G
+        % Johansson 2023-11-28
         %
         %
         % ARGUMENTS
@@ -222,7 +227,6 @@ classdef qual
         %
         function zvUfv = get_UFV_records_from_settings(...
                 zv_Epoch, zvBdmFpa, isLfr, SETTINGS, L)
-            
             % PROPOSAL: Separate function for logging which records that should be removed.
             % PROPOSAL: Arguments for settings.
             %   CON: Logs the settings keys.

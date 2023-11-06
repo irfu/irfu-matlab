@@ -11,6 +11,12 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef Routing   % < handle
+    % PROPOSAL: Better name
+    %   source, destination
+    %   demultiplexer
+    %   DemultiplexerRouting
+    %   Source(To)DestinationRouting
+    %       PRO: Can use abbreviation SDR.
     % PROPOSAL: src --> ssid, dest --> sdid
 
 

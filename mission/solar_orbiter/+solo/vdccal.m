@@ -177,7 +177,8 @@ for iSub = 1:length(sub_int_times)-1
 
     % Assume all probe data available: Compute PSP from corrected quantities.
     PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2);
-    % Single-probe data: Use alternate, simpler "calculation".
+    % Single-probe data: Use alternate, simpler "calculation" for some
+    %                    timestamps.
     PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
     PSP.units = 'V';
     PSP_out   = PSP_out.combine(PSP);

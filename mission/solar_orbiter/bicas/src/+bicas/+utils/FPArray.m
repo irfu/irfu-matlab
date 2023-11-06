@@ -11,10 +11,10 @@
 % =========
 % Class should be useful for representing variables where individual elements
 % can also be unknown (in practice, originate from CDF fill values). BICAS was
-% originally not written with this in mind, but some has been retrofitted to use
-% this class, but far from all. Using this class more should however be the
-% natural approach to solve problems associated with fill values/unknown values
-% in the future.
+% originally not written with this class in mind, but some code has been
+% retrofitted to use this class, but far from all. Using this class more should
+% however be the natural approach to solve problems associated with fill
+% values/unknown values in the future.
 %
 %
 % ~BUG
@@ -32,9 +32,13 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %
     % PROPOSAL: Shorten constructor string constants.
     %   FILL_VALUE          --> FV
+    %       PRO: Common. ~40 occurrences
     %   FILL_POSITIONS      --> FP,    FPs
+    %       PRO: Common. ~20 occurrences
     %   NO_FILL_POSITIONS   --> NO_FP, NO_FPs
-    %   ONLY_FILL_POSITIONS --> ONLY_FP
+    %       CON: Very uncommon. ~0 occurrences
+    %   ONLY_FILL_POSITIONS --> ONLY_FP, ONLY_FPs
+    %       CON: Very uncommon. ~1 occurrences
     %   CON: Plural becomes problematic(?).
     %
     % PROPOSAL: Change name of method "array()"

@@ -140,7 +140,7 @@ classdef utils
         %
         % RETURN VALUE
         % ============
-        % zv :
+        % zv
         %       Array of the same size as argument "zv", such that
         %       zv(i,:,:) == NaN for bRowFilter(i)==true.
         function zv = set_NaN_rows(zv, bRowFilter)

@@ -26,7 +26,7 @@ see RCS ICD and RUM documents (see below).
  Naming conventions
 ####################
 The naming conventions are partly inconsistent for historical reasons.
-The code should however converge on the following.
+The code should however converge on the following:
 - Use the defined abbreviations in identifiers.
 - Variable names should use camelCase. Initial in lowercase.
 - Classes:
@@ -35,21 +35,24 @@ The code should however converge on the following.
     uppercase.
   - Classes which are not instantiated should be named using lowercase without
     underscore.
-- Functions should be named using snake_case. Abbreviations in uppercase.
+- Functions should be named using snake_case but with abbreviations in
+  uppercase.
 
 
 
 ###########################
  Abbreviations, dictionary
 ###########################
-NOTE: This list also applies to comments and identifiers in the source code.
+NOTE: This list primarily applies to comments and identifiers in the source
+code. Most of the abbreviations are not "official" and have been created
+specifically for BICAS.
 --
 AA, aampere
     Antenna ampere. Calibrated ampere at the antenna.
 AAPT
     Antenna ampere/TM
 ASID
-    bicas.proc.L1L2.AntennaSignalId
+    Class bicas.proc.L1L2.AntennaSignalId.
 ASR, Antenna Signal Representation.
     (1) A reference to a particular "physical antenna signal"
         (a "data channel") which BIAS-LFR/TDS is trying to measure, or
@@ -225,7 +228,7 @@ sampere
     "Set current ampere". Simplified calibration value (in ampere) that is
     exactly proportional to bias current in TM.
 SDID
-    bicas.proc.L1L2.SignalDestinationId
+    Class bicas.proc.L1L2.SignalDestinationId.
 Sec
     Seconds
 SPR
@@ -234,7 +237,7 @@ SPR
 SRF
     Name of a particular s/c coordinate system. "Spacecraft Reference Frame"?
 SSID
-    bicas.proc.L1L2.SignalSourceId
+    Class bicas.proc.L1L2.SignalSourceId.
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not

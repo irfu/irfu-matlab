@@ -64,20 +64,20 @@ classdef dc
 
             currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
             iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
-            [iFirstList, iLastList, nSs] = irf.utils.split_by_change(iCalibLZv);
+            [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
                 ['Calibrating currents -', ...
                 ' One sequence of records with identical settings at a time.'])
             for iSs = 1:nSs
-                iFirst = iFirstList(iSs);
-                iLast  = iLastList(iSs);
+                iRec1 = iRec1Ar(iSs);
+                iRec2 = iRec2Ar(iSs);
 
-                iRecords = iFirst:iLast;
+                iRecords = iRec1:iRec2;
 
                 L.logf('info', 'Records %7i-%7i : %s -- %s', ...
-                    iFirst, iLast, ...
-                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast )))
+                    iRec1, iRec2, ...
+                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec1)), ...
+                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec2)))
 
                 for iAnt = 1:3
                     %--------------------
@@ -136,7 +136,7 @@ classdef dc
         
         
         
-        % Demultiplex and calibrate voltages.
+        % Demultiplex and calibrate VOLTAGES (not e.g. currents).
         %
         % NOTE: Can handle arrays of any size if the sizes are
         % consistent.
@@ -235,7 +235,7 @@ classdef dc
             %
             % SS = Subsequence
             %===================================================================
-            [iFirstList, iLastList, nSs] = irf.utils.split_by_change(...
+            [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
                 PreDc.Zv.bdmFpa.int2doubleNan(), ...
                 PreDc.Zv.biasHighGainFpa.logical2doubleNan(), ...
                 PreDc.Zv.freqHz, ...
@@ -251,14 +251,14 @@ classdef dc
                 ['Calibrating voltages -', ...
                 ' One sequence of records with identical settings at a time.'])
             for iSs = 1:nSs
-                iFirst = iFirstList(iSs);
-                iLast  = iLastList (iSs);
+                iRec1 = iRec1Ar(iSs);
+                iRec2 = iRec2Ar(iSs);
 
                 SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
-                    PreDc, dlrFpa, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
+                    PreDc, dlrFpa, iCalibLZv, iCalibHZv, Cal, iRec1, iRec2, L);
 
                 % Add demuxed sequence to the to-be complete set of records.
-                AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iFirst:iLast]');
+                AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
             end
 
 
@@ -295,6 +295,7 @@ classdef dc
             bdm_ss                     = bdmFpa_ss.int2doubleNan();
             biasHighGainFpa_ss         = PreDc.Zv.biasHighGainFpa(        iFirst);    % Temporary variable. Should be eliminated eventually.
             biasHighGain_ss            = biasHighGainFpa_ss.logical2doubleNan();      % Convert FPA --> double-NaN
+            clear biasHighGainFpa_ss
             freqHz_ss                  = PreDc.Zv.freqHz(                 iFirst);
             iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
             CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);

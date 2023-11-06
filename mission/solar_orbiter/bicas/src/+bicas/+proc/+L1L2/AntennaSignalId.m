@@ -43,8 +43,10 @@ classdef AntennaSignalId
 
         % 1x1, or 1x2 numeric array with components representing antennas.
         % Its exact interpretation depends on "category".
-        % Whether it is row or column vector is important for comparisons and is
-        % therefore well defined.
+        % Since comparisons must be well defined, permitted values must be well
+        % defined to ensure uniqueness:
+        % (1) whether it is a column or row vector,
+        % (2) the order of antennas in diffs (e.g. E12 vs E21).
         antennas
     end
 

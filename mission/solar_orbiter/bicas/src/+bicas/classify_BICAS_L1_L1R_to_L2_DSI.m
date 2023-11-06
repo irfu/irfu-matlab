@@ -21,6 +21,8 @@
 %
 function C = classify_BICAS_L1_L1R_to_L2_DSI(dsi)
     % PROPOSAL: Automatic test code.
+    %
+    % PROPOSAL: Replace DSIs with objects (constants).
     
     [~, datasetLevel, descriptor] = ...
         solo.adm.disassemble_DATASET_ID(dsi);
