@@ -190,6 +190,23 @@ classdef utils
             assert(all(  ACQUISITION_TIME(:, 2) < 65536), ...
                 EMID, 'ACQUISITION_TIME subseconds out of range.')
         end
+        
+        
+        
+        % NOTE: Not implemented as assertion function in order to make it
+        % possible to return proper error message on fail.
+        function success = validate_ZV_QUALITY_FLAG(QUALITY_FLAG)
+            if ~isa(QUALITY_FLAG, 'uint8')
+                success = false;
+            elseif ~all(...
+                bicas.const.QUALITY_FLAG_MIN <= QUALITY_FLAG & ...
+                bicas.const.QUALITY_FLAG_MAX >= QUALITY_FLAG ...
+            )
+                success = false;
+            else
+                success = true;
+            end
+        end
 
 
 

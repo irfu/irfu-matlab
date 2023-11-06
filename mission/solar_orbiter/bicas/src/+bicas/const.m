@@ -141,10 +141,10 @@ classdef const
 
 
 
-        % Highest allowed QUALITY_FLAG values for various conditions.
-        QUALITY_FLAG_CAP_PARTIAL_SATURATION = uint8(1);
-        QUALITY_FLAG_CAP_FULL_SATURATION    = uint8(0);
-        QUALITY_FLAG_CAP_THRUSTER_FIRING    = uint8(1);
+        NSOID_SETTINGS = bicas.const.init_NSOID_SETTINGS();
+        % How to interpret different NSOIDs in terms of quality ZVs.
+        % NOTE: As of 2023-11-06, this is only used for setting quality
+        %       ZVs in L2 datasets.
 
 
             
@@ -393,6 +393,32 @@ classdef const
 
 
 
+        function NsoidSettingsMap = init_NSOID_SETTINGS()
+            NsoidSettingsMap = containers.Map();
+            
+            NsoidSettingsMap(bicas.const.NSOID.PARTIAL_SATURATION) = ...
+                bicas.proc.L1L2.NsoidSetting(...
+                    uint8(1), ...
+                    bicas.const.L2QBM_PARTIAL_SATURATION);
+                
+            % NOTE: Also set PARTIAL saturation bit when FULL
+            % saturation. /YK 2020-10-02.
+            NsoidSettingsMap(bicas.const.NSOID.FULL_SATURATION) = ...
+                bicas.proc.L1L2.NsoidSetting(...
+                    uint8(0), ...
+                    bicas.const.L2QBM_FULL_SATURATION + ...
+                    bicas.const.L2QBM_PARTIAL_SATURATION);
+            
+            % NOTE: There will be an L1 QUALITY_BITMASK bit for
+            % thruster firings eventually according to
+            % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
+            % Therefore(?) not setting any bit in
+            % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
+            % to be set.)
+            NsoidSettingsMap(bicas.const.NSOID.THRUSTER_FIRING) = ...
+                bicas.proc.L1L2.NsoidSetting(...
+                    uint8(1), ...
+                    uint16(0));
         end
 
 

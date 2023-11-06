@@ -58,15 +58,13 @@ classdef qual
 
             zvUfv = zvUfv | zvUfvSettings;
 
-
-
-            %========================================
-            % Take actions based on NSO events table
-            %========================================
-            [zv_QUALITY_FLAG_CapFpa, zv_L2_QUALITY_BITMASK_new] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
-                Epoch, NsoTable, L);
-            QUALITY_FLAG_Fpa   = QUALITY_FLAG_Fpa.min(zv_QUALITY_FLAG_CapFpa);
-            L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, zv_L2_QUALITY_BITMASK_new);
+            %==============================================
+            % Modify quality ZVs based on NSO events table
+            %==============================================
+            [QUALITY_FLAG_NsoFpa, L2_QUALITY_BITMASK_nso] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
+                bicas.const.NSOID_SETTINGS, NsoTable, Epoch, L);
+            QUALITY_FLAG_Fpa   = QUALITY_FLAG_Fpa.min(QUALITY_FLAG_NsoFpa);
+            L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_nso);
 
 
 
@@ -89,16 +87,8 @@ classdef qual
         %       Array. L2_QUALITY_BITMASK bits set based on NSOs only. Should be
         %       merged (OR:ed) with global L2_QUALITY_BITMASK.
         %
-        function [QUALITY_FLAG_CapFpa, L2_QUALITY_BITMASK] = get_quality_by_NSOs(...
-                Epoch, NsoTable, L)
-
-            % PROPOSAL: Arguments for the QUALITY_FLAG cap and
-            %           L2_QUALITY_BITMASK values to set for the respective NSOIDs.
-            %   PRO: Better for testing.
-            %   PRO: Can better document the consequences of different NSOIDs.
-            %       PROPOSAL: Can document as ~constants.
-            %   PROPOSAL: Map argument.
-            %       NSOID-->(QUALITY_FLAG cap, L2_QUALITY_FLAG bits to set)
+        function [QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
+                get_quality_by_NSOs(NsoidSettingsMap, NsoTable, Epoch, L)
 
             % Variable naming conventions:
             % ----------------------------
@@ -115,13 +105,14 @@ classdef qual
                 ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
                 nCe, nGe);
 
-
-
             % Pre-allocate
-            QUALITY_FLAG_CapFpa = bicas.utils.FPArray(...
+            % NOTE: QUALITY_FLAG is set to max value.
+            QUALITY_FLAG_Fpa = bicas.utils.FPArray(...
                 bicas.const.QUALITY_FLAG_MAX * ones(size(Epoch), 'uint8'), ...
                 'NO_FILL_POSITIONS');
             L2_QUALITY_BITMASK = zeros(size(Epoch), 'uint16');
+            
+            
 
             % Iterate over index into LOCAL/CDF NSO events table.
             for kCe = 1:nCe
@@ -143,56 +134,29 @@ classdef qual
                 %================================
                 % Take action depending on NSOID
                 %================================
-                % Temporary shorter variable name.
-                L2_QUALITY_BITMASK_ce = L2_QUALITY_BITMASK(bCeRecords);
-
-                switch(eventNsoid)
-
-                    case bicas.const.NSOID.PARTIAL_SATURATION
-
-                        QUALITY_FLAG_capCe = bicas.const.QUALITY_FLAG_CAP_PARTIAL_SATURATION;
-
-                        L2_QUALITY_BITMASK_ce = bitor(...
-                            L2_QUALITY_BITMASK_ce, ...
-                            bicas.const.L2QBM_PARTIAL_SATURATION);
-
-                    case bicas.const.NSOID.FULL_SATURATION
-
-                        QUALITY_FLAG_capCe = bicas.const.QUALITY_FLAG_CAP_FULL_SATURATION;
-
-                        % NOTE: Also set PARTIAL saturation bit when FULL
-                        % saturation. /YK 2020-10-02.
-                        L2_QUALITY_BITMASK_ce = bitor(...
-                            L2_QUALITY_BITMASK_ce, ...
-                            bicas.const.L2QBM_FULL_SATURATION + ...
-                            bicas.const.L2QBM_PARTIAL_SATURATION);
-
-                    case bicas.const.NSOID.THRUSTER_FIRING
-
-                        QUALITY_FLAG_capCe = bicas.const.QUALITY_FLAG_CAP_THRUSTER_FIRING;
-
-                        % NOTE: There will be an L1 QUALITY_BITMASK bit for
-                        % thruster firings eventually according to
-                        % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
-                        % Therefore(?) not setting any bit in
-                        % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
-                        % to be set.)
-
-                    otherwise
-                        % ASSERTION
-                        % NOTE: Not perfect assertion on legal NSOIDs since
-                        % code only checks those relevant for the data (time
-                        % interval) currently processed. (Therefore also checks
-                        % all NSOIDs when reads NSO table.)
-                        error('Can not interpret RCS NSOID "%s".', ...
-                            ceNsoidCa{kCe})
-
+                if NsoidSettingsMap.isKey(eventNsoid)
+                    Setting = NsoidSettingsMap(eventNsoid);
+                    
+                    % NOTE: Variables contain SCALAR values (i.e. they are not
+                    %       arrays).
+                    QUALITY_FLAG_nsoid       = Setting.QUALITY_FLAG;
+                    L2_QUALITY_BITMASK_nsoid = Setting.L2_QUALITY_BITMASK;
+                else
+                    % ASSERTION
+                    % NOTE: Not perfect assertion on legal NSOIDs since code
+                    % only checks those relevant for the data (time interval)
+                    % currently processed. (Therefore also checks all NSOIDs
+                    % when reads NSO table.)
+                    error('Can not interpret RCS NSOID "%s".', eventNsoid)
                 end
-                
-                % New implementation which should not have abovementioned bug.
-                QUALITY_FLAG_CapFpaTemp            = QUALITY_FLAG_CapFpa(bCeRecords, 1);
-                QUALITY_FLAG_CapFpa(bCeRecords, 1) = QUALITY_FLAG_CapFpaTemp.min(bicas.utils.FPArray(QUALITY_FLAG_capCe, 'NO_FILL_POSITIONS'));
-                L2_QUALITY_BITMASK( bCeRecords, 1) = bitor(L2_QUALITY_BITMASK(bCeRecords, 1), L2_QUALITY_BITMASK_ce);
+
+                QUALITY_FLAG_CeFpa              = QUALITY_FLAG_Fpa(bCeRecords, 1);
+                QUALITY_FLAG_Fpa(bCeRecords, 1) = QUALITY_FLAG_CeFpa.min(...
+                    bicas.utils.FPArray(QUALITY_FLAG_nsoid, 'NO_FILL_POSITIONS'));
+            
+                L2_QUALITY_BITMASK( bCeRecords, 1) = bitor(...
+                    L2_QUALITY_BITMASK(bCeRecords, 1), ...
+                    L2_QUALITY_BITMASK_nsoid);
                 
             end    % for
 
