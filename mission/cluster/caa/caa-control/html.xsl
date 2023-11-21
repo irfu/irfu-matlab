@@ -21,7 +21,7 @@ $Id$
 	</HEAD>
 	<BODY>
 	<H1 ALIGN="center">
-		Non-Standard Operations
+		EFW Non-Standard Operations Created (branch devel): <xsl:value-of select="$current-date"/>
 	</H1>
 	<H2>
 		<xsl:value-of select="//description"/>

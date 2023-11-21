@@ -13,7 +13,7 @@ If working on a special development branch (e.g. [MMSdevel](https://github.com/i
 
 1. According to [Matlab Style Guidelines](https://web.archive.org/web/20210424065750/http://www.datatool.com/downloads/matlab_style_guidelines.pdf "MATLAB Programming Style Guidelines")
 2. Help follows matlab style, see [irf_template.m](https://github.com/irfu/irfu-matlab/blob/master/irf/irf_template.m)
-3. Matlab code files checked for possible problems, using [checkcode](https://www.mathworks.com/help/matlab/ref/checkcode.html)
+3. Matlab code files checked for possible problems, using [checkcode](https://www.mathworks.com/help/matlab/ref/checkcode.html) (or [codeIssues](https://www.mathworks.com/help/matlab/ref/codeissues.html) if using a modern Matlab release).
 4. For new code written, use only two spaces as indentation.
 
 ## Git
