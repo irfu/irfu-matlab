@@ -44,9 +44,8 @@ if isa(data,'TSeries')
   irf.log('debug','TSeries data used');
   %Temporary fix
   %tlimit = irf.tint(data.time.start.utc,data.time.stop.utc);
-  timeint = data.time.stop-data.time.start;
-  Fs=numel(data.data(:,1))/timeint;
   t = data.time.epochUnix;
+  Fs=1/median(diff(t));
   data = data.data;
 else
   irf.log('debug','Old format used');
