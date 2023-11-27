@@ -1,23 +1,27 @@
-
-%
-% EXPERIMENTAL
 %
 % Find relevant CDFs and search for specific conditions that indicate that
 % something is wrong with the processing inside the RPWI (not the GS pipeline).
 % Print/log warning for specific conditions.
 %
+% So far it searches for and reports:
+% (1)  all 5.2, 5.3, 5.4 packets (which indicate error),
+% (2a) incrementing error counters (core0/1), and
+% (2b) non-zero error counters (core0/1).
+%
 %
 % NOTES
 % =====
-% * Code is partly a proof-of-concept. It tests whether it makes sense to use
-%   the GS pipeline CDFs to automatically look for common well-defined states
-%   that indicate warnings or errors in the instrument itself (not problems
-%   related to the TM as such), e.g. for end2end tests. It is not obvious how
-%   many conditions it should search for or how sophisticated the code should be,
-%   e.g. w.r.t. logging.
+% * The code is partly a proof-of-concept. It tests whether it makes sense to
+%   use the GS pipeline CDFs to automatically look for common well-defined
+%   states that indicate warnings or errors in the instrument itself (not
+%   problems related to the TM as such), e.g. for end2end tests. It is not
+%   obvious how many conditions it should search for or how sophisticated
+%   the code should be, e.g. w.r.t. logging.
 % * Code can potentially be amended with more tests.
-% * Should maybe not be implemented in MATLAB, but in Python.
-% * Since the code relies on
+% * Since the code relies on pipeline filenaming conventions and zVariable
+%   naming conventions, it may need to be updated when the pipeline is updated.
+% * Does not necessarily have to be implemented MATLAB. Could be implemented in
+%   e.g. Python.
 %
 %
 % ARGUMENTS
@@ -26,7 +30,7 @@
 %       Path to root directory. Code will search all subdirectories for relevant
 %       JUICE/RPWI GS TM-to-L1a CDF files assuming filenaming conventions.
 % reportErrorCounterNonzero
-%       Scalar logical. Whether to report to when error counters are not zero.
+%       Scalar logical. Whether to report when error counters are not zero.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
