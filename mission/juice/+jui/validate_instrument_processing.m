@@ -5,7 +5,7 @@
 % Find relevant CDFs and search for specific conditions that indicate that
 % something is wrong with the processing inside the RPWI (not the GS pipeline).
 % Print/log warning for specific conditions.
-% 
+%
 %
 % NOTES
 % =====
@@ -39,7 +39,7 @@ function validate_instrument_processing(dirPath, reportErrorCounterNonzero)
     %   processing
     %       CON: Does not have to do with TM-to-L1a processing or GS.
     %   validate_instrument_processing
-    %   
+    %
     % PROPOSAL: Implement in Python.
     %   PRO: Could load MIB with pre-existing code.
     %   CON: Harder to plot.
@@ -59,7 +59,7 @@ function validate_instrument_processing(dirPath, reportErrorCounterNonzero)
     %       Can therefore not look up e.g. packet type descriptions.
 
     assert(ischar(dirPath))
-    
+
     validate_error_packets(dirPath)
     validate_error_counters(dirPath, reportErrorCounterNonzero)
 end
@@ -71,28 +71,28 @@ function validate_error_packets(dirPath)
     PPD_FILENAME_RE       = 'JUICE_LU_RPWI-PPD_.*.bin.cdf';
     SERVICE_TYPE          = 5;
     SERVICE_SUBTYPE_ARRAY = [2,3,4];
-    
+
     DirInfoArray = find_files(dirPath, PPD_FILENAME_RE);
-    
+
     for i = 1:numel(DirInfoArray)
         cdfPath = fullfile(DirInfoArray(i).folder, DirInfoArray(i).name);
         do      = dataobj(cdfPath);
-        
+
         spidCa              = cellstr(read_DO_field(do, {'SPID'}));
         serviceTypeArray    =         read_DO_field(do, {'DFH_SERVICE_TYPE'});
         serviceSubtypeArray =         read_DO_field(do, {'DFH_SERVICE_SUBTYPE'});
-        
+
         fprintf('cdfFile = "%s"\n', cdfPath)
-                
+
         b = (serviceTypeArray == SERVICE_TYPE) & ismember(serviceSubtypeArray, SERVICE_SUBTYPE_ARRAY);
         iEPackets = find(b);
-        
+
         if ~isempty(iEPackets)
             nErrorPackets = numel(iEPackets);
-            
+
             [~, jUniqueEPacketsArray] = unique(spidCa(iEPackets));
             iUniqueEPacketsArray = iEPackets(jUniqueEPacketsArray);
-            
+
             log_warning(0, 'Found %i error packet(s) (5.2, 5.3, 5.4). Unique packet types:', ...
                 nErrorPackets)
             for iUniqueEPacket = iUniqueEPacketsArray(:)'
@@ -103,7 +103,7 @@ function validate_error_packets(dirPath)
             end
         end
     end
-    
+
 end
 
 
@@ -112,18 +112,18 @@ function validate_error_counters(dirPath, reportErrorCounterNonzero)
     PPTD_HK64_FILENAME_RE = 'JUICE_LU_RPWI-PPTD-LWYHK[01]0064_.*\.cdf';
     ERROR_CORE0_MPN_CA    = {'LWT0343D', 'LWT0456B'};
     ERROR_CORE1_MPN_CA    = {'LWT0343E', 'LWT0456C'};
-    
+
     DirInfoArray = find_files(dirPath, PPTD_HK64_FILENAME_RE);
 
     for i = 1:numel(DirInfoArray)
         cdfPath = fullfile(DirInfoArray(i).folder, DirInfoArray(i).name);
         do = dataobj(cdfPath);
-        
+
         fprintf('cdfFile = "%s"\n', cdfPath)
-        
+
         errorCounter0Array = read_DO_field(do, ERROR_CORE0_MPN_CA);
         errorCounter1Array = read_DO_field(do, ERROR_CORE1_MPN_CA);
-        
+
         validate_error_counter_array(0, errorCounter0Array, reportErrorCounterNonzero)
         validate_error_counter_array(1, errorCounter1Array, reportErrorCounterNonzero)
     end
@@ -134,7 +134,7 @@ end
 % Validate one array of error counter values.
 function validate_error_counter_array(iCounter, counterArray, reportErrorCounterNonzero)
     assert(isscalar(reportErrorCounterNonzero) & islogical(reportErrorCounterNonzero))
-    
+
     strUniqueValues = sprintf('Unique values: %s', num2str(unique(counterArray(:)')));
 
     n = numel(unique(counterArray));
@@ -142,7 +142,7 @@ function validate_error_counter_array(iCounter, counterArray, reportErrorCounter
         log_warning(0, 'Core%i error counter values are NOT CONSTANT. %s', ...
             iCounter, strUniqueValues)
     end
-    
+
     if reportErrorCounterNonzero
         if ~all(counterArray == 0)
             log_warning(0, 'Core%i error counter values are not equal to zero. %s', ...
@@ -155,12 +155,12 @@ end
 
 function DirInfoArray = find_files(rootDirPath, rePattern)
     DirInfoArray = dir(fullfile(rootDirPath, '**/*.cdf'));
-    
+
     bIsFile = ~[DirInfoArray.isdir];
-    
+
     ca = regexp({DirInfoArray.name}, rePattern);
     bFilenameMatch = ~cellfun(@isempty, ca);
-    
+
     DirInfoArray = DirInfoArray(bIsFile & bFilenameMatch);
 end
 
@@ -172,10 +172,10 @@ end
 %       1D CA of ZV names. Exactly one should be valid.
 function value = read_DO_field(do, zvNameCandidatesCa)
     assert(isa(do, 'dataobj'))
-    
+
     bArray = ismember(zvNameCandidatesCa, fieldnames(do.data));
     assert(sum(bArray) == 1, 'Can not find exactly one matching field.')
-    
+
     fieldName = zvNameCandidatesCa{bArray};
     value = do.data.(fieldName).data;
 end
@@ -185,11 +185,11 @@ end
 % Print a one-row warning to stdout.
 function log_warning(iLevel, s, varargin)
     assert(iLevel >= 0)
-    
+
     if iLevel == 0
         s = ['WARNING: ', s];
     end
-    
+
     s = [repmat('    ', 1, iLevel+1), s, '\n'];
     fprintf(s, varargin{:})
 end
