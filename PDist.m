@@ -1703,296 +1703,296 @@ classdef PDist < TSeries
       end
     end
     function Out = shift(pdist,v_nf,nMC,orient,sc,varargin)
-        %%%This function rebins the distribution function to shifted reference
-        %%%frame and a rotated coordinate system.
-        %%% Input:
-        %%% pdist: 3D skymap distribution function
-        %%% v_nf transformation velocity in km/s.
-        %%% orient: 3x3 rotation matrix between the old and the new cooridnate system.
-        %%% When rotating to a Field alligned coordinate system, if you want the
-        %%% theta to be the pitch angle, the orient input has to be of the form
-        %%% [t1x t1y t1z; t2x t2y t2z; bx by bz] where t1x, t1y, t1z, t2x, t2y,
-        %%% t2z, bx, by, bz are the dsl components of the t1 and t2
-        %%% vectors (perpendicular to the magnetic field) and b vector (parallel to
-        %%% the magnetic field.
-        %%%
-        %%% The flag returndiff if set to 1 returns the descrete phase space volume
-        %%% elements d3v. It is 0 by default.
-        %%% The flag new_grid allows the user to input their own new grid. After the
-        %%% flag the user have to give in order: edges of new energy bins (in eV), edges of
-        %%% new polar bins (in degrees), and edges of new azimuthal bins (in degrees).
-        
-        Var = varargin;
-        
-        returndiff = 0;%%by default don't return differentials
-        flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
-        while ~isempty(Var)
-            flag = Var{1};
-            switch flag
-                case 'returndiff'
-                    returndiff =Var{2};
-                    Var(1:2) =[];
-                case 'new_grid'
-                    flag_newgrid = 1;
-                    Eedgesn = Var{2};
-                    thedgesn = Var{3};
-                    phedgesn = Var{4};
-                    Var(1:4) = [];
-                otherwise
-                    error(['undefined input flag: ' flag])
-                    
+      %%%This function rebins the distribution function to shifted reference
+      %%%frame and a rotated coordinate system.
+      %%% Input:
+      %%% pdist: 3D skymap distribution function
+      %%% v_nf transformation velocity in km/s.
+      %%% orient: 3x3 rotation matrix between the old and the new cooridnate system.
+      %%% When rotating to a Field alligned coordinate system, if you want the
+      %%% theta to be the pitch angle, the orient input has to be of the form
+      %%% [t1x t1y t1z; t2x t2y t2z; bx by bz] where t1x, t1y, t1z, t2x, t2y,
+      %%% t2z, bx, by, bz are the dsl components of the t1 and t2
+      %%% vectors (perpendicular to the magnetic field) and b vector (parallel to
+      %%% the magnetic field.
+      %%%
+      %%% The flag returndiff if set to 1 returns the descrete phase space volume
+      %%% elements d3v. It is 0 by default.
+      %%% The flag new_grid allows the user to input their own new grid. After the
+      %%% flag the user have to give in order: edges of new energy bins (in eV), edges of
+      %%% new polar bins (in degrees), and edges of new azimuthal bins (in degrees).
+
+      Var = varargin;
+
+      returndiff = 0;%%by default don't return differentials
+      flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
+      while ~isempty(Var)
+        flag = Var{1};
+        switch flag
+          case 'returndiff'
+            returndiff =Var{2};
+            Var(1:2) =[];
+          case 'new_grid'
+            flag_newgrid = 1;
+            Eedgesn = Var{2};
+            thedgesn = Var{3};
+            phedgesn = Var{4};
+            Var(1:4) = [];
+          otherwise
+            error(['undefined input flag: ' flag])
+
+        end
+      end
+
+
+      u = irf_units;
+      pdist = pdist.convertto('s^3/m^6');%put in SI units
+      sp = pdist.species;
+      switch sp
+        case 'ions'
+          m = u.mp;
+        case 'electrons'
+          m = u.me;
+      end
+      dat = squeeze(pdist.data);
+      E_old = pdist.depend{1};
+      dEo = diff(E_old);
+      Eedgeso = [ E_old(1:end-1)-dEo/2 E_old(end)-dEo(end)/2 E_old(end)+dEo(end)/2];
+      Eedgeso(Eedgeso<0) = 0;
+      %%Define new coordinate system
+
+      e1 = orient(1,:);
+      e2 = orient(2,:);
+      e3 = orient(3,:);
+
+
+      %%use same old polar and azimuthal grid points for new grid
+      th = pdist.depend{3};
+      %fix for the case when theta and phi points are not in ascending order
+      if ~issorted(th);[th,ithsort] = sort(th);dat = dat(:,:,ithsort);end
+      dth = diff(th);
+      thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
+
+      ph = pdist.depend{2};
+      dph = diff(ph);
+      phedges = [ph(1:end-1) - dph/2 ph(end)-dph(end)/2 ph(end)+dph(end)/2];
+      %Incorporates SolO where phi is from -180 to 180, make it from 0 to 360
+      if ~issorted(ph);[ph,iphsort] = sort(ph);dat = dat(:,iphsort,:);phedges = sort((phedges));end
+
+      %%velocity grid before shifting reference frame
+      vedges_old = sqrt(2*u.e*Eedgeso./m);
+      dv_old = diff(vedges_old);%% velocity increment in the old bin
+
+      %%calculate old d3v and fd3v
+      dv3o = diff(vedges_old.^3)/3;%%dv = int v^2dv = (v^3(2) - v^3(1))/3
+      dcosth = -diff(cosd(thedges));%%int sin(theta) dth = -( cos(theta2) - cos(theta1))
+      dp = diff(phedges)*pi/180;%%int dphi = phi2-phi1
+      [dV3o,dPHo,dcosTHo] = ndgrid(dv3o,dp,dcosth);
+      d3vo = dV3o.*dcosTHo.*dPHo;
+      fd3vo = dat.*d3vo;
+      %% shift reference frame and rotate to new coordinate system
+      [vx,vy,vz] = pdist.v;
+      %%%the function PDist.v gives vx vy vz of the electrons. But when rebinning
+      %%%I should use vx vy and vz of the instrument bins. Note the instrument
+      %%%bins sees the direction  where an electron is coming from so an electron
+      %%%with v = (vx,vy,vz) will be observed in the instrument bin -(vx,vy,vz).
+      vxn = -(squeeze(vx) - v_nf(1));
+      vyn = -(squeeze(vy) - v_nf(2));
+      vzn = -(squeeze(vz) - v_nf(3));
+
+      vxn = vxn*1000;vyn = vyn*1000;vzn = vzn*1000;%put in m/s
+      %%rotate to new coordinate system
+
+      vxnr =  vxn*e1(1) + vyn*e1(2) + vzn*e1(3);
+      vynr =  vxn*e2(1) + vyn*e2(2) + vzn*e2(3);
+      vznr =  vxn*e3(1) + vyn*e3(2) + vzn*e3(3);
+
+      %%get the spherical coordinates of grid points in the shifted reference
+      %%frame
+      [~,~,v_o] = cart2sph(vxnr,vynr,vznr);
+
+
+      %% generate old velocity grid for shifted reference frame and roatated coordinate system
+      %%%determine the location of the grid edges in spherical coordinates in
+      %%%the new frame.
+
+      [VO,PHO,THO] = ndgrid(vedges_old,phedges,thedges);
+
+      %% generate new velocity grid
+      if ~flag_newgrid
+        %%%the new velocity grid will have the same discretization as the old one
+        %%%except the start and end point will be determined from the minimum and
+        %%%maximum values of the speed in the shifted reference frame.
+
+        vmin = min(min(min(v_o)));
+        vmin = min([vedges_old(1),vmin-dv_old(1)/2]);
+        % if norm(v_nf)>vedges_old(1)/1000; vmin =0;end
+        if vmin<0; vmin =0;end
+
+        vmax = max(max(max(v_o)));
+        vmax = max([vedges_old(end),vmax+dv_old(end)/2]);
+        Vedges = [vmin vedges_old(2:end-1) vmax];
+
+      else
+        Vedges = sqrt(2*u.e*Eedgesn./m);
+        thedges = thedgesn;
+        phedges = phedgesn;
+
+      end
+      if strcmpi(sc,'solo')
+        Emin = 0.5*m*(norm(v_nf)*1000)^2/u.e;
+        if Eedgeso(1)-Emin<0
+          Vedges(1) = 0;
+        end
+        thedges = linspace(0,180,45);
+        phedges = linspace(0,360,67);
+      end
+
+      %get new velocity and energies at the center of each new grid box
+      %         dV = diff(Vedges);
+      %         Vn = Vedges(1:end-1)+dV/2;
+      %         En = 0.5*m*Vn.^2/u.e;
+
+      Eedgesn = 0.5*m*Vedges.^2/u.e;
+      En = Eedgesn(1:end-1) + diff(Eedgesn)/2;
+      %         En(2:end-2) = E_old(2:end-2);
+
+
+      dthn = diff(thedges);
+      thn = thedges(1:end-1)+dthn/2;
+
+
+      dphn = diff(phedges);
+      phn = phedges(1:end-1)+dphn/2;
+
+      %%new d3v
+      dv3 = diff(Vedges.^3)/3;
+      dcosth = -diff(cosd(thedges));
+      dp = diff(phedges)*pi/180;
+      [dV3,dPH,dcosTH] = ndgrid(dv3,dp,dcosth);
+      d3vn = dV3.*dcosTH.*dPH;
+
+      %% rebin to new grid in shifted reference frame
+      l1o = size(v_o,1);l2o = size(v_o,2);l3o = size(v_o,3);
+      l1 = size(d3vn,1);l2 = size(d3vn,2);l3 = size(d3vn,3);
+      fd3vn = zeros(l1,l2,l3);
+      for i = 1:l1o
+
+        for j = 1:l2o
+
+          for k = 1:l3o
+
+
+            fd3vperm = fd3vo(i,j,k)/nMC;%% fd3vperm = fd3v per monte carlo point
+            if fd3vperm == 0
+              continue;
             end
-        end
-        
-        
-        u = irf_units;
-        pdist = pdist.convertto('s^3/m^6');%put in SI units
-        sp = pdist.species;
-        switch sp
-            case 'ions'
-                m = u.mp;
-            case 'electrons'
-                m = u.me;
-        end
-        dat = squeeze(pdist.data);
-        E_old = pdist.depend{1};
-        dEo = diff(E_old);
-        Eedgeso = [ E_old(1:end-1)-dEo/2 E_old(end)-dEo(end)/2 E_old(end)+dEo(end)/2];
-        Eedgeso(Eedgeso<0) = 0;
-        %%Define new coordinate system
-        
-        e1 = orient(1,:);
-        e2 = orient(2,:);
-        e3 = orient(3,:);
-        
-        
-        %%use same old polar and azimuthal grid points for new grid
-        th = pdist.depend{3};
-        %fix for the case when theta and phi points are not in ascending order
-        if ~issorted(th);[th,ithsort] = sort(th);dat = dat(:,:,ithsort);end
-        dth = diff(th);
-        thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
-        
-        ph = pdist.depend{2};
-        dph = diff(ph);
-        phedges = [ph(1:end-1) - dph/2 ph(end)-dph(end)/2 ph(end)+dph(end)/2];
-        %Incorporates SolO where phi is from -180 to 180, make it from 0 to 360
-        if ~issorted(ph);[ph,iphsort] = sort(ph);dat = dat(:,iphsort,:);phedges = sort((phedges));end
-        
-        %%velocity grid before shifting reference frame
-        vedges_old = sqrt(2*u.e*Eedgeso./m);
-        dv_old = diff(vedges_old);%% velocity increment in the old bin
-        
-        %%calculate old d3v and fd3v
-        dv3o = diff(vedges_old.^3)/3;%%dv = int v^2dv = (v^3(2) - v^3(1))/3
-        dcosth = -diff(cosd(thedges));%%int sin(theta) dth = -( cos(theta2) - cos(theta1))
-        dp = diff(phedges)*pi/180;%%int dphi = phi2-phi1
-        [dV3o,dPHo,dcosTHo] = ndgrid(dv3o,dp,dcosth);
-        d3vo = dV3o.*dcosTHo.*dPHo;
-        fd3vo = dat.*d3vo;
-        %% shift reference frame and rotate to new coordinate system
-        [vx,vy,vz] = pdist.v;
-        %%%the function PDist.v gives vx vy vz of the electrons. But when rebinning
-        %%%I should use vx vy and vz of the instrument bins. Note the instrument
-        %%%bins sees the direction  where an electron is coming from so an electron
-        %%%with v = (vx,vy,vz) will be observed in the instrument bin -(vx,vy,vz).
-        vxn = -(squeeze(vx) - v_nf(1));
-        vyn = -(squeeze(vy) - v_nf(2));
-        vzn = -(squeeze(vz) - v_nf(3));
-        
-        vxn = vxn*1000;vyn = vyn*1000;vzn = vzn*1000;%put in m/s
-        %%rotate to new coordinate system
-        
-        vxnr =  vxn*e1(1) + vyn*e1(2) + vzn*e1(3);
-        vynr =  vxn*e2(1) + vyn*e2(2) + vzn*e2(3);
-        vznr =  vxn*e3(1) + vyn*e3(2) + vzn*e3(3);
-        
-        %%get the spherical coordinates of grid points in the shifted reference
-        %%frame
-        [~,~,v_o] = cart2sph(vxnr,vynr,vznr);
-        
-        
-        %% generate old velocity grid for shifted reference frame and roatated coordinate system
-        %%%determine the location of the grid edges in spherical coordinates in
-        %%%the new frame.
-        
-        [VO,PHO,THO] = ndgrid(vedges_old,phedges,thedges);
-        
-        %% generate new velocity grid
-        if ~flag_newgrid
-            %%%the new velocity grid will have the same discretization as the old one
-            %%%except the start and end point will be determined from the minimum and
-            %%%maximum values of the speed in the shifted reference frame.
-            
-            vmin = min(min(min(v_o)));
-            vmin = min([vedges_old(1),vmin-dv_old(1)/2]);
-            % if norm(v_nf)>vedges_old(1)/1000; vmin =0;end
-            if vmin<0; vmin =0;end
-            
-            vmax = max(max(max(v_o)));
-            vmax = max([vedges_old(end),vmax+dv_old(end)/2]);
-            Vedges = [vmin vedges_old(2:end-1) vmax];
-            
-        else
-            Vedges = sqrt(2*u.e*Eedgesn./m);
-            thedges = thedgesn;
-            phedges = phedgesn;
-            
-        end
-        if strcmpi(sc,'solo')
-            Emin = 0.5*m*(norm(v_nf)*1000)^2/u.e;
-            if Eedgeso(1)-Emin<0
-                Vedges(1) = 0;
+
+
+
+
+            %%get bin edges in the non-rotated, non-transformed reference
+            %%frame (from now on called F1)
+
+            Vm_o = VO(i,j,k);
+            Vp_o = VO(i+1,j,k);
+
+            Phm_o = PHO(i,j,k);
+            Php_o = PHO(i,j+1,k);
+
+            Thm_o = THO(i,j,k);
+            Thp_o = THO(i,j,k+1);
+
+            %%generate Monte Carlo points in the bin in F1
+
+            vo_MC = rand(nMC,1)*(Vp_o - Vm_o)+Vm_o;
+            tho_MC = rand(nMC,1)*(Thp_o - Thm_o)+Thm_o;
+            pho_MC = rand(nMC,1)*(Php_o - Phm_o)+Phm_o;
+
+            %%Put each MC vector in cartesian coordinate, transform to new
+            %%reference frame and rotated coordinate system (from now on
+            %%called F2) then get the spherical coordinates in that new
+            %%frame
+
+            %%%as before the - sign is to make the velocities of the electrons instead
+            %%%of the instrument. After shifting to the new reference frame I change it
+            %%%back to that of the isntrument.
+
+            VXE = -vo_MC.*sind(tho_MC).*cosd(pho_MC);
+            VYE = -vo_MC.*sind(tho_MC).*sind(pho_MC);
+            VZE = -vo_MC.*cosd(tho_MC);
+
+            VXEnf = -(VXE - v_nf(1)*1000);
+            VYEnf = -(VYE - v_nf(2)*1000);
+            VZEnf = -(VZE - v_nf(3)*1000);
+
+            VXEnfr = VXEnf*e1(1) + VYEnf*e1(2) + VZEnf*e1(3);
+            VYEnfr = VXEnf*e2(1) + VYEnf*e2(2) + VZEnf*e2(3);
+            VZEnfr = VXEnf*e3(1) + VYEnf*e3(2) + VZEnf*e3(3);
+
+            [ph_MC,th_MC,v_MC] = cart2sph(VXEnfr,VYEnfr,VZEnfr);
+
+            %cat2sph returns elevation angle, make it polar angle in the range
+            %(0,180) instead of -pi/2 to pi/2
+            th_MC = (pi/2-th_MC)*180/pi;
+
+            %put in degrees and 0 to 360 range (instead of -pi to pi)
+            ph_MC = ph_MC*180/pi;
+            ph_MC = wrapTo360(ph_MC);
+
+            if phedges(1)<0 && max(phedges)~=360
+              ph_MC(ph_MC>max(phedges)) = ph_MC(ph_MC>max(phedges)) - 360;
             end
-            thedges = linspace(0,180,45);
-            phedges = linspace(0,360,67);
-        end
-        
-        %get new velocity and energies at the center of each new grid box
-%         dV = diff(Vedges);
-%         Vn = Vedges(1:end-1)+dV/2;
-%         En = 0.5*m*Vn.^2/u.e;
-        
-        Eedgesn = 0.5*m*Vedges.^2/u.e;
-        En = Eedgesn(1:end-1) + diff(Eedgesn)/2;
-%         En(2:end-2) = E_old(2:end-2);
-        
-        
-        dthn = diff(thedges);
-        thn = thedges(1:end-1)+dthn/2;
-        
-        
-        dphn = diff(phedges);
-        phn = phedges(1:end-1)+dphn/2;
-        
-        %%new d3v
-        dv3 = diff(Vedges.^3)/3;
-        dcosth = -diff(cosd(thedges));
-        dp = diff(phedges)*pi/180;
-        [dV3,dPH,dcosTH] = ndgrid(dv3,dp,dcosth);
-        d3vn = dV3.*dcosTH.*dPH;
-        
-        %% rebin to new grid in shifted reference frame
-        l1o = size(v_o,1);l2o = size(v_o,2);l3o = size(v_o,3);
-        l1 = size(d3vn,1);l2 = size(d3vn,2);l3 = size(d3vn,3);
-        fd3vn = zeros(l1,l2,l3);
-        for i = 1:l1o
-            
-            for j = 1:l2o
-                
-                for k = 1:l3o
-                    
-                    
-                    fd3vperm = fd3vo(i,j,k)/nMC;%% fd3vperm = fd3v per monte carlo point
-                    if fd3vperm == 0
-                        continue;
-                    end
-                    
-                    
-                    
-                    
-                    %%get bin edges in the non-rotated, non-transformed reference
-                    %%frame (from now on called F1)
-                    
-                    Vm_o = VO(i,j,k);
-                    Vp_o = VO(i+1,j,k);
-                    
-                    Phm_o = PHO(i,j,k);
-                    Php_o = PHO(i,j+1,k);
-                    
-                    Thm_o = THO(i,j,k);
-                    Thp_o = THO(i,j,k+1);
-                    
-                    %%generate Monte Carlo points in the bin in F1
-                    
-                    vo_MC = rand(nMC,1)*(Vp_o - Vm_o)+Vm_o;
-                    tho_MC = rand(nMC,1)*(Thp_o - Thm_o)+Thm_o;
-                    pho_MC = rand(nMC,1)*(Php_o - Phm_o)+Phm_o;
-                    
-                    %%Put each MC vector in cartesian coordinate, transform to new
-                    %%reference frame and rotated coordinate system (from now on
-                    %%called F2) then get the spherical coordinates in that new
-                    %%frame
-                    
-                    %%%as before the - sign is to make the velocities of the electrons instead
-                    %%%of the instrument. After shifting to the new reference frame I change it
-                    %%%back to that of the isntrument.
-                    
-                    VXE = -vo_MC.*sind(tho_MC).*cosd(pho_MC);
-                    VYE = -vo_MC.*sind(tho_MC).*sind(pho_MC);
-                    VZE = -vo_MC.*cosd(tho_MC);
-                    
-                    VXEnf = -(VXE - v_nf(1)*1000);
-                    VYEnf = -(VYE - v_nf(2)*1000);
-                    VZEnf = -(VZE - v_nf(3)*1000);
-                    
-                    VXEnfr = VXEnf*e1(1) + VYEnf*e1(2) + VZEnf*e1(3);
-                    VYEnfr = VXEnf*e2(1) + VYEnf*e2(2) + VZEnf*e2(3);
-                    VZEnfr = VXEnf*e3(1) + VYEnf*e3(2) + VZEnf*e3(3);
-                    
-                    [ph_MC,th_MC,v_MC] = cart2sph(VXEnfr,VYEnfr,VZEnfr);
-                    
-                    %cat2sph returns elevation angle, make it polar angle in the range
-                    %(0,180) instead of -pi/2 to pi/2
-                    th_MC = (pi/2-th_MC)*180/pi;
-                    
-                    %put in degrees and 0 to 360 range (instead of -pi to pi)
-                    ph_MC = ph_MC*180/pi;
-                    ph_MC = wrapTo360(ph_MC);
-                    
-                    if phedges(1)<0 && max(phedges)~=360
-                        ph_MC(ph_MC>max(phedges)) = ph_MC(ph_MC>max(phedges)) - 360;
-                    end
-                    
-                    
-                    
-                    
-                    
-                    %%Discretize MC into new grid
-                    iv = discretize(v_MC,Vedges);
-                    ith_n = discretize(th_MC,thedges);
-                    iph_n = discretize(ph_MC,phedges);
-                    
-                    loc = sub2ind([l1 l2 l3],iv,iph_n,ith_n);
-                    loc(isnan(loc)) = []; % values that fall outside of box becomes nan, remove these
-                    hasdata = all(loc>0, 2);
-                    
-                    %%sum all fd3vperm for each MC in each new bin from the old bin
-                    sum = accumarray(loc(hasdata,:),fd3vperm,[numel(fd3vn) 1]);
-                    fd3vn = fd3vn(:,:,:) + reshape(sum,[ l1 l2 l3]);
-                    
-                    
-                end
-                
-            end
-            
-        end
-        %%
-        fd3vn(fd3vn == 0 ) = nan;
-        fn = fd3vn./d3vn;
-        Fn = nan*zeros([1,size(fn)]);
-        Fn(1,:,:,:) = fn;
-        PDistn = PDist(pdist.time,Fn,'skymap',En,phn,thn);
-        
-        PDistn.ancillary.V_edges = Vedges/1000;%km/s
-        PDistn.ancillary.phi_edges = phedges;
-        PDistn.ancillary.theta_edges = thedges;
-        PDistn.ancillary.base = 'sph';
-        PDistn.units = pdist.units;
-        PDistn.species = pdist.species;
-        if returndiff
-            
-            differentials.dV3 = dV3;
-            differentials.dcosTh = dcosTH;
-            differentials.dPH = dPH;
-            differentials.d3v = d3vn;
-            Out{1} = PDistn;
-            Out{2} = differentials;
-        else
-            Out{1} = PDistn;
+
+
+
+
+
+            %%Discretize MC into new grid
+            iv = discretize(v_MC,Vedges);
+            ith_n = discretize(th_MC,thedges);
+            iph_n = discretize(ph_MC,phedges);
+
+            loc = sub2ind([l1 l2 l3],iv,iph_n,ith_n);
+            loc(isnan(loc)) = []; % values that fall outside of box becomes nan, remove these
+            hasdata = all(loc>0, 2);
+
+            %%sum all fd3vperm for each MC in each new bin from the old bin
+            sum = accumarray(loc(hasdata,:),fd3vperm,[numel(fd3vn) 1]);
+            fd3vn = fd3vn(:,:,:) + reshape(sum,[ l1 l2 l3]);
+
+
+          end
+
         end
 
-end
+      end
+      %%
+      fd3vn(fd3vn == 0 ) = nan;
+      fn = fd3vn./d3vn;
+      Fn = nan*zeros([1,size(fn)]);
+      Fn(1,:,:,:) = fn;
+      PDistn = PDist(pdist.time,Fn,'skymap',En,phn,thn);
+
+      PDistn.ancillary.V_edges = Vedges/1000;%km/s
+      PDistn.ancillary.phi_edges = phedges;
+      PDistn.ancillary.theta_edges = thedges;
+      PDistn.ancillary.base = 'sph';
+      PDistn.units = pdist.units;
+      PDistn.species = pdist.species;
+      if returndiff
+
+        differentials.dV3 = dV3;
+        differentials.dcosTh = dcosTH;
+        differentials.dPH = dPH;
+        differentials.d3v = d3vn;
+        Out{1} = PDistn;
+        Out{2} = differentials;
+      else
+        Out{1} = PDistn;
+      end
+
+    end
     function PD = smooth(obj,step)
       % PDIST.SMOOTH Running average
       % PD = smooth(obj,step)
