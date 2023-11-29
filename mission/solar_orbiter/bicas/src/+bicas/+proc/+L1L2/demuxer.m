@@ -337,9 +337,9 @@ classdef demuxer
             nRows = size(bltsSamplesAVolt, 1);
             AsrSamplesSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
             for iBlts = 1:5
-                if ~isequal(SdidArray(iBlts).value, 'Nowhere')
+                if ~SdidArray(iBlts).isNowhere
                     AsrSamplesSrm.add(...
-                        SdidArray(iBlts).value.s, ...
+                        SdidArray(iBlts).asid.s, ...
                         bltsSamplesAVolt(:, :, iBlts));
                 end
             end

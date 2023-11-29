@@ -18,7 +18,12 @@ classdef SignalDestinationId
 
 
     properties(SetAccess=immutable, GetAccess=public)
-        value
+        % ASID object or empty.
+        asid
+        
+        % Whether destination is "nowhere", i.e. the signal does not have a
+        % destination and should be ignored.
+        isNowhere
     end
 
 
@@ -29,9 +34,15 @@ classdef SignalDestinationId
 
         % Constructor
         function obj = SignalDestinationId(value)
-            assert(isequal(value, 'Nowhere') || isa(value, 'bicas.proc.L1L2.AntennaSignalId'))
-
-            obj.value = value;
+            if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
+                obj.asid      = value;
+                obj.isNowhere = false;
+            elseif isequal(value, 'Nowhere')
+                obj.asid      = [];
+                obj.isNowhere = true;
+            else
+                error('Illegal argument.')
+            end
         end
 
 
