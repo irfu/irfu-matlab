@@ -17,7 +17,6 @@ classdef Routing   % < handle
     %   DemultiplexerRouting
     %   Source(To)DestinationRouting
     %       PRO: Can use abbreviation SDR.
-    % PROPOSAL: src --> ssid, dest --> sdid
 
 
 
@@ -41,11 +40,11 @@ classdef Routing   % < handle
         % bicas.proc.L1L2.SignalSourceId.
         % Where the physical signal in the BLTS ultimately comes from. This is
         % used to determine how the signal should be calibrated.
-        src
+        ssid
         
         % bicas.proc.L1L2.SignalDestinationId.
         % How the BLTS should be stored in the datasets.
-        dest
+        sdid
     end
 
 
@@ -61,7 +60,7 @@ classdef Routing   % < handle
         
         function obj = Routing(ssid, varargin)
             assert(isa(ssid, 'bicas.proc.L1L2.SignalSourceId'))
-            obj.src = ssid;
+            obj.ssid = ssid;
             
             switch numel(varargin)
                 case 0
@@ -69,12 +68,12 @@ classdef Routing   % < handle
                     sdid = bicas.proc.L1L2.SignalDestinationId(ssid.value);
                 case 1
                     sdid = varargin{1};
-                    assert(isa(sdid, 'bicas.proc.L1L2.SignalDestinationId'))
                 otherwise
                     error('BICAS:Assertion:IllegalArgument', ...
                         'Illegal number of extra arguments.')
             end
-            obj.dest = sdid;
+            assert(isa(sdid, 'bicas.proc.L1L2.SignalDestinationId'))
+            obj.sdid = sdid;
             
         end
 

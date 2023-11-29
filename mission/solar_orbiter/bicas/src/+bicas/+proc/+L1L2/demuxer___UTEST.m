@@ -65,7 +65,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
                     bdmFpa, dlrFpa);
                 ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
-                    [ActRoutingArray.dest], bltsSamplesAVolt);
+                    [ActRoutingArray.sdid], bltsSamplesAVolt);
                 
                 % ASSERTIONS
                 testCase.assertEqual(ActRoutingArray, ExpRoutingArray)
@@ -94,8 +94,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 
                 for i = 1:numel(RoutingArray)
                     routing = RoutingArray(i);
-                    if isa(routing.src.value, 'bicas.proc.L1L2.AntennaSignalId')                    
-                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.src.value.s);
+                    if isa(routing.ssid.value, 'bicas.proc.L1L2.AntennaSignalId')
+                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.ssid.value.s);
                     else
                         bltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
                     end
