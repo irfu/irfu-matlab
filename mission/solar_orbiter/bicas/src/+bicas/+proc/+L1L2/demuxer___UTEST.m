@@ -94,8 +94,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 
                 for i = 1:numel(RoutingArray)
                     routing = RoutingArray(i);
-                    if isa(routing.ssid.value, 'bicas.proc.L1L2.AntennaSignalId')
-                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.ssid.value.s);
+                    if routing.ssid.is_ASR()
+                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.ssid.asid.s);
                     else
                         bltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
                     end

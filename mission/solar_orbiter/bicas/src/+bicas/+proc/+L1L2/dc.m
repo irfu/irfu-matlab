@@ -410,11 +410,12 @@ classdef dc
             assert(isnumeric(samplesTm))
             irf.assert.sizes(samplesTm, [-1, -2])   % One BLTS channel.
 
-            if isequal(Ssid.value, 'Unknown')
+            if isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.UNKNOWN)
                 % ==> Calibrated data set to NaN.
                 samplesAVolt = nan(size(samplesTm));
 
-            elseif isequal(Ssid.value, 'GND') || isequal(Ssid.value, '2.5V Ref')
+            elseif isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.GND) || ...
+                    isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.REF25V)
                 % ==> No calibration.
                 samplesAVolt = ssSamplesTm;
 

@@ -65,7 +65,7 @@ classdef Routing   % < handle
             switch numel(varargin)
                 case 0
                     assert(ssid.is_ASR())
-                    sdid = bicas.proc.L1L2.SignalDestinationId(ssid.value);
+                    sdid = bicas.proc.L1L2.SignalDestinationId(ssid.asid);
                 case 1
                     sdid = varargin{1};
                 otherwise
