@@ -25,11 +25,13 @@
 classdef fs
 % PROPOSAL: Merge with bicas.proc.L1L2.cal.rct.typeproc.
 %
-% PROPOSAL: Class for each type of RCT. Common superclass. Can contain 
+% PROPOSAL: Singleton classes for each type of RCT (not storing the data). 
+%           Share a common superclass. Can contain:
 %   (1) methods read_*_RCT()
 %   (2) methods modify_*_data()
 %   (3) methods log_*_RCTs()
-%   (4) filenameRegexpSettingKey
+%   (4) filenameRegexpSettingKey (constant)
+%   (5) RCTID (constant)
 %   PRO: Can replace bulk of
 %        bicas.proc.L1L2.cal.rct.fs,
 %        bicas.proc.L1L2.cal.rct.typeproc.
@@ -49,6 +51,13 @@ classdef fs
 %       PROPOSAL: Can still have separate methods for (1) reading raw RCT, and
 %                 (2) modifying the raw RCT data.
 %
+% PROPOSAL: Classes for RCT data (not RCT type).
+%   PRO: BIAS data has many fields.
+%   PRO: More well-defined data structs.
+%   PRO: Automatic assertions.
+%   CON: Structs are modified when cal.m uses them, i.e. one could just as well
+%        have classes for the format cal.m uses. ==> Too many classes.
+%
 % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
 % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
 % PROPOSAL: Assert CDF skeleton/master version number.
@@ -60,13 +69,6 @@ classdef fs
 % PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that the RCT zVariables have the wrong units.
 % PROPOSAL: Use utility function for reading every zVariable.
 %   PROPOSAL: Assert units from zVar attributes.
-%
-% PROPOSAL: Classes for RCT data.
-%   PRO: BIAS data has many fields.
-%   PRO: More well-defined data structs.
-%   PRO: Automatic assertions.
-%   CON: Structs are modified when cal.m uses them, i.e. one could just as well
-%        have classes for the format cal.m uses. ==> Too many classes.
 
 
 

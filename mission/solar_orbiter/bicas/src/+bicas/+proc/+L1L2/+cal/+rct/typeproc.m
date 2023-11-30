@@ -32,7 +32,6 @@ classdef typeproc
         % containers.Map: RCT Type ID --> Info about RCT type.
         % Its keys defines the set of RCT Type ID strings.
         RCT_TYPES_MAP = bicas.proc.L1L2.cal.rct.typeproc.init_RCT_TYPES_MAP();
-
     end
 
 
@@ -45,8 +44,7 @@ classdef typeproc
     properties(Access=private, Constant)
         
         % LL = Log Level
-        RCT_DATA_LL         = 'debug';
-        
+        RCT_DATA_LL = 'debug';
     end
 
 
@@ -239,7 +237,6 @@ classdef typeproc
                 VALUE_OUTSIDE_TABLE = 0;
                 itfModifIvpt = @(omegaRps) (bicas.proc.L1L2.cal.utils.eval_tabulated_TF(...
                     ItfModifIvpt, omegaRps, VALUE_OUTSIDE_TABLE));
-                
                 
                 RctData2.itfModifIvptCa{iBlts} = itfModifIvpt;
                     

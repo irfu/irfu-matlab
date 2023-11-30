@@ -209,27 +209,31 @@ classdef demuxer
         %       which can not be derived are correctly sized
         %       containing only NaN. Struct with fields.
         % --
-        % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVolt to denote that
+        % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote that
         % they are organized by BLTS and ASRs respectively.
         %
         function AsrSamplesAVoltSrm = calibrated_BLTSs_to_ASRs(SdidArray, bltsSamplesAVolt)
             % PROPOSAL: Log message for mux=NaN.
             
             % ASSERTIONS
-            assert(numel(SdidArray) == 5)
+            assert(numel(SdidArray) == bicas.const.N_BLTS)
             assert(isa(SdidArray, 'bicas.proc.L1L2.SignalDestinationId'))
             assert(isnumeric(bltsSamplesAVolt))
-            irf.assert.sizes(bltsSamplesAVolt, [-1, -2, 5])
+            irf.assert.sizes(bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS])
             
+            % Set only those ASRs for which there is data.
             AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
                 bltsSamplesAVolt, SdidArray);
+            
+            % Set those ASRs for which there is NO data.
+            % NOTE: Argument (handle object) is modified.
             bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltSrm);
         end
         
         
         
-        % Given an incomplete containers.Map of ASR-labelled samples, derive the
-        % missing ASRs.
+        % Given an incomplete SRM of ASID-labelled samples, derive the missing
+        % ASRs.
         %
         % NOTE: In the event of redundant FIELDS, but not redundant DATA
         % (non-fill value), the code can NOT make intelligent choice of only
@@ -330,13 +334,13 @@ classdef demuxer
                 bltsSamplesAVolt, SdidArray)
 
             % ASSERTIONS
-            assert(numel(SdidArray) == 5)
+            assert(numel(SdidArray) == bicas.const.N_BLTS)
             assert(isnumeric(bltsSamplesAVolt))
-            irf.assert.sizes(bltsSamplesAVolt, [-1, -2, 5])
+            irf.assert.sizes(bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS])
 
             nRows = size(bltsSamplesAVolt, 1);
             AsrSamplesSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
-            for iBlts = 1:5
+            for iBlts = 1:bicas.const.N_BLTS
                 if ~SdidArray(iBlts).isNowhere
                     AsrSamplesSrm.add(...
                         SdidArray(iBlts).asid.s, ...

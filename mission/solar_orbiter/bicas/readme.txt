@@ -56,6 +56,7 @@ ASID
 ASR, Antenna Signal Representation.
     (1) A reference to a particular "physical antenna signal"
         (a "data channel") which BIAS-LFR/TDS is trying to measure, or
+        NOTE: Class ASID represents such a reference.
     (2) a measurement of such.
     In reality, the terminology is:
     ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF

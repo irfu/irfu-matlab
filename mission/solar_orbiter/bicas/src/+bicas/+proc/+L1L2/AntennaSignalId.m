@@ -1,7 +1,12 @@
 %
 % Immutable class which instances represent an ASR channel ID (DC single/DC
-% diff/AC diff). This may or may not refer to a physical source signal, or how a
-% signal (from antennas) should be represented in a dataset.
+% diff/AC diff). This may or may not refer to
+% (1) a physical source signal, or
+% (2) how a signal (from antennas) should be represented in a dataset, since
+%     output datasets organize output data sorted as if they were physical
+%     signals (though the actual values/samples might actually be e.g. GND, 2.5V
+%     Ref, or unknown).
+% 
 %
 % NOTE: The constant field names used in bicas.proc.L1L2.AntennaSignalId.C
 % auto-propagate(!) to constant field names in bicas.proc.L1L2.SignalSourceId.C
@@ -12,6 +17,12 @@
 %
 classdef AntennaSignalId
     % PROPOSAL: Shorten constant field names to DC1, AC23 etc.
+    % PROPOSAL: Rename "s" to something more standard.
+    %   id
+    %       CON: Does not imply string(?). The object is an "ID".
+    % PROPOSAL: Have abbreviation for "s".
+    % PROPOSAL: Abolish "s" by implementing map object which accepts ASIDs as
+    % keys and using map for implementing SameRowsMap.
 
 
 
@@ -37,8 +48,8 @@ classdef AntennaSignalId
         % objects. containers.Map does not accept objects as keys.
         s
         
-        % String constant that represents the type of signal (DC/AC,
-        % single/diff).
+        % String constant that represents the type of signal (single/diff,
+        % DC/AC).
         category
 
         % 1x1, or 1x2 numeric array with components representing antennas.
@@ -132,7 +143,7 @@ classdef AntennaSignalId
             C    = struct();
 
             for asidNameCa = ASID.ALL_ASID_NAMES_CA'
-                asidName = asidNameCa{1};
+                asidName     = asidNameCa{1};
                 C.(asidName) = fh(ASID.(asidName));
             end
         end
@@ -154,6 +165,9 @@ classdef AntennaSignalId
                 C.(name) = bicas.proc.L1L2.AntennaSignalId(name, asidCategory, asidAntennas);
             end
             
+            % =====================================
+            % Add every possible unique ASID object
+            % =====================================
             add('DC_V1',  'DC single', [1  ]);
             add('DC_V2',  'DC single', [2  ]);
             add('DC_V3',  'DC single', [3  ]);
@@ -166,15 +180,17 @@ classdef AntennaSignalId
             add('AC_V13', 'AC diff',   [1, 3]);
             add('AC_V23', 'AC diff',   [2, 3]);
         
-            % Create lists.
+            % =======================================
+            % Create lists of all unique ASID objects
+            % =======================================
             ALL_ASID_NAMES_CA = {};    % All ASID names.
             ALL_ASID_CA       = {};    % All ASID objects.
             for fnCa = fieldnames(C)'
-                ALL_ASID_NAMES_CA{end+1, 1} = fnCa{1};
-                ALL_ASID_CA{   end+1, 1} = C.(fnCa{1});
+                ALL_ASID_NAMES_CA{end+1, 1} =    fnCa{1};
+                ALL_ASID_CA{      end+1, 1} = C.(fnCa{1});
             end
             C.ALL_ASID_NAMES_CA = ALL_ASID_NAMES_CA;
-            C.ALL_ASID_CA    = ALL_ASID_CA;
+            C.ALL_ASID_CA       = ALL_ASID_CA;
         end
         
         

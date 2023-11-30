@@ -142,6 +142,14 @@ classdef SameRowsMap < handle
 %       CON: Must redefine all methods, just for wrapping.
 %   PROBLEM: How compare SameRowsMap with SameSizeTypeMap?
 %
+% PROPOSAL: Prefix class name with "H" to imply handle class.
+% PROPOSAL: Prefix all variables that point to handle objects "h".
+%   Ex: hSrm
+%   NOTE: Does not want to use capital "H" since could cause ambiguity w.r.t.
+%         abbreviations.
+%   CON: Can not make distinction between pointing to objects/structs and not.
+%       CON: Does not need to. Pointed-to objects are always objects.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TODO: Check that pre-allocation works when using subsasgn.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

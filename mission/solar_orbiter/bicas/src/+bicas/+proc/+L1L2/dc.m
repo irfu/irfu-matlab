@@ -176,8 +176,6 @@ classdef dc
             % ASSERTIONS
             assert(isscalar(PreDc.hasSnapshotFormat))
             assert(isnumeric(  PreDc.Zv.bltsSamplesTm))
-            %irf.assert.vector(PreDc.Zv.bltsSamplesTmCa)
-            %assert(numel(PreDc.Zv.bltsSamplesTmCa) == bicas.const.N_BLTS)
 %             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
 %                 PreDc.Zv)
             [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
@@ -208,12 +206,6 @@ classdef dc
             else
                 % Use HK
                 % ------
-                % IMPLEMENTATION NOTE: HK contains the inverted value compared
-                % to what BICAS uses. Inverting the boolean value is non-trivial
-                % since the code uses float to represent a boolean value, with
-                % NaN=unknown/fill value.
-                
-                % Negate flag.
                 dlrFpa = PreDc.Zv.dlrFpa;
             end
             

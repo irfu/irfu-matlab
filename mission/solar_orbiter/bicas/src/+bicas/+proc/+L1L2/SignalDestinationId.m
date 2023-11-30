@@ -41,7 +41,7 @@ classdef SignalDestinationId
                 obj.asid      = [];
                 obj.isNowhere = true;
             else
-                error('Illegal argument.')
+                error('BICAS:Assertion:IllegalArgument', 'Illegal argument.')
             end
         end
 

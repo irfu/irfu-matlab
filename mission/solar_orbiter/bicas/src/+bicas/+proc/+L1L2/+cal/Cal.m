@@ -909,6 +909,7 @@ classdef Cal < handle
 
             % ASSERTION
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
+            assert(Ssid.is_ASR())
             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
@@ -1062,6 +1063,7 @@ classdef Cal < handle
             % ASSERTIONS
             bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
+            assert(Ssid.is_ASR())
             bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
             assert(isscalar(iNonBiasRct))
             assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)

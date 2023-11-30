@@ -37,12 +37,10 @@ classdef Routing   % < handle
     %#####################
     %#####################
     properties(SetAccess=immutable)
-        % bicas.proc.L1L2.SignalSourceId.
         % Where the physical signal in the BLTS ultimately comes from. This is
         % used to determine how the signal should be calibrated.
         ssid
         
-        % bicas.proc.L1L2.SignalDestinationId.
         % How the BLTS should be stored in the datasets.
         sdid
     end
@@ -57,7 +55,11 @@ classdef Routing   % < handle
     methods(Access=public)
 
         
-        
+        % ARGUMENTS
+        % =========
+        % Syntax 1: ssid
+        %       Reuse ssid.asid for creating a corresponding SDID.
+        % Syntax 2: ssid, sdid
         function obj = Routing(ssid, varargin)
             assert(isa(ssid, 'bicas.proc.L1L2.SignalSourceId'))
             obj.ssid = ssid;

@@ -37,9 +37,11 @@
 classdef drt < handle
     %
     % PROPOSAL: Better name.
-    %   deretrending
-    %   deretr
-    %   detrending
+    %   PRO: "drt" violates current naming conventions.
+    %   Deretrending
+    %   Deretr
+    %   Detrending
+    %   DetrendingRetrending
     
     
     

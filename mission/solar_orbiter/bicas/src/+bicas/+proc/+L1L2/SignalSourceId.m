@@ -1,16 +1,13 @@
 %
 % Immutable class which instances represent the source of a signal, i.e.
 % either:
-% (1) an ASR, or
+% (1) an ASR (ASID), or
 % (2) various special cases.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef SignalSourceId
-% PROPOSAL: Properties for "category" and "antennas" that mirror the
-%           bicas.proc.L1L2.AntennaSignalId stored inside the object in most
-%           cases. Error if other.
 
 
 
