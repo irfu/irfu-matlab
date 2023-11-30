@@ -277,7 +277,7 @@ classdef qual
         % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
         %
         function tsfAr = determine_TSF(...
-                samplesAVolt, ssid, hasSnapshotFormat, biasHighGain)
+                samplesAVolt, Ssid, hasSnapshotFormat, biasHighGain)
             % PROPOSAL: Better name.
             %   ~sample-to-TSF
             %       PRO: Can use same scheme for TSF-to-SWSF function.
@@ -297,9 +297,9 @@ classdef qual
             %             implementation though.
             
             assert(isfloat(samplesAVolt))
-            assert(isa(ssid, 'bicas.proc.L1L2.SignalSourceId'))
+            assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             
-            if ~ssid.is_ASR()
+            if ~Ssid.is_ASR()
                 tsfAr = false(size(samplesAVolt));
                 return
             end
@@ -309,8 +309,8 @@ classdef qual
             % ====================
             % Determine thresholds
             % ====================
-            if ssid.asid.is_diff()
-                if ssid.asid.is_AC()
+            if Ssid.Asid.is_diff()
+                if Ssid.Asid.is_AC()
                     % CASE: AC diff
                     % -------------
                     assert(isfinite(biasHighGain))   % Not NaN.

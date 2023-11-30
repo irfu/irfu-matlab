@@ -39,10 +39,10 @@ classdef Routing   % < handle
     properties(SetAccess=immutable)
         % Where the physical signal in the BLTS ultimately comes from. This is
         % used to determine how the signal should be calibrated.
-        ssid
+        Ssid
         
         % How the BLTS should be stored in the datasets.
-        sdid
+        Sdid
     end
 
 
@@ -57,25 +57,25 @@ classdef Routing   % < handle
         
         % ARGUMENTS
         % =========
-        % Syntax 1: ssid
-        %       Reuse ssid.asid for creating a corresponding SDID.
-        % Syntax 2: ssid, sdid
-        function obj = Routing(ssid, varargin)
-            assert(isa(ssid, 'bicas.proc.L1L2.SignalSourceId'))
-            obj.ssid = ssid;
+        % Syntax 1: Ssid
+        %       Reuse Ssid.Asid for creating a corresponding SDID.
+        % Syntax 2: Ssid, Sdid
+        function obj = Routing(Ssid, varargin)
+            assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
+            obj.Ssid = Ssid;
             
             switch numel(varargin)
                 case 0
-                    assert(ssid.is_ASR())
-                    sdid = bicas.proc.L1L2.SignalDestinationId(ssid.asid);
+                    assert(Ssid.is_ASR())
+                    Sdid = bicas.proc.L1L2.SignalDestinationId(Ssid.Asid);
                 case 1
-                    sdid = varargin{1};
+                    Sdid = varargin{1};
                 otherwise
                     error('BICAS:Assertion:IllegalArgument', ...
                         'Illegal number of extra arguments.')
             end
-            assert(isa(sdid, 'bicas.proc.L1L2.SignalDestinationId'))
-            obj.sdid = sdid;
+            assert(isa(Sdid, 'bicas.proc.L1L2.SignalDestinationId'))
+            obj.Sdid = Sdid;
             
         end
 
@@ -101,8 +101,8 @@ classdef Routing   % < handle
             SSID = bicas.proc.L1L2.SignalSourceId.C;
             SDID = bicas.proc.L1L2.SignalDestinationId.C;
             R = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants(...
-                @(asid) (bicas.proc.L1L2.Routing(...
-                    bicas.proc.L1L2.SignalSourceId(asid))));
+                @(Asid) (bicas.proc.L1L2.Routing(...
+                    bicas.proc.L1L2.SignalSourceId(Asid))));
                 
             R.REF25V_TO_DC_V1    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V1);
             R.REF25V_TO_DC_V2    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V2);

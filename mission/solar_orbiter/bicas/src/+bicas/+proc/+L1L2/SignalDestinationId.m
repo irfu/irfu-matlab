@@ -19,7 +19,7 @@ classdef SignalDestinationId
 
     properties(SetAccess=immutable, GetAccess=public)
         % ASID object or empty.
-        asid
+        Asid
         
         % Whether destination is "nowhere", i.e. the signal does not have a
         % destination and should be ignored.
@@ -35,10 +35,10 @@ classdef SignalDestinationId
         % Constructor
         function obj = SignalDestinationId(value)
             if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
-                obj.asid      = value;
+                obj.Asid      = value;
                 obj.isNowhere = false;
             elseif isequal(value, 'Nowhere')
-                obj.asid      = [];
+                obj.Asid      = [];
                 obj.isNowhere = true;
             else
                 error('BICAS:Assertion:IllegalArgument', 'Illegal argument.')
@@ -57,7 +57,7 @@ classdef SignalDestinationId
 
         function C = init_const()
             C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
-                @(asid) (bicas.proc.L1L2.SignalDestinationId(asid)));
+                @(Asid) (bicas.proc.L1L2.SignalDestinationId(Asid)));
 
             C.NOWHERE = bicas.proc.L1L2.SignalDestinationId('Nowhere');
         end

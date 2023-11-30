@@ -85,7 +85,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
                     bdmFpa, dlrFpa);
                 ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
-                    [ActRoutingArray.sdid], bltsSamplesAVolt);
+                    [ActRoutingArray.Sdid], bltsSamplesAVolt);
                 
                 % ASSERTIONS
                 testCase.assertEqual(ActRoutingArray, ExpRoutingArray)
@@ -114,8 +114,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 
                 for i = 1:numel(RoutingArray)
                     routing = RoutingArray(i);
-                    if routing.ssid.is_ASR()
-                        tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.ssid.asid.s);
+                    if routing.Ssid.is_ASR()
+                        tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.Ssid.Asid.s);
                     else
                         tempBltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
                     end
@@ -261,10 +261,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 nRows = size(inputFieldsCa{2}, 1);
                 AsSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
                 for i = 1:(numel(inputFieldsCa)/2)
-                    asid  = inputFieldsCa{2*i-1};
-                    value = inputFieldsCa{2*i  };
-                    %AsMap(key) = value;
-                    AsSrm.add(asid.s, value)
+                    Asid   = inputFieldsCa{2*i-1};
+                    sample = inputFieldsCa{2*i  };
+                    AsSrm.add(Asid.s, sample)
                 end
                 
                 % RUN FUNCTION TO BE TESTED

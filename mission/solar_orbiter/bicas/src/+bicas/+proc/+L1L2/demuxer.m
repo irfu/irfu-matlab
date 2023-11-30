@@ -343,7 +343,7 @@ classdef demuxer
             for iBlts = 1:bicas.const.N_BLTS
                 if ~SdidArray(iBlts).isNowhere
                     AsrSamplesSrm.add(...
-                        SdidArray(iBlts).asid.s, ...
+                        SdidArray(iBlts).Asid.s, ...
                         bltsSamplesAVolt(:, :, iBlts));
                 end
             end
@@ -353,27 +353,27 @@ classdef demuxer
         
         % Utility function. Derive missing ASR fields from other fields. If
         % exactly two of the Map keys exist in S, then derive the third using
-        % the relationship AsMap(asid1) == AsMap(asid2) + AsMap(asid3)
+        % the relationship AsMap(Asid1.s) == AsMap(Asid2.s) + AsMap(Asid3.s).
         %
         % ARGUMENTS
         % =========
-        % asid1, asid2, asid3
-        %       ASID names key strings which may or may not be keys in AsMap. If
+        % Asid1, Asid2, Asid3
+        %       ASIDs whose ID strings may or may not be keys in AsMap. If
         %       exactly one of them is missing in "As", then the key+value is
         %       created with values assuming that the field contents are related
-        %       through the relationship value1 = value2 + value3.
-        %       In other cases, "AsMap" is returned unmodified.
+        %       through the relationship value1 = value2 + value3. In other
+        %       cases, "AsMap" is returned unmodified.
         %
-        function AsSrm = complete_relation(AsSrm, asid1, asid2, asid3)
+        function AsSrm = complete_relation(AsSrm, Asid1, Asid2, Asid3)
             assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
             
-            e1 = AsSrm.isKey(asid1.s);
-            e2 = AsSrm.isKey(asid2.s);
-            e3 = AsSrm.isKey(asid3.s);
+            e1 = AsSrm.isKey(Asid1.s);
+            e2 = AsSrm.isKey(Asid2.s);
+            e3 = AsSrm.isKey(Asid3.s);
 
-            if     ~e1 &&  e2 &&  e3   AsSrm.add(asid1.s, AsSrm(asid2.s) + AsSrm(asid3.s));
-            elseif  e1 && ~e2 &&  e3   AsSrm.add(asid2.s, AsSrm(asid1.s) - AsSrm(asid3.s));
-            elseif  e1 &&  e2 && ~e3   AsSrm.add(asid3.s, AsSrm(asid1.s) - AsSrm(asid2.s));
+            if     ~e1 &&  e2 &&  e3   AsSrm.add(Asid1.s, AsSrm(Asid2.s) + AsSrm(Asid3.s));
+            elseif  e1 && ~e2 &&  e3   AsSrm.add(Asid2.s, AsSrm(Asid1.s) - AsSrm(Asid3.s));
+            elseif  e1 &&  e2 && ~e3   AsSrm.add(Asid3.s, AsSrm(Asid1.s) - AsSrm(Asid2.s));
             end
         end
 

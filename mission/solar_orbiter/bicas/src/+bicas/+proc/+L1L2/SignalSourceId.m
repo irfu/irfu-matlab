@@ -18,7 +18,7 @@ classdef SignalSourceId
 
 
     properties(SetAccess=immutable, GetAccess=public)
-        asid
+        Asid
     end
 
 
@@ -36,10 +36,10 @@ classdef SignalSourceId
         % Constructor
         function obj = SignalSourceId(value)
             if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
-                obj.asid        = value;
+                obj.Asid        = value;
                 obj.specialCase = [];
             elseif ischar(value) && ismember(value, {'2.5V Ref', 'GND', 'Unknown'})
-                obj.asid        = [];
+                obj.Asid        = [];
                 obj.specialCase = value;
             else
                 error('BICAS:Assertion:IllegalArgument', 'Illegal argument.')
@@ -47,7 +47,7 @@ classdef SignalSourceId
         end
 
         function isAsr = is_ASR(obj)
-            isAsr = isa(obj.asid, 'bicas.proc.L1L2.AntennaSignalId');
+            isAsr = isa(obj.Asid, 'bicas.proc.L1L2.AntennaSignalId');
         end
 
     end    % methods(Access=public)
@@ -58,7 +58,7 @@ classdef SignalSourceId
 
         function C = init_const()
             C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
-                @(asid) (bicas.proc.L1L2.SignalSourceId(asid)));
+                @(Asid) (bicas.proc.L1L2.SignalSourceId(Asid)));
 
             C.REF25V   = bicas.proc.L1L2.SignalSourceId('2.5V Ref');
             C.GND      = bicas.proc.L1L2.SignalSourceId('GND');
