@@ -64,8 +64,8 @@ classdef findread
 
         % Map of singleton RCTT objects
         % -----------------------------
-        % containers.Map: RCTID --> RCTT
-        % Its keys defines the set of RCTID strings.
+        % containers.Map: RCTTID --> RCTT
+        % Its keys defines the set of RCTTID strings.
         RCTT_MAP = bicas.proc.L1L2.cal.rct.findread.init_RCTT_MAP();
     end
 
@@ -104,34 +104,34 @@ classdef findread
         % RctDataMap
         %       containers.Map. Can be used for bicas.proc.L1L2.cal.Cal
         %       constructor even if there is no zVar CALIBRATION_TABLE.
-        %       One key per specified RCT type ID in argument rctidCa.
+        %       One key per specified RCTTID in argument rcttidCa.
         %       Exactly one RCT per RCT type.
         % 
         function RctDataMap = find_read_RCTs_by_regexp(...
-                rctidCa, rctDir, SETTINGS, L)
+                rcttidCa, rctDir, SETTINGS, L)
             
-            assert(iscell(rctidCa))
+            assert(iscell(rcttidCa))
             
             RctDataMap = containers.Map();
             
-            for i = 1:numel(rctidCa)
-                rctid = rctidCa{i};
+            for i = 1:numel(rcttidCa)
+                rcttid = rcttidCa{i};
                 
                 % Find path to RCT.
                 settingKey     = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(...
-                    rctid).filenameRegexpSettingKey;
+                    rcttid).filenameRegexpSettingKey;
                 filenameRegexp = SETTINGS.get_fv(settingKey);
                 filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                     rctDir, filenameRegexp, L);
                 
                 % Read RCT file.
                 RctDataList    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-                    rctid, filePath, L)};
+                    rcttid, filePath, L)};
                 
                 % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so
                 % that they are stored analogously with when using ga.
                 % CALIBRATION_TABLE.
-                RctDataMap(rctid) = RctDataList;
+                RctDataMap(rcttid) = RctDataList;
             end
         end
 
@@ -139,7 +139,7 @@ classdef findread
 
         % (1) Load one BIAS RCT by regular expression.
         % (2) Load one or multiple non-BIAS RCT(s) of the selected type
-        % (rctid) using CDF global attribute CALIBRATION_TABLE and ZVs
+        % (rcttid) using CDF global attribute CALIBRATION_TABLE and ZVs
         % CALIBRATION_TABLE_INDEX and BW.
         %
         %
@@ -156,8 +156,8 @@ classdef findread
         %
         % ARGUMENTS
         % =========
-        % nonBiasRctid
-        %       RCTID for one *non-BIAS* RCT.
+        % nonBiasRcttid
+        %       RCTTID for one *non-BIAS* RCT.
         % ga_CALIBRATION_TABLE
         %       1D cell array of strings. LFR/TDS RCT global attribute
         %       CALIBRATION_TABLE.
@@ -176,26 +176,26 @@ classdef findread
         %       constructor.
         %
         function RctDataMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
-                nonBiasRctid, rctDir, ...
+                nonBiasRcttid, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, SETTINGS, L)            
             
-            % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRctid".
+            % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRcttid".
             % specifies.
             BiasRctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
                 {'BIAS'}, rctDir, SETTINGS, L);
             
-            % Read BIAS RCT as specified by argument "nonBiasRctid".
+            % Read BIAS RCT as specified by argument "nonBiasRcttid".
             NonBiasRctDataList = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
-                nonBiasRctid, rctDir, ...
+                nonBiasRcttid, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, L);
             
-            RctDataMap               = containers.Map();
-            RctDataMap('BIAS')       = BiasRctDataMap('BIAS');
-            RctDataMap(nonBiasRctid) = NonBiasRctDataList;
+            RctDataMap                = containers.Map();
+            RctDataMap('BIAS')        = BiasRctDataMap('BIAS');
+            RctDataMap(nonBiasRcttid) = NonBiasRctDataList;
         end
                 
         
@@ -286,7 +286,7 @@ classdef findread
         %       it (normalize input).
         %
         function RctDataList = find_read_RCTs_by_CALIBRATION_TABLE(...
-                nonBiasRctid, rctDir, ...
+                nonBiasRcttid, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, L)
@@ -320,7 +320,7 @@ classdef findread
                 j              = iCtArray(i) + 1;
                 filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
                 RctDataList{j} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-                    nonBiasRctid, filePath, L);
+                    nonBiasRcttid, filePath, L);
             end
             
         end
@@ -344,12 +344,12 @@ classdef findread
         % (2) separate the logging from the RCT-reading code, so that external
         %     code can read RCTs without BICAS.
         %
-        function RctData = read_RCT_modify_log(rctid, filePath, L)
+        function RctData = read_RCT_modify_log(rcttid, filePath, L)
             
             L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
-                'Reading RCT (rctid=%s): "%s"', rctid, filePath)
+                'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
             
-            Rctt = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(rctid);
+            Rctt = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(rcttid);
             
             RctDataTemp = Rctt.read_RCT(filePath);
             RctData     = Rctt.modify_RCT_data(RctDataTemp);

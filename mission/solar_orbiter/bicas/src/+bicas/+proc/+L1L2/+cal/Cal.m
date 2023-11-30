@@ -273,7 +273,7 @@ classdef Cal < handle
 
         % RCT calibration data
         % --------------------------------------------------
-        % containers.Map: RCT Type ID --> Data
+        % containers.Map: RCTTID --> Data
         % For BIAS, data is a struct (only one BIAS RCT is loaded).
         % For non-BIAS, data is a 1D cell array. {iRct}.
         % iRct-1 corresponds to ga. CALIBRATION_TABLE. and zv.
@@ -339,10 +339,9 @@ classdef Cal < handle
         %
         % ARGUMENTS
         % =========
-        % RctDataMap
-        %       containers.Map with
-        %           keys   = BIAS RCT type ID.
-        %           values = 1D cell array.
+        % RctDataMap        
+        %       containers.Map with keys RCTTID --> values = 1D cell array of
+        %       RCT data. Must include BIAS RCT data.
         %       The content in non-empty indices {iRct} come from the RCT which
         %       is determined by the combination zVar BW, zVar
         %       CALIBRATION_TABLE_INDEX(i,1), glob.attr. CALIBRATION_TABLE  (or

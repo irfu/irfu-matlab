@@ -207,9 +207,9 @@ RCT
     RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
 RCTT
     Class bicas.proc.L1L2.cal.rct.RctType.
-RCTID
-    RCT ID. String constant that represents a type of RCT: "BIAS", "LFR",
-    "TDS-CWF", "TDS-RSWF".
+RCTTID
+    RCT Type ID. String constant that represents a type of RCT. Permitted
+    values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
 RCTS
     RCT CALIBRATION_TABLE (glob.attr) + CALIBRATION_TABLE_INDEX (zVariable).
     S = plural.
