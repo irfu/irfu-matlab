@@ -62,7 +62,7 @@ classdef dc
                 PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
             currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
-            currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
+            currentAAmpere = nan(size(currentSAmpere));    % Preallocate.
             iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
             [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
@@ -138,25 +138,9 @@ classdef dc
         
         % Demultiplex and calibrate VOLTAGES (not e.g. currents).
         %
-        % NOTE: Can handle arrays of any size if the sizes are
-        % consistent.
+        % NOTE: Can handle arrays of any size if the sizes are consistent.
         %
         function AsrSamplesAVoltSrm = calibrate_demux_voltages(PreDc, Cal, L)
-        % PROPOSAL: Sequence of constant settings includes dt (for CWF)
-        %   PROBLEM: Not clear how to implement it since it is a property of two records, not one.
-        %       PROPOSAL: Use other utility function(s).
-        %           PROPOSAL: Function that finds changes in dt.
-        %           PROPOSAL: Function that further splits list of index intervals ~on the form iFirstList, iLastList.
-        %           PROPOSAL: Write functions such that one can detect suspicious jumps in dt (under some threshold).
-        %               PROPOSAL: Different policies/behaviours:
-        %                   PROPOSAL: Assertion on expected constant dt.
-        %                   PROPOSAL: Always split sequence at dt jumps.
-        %                   PROPOSAL: Never  split sequence at dt jumps.
-        %                   PROPOSAL: Have threshold on dt when expected constant dt.
-        %                       PROPOSAL: Below dt jump threshold, never split sequence
-        %                       PROPOSAL: Above dt jump threshold, split sequence
-        %                       PROPOSAL: Above dt jump threshold, assert never/give error
-        %
         % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN for CWF.
         %
         % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
@@ -164,12 +148,7 @@ classdef dc
         %       subsequences based on mux mode and latching relay, nothing else.
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
         %
-        % PROPOSAL: Function for dtSec.
-        %     PROPOSAL: Some kind of assertion (assumption of) constant sampling frequency.
-        %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
-        %
-        % PROPOSAL: Move processing of one subsequence (one for-loop iteration) into its own function.
 
             %tTicToc  = tic();
 
@@ -194,21 +173,6 @@ classdef dc
                 nan(nRecords, nSamplesPerRecordChannel), ...
                 bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA);
 
-            % Set dlrFpa
-            % ----------
-            if 0
-                % Use hardcoded values
-                % --------------------
-                % IMPLEMENTATION NOTE: This exists for historical reasons and
-                % should eventually be abolished, together with the function
-                % called below.
-                dlrFpa = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
-            else
-                % Use HK
-                % ------
-                dlrFpa = PreDc.Zv.dlrFpa;
-            end
-            
             iCalibLZv = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
             iCalibHZv = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
 
@@ -233,9 +197,9 @@ classdef dc
                 PreDc.Zv.freqHz, ...
                 PreDc.Zv.iLsf, ...
                 PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
-                PreDc.Zv.ufv, ...
+                PreDc.Zv.ufv, ...                
+                PreDc.Zv.dlrFpa.logical2doubleNan(), ...
                 PreDc.Zv.lfrRx, ...
-                dlrFpa.logical2doubleNan(), ...
                 iCalibLZv, ...
                 iCalibHZv);
 
@@ -271,10 +235,14 @@ classdef dc
                 Cv.freqHz                  = PreDc.Zv.freqHz(                 iRec1);
                 Cv.iLsf                    = PreDc.Zv.iLsf(                   iRec1);
                 Cv.CALIBRATION_TABLE_INDEX = PreDc.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
-                Cv.ufv                     = PreDc.Zv.ufv(                    iRec1);
-                Cv.dlrFpa                  = dlrFpa(                          iRec1);
+                Cv.ufv                     = PreDc.Zv.ufv(                    iRec1);                
+                Cv.dlrFpa                  = PreDc.Zv.dlrFpa(                 iRec1);
+                % NOTE: Excluding PreDc.Zv.lfrRx since it is only need for
+                %       splitting time/CDF record intervals, not for calibration
+                %       since calibration can handle sequences of only NaN.
                 Cv.iCalibL                 = iCalibLZv(                       iRec1);
                 Cv.iCalibH                 = iCalibHZv(                       iRec1);
+                % NOTE: Below variables do not vary over CDF records anyhow.
                 Cv.hasSnapshotFormat       = PreDc.hasSnapshotFormat;
                 Cv.isLfr                   = PreDc.isLfr;
                 Cv.isTdsCwf                = PreDc.isTdsCwf;
@@ -374,10 +342,10 @@ classdef dc
                     Cal);
             end
 
-            %====================================
-            % DEMULTIPLEXER: DERIVE MISSING ASRs
-            %====================================
-            AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
+            %========================================================
+            % DEMULTIPLEXER: DERIVE AND COMPLEMENT WITH MISSING ASRs
+            %========================================================
+            AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
                 [DemuxerRoutingArray.sdid], ssBltsSamplesAVolt);
         end    % calibrate_demux_subsequence
 

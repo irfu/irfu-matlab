@@ -277,7 +277,7 @@ classdef qual
         % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
         %
         function tsfAr = determine_TSF(...
-                samplesAVolt, ssid, hasSnapshotFormat, biasHighGain, isLfr)
+                samplesAVolt, ssid, hasSnapshotFormat, biasHighGain)
             % PROPOSAL: Better name.
             %   ~sample-to-TSF
             %       PRO: Can use same scheme for TSF-to-SWSF function.
@@ -286,9 +286,15 @@ classdef qual
             %   Ex: Channels set to NaN when there is no BLTS due to Rx setting.
             %
             % TODO-DEC: How handle snapshots? If sliding window is not applied
-            % here, then when should the decision how to set SWSF for snapshots be done?
-            %   PROPOSAL: Return TSFs for every snapshot sample. Let other code
-            %             decide.
+            %           here, then when should the decision how to set SWSF for
+            %           snapshots be done?
+            %   PROPOSAL: Return TSFs for every snapshot sample for sequence of
+            %             samples, regardless of whether snapshots or not. Other
+            %             function handles snapshots specifically.
+            %   PROPOSAL: Separate function for snapshots and which returns
+            %             value with other meaning (not apply sliding window
+            %             to). That function uses this function in its
+            %             implementation though.
             
             assert(isfloat(samplesAVolt))
             assert(isa(ssid, 'bicas.proc.L1L2.SignalSourceId'))
@@ -328,7 +334,7 @@ classdef qual
             end
             lowerThreshold = -higherThresholdAVolt;
             
-            
+            % NOTE: Has to be able handle NaN.
             if ~hasSnapshotFormat
                 tsfAr = (samplesAVolt < lowerThresholdAVolt) || (higherThresholdAVolt < samplesAVolt);
             else

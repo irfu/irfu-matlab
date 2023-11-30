@@ -8,23 +8,24 @@
 %
 % IMPLEMENTATION NOTE
 % ===================
-% bicas.utils.SameRowsMap.setRows() can be slow if storing data directly as
-% values in containers.Map, presumably since preallocation does not work.
-% Therefore storing all values indirectly via handle class objects
-% (bicas.utils.HandleWrapper), which (apparently) makes it possible to modify
-% arrays without implicit copying by MATLAB, thus increasing performance. Does
-% seem to work. Since the class's internal data structure uses handle objects,
-% the class itself also has to be a handle class, to avoid that internal handle
-% objects are shared between different instances of bicas.utils.SameRowsMap.
+% bicas.utils.SameRowsMap.setRows() can be slow *IF* the implementation stores
+% data directly as (non-handle) values in containers.Map, presumably since
+% preallocation does not work. To avoid this, the implementation instead stores
+% all values indirectly via handle class objects (bicas.utils.HandleWrapper),
+% which (apparently) makes it possible to modify arrays without implicit copying
+% by MATLAB, thus increasing performance. Does seem to work. Since the class's
+% internal data structure uses handle objects, the class itself also has to be a
+% handle class, to avoid that internal handle objects are shared between
+% different instances of bicas.utils.SameRowsMap.
 %
 %
 % RATIONALE
 % =========
-% Class was created for the purpose of managing sets of zVariable-like arrays,
-% where the first dimension represent CDF records and is thus equal in size for
-% all arrays. This could be useful for doing indexing operations and enforcing
-% the same number of CDF records/rows. In practice, this seems to not be as
-% useful as intended, and harder to implement than expected. Therefore not
+% Class was created for the purpose of managing sets of ZV-like arrays, where
+% the first dimension represent CDF records and is thus equal in size for all
+% arrays. This could be useful for doing indexing operations and enforcing the
+% same number of CDF records/rows. In practice, this seems to not be as useful
+% as intended, and harder to implement than expected. The class is therefore not
 % widely used. Still useful for maintaining a map ASR channel-->samples.
 % /Erik P G Johansson 2023-10-02
 %
@@ -327,6 +328,8 @@ classdef SameRowsMap < handle
 
 
 
+        % Syntactic sugar.
+        % Support indexing with (): array = Srm(key)
         function varargout = subsref(obj, S)
 
             switch(S(1).type)

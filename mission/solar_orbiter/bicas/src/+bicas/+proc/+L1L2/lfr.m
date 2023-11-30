@@ -234,7 +234,10 @@ classdef lfr
 %             Zv.bltsSamplesTmCa{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
 %             Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==1 );
             Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
-            % Copy values, except when zvRx==0 (==>NaN).
+            % Copy values when there is actual data for that BLTS as determined
+            % by zvRx==0. Otherwise NaN.
+            % zvRx == 0: BLTS 4/5 contain data.
+            % zvRx == 1: BLTS 2/3 contain data.
             Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==0 );
             Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==0 );
             Zv.bltsSamplesTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
@@ -249,7 +252,6 @@ classdef lfr
             Zv.ufv                     = ~logical(InSci.Zv.BW);
             Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;
             Zv.dlrFpa                  = HkSciTime.dlrFpa;
-            %Zv.dlrFpa                  = bicas.utils.FPArray(false(size(InSci.Zv.Epoch)));   % TEST: Always DLR = 0.
             Zv.iLsf                    = iLsfZv;
 
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;

@@ -465,8 +465,18 @@ classdef Cal < handle
         % NOTE: This is the normal way of obtaining bias current in physical
         % units (as opposed to HK bias current).
         %
+        % ARGUMENTS
+        % =========
+        % iCalibTimeL
+        %       Has to be same size as "biasCurrentTm".
+        %
         function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
                 biasCurrentTm, iAntenna, iCalibTimeL)
+            
+            assert(isscalar(iAntenna))
+            assert(isequaln(...
+                size(biasCurrentTm), ...
+                size(iCalibTimeL)))
 
             %==============================
             % Obtain calibration constants

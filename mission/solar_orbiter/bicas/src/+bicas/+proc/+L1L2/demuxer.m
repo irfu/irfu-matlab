@@ -1,7 +1,7 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
-%   bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs()
+%   bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs()
 %   bicas.proc.L1L2.AntennaSignalId
 %   bicas.proc.L1L2.SignalSourceId
 %   bicas.proc.L1L2.SignalDestinationId
@@ -193,6 +193,8 @@ classdef demuxer
         % 
         % ARGUMENTS
         % =========
+        % SdidArray
+        %       Length-5 array of SSIDs. One SDID per BLTS.
         % bltsSamplesAVolt
         %       Cell array of vectors/matrices, length 5.
         %       {iBlts} = Vector/matrix with sample values
@@ -201,18 +203,16 @@ classdef demuxer
         %
         % RETURN VALUES
         % =============
-        % SsidArray
-        %       Length-5 array of SSIDs. One SSID per BLTS.
         % AsrSamplesAVoltSrm
         %       Samples for all ASRs (singles, diffs) which can
         %       possibly be derived from the BLTS (BIAS_i). Those
         %       which can not be derived are correctly sized
         %       containing only NaN. Struct with fields.
         % --
-        % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote that
-        % they are organized by BLTS and ASRs respectively.
+        % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote
+        % that they are organized by BLTS and ASRs respectively.
         %
-        function AsrSamplesAVoltSrm = calibrated_BLTSs_to_ASRs(SdidArray, bltsSamplesAVolt)
+        function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(SdidArray, bltsSamplesAVolt)
             % PROPOSAL: Log message for mux=NaN.
             
             % ASSERTIONS

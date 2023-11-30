@@ -13,8 +13,8 @@ classdef PreDc
     %   demultiplexing
     %   data
     %
-    % IMPLEMENTATION NOTE: bltsSamplesTm
-    % ==================================
+    % IMPLEMENTATION NOTE: bltsSamplesTm and lfrRx
+    % ============================================
     % PreDc always represents (has variables/elements for) all five BLTS's,
     % despite that only three are used at any given time. The channels not used
     % are set to NaN. Which ones are actually used can be switched at any given

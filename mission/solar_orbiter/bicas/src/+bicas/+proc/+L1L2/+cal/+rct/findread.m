@@ -13,7 +13,7 @@ classdef findread
     %   NOTE: There is a function
     %         bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX() used by
     %         bicas.proc.L1L2.lfr.process_normalize_CDF() to produce NaN-valued
-    %         zVar.
+    %         ZVs.
     %
     %   PROPOSAL: Have LFR&TDS:process_normalize_CDF() normalize
     %            CALIBRATION_TABLE_INDEX and CALIBRATION_TABLE by creating fake
@@ -186,7 +186,8 @@ classdef findread
             BiasRctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
                 {'BIAS'}, rctDir, SETTINGS, L);
             
-            % Read BIAS RCT as specified by argument "nonBiasRcttid".
+            % NOTE: Reads potentially MULTIPLE NON-BIAS RCTs as specified by
+            % argument "nonBiasRcttid".
             NonBiasRctDataList = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
                 nonBiasRcttid, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
@@ -278,6 +279,10 @@ classdef findread
         
         
         
+        % Reads potentially MULTIPLE NON-BIAS RCTs (of the same type) from
+        % filenames indirectly specified by arguments ga_CALIBRATION_TABLE, and
+        % zv_CALIBRATION_TABLE_INDEX.
+        %
         % ARGUMENTS
         % =========
         % zv_BW

@@ -52,11 +52,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         
         
         
-        % Test two function in combination.
+        % Test two functions in combination.
         %
         % IMPLEMENTATION NOTE: The design is for historical reasons before the
         % two functions were split up.
-        function test_get_routings_calibrated_BLTSs_to_ASRs(testCase)
+        function test_get_routings_calibrated_BLTSs_to_all_ASRs(testCase)
 
             A = bicas.proc.L1L2.AntennaSignalId.C;
             R = bicas.proc.L1L2.Routing.C;
@@ -84,7 +84,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
                     bdmFpa, dlrFpa);
-                ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_ASRs(...
+                ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
                     [ActRoutingArray.sdid], bltsSamplesAVolt);
                 
                 % ASSERTIONS
