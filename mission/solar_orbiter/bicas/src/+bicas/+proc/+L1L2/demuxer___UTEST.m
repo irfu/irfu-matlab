@@ -8,7 +8,39 @@
 % First created 2021-09-08, using older test code.
 %
 classdef demuxer___UTEST < matlab.unittest.TestCase
+    
+    
+    
+    methods(Static, Access=private)
+        
+        function [channelIdStringsCa, testSamplesCa] = create_channel_test_data(sampleSize)
+            % (iChannel, 1) = ASID ID string.
+            % (iChannel, 2) = Sample value (that is consistent with other
+            %                 channels).
+            A = bicas.proc.L1L2.AntennaSignalId.C;
+            TEST_DATA_CA = { ...
+                A.DC_V1.s,  10; ...
+                A.DC_V2.s,  11; ...
+                A.DC_V3.s,  13; ...
+                A.DC_V12.s, 10-11; ...
+                A.DC_V13.s, 10-13; ...
+                A.DC_V23.s, 11-13; ...
+                A.AC_V12.s, 45-56; ...
+                A.AC_V13.s, 45-69; ...
+                A.AC_V23.s, 56-69 ...
+            };
+            
+            % Multiply the sample values with matrix to test multiple records
+            % with "snapshots" (SPR>1).
+            TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(sampleSize)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
+            
+            channelIdStringsCa = TEST_DATA_CA(:, 1);
+            testSamplesCa      = TEST_DATA_CA(:, 2);
+        
+        end
 
+    end
+    
 
 
     %##############
@@ -17,9 +49,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %##############
     %##############
     methods(Test)
-
-
-
+        
+        
+        
         % Test two function in combination.
         %
         % IMPLEMENTATION NOTE: The design is for historical reasons before the
@@ -33,24 +65,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             % Test data
             % =========
             TEST_DATA_UNKNOWN = [999];   % Data from unknown source.
-            TEST_DATA_CA = { ...
-                A.DC_V1.s,  10; ...
-                A.DC_V2.s,  11; ...
-                A.DC_V3.s,  13; ...
-                A.DC_V12.s, 10-11; ...
-                A.DC_V13.s, 10-13; ...
-                A.DC_V23.s, 11-13; ...
-                A.AC_V12.s, 45-56; ...
-                A.AC_V13.s, 45-69; ...
-                A.AC_V23.s, 56-69 ...
-            };
-            SAMPLES_SIZE = [3,2];
-            % Multiply the sample values with matrix to test multiple records
-            % with "snapshots" (SPR>1).
-            TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(SAMPLES_SIZE)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
+            SAMPLES_SIZE      = [3,2];
             
-            AsidTestSamplesSrm = containers.Map(TEST_DATA_CA(:, 1), TEST_DATA_CA(:, 2));
-            nRows = size(TEST_DATA_CA{1,2}, 1);
+            nRows = SAMPLES_SIZE(1);
+            [channelIdStringsCa, testSamplesCa] = bicas.proc.L1L2.demuxer___UTEST.create_channel_test_data(SAMPLES_SIZE);
+            
+            AsidTestSamplesSrm = containers.Map(channelIdStringsCa, testSamplesCa);
             
             
             
@@ -82,22 +102,22 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 
                 % Autogenerate bltsSamplesCa (test argument) using
                 % ExpRoutingArray (only possible for BDM 0-4.
-                bltsSamplesAVolt = gen_BLTS_samples(ExpRoutingArray);
+                tempBltsSamplesAVolt = gen_BLTS_samples(ExpRoutingArray);
                 
-                test(bdmFloatNan, dlrFloatNan, bltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
+                test(bdmFloatNan, dlrFloatNan, tempBltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
             end
             
             
             
-            function bltsSamplesAVolt = gen_BLTS_samples(RoutingArray)
-                bltsSamplesAVolt = zeros(SAMPLES_SIZE);
+            function tempBltsSamplesAVolt = gen_BLTS_samples(RoutingArray)
+                tempBltsSamplesAVolt = zeros(SAMPLES_SIZE);
                 
                 for i = 1:numel(RoutingArray)
                     routing = RoutingArray(i);
                     if routing.ssid.is_ASR()
-                        bltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.ssid.asid.s);
+                        tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.ssid.asid.s);
                     else
-                        bltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
+                        tempBltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
                     end
                 end
             end
