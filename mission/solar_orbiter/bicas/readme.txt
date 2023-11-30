@@ -205,6 +205,8 @@ RCS ICD
     RCS ICD may thus be superseded by a lower rev/iss for the newer RCS ICD.
 RCT
     RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
+RCTT
+    Class bicas.proc.L1L2.cal.rct.RctType.
 RCTID
     RCT ID. String constant that represents a type of RCT: "BIAS", "LFR",
     "TDS-CWF", "TDS-RSWF".

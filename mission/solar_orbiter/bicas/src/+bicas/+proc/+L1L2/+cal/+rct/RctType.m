@@ -16,32 +16,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) RctType
-% PROPOSAL: Singleton classes for each type of RCT (not storing the data).  -- ALMOST IMPLEMENTED
-%           Share a common superclass. Can contain:
-%   (1) methods read_*_RCT()
-%   (2) methods modify_*_data()
-%   (3) methods log_*_RCTs()
-%   (4) filenameRegexpSettingKey (constant)
-%   (5) RCTID (constant)
-%   PRO: Can replace bulk of
-%        bicas.proc.L1L2.cal.rct.fs,
-%        bicas.proc.L1L2.cal.rct.typeproc.
-%   PRO: Can replace structs created by
-%        bicas.proc.L1L2.cal.rct.typeproc.init_RCT_TYPES_MAP.entry().
-%   NEED: There is a need to be able to load the "plain" content of RCTs,
-%         without modification.
-%       Ex: Best practice w.r.t. modularization. Reusability.
-%       Ex: Loading and analyzing RCTs outside of BICAS.
-%       PROPOSAL: Can still have separate methods for (1) reading raw RCT, and
-%                 (2) modifying the raw RCT data.
-%
-% PROPOSAL: Field for RCTID.
-%
-% PROPOSAL: Create singleton classes of subclasses and store a map with RCTID
-%           keys to them.
-%   PROPOSAL: Assert that filenameRegexpSettingKey values are unique.
-%
-% PROPOSAL: Classes for RCT data (not RCT type).
+% PROPOSAL: Classes for RCT data (not just RCT type).
 %   PRO: BIAS data has many fields.
 %   PRO: More well-defined data structs.
 %   PRO: Automatic assertions.
