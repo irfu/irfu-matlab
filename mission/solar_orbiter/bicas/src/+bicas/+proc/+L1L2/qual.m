@@ -274,6 +274,416 @@ classdef qual
 
 
 
+        % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
+        %
+        function tsfAr = determine_TSF(...
+                samplesAVolt, ssid, hasSnapshotFormat, biasHighGain, isLfr)
+            % PROPOSAL: Better name.
+            %   ~sample-to-TSF
+            %       PRO: Can use same scheme for TSF-to-SWSF function.
+            % PROPOSAL: Retrieve thresholds from settings.
+            % TODO-DEC: How handle NaN/missing samples?
+            %   Ex: Channels set to NaN when there is no BLTS due to Rx setting.
+            %
+            % TODO-DEC: How handle snapshots? If sliding window is not applied
+            % here, then when should the decision how to set SWSF for snapshots be done?
+            %   PROPOSAL: Return TSFs for every snapshot sample. Let other code
+            %             decide.
+            
+            assert(isfloat(samplesAVolt))
+            assert(isa(ssid, 'bicas.proc.L1L2.SignalSourceId'))
+            
+            if ~ssid.is_ASR()
+                tsfAr = false(size(samplesAVolt));
+                return
+            end
+            
+            % CASE: ASR (no non-plasma signal, no special case)
+            
+            % ====================
+            % Determine thresholds
+            % ====================
+            if ssid.asid.is_diff()
+                if ssid.asid.is_AC()
+                    % CASE: AC diff
+                    % -------------
+                    assert(isfinite(biasHighGain))   % Not NaN.
+                    % TODO-DEC: Too high thresholds?
+                    if biasHighGain
+                        higherThresholdAVolt = 0.3/20;
+                    else
+                        higherThresholdAVolt = 0.3;
+                    end
+                else
+                    % CASE: DC diff
+                    % -------------
+                    higherThresholdAVolt = 2;
+                end
+            else
+                % CASE: Single
+                % ------------
+                % NOTE: Not using terms "min" and "max" since they are
+                % ambiguous (?).
+                higherThresholdAVolt =  40;
+            end
+            lowerThreshold = -higherThresholdAVolt;
+            
+            
+            if ~hasSnapshotFormat
+                tsfAr = (samplesAVolt < lowerThresholdAVolt) || (higherThresholdAVolt < samplesAVolt);
+            else
+                % size(ssBltsSamplesTm) = [1        2048           5];
+                error
+            end
+        end
+
+
+
+        % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
+        %
+        % Detect saturation in an arbitrary (one-channel/scalar) signal.
+        %
+        % Primarily intended for detecting saturation in CWF diffs, but could
+        % potentially be used for singles too. Only intended for detecting "full
+        % saturation" (not "partial saturation") to be used for setting in
+        % quality bits directly.
+        %
+        % ARGUMENTS
+        % =========
+        % tt2000Ar
+        % y
+        %       Column vector of samples over time.
+        %       Missing data is represented with NaN (not fill value).
+        %       NOTE: Does not specify unit. Can be both physical units or TM,
+        %       as long as it is consistent with the threshold arguments.
+        % lowerThreshold, higherThreshold
+        %       Scalar thresholds. If y exceeds any of these, and does so
+        %       "sufficiently often", then the corresponding values are labelled
+        %       as saturated.
+        %
+        %
+        % RETURN VALUE
+        % ============
+        % bSwsf
+        %       Array of logical where elements are set for positions where
+        %       argument y is saturated (SWSF).
+        %
+        function bSwsf = determine_SWSF(...
+                tt2000Ar, y, ...
+                lowerThreshold, higherThreshold, ...
+                saturationFractionThreshold, intervalLengthSec)
+            % PROPOSAL: Remove assertions and rely on sub-function's assertion.
+            % PROPOSAL: Separate threshold saturation from sliding window saturation (the output).
+            %   PRO: Can detect threshold saturation separately for subsequences,
+            %        using different thresholds, and then sliding window
+            %        saturation.
+            %        later for entire sequence.
+            % TODO-DEC: How handle NaN/missing samples?
+            %   Ex: Channels set to NaN when there is no BLTS due to Rx setting.
+
+            %============
+            % ASSERTIONS
+            %============
+            irf.assert.sizes(...
+                tt2000Ar, [-1], ...
+                y,        [-1] ...
+            )
+            assert(isa(tt2000Ar, 'int64'))
+            assert(isfloat(y))
+            assert(isscalar(lowerThreshold))
+            assert(isscalar(higherThreshold))
+            % NOTE: No assertions on saturationFractionThreshold and
+            % intervalLengthSec which are checked by
+            % bicas.proc.qual.sliding_window_over_fraction() further below.
+
+            bTsf = (y < lowerThreshold) || (higherThreshold < y);
+
+            bSwsf = bicas.proc.qual.sliding_window_over_fraction(...
+                tt2000Ar, bTsf, saturationFractionThreshold, intervalLengthSec);
+        end
+
+
+
+        % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
+        %
+        % Given a (timestamped) 1D array of flagged samples (bool), label all
+        % samples positions which are part of a sliding window (of a specified
+        % length) with a fraction of flagged samples which is above a
+        % specified threshold.
+        %
+        %
+        % DETAILS
+        % =======
+        % * Data gaps effectively count as being filled with samples which are
+        %   not flagged.
+        % * The algorithm should be fast for data without or few flagged samples.
+        % * Individual samples are weighted by their estimated inverse sampling
+        %   rate which is the distance to the nearest sample (if there are
+        %   >=2 samples). This should make the algorithm handle varying sampling
+        %   rate sensibly.
+        % * Due to how the algorithm estimates the weight for each sample, if
+        %   a window contains samples with a slightly varying sampling rate, the
+        %   found fraction of flagged samples within the window will be slightly
+        %   lower than one might expect. For that reason, a flagged fraction
+        %   threshold of 1 might not trigger (flag) windows within which all
+        %   samples are flagged.
+        % * Due to how the algorithm estimates the weight for each sample,
+        %   samples with identical timestamps count as having weight zero.
+        % * Timestamps must increase (but not strictly increase). This is
+        % important as there is late be data which
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % tt2000Ar
+        %       Column array of TT2000 values.
+        % bFlag1Ar
+        %       Column array of logical. Samples which are "flagged", e.g. for
+        %       saturation.
+        % minFlaggedFraction
+        %       Minimum fraction of (weighted) flagged samples within a window,
+        %       for all samples within the window to be flagged.
+        % windowLengthSec
+        %       Length of sliding window.
+        %
+        %
+        % RETURN VALUE
+        % ============
+        % bFlag2Ar
+        %       Column array of logical. Modified version of bFlag1Ar such that,
+        %       every sliding window (of length intervalLengthSec) contains at
+        %       least a fraction minFlaggedFraction of weighted flagged samples.
+        %
+        function bFlag2Ar = sliding_window_over_fraction(...
+                tt2000Ar, bFlag1Ar, minFlaggedFraction, windowLengthSec)
+            % PROPOSAL: Better name
+            %   "sliding_window_exceding_fraction"
+            %   "sliding_window"
+            %   moving window
+            %   interval over fraction
+            %   smooth
+            %   density (of set bits/flags)
+            %   bit, flag
+            % TODO-NI: Distinguishing name for set bits before & after?
+            %   PROPOSAL: Suffix 1 & 2
+            %   PROPOSAL: Suffix before & after
+            %   PROPOSAL: rawFlag vs slidingWindowFlag
+            %   PROPOSAL: TSF=Threshold Saturation Flag,
+            %             SWSF=Sliding Window Saturation Flag.
+            %       CON: Function is generic. Should not make reference to
+            %            saturation.
+            %
+            % TODO-DEC: Exact algorithm to use? How implement?
+            %   NOTE: Most data is not saturated.
+            %       PROPOSAL: Faster to iterate over saturated samples than
+            %                 non-satured.
+            %   PROPOSAL: More than x percent saturation within moving/rolling time
+            %             period of length t. ==> Label entire period.
+            %       TODO-DEC: How handle data that is shorter than window time
+            %                 interval?
+            %           PROPOSAL: Ignore time interval. Apply fraction to all
+            %                     data.
+            %       PROPOSAL: Iterate over intervals which are entirely
+            %                 threshold saturated or not.
+            %       PROPOSAL: Iterate over every length-t interval.
+            %           CON: Slow?
+            %           NOTE: Must still iterate in both directions.
+
+            %============
+            % ASSERTIONS
+            %============
+            % Sizes:
+            irf.assert.sizes(...
+                tt2000Ar, [-1], ...
+                bFlag1Ar, [-1] ...
+            );
+            assert(isscalar(minFlaggedFraction))
+            assert(isscalar(windowLengthSec))
+            % Types/classes:
+            assert(isa(tt2000Ar, 'int64'))
+            assert(islogical(bFlag1Ar))
+            assert(isfloat(minFlaggedFraction))
+            assert(isfloat(windowLengthSec))
+            % NOTE: Algorithm requires that timestamps increase (nut not
+            %       strictly increase).
+            assert(issorted(tt2000Ar, 'ascend'))
+            assert((0 <= minFlaggedFraction) && (minFlaggedFraction <= 1), ...
+                'flagFractionThreshold = %d is not a legal value.', minFlaggedFraction)
+            assert(windowLengthSec >= 0)
+
+            %===========================
+            % ALGORITHM / SPECIAL CASES
+            %===========================
+            if all(~bFlag1Ar)
+                % CASE: (1) All samples are false, or
+                %       (2) there are zero samples.
+                bFlag2Ar = false(size(bFlag1Ar));
+
+            elseif isscalar(bFlag1Ar)
+                % CASE: There is exactly one sample.
+
+                % NOTE: Algorithm can not handle this case since STL becomes
+                % infinite. Therefore special case.
+                bFlag2Ar = bFlag1Ar;
+
+            else
+                % CASE: (1) There is at least one flagged sample, and
+                %       (2) There are at least two samples.
+                
+                timeSecAr = double(tt2000Ar) / 1e9;
+
+                bFlag2ForwardAr = bicas.proc.L1L2.qual.sliding_window_over_fraction_forward_pass(...
+                    timeSecAr, bFlag1Ar, minFlaggedFraction, windowLengthSec);
+
+                % NOTE: Same call as above, except that (1) reversing the order of
+                % timestamps and samples, and (2) negating the timestamps (so
+                % that they increment despite their order being reversed).
+                bFlag2BackwardAr = bicas.proc.L1L2.qual.sliding_window_over_fraction_forward_pass(...
+                    -timeSecAr(end:-1:1), bFlag1Ar(end:-1:1), minFlaggedFraction, windowLengthSec);
+
+                bFlag2BackwardAr = bFlag2BackwardAr(end:-1:1);
+                
+                bFlag2Ar = bFlag2ForwardAr | bFlag2BackwardAr;
+
+%                 bFlag2Ar = bicas.proc.L1L2.qual.sliding_window_over_fraction_algorithm(...
+%                     timeSecAr, bFlag1Ar, minFlagFraction, maxWindowLengthSec);
+            end
+        end    % function
+        
+        
+        
+        % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
+        %
+        % Effectively internal function to
+        % bicas.proc.L1L2.qual.sliding_window_over_fraction() to simplify its
+        % implementation. Runs one "pass" in the forward direction.
+        %
+        function bFlag2Ar = sliding_window_over_fraction_forward_pass(...
+                timeSecAr, bFlag1Ar, minFlaggedFraction, windowLengthSec)
+            % PROPOSAL: Better name
+            %   algorithm
+            %   pass
+            % 
+            % PROPOSAL: Use smallest window length that is equal to or greater than
+            %           the specified one (instead of the largest window length
+            %           that is equal to or less than the specified one).
+            %   CON: If there is a data gap, then the difference can be very
+            %        large, and the window could become too much large.
+            % PROPOSAL: Always use argument for window length when calculating
+            %           fraction.
+            %   PRO: Prevents window from becoming too small before a data gap
+            %        that is longer than the argument window length.
+            
+            % Naming conventions
+            % ==================
+            % STL  = Sample Time Length. Length of time assigned to each sample.
+            %        Equal to twice the longest distance to the nearest sample.
+            %        Intended for (1) weighing sections with different sampling
+            %        rate, and (2) for including half in the window length.
+            % STLW = STL-Weighted
+            
+            DEBUG_ENABLED = 0;
+
+            % DEBUG
+            if DEBUG_ENABLED
+                fprintf('--------sliding_window_over_fraction_forward_pass\n')
+            end
+
+            n = numel(bFlag1Ar);
+            assert(n >= 2)
+
+            % Pre-allocate
+            bFlag2Ar = false(size(bFlag1Ar));
+
+            diffSecAr = [Inf; diff(timeSecAr); Inf];
+            % NOTE: Returns Inf for array length == 1 which must therefore be
+            %       avoided.
+            stlSecAr  = min([diffSecAr(1:end-1), diffSecAr(2:end)], [], 2);
+
+            % Modified cumulative sum so that a difference between indices i and
+            % i+1 represents the STL of sample i.
+            cumulStlwFlagAr = [0; cumsum(bFlag1Ar .* stlSecAr)];
+
+            % =======================================
+            % Iterate over time intervals ("windows")
+            % =======================================
+            iFlagSet1Ar = find(bFlag1Ar);
+            i1 = iFlagSet1Ar(1);
+            % Iterate over starting indices: i0
+            for i0 = iFlagSet1Ar'
+                % CASE: i0 = Index to a flagged sample.
+
+                % =============================================================
+                % Obtain window that begins with i0 (already set) and ends with
+                % i1 (to be determined)
+                % =============================================================
+                while true
+                    % If no more sample can be added to the window, then keep
+                    % the window size as it is.
+                    if i1+1 > n
+                        break
+                    end                    
+                    % CASE: i1+1 <= n (i.e. one can safely use i1+1 as an index)
+                    
+                    % If a one sample larger window is too large, then keep the
+                    % current window size.
+                    % PROPOSAL: Derive arrays of time of beginnings and end of
+                    %           every sample and use that instead.
+                    edgesStlSec              = stlSecAr(i0)/2 + stlSecAr(i1+1)/2;
+                    candidateWindowLengthSec = timeSecAr(i1+1) - timeSecAr(i0) + edgesStlSec;
+                    if candidateWindowLengthSec > windowLengthSec
+                        break
+                    end
+                    % CASE: A one sample larger window is not too large.
+
+                    i1 = i1 + 1;
+                end
+                % CASE: i1 is the highest value for which
+                %       (1) i0 <= i1 <= n, AND
+                %       (2) cumulTimeSecAr(i1) < cumulTimeSecAr+intervalLengthSec.
+
+                
+                % edgesStlSec       = stlSecAr(i0)/2 + stlSecAr(i1)/2;
+                windowStlwFlagSec = cumulStlwFlagAr(i1+1) - cumulStlwFlagAr(i0);
+                % IMPLEMENTATION NOTE: Using the argument window length rather
+                % than window length calculated from the sample/index range
+                % prevents the window from becoming too small (1) before a data
+                % gap that is longer than the argument window length, and (2)
+                % before the end of samples.
+                fractionStlwFlag  = windowStlwFlagSec / windowLengthSec;
+
+                % IMPLEMENTATION NOTE: Threshold should count as lower value
+                % (equality) so that one can require all elements to be
+                % flagged by setting minFlaggedFraction=1.
+                setWindowFlags = (fractionStlwFlag >= minFlaggedFraction);
+                if setWindowFlags
+                    bFlag2Ar(i0:i1) = true;
+                end
+
+                if DEBUG_ENABLED
+                    fprintf('Found interval i0:i1 = %i:%i\n', i0, i1)
+                    fprintf('    timeSecAr([i0, i1]) = %g - %g\n', timeSecAr(i0), timeSecAr(i1))
+                    % fprintf('    edgesStlSec         = %g\n', edgesStlSec)
+                    fprintf('    windowLengthSec     = %g\n', windowLengthSec)
+                    fprintf('    windowStlwFlagSec   = %g\n', windowStlwFlagSec)
+                    fprintf('    fractionStlwFlag    = %g\n', fractionStlwFlag)
+                    fprintf('    ==> setWindowFlags = %d\n', setWindowFlags)
+                end
+                
+                % If future windows can not be larger due to lack of
+                % samples, then exit function.
+                % IMPLEMENTATION NOTE: This prevents the algorithm from
+                % evaluating (calculating fractions for) unnecessarily small
+                % windows at the high timestamps end.
+                if i1+1 > n
+                    return
+                end                
+            end    % for
+
+        end    % function
+
+
+
     end    % methods(Static)
 
 

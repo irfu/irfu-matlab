@@ -123,6 +123,14 @@ classdef AntennaSignalId
         function isAc = is_AC(obj)
             isAc = strcmp(obj.category, 'AC diff');
         end
+        
+        
+        
+        % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
+        %
+        function isDiff = is_diff(obj)
+            isDiff = numel(obj.antennas) == 2;
+        end
 
 
 

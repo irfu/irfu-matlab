@@ -264,6 +264,9 @@ TPIV
     TM/interface volt. TM per interface volt.
 TS
     irfu-matlab's TSeries object/class.
+TSF
+    Threshold Saturation Flag. Bit for a sample that is set if the sample
+    value exceeds thresholds. (Does not take context into account.)
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
