@@ -283,7 +283,7 @@ classdef qual
             %       PRO: Can use same scheme for TSF-to-SWSF function.
             % PROPOSAL: Retrieve thresholds from settings.
             % TODO-DEC: How handle NaN/missing samples?
-            %   Ex: Channels set to NaN when there is no BLTS due to Rx setting.
+            %   Ex: Channels set to NaN when there is no BLTS due to LRX setting.
             %
             % TODO-DEC: How handle snapshots? If sliding window is not applied
             %           here, then when should the decision how to set SWSF for
@@ -385,7 +385,7 @@ classdef qual
             %        saturation.
             %        later for entire sequence.
             % TODO-DEC: How handle NaN/missing samples?
-            %   Ex: Channels set to NaN when there is no BLTS due to Rx setting.
+            %   Ex: Channels set to NaN when there is no BLTS due to LRX setting.
 
             %============
             % ASSERTIONS

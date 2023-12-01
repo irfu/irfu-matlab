@@ -307,7 +307,7 @@ classdef tds
 
             % Only set because the code shared with LFR requires it.
             Zv.iLsf           = nan(nRecords, 1);
-            Zv.lfrRx          = ones(nRecords, 1);
+            Zv.lrx            = ones(nRecords, 1);
             
             PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isTdsRswf, false, C.isTdsCwf);
         end    % process_CDF_to_PreDC

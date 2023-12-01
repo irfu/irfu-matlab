@@ -13,15 +13,15 @@ classdef PreDc
     %   demultiplexing
     %   data
     %
-    % IMPLEMENTATION NOTE: bltsSamplesTm and lfrRx
-    % ============================================
+    % IMPLEMENTATION NOTE: bltsSamplesTm and lrx
+    % ==========================================
     % PreDc always represents (has variables/elements for) all five BLTS's,
     % despite that only three are used at any given time. The channels not used
     % are set to NaN. Which ones are actually used can be switched at any given
-    % time due to lfrRx changing.
+    % time due to lrx changing.
     %
     % This handling does in principle differ from the handling of other "data
-    % parameters" (BW, LSF, isTdsCwf, freqHz, hasSnapshotFormat, etc.). lfrRx
+    % parameters" (BW, LSF, isTdsCwf, freqHz, hasSnapshotFormat, etc.). LRX
     % determines which channels contain actual data. The BLTS index into the
     % array is used to determine whether one has DC diff or AC diff data.
     %
@@ -36,7 +36,7 @@ classdef PreDc
     %        the PreDc class make.
     %       CON: No, it does not. Which?
     %           CON: Always 3 channels worth of data. BLTS 2-3/4-5 are different from BLTS 1
-    %                and can change meaning due to Rx.
+    %                and can change meaning due to LRX.
     %   CON: Must invent a new concept (type of index) to represent these three
     %        data channels.
     %       Ex: New abbreviation/name.
@@ -95,7 +95,7 @@ classdef PreDc
                 'iLsf', ...
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
                 'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', ...
-                'ufv', 'lfrRx'}, ...
+                'ufv', 'lrx'}, ...
                 {'BW'});
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
             assert(size(Zv.bltsSamplesTm, 3) == 5)

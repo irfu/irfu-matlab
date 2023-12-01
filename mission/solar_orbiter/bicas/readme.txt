@@ -166,6 +166,11 @@ L3QBM
     zVar L3_QUALITY_BITMASK.
 LL
     Log Level
+LRX
+    LFR Rx. Internal ZV-like variable (one boolean per CDF record) that
+    determines whether there is data on BLTS 2-3 (LRX=1) or BLTS 4-5 (LRX=0).
+    "Rx" is named after the similar LFR ZVs R0, R1 and R2 (one per LFR
+    frequency, except F3). The value is constant for TDS.
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.

@@ -193,7 +193,7 @@ classdef lfr
 
             % Obtain the relevant values (one per record) from zVariables R0,
             % R1, R2, and the virtual "R3".
-            zvRx = solo.hwzv.get_LFR_Rx(...
+            zvLrx = solo.hwzv.get_LFR_Rx(...
                 InSci.Zv.R0, ...
                 InSci.Zv.R1, ...
                 InSci.Zv.R2, ...
@@ -228,20 +228,20 @@ classdef lfr
 
 %             Zv.bltsSamplesTmCa    = cell(5,1);
 %             Zv.bltsSamplesTmCa{1} = single(InSci.Zv.V);
-%             % Copy values, except when zvRx==0 (==>NaN).
-%             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==0 );
-%             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==0 );
-%             Zv.bltsSamplesTmCa{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
-%             Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==1 );
+%             % Copy values, except when zvLrx==0 (==>NaN).
+%             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
+%             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
+%             Zv.bltsSamplesTmCa{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
+%             Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
             Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
             % Copy values when there is actual data for that BLTS as determined
-            % by zvRx==0. Otherwise NaN.
-            % zvRx == 0: BLTS 4/5 contain data.
-            % zvRx == 1: BLTS 2/3 contain data.
-            Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==0 );
-            Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==0 );
-            Zv.bltsSamplesTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvRx==1 );
-            Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvRx==1 );
+            % by zvLrx==0. Otherwise NaN.
+            % zvLrx == 0: BLTS 4/5 contain data.
+            % zvLrx == 1: BLTS 2/3 contain data.
+            Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
+            Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
+            Zv.bltsSamplesTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
+            Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
             
             Zv.Epoch                   = InSci.Zv.Epoch;
             Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
@@ -260,7 +260,7 @@ classdef lfr
             Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
             Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
 
-            Zv.lfrRx                   = zvRx;
+            Zv.lrx                     = zvLrx;
 
 
 
