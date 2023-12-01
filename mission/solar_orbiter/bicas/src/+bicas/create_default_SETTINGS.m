@@ -393,6 +393,16 @@ function SETTINGS = create_default_SETTINGS()
     % If non-empty, then it overrides PROCESSING.RCS_NSO.FILE.RELATIVE_PATH.
     % Can be set to absolute path. Intended for testing.
     S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')
+    
+    % Configuration parameters for the automatic detection of saturation
+    % performed for L1R-->L2 processing.
+    % TODO-DEC: Too high AC diff thresholds?
+    S.define_setting('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC',            60.0);
+    S.define_setting('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD',                    0.5)
+    S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',         40.0);
+    S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',            2.0);
+    S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
+    S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);
 
 
 

@@ -108,6 +108,19 @@ classdef dc
             Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
             clear AsrSamplesAVoltSrm
             
+            if 0
+                % DETECT SATURATION
+                % NOT YET COMPLETED FUNCTIONALITY.
+                Sat = bicas.proc.L1L2.Saturation(SETTINGS);
+                Sat.get_voltage_saturation_quality_bit(...
+                    PreDc.Zv.Epoch, ...
+                    Zv.AsrSamplesAVoltSrm, ...
+                    PreDc.Zv.nValidSamplesPerRecord, ...
+                    PreDc.Zv.bdmFpa, PreDc.Zv.dlrFpa, ...
+                    PreDc.Zv.lrx, PreDc.Zv.biasHighGainFpa, ...
+                    PreDc.hasSnapshotFormat, L);
+            end
+
 
             
             % ############
