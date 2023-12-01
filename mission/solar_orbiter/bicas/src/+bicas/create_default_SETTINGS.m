@@ -146,7 +146,7 @@ function SETTINGS = create_default_SETTINGS()
     % opposed to L1 current datasets.
     S.define_setting('SWM.L1-L2_ENABLED',          0);
     % Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
-    S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED', 0);
+    S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED',  0);
     % Enable s/w mode for processing L2-->L3 datasets.
     S.define_setting('SWM.L2-L3_ENABLED',          0);
 
@@ -165,9 +165,11 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
-    %#############
+    %###########################################
     % INPUT_CDF.*
-    %#############
+    % ------------
+    % Settings that apply to ALL input datasets
+    %###########################################
 
     % The epoch for zVar ACQUISITION_TIME.
     % The time in UTC at which ACQUISITION_TIME is [0,0].
@@ -188,7 +190,7 @@ function SETTINGS = create_default_SETTINGS()
 
     % Require input CDF Global Attribute "DSI" to match the expected
     % value.
-    S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY', 'WARNING')    % ERROR, WARNING
+    S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',        'WARNING')    % ERROR, WARNING
     S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
     % NOTE: This modification applies BEFORE
@@ -370,6 +372,15 @@ function SETTINGS = create_default_SETTINGS()
 
 
 
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
+    % EFIELD, and SCPOT data; both OSR and DSR.
+    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',     2)
+    % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
+    % SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND data.
+    % NOTE: This does not affect the corresponding OSR dataset and is therefore
+    % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
+    S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
+
     % Maximum value for zVar QUALITY_FLAG in output datasets.
     % YK 2020-08-31: Use 2=Survey data, possibly not publication-quality
     %
@@ -382,15 +393,6 @@ function SETTINGS = create_default_SETTINGS()
     % If non-empty, then it overrides PROCESSING.RCS_NSO.FILE.RELATIVE_PATH.
     % Can be set to absolute path. Intended for testing.
     S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')
-
-    % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
-    % EFIELD, and SCPOT data; both OSR and DSR.
-    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',     2)
-    % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
-    % SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND data.
-    % NOTE: This does not affect the corresponding OSR dataset and is therefore
-    % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
-    S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
 
 
 
@@ -549,12 +551,12 @@ function SETTINGS = create_default_SETTINGS()
     % the LFR/TDS transfer functions.
     S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 
-
     S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, kernel
     %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'kernel')   % FFT, kernel
     %S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'zeros')   % zeros, cyclic, mirror
     S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'mirror')   % zeros, cyclic, mirror
     S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)   % false, true
+
 
 
     %===========================================================================

@@ -103,6 +103,9 @@ CTI
     CALIBRATION_TABLE_INDEX (zVariable).
 CTI2
     Second value in a CDF record of zVariable CALIBRATION_TABLE_INDEX.
+CWF
+    Continuous WaveForm. Data on the form of samples over longer periods of
+    time than a snapshot. Cf. SWF.
 Dataset (data set)
     A CDF file on any one of a number standardized formats specified by the
     various RPW teams. All CDF files in the context of BICAS are datasets.
@@ -250,6 +253,8 @@ SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
     very clearly. (Defined by the RCS ICD.)
+SWF
+    Snapshot WaveForm. Snapshot data. Cf. CWF.
 SWM, S/W mode
     (1) A "S/W mode" defines a set of required input CDF files and a set
     of output CDF files derived from the input files. BICAS can execute only
@@ -272,8 +277,12 @@ TPIV
 TS
     irfu-matlab's TSeries object/class.
 TSF
-    Threshold Saturation Flag. Bit for a sample that is set if the sample
-    value exceeds thresholds. (Does not take context into account.)
+    Threshold Saturation Flag. Bit for a sample that is set iff the sample
+    value exceeds thresholds, i.e. it does not take any context into account,
+    except for determining which thresholds to use. This is in contrast with
+    (1) saturation flags for snapshots, which may summarize the saturation of
+    the entire snapshot, or (2) saturation flags for CWF data which may take
+    saturation before or after into account.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
@@ -296,8 +305,9 @@ lowercase initial.
 Exception: Variables which are direct analogues to zVariables are named as the
 corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of the time.
 
-"b" refers to logical values (boolean) and logical indexing
-"i", "j" refers to indices into arrays.
+b        = Logical (boolean) values, often logical arrays used for logical indexing.
+i, j     = Indices into arrays.
+SETTINGS = bicas.Settings object.
 
 Unit tests (classes) have suffix "___UTEST".
 

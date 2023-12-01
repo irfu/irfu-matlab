@@ -113,9 +113,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 tempBltsSamplesAVolt = zeros(SAMPLES_SIZE);
                 
                 for i = 1:numel(RoutingArray)
-                    routing = RoutingArray(i);
-                    if routing.Ssid.is_ASR()
-                        tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(routing.Ssid.Asid.s);
+                    Routing = RoutingArray(i);
+                    if Routing.Ssid.is_ASR()
+                        tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(Routing.Ssid.Asid.s);
                     else
                         tempBltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
                     end

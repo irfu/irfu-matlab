@@ -153,8 +153,8 @@ classdef dc
             %tTicToc  = tic();
 
             % ASSERTIONS
-            assert(isscalar(PreDc.hasSnapshotFormat))
-            assert(isnumeric(  PreDc.Zv.bltsSamplesTm))
+            assert(isscalar( PreDc.hasSnapshotFormat))
+            assert(isnumeric(PreDc.Zv.bltsSamplesTm))
 %             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
 %                 PreDc.Zv)
             [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
@@ -213,7 +213,7 @@ classdef dc
                 % ==============================================================
                 % IMPLEMENTATION NOTE: Below extraction of data from PreDc etc.
                 % may seem awkward but actually clarifies the code associated
-                % with bicas.proc.L1L2.dc.calibrate_demux_subsequence() as
+                % with bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence() as
                 % compared to earlier version before refactoring.
                 %
                 % PRO: Clearly divides the variables/arguments into (a) constant
@@ -251,7 +251,7 @@ classdef dc
                 Vv = [];
                 Vv.Epoch                    = PreDc.Zv.Epoch(                  iRec1:iRec2);
                 Vv.bltsSamplesTm            = PreDc.Zv.bltsSamplesTm(          iRec1:iRec2, :, :);
-                Vv.zvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord( iRec1:iRec2);                
+                Vv.zvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord( iRec1:iRec2);
 
                 if ~(Cv.hasSnapshotFormat && Cv.isLfr)
                     % IMPLEMENTATION NOTE: Do not log for LFR SWF since it
@@ -282,7 +282,7 @@ classdef dc
                         Cv.CALIBRATION_TABLE_INDEX(2))
                 end
                 
-                SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
+                SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(...
                     Cv, Vv, Cal);
 
                 % Add demuxed sequence to the to-be complete set of records.
@@ -300,7 +300,7 @@ classdef dc
 
         % Calibrate and demux all BLTS channels for one subsequence with various
         % constant settings/values.
-        function AsrSamplesAVoltSrm = calibrate_demux_subsequence(Cv, Vv, Cal)
+        function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(Cv, Vv, Cal)
             % PROPOSAL: Rename "subsequence".
             %   ~time interval
             %   ~constant settings time interval
@@ -347,7 +347,7 @@ classdef dc
             %========================================================
             AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
                 [DemuxerRoutingArray.Sdid], ssBltsSamplesAVolt);
-        end    % calibrate_demux_subsequence
+        end    % calibrate_demux_voltages_subsequence
 
 
 

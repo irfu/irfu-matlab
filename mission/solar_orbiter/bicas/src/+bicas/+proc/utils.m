@@ -290,17 +290,19 @@ classdef utils
         %
         % ARGUMENTS
         % =========
-        % freqHz : Frequency column vector in s^-1.
-        %          Can not handle freqHz=NaN since the output is an
-        %          integer (assertion).
-        % nSpr   : Number of samples/record.
+        % freqHz
+        %       Frequency column vector in s^-1.
+        %       Can not handle freqHz=NaN since the output is an integer
+        %       (assertion).
+        % nSpr
+        %       Number of samples/record.
         %
         %
         % RETURN VALUE
         % ============
-        % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64.
-        %                    NOTE: Unit ns.
-        %
+        % DELTA_PLUS_MINUS
+        %       Analogous to BIAS zVariable. CDF_INT8=int64.
+        %       NOTE: Unit ns.
 
             ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
 

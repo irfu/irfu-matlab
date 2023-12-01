@@ -470,6 +470,11 @@ classdef qual
             %   smooth
             %   density (of set bits/flags)
             %   bit, flag
+            %
+            % PROPOSAL: Move to bicas.utils.
+            %   PRO: More generic that quality variables.
+            %   PRO: Independent of L1/L1R-L2 proessing in principle.
+            %
             % TODO-NI: Distinguishing name for set bits before & after?
             %   PROPOSAL: Suffix 1 & 2
             %   PROPOSAL: Suffix before & after

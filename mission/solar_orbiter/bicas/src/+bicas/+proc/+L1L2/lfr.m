@@ -178,18 +178,18 @@ classdef lfr
             %============
             % Set iLsfZv
             %============
-            if     C.isLfrSbm1   iLsfZv = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
-            elseif C.isLfrSbm2   iLsfZv = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
-            else                 iLsfZv = InSci.Zv.FREQ + 1;
+            if     C.isLfrSbm1   zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
+            elseif C.isLfrSbm2   zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
+            else                 zvILsf = InSci.Zv.FREQ + 1;
                 % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
                 % index values (1=F0) used in loaded RCT data structs.
             end
-            irf.assert.sizes(iLsfZv, [nRecords])
+            irf.assert.sizes(zvILsf, [nRecords])
 
 
 
             % NOTE: Needed also for 1 SPR.
-            zvFreqHz = solo.hwzv.get_LFR_frequency( iLsfZv );
+            zvFreqHz = solo.hwzv.get_LFR_frequency( zvILsf );
 
             % Obtain the relevant values (one per record) from zVariables R0,
             % R1, R2, and the virtual "R3".
@@ -197,7 +197,7 @@ classdef lfr
                 InSci.Zv.R0, ...
                 InSci.Zv.R1, ...
                 InSci.Zv.R2, ...
-                iLsfZv );
+                zvILsf);
 
 
 
@@ -235,7 +235,7 @@ classdef lfr
 %             Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
             Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
             % Copy values when there is actual data for that BLTS as determined
-            % by zvLrx==0. Otherwise NaN.
+            % by zvLrx. Otherwise NaN.
             % zvLrx == 0: BLTS 4/5 contain data.
             % zvLrx == 1: BLTS 2/3 contain data.
             Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
@@ -252,7 +252,7 @@ classdef lfr
             Zv.ufv                     = ~logical(InSci.Zv.BW);
             Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;
             Zv.dlrFpa                  = HkSciTime.dlrFpa;
-            Zv.iLsf                    = iLsfZv;
+            Zv.iLsf                    = zvILsf;
 
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
             Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
