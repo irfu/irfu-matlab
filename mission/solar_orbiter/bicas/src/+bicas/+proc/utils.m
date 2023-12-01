@@ -73,7 +73,7 @@ classdef utils
         % varargin : Passed on to bicas.handle_struct_name_change as its
         %            varargin.
         %
-        function handle_ZV_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
+        function handle_ZV_name_change(fnChangeList, inSciDsi, Bso, L, varargin)
             anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
                 ['Input dataset DSI=%s uses an alternative', ...
                 ' but illegal(?) zVariable name "%s" instead of "%s".'], ...
@@ -81,7 +81,7 @@ classdef utils
 
             bicas.handle_struct_name_change(...
                 fnChangeList, ...
-                SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
+                Bso, L, anomalyDescrMsgFunc, varargin{:})
         end
         
         

@@ -89,9 +89,9 @@ function generate_VHT_dataset(...
     
     
     
-    BICAS_SETTINGS = bicas.create_default_SETTINGS();
-    BICAS_SETTINGS.make_read_only();
-    BICAS_L        = bicas.Logger('human-readable', false);
+    Bso     = bicas.create_default_BSO();
+    Bso.make_read_only();
+    BICAS_L = bicas.Logger('human-readable', false);
     
     
     
@@ -181,16 +181,16 @@ function generate_VHT_dataset(...
     % execute_SWM:derive_output_dataset_GAs() to derive many
     % global attributes.
     %   NOTE: OutGaSubset = derive_output_dataset_GAs(...
-    %       InputDatasetsMap, OutputDataset, outputFilename, SETTINGS, L)
+    %       InputDatasetsMap, OutputDataset, outputFilename, Bso, L)
     %   Ex: Generation_date, Parents, Software_name (BICAS), Datetime (time
     %   interval string from filename)    
     %---------------------------------------------------------------------------
     GaSubset = bicas.derive_output_dataset_GAs(...
         InputDatasetsMap, OutputDataset, ...
-        irf.fs.get_name(outputFile), BICAS_SETTINGS, BICAS_L);
+        irf.fs.get_name(outputFile), Bso, BICAS_L);
     
     bicas.write_dataset_CDF(...
         Zv, GaSubset, outputFile, masterCdfPath, ...
-        BICAS_SETTINGS, BICAS_L)
+        Bso, BICAS_L)
 
 end

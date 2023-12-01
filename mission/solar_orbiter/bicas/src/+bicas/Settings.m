@@ -63,7 +63,7 @@ classdef Settings < handle
 %   PROPOSAL: Legal alternatives.
 %       PRO: Rapid feedback when using bad value. Does not require triggering
 %            code.
-%       PRO: Clear in code (bicas.create_default_SETTINGS()).
+%       PRO: Clear in code (bicas.create_default_BSO()).
 %       CON: Might not be consistent with how the settings values are actually used in the code.
 %            Duplicates that decision.
 %       PROPOSAL: Submit function (value-->boolean) that specifies what is legal
@@ -99,8 +99,8 @@ classdef Settings < handle
 %            then be able to return info on a setting being set multiple times,
 %            and return that information. As of now (2021-08-19) they only
 %            return the final setting.
-%       PROPOSAL: Submit SETTINGS to those functions.
-%           CON: Automatic testing becomes harder. Harder to test returned value. Harder to submit varied SETTINGS.
+%       PROPOSAL: Submit BSO to those functions.
+%           CON: Automatic testing becomes harder. Harder to test returned value. Harder to submit varied BSO.
 %       PROPOSAL: Return KVPL.
 %           NOTE: KVPL only permits string values(?).
 %

@@ -22,10 +22,10 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
             function test(l1l2Enabled, l2l2Enabled, l2l3Enabled)
                 % Tests (1) non-crash, (2) class of return value.
                 L = bicas.Logger('none', false);
-                SETTINGS = bicas.swm.get_SWML___UTEST.get_SETTINGS(...
+                Bso = bicas.swm.get_SWML___UTEST.get_BSO(...
                     l1l2Enabled, l2l2Enabled, l2l3Enabled);
 
-                Swml = bicas.swm.get_SWML(SETTINGS, L);
+                Swml = bicas.swm.get_SWML(Bso, L);
 
                 testCase.verifyClass(Swml, 'bicas.swm.SoftwareModeList')
             end
@@ -55,14 +55,14 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
     %########################
     methods(Static, Access=private)
 
-        function SETTINGS = get_SETTINGS(l1l2Enabled, l2l2Enabled, l2l3Enabled)
-            SETTINGS = bicas.create_default_SETTINGS();
+        function Bso = get_BSO(l1l2Enabled, l2l2Enabled, l2l3Enabled)
+            Bso = bicas.create_default_BSO();
 
-            SETTINGS.override_value('SWM.L1-L2_ENABLED',         l1l2Enabled, 'test')
-            SETTINGS.override_value('SWM.L2-L2_CWF-DSR_ENABLED', l2l2Enabled, 'test')
-            SETTINGS.override_value('SWM.L2-L3_ENABLED',         l2l3Enabled, 'test')
+            Bso.override_value('SWM.L1-L2_ENABLED',         l1l2Enabled, 'test')
+            Bso.override_value('SWM.L2-L2_CWF-DSR_ENABLED', l2l2Enabled, 'test')
+            Bso.override_value('SWM.L2-L3_ENABLED',         l2l3Enabled, 'test')
 
-            SETTINGS.make_read_only()
+            Bso.make_read_only()
         end
 
     end    % methods(Static, Access=private)

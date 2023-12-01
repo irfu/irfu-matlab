@@ -121,9 +121,9 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
             % NOTE: Only read BICAS's own default file (in BICAS's git repo).
             bicasRootPath = bicas.utils.get_BICAS_root_path();
 
-            SETTINGS = bicas.create_default_SETTINGS();
-            SETTINGS.make_read_only()
-            rcsNsoRelativePath = SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
+            Bso = bicas.create_default_BSO();
+            Bso.make_read_only()
+            rcsNsoRelativePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
 
             nsoFilePath = fullfile(bicasRootPath, rcsNsoRelativePath);
 

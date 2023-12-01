@@ -71,7 +71,7 @@ classdef utils
         %       NOTE: Uses field name to determine whether field is Epoch-like
         %             or not.
         %
-        function log_ZVs(Zvs, SETTINGS, L)
+        function log_ZVs(Zvs, Bso, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
             %   Ex: process_HK_CDF_to_HK_on_SCI_TIME: Print different versions
@@ -100,13 +100,13 @@ classdef utils
                     % CASE: Epoch-like variable.
 
                     ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
-                        zvName, zvValue, 'Epoch', SETTINGS);
+                        zvName, zvValue, 'Epoch', Bso);
 
                 elseif isnumeric(zvValue)
                     % CASE: Non-Epoch-like numeric variable.
 
                     ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
-                        zvName, zvValue, 'numeric', SETTINGS);
+                        zvName, zvValue, 'numeric', Bso);
 
                 elseif ischar(zvValue)
 
@@ -254,7 +254,7 @@ classdef utils
 
         
         function ColumnStrs = get_array_statistics_strings(...
-                varName, varValue, varType, SETTINGS)
+                varName, varValue, varType, Bso)
         %
         % Derive statistics on the contents of a numeric variable (any
         % dimensionality) and return it so that it can easily be logged, e.g. in
@@ -329,7 +329,7 @@ classdef utils
                     %===================================
                     % Construct string: range of values
                     %===================================
-                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED')
+                    if nUniqueValues > Bso.get_fv('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED')
                         vMin = min(min(min(varValue)));
                         vMax = max(max(max(varValue)));
 
@@ -351,7 +351,7 @@ classdef utils
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
 
-                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
+                    if nUniqueValues > Bso.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
                         epochMinStr = bicas.utils.TT2000_to_UTC_str(min(varValue));
                         epochMaxStr = bicas.utils.TT2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);

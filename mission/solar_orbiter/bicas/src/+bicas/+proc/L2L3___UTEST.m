@@ -190,11 +190,11 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
         %
         function test(testCase, DATA_OSR, DATA_DSR)
             L        = bicas.Logger('none', false);
-            SETTINGS = bicas.create_default_SETTINGS();
-            SETTINGS.make_read_only();
+            Bso = bicas.create_default_BSO();
+            Bso.make_read_only();
 
             % Tests are designed for this value.
-            assert(SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX') == 2)
+            assert(Bso.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX') == 2)
 
             FV_QUALITY_FLAG       = uint8(255);
             FV_QUALITY_BITMASK    = uint16(65535);
@@ -263,7 +263,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             [OutEfieldOsr,  OutEfieldDsr, ...
              OutScpotOsr,   OutScpotDsr, ...
              OutDensityOsr, OutDensityDsr] ...
-                = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, Ec, SETTINGS, L);
+                = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, Ec, Bso, L);
             %##################################################################
 
             % OSR

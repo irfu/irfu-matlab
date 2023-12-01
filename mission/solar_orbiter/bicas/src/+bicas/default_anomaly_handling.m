@@ -27,7 +27,7 @@
 % EXAMPLE 1: Handle ERROR, mitigation/workaround, illegal value
 % =============================================================
 % anomalyDescrMsg = 'Description of anomaly.';
-% [settingValue, settingKey] = SETTINGS.get_fv(...
+% [settingValue, settingKey] = Bso.get_fv(...
 %     'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
 % switch(settingValue)
 %     case 'USE_WORKAROUND_1'
@@ -52,7 +52,7 @@
 % EXAMPLE 2: Handle ERROR, WARNING, illegal value
 % ===============================================
 % anomalyDescrMsg = 'Description of anomaly.';
-% [settingValue, settingKey] = SETTINGS.get_fv(...
+% [settingValue, settingKey] = Bso.get_fv(...
 %     'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
 % bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
 %     anomalyDescrMsg, 'BICAS:SWMProcessing')
@@ -75,7 +75,7 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
         casesHandled, anomalyDescriptionMsg, errorId)
     
     % PROPOSAL: Accept one struct "AnomalyHandlingInfo" for settingValue/Key, msg, errorId).
-    %   PROPOSAL: Combine with SETTINGS.get_fvs which returns struct with key+value.
+    %   PROPOSAL: Combine with Bso.get_fvs which returns struct with key+value.
     %   PRO: Shorter to call function repeatedly.
     %   PROPOSAL: Optional to use.
     %       NOTE: Implies that casesHandled should be earlier in argument list.

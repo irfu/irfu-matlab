@@ -27,7 +27,7 @@ classdef qual
         % NOTE: Does not seem able to ever set zv_L2_QUALITY_BITMASK to fill
         %       value.
         function [zvUfv, QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
-                modify_quality_filter(InZv, isLfr, NsoTable, SETTINGS, L)
+                modify_quality_filter(InZv, isLfr, NsoTable, Bso, L)
 
             irf.assert.struct(InZv, {'Epoch', 'ufv', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
             Epoch            = InZv.Epoch;
@@ -54,7 +54,7 @@ classdef qual
             % Find CDF records to remove due to settings
             %============================================================
             zvUfvSettings = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
-                Epoch, zvBdmFpa, isLfr, SETTINGS, L);
+                Epoch, zvBdmFpa, isLfr, Bso, L);
 
             zvUfv = zvUfv | zvUfvSettings;
 
@@ -226,7 +226,7 @@ classdef qual
         %       Fill positions are not matched agains BDMs stored in settings.
         %
         function zvUfv = get_UFV_records_from_settings(...
-                zv_Epoch, zvBdmFpa, isLfr, SETTINGS, L)
+                zv_Epoch, zvBdmFpa, isLfr, Bso, L)
             % PROPOSAL: Separate function for logging which records that should be removed.
             % PROPOSAL: Arguments for settings.
             %   CON: Logs the settings keys.
@@ -239,13 +239,13 @@ classdef qual
             %===============
             % Read settings
             %===============
-            [bdmRemoveArray, settingBdmRemoveKey] = SETTINGS.get_fv(...
+            [bdmRemoveArray, settingBdmRemoveKey] = Bso.get_fv(...
                 'PROCESSING.L2.REMOVE_DATA.MUX_MODES');
             bdmRemoveArray = bdmRemoveArray(:);
             if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
             else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
             end
-            [removeMarginSec, settingMarginKey] = SETTINGS.get_fv(settingMarginKey);
+            [removeMarginSec, settingMarginKey] = Bso.get_fv(settingMarginKey);
 
             %==========================================
             % Find exact indices/CDF records to remove

@@ -62,7 +62,7 @@ classdef pf
         %
         function [OutputDatasetsMap] = produce_L1R_to_L2_LFR(...
                 InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, ...
-                SETTINGS, L)
+                Bso, L)
             
             InputHkCdf  = InputDatasetsMap('HK_cdf');
             InputCurCdf = InputDatasetsMap('CUR_cdf');
@@ -74,8 +74,8 @@ classdef pf
             % Configure bicas.proc.L1L2.cal.Cal object
             %======================================
             C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
-            useCtRcts = C.isL1r && SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
-            useCti2   = C.isL1r && SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
+            useCtRcts = C.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
+            useCti2   = C.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
             
             if useCtRcts
                 RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
@@ -83,23 +83,23 @@ classdef pf
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
                     InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     InputSciCdf.Zv.BW, ...
-                    SETTINGS, L);
+                    Bso, L);
             else
                 RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
-                    {'BIAS', 'LFR'}, rctDir, SETTINGS, L);
+                    {'BIAS', 'LFR'}, rctDir, Bso, L);
             end
             
-            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
+            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, Bso);
             
             
             
             %==============
             % Process data
             %==============
-            HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
-            InputSciCdf  = bicas.proc.L1L2.lfr.process_normalize_CDF(       InputSciCdf, inputSciDsi, SETTINGS, L);
-            SciPreDc     = bicas.proc.L1L2.lfr.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, SETTINGS, L);
+            HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
+            InputSciCdf  = bicas.proc.L1L2.lfr.process_normalize_CDF(       InputSciCdf, inputSciDsi, Bso, L);
+            SciPreDc     = bicas.proc.L1L2.lfr.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, Bso, L);
+            SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
             OutputSciCdf = bicas.proc.L1L2.lfr.process_PostDC_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
             
             
@@ -112,7 +112,7 @@ classdef pf
 
         function [OutputDatasetsMap] = produce_L1R_to_L2_TDS(...
                 InputDatasetsMap, rctDir, NsoTable, inputSciDsi, outputDsi, ...
-                SETTINGS, L)
+                Bso, L)
             
             InputHkCdf  = InputDatasetsMap('HK_cdf');
             InputCurCdf = InputDatasetsMap('CUR_cdf');
@@ -132,7 +132,7 @@ classdef pf
                 settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
                 tdsRcttid = 'TDS-RSWF';
             end
-            useCtRcts = C.isL1r && SETTINGS.get_fv(settingUseCt);
+            useCtRcts = C.isL1r && Bso.get_fv(settingUseCt);
             useCti2   = false;    % Always false for TDS.
             
             if useCtRcts
@@ -148,23 +148,23 @@ classdef pf
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
                     InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
                     zv_BW, ...
-                    SETTINGS, L);
+                    Bso, L);
             else
                 RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
-                    {'BIAS', tdsRcttid}, rctDir, SETTINGS, L);
+                    {'BIAS', tdsRcttid}, rctDir, Bso, L);
             end
             
-            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, SETTINGS);
+            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, Bso);
             
             
             
             %==============
             % Process data
             %==============
-            HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  SETTINGS, L);
-            InputSciCdf  = bicas.proc.L1L2.tds.process_normalize_CDF(       InputSciCdf, inputSciDsi, SETTINGS, L);
-            SciPreDc     = bicas.proc.L1L2.tds.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, SETTINGS, L);
-            SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, SETTINGS, L);
+            HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
+            InputSciCdf  = bicas.proc.L1L2.tds.process_normalize_CDF(       InputSciCdf, inputSciDsi, Bso, L);
+            SciPreDc     = bicas.proc.L1L2.tds.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, Bso, L);
+            SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
             OutputSciCdf = bicas.proc.L1L2.tds.process_PostDC_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
 
@@ -177,11 +177,11 @@ classdef pf
         
         function [OutputDatasetsMap] = produce_L2_to_L2_CWF_DSR(...
                 InputDatasetsMap, ...
-                SETTINGS, L)
+                Bso, L)
             
             InLfrCwf = InputDatasetsMap('OSR_cdf');
             
-            OutLfrCwfDsr = bicas.proc.L2L2.process_LFRCWF_to_DSR(InLfrCwf, SETTINGS, L);
+            OutLfrCwfDsr = bicas.proc.L2L2.process_LFRCWF_to_DSR(InLfrCwf, Bso, L);
             
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('DSR_cdf') = OutLfrCwfDsr;
@@ -191,7 +191,7 @@ classdef pf
         
         function [OutputDatasetsMap] = produce_L2_to_L3(...
                 InputDatasetsMap, ...
-                SETTINGS, L)
+                Bso, L)
             
             InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
@@ -203,7 +203,7 @@ classdef pf
             [EfieldOsrCdf,  EfieldDsrCdf, ...
              ScpotOsrCdf,   ScpotDsrCdf, ...
              DensityOsrCdf, DensityDsrCdf] = ...
-                bicas.proc.L2L3.process_L2_to_L3(InputLfrCwfCdf, Ec, SETTINGS, L);
+                bicas.proc.L2L3.process_L2_to_L3(InputLfrCwfCdf, Ec, Bso, L);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('EFIELD_OSR_cdf')  = EfieldOsrCdf;

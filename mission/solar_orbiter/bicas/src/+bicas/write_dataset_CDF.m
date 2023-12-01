@@ -26,7 +26,7 @@
 % other file.
 %
 function write_dataset_CDF(...
-        ZvsSubset, GaSubset, outputFile, masterCdfPath, SETTINGS, L)
+        ZvsSubset, GaSubset, outputFile, masterCdfPath, Bso, L)
 
     %===========================================================================
     % This function needs GlobalAttributes values from the input files:
@@ -51,7 +51,7 @@ function write_dataset_CDF(...
     %               or directory.
     % Command checks for file and directory (should not do just file).
     if exist(outputFile, 'file')
-        [settingValue, settingKey] = SETTINGS.get_fv(...
+        [settingValue, settingKey] = Bso.get_fv(...
             'OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
         
         anomalyDescrMsg = sprintf(...
@@ -67,12 +67,12 @@ function write_dataset_CDF(...
     % Create (modified) dataobj
     %===========================
     % NPEF = No Processing, Empty File
-    [settingNpefValue, settingNpefKey] = SETTINGS.get_fv(...
+    [settingNpefValue, settingNpefKey] = Bso.get_fv(...
         'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
         
         DataObj = init_modify_dataobj(...
-            ZvsSubset, GaSubset, masterCdfPath, outputFile, SETTINGS, L);
+            ZvsSubset, GaSubset, masterCdfPath, outputFile, Bso, L);
         % IMPLEMENTATION NOTE: This call will fail if setting
         % OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
         % therefore ZvsSubset=[] (can not be generated). Must therefore check
@@ -88,7 +88,7 @@ function write_dataset_CDF(...
     % Check if file writing is deliberately disabled.
     % NOTE: Do this as late as possible, in order to be able to test as much
     % code as possible without writing file.
-    [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
+    [settingValue, settingKey] = Bso.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
     if settingValue
         L.logf('warning', ...
             'Writing output CDF file is disabled via setting %s.', settingKey)
@@ -99,7 +99,7 @@ function write_dataset_CDF(...
         %=====================================
         % CASE: ACTUALLY WRITE OUTPUT DATASET
         %=====================================
-        write_nominal_dataset_CDF(DataObj, outputFile, SETTINGS, L)
+        write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
     else
         %=====================================================
         % CASE: Write EMPTY output dataset file (for testing)
@@ -127,7 +127,7 @@ end
 %
 function DataObj = init_modify_dataobj(...
         ZvsSubset, GaSubset, ...
-        masterCdfPath, outputFile, SETTINGS, L)
+        masterCdfPath, outputFile, Bso, L)
     
     %============
     % ASSERTIONS
@@ -170,7 +170,7 @@ function DataObj = init_modify_dataobj(...
         %===================================================================
         assert(isa(ZvsSubset.QUALITY_FLAG, 'bicas.utils.FPArray'))
 
-        [qfMax, key] = SETTINGS.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
+        [qfMax, key] = Bso.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
         assert(isfinite(qfMax))
         qfMax = uint8(qfMax);
         assert(bicas.utils.validate_ZV_QUALITY_FLAG(qfMax), ...
@@ -248,7 +248,7 @@ function DataObj = init_modify_dataobj(...
     
     
     % Log data to be written to CDF file.
-    bicas.utils.log_ZVs(ZvsLog, SETTINGS, L)
+    bicas.utils.log_ZVs(ZvsLog, Bso, L)
 
 
     
@@ -278,7 +278,7 @@ function DataObj = init_modify_dataobj(...
         if isempty(DataObj.data.(zvName).data)
             
             DataObj = handle_empty_ZV_anomaly(DataObj, zvName, ...
-                masterCdfPath, SETTINGS, L);
+                masterCdfPath, Bso, L);
             
         end    % if isempty(DataObj.data.(zvName).data)
     end    % for
@@ -442,7 +442,7 @@ end
 %       NOTE: Only needed for anomaly description message.
 % 
 function DataObj = handle_empty_ZV_anomaly(...
-        DataObj, zvName, masterCdfPath, SETTINGS, L)
+        DataObj, zvName, masterCdfPath, Bso, L)
     
     %==============================================================
     % CASE: zVariable has zero records.
@@ -467,7 +467,7 @@ function DataObj = handle_empty_ZV_anomaly(...
         %====================
         % CASE: Numeric zVar
         %====================
-        [settingValue, settingKey] = SETTINGS.get_fv(...
+        [settingValue, settingKey] = Bso.get_fv(...
             'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
         switch(settingValue)
             
@@ -503,7 +503,7 @@ function DataObj = handle_empty_ZV_anomaly(...
         %========================
         % CASE: Non-numeric zVar
         %========================
-        [settingValue, settingKey] = SETTINGS.get_fv(...
+        [settingValue, settingKey] = Bso.get_fv(...
             'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
         bicas.default_anomaly_handling(L, ...
             settingValue, settingKey, ...
@@ -517,12 +517,12 @@ end
 
 % NOTE: Unclear if can overwrite CDFs. Varies depending on file.
 %
-function write_nominal_dataset_CDF(DataObj, outputFile, SETTINGS, L)
+function write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
     %===========================================
     % Write to CDF file using write_CDF_dataobj
     %===========================================
     
-    [strictNumericZvSizePerRecord, settingKey] = SETTINGS.get_fv(...
+    [strictNumericZvSizePerRecord, settingKey] = Bso.get_fv(...
         'OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord');
     if ~strictNumericZvSizePerRecord
         L.logf('warning', [...
@@ -541,8 +541,8 @@ function write_nominal_dataset_CDF(DataObj, outputFile, SETTINGS, L)
         DataObj.VariableAttributes, ...
         DataObj.Variables, ...
         'calculateMd5Checksum',              true, ...
-        'strictEmptyZvClass',                SETTINGS.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyZvClass'), ...
-        'strictEmptyNumericZvSizePerRecord', SETTINGS.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord'), ...
+        'strictEmptyZvClass',                Bso.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyZvClass'), ...
+        'strictEmptyNumericZvSizePerRecord', Bso.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord'), ...
         'strictNumericZvSizePerRecord',      strictNumericZvSizePerRecord)
 end
 

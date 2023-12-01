@@ -1,6 +1,6 @@
 %
 % To be used to analyze the result of use of
-% irf.ds.normalize_struct_fieldnames(). React depending on SETTINGS.
+% irf.ds.normalize_struct_fieldnames(). React depending on BSO.
 %
 %
 % ARGUMENTS
@@ -14,7 +14,7 @@
 % varargin
 %       List of pairs of arguments.
 %       varargin{2*m + 1} : Fieldname (new/after change) for which to react.
-%       varargin{2*m + 2} : SETTINGS key which determines the policy. Must have
+%       varargin{2*m + 2} : BSO key which determines the policy. Must have
 %                           value WARNING or ERROR.
 %
 %
@@ -22,7 +22,7 @@
 % First created 2016-06-09
 %
 function handle_struct_name_change(...
-        fnChangeList, SETTINGS, L, anomalyDescrMsgFunc, varargin)
+        fnChangeList, Bso, L, anomalyDescrMsgFunc, varargin)
     %
     % PROPOSAL: Somehow generalize to something that can handle "all" fnChangeList returned from
     % normalize_struct_fieldnames.
@@ -48,7 +48,7 @@ function handle_struct_name_change(...
         [~, i] = ismember(newFn, {fnChangeList(:).newFieldname});
         if i > 0
             % CASE: Found a fieldname change to react to.
-            [settingValue, settingKey] = SETTINGS.get_fv(settingKey);
+            [settingValue, settingKey] = Bso.get_fv(settingKey);
             anomalyDescrMsg = anomalyDescrMsgFunc(...
                 fnChangeList(i).oldFieldname, ...
                 fnChangeList(i).newFieldname);

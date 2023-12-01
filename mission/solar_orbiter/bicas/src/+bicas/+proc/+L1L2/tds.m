@@ -25,7 +25,7 @@ classdef tds
         % ** mitigate historical bugs in the input datasets
         % ** mitigate for not yet implemented features in input datasets
         %
-        function InSciNorm = process_normalize_CDF(InSci, inSciDsi, SETTINGS, L)
+        function InSciNorm = process_normalize_CDF(InSci, inSciDsi, Bso, L)
 
             % Default behaviour: Copy values, except for values which are
             % modified later
@@ -60,7 +60,7 @@ classdef tds
                 'Assert one matching candidate');
 
             bicas.proc.utils.handle_ZV_name_change(...
-                fnChangeList, inSciDsi, SETTINGS, L, ...
+                fnChangeList, inSciDsi, Bso, L, ...
                 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
 
 
@@ -69,7 +69,7 @@ classdef tds
             % Normalize SAMPLING_RATE
             %=========================
             if any(InSci.Zv.SAMPLING_RATE == 255)
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY');
                 anomalyDescrMsg = ...
                     ['Finds illegal, stated sampling frequency', ...
@@ -138,7 +138,7 @@ classdef tds
                         solo.hwzv.const.TDS_RSWF_SNAPSHOT_LENGTH_MAX, ...
                         badValuesDisplayStr);
 
-                    [settingValue, settingKey] = SETTINGS.get_fv(...
+                    [settingValue, settingKey] = Bso.get_fv(...
                         'PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
                     switch(settingValue)
                         
@@ -172,7 +172,7 @@ classdef tds
 
 
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
-        function PreDc = process_CDF_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
+        function PreDc = process_CDF_to_PreDC(InSci, inSciDsi, HkSciTime, Bso, L)
         %
         % BUG?: Does not use CHANNEL_STATUS_INFO.
         % NOTE: BIAS output datasets do not have a variable for the length of

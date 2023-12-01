@@ -18,7 +18,7 @@
 % First created 2020-09-17 as a separate file, by moving out the function from
 % other file.
 %
-function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
+function Dataset = read_dataset_CDF(filePath, Bso, L)
     % IMPLEMENTATION NOTE: Generating FPAs for all ZVs in parallel with the old
     % representation of ZV values. The intention is that this will be a move
     % towards only using FPAs for all ZVs.
@@ -125,7 +125,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
     
     
     % Log data read from CDF file
-    bicas.utils.log_ZVs(ZvsLog, SETTINGS, L)
+    bicas.utils.log_ZVs(ZvsLog, Bso, L)
     
     
     
@@ -149,7 +149,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
         ['Global attribute in input dataset', ...
         '\n    "%s"\nuses illegal alternative "%s" instead of "%s".\n'], ...
         filePath, oldFn, newFn));
-    bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, ...
+    bicas.handle_struct_name_change(fnChangeList, Bso, L, ...
         msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
     
     
@@ -189,7 +189,7 @@ function Dataset = read_dataset_CDF(filePath, SETTINGS, L)
             ' which values do not monotonically increment.\n'], ...
             filePath);
         
-        [settingValue, settingKey] = SETTINGS.get_fv(...
+        [settingValue, settingKey] = Bso.get_fv(...
             'INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
         switch(settingValue)
             

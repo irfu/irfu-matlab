@@ -108,7 +108,7 @@ classdef findread
         %       Exactly one RCT per RCT type.
         % 
         function RctDataMap = find_read_RCTs_by_regexp(...
-                rcttidCa, rctDir, SETTINGS, L)
+                rcttidCa, rctDir, Bso, L)
             
             assert(iscell(rcttidCa))
             
@@ -120,7 +120,7 @@ classdef findread
                 % Find path to RCT.
                 settingKey     = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(...
                     rcttid).filenameRegexpSettingKey;
-                filenameRegexp = SETTINGS.get_fv(settingKey);
+                filenameRegexp = Bso.get_fv(settingKey);
                 filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                     rctDir, filenameRegexp, L);
                 
@@ -179,12 +179,12 @@ classdef findread
                 nonBiasRcttid, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
-                zv_BW, SETTINGS, L)            
+                zv_BW, Bso, L)            
             
             % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRcttid".
             % specifies.
             BiasRctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
-                {'BIAS'}, rctDir, SETTINGS, L);
+                {'BIAS'}, rctDir, Bso, L);
             
             % NOTE: Reads potentially MULTIPLE NON-BIAS RCTs as specified by
             % argument "nonBiasRcttid".

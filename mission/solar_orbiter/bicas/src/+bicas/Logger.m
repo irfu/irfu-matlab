@@ -63,7 +63,7 @@ classdef Logger < handle
 
     properties(Access=private)
         % IMPLEMENTATION NOTE: Constant defined here and not centrally (e.g.
-        % SETTINGS) to make sure that it is error-safe and always initialized.
+        % BSO) to make sure that it is error-safe and always initialized.
         % Needed for early initialization and error handling (try-catch).
         %LOG_PREFIX = 'LOG FILE: ';
         

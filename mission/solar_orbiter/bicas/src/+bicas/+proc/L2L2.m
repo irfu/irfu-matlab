@@ -38,7 +38,7 @@ classdef L2L2
         %     as opposed to process_L2_to_L3() which produces official datasets
         %     and might one day be "officially" run at ROC.
         %
-        function OutLfrCwfDsr = process_LFRCWF_to_DSR(InLfrCwf, SETTINGS, L)
+        function OutLfrCwfDsr = process_LFRCWF_to_DSR(InLfrCwf, Bso, L)
             %
             % PROBLEM: How handle leap seconds if bin size <= 1 s?
             %   NOTE: Positive leap seconds are not a problem.
@@ -75,7 +75,7 @@ classdef L2L2
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
 
             % 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data.
-            QUALITY_FLAG_minForUse = uint8(SETTINGS.get_fv(...
+            QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
                 'PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN'));
 
 

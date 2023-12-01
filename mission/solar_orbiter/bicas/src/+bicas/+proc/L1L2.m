@@ -66,7 +66,7 @@ classdef L1L2
         %
         % NOTE: Only converts relevant HK ZVs to be on SCI Epoch. Later
         % (other) code decides whether to use it (mux mode).
-        function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
+        function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, Bso, L)
             % PROPOSAL: Separate function for the actual interpolation of data
             %           (changing time array HK-->SCI).
             
@@ -89,8 +89,8 @@ classdef L1L2
             % Epoch contains errors, but ACQUISITION_TIME seems OK. This should
             % be phased out eventually.
             %===================================================================
-            ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
-            USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
+            ACQUISITION_TIME_EPOCH_UTC = Bso.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
+            USE_ZV_ACQUISITION_TIME_HK = Bso.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
             if USE_ZV_ACQUISITION_TIME_HK
                 hkEpoch = bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
@@ -119,7 +119,7 @@ classdef L1L2
                     bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
-            bicas.utils.log_ZVs(TimeVars, SETTINGS, L);
+            bicas.utils.log_ZVs(TimeVars, Bso, L);
 
 
 
@@ -145,7 +145,7 @@ classdef L1L2
 
                 % NOTE: "WARNING" (rather than error) only makes sense if it is
                 % possible to later meaningfully permit non-intersection.
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
@@ -169,7 +169,7 @@ classdef L1L2
                     hk1RelativeSec, ...
                     -hk2RelativeSec);
 
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...

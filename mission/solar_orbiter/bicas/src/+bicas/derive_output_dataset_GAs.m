@@ -52,7 +52,7 @@
 %
 function OutGaSubset = derive_output_dataset_GAs(...
         InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
-        SETTINGS, L)
+        Bso, L)
 
     % PROPOSAL: Automatic test code.
     % PROPOSAL: Create class for GAs.
@@ -240,7 +240,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
     
 
 
-    enableMods = SETTINGS.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
+    enableMods = Bso.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
     if enableMods
         MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
         OutGaSubset.MODS = MODS;
@@ -256,7 +256,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
     
     % ~ASSERTION
     if ~isscalar(OutGaSubset.Parents)
-        [settingValue, settingKey] = SETTINGS.get_fv(...
+        [settingValue, settingKey] = Bso.get_fv(...
             'INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY');
         bicas.default_anomaly_handling(...
             L, settingValue, settingKey, 'E+W+illegal', ...

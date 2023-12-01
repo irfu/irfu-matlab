@@ -89,7 +89,7 @@ classdef SoftwareModeList
     %       CON: Makes bicas.swm.SoftwareModeList harder to initialize (outside of BICAS).
     %   PROPOSAL: All arguments which are different for different (underlying) production
     %             functions. ==> As few as possible.
-    %   Ex: SETTINGS, L, rctDir, NsoTable
+    %   Ex: Bso, L, rctDir, NsoTable
     %
     % PROPOSAL: Abolish this class. Only need SWM class + object array/list.
     % PROPOSAL: Better class name

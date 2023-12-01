@@ -25,7 +25,7 @@ classdef lfr
         % ** mitigate historical bugs in input datasets
         % ** mitigate for not yet implemented features in input datasets
         %
-        function InSciNorm = process_normalize_CDF(InSci, inSciDsi, SETTINGS, L)
+        function InSciNorm = process_normalize_CDF(InSci, inSciDsi, Bso, L)
 
             % Default behaviour: Copy values, except for values which are
             % modified later
@@ -58,7 +58,7 @@ classdef lfr
 
                 % CASE: Input CDF uses wrong zVar name.
                 [settingValue, settingKey] = ...
-                    SETTINGS.get_fv('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY');
+                    Bso.get_fv('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY');
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
                     'Found zVar TIME_SYNCHRO_FLAG instead of SYNCHRO_FLAG.')
@@ -76,7 +76,7 @@ classdef lfr
                 %------------------------
                 % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG
                 % seems to be the correct zVar.
-                if SETTINGS.get_fv(...
+                if Bso.get_fv(...
                         'INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED') ...
                         && isempty(InSci.Zv.SYNCHRO_FLAG)
                     %----------------------------------------------------------
@@ -120,7 +120,7 @@ classdef lfr
             % PROPOSAL: Move to the code that reads CDF datasets instead. Generalize to many zVariables.
             % PROPOSAL: Regard as "normalization" code. ==> Group together with other normalization code.
             %=======================================================================================================
-            [settingValue, settingKey] = SETTINGS.get_fv(...
+            [settingValue, settingKey] = Bso.get_fv(...
                 'PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
 
             InSciNorm.ZvFpa.QUALITY_BITMASK = bicas.proc.L1L2.lfr.normalize_ZV_empty(...
@@ -150,7 +150,7 @@ classdef lfr
         % IMPLEMENTATION NOTE: Does not modify InSci in an attempt to save RAM
         % (should help MATLAB's optimization). Unclear if actually works.
         %
-        function PreDc = process_CDF_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
+        function PreDc = process_CDF_to_PreDC(InSci, inSciDsi, HkSciTime, Bso, L)
             %
             % PROBLEM: Hard-coded CDF data types (MATLAB classes).
             % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining
@@ -269,7 +269,7 @@ classdef lfr
             % -------
             % Select which source of mux mode is used.
             %==========================================
-            [bdmSrcSettingValue, bdmSrcSettingKey] = SETTINGS.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
+            [bdmSrcSettingValue, bdmSrcSettingKey] = Bso.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
             switch(bdmSrcSettingValue)
                 case 'BIAS_HK'
                     L.log('debug', 'Using BIAS HK mux mode.')

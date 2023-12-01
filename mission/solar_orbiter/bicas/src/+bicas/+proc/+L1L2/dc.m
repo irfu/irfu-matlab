@@ -38,7 +38,7 @@ classdef dc
         % NOTE: Public function as opposed to the other demuxing/calibration
         % functions.
         %
-        function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, SETTINGS, L)
+        function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, Bso, L)
 
             tTicToc = tic();
 
@@ -59,7 +59,7 @@ classdef dc
             % Calibrate bias CURRENTS
             %#########################
             currentSAmpere = bicas.proc.L1L2.dc.convert_CUR_to_CUR_on_SCI_TIME(...
-                PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
+                PreDc.Zv.Epoch, InCurPd, Bso, L);
             currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
             currentAAmpere = nan(size(currentSAmpere));    % Preallocate.
@@ -99,7 +99,7 @@ classdef dc
                 'bdmFpa',           PreDc.Zv.bdmFpa, ...
                 'QUALITY_FLAG_Fpa', PreDc.Zv.QUALITY_FLAG);
             [zvUfv, Zv.QUALITY_FLAG, Zv.L2_QUALITY_BITMASK] = ...
-                bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, SETTINGS, L);
+                bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, PreDc.isLfr, NsoTable, Bso, L);
             clear ZvIn
             
             % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
@@ -111,7 +111,7 @@ classdef dc
             if 0
                 % DETECT SATURATION
                 % NOT YET COMPLETED FUNCTIONALITY.
-                Sat = bicas.proc.L1L2.Saturation(SETTINGS);
+                Sat = bicas.proc.L1L2.Saturation(Bso);
                 Sat.get_voltage_saturation_quality_bit(...
                     PreDc.Zv.Epoch, ...
                     Zv.AsrSamplesAVoltSrm, ...
@@ -453,7 +453,7 @@ classdef dc
 
 
         function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
-                sciEpoch, InCur, SETTINGS, L)
+                sciEpoch, InCur, Bso, L)
             
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
@@ -471,7 +471,7 @@ classdef dc
                 sciEpochUtcStr    = irf.cdf.TT2000_to_UTC_str(min(sciEpoch));
                 curEpochMinUtcStr = irf.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
 
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
 
                 anomalyDescrMsg = sprintf(...
@@ -503,9 +503,9 @@ classdef dc
             % NOTE: bicas.proc.L1L2.dc.zv_TC_to_current() checks that Epoch
             % increases monotonically.
             currentNanoSAmpere = [];
-            currentNanoSAmpere(:,1) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,2) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,3) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,1) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, Bso);
+            currentNanoSAmpere(:,2) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, Bso);
+            currentNanoSAmpere(:,3) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, Bso);
 
             currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
@@ -515,7 +515,7 @@ classdef dc
         % Wrapper around solo.hwzv.CURRENT_ZV_to_current_interpolate for
         % anomaly handling.
         function sciZv_IBIASx = zv_TC_to_current(...
-                curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
+                curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, Bso)
 
 
 
@@ -534,7 +534,7 @@ classdef dc
                 %====================================================
                 % Handle anomaly: Non-monotonically increasing Epoch
                 %====================================================
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY');
                 anomalyDescriptionMsg = [...
                     'Bias current data contain duplicate settings, with', ...

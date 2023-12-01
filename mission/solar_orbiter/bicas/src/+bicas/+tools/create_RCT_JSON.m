@@ -78,7 +78,7 @@ function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename)
     % TODO-NI: Should the JSON file only include the teams own RCT? I.e. BIAS RCT, but not LFR & TDS RCTs?
     %   NOTE: L1R files contain the filenames of the LFR/TDS RCTs.
     %
-    % PROPOSAL: Move RCT_JSON_FILENAME to BICAS SETTINGS.
+    % PROPOSAL: Move RCT_JSON_FILENAME to BSO.
     %   CON: This code an additional tool. Not part of BICAS itself and is never launhed by BICAS.
     
     

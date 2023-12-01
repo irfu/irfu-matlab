@@ -13,7 +13,7 @@
 % Class is designed as an instantiable class in order to:
 % (1) reduce the number of arguments (eliminates arguments that configure
 %     the saturation criteria),
-% (2) only extract saturation criteria from SETTINGS once, to possibly increase
+% (2) only extract saturation criteria from BSO once, to possibly increase
 %     performance.
 %
 %
@@ -59,14 +59,14 @@ classdef Saturation
 
 
 
-        function obj = Saturation(SETTINGS)
-            obj.cwfSlidingWindowLengthSec    = SETTINGS.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
-            obj.tsfFractionThreshold         = SETTINGS.get_fv('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD');
+        function obj = Saturation(Bso)
+            obj.cwfSlidingWindowLengthSec    = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
+            obj.tsfFractionThreshold         = Bso.get_fv('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD');
 
-            obj.higherThresholdAVoltDcSingle = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
-            obj.higherThresholdAVoltDcDiff   = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
-            obj.higherThresholdAVoltAclg     = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
-            obj.higherThresholdAVoltAchg     = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
+            obj.higherThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
+            obj.higherThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
+            obj.higherThresholdAVoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
+            obj.higherThresholdAVoltAchg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
 
 
 

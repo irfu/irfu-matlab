@@ -21,7 +21,7 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-08-12, by breaking out code from bicas.sprint_SETTINGS().
+% First created 2021-08-12, by breaking out code from bicas.sprint_BSO().
 %
 function displayStr = settings_value_to_display_str(value)
     % PROPOSAL: Shorter name.
@@ -60,7 +60,7 @@ function displayStr = settings_value_to_display_str(value)
 
         error(...
             'BICAS:Assertion', ...
-            ['can not convert SETTINGS value (overriden or not)'])
+            ['can not convert BSO value (overriden or not)'])
     end
 end
 

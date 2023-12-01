@@ -29,16 +29,16 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 % NOTE: Does not need to handle PROCESSING.ZV_QUALITY_FLAG_MAX.
                 % That is handled by bicas.write_dataset_CDF().
 
-                SETTINGS = bicas.create_default_SETTINGS();
-                SETTINGS.override_value('PROCESSING.L2.REMOVE_DATA.MUX_MODES',             S.bdmRemoveArray,  'test')
-                SETTINGS.override_value('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S', S.lfrBdmMarginSec, 'test')
-                SETTINGS.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', S.tdsBdmMarginSec, 'test')
-                SETTINGS.make_read_only()
+                Bso = bicas.create_default_BSO();
+                Bso.override_value('PROCESSING.L2.REMOVE_DATA.MUX_MODES',             S.bdmRemoveArray,  'test')
+                Bso.override_value('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S', S.lfrBdmMarginSec, 'test')
+                Bso.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', S.tdsBdmMarginSec, 'test')
+                Bso.make_read_only()
                 L = bicas.Logger('human-readable', false);
 
                 % CALL FUNCTION
                 [actZvUfv, actZv_QUALITY_FLAG, actZv_L2_QUALITY_BITMASK] = ...
-                    bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, isLfr, NsoTable, SETTINGS, L);
+                    bicas.proc.L1L2.qual.modify_quality_filter(ZvIn, isLfr, NsoTable, Bso, L);
 
                 testCase.assertEqual(actZvUfv,                 expZvOut.ufv)
                 testCase.assertEqual(actZv_QUALITY_FLAG,       expZvOut.QUALITY_FLAG_Fpa)
@@ -273,16 +273,16 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 assert(isfloat(zvBdmDoubleNan))
                 zvBdmFpa = bicas.utils.FPArray(zvBdmDoubleNan, 'FILL_VALUE', NaN).cast('int8');
 
-                SETTINGS = bicas.create_default_SETTINGS();
-                SETTINGS.override_value('PROCESSING.L2.REMOVE_DATA.MUX_MODES',             bdmRemoveArray,  'test')
-                SETTINGS.override_value('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S', lfrBdmMarginSec, 'test')
-                SETTINGS.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', tdsBdmMarginSec, 'test')
-                SETTINGS.make_read_only()
+                Bso = bicas.create_default_BSO();
+                Bso.override_value('PROCESSING.L2.REMOVE_DATA.MUX_MODES',             bdmRemoveArray,  'test')
+                Bso.override_value('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S', lfrBdmMarginSec, 'test')
+                Bso.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', tdsBdmMarginSec, 'test')
+                Bso.make_read_only()
 
                 L = bicas.Logger('none', false);
                 
                 actZvUfv = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
-                    zv_Epoch, zvBdmFpa, isLfr, SETTINGS, L);
+                    zv_Epoch, zvBdmFpa, isLfr, Bso, L);
             end
 
 

@@ -36,10 +36,10 @@ classdef ext
         % Indirectly call BICAS-external code to calculate
         % (1) EFIELD, SCPOT (solo.vdccal), and from that
         % (2) DENSITY       (solo.psp2ne).
-        function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, SETTINGS)
+        function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso)
             assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
             
-            QUALITY_FLAG_minForUse = uint8(SETTINGS.get_fv(...
+            QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
                 'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
             
             % =================================

@@ -1,10 +1,9 @@
 %
-% Create settings object and
+% Create a BSO by creating a bicas.Settings object and
 % (1) define the set of permitted/existing settings keys, and
 % (2) set all settings keys to their initial default values.
+% Note: Does NOT make the object write-only.
 %
-% NOTE: This function does not declare any global SETTINGS object and does not
-% rely on such one being already defined.
 % NOTE: Slightly deceiving name, since it defines which keys are permitted.
 %
 %
@@ -14,8 +13,8 @@
 % ENABLE(D)/DISABLE(D) always at the end of a setting key.
 %
 %
-% NOTES ON SETTINGS KEY NAMING CONVENTION
-% =======================================
+% NOTES ON BSO KEY NAMING CONVENTION
+% ==================================
 % Some constants
 %   (1) correspond exactly to fields in the (JSON) S/W descriptor, and
 %   (2) are unlikely to be used for anything else.
@@ -26,7 +25,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-24
 %
-function SETTINGS = create_default_SETTINGS()
+function Bso = create_default_BSO()
 % PROPOSAL: Setting for latching relay? Setting for only mode 0?
 %
 % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
@@ -115,9 +114,9 @@ function SETTINGS = create_default_SETTINGS()
 
     % The MATLAB command (e.g. path) to use to launch MATLAB for BICAS.
     % NOTE: Only the value in the BICAS config file is actually used. The normal
-    % priority order for how SETTINGS values are being obtained does apply here
-    % but does not matter since the value is only used by the bash wrapper
-    % script for launching MATLAB.
+    % priority order for how BSO values are being obtained does apply here but
+    % does not matter since the value is only used by the bash wrapper script
+    % for launching MATLAB.
     S.define_setting('MATLAB_COMMAND', '');
 
 
@@ -633,6 +632,6 @@ function SETTINGS = create_default_SETTINGS()
 
     S.disable_define();
 
-    SETTINGS = S;
+    Bso = S;
 
 end

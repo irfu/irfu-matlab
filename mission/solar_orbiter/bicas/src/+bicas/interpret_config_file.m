@@ -21,9 +21,9 @@
 % IMPLEMENTATION NOTE
 % ===================
 % Does not read the config file itself in order to make the code more easily
-% testable. Does not modify a settings object in order to be able to use one
-% common code for interpreting numeric string values (reading settings from CLI
-% arguments also requires converting string arguments to numeric values.
+% testable. Does not modify a bicas.Settings object in order to be able to use
+% one common code for interpreting numeric string values (reading settings from
+% CLI arguments also requires converting string arguments to numeric values.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -56,7 +56,7 @@ function settingsVsMap = interpret_config_file(configFileRowsCa, L)
             % Do nothing
             
         else
-            % CASE: Row is a SETTINGS key assignment.
+            % CASE: Row is a setting key assignment.
             [subStrList, ~, isPerfectMatch] = ...
                 irf.str.regexp_str_parts(...
                     row, ASSIGNMENT_RE_LIST, 'permit non-match');

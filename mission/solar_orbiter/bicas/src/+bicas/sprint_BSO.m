@@ -1,12 +1,12 @@
 %
-% Create human-readable multi-line string to represent SETTINGS. Meant for
+% Create human-readable multi-line string to represent BSO. Meant for
 % logging and printing to stdout.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-22
 %
-function str = sprint_SETTINGS(SETTINGS)
+function str = sprint_BSO(Bso)
     
     % PROPOSAL: Make hierarchy visually clearer?!!! Should then have help from data structure itself.
     %
@@ -26,22 +26,22 @@ function str = sprint_SETTINGS(SETTINGS)
     %       PRO: Can handle any situation of overriding.
     
     % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants")
-    % to indicate/hint that it is only the content of the "SETTINGS" variables,
+    % to indicate/hint that it is only the content of the "Bso" variables,
     % and not of bicas.const.
     str = sprintf([...
         '\n', ...
-        'SETTINGS\n', ...
-        '========\n']);
+        'BICAS SETTINGS\n', ...
+        '==============\n']);
     
     % Values seem sorted from the method, but sort again just to be sure.
-    keyList      = sort(SETTINGS.get_keys());   
+    keyList      = sort(Bso.get_keys());   
     lengthMaxKey = max(cellfun(@length, keyList));
     
     
     
     for iKey = 1:length(keyList)
         key   = keyList{iKey};
-        valueStructArray = SETTINGS.get_final_value_array(key);
+        valueStructArray = Bso.get_final_value_array(key);
         %value = valueStructArray(end).value;
         nValues = numel(valueStructArray);
         
@@ -57,7 +57,7 @@ function str = sprint_SETTINGS(SETTINGS)
             catch Exc
                 error(...
                     'BICAS:Assertion', ...
-                    ['SETTINGS value (overriden or not) for key="%s"', ...
+                    ['BSO value (overriden or not) for key="%s"', ...
                     ' can not be converted to a display string.', ...
                     ' This is likely a bug.'], ...
                     key)

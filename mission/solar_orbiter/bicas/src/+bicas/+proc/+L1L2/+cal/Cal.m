@@ -1,7 +1,7 @@
 %
 % Class for functions that calibrate data.
 % An instance of this class contains
-%   (1) relevant settings (loaded from SETTINGS) on how to calibrate data, and
+%   (1) relevant settings (loaded from BSO) on how to calibrate data, and
 %   (2) calibration data.
 % An instance may or may not contain calibration data for __ALL__ types of
 % data/RCTs depending on how it was initialized.
@@ -176,7 +176,7 @@ classdef Cal < handle
 % PROPOSAL: Refactor to facilitate automated testing.
 %   PROBLEM: Though it does not read RCTs, the corresponding data
 %            structures are complex and would be hard to create test data for(?)
-%   NOTE: Uses SETTINGS object, and many of its values.
+%   NOTE: Uses BSO, and many of its values.
 %   PROBLEM: Calls complex function that should (primarily) be tested separately:
 %            bicas.tf.apply_TF_freq()
 %       PROPOSAL: Replace with function handle, set in constructor from
@@ -294,8 +294,8 @@ classdef Cal < handle
         %==================================================
         % Settings for what kind of calibration to perform
         %==================================================
+        % Correspond to BSO key-values.
 
-        % Corresponds to SETTINGS key-value.
         tfMethod
         %
         itfHighFreqLimitFraction
@@ -378,7 +378,7 @@ classdef Cal < handle
                 RctDataMap, ...
                 use_CALIBRATION_TABLE_rcts, ...
                 use_CALIBRATION_TABLE_INDEX2, ...
-                SETTINGS)
+                Bso)
 
             % ASSERTIONS: Arguments
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
@@ -397,45 +397,45 @@ classdef Cal < handle
 
 
             %==================================================================
-            % Store miscellaneous SETTINGS key values
-            % ---------------------------------------
+            % Store miscellaneous BSO key values
+            % ----------------------------------
             % IMPLEMENTATION NOTE: This useful since it is:
             %   ** More convenient to access values via shorter field names
             %       (more readable code).
             %   ** Potentially gives faster access to values (better
             %      performance).
             %==================================================================
-            obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
-            obj.HkBiasCurrent.gainAapt         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
+            obj.HkBiasCurrent.offsetTm         = Bso.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
+            obj.HkBiasCurrent.gainAapt         = Bso.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
 
-            obj.BiasScalarGain.alphaIvpav      = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
-            obj.BiasScalarGain.betaIvpav       = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
-            obj.BiasScalarGain.gammaIvpav.achg = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
-            obj.BiasScalarGain.gammaIvpav.aclg = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
+            obj.BiasScalarGain.alphaIvpav      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
+            obj.BiasScalarGain.betaIvpav       = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
+            obj.BiasScalarGain.gammaIvpav.achg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
+            obj.BiasScalarGain.gammaIvpav.aclg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
 
-            obj.tfMethod                       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.METHOD');
+            obj.tfMethod                       = Bso.get_fv('PROCESSING.CALIBRATION.TF.METHOD');
 
-            obj.itfHighFreqLimitFraction       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION');
+            obj.itfHighFreqLimitFraction       = Bso.get_fv('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION');
             % NOTE: Converts Hz-->rad/s
-            obj.itfAcConstGainLowFreqRps       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
+            obj.itfAcConstGainLowFreqRps       = Bso.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
 
-            obj.dcDetrendingDegreeOf           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
-            obj.dcRetrendingEnabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
-            obj.acDetrendingDegreeOf           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
+            obj.dcDetrendingDegreeOf           = Bso.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
+            obj.dcRetrendingEnabled            = Bso.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
+            obj.acDetrendingDegreeOf           = Bso.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
 
-            obj.kernelEdgePolicy               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
-            obj.kernelHannWindow               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
-            obj.snfEnabled                     = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
-            obj.snfSubseqMinSamples            = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
+            obj.kernelEdgePolicy               = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
+            obj.kernelHannWindow               = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
+            obj.snfEnabled                     = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
+            obj.snfSubseqMinSamples            = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
 
-            obj.allVoltageCalibDisabled        = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
-            obj.biasOffsetsDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
-            obj.lfrTdsTfDisabled               = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
+            obj.allVoltageCalibDisabled        = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
+            obj.biasOffsetsDisabled            = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
+            obj.lfrTdsTfDisabled               = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
 
             %-------------------------
             % Set obj.useBiasTfScalar
             %-------------------------
-            settingBiasTf                      = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
+            settingBiasTf                      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
             switch(settingBiasTf)
                 case 'FULL'
                     obj.useBiasTfScalar = 0;
@@ -897,7 +897,7 @@ classdef Cal < handle
         % settings.
         %
         % NOTE: May return calibration values corresponding to scalar
-        % calibration, depending on SETTINGS:
+        % calibration, depending on BSO:
         %
         %
         % ARGUMENTS

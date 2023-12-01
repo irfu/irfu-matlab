@@ -380,7 +380,7 @@ function main_without_error_handling(cliArgumentsList, L)
     %========================================
     % Initialize global settings & constants
     %========================================
-    SETTINGS  = bicas.create_default_SETTINGS();
+    Bso  = bicas.create_default_BSO();
     
     
     
@@ -417,7 +417,7 @@ function main_without_error_handling(cliArgumentsList, L)
     end
     L.logf('info', 'configFile = "%s"', configFile)
     L.log('info', 'Overriding subset of in-memory settings using config file.')
-    bicas.override_settings_from_config_file(configFile, SETTINGS, L)
+    bicas.override_settings_from_config_file(configFile, Bso, L)
     
     
     
@@ -427,41 +427,41 @@ function main_without_error_handling(cliArgumentsList, L)
     L.log('info', ...
         ['Overriding subset of in-memory settings using', ...
         ' (optional, unofficial) CLI arguments, if any.'])
-    SETTINGS.override_values_from_strings(...
+    Bso.override_values_from_strings(...
         CliData.ModifiedSettingsMap, 'CLI arguments');
     
     
     
-    SETTINGS.make_read_only();
-    % CASE: SETTINGS has now been finalized and is read-only (by assertion)
+    Bso.make_read_only();
+    % CASE: BSO has now been finalized and is read-only (by assertion)
     % after this.
     
     
     
-    % Print/log the content of SETTINGS.
-    L.log('info', bicas.sprint_SETTINGS(SETTINGS))
+    % Print/log the content of Bso.
+    L.log('info', bicas.sprint_BSO(Bso))
     
     % Print/log selected parts of bicas.const.
     L.log('info', sprint_constants())
     
     
     
-    Swml = bicas.swm.get_SWML(SETTINGS, L);
+    Swml = bicas.swm.get_SWML(Bso, L);
     
     
     
     switch(CliData.functionalityMode)
         case 'version'
-            print_version(Swml, SETTINGS)
+            print_version(Swml, Bso)
             
         case 'identification'
-            print_identification(Swml, SETTINGS)
+            print_identification(Swml, Bso)
             
         case 'S/W descriptor'
-            print_SWD(Swml, SETTINGS)
+            print_SWD(Swml, Bso)
             
         case 'help'
-            print_help(SETTINGS)
+            print_help(Bso)
             
         case 'S/W mode'
             %============================
@@ -515,9 +515,9 @@ function main_without_error_handling(cliArgumentsList, L)
             %==========================
             % NOTE: Reading environment variables first here, where they are
             % needed.
-            rctDir       = read_env_variable(SETTINGS, L, ...
+            rctDir       = read_env_variable(Bso, L, ...
                 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-            masterCdfDir = read_env_variable(SETTINGS, L, ...
+            masterCdfDir = read_env_variable(Bso, L, ...
                 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
             L.logf('info', 'rctDir       = "%s"', rctDir)
             L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
@@ -530,8 +530,8 @@ function main_without_error_handling(cliArgumentsList, L)
             %===================
             % Read RCS NSO file
             %===================
-            rcsNsoRelativePath = SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
-            rcsNsoOverridePath = SETTINGS.get_fv('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH');
+            rcsNsoRelativePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
+            rcsNsoOverridePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH');
             if isempty(rcsNsoOverridePath)
                 rcsNsoPath = fullfile(bicasRootPath, rcsNsoRelativePath);
             else
@@ -549,7 +549,7 @@ function main_without_error_handling(cliArgumentsList, L)
             %==================
             bicas.execute_SWM(...
                 Swm, InputFilesMap, OutputFilesMap, ...
-                masterCdfDir, rctDir, NsoTable, SETTINGS, L )
+                masterCdfDir, rctDir, NsoTable, Bso, L )
             
         otherwise
             error('BICAS:Assertion', ...
@@ -588,7 +588,7 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created <<2019-08-05
 %
-function print_version(Swml, SETTINGS)
+function print_version(Swml, Bso)
     
     % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor
     % rather than the in the BICAS constants since the RCS ICD specifies that it
@@ -601,7 +601,7 @@ function print_version(Swml, SETTINGS)
     JsonVersion.version = JsonSwd.release.version;
     
     strVersion = bicas.utils.JSON_object_str(JsonVersion, ...
-        SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+        Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strVersion);
 end
 
@@ -614,11 +614,11 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
 %
-function print_identification(Swml, SETTINGS)
+function print_identification(Swml, Bso)
     
     JsonSwd = bicas.get_SWD(Swml.List);
     strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
-        SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+        Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
     
 end
@@ -632,11 +632,11 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24
 %
-function print_SWD(Swml, SETTINGS)
+function print_SWD(Swml, Bso)
     
     JsonSwd = bicas.get_SWD(Swml.List);
     strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
-        SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+        Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
     
 end
@@ -649,7 +649,7 @@ end
 % copy-pasting into RCS User Manual (RUM).
 % NOTE: No logging.
 %
-function print_help(SETTINGS)
+function print_help(Bso)
     %
     % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
     
@@ -677,7 +677,7 @@ function print_help(SETTINGS)
     end
     
     % Print settings
-    bicas.stdout_print(bicas.sprint_SETTINGS(SETTINGS))   % Includes title
+    bicas.stdout_print(bicas.sprint_BSO(Bso))   % Includes title
     
     bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
 end
@@ -686,8 +686,8 @@ end
 
 % Read environment variable, but allow the value to be overriden by a settings
 % variable.
-function v = read_env_variable(SETTINGS, L, envVarName, overrideSettingKey)
-    settingsOverrideValue = SETTINGS.get_fv(overrideSettingKey);
+function v = read_env_variable(Bso, L, envVarName, overrideSettingKey)
+    settingsOverrideValue = Bso.get_fv(overrideSettingKey);
     
     if isempty(settingsOverrideValue)
         v = getenv(envVarName);

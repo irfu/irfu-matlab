@@ -97,6 +97,9 @@ BLTS = BIAS-LFR/TDS SIGNAL
     NOTE: This definition is partly created to avoid using term "BIAS_i" since
     it is easily confused with other things (the subsystem BIAS, bias currents),
     partly to include various stages of calibration.
+BSO
+    Singleton instance of class bicas.Settings which stores the settings for
+    BICAS as a whole.
 CA
     Cell Array.
 CLI
@@ -309,9 +312,8 @@ lowercase initial.
 Exception: Variables which are direct analogues to zVariables are named as the
 corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of the time.
 
-b        = Logical (boolean) values, often logical arrays used for logical indexing.
-i, j     = Indices into arrays.
-SETTINGS = bicas.Settings object.
+b    = Logical (boolean) values, often logical arrays used for logical indexing.
+i, j = Indices into arrays.
 
 Unit tests (classes) have suffix "___UTEST".
 

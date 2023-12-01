@@ -45,7 +45,7 @@
 % =======================
 % See implementation for comments.
 % See comments for settings PROCESSING.RCT_REGEXP.* (all RCTs), in
-% bicas.create_default_SETTINGS.
+% bicas.create_default_BSO.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -242,7 +242,7 @@ end
 %
 % OFFICIAL DOCUMENTATION ON RCT FILENAMING CONVENTION
 % ===================================================
-% See comments for bicas.create_default_SETTINGS, settings
+% See comments for bicas.create_default_BSO, settings
 % PROCESSING.RCT_REGEXP.* (all RCTs).
 %
 function [destFilename, gaCALIBRATION_VERSION] = create_RCT_filename()
