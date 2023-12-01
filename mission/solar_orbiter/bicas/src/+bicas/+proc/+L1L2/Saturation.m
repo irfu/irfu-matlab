@@ -249,13 +249,13 @@ classdef Saturation
         %
         function isSaturatedAr = get_voltage_saturation_quality_bit(...
                 obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
-                bdmFpa, dlrFpa, lrx, isAchgFpa, hasSnapshotFormat, L)
+                bdmFpa, dlrFpa, lrx, isAchgFpa, hasSwfFormat, L)
 
             % TODO: Test code
 
             % ASSERTIONS
             bicas.utils.assert_ZV_Epoch(tt2000Ar)
-            assert(islogical(hasSnapshotFormat) && isscalar(hasSnapshotFormat))
+            assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
             assert(strcmp(bdmFpa.mc, 'uint8'))   % Must be some integer.
             assert(strcmp(dlrFpa.mc, 'logical'))
             assert(isa(lrx, 'double'))
@@ -283,7 +283,7 @@ classdef Saturation
             % Bit array, one element per CDF record
             % -------------------------------------
             % NOTE: The meaning and usage of the bits is different for different
-            % values of hasSnapshotFormat, hence the neutral name.
+            % values of hasSwfFormat, hence the neutral name.
             bitAr = false(nRows, 1);
 
             for iSs = 1:nSs
@@ -294,12 +294,12 @@ classdef Saturation
                 % CV = Constant values = Values which are constant for the
                 %      entire subsequence of records.
                 Cv = [];
-                Cv.bdmFpa            = bdmFpa(   iRec1);
-                Cv.dlrFpa            = dlrFpa(   iRec1);
-                Cv.isAchgFpa         = isAchgFpa(iRec1);
-                Cv.lrx               = lrx(      iRec1);
+                Cv.bdmFpa       = bdmFpa(   iRec1);
+                Cv.dlrFpa       = dlrFpa(   iRec1);
+                Cv.isAchgFpa    = isAchgFpa(iRec1);
+                Cv.lrx          = lrx(      iRec1);
                 % NOTE: Below variables do not vary over CDF records anyhow.
-                Cv.hasSnapshotFormat = hasSnapshotFormat;
+                Cv.hasSwfFormat = hasSwfFormat;
 
                 RoutingAr = bicas.proc.L1L2.demuxer.get_routings(...
                     Cv.bdmFpa, Cv.dlrFpa);
@@ -319,7 +319,7 @@ classdef Saturation
 
                         % Set ssBltsBitAr=bits for the current subsequence and
                         % BLTS.
-                        if hasSnapshotFormat
+                        if hasSwfFormat
                             ssBltsBitAr = obj.get_snapshot_saturation_many(...
                                  zvNValidSamplesPerRecord(iRec1:iRec2), ...
                                  ssBltsSamplesAVolt, ...
@@ -338,7 +338,7 @@ classdef Saturation
                 bitAr(iRec1:iRec2) = ssBitAr;
             end    % for iSs = ...
 
-            if hasSnapshotFormat
+            if hasSwfFormat
                 isSaturatedAr = bitAr;
             else
                 isSaturatedAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...

@@ -21,7 +21,7 @@ classdef PreDc
     % time due to lrx changing.
     %
     % This handling does in principle differ from the handling of other "data
-    % parameters" (BW, LSF, isTdsCwf, freqHz, hasSnapshotFormat, etc.). LRX
+    % parameters" (BW, LSF, isTdsCwf, freqHz, hasSwfFormat, etc.). LRX
     % determines which channels contain actual data. The BLTS index into the
     % array is used to determine whether one has DC diff or AC diff data.
     %
@@ -73,7 +73,7 @@ classdef PreDc
     properties(SetAccess=immutable)
         Zv
         Ga
-        hasSnapshotFormat
+        hasSwfFormat
         isLfr
         isTdsCwf
     end
@@ -87,7 +87,7 @@ classdef PreDc
     %#########################
     methods(Access=public)
 
-        function obj = PreDc(Zv, Ga, hasSnapshotFormat, isLfr, isTdsCwf)
+        function obj = PreDc(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
 
             irf.assert.struct(Zv, ...
                 {'Epoch', 'bltsSamplesTm', 'freqHz', 'nValidSamplesPerRecord', ...
@@ -99,16 +99,16 @@ classdef PreDc
                 {'BW'});
             bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
             assert(size(Zv.bltsSamplesTm, 3) == 5)
-            assert(isa(Zv.freqHz,         'double' ))
-            assert(isa(hasSnapshotFormat, 'logical'))
-            assert(isa(isLfr,             'logical'))
-            assert(isa(isTdsCwf,          'logical'))
+            assert(isa(Zv.freqHz,    'double' ))
+            assert(isa(hasSwfFormat, 'logical'))
+            assert(isa(isLfr,        'logical'))
+            assert(isa(isTdsCwf,     'logical'))
 
-            obj.Zv                = Zv;
-            obj.Ga                = Ga;
-            obj.hasSnapshotFormat = hasSnapshotFormat;
-            obj.isLfr             = isLfr;
-            obj.isTdsCwf          = isTdsCwf;
+            obj.Zv           = Zv;
+            obj.Ga           = Ga;
+            obj.hasSwfFormat = hasSwfFormat;
+            obj.isLfr        = isLfr;
+            obj.isTdsCwf     = isTdsCwf;
         end
 
     end    % methods(Access=public)
