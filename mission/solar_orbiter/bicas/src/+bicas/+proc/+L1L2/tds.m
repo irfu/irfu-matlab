@@ -180,7 +180,7 @@ classdef tds
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            irf.assert.struct(HkSciTime, {'bdmFpa', 'biasHighGainFpa', 'dlrFpa'}, {})
+            irf.assert.struct(HkSciTime, {'bdmFpa', 'isAchgFpa', 'dlrFpa'}, {})
 
             C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
 
@@ -241,7 +241,7 @@ classdef tds
             Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
             Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
             Zv.bdmFpa                  = HkSciTime.bdmFpa;
-            Zv.biasHighGainFpa         = HkSciTime.biasHighGainFpa;
+            Zv.isAchgFpa               = HkSciTime.isAchgFpa;
             Zv.dlrFpa                  = HkSciTime.dlrFpa;
             Zv.ufv                     = false(nRecords, 1);
             Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;

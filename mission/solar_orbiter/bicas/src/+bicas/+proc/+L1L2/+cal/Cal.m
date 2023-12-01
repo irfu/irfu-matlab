@@ -405,37 +405,37 @@ classdef Cal < handle
             %   ** Potentially gives faster access to values (better
             %      performance).
             %==================================================================
-            obj.HkBiasCurrent.offsetTm             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
-            obj.HkBiasCurrent.gainAapt             = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
+            obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
+            obj.HkBiasCurrent.gainAapt         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
 
-            obj.BiasScalarGain.alphaIvpav          = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
-            obj.BiasScalarGain.betaIvpav           = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
-            obj.BiasScalarGain.gammaIvpav.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
-            obj.BiasScalarGain.gammaIvpav.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
+            obj.BiasScalarGain.alphaIvpav      = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
+            obj.BiasScalarGain.betaIvpav       = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
+            obj.BiasScalarGain.gammaIvpav.achg = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
+            obj.BiasScalarGain.gammaIvpav.aclg = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
 
-            obj.tfMethod                           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.METHOD');
+            obj.tfMethod                       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.METHOD');
 
-            obj.itfHighFreqLimitFraction           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION');
+            obj.itfHighFreqLimitFraction       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION');
             % NOTE: Converts Hz-->rad/s
-            obj.itfAcConstGainLowFreqRps           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
+            obj.itfAcConstGainLowFreqRps       = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ') * 2*pi;
 
-            obj.dcDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
-            obj.dcRetrendingEnabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
-            obj.acDetrendingDegreeOf               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
+            obj.dcDetrendingDegreeOf           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE');
+            obj.dcRetrendingEnabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
+            obj.acDetrendingDegreeOf           = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
 
-            obj.kernelEdgePolicy                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
-            obj.kernelHannWindow                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
-            obj.snfEnabled                         = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
-            obj.snfSubseqMinSamples                = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
+            obj.kernelEdgePolicy               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
+            obj.kernelHannWindow               = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
+            obj.snfEnabled                     = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
+            obj.snfSubseqMinSamples            = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
 
-            obj.allVoltageCalibDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
-            obj.biasOffsetsDisabled                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
-            obj.lfrTdsTfDisabled                   = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
+            obj.allVoltageCalibDisabled        = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
+            obj.biasOffsetsDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
+            obj.lfrTdsTfDisabled               = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
 
             %-------------------------
             % Set obj.useBiasTfScalar
             %-------------------------
-            settingBiasTf                          = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
+            settingBiasTf                      = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
             switch(settingBiasTf)
                 case 'FULL'
                     obj.useBiasTfScalar = 0;
@@ -569,7 +569,7 @@ classdef Cal < handle
             % ASSERTIONS
             assert(isstruct(CalSettings))
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'Ssid', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'isAchg', ...
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             assert(iscell(bltsSamplesTmCa))
             assert(isvector(bltsSamplesTmCa))
@@ -698,11 +698,11 @@ classdef Cal < handle
                 dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
 
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'Ssid', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'isAchg', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
             iBlts        = CalSettings.iBlts;
             Ssid         = CalSettings.Ssid;
-            biasHighGain = CalSettings.biasHighGain;
+            isAchg       = CalSettings.isAchg;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
 
@@ -733,7 +733,7 @@ classdef Cal < handle
                 % NOTE: Low/high gain is irrelevant for TDS. Argument value
                 % arbitrary.
                 BiasCalibData = obj.get_BIAS_calib_data(...
-                    Ssid, biasHighGain, iCalibTimeL, iCalibTimeH);
+                    Ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
                 if obj.lfrTdsTfDisabled
                     tdsFactorIvpt = 1;
@@ -792,11 +792,11 @@ classdef Cal < handle
                 dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
             
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'Ssid', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'isAchg', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
             iBlts        = CalSettings.iBlts;
             Ssid         = CalSettings.Ssid;
-            biasHighGain = CalSettings.biasHighGain;
+            isAchg       = CalSettings.isAchg;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
 
@@ -821,7 +821,7 @@ classdef Cal < handle
             % NOTE: Low/high gain is irrelevant for TDS. Argument value
             % arbitrary.
             BiasCalibData = obj.get_BIAS_calib_data(...
-                Ssid, biasHighGain, iCalibTimeL, iCalibTimeH);
+                Ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
             % Initialize empty output variable.
             bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
@@ -902,24 +902,24 @@ classdef Cal < handle
         %
         % ARGUMENTS
         % =========
-        % biasHighGain
+        % isAchg
         %       NUMERIC value: 0=Off, 1=ON, or NaN=Value not known.
-        %       IMPLEMENTATION NOTE: Needs value to represent that biasHighGain
-        %       is unknown. Sometimes, if biasHighGain is unknown, then it is
+        %       IMPLEMENTATION NOTE: Needs value to represent that isAchg
+        %       is unknown. Sometimes, if isAchg is unknown, then it is
         %       useful to process as usual since some of the data can still be
         %       derived/calibrated, so that the caller does not need to handle
         %       the special case.
         %
         function BiasCalibData = get_BIAS_calib_data(obj, ...
-                Ssid, biasHighGain, iCalibTimeL, iCalibTimeH)
+                Ssid, isAchg, iCalibTimeL, iCalibTimeH)
 
-            % PROPOSAL: Log warning message when simultaneously biasHighGain=NaN
+            % PROPOSAL: Log warning message when simultaneously isAchg=NaN
             % and the value is needed.
 
             % ASSERTION
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
             assert(Ssid.is_ASR())
-            assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
+            assert(isscalar(isAchg) && isnumeric(isAchg))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
 
@@ -952,22 +952,22 @@ classdef Cal < handle
 
                 case 'AC diff'
 
-                    if     biasHighGain == 0
-                        biasItfAvpiv = BiasRct.ItfSet.acLowGainAvpiv{iCalibTimeL};
-                        kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.lowGain;
+                    if     isAchg == 0
+                        biasItfAvpiv = BiasRct.ItfSet.aclgAvpiv{iCalibTimeL};
+                        kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.aclg;
                         offsetAVolt  = 0;
-                    elseif biasHighGain == 1
-                        biasItfAvpiv = BiasRct.ItfSet.acHighGainAvpiv{iCalibTimeL};
-                        kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.highGain;
+                    elseif isAchg == 1
+                        biasItfAvpiv = BiasRct.ItfSet.achgAvpiv{iCalibTimeL};
+                        kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.achg;
                         offsetAVolt  = 0;
-                    elseif isnan(biasHighGain)
+                    elseif isnan(isAchg)
                         % CASE: GAIN unknown when it is NEEDED for calibration.
                         biasItfAvpiv = bicas.proc.L1L2.cal.Cal.NAN_TF;
                         kFtfIvpav    = NaN;
                         offsetAVolt  = NaN;
                     else
                         error('BICAS:Assertion:IllegalArgument', ...
-                            'Illegal argument biasHighGain=%g.', biasHighGain)
+                            'Illegal argument isAchg=%g.', isAchg)
                     end
 
                 otherwise
@@ -1060,11 +1060,11 @@ classdef Cal < handle
 
             % ASSERTIONS
 %             irf.assert.struct(CalSettings, {...
-%                 'iBlts', 'Ssid', 'biasHighGain', ...
+%                 'iBlts', 'Ssid', 'isAchg', ...
 %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
             iBlts        = CalSettings.iBlts;
             Ssid         = CalSettings.Ssid;
-            biasHighGain = CalSettings.biasHighGain;
+            isAchg       = CalSettings.isAchg;
             iCalibTimeL  = CalSettings.iCalibTimeL;
             iCalibTimeH  = CalSettings.iCalibTimeH;
             iLsf         = CalSettings.iLsf;
@@ -1129,7 +1129,7 @@ classdef Cal < handle
             % Obtain BIAS calibration data
             %==============================
             CalData.BiasCalibData = obj.get_BIAS_calib_data(...
-                Ssid, biasHighGain, iCalibTimeL, iCalibTimeH);
+                Ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
             %========================================
             % Obtain (official) LFR calibration data

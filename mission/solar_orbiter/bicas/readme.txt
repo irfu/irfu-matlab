@@ -51,6 +51,10 @@ AA, aampere
     Antenna ampere. Calibrated ampere at the antenna.
 AAPT
     Antenna ampere/TM
+ACHG
+    (BIAS diff) AC High Gain.
+ACLG
+    (BIAS diff) AC Low Gain.
 ASID
     Class bicas.proc.L1L2.AntennaSignalId.
 ASR, Antenna Signal Representation.

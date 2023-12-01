@@ -44,8 +44,8 @@ classdef Saturation
         % below the negated value, count as threshold-saturated (TSF).
         higherThresholdAVoltDcSingle
         higherThresholdAVoltDcDiff
-        higherThresholdAVoltAcDiffLowGain
-        higherThresholdAVoltAcDiffHighGain
+        higherThresholdAVoltAclg
+        higherThresholdAVoltAchg
     end
 
 
@@ -60,13 +60,13 @@ classdef Saturation
 
 
         function obj = Saturation(SETTINGS)
-            obj.cwfSlidingWindowLengthSec          = SETTINGS.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
-            obj.tsfFractionThreshold               = SETTINGS.get_fv('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD');
+            obj.cwfSlidingWindowLengthSec    = SETTINGS.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
+            obj.tsfFractionThreshold         = SETTINGS.get_fv('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD');
 
-            obj.higherThresholdAVoltDcSingle       = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
-            obj.higherThresholdAVoltDcDiff         = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
-            obj.higherThresholdAVoltAcDiffLowGain  = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
-            obj.higherThresholdAVoltAcDiffHighGain = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
+            obj.higherThresholdAVoltDcSingle = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
+            obj.higherThresholdAVoltDcDiff   = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
+            obj.higherThresholdAVoltAclg     = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
+            obj.higherThresholdAVoltAchg     = SETTINGS.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
 
 
 
@@ -87,8 +87,8 @@ classdef Saturation
 
             assert_positive_float(obj.higherThresholdAVoltDcSingle)
             assert_positive_float(obj.higherThresholdAVoltDcDiff)
-            assert_positive_float(obj.higherThresholdAVoltAcDiffLowGain)
-            assert_positive_float(obj.higherThresholdAVoltAcDiffHighGain)
+            assert_positive_float(obj.higherThresholdAVoltAclg)
+            assert_positive_float(obj.higherThresholdAVoltAchg)
         end
 
 
@@ -122,7 +122,7 @@ classdef Saturation
         %       are no thresholds for this kind of data (e.g. for non-ASR
         %       sources). False is returned for NaN input elements.
         %
-        function tsfAr = get_TSF(obj, samplesAVolt, Ssid, biasHighGainFpa)
+        function tsfAr = get_TSF(obj, samplesAVolt, Ssid, isAchgFpa)
             % PROPOSAL: Better name.
             %   ~sample-to-TSF
             %       PRO: Can use same maing scheme for TSF-to-SWSF function (for CWF).
@@ -130,7 +130,7 @@ classdef Saturation
 
             assert(isfloat(samplesAVolt))
             assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
-            assert(isa(biasHighGainFpa, 'bicas.utils.FPArray') && isscalar(biasHighGainFpa))
+            assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
 
             % Default value that used if there are no thresholds.
             tsfAr = false(size(samplesAVolt));
@@ -148,14 +148,14 @@ classdef Saturation
                 % CASE: DC/AC diff
                 % ----------------
 
-                biasHighGain = biasHighGainFpa.logical2doubleNan();
+                isAchg = isAchgFpa.logical2doubleNan();
                 if Ssid.Asid.is_AC()
                     % CASE: AC diff
                     % -------------
-                    if biasHighGain == 0
-                        highThresholdAVolt = obj.higherThresholdAVoltAcDiffLowGain;
-                    elseif biasHighGain == 1
-                        highThresholdAVolt = obj.higherThresholdAVoltAcDiffHighGain;
+                    if isAchg == 0
+                        highThresholdAVolt = obj.higherThresholdAVoltAclg;
+                    elseif isAchg == 1
+                        highThresholdAVolt = obj.higherThresholdAVoltAchg;
                     else
                         return
                     end
@@ -199,10 +199,10 @@ classdef Saturation
         % isSaturated
         %       Logical. Scalar.
         %
-        function isSaturated = get_snapshot_saturation(obj, samplesAVolt, Ssid, biasHighGain)
+        function isSaturated = get_snapshot_saturation(obj, samplesAVolt, Ssid, isAchg)
             irf.assert.sizes(samplesAVolt, [1, NaN, 1])
 
-            tsfAr = obj.get_TSF(samplesAVolt, Ssid, biasHighGain);
+            tsfAr = obj.get_TSF(samplesAVolt, Ssid, isAchg);
 
             isSaturated = (sum(tsfAr, 'all') / numel(samplesAVolt)) > obj.tsfFractionThreshold;
         end
@@ -222,7 +222,7 @@ classdef Saturation
         % zvSamplesAVolt
         %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
         function isSaturatedAr = get_snapshot_saturation_many(obj, ...
-                zvNValidSamplesPerRecord, zvSamplesAVolt, Ssid, biasHighGain)
+                zvNValidSamplesPerRecord, zvSamplesAVolt, Ssid, isAchg)
 
             nRecs = irf.assert.sizes(...
                 zvNValidSamplesPerRecord, [-1],  ...
@@ -232,7 +232,7 @@ classdef Saturation
             for iRec = 1:nRecs
                 isSaturatedAr(iRec) = obj.get_snapshot_saturation(...
                     zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
-                    Ssid, biasHighGain);
+                    Ssid, isAchg);
             end
         end
 
@@ -249,7 +249,7 @@ classdef Saturation
         %
         function isSaturatedAr = get_voltage_saturation_quality_bit(...
                 obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
-                bdmFpa, dlrFpa, lrx, biasHighGainFpa, hasSnapshotFormat, L)
+                bdmFpa, dlrFpa, lrx, isAchgFpa, hasSnapshotFormat, L)
 
             % TODO: Test code
 
@@ -273,7 +273,7 @@ classdef Saturation
             [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
                 bdmFpa.int2doubleNan(), ...
                 dlrFpa.logical2doubleNan(), ...
-                biasHighGainFpa.logical2doubleNan(), ...
+                isAchgFpa.logical2doubleNan(), ...
                 lrx);
 
             L.logf('info', ...
@@ -294,10 +294,10 @@ classdef Saturation
                 % CV = Constant values = Values which are constant for the
                 %      entire subsequence of records.
                 Cv = [];
-                Cv.bdmFpa          = bdmFpa(         iRec1);
-                Cv.dlrFpa          = dlrFpa(         iRec1);
-                Cv.biasHighGainFpa = biasHighGainFpa(iRec1);
-                Cv.lrx             = lrx(            iRec1);
+                Cv.bdmFpa            = bdmFpa(   iRec1);
+                Cv.dlrFpa            = dlrFpa(   iRec1);
+                Cv.isAchgFpa         = isAchgFpa(iRec1);
+                Cv.lrx               = lrx(      iRec1);
                 % NOTE: Below variables do not vary over CDF records anyhow.
                 Cv.hasSnapshotFormat = hasSnapshotFormat;
 
@@ -323,11 +323,11 @@ classdef Saturation
                             ssBltsBitAr = obj.get_snapshot_saturation_many(...
                                  zvNValidSamplesPerRecord(iRec1:iRec2), ...
                                  ssBltsSamplesAVolt, ...
-                                 Ssid, Cv.biasHighGainFpa);
+                                 Ssid, Cv.isAchgFpa);
                         else
                             ssBltsBitAr = obj.get_TSF(...
                                 ssBltsSamplesAVolt, ...
-                                Ssid, Cv.biasHighGainFpa);
+                                Ssid, Cv.isAchgFpa);
                         end
 
                         % Merge (OR) bits over BLTS's (for current subsequence).

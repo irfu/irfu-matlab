@@ -110,20 +110,20 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
                     ftfCoeffs(:, :, I_NUMERATOR,   I_DC_DIFF), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_DC_DIFF));
 
-                RctData.FtfSet.AcLowGainAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+                RctData.FtfSet.AclgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_AC_LG), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_LG));
 
-                RctData.FtfSet.AcHighGainAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+                RctData.FtfSet.AchgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
                     ftfCoeffs(:, :, I_NUMERATOR,   I_AC_HG), ...
                     ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
 
                 % ASSERTIONS
                 irf.assert.sizes(...
-                    RctData.FtfSet.DcSingleAvpiv,   [nEpochL, 1], ...
-                    RctData.FtfSet.DcDiffAvpiv,     [nEpochL, 1], ...
-                    RctData.FtfSet.AcLowGainAvpiv,  [nEpochL, 1], ...
-                    RctData.FtfSet.AcHighGainAvpiv, [nEpochL, 1]);
+                    RctData.FtfSet.DcSingleAvpiv, [nEpochL, 1], ...
+                    RctData.FtfSet.DcDiffAvpiv,   [nEpochL, 1], ...
+                    RctData.FtfSet.AclgAvpiv,     [nEpochL, 1], ...
+                    RctData.FtfSet.AchgAvpiv,     [nEpochL, 1]);
                 for iEpochL = 1:nEpochL
                     %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
                     %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
@@ -175,10 +175,10 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
 
             % ASSERTIONS
             nTime = irf.assert.sizes(...
-                FtfRctSet.DcSingleAvpiv,   [-1, 1], ...
-                FtfRctSet.DcDiffAvpiv,     [-1, 1], ...
-                FtfRctSet.AcLowGainAvpiv,  [-1, 1], ...
-                FtfRctSet.AcHighGainAvpiv, [-1, 1]);
+                FtfRctSet.DcSingleAvpiv, [-1, 1], ...
+                FtfRctSet.DcDiffAvpiv,   [-1, 1], ...
+                FtfRctSet.AclgAvpiv,     [-1, 1], ...
+                FtfRctSet.AchgAvpiv,     [-1, 1]);
 
             % NOTE: Derive ITFs.
             ItfSet = [];
@@ -189,15 +189,15 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
                 % anonymous functions later.
                 % * Might speed up code by eliminating calls to method .inverse()
                 % * Reduces size of individual expressions.
-                TempItfDcSingleAvpiv   = FtfRctSet.DcSingleAvpiv{  iTf}.inverse();
-                TempItfDcDiffAvpiv     = FtfRctSet.DcDiffAvpiv{    iTf}.inverse();
-                TempItfAcLowGainAvpiv  = FtfRctSet.AcLowGainAvpiv{ iTf}.inverse();
-                TempItfAcHighGainAvpiv = FtfRctSet.AcHighGainAvpiv{iTf}.inverse();
+                TempItfDcSingleAvpiv = FtfRctSet.DcSingleAvpiv{  iTf}.inverse();
+                TempItfDcDiffAvpiv   = FtfRctSet.DcDiffAvpiv{    iTf}.inverse();
+                TempItfAclgAvpiv     = FtfRctSet.AclgAvpiv{ iTf}.inverse();
+                TempItfAchgAvpiv     = FtfRctSet.AchgAvpiv{iTf}.inverse();
 
-                ItfSet.dcSingleAvpiv{  iTf} = @(omegaRps) (TempItfDcSingleAvpiv.eval(omegaRps));
-                ItfSet.dcDiffAvpiv{    iTf} = @(omegaRps) (TempItfDcDiffAvpiv.eval(omegaRps));
-                ItfSet.acLowGainAvpiv{ iTf} = @(omegaRps) (TempItfAcLowGainAvpiv.eval(omegaRps));
-                ItfSet.acHighGainAvpiv{iTf} = @(omegaRps) (TempItfAcHighGainAvpiv.eval(omegaRps));
+                ItfSet.dcSingleAvpiv{iTf} = @(omegaRps) (TempItfDcSingleAvpiv.eval(omegaRps));
+                ItfSet.dcDiffAvpiv{  iTf} = @(omegaRps) (TempItfDcDiffAvpiv.eval(omegaRps));
+                ItfSet.aclgAvpiv{    iTf} = @(omegaRps) (TempItfAclgAvpiv.eval(omegaRps));
+                ItfSet.achgAvpiv{    iTf} = @(omegaRps) (TempItfAchgAvpiv.eval(omegaRps));
             end
 
             RctData.ItfSet = ItfSet;
@@ -239,8 +239,8 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
                     ' (FTFs; RctData.FtfRctSet) since the inversion is trivial.'])
                 log_TF('    BIAS ITF DC single',          DC_FREQ_HZ,       RctData.ItfSet.dcSingleAvpiv)
                 log_TF('    BIAS ITF DC diff',            DC_FREQ_HZ,       RctData.ItfSet.dcDiffAvpiv)
-                log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.acLowGainAvpiv)
-                log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.acHighGainAvpiv)
+                log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.aclgAvpiv)
+                log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.achgAvpiv)
             end
 
             %=====================

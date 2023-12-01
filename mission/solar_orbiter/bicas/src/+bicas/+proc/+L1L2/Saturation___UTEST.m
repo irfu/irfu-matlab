@@ -30,12 +30,12 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
         function test_get_TSF(testCase)
-            function test(satArgsCa, samplesAVolt, Ssid, biasHighGain, expTsfAr)
+            function test(satArgsCa, samplesAVolt, Ssid, isAchg, expTsfAr)
                 expTsfAr = logical(expTsfAr);
-                biasHighGainFpa = bicas.utils.FPArray.floatNan2logical(biasHighGain);
+                isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
                 Sat = bicas.proc.L1L2.Saturation___UTEST.init_object(satArgsCa{:});
 
-                actTsfAr = Sat.get_TSF(samplesAVolt, Ssid, biasHighGainFpa);
+                actTsfAr = Sat.get_TSF(samplesAVolt, Ssid, isAchgFpa);
 
                 testCase.assertEqual(actTsfAr, expTsfAr)
             end
@@ -43,27 +43,27 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
             function main()
                 S = bicas.proc.L1L2.SignalSourceId.C;
 
-                for biasHighGain = [0, 1, NaN]
+                for isAchg = [0, 1, NaN]
                     % DC single, 1x6
-                    test({99, 0.6, 3, 99,99,99}, [-5, -1, 0, 1, 5, NaN], S.DC_V1,  biasHighGain, [1, 0, 0, 0, 1, 0])
+                    test({99, 0.6, 3, 99,99,99}, [-5, -1, 0, 1, 5, NaN], S.DC_V1,  isAchg, [1, 0, 0, 0, 1, 0])
 
                     % DC diff, 3x2
-                    test({99, 0.6, 99, 3,99,99}, [-5, -1, 0; 1, 5, NaN], S.DC_V12, biasHighGain, [1, 0, 0; 0, 1, 0])
+                    test({99, 0.6, 99, 3,99,99}, [-5, -1, 0; 1, 5, NaN], S.DC_V12, isAchg, [1, 0, 0; 0, 1, 0])
                 end
 
                 % AC, low gain, 6x1
-                for highGainThreshold = [1, 7]
-                    test({99, 0.6, 99, 99, 3, highGainThreshold}, [-5, -1, 0, 1, 5, NaN]', S.AC_V12, 0,    [1, 0, 0, 0, 1, 0]')
+                for achgThreshold = [1, 7]
+                    test({99, 0.6, 99, 99, 3, achgThreshold}, [-5, -1, 0, 1, 5, NaN]', S.AC_V12, 0,    [1, 0, 0, 0, 1, 0]')
                 end
 
                 % AC, high gain, 1x6
-                for lowGainThreshold = [1, 7]
-                    test({99, 0.6, 99, 99, lowGainThreshold,  3}, [-5, -1, 0, 1, 5, NaN],  S.AC_V23, 1,    [1, 0, 0, 0, 1, 0] )
+                for aclgThreshold = [1, 7]
+                    test({99, 0.6, 99, 99, aclgThreshold,  3}, [-5, -1, 0, 1, 5, NaN],  S.AC_V23, 1,    [1, 0, 0, 0, 1, 0] )
                 end
 
                 % AC, unknown gain, 1x6
-                for lowGainThreshold = [1, 7]
-                    test({99, 0.6, 99, 99, lowGainThreshold,  3}, [-5, -1, 0, 1, 5, NaN],  S.AC_V23, NaN,  [0, 0, 0, 0, 0, 0] )
+                for aclgThreshold = [1, 7]
+                    test({99, 0.6, 99, 99, aclgThreshold,  3}, [-5, -1, 0, 1, 5, NaN],  S.AC_V23, NaN,  [0, 0, 0, 0, 0, 0] )
                 end
             end
 
@@ -74,11 +74,11 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
         function test_get_snapshot_saturation(testCase)
 
-            function test(satArgsCa, samplesAVolt, Ssid, biasHighGain, expIsSaturated)
-                biasHighGainFpa = bicas.utils.FPArray.floatNan2logical(biasHighGain);
+            function test(satArgsCa, samplesAVolt, Ssid, isAchg, expIsSaturated)
+                isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
                 Sat = bicas.proc.L1L2.Saturation___UTEST.init_object(satArgsCa{:});
 
-                actIsSaturated = Sat.get_snapshot_saturation(samplesAVolt, Ssid, biasHighGainFpa);
+                actIsSaturated = Sat.get_snapshot_saturation(samplesAVolt, Ssid, isAchgFpa);
 
                 testCase.assertEqual(actIsSaturated, expIsSaturated)
             end
@@ -91,20 +91,20 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
                 % extensive tests exist for historical reasons.
 
 
-                for biasHighGain = [0, 1, NaN]
+                for isAchg = [0, 1, NaN]
                     % Empty snapshot.
-                    test({99, 0.6, 3, 99,99,99}, zeros(1,0), S.DC_V1, biasHighGain, false)
+                    test({99, 0.6, 3, 99,99,99}, zeros(1,0), S.DC_V1, isAchg, false)
                     % Length-one snapshot.
-                    test({99, 0.6, 3, 99,99,99}, [5],        S.DC_V1, biasHighGain, true)
+                    test({99, 0.6, 3, 99,99,99}, [5],        S.DC_V1, isAchg, true)
 
                     % DC single
-                    test({99, 0.6, 3, 99,99,99}, [ 0, 0], S.DC_V1, biasHighGain, false)
-                    test({99, 0.6, 3, 99,99,99}, [ 0, 5], S.DC_V1, biasHighGain, false)
-                    test({99, 0.6, 3, 99,99,99}, [-5, 5], S.DC_V1, biasHighGain, true)
+                    test({99, 0.6, 3, 99,99,99}, [ 0, 0], S.DC_V1, isAchg, false)
+                    test({99, 0.6, 3, 99,99,99}, [ 0, 5], S.DC_V1, isAchg, false)
+                    test({99, 0.6, 3, 99,99,99}, [-5, 5], S.DC_V1, isAchg, true)
 
                     % DC diff
-                    test({99, 0.6, 99, 3, 99,99}, [0,  0], S.DC_V12, biasHighGain, false)
-                    test({99, 0.6, 99, 3, 99,99}, [5, -5], S.DC_V13, biasHighGain, true)
+                    test({99, 0.6, 99, 3, 99,99}, [0,  0], S.DC_V12, isAchg, false)
+                    test({99, 0.6, 99, 3, 99,99}, [5, -5], S.DC_V13, isAchg, true)
                 end
 
                 for unusedGainThreshold = [1, 7]
@@ -133,14 +133,14 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
             function test(...
                     satArgsCa, ...
                     zvNValidSamplesPerRecord, samplesAVolt, ...
-                    Ssid, biasHighGain, expIsSaturatedAr)
+                    Ssid, isAchg, expIsSaturatedAr)
 
                 expIsSaturatedAr = logical(expIsSaturatedAr);
-                biasHighGainFpa  = bicas.utils.FPArray.floatNan2logical(biasHighGain);
+                isAchgFpa  = bicas.utils.FPArray.floatNan2logical(isAchg);
                 Sat = bicas.proc.L1L2.Saturation___UTEST.init_object(satArgsCa{:});
 
                 actIsSaturatedAr = Sat.get_snapshot_saturation_many(...
-                    zvNValidSamplesPerRecord, samplesAVolt, Ssid, biasHighGainFpa);
+                    zvNValidSamplesPerRecord, samplesAVolt, Ssid, isAchgFpa);
 
                 testCase.assertEqual(actIsSaturatedAr, expIsSaturatedAr)
             end
@@ -152,24 +152,24 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
                 % test_get_TSF() tests the different types of thresholds. The
                 % extensive tests exist for historical reasons.
 
-                for biasHighGain = [0, 1, NaN]
+                for isAchg = [0, 1, NaN]
                     % DC single
                     % ---------
                     % Zero snapshots
-                    test({99, 0.6, 99,99,99,99}, ones(0,1), ones(0,0),    S.DC_V1, biasHighGain, false(0,1))
+                    test({99, 0.6, 99,99,99,99}, ones(0,1), ones(0,0),    S.DC_V1, isAchg, false(0,1))
 
                     % One snapshot of varying length.
-                    test({99, 0.6, 3, 99,99,99}, [0],       [5, 0, 5],    S.DC_V1, biasHighGain, [0])
-                    test({99, 0.6, 3, 99,99,99}, [1],       [5, 0, 5],    S.DC_V1, biasHighGain, [1])
-                    test({99, 0.6, 3, 99,99,99}, [2],       [5, 0, 5],    S.DC_V1, biasHighGain, [0])
-                    test({99, 0.6, 3, 99,99,99}, [3],       [5, 0, 5],    S.DC_V1, biasHighGain, [1])
+                    test({99, 0.6, 3, 99,99,99}, [0],       [5, 0, 5],    S.DC_V1, isAchg, [0])
+                    test({99, 0.6, 3, 99,99,99}, [1],       [5, 0, 5],    S.DC_V1, isAchg, [1])
+                    test({99, 0.6, 3, 99,99,99}, [2],       [5, 0, 5],    S.DC_V1, isAchg, [0])
+                    test({99, 0.6, 3, 99,99,99}, [3],       [5, 0, 5],    S.DC_V1, isAchg, [1])
 
                     % Many snapshots
-                    test({99, 0.6, 3, 99,99,99}, [0;1;2;3], [5 0 5; 5 0 5; 5 0 5; 5 0 5],    S.DC_V1, biasHighGain, [0; 1; 0; 1])
+                    test({99, 0.6, 3, 99,99,99}, [0;1;2;3], [5 0 5; 5 0 5; 5 0 5; 5 0 5],    S.DC_V1, isAchg, [0; 1; 0; 1])
 
                     % DC diff
-                    test({99, 0.6, 99, 3, 99,99}, 2, [0,  0], S.DC_V12, biasHighGain, [0])
-                    test({99, 0.6, 99, 3, 99,99}, 2, [5, -5], S.DC_V13, biasHighGain, [1])
+                    test({99, 0.6, 99, 3, 99,99}, 2, [0,  0], S.DC_V12, isAchg, [0])
+                    test({99, 0.6, 99, 3, 99,99}, 2, [5, -5], S.DC_V13, isAchg, [1])
                 end
 
                 for unusedGainThreshold = [1, 7]
@@ -215,16 +215,16 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
                 tsfFractionThreshold, ...
                 thresholdAVoltDcSingle, ...
                 thresholdAVoltDcDiff, ...
-                thresholdAVoltAcDiffLowGain, ...
-                thresholdAVoltAcDiffHighGain)
+                thresholdAVoltAclg, ...
+                thresholdAVoltAchg)
 
             SETTINGS = bicas.create_default_SETTINGS();
-            SETTINGS.override_value('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC',            cwfSlidingWindowLengthSec,    'test');
-            SETTINGS.override_value('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD',                   tsfFractionThreshold,         'test');
-            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',         thresholdAVoltDcSingle,       'test');
-            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',           thresholdAVoltDcDiff,         'test');
-            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',  thresholdAVoltAcDiffLowGain,  'test');
-            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN', thresholdAVoltAcDiffHighGain, 'test');
+            SETTINGS.override_value('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC',            cwfSlidingWindowLengthSec, 'test');
+            SETTINGS.override_value('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD',                   tsfFractionThreshold,      'test');
+            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',         thresholdAVoltDcSingle,    'test');
+            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',           thresholdAVoltDcDiff,      'test');
+            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',  thresholdAVoltAclg,        'test');
+            SETTINGS.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN', thresholdAVoltAchg,        'test');
             SETTINGS.make_read_only();
 
             S = bicas.proc.L1L2.Saturation(SETTINGS);
