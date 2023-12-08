@@ -32,7 +32,7 @@ classdef dc
         
         
         
-        % Processing function. Derive PostDC from PreDc, i.e. demux, calibrate
+        % Processing function. Derive PostDc from PreDc, i.e. demux, calibrate
         % dat, and set quality variables.
         %
         % NOTE: Public function as opposed to the other demuxing/calibration

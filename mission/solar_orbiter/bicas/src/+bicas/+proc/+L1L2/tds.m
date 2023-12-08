@@ -171,8 +171,8 @@ classdef tds
 
 
 
-        % Processing function. Convert TDS CDF data (PDs) to PreDC.
-        function PreDc = process_CDF_to_PreDC(InSci, inSciDsi, HkSciTime, Bso, L)
+        % Processing function. Convert TDS CDF data (PDs) to PreDc.
+        function PreDc = process_CDF_to_PreDc(InSci, inSciDsi, HkSciTime, Bso, L)
         %
         % BUG?: Does not use CHANNEL_STATUS_INFO.
         % NOTE: BIAS output datasets do not have a variable for the length of
@@ -310,21 +310,21 @@ classdef tds
             Zv.lrx            = ones(nRecords, 1);
             
             PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isTdsRswf, false, C.isTdsCwf);
-        end    % process_CDF_to_PreDC
+        end    % process_CDF_to_PreDc
 
 
 
-        % Processing function. Convert PreDc+PostDC to something that 
+        % Processing function. Convert PreDc+PostDc to something that 
         % (1) represents a TDS dataset (hence the name), and
         % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
         %
         % This function only changes the data format (and selects data to send
         % to CDF).
         %
-        function [OutSci] = process_PostDC_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
+        function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
             % PROPOSAL: Rename to something shared between LFR and TDS, then use
             %           two wrappers.
-            %   PROPOSAL: process_PostDC_to_LFR_TDS_CDF_core
+            %   PROPOSAL: process_PostDc_to_LFR_TDS_CDF_core
             %   TODO-DEC: Put in which future file?
 
             % ASSERTIONS
@@ -445,7 +445,7 @@ classdef tds
                 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
 
-        end    % process_PostDC_to_CDF
+        end    % process_PostDc_to_CDF
         
         
         

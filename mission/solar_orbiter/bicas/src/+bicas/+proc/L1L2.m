@@ -18,12 +18,12 @@
 %
 % SOME INTERMEDIATE PROCESSING DATA FORMATS
 % =========================================
-% - PreDC = Pre-(Demuxing & Calibration) Data
+% - PreDc = Pre-(Demuxing & Calibration) Data
 %       Generic data format that can represent all forms of input datasets
 %       before demuxing and calibration. Can use an arbitrary number of samples
 %       per record. Some variables are therefore not used in CWF output
 %       datasets.
-% - PostDC = Post-(Demuxing & Calibration) Data
+% - PostDc = Post-(Demuxing & Calibration) Data
 %       Data format that includes calibrated currents & calibrated & demuxed
 %       voltages.
 %
@@ -201,7 +201,7 @@ classdef L1L2
             %       ==> Can not change BDM in the middle of a record.
             % NOTE: Can potentially also obtain BDM from LFR SCI, but that
             %       decision should not be made here.
-            %       See bicas.proc.L1L2.lfr.process_CDF_to_PreDC().
+            %       See bicas.proc.L1L2.lfr.process_CDF_to_PreDc().
             %=============================================================
             bdmDoubleNan = bicas.utils.interpolate_nearest(...
                     hkEpochExtrapMargin, ...

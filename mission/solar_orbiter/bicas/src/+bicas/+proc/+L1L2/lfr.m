@@ -145,12 +145,12 @@ classdef lfr
 
 
 
-        % Processing function. Convert LFR CDF data to PreDC.
+        % Processing function. Convert LFR CDF data to PreDc.
         %
         % IMPLEMENTATION NOTE: Does not modify InSci in an attempt to save RAM
         % (should help MATLAB's optimization). Unclear if actually works.
         %
-        function PreDc = process_CDF_to_PreDC(InSci, inSciDsi, HkSciTime, Bso, L)
+        function PreDc = process_CDF_to_PreDc(InSci, inSciDsi, HkSciTime, Bso, L)
             %
             % PROBLEM: Hard-coded CDF data types (MATLAB classes).
             % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining
@@ -300,13 +300,13 @@ classdef lfr
             
             PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isLfrSurvSwf, true, false);
 
-        end    % process_CDF_to_PreDC
+        end    % process_CDF_to_PreDc
 
 
 
-        function [OutSci] = process_PostDC_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
+        function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
             % NOTE: Using __TDS__ function.
-            OutSci = bicas.proc.L1L2.tds.process_PostDC_to_CDF(...
+            OutSci = bicas.proc.L1L2.tds.process_PostDc_to_CDF(...
                 SciPreDc, SciPostDc, outputDsi, L);
 
             OutSci.Zv.BW = SciPreDc.Zv.BW;

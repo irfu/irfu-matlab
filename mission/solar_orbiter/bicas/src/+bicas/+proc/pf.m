@@ -98,9 +98,9 @@ classdef pf
             %==============
             HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
             InputSciCdf  = bicas.proc.L1L2.lfr.process_normalize_CDF(       InputSciCdf, inputSciDsi, Bso, L);
-            SciPreDc     = bicas.proc.L1L2.lfr.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, Bso, L);
+            SciPreDc     = bicas.proc.L1L2.lfr.process_CDF_to_PreDc(        InputSciCdf, inputSciDsi, HkSciTimePd, Bso, L);
             SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
-            OutputSciCdf = bicas.proc.L1L2.lfr.process_PostDC_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
+            OutputSciCdf = bicas.proc.L1L2.lfr.process_PostDc_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
             
             
             
@@ -163,9 +163,9 @@ classdef pf
             %==============
             HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
             InputSciCdf  = bicas.proc.L1L2.tds.process_normalize_CDF(       InputSciCdf, inputSciDsi, Bso, L);
-            SciPreDc     = bicas.proc.L1L2.tds.process_CDF_to_PreDC(        InputSciCdf, inputSciDsi, HkSciTimePd, Bso, L);
+            SciPreDc     = bicas.proc.L1L2.tds.process_CDF_to_PreDc(        InputSciCdf, inputSciDsi, HkSciTimePd, Bso, L);
             SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
-            OutputSciCdf = bicas.proc.L1L2.tds.process_PostDC_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
+            OutputSciCdf = bicas.proc.L1L2.tds.process_PostDc_to_CDF(       SciPreDc, SciPostDc, outputDsi, L);
 
 
 
