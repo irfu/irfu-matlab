@@ -21,11 +21,6 @@
 % (not 4-5) and does not need to be.
 %
 %
-% DEFINITIONS
-% ===========
-% See bicas.proc.L1L2.cal.Cal, bicas.proc.L1L2.demuxer_latching_relay.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %
@@ -68,7 +63,7 @@ classdef demuxer
         %       Implies that AsrSamplesVolt fields are correctly
         %       sized with NaN values.
         % dlrFpa
-        %       Scalar value. See bicas.proc.L1L2.demuxer_latching_relay().
+        %       Scalar value.
         %
         %
         % RETURN VALUES
