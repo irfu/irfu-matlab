@@ -2,7 +2,7 @@
 % Immutable class which instances represent the destination of a signal, i.e.
 % either:
 % (1) an ASR (to determine how to store the signal in the dataset), or
-% (2) "nowhere" (when mux mode is unknown).
+% (2) "nowhere" (when BDM is unknown).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

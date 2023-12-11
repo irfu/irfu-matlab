@@ -39,7 +39,7 @@ classdef L1L2
 %       CON: Function is too specific. Has inputDsi as argument.
 %           CON: Could be less bad than this file.
 %
-% PROPOSAL: Submit zVar variable attributes.
+% PROPOSAL: Submit ZV attributes.
 %   PRO: Can interpret fill values.
 %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
 %           to be bad).
@@ -64,8 +64,8 @@ classdef L1L2
 
         % Processing function
         %
-        % NOTE: Only converts relevant HK ZVs to be on SCI Epoch. Later
-        % (other) code decides whether to use it (mux mode).
+        % NOTE: Only converts relevant HK ZVs to be on SCI Epoch. Other code
+        %       later decides whether to actually use it (BDM).
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, Bso, L)
             % PROPOSAL: Separate function for the actual interpolation of data
             %           (changing time array HK-->SCI).

@@ -168,6 +168,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
 
 
+        % NOTE: Constructor can not be used for changing MATLAB class of data.
+        %
+        %
         % ARGUMENTS
         % =========
         % dataAr

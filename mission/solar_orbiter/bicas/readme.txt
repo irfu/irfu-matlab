@@ -68,7 +68,7 @@ ASR, Antenna Signal Representation.
     ASR samples : Samples representing a specific ASR (as opposed to BLTS).
     NOTE: There are 9 ASRs (DC: 3 singles, 3 diffs; AC: 3 diffs), i.e. they
     can refer also to signals not represented by any single BLTS, given a
-    chosen mux mode and latching relay setting.
+    chosen mux mode (BDM) and demultiplexer latching relay (DLR) setting.
 AV, avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from
@@ -77,13 +77,18 @@ AVPIV
     Antenna Volt / (Per) Interface Volt
 BDM, "mux mode"
     BIAS Demultiplexer Mode. Corresponds to BIAS HK ZV "HK_BIA_MODE_MUX_SET".
+    Abbreviation partly just to have one consistent name (replacing "mux",
+    "mux mode", "demux mode", "demultiplexer mode", "bias mux mode", etc.)
+    and to distinguish it from "muxing" as a verb. Mostly used internally,
+    not in the interface.
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".
 BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
     Defined in BIAS specifications document. Equal to the physical signal at
     the physical boundary between BIAS and LFR/TDS. Unit: Interface volt.
-    Mostly replaced by BLTS+specified unit in the implementation.
+    Should be, and mostly is, replaced by BLTS+specified unit in
+    the implementation.
 BLTS = BIAS-LFR/TDS SIGNAL
     Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the
     BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5,
@@ -122,8 +127,8 @@ DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
     of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
     "Data D3 = Diff probe 1&2(0), Diff probe 1&3(1)".
-    Corresponds to BIAS HK zVariable "HK_BIA_MODE_DIFF_PROBE".
-    The convention used for representing the value is the same as in the ZV.
+    Corresponds to BIAS HK zVariable "HK_BIA_MODE_DIFF_PROBE". The convention
+    used for representing the value in BICAS is the same as in the BIAS HK ZV:
     0/false = V12
     1/true  = V13
     2023-08-29, EJ: Variable is constant for the entire mission except when it
@@ -314,6 +319,7 @@ corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of the time.
 
 b    = Logical (boolean) values, often logical arrays used for logical indexing.
 i, j = Indices into arrays.
+L    = Singleton instance of class bicas.Logger.
 
 Unit tests (classes) have suffix "___UTEST".
 

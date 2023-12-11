@@ -497,7 +497,7 @@ classdef qual
                     % the window size as it is.
                     if i1+1 > n
                         break
-                    end                    
+                    end
                     % CASE: i1+1 <= n (i.e. one can safely use i1+1 as an index)
                     
                     % If a one sample larger window is too large, then keep the

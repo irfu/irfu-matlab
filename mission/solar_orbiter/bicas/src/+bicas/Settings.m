@@ -33,8 +33,8 @@
 %
 % NOTE
 % ====
-% Class stores all overriden values, not just the latest ones. This has not been
-% taken advantage of yet, but is intended for better logging the sources of
+% The class stores all overriden values, not just the latest ones. This has not
+% been taken advantage of yet, but is intended for better logging the sources of
 % settings and how they override each other. /2020-01-23
 %
 %
@@ -83,7 +83,8 @@ classdef Settings < handle
 %
 % PROPOSAL: Initialize by submitting map.
 %   PRO: Can remove methods define_setting, disable_define.
-%   CON: Can not easily add metadata for every variable (in the future), e.g. permitted values (data type/class, range).
+%   CON: Can not easily add metadata for every variable (in the future),
+%        e.g. permitted values (data type/class, range).
 %
 % PROPOSAL: Be able to make some settings (default values) write-protected, not overridable.
 %   CON: Of limited value.
@@ -108,7 +109,10 @@ classdef Settings < handle
 %   TODO-DEC: Should the internal order of --set and --config arguments matter? Should a --config override a previous
 %                  --set?
 %
-% PROPOSAL: Automatic tests, in particular for different settings values data types.
+% PROPOSAL: Enforce keeping same MC (instead of the locally define "value
+%           type").
+%   CON: Could not specify values inside of cell arrays.
+%       NOTE: Cell arrays are noy yet really supported /2023-12-12).
 
 
 
@@ -213,7 +217,7 @@ classdef Settings < handle
             
             valueArrayStruct = obj.get_value_array_struct(key);
             
-            % ASSERTION
+            % ASSERTION: Old and new value have the same value type.
             if ~strcmp(...
                     bicas.Settings.get_value_type(newValue), ...
                     obj.get_setting_value_type(key))
@@ -273,13 +277,13 @@ classdef Settings < handle
                 %==================================================
                 % Convert string value to appropriate MATLAB class.
                 %==================================================
-                newValue = bicas.Settings.convert_str_to_value(...
-                    obj.get_setting_value_type(key), newValueAsString);
+                value_type = obj.get_setting_value_type(key);
+                newValue   = bicas.Settings.convert_str_to_value(...
+                    value_type, newValueAsString);
 
                 % Overwrite old setting.
                 obj.override_value(key, newValue, valueSource);
             end
-
         end
 
 
@@ -342,8 +346,7 @@ classdef Settings < handle
                 error('BICAS:Assertion:IllegalArgument', ...
                     'There is no setting "%s".', key)
             end
-            
-            
+
             valueArrayStruct = obj.DataMap(key);
             irf.assert.struct(...
                 valueArrayStruct, ...
@@ -467,6 +470,7 @@ classdef Settings < handle
         
         
         
+        % NOTE: Returns one of its own categories. Does not return MC.
         function valueType = get_value_type(value)
             if isnumeric(value)
                 valueType = 'numeric';

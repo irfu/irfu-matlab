@@ -37,11 +37,28 @@
 classdef pf
 
     % PROPOSAL: Function for constructing RctDataMap.
-    % PROPOSAL: One class per production function.
-    %   PRO: Can associate metadata used by SWM data structure.
-    %       PRO: Metadata located with code.
-    %       CON: Metadata is spread out in multiple (class) files.
-    % PROPOSAL: One class per SWM, with production function as a method.
+    % PROPOSAL: Replace production functions with class instances.
+    %   NOTE: Some production functions are shared between SWMs.
+    %   CON: Production functions have varying sets of arguments. Is problem if
+    %        want methods with consistent interface.
+    %       CON-PROPOSAL: Can use constructor to set arguments only needed by
+    %                     some SWMs.
+    %           NOTE: No different from current (2023-12-11) implementation
+    %                 which wraps the de facto production functions in anonymous
+    %                 function with a consistent interface.
+    %   PROPOSAL: One class instance per SWM, with production function as a
+    %             method. Production functions which are shared between SWMs are
+    %             converted into one class of which there are separate instances
+    %             for separate SWMs.
+    %       PRO: Can associate metadata used by SWM data structure.
+    %           PRO: Metadata located with code.
+    %           PRO: Superclass implements the storage of metadata and can thus
+    %                enforce constraints.
+    %           CON: Metadata is spread out in multiple (class) files.
+    %       PRO: Should be clearer code.
+    %       NOTE/PRO: Should be able to naturally move functions from
+    %                 bicas.proc.L1L2.lfr/tds and
+    %                 bicas.proc.L2L2/L2L3 into corresponding classes.
 
     
     

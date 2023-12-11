@@ -21,7 +21,7 @@ classdef lfr
 
         % Processing function. Only "normalizes" data to account for technically
         % illegal input LFR datasets. It should try to:
-        % ** modify L1 to look like L1R
+        % ** modify L1 data to look like L1R
         % ** mitigate historical bugs in input datasets
         % ** mitigate for not yet implemented features in input datasets
         %
@@ -264,24 +264,24 @@ classdef lfr
 
 
 
-            %==========================================
+            %=====================================
             % Set BDM
             % -------
-            % Select which source of mux mode is used.
-            %==========================================
+            % Select which source of BDM is used.
+            %=====================================
             [bdmSrcSettingValue, bdmSrcSettingKey] = Bso.get_fv('PROCESSING.LFR.MUX_MODE_SOURCE');
             switch(bdmSrcSettingValue)
                 case 'BIAS_HK'
-                    L.log('debug', 'Using BIAS HK mux mode.')
+                    L.log('debug', 'Using BIAS HK mux mode (BDM).')
                     bdmFpa = HkSciTime.bdmFpa;
 
                 case 'LFR_SCI'
-                    L.log('debug', 'Using LFR SCI mux mode.')
+                    L.log('debug', 'Using LFR SCI mux mode (BDM).')
                     bdmFpa = InSci.ZvFpa.BIAS_MODE_MUX_SET;
 
                 case 'BIAS_HK_LFR_SCI'
                     L.log('debug', ...
-                        ['Using mux mode from BIAS HK when available, and', ...
+                        ['Using mux mode (BDM) from BIAS HK when available, and', ...
                         ' from LFR SCI when the former is not available.'])
 
                     bdmFpa = HkSciTime.bdmFpa.complement(InSci.ZvFpa.BIAS_MODE_MUX_SET);

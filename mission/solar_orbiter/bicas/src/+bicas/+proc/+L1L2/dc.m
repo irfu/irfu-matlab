@@ -158,7 +158,7 @@ classdef dc
         %
         % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
         % NOTE: Calibration is really separate from the demultiplexer. Demultiplexer only needs to split into
-        %       subsequences based on mux mode and latching relay, nothing else.
+        %       subsequences based on BDM and DLR, nothing else.
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
         %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!

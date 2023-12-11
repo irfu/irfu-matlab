@@ -33,8 +33,8 @@ classdef demuxer
 
 
         % Function that "encodes" the demultiplexer part of the BIAS subsystem.
-        % For a specified mux mode and demuxer latching relay setting, it
-        % determines, for every BLTS, it associates
+        % For a specified BDM and DLR setting, it determines, for every BLTS, it
+        % associates
         % (1) which (physical) input signal (Antennas, GND, "2.5V Ref",
         %     unknown), and
         % (2) as what ASR (if any) should the BLTS be represented in the
@@ -51,15 +51,15 @@ classdef demuxer
         % ==========
         % Function must be able to handle:
         % ** bdm = NaN                                   
-        %    Unknown demux mode, e.g. due to insufficient HK time coverage.
-        % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref" in demux modes 5-7.
+        %    Unknown BDM, e.g. due to insufficient HK time coverage.
+        % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref" in BDMs 5-7.
         %
         %
         % ARGUMENTS
         % =========
         % bdm
         %       Scalar value. Demultiplexer mode.
-        %       NOTE: Can be NaN to represent unknown demux mode.
+        %       NOTE: Can be NaN to represent unknown BDM.
         %       Implies that AsrSamplesVolt fields are correctly
         %       sized with NaN values.
         % dlrFpa
@@ -109,8 +109,7 @@ classdef demuxer
                     RoutingArray(3) = R.DC_V23;
                     
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3
-                    % contain redundant data (regardless of latching relay
-                    % setting).
+                    % contain redundant data (regardless of DLR).
                     
                 case 2   % Probe 2 fails
                     
@@ -152,10 +151,9 @@ classdef demuxer
                     RoutingArray(2) = R.UNKNOWN_TO_NOWHERE;
                     RoutingArray(3) = R.UNKNOWN_TO_NOWHERE;
 
-                    % NOTE: The routing of BLTS 4 & 5 is identical for all
-                    % mux modes (but does depend on the latching relay). Can
-                    % therefore route them also when the mux mode is
-                    % unknown.
+                    % NOTE: The routing of BLTS 4 & 5 is identical for all BDMs
+                    % (but does depend on the DLR). Can therefore route them
+                    % also when the BDM is unknown.
                     
                 otherwise
                     error('BICAS:Assertion:IllegalArgument:DatasetFormat', ...
@@ -208,7 +206,7 @@ classdef demuxer
         % that they are organized by BLTS and ASRs respectively.
         %
         function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(SdidArray, bltsSamplesAVolt)
-            % PROPOSAL: Log message for mux=NaN.
+            % PROPOSAL: Log message for BDM=NaN.
             
             % ASSERTIONS
             assert(numel(SdidArray) == bicas.const.N_BLTS)
@@ -233,7 +231,7 @@ classdef demuxer
         % NOTE: In the event of redundant FIELDS, but not redundant DATA
         % (non-fill value), the code can NOT make intelligent choice of only
         % using available data to replace fill values.
-        %   Ex: mux=1: Fields (V1, V2, V12) but V1 does not contain any data
+        %   Ex: BDM=1: Fields (V1, V2, V12) but V1 does not contain any data
         %   (fill values). Could in principle derive V1=V2-V12 but code does
         %   not know this.
         %   NOTE: Unlikely that this will ever happen, or that the
@@ -289,7 +287,7 @@ classdef demuxer
             % ----------------------------------------------
             % IMPLEMENTATION NOTE: This is needed to handle for situations when
             % the supplied fields can not be used to determine all nine fields.
-            %   Ex: mux=1,2,3
+            %   Ex: bdm=1,2,3
             %===================================================================            
             
             keysCa = AsSrm.keys;

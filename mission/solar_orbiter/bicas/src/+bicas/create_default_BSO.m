@@ -22,12 +22,17 @@
 % (because that is what they are in the S/W descriptor).
 %
 %
+% RETURN VALUE
+% ============
+% Bso
+%       bicas.Settings object with all BICAS settings pre-defined with default
+%       values. Can not define more settings, but can modify settings.
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-01-24
 %
 function Bso = create_default_BSO()
-% PROPOSAL: Setting for latching relay? Setting for only mode 0?
-%
 % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
 %                                                            Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
@@ -306,7 +311,7 @@ function Bso = create_default_BSO()
     % How to react to HK not overlapping with SCI.
     % NOTE: Switch is shared for LFR & TDS, but WARNING only(?) makes sense for
     % LFR, since some data can be salvaged in the event of non-overlap for LFR
-    % (using LFR mux mode), but not for TDS.
+    % (using LFR BDM), but not for TDS.
     S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'WARNING')    % WARNING, ERROR
     % NOTE: "WARNING": Will lead to using nearest interpolation.
     S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
@@ -330,23 +335,22 @@ function Bso = create_default_BSO()
     S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
 
     %============================================================================
-    % Where to obtain the mux mode
-    % ----------------------------
+    % Where to obtain the BDM (mux mode)
+    % ----------------------------------
     %
     % BIAS HK data
     % ------------
-    % Contains mux mode using its own Epoch (typically ~30 s time resolution?),
-    % which means that ~interpolation to SCI data is necessary, which means that
-    % the effective mux mode value can briefly be wrong.
-    % NOTE: BIAS HK may potentially NOT cover the same time range as SCI data at
-    % all, and then the mux mode can be really wrong (e.g. when using different
-    % versions).
+    % Contains BDM using its own Epoch (typically ~30 s time resolution?), which
+    % means that ~interpolation to SCI data is necessary, which means that the
+    % effective BDM value can briefly be wrong. NOTE: BIAS HK may potentially
+    % NOT cover the same time range as SCI data at all, and then the BDM can be
+    % really wrong (e.g. when using different versions).
     %
     % LFR SCI data (L1/L1R)
     % ---------------------
-    % Contains a zVar for mux mode using the same Epoch as the data.
-    % NOTE: This mux mode may be available when the BIAS HK mux mode is not.
-    % NOTE: The relevant TDS datasets do not contain mux mode.
+    % Contains a ZV for BDM using the same Epoch as the data.
+    % NOTE: Th LFR L1/L1R BDM may be available when the BIAS HK BDM is not.
+    % NOTE: The relevant TDS datasets do not contain BDM.
     %============================================================================
     S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_SCI, BIAS_HK_LFR_SCI
 
@@ -360,17 +364,17 @@ function Bso = create_default_BSO()
     % sweeps.
     %============================================================================
     S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
-    % Unit: S = Seconds
-    % Lower number since using LFR mux mode (unless configured not to), which
-    % has same cadence as science data.
+    
+    % Unit: S = Seconds    
+    % Lower number since using LFR BDM (mux mode; unless configured not to),
+    % which has same cadence as science data.
     % See PROCESSING.LFR.MUX_MODE_SOURCE.
     S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)
-    % Higher number since using BIAS HK for TDS, which means that the mux mode
-    % is known with a lower time resolution.
+    
+    % Higher number since using BIAS HK for TDS, which means that the BDM is
+    % known with a lower time resolution.
     S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
-
-
-
+    
     % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
     % EFIELD, and SCPOT data; both OSR and DSR.
     S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',     2)
