@@ -441,9 +441,36 @@ classdef Settings < handle
             switch(settingValueType)
 
                 case 'numeric'
-                    value = textscan(valueAsString, '%f', ...
-                        'Delimiter', ',');
-                    value = value{1}';    % Row vector.
+
+                    % NORMALIZE: Remove surrounding brackets [] if present
+                    % ----------------------------------------------------
+                    % NOTE: textscan() can not handle [].
+                    % IMPLEMENTATION NOTE: In principle, one could state that
+                    % the format for specifying an array (as a string) is
+                    % "1,2,3", but in practice, it is natural to use "[1,2,3]"
+                    % since that is the MATLAB syntax. An earlier implementation
+                    % falsely interpreted "[1,2,3]" as an empty array (i.e.
+                    % without raising error), due to not considering this.
+                    if regexp(valueAsString, '^\[.*\]$')
+                        valueAsString = valueAsString(2:end-1);
+                    end
+                    
+                    if isempty(valueAsString)
+                        value = zeros(1,0);    % Zero-length row vector.
+                    else
+                        % NOTE: textscan() can not handle empty string (not even
+                        %       1x0).
+                        value = textscan(valueAsString, '%f', 'Delimiter', ',');
+
+                        % IMPLEMENTATION NOTE: Not sure if/when this error message
+                        % can be triggered.
+                        if ~isscalar(value)
+                            error('BICAS:Assertion:IllegalArgument', ...
+                                'Can not parse string "%s" as array or scalar.', valueAsString)
+                        end
+
+                        value = value{1}';    % Row vector.
+                    end
 
                 case 'logical'
                     if strcmpi(valueAsString, 'true')
