@@ -40,18 +40,16 @@ function str = sprint_BSO(Bso)
     
     
     for iKey = 1:length(keyList)
-        key   = keyList{iKey};
-        valueStructArray = Bso.get_final_value_array(key);
-        %value = valueStructArray(end).value;
-        nValues = numel(valueStructArray);
+        key = keyList{iKey};
+        Skv = Bso.get_SKV(key);
         
         %======================================================================
         % Derive value strings for all historical values: present and previous
         % ones
         %======================================================================
         strValueList = {};   % Must be reset for every key.
-        for iVs = 1:nValues    % Iterate over versions of the same setting.
-            value = valueStructArray(iVs).value;
+        for iVs = 1:Skv.N_values()    % Iterate over versions of the same setting.
+            value = Skv.valuesCa{iVs};
             try
                 displayStr = bicas.settings_value_to_display_str(value);
             catch Exc
@@ -69,7 +67,7 @@ function str = sprint_BSO(Bso)
             {'default'},            '  --';
             {'configuration file'}, '(conf)';
             {'CLI arguments'},      '(CLI)'}, ...
-            valueStructArray(end).valueSource, ...
+            Skv.valueSourcesCa{end}, ...
             'BICAS:Assertion', ...
             'Illegal setting value source');
         

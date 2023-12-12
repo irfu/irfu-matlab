@@ -61,10 +61,8 @@ classdef Settings___UTEST < matlab.unittest.TestCase
         %   .override_value()
         %   .override_values_from_strings()
         %   .get_fv()
-        %   .get_final_value_array()
+        %   .get_SKV()
         %   etc.
-        %
-        % NOTE: Does not test cell arrays.
         function test_value_types(testCase)
 
             % (1) set a key-value,
@@ -108,11 +106,10 @@ classdef Settings___UTEST < matlab.unittest.TestCase
                     actValue = S.get_fv(KEY);
                     testCase.assertEqual(actValue, overrideValue)
 
-                    actS = S.get_final_value_array(KEY);
-                    expS = struct(...
-                        'value',       {initialValue, overrideValue}, ...
-                        'valueSource', {'default',    'test'});
-                    testCase.assertEqual(actS, expS)
+                    actSkv = S.get_SKV(KEY);
+                    expSkv = bicas.SettingsKeyValue(initialValue,  'default');
+                    expSkv = expSkv.override(       overrideValue, 'test');
+                    testCase.assertEqual(actSkv, expSkv)
                 end
 
                 %==================================
@@ -212,11 +209,11 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
 
 
-        % Test .get_final_value_array() for non-overridden values.
+        % Test .get_SKV() for non-overridden values.
         %
         % NOTE: test_value_types() also tests the same method but for overridden
         % values.
-        function test_get_final_value_array(testCase)
+        function test_get_SKV(testCase)
             KEY_1 = 'KEY_1';
             KEY_2 = 'KEY_2';
             VALUE_1 = 99;
@@ -226,9 +223,9 @@ classdef Settings___UTEST < matlab.unittest.TestCase
             S1.define_setting(KEY_1, VALUE_1);
             S1.make_read_only()
 
-            actS = S1.get_final_value_array(KEY_1);
-            expS = struct('value', VALUE_1, 'valueSource', 'default');
-            testCase.assertEqual(actS, expS)
+            actSkv = S1.get_SKV(KEY_1);
+            expSkv = bicas.SettingsKeyValue(VALUE_1, 'default');
+            testCase.assertEqual(actSkv, expSkv)
 
             % Two simultaneous keys
 
@@ -237,13 +234,13 @@ classdef Settings___UTEST < matlab.unittest.TestCase
             S2.define_setting(KEY_2, VALUE_2);
             S2.make_read_only()
 
-            actS = S2.get_final_value_array(KEY_2);
-            expS = struct('value', VALUE_2, 'valueSource', 'default');
-            testCase.assertEqual(actS, expS)
+            actSkv = S2.get_SKV(KEY_2);
+            expSkv = bicas.SettingsKeyValue(VALUE_2, 'default');
+            testCase.assertEqual(actSkv, expSkv)
 
-            actS = S2.get_final_value_array(KEY_1);
-            expS = struct('value', VALUE_1, 'valueSource', 'default');
-            testCase.assertEqual(actS, expS)
+            actSkv = S2.get_SKV(KEY_1);
+            expSkv = bicas.SettingsKeyValue(VALUE_1, 'default');
+            testCase.assertEqual(actSkv, expSkv)
         end
 
 

@@ -254,6 +254,8 @@ SDID
     Class bicas.proc.L1L2.SignalDestinationId.
 Sec
     Seconds
+SKV
+    bicas.SettingsKeyValue class.
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.

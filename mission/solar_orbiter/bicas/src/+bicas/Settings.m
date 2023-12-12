@@ -130,7 +130,13 @@ classdef Settings < handle
         readOnlyForever       = false;
         
         % Map containing the actual settings data.
-        DataMap;
+        SkvMap;
+    end
+    
+    
+    
+    properties(Constant)
+        VALUE_SOURCE_DEFAULT = 'default';
     end
 
 
@@ -146,11 +152,11 @@ classdef Settings < handle
 
         % Constructor
         function obj = Settings()
-            % IMPLEMENTATION NOTE: "DataMap" reset here since empirically it is
+            % IMPLEMENTATION NOTE: "SkvMap" reset here since empirically it is
             % not reset every time an instance is created if it is only reset in
             % the "properties" section. Otherwise the value from the previous
             % execution is used for unknown reasons.
-            obj.DataMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            obj.SkvMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
         end
 
 
@@ -180,7 +186,7 @@ classdef Settings < handle
                     ['Trying to define new keys in settings object which', ...
                     ' disallows defining new keys.'])
             end
-            if obj.DataMap.isKey(key)
+            if obj.SkvMap.isKey(key)
                 error('BICAS:Assertion:ConfigurationBug', ...
                     'Trying to define pre-existing settings key.')
             end
@@ -189,11 +195,10 @@ classdef Settings < handle
             
             
             % NOTE: Needs to be able to handle cell-valued values.
-            Setting = struct(...
-                'value',       {defaultValue}, ...
-                'valueSource', {'default'});
-            assert(isscalar(Setting))
-            obj.DataMap(key) = Setting;
+            Skv = bicas.SettingsKeyValue(...
+                defaultValue, ...
+                bicas.Settings.VALUE_SOURCE_DEFAULT);
+            obj.SkvMap(key) = Skv;
         end
 
 
@@ -215,7 +220,7 @@ classdef Settings < handle
                     'Trying to modify read-only settings object.')
             end
             
-            valueArrayStruct = obj.get_value_array_struct(key);
+            Skv = obj.get_SKV_private(key);
             
             % ASSERTION: Old and new value have the same value type.
             if ~strcmp(...
@@ -228,12 +233,7 @@ classdef Settings < handle
                     key)
             end
 
-            % IMPLEMENTATION NOTE: The syntax
-            %   obj.DataMap(key).value = newValue
-            % is not permitted by MATLAB.
-            valueArrayStruct(end+1).value       = newValue;
-            valueArrayStruct(end  ).valueSource = valueSource;
-            obj.DataMap(key) = valueArrayStruct;
+            obj.SkvMap(key) = Skv.override(newValue, valueSource);
         end
 
         
@@ -289,7 +289,7 @@ classdef Settings < handle
 
 
         function keyList = get_keys(obj)
-            keyList = obj.DataMap.keys;
+            keyList = obj.SkvMap.keys;
         end
         
         
@@ -323,9 +323,9 @@ classdef Settings < handle
                     ['Not allowed to call this method for non-read-only', ...
                     ' settings object.'])
             end
-            valueStructArray = obj.get_value_array_struct(key);
 
-            value = valueStructArray(end).value;
+            Skv   = obj.get_SKV(key);
+            value = Skv.valuesCa{end};
         end
         
         
@@ -334,37 +334,22 @@ classdef Settings < handle
         % object is read-only, and the settings have their final values.
         %
         % IMPLEMENTATION NOTE: Short function name since function is called many
-        % times, often repeatedly. FV = Final value
-        function valueArrayStruct = get_final_value_array(obj, key)
+        % times, often repeatedly.
+        function Skv = get_SKV(obj, key)
             % ASSERTIONS
             if ~obj.readOnlyForever
                 error('BICAS:Assertion', ...
                     ['Not allowed to call this method for a non-read-only', ...
                     ' settings object.'])
             end
-            if ~obj.DataMap.isKey(key)
+            if ~obj.SkvMap.isKey(key)
                 error('BICAS:Assertion:IllegalArgument', ...
                     'There is no setting "%s".', key)
             end
 
-            valueArrayStruct = obj.DataMap(key);
-            irf.assert.struct(...
-                valueArrayStruct, ...
-                {'value', 'valueSource'}, {})
+            Skv = obj.SkvMap(key);
         end
         
-
-
-        % Needs to be public so that caller can determine how to parse string,
-        % e.g. parse to number.
-        function valueType = get_setting_value_type(obj, key)
-            valueArrayStruct = obj.get_value_array_struct(key);            
-            
-            % NOTE: Always use default/first value.
-            valueType        = bicas.Settings.get_value_type(...
-                valueArrayStruct(1).value);
-        end
-
 
 
     end    % methods(Access=public)
@@ -380,18 +365,33 @@ classdef Settings < handle
         
         
         
-        % Return settings array struct for a given, existing key.
+        % Needs to be public so that caller can determine how to parse string,
+        % e.g. parse to number.
+        function valueType = get_setting_value_type(obj, key)
+            Skv = obj.get_SKV_private(key);
+            
+            % NOTE: Always use default/first value.
+            valueType = bicas.Settings.get_value_type(Skv.valuesCa{1});
+        end
+
+
+
+        % Return SKV for a given, existing key.
+        %
+        % NOTE: Does not check obj.readOnlyForever since method is used
+        % internally for non-readonly objects. Can therefore not be replaced by
+        % public method get_SKV().
         %
         % RATIONALE: Exists to give better error message when using an illegal
-        % key, than just calling obj.DataMap directly.
-        function S = get_value_array_struct(obj, key)
+        % key, than just calling obj.SkvMap directly.
+        function Skv = get_SKV_private(obj, key)
             % ASSERTIONS
-            if ~obj.DataMap.isKey(key)
+            if ~obj.SkvMap.isKey(key)
                 error('BICAS:Assertion:IllegalArgument', ...
                     'There is no setting "%s".', key)
             end
             
-            S = obj.DataMap(key);
+            Skv = obj.SkvMap(key);
         end
         
         
