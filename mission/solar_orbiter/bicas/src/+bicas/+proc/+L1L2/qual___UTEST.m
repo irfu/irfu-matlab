@@ -306,7 +306,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                     % NOTE: Test PROCESSING.L2.REMOVE_DATA.MUX_MODES = [] (0x0)
                     % as is likely to be set to.
                     % Iterate over bdmRemoveArray values without BDM=0.
-                    for bdmRemoveArrayCa = {[], zeros(0,1), [2]', [1,2,3]'}
+                    for bdmRemoveArrayCa = {zeros(1,0), zeros(0,1), [2]', [1,2,3]'}
                         bdmRemoveArray = bdmRemoveArrayCa{1};
 
                         % Zero records

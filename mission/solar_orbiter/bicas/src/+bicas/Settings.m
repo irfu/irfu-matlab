@@ -23,26 +23,7 @@
 % ensure that the caller knows whether it reads a final value or not.
 % --
 % RATIONALE: This concept makes it natural to, when possible, clearly and
-% conclusively separate the writing (setting) and reading of settings. Ideally,
-% we would want all the writing to be followed by all the reading, but in
-% practice they overlap and there does not seem to be a way of avoiding it in
-% BICAS. For those cases it is useful to be forced to use a different get method
-% to highlight that the read value is tentative (which it may be during
-% initialization).
-% 
-%
-% NOTE
-% ====
-% The class stores all overriden values, not just the latest ones. This has not
-% been taken advantage of yet, but is intended for better logging the sources of
-% settings and how they override each other. /2020-01-23
-%
-%
-% ~BUG POTENTIAL: Support for 1D cell arrays may not be completely implemented.
-%   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1).
-%         Inconvenient when working with values from CLI arguments and log files
-%         since less convenient to write a 0x1 or 1x0 literal?!
-%       Ex: Have to write zeros(0,1) instead of []?
+% conclusively separate the writing (setting) and reading of settings.
 % 
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -51,68 +32,27 @@
 classdef Settings < handle
 % BOGIQ: 
 % ------
-% PROPOSAL: Add extra information for every setting (key-value pair).
-%   PROPOSAL: Human-readable description!
-%   PROPOSAL: MATLAB class (data type)
-%   PROPOSAL: Default value (so can display it if overridden)
-%   PROPOSAL: Flag for write-protection (always use default value).
-%       NOTE: Some settings (one?) make no sense to modify: config file path.
-%   PROPOSAL: Flag for values which have not been set but must later be set.
-%       PROPOSAL: MATLAB_COMMAND
-%           CON: Is not really needed by BICAS.
-%   PROPOSAL: Legal alternatives.
-%       PRO: Rapid feedback when using bad value. Does not require triggering
-%            code.
-%       PRO: Clear in code (bicas.create_default_BSO()).
-%       CON: Might not be consistent with how the settings values are actually used in the code.
-%            Duplicates that decision.
-%       PROPOSAL: Submit function (value-->boolean) that specifies what is legal
-%                 and not. Can have set of pre-defined functions.
-%           TODO-NI: How relates to how values are converted to display strings?
-%           TODO-NI: How relates to how values are converted from strings (config file, CLI argument)?
-%           
-%       PROPOSAL: String constants.
-%       PROPOSAL: Value type (MATLAB class)
-%           Ex: Logical
-%           CON: Not necessary since initial/default value specifies it.
-%   --
-%   NOTE: This information should only be given once in the code, and be hard-coded.
-%
-% PROPOSAL: Convention for "empty"/"not set"?!
-%   TODO-DEC/CON: Not really needed? Depends too much on the variable/setting.
-%
-% PROPOSAL: Initialize by submitting map.
-%   PRO: Can remove methods define_setting, disable_define.
-%   CON: Can not easily add metadata for every variable (in the future),
-%        e.g. permitted values (data type/class, range).
-%
-% PROPOSAL: Be able to make some settings (default values) write-protected, not overridable.
-%   CON: Of limited value.
+% PROPOSAL: Move settings-related files to its own package.
+%   Ex:
+%       Settings         + UTEST
+%       SettingsKeyValue + UTEST
+%       create_default_BSO
+%       settings_value_to_display_str + UTEST
+%       sprint_BSO
+%   CON: Mixes generic and non-generic code.
+%       PROPOSAL: Split.
+%           bicas.utils.*
+%               Settings         + UTEST
+%               SettingsKeyValue + UTEST
+%           bicas.settings.*
+%               create_default_BSO
+%               settings_value_to_display_str + UTEST
+%               sprint_BSO
+%           PROPOSAL: Remove BSO from file names.
 %
 % PROPOSAL: Store which settings were invoked (read) during a run.
 %   PRO: Can summarize (and log) which settings are actually being used.
 %   CON: Must distinguish between retrieving settings for actual use in algorithm, or for just logging.
-%
-% PROPOSAL: Enable BICAS to log where a key is set, and how many times. To follow how default value is overridden, and
-%           how it is overriden twice in the same interface (in the config file or CLI arguments)
-%   Ex: Config file specifies a new "default" value which is then overridden further below.
-%   PROBLEM: bicas.interpret_config_file() and bicas.interpret_CLI_args() must
-%            then be able to return info on a setting being set multiple times,
-%            and return that information. As of now (2021-08-19) they only
-%            return the final setting.
-%       PROPOSAL: Submit BSO to those functions.
-%           CON: Automatic testing becomes harder. Harder to test returned value. Harder to submit varied BSO.
-%       PROPOSAL: Return KVPL.
-%           NOTE: KVPL only permits string values(?).
-%
-% PROPOSAL: Make it possible to load multiple config files. Subsequent log files override each other.
-%   TODO-DEC: Should the internal order of --set and --config arguments matter? Should a --config override a previous
-%                  --set?
-%
-% PROPOSAL: Enforce keeping same MC (instead of the locally define "value
-%           type").
-%   CON: Could not specify values inside of cell arrays.
-%       NOTE: Cell arrays are noy yet really supported /2023-12-12).
 
 
 
@@ -186,18 +126,14 @@ classdef Settings < handle
                     ['Trying to define new keys in settings object which', ...
                     ' disallows defining new keys.'])
             end
+
             if obj.SkvMap.isKey(key)
                 error('BICAS:Assertion:ConfigurationBug', ...
                     'Trying to define pre-existing settings key.')
             end
-            bicas.Settings.assert_legal_value(defaultValue)
             
-            
-            
-            % NOTE: Needs to be able to handle cell-valued values.
             Skv = bicas.SettingsKeyValue(...
-                defaultValue, ...
-                bicas.Settings.VALUE_SOURCE_DEFAULT);
+                defaultValue, bicas.Settings.VALUE_SOURCE_DEFAULT);
             obj.SkvMap(key) = Skv;
         end
 
@@ -222,18 +158,23 @@ classdef Settings < handle
             
             Skv = obj.get_SKV_private(key);
             
-            % ASSERTION: Old and new value have the same value type.
-            if ~strcmp(...
-                    bicas.Settings.get_value_type(newValue), ...
-                    obj.get_setting_value_type(key))
-                
-                error('BICAS:Assertion:IllegalArgument', ...
-                    ['New settings value does not match the type of the', ...
-                    ' old settings value for key "%s".'], ...
-                    key)
+            % IMPLEMENTATION NOTE: Only catching (specific) exception so that
+            % the code can generate a better error message and specify the key
+            % since this error is quite likely to be generated by user error.
+            try
+                Skv = Skv.override(newValue, valueSource);
+            catch Exc
+                if strcmp(Exc.identifier, 'BICAS:IllegalOverridingSettingValueType')
+                    error('BICAS:IllegalOverridingSettingValueType', ...
+                        ['New settings value does not match the type of the', ...
+                        ' old settings value for key "%s".'], ...
+                        key)
+                else
+                    rethrow(Exc)
+                end
             end
-
-            obj.SkvMap(key) = Skv.override(newValue, valueSource);
+            
+            obj.SkvMap(key) = Skv;
         end
 
         
@@ -269,6 +210,10 @@ classdef Settings < handle
         function obj = override_values_from_strings(...
                 obj, ModifiedSettingsMap, valueSource)
 
+            % ASSERTIONS
+            % NOTE: Not checking object state (define disabled) since called
+            % function does that.
+
             keysList = ModifiedSettingsMap.keys;
             for iModifSetting = 1:numel(keysList)
                 key              = keysList{iModifSetting};
@@ -277,9 +222,9 @@ classdef Settings < handle
                 %==================================================
                 % Convert string value to appropriate MATLAB class.
                 %==================================================
-                value_type = obj.get_setting_value_type(key);
-                newValue   = bicas.Settings.convert_str_to_value(...
-                    value_type, newValueAsString);
+                valueType = obj.get_setting_value_type(key);
+                newValue  = bicas.Settings.convert_str_to_value(...
+                    valueType, newValueAsString);
 
                 % Overwrite old setting.
                 obj.override_value(key, newValue, valueSource);
@@ -318,11 +263,7 @@ classdef Settings < handle
         %       need it.
         function [value, key] = get_fv(obj, key)
             % ASSERTIONS
-            if ~obj.readOnlyForever
-                error('BICAS:Assertion', ...
-                    ['Not allowed to call this method for non-read-only', ...
-                    ' settings object.'])
-            end
+            obj.assert_read_only()
 
             Skv   = obj.get_SKV(key);
             value = Skv.valuesCa{end};
@@ -337,11 +278,8 @@ classdef Settings < handle
         % times, often repeatedly.
         function Skv = get_SKV(obj, key)
             % ASSERTIONS
-            if ~obj.readOnlyForever
-                error('BICAS:Assertion', ...
-                    ['Not allowed to call this method for a non-read-only', ...
-                    ' settings object.'])
-            end
+            obj.assert_read_only()
+
             if ~obj.SkvMap.isKey(key)
                 error('BICAS:Assertion:IllegalArgument', ...
                     'There is no setting "%s".', key)
@@ -365,13 +303,21 @@ classdef Settings < handle
         
         
         
-        % Needs to be public so that caller can determine how to parse string,
-        % e.g. parse to number.
+        function assert_read_only(obj)
+            if ~obj.readOnlyForever
+                error('BICAS:Assertion', ...
+                    ['Not allowed to call this method for a non-read-only', ...
+                    ' settings object.'])
+            end
+        end
+        
+        
+        
         function valueType = get_setting_value_type(obj, key)
             Skv = obj.get_SKV_private(key);
             
             % NOTE: Always use default/first value.
-            valueType = bicas.Settings.get_value_type(Skv.valuesCa{1});
+            valueType = Skv.get_value_type();
         end
 
 
@@ -406,28 +352,6 @@ classdef Settings < handle
     %########################
     %########################
     methods(Access=private, Static)
-        
-        
-        
-        % Defines what is a legal value.
-        function assert_legal_value(value)
-            if ischar(value)
-                
-                % Do nothing
-                irf.assert.castring(value)
-                
-            elseif isnumeric(value) ...
-                    || iscell(value) ...
-                    || islogical(value)
-                
-                irf.assert.vector(value)
-                
-            else
-                
-                error('BICAS:Assertion:IllegalArgument', ...
-                    'Argument "value" is illegal.')
-            end
-        end
         
         
         
@@ -490,29 +414,14 @@ classdef Settings < handle
                     error('BICAS:Assertion:IllegalArgument', ...
                         ['Can not interpret argument settingValueType="%s"'], ...
                         valueAsString)
-            end
-            
-            bicas.Settings.assert_legal_value(value)
-        end
-        
-        
-        
-        % NOTE: Returns one of its own categories. Does not return MC.
-        function valueType = get_value_type(value)
-            if isnumeric(value)
-                valueType = 'numeric';
-            elseif islogical(value)
-                valueType = 'logical';
-            elseif ischar(value)
-                valueType = 'string';
-            else
-                error('BICAS:ConfigurationBug', ...
-                    'Settings value (old or new) has an illegal MATLAB class.')
-            end
-        end
+
+            end    % switch
+        end    % function
         
         
         
     end    % methods(Access=private, Static)
+
+
     
 end
