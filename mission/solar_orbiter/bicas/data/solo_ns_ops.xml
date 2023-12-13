@@ -20,7 +20,7 @@
             2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2023-11-03, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2023-10-20 (inclusive). Only contains manually identified thuster firings.
+            2023-12-13, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2023-12-10 (inclusive). Only contains manually identified thuster firings.
         </note>
         <note>
             Note that since data gaps may be filled in after that a time interval has been manually searched for thruster firings etc., this list still might not label all such thruster firings (etc.) in the time period(s) that has/have been stated to be searched.
@@ -2079,6 +2079,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2023-10-08T22:59:24</startTimeUtc>
+            <stopTimeUtc> 2023-10-08T23:32:05</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
             <startTimeUtc>2023-10-11T14:29:20</startTimeUtc>
             <stopTimeUtc> 2023-10-11T14:56:08</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
@@ -2087,6 +2093,48 @@
         <event>
             <startTimeUtc>2023-10-15T00:29:30</startTimeUtc>
             <stopTimeUtc> 2023-10-15T00:55:51</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-10-22T22:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-10-22T22:38:33</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-03T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2023-11-03T01:23:38</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-06T06:53:46</startTimeUtc>
+            <stopTimeUtc> 2023-11-06T07:06:16</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unclear if really is thruster firing. 3-4 cycles with 90 s/cycle. First "cycle" is odd.</description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-13T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2023-11-13T01:15:32</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-20T01:04:18</startTimeUtc>
+            <stopTimeUtc> 2023-11-20T01:14:20</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Looks different but is still unambiguous. 5 cycles.</description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-27T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-11-27T01:15:12</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-12-04T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-12-04T01:16:34</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
