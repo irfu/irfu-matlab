@@ -29,9 +29,8 @@ classdef qual
         function [zvUfv, QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
                 modify_quality_filter(InZv, isLfr, NsoTable, Bso, L)
 
-            irf.assert.struct(InZv, {'Epoch', 'ufv', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
+            irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
             Epoch            = InZv.Epoch;
-            zvUfv            = InZv.ufv;
             zvBdmFpa         = InZv.bdmFpa;
             QUALITY_FLAG_Fpa = InZv.QUALITY_FLAG_Fpa;
             clear ZvIn
@@ -42,8 +41,7 @@ classdef qual
             nRecords = irf.assert.sizes( ...
                 Epoch,            [-1], ...
                 zvBdmFpa,         [-1], ...
-                QUALITY_FLAG_Fpa, [-1], ...
-                zvUfv,            [-1]);
+                QUALITY_FLAG_Fpa, [-1]);
 
             % Pre-allocate
             L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
@@ -53,10 +51,8 @@ classdef qual
             %============================================================
             % Find CDF records to remove due to settings
             %============================================================
-            zvUfvSettings = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
+            zvUfv = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
                 Epoch, zvBdmFpa, isLfr, Bso, L);
-
-            zvUfv = zvUfv | zvUfvSettings;
 
             %==============================================
             % Modify quality ZVs based on NSO events table
