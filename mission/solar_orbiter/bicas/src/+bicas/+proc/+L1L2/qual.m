@@ -51,7 +51,7 @@ classdef qual
             %============================================================
             % Find CDF records to remove due to settings
             %============================================================
-            zvUfv = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
+            zvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
                 Epoch, zvBdmFpa, isLfr, Bso, L);
 
             %==============================================
@@ -205,7 +205,7 @@ classdef qual
 
 
         % Find CDF records to remove (set to fill value) based on settings (not
-        % data itself, almost, since MUX mode is data).
+        % data itself, almost, since BDM is data).
         %
         % Ex: Sweeps
         %
@@ -221,7 +221,7 @@ classdef qual
         %       Demultiplexer data, from BIAS HK or LFR.
         %       Fill positions are not matched agains BDMs stored in settings.
         %
-        function zvUfv = get_UFV_records_from_settings(...
+        function zvUfv = get_UFV_from_removing_BDMs(...
                 zv_Epoch, zvBdmFpa, isLfr, Bso, L)
             % PROPOSAL: Separate function for logging which records that should be removed.
             % PROPOSAL: Arguments for settings.
@@ -572,6 +572,12 @@ classdef qual
         %
         % NOTE: Only logs (including header) if there are records to remove.
         function log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
+            % PROPOSAL: Redefine, rework to function that can be used for
+            % logging separate UFVs obtained in different ways.
+            %   Ex: UFVs due to excluding BDMs.
+            %   Ex: UFVs due to automatically detected sweeps.
+            %   Ex: UFVs due to detected sweeps via QUALITY_BITMASK (future).
+            
             LL = 'info';    % LL = Log Level
 
             [i1Array, i2Array] = irf.utils.split_by_false(zvUfv);
@@ -591,7 +597,7 @@ classdef qual
                     iCdfRecord2 = i2Array(iRi);
                     utc1  = irf.cdf.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1));
                     utc2  = irf.cdf.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2));
-                    L.logf(LL, '    Records %7i-%7i, %s -- %s', ...
+                    L.logf(LL, '    Records %8i-%8i, %s -- %s', ...
                         iCdfRecord1, iCdfRecord2, utc1, utc2);
                 end
             end

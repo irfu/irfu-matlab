@@ -69,6 +69,9 @@ classdef L1L2
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, Bso, L)
             % PROPOSAL: Separate function for the actual interpolation of data
             %           (changing time array HK-->SCI).
+            %
+            % NOTE: Function only uses InSci fields InSci.Zv.Epoch and InSci.Zv.ACQUISITION_TIME
+            %   PROPOSAL: Replace argument InSci --> SciEpoch and Sci_ACQUISITION_TIME
             
             
 

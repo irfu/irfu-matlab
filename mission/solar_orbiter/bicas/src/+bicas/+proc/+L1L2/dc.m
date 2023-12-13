@@ -118,7 +118,7 @@ classdef dc
                     Zv.AsrSamplesAVoltSrm, ...
                     PreDc.Zv.nValidSamplesPerRecord, ...
                     PreDc.Zv.bdmFpa, PreDc.Zv.dlrFpa, ...
-                    PreDc.Zv.lrx, PreDc.Zv.isAchgFpa, ...
+                    PreDc.Zv.lrx,    PreDc.Zv.isAchgFpa, ...
                     PreDc.hasSwfFormat, L);
             end
 
@@ -241,7 +241,7 @@ classdef dc
                 %      the selected interval of time.
                 % ==============================================================
                 
-                % CV = Constant values = Values which are constant for the
+                % CV = Constant Values = Values which are constant for the
                 %      entire subsequence of records.
                 Cv = [];
                 Cv.bdmFpa                  = PreDc.Zv.bdmFpa(                 iRec1);

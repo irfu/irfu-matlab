@@ -1,7 +1,12 @@
 %
 % Get official SWML used by BICAS (as opposed to any future test SWML).
 %
-% NOTE: The s/w modes implemented in the body of BICAS must always be compatible
+%
+% NOTE
+% ====
+% NOTE: There is no SWM for generating VHT datasets. VHT processing is therefore
+%       not represented here.
+% NOTE: The SWMs implemented in the body of BICAS must always be compatible
 %       with the SWMs specified here.
 %
 %

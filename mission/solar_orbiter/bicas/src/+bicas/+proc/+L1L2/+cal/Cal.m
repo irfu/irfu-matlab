@@ -547,10 +547,10 @@ classdef Cal < handle
         % zv_CALIBRATION_TABLE_INDEX
         %       NOTE: Only one record of zVar CALIBRATION_TABLE_INDEX! Not
         %             entire zVar.
-        % voltageNaN
+        % ufv
         %       Scalar logical.
-        %       Whether to set output voltages to NaN and not execute any (real)
-        %       calibration.
+        %       Whether to set output voltages to NaN (representing fill values)
+        %       and thus not execute any (real) calibration.
         %       RATIONALE: This option is useful to
         %       (1) potentially speed up BICAS when it is known that
         %           data will be overwritten with fill values later.
@@ -564,7 +564,7 @@ classdef Cal < handle
         %
         function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
                 dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, ...
-                zv_CALIBRATION_TABLE_INDEX, voltageNaN)
+                zv_CALIBRATION_TABLE_INDEX, ufv)
 
             % ASSERTIONS
             assert(isstruct(CalSettings))
@@ -574,7 +574,7 @@ classdef Cal < handle
             assert(iscell(bltsSamplesTmCa))
             assert(isvector(bltsSamplesTmCa))
             irf.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
-            assert(islogical(voltageNaN) && isscalar(voltageNaN))
+            assert(islogical(ufv) && isscalar(ufv))
 
 
 
@@ -592,7 +592,7 @@ classdef Cal < handle
 
 
 
-            if obj.allVoltageCalibDisabled || voltageNaN
+            if obj.allVoltageCalibDisabled || ufv
 
                 bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
 
@@ -601,7 +601,7 @@ classdef Cal < handle
                         % CASE: Set voltages to TM values.
                         bltsSamplesAVoltCa{i} = double(bltsSamplesTmCa{i});
                     end
-                    if voltageNaN
+                    if ufv
                         % CASE: Set voltages to NaN.
 
                         % IMPLEMENTATION NOTE: Potentially overwrites TM value

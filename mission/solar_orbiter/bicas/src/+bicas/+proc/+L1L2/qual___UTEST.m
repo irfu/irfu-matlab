@@ -266,7 +266,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-        function test_get_UFV_records_from_settings(testCase)
+        function test_get_UFV_from_removing_BDMs(testCase)
 
             function actZvUfv = call_func(zv_Epoch, zvBdmDoubleNan, isLfr, bdmRemoveArray, lfrBdmMarginSec, tdsBdmMarginSec)
                 assert(isfloat(zvBdmDoubleNan))
@@ -280,7 +280,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
                 L = bicas.Logger('none', false);
                 
-                actZvUfv = bicas.proc.L1L2.qual.get_UFV_records_from_settings(...
+                actZvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
                     zv_Epoch, zvBdmFpa, isLfr, Bso, L);
             end
 

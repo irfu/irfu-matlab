@@ -11,7 +11,7 @@
 %   Value : One of below:
 %       (1) strings
 %       (2) numbers (1D vector)
-%       (3) cell array of strings (1D vector)
+%       (3) logical (scalar)
 % --
 % A settings object progresses through three phases, in order, and stays
 % write-protected in the last phase:
@@ -211,8 +211,8 @@ classdef Settings < handle
                 obj, ModifiedSettingsMap, valueSource)
 
             % ASSERTIONS
-            % NOTE: Not checking object state (define disabled) since called
-            % function does that.
+            % NOTE: Not checking object state (define disabled; not readonly)
+            % since the other called method does that.
 
             keysList = ModifiedSettingsMap.keys;
             for iModifSetting = 1:numel(keysList)
@@ -245,7 +245,8 @@ classdef Settings < handle
         %
         % IMPLEMENTATION NOTE: Short function name since function is called many
         % times, often repeatedly.
-        % FV = Final value
+        % FV = Final Value
+        %
         %
         % RETURN VALUES
         % ==============
@@ -355,14 +356,14 @@ classdef Settings < handle
         
         
         
-        function value = convert_str_to_value(settingValueType, valueAsString)
+        function value = convert_str_to_value(valueType, valueAsString)
             % ASSERTION
             if ~isa(valueAsString, 'char')
                 error('BICAS:Assertion:IllegalArgument', ...
-                    'Map value is not a string.')
+                    'valueAsString is not a string.')
             end
 
-            switch(settingValueType)
+            switch(valueType)
 
                 case 'numeric'
 

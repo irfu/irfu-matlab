@@ -85,5 +85,4 @@ function str = sprint_BSO(Bso)
     str = [str, sprintf('(CLI)  = Value comes from CLI argument\n')];
     
     str = [str, newline];
-    
 end

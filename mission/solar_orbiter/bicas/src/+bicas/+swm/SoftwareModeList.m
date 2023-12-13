@@ -46,12 +46,6 @@
 % -- Possible need for backward compatibility.
 %
 %
-% NOTE
-% ====
-% There is no s/w mode for generating VHT datasets. They are therefore not
-% represented here.
-%
-%
 % DEFINITIONS
 % ===========
 % SIP = "Specific Input Parameters" (RCS ICD).
@@ -104,8 +98,9 @@ classdef SoftwareModeList
     % PUBLIC, IMMUTABLE
     properties(SetAccess=immutable)
         
-        % NOTE: Implicit that it is a list of s/w modes (not in name). Note that
-        % it is a public property.
+        % NOTE: Implicit that it is a list of SWMs (since it is not in the
+        % variable name).
+        % NOTE: Public property.
         List
     end
     

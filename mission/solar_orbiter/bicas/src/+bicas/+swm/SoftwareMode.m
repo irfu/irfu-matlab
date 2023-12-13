@@ -10,7 +10,6 @@ classdef SoftwareMode
     %   outputsList --> outputsArray
     %   NOTE: Likely influences BICAS testing code and pipeline.
     %         Should only be implemented at the right time.
-    %
 
     %#####################
     %#####################
@@ -33,6 +32,8 @@ classdef SoftwareMode
     %#########################
     %#########################
     methods(Access=public)
+
+
 
         function obj = SoftwareMode(...
                 prodFunc, cliOption, swdPurpose, ...
@@ -63,6 +64,8 @@ classdef SoftwareMode
             irf.assert.castring_set( { obj.inputsList(:).prodFuncInputKey   })
             irf.assert.castring_set( { obj.outputsList(:).prodFuncOutputKey })
         end
+
+
 
     end    % methods(Access=public)
 

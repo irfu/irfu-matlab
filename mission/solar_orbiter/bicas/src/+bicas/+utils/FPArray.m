@@ -361,7 +361,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
                 case 3
                     % Do nothing. Use caller-supplied value of "fbBefore".
                 otherwise
-                    error('BICAS:AssertionError', 'Illegal number of arguments')
+                    error('BICAS:Assertion', 'Illegal number of arguments')
             end
             
             Fpa = obj.convert(...
@@ -586,7 +586,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
                     %     dataAr2 = obj2;
                     %     fpAr2   = false(size(obj2));
                     else
-                        error('BICAS:AssertionError', 'Assigning FPA elements with non-FPA.')
+                        error('BICAS:Assertion', 'Assigning FPA elements with non-FPA.')
                     end
                     
                     Fpa1.dataAr = subsasgn(Fpa1.dataAr, S, dataAr2);
@@ -990,7 +990,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             else
                 % CASE: Can not determine MATLAB class and hence FV.
                 %fv = [];
-                error('BICAS:AssertionError:IllegalArgument', ...
+                error('BICAS:Assertion:IllegalArgument', ...
                     'Can not derive value that survives typecasting from "%s" to "%s".', mc1, mc2)
             end
         end

@@ -377,7 +377,7 @@ function Bso = create_default_BSO()
     
     % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
     % EFIELD, and SCPOT data; both OSR and DSR.
-    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',     2)
+    S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
     % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
     % SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND data.
     % NOTE: This does not affect the corresponding OSR dataset and is therefore

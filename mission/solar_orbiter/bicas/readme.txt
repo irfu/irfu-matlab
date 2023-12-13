@@ -270,10 +270,10 @@ SWD, S/W descriptor
 SWF
     Snapshot WaveForm. Snapshot data. Cf. CWF.
 SWM, S/W mode
-    (1) A "S/W mode" defines a set of required input CDF files and a set
-    of output CDF files derived from the input files. BICAS can execute only
-    one such mode on each run. Executing such modes is the primary purpose of
-    an RCS. (Defined by the RCS ICD.)
+    (1) A "S/W mode" defines a set of required input CDF files and a set of
+    output CDF files which can be derived from said input files. BICAS can
+    execute only one such mode on each run. Executing such modes is the
+    primary purpose of an RCS. (Defined by the RCS ICD.)
     (2) Class bicas.swm.SoftwareMode.
 SWML
     Class bicas.swm.SoftwareModeList.
@@ -300,8 +300,9 @@ TSF
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
-    Use Fill Values. Refers to CDF records which data should overwritten with
-    fill values).
+    Use Fill Values. Refers to CDF records for which science data should be
+    overwritten with fill values. This refers to both bias currents and
+    measured voltages.
 WOLS
     WithOut Leap Seconds
 ZV
