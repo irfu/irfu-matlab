@@ -159,7 +159,7 @@ classdef lfr
 
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
-            irf.assert.struct(HkSciTime, {'bdmFpa', 'isAchgFpa', 'dlrFpa'}, {})
+            irf.assert.struct(HkSciTime, {'bdmFpa', 'isAchgFpa', 'dlrFpa', 'isSweepingFpa'}, {})
             
             % ASSERTIONS: CDF
             bicas.proc.utils.assert_increasing(...
@@ -249,7 +249,7 @@ classdef lfr
             Zv.freqHz                  = zvFreqHz;
             Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
             Zv.BW                      = InSci.Zv.BW;
-            Zv.ufv                     = ~logical(InSci.Zv.BW);
+            Zv.ufv                     = ~logical(InSci.Zv.BW) | HkSciTime.isSweepingFpa.array(false);
             Zv.isAchgFpa               = HkSciTime.isAchgFpa;
             Zv.dlrFpa                  = HkSciTime.dlrFpa;
             Zv.iLsf                    = zvILsf;

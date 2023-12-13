@@ -407,6 +407,29 @@ function Bso = create_default_BSO()
     S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
     S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);
 
+    %--------------------------------------------------------------------------
+    % Settings for autodetecting sweeps (so that they can be excluded from L2)
+    %--------------------------------------------------------------------------
+    % NOTE: This is a temporary functionality. The long-term solution should be
+    % to use L1/L1R QUALITY_BITMASK. It has been created so that sweeps can
+    % still be removed while BIAS is commanded to use BDM=4 for bulk data.
+    % NOTE: As of 2023-12-13, it is not yet clear exactly when this will happen.
+    % The corresponding default value may thus need to be updated.
+    
+    % Time before which BDM=4 <=> sweep, and after which a sliding window
+    % algorithm will be used.
+    % Format: Year-month-day
+    %         -hour-minute-second
+    %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
+    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+    % Length of time interval which is considered at a time. Unit: Data
+    % points/HK CDF records.
+    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',  3)
+    % Threshold for HK bias current difference between min and max within
+    % interval. If the value exceeds this value, then the interval is labelled
+    % as sweeping.
+    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM', 500)
+    
 
 
     %============================================================================
