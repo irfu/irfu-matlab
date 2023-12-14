@@ -1,6 +1,11 @@
 %
 % Class that stores metadata and production function for one SWM.
 %
+% NOTE: Not to be confused with class bicas.proc.SwmProcessing which contains
+% the processing associated with a SWM but not the metadata for the SWD. This
+% class does however contain a copy to the relevant instance of
+% bicas.proc.SwmProcessing.
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
@@ -17,7 +22,7 @@ classdef SoftwareMode
     %#####################
     %#####################
     properties(SetAccess=immutable)
-        prodFunc
+        Swmp
         cliOption
         swdPurpose
         inputsList
@@ -36,10 +41,10 @@ classdef SoftwareMode
 
 
         function obj = SoftwareMode(...
-                prodFunc, cliOption, swdPurpose, ...
+                Swmp, cliOption, swdPurpose, ...
                 inputsList, outputsList)
 
-            obj.prodFunc    = prodFunc;
+            obj.Swmp        = Swmp;
             % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by
             % e.g. "--". Variable therefore NOT named *Body.
             obj.cliOption   = cliOption;
@@ -50,6 +55,7 @@ classdef SoftwareMode
             %============
             % ASSERTIONS
             %============
+            assert(isa(obj.Swmp, 'bicas.proc.SwmProcessing'))
             bicas.swm.utils.assert_SWM_CLI_option(obj.cliOption)
             bicas.swm.utils.assert_text(          obj.swdPurpose)
 

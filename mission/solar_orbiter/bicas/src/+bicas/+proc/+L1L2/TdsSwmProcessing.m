@@ -1,31 +1,140 @@
 %
-% Collection of TDS-related processing functions.
+% SWMP for processing TDS L1/L1R --> L2.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-05-25
 %
-classdef tds    
+classdef TdsSwmProcessing < bicas.proc.SwmProcessing
     % PROPOSAL: Automatic test code.
+    
+
+
+    %#####################
+    %#####################
+    % INSTANCE PROPERTIES
+    %#####################
+    %#####################
+    properties(SetAccess=immutable, GetAccess=private)
+        inputSciDsi
+        inputSci    % Classification of type of processing (based on input dataset).
+        outputDsi
+    end
 
 
 
-    %#######################
-    %#######################
-    % PUBLIC STATIC METHODS
-    %#######################
-    %#######################
-    methods(Static)
+    %#########################
+    %#########################
+    % PUBLIC INSTANCE METHODS
+    %#########################
+    %#########################
+    methods(Access=public)
+        
+
+        
+        % ARGUMENTS
+        % =========
+        % inputSciDsi
+        %       The science input dataset will be interpreted as having this
+        %       DSI.
+        %       RATIONALE: InputDatasetsMap should contain the same as a CDF
+        %       global attribute but
+        %       (1) it could be missing, or
+        %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
+        %           was an RODP dataset or the other way around.
+        %
+        function obj = TdsSwmProcessing(inputSciDsi, outputDsi)
+            obj.inputSciDsi = inputSciDsi;
+            obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
+
+            obj.outputDsi   = outputDsi;
+        end
 
 
 
-        % Processing function. Only "normalizes" data to account for technically
+        % OVERRIDE
+        function OutputDatasetsMap = production_function(obj, ...
+            InputDatasetsMap, rctDir, NsoTable, Bso, L)
+            
+            InputHkCdf  = InputDatasetsMap('HK_cdf');
+            InputCurCdf = InputDatasetsMap('CUR_cdf');
+            InputSciCdf = InputDatasetsMap('SCI_cdf');
+            
+            
+            
+            %==========================================
+            % Configure bicas.proc.L1L2.cal.Cal object
+            %==========================================
+            % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
+            if obj.inputSci.isTdsCwf
+                settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                tdsRcttid = 'TDS-CWF';
+            else
+                settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                tdsRcttid = 'TDS-RSWF';
+            end
+            useCtRcts = obj.inputSci.isL1r && Bso.get_fv(settingUseCt);
+            useCti2   = false;    % Always false for TDS.
+            
+            if useCtRcts
+                % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
+                % NOTE: This should not be regarded as a hack but as
+                % ~normalization to avoid later special cases.
+                zv_BW = uint8(ones(...
+                    size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
+                    1));
+                
+                RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
+                    tdsRcttid, rctDir, ...
+                    InputSciCdf.Ga.CALIBRATION_TABLE, ...
+                    InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+                    zv_BW, ...
+                    Bso, L);
+            else
+                RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
+                    {'BIAS', tdsRcttid}, rctDir, Bso, L);
+            end
+            
+            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, Bso);
+            
+            
+            
+            %==============
+            % Process data
+            %==============
+            HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
+            InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf,              Bso, L);
+            SciPreDc     = obj.process_CDF_to_PreDc(                        InputSciCdf, HkSciTimePd);
+            SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
+            OutputSciCdf = bicas.proc.L1L2.process_PostDc_to_CDF(           SciPreDc, SciPostDc, obj.outputDsi);
+
+
+
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
+        end
+        
+
+
+    end    % methods(Access=public)
+
+
+
+    %##########################
+    %##########################
+    % PRIVATE INSTANCE METHODS
+    %##########################
+    %##########################
+    methods(Access=private)
+
+
+
+        % Only "normalizes" data to account for technically
         % illegal input TDS datasets. It should try to:
         % ** modify L1 to look like L1R
         % ** mitigate historical bugs in the input datasets
         % ** mitigate for not yet implemented features in input datasets
         %
-        function InSciNorm = process_normalize_CDF(InSci, inSciDsi, Bso, L)
+        function InSciNorm = process_normalize_CDF(obj, InSci, Bso, L)
 
             % Default behaviour: Copy values, except for values which are
             % modified later
@@ -33,15 +142,13 @@ classdef tds
 
             nRecords = irf.assert.sizes(InSci.Zv.Epoch, [-1]);
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
-
 
 
             %===================================
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
             InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
-                InSci.Zv, nRecords, inSciDsi);
+                InSci.Zv, nRecords, obj.inputSciDsi);
 
 
 
@@ -60,7 +167,7 @@ classdef tds
                 'Assert one matching candidate');
 
             bicas.proc.utils.handle_ZV_name_change(...
-                fnChangeList, inSciDsi, Bso, L, ...
+                fnChangeList, obj.inputSciDsi, Bso, L, ...
                 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
 
 
@@ -75,7 +182,7 @@ classdef tds
                     ['Finds illegal, stated sampling frequency', ...
                     ' 255 in TDS L1/L1R LFM-RSWF dataset.'];
 
-                if C.isTdsRswf
+                if obj.inputSci.isTdsRswf
                     switch(settingValue)
                         
                         case 'CORRECT'
@@ -108,7 +215,7 @@ classdef tds
 
 
 
-            if C.isTdsRswf
+            if obj.inputSci.isTdsRswf
                 %============================================================
                 % Check for and handle illegal input data, zVar SAMPS_PER_CH
                 % ----------------------------------------------------------
@@ -171,8 +278,8 @@ classdef tds
 
 
 
-        % Processing function. Convert TDS CDF data (PDs) to PreDc.
-        function PreDc = process_CDF_to_PreDc(InSci, inSciDsi, HkSciTime, Bso, L)
+        % Convert TDS CDF data (PDs) to PreDc.
+        function PreDc = process_CDF_to_PreDc(obj, InSci, HkSciTime)
         %
         % BUG?: Does not use CHANNEL_STATUS_INFO.
         % NOTE: BIAS output datasets do not have a variable for the length of
@@ -181,8 +288,6 @@ classdef tds
             % ASSERTIONS: VARIABLES
             assert(isa(InSci, 'bicas.InputDataset'))
             irf.assert.struct(HkSciTime, {'bdmFpa', 'isAchgFpa', 'dlrFpa', 'isSweepingFpa'}, {})
-
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
 
 
 
@@ -195,8 +300,8 @@ classdef tds
             [nRecords, WAVEFORM_DATA_nChannels, nCdfSamplesPerRecord] = irf.assert.sizes(...
                 InSci.Zv.Epoch,         [-1], ...
                 InSci.Zv.WAVEFORM_DATA, [-1, -2, -3]);
-            if     C.isL1r   WAVEFORM_DATA_nChannels_expected = 3;
-            elseif C.isL1    WAVEFORM_DATA_nChannels_expected = 8;
+            if     obj.inputSci.isL1r   WAVEFORM_DATA_nChannels_expected = 3;
+            elseif obj.inputSci.isL1    WAVEFORM_DATA_nChannels_expected = 8;
             end
             assert(...
                 WAVEFORM_DATA_nChannels == WAVEFORM_DATA_nChannels_expected, ...
@@ -214,7 +319,7 @@ classdef tds
             % Ex:
             %     solo_L1R_rpw-tds-lfm-rswf-e-cdag_20200409_V12.cdf: 32768 samples/record
             %     solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V09.cdf   : 16384 samples/record
-            if C.isTdsRswf
+            if obj.inputSci.isTdsRswf
                 assert(...
                     nCdfSamplesPerRecord == solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD, ...
                     'Unexpected number of samples per CDF record (%i). Expected %i.', ...
@@ -251,7 +356,7 @@ classdef tds
             %=====================================
             % Set Zv.nValidSamplesPerRecord
             %=====================================
-            if C.isTdsRswf
+            if obj.inputSci.isTdsRswf
                 %================================================================
                 % NOTE: This might only be appropriate for TDS's "COMMON_MODE"
                 % mode. TDS also has a "FULL_BAND" mode with 2^18=262144 samples
@@ -309,147 +414,12 @@ classdef tds
             Zv.iLsf           = nan(nRecords, 1);
             Zv.lrx            = ones(nRecords, 1);
             
-            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isTdsRswf, false, C.isTdsCwf);
+            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
         end    % process_CDF_to_PreDc
 
 
 
-        % Processing function. Convert PreDc+PostDc to something that 
-        % (1) represents a TDS dataset (hence the name), and
-        % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
-        %
-        % This function only changes the data format (and selects data to send
-        % to CDF).
-        %
-        function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
-            % PROPOSAL: Rename to something shared between LFR and TDS, then use
-            %           two wrappers.
-            %   PROPOSAL: process_PostDc_to_LFR_TDS_CDF_core
-            %   TODO-DEC: Put in which future file?
-
-            % ASSERTIONS
-            assert(isa(SciPreDc,  'bicas.proc.L1L2.PreDc'))
-            assert(isa(SciPostDc, 'bicas.proc.L1L2.PostDc'))
-
-
-
-            nRecords                 = size(SciPreDc.Zv.Epoch, 1);
-            nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
-
-            OutSci = [];
-
-            OutSci.Zv.Epoch              = SciPreDc.Zv.Epoch;
-            OutSci.Zv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
-            OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
-            OutSci.Zv.QUALITY_FLAG       = SciPostDc.Zv.QUALITY_FLAG;
-            OutSci.Zv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
-            OutSci.Zv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
-            OutSci.Zv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
-
-            % NOTE: Convert aampere --> nano-aampere
-            OutSci.Zv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
-            OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
-            OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
-
-            OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
-            OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
-
-
-
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(outputDsi);
-
-            % NOTE: The two cases are different in the indexes they use for
-            % OutSciZv.
-            if C.isCwf
-
-                % ASSERTIONS
-                assert(nSamplesPerRecordChannel == 1, ...
-                    'BICAS:Assertion:IllegalArgument', ...
-                    ['Number of samples per CDF record is not 1, as expected.', ...
-                    ' Bad input CDF?'])
-                irf.assert.sizes(...
-                    OutSci.Zv.QUALITY_BITMASK, [nRecords, 1], ...
-                    OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
-
-                % Try to pre-allocate to save RAM/speed up.
-                tempNaN = nan(nRecords, 3);
-                OutSci.Zv.VDC = tempNaN;
-                OutSci.Zv.EDC = tempNaN;
-                OutSci.Zv.EAC = tempNaN;
-
-                OutSci.Zv.VDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
-                OutSci.Zv.VDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
-                OutSci.Zv.VDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
-
-                OutSci.Zv.EDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
-                OutSci.Zv.EDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
-                OutSci.Zv.EDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
-
-                OutSci.Zv.EAC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
-                OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
-                OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
-
-            elseif C.isSwf
-
-                if     C.isLfr
-                    SAMPLES_PER_RECORD_CHANNEL = ...
-                        solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;
-                elseif C.isTds
-                    SAMPLES_PER_RECORD_CHANNEL = ...
-                        solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD;
-                else
-                    error(...
-                        'BICAS:Assertion', ...
-                        'Illegal DSI classification.')
-                end
-
-                % ASSERTION
-                assert(nSamplesPerRecordChannel == SAMPLES_PER_RECORD_CHANNEL, ...
-                    'BICAS:Assertion:IllegalArgument', ...
-                    ['Number of samples per CDF record (%i) is not', ...
-                    ' %i, as expected. Bad Input CDF?'], ...
-                    nSamplesPerRecordChannel, ...
-                    SAMPLES_PER_RECORD_CHANNEL)
-
-                % Try to pre-allocate to save RAM/speed up.
-                tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
-                OutSci.Zv.VDC = tempNaN;
-                OutSci.Zv.EDC = tempNaN;
-                OutSci.Zv.EAC = tempNaN;
-
-                OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
-                OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
-                OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
-
-                OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
-                OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
-                OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
-
-                OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
-                OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
-                OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
-
-            else
-                error('BICAS:Assertion:IllegalArgument', ...
-                    'Function can not produce outputDsi=%s.', outputDsi)
-            end
-
-
-
-            % ASSERTION
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
-            % NOTE: Not really necessary since the list of ZVs will be checked
-            % against the master CDF?
-            irf.assert.struct(OutSci.Zv, {...
-                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
-                'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
-                'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
-
-        end    % process_PostDc_to_CDF
-        
-        
-        
-    end    % methods(Static)
+    end    % methods(Access=private)
 
 
 

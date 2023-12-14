@@ -1,31 +1,125 @@
 %
-% Collection of LFR-related processing functions.
+% SWMP for processing LFR L1/L1R --> L2.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-05-25, from reorganized older code.
 %
-classdef lfr    
+classdef LfrSwmProcessing < bicas.proc.SwmProcessing
     % PROPOSAL: Automatic test code.
 
-    
-    
-    %#######################
-    %#######################
-    % PUBLIC STATIC METHODS
-    %#######################
-    %#######################
-    methods(Static)
+
+
+    %#####################
+    %#####################
+    % INSTANCE PROPERTIES
+    %#####################
+    %#####################
+    properties(SetAccess=immutable, GetAccess=private)
+        inputSciDsi
+        inputSci    % Classification of type of processing (based on input dataset).
+        outputDsi
+    end
 
 
 
-        % Processing function. Only "normalizes" data to account for technically
+    %#########################
+    %#########################
+    % PUBLIC INSTANCE METHODS
+    %#########################
+    %#########################
+    methods(Access=public)
+        
+        
+        
+        % ARGUMENTS
+        % =========
+        % inputSciDsi
+        %       The science input dataset will be interpreted as having this
+        %       DSI.
+        %       RATIONALE: InputDatasetsMap should contain the same as a CDF
+        %       global attribute but
+        %       (1) it could be missing, or
+        %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
+        %           was an RODP dataset or the other way around.
+        %
+        function obj = LfrSwmProcessing(inputSciDsi, outputDsi)
+            obj.inputSciDsi = inputSciDsi;
+            obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
+
+            obj.outputDsi   = outputDsi;
+        end
+
+
+
+        % OVERRIDE
+        function OutputDatasetsMap = production_function(obj, ...
+            InputDatasetsMap, rctDir, NsoTable, Bso, L)
+
+            InputHkCdf  = InputDatasetsMap('HK_cdf');
+            InputCurCdf = InputDatasetsMap('CUR_cdf');
+            InputSciCdf = InputDatasetsMap('SCI_cdf');
+
+            
+            
+            %======================================
+            % Configure bicas.proc.L1L2.cal.Cal object
+            %======================================
+            useCtRcts = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
+            useCti2   = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
+            
+            if useCtRcts
+                RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
+                    'LFR', rctDir, ...
+                    InputSciCdf.Ga.CALIBRATION_TABLE, ...
+                    InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+                    InputSciCdf.Zv.BW, ...
+                    Bso, L);
+            else
+                RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
+                    {'BIAS', 'LFR'}, rctDir, Bso, L);
+            end
+            
+            Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, Bso);
+            
+            
+            
+            %==============
+            % Process data
+            %==============
+            HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
+            InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf, Bso, L);
+            SciPreDc     = obj.process_CDF_to_PreDc(                        InputSciCdf, HkSciTimePd, Bso, L);
+            SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
+            OutputSciCdf = obj.process_PostDc_to_CDF(                       SciPreDc, SciPostDc);
+            
+            
+            
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
+        end
+
+
+
+    end    % methods(Access=public)
+
+
+
+    %##########################
+    %##########################
+    % PRIVATE INSTANCE METHODS
+    %##########################
+    %##########################
+    methods(Access=private)
+
+
+
+        % Only "normalizes" data to account for technically
         % illegal input LFR datasets. It should try to:
         % ** modify L1 data to look like L1R
         % ** mitigate historical bugs in input datasets
         % ** mitigate for not yet implemented features in input datasets
         %
-        function InSciNorm = process_normalize_CDF(InSci, inSciDsi, Bso, L)
+        function InSciNorm = process_normalize_CDF(obj, InSci, Bso, L)
 
             % Default behaviour: Copy values, except for values which are
             % modified later
@@ -40,7 +134,7 @@ classdef lfr
             %===================================
             InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
                 bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
-                    InSci.Zv, nRecords, inSciDsi);
+                    InSci.Zv, nRecords, obj.inputSciDsi);
 
 
 
@@ -123,11 +217,11 @@ classdef lfr
             [settingValue, settingKey] = Bso.get_fv(...
                 'PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
 
-            InSciNorm.ZvFpa.QUALITY_BITMASK = bicas.proc.L1L2.lfr.normalize_ZV_empty(...
+            InSciNorm.ZvFpa.QUALITY_BITMASK = bicas.proc.L1L2.LfrSwmProcessing.normalize_ZV_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.ZvFpa.QUALITY_BITMASK, 'QUALITY_BITMASK');
 
-            InSciNorm.ZvFpa.QUALITY_FLAG    = bicas.proc.L1L2.lfr.normalize_ZV_empty(...
+            InSciNorm.ZvFpa.QUALITY_FLAG    = bicas.proc.L1L2.LfrSwmProcessing.normalize_ZV_empty(...
                 L, settingValue, settingKey, nRecords, ...
                 InSci.ZvFpa.QUALITY_FLAG,    'QUALITY_FLAG');
             
@@ -145,12 +239,12 @@ classdef lfr
 
 
 
-        % Processing function. Convert LFR CDF data to PreDc.
+        % Convert LFR CDF data to PreDc.
         %
         % IMPLEMENTATION NOTE: Does not modify InSci in an attempt to save RAM
         % (should help MATLAB's optimization). Unclear if actually works.
         %
-        function PreDc = process_CDF_to_PreDc(InSci, inSciDsi, HkSciTime, Bso, L)
+        function PreDc = process_CDF_to_PreDc(obj, InSci, HkSciTime, Bso, L)
             %
             % PROBLEM: Hard-coded CDF data types (MATLAB classes).
             % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining
@@ -171,15 +265,11 @@ classdef lfr
 
 
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inSciDsi);
-
-
-
             %============
             % Set iLsfZv
             %============
-            if     C.isLfrSbm1   zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
-            elseif C.isLfrSbm2   zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
+            if     obj.inputSci.isLfrSbm1   zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
+            elseif obj.inputSci.isLfrSbm2   zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
             else                 zvILsf = InSci.Zv.FREQ + 1;
                 % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
                 % index values (1=F0) used in loaded RCT data structs.
@@ -218,8 +308,8 @@ classdef lfr
             nCdfSamplesPerRecord = irf.assert.sizes(...
                 InSci.Zv.V, [nRecords, -1], ...
                 E,          [nRecords, -1, 2]);
-            if C.isLfrSurvSwf   assert(nCdfSamplesPerRecord == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
-            else                assert(nCdfSamplesPerRecord == 1)
+            if obj.inputSci.isLfrSurvSwf   assert(nCdfSamplesPerRecord == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
+            else                           assert(nCdfSamplesPerRecord == 1)
             end
 
 
@@ -298,26 +388,27 @@ classdef lfr
             Ga.OBS_ID    = InSci.Ga.OBS_ID;
             Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
             
-            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, C.isLfrSurvSwf, true, false);
+            PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
 
         end    % process_CDF_to_PreDc
 
 
 
-        function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi, L)
-            % NOTE: Using __TDS__ function.
-            OutSci = bicas.proc.L1L2.tds.process_PostDc_to_CDF(...
-                SciPreDc, SciPostDc, outputDsi, L);
+        function [OutSci] = process_PostDc_to_CDF(obj, SciPreDc, SciPostDc)
+            % NOTE: Most processing is done in function shared between LFR and
+            %       TDS.
+            OutSci = bicas.proc.L1L2.process_PostDc_to_CDF(...
+                SciPreDc, SciPostDc, obj.outputDsi);
 
             OutSci.Zv.BW = SciPreDc.Zv.BW;
         end
         
         
         
-    end    % methods(Static)
-    
-    
-    
+    end    % methods(Access=private)
+
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
@@ -332,7 +423,8 @@ classdef lfr
         % ARGUMENTS
         % =========
         % ZvFpa1
-        %   zVar-like FPA. Column vector (Nx1) or empty.
+        %   ZV-like FPA. Column vector (Nx1) or empty.
+        %
         function ZvFpa2 = normalize_ZV_empty(...
                 L, settingValue, settingKey, nRecords, ZvFpa1, zvName)
 
@@ -365,9 +457,11 @@ classdef lfr
 
             irf.assert.sizes(ZvFpa2, [NaN])
         end
-        
-        
-        
+
+
+
     end    % methods(Static, Access=private)
+
+
 
 end

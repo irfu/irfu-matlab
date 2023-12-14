@@ -17,15 +17,15 @@ classdef utils
 %   PROPOSAL: Move functions that are entirely used within a group/package of processing modes
 %           (L1L2, L2L2, L2L3) to their respective group.
 %       Ex: L1L2
-%           Ex: lfr.m, dts.m: derive_DELTA_PLUS_MINUS
-%           Ex: lfr.m:        bicas.proc.utils.set_NaN_rows
-%           Ex: tds.m:        set_NaN_end_of_rows
+%           Ex: LFR, TDS: derive_DELTA_PLUS_MINUS
+%           Ex: LFR:      bicas.proc.utils.set_NaN_rows
+%           Ex: TDS:      set_NaN_end_of_rows
 %           Ex: dc.m:
 %                   select_row_range_from_cell_comps
 %                   assert_cell_array_comps_have_same_N_rows (used by select_row_range_from_cell_comps)
 %                   convert_matrix_to_cell_array_of_vectors
-%           Ex: L1L2.m:       ACQUISITION_TIME_to_TT2000
-%                             (not used in processing function directly, only indirectly)
+%           Ex: L1L2.m:   ACQUISITION_TIME_to_TT2000
+%                         (not used in processing directly, only indirectly)
 %       CON: Useful to have all SMALL functions collected.
 %       CON: Can forget that a function exists if it is needed somewhere else.
 %       TODO-DEC: Move to subfile if only used there instead?

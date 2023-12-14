@@ -446,7 +446,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    Swml = bicas.swm.get_SWML(Bso, L);
+    Swml = bicas.swm.get_SWML(Bso);
     
     
     

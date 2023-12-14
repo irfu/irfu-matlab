@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L2L3.
+% matlab.unittest automatic test code for bicas.proc.L2L3.L3OsrDsrSwmProcessing.
 %
 % NOTE: Very low code coverage.
 %
@@ -7,7 +7,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-08, from older test code.
 %
-classdef L2L3___UTEST < matlab.unittest.TestCase
+classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
 
 
 
@@ -144,11 +144,11 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
                  90, 255,     0,     0, 1; ...
                 100, 255,     0,     0, 1; ...
             ];
-            bicas.proc.L2L3___UTEST.test(testCase, DATA_OSR, DATA_DSR)
+            bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, DATA_OSR, DATA_DSR)
             
             % Normal bin
             % Test merging QUALITY_BITMASK bits.
-            bicas.proc.L2L3___UTEST.test(testCase, ...
+            bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ...
                 [ ...
                  -1,   2,   2, 1,  8,   1,2,3, -1,-2,-3; ...
                   0,   2,   2, 2, 16,   1,2,3, -1,-2,-3; ...
@@ -263,7 +263,7 @@ classdef L2L3___UTEST < matlab.unittest.TestCase
             [OutEfieldOsr,  OutEfieldDsr, ...
              OutScpotOsr,   OutScpotDsr, ...
              OutDensityOsr, OutDensityDsr] ...
-                = bicas.proc.L2L3.process_L2_to_L3(InLfrCwf, Ec, Bso, L);
+                = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InLfrCwf, Ec, Bso, L);
             %##################################################################
 
             % OSR

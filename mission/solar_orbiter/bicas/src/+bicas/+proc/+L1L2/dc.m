@@ -1,6 +1,6 @@
 %
-% Collection of processing function for demultiplexing and calibrating (DC), and
-% related code (except bicas.proc.L1L2.demuxer).
+% Collection of processing functions for demultiplexing and calibrating (DC),
+% and related code (except bicas.proc.L1L2.demuxer).
 %
 % DC = Demux (demultiplex) & Calibrate
 %
@@ -32,8 +32,8 @@ classdef dc
         
         
         
-        % Processing function. Derive PostDc from PreDc, i.e. demux, calibrate
-        % dat, and set quality variables.
+        % Derive PostDc from PreDc, i.e. demux, calibrate data, and set quality
+        % variables.
         %
         % NOTE: Public function as opposed to the other demuxing/calibration
         % functions.

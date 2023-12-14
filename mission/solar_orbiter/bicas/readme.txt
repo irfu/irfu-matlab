@@ -277,6 +277,8 @@ SWM, S/W mode
     (2) Class bicas.swm.SoftwareMode.
 SWML
     Class bicas.swm.SoftwareModeList.
+SWMP
+    Class bicas.proc.SwmProcessing and subclasses thereof.
 TBW
     To Bash Wrapper.
 TF

@@ -21,11 +21,10 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
             function test(l1l2Enabled, l2l2Enabled, l2l3Enabled)
                 % Tests (1) non-crash, (2) class of return value.
-                L = bicas.Logger('none', false);
                 Bso = bicas.swm.get_SWML___UTEST.get_BSO(...
                     l1l2Enabled, l2l2Enabled, l2l3Enabled);
 
-                Swml = bicas.swm.get_SWML(Bso, L);
+                Swml = bicas.swm.get_SWML(Bso);
 
                 testCase.verifyClass(Swml, 'bicas.swm.SoftwareModeList')
             end

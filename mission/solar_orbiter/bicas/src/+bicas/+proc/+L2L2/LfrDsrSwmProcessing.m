@@ -1,22 +1,48 @@
 %
-% Code for processing functions L2-->L2, i.e. downsampling
-% SOLO_L2_RPW-LFR-SURV-CWF-E.
+% SWMP for downsampling SOLO_L2_RPW-LFR-SURV-CWF-E L2-->L2 (unofficial
+% output datasets).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-05-18
 %
-classdef L2L2    
+classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
     % PROPOSAL: Automatic test code.
-    
-    
-    
-    %#######################
-    %#######################
-    % PUBLIC STATIC METHODS
-    %#######################
-    %#######################
-    methods(Static)
+
+
+
+    %#########################
+    %#########################
+    % PUBLIC INSTANCE METHODS
+    %#########################
+    %#########################
+    methods(Access=public)
+        
+        
+        
+        % OVERRIDE
+        function OutputDatasetsMap = production_function(obj, ...
+            InputDatasetsMap, rctDir, NsoTable, Bso, L)
+            
+            InLfrCwf = InputDatasetsMap('OSR_cdf');
+            
+            OutLfrCwfDsr = bicas.proc.L2L2.LfrDsrSwmProcessing.process_LFRCWF_to_DSR(InLfrCwf, Bso, L);
+            
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('DSR_cdf') = OutLfrCwfDsr;
+        end
+
+
+
+    end    % methods(Access=public)
+
+
+
+    %########################
+    %########################
+    % PRIVATE STATIC METHODS
+    %########################
+    %########################
+    methods(Static, Access=private)
         
         
         
@@ -44,23 +70,6 @@ classdef L2L2
             %   NOTE: Positive leap seconds are not a problem.
             %   PROPOSAL: Split bins WITH leap seconds? Then there is no
             %             problem(?).
-            %
-            % TODO-DEC: S/w mode?
-            %   PROPOSAL: Separate mode
-            %             SOLO_L2_LFR-RPW-CWF-E --> DSR
-            %       PRO: Can process files separately ==> faster.
-            %       CON: Two separate modes require one SOLO_L2_LFR-RPW-CWF-E
-            %            dataset.
-            %           PRO: Can not automatically identify exactly one
-            %               s/w mode from a set of input datasets as BPTD (external
-            %               to BICAS) assumes for .
-            %           PRO?!!: Has consequences for batch processing code?
-            %
-            %   PROPOSAL: Merged L1/L1R-->L2 mode 
-            %             SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DSR).
-            %       PRO: Fewer modes for batch processing code to handle.
-            %            ==> Faster identification of files+modes.
-            %       PRO: More automatic synching of OSR and DSR versions.
             
             tTicToc = tic();
 
@@ -138,7 +147,7 @@ classdef L2L2
                 L);
             OutLfrCwfDsr.Zv.EDC    = EdcDsrFpa.cast('single');
             OutLfrCwfDsr.Zv.EDCSTD = EdcstdDsrFpa.cast('single');
-            
+
             
 
             bicas.log_speed_profiling(L, ...
@@ -152,7 +161,7 @@ classdef L2L2
 
 
 
-    end    % methods(Static)
+    end    % methods(Static, Access=private)
 
 
 

@@ -128,7 +128,7 @@ function execute_SWM(...
         %==========================
         % CALL PRODUCTION FUNCTION
         %==========================
-        OutputDatasetsMap = SwmInfo.prodFunc(InputDatasetsMap, rctDir, NsoTable);
+        OutputDatasetsMap = SwmInfo.Swmp.production_function(InputDatasetsMap, rctDir, NsoTable, Bso, L);
     else
         L.logf('warning', ...
             'Disabled processing due to setting %s.', settingNpefKey)

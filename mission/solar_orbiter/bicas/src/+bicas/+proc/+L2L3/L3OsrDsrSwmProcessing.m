@@ -1,17 +1,11 @@
 %
-% Class that collects "processing functions" as public static methods. Only
-% covers processing L2-->L3.
+% SWMP for processing L2 LFR CWF to L3 OSR+DSR density, E field, and ScPot.
 %
 %
 % CODE CONVENTIONS
 % ================
 % - It is implicit that arrays/matrices representing CDF data, or "CDF-like"
 %   data, use the first MATLAB array index to represent CDF records.
-%
-%
-% DEFINITIONS, NAMING CONVENTIONS
-% ===============================
-% See readme.txt.
 %
 %
 % BUG?
@@ -22,12 +16,19 @@
 % At the same time, bNotUsed is used for creating the OSR template which is used
 % for all datasets (DENSITY, EFIELD, SCPOT).
 %   InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
-%   TemplateOsr = bicas.proc.L2L3.get_OSR_template(InLfrCwf);
-% 
+%   TemplateOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_OSR_template(InLfrCwf);
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef L2L3
+classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
+% PROPOSAL: Automatic test code.
+%   NOTE: There are limited tests.
+%
+% PROPOSAL: Better name.
+%   OSR, DSR
+%   L3
+%   Density, Efield, ScPot = DES
 %
 % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT.
 %   PRO: Faster
@@ -37,24 +38,61 @@ classdef L2L3
 %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed after
 %        the latter.
 %
-% NOTE: Class only has one function.
-%   PROPOSAL: Convert to function file.
-%
-% PROPOSAL: Split up customization of 2x3 datasets into separate functions.
-%   PROPOSAL: Instead of sharing initial "template variables", have function for
-%             generating those variables.
+% PROPOSAL: Instead of sharing initial "template variables", have function for
+%           generating those variables.
 
 
 
-    %#############################
-    %#############################
-    methods(Static, Access=public)
-    %#############################
-    %#############################
+    %#########################
+    %#########################
+    % PUBLIC INSTANCE METHODS
+    %#########################
+    %#########################
+    methods(Access=public)
 
-    
-    
-        % Processing function for processing L2-->L3 (not VHT).
+
+
+        % OVERRIDE
+        function OutputDatasetsMap = production_function(obj, ...
+            InputDatasetsMap, rctDir, NsoTable, Bso, L)
+            
+            InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
+
+            Ec = bicas.proc.L2L3.ExternalCodeImplementation();
+
+            %==============
+            % Process data
+            %==============
+            [EfieldOsrCdf,  EfieldDsrCdf, ...
+             ScpotOsrCdf,   ScpotDsrCdf, ...
+             DensityOsrCdf, DensityDsrCdf] = ...
+                bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InputLfrCwfCdf, Ec, Bso, L);
+
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('EFIELD_OSR_cdf')  = EfieldOsrCdf;
+            OutputDatasetsMap('EFIELD_DSR_cdf')  = EfieldDsrCdf;
+            OutputDatasetsMap('SCPOT_OSR_cdf')   = ScpotOsrCdf;
+            OutputDatasetsMap('SCPOT_DSR_cdf')   = ScpotDsrCdf;
+            OutputDatasetsMap('DENSITY_OSR_cdf') = DensityOsrCdf;
+            OutputDatasetsMap('DENSITY_DSR_cdf') = DensityDsrCdf;
+        end
+
+
+
+    end    % methods(Access=public)
+
+
+
+    %#######################
+    %#######################
+    % PUBLIC STATIC METHODS
+    %#######################
+    %#######################
+    methods(Static)
+
+
+
+        % ~Process L2-->L3 (not VHT).
         %
         % NOTE: Function assumes that (some) fill values for integer-valued
         % zVariables are identical in input and output datasets.
@@ -166,7 +204,7 @@ classdef L2L3
             % Misc. variables shared between datasets and later modified for
             % specific datasets
             %================================================================
-            TemplateOsr = bicas.proc.L2L3.get_OSR_template(InLfrCwf);
+            TemplateOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_OSR_template(InLfrCwf);
             [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
                 InLfrCwf, ...
                 BIN_LENGTH_WOLS_NS, ...
@@ -181,28 +219,41 @@ classdef L2L3
             %=======================================
             % Generate data structures for datasets
             %=======================================            
-            OutEfieldOsr  = bicas.proc.L2L3.OSR_efield( TemplateOsr, R.EdcSrfMvpmFpa,                       gaEfieldScpot_Misc_calibration_versions);
-            OutScpotOsr   = bicas.proc.L2L3.OSR_scpot(  TemplateOsr, R.ScpotVoltFpa,  R.PspVoltFpa,         gaEfieldScpot_Misc_calibration_versions);
-            OutDensityOsr = bicas.proc.L2L3.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   R.NeScpQualityBitFpa, gaDensity_Misc_calibration_versions);
+            OutEfieldOsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_efield( TemplateOsr, R.EdcSrfMvpmFpa,                       gaEfieldScpot_Misc_calibration_versions);
+            OutScpotOsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_scpot(  TemplateOsr, R.ScpotVoltFpa,  R.PspVoltFpa,         gaEfieldScpot_Misc_calibration_versions);
+            OutDensityOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   R.NeScpQualityBitFpa, gaDensity_Misc_calibration_versions);
             %
-            OutEfieldDsr  = bicas.proc.L2L3.DSR_efield( TemplateDsr, OutEfieldOsr.Ga,  R.EdcSrfMvpmFpa,                                    iRecordsInBinCa, L);
-            OutScpotDsr   = bicas.proc.L2L3.DSR_scpot(  TemplateDsr, OutScpotOsr.Ga,   R.ScpotVoltFpa, R.PspVoltFpa,                       iRecordsInBinCa, L);
-            OutDensityDsr = bicas.proc.L2L3.DSR_density(TemplateDsr, OutDensityOsr.Ga, R.NeScpCm3Fpa, OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa, L);
+            OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( TemplateDsr, OutEfieldOsr.Ga,  R.EdcSrfMvpmFpa,                                    iRecordsInBinCa, L);
+            OutScpotDsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_scpot(  TemplateDsr, OutScpotOsr.Ga,   R.ScpotVoltFpa, R.PspVoltFpa,                       iRecordsInBinCa, L);
+            OutDensityDsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_density(TemplateDsr, OutDensityOsr.Ga, R.NeScpCm3Fpa, OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa, L);
 
 
 
             nRecordsOsr = size(InLfrCwf.Zv.Epoch,   1);
             nRecordsDsr = size(TemplateDsr.Zv.Epoch, 1);
             bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L3.process_L2_to_L3', tTicToc, ...
+                'bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', tTicToc, ...
                 nRecordsOsr, 'OSR record')
             bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L3.process_L2_to_L3', tTicToc, ...
+                'bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', tTicToc, ...
                 nRecordsDsr, 'DSR record')
         end    % process_L2_to_L3
-        
-        
-        
+
+
+
+    end    % methods(Static)
+
+
+
+    %########################
+    %########################
+    % PRIVATE STATIC METHODS
+    %########################
+    %########################
+    methods(Static, Access=private)
+
+
+
         % Starting template for OSR datasets. Return value is modified 
         function TemplateOsr = get_OSR_template(InLfrCwf)
             Ga = struct();
@@ -331,7 +382,7 @@ classdef L2L3
 
 
 
-    end    % methods(Static, Access=public)
+    end    % methods(Static, Access=private)
 
 
 

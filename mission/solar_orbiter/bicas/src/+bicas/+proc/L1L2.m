@@ -1,6 +1,5 @@
 %
-% Class that collects "processing functions" as public static methods. Only
-% covers processing L1/L1R-->L2.
+% Class that collects miscellaneous functions for processing L1/L1R-->L2.
 %
 % This class is not meant to be instantiated.
 %
@@ -9,11 +8,6 @@
 % ================
 % - It is implicit that arrays/matrices representing CDF data, or "CDF-like"
 %   data, use the first MATLAB array index to represent CDF records.
-%
-%
-% DEFINITIONS, NAMING CONVENTIONS
-% ===============================
-% See readme.txt.
 %
 %
 % SOME INTERMEDIATE PROCESSING DATA FORMATS
@@ -62,10 +56,8 @@ classdef L1L2
 
 
 
-        % Processing function
-        %
-        % NOTE: Only converts relevant HK ZVs to be on SCI Epoch. Other code
-        %       later decides whether to actually use it (BDM).
+        % Only converts relevant HK ZVs to be on SCI Epoch. Other code later
+        % decides whether to actually use it (BDM).
         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, Bso, L)
             % PROPOSAL: Separate function for the actual interpolation of data
             %           (changing time array HK-->SCI).
@@ -377,6 +369,145 @@ classdef L1L2
             isSweeping = isSweeping1 | isSweeping2;
             isSweepingFpa = bicas.utils.FPArray(isSweeping);
         end
+
+
+
+        % Convert PreDc+PostDc to something that 
+        % (1) represents a TDS dataset (hence the name), and
+        % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
+        %
+        % This function only changes the data format (and selects data to send
+        % to CDF).
+        %
+        % IMPLEMENTATION NOTE: This method is used by both LFR and TDS since the
+        % L2 output datasets are very similar, despite that the input L1/L1R LFR
+        % & TDS datasets are very dissimilar.
+        %
+        function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi)
+            % PROPOSAL: Rename to something shared between LFR and TDS, then use
+            %           two wrappers.
+            %   PROPOSAL: process_PostDc_to_LFR_TDS_CDF_core
+            %   TODO-DEC: Put in which future file?
+
+            % ASSERTIONS
+            assert(isa(SciPreDc,  'bicas.proc.L1L2.PreDc'))
+            assert(isa(SciPostDc, 'bicas.proc.L1L2.PostDc'))
+
+
+
+            nRecords                 = size(SciPreDc.Zv.Epoch, 1);
+            nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
+
+            OutSci = [];
+
+            OutSci.Zv.Epoch              = SciPreDc.Zv.Epoch;
+            OutSci.Zv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
+            OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
+            OutSci.Zv.QUALITY_FLAG       = SciPostDc.Zv.QUALITY_FLAG;
+            OutSci.Zv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
+            OutSci.Zv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
+            OutSci.Zv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
+
+            % NOTE: Convert aampere --> nano-aampere
+            OutSci.Zv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
+            OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
+            OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
+
+            OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
+            OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
+
+
+
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(outputDsi);
+
+            % NOTE: The two cases are different in the indexes they use for
+            % OutSciZv.
+            if C.isCwf
+
+                % ASSERTIONS
+                assert(nSamplesPerRecordChannel == 1, ...
+                    'BICAS:Assertion:IllegalArgument', ...
+                    ['Number of samples per CDF record is not 1, as expected.', ...
+                    ' Bad input CDF?'])
+                irf.assert.sizes(...
+                    OutSci.Zv.QUALITY_BITMASK, [nRecords, 1], ...
+                    OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
+
+                % Try to pre-allocate to save RAM/speed up.
+                tempNaN = nan(nRecords, 3);
+                OutSci.Zv.VDC = tempNaN;
+                OutSci.Zv.EDC = tempNaN;
+                OutSci.Zv.EAC = tempNaN;
+
+                OutSci.Zv.VDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
+                OutSci.Zv.VDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
+                OutSci.Zv.VDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+
+                OutSci.Zv.EDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
+                OutSci.Zv.EDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
+                OutSci.Zv.EDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+
+                OutSci.Zv.EAC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
+                OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
+                OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+
+            elseif C.isSwf
+
+                if     C.isLfr
+                    SAMPLES_PER_RECORD_CHANNEL = ...
+                        solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;
+                elseif C.isTds
+                    SAMPLES_PER_RECORD_CHANNEL = ...
+                        solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD;
+                else
+                    error(...
+                        'BICAS:Assertion', ...
+                        'Illegal DSI classification.')
+                end
+
+                % ASSERTION
+                assert(nSamplesPerRecordChannel == SAMPLES_PER_RECORD_CHANNEL, ...
+                    'BICAS:Assertion:IllegalArgument', ...
+                    ['Number of samples per CDF record (%i) is not', ...
+                    ' %i, as expected. Bad Input CDF?'], ...
+                    nSamplesPerRecordChannel, ...
+                    SAMPLES_PER_RECORD_CHANNEL)
+
+                % Try to pre-allocate to save RAM/speed up.
+                tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
+                OutSci.Zv.VDC = tempNaN;
+                OutSci.Zv.EDC = tempNaN;
+                OutSci.Zv.EAC = tempNaN;
+
+                OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
+                OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
+                OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+
+                OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
+                OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
+                OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+
+                OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
+                OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
+                OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+
+            else
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'Function can not produce outputDsi=%s.', outputDsi)
+            end
+
+
+
+            % ASSERTION
+            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
+            % NOTE: Not really necessary since the list of ZVs will be checked
+            % against the master CDF?
+            irf.assert.struct(OutSci.Zv, {...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
+                'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
+
+        end    % process_PostDc_to_CDF
 
 
 
