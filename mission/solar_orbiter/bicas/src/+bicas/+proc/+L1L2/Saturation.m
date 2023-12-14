@@ -238,7 +238,8 @@ classdef Saturation
 
 
 
-        % NOTE: 2023-12-01: UNFINISHED AND UNUSED, BUT IS PLANNED TO BE USED.
+        % NOTE: 2023-12-14: FINISHED BUT CURRENTLY UNUSED, BUT IS PLANNED TO BE
+        % USED.
         %
         % Given ZV-like variables, get saturation bits for quality bitmask.
         %
@@ -251,8 +252,6 @@ classdef Saturation
                 obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
                 bdmFpa, dlrFpa, lrx, isAchgFpa, hasSwfFormat, L)
 
-            % TODO: Test code
-
             % ASSERTIONS
             bicas.utils.assert_ZV_Epoch(tt2000Ar)
             assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
@@ -260,9 +259,11 @@ classdef Saturation
             assert(strcmp(dlrFpa.mc, 'logical'))
             assert(isa(lrx, 'double'))
             nRows = irf.assert.sizes(...
-                bdmFpa, [-1], ...
-                dlrFpa, [-1], ...
-                lrx,    [-1]);
+                tt2000Ar,                 [-1], ...
+                zvNValidSamplesPerRecord, [-1], ...
+                bdmFpa,                   [-1], ...
+                dlrFpa,                   [-1], ...
+                lrx,                      [-1]);
             assert(AsrSamplesAVoltSrm.nRows == nRows)
 
             %===================================================================

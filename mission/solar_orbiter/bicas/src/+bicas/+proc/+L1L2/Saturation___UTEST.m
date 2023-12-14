@@ -182,9 +182,240 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-%         function test_get_voltage_saturation_quality_bit(testCase)
-%             % TODO
-%         end
+        function test_get_voltage_saturation_quality_bit(testCase)
+            
+            function test(V, expIsSaturatedAr)
+                % Modify/normalize arguments.
+                V.tt2000Ar     = int64(V.tt2000Ar);
+                V.dlrFpa       = bicas.utils.FPArray(logical(V.dlr),    'FILL_POSITIONS', isnan(V.dlr));
+                V.bdmFpa       = bicas.utils.FPArray(uint8(V.bdm),      'FILL_POSITIONS', isnan(V.bdm));
+                V.isAchgFpa    = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
+                V.hasSwfFormat = logical(V.hasSwfFormat);
+                
+                expIsSaturatedAr = logical(expIsSaturatedAr);
+                
+                L = bicas.Logger('none', false);
+                S = bicas.proc.L1L2.Saturation___UTEST.init_object(...
+                    V.cwfSlidingWindowLengthSec, ...
+                    V.tsfFractionThreshold, ...
+                    V.thresholdAVoltDcSingle, ...
+                    V.thresholdAVoltDcDiff, ...
+                    V.thresholdAVoltAclg, ...
+                    V.thresholdAVoltAchg);
+                
+                % CALL FUNCTION
+                actIsSaturatedAr = S.get_voltage_saturation_quality_bit(...
+                    V.tt2000Ar, V.AsrSamplesAVoltSrm, V.zvNValidSamplesPerRecord, ...
+                    V.bdmFpa, V.dlrFpa, V.lrx, V.isAchgFpa, V.hasSwfFormat, L);
+
+                testCase.assertEqual(actIsSaturatedAr, expIsSaturatedAr)
+            end
+            
+            C = bicas.proc.L1L2.SignalSourceId.C;
+            ALL_ENABLED = true;
+            %ALL_ENABLED = false;
+
+            if ALL_ENABLED
+                % Zero records.
+                for hasSwfFormat = 0:1
+                    V = [];
+                    V.cwfSlidingWindowLengthSec = 10;
+                    V.tsfFractionThreshold      = 0.5;
+                    V.thresholdAVoltDcSingle    = 1;
+                    V.thresholdAVoltDcDiff      = 2;
+                    V.thresholdAVoltAclg        = 3;
+                    V.thresholdAVoltAchg        = 4;
+                    %
+                    V.tt2000Ar                  = zeros(0, 1);
+                    V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
+                    V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s, zeros(0, 1))
+                    V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid.s, zeros(0, 1))
+                    V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid.s, zeros(0, 1))
+                    V.zvNValidSamplesPerRecord  = zeros(0, 1);
+                    V.bdm                       = zeros(0, 1);
+                    V.dlr                       = zeros(0, 1);
+                    V.lrx                       = zeros(0, 1);
+                    V.isAchg                    = zeros(0, 1);
+                    V.hasSwfFormat              = logical(hasSwfFormat);
+
+                    test(V, false(0,1));
+                end
+            end
+            
+            %#####
+            % CWF
+            %#####
+            % One subsequence
+            % CWF, BDM=0, LRX=1/DC diff.
+            if ALL_ENABLED
+                V = [];
+                V.cwfSlidingWindowLengthSec = 2.1;
+                V.tsfFractionThreshold      = 0.4;
+                V.thresholdAVoltDcSingle    = 1;
+                V.thresholdAVoltDcDiff      = 2;
+                V.thresholdAVoltAclg        = 3;
+                V.thresholdAVoltAchg        = 4;
+                %
+                V.tt2000Ar                  = [10 11 12]' * 1e9;
+                V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 3, 'EMPTY');
+                V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s,  [2 0 2]')
+                V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid.s, [2 0 2]'+1)
+                V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid.s, [2 0 2]'+1)
+                V.zvNValidSamplesPerRecord  = [1 1 1]';
+                V.bdm                       = [0 0 0]';
+                V.dlr                       = [0 0 0]';
+                V.lrx                       = [1 1 1]';
+                V.isAchg                    = [0 0 0]';
+                V.hasSwfFormat              = false;
+
+                test(V, [1 1 1]');
+            end
+            
+            % One subsequence
+            % Separate episodes of saturation on different channels.
+            % CWF, BDM=0, LRX=1/AC diff.
+            if ALL_ENABLED
+                V = [];
+                V.cwfSlidingWindowLengthSec = 2.1;
+                V.tsfFractionThreshold      = 0.6;
+                V.thresholdAVoltDcSingle    = 1;
+                V.thresholdAVoltDcDiff      = 2;
+                V.thresholdAVoltAclg        = 3;
+                V.thresholdAVoltAchg        = 4;
+                %
+                V.tt2000Ar                  = [10:19]' * 1e9;
+                V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 10, 'EMPTY');
+                V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s,  [2 2 0 0 0 0 0 0 0 0]')
+                V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid.s, [0 0 0 2 2 0 0 0 0 0]'+2)
+                V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid.s, [0 0 0 0 0 0 2 2 0 0]'+2)
+                V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1 1 1]';
+                V.bdm                       = [0 0 0 0 0 0 0 0 0 0]';
+                V.dlr                       = [0 0 0 0 0 0 0 0 0 0]';
+                V.lrx                       = [0 0 0 0 0 0 0 0 0 0]';
+                V.isAchg                    = [0 0 0 0 0 0 0 0 0 0]';
+                V.hasSwfFormat              = false;
+
+                test(V, [1 1 0 1 1 0 1 1 0 0]');
+            end
+            
+            % Multiple subsequences
+            % Separate episodes of saturation on different channels.
+            % CWF, BDM=0, LRX=1/AC diff.
+            if ALL_ENABLED
+                V = [];
+                V.cwfSlidingWindowLengthSec = 2.1;
+                V.tsfFractionThreshold      = 0.6;
+                V.thresholdAVoltDcSingle    = 1;
+                V.thresholdAVoltDcDiff      = 2;
+                V.thresholdAVoltAclg        = 3;
+                V.thresholdAVoltAchg        = 4;
+                %
+                V.tt2000Ar                  = [10:17]' * 1e9;
+                V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 8, 'EMPTY');
+                V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s,  [0 0 2 2 0 0 0 0]')
+                V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid.s, [0 0 0 0 0 0 2 2]'+2)
+                V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid.s, [0 0 0 0 0 0 0 0]'+2)
+                V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid.s,  [2 2 0 0 0 0 0 0]')
+                V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid.s,  [0 0 0 0 2 2 0 0]')
+                V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1]';
+                V.bdm                       = [0 0 0 0 4 4 4 4]';
+                V.dlr                       = [0 0 0 0 0 0 0 0]';
+                V.lrx                       = [1 1 1 1 1 1 1 1]';
+                V.isAchg                    = [0 0 0 0 0 0 0 0]';
+                V.hasSwfFormat              = false;
+
+                test(V, [0 0 1 1 1 1 0 0]');
+            end
+
+            %#####
+            % SWF
+            %#####
+            % One subsequence
+            % SWF, BDM=0, LRX=0/AC diff
+            % Saturated DC single
+            if ALL_ENABLED
+                V = [];
+                V.cwfSlidingWindowLengthSec = 2.1;   % Should be irrelevant since SWF.
+                V.tsfFractionThreshold      = 0.5;
+                V.thresholdAVoltDcSingle    = 1;
+                V.thresholdAVoltDcDiff      = 3;
+                V.thresholdAVoltAclg        = 5;
+                V.thresholdAVoltAchg        = 7;
+                %
+                V.tt2000Ar                  = [10 11]' * 1e9;
+                V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 2, 'EMPTY');
+                V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s, ...
+                    [
+                        [2 2 2 0 0 0 0] + 0; ...   % Saturated
+                        [0 0 0 2 2 2 2] + 0;
+                    ])
+                V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid.s, ...
+                    [
+                        [0 0 0 0 0 0 0] + 4; ...
+                        [0 0 0 2 2 2 2] + 6;
+                    ]+1)
+                V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid.s, ...
+                    [
+                        [0 0 0 0 0 0 0] + 4; ...
+                        [0 0 0 2 2 2 2] + 6;
+                    ]+1)
+                V.zvNValidSamplesPerRecord  = [5 5]';
+                V.bdm                       = [0 0]';
+                V.dlr                       = [0 0]';
+                V.lrx                       = [0 0]';
+                V.isAchg                    = [0 1]';
+                V.hasSwfFormat              = true;
+
+                test(V, [1 0]');
+            end
+
+            % One subsequence
+            % SWF, BDM=0, LRX=0/AC diff, LG+HG.
+            % Varying snapshot lengths.
+            % Saturated AC diffs
+            if ALL_ENABLED
+                V = [];
+                V.cwfSlidingWindowLengthSec = 2.1;   % Should be irrelevant since SWF.
+                V.tsfFractionThreshold      = 0.5;
+                V.thresholdAVoltDcSingle    = 1;
+                V.thresholdAVoltDcDiff      = 3;
+                V.thresholdAVoltAclg        = 5;
+                V.thresholdAVoltAchg        = 7;
+                %
+                V.tt2000Ar                  = [10:13]' * 1e9;
+                V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 4, 'EMPTY');
+                V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s, ...
+                    [
+                        [0 0 0 0 0 0 0] + 0; ...
+                        [0 2 2 2 2 2 2] + 0; ...
+                        [0 0 0 0 0 0 0] + 0; ...
+                        [0 0 0 2 2 2 2] + 0;
+                    ])
+                V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid.s, ...
+                    [
+                        [2 0 0 0 0 0 0] + 4; ...   % Saturated.
+                        [0 2 2 2 2 2 2] + 4; ...
+                        [2 2 2 0 0 0 0] + 6; ...   % Saturated.
+                        [0 0 0 2 2 2 2] + 6;
+                    ]+1)
+                V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid.s, ...
+                    [
+                        [0 0 0 0 0 0 0] + 4; ...
+                        [0 2 2 2 2 2 2] + 4; ...
+                        [0 0 0 0 0 0 0] + 6; ...
+                        [0 0 0 2 2 2 2] + 6;
+                    ]+1)
+                V.zvNValidSamplesPerRecord  = [1 1 3 3]';
+                V.bdm                       = [0 0 0 0]';
+                V.dlr                       = [0 0 0 0]';
+                V.lrx                       = [0 0 0 0]';
+                V.isAchg                    = [0 0 1 1]';
+                V.hasSwfFormat              = true;
+
+                test(V, [1 0 1 0]');
+            end
+
+        end    % test_get_voltage_saturation_quality_bit
 
 
 
