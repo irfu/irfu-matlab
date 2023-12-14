@@ -377,6 +377,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2020-07-27T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2020-07-27T01:14:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Note: Thruster firing occurs during period when data is labelled as saturated, which means that it is deleted in L3 SCPOT anyway and could not be seen there, even it was not labelled as thruster firing.</description>
+        </event>
+        <event>
             <startTimeUtc>2020-08-01T12:39:46</startTimeUtc>
             <stopTimeUtc> 2020-08-01T12:49:43</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
