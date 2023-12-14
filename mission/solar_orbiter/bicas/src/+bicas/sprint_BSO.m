@@ -34,20 +34,20 @@ function str = sprint_BSO(Bso)
         '==============\n']);
     
     % Values seem sorted from the method, but sort again just to be sure.
-    keyList      = sort(Bso.get_keys());   
-    lengthMaxKey = max(cellfun(@length, keyList));
+    keyCa        = sort(Bso.get_keys());   
+    lengthMaxKey = max(cellfun(@length, keyCa));
     
     
     
-    for iKey = 1:length(keyList)
-        key = keyList{iKey};
+    for iKey = 1:length(keyCa)
+        key = keyCa{iKey};
         Skv = Bso.get_SKV(key);
         
         %======================================================================
         % Derive value strings for all historical values: present and previous
         % ones
         %======================================================================
-        strValueList = {};   % Must be reset for every key.
+        strValueCa = {};   % Must be reset for every key.
         for iVs = 1:Skv.N_values()    % Iterate over versions of the same setting.
             value = Skv.valuesCa{iVs};
             try
@@ -60,7 +60,7 @@ function str = sprint_BSO(Bso)
                     ' This is likely a bug.'], ...
                     key)
             end
-            strValueList{iVs} = displayStr;
+            strValueCa{iVs} = displayStr;
         end
         
         valueStatusStr = irf.utils.translate({...
@@ -73,7 +73,7 @@ function str = sprint_BSO(Bso)
         
         str = [str, sprintf(...
             ['%-6s  %-', int2str(lengthMaxKey),'s = %s\n'], ...
-            valueStatusStr, key, strValueList{end})];
+            valueStatusStr, key, strValueCa{end})];
         
     end
     

@@ -116,7 +116,7 @@ classdef Saturation
         % RETURN VALUE
         % ============
         % tsfAr
-        %       float. Same size as samplesAVolt. Whether corresponding elements
+        %       Float. Same size as samplesAVolt. Whether corresponding elements
         %       in samplesAVolt are deemed to be outside the relevant
         %       thresholds. False is returned for all input elements if there
         %       are no thresholds for this kind of data (e.g. for non-ASR
@@ -190,7 +190,7 @@ classdef Saturation
         % ARGUMENTS
         % =========
         % samplesAVolt
-        %   Snapshot samples. (iSampleInSnapshot).
+        %   Snapshot samples. (1, iSampleInSnapshot) = row vector.
         %   NOTE: Should only contain the length of the snapshot. No padding at
         %         the end of array.
         %
@@ -200,7 +200,7 @@ classdef Saturation
         %       Logical. Scalar.
         %
         function isSaturated = get_snapshot_saturation(obj, samplesAVolt, Ssid, isAchg)
-            irf.assert.sizes(samplesAVolt, [1, NaN, 1])
+            irf.assert.sizes(samplesAVolt, [1, NaN, 1])     % Row vector.
 
             tsfAr = obj.get_TSF(samplesAVolt, Ssid, isAchg);
 
@@ -307,23 +307,23 @@ classdef Saturation
                 % Array of BLTS's for which there is data.
                 iBltsAr = bicas.proc.utils.interpret_LRX(Cv.lrx);
 
-                % Bits for the current sub-sequence.
+                % Preallocate. Bits for the current sub-sequence.
                 ssBitAr = false(ssNRows, 1);
 
                 for iBlts = iBltsAr(:)'
                     Ssid = RoutingAr(iBlts).Ssid;
 
                     if Ssid.is_ASR()
-                        ssBltsSamplesAVolt = AsrSamplesAVoltSrm(Ssid.Asid.s);
-                        ssBltsSamplesAVolt = ssBltsSamplesAVolt(iRec1:iRec2, :);
+                        bltsSamplesAVolt   = AsrSamplesAVoltSrm(Ssid.Asid.s);
+                        ssBltsSamplesAVolt = bltsSamplesAVolt(iRec1:iRec2, :);
 
                         % Set ssBltsBitAr=bits for the current subsequence and
                         % BLTS.
                         if hasSwfFormat
                             ssBltsBitAr = obj.get_snapshot_saturation_many(...
-                                 zvNValidSamplesPerRecord(iRec1:iRec2), ...
-                                 ssBltsSamplesAVolt, ...
-                                 Ssid, Cv.isAchgFpa);
+                                zvNValidSamplesPerRecord(iRec1:iRec2), ...
+                                ssBltsSamplesAVolt, ...
+                                Ssid, Cv.isAchgFpa);
                         else
                             ssBltsBitAr = obj.get_TSF(...
                                 ssBltsSamplesAVolt, ...

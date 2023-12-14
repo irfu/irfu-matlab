@@ -141,10 +141,10 @@ classdef const
 
 
 
-        NSOID_SETTINGS = bicas.const.init_NSOID_SETTINGS();
         % How to interpret different NSOIDs in terms of quality ZVs.
         % NOTE: As of 2023-11-06, this is only used for setting quality
         %       ZVs in L2 datasets.
+        NSOID_SETTINGS = bicas.const.init_NSOID_SETTINGS();
 
 
             

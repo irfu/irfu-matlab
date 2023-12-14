@@ -10,16 +10,6 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    properties(Constant)
-    end
-
-
-
-    properties(TestParameter)
-    end
-
-
-
     %##############
     %##############
     % TEST METHODS
@@ -30,6 +20,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
         function test_get_TSF(testCase)
+
             function test(satArgsCa, samplesAVolt, Ssid, isAchg, expTsfAr)
                 expTsfAr = logical(expTsfAr);
                 isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
@@ -156,13 +147,13 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
                     % DC single
                     % ---------
                     % Zero snapshots
-                    test({99, 0.6, 99,99,99,99}, ones(0,1), ones(0,0),    S.DC_V1, isAchg, false(0,1))
+                    test({99, 0.6, 99,99,99,99}, zeros(0,1), zeros(0,0),   S.DC_V1, isAchg, false(0,1))
 
                     % One snapshot of varying length.
-                    test({99, 0.6, 3, 99,99,99}, [0],       [5, 0, 5],    S.DC_V1, isAchg, [0])
-                    test({99, 0.6, 3, 99,99,99}, [1],       [5, 0, 5],    S.DC_V1, isAchg, [1])
-                    test({99, 0.6, 3, 99,99,99}, [2],       [5, 0, 5],    S.DC_V1, isAchg, [0])
-                    test({99, 0.6, 3, 99,99,99}, [3],       [5, 0, 5],    S.DC_V1, isAchg, [1])
+                    test({99, 0.6, 3, 99,99,99}, [0],        [5, 0, 5],    S.DC_V1, isAchg, [0])
+                    test({99, 0.6, 3, 99,99,99}, [1],        [5, 0, 5],    S.DC_V1, isAchg, [1])
+                    test({99, 0.6, 3, 99,99,99}, [2],        [5, 0, 5],    S.DC_V1, isAchg, [0])
+                    test({99, 0.6, 3, 99,99,99}, [3],        [5, 0, 5],    S.DC_V1, isAchg, [1])
 
                     % Many snapshots
                     test({99, 0.6, 3, 99,99,99}, [0;1;2;3], [5 0 5; 5 0 5; 5 0 5; 5 0 5],    S.DC_V1, isAchg, [0; 1; 0; 1])

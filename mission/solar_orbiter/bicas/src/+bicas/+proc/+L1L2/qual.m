@@ -5,8 +5,35 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual
-    % PROPOSAL: Redefine as applying to quality variables for all processing
-    %           (between any archiving levels).
+% PROPOSAL: Redefine as applying to quality variables for all processing
+%           (between any archiving levels, not just L1/L1R-L2).
+%
+% PROPOSAL: Allow code to set/derive "NSOs" for CDF records, and share the
+%           definition/handling of these NSOs with the NSO table: How to modify
+%           *_QUALITY_BITMASK and QUALITY_FLAG, i.e. can share
+%           bicas.const.NSOID_SETTINGS.
+%   Ex: Thruster firings: Can be set in NSO table and (future) from
+%       QUALITY_BITMASK.
+%   Ex: Full saturation: Can be set in NSO table and (future) from algorithm.
+%   --
+%   TODO-DEC: How represent such information?
+%       NOTE: Is naturally one value per CDF record. NSO table is list of
+%             labelled time periods.
+%       PROPOSAL: Arrays of logical.
+%           PRO: Simple & straightforward.
+%           CON: Multiple variables. Many arguments.
+%   --
+%   PROPOSAL: Add argument bFullSaturation to get_quality_by_NSOs().
+%   PROPOSAL: Split get_quality_by_NSOs() into two functions:
+%       (1) Convert NSO table into one array of logical (flags) per NSOID
+%       (2) Modify *_QUALITY_BITMASK based on arrays or logical (flags), one per
+%           NSOID.
+%           PROPOSAL: Store arrays as containers.Map: NSOID->Array
+%       TODO-DEC: How handle having multiple *_QUALITY_BITMASK ZVs for potential
+%                 reuse in L3 (not just L2).
+%           NOTE: bicas.const.NSOID_SETTINGS and bicas.proc.L1L2.NsoidSetting do
+%                 specify that values should be applied to L2_QUALITY_BITMASK,
+%                 but L3_QUALITY_BITMASK could be added naturally.
 
 
 

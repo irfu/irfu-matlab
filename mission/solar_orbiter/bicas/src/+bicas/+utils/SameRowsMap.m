@@ -2,7 +2,7 @@
 % Basic map key-->value, where all values must have the same number of rows
 % (size in first dimension). Values must be immutable.
 %
-% Intended for zVariables. May be upgraded to require FPAs.
+% Intended for zVariables. Implementation may be upgraded to require FPAs.
 % Some method names are chosen to be identical with containers.Map.
 %
 %
@@ -182,11 +182,22 @@ classdef SameRowsMap < handle
 
 
 
+        % ARGUMENTS
+        % =========
+        % varargin
+        %       initType == 'EMPTY':    Zero length.
+        %       initType == 'CONSTANT': 
+        %           varargin{1} = array
+        %           varargin{2} = Cell array of keys which should have this
+        %                         value.
+        %
+        % NOTE: To initialize with multiple keys with unique values, use both
+        %       constructor and method "add".
         function obj = SameRowsMap(keyType, nRows, initType, varargin)
             assert(isnumeric(nRows) && nRows >= 0)
             
             obj.nRows2 = nRows;
-            obj.Map = containers.Map('KeyType', keyType, 'ValueType', 'any');
+            obj.Map    = containers.Map('KeyType', keyType, 'ValueType', 'any');
             
             switch(initType)
                 case 'EMPTY'
