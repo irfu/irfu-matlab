@@ -110,7 +110,7 @@ classdef const
 
 
         % Field values = Legal RCS QRCIDs. This defines the set of legal QRCIDs,
-        % including ones that can be used in the RCS NSO XML file.
+        % including ones that can be used in the NSO table file.
         % Field names can be used as constants for those strings inside BICAS.
         %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can

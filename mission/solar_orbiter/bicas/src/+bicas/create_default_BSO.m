@@ -390,9 +390,9 @@ function Bso = create_default_BSO()
     % TODO-NI/DEC: Temporary? Use for all output datasets (L2, L3)?
     S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
 
-    % Path to RCS NSO file. Relative to BICAS root.
+    % Path to NSO table file. Relative to BICAS root.
     S.define_setting('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH',  fullfile('data', 'solo_ns_ops.xml'))
-    % Path to RCS NSO file for debugging purposes.
+    % Path to NSO table file for debugging purposes.
     % If non-empty, then it overrides PROCESSING.RCS_NSO.FILE.RELATIVE_PATH.
     % Can be set to absolute path. Intended for testing.
     S.define_setting('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH', '')

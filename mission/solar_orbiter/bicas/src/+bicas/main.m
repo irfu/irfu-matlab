@@ -527,20 +527,20 @@ function main_without_error_handling(cliArgumentsList, L)
             
             
             
-            %===================
-            % Read RCS NSO file
-            %===================
-            rcsNsoRelativePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
-            rcsNsoOverridePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH');
-            if isempty(rcsNsoOverridePath)
-                rcsNsoPath = fullfile(bicasRootPath, rcsNsoRelativePath);
+            %=====================
+            % Read NSO table file
+            %=====================
+            nsoTableRelativePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
+            nsoTableOverridePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH');
+            if isempty(nsoTableOverridePath)
+                nsoTablePath = fullfile(bicasRootPath, nsoTableRelativePath);
             else
-                rcsNsoPath = rcsNsoOverridePath;
+                nsoTablePath = nsoTableOverridePath;
             end
             
-            %L.logf('info', 'rcsNsoPath = "%s"', rcsNsoPath);
-            L.logf('info', 'Loading RCS NSO table XML file "%s"', rcsNsoPath)
-            NsoTable = bicas.NsoTable.read_file_BICAS(rcsNsoPath);
+            %L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
+            L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
+            NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath);
 
 
 
