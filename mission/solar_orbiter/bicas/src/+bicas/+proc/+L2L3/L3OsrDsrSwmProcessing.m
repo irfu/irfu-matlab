@@ -278,8 +278,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             
             Out.Zv.EDC_SRF                   = EdcSrfMvpmFpa.cast('single');
             
-            b = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-            Out.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
+            bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
+            Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
         end
 
 
@@ -291,9 +291,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             Out.Zv.SCPOT                     = ScpotVoltFpa.cast('single');
             Out.Zv.PSP                       = PspVoltFpa.  cast('single');
 
-            b = Out.Zv.SCPOT.fpAr & ...
-                Out.Zv.PSP.fpAr;
-            Out.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
+            bFp = Out.Zv.SCPOT.fpAr & ...
+                  Out.Zv.PSP.fpAr;
+            Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
         end
 
 
@@ -304,15 +304,16 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
             Out.Zv.DENSITY                   = NeScpCm3Fpa.cast('single');
 
-            b = Out.Zv.DENSITY.fpAr;
-            Out.Zv.QUALITY_FLAG(b)           = bicas.utils.FPArray.FP_UINT8;
+            bFp = Out.Zv.DENSITY.fpAr;
+            Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
             Out.Zv.L3_QUALITY_BITMASK        = ...
                 NeScpQualityBitFpa.ensure_NFP(false).cast('uint16') .* bicas.const.L3QBM_BAD_DENSITY;
-            Out.Zv.L3_QUALITY_BITMASK(b)     = bicas.utils.FPArray.FP_UINT16;   % ?!
+            Out.Zv.L3_QUALITY_BITMASK(bFp)   = bicas.utils.FPArray.FP_UINT16;   % ?!
             % NOTE: Behaviour w.r.t. FPs:
             %   Density FP     ==> L3_QUALITY_BITMASK FP
-            %   Density bit FP ==> Do not set L3_QUALITY_BITMASK (since there is
-            %                      no FP for individual quality bits).
+            %                      QUALITY_FLAG       FP
+            %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
+            %                      (since there is no FP for individual quality bits).
         end
 
 
@@ -328,8 +329,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             Out.Zv.EDC_SRF    = EdcSrfDsrFpa.   cast('single');
             Out.Zv.EDCSTD_SRF = EdcstdSrfDsrFpa.cast('single');
 
-            b = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-            Out.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
+            bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
+            Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
         end
 
 
@@ -355,9 +356,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             Out.Zv.PSP    = PspDsrFpa.   cast('single');
             Out.Zv.PSPSTD = PspstdDsrFpa.cast('single');
 
-            b = Out.Zv.SCPOT.fpAr & ...
-                Out.Zv.PSP.fpAr;
-            Out.Zv.QUALITY_FLAG(b) = bicas.utils.FPArray.FP_UINT8;
+            bFp = Out.Zv.SCPOT.fpAr & ...
+                  Out.Zv.PSP.fpAr;
+            Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
         end
 
 
@@ -373,11 +374,11 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             Out.Zv.DENSITY    = DensityDsrFpa.   cast('single');
             Out.Zv.DENSITYSTD = DensitystdDsrFpa.cast('single');
 
-            b = Out.Zv.DENSITY.fpAr;
-            Out.Zv.QUALITY_FLAG(b)       = bicas.utils.FPArray.FP_UINT8;
-            Out.Zv.L3_QUALITY_BITMASK    = bicas.proc.dsr.downsample_ZV_bitmask(...
+            bFp = Out.Zv.DENSITY.fpAr;
+            Out.Zv.QUALITY_FLAG(bFp)       = bicas.utils.FPArray.FP_UINT8;
+            Out.Zv.L3_QUALITY_BITMASK      = bicas.proc.dsr.downsample_ZV_bitmask(...
                 osr_L3_QUALITY_BITMASK, iRecordsInBinCa);
-            Out.Zv.L3_QUALITY_BITMASK(b) = bicas.utils.FPArray.FP_UINT16;
+            Out.Zv.L3_QUALITY_BITMASK(bFp) = bicas.utils.FPArray.FP_UINT16;   % ?!
         end
 
 

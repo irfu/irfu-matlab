@@ -49,6 +49,12 @@ classdef NsoTable
     %       (2) Assertions on file content only in read_file_raw(), but after
     %           invoking constructor.
     %       (3) No assertions (besides valid XML file) in read_file_raw().
+    %
+    % PROPOSAL: Change NSO table XML format: rcsNsoId --> Nsoid
+    %   PRO: Consistent with code and readme.txt.
+    %   PROBLEM: Must update BICAS version simultaneously as NSO table file,
+    %            also on brain. Can not update NSO table file only with e.g. new
+    %            thruster firings.
 
     
     

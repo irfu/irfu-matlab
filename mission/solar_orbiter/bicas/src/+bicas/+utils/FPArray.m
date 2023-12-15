@@ -409,7 +409,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         
         
         
-        % Create new FPA but with FPs replaced with fill values (NFPs).
+        % Create new FPA but with FPs replaced with specified NFP fill value.
         function Fpa = ensure_NFP(obj, fv)
             % PROPOSAL: Better name.
             %   PROBLEM: Unclear that new instance is created.
