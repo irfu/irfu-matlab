@@ -530,8 +530,8 @@ function main_without_error_handling(cliArgumentsList, L)
             %=====================
             % Read NSO table file
             %=====================
-            nsoTableRelativePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
-            nsoTableOverridePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.OVERRIDE_PATH');
+            nsoTableRelativePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH');
+            nsoTableOverridePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH');
             if isempty(nsoTableOverridePath)
                 nsoTablePath = fullfile(bicasRootPath, nsoTableRelativePath);
             else

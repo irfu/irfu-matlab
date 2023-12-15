@@ -123,7 +123,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
             Bso = bicas.create_default_BSO();
             Bso.make_read_only()
-            nsoTableRelativePath = Bso.get_fv('PROCESSING.RCS_NSO.FILE.RELATIVE_PATH');
+            nsoTableRelativePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH');
 
             nsoFilePath = fullfile(bicasRootPath, nsoTableRelativePath);
 
