@@ -91,9 +91,9 @@ classdef qual
             %==============================================
             % Modify quality ZVs based on NSO events table
             %==============================================
-            [QUALITY_FLAG_NsoFpa, L2_QUALITY_BITMASK_nso] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
+            [QUALITY_FLAG_Nso, L2_QUALITY_BITMASK_nso] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
                 bicas.const.NSOID_SETTINGS, NsoTable, Epoch, L);
-            QUALITY_FLAG_Fpa   = QUALITY_FLAG_Fpa.min(QUALITY_FLAG_NsoFpa);
+            QUALITY_FLAG_Fpa   = QUALITY_FLAG_Fpa.min(bicas.utils.FPArray(QUALITY_FLAG_Nso));
             L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_nso);
 
 
@@ -110,17 +110,15 @@ classdef qual
         %
         % RETURN VALUES
         % =============
-        % QUALITY_FLAG_CapFpa
-        %       FPA. Cap (highest allowed value) for ZV QUALITY_FLAG.
+        % QUALITY_FLAG
+        %       Cap (highest allowed value) for ZV QUALITY_FLAG.
         %       NOTE: Will never have FPs.
         % L2_QUALITY_BITMASK
         %       Array. L2_QUALITY_BITMASK bits set based on NSOs only. Should be
         %       merged (OR:ed) with global L2_QUALITY_BITMASK.
         %
-        function [QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
+        function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 get_quality_by_NSOs(NsoidSettingsMap, NsoTable, Epoch, L)
-            % PROPOSAL: Return non-FPA QUALITY_FLAG.
-            %   PRO: Internal algorithm can not produce unknown values.
             
             NsoFlagsPerRecordMap = ...
                 bicas.proc.L1L2.qual.NSO_table_to_NSO_arrays(...
@@ -129,8 +127,6 @@ classdef qual
             [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 bicas.proc.L1L2.qual.NSO_arrays_to_quality_variables(...
                     size(Epoch, 1), NsoFlagsPerRecordMap, NsoidSettingsMap);
-            
-            QUALITY_FLAG_Fpa = bicas.utils.FPArray(QUALITY_FLAG);
         end
 
 

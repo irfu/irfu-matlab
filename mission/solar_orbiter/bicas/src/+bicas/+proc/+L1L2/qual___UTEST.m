@@ -88,17 +88,19 @@ classdef qual___UTEST < matlab.unittest.TestCase
         
         function test_get_quality_by_NSOs(testCase)
             
-            function test(NsoidSettingsMap, NsoTable, Epoch, exp_QUALITY_FLAG_doubleNaN, exp_L2_QUALITY_BITMASK)
+            function test(NsoidSettingsMap, NsoTable, Epoch, exp_QUALITY_FLAG, exp_L2_QUALITY_BITMASK)
+                % Normalize/modify arguments
                 Epoch = int64(Epoch(:));
-                exp_QUALITY_FLAG_Fpa   = bicas.utils.FPArray(exp_QUALITY_FLAG_doubleNaN(:), 'FILL_VALUE', NaN).cast('uint8');
+                assert(~any(isnan(exp_QUALITY_FLAG)))
+                exp_QUALITY_FLAG       = uint8(exp_QUALITY_FLAG(:));
                 exp_L2_QUALITY_BITMASK = uint16(exp_L2_QUALITY_BITMASK(:));
 
                 L = bicas.Logger('human-readable', false);
 
-                [act_QUALITY_FLAG_Fpa, act_L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
+                [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
                     NsoidSettingsMap, NsoTable, Epoch, L);
             
-                testCase.assertEqual(act_QUALITY_FLAG_Fpa,   exp_QUALITY_FLAG_Fpa)
+                testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
                 testCase.assertEqual(act_L2_QUALITY_BITMASK, exp_L2_QUALITY_BITMASK)
             end
 
