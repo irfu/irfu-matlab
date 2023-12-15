@@ -44,7 +44,7 @@ jobs:
           command: tests_before_release;
 
       # upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: test_report.pdf
           path: ciPath/report.pdf
