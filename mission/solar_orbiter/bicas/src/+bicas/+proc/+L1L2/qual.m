@@ -71,7 +71,7 @@ classdef qual
         % L2_QUALITY_BITMASK
         %       Quality ZV to use.
         function [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-                modify_quality_filter(InZv, isLfr, NsoTable, Bso, L)
+                get_UFV_quality_ZVs(InZv, isLfr, NsoTable, Bso, L)
             % PROPOSAL: Replace InZv-->Separate arguments.
 
             % ASSERTIONS
@@ -121,7 +121,7 @@ classdef qual
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 get_quality_by_NSOs(NsoidSettingsMap, NsoTable, Epoch, isFullSaturation, L)
             % PROPOSAL: Abolish function. Make code part of
-            %           modify_quality_filter().
+            %           get_UFV_quality_ZVs().
             
             NsoFlagsMap = bicas.proc.L1L2.qual.NSO_table_to_NSO_arrays(...
                 fieldnames(bicas.const.NSOID), NsoTable, Epoch, L);
