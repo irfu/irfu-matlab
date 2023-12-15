@@ -24,11 +24,18 @@ classdef qual
 %           CON: Multiple variables. Many arguments.
 %   --
 %   PROPOSAL: Add argument bFullSaturation to get_quality_by_NSOs().
-%   PROPOSAL: Split get_quality_by_NSOs() into two functions:
-%       (1) Convert NSO table into one array of logical (flags) per NSOID
+%   PROPOSAL: Split get_quality_by_NSOs() into two functions: -- IMPLEMENTED (but not sub-proposals).
+%       (1) Convert NSO (file) table into one array of logical (flags) per NSOID
 %       (2) Modify *_QUALITY_BITMASK based on arrays or logical (flags), one per
 %           NSOID.
 %           PROPOSAL: Store arrays as containers.Map: NSOID->Array
+%           PROPOSAL: Redefine NSOID as ~"quality-related condition" ID = QRCID which
+%                     identifies any condition (one logical flag per CDF record) which may affect *_QUALITY_BITMASK and
+%                     QUALITY_FLAG and which can be deduced from NSO table or
+%                     algorithm in processing (or from ZVs).
+%           PROPOSAL: Have function (2) be function of output dataset.
+%               PRO: Can be used to influence the setting of QUALITY_FLAG and
+%                    *_QUALITY_BITMASK in the future.
 %       TODO-DEC: How handle having multiple *_QUALITY_BITMASK ZVs for potential
 %                 reuse in L3 (not just L2).
 %           NOTE: bicas.const.NSOID_SETTINGS and bicas.proc.L1L2.NsoidSetting do
@@ -112,15 +119,33 @@ classdef qual
         %
         function [QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
                 get_quality_by_NSOs(NsoidSettingsMap, NsoTable, Epoch, L)
+            % PROPOSAL: Return non-FPA QUALITY_FLAG.
+            %   PRO: Internal algorithm can not produce unknown values.
+            
+            NsoFlagsPerRecordMap = ...
+                bicas.proc.L1L2.qual.NSO_table_to_NSO_arrays(...
+                    NsoidSettingsMap, NsoTable, Epoch, L);
 
-            % Variable naming conventions:
-            % ----------------------------
+            [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+                bicas.proc.L1L2.qual.NSO_arrays_to_quality_variables(...
+                    size(Epoch, 1), NsoFlagsPerRecordMap, NsoidSettingsMap);
+            
+            QUALITY_FLAG_Fpa = bicas.utils.FPArray(QUALITY_FLAG);
+        end
+
+
+
+        function NsoFlagsPerRecordMap = NSO_table_to_NSO_arrays(...
+                NsoidSettingsMap, NsoTable, Epoch, L)
+
+            % Local variable naming conventions:
+            % ----------------------------------
             % GE = Global Event = NSO event in global NSO event table.
             % CE = CDF Event    = NSO event that overlaps with CDF records.
-            % NA                = Numeric Array
+            % Ar                = (Non-cell) Array
 
-            % NOTE: iCdfEventNa = CDF events as indices to global events.
-            [bCeRecordsCa, ceNsoidCa, iCeNa] = NsoTable.get_NSO_timestamps(Epoch);
+            % NOTE: iCeAr = CDF events as indices to global events.
+            [bCeRecordsCa, ceNsoidCa, iCeAr] = NsoTable.get_NSO_timestamps(Epoch);
             nCe = numel(ceNsoidCa);
             nGe = numel(NsoTable.evtNsoidCa);
             L.logf('info', ...
@@ -128,19 +153,20 @@ classdef qual
                 ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
                 nCe, nGe);
 
-            % Pre-allocate
-            % NOTE: QUALITY_FLAG is set to max value.
-            QUALITY_FLAG_Fpa = bicas.utils.FPArray(...
-                bicas.const.QUALITY_FLAG_MAX * ones(size(Epoch), 'uint8'));
-            L2_QUALITY_BITMASK = zeros(size(Epoch), 'uint16');
-            
-            
+            % Initialize "empty" nsoPerRecordsMap
+            % -----------------------------------
+            % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!).
+            NsoFlagsPerRecordMap = containers.Map('keyType', 'char', 'valueType', 'any');
+            nsoidCa = NsoidSettingsMap.keys();
+            for i = 1:numel(nsoidCa)
+                NsoFlagsPerRecordMap(nsoidCa{i}) = false(size(Epoch));
+            end
 
             % Iterate over index into LOCAL/CDF NSO events table.
             for kCe = 1:nCe
 
                 % Index into GLOBAL NSO events table.
-                iGe = iCeNa(kCe);
+                iGe = iCeAr(kCe);
                 eventNsoid = ceNsoidCa{kCe};
                 % Indices into ZVs.
                 bCeRecords = bCeRecordsCa{kCe};
@@ -157,12 +183,10 @@ classdef qual
                 % Take action depending on NSOID
                 %================================
                 if NsoidSettingsMap.isKey(eventNsoid)
-                    Setting = NsoidSettingsMap(eventNsoid);
+                    bNsoid                           = NsoFlagsPerRecordMap(eventNsoid);
+                    bNsoid(bCeRecords)               = true;
+                    NsoFlagsPerRecordMap(eventNsoid) = bNsoid;
                     
-                    % NOTE: Variables contain SCALAR values (i.e. they are not
-                    %       arrays).
-                    QUALITY_FLAG_nsoid       = Setting.QUALITY_FLAG;
-                    L2_QUALITY_BITMASK_nsoid = Setting.L2_QUALITY_BITMASK;
                 else
                     % ASSERTION
                     % NOTE: Not perfect assertion on legal NSOIDs since code
@@ -172,15 +196,39 @@ classdef qual
                     error('Can not interpret RCS NSOID "%s".', eventNsoid)
                 end
 
-                QUALITY_FLAG_CeFpa              = QUALITY_FLAG_Fpa(bCeRecords, 1);
-                QUALITY_FLAG_Fpa(bCeRecords, 1) = QUALITY_FLAG_CeFpa.min(...
-                    bicas.utils.FPArray(QUALITY_FLAG_nsoid));
-            
-                L2_QUALITY_BITMASK( bCeRecords, 1) = bitor(...
-                    L2_QUALITY_BITMASK(bCeRecords, 1), ...
-                    L2_QUALITY_BITMASK_nsoid);
-                
             end    % for
+        end
+        
+        
+        
+        % NOTE: Does not return FPA, since internal algorithm can not produce
+        % unknown values.
+        function [QUALITY_FLAG, L2_QUALITY_BITMASK] = NSO_arrays_to_quality_variables(...
+                nRec, NsoFlagsPerRecordMap, NsoidSettingsMap)
+            
+            % Create "empty" arrays
+            QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
+            L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
+
+            nsoidCa = NsoFlagsPerRecordMap.keys();
+            for i = 1:numel(nsoidCa)
+                nsoid        = nsoidCa{i};
+                NsoidSetting = NsoidSettingsMap(nsoid);
+                bNsoid       = NsoFlagsPerRecordMap(nsoid);
+                
+                % Set QUALITY_FLAG
+                % ----------------
+                % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
+                % operation is more natural (simpler) that way.
+                QUALITY_FLAG(bNsoid) = min(...
+                    QUALITY_FLAG(bNsoid), ...
+                    NsoidSetting.QUALITY_FLAG);
+                
+                % Set L2_QUALITY_BITMASK
+                L2_QUALITY_BITMASK = bitor(...
+                    L2_QUALITY_BITMASK, ...
+                    NsoidSetting.L2_QUALITY_BITMASK * uint16(bNsoid));
+            end
 
         end
 
