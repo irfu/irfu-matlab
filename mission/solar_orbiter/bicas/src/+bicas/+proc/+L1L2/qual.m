@@ -23,12 +23,12 @@ classdef qual
 %           PRO: Simple & straightforward.
 %           CON: Multiple variables. Many arguments.
 %   --
-%   PROPOSAL: Add argument bFullSaturation to get_quality_by_NSOs().
+%   PROPOSAL: Add argument bFullSaturation to get_quality_by_NSOs(). -- IMPLEMENTED
 %   PROPOSAL: Split get_quality_by_NSOs() into two functions: -- IMPLEMENTED (but not sub-proposals).
 %       (1) Convert NSO (file) table into one array of logical (flags) per NSOID
 %       (2) Modify *_QUALITY_BITMASK based on arrays or logical (flags), one per
 %           NSOID.
-%           PROPOSAL: Store arrays as containers.Map: NSOID->Array
+%           PROPOSAL: Store arrays as containers.Map: NSOID->Array -- IMPLEMENTED
 %           PROPOSAL: Redefine NSOID as ~"quality-related condition" ID = QRCID which
 %                     identifies any condition (one logical flag per CDF record) which may affect *_QUALITY_BITMASK and
 %                     QUALITY_FLAG and which can be deduced from NSO table or
@@ -62,44 +62,44 @@ classdef qual
         %       value.
         function [zvUfv, QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
                 modify_quality_filter(InZv, isLfr, NsoTable, Bso, L)
-
-            irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'QUALITY_FLAG_Fpa'}, {})
-            Epoch            = InZv.Epoch;
-            zvBdmFpa         = InZv.bdmFpa;
-            QUALITY_FLAG_Fpa = InZv.QUALITY_FLAG_Fpa;
-            clear ZvIn
+            % PROPOSAL: Replace InZv-->Separate arguments.
+            % PROPOSAL: Return non-FPA QUALITY_FLAG.
+            %   PRO: Value can not be unknown.
 
             % ASSERTIONS
+            irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'QUALITY_FLAG_Fpa', 'isFullSaturation'}, {})
+            irf.assert.sizes( ...
+                InZv.Epoch,            [-1], ...
+                InZv.bdmFpa,           [-1], ...
+                InZv.QUALITY_FLAG_Fpa, [-1], ...
+                InZv.isFullSaturation, [-1]);
             assert(isscalar(isLfr) && islogical(isLfr))
-            assert(isa(QUALITY_FLAG_Fpa, 'bicas.utils.FPArray') && strcmp(QUALITY_FLAG_Fpa.mc, 'uint8'))
-            nRecords = irf.assert.sizes( ...
-                Epoch,            [-1], ...
-                zvBdmFpa,         [-1], ...
-                QUALITY_FLAG_Fpa, [-1]);
-
-            % Pre-allocate
-            L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
-
-
+            assert(...
+                isa(InZv.QUALITY_FLAG_Fpa, 'bicas.utils.FPArray') && ...
+                strcmp(InZv.QUALITY_FLAG_Fpa.mc, 'uint8'))
             
-            %============================================================
+            Epoch            = InZv.Epoch;
+            BdmFpa           = InZv.bdmFpa;
+            QUALITY_FLAG_Fpa = InZv.QUALITY_FLAG_Fpa;
+            isFullSaturation = InZv.isFullSaturation;
+            clear InZv
+
+
+
+            %============================================
             % Find CDF records to remove due to settings
-            %============================================================
+            %============================================
             zvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
-                Epoch, zvBdmFpa, isLfr, Bso, L);
+                Epoch, BdmFpa, isLfr, Bso, L);
 
             %==============================================
-            % Modify quality ZVs based on NSO events table
+            % Create quality ZVs based on NSO events table
             %==============================================
-            [QUALITY_FLAG_Nso, L2_QUALITY_BITMASK_nso] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
-                bicas.const.NSOID_SETTINGS, NsoTable, Epoch, L);
-            QUALITY_FLAG_Fpa   = QUALITY_FLAG_Fpa.min(bicas.utils.FPArray(QUALITY_FLAG_Nso));
-            L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_nso);
+            [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
+                bicas.const.NSOID_SETTINGS, NsoTable, Epoch, isFullSaturation, L);
 
-
-
-            assert(isa(L2_QUALITY_BITMASK, 'uint16'))
-        end    % modify_quality_filter
+            QUALITY_FLAG_Fpa = QUALITY_FLAG_Fpa.min(bicas.utils.FPArray(QUALITY_FLAG));
+        end
         
         
         
@@ -115,24 +115,49 @@ classdef qual
         %       NOTE: Will never have FPs.
         % L2_QUALITY_BITMASK
         %       Array. L2_QUALITY_BITMASK bits set based on NSOs only. Should be
-        %       merged (OR:ed) with global L2_QUALITY_BITMASK.
+        %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
         %
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-                get_quality_by_NSOs(NsoidSettingsMap, NsoTable, Epoch, L)
+                get_quality_by_NSOs(NsoidSettingsMap, NsoTable, Epoch, isFullSaturation, L)
+            % PROPOSAL: Abolish function. Make code part of
+            %           modify_quality_filter().
             
-            NsoFlagsPerRecordMap = ...
-                bicas.proc.L1L2.qual.NSO_table_to_NSO_arrays(...
-                    NsoidSettingsMap, NsoTable, Epoch, L);
+            NsoFlagsMap = bicas.proc.L1L2.qual.NSO_table_to_NSO_arrays(...
+                fieldnames(bicas.const.NSOID), NsoTable, Epoch, L);
+
+            % Add autodetected saturation.
+            b = NsoFlagsMap(bicas.const.NSOID.FULL_SATURATION);
+            b = b | isFullSaturation;
+            NsoFlagsMap(bicas.const.NSOID.FULL_SATURATION) = b;
 
             [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 bicas.proc.L1L2.qual.NSO_arrays_to_quality_variables(...
-                    size(Epoch, 1), NsoFlagsPerRecordMap, NsoidSettingsMap);
+                    size(Epoch, 1), NsoFlagsMap, NsoidSettingsMap);
         end
 
 
-
-        function NsoFlagsPerRecordMap = NSO_table_to_NSO_arrays(...
-                NsoidSettingsMap, NsoTable, Epoch, L)
+        
+        % IMPLEMENTATION NOTE: Without allNsoidCa, the function can not create a
+        % return value map that contains keys for all NSOIDs, in case the
+        % NsoTable does not contain all NSOIDs.
+        %
+        % IMPLEMENTATION NOTE: allNsoidCa is an argument due to automated tests.
+        % Could otherwise be derived from constants.
+        %
+        % ARGUMENTS
+        % =========
+        % allNsoidCa
+        %       1D cell array of all NSOIDs.
+        %
+        % RETURN VALUE
+        % ============
+        % NsoFlagsMap
+        %       containers.Map. NSOID->logical array
+        %       Contains keys for all NSOIDs specified in allNsoidCa, not just
+        %       those present in NsoTable.
+        %
+        function NsoFlagsMap = NSO_table_to_NSO_arrays(...
+                allNsoidCa, NsoTable, Epoch, L)
 
             % Local variable naming conventions:
             % ----------------------------------
@@ -152,10 +177,9 @@ classdef qual
             % Initialize "empty" nsoPerRecordsMap
             % -----------------------------------
             % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!).
-            NsoFlagsPerRecordMap = containers.Map('keyType', 'char', 'valueType', 'any');
-            nsoidCa = NsoidSettingsMap.keys();
-            for i = 1:numel(nsoidCa)
-                NsoFlagsPerRecordMap(nsoidCa{i}) = false(size(Epoch));
+            NsoFlagsMap = containers.Map('keyType', 'char', 'valueType', 'any');
+            for i = 1:numel(allNsoidCa)
+                NsoFlagsMap(allNsoidCa{i}) = false(size(Epoch));
             end
 
             % Iterate over index into LOCAL/CDF NSO events table.
@@ -175,23 +199,19 @@ classdef qual
                     irf.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGe)), ...
                     eventNsoid);
 
+                % ASSERTION
+                % NOTE: Not perfect assertion on legal NSOIDs since code only
+                % checks those relevant for the data (time interval) currently
+                % processed. (Therefore also checks all NSOIDs when reads NSO
+                % table.)
+                assert(ismember(eventNsoid, allNsoidCa), 'Can not interpret RCS NSOID "%s".', eventNsoid)
+
                 %================================
                 % Take action depending on NSOID
                 %================================
-                if NsoidSettingsMap.isKey(eventNsoid)
-                    bNsoid                           = NsoFlagsPerRecordMap(eventNsoid);
-                    bNsoid(bCeRecords)               = true;
-                    NsoFlagsPerRecordMap(eventNsoid) = bNsoid;
-                    
-                else
-                    % ASSERTION
-                    % NOTE: Not perfect assertion on legal NSOIDs since code
-                    % only checks those relevant for the data (time interval)
-                    % currently processed. (Therefore also checks all NSOIDs
-                    % when reads NSO table.)
-                    error('Can not interpret RCS NSOID "%s".', eventNsoid)
-                end
-
+                bNsoid                  = NsoFlagsMap(eventNsoid);
+                bNsoid(bCeRecords)      = true;
+                NsoFlagsMap(eventNsoid) = bNsoid;
             end    % for
         end
         
@@ -199,18 +219,27 @@ classdef qual
         
         % NOTE: Does not return FPA, since internal algorithm can not produce
         % unknown values.
+        %
+        % ARGUMENTS
+        % =========
+        % nRec
+        %       Number of CDF records (rows).
+        %       IMPLEMENTATION NOTE: Needed for handling the case of zero
+        %       NSOIDs.
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = NSO_arrays_to_quality_variables(...
-                nRec, NsoFlagsPerRecordMap, NsoidSettingsMap)
+                nRec, NsoFlagsMap, NsoidSettingsMap)
             
             % Create "empty" arrays
             QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
             L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 
-            nsoidCa = NsoFlagsPerRecordMap.keys();
+            nsoidCa = NsoFlagsMap.keys();
             for i = 1:numel(nsoidCa)
                 nsoid        = nsoidCa{i};
                 NsoidSetting = NsoidSettingsMap(nsoid);
-                bNsoid       = NsoFlagsPerRecordMap(nsoid);
+                bNsoid       = NsoFlagsMap(nsoid);
+
+                assert(isequal( size(bNsoid), [nRec, 1] ))
                 
                 % Set QUALITY_FLAG
                 % ----------------
