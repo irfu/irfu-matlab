@@ -12,8 +12,8 @@ classdef qual
 %           definition/handling of these NSOs with the NSO table: How to modify
 %           *_QUALITY_BITMASK and QUALITY_FLAG, i.e. can share
 %           bicas.const.NSOID_SETTINGS.
-%   Ex: Thruster firings: Can be set in NSO table and (future) from
-%       QUALITY_BITMASK.
+%   Ex: Thruster firings: Can be set in NSO table and (in the future) from
+%       QUALITY_BITMASK (L1).
 %   Ex: Full saturation: Can be set in NSO table and (future) from algorithm.
 %   --
 %   TODO-DEC: How represent such information?
@@ -86,8 +86,6 @@ classdef qual
             BdmFpa           = InZv.bdmFpa;
             isFullSaturation = InZv.isFullSaturation;
             clear InZv
-
-
 
             %============================================
             % Find CDF records to remove due to settings
@@ -255,7 +253,6 @@ classdef qual
                     L2_QUALITY_BITMASK, ...
                     NsoidSetting.L2_QUALITY_BITMASK * uint16(bNsoid));
             end
-
         end
 
 
@@ -516,9 +513,6 @@ classdef qual
                 bFlag2BackwardAr = bFlag2BackwardAr(end:-1:1);
                 
                 bFlag2Ar = bFlag2ForwardAr | bFlag2BackwardAr;
-
-%                 bFlag2Ar = bicas.proc.L1L2.qual.sliding_window_over_fraction_algorithm(...
-%                     timeSecAr, bFlag1Ar, minFlagFraction, maxWindowLengthSec);
             end
         end    % function
         

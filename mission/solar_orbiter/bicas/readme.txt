@@ -203,8 +203,8 @@ NS
     Nanoseconds
 NSO
     Non-Standard Operations. Functionality for making BICAS modify processed
-    data based on manually compiled list of "events". Can e.g. set quality
-    bits and remove data.
+    data based on a list of manually labelled time intervals. BICAS can e.g.
+    use this to set quality bits and remove data.
 NSOID
     NSO ID. String constant that represents a specific type of NSO. Used in
     NSO table.

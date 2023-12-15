@@ -4,11 +4,8 @@
 %
 % TERMINOLOGY
 % ===========
-% NSO       : Non-Standard Operations
 % NSO event : One continuous time interval with exactly one NSOID attached to
 %             it.
-% NSOID     : Unique string that identifies the actions BICAS should take.
-%             Multiple NSO events may have the same NSOID.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
