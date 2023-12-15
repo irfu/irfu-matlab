@@ -53,34 +53,37 @@ classdef qual
 
 
 
-        % Set quality zVariables.
+        % Determine quality ZVs.
         % Overwrite selected data in selected CDF records with fill values/NaN.
         %
         % NOTE: Does not handle PROCESSING.ZV_QUALITY_FLAG_MAX. That is handled
         %       by bicas.write_dataset_CDF().
         % NOTE: Does not seem able to ever set zv_L2_QUALITY_BITMASK to fill
         %       value.
-        function [zvUfv, QUALITY_FLAG_Fpa, L2_QUALITY_BITMASK] = ...
+        %
+        % RETURN VALUES
+        % =============
+        % zvUfv
+        %       Logical array. UFV records.
+        % QUALITY_FLAG
+        %       Cap for output dataset ZV QUALITY_FLAG (cap for input dataset 
+        %       QUALITY_FLAG).
+        % L2_QUALITY_BITMASK
+        %       Quality ZV to use.
+        function [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 modify_quality_filter(InZv, isLfr, NsoTable, Bso, L)
             % PROPOSAL: Replace InZv-->Separate arguments.
-            % PROPOSAL: Return non-FPA QUALITY_FLAG.
-            %   PRO: Value can not be unknown.
 
             % ASSERTIONS
-            irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'QUALITY_FLAG_Fpa', 'isFullSaturation'}, {})
+            irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'isFullSaturation'}, {})
             irf.assert.sizes( ...
                 InZv.Epoch,            [-1], ...
                 InZv.bdmFpa,           [-1], ...
-                InZv.QUALITY_FLAG_Fpa, [-1], ...
                 InZv.isFullSaturation, [-1]);
             assert(isscalar(isLfr) && islogical(isLfr))
-            assert(...
-                isa(InZv.QUALITY_FLAG_Fpa, 'bicas.utils.FPArray') && ...
-                strcmp(InZv.QUALITY_FLAG_Fpa.mc, 'uint8'))
             
             Epoch            = InZv.Epoch;
             BdmFpa           = InZv.bdmFpa;
-            QUALITY_FLAG_Fpa = InZv.QUALITY_FLAG_Fpa;
             isFullSaturation = InZv.isFullSaturation;
             clear InZv
 
@@ -97,8 +100,6 @@ classdef qual
             %==============================================
             [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
                 bicas.const.NSOID_SETTINGS, NsoTable, Epoch, isFullSaturation, L);
-
-            QUALITY_FLAG_Fpa = QUALITY_FLAG_Fpa.min(bicas.utils.FPArray(QUALITY_FLAG));
         end
         
         
