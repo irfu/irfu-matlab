@@ -1,12 +1,12 @@
 %
-% Class that represents how to interpret one particular NSOID.
+% Class that represents how to interpret a particular QRCID.
 %
-% NOTE: Does not include the NSOID itself.
+% NOTE: Does not include the QRCID itself.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef NsoidSetting
+classdef QrcidSetting
     % PROPOSAL: Better name
     %   setting
     %       CON: Could be confused with more proper settings such as the NSO
@@ -15,12 +15,15 @@ classdef NsoidSetting
     %   interpretation
     %   behaviour
     %   entry
+    %   policy
+    %   entry
+    %   action
 
 
 
     properties(SetAccess=immutable)
         QUALITY_FLAG
-        % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the NSOID applies.
+        % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
         %
         % NOTE: This is interpretation is in compliance with how the ZV
         % QUALITY_FLAG is supposed to be set.
@@ -33,7 +36,7 @@ classdef NsoidSetting
 
     methods(Access=public)
 
-        function obj = NsoidSetting(QUALITY_FLAG, L2_QUALITY_BITMASK)
+        function obj = QrcidSetting(QUALITY_FLAG, L2_QUALITY_BITMASK)
             assert(bicas.utils.validate_ZV_QUALITY_FLAG(QUALITY_FLAG))
             assert(isa(L2_QUALITY_BITMASK, 'uint16'))
 

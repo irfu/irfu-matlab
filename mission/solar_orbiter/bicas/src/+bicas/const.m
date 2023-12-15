@@ -109,19 +109,20 @@ classdef const
 
 
 
-        % Field values = Legal RCS NSOIDs used in the RCS NSO XML file.
+        % Field values = Legal RCS QRCIDs. This defines the set of legal QRCIDs,
+        % including ones that can be used in the RCS NSO XML file.
         % Field names can be used as constants for those strings inside BICAS.
         %
         % IMPLEMENTATION NOTE: Specified as struct so that the struct can
         % simultaneously be used to
-        % (1) compile a complete list of legal NSOIDs in the NSO table file
+        % (1) compile a complete list of legal QRCIDs, and
         % (2) reference specific constants (fields) throughout BICAS without
-        %     hardcoding the actual NSOIDs in multiple places.
+        %     hardcoding the actual QRCIDs in multiple places.
         %
-        % IMPLEMENTATION NOTE: One does not want to use the RCS NSOID string
+        % IMPLEMENTATION NOTE: One does not want to use the RCS QRCID string
         % constants directly inside the code, in case of typos.
         %
-        NSOID = struct(...
+        QRCID = struct(...
             'PARTIAL_SATURATION', 'PARTIAL_SATURATION', ...
             'FULL_SATURATION',    'FULL_SATURATION', ...
             'THRUSTER_FIRING',    'THRUSTER_FIRING');
@@ -141,10 +142,10 @@ classdef const
 
 
 
-        % How to interpret different NSOIDs in terms of quality ZVs.
-        % NOTE: As of 2023-11-06, this is only used for setting quality
-        %       ZVs in L2 datasets.
-        NSOID_SETTINGS = bicas.const.init_NSOID_SETTINGS();
+        % How to interpret different QRCIDs in terms of quality ZVs.
+        % NOTE: As of 2023-12-15, this is only used for setting quality ZVs in
+        %       L2 datasets.
+        QRCID_SETTINGS = bicas.const.init_QRCID_SETTINGS();
 
 
             
@@ -396,18 +397,18 @@ classdef const
 
 
 
-        function NsoidSettingsMap = init_NSOID_SETTINGS()
-            NsoidSettingsMap = containers.Map();
+        function QrcidSettingsMap = init_QRCID_SETTINGS()
+            QrcidSettingsMap = containers.Map();
             
-            NsoidSettingsMap(bicas.const.NSOID.PARTIAL_SATURATION) = ...
-                bicas.proc.L1L2.NsoidSetting(...
+            QrcidSettingsMap(bicas.const.QRCID.PARTIAL_SATURATION) = ...
+                bicas.proc.L1L2.QrcidSetting(...
                     uint8(1), ...
                     bicas.const.L2QBM_PARTIAL_SATURATION);
                 
             % NOTE: Also set PARTIAL saturation bit when FULL
             % saturation. /YK 2020-10-02.
-            NsoidSettingsMap(bicas.const.NSOID.FULL_SATURATION) = ...
-                bicas.proc.L1L2.NsoidSetting(...
+            QrcidSettingsMap(bicas.const.QRCID.FULL_SATURATION) = ...
+                bicas.proc.L1L2.QrcidSetting(...
                     uint8(0), ...
                     bicas.const.L2QBM_FULL_SATURATION + ...
                     bicas.const.L2QBM_PARTIAL_SATURATION);
@@ -418,8 +419,8 @@ classdef const
             % Therefore(?) not setting any bit in
             % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
             % to be set.)
-            NsoidSettingsMap(bicas.const.NSOID.THRUSTER_FIRING) = ...
-                bicas.proc.L1L2.NsoidSetting(...
+            QrcidSettingsMap(bicas.const.QRCID.THRUSTER_FIRING) = ...
+                bicas.proc.L1L2.QrcidSetting(...
                     uint8(1), ...
                     uint16(0));
         end

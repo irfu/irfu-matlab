@@ -11,7 +11,7 @@ classdef qual
 % PROPOSAL: Allow code to set/derive "NSOs" for CDF records, and share the
 %           definition/handling of these NSOs with the NSO table: How to modify
 %           *_QUALITY_BITMASK and QUALITY_FLAG, i.e. can share
-%           bicas.const.NSOID_SETTINGS.
+%           bicas.const.QRCID_SETTINGS.
 %   Ex: Thruster firings: Can be set in NSO table and (in the future) from
 %       QUALITY_BITMASK (L1).
 %   Ex: Full saturation: Can be set in NSO table and (future) from algorithm.
@@ -23,12 +23,12 @@ classdef qual
 %           PRO: Simple & straightforward.
 %           CON: Multiple variables. Many arguments.
 %   --
-%   PROPOSAL: Add argument bFullSaturation to get_quality_by_NSOs(). -- IMPLEMENTED
-%   PROPOSAL: Split get_quality_by_NSOs() into two functions: -- IMPLEMENTED (but not sub-proposals).
-%       (1) Convert NSO (file) table into one array of logical (flags) per NSOID
+%   PROPOSAL: Add argument bFullSaturation to get_quality_ZVs(). -- IMPLEMENTED
+%   PROPOSAL: Split get_quality_ZVs() into two functions: -- IMPLEMENTED (but not sub-proposals).
+%       (1) Convert NSO (file) table into one array of logical (flags) per QRCID
 %       (2) Modify *_QUALITY_BITMASK based on arrays or logical (flags), one per
-%           NSOID.
-%           PROPOSAL: Store arrays as containers.Map: NSOID->Array -- IMPLEMENTED
+%           QRCID.
+%           PROPOSAL: Store arrays as containers.Map: QRCID->Array -- IMPLEMENTED
 %           PROPOSAL: Redefine NSOID as ~"quality-related condition" ID = QRCID which
 %                     identifies any condition (one logical flag per CDF record) which may affect *_QUALITY_BITMASK and
 %                     QUALITY_FLAG and which can be deduced from NSO table or
@@ -38,7 +38,7 @@ classdef qual
 %                    *_QUALITY_BITMASK in the future.
 %       TODO-DEC: How handle having multiple *_QUALITY_BITMASK ZVs for potential
 %                 reuse in L3 (not just L2).
-%           NOTE: bicas.const.NSOID_SETTINGS and bicas.proc.L1L2.NsoidSetting do
+%           NOTE: bicas.const.QRCID_SETTINGS and bicas.proc.L1L2.QrcidSetting do
 %                 specify that values should be applied to L2_QUALITY_BITMASK,
 %                 but L3_QUALITY_BITMASK could be added naturally.
 
@@ -96,8 +96,8 @@ classdef qual
             %==============================================
             % Create quality ZVs based on NSO events table
             %==============================================
-            [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_by_NSOs(...
-                bicas.const.NSOID_SETTINGS, NsoTable, Epoch, isFullSaturation, L);
+            [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
+                bicas.const.QRCID_SETTINGS, NsoTable, Epoch, isFullSaturation, L);
         end
         
         
@@ -117,46 +117,46 @@ classdef qual
         %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
         %
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-                get_quality_by_NSOs(NsoidSettingsMap, NsoTable, Epoch, isFullSaturation, L)
+                get_quality_ZVs(QrcidSettingsMap, NsoTable, Epoch, isFullSaturation, L)
             % PROPOSAL: Abolish function. Make code part of
             %           get_UFV_quality_ZVs().
             
-            NsoFlagsMap = bicas.proc.L1L2.qual.NSO_table_to_NSO_arrays(...
-                fieldnames(bicas.const.NSOID), NsoTable, Epoch, L);
+            QrcFlagsMap = bicas.proc.L1L2.qual.NSO_table_to_QRC_flag_arrays(...
+                fieldnames(bicas.const.QRCID), NsoTable, Epoch, L);
 
             % Add autodetected saturation.
-            b = NsoFlagsMap(bicas.const.NSOID.FULL_SATURATION);
+            b = QrcFlagsMap(bicas.const.QRCID.FULL_SATURATION);
             b = b | isFullSaturation;
-            NsoFlagsMap(bicas.const.NSOID.FULL_SATURATION) = b;
+            QrcFlagsMap(bicas.const.QRCID.FULL_SATURATION) = b;
 
             [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-                bicas.proc.L1L2.qual.NSO_arrays_to_quality_variables(...
-                    size(Epoch, 1), NsoFlagsMap, NsoidSettingsMap);
+                bicas.proc.L1L2.qual.QRC_flag_arrays_to_quality_ZVs(...
+                    size(Epoch, 1), QrcFlagsMap, QrcidSettingsMap);
         end
 
 
         
-        % IMPLEMENTATION NOTE: Without allNsoidCa, the function can not create a
-        % return value map that contains keys for all NSOIDs, in case the
-        % NsoTable does not contain all NSOIDs.
+        % IMPLEMENTATION NOTE: Without allQrcidCa, the function can not create a
+        % return value map that contains keys for all QRCIDs, in case the
+        % NsoTable does not contain all QRCIDs.
         %
-        % IMPLEMENTATION NOTE: allNsoidCa is an argument due to automated tests.
+        % IMPLEMENTATION NOTE: allQrcidCa is an argument due to automated tests.
         % Could otherwise be derived from constants.
         %
         % ARGUMENTS
         % =========
-        % allNsoidCa
-        %       1D cell array of all NSOIDs.
+        % allQrcidCa
+        %       1D cell array of all QRCIDs.
         %
         % RETURN VALUE
         % ============
-        % NsoFlagsMap
-        %       containers.Map. NSOID->logical array
-        %       Contains keys for all NSOIDs specified in allNsoidCa, not just
+        % QrcFlagsMap
+        %       containers.Map. QRCID->logical array
+        %       Contains keys for all QRCIDs specified in allQrcidCa, not just
         %       those present in NsoTable.
         %
-        function NsoFlagsMap = NSO_table_to_NSO_arrays(...
-                allNsoidCa, NsoTable, Epoch, L)
+        function QrcFlagsMap = NSO_table_to_QRC_flag_arrays(...
+                allQrcidCa, NsoTable, Epoch, L)
 
             % Local variable naming conventions:
             % ----------------------------------
@@ -165,9 +165,9 @@ classdef qual
             % Ar                = (Non-cell) Array
 
             % NOTE: iCeAr = CDF events as indices to global events.
-            [bCeRecordsCa, ceNsoidCa, iCeAr] = NsoTable.get_NSO_timestamps(Epoch);
-            nCe = numel(ceNsoidCa);
-            nGe = numel(NsoTable.evtNsoidCa);
+            [bCeRecordsCa, ceQrcidCa, iCeAr] = NsoTable.get_NSO_timestamps(Epoch);
+            nCe = numel(ceQrcidCa);
+            nGe = numel(NsoTable.evtQrcidCa);
             L.logf('info', ...
                 ['Searched non-standard operations (NSO) table.', ...
                 ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
@@ -176,9 +176,9 @@ classdef qual
             % Initialize "empty" nsoPerRecordsMap
             % -----------------------------------
             % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!).
-            NsoFlagsMap = containers.Map('keyType', 'char', 'valueType', 'any');
-            for i = 1:numel(allNsoidCa)
-                NsoFlagsMap(allNsoidCa{i}) = false(size(Epoch));
+            QrcFlagsMap = containers.Map('keyType', 'char', 'valueType', 'any');
+            for i = 1:numel(allQrcidCa)
+                QrcFlagsMap(allQrcidCa{i}) = false(size(Epoch));
             end
 
             % Iterate over index into LOCAL/CDF NSO events table.
@@ -186,7 +186,7 @@ classdef qual
 
                 % Index into GLOBAL NSO events table.
                 iGe = iCeAr(kCe);
-                eventNsoid = ceNsoidCa{kCe};
+                eventQrcid = ceQrcidCa{kCe};
                 % Indices into ZVs.
                 bCeRecords = bCeRecordsCa{kCe};
 
@@ -196,21 +196,21 @@ classdef qual
                 L.logf('info', '    %s -- %s %s', ...
                     irf.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGe)), ...
                     irf.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGe)), ...
-                    eventNsoid);
+                    eventQrcid);
 
                 % ASSERTION
-                % NOTE: Not perfect assertion on legal NSOIDs since code only
+                % NOTE: Not perfect assertion on legal QRCIDs since code only
                 % checks those relevant for the data (time interval) currently
-                % processed. (Therefore also checks all NSOIDs when reads NSO
+                % processed. (Therefore also checks all QRCIDs when reads NSO
                 % table.)
-                assert(ismember(eventNsoid, allNsoidCa), 'Can not interpret RCS NSOID "%s".', eventNsoid)
+                assert(ismember(eventQrcid, allQrcidCa), 'Can not interpret QRCID "%s".', eventQrcid)
 
                 %================================
-                % Take action depending on NSOID
+                % Take action depending on QRCID
                 %================================
-                bNsoid                  = NsoFlagsMap(eventNsoid);
-                bNsoid(bCeRecords)      = true;
-                NsoFlagsMap(eventNsoid) = bNsoid;
+                bQrc                    = QrcFlagsMap(eventQrcid);
+                bQrc(bCeRecords)        = true;
+                QrcFlagsMap(eventQrcid) = bQrc;
             end    % for
         end
         
@@ -224,34 +224,34 @@ classdef qual
         % nRec
         %       Number of CDF records (rows).
         %       IMPLEMENTATION NOTE: Needed for handling the case of zero
-        %       NSOIDs.
-        function [QUALITY_FLAG, L2_QUALITY_BITMASK] = NSO_arrays_to_quality_variables(...
-                nRec, NsoFlagsMap, NsoidSettingsMap)
+        %       QRCIDs.
+        function [QUALITY_FLAG, L2_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
+                nRec, QrcFlagsMap, QrcidSettingsMap)
             
             % Create "empty" arrays
             QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
             L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 
-            nsoidCa = NsoFlagsMap.keys();
-            for i = 1:numel(nsoidCa)
-                nsoid        = nsoidCa{i};
-                NsoidSetting = NsoidSettingsMap(nsoid);
-                bNsoid       = NsoFlagsMap(nsoid);
+            qrcidCa = QrcFlagsMap.keys();
+            for i = 1:numel(qrcidCa)
+                qrcid        = qrcidCa{i};
+                QrcidSetting = QrcidSettingsMap(qrcid);
+                bQrcid       = QrcFlagsMap(qrcid);
 
-                assert(isequal( size(bNsoid), [nRec, 1] ))
+                assert(isequal( size(bQrcid), [nRec, 1] ))
                 
                 % Set QUALITY_FLAG
                 % ----------------
                 % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
                 % operation is more natural (simpler) that way.
-                QUALITY_FLAG(bNsoid) = min(...
-                    QUALITY_FLAG(bNsoid), ...
-                    NsoidSetting.QUALITY_FLAG);
+                QUALITY_FLAG(bQrcid) = min(...
+                    QUALITY_FLAG(bQrcid), ...
+                    QrcidSetting.QUALITY_FLAG);
                 
                 % Set L2_QUALITY_BITMASK
                 L2_QUALITY_BITMASK = bitor(...
                     L2_QUALITY_BITMASK, ...
-                    NsoidSetting.L2_QUALITY_BITMASK * uint16(bNsoid));
+                    QrcidSetting.L2_QUALITY_BITMASK * uint16(bQrcid));
             end
         end
 

@@ -201,18 +201,26 @@ NFP
     Non-Fill Position, in the context of FPAs.
 NS
     Nanoseconds
-NSO
-    Non-Standard Operations. Functionality for making BICAS modify processed
-    data based on a list of manually labelled time intervals. BICAS can e.g.
-    use this to set quality bits and remove data.
-NSOID
-    NSO ID. String constant that represents a specific type of NSO. Used in
-    NSO table.
+NSO (Event)
+    Non-Standard Operation. A time interval that has been manually labelled
+    as special. BICAS can e.g. use this to set quality bits and remove data.
+NSO table
+    Separate XML file that contains a list of time intervals which have been
+    manually labeled as NSOs. BICAS uses this list for potentially modifying
+    processed data. Every NSO in the table is categorized using exactly one
+    QRCID.
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
 OSR
     Original sampling (rate). Used in the context of downsampling. Cf DSR.
+QRC
+    Quality-Related Condition.
+    Condition that may influence quality ZVs. Ex: Thruster firing, saturation.
+    QRCs are labelled using QRCIDs.
+QRCID
+    QRC ID. String constant that represents a specific type of QRC.
+    The NSO table uses QRCIDs to label NSO events.
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
 RCS ICD

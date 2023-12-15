@@ -17,17 +17,17 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-        function test_NSO_table_to_NSO_arrays(testCase)
+        function test_NSO_table_to_QRC_flag_arrays(testCase)
 
-            function test(allNsoidCa, NsoTable, Epoch, ExpNsoFlagsMap)
+            function test(allQrcidCa, NsoTable, Epoch, ExpQrcFlagsMap)
                 % Normalize/modify arguments
                 Epoch = int64(Epoch(:));
 
                 L = bicas.Logger('human-readable', false);
 
                 % CALL TESTED FUNCTION
-                ActNsoFlagsMap = bicas.proc.L1L2.qual.NSO_table_to_NSO_arrays(...
-                    allNsoidCa, NsoTable, Epoch, L);
+                ActQrcFlagsMap = bicas.proc.L1L2.qual.NSO_table_to_QRC_flag_arrays(...
+                    allQrcidCa, NsoTable, Epoch, L);
 
                 % ASSERT EXPECTED RESULT
                 % ----------------------
@@ -36,15 +36,15 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 % debugging by understanding any found difference between the
                 % two maps. Therefore explicitly comparing the map subcomponents.
                 testCase.assertEqual(...
-                    sort(ActNsoFlagsMap.keys), ...
-                    sort(ExpNsoFlagsMap.keys))
+                    sort(ActQrcFlagsMap.keys), ...
+                    sort(ExpQrcFlagsMap.keys))
                 
-                nsoidCa = ActNsoFlagsMap.keys;
-                for i = 1:numel(nsoidCa)
-                    nsoid = nsoidCa{i}
+                qrcidCa = ActQrcFlagsMap.keys;
+                for i = 1:numel(qrcidCa)
+                    qrcid = qrcidCa{i}
                     testCase.assertEqual(...
-                        ActNsoFlagsMap(nsoid), ...
-                        ExpNsoFlagsMap(nsoid))
+                        ActQrcFlagsMap(qrcid), ...
+                        ExpQrcFlagsMap(qrcid))
                 end
             end
             
@@ -62,11 +62,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 EPOCH_DOUBLE_CA = {zeros(0,1), [10], [10;20;30]};
                 for i = 1:numel(EPOCH_DOUBLE_CA)
                     Epoch_double = EPOCH_DOUBLE_CA{i};
-                    ExpNsoFlagsMap = containers.Map();
+                    ExpQrcFlagsMap = containers.Map();
                     test(...
                         {}, EMPTY_NSO_TABLE, ...
                         Epoch_double, ...
-                        ExpNsoFlagsMap ...
+                        ExpQrcFlagsMap ...
                     )
                 end
             end
@@ -75,138 +75,138 @@ classdef qual___UTEST < matlab.unittest.TestCase
             % Two non-overlapping NSOs, one at a time
             %=========================================
             % Nontrivial NSO settings.
-            ALL_NSOID_CA = {'NSOID1', 'NSOID2'};
+            ALL_QRCID_CA = {'QRCID1', 'QRCID2'};
             NSO_TABLE = bicas.NsoTable(...
                 int64([1, 4]'*1e9), ...
                 int64([2, 5]'*1e9), ...
-                {'NSOID1', 'NSOID2'}');
+                {'QRCID1', 'QRCID2'}');
             
             if ALL_ENABLED
                 % Time interval is superset of NSO 1/2.
-                ExpNsoFlagsMap = containers.Map();
-                ExpNsoFlagsMap('NSOID1') = logical([0 1 1 0]');
-                ExpNsoFlagsMap('NSOID2') = false(4,1);
+                ExpQrcFlagsMap = containers.Map();
+                ExpQrcFlagsMap('QRCID1') = logical([0 1 1 0]');
+                ExpQrcFlagsMap('QRCID2') = false(4,1);
                 test(...
-                    ALL_NSOID_CA, NSO_TABLE, ...
+                    ALL_QRCID_CA, NSO_TABLE, ...
                     [0:3]*1e9, ...
-                    ExpNsoFlagsMap ...
+                    ExpQrcFlagsMap ...
                 );
             end
             
             if ALL_ENABLED
                 % Time interval is superset of NSO 2/2.
-                ExpNsoFlagsMap = containers.Map();
-                ExpNsoFlagsMap('NSOID1') = false(4,1);
-                ExpNsoFlagsMap('NSOID2') = logical([0 1 1 0]');
+                ExpQrcFlagsMap = containers.Map();
+                ExpQrcFlagsMap('QRCID1') = false(4,1);
+                ExpQrcFlagsMap('QRCID2') = logical([0 1 1 0]');
                 test(...
-                    ALL_NSOID_CA, NSO_TABLE, ...
+                    ALL_QRCID_CA, NSO_TABLE, ...
                     [3:6]*1e9, ...
-                    ExpNsoFlagsMap ...
+                    ExpQrcFlagsMap ...
                 );
             end
             
             if ALL_ENABLED
                 % Time interval from middle of NSO 1 to middle of NSO 2.
-                ExpNsoFlagsMap = containers.Map();
-                ExpNsoFlagsMap('NSOID1') = logical([1 0 0]');
-                ExpNsoFlagsMap('NSOID2') = logical([0 0 1]');
+                ExpQrcFlagsMap = containers.Map();
+                ExpQrcFlagsMap('QRCID1') = logical([1 0 0]');
+                ExpQrcFlagsMap('QRCID2') = logical([0 0 1]');
                 test(...
-                    ALL_NSOID_CA, NSO_TABLE, ...
+                    ALL_QRCID_CA, NSO_TABLE, ...
                     [2:4]'*1e9, ...
-                    ExpNsoFlagsMap ...
+                    ExpQrcFlagsMap ...
                 );
             end
 
             %========================================
-            % Two overlapping NSOs, one unused NSOID
+            % Two overlapping NSOs, one unused QRCID
             %========================================
-            ALL_NSOID_CA = {'NSOID1', 'NSOID2', 'NSOID3'};
+            ALL_QRCID_CA = {'QRCID1', 'QRCID2', 'QRCID3'};
             NSO_TABLE = bicas.NsoTable(...
                 int64([1, 2]'*1e9), ...
                 int64([2, 3]'*1e9), ...
-                {'NSOID1', 'NSOID2'}');
+                {'QRCID1', 'QRCID2'}');
             
             if ALL_ENABLED
                 % Time interval covers all NSOs.
-                ExpNsoFlagsMap = containers.Map();
-                ExpNsoFlagsMap('NSOID1') = logical([0 1 1 0 0]');
-                ExpNsoFlagsMap('NSOID2') = logical([0 0 1 1 0]');
-                ExpNsoFlagsMap('NSOID3') = logical([0 0 0 0 0]');
+                ExpQrcFlagsMap = containers.Map();
+                ExpQrcFlagsMap('QRCID1') = logical([0 1 1 0 0]');
+                ExpQrcFlagsMap('QRCID2') = logical([0 0 1 1 0]');
+                ExpQrcFlagsMap('QRCID3') = logical([0 0 0 0 0]');
                 test(...
-                    ALL_NSOID_CA, NSO_TABLE, ...
+                    ALL_QRCID_CA, NSO_TABLE, ...
                     [0:4]*1e9, ...
-                    ExpNsoFlagsMap ...
+                    ExpQrcFlagsMap ...
                 );
             end
             
             if ALL_ENABLED
                 % Epoch does not overlap with any NSOs (though time interval does).
-                ExpNsoFlagsMap = containers.Map();
-                ExpNsoFlagsMap('NSOID1') = logical([0 0]');
-                ExpNsoFlagsMap('NSOID2') = logical([0 0]');
-                ExpNsoFlagsMap('NSOID3') = logical([0 0]');
+                ExpQrcFlagsMap = containers.Map();
+                ExpQrcFlagsMap('QRCID1') = logical([0 0]');
+                ExpQrcFlagsMap('QRCID2') = logical([0 0]');
+                ExpQrcFlagsMap('QRCID3') = logical([0 0]');
                 test(...
-                    ALL_NSOID_CA, NSO_TABLE, ...
+                    ALL_QRCID_CA, NSO_TABLE, ...
                     [-1, 4]*1e9, ...
-                    ExpNsoFlagsMap ...
+                    ExpQrcFlagsMap ...
                 );
             end
         end
 
 
 
-        function test_NSO_arrays_to_quality_variables(testCase)
+        function test_QRC_flag_arrays_to_quality_ZVs(testCase)
 
-            function test(nRec, NsoFlagsMap, NsoidSettingsMap, ...
+            function test(nRec, QrcFlagsMap, QrcidSettingsMap, ...
                     exp_QUALITY_FLAG, exp_L2_QUALITY_BITMASK)
                 exp_QUALITY_FLAG       = uint8( exp_QUALITY_FLAG(:));
                 exp_L2_QUALITY_BITMASK = uint16(exp_L2_QUALITY_BITMASK(:));
                 
                 % CALL TESTED FUNCTION
                 [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-                    bicas.proc.L1L2.qual.NSO_arrays_to_quality_variables(...
-                        nRec, NsoFlagsMap, NsoidSettingsMap);
+                    bicas.proc.L1L2.qual.QRC_flag_arrays_to_quality_ZVs(...
+                        nRec, QrcFlagsMap, QrcidSettingsMap);
                     
                 testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
                 testCase.assertEqual(act_L2_QUALITY_BITMASK, exp_L2_QUALITY_BITMASK)
             end
             
             % =======================
-            % Zero NSOIDs are defined
+            % Zero QRCIDs are defined
             % =======================
-            NsoidSettingsMap = containers.Map();
-            NsoFlagsMap      = containers.Map();
+            QrcidSettingsMap = containers.Map();
+            QrcFlagsMap      = containers.Map();
             
             % Zero records
-            test(0, NsoFlagsMap, NsoidSettingsMap, ...
+            test(0, QrcFlagsMap, QrcidSettingsMap, ...
                 [], [] ...
             )
         
             % Non-zero records
-            test(3, NsoFlagsMap, NsoidSettingsMap, ...
+            test(3, QrcFlagsMap, QrcidSettingsMap, ...
                 3*ones(3,1), zeros(3,1) ...
             )
         
             % ==========================
-            % Several NSOIDs are defined
+            % Several QRCIDs are defined
             % ==========================
-            NsoidSettingsMap = containers.Map();
-            NsoidSettingsMap('NSOID1') = bicas.proc.L1L2.NsoidSetting(uint8(2), uint16(2));
-            NsoidSettingsMap('NSOID2') = bicas.proc.L1L2.NsoidSetting(uint8(3), uint16(4));
+            QrcidSettingsMap = containers.Map();
+            QrcidSettingsMap('QRCID1') = bicas.proc.L1L2.QrcidSetting(uint8(2), uint16(2));
+            QrcidSettingsMap('QRCID2') = bicas.proc.L1L2.QrcidSetting(uint8(3), uint16(4));
             
             % Zero records
-            NsoFlagsMap = containers.Map();
-            NsoFlagsMap('NSOID1') = false(0, 1);
-            NsoFlagsMap('NSOID2') = false(0, 1);
-            test(0, NsoFlagsMap, NsoidSettingsMap, ...
+            QrcFlagsMap = containers.Map();
+            QrcFlagsMap('QRCID1') = false(0, 1);
+            QrcFlagsMap('QRCID2') = false(0, 1);
+            test(0, QrcFlagsMap, QrcidSettingsMap, ...
                 [], [] ...
             )
             
             % Non-zero records
-            NsoFlagsMap = containers.Map();
-            NsoFlagsMap('NSOID1') = logical([0 0 1 1]');
-            NsoFlagsMap('NSOID2') = logical([0 1 0 1]');
-            test(4, NsoFlagsMap, NsoidSettingsMap, ...
+            QrcFlagsMap = containers.Map();
+            QrcFlagsMap('QRCID1') = logical([0 0 1 1]');
+            QrcFlagsMap('QRCID2') = logical([0 1 0 1]');
+            test(4, QrcFlagsMap, QrcidSettingsMap, ...
                 [3 3 2 2], [0 4 2 4+2] ...
             )
         end
