@@ -665,6 +665,11 @@ classdef FPArray < matlab.mixin.CustomDisplay
             Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 .* a2));
         end
 
+        % Overload |
+%         function Fpa = or(obj1, obj2)
+%             Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 | a2));
+%         end
+
 
 
         % "Overload" cat().

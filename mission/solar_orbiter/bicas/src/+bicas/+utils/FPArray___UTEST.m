@@ -629,6 +629,43 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
         
         
         
+%         function test_or(testCase)
+%             function Fpa = Fpa(dataAr, fpAr)
+%                 Fpa = bicas.utils.FPArray(logical(dataAr), ...
+%                     'FILL_POSITIONS', logical(fpAr));
+%             end
+%             
+%             function test(Fpa1, Fpa2, ExpFpa)
+%                 ActFpa12  = Fpa1 | Fpa2;
+%                 ActFpa21  = Fpa2 | Fpa1;
+%                 ActFpa12b = Fpa1 | Fpa2.array();
+%                 ActFpa21b = Fpa2 | Fpa1.array();
+%                 
+%                 testCase.assertEqual(ActFpa12,  ExpFpa)
+%                 testCase.assertEqual(ActFpa21,  ExpFpa)
+%                 testCase.assertEqual(ActFpa12b, ExpFpa)
+%                 testCase.assertEqual(ActFpa21b, ExpFpa)
+%             end
+%             
+%             % Non-scalar | non-scalar
+%             test(...
+%                 Fpa([0 1 0 1; 0 1 0 1], [0 0 0 0; 1 1 1 1]), ...
+%                 Fpa([0 0 1 1; 0 0 1 1], [0 0 0 0; 1 1 1 1]), ...
+%                 Fpa([0 1 1 1; 1 0 0 0], [0 0 0 0; 1 1 1 1]))
+% 
+%             % Scalar | non-scalar
+%             test(...
+%                 Fpa([0],    [0]), ...
+%                 Fpa([0; 1], [0; 0]), ...
+%                 Fpa([0; 1], [0; 0]))
+% 
+%             % Scalar | scalar
+%             test(Fpa([1], [0]), Fpa([1], [0]), Fpa([1], [0]))
+%             test(Fpa([0], [0]), Fpa([0], [0]), Fpa([0], [0]))
+%         end
+        
+        
+        
         function test_floatNan2logical(testCase)
             function test_element_illegal_fail(mc2)
                 Fpa = bicas.utils.FPArray.floatNan2logical(...
