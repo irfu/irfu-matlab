@@ -91,7 +91,7 @@ classdef qual
             
             % Remove QRCIDs which this function can not handle (and should not
             % need to) since they are not intended for L2_QUALITY_BITMASK.
-            QrcFlagsMap.remove(bicas.const.QRCID.BAD_DENSITY)
+            QrcFlagsMap.remove(bicas.const.QRCID.BAD_DENSITY);
 
             % Add autodetected saturation.
             b = QrcFlagsMap(bicas.const.QRCID.FULL_SATURATION);
