@@ -93,7 +93,7 @@ classdef dc
             % ##############################################
             % Set quality variables, and apply UFV (to data)
             % ##############################################
-            if 0
+            if 1
                 % AUTODETECT SATURATION.
                 % NOT YET COMPLETED FUNCTIONALITY.
                 Sat = bicas.proc.L1L2.Saturation(Bso);
