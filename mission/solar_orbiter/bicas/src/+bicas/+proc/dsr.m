@@ -549,6 +549,7 @@ classdef dsr
         % Downsample a zVariable using pre-defined bins to minimum in each bin.
         %
         function [DsrFpa] = downsample_ZV_minimum( OsrFpa, iRecordsInBinCa )
+            assert(isa(OsrFpa, 'bicas.utils.FPArray'))
            
             function [binSamplesDsrAr, binFpDsrAr] = bin_to_record(binSamplesOsrAr, binFpOsrAr)
 
@@ -581,11 +582,13 @@ classdef dsr
 
 
         
-        % Downsample a zVariable using pre-defined bins to the logical OR of
-        % each bin.
+        % Downsample a zVariable (FPA) using pre-defined bins to the "logical OR
+        % value" each OSR bin.
         %
         function DsrFpa = downsample_ZV_bitmask(OsrFpa, iRecordsInBinCa)
+            assert(isa(OsrFpa, 'bicas.utils.FPArray'))
 
+            % How to reduce one bin into one record.
             function [binSamplesDsrAr, binFpDsrAr] = bin_to_record(binSamplesOsrAr, binFpOsrAr)
 
                 binSamplesOsrAr(binFpOsrAr, :) = [];   % Delete rows with FPs.

@@ -195,7 +195,8 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % equality.
             % NOTE: Does not permit cell arrays.
             % NOTE: Needs to permit char arrays for metadata ZVs.
-            assert(isnumeric(dataAr) || ischar(dataAr) || islogical(dataAr))
+            assert(isnumeric(dataAr) || ischar(dataAr) || islogical(dataAr), ...
+                'dataAr has disallowed MATLAB class="%s".', class(dataAr))
             
             
             if numel(varargin) == 0
@@ -286,18 +287,6 @@ classdef FPArray < matlab.mixin.CustomDisplay
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fv;
         end
-        
-        
-        
-        % Set all positions to FP.
-        %
-        % NOTE/BUG: Does not modify the object without explicitly using the
-        % return value! Call Fpa = Fpa.set_FP() to effectively modify the
-        % object.
-%         function obj = set_FP(obj)
-%             obj.fpAr(:) = true;
-%         end
-%       Function disabled since not used.
         
         
         
@@ -787,13 +776,14 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %       Instance of FPA.
         % obj2
         %       FPA, or some other object/array.
-        %       Must have same MATLAB class (obj2.mc if it is an FPA) as "Fpa1".
+        %       Must have same MATLAB class (obj2.mc if it is an FPA) as
+        %       "Fpa1.mc".
         % fhBinaryArrayOperation
-        %       Function handle. Combines two arrays (not FPAs) to produce third
-        %       array. Input arrays have to have same MATLAB class, and either
-        %       (a) same size or (b) one of them has to be scalar. The operation
-        %       has to be element-wise. (Otherwise the handling of FPs won't
-        %       work.)
+        %       Function handle. Combines two non-FPA arrays to produce third
+        %       non-FPA array. Input arrays have to have same MATLAB class, and
+        %       either (a) same size or (b) one of them has to be scalar. The
+        %       operation has to be element-wise. (Otherwise the handling of FPs
+        %       won't work.)
         %
         %
         % NOTE: Always outputs an FPA.

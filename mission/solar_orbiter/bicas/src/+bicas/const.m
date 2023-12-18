@@ -262,8 +262,6 @@ classdef const
 
         % Various S/W descriptor (SWD) release data for the entire software (not
         % specific outputs)
-        % ----------------------------------------------------------------------
-        %
         function MAP = init_SWD_metadata()
             MAP = containers.Map();
 
@@ -435,7 +433,7 @@ classdef const
             
             QrcSettingsL3Map(bicas.const.QRCID.BAD_DENSITY) = ...
                 bicas.proc.QrcSetting(...
-                    uint8(3), ...                          % Should set to =1=3-1-1?
+                    uint8(1), ...
                     bicas.const.L3QBM_BAD_DENSITY);
         end
 

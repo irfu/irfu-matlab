@@ -1,46 +1,10 @@
 %
-% Collection of code relating to quality variables for L1/L1R to L2 processing.
+% Collection of code relating to quality ZVs for L1/L1R to L2 processing.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual
-% PROPOSAL: Redefine as applying to quality variables for all processing
-%           (between any archiving levels, not just L1/L1R-L2).
-%
-% PROPOSAL: Allow code to set/derive "NSOs" for CDF records, and share the
-%           definition/handling of these NSOs with the NSO table: How to modify
-%           *_QUALITY_BITMASK and QUALITY_FLAG, i.e. can share
-%           bicas.const.QRC_SETTINGS.
-%   Ex: Thruster firings: Can be set in NSO table and (in the future) from
-%       QUALITY_BITMASK (L1).
-%   Ex: Full saturation: Can be set in NSO table and (future) from algorithm.
-%   --
-%   TODO-DEC: How represent such information?
-%       NOTE: Is naturally one value per CDF record. NSO table is list of
-%             labelled time periods.
-%       PROPOSAL: Arrays of logical.
-%           PRO: Simple & straightforward.
-%           CON: Multiple variables. Many arguments.
-%   --
-%   PROPOSAL: Add argument bFullSaturation to get_quality_ZVs(). -- IMPLEMENTED
-%   PROPOSAL: Split get_quality_ZVs() into two functions: -- IMPLEMENTED (but not sub-proposals).
-%       (1) Convert NSO (file) table into one array of logical (flags) per QRCID
-%       (2) Modify *_QUALITY_BITMASK based on arrays or logical (flags), one per
-%           QRCID.
-%           PROPOSAL: Store arrays as containers.Map: QRCID->Array -- IMPLEMENTED
-%           PROPOSAL: Redefine NSOID as ~"quality-related condition" ID = QRCID which
-%                     identifies any condition (one logical flag per CDF record) which may affect *_QUALITY_BITMASK and
-%                     QUALITY_FLAG and which can be deduced from NSO table or
-%                     algorithm in processing (or from ZVs).
-%           PROPOSAL: Have function (2) be function of output dataset.
-%               PRO: Can be used to influence the setting of QUALITY_FLAG and
-%                    *_QUALITY_BITMASK in the future.
-%       TODO-DEC: How handle having multiple *_QUALITY_BITMASK ZVs for potential
-%                 reuse in L3 (not just L2).
-%           NOTE: bicas.const.QRC_SETTINGS and bicas.proc.QrcSetting do
-%                 specify that values should be applied to L2_QUALITY_BITMASK,
-%                 but L3_QUALITY_BITMASK could be added naturally.
 
 
 
@@ -120,6 +84,7 @@ classdef qual
         %
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 get_quality_ZVs(QrcSettingsL2Map, NsoTable, Epoch, isFullSaturation, L)
+            assert(islogical(isFullSaturation))
             
             QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
                 fieldnames(bicas.const.QRCID), NsoTable, Epoch, L);

@@ -1,4 +1,6 @@
 %
+% Collection of code relating to setting quality ZVs.
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
@@ -103,6 +105,7 @@ classdef qual
             QrcFlagsMap = containers.Map('keyType', 'char', 'valueType', 'any');
             for i = 1:numel(allQrcidCa)
                 QrcFlagsMap(allQrcidCa{i}) = false(size(Epoch));
+                % QrcFlagsMap(allQrcidCa{i}) = bicas.utils.FPArray(false(size(Epoch)));
             end
 
             % Iterate over events in NSO events table which apply to the
@@ -141,8 +144,9 @@ classdef qual
 
 
 
-        % NOTE: Does not return FPA, since internal algorithm can not produce
-        % unknown values.
+        % NOTE: Does not work with FPAs, since internal algorithm can not
+        % produce unknown values. The caller is supposed to decide how to
+        % interpret unknown values before calling function.
         %
         %
         % ARGUMENTS
@@ -155,6 +159,7 @@ classdef qual
         %       containers.Map: QRCID-->Logical column array
         % QrcSettingsMap
         %       containers.Map: QRCID-->bicas.proc.QrcSetting
+        %       NOTE: QRCIDs must match those of QrcFlagsMap.
         %
         %
         % RETURN VALUES
@@ -167,7 +172,19 @@ classdef qual
         %
         function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
                 nRec, QrcFlagsMap, QrcSettingsMap)
+            
+%             % ASSERTION: Same QRCID is not specified twice.
+%             assert(isempty(intersect(QrcSettingsMap.keys, ignoredQrcidCa)))
+%             % ASSERTION: The QRCIDs in QrcFlagsMap have been specified (no more,
+%             %            no less).
+%             castring_sets_equal(...
+%                 QrcFlagsMap.keys, ...
+%                 [QrcSettingsMap.keys, ignoredQrcidCa])
 
+            irf.assert.castring_sets_equal(...
+                QrcFlagsMap.keys, ...
+                QrcSettingsMap.keys)
+            
             % Create "empty" arrays
             QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
             Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
@@ -176,22 +193,23 @@ classdef qual
             for i = 1:numel(qrcidCa)
                 qrcid      = qrcidCa{i};
                 QrcSetting = QrcSettingsMap(qrcid);
-                bQrcid     = QrcFlagsMap(qrcid);
+                bQrc       = QrcFlagsMap(qrcid);
 
-                assert(isequal( size(bQrcid), [nRec, 1] ))
+                assert(isa(bQrc, 'logical'))
+                assert(isequal( size(bQrc), [nRec, 1] ))
 
                 % Set QUALITY_FLAG
                 % ----------------
                 % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
                 % operation is more natural (simpler) that way.
-                QUALITY_FLAG(bQrcid) = min(...
-                    QUALITY_FLAG(bQrcid), ...
+                QUALITY_FLAG(bQrc) = min(...
+                    QUALITY_FLAG(bQrc), ...
                     QrcSetting.QUALITY_FLAG);
 
                 % Set Lx_QUALITY_BITMASK
                 Lx_QUALITY_BITMASK = bitor(...
                     Lx_QUALITY_BITMASK, ...
-                    QrcSetting.Lx_QUALITY_BITMASK * uint16(bQrcid));
+                    QrcSetting.Lx_QUALITY_BITMASK * uint16(bQrc));
             end
         end
 

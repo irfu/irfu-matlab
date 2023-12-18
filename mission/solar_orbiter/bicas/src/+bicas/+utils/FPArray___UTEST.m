@@ -481,8 +481,8 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             % Assign scalar to matrix.
             Fpa1a = Fpa([1,NaN,3; 4,5,NaN], NaN);
             Fpa1b = Fpa1a;
-            Fpa2 = Fpa([9], NaN);
-            Fpa3 = Fpa([9,9,9; 9,9,9], NaN);
+            Fpa2  = Fpa([9], NaN);
+            Fpa3  = Fpa([9,9,9; 9,9,9], NaN);
             Fpa1a(:, :) = Fpa2;
             testCase.verifyEqual(Fpa1a, Fpa3)
 %             Fpa1b(:, :) = Fpa2.array(NaN);
@@ -608,8 +608,8 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
             import bicas.utils.FPArray___UTEST.Fpa
             
             function test(Fpa1, Fpa2, ExpFpa)
-                ActFpa12 = Fpa1 .* Fpa2;
-                ActFpa21 = Fpa2 .* Fpa1;
+                ActFpa12  = Fpa1 .* Fpa2;
+                ActFpa21  = Fpa2 .* Fpa1;
                 ActFpa12b = Fpa1 .* Fpa2.array();
                 ActFpa21b = Fpa2 .* Fpa1.array();
                 
