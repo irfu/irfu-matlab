@@ -157,7 +157,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
         function test_QRC_flag_arrays_to_quality_ZVs(testCase)
 
-            function test(nRec, QrcFlagsMap, QrcidSettingsMap, ...
+            function test(nRec, QrcFlagsMap, QrcSettingsMap, ...
                     exp_QUALITY_FLAG, exp_L2_QUALITY_BITMASK)
                 exp_QUALITY_FLAG       = uint8( exp_QUALITY_FLAG(:));
                 exp_L2_QUALITY_BITMASK = uint16(exp_L2_QUALITY_BITMASK(:));
@@ -165,7 +165,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 % CALL TESTED FUNCTION
                 [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
                     bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-                        nRec, QrcFlagsMap, QrcidSettingsMap);
+                        nRec, QrcFlagsMap, QrcSettingsMap);
 
                 testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
                 testCase.assertEqual(act_L2_QUALITY_BITMASK, exp_L2_QUALITY_BITMASK)
@@ -174,31 +174,31 @@ classdef qual___UTEST < matlab.unittest.TestCase
             % =======================
             % Zero QRCIDs are defined
             % =======================
-            QrcidSettingsMap = containers.Map();
+            QrcSettingsMap = containers.Map();
             QrcFlagsMap      = containers.Map();
 
             % Zero records
-            test(0, QrcFlagsMap, QrcidSettingsMap, ...
+            test(0, QrcFlagsMap, QrcSettingsMap, ...
                 [], [] ...
             )
 
             % Non-zero records
-            test(3, QrcFlagsMap, QrcidSettingsMap, ...
+            test(3, QrcFlagsMap, QrcSettingsMap, ...
                 3*ones(3,1), zeros(3,1) ...
             )
 
             % ==========================
             % Several QRCIDs are defined
             % ==========================
-            QrcidSettingsMap = containers.Map();
-            QrcidSettingsMap('QRCID1') = bicas.proc.L1L2.QrcidSetting(uint8(2), uint16(2));
-            QrcidSettingsMap('QRCID2') = bicas.proc.L1L2.QrcidSetting(uint8(3), uint16(4));
+            QrcSettingsMap = containers.Map();
+            QrcSettingsMap('QRCID1') = bicas.proc.QrcSetting(uint8(2), uint16(2));
+            QrcSettingsMap('QRCID2') = bicas.proc.QrcSetting(uint8(3), uint16(4));
 
             % Zero records
             QrcFlagsMap = containers.Map();
             QrcFlagsMap('QRCID1') = false(0, 1);
             QrcFlagsMap('QRCID2') = false(0, 1);
-            test(0, QrcFlagsMap, QrcidSettingsMap, ...
+            test(0, QrcFlagsMap, QrcSettingsMap, ...
                 [], [] ...
             )
 
@@ -206,7 +206,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
             QrcFlagsMap = containers.Map();
             QrcFlagsMap('QRCID1') = logical([0 0 1 1]');
             QrcFlagsMap('QRCID2') = logical([0 1 0 1]');
-            test(4, QrcFlagsMap, QrcidSettingsMap, ...
+            test(4, QrcFlagsMap, QrcSettingsMap, ...
                 [3 3 2 2], [0 4 2 4+2] ...
             )
         end

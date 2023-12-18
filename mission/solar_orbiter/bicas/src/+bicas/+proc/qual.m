@@ -152,7 +152,7 @@ classdef qual
         %       QRCIDs.
         %
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
-                nRec, QrcFlagsMap, QrcidSettingsMap)
+                nRec, QrcFlagsMap, QrcSettingsMap)
 
             % Create "empty" arrays
             QUALITY_FLAG               = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
@@ -160,9 +160,9 @@ classdef qual
 
             qrcidCa = QrcFlagsMap.keys();
             for i = 1:numel(qrcidCa)
-                qrcid        = qrcidCa{i};
-                QrcidSetting = QrcidSettingsMap(qrcid);
-                bQrcid       = QrcFlagsMap(qrcid);
+                qrcid      = qrcidCa{i};
+                QrcSetting = QrcSettingsMap(qrcid);
+                bQrcid     = QrcFlagsMap(qrcid);
 
                 assert(isequal( size(bQrcid), [nRec, 1] ))
 
@@ -172,12 +172,12 @@ classdef qual
                 % operation is more natural (simpler) that way.
                 QUALITY_FLAG(bQrcid) = min(...
                     QUALITY_FLAG(bQrcid), ...
-                    QrcidSetting.QUALITY_FLAG);
+                    QrcSetting.QUALITY_FLAG);
 
                 % Set L2_QUALITY_BITMASK
                 L2_QUALITY_BITMASK = bitor(...
                     L2_QUALITY_BITMASK, ...
-                    QrcidSetting.L2_QUALITY_BITMASK * uint16(bQrcid));
+                    QrcSetting.L2_QUALITY_BITMASK * uint16(bQrcid));
             end
         end
 

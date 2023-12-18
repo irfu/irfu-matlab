@@ -11,7 +11,7 @@ classdef qual
 % PROPOSAL: Allow code to set/derive "NSOs" for CDF records, and share the
 %           definition/handling of these NSOs with the NSO table: How to modify
 %           *_QUALITY_BITMASK and QUALITY_FLAG, i.e. can share
-%           bicas.const.QRCID_SETTINGS.
+%           bicas.const.QRC_SETTINGS.
 %   Ex: Thruster firings: Can be set in NSO table and (in the future) from
 %       QUALITY_BITMASK (L1).
 %   Ex: Full saturation: Can be set in NSO table and (future) from algorithm.
@@ -38,7 +38,7 @@ classdef qual
 %                    *_QUALITY_BITMASK in the future.
 %       TODO-DEC: How handle having multiple *_QUALITY_BITMASK ZVs for potential
 %                 reuse in L3 (not just L2).
-%           NOTE: bicas.const.QRCID_SETTINGS and bicas.proc.L1L2.QrcidSetting do
+%           NOTE: bicas.const.QRC_SETTINGS and bicas.proc.QrcSetting do
 %                 specify that values should be applied to L2_QUALITY_BITMASK,
 %                 but L3_QUALITY_BITMASK could be added naturally.
 
@@ -97,7 +97,7 @@ classdef qual
             % Create quality ZVs based on NSO events table
             %==============================================
             [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
-                bicas.const.QRCID_SETTINGS, NsoTable, Epoch, isFullSaturation, L);
+                bicas.const.QRC_SETTINGS, NsoTable, Epoch, isFullSaturation, L);
         end
         
         
@@ -117,7 +117,7 @@ classdef qual
         %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
         %
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-                get_quality_ZVs(QrcidSettingsMap, NsoTable, Epoch, isFullSaturation, L)
+                get_quality_ZVs(QrcSettingsMap, NsoTable, Epoch, isFullSaturation, L)
             % PROPOSAL: Abolish function. Make code part of
             %           get_UFV_quality_ZVs().
             
@@ -131,7 +131,7 @@ classdef qual
 
             [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-                    size(Epoch, 1), QrcFlagsMap, QrcidSettingsMap);
+                    size(Epoch, 1), QrcFlagsMap, QrcSettingsMap);
         end
 
 

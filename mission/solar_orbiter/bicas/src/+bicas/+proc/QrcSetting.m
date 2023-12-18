@@ -1,12 +1,13 @@
 %
-% Class that represents how to interpret a particular QRCID.
+% Class that represents how to convert one particular QRCID into modifications
+% of quality ZVs.
 %
-% NOTE: Does not include the QRCID itself.
+% NOTE: Class does not include the QRCID itself.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef QrcidSetting
+classdef QrcSetting
     % PROPOSAL: Better name
     %   setting
     %       CON: Could be confused with more proper settings such as the NSO
@@ -19,7 +20,10 @@ classdef QrcidSetting
     %   policy
     %   entry
     %   action
-    %   QRC (instead of QRCID)
+    %   QRC/QRCID
+    %       CON: Class refers to translation of QRCID to quality variables modifications
+    %   quality ZVs
+    %   quality ZVs modification
     %   QrcSetting
     %
     properties(SetAccess=immutable)
@@ -39,7 +43,7 @@ classdef QrcidSetting
 
 
 
-        function obj = QrcidSetting(QUALITY_FLAG, L2_QUALITY_BITMASK)
+        function obj = QrcSetting(QUALITY_FLAG, L2_QUALITY_BITMASK)
 
             assert(bicas.utils.validate_ZV_QUALITY_FLAG(QUALITY_FLAG))
             assert(isa(L2_QUALITY_BITMASK, 'uint16'))
