@@ -145,7 +145,7 @@ classdef const
         % How to interpret different QRCIDs in terms of quality ZVs.
         % NOTE: As of 2023-12-15, this is only used for setting quality ZVs in
         %       L2 datasets.
-        QRC_SETTINGS = bicas.const.init_QRC_SETTINGS();
+        QRC_SETTINGS_L2 = bicas.const.init_QRC_SETTINGS_L2();
 
 
             
@@ -397,29 +397,29 @@ classdef const
 
 
 
-        function QrcSettingsMap = init_QRC_SETTINGS()
-            QrcSettingsMap = containers.Map();
+        % Function for initializing constant.
+        function QrcSettingsL2Map = init_QRC_SETTINGS_L2()
+            QrcSettingsL2Map = containers.Map();
             
-            QrcSettingsMap(bicas.const.QRCID.PARTIAL_SATURATION) = ...
+            QrcSettingsL2Map(bicas.const.QRCID.PARTIAL_SATURATION) = ...
                 bicas.proc.QrcSetting(...
                     uint8(1), ...
                     bicas.const.L2QBM_PARTIAL_SATURATION);
                 
             % NOTE: Also set PARTIAL saturation bit when FULL
             % saturation. /YK 2020-10-02.
-            QrcSettingsMap(bicas.const.QRCID.FULL_SATURATION) = ...
+            QrcSettingsL2Map(bicas.const.QRCID.FULL_SATURATION) = ...
                 bicas.proc.QrcSetting(...
                     uint8(0), ...
                     bicas.const.L2QBM_FULL_SATURATION + ...
                     bicas.const.L2QBM_PARTIAL_SATURATION);
             
             % NOTE: There will be an L1 QUALITY_BITMASK bit for
-            % thruster firings eventually according to
+            % thruster firings in the future according to
             % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
-            % Therefore(?) not setting any bit in
-            % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
-            % to be set.)
-            QrcSettingsMap(bicas.const.QRCID.THRUSTER_FIRING) = ...
+            % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
+            % (YK 2020-11-03 did not ask for any to be set.)
+            QrcSettingsL2Map(bicas.const.QRCID.THRUSTER_FIRING) = ...
                 bicas.proc.QrcSetting(...
                     uint8(1), ...
                     uint16(0));

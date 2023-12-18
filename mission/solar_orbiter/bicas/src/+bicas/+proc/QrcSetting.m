@@ -33,8 +33,10 @@ classdef QrcSetting
         % QUALITY_FLAG is supposed to be set/updated.
         QUALITY_FLAG
 
-        % Bits that should be set in ZV "L2_QUALITY_BITMASK".
-        L2_QUALITY_BITMASK
+        % Bits that should be set in either ZV "L2_QUALITY_BITMASK" or
+        % "L3_QUALITY_BITMASK". The context in which this class is used
+        % determines which.
+        Lx_QUALITY_BITMASK
     end
 
 
@@ -43,13 +45,13 @@ classdef QrcSetting
 
 
 
-        function obj = QrcSetting(QUALITY_FLAG, L2_QUALITY_BITMASK)
+        function obj = QrcSetting(QUALITY_FLAG, Lx_QUALITY_BITMASK)
 
             assert(bicas.utils.validate_ZV_QUALITY_FLAG(QUALITY_FLAG))
-            assert(isa(L2_QUALITY_BITMASK, 'uint16'))
+            assert(isa(Lx_QUALITY_BITMASK, 'uint16'))
 
             obj.QUALITY_FLAG       = QUALITY_FLAG;
-            obj.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
+            obj.Lx_QUALITY_BITMASK = Lx_QUALITY_BITMASK;
         end
 
 

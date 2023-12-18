@@ -144,19 +144,33 @@ classdef qual
         % NOTE: Does not return FPA, since internal algorithm can not produce
         % unknown values.
         %
+        %
         % ARGUMENTS
         % =========
         % nRec
         %       Number of CDF records (rows).
         %       IMPLEMENTATION NOTE: Needed for handling the case of zero
         %       QRCIDs.
+        % QrcFlagsMap
+        %       containers.Map: QRCID-->Logical column array
+        % QrcSettingsMap
+        %       containers.Map: QRCID-->bicas.proc.QrcSetting
         %
-        function [QUALITY_FLAG, L2_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
+        %
+        % RETURN VALUES
+        % =============
+        % QUALITY_FLAG
+        % Lx_QUALITY_BITMASK
+        %       L*_QUALITY_FLAG value to use for output dataset.
+        %       Refers to L2_QUALITY_BITMASK or L3_QUALITY_BITMASK
+        %       depending on context.
+        %
+        function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
                 nRec, QrcFlagsMap, QrcSettingsMap)
 
             % Create "empty" arrays
-            QUALITY_FLAG               = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
-            L2_QUALITY_BITMASK         = zeros(nRec, 1, 'uint16');
+            QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
+            Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 
             qrcidCa = QrcFlagsMap.keys();
             for i = 1:numel(qrcidCa)
@@ -174,10 +188,10 @@ classdef qual
                     QUALITY_FLAG(bQrcid), ...
                     QrcSetting.QUALITY_FLAG);
 
-                % Set L2_QUALITY_BITMASK
-                L2_QUALITY_BITMASK = bitor(...
-                    L2_QUALITY_BITMASK, ...
-                    QrcSetting.L2_QUALITY_BITMASK * uint16(bQrcid));
+                % Set Lx_QUALITY_BITMASK
+                Lx_QUALITY_BITMASK = bitor(...
+                    Lx_QUALITY_BITMASK, ...
+                    QrcSetting.Lx_QUALITY_BITMASK * uint16(bQrcid));
             end
         end
 
