@@ -49,7 +49,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %   ~dataAr
     %       NOTE: Same as internal variable.
     %
-    % PROPOSAL: Better name for method "NFP_array".
+    % PROPOSAL: Better name for method "NFP_1D_array".
     %   NOTE: Cf .get_data().
     %   ~get_non_FP
     %   ~NFP_array    ## cf. .array(fv)
@@ -400,7 +400,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % ar
         %       1D column array. Internal array is first converted to column
         %       vector. Then fill positions are removed.
-        function ar = NFP_array(obj)
+        function ar = NFP_1D_array(obj)
             % IMPLEMENTATION NOTE: Must convert to column array. Otherwise a 1D
             % vector that is not a column remains a column in that dimension.
             dataAr = obj.dataAr(:);    % Convert to column array.

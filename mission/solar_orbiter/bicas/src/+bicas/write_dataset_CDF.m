@@ -230,7 +230,7 @@ function DataObj = init_modify_dataobj(...
             if ismember(zvValuePd.mc, {'single', 'double'})
                 fv = cast(NaN, zvValuePd.mc);
             end
-            assert(all(~ismember(fv, zvValuePd.NFP_array())))
+            assert(all(~ismember(fv, zvValuePd.NFP_1D_array())))
             
             zvValueLog = zvValuePd.array(fv);
         else
@@ -326,7 +326,7 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     if isa(zvValuePd, 'bicas.utils.FPArray')
         % Normalize FPA --> array with CDF FV.
         assert(strcmp(mc, zvValuePd.mc))
-        assert(all(~ismember(fv, zvValuePd.NFP_array())))
+        assert(all(~ismember(fv, zvValuePd.NFP_1D_array())))
         zvValueTemp = zvValuePd.array(fv);
     elseif isfloat(zvValuePd)
         % Normalize array --> array with CDF FV.
