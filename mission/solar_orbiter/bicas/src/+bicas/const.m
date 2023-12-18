@@ -122,10 +122,13 @@ classdef const
         % IMPLEMENTATION NOTE: One does not want to use the RCS QRCID string
         % constants directly inside the code, in case of typos.
         %
+        % NOTE: This includes QRCIDs for both L2 and L3 density.
+        %
         QRCID = struct(...
             'PARTIAL_SATURATION', 'PARTIAL_SATURATION', ...
             'FULL_SATURATION',    'FULL_SATURATION', ...
-            'THRUSTER_FIRING',    'THRUSTER_FIRING');
+            'THRUSTER_FIRING',    'THRUSTER_FIRING', ...
+            'BAD_DENSITY',        'BAD_DENSITY');
 
         % Define the bits (bitmasks) in L2_QUALITY_BITMASK and
         % L3_QUALITY_BITMASK. Intended for bit operations.
@@ -143,9 +146,8 @@ classdef const
 
 
         % How to interpret different QRCIDs in terms of quality ZVs.
-        % NOTE: As of 2023-12-15, this is only used for setting quality ZVs in
-        %       L2 datasets.
-        QRC_SETTINGS_L2 = bicas.const.init_QRC_SETTINGS_L2();
+        QRC_SETTINGS_L2         = bicas.const.init_QRC_SETTINGS_L2();
+        QRC_SETTINGS_L3_DENSITY = bicas.const.init_QRC_SETTINGS_L3_DENSITY();
 
 
             
@@ -423,6 +425,18 @@ classdef const
                 bicas.proc.QrcSetting(...
                     uint8(1), ...
                     uint16(0));
+        end
+
+
+
+        % Function for initializing constant.
+        function QrcSettingsL3Map = init_QRC_SETTINGS_L3_DENSITY()
+            QrcSettingsL3Map = containers.Map();
+            
+            QrcSettingsL3Map(bicas.const.QRCID.BAD_DENSITY) = ...
+                bicas.proc.QrcSetting(...
+                    uint8(3), ...                          % Should set to =1=3-1-1?
+                    bicas.const.L3QBM_BAD_DENSITY);
         end
 
 

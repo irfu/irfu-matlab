@@ -304,16 +304,18 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
             Out.Zv.DENSITY                   = NeScpCm3Fpa.cast('single');
 
-            bFp = Out.Zv.DENSITY.fpAr;
-            Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
-            Out.Zv.L3_QUALITY_BITMASK        = ...
-                NeScpQualityBitFpa.ensure_NFP(false).cast('uint16') .* bicas.const.L3QBM_BAD_DENSITY;
-            Out.Zv.L3_QUALITY_BITMASK(bFp)   = bicas.utils.FPArray.FP_UINT16;   % ?!
             % NOTE: Behaviour w.r.t. FPs:
             %   Density FP     ==> L3_QUALITY_BITMASK FP
             %                      QUALITY_FLAG       FP
             %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
             %                      (since there is no FP for individual quality bits).
+            [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(NeScpQualityBitFpa.array(false));
+            Out.Zv.QUALITY_FLAG              = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
+            Out.Zv.L3_QUALITY_BITMASK        = bicas.utils.FPArray(L3_QUALITY_FLAG);
+            
+            bFp = Out.Zv.DENSITY.fpAr;
+            Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
+            Out.Zv.L3_QUALITY_BITMASK(bFp)   = bicas.utils.FPArray.FP_UINT16;
         end
 
 

@@ -123,6 +123,10 @@ classdef qual
             
             QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
                 fieldnames(bicas.const.QRCID), NsoTable, Epoch, L);
+            
+            % Remove QRCIDs which this function can not handle (and should not
+            % need to) since they are not intended for L2_QUALITY_BITMASK.
+            QrcFlagsMap.remove(bicas.const.QRCID.BAD_DENSITY)
 
             % Add autodetected saturation.
             b = QrcFlagsMap(bicas.const.QRCID.FULL_SATURATION);
