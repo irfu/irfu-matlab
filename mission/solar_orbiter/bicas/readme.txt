@@ -176,9 +176,9 @@ IVPAV
 IVPT
     Interface volt Per TM unit. IV/TM.
 L2QBM
-    zVar L2_QUALITY_BITMASK.
+    zVariable L2_QUALITY_BITMASK.
 L3QBM
-    zVar L3_QUALITY_BITMASK.
+    zVariable L3_QUALITY_BITMASK.
 LL
     Log Level
 LRX

@@ -47,9 +47,13 @@ classdef ext
             % =================================
             R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse, Ec);
             
-            % ===================================
-            % Caller wrapper around solo.psp2ne()
-            % ===================================
+            % =================================
+            % Call wrapper around solo.psp2ne()
+            % =================================
+            % NOTE: The name "NeScpQualityBit" is used by solo.psp2ne() and
+            % refers to its other return value "NeScp", i.e. "Scp" only refers
+            % to the data the density is based on, but the quality bit only
+            % refers to density (and not to SCPOT).
             [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
                 bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Ec);
 

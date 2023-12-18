@@ -51,13 +51,19 @@ classdef dsr
 
 
 
-        % Derive template ZVs (not GA) for all datasets based on DOWNSAMPLED LFR CWF.
+        % Derive template ZVs (not GA) for all datasets based on DOWNSAMPLED LFR
+        % CWF.
         %
         %
         % RETURN VALUES
         % =============
         % TemplateDsrZv
-        %       Struct with zVariables. 
+        %       Struct with common ZVs:
+        %           Epoch
+        %           QUALITY_FLAG
+        %           QUALITY_BITMASK
+        %           L2_QUALITY_BITMASK
+        %           DELTA_PLUS_MINUS
         % iRecordsInBinCa
         %       Distribution of non-downsampled records in bins.
         %

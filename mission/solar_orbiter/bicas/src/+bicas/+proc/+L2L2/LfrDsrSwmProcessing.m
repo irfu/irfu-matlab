@@ -2,6 +2,8 @@
 % SWMP for downsampling SOLO_L2_RPW-LFR-SURV-CWF-E L2-->L2 (unofficial
 % output datasets).
 %
+% NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
@@ -105,21 +107,22 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
                 'Ga', Ga, ...
                 'Zv', Zv);
             nRecordsDsr = numel(iRecordsInBinCa);
-            
-            
-            
-            VdcOsrFpa = InLfrCwf.ZvFpa.VDC;
-            EdcOsrFpa = InLfrCwf.ZvFpa.EDC;
+
+
+
+            VdcOsrFpa   = InLfrCwf.ZvFpa.VDC;
+            EdcOsrFpa   = InLfrCwf.ZvFpa.EDC;
             nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
             
             
             
             % NOTE: Unclear how treat QUALITY_FLAG=FV.
-            bDoNotUseFpa = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
-            bDoNotUse    = bDoNotUseFpa.array(false);   % FV = false wise?
+            % QUALITY_FLAG=FV ==> UFV=false
+            bUfvFpa = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+            bUfv    = bUfvFpa.array(false);   % Is it wise to do FV-->false.
             
-            VdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
-            EdcOsrFpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+            VdcOsrFpa(bUfv, :) = bicas.utils.FPArray.FP_SINGLE;
+            EdcOsrFpa(bUfv, :) = bicas.utils.FPArray.FP_SINGLE;
             
             
             
@@ -128,8 +131,8 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
             
             
             %===============================================
-            % Downsample
-            % ----------
+            % Downsample science data
+            % -----------------------
             % NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
             %===============================================
             [VdcDsrFpa, VdcstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
