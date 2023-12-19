@@ -38,7 +38,7 @@ Cal = [];
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2023-08-11T10:11:00';
+codeVerStr = '2023-12-19T15:11:00';
 
 AddEntry('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z',[0.8889  3.4389]); % Based on data from 2020-04-07
 AddEntry('2020-05-18T04:05:55Z/2020-05-29T23:59:59Z',[0.8154  4.5562]);
