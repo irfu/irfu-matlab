@@ -399,7 +399,8 @@ classdef dc
             elseif isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.GND) || ...
                     isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.REF25V)
                 % ==> No calibration.
-                samplesAVolt = ssSamplesTm;
+                % NOTE: samplesTm stores TM units using float!
+                samplesAVolt = samplesTm;
 
             else
                 assert(Ssid.is_ASR())
