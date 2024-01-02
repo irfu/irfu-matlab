@@ -62,8 +62,8 @@ classdef dc
                 PreDc.Zv.Epoch, InCurPd, Bso, L);
             currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
-            currentAAmpere = nan(size(currentSAmpere));    % Preallocate.
-            iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
+            currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
+            iCalibLZv               = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
             [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
                 ['Calibrating currents -', ...
@@ -95,7 +95,6 @@ classdef dc
             % ##############################################
             if 1
                 % AUTODETECT SATURATION.
-                % NOT YET COMPLETED FUNCTIONALITY.
                 Sat = bicas.proc.L1L2.Saturation(Bso);
                 isAutodetectedSaturation = Sat.get_voltage_saturation_quality_bit(...
                     PreDc.Zv.Epoch, ...
@@ -389,7 +388,16 @@ classdef dc
             % PROPOSAL: Reorder arguments to group them.
             %   PROPOSAL: Group arguments from PreDc.
             
-            assert(isnumeric(samplesTm))
+            % IMPLEMENTATION NOTE: It seems that data processing submits
+            % different types of floats for LFR and TDS. This difference in
+            % processing is unintended and should probably ideally be
+            % eliminated.
+            % NOTE: Storing TM units with floats!
+            if isLfr
+                assert(isa(samplesTm, 'single'))
+            else
+                assert(isa(samplesTm, 'double'))
+            end
             irf.assert.sizes(samplesTm, [-1, -2])   % One BLTS channel.
 
             if isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.UNKNOWN)

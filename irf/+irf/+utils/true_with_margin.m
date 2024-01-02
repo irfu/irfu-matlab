@@ -40,9 +40,9 @@ function b2 = true_with_margin(x, b1, xMargin)
 %           least one side). Iterate over and set b2=true for all elements
 %           within range.
 
-% IMPLEMENTATION NOTE: It has proven hard to implement without some kind of
-% loop over elements. Can probably not have a loop with fewer iterations
-% than this.
+% IMPLEMENTATION NOTE: It has proven hard to implement the functionality without
+% some kind of loop over elements. One can probably not have a loop with fewer
+% iterations than this.
 
 irf.assert.vector(x)
 irf.assert.vector(b1)
@@ -60,7 +60,7 @@ b1 = b1(iSortArray);
 
 [i1Array, i2Array] = irf.utils.split_by_false(b1);
 
-b2   = b1;
+b2 = b1;
 for i = 1:numel(i1Array)
   xMin = (x(i1Array(i)) - xMargin);
   xMax = (x(i2Array(i)) + xMargin);

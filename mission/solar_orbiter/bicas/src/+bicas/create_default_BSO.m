@@ -108,11 +108,13 @@ function Bso = create_default_BSO()
 %   NEED: Distinguish
 %       (1) datasets of specific level, and
 %       (2) algorithms that run when using given input level.
-%   PROPOSAL: when speaking of datasets, use
+%   PROPOSAL: When speaking of datasets, use
 %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
 %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
 %       PROBLEM: How distinguish from processing?
-
+%
+% TODO-DEC: How specify units for seconds? "_S" or "_SEC"?
+%   NOTE: Is currently inconsistent.
 
 
     S = bicas.Settings();
@@ -391,7 +393,7 @@ function Bso = create_default_BSO()
     S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
 
     % Path to NSO table file. Relative to BICAS root.
-    S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH',  fullfile('data', 'solo_ns_ops.xml'))
+    S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', fullfile('data', 'solo_ns_ops.xml'))
     % Path to NSO table file for debugging purposes.
     % If non-empty, then it overrides PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH.
     % Can be set to absolute path. Intended for testing.
@@ -412,16 +414,28 @@ function Bso = create_default_BSO()
     %--------------------------------------------------------------------------
     % NOTE: This is a temporary functionality. The long-term solution should be
     % to use L1/L1R QUALITY_BITMASK. It has been created so that sweeps can
-    % still be removed while BIAS is commanded to use BDM=4 for bulk data.
-    % NOTE: As of 2023-12-13, it is not yet clear exactly when this will happen.
-    % The corresponding default value may thus need to be updated.
+    % still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
+    % data.
     
-    % Time before which BDM=4 <=> sweep, and after which a sliding window
-    % algorithm will be used.
+    % NOTE: BDM changed from 0 to 4:    
+    % (1) Xavier Bonnin e-mail 2023-12-22: "BIAS is set to MUX_4 on-board after
+    %     Dec. 25."
+    % (2) According to BIAS HK: 2023-12-25T23:29:10 (+/-30 s).        
+    % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
+    %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
+    
+    
+    % As of 2024-01-02, it is not yet clear exactly when this actually happened.
+    % The corresponding default value may thus need to be updated.
+    %
+    % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC: Time before which
+    % BDM=4 <=> sweep, and after which a sliding window autodetection algorithm
+    % will be used.
     % Format: Year-month-day
     %         -hour-minute-second
     %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
-    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 25, 23, 28, 30, 0, 0, 0])
+    % S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
     % Length of time interval which is considered at a time. Unit: Data
     % points/HK CDF records.
     S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',  3)

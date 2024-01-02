@@ -239,7 +239,7 @@ classdef L1L2
             % Derive isSweeping
             %===================
             isSweepingFpa = bicas.proc.L1L2.autodetect_sweeps(...
-                InHk.Zv.Epoch, ...
+                hkEpoch, ...
                 InHk.ZvFpa.HK_BIA_MODE_MUX_SET, ...
                 [InHk.ZvFpa.HK_BIA_BIAS1, ...
                  InHk.ZvFpa.HK_BIA_BIAS2, ...
@@ -320,6 +320,10 @@ classdef L1L2
         %       record will be labelled as sweeping.
         %
         function isSweepingFpa = autodetect_sweeps(tt2000, bdmFpa, hkBiasCurrentFpa, Bso)
+            % TODO-DEC: Does having argument and return value FPAs make sense?
+            %           Should caller convert?
+            
+            % The only BDM which sweeps use, but there may be other data too.
             BDM_SWEEP_POSSIBLE = 4;
 
             % Time before which sweeps can be identified by BDM=4.
@@ -362,7 +366,6 @@ classdef L1L2
                 
                 if mmDiff > currentMinMaxDiffThresholdTm
                     isSweeping2(iAr) = (bdm(iAr) == BDM_SWEEP_POSSIBLE) & ~bdm4TrickApplies(iAr);
-                    %isSweeping2(i) = ;
                 end
             end
             
