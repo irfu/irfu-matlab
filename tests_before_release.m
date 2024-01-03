@@ -36,8 +36,8 @@ suite = testsuite(testsToRun);
 
 % Add tests for MATLAB packages in which automated test files can be
 % automatically found via MATLAB's filenaming convention.
-% NOTE: Excludes BICAS which requires MATLAB R12019b.
-for pkgPathCa = {'irf.str', 'irf.utils', 'solo.adm', 'solo.shk', 'solo.qli'}
+% NOTE: Excludes BICAS which requires MATLAB R2019b.
+for pkgPathCa = {'irf.str', 'irf.utils', 'solo.adm', 'solo.hwzv', 'solo.shk', 'solo.qli'}
   suite = [ ...
     suite, matlab.unittest.TestSuite.fromPackage(...
     pkgPathCa{1}, 'IncludingSubpackages', true) ...
