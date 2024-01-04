@@ -416,26 +416,25 @@ function Bso = create_default_BSO()
     % to use L1/L1R QUALITY_BITMASK. It has been created so that sweeps can
     % still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
     % data.
-    
-    % NOTE: BDM changed from 0 to 4:    
-    % (1) Xavier Bonnin e-mail 2023-12-22: "BIAS is set to MUX_4 on-board after
-    %     Dec. 25."
-    % (2) According to BIAS HK: 2023-12-25T23:29:10 (+/-30 s).        
-    % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
-    %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
-    
-    
-    % As of 2024-01-02, it is not yet clear exactly when this actually happened.
-    % The corresponding default value may thus need to be updated.
-    %
-    % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC: Time before which
-    % BDM=4 <=> sweep, and after which a sliding window autodetection algorithm
-    % will be used.
+    %--------------------------------------------------------------------------
+    % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC: 
+    % Before this time: BDM=4 is interpreted as equivalent to sweep.
+    % After this time:  A sliding window autodetection algorithm is used for
+    %                   detecting sweeps from measured HK currents.
     % Format: Year-month-day
     %         -hour-minute-second
     %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
-    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 25, 23, 28, 30, 0, 0, 0])
-    % S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+    %
+    % NOTE: BDM changed from 0 to 4 for bulk science data on/at:
+    % (1) Xavier Bonnin e-mail 2023-12-22: "BIAS is set to MUX_4 on-board after
+    %     Dec. 25."
+    % (2) According to BIAS HK: 2023-12-25T23:29:10 (+/-30 s).
+    % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
+    %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
+    % However, a test with multiple BDMs (mux modes) ran on 2023-12-16 so it is
+    % worth not setting PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC to
+    % after that.
+    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
     % Length of time interval which is considered at a time. Unit: Data
     % points/HK CDF records.
     S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',  3)
