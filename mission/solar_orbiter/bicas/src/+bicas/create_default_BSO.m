@@ -442,6 +442,11 @@ function Bso = create_default_BSO()
     % interval. If the value exceeds this value, then the interval is labelled
     % as sweeping.
     S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM', 500)
+    % Amount of margin to add around regions labelled as sweeps by the initial
+    % window algorithm. The sweeps autodetection works on BIAS HK which has a
+    % lower time resolution, and may therefore be incorrect at the beginning and
+    % end of a labelled region.
+    S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC', 120)
     
 
 

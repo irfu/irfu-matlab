@@ -21,7 +21,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
 
             function test(...
                     tt2000, bdm, hkBiasCurrentFpa, ...
-                    bdm4TrickEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, ...
+                    bdm4TrickEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
                     expIsSweeping)
                 
                 assert(issorted(tt2000), 'ascend')
@@ -33,6 +33,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                 Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC',              spdfbreakdowntt2000(bdm4TrickEndTt2000), 'test');
                 Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',               windowLengthPts,                         'test');
                 Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM', currentMinMaxDiffThresholdTm,            'test');
+                Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC',               windowMarginSec,                         'test');
                 Bso.make_read_only()
 
                 % CALL TESTED FUNCTION
@@ -65,6 +66,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                         bdm4TrickEndTt2000, ...
                         windowLengthPts, ...      % Iterated over
                         currentMinMaxDiffThresholdTm, ...
+                        0, ...                    % windowMarginSec
                         [1 1 1 1 1 1]' * expIsSweeping)
                 end
             end
@@ -98,6 +100,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                     -10000, ...
                     4, ...
                     100, ...
+                    0, ...   % windowMarginSec
                     [0, 0, 0]')
             end
             
@@ -120,6 +123,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                     6, ...   % Time threshold
                     2, ...   % Window length
                     3, ...   % Threshold
+                    0, ...   % windowMarginSec
                     expIsSweeping)
             end
 
@@ -138,6 +142,33 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                     6, ...   % Time threshold
                     2, ...   % Window length
                     3, ...   % Threshold
+                    0, ...   % windowMarginSec
+                    expIsSweeping)
+            end
+            
+            if ALL_ENABLED
+                % Test window margin
+                DATA = [ ...
+                     1, 4,   2, 3, 1,   0; ...
+                     2, 4,   1, 2, 3,   1; ...   % Set due to window margin
+                     3, 4,   3, 1, 2,   1; ...   % Set due to window length
+                     4, 4,   2, 3, 1-2, 1; ...   % Exceed threshold
+                     5, 4,   1, 2, 3+2, 1; ...   % Exceed threshold
+                     6, 4,   3, 1, 2,   1; ...   % Set due to window length
+                     7, 4,   2, 3, 1,   1; ...   % Set due to window margin
+                     8, 4,   1, 2, 3,   0; ...
+                     9, 4,   3, 1, 2,   0; ...
+                ];
+                tt2000        = int64(DATA(:, 1));
+                bdm           =       DATA(:, 2);
+                hkBiasCurrent =       DATA(:, 3:5) + 100;
+                expIsSweeping =       DATA(:, 6);
+                test(...
+                    tt2000, bdm, hkBiasCurrent, ...
+                    0, ...        % Time threshold
+                    2, ...        % Window length
+                    3, ...        % Threshold
+                    1.1e-9, ...   % windowMarginSec
                     expIsSweeping)
             end
             
@@ -159,13 +190,14 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                 ];
                 tt2000        = int64(DATA(:, 1));
                 bdm           =       DATA(:, 2);
-                hkBiasCurrent =       DATA(:, 3:5);
+                hkBiasCurrent =       DATA(:, 3:5) + 100;
                 expIsSweeping =       DATA(:, 6);
                 test(...
                     tt2000, bdm, hkBiasCurrent, ...
                     6, ...   % Time threshold
                     2, ...   % Window length
                     3, ...   % Threshold
+                    0, ...   % windowMarginSec
                     expIsSweeping)
             end
 

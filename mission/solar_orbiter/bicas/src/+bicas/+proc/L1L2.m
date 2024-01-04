@@ -330,6 +330,7 @@ classdef L1L2
             bdm4TrickEndTt2000           = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC'));
             windowLengthPts              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS');
             currentMinMaxDiffThresholdTm =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM');
+            windowMarginSec              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC');
 
             nCdfRecs = irf.assert.sizes(...
                 tt2000,           [-1, 1], ...
@@ -369,8 +370,10 @@ classdef L1L2
                 end
             end
             
-            isSweeping = isSweeping1 | isSweeping2;
-            isSweepingFpa = bicas.utils.FPArray(isSweeping);
+            isSweeping           = isSweeping1 | isSweeping2;
+            isSweepingWithMargin = irf.utils.true_with_margin(tt2000, isSweeping, windowMarginSec * 1e9);
+
+            isSweepingFpa        = bicas.utils.FPArray(isSweepingWithMargin);
         end
 
 
