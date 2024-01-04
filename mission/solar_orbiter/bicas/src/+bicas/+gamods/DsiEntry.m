@@ -41,37 +41,57 @@ classdef DsiEntry < handle
 
 
 
-        function add_version_entry(obj, Gmve)
-            assert(isa(Gmve, 'bicas.gamods.VersionEntry'))
+        % Add GMVE to GMDE.
+        %
+        %
+        % IMPLEMENTATION NOTE: Does not assert not re-using earlier BICAS
+        % version since
+        % (1) there have been L3 deliveries made with the same BICAS version
+        %     (despite minor BICAS modifications), and
+        % (2) one can can not easily assert sorting of BICAS version strings.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % GmveNew
+        %       Date strings must be equal to or later than the LAST stored GMVE
+        %       if there is one.
+        %       NOTE: There is no constraint on the BICAS version number(!).
+        function add_version_entry(obj, GmveNew)
+            
+            assert(isa(GmveNew, 'bicas.gamods.VersionEntry'))
 
-            % ASSERTIONS
-            if ~isempty(obj.GmveAr)
-                GmvePrev = obj.GmveAr(end);
+            if isempty(obj.GmveAr)
+                obj.GmveAr(1, 1) = GmveNew;
+            else
+                GmveLast = obj.GmveAr(end);
 
-                dateStrCa = arrayfun(@(ca) ca.dateStr, ...
-                    obj.GmveAr, 'UniformOutput', false);
-                % bicasVersionStrCa = cellfun(@(ca) ca.bicasVersionStr, ...
-                %     obj.GmveAr, 'UniformOutput', false);
+                % Obtain list of all date strings, except the last one.
+                nonlastDateStrCa = arrayfun(@(ca) ca.dateStr, ...
+                    obj.GmveAr(1:end-1), 'UniformOutput', false);
 
-                % Do not reuse earlier date.
-                assert(~ismember(Gmve.dateStr, dateStrCa))
+                assert(~ismember(GmveNew.dateStr, nonlastDateStrCa), ...
+                    'The date string Gmve.dateStr="%s" has already been used by a non-last GMVE in this GMDE.', ...
+                    GmveNew.dateStr)
+                if strcmp(GmveNew.dateStr, GmveLast.dateStr)
+                    if strcmp(GmveNew.bicasVersionStr, GmveLast.bicasVersionStr)
+                        % NOTE: Overwrite last GMVE in array
+                        obj.GmveAr(end, 1) = GmveLast + GmveNew;
+                    else
+                        obj.GmveAr(end+1, 1) = GmveNew;
+                    end
 
-                % Date comes after previous one.
-                % NOTE: issorted() does not check for equality for strings.
-                assert(issorted({GmvePrev.dateStr, Gmve.dateStr}))
+                elseif issorted({GmveLast.dateStr, GmveNew.dateStr})
+                    % NOTE: issorted() does not check for equality for strings,
+                    % but we know that the strings are not equal at this point.
+                    obj.GmveAr(end+1, 1) = GmveNew;
 
-                % Do not reuse earlier BICAS version
-                % ----------------------------------
-                % IMPLEMENTATION NOTE: Would in principle want to test for not
-                % reusing earlier BICAS version, but since there have been L3
-                % deliveries made with the same BICAS version (despite minor
-                % BICAS modifications), we can not use this check.                
-                % assert(~ismember(Gmve.bicasVersionStr, bicasVersionStrCa))
-                
-                % NOTE: Can not easily assert sorting of BICAS version strings.
+                else
+                    error('BICAS:Assertion:IllegalArgument', ...
+                        'The date string Gmve.dateStr="%s" has already been used in this GMDE.', ...
+                        Gmve.dateStr)
+                end
             end
-
-            obj.GmveAr(end+1, 1) = Gmve;
         end
 
 
