@@ -365,7 +365,8 @@ function Bso = create_default_BSO()
     % practice, this functionality is there as a temporary solution for removing
     % sweeps.
     %============================================================================
-    S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
+    %S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
+    S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
     
     % Unit: S = Seconds    
     % Lower number since using LFR BDM (mux mode; unless configured not to),
