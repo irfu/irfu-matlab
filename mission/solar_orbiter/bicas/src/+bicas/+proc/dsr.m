@@ -75,7 +75,7 @@ classdef dsr
             %   PROPOSAL: Wait until only using FPAs.
             %       PRO: Can abolish .ZvFv.
             
-            tTicToc = tic();
+            Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', L);
 
 
 
@@ -198,12 +198,7 @@ classdef dsr
 
 
 
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', tTicToc, ...
-                nRecordsOsr, 'OSR record')
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', tTicToc, ...
-                nRecordsDsr, 'DSR record')
+            Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
         end
         
         
@@ -280,6 +275,7 @@ classdef dsr
             % PROPOSAL: Separate function for generating boundaries.
             
             tTicToc = tic();
+            Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_downsampling_bins', L);
             
 
             
@@ -353,12 +349,7 @@ classdef dsr
 
 
 
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.get_downsampling_bins', tTicToc, ...
-                numel(zvAllTt2000), 'OSR record')
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.get_downsampling_bins', tTicToc, ...
-                nBins,              'DSR record')
+            Tmk.stop_log(numel(zvAllTt2000), 'OSR record', nBins, 'DSR record')
         end
         
         
@@ -411,7 +402,7 @@ classdef dsr
             % IMPLEMENTATION NOTE: Not using bicas.proc.dsr.downsample() since
             % it is not designed for returning two values per bin.
             
-            tTicToc = tic();
+            Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.downsample_sci_ZV', L);
 
             % ASSERTIONS
             assert(isa(OsrFpa, 'bicas.utils.FPArray'))
@@ -480,12 +471,7 @@ classdef dsr
 
 
 
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
-                nRecordsOsr, 'OSR record')
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.dsr.downsample_sci_ZV', tTicToc, ...
-                nRecordsDsr,              'DSR record')
+            Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
             
         end    % downsample_sci_ZV
 

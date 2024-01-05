@@ -51,7 +51,10 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
     
     FPA_ZV_NAME_CA = [FPA_ZV_NAME_BIAS_HK_CA, FPA_ZV_NAME_LFR_SCI_CA, FPA_ZV_NAME_L2_CA];
 
-    tTicToc = tic();
+    % Only including filename (not entire path) to shorten log rows.
+    Tmk = bicas.utils.Timekeeper(...
+        sprintf('%s(%s)', mfilename, irf.fs.get_name(filePath)), ...
+        L);
 
 
 
@@ -241,11 +244,7 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
     
     
     
-    % Just printing filename to avoid that actual time information is too far
-    % right.
-    bicas.log_speed_profiling(L, ...
-        sprintf('%s: %s', mfilename, irf.fs.get_name(filePath)), ...
-        tTicToc)
+    Tmk.stop_log()
 end
 
 

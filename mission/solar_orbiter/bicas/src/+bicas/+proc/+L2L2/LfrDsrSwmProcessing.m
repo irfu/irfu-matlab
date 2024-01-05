@@ -73,7 +73,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
             %   PROPOSAL: Split bins WITH leap seconds? Then there is no
             %             problem(?).
             
-            tTicToc = tic();
+            Tmk = bicas.utils.Timekeeper('bicas.proc.L2L2.process_LFRCWF_to_DSR', L);
 
 
 
@@ -153,13 +153,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
             
 
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L2.process_LFRCWF_to_DSR', tTicToc, ...
-                nRecordsOsr, 'OSR record')
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L2.process_LFRCWF_to_DSR', tTicToc, ...
-                nRecordsDsr, 'DSR record')
-
+            Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
         end    % process_LFRCWF_to_DSR
 
 

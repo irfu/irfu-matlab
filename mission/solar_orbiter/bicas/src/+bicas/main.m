@@ -284,9 +284,7 @@ end
 %
 function main_without_error_handling(cliArgumentsList, L)
     
-    
-    
-    tTicToc = tic();
+    Tmk = bicas.utils.Timekeeper('main_without_error_handling', L);
     
     
     
@@ -558,7 +556,7 @@ function main_without_error_handling(cliArgumentsList, L)
     
     
     
-    bicas.log_speed_profiling(L, 'main_without_error_handling', tTicToc);
+    Tmk.stop_log()
 end    % main_without_error_handling
 
 

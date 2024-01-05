@@ -139,7 +139,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             % until skt V12 when it was changed to
             %   QUALITY_BITMASK=CDF_UINT2, fill value 65535 (correct).
 
-            tTicToc = tic();
+            Tmk = bicas.utils.Timekeeper('bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', L);
             assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
 
@@ -231,12 +231,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
             nRecordsOsr = size(InLfrCwf.Zv.Epoch,    1);
             nRecordsDsr = size(TemplateDsr.Zv.Epoch, 1);
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', tTicToc, ...
-                nRecordsOsr, 'OSR record')
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', tTicToc, ...
-                nRecordsDsr, 'DSR record')
+            Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
         end    % process_L2_to_L3
 
 

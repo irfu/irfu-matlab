@@ -296,6 +296,8 @@ TF
 TM
     Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this term
     instead of the term "count".
+TMK
+    Class bicas.utils.Timekeeper.
 TPIV
     TM/interface volt. TM per interface volt.
 TS

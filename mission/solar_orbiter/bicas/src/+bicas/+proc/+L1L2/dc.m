@@ -40,7 +40,7 @@ classdef dc
         %
         function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, Bso, L)
 
-            tTicToc = tic();
+            Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
             % ASSERTION
             assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'));
@@ -133,9 +133,7 @@ classdef dc
             PostDc = bicas.proc.L1L2.PostDc(Zv);
 
             nRecords = size(PreDc.Zv.Epoch, 1);
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.L1L2.dc.process_calibrate_demux', tTicToc, ...
-                nRecords, 'record')
+            Tmk.stop_log(nRecords, 'record')
         end    % process_calibrate_demux
 
 
@@ -166,8 +164,6 @@ classdef dc
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
         %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
-
-            %tTicToc  = tic();
 
             % ASSERTIONS
             assert(isscalar( PreDc.hasSwfFormat))
@@ -306,11 +302,6 @@ classdef dc
                 AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
             end
 
-
-
-            % NOTE: Assumes no "return" statement.
-            %bicas.log_speed_profiling(L, 'bicas.proc.L1L2.dc.calibrate_demux_voltages', tTicToc, nRecords, 'record')
-            %bicas.log_memory_profiling(L, 'bicas.proc.L1L2.dc.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
 
 
