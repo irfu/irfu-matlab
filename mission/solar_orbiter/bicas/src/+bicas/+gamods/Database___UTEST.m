@@ -24,23 +24,23 @@ classdef Database___UTEST < matlab.unittest.TestCase
 
 
 
-            % ===================
-            % add_version_entry()
-            % ===================
+            % ==========
+            % add_GMVE()
+            % ==========
             
             % Add GMVE to zero DSIs.
             Gmve0 = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
-            Gmdb.add_version_entry({}, Gmve0)
+            Gmdb.add_GMVE({}, Gmve0)
 
             % Add to one DSI.
             Gmve1 = bicas.gamods.VersionEntry('2020-01-01', '3.0.0', {...
                 'Comment1.'});
-            Gmdb.add_version_entry({'DSI_1'}, Gmve1)
+            Gmdb.add_GMVE({'DSI_1'}, Gmve1)
 
             % Add to two DSIs.
             Gmve2 = bicas.gamods.VersionEntry('2021-01-01', '4.0.0', {...
                 'Comment2.'});
-            Gmdb.add_version_entry({'DSI_1', 'DSI_2'}, Gmve2)
+            Gmdb.add_GMVE({'DSI_1', 'DSI_2'}, Gmve2)
 
 
 

@@ -69,14 +69,15 @@ classdef Database < handle
 
 
 
-        function add_version_entry(obj, dsiCa, Gmve)
+        % Add one GMVE to multiple DSIs.
+        function add_GMVE(obj, dsiCa, Gmve)
             irf.assert.castring_set(dsiCa)
             assert(isa(Gmve, 'bicas.gamods.VersionEntry'))
 
             for i = 1:numel(dsiCa)
                 dsi = dsiCa{i};
                 Gmde = obj.DsiGmdeMap(dsi);
-                Gmde.add_version_entry(Gmve)
+                Gmde.add_GMVE(Gmve)
             end
         end
 

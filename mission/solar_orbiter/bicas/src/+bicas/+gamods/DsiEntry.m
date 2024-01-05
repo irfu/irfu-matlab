@@ -11,7 +11,6 @@
 classdef DsiEntry < handle
 % PROPOSAL: Assert than all comment strings (separate ones in VersionEntry)
 %           are unique.
-% PROPOSAL: Rename add_version_entry() --> add_GMVE().
 
     
     
@@ -57,7 +56,7 @@ classdef DsiEntry < handle
         %       Date strings must be equal to or later than the LAST stored GMVE
         %       if there is one.
         %       NOTE: There is no constraint on the BICAS version number(!).
-        function add_version_entry(obj, GmveNew)
+        function add_GMVE(obj, GmveNew)
             
             assert(isa(GmveNew, 'bicas.gamods.VersionEntry'))
 
