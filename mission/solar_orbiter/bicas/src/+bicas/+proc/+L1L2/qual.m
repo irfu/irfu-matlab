@@ -216,8 +216,6 @@ classdef qual
 
 
 
-        % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
-        %
         % Given a (timestamped) 1D array of flagged samples (bool), label all
         % samples positions which are part of a sliding window (of a specified
         % length) with a fraction of flagged samples which is above a
@@ -366,8 +364,6 @@ classdef qual
         
         
         
-        % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
-        %
         % Effectively internal function to
         % bicas.proc.L1L2.qual.sliding_window_over_fraction() to simplify its
         % implementation. Runs one "pass" in the forward direction.

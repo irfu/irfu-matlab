@@ -4,9 +4,6 @@
 % NOTE: Excludes functionality for setting saturation quality bits and
 % QUALITY_FLAG via NSO table.
 %
-% NOTE: 2023-12-01: Class is partly complete. Class is currently unused, but is
-% planned to be used.
-%
 %
 % IMPLEMENTATION NOTE
 % ===================
@@ -91,9 +88,6 @@ classdef Saturation
 
 
 
-        % NOTE: 2023-12-01: FINISHED BUT CURRENTLY UNUSED, BUT IS PLANNED TO BE
-        % USED.
-        %
         % Given an arbitrary-size ARRAY of samples, get TSF bits for every
         % sample.
         %
@@ -180,9 +174,6 @@ classdef Saturation
 
 
 
-        % NOTE: 2023-12-01: FINISHED BUT CURRENTLY UNUSED, BUT IS PLANNED TO BE
-        % USED.
-        %
         % Determine whether ONE snapshot should be labelled as saturated.
         %
         % ARGUMENTS
@@ -207,9 +198,6 @@ classdef Saturation
 
 
 
-        % NOTE: 2023-12-01: FINISHED BUT CURRENTLY UNUSED, BUT IS PLANNED TO BE
-        % USED.
-        %
         % Determine whether multiple snapshots (with same settings) are
         % saturated. Uses ZV-like variables.
         %
@@ -236,9 +224,6 @@ classdef Saturation
 
 
 
-        % NOTE: 2023-12-14: FINISHED BUT CURRENTLY UNUSED, BUT IS PLANNED TO BE
-        % USED.
-        %
         % Given ZV-like variables, get saturation bits for quality bitmask.
         %
         % RETURN VALUE
