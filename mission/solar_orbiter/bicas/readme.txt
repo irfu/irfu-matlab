@@ -48,9 +48,9 @@ code. Most of the abbreviations are not "official" and have been created
 specifically for BICAS.
 --
 AA, aampere
-    Antenna ampere. Calibrated ampere at the antenna.
+    Antenna Ampere. Calibrated ampere at the antenna.
 AAPT
-    Antenna ampere/TM
+    Antenna Ampere/TM
 ACHG
     (BIAS diff) AC High Gain.
 ACLG
@@ -213,11 +213,14 @@ Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
 OSR
-    Original sampling (rate). Used in the context of downsampling. Cf DSR.
+    Original Sampling Rate. Used in the context of downsampling. Cf DSR.
 QRC
-    Quality-Related Condition.
-    Condition that may influence quality ZVs. Ex: Thruster firing, saturation.
-    QRCs are labelled using QRCIDs.
+    Quality-Related Condition. Condition that may influence quality ZVs.
+    Ex: Thruster firing, saturation.
+    QRCs are uniquely identified using QRCIDs.
+    Note that QRCs are distinct from quality bits themselves. A QRC
+    corresponds to setting zero, one, or multiple quality bits and/or cap
+    QUALITY_FLAG.
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.

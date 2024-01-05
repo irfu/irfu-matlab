@@ -252,8 +252,7 @@ classdef qual
         %   samples are flagged.
         % * Due to how the algorithm estimates the weight for each sample,
         %   samples with identical timestamps count as having weight zero.
-        % * Timestamps must increase (but not strictly increase). This is
-        % important as there is late be data which
+        % * Timestamps must increase (but not strictly increase).
         %
         %
         % ARGUMENTS
@@ -361,13 +360,15 @@ classdef qual
                 timeSecAr = double(tt2000Ar) / 1e9;
 
                 bFlag2ForwardAr = bicas.proc.L1L2.qual.sliding_window_over_fraction_forward_pass(...
-                    timeSecAr, bFlag1Ar, minFlaggedFraction, windowLengthSec);
+                    timeSecAr, bFlag1Ar, ...
+                    minFlaggedFraction, windowLengthSec);
 
                 % NOTE: Same call as above, except that (1) reversing the order of
                 % timestamps and samples, and (2) negating the timestamps (so
                 % that they increment despite their order being reversed).
                 bFlag2BackwardAr = bicas.proc.L1L2.qual.sliding_window_over_fraction_forward_pass(...
-                    -timeSecAr(end:-1:1), bFlag1Ar(end:-1:1), minFlaggedFraction, windowLengthSec);
+                    -timeSecAr(end:-1:1), bFlag1Ar(end:-1:1), ...
+                    minFlaggedFraction, windowLengthSec);
 
                 bFlag2BackwardAr = bFlag2BackwardAr(end:-1:1);
                 
@@ -401,8 +402,9 @@ classdef qual
             % ==================
             % STL  = Sample Time Length. Length of time assigned to each sample.
             %        Equal to twice the longest distance to the nearest sample.
-            %        Intended for (1) weighing sections with different sampling
-            %        rate, and (2) for including half in the window length.
+            %        Intended for (1) weighing samples with different sampling
+            %        rate, and (2) for including half in the window length for
+            %        samples at the beginning and end of window.
             % STLW = STL-Weighted
             
             DEBUG_ENABLED = 0;
@@ -416,7 +418,7 @@ classdef qual
             assert(n >= 2)
 
             % Pre-allocate
-            bFlag2Ar = false(size(bFlag1Ar));
+            bFlag2Ar  = false(size(bFlag1Ar));
 
             diffSecAr = [Inf; diff(timeSecAr); Inf];
             % NOTE: Returns Inf for array length == 1 which must therefore be
@@ -431,7 +433,7 @@ classdef qual
             % Iterate over time intervals ("windows")
             % =======================================
             iFlagSet1Ar = find(bFlag1Ar);
-            i1 = iFlagSet1Ar(1);
+            i1          = iFlagSet1Ar(1);
             % Iterate over starting indices: i0
             for i0 = iFlagSet1Ar'
                 % CASE: i0 = Index to a flagged sample.
@@ -464,8 +466,10 @@ classdef qual
                 % CASE: i1 is the highest value for which
                 %       (1) i0 <= i1 <= n, AND
                 %       (2) cumulTimeSecAr(i1) < cumulTimeSecAr+intervalLengthSec.
+                %       i0:i1 = Range of indices which define the window.
 
-                
+
+
                 % edgesStlSec       = stlSecAr(i0)/2 + stlSecAr(i1)/2;
                 windowStlwFlagSec = cumulStlwFlagAr(i1+1) - cumulStlwFlagAr(i0);
                 % IMPLEMENTATION NOTE: Using the argument window length rather
@@ -484,7 +488,7 @@ classdef qual
                 end
 
                 if DEBUG_ENABLED
-                    fprintf('Found interval i0:i1 = %i:%i\n', i0, i1)
+                    fprintf('Found window i0:i1 = %i:%i\n', i0, i1)
                     fprintf('    timeSecAr([i0, i1]) = %g - %g\n', timeSecAr(i0), timeSecAr(i1))
                     % fprintf('    edgesStlSec         = %g\n', edgesStlSec)
                     fprintf('    windowLengthSec     = %g\n', windowLengthSec)

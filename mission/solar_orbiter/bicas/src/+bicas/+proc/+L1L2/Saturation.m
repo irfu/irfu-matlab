@@ -226,6 +226,9 @@ classdef Saturation
 
         % Given ZV-like variables, get saturation bits for quality bitmask.
         %
+        % NOTE: Applies to both CWF and SWF data.
+        %
+        %
         % RETURN VALUE
         % ============
         % isSaturatedAr
@@ -248,6 +251,8 @@ classdef Saturation
                 dlrFpa,                   [-1], ...
                 lrx,                      [-1]);
             assert(AsrSamplesAVoltSrm.nRows == nRows)
+            
+
 
             %===================================================================
             % (1) Find continuous subsequences of records with identical
@@ -274,8 +279,8 @@ classdef Saturation
             bitAr = false(nRows, 1);
 
             for iSs = 1:nSs
-                iRec1 = iRec1Ar(iSs);
-                iRec2 = iRec2Ar(iSs);
+                iRec1   = iRec1Ar(iSs);
+                iRec2   = iRec2Ar(iSs);
                 ssNRows = iRec2-iRec1 + 1;
 
                 % CV = Constant values = Values which are constant for the
@@ -328,9 +333,11 @@ classdef Saturation
             if hasSwfFormat
                 isSaturatedAr = bitAr;
             else
+                %Tmk2 = bicas.utils.Timekeeper('sliding_window_over_fraction', L);
                 isSaturatedAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
                     tt2000Ar, bitAr, ...
                     obj.tsfFractionThreshold, obj.cwfSlidingWindowLengthSec);
+                %Tmk2.stop_log()
             end
 
 

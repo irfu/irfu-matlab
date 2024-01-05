@@ -41,7 +41,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
                 qrcidCa = ActQrcFlagsMap.keys;
                 for i = 1:numel(qrcidCa)
-                    qrcid = qrcidCa{i}
+                    qrcid = qrcidCa{i};
                     testCase.assertEqual(...
                         ActQrcFlagsMap(qrcid), ...
                         ExpQrcFlagsMap(qrcid))

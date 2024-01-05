@@ -217,12 +217,8 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 end
             end
 
-            % TODO: Identical timestamps.       -- DONE
-            % TODO: Data gaps.                  -- DONE
-            % TODO: Varying sampling rate.      -- DONE
-            % TODO: Total time < window length  -- DONE
-            % TODO: Test equality in interval length, fraction.
-            
+
+
             ENABLE_ALL = 1;
             if ENABLE_ALL
                 % ============
