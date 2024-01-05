@@ -263,6 +263,9 @@ classdef Saturation
             L.logf('info', ...
                 ['Detecting threshold saturation (voltages) -', ...
                 ' One sequence of records with identical settings at a time.'])
+            Tmk = bicas.utils.Timekeeper('get_voltage_saturation_quality_bit', L);
+
+
 
             % Bit array, one element per CDF record
             % -------------------------------------
@@ -329,7 +332,24 @@ classdef Saturation
                     tt2000Ar, bitAr, ...
                     obj.tsfFractionThreshold, obj.cwfSlidingWindowLengthSec);
             end
-        end
+
+
+
+            if hasSwfFormat
+                Tmk.stop_log(nRows, 'CDF record')
+            else
+                % Log some saturation statistics which may help tell whether how
+                % much the saturation varies over time, which may
+                % influence/explain if the above processing is slow. Should only
+                % be relevant for CWF.
+                % NOTE: Only reflects the behaviour of the final saturation bit,
+                % not the TSF.
+                nSaturationChanges = numel(find(isSaturatedAr(1:end-1) ~= isSaturatedAr(2:end)));
+                Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
+                L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
+            end
+            
+        end    % function
 
 
 
