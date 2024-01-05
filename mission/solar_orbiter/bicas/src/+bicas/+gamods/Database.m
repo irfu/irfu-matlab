@@ -1,8 +1,8 @@
 %
-% Mutable class that stores values for GA "MODS" for all output datasets.
-% Intended to make it easy to build the corresponding hard-coded constant
+% Mutable class that stores values for GA "MODS" for multiple output datasets.
+% Intended for making it easy to build the corresponding hard-coded constants
 % (1) with a lot of overlap between dataset IDs and entries, and
-% (2) that conforms to certain format.
+% (2) that conforms to certain format specified by the RCS ICD.
 %
 % Contains map DSI-->bicas.gamods.DsiEntry.
 %
@@ -27,6 +27,7 @@ classdef Database < handle
     %#####################
     %#####################
     properties(SetAccess=private, GetAccess=private)
+        % Map DSI-->GMDE
         DsiGmdeMap
     end
 
@@ -86,7 +87,7 @@ classdef Database < handle
         % Return cell array of strings to be used as value GA MODS for the
         % specified DSI.
         function gaModsStrCa = get_MODS_strings_CA(obj, dsi)
-            Gmde = obj.DsiGmdeMap(dsi);
+            Gmde        = obj.DsiGmdeMap(dsi);
             gaModsStrCa = Gmde.get_MODS_strings_CA();
         end
 

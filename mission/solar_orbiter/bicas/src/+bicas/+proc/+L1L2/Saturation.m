@@ -20,8 +20,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef Saturation
-    % PROPOSAL: Automatic test code.
-    %
     % PROPOSAL: Merge higherThresholdAVolt* to a struct somehow.
 
 

@@ -2,9 +2,9 @@
 % Class that represents the data in one GA "MODS" entry for one unique
 % combination of (1) DSI and (2) dataset version. One such entry can then be
 % "applied" to multiple DSIs via bicas.gamods.Database. One entry contains a
-% data (of a BICAS version), a BICAS version, and a list of comments. One entry
-% does NOT contain the DSI or dataset version. That is for the owner of the
-% object to store.
+% date (of a BICAS version), a BICAS version number, and a list of comments. One
+% entry does NOT contain the DSI or dataset version. That is for the owner of
+% the object to store.
 %
 % IMMUTABLE.
 %

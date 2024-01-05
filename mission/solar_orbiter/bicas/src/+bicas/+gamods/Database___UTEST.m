@@ -6,6 +6,8 @@
 %
 classdef Database___UTEST < matlab.unittest.TestCase
 
+
+
     %##############
     %##############
     % TEST METHODS
@@ -19,6 +21,7 @@ classdef Database___UTEST < matlab.unittest.TestCase
             % ===========
             % Constructor
             % ===========
+
             Gmdb = bicas.gamods.Database({});
             Gmdb = bicas.gamods.Database({'DSI_1', 'DSI_2'});
 
@@ -50,20 +53,21 @@ classdef Database___UTEST < matlab.unittest.TestCase
             
             actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_1');
             expGaModsStrCa = {Gmve1.get_str(); Gmve2.get_str()};
-            testCase.verifyEqual(actGaModsStrCa, expGaModsStrCa)
+            testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
 
             actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_2');
             expGaModsStrCa = {Gmve2.get_str()};
-            testCase.verifyEqual(actGaModsStrCa, expGaModsStrCa)
+            testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
             
-            testCase.verifyError(...
+            testCase.assertError(...
                 @() Gmdb.get_MODS_strings_CA('DSI_UNKNOWN'), ...
                 ?MException)
-
         end
 
 
 
     end    % methods(Test)
+
+
 
 end

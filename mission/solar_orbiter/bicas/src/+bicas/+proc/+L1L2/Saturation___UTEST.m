@@ -1,6 +1,4 @@
 %
-% UNFINISHED
-%
 % matlab.unittest automatic test code for bicas.proc.L1L2.Saturation.
 %
 %
@@ -21,7 +19,9 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
         function test_get_TSF(testCase)
 
-            function test(satArgsCa, samplesAVolt, Ssid, isAchg, expTsfAr)
+            % NOTE: Changes order of arguments to get easier-to-read hardcoded
+            %       calls.
+            function test(satArgsCa, Ssid, isAchg, samplesAVolt, expTsfAr)
                 expTsfAr = logical(expTsfAr);
                 isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
                 Sat = bicas.proc.L1L2.Saturation___UTEST.init_object(satArgsCa{:});
@@ -36,25 +36,39 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
                 for isAchg = [0, 1, NaN]
                     % DC single, 1x6
-                    test({99, 0.6, 3, 99,99,99}, [-5, -1, 0, 1, 5, NaN], S.DC_V1,  isAchg, [1, 0, 0, 0, 1, 0])
+                    test(...
+                        {99, 0.6, 3, 99,99,99}, S.DC_V1,  isAchg, ...
+                        [-5, -1, 0, 1, 5, NaN], ...
+                        [ 1,  0, 0, 0, 1,   0])
 
                     % DC diff, 3x2
-                    test({99, 0.6, 99, 3,99,99}, [-5, -1, 0; 1, 5, NaN], S.DC_V12, isAchg, [1, 0, 0; 0, 1, 0])
+                    test(...
+                        {99, 0.6, 99, 3,99,99}, S.DC_V12, isAchg, ...
+                        [-5, -1, 0; 1, 5, NaN], ...
+                        [ 1,  0, 0; 0, 1,   0])
                 end
 
                 % AC, low gain, 6x1
                 for achgThreshold = [1, 7]
-                    test({99, 0.6, 99, 99, 3, achgThreshold}, [-5, -1, 0, 1, 5, NaN]', S.AC_V12, 0,    [1, 0, 0, 0, 1, 0]')
+                    test(...
+                        {99, 0.6, 99, 99, 3, achgThreshold}, S.AC_V12, 0, ...
+                        [-5, -1, 0, 1, 5, NaN]', ...
+                        [ 1,  0, 0, 0, 1,   0]')
                 end
 
                 % AC, high gain, 1x6
                 for aclgThreshold = [1, 7]
-                    test({99, 0.6, 99, 99, aclgThreshold,  3}, [-5, -1, 0, 1, 5, NaN],  S.AC_V23, 1,    [1, 0, 0, 0, 1, 0] )
+                    test(...
+                        {99, 0.6, 99, 99, aclgThreshold,  3}, S.AC_V23, 1, ...
+                        [-5, -1, 0, 1, 5, NaN], ...
+                        [ 1,  0, 0, 0, 1,   0])
                 end
 
                 % AC, unknown gain, 1x6
                 for aclgThreshold = [1, 7]
-                    test({99, 0.6, 99, 99, aclgThreshold,  3}, [-5, -1, 0, 1, 5, NaN],  S.AC_V23, NaN,  [0, 0, 0, 0, 0, 0] )
+                    test({99, 0.6, 99, 99, aclgThreshold,  3}, S.AC_V23, NaN, ...
+                        [-5, -1, 0, 1, 5, NaN], ...
+                        [ 0,  0, 0, 0, 0,   0])
                 end
             end
 

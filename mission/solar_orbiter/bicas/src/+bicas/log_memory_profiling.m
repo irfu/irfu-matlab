@@ -17,9 +17,8 @@
 function log_memory_profiling(L, locationName)
     % PROPOSAL: Automatic test code.
     %
-    % PROPOSAL: Use generic code for creating tables. irf.str.assist_print_table.
-    % PROPOSAL: Convert to kiB, MiB.
-    %   PROPOSAL: Different for different variables.
+    % PROPOSAL: Use generic code for creating tables.
+    %   NOTE: Already using irf.str.assist_print_table().
     % PROPOSAL: Make more grep-friendly.
     %   Ex: Sums, specific code locations.
     %
@@ -96,6 +95,6 @@ function [valueStr, unit] = select_unit(valueBytes)
     else
         % NOTE: Adds whitespace instead of decimals.
         valueStr = sprintf('%.0f  ', valueBytes);
-        unit  = 'bytes';
+        unit     = 'bytes';
     end
 end

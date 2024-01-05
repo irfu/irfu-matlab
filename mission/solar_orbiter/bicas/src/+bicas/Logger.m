@@ -21,12 +21,14 @@
 % log messages.
 % --
 % Ex: Switch between any combination of logging to
-%   (1a) file and/or (1b) stdout, or (2) don't log at all.
+%     (1a) file and/or
+%     (1b) stdout, or
+%     (2) don't log at all.
 % Ex: Switch between log prefixes or not.
-% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.proc.L1L2.cal.Cal) can have other
-% logging, or none.
+% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.proc.L1L2.cal.Cal) can
+%     have other logging, or none.
 % Ex: Can implement accepting log messages before specifying the log file, by
-% temporarily storing the messages.
+%     temporarily storing the messages.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -90,9 +92,12 @@ classdef Logger < handle
         %           'none'
         %               Do not log to stdout.
         %           'human-readable'
-        %               Log to stdout as is most convenient for a human reader.
+        %               Log to stdout as is most convenient for a human reader,
+        %               i.e. without adding any prefix that later meant to be
+        %               removed.
         %           'bash wrapper'
-        %               Log to stdout as required by BICAS bash wrapper script.
+        %               Log to stdout as required by BICAS bash wrapper script,
+        %               i.e. add prefix to every tow.
         % logFileEnabled
         %       Logical/numerical. Whether to write to log file.
         %       NOTE: Log messages are stored in a buffer until the log file is

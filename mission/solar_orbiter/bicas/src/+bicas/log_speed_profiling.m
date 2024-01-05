@@ -45,6 +45,21 @@ function log_speed_profiling(L, codeName, tTicToc, nUnits, unitName)
 %         bicas.proc.dsr.get_downsampling_bins: 0.254625 [s], 0.000705332 [s/DSR record], 361 [DSR records] (wall time)
 %       PRO: Rows searchable (grep).
 %       NOTE: Crude, but still improvement over status quo.
+%
+% PROPOSAL: Replace with class.
+%   Constructor calls tic(), stores value. Call method for printing result.
+%   Multiple functions for different logging formats.
+%   PRO: Does not need optional arguments.
+%   PRO: Could potentially print result (of one time interval) over multiple
+%        function calls.
+%   PRO: Can store string used for logging both before and after time period.
+%   CON: Much overhead?
+%   NOTE: Requires mutable class.
+%   PROPOSAL: Constructor and methods should caller logger themselves.
+%       CON: Creates dependence on bicas.Logger
+%       CON: Class specifies log level.
+%           CON-PROPOSAL: Submit log level.
+%       PRO: Constructor can not return string in addition to object.
 
     wallTimeSec = toc(tTicToc);
 
