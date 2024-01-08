@@ -429,11 +429,14 @@ classdef qual
             % i+1 represents the STL of sample i.
             cumulStlwFlagAr = [0; cumsum(bFlag1Ar .* stlSecAr)];
 
-            % =======================================
-            % Iterate over time intervals ("windows")
-            % =======================================
-            iFlagSet1Ar = find(bFlag1Ar);
-            i1          = iFlagSet1Ar(1);
+            % ==================================================================
+            % Iterate over flagged samples and use these to find "windows"
+            % (approximately fixed-length time intervals) which begin at those
+            % samples
+            % ==================================================================
+            iFlagSet1Ar        = find(bFlag1Ar);
+            i1                 = iFlagSet1Ar(1);
+            prevSetWindowFlags = false;
             % Iterate over starting indices: i0
             for i0 = iFlagSet1Ar'
                 % CASE: i0 = Index to a flagged sample.
@@ -484,11 +487,24 @@ classdef qual
                 % flagged by setting minFlaggedFraction=1.
                 setWindowFlags = (fractionStlwFlag >= minFlaggedFraction);
                 if setWindowFlags
-                    bFlag2Ar(i0:i1) = true;
+                    % IMPLEMENTATION NOTE: Setting bFlag2Ar(...) = true slows
+                    % down the entire algorithm. Therefore sets as few indices
+                    % as possible by avoiding indices set in the previous window
+                    % (if set). ==> Speeds up algorithm.
+                    if prevSetWindowFlags
+                        bFlag2Ar(max(i0, prevI1+1):i1) = true;
+                    else
+                        bFlag2Ar(i0:i1)                = true;
+                    end
                 end
+                prevSetWindowFlags = setWindowFlags;
+                %prevSetWindowFlags = false;    % TEST. Disable speedup.
+                prevI1             = i1;
 
                 if DEBUG_ENABLED
                     fprintf('Found window i0:i1 = %i:%i\n', i0, i1)
+                    fprintf('    prevSetWindowFlags  = %g\n', prevSetWindowFlags)
+                    fprintf('    prevI1              = %g\n', prevI1)
                     fprintf('    timeSecAr([i0, i1]) = %g - %g\n', timeSecAr(i0), timeSecAr(i1))
                     % fprintf('    edgesStlSec         = %g\n', edgesStlSec)
                     fprintf('    windowLengthSec     = %g\n', windowLengthSec)
