@@ -162,7 +162,7 @@ classdef const
         % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
         % external metadata standards.
         QUALITY_FLAG_MIN = uint8(0);
-        QUALITY_FLAG_MAX = uint8(3);
+        QUALITY_FLAG_MAX = uint8(4);
         
         % Number of BLTSs.
         N_BLTS = 5;
