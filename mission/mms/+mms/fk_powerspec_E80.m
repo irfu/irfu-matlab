@@ -136,11 +136,20 @@ while flag
 
 end
 
+%% define baseline
+
+if boom_shortening
+  dl56 = 14.5;dl12 = 96;dl13 = sqrt(2)*dl12/2;
+else
+  dl56 = 28.15;dl12 = 120;dl13 = sqrt(2)*dl12/2;
+end
+
+
+%% Correct for timing in spacecraft potential data.
 if correct_timeshifts
-  %% Correct for timing in spacecraft potential data.
-  E12 = TSeries(SCpot.time,(SCpot.data(:,1)-SCpot.data(:,2))/0.120);
-  E34 = TSeries(SCpot.time,(SCpot.data(:,3)-SCpot.data(:,4))/0.120);
-  E56 = TSeries(SCpot.time,(SCpot.data(:,5)-SCpot.data(:,6))/0.02815);
+  E12 = TSeries(SCpot.time,(SCpot.data(:,1)-SCpot.data(:,2))/(dl12/1000));
+  E34 = TSeries(SCpot.time,(SCpot.data(:,3)-SCpot.data(:,4))/(dl12/1000));
+  E56 = TSeries(SCpot.time,(SCpot.data(:,5)-SCpot.data(:,6))/(dl56/1000));
   V1 = TSeries(SCpot.time,SCpot.data(:,1));
   V3 = TSeries(SCpot.time+ 7.629e-6,SCpot.data(:,3));
   V5 = TSeries(SCpot.time+15.259e-6,SCpot.data(:,5));
@@ -164,9 +173,9 @@ if correct_timeshifts
 
   end
 
-  V2 = V1 - E12 * 0.120;
-  V4 = V3 - E34 * 0.120;
-  V6 = V5 - E56 * 0.0292;
+  V2 = V1 - E12 * (dl12/1000);
+  V4 = V3 - E34 * (dl12/1000);
+  V6 = V5 - E56 * (dl56/1000);
   % Make new SCpot with corrections
   SCpot = irf.ts_scalar(V1.time,[V1.data V2.data V3.data V4.data V5.data V6.data]);
   clear V1 V2 V3 V4 V5 V6 E12 E34 E56
@@ -181,13 +190,7 @@ V5=irf.ts_scalar(Time,V(:,5));V6=irf.ts_scalar(Time,V(:,6));
 V1=V1.tlim(T1);V2=V2.tlim(T1);V3=V3.tlim(T1);V4=V4.tlim(T1);V5=V5.tlim(T1);V6=V6.tlim(T1);
 V1.name='V1';V2.name='V2';V3.name='V3';V4.name='V4';V5.name='V5';V6.name='V6';
 
-%% define baseline
 
-if boom_shortening
-  dl56 = 14.5;dl12 = 96;dl13 = sqrt(2)*dl12/2;
-else
-  dl56 = 28.15;dl12 = 120;dl13 = sqrt(2)*dl12/2;
-end
 
 
 

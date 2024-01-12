@@ -6,5 +6,5 @@
 % Initially created 2020-03-03 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function datasetId = convert_DATASET_ID_to_SOLO(datasetId)
-    datasetId = regexprep(datasetId, '^ROC-SGSE', 'SOLO');
+    datasetId = regexprep(datasetId, '^ROC-SGSE_', 'SOLO_');
 end

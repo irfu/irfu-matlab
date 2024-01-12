@@ -15,7 +15,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 %                     seems bad or not. 1=Bad, 0=Can not find any problem.
 %                     Must not be NaN. (Currently (2023-08-10) not sure if this
 %                     is strictly in agreement with conventions, but that is
-%                     what BIACS requires).
+%                     what BICAS requires).
 %   codeVerStr      - Code version string. Used by BICAS. Represents the version
 %                     of the function *code*, including calibration data,
 %                     excluding comments.
@@ -40,7 +40,7 @@ Cal = [];
 % NOTE: This value is meant to be be updated by hand, not by an automatic
 % timestamp, so that a constant value represents the same algorithm.
 %===========================================================================
-codeVerStr = '2023-08-11T10:11:00';
+codeVerStr = '2023-12-19T15:11:00';
 
 AddEntry('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z',[0.8889  3.4389]); % Based on data from 2020-04-07
 AddEntry('2020-05-18T04:05:55Z/2020-05-29T23:59:59Z',[0.8154  4.5562]);
@@ -131,8 +131,14 @@ AddEntry('2022-09-07T08:00:00Z/2022-09-14T06:59:59Z',[0.6757 2.2607]); %53
 AddEntry('2022-09-14T07:00:00Z/2022-10-18T19:59:59Z',... %54
   [0.8547 + 2.9232i  0.2128 + 3.8295i],1.7300);
 AddEntry('2022-10-18T20:00:00Z/2022-11-03T23:59:59Z',[0.3968 3.1672]); %55
-AddEntry('2022-11-04T20:15:00Z/2022-11-25T23:39:59Z',... %56
-  [0.4405 + 2.4799i  0.2083 + 3.1489i],3.2500);
+AddEntry('2022-11-04T00:00:00Z/2022-11-29T23:59:59Z',... %56
+  [0.4405 + 2.4799i  0.2083 + 3.1493i],3.2500);
+AddEntry('2022-11-30T00:00:00Z/2022-12-09T18:15:59Z',... %57
+  [0.6897 + 1.7440i  0.2457 + 2.9565i],2.7252);
+AddEntry('2022-12-09T18:16:00Z/2022-12-19T01:04:59Z',... %58
+  [0.5208 + 1.9359i  0.2242 + 2.7081i],2.6131);
+AddEntry('2022-12-19T01:05:00Z/2022-12-20T15:04:39Z',[0.4545 1.9587]); %59
+AddEntry('2022-12-20T15:04:40Z/2022-12-31T23:59:59Z',[0.7194 1.5239]); %60
 
 %% calibrate
 CalR = Cal.resample(PSP);
@@ -142,7 +148,7 @@ NeScp = PSP;
 NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
 
 
-timeOutsideInterval = irf_time('2022-11-25T23:39:59Z','utc>ttns');
+timeOutsideInterval = irf_time('2022-12-31T23:39:59Z','utc>ttns');
 NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
 
 

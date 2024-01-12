@@ -263,7 +263,7 @@ for i = 1:nV % velocity (energy)
       % generate MC points
       nMCt = NMC(i,j,k); % temporary number
       % Ignore bin if value of F is zero to save computations
-      if F(i,j,k) == 0
+      if F(i,j,k) == 0 || isnan(F(i,j,k))
         continue;
       end
 

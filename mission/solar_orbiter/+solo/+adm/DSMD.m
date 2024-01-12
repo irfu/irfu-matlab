@@ -23,6 +23,9 @@
 % First created 2020-05-28.
 %
 classdef DSMD
+    % PROPOSAL: Rename DatasetMetadata.
+    %   PRO: Consistent with other class naming for BICAS.
+    %
     % PROPOSAL: Make DSMD entirely immutable, including .datasetId. Modify
     %           solo.adm.convert_DSMD_DATASET_ID_to_SOLO() to create new instance instead.
     %
@@ -35,7 +38,17 @@ classdef DSMD
     %           argument DSMD array.
     %           Ex: Group DSMDs should return groups of indices instead.
     %   PROPOSAL: New class = path + DSMD(without path)
+    %
+    % PROPOSAL: Add static function for extracting CA of dataset filenames from
+    %           array of DSMDs.
 
+
+
+    %#####################
+    %#####################
+    % INSTANCE PROPERTIES
+    %#####################
+    %#####################
     properties(SetAccess = public)
         % NOTE: Mutable because of
         % solo.adm.convert_DSMD_DATASET_ID_to_SOLO() (which
@@ -43,9 +56,6 @@ classdef DSMD
         % solo.adm.convert_DATASET_ID_to_SOLO).
         datasetId
     end
-
-
-
     properties(SetAccess = immutable)
         path
 
@@ -59,7 +69,14 @@ classdef DSMD
 
 
 
-    methods
+    %#########################
+    %#########################
+    % PUBLIC INSTANCE METHODS
+    %#########################
+    %#########################
+    methods(Access=public)
+
+
 
         function obj = DSMD(path, datasetId, versionNbr, isCdag, dt1, dt2)
             assert(ischar(path))
@@ -82,5 +99,9 @@ classdef DSMD
             obj.dt2 = dt2;
         end
 
-    end
+
+
+    end    % methods(Access=public)
+
+
 end

@@ -29,7 +29,8 @@ Damp = 1.1*ones(1,4);
 % t>=toepoch([2018 11 19 21 00 0]), Ddsi = [ x x x x ];
 % elseif t>=toepoch([2018 06 23 06 00 0]), Ddsi = [ x x x x ]; % Force MS offset for months when don't enter SW.
 
-if t>=toepoch([2021 01 01 00 00 0]), Ddsi = [ 00 2.25  00 0.20 ];
+if t>=toepoch([2022 01 01 00 00 0]), Ddsi = [ 00 2.43  00 0.22 ];
+elseif t>=toepoch([2021 01 01 00 00 0]), Ddsi = [ 00 2.25  00 0.20 ];
 elseif t>=toepoch([2020 01 01 00 00 0]), Ddsi = [ 00 2.09  00 0.09 ];
 elseif t>=toepoch([2019 01 01 00 00 0]), Ddsi = [ -0.15 1.93  00 -0.12 ];
 elseif t>=toepoch([2017 09 01 00 00 0]), Ddsi = [ -0.18 1.84  00 -0.09 ];
@@ -123,7 +124,8 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2021 01 01 00 0 0]), Ddsi = [ 00 2.99 00 0.35 ];
+if t>=toepoch([2022 01 01 00 0 0]), Ddsi = [ 00 3.65 00 0.57 ];
+elseif t>=toepoch([2021 01 01 00 0 0]), Ddsi = [ 00 2.99 00 0.35 ];
 elseif t>=toepoch([2020 01 01 00 0 0]), Ddsi = [ 00 2.59 00 0.29 ];
 elseif t>=toepoch([2019 01 01 00 0 0]), Ddsi = [ 00 2.44 00 -0.03 ];
 elseif t>=toepoch([2018 01 01 00 0 0]), Ddsi = [ 0.05 2.44 00 0.17 ];

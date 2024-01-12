@@ -25,6 +25,12 @@
 % First created 2020-06-26, when broken out from other code.
 %
 function freqHz = get_LFR_frequency(iLsf)
+    % PROPOSAL: Change name:
+    %   get_LSF()
+    %       CON: Too BICAS-specific abbreviation.
+    %           CON: Already used in argument name, solo.hwzv.const.LSF_HZ,
+    %                function documentation.
+    %   get_LFR_sampling_frequency()
     
     LSF_HZ = solo.hwzv.const.LSF_HZ;
     

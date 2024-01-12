@@ -48,6 +48,9 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %   'facMatrix'    - specify rotation matrix to FAC system
 %   'mwidthcoef'   - specify coefficient to multiple Morlet wavelet width by. 1
 %   corresponds to standard Morlet wavelet.
+%   'returncomplex'- set to 1 to return the complex amplitudes of the
+%   wavelet transforms of both electric and magnetic field. Default is 0.
+%   'downsample'   - set to 1 to downsample the output (default).
 %
 %  Examples:
 %
@@ -109,6 +112,7 @@ res = struct('t',[],'f',[],'flagFac',0,...
   'fullB',fullB,'B0',B0,'r',xyz);
 
 flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
+flag_return_complex = 0;downsample = 1;
 args = varargin;
 while 1
   l = 1;
@@ -141,6 +145,10 @@ while 1
         error('FACMATRIX requires a second argument struct(t,rotMatrix)')
       end
       facMatrix = args{2}; l = 2;
+    case 'returncomplex'
+      flag_return_complex = args{2}; l = 2;
+    case 'downsample'
+      downsample = args{2}; l = 2;
     otherwise
       irf_log('fcal',['Option ''' args{1} '''not recognized'])
   end
@@ -245,7 +253,9 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
   if wantEE, e=e(1:end-1,:); end
 end
 inTime = dB(:,1);
-
+if ~downsample
+  outTime = inTime;
+end
 Bx = []; By = []; Bz = []; idxBparSpinPlane = [];
 if flag_dEdotB0
   Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
@@ -324,6 +334,14 @@ power2B_plot = zeros(ndata,nfreq);
 powerBx_plot = zeros(ndata,nfreq);
 powerBy_plot = zeros(ndata,nfreq);
 powerBz_plot = zeros(ndata,nfreq);
+if flag_return_complex
+  Ex_complex = zeros(ndata,nfreq);
+  Ey_complex = zeros(ndata,nfreq);
+  Ez_complex = zeros(ndata,nfreq);
+  Bx_complex = zeros(ndata,nfreq);
+  By_complex = zeros(ndata,nfreq);
+  Bz_complex = zeros(ndata,nfreq);
+end
 S_plot_x = zeros(ndata,nfreq);
 S_plot_y = zeros(ndata,nfreq);
 S_plot_z = zeros(ndata,nfreq);
@@ -397,6 +415,11 @@ parfor ind_a=1:length(a) % Main loop over frequencies
     powerEy_plot(:,ind_a) = powerE(:,2);
     powerEz_plot(:,ind_a) = powerE(:,3);
     power2E_plot(:,ind_a) = powerE(:,4);
+    if flag_return_complex
+      Ex_complex(:,ind_a) = sqrt(2*pi).*We(:,1)./sqrt(newfreqmat);
+      Ey_complex(:,ind_a) = sqrt(2*pi).*We(:,2)./sqrt(newfreqmat);
+      Ez_complex(:,ind_a) = sqrt(2*pi).*We(:,3)./sqrt(newfreqmat);
+    end
 
     % Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
     coef_poynt=10/4/pi*(1/4)*(4*pi); % 4pi from wavelets, see A. Tjulins power estimates a few lines above
@@ -419,7 +442,11 @@ parfor ind_a=1:length(a) % Main loop over frequencies
   powerBy_plot(:,ind_a) = powerB(:,2);
   powerBz_plot(:,ind_a) = powerB(:,3);
   power2B_plot(:,ind_a) = powerB(:,4);
-
+  if flag_return_complex
+    Bx_complex(:,ind_a) = sqrt(2*pi).*Wb(:,1)./sqrt(newfreqmat);
+    By_complex(:,ind_a) = sqrt(2*pi).*Wb(:,2)./sqrt(newfreqmat);
+    Bz_complex(:,ind_a) = sqrt(2*pi).*Wb(:,3)./sqrt(newfreqmat);
+  end
   if wantPolarization % Polarization parameters
     %% Construct spectral matrix and average it
     SM = zeros(3,3,ndata);
@@ -514,12 +541,22 @@ for ind_a=1:length(a)
   powerBy_plot(censurIdx,ind_a) = NaN;
   powerBz_plot(censurIdx,ind_a) = NaN;
   power2B_plot(censurIdx,ind_a) = NaN;
+  if flag_return_complex
+    Bx_complex(censurIdx,ind_a) = NaN;
+    By_complex(censurIdx,ind_a) = NaN;
+    Bz_complex(censurIdx,ind_a) = NaN;
+  end
   if wantEE
     powerEx_plot(censurIdx,ind_a) = NaN;
     powerEy_plot(censurIdx,ind_a) = NaN;
     powerEz_plot(censurIdx,ind_a) = NaN;
     power2E_plot(censurIdx,ind_a) = NaN;
     power2E_ISR2_plot(censurIdx,ind_a) = NaN;
+    if flag_return_complex
+      Ex_complex(censurIdx,ind_a) = NaN;
+      Ey_complex(censurIdx,ind_a) = NaN;
+      Ez_complex(censurIdx,ind_a) = NaN;
+    end
     S_plot_x(censurIdx,ind_a) = NaN;
     S_plot_y(censurIdx,ind_a) = NaN;
     S_plot_z(censurIdx,ind_a) = NaN;
@@ -546,6 +583,11 @@ for i=1:length(idxNanB)-1
       powerBy_plot(censur_index_front,j) = NaN;
       powerBz_plot(censur_index_front,j) = NaN;
       power2B_plot(censur_index_front,j) = NaN;
+      if flag_return_complex
+        Bx_complex(censur_index_front,j) = NaN;
+        By_complex(censur_index_front,j) = NaN;
+        Bz_complex(censur_index_front,j) = NaN;
+      end
       S_plot_x(censur_index_front,j) = NaN;
       S_plot_y(censur_index_front,j) = NaN;
       S_plot_z(censur_index_front,j) = NaN;
@@ -558,6 +600,11 @@ for i=1:length(idxNanB)-1
       powerBy_plot(censur_index_back,j) = NaN;
       powerBz_plot(censur_index_back,j) = NaN;
       power2B_plot(censur_index_back,j) = NaN;
+      if flag_return_complex
+        Bx_complex(censur_index_back,j) = NaN;
+        By_complex(censur_index_back,j) = NaN;
+        Bz_complex(censur_index_back,j) = NaN;
+      end
       S_plot_x(censur_index_back,j) = NaN;
       S_plot_y(censur_index_back,j) = NaN;
       S_plot_z(censur_index_back,j) = NaN;
@@ -575,6 +622,11 @@ for i=1:length(idxNanE)-1
       powerEz_plot(censur_index_front,j) = NaN;
       power2E_plot(censur_index_front,j) = NaN;
       power2E_ISR2_plot(censur_index_front,j) = NaN;
+      if flag_return_complex
+        Ex_complex(censur_index_front,j) = NaN;
+        Ey_complex(censur_index_front,j) = NaN;
+        Ez_complex(censur_index_front,j) = NaN;
+      end
       S_plot_x(censur_index_front,j) = NaN;
       S_plot_y(censur_index_front,j) = NaN;
       S_plot_z(censur_index_front,j) = NaN;
@@ -588,6 +640,11 @@ for i=1:length(idxNanE)-1
       powerEz_plot(censur_index_back,j) = NaN;
       power2E_plot(censur_index_back,j) = NaN;
       power2E_ISR2_plot(censur_index_back,j) = NaN;
+      if flag_return_complex
+        Ex_complex(censur_index_back,j) = NaN;
+        Ey_complex(censur_index_back,j) = NaN;
+        Ez_complex(censur_index_back,j) = NaN;
+      end
       S_plot_x(censur_index_back,j) = NaN;
       S_plot_y(censur_index_back,j) = NaN;
       S_plot_z(censur_index_back,j) = NaN;
@@ -618,21 +675,37 @@ powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
 powerBy_plot = AverageData(powerBy_plot,inTime,outTime);
 powerBz_plot = AverageData(powerBz_plot,inTime,outTime);
 power2B_plot = AverageData(power2B_plot,inTime,outTime);
+if flag_return_complex
+  Bx_complex = AverageData(Bx_complex,inTime,outTime);
+  By_complex = AverageData(By_complex,inTime,outTime);
+  Bz_complex = AverageData(Bz_complex,inTime,outTime);
+end
 bb_xxyyzzss = powerBx_plot;
 bb_xxyyzzss(:,:,2) = powerBy_plot;
 bb_xxyyzzss(:,:,3) = powerBz_plot;
 bb_xxyyzzss(:,:,4) = power2B_plot;
 
+
 % Output
 res.t = outTime;
 res.f = frequencyVec;
 res.bb_xxyyzzss = bb_xxyyzzss;
-
+if flag_return_complex
+  B_complex = Bx_complex;
+  B_complex(:,:,2) = By_complex;
+  B_complex(:,:,3) = Bz_complex;
+  res.B_complex = B_complex;
+end
 if wantEE
   powerEx_plot = AverageData(powerEx_plot,inTime,outTime);
   powerEy_plot = AverageData(powerEy_plot,inTime,outTime);
   powerEz_plot = AverageData(powerEz_plot,inTime,outTime);
   power2E_plot = AverageData(power2E_plot,inTime,outTime);
+  if flag_return_complex
+    Ex_complex = AverageData(Ex_complex,inTime,outTime);
+    Ey_complex = AverageData(Ey_complex,inTime,outTime);
+    Ez_complex = AverageData(Ez_complex,inTime,outTime);
+  end
   power2E_ISR2_plot = AverageData(power2E_ISR2_plot,inTime,outTime);
   S_plot_x = AverageData(S_plot_x,inTime,outTime);
   S_plot_y = AverageData(S_plot_y,inTime,outTime);
@@ -654,6 +727,12 @@ if wantEE
   % Output
   res.ee_ss = power2E_ISR2_plot;
   res.ee_xxyyzzss = ee_xxyyzzss;
+  if flag_return_complex
+    E_complex = Ex_complex;
+    E_complex(:,:,2) = Ey_complex;
+    E_complex(:,:,3) = Ez_complex;
+    res.E_complex = E_complex;
+  end
   res.pf_xyz = Poynting_XYZ;
   res.pf_rtp = Poynting_RThPh;
 end
@@ -682,6 +761,7 @@ end
 end % Main function
 
 function out = AverageData(data,x,y,avWindow,flagSerial)
+if length(x) == length(y);out = data;return;end
 % average data with time x to time y using window
 dtx = median(diff(x)); dty = median(diff(y));
 if nargin<4, avWindow = dty; end
