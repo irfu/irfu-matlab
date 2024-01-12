@@ -6,6 +6,8 @@
 %
 classdef utils
 
+
+
     %#######################
     %#######################
     % PUBLIC STATIC METHODS
@@ -13,9 +15,14 @@ classdef utils
     %#######################
     methods(Static)
 
+
+
         % Assert that string contains human-readable text.
         function assert_text(str)
+            % Require at least one whitespace to prevent confusing value with
+            % other values.
             irf.assert.castring_regexp(str, '.* .*')
+
             irf.assert.castring_regexp(str, '[^<>]*')
         end
 
@@ -47,6 +54,10 @@ classdef utils
             assert(strcmp(sourceName, 'SOLO'))
         end
 
+
+
     end    % methods(Static)
+
+
 
 end

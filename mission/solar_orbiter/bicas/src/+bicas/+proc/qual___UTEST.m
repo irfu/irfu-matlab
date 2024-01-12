@@ -175,7 +175,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
             % Zero QRCIDs are defined
             % =======================
             QrcSettingsMap = containers.Map();
-            QrcFlagsMap      = containers.Map();
+            QrcFlagsMap    = containers.Map();
 
             % Zero records
             test(0, QrcFlagsMap, QrcSettingsMap, ...

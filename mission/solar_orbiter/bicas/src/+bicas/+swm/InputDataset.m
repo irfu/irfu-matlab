@@ -10,7 +10,7 @@ classdef InputDataset
 % PROPOSAL: Rename to not be same as bicas.InputDataset.
 %   InputSwmDataset
 %       CON: SWM already in path (MATLAB package name).
-%   InputMetadataDataset
+%   InputMetadataDataset, InputDatasetMetadata
 %       CON: 2x "data"
 
 
@@ -35,19 +35,24 @@ classdef InputDataset
     %#########################
     methods(Access=public)
 
+
+
         function obj = InputDataset(...
                 cliOptionHeaderBody, dsi, prodFuncInputKey)
 
             % NOTE: No dataset/skeleton version.
             obj.cliOptionHeaderBody = cliOptionHeaderBody;
             obj.prodFuncInputKey    = prodFuncInputKey;
-            obj.dsi           = dsi;
+            obj.dsi                 = dsi;
 
             bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
-            % NOTE: Using the INTERNAL assertion function, not the global one.
-            bicas.swm.utils.assert_DSI(    obj.dsi)
+            bicas.swm.utils.assert_DSI(           obj.dsi)
         end
 
+
+
     end
+
+
 
 end

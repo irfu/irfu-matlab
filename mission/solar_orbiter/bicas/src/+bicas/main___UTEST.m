@@ -8,8 +8,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef main___UTEST < matlab.unittest.TestCase
-% NOTE: The git repo does not contain any BICAS config file. That "has to" be
-%       created by the tests (and ideally should be).
+% NOTE: The irfu-matlab git repo does not contain any BICAS config file. That
+%       "has to" be created by the tests (and ideally should be).
 % PROBLEM: Not clear how to test the use of config file: Explicit path .default path, content
 % PROBLEM: How be able to both (1) run the tests locally, and (2) test loading
 %          from the default config file path, without overwriting a

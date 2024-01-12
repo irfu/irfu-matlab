@@ -229,11 +229,11 @@ RCS
 RCS ICD
     Originally document ROC-TST-GSE-ICD-00023-LES,
     "RPW Calibration Software ICD Documentation",
-    which was later superseded by ROC-PRO-PIP-ICD-00037-LES,
+    which was later first complemented by and then later superseded by
+    ROC-PRO-PIP-ICD-00037-LES,
     "RPW Calibration Software Interface Document".
-    NOTE: "RCS ICD" does not at this time (2019-07-24) distinguish between
-    these two which gives room for confusion since a later rev/iss for the old
-    RCS ICD may thus be superseded by a lower rev/iss for the newer RCS ICD.
+    NOTE: For a period in the past, both documents were simultaneously valid
+    and then referred to the ROC-SGSE and RODP pipeline separately(?).
 RCT
     RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
 RCTT
@@ -265,6 +265,10 @@ SDID
     Class bicas.proc.L1L2.SignalDestinationId.
 Sec
     Seconds
+SIP
+    Specific Input Parameter. BICAS CLI argument which specifies the path to
+    an input or output dataset.
+    The phrase (but not the abbreviation) is defined by the RCS ICD.
 SKV
     bicas.SettingsKeyValue class.
 SPR

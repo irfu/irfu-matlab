@@ -9,10 +9,11 @@ function qual___sliding_window_over_fraction_speedTest()
 
     xAr    = [];
     tSecAr = [];
-    for i = logspace(log10(1), log10(1e2), 10)
-        nSamples           = i*1e3;
+    %for i = logspace(log10(1e4), log10(1e4), 10)
+    for i = logspace(log10(1e3), log10(1e6), 10)
+        nSamples           = i;
         minFlaggedFraction = 0.6;
-        windowLengthSec    = 1;
+        windowLengthSec    = 6*1;
         
         periodSec   = 1e99;
         samplFreqHz = 1000;

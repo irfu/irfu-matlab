@@ -8,8 +8,16 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef(Abstract) SwmProcessing   % < handle
+classdef(Abstract) SwmProcessing
     % PROPOSAL: Naming convention for subclasses: *Swmp
+    %   PRO: Shortens names of implementations.
+    %       Ex: 
+    %         bicas.proc.L1L2.LfrSwmProcessing
+    %         bicas.proc.L1L2.TdsSwmProcessing
+    %         bicas.proc.L2L2.LfrDsrSwmProcessing
+    %         bicas.proc.L2L3.L3OsrDsrSwmProcessing
+    %   CON: Bad for TestSwmProcessing, SwmProcessing
+    %       CON: Does not have to apply convention to every class.
 
 
 
@@ -19,6 +27,8 @@ classdef(Abstract) SwmProcessing   % < handle
     %###########################
     %###########################
     methods(Abstract)
+
+
         
         % ARGUMENTS
         % =========
@@ -42,6 +52,7 @@ classdef(Abstract) SwmProcessing   % < handle
         % PROPOSAL: Rename
         %   process
         %   process_data
+        %   process_method
         %
         % PROPOSAL: Remove argument rctDir, NsoTable.
         %   PRO: Not used for L2-L2, L2-L3.
@@ -50,6 +61,8 @@ classdef(Abstract) SwmProcessing   % < handle
         %            runs does not use it.
         %           CON: The current implementation always loads NsoTable.
         %   PROPOSAL: Submit path to NSO table in (subclass) constructor.
+
+
 
     end    % methods(Access=public)
 

@@ -117,7 +117,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             %   CON: There is much shared functionality for 3 quality ZVs.
             %       PRO: Same ~constants
             %           Ex: INPUT_DSI, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
-            %       PRO: Read setting QUALITY_FLAG_MIN_FOR_USE
+            %       PRO: Read setting QUALITY_FLAG_MIN
             %       PRO: Normalizing CWF zVar names.
             %       PRO: Preparations for downsampled.
             %           Bin locations, bundling of records,

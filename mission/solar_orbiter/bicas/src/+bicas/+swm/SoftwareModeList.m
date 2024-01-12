@@ -62,7 +62,6 @@ classdef SoftwareModeList
     %           then filter out the undesired ones using internal metadata for
     %           every S/W mode.
     %
-    % PROPOSAL: Use PF = prodFunc, production function
     % PROPOSAL: Same input CDF can have multiple DSIs, but only one is
     %           shown in the s/w descriptor.
     %   PRO: Can handle old datasets with ROG-SGSE DSIs, and otherwise
@@ -86,13 +85,15 @@ classdef SoftwareModeList
     %   Ex: Bso, L, rctDir, NsoTable
     %
     % PROPOSAL: Abolish this class. Only need SWM class + object array/list.
+    %   PROPOSAL: Use containers.Map.
+    %   NOTE: Alters the BICAS interface which bicas.batch uses.
+    %
     % PROPOSAL: Better class name
     %   PROPOSAL: SwmSet
     %       PRO: There is no inherent ordering of SWMs.
     %   PROPOSAL: SwmList
     %       CON: List implies ordering.
     %       CON: Conflicts with variable naming for plain list of SWM objects.
-
 
 
     % PUBLIC, IMMUTABLE
