@@ -7,12 +7,12 @@
         "icd_version": "1.4"
     },
     "release": {
-        "version":      "7.0.0",
-        "date":         "2023-02-17T11:10:00Z",
+        "version":      "8.0.0",
+        "date":         "2024-01-17T17:49:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
         "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Non-Standard Operations (NSO) table for thruster firings updated for up until 2023-02-05; Uses new master CDFs.",
+        "modification": "Non-Standard Operations (NSO) table for thruster firings updated for up until 2024-01-11; Uses new L3 master CDFs without \"LFR\".; Support demultiplexer latching relay changing.; Autodetects saturation.; New L3 density quality bit.; Detect sweeps for exclusion using algorithm.",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {
