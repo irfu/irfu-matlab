@@ -55,13 +55,13 @@ assert(numel(varargin) >= 1, 'Zero arguments. Must have at least one argument.')
 fhArray = irf.utils.find_equalities(1, varargin{:});
 
 if isempty(fhArray)
-    i1Array = zeros(0,1);
-    i2Array = zeros(0,1);
+  i1Array = zeros(0,1);
+  i2Array = zeros(0,1);
 else
-    bChange = ( fhArray(1:end-1) ~= fhArray(2:end) );
-    iChange = find(bChange);
-    i1Array = [1;       iChange+1     ];
-    i2Array = [iChange; numel(fhArray)];
+  bChange = ( fhArray(1:end-1) ~= fhArray(2:end) );
+  iChange = find(bChange);
+  i1Array = [1;       iChange+1     ];
+  i2Array = [iChange; numel(fhArray)];
 end
 
 n = numel(i1Array);
