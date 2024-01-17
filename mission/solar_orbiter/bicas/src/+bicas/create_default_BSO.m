@@ -231,6 +231,8 @@ function Bso = create_default_BSO()
     % content is unimportant since it speeds up BICAS.
     S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
 
+    % "There must be one entry for each entry in the CALIBRATION_TABLE
+    % attribute"  /RCS ICD 1.6
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
     % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.TDS',         'TDS team')

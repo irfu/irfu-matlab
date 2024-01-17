@@ -1,5 +1,6 @@
 Release notes
 =============
+Note: This list includes updates to unofficial functionality, e.g. for processing L2 to L3.
 
 
 Version 1.0.0

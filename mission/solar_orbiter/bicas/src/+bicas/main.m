@@ -239,7 +239,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
         ' derived from Exception1.identifier):\n'])];
     for i = 1:numel(emidpList)
         emidp = emidpList{i};
-        msg  = [msg, sprintf('    %-23s : %s\n', ...
+        msg  = [msg, sprintf('    %-24s : %s\n', ...
             emidp, bicas.const.EMIDP_2_INFO(emidp).description)];
     end
     % NOTE: Choice - Uses the last part of the message ID for determining error
