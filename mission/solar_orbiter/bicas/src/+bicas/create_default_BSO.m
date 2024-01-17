@@ -291,7 +291,7 @@ function Bso = create_default_BSO()
     % the remaining activities on RPW data processing. I will let you know.
     % """""""" /Xavier Bonnin, e-mail 2022-04-20
     %
-    S.define_setting('OUTPUT_CDF.GA_MODS_ENABLED', 0)    % 0/false, 1/true
+    S.define_setting('OUTPUT_CDF.GA_MODS_ENABLED', 1)    % 0/false, 1/true
 
 
 
