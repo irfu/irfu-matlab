@@ -502,13 +502,14 @@ classdef const
             %======================================================
             % Initialize empty data structure for all MODS entries)
             %======================================================
-            % NOTE: Includes UNOFFICIAL DATASETS. Not strictly required.
+            % NOTE: Includes UNOFFICIAL DATASETS to avoid having a special case
+            %       in the code for them w.r.t. MODS.
             % NOTE: Formal parent dataset(s) might be changed due to
             %       reorganizing SWM, which could change the technically
             %       correct value.
             DSI_CA = [...
                 L2_LFR_TDS_DSIs, L3_DSIs ...
-                %{'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'}...
+                {'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'}...
             ]';
             Gmdb = bicas.gamods.Database(DSI_CA);
 
