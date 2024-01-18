@@ -431,7 +431,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         % ARGUMENTS
         % =========
         % ZvFpa1
-        %   ZV-like FPA. Column vector (Nx1) or empty.
+        %       ZV-like FPA. Column vector (Nx1) or empty.
         %
         function ZvFpa2 = normalize_ZV_empty(...
                 L, settingValue, settingKey, nRecords, ZvFpa1, zvName)

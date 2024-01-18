@@ -74,7 +74,7 @@ classdef dc
 
                 iRecords = iRec1:iRec2;
 
-                L.logf('info', 'Records %7i-%7i : %s -- %s', ...
+                L.logf('info', 'Records %8i-%8i : %s -- %s', ...
                     iRec1, iRec2, ...
                     bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec1)), ...
                     bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec2)))
@@ -226,8 +226,8 @@ classdef dc
                 % ==============================================================
                 % IMPLEMENTATION NOTE: Below extraction of data from PreDc etc.
                 % may seem awkward but actually clarifies the code associated
-                % with bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence() as
-                % compared to earlier version before refactoring.
+                % with bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence()
+                % as compared to earlier version before refactoring.
                 %
                 % PRO: Clearly divides the variables/arguments into (a) constant
                 %      and (2) varying variables.

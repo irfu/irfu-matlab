@@ -343,12 +343,13 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %
         function Fpa = cast(obj, outputMc, fvBefore)
             
+            % Determine which "fvBefore" value to use.
             switch(nargin)
                 case 2
                     fvBefore = bicas.utils.FPArray.get_cast_FV(...
                         obj.mc, outputMc);
                 case 3
-                    % Do nothing. Use caller-supplied value of "fbBefore".
+                    % Do nothing. Use caller-supplied value of "fvBefore".
                 otherwise
                     error('BICAS:Assertion', 'Illegal number of arguments')
             end

@@ -60,10 +60,13 @@
 %
 % ARGUMENTS
 % =========
-% casesHandled          : String constant. Which setting values are being
-%                         handled by this particular call.
-% anomalyDescriptionMsg : String.
-% errorId               : String. Optional for casesHandled == 'other'
+% casesHandled
+%       String constant. Which setting values are being handled by this
+%       particular call.
+% anomalyDescriptionMsg
+%       String.
+% errorId
+%       String. Optional for casesHandled == 'other'
 % --
 % NOTE: Order of settingValue, settingKey.
 %
